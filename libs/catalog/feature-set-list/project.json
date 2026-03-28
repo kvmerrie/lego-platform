@@ -1,0 +1,9 @@
+{
+  "name": "catalog-feature-set-list",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/feature-set-list/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project catalog-feature-set-list --web",
+  "targets": {}
+}

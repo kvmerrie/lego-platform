@@ -1,0 +1,9 @@
+{
+  "name": "content-feature-page-renderer",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/content/feature-page-renderer/src",
+  "projectType": "library",
+  "tags": ["scope:content", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project content-feature-page-renderer --web",
+  "targets": {}
+}

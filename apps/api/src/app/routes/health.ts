@@ -1,0 +1,10 @@
+import { FastifyInstance } from 'fastify';
+
+export default async function (fastify: FastifyInstance) {
+  fastify.get('/health', async function () {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+    };
+  });
+}

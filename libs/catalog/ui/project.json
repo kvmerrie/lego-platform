@@ -1,0 +1,9 @@
+{
+  "name": "catalog-ui",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/ui/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:ui", "platform:web"],
+  "// targets": "to see all targets run: nx show project catalog-ui --web",
+  "targets": {}
+}

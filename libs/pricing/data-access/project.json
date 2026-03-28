@@ -1,0 +1,9 @@
+{
+  "name": "pricing-data-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/pricing/data-access/src",
+  "projectType": "library",
+  "tags": ["scope:pricing", "type:data-access", "platform:shared"],
+  "// targets": "to see all targets run: nx show project pricing-data-access --web",
+  "targets": {}
+}

@@ -1,0 +1,9 @@
+{
+  "name": "affiliate-util",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/affiliate/util/src",
+  "projectType": "library",
+  "tags": ["scope:affiliate", "type:util", "platform:shared"],
+  "// targets": "to see all targets run: nx show project affiliate-util --web",
+  "targets": {}
+}

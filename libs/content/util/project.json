@@ -1,0 +1,9 @@
+{
+  "name": "content-util",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/content/util/src",
+  "projectType": "library",
+  "tags": ["scope:content", "type:util", "platform:shared"],
+  "// targets": "to see all targets run: nx show project content-util --web",
+  "targets": {}
+}

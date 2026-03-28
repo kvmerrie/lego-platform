@@ -1,0 +1,9 @@
+{
+  "name": "affiliate-feature-offers",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/affiliate/feature-offers/src",
+  "projectType": "library",
+  "tags": ["scope:affiliate", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project affiliate-feature-offers --web",
+  "targets": {}
+}

@@ -1,0 +1,9 @@
+{
+  "name": "catalog-data-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/data-access/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:data-access", "platform:shared"],
+  "// targets": "to see all targets run: nx show project catalog-data-access --web",
+  "targets": {}
+}

@@ -1,0 +1,9 @@
+{
+  "name": "wishlist-util",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/wishlist/util/src",
+  "projectType": "library",
+  "tags": ["scope:wishlist", "type:util", "platform:shared"],
+  "// targets": "to see all targets run: nx show project wishlist-util --web",
+  "targets": {}
+}

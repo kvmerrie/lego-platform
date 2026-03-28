@@ -1,0 +1,43 @@
+import { ReactNode } from 'react';
+import { platformConfig, webNavigation } from '@lego-platform/shared/config';
+import { ShellWebThemeToggle } from './theme-toggle';
+
+export function ShellWeb({ children }: { children: ReactNode }) {
+  return (
+    <div className="app-shell">
+      <header className="shell-header">
+        <div className="shell-header__row">
+          <div className="stack">
+            <p className="eyebrow">Public portal</p>
+            <div className="shell-brand">
+              <span className="brand-mark">B</span>
+              <div className="stack">
+                <h1>{platformConfig.productName}</h1>
+                <p className="muted">{platformConfig.tagline}</p>
+              </div>
+            </div>
+          </div>
+          <ShellWebThemeToggle />
+        </div>
+        <nav aria-label="Primary" className="shell-nav">
+          {webNavigation.map((navigationItem) => (
+            <a href={navigationItem.href} key={navigationItem.href}>
+              <span>{navigationItem.label}</span>
+              <small>{navigationItem.description}</small>
+            </a>
+          ))}
+        </nav>
+      </header>
+      <main className="stack-xl">{children}</main>
+      <footer className="shell-footer">
+        <p>
+          Built as an Nx monorepo with strict boundaries so future Contentful,
+          Supabase, pricing, and mobile integrations can scale without undoing
+          the foundation.
+        </p>
+      </footer>
+    </div>
+  );
+}
+
+export default ShellWeb;

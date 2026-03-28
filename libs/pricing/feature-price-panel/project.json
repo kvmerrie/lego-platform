@@ -1,0 +1,9 @@
+{
+  "name": "pricing-feature-price-panel",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/pricing/feature-price-panel/src",
+  "projectType": "library",
+  "tags": ["scope:pricing", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project pricing-feature-price-panel --web",
+  "targets": {}
+}

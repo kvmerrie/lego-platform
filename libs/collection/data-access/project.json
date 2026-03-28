@@ -1,0 +1,9 @@
+{
+  "name": "collection-data-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/collection/data-access/src",
+  "projectType": "library",
+  "tags": ["scope:collection", "type:data-access", "platform:shared"],
+  "// targets": "to see all targets run: nx show project collection-data-access --web",
+  "targets": {}
+}
