@@ -1,0 +1,230 @@
+import { mkdtemp, readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { describe, expect, test } from 'vitest';
+import {
+  buildCatalogSyncArtifacts,
+  runCatalogSync,
+} from './catalog-data-access-sync';
+import type { RebrickableClient } from './rebrickable-client';
+
+function createMockRebrickableClient(): RebrickableClient {
+  return {
+    async getSet(setNumber: string) {
+      switch (setNumber) {
+        case '10316-1':
+          return {
+            set_num: '10316-1',
+            name: 'Rivendell',
+            year: 2023,
+            num_parts: 6167,
+            theme_id: 1,
+            set_img_url: 'https://images.example/rivendell.jpg',
+          };
+        case '21348-1':
+          return {
+            set_num: '21348-1',
+            name: "Dungeons & Dragons: Red Dragon's Tale",
+            year: 2024,
+            num_parts: 3745,
+            theme_id: 2,
+            set_img_url: 'https://images.example/dnd.jpg',
+          };
+        case '76269-1':
+          return {
+            set_num: '76269-1',
+            name: 'Avengers Tower',
+            year: 2023,
+            num_parts: 5201,
+            theme_id: 3,
+            set_img_url: 'https://images.example/avengers.jpg',
+          };
+        default:
+          throw new Error(`Unexpected set lookup for ${setNumber}.`);
+      }
+    },
+    async getTheme(themeId: number) {
+      switch (themeId) {
+        case 1:
+          return { id: 1, name: 'Icons' };
+        case 2:
+          return { id: 2, name: 'Ideas' };
+        case 3:
+          return { id: 3, name: 'Marvel' };
+        default:
+          throw new Error(`Unexpected theme lookup for ${themeId}.`);
+      }
+    },
+  };
+}
+
+describe('catalog sync artifacts', () => {
+  test('builds normalized snapshot and manifest data from curated Rebrickable records', async () => {
+    const artifacts = await buildCatalogSyncArtifacts({
+      now: new Date('2026-03-28T00:00:00.000Z'),
+      rebrickableClient: createMockRebrickableClient(),
+    });
+
+    expect(artifacts.catalogSnapshot).toEqual({
+      source: 'rebrickable-api-v3',
+      generatedAt: '2026-03-28T00:00:00.000Z',
+      setRecords: [
+        {
+          canonicalId: '10316',
+          sourceSetNumber: '10316-1',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6167,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        },
+        {
+          canonicalId: '21348',
+          sourceSetNumber: '21348-1',
+          slug: 'dungeons-and-dragons-red-dragons-tale-21348',
+          name: "Dungeons & Dragons: Red Dragon's Tale",
+          theme: 'Ideas',
+          releaseYear: 2024,
+          pieces: 3745,
+          imageUrl: 'https://images.example/dnd.jpg',
+        },
+        {
+          canonicalId: '76269',
+          sourceSetNumber: '76269-1',
+          slug: 'avengers-tower-76269',
+          name: 'Avengers Tower',
+          theme: 'Marvel',
+          releaseYear: 2023,
+          pieces: 5201,
+          imageUrl: 'https://images.example/avengers.jpg',
+        },
+      ],
+    });
+    expect(artifacts.catalogSyncManifest).toEqual({
+      source: 'rebrickable-api-v3',
+      generatedAt: '2026-03-28T00:00:00.000Z',
+      recordCount: 3,
+      homepageFeaturedSetIds: ['10316', '21348', '76269'],
+      notes:
+        'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
+    });
+  });
+
+  test('rejects malformed source payloads before artifacts are built', async () => {
+    await expect(
+      buildCatalogSyncArtifacts({
+        now: new Date('2026-03-28T00:00:00.000Z'),
+        rebrickableClient: {
+          async getSet() {
+            return {
+              set_num: '10316-1',
+              name: '',
+              year: 2023,
+              num_parts: 6167,
+              theme_id: 1,
+            };
+          },
+          async getTheme() {
+            return { id: 1, name: 'Icons' };
+          },
+        },
+      }),
+    ).rejects.toThrow(
+      'Invalid Rebrickable set payload for 10316-1: name is required.',
+    );
+  });
+
+  test('writes generated artifact modules into the existing catalog read-artifact paths', async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), 'catalog-sync-'));
+
+    await runCatalogSync({
+      apiKey: 'test-key',
+      fetchImpl: async (input) => {
+        const url = String(input);
+
+        if (url.endsWith('/lego/sets/10316-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10316-1',
+              name: 'Rivendell',
+              year: 2023,
+              num_parts: 6167,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21348-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21348-1',
+              name: "Dungeons & Dragons: Red Dragon's Tale",
+              year: 2024,
+              num_parts: 3745,
+              theme_id: 2,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/76269-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '76269-1',
+              name: 'Avengers Tower',
+              year: 2023,
+              num_parts: 5201,
+              theme_id: 3,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/themes/1/')) {
+          return new Response(JSON.stringify({ id: 1, name: 'Icons' }), {
+            status: 200,
+          });
+        }
+
+        if (url.endsWith('/lego/themes/2/')) {
+          return new Response(JSON.stringify({ id: 2, name: 'Ideas' }), {
+            status: 200,
+          });
+        }
+
+        if (url.endsWith('/lego/themes/3/')) {
+          return new Response(JSON.stringify({ id: 3, name: 'Marvel' }), {
+            status: 200,
+          });
+        }
+
+        return new Response(null, { status: 404 });
+      },
+      now: new Date('2026-03-28T00:00:00.000Z'),
+      workspaceRoot,
+    });
+
+    const snapshotModule = await readFile(
+      join(
+        workspaceRoot,
+        'libs/catalog/data-access/src/lib/catalog-snapshot.generated.ts',
+      ),
+      'utf8',
+    );
+    const manifestModule = await readFile(
+      join(
+        workspaceRoot,
+        'libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts',
+      ),
+      'utf8',
+    );
+
+    expect(snapshotModule).toContain(
+      '// Generated by apps/catalog-sync. Do not edit by hand.',
+    );
+    expect(snapshotModule).toContain('"canonicalId": "10316"');
+    expect(manifestModule).toContain('"homepageFeaturedSetIds": [');
+  });
+});

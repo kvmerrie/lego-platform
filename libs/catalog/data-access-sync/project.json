@@ -1,0 +1,17 @@
+{
+  "name": "catalog-data-access-sync",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/data-access-sync/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:data-access", "platform:server"],
+  "// targets": "to see all targets run: nx show project catalog-data-access-sync --web",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/catalog/data-access-sync",
+        "command": "vitest run src/lib/catalog-data-access-sync.spec.ts --config ../vitest.config.mts"
+      }
+    }
+  }
+}

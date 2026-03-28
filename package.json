@@ -6,6 +6,7 @@
     "dev:web": "pnpm nx dev web",
     "dev:admin": "pnpm nx serve admin",
     "dev:api": "pnpm nx serve api",
+    "sync:catalog": "pnpm nx run catalog-sync:run",
     "build": "pnpm nx run-many -t build --all",
     "lint": "pnpm nx run-many -t lint --all",
     "test": "pnpm nx run-many -t test --all",
