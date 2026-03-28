@@ -1,13 +1,11 @@
-import { CatalogSetDetail, CatalogThemeSnapshot } from '@lego-platform/catalog/util';
+import {
+  CatalogSetOverlay,
+  CatalogThemeOverlay,
+} from '@lego-platform/catalog/util';
 
-export const catalogSetDetails: readonly CatalogSetDetail[] = [
+export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
-    id: '10316',
-    slug: 'rivendell-10316',
-    name: 'Rivendell',
-    theme: 'Icons',
-    releaseYear: 2023,
-    pieces: 6167,
+    canonicalId: '10316',
     priceRange: '$499 to $569',
     collectorAngle: 'Prestige display anchor',
     tagline:
@@ -20,12 +18,7 @@ export const catalogSetDetails: readonly CatalogSetDetail[] = [
     ],
   },
   {
-    id: '21348',
-    slug: 'dungeons-and-dragons-red-dragons-tale-21348',
-    name: "Dungeons & Dragons: Red Dragon's Tale",
-    theme: 'Ideas',
-    releaseYear: 2024,
-    pieces: 3745,
+    canonicalId: '21348',
     priceRange: '$359 to $409',
     collectorAngle: 'Crossover audience magnet',
     tagline:
@@ -38,12 +31,7 @@ export const catalogSetDetails: readonly CatalogSetDetail[] = [
     ],
   },
   {
-    id: '76269',
-    slug: 'avengers-tower-76269',
-    name: 'Avengers Tower',
-    theme: 'Marvel',
-    releaseYear: 2023,
-    pieces: 5201,
+    canonicalId: '76269',
     priceRange: '$449 to $519',
     collectorAngle: 'Marvel flagship showcase',
     tagline: 'A marquee licensed set with broad household recognizability.',
@@ -56,7 +44,7 @@ export const catalogSetDetails: readonly CatalogSetDetail[] = [
   },
 ];
 
-export const catalogThemeSnapshots: readonly CatalogThemeSnapshot[] = [
+export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   {
     name: 'Icons',
     setCount: 14,

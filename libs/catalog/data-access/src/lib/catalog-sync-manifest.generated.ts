@@ -1,0 +1,10 @@
+import { CatalogSyncManifest } from '@lego-platform/catalog/util';
+
+export const catalogSyncManifest: CatalogSyncManifest = {
+  source: 'seeded-catalog-snapshot',
+  generatedAt: '2026-03-28T00:00:00.000Z',
+  recordCount: 3,
+  homepageFeaturedSetIds: ['10316', '21348', '76269'],
+  notes:
+    'Seeded snapshot artifact for the first snapshot-backed catalog phase. Live sync is intentionally not implemented yet.',
+};

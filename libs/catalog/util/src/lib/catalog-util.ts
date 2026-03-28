@@ -25,6 +25,99 @@ export interface CatalogThemeSnapshot {
   signatureSet: string;
 }
 
+export interface CatalogSetRecord {
+  canonicalId: string;
+  sourceSetNumber: string;
+  slug: string;
+  name: string;
+  theme: string;
+  releaseYear: number;
+  pieces: number;
+  imageUrl?: string;
+}
+
+export interface CatalogSnapshot {
+  source: string;
+  generatedAt: string;
+  setRecords: readonly CatalogSetRecord[];
+}
+
+export interface CatalogSetOverlay {
+  canonicalId: string;
+  collectorAngle: string;
+  priceRange: string;
+  tagline: string;
+  availability: string;
+  collectorHighlights: readonly string[];
+}
+
+export interface CatalogThemeOverlay {
+  name: string;
+  setCount: number;
+  momentum: string;
+  signatureSet: string;
+}
+
+export interface CatalogSyncManifest {
+  source: string;
+  generatedAt: string;
+  recordCount: number;
+  homepageFeaturedSetIds: readonly string[];
+  notes?: string;
+}
+
+export interface CatalogSetSeed {
+  sourceSetNumber: string;
+  name: string;
+  theme: string;
+  releaseYear: number;
+  pieces: number;
+  imageUrl?: string;
+}
+
+function normalizeCatalogText(value: string): string {
+  return value.trim().replace(/\s+/g, ' ');
+}
+
+export function getCanonicalCatalogSetId(sourceSetNumber: string): string {
+  const normalizedSourceSetNumber = normalizeCatalogText(sourceSetNumber);
+  const variantMatch = normalizedSourceSetNumber.match(/^([0-9A-Za-z]+)-[0-9A-Za-z]+$/);
+
+  return variantMatch ? variantMatch[1] : normalizedSourceSetNumber;
+}
+
+export function buildCatalogSetSlug(name: string, canonicalId: string): string {
+  const normalizedName = normalizeCatalogText(name)
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return `${normalizedName}-${canonicalId}`;
+}
+
+export function createCatalogSetRecord(
+  catalogSetSeed: CatalogSetSeed,
+): CatalogSetRecord {
+  const normalizedSourceSetNumber = normalizeCatalogText(
+    catalogSetSeed.sourceSetNumber,
+  );
+  const canonicalId = getCanonicalCatalogSetId(normalizedSourceSetNumber);
+
+  return {
+    canonicalId,
+    sourceSetNumber: normalizedSourceSetNumber,
+    slug: buildCatalogSetSlug(catalogSetSeed.name, canonicalId),
+    name: normalizeCatalogText(catalogSetSeed.name),
+    theme: normalizeCatalogText(catalogSetSeed.theme),
+    releaseYear: catalogSetSeed.releaseYear,
+    pieces: catalogSetSeed.pieces,
+    imageUrl: catalogSetSeed.imageUrl,
+  };
+}
+
 export function sortCatalogSetSummaries(
   setSummaries: readonly CatalogSetSummary[],
 ): CatalogSetSummary[] {
