@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type {
   ButtonHTMLAttributes,
+  ComponentProps,
   HTMLAttributes,
   ReactNode,
 } from 'react';
@@ -13,42 +14,74 @@ function joinClasses(
 }
 
 type SurfaceElement = 'article' | 'div' | 'footer' | 'header' | 'nav' | 'section';
-type SurfaceTone = 'default' | 'muted';
+type SurfaceElevation = 'default' | 'floating' | 'rested';
+type SurfaceTone = 'default' | 'muted' | 'accent';
 type SurfacePadding = 'md' | 'lg';
-type ActionTone = 'accent' | 'card' | 'ghost' | 'secondary';
-type BadgeTone = 'accent' | 'neutral' | 'positive' | 'warning';
+type ActionTone = 'accent' | 'card' | 'ghost' | 'inline' | 'secondary';
+type BadgeTone =
+  | 'accent'
+  | 'error'
+  | 'info'
+  | 'neutral'
+  | 'positive'
+  | 'warning';
 type SectionHeadingLevel = 'h1' | 'h2' | 'h3';
+type SectionHeadingTone = 'default' | 'hero';
 
-const buttonToneClasses: Record<Exclude<ActionTone, 'card'>, string> = {
-  accent: styles.buttonAccent,
-  ghost: styles.buttonGhost,
-  secondary: styles.buttonSecondary,
-};
+const buttonToneClasses: Record<Exclude<ActionTone, 'card' | 'inline'>, string> =
+  {
+    accent: styles.buttonAccent,
+    ghost: styles.buttonGhost,
+    secondary: styles.buttonSecondary,
+  };
 
 const linkToneClasses: Record<ActionTone, string> = {
   accent: styles.linkAccent,
   card: styles.linkCard,
   ghost: styles.linkGhost,
+  inline: styles.linkInline,
   secondary: styles.linkSecondary,
 };
 
 const badgeToneClasses: Record<BadgeTone, string | undefined> = {
   accent: styles.badgeAccent,
+  error: styles.badgeError,
+  info: styles.badgeInfo,
   neutral: undefined,
   positive: styles.badgePositive,
   warning: styles.badgeWarning,
 };
 
+const surfaceElevationClasses: Record<SurfaceElevation, string> = {
+  default: styles.surfaceElevationDefault,
+  floating: styles.surfaceElevationFloating,
+  rested: styles.surfaceElevationRested,
+};
+
+const surfaceToneClasses: Record<SurfaceTone, string | undefined> = {
+  accent: styles.surfaceAccent,
+  default: undefined,
+  muted: styles.surfaceMuted,
+};
+
+const sectionHeadingToneClasses: Record<SectionHeadingTone, string | undefined> =
+  {
+    default: undefined,
+    hero: styles.sectionHeadingHero,
+  };
+
 export function Surface({
   as = 'div',
   children,
   className,
+  elevation = 'default',
   padding = 'md',
   tone = 'default',
   ...rest
 }: HTMLAttributes<HTMLElement> & {
   as?: SurfaceElement;
   children: ReactNode;
+  elevation?: SurfaceElevation;
   padding?: SurfacePadding;
   tone?: SurfaceTone;
 }) {
@@ -58,7 +91,8 @@ export function Surface({
     <Component
       className={joinClasses(
         styles.surface,
-        tone === 'muted' ? styles.surfaceMuted : undefined,
+        surfaceToneClasses[tone],
+        surfaceElevationClasses[elevation],
         padding === 'lg' ? styles.surfacePaddingLg : styles.surfacePaddingMd,
         className,
       )}
@@ -80,7 +114,7 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   isLoading?: boolean;
-  tone?: Exclude<ActionTone, 'card'>;
+  tone?: Exclude<ActionTone, 'card' | 'inline'>;
 }) {
   return (
     <button
@@ -106,11 +140,11 @@ export function ActionLink({
   href,
   prefetch,
   tone = 'secondary',
-}: {
+  ...rest
+}: Omit<ComponentProps<typeof Link>, 'className' | 'children' | 'href'> & {
   children: ReactNode;
   className?: string;
   href: string;
-  prefetch?: boolean;
   tone?: ActionTone;
 }) {
   return (
@@ -122,6 +156,7 @@ export function ActionLink({
       )}
       href={href}
       prefetch={prefetch}
+      {...rest}
     >
       {children}
     </Link>
@@ -147,20 +182,30 @@ export function Badge({
 }
 
 export function SectionHeading({
+  className,
   description,
   eyebrow,
   title,
   titleAs = 'h2',
+  tone = 'default',
 }: {
+  className?: string;
   description?: string;
   eyebrow?: string;
   title: string;
   titleAs?: SectionHeadingLevel;
+  tone?: SectionHeadingTone;
 }) {
   const TitleTag = titleAs;
 
   return (
-    <div className={styles.sectionHeading}>
+    <div
+      className={joinClasses(
+        styles.sectionHeading,
+        sectionHeadingToneClasses[tone],
+        className,
+      )}
+    >
       {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
       <TitleTag className={styles.sectionTitle}>{title}</TitleTag>
       {description ? (

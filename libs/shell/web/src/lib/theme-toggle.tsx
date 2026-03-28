@@ -31,6 +31,7 @@ export function ShellWebThemeToggle({ className }: { className?: string }) {
 
   return (
     <Button
+      aria-label={getThemeToggleLabel(themeMode)}
       aria-pressed={themeMode === 'dark'}
       className={className}
       title={getThemeToggleLabel(themeMode)}
@@ -38,7 +39,7 @@ export function ShellWebThemeToggle({ className }: { className?: string }) {
       type="button"
       onClick={handleToggleTheme}
     >
-      {getThemeToggleLabel(themeMode)}
+      {themeMode === 'dark' ? 'Dark mode' : 'Light mode'}
     </Button>
   );
 }
