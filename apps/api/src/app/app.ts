@@ -1,17 +1,17 @@
-import * as path from 'path';
 import type { FastifyInstance } from 'fastify';
-import AutoLoad from '@fastify/autoload';
+import requestPrincipalPlugin from './plugins/request-principal';
+import sensiblePlugin from './plugins/sensible';
+import apiV1Routes from './routes/api-v1';
+import healthRoutes from './routes/health';
+import rootRoutes from './routes/root';
 
 export type AppOptions = Record<string, never>;
 
 export async function app(fastify: FastifyInstance, opts: AppOptions) {
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'plugins'),
-    options: { ...opts },
-  });
+  await fastify.register(sensiblePlugin, { ...opts });
+  await fastify.register(requestPrincipalPlugin, { ...opts });
 
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, 'routes'),
-    options: { ...opts },
-  });
+  await fastify.register(rootRoutes, { ...opts });
+  await fastify.register(healthRoutes, { ...opts });
+  await fastify.register(apiV1Routes, { ...opts });
 }
