@@ -24,12 +24,6 @@ const catalogSetRecordById = new Map(
     catalogSetRecord,
   ]),
 );
-const catalogSetRecordBySlug = new Map(
-  catalogSnapshot.setRecords.map((catalogSetRecord) => [
-    catalogSetRecord.slug,
-    catalogSetRecord,
-  ]),
-);
 
 function toCatalogSetSummary(catalogSetDetail: CatalogSetDetail): CatalogSetSummary {
   return {
@@ -58,14 +52,54 @@ function requireCatalogSetOverlay(
   return catalogSetOverlay;
 }
 
+function getCatalogProductSlug(
+  catalogSetRecord: CatalogSetRecord,
+  catalogSetOverlay: CatalogSetOverlay,
+): string {
+  return catalogSetOverlay.productSlug ?? catalogSetRecord.slug;
+}
+
+function getCatalogDisplayName(
+  catalogSetRecord: CatalogSetRecord,
+  catalogSetOverlay: CatalogSetOverlay,
+): string {
+  return catalogSetOverlay.displayName ?? catalogSetRecord.name;
+}
+
+function getCatalogDisplayTheme(
+  catalogSetRecord: CatalogSetRecord,
+  catalogSetOverlay: CatalogSetOverlay,
+): string {
+  return catalogSetOverlay.displayTheme ?? catalogSetRecord.theme;
+}
+
+function createCatalogSetRecordByProductSlug() {
+  const catalogSetRecordByProductSlug = new Map<string, CatalogSetRecord>();
+
+  for (const catalogSetRecord of catalogSnapshot.setRecords) {
+    const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
+    const productSlug = getCatalogProductSlug(catalogSetRecord, catalogSetOverlay);
+
+    if (catalogSetRecordByProductSlug.has(productSlug)) {
+      throw new Error(`Duplicate product catalog slug: ${productSlug}.`);
+    }
+
+    catalogSetRecordByProductSlug.set(productSlug, catalogSetRecord);
+  }
+
+  return catalogSetRecordByProductSlug;
+}
+
+const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
+
 function toCatalogSetDetail(catalogSetRecord: CatalogSetRecord): CatalogSetDetail {
   const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
 
   return {
     id: catalogSetRecord.canonicalId,
-    slug: catalogSetRecord.slug,
-    name: catalogSetRecord.name,
-    theme: catalogSetRecord.theme,
+    slug: getCatalogProductSlug(catalogSetRecord, catalogSetOverlay),
+    name: getCatalogDisplayName(catalogSetRecord, catalogSetOverlay),
+    theme: getCatalogDisplayTheme(catalogSetRecord, catalogSetOverlay),
     releaseYear: catalogSetRecord.releaseYear,
     pieces: catalogSetRecord.pieces,
     priceRange: catalogSetOverlay.priceRange,
@@ -105,7 +139,12 @@ export function listHomepageSets(): CatalogSetSummary[] {
 }
 
 export function listCatalogSetSlugs(): string[] {
-  return catalogSnapshot.setRecords.map((catalogSetRecord) => catalogSetRecord.slug);
+  return catalogSnapshot.setRecords.map((catalogSetRecord) =>
+    getCatalogProductSlug(
+      catalogSetRecord,
+      requireCatalogSetOverlay(catalogSetRecord),
+    ),
+  );
 }
 
 export function getCatalogSetBySlug(slug: string) {

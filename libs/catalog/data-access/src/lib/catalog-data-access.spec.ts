@@ -10,7 +10,7 @@ import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 describe('catalog snapshot artifacts', () => {
-  test('keep the seeded snapshot and manifest aligned', () => {
+  test('keep the generated snapshot and manifest aligned', () => {
     expect(catalogSnapshot.setRecords).toHaveLength(3);
     expect(catalogSyncManifest.recordCount).toBe(catalogSnapshot.setRecords.length);
     expect(catalogSyncManifest.homepageFeaturedSetIds).toEqual([
@@ -20,7 +20,7 @@ describe('catalog snapshot artifacts', () => {
     ]);
   });
 
-  test('seeded records already carry normalized slugs and canonical ids', () => {
+  test('generated records keep source-normalized slugs and canonical ids', () => {
     expect(
       catalogSnapshot.setRecords.map((catalogSetRecord) => ({
         canonicalId: catalogSetRecord.canonicalId,
@@ -30,7 +30,7 @@ describe('catalog snapshot artifacts', () => {
     ).toEqual([
       {
         canonicalId: '10316',
-        slug: 'rivendell-10316',
+        slug: 'lord-of-the-rings-rivendell-10316',
         sourceSetNumber: '10316-1',
       },
       {
@@ -48,7 +48,7 @@ describe('catalog snapshot artifacts', () => {
 });
 
 describe('catalog data-access contracts', () => {
-  test('keeps static params generation stable', () => {
+  test('keeps static params generation stable through product-facing slugs', () => {
     expect(listCatalogSetSlugs()).toEqual([
       'rivendell-10316',
       'dungeons-and-dragons-red-dragons-tale-21348',
@@ -56,14 +56,14 @@ describe('catalog data-access contracts', () => {
     ]);
   });
 
-  test('merges snapshot records with local overlays for set detail reads', () => {
+  test('merges source-truth records with local product overlays for set detail reads', () => {
     expect(getCatalogSetBySlug('rivendell-10316')).toEqual({
       id: '10316',
       slug: 'rivendell-10316',
       name: 'Rivendell',
       theme: 'Icons',
       releaseYear: 2023,
-      pieces: 6167,
+      pieces: 6181,
       priceRange: '$499 to $569',
       collectorAngle: 'Prestige display anchor',
       tagline:
@@ -77,7 +77,7 @@ describe('catalog data-access contracts', () => {
     });
   });
 
-  test('keeps homepage summaries stable and locally curated', () => {
+  test('keeps homepage summaries stable while allowing source facts to refresh', () => {
     expect(listHomepageSets()).toEqual([
       {
         id: '21348',
@@ -85,7 +85,7 @@ describe('catalog data-access contracts', () => {
         name: "Dungeons & Dragons: Red Dragon's Tale",
         theme: 'Ideas',
         releaseYear: 2024,
-        pieces: 3745,
+        pieces: 3747,
         priceRange: '$359 to $409',
         collectorAngle: 'Crossover audience magnet',
       },
@@ -95,7 +95,7 @@ describe('catalog data-access contracts', () => {
         name: 'Avengers Tower',
         theme: 'Marvel',
         releaseYear: 2023,
-        pieces: 5201,
+        pieces: 5202,
         priceRange: '$449 to $519',
         collectorAngle: 'Marvel flagship showcase',
       },
@@ -105,11 +105,15 @@ describe('catalog data-access contracts', () => {
         name: 'Rivendell',
         theme: 'Icons',
         releaseYear: 2023,
-        pieces: 6167,
+        pieces: 6181,
         priceRange: '$499 to $569',
         collectorAngle: 'Prestige display anchor',
       },
     ]);
+  });
+
+  test('does not expose upstream slug drift through the product route contract', () => {
+    expect(getCatalogSetBySlug('lord-of-the-rings-rivendell-10316')).toBeUndefined();
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {

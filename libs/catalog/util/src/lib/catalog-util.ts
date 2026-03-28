@@ -44,6 +44,9 @@ export interface CatalogSnapshot {
 
 export interface CatalogSetOverlay {
   canonicalId: string;
+  productSlug?: string;
+  displayName?: string;
+  displayTheme?: string;
   collectorAngle: string;
   priceRange: string;
   tagline: string;

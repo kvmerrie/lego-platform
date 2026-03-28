@@ -15,9 +15,9 @@ function createMockRebrickableClient(): RebrickableClient {
         case '10316-1':
           return {
             set_num: '10316-1',
-            name: 'Rivendell',
+            name: 'Lord of the Rings: Rivendell',
             year: 2023,
-            num_parts: 6167,
+            num_parts: 6181,
             theme_id: 1,
             set_img_url: 'https://images.example/rivendell.jpg',
           };
@@ -26,7 +26,7 @@ function createMockRebrickableClient(): RebrickableClient {
             set_num: '21348-1',
             name: "Dungeons & Dragons: Red Dragon's Tale",
             year: 2024,
-            num_parts: 3745,
+            num_parts: 3747,
             theme_id: 2,
             set_img_url: 'https://images.example/dnd.jpg',
           };
@@ -35,7 +35,7 @@ function createMockRebrickableClient(): RebrickableClient {
             set_num: '76269-1',
             name: 'Avengers Tower',
             year: 2023,
-            num_parts: 5201,
+            num_parts: 5202,
             theme_id: 3,
             set_img_url: 'https://images.example/avengers.jpg',
           };
@@ -48,9 +48,9 @@ function createMockRebrickableClient(): RebrickableClient {
         case 1:
           return { id: 1, name: 'Icons' };
         case 2:
-          return { id: 2, name: 'Ideas' };
+          return { id: 2, name: 'LEGO Ideas and CUUSOO' };
         case 3:
-          return { id: 3, name: 'Marvel' };
+          return { id: 3, name: 'Avengers' };
         default:
           throw new Error(`Unexpected theme lookup for ${themeId}.`);
       }
@@ -72,11 +72,11 @@ describe('catalog sync artifacts', () => {
         {
           canonicalId: '10316',
           sourceSetNumber: '10316-1',
-          slug: 'rivendell-10316',
-          name: 'Rivendell',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          name: 'Lord of the Rings: Rivendell',
           theme: 'Icons',
           releaseYear: 2023,
-          pieces: 6167,
+          pieces: 6181,
           imageUrl: 'https://images.example/rivendell.jpg',
         },
         {
@@ -84,9 +84,9 @@ describe('catalog sync artifacts', () => {
           sourceSetNumber: '21348-1',
           slug: 'dungeons-and-dragons-red-dragons-tale-21348',
           name: "Dungeons & Dragons: Red Dragon's Tale",
-          theme: 'Ideas',
+          theme: 'LEGO Ideas and CUUSOO',
           releaseYear: 2024,
-          pieces: 3745,
+          pieces: 3747,
           imageUrl: 'https://images.example/dnd.jpg',
         },
         {
@@ -94,9 +94,9 @@ describe('catalog sync artifacts', () => {
           sourceSetNumber: '76269-1',
           slug: 'avengers-tower-76269',
           name: 'Avengers Tower',
-          theme: 'Marvel',
+          theme: 'Avengers',
           releaseYear: 2023,
-          pieces: 5201,
+          pieces: 5202,
           imageUrl: 'https://images.example/avengers.jpg',
         },
       ],
@@ -147,9 +147,9 @@ describe('catalog sync artifacts', () => {
           return new Response(
             JSON.stringify({
               set_num: '10316-1',
-              name: 'Rivendell',
+              name: 'Lord of the Rings: Rivendell',
               year: 2023,
-              num_parts: 6167,
+              num_parts: 6181,
               theme_id: 1,
             }),
             { status: 200 },
@@ -162,7 +162,7 @@ describe('catalog sync artifacts', () => {
               set_num: '21348-1',
               name: "Dungeons & Dragons: Red Dragon's Tale",
               year: 2024,
-              num_parts: 3745,
+              num_parts: 3747,
               theme_id: 2,
             }),
             { status: 200 },
@@ -175,7 +175,7 @@ describe('catalog sync artifacts', () => {
               set_num: '76269-1',
               name: 'Avengers Tower',
               year: 2023,
-              num_parts: 5201,
+              num_parts: 5202,
               theme_id: 3,
             }),
             { status: 200 },
@@ -189,13 +189,16 @@ describe('catalog sync artifacts', () => {
         }
 
         if (url.endsWith('/lego/themes/2/')) {
-          return new Response(JSON.stringify({ id: 2, name: 'Ideas' }), {
-            status: 200,
-          });
+          return new Response(
+            JSON.stringify({ id: 2, name: 'LEGO Ideas and CUUSOO' }),
+            {
+              status: 200,
+            },
+          );
         }
 
         if (url.endsWith('/lego/themes/3/')) {
-          return new Response(JSON.stringify({ id: 3, name: 'Marvel' }), {
+          return new Response(JSON.stringify({ id: 3, name: 'Avengers' }), {
             status: 200,
           });
         }

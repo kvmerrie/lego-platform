@@ -6,6 +6,8 @@ import {
 export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '10316',
+    productSlug: 'rivendell-10316',
+    displayName: 'Rivendell',
     priceRange: '$499 to $569',
     collectorAngle: 'Prestige display anchor',
     tagline:
@@ -19,6 +21,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '21348',
+    displayTheme: 'Ideas',
     priceRange: '$359 to $409',
     collectorAngle: 'Crossover audience magnet',
     tagline:
@@ -32,6 +35,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '76269',
+    displayTheme: 'Marvel',
     priceRange: '$449 to $519',
     collectorAngle: 'Marvel flagship showcase',
     tagline: 'A marquee licensed set with broad household recognizability.',
