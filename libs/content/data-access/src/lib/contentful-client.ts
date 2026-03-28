@@ -1,5 +1,8 @@
-const CONTENTFUL_BASE_URL = 'https://cdn.contentful.com';
+const CONTENTFUL_DELIVERY_BASE_URL = 'https://cdn.contentful.com';
+const CONTENTFUL_PREVIEW_BASE_URL = 'https://preview.contentful.com';
 const CONTENTFUL_CONTENT_TYPE = 'editorialPage';
+
+export type ContentQueryMode = 'delivery' | 'preview';
 
 interface ContentfulLink {
   sys: {
@@ -55,15 +58,21 @@ export interface ContentfulEditorialPageCollection {
   };
 }
 
-interface ContentfulDeliveryConfig {
+interface ContentfulClientConfig {
   accessToken: string;
+  baseUrl: string;
   environment: string;
   spaceId: string;
 }
 
-function getContentfulDeliveryConfig(): ContentfulDeliveryConfig | null {
+function getContentfulClientConfig(
+  mode: ContentQueryMode,
+): ContentfulClientConfig | null {
   const spaceId = process.env.CONTENTFUL_SPACE_ID;
-  const accessToken = process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
+  const accessToken =
+    mode === 'preview'
+      ? process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN
+      : process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN;
 
   if (!spaceId || !accessToken) {
     return null;
@@ -71,30 +80,49 @@ function getContentfulDeliveryConfig(): ContentfulDeliveryConfig | null {
 
   return {
     accessToken,
+    baseUrl:
+      mode === 'preview'
+        ? CONTENTFUL_PREVIEW_BASE_URL
+        : CONTENTFUL_DELIVERY_BASE_URL,
     environment: process.env.CONTENTFUL_ENVIRONMENT ?? 'master',
     spaceId,
   };
 }
 
-function buildContentfulEntriesUrl(searchParams: URLSearchParams): string {
-  const config = getContentfulDeliveryConfig();
-
-  if (!config) {
-    throw new Error('Contentful delivery credentials are not configured.');
-  }
-
-  return `${CONTENTFUL_BASE_URL}/spaces/${config.spaceId}/environments/${config.environment}/entries?${searchParams.toString()}`;
+function buildContentfulEntriesUrl(
+  config: ContentfulClientConfig,
+  searchParams: URLSearchParams,
+): string {
+  return `${config.baseUrl}/spaces/${config.spaceId}/environments/${config.environment}/entries?${searchParams.toString()}`;
 }
 
-export function isContentfulDeliveryEnabled(): boolean {
-  return getContentfulDeliveryConfig() !== null;
+export function hasAnyContentfulCredentials(): boolean {
+  return Boolean(
+    process.env.CONTENTFUL_SPACE_ID ||
+      process.env.CONTENTFUL_DELIVERY_ACCESS_TOKEN ||
+      process.env.CONTENTFUL_PREVIEW_ACCESS_TOKEN,
+  );
 }
 
-export async function fetchContentfulEditorialPages(searchParams: {
-  pageType?: 'homepage' | 'page';
-  slug?: string;
-}): Promise<ContentfulEditorialPageCollection | null> {
-  const config = getContentfulDeliveryConfig();
+export function isContentfulModeEnabled(mode: ContentQueryMode): boolean {
+  return getContentfulClientConfig(mode) !== null;
+}
+
+export function shouldUseMockPreviewContent(): boolean {
+  return !hasAnyContentfulCredentials();
+}
+
+export async function fetchContentfulEditorialPages(
+  searchParams: {
+    pageType?: 'homepage' | 'page';
+    slug?: string;
+  },
+  options?: {
+    mode?: ContentQueryMode;
+  },
+): Promise<ContentfulEditorialPageCollection | null> {
+  const mode = options?.mode ?? 'delivery';
+  const config = getContentfulClientConfig(mode);
 
   if (!config) {
     return null;
@@ -103,7 +131,8 @@ export async function fetchContentfulEditorialPages(searchParams: {
   const urlSearchParams = new URLSearchParams({
     content_type: CONTENTFUL_CONTENT_TYPE,
     include: '2',
-    limit: searchParams.slug || searchParams.pageType === 'homepage' ? '1' : '50',
+    limit:
+      searchParams.slug || searchParams.pageType === 'homepage' ? '1' : '50',
   });
 
   if (searchParams.pageType) {
@@ -114,14 +143,15 @@ export async function fetchContentfulEditorialPages(searchParams: {
     urlSearchParams.set('fields.slug', searchParams.slug);
   }
 
-  const response = await fetch(buildContentfulEntriesUrl(urlSearchParams), {
+  const response = await fetch(buildContentfulEntriesUrl(config, urlSearchParams), {
+    cache: mode === 'preview' ? 'no-store' : undefined,
     headers: {
       Authorization: `Bearer ${config.accessToken}`,
     },
   });
 
   if (!response.ok) {
-    throw new Error('Unable to load editorial pages from Contentful.');
+    throw new Error(`Unable to load ${mode} editorial pages from Contentful.`);
   }
 
   return (await response.json()) as ContentfulEditorialPageCollection;

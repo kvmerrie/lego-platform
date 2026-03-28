@@ -1,3 +1,4 @@
+import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
 import { CatalogFeatureSetList } from '@lego-platform/catalog/feature-set-list';
 import { getHomepagePage } from '@lego-platform/content/data-access';
@@ -8,13 +9,19 @@ import type { Metadata } from 'next';
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const homepagePage = await getHomepagePage();
+  const queryMode = await getEditorialQueryMode();
+  const homepagePage = await getHomepagePage({
+    mode: queryMode,
+  });
 
   return getMetadataFromSeoFields(homepagePage.seo);
 }
 
 export default async function HomePage() {
-  const homepagePage = await getHomepagePage();
+  const queryMode = await getEditorialQueryMode();
+  const homepagePage = await getHomepagePage({
+    mode: queryMode,
+  });
 
   return (
     <ShellWeb>

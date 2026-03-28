@@ -1,3 +1,4 @@
+import { getEditorialQueryMode } from '../../lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from '../../lib/editorial-metadata';
 import {
   getEditorialPageBySlug,
@@ -11,7 +12,9 @@ import { notFound } from 'next/navigation';
 export const revalidate = 300;
 
 export async function generateStaticParams() {
-  const editorialPageSlugs = await listEditorialPageSlugs();
+  const editorialPageSlugs = await listEditorialPageSlugs({
+    mode: 'delivery',
+  });
 
   return editorialPageSlugs.map((slug) => ({ slug }));
 }
@@ -22,7 +25,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const editorialPage = await getEditorialPageBySlug(slug);
+  const queryMode = await getEditorialQueryMode();
+  const editorialPage = await getEditorialPageBySlug(slug, {
+    mode: queryMode,
+  });
 
   if (!editorialPage) {
     return {};
@@ -37,7 +43,10 @@ export default async function EditorialPageRoute({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const editorialPage = await getEditorialPageBySlug(slug);
+  const queryMode = await getEditorialQueryMode();
+  const editorialPage = await getEditorialPageBySlug(slug, {
+    mode: queryMode,
+  });
 
   if (!editorialPage) {
     notFound();

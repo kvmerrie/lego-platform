@@ -10,8 +10,7 @@ It is scoped to:
 - generic editorial pages under `/pages/[slug]`
 - ordered sections
 - SEO fields
-
-It does not cover preview mode yet.
+- basic draft-mode preview entry and exit routes
 
 ## Environment Variables
 
@@ -19,12 +18,16 @@ The current content facade checks these variables:
 
 - `CONTENTFUL_SPACE_ID`
 - `CONTENTFUL_DELIVERY_ACCESS_TOKEN`
+- `CONTENTFUL_PREVIEW_ACCESS_TOKEN`
+- `CONTENTFUL_PREVIEW_SECRET`
 - `CONTENTFUL_ENVIRONMENT`
 
 Behavior:
 
-- if `CONTENTFUL_SPACE_ID` and `CONTENTFUL_DELIVERY_ACCESS_TOKEN` are missing, the app uses local mock content
+- if `CONTENTFUL_SPACE_ID` and `CONTENTFUL_DELIVERY_ACCESS_TOKEN` are missing, the app uses local mock content in delivery mode
 - if both are present, the app attempts live Contentful delivery fetches
+- if preview mode is requested and no Contentful credentials exist at all, the app may use mock content only to exercise preview plumbing locally
+- if delivery credentials exist but preview credentials do not, preview mode is treated as misconfigured rather than falling back to delivery
 - `CONTENTFUL_ENVIRONMENT` defaults to `master`
 
 Recommended local `.env.local` example:
@@ -32,14 +35,16 @@ Recommended local `.env.local` example:
 ```bash
 CONTENTFUL_SPACE_ID=your_space_id
 CONTENTFUL_DELIVERY_ACCESS_TOKEN=your_delivery_token
+CONTENTFUL_PREVIEW_ACCESS_TOKEN=your_preview_token
+CONTENTFUL_PREVIEW_SECRET=your_preview_secret
 CONTENTFUL_ENVIRONMENT=master
 ```
 
 Recommended deployment setup:
 
 - set all three variables in the hosting environment
-- use a delivery token only
-- do not expose preview tokens yet
+- keep delivery and preview tokens server-only
+- do not expose the preview secret to the client
 
 ## Initial Space Configuration
 
@@ -98,6 +103,27 @@ Resulting route:
 
 - `/pages/about`
 
+## Preview Route Usage
+
+The web app uses Next draft mode for editorial preview.
+
+Enable preview:
+
+- `/api/preview/enable?secret=YOUR_SECRET&pageType=homepage`
+- `/api/preview/enable?secret=YOUR_SECRET&slug=about`
+
+Disable preview:
+
+- `/api/preview/disable`
+- `/api/preview/disable?path=/pages/about`
+
+Behavior:
+
+- preview routes validate the secret on the server
+- preview routes derive the redirect path internally
+- preview uses only editorial content queries
+- preview does not affect catalog, user, collection, or wishlist flows
+
 ## Mapping Checklist
 
 Before considering the space ready, verify:
@@ -140,8 +166,7 @@ The repo should keep these docs together:
 
 These belong in a later phase:
 
-- preview mode and draft mode
-- preview access tokens
+- richer preview UX inside the app shell
 - richer rich-text rendering
 - more section variants
 - editorial references to catalog entities
