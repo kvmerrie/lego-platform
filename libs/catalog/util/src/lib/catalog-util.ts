@@ -101,6 +101,16 @@ export function buildCatalogSetSlug(name: string, canonicalId: string): string {
   return `${normalizedName}-${canonicalId}`;
 }
 
+export function getCatalogProductSlug({
+  catalogSetRecord,
+  catalogSetOverlay,
+}: {
+  catalogSetRecord: CatalogSetRecord;
+  catalogSetOverlay: Pick<CatalogSetOverlay, 'productSlug'>;
+}): string {
+  return catalogSetOverlay.productSlug ?? catalogSetRecord.slug;
+}
+
 export function createCatalogSetRecord(
   catalogSetSeed: CatalogSetSeed,
 ): CatalogSetRecord {

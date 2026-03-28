@@ -11,7 +11,7 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(3);
+    expect(catalogSnapshot.setRecords).toHaveLength(5);
     expect(catalogSyncManifest.recordCount).toBe(catalogSnapshot.setRecords.length);
     expect(catalogSyncManifest.homepageFeaturedSetIds).toEqual([
       '10316',
@@ -43,6 +43,16 @@ describe('catalog snapshot artifacts', () => {
         slug: 'avengers-tower-76269',
         sourceSetNumber: '76269-1',
       },
+      {
+        canonicalId: '10305',
+        slug: 'lion-knights-castle-10305',
+        sourceSetNumber: '10305-1',
+      },
+      {
+        canonicalId: '21338',
+        slug: 'a-frame-cabin-21338',
+        sourceSetNumber: '21338-1',
+      },
     ]);
   });
 });
@@ -53,6 +63,8 @@ describe('catalog data-access contracts', () => {
       'rivendell-10316',
       'dungeons-and-dragons-red-dragons-tale-21348',
       'avengers-tower-76269',
+      'lion-knights-castle-10305',
+      'a-frame-cabin-21338',
     ]);
   });
 
@@ -116,8 +128,48 @@ describe('catalog data-access contracts', () => {
     expect(getCatalogSetBySlug('lord-of-the-rings-rivendell-10316')).toBeUndefined();
   });
 
+  test('keeps newly curated sets product-ready through local overlay coverage', () => {
+    expect(getCatalogSetBySlug('lion-knights-castle-10305')).toEqual({
+      id: '10305',
+      slug: 'lion-knights-castle-10305',
+      name: "Lion Knights' Castle",
+      theme: 'Icons',
+      releaseYear: 2022,
+      pieces: 4514,
+      priceRange: '$359 to $429',
+      collectorAngle: 'Castle nostalgia tentpole',
+      tagline:
+        'A modern fortress build that lands squarely at the intersection of nostalgia and display value.',
+      availability: 'Steady premium demand',
+      collectorHighlights: [
+        'Strong crossover appeal between adult nostalgia and fantasy display buyers',
+        'High perceived value thanks to dense build volume and minifigure count',
+        'Excellent anchor set for long-form editorial and collection storytelling',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('a-frame-cabin-21338')).toEqual({
+      id: '21338',
+      slug: 'a-frame-cabin-21338',
+      name: 'A-Frame Cabin',
+      theme: 'Ideas',
+      releaseYear: 2023,
+      pieces: 2082,
+      priceRange: '$179 to $239',
+      collectorAngle: 'Cabin-core conversation piece',
+      tagline:
+        'A warmly detailed display set with broad shelf appeal beyond traditional franchise collectors.',
+      availability: 'Consistent enthusiast pull',
+      collectorHighlights: [
+        'Display-friendly footprint with strong giftability and crossover appeal',
+        'Distinct silhouette helps diversify a curated premium set assortment',
+        'Useful test case for editorial storytelling beyond licensed fandoms',
+      ],
+    });
+  });
+
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(3);
+    expect(listCatalogSetSummaries()).toHaveLength(5);
     expect(listCatalogThemes()).toEqual([
       {
         name: 'Icons',

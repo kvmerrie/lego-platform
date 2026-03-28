@@ -4,6 +4,7 @@ import {
   CatalogSetRecord,
   CatalogSetSummary,
   CatalogThemeSnapshot,
+  getCatalogProductSlug,
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import { catalogSetOverlays, catalogThemeOverlays } from './catalog-overlays';
@@ -52,13 +53,6 @@ function requireCatalogSetOverlay(
   return catalogSetOverlay;
 }
 
-function getCatalogProductSlug(
-  catalogSetRecord: CatalogSetRecord,
-  catalogSetOverlay: CatalogSetOverlay,
-): string {
-  return catalogSetOverlay.productSlug ?? catalogSetRecord.slug;
-}
-
 function getCatalogDisplayName(
   catalogSetRecord: CatalogSetRecord,
   catalogSetOverlay: CatalogSetOverlay,
@@ -78,7 +72,10 @@ function createCatalogSetRecordByProductSlug() {
 
   for (const catalogSetRecord of catalogSnapshot.setRecords) {
     const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
-    const productSlug = getCatalogProductSlug(catalogSetRecord, catalogSetOverlay);
+    const productSlug = getCatalogProductSlug({
+      catalogSetRecord,
+      catalogSetOverlay,
+    });
 
     if (catalogSetRecordByProductSlug.has(productSlug)) {
       throw new Error(`Duplicate product catalog slug: ${productSlug}.`);
@@ -97,7 +94,10 @@ function toCatalogSetDetail(catalogSetRecord: CatalogSetRecord): CatalogSetDetai
 
   return {
     id: catalogSetRecord.canonicalId,
-    slug: getCatalogProductSlug(catalogSetRecord, catalogSetOverlay),
+    slug: getCatalogProductSlug({
+      catalogSetRecord,
+      catalogSetOverlay,
+    }),
     name: getCatalogDisplayName(catalogSetRecord, catalogSetOverlay),
     theme: getCatalogDisplayTheme(catalogSetRecord, catalogSetOverlay),
     releaseYear: catalogSetRecord.releaseYear,
@@ -140,10 +140,10 @@ export function listHomepageSets(): CatalogSetSummary[] {
 
 export function listCatalogSetSlugs(): string[] {
   return catalogSnapshot.setRecords.map((catalogSetRecord) =>
-    getCatalogProductSlug(
+    getCatalogProductSlug({
       catalogSetRecord,
-      requireCatalogSetOverlay(catalogSetRecord),
-    ),
+      catalogSetOverlay: requireCatalogSetOverlay(catalogSetRecord),
+    }),
   );
 }
 

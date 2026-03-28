@@ -57,9 +57,11 @@ Use this before overwriting artifacts when you want a safe drift check first.
 ## Operator Notes
 
 - The current sync scope is intentionally small and curated.
+- Only add sets to the curated sync list when they are also ready to be product-presented.
+- When expanding coverage, update `libs/catalog/data-access-sync/src/lib/catalog-sync-curation.ts` and `libs/catalog/data-access/src/lib/catalog-overlays.ts` in the same change.
 - Homepage featured-set curation remains local and is written into the generated manifest.
-- Collector-facing fields such as pricing posture, collector angle, tagline, availability, and highlights remain local overlays.
-- The sync app validates duplicate ids, slugs, source set numbers, manifest counts, and homepage-featured ids before writing artifacts.
+- Product-facing fields such as route slugs, display-name normalization, display-theme normalization, pricing posture, collector angle, tagline, availability, and highlights remain local overlays.
+- The sync app validates overlay coverage, duplicate ids, duplicate source slugs, duplicate product slugs, source set numbers, manifest counts, and homepage-featured ids before writing artifacts.
 - `pnpm sync:catalog` writes generated artifacts in place only when the rendered output actually changes.
 - `pnpm sync:catalog:check` is the safer first step when reviewing upstream changes.
 - Review the resulting diff before committing, especially:

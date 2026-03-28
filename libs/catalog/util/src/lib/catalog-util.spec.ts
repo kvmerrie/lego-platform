@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   buildCatalogSetSlug,
   createCatalogSetRecord,
+  getCatalogProductSlug,
   getCanonicalCatalogSetId,
 } from './catalog-util';
 
@@ -15,6 +16,25 @@ describe('catalog snapshot helpers', () => {
     expect(
       buildCatalogSetSlug("Dungeons & Dragons: Red Dragon's Tale", '21348'),
     ).toBe('dungeons-and-dragons-red-dragons-tale-21348');
+  });
+
+  test('prefers product slug overrides when present', () => {
+    const catalogSetRecord = createCatalogSetRecord({
+      sourceSetNumber: '10316-1',
+      name: 'Lord of the Rings: Rivendell',
+      theme: 'Icons',
+      releaseYear: 2023,
+      pieces: 6181,
+    });
+
+    expect(
+      getCatalogProductSlug({
+        catalogSetRecord,
+        catalogSetOverlay: {
+          productSlug: 'rivendell-10316',
+        },
+      }),
+    ).toBe('rivendell-10316');
   });
 
   test('normalizes seeded records into snapshot-ready catalog records', () => {

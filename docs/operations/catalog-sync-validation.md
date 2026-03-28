@@ -1,6 +1,6 @@
 # Catalog Sync Validation Plan
 
-This checklist is for the first real Rebrickable-backed sync run using the current curated catalog scope. It assumes the current sync runtime, generated artifacts, overlays, and tests are already in place.
+This checklist is for the current Rebrickable-backed sync run using the curated product-ready catalog scope. It assumes the current sync runtime, generated artifacts, overlays, and tests are already in place.
 
 ## 1. First Real Sync Run Checklist
 
@@ -33,7 +33,7 @@ Safe setup guidance:
 - Run sync from the workspace root so the artifact writer resolves the correct paths.
 - Prefer `pnpm sync:catalog:check` before `pnpm sync:catalog`.
 - Do not run the first real sync in the middle of unrelated repo changes.
-- Keep the current curated sync scope unchanged for this validation pass.
+- If you are intentionally expanding the curated sync scope, add the new set numbers and their local overlay entries in the same branch before running the sync.
 
 ## 3. Files To Review After The Run
 
@@ -58,18 +58,28 @@ What a healthy diff looks like:
 
 ### Slug Quality
 
-Check each generated slug in `catalog-snapshot.generated.ts`:
+Check each generated source slug in `catalog-snapshot.generated.ts`:
 
 - slug ends with the canonical id
 - slug is lowercase and hyphenated
 - slug still reads naturally from the set name
 - there are no duplicate slugs
 
-Current expected slugs:
+Current expected source slugs:
+
+- `lord-of-the-rings-rivendell-10316`
+- `dungeons-and-dragons-red-dragons-tale-21348`
+- `avengers-tower-76269`
+- `lion-knights-castle-10305`
+- `a-frame-cabin-21338`
+
+Current expected public route slugs from the product-facing layer:
 
 - `rivendell-10316`
 - `dungeons-and-dragons-red-dragons-tale-21348`
 - `avengers-tower-76269`
+- `lion-knights-castle-10305`
+- `a-frame-cabin-21338`
 
 ### Canonical Id Assumptions
 
@@ -78,16 +88,20 @@ Check that each source set number still maps correctly:
 - `10316-1` -> `10316`
 - `21348-1` -> `21348`
 - `76269-1` -> `76269`
+- `10305-1` -> `10305`
+- `21338-1` -> `21338`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 
 ### Overlay Merge Behavior
 
-The generated snapshot should only carry source-oriented fields. Collector-facing product copy still comes from overlays.
+The generated snapshot should only carry source-oriented fields. Product-facing normalization and collector-facing copy still come from overlays.
 
 Validate this by confirming:
 
 - generated artifacts do not contain `priceRange`, `collectorAngle`, `tagline`, `availability`, or `collectorHighlights`
+- every synced `canonicalId` has a matching overlay entry
+- any product slug overrides remain unique after the overlay merge
 - `pnpm nx run catalog-data-access:test` still passes
 - `pnpm nx run web:build` still produces the current set-detail routes
 
@@ -99,6 +113,7 @@ Check `catalog-sync-manifest.generated.ts`:
 
 - `homepageFeaturedSetIds` still contains the curated ids only
 - all featured ids exist in the generated snapshot
+- homepage ids remain unchanged unless the team explicitly intends to change homepage merchandising
 
 Current expected featured ids:
 
@@ -114,6 +129,7 @@ Review the diff for these questions:
 
 - Did only the two generated artifact files change?
 - Are changes limited to source-backed fields and timestamps?
+- If new set records were added, are they accompanied by matching overlay entries and reviewable product copy?
 - Did the generated module comment and formatting remain stable?
 - Did any local overlay or curation file change unexpectedly?
 
@@ -146,6 +162,16 @@ If the answer to any of those is no, pause and inspect before committing.
 - The current normalization assumptions no longer safely represent the curated set scope.
 - Do not accept the generated artifacts until the mapping rules are reviewed.
 
+`Missing product overlay for synced catalog set ...`
+
+- A newly curated set was added to sync scope without its required local product-facing overlay.
+- Add the overlay before accepting the artifacts.
+
+`duplicate product slug`
+
+- Two records normalize to the same public route slug after overlay merging.
+- Fix the local product slug policy before accepting the artifacts.
+
 `Homepage featured set ... is missing from the generated catalog snapshot`
 
 - The curated manifest assumptions and the generated source scope have diverged.
@@ -158,8 +184,9 @@ If the generated artifacts are not acceptable:
 1. Do not commit the generated diff.
 2. Restore the generated artifact files to the last known-good committed state.
 3. Keep local overlay files unchanged unless the team explicitly intends to update them.
-4. Record which source field or validation assumption failed.
-5. Re-run `pnpm sync:catalog:check` only after the issue is understood.
+4. If the problem came from a newly added curated set, remove it from the curation list or finish its overlay review before retrying.
+5. Record which source field or validation assumption failed.
+6. Re-run `pnpm sync:catalog:check` only after the issue is understood.
 
 If the issue is upstream-data-related rather than repo-related, keep the last known-good generated artifacts in place and stop the rollout.
 
@@ -172,6 +199,7 @@ Do not broaden catalog sync coverage until all of these are true:
 - slug and canonical-id assumptions hold for the curated set scope
 - overlay merge behavior remains stable and the web build still succeeds
 - the team is comfortable reviewing generated artifact changes as part of normal code review
+- the team can add a small curated batch without changing homepage merchandising or route behavior for existing sets
 - operator docs are sufficient for someone other than the original implementer to run the workflow safely
 
 Once those criteria are met, the next step is to expand source coverage carefully, not to change the runtime read path.

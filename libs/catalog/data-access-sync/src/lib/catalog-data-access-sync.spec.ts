@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest';
 import {
   buildCatalogSyncArtifacts,
   runCatalogSync,
+  validateCatalogSyncArtifacts,
 } from './catalog-data-access-sync';
 import type { RebrickableClient } from './rebrickable-client';
 
@@ -38,6 +39,24 @@ function createMockRebrickableClient(): RebrickableClient {
             num_parts: 5202,
             theme_id: 3,
             set_img_url: 'https://images.example/avengers.jpg',
+          };
+        case '10305-1':
+          return {
+            set_num: '10305-1',
+            name: "Lion Knights' Castle",
+            year: 2022,
+            num_parts: 4514,
+            theme_id: 1,
+            set_img_url: 'https://images.example/lion-knights-castle.jpg',
+          };
+        case '21338-1':
+          return {
+            set_num: '21338-1',
+            name: 'A-Frame Cabin',
+            year: 2023,
+            num_parts: 2082,
+            theme_id: 2,
+            set_img_url: 'https://images.example/a-frame-cabin.jpg',
           };
         default:
           throw new Error(`Unexpected set lookup for ${setNumber}.`);
@@ -99,12 +118,32 @@ describe('catalog sync artifacts', () => {
           pieces: 5202,
           imageUrl: 'https://images.example/avengers.jpg',
         },
+        {
+          canonicalId: '10305',
+          sourceSetNumber: '10305-1',
+          slug: 'lion-knights-castle-10305',
+          name: "Lion Knights' Castle",
+          theme: 'Icons',
+          releaseYear: 2022,
+          pieces: 4514,
+          imageUrl: 'https://images.example/lion-knights-castle.jpg',
+        },
+        {
+          canonicalId: '21338',
+          sourceSetNumber: '21338-1',
+          slug: 'a-frame-cabin-21338',
+          name: 'A-Frame Cabin',
+          theme: 'LEGO Ideas and CUUSOO',
+          releaseYear: 2023,
+          pieces: 2082,
+          imageUrl: 'https://images.example/a-frame-cabin.jpg',
+        },
       ],
     });
     expect(artifacts.catalogSyncManifest).toEqual({
       source: 'rebrickable-api-v3',
       generatedAt: '2026-03-28T00:00:00.000Z',
-      recordCount: 3,
+      recordCount: 5,
       homepageFeaturedSetIds: ['10316', '21348', '76269'],
       notes:
         'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
@@ -203,6 +242,32 @@ describe('catalog sync artifacts', () => {
           });
         }
 
+        if (url.endsWith('/lego/sets/10305-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10305-1',
+              name: "Lion Knights' Castle",
+              year: 2022,
+              num_parts: 4514,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21338-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21338-1',
+              name: 'A-Frame Cabin',
+              year: 2023,
+              num_parts: 2082,
+              theme_id: 2,
+            }),
+            { status: 200 },
+          );
+        }
+
         return new Response(null, { status: 404 });
       },
       now: new Date('2026-03-28T00:00:00.000Z'),
@@ -229,6 +294,91 @@ describe('catalog sync artifacts', () => {
     );
     expect(snapshotModule).toContain('"canonicalId": "10316"');
     expect(manifestModule).toContain('"homepageFeaturedSetIds": [');
+  });
+
+  test('fails validation when a synced set is missing a local product overlay', () => {
+    expect(() =>
+      validateCatalogSyncArtifacts({
+        catalogSnapshot: {
+          source: 'rebrickable-api-v3',
+          generatedAt: '2026-03-28T00:00:00.000Z',
+          setRecords: [
+            {
+              canonicalId: '99999',
+              sourceSetNumber: '99999-1',
+              slug: 'mystery-set-99999',
+              name: 'Mystery Set',
+              theme: 'Icons',
+              releaseYear: 2026,
+              pieces: 1000,
+            },
+          ],
+        },
+        catalogSyncManifest: {
+          source: 'rebrickable-api-v3',
+          generatedAt: '2026-03-28T00:00:00.000Z',
+          recordCount: 1,
+          homepageFeaturedSetIds: ['99999'],
+        },
+      }),
+    ).toThrow('Missing product overlay for synced catalog set 99999.');
+  });
+
+  test('fails validation when product slug overrides collide', () => {
+    expect(() =>
+      validateCatalogSyncArtifacts({
+        catalogSnapshot: {
+          source: 'rebrickable-api-v3',
+          generatedAt: '2026-03-28T00:00:00.000Z',
+          setRecords: [
+            {
+              canonicalId: '10316',
+              sourceSetNumber: '10316-1',
+              slug: 'lord-of-the-rings-rivendell-10316',
+              name: 'Lord of the Rings: Rivendell',
+              theme: 'Icons',
+              releaseYear: 2023,
+              pieces: 6181,
+            },
+            {
+              canonicalId: '10305',
+              sourceSetNumber: '10305-1',
+              slug: 'lion-knights-castle-10305',
+              name: "Lion Knights' Castle",
+              theme: 'Icons',
+              releaseYear: 2022,
+              pieces: 4514,
+            },
+          ],
+        },
+        catalogSyncManifest: {
+          source: 'rebrickable-api-v3',
+          generatedAt: '2026-03-28T00:00:00.000Z',
+          recordCount: 2,
+          homepageFeaturedSetIds: ['10316'],
+        },
+        catalogSetOverlays: [
+          {
+            canonicalId: '10316',
+            productSlug: 'shared-product-slug',
+            collectorAngle: 'Anchor',
+            priceRange: '$0',
+            tagline: 'Tagline',
+            availability: 'Availability',
+            collectorHighlights: ['One'],
+          },
+          {
+            canonicalId: '10305',
+            productSlug: 'shared-product-slug',
+            collectorAngle: 'Anchor',
+            priceRange: '$0',
+            tagline: 'Tagline',
+            availability: 'Availability',
+            collectorHighlights: ['One'],
+          },
+        ],
+      }),
+    ).toThrow('Catalog sync produced a duplicate product slug: shared-product-slug.');
   });
 
   test('fails validation when homepage featured ids drift outside the snapshot', () => {

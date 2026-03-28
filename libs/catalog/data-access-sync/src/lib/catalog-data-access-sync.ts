@@ -1,10 +1,13 @@
 import {
+  type CatalogSetOverlay,
   type CatalogSetRecord,
   type CatalogSnapshot,
   type CatalogSyncManifest,
   createCatalogSetRecord,
+  getCatalogProductSlug,
   getCanonicalCatalogSetId,
 } from '@lego-platform/catalog/util';
+import { catalogSetOverlays } from '@lego-platform/catalog/data-access';
 import {
   curatedCatalogSyncSetNumbers,
   getCuratedHomepageFeaturedSetIds,
@@ -188,7 +191,10 @@ function mapRebrickableSetToCatalogSetRecord({
 export function validateCatalogSyncArtifacts({
   catalogSnapshot,
   catalogSyncManifest,
-}: CatalogSyncArtifacts): void {
+  catalogSetOverlays: configuredCatalogSetOverlays = catalogSetOverlays,
+}: CatalogSyncArtifacts & {
+  catalogSetOverlays?: readonly CatalogSetOverlay[];
+}): void {
   if (catalogSnapshot.setRecords.length === 0) {
     throw new Error('Catalog sync produced no set records.');
   }
@@ -200,10 +206,27 @@ export function validateCatalogSyncArtifacts({
   }
 
   const canonicalIds = new Set<string>();
+  const productSlugs = new Set<string>();
   const sourceSetNumbers = new Set<string>();
   const slugs = new Set<string>();
+  const catalogSetOverlayById = new Map(
+    configuredCatalogSetOverlays.map((catalogSetOverlay) => [
+      catalogSetOverlay.canonicalId,
+      catalogSetOverlay,
+    ]),
+  );
 
   for (const catalogSetRecord of catalogSnapshot.setRecords) {
+    const catalogSetOverlay = catalogSetOverlayById.get(
+      catalogSetRecord.canonicalId,
+    );
+
+    if (!catalogSetOverlay) {
+      throw new Error(
+        `Missing product overlay for synced catalog set ${catalogSetRecord.canonicalId}.`,
+      );
+    }
+
     if (canonicalIds.has(catalogSetRecord.canonicalId)) {
       throw new Error(
         `Catalog sync produced a duplicate canonicalId: ${catalogSetRecord.canonicalId}.`,
@@ -225,6 +248,19 @@ export function validateCatalogSyncArtifacts({
     canonicalIds.add(catalogSetRecord.canonicalId);
     sourceSetNumbers.add(catalogSetRecord.sourceSetNumber);
     slugs.add(catalogSetRecord.slug);
+
+    const productSlug = getCatalogProductSlug({
+      catalogSetRecord,
+      catalogSetOverlay,
+    });
+
+    if (productSlugs.has(productSlug)) {
+      throw new Error(
+        `Catalog sync produced a duplicate product slug: ${productSlug}.`,
+      );
+    }
+
+    productSlugs.add(productSlug);
   }
 
   for (const homepageFeaturedSetId of catalogSyncManifest.homepageFeaturedSetIds) {

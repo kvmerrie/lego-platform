@@ -46,6 +46,33 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Good test case for franchise-driven merchandising',
     ],
   },
+  {
+    canonicalId: '10305',
+    priceRange: '$359 to $429',
+    collectorAngle: 'Castle nostalgia tentpole',
+    tagline:
+      'A modern fortress build that lands squarely at the intersection of nostalgia and display value.',
+    availability: 'Steady premium demand',
+    collectorHighlights: [
+      'Strong crossover appeal between adult nostalgia and fantasy display buyers',
+      'High perceived value thanks to dense build volume and minifigure count',
+      'Excellent anchor set for long-form editorial and collection storytelling',
+    ],
+  },
+  {
+    canonicalId: '21338',
+    displayTheme: 'Ideas',
+    priceRange: '$179 to $239',
+    collectorAngle: 'Cabin-core conversation piece',
+    tagline:
+      'A warmly detailed display set with broad shelf appeal beyond traditional franchise collectors.',
+    availability: 'Consistent enthusiast pull',
+    collectorHighlights: [
+      'Display-friendly footprint with strong giftability and crossover appeal',
+      'Distinct silhouette helps diversify a curated premium set assortment',
+      'Useful test case for editorial storytelling beyond licensed fandoms',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
