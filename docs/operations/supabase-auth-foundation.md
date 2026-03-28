@@ -13,6 +13,14 @@ This document describes the current Supabase foundation for real auth and owned 
 - `GET /api/v1/session` returns an anonymous session when there is no valid bearer token.
 - Owned or wanted mutations now require a valid bearer token and return `401` otherwise.
 
+## Current Browser Flow
+
+- Anonymous visitors can still browse the public slice without auth.
+- The web auth surface now offers a minimal email sign-in flow backed by Supabase Auth.
+- Sign-in starts with an email magic-link or OTP request from the browser.
+- After the browser session changes, the existing `/api/v1/session` route is reloaded so the current collector state stays in sync.
+- Sign-out stays browser-driven and clears the current Supabase session without changing the static catalog or editorial route model.
+
 ## Required Environment Variables
 
 Browser-safe variables:
@@ -41,6 +49,8 @@ Notes:
 4. Copy the service-role key into:
    - `SUPABASE_SERVICE_ROLE_KEY`
 5. Apply the SQL migration in `supabase/migrations/20260328223000_initial_auth_foundation.sql`.
+6. In the Supabase dashboard, enable the email auth provider you want to use for this phase.
+7. Configure the auth redirect or site URL so the local web app can receive the sign-in callback. For local work, this should point at your `apps/web` runtime, typically `http://localhost:3000`.
 
 This repo does not currently enforce a root `.env` convention. Keep local credentials in your normal untracked shell or environment-file workflow.
 
@@ -65,6 +75,7 @@ Design intent:
 - Keep runtime writes behind `apps/api`.
 - Keep `collector.id` product-facing. It must not be repurposed as the raw Supabase user UUID.
 - Keep unauthenticated behavior graceful: anonymous session reads may continue, but writes must stay protected.
+- If local browser auth env vars are absent, the public product slice should still browse cleanly in anonymous mode and the sign-in control should be treated as unavailable rather than partially wired.
 
 ## Current Repo Surface
 
@@ -75,4 +86,4 @@ Design intent:
 - `libs/user/data-access-server`
   Profile repository, user set status repository, and session assembly service.
 
-The current UI and web routes remain unchanged. The `/api/v1` handlers now use Supabase-backed repositories, while the sign-in UX and richer profile management still wait for the next phase.
+The current UI and web routes remain unchanged. The `/api/v1` handlers now use Supabase-backed repositories, the web auth surface now supports minimal sign-in or sign-out, and richer profile management still waits for a later phase.

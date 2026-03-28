@@ -76,6 +76,12 @@
   margin: 0;
 }
 
+.infoText {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
 .statusRow {
   align-items: center;
   display: flex;
@@ -113,8 +119,64 @@
   gap: var(--lego-space-2);
 }
 
+.sessionActions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+}
+
 .sessionStatus {
   justify-self: flex-start;
+}
+
+.authForm {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.formField {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.fieldLabel {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.textInput {
+  appearance: none;
+  background: color-mix(in srgb, var(--lego-surface-raised) 96%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 88%, transparent);
+  border-radius: var(--lego-radius-sm);
+  color: var(--lego-text);
+  font: inherit;
+  min-height: 2.85rem;
+  padding: 0.88rem 0.96rem;
+  transition:
+    border-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard),
+    box-shadow var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
+    background-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+}
+
+.textInput::placeholder {
+  color: color-mix(in srgb, var(--lego-text-muted) 88%, transparent);
+}
+
+.textInput:hover {
+  border-color: color-mix(in srgb, var(--lego-accent) 26%, var(--lego-border));
+}
+
+.textInput:focus-visible {
+  border-color: color-mix(in srgb, var(--lego-accent) 44%, var(--lego-border));
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
 }
 
 .demo {

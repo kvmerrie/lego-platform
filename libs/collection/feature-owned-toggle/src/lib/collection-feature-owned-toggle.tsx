@@ -6,6 +6,7 @@ import {
   getOwnedSetState,
   removeOwnedSet,
 } from '@lego-platform/collection/data-access';
+import { subscribeToSupabaseAuthChanges } from '@lego-platform/shared/data-access-auth';
 import { OwnedSetToggleCard } from '@lego-platform/collection/ui';
 import { OwnedSetState } from '@lego-platform/collection/util';
 
@@ -42,9 +43,18 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
     }
 
     void loadOwnedSetState();
+    const unsubscribe = subscribeToSupabaseAuthChanges(() => {
+      if (!isMounted) {
+        return;
+      }
+
+      setIsLoading(true);
+      void loadOwnedSetState();
+    });
 
     return () => {
       isMounted = false;
+      unsubscribe();
     };
   }, [setId]);
 

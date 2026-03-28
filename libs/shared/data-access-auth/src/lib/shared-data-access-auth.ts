@@ -1,10 +1,18 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import {
+  createClient,
+  type AuthChangeEvent,
+  type SupabaseClient,
+} from '@supabase/supabase-js';
 import {
   getBrowserSupabaseConfig,
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 
 let browserSupabaseClient: SupabaseClient | undefined;
+
+export type BrowserSupabaseAuthChangeListener = (
+  authChangeEvent: AuthChangeEvent,
+) => void;
 
 export function createBrowserSupabaseClient(): SupabaseClient {
   const browserSupabaseConfig = getBrowserSupabaseConfig();
@@ -26,6 +34,10 @@ export function getBrowserSupabaseClient(): SupabaseClient {
   browserSupabaseClient ??= createBrowserSupabaseClient();
 
   return browserSupabaseClient;
+}
+
+export function isBrowserSupabaseAuthAvailable(): boolean {
+  return hasBrowserSupabaseConfig();
 }
 
 export async function getBrowserAccessToken(): Promise<string | undefined> {
@@ -51,6 +63,24 @@ export async function buildSupabaseAuthorizationHeaders(
   }
 
   return nextHeaders;
+}
+
+export function subscribeToSupabaseAuthChanges(
+  listener: BrowserSupabaseAuthChangeListener,
+): () => void {
+  if (!hasBrowserSupabaseConfig()) {
+    return () => undefined;
+  }
+
+  const {
+    data: { subscription },
+  } = getBrowserSupabaseClient().auth.onAuthStateChange((authChangeEvent) => {
+    listener(authChangeEvent);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
 }
 
 export async function signInWithSupabaseOtp(options: {

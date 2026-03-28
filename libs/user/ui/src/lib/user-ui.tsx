@@ -5,7 +5,13 @@ import {
   UserProfile,
   UserSession,
 } from '@lego-platform/user/util';
-import { Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import {
+  Badge,
+  Button,
+  SectionHeading,
+  Surface,
+  VisuallyHidden,
+} from '@lego-platform/shared/ui';
 import styles from './user-ui.module.css';
 
 export function UserIdentityCard({
@@ -37,12 +43,26 @@ export function UserIdentityCard({
 }
 
 export function UserSessionCard({
+  authEmail,
+  authStatusMessage,
   errorMessage,
+  isAuthActionPending,
+  isAuthAvailable = true,
   isLoading,
+  onAuthEmailChange,
+  onSignIn,
+  onSignOut,
   userSession,
 }: {
+  authEmail?: string;
+  authStatusMessage?: string;
   errorMessage?: string;
+  isAuthActionPending?: boolean;
+  isAuthAvailable?: boolean;
   isLoading?: boolean;
+  onAuthEmailChange?: (value: string) => void;
+  onSignIn?: () => void;
+  onSignOut?: () => void;
   userSession: UserSession;
 }) {
   if (isLoading) {
@@ -54,7 +74,7 @@ export function UserSessionCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading the phase-1 authenticated mock session."
+            description="Loading the current collector session and set-state ledger."
             eyebrow="Session"
             title="Checking collector session"
           />
@@ -75,10 +95,53 @@ export function UserSessionCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Phase 1 keeps auth mocked, but the UI still renders against the real session contract."
+            description={
+              isAuthAvailable
+                ? 'Use a Supabase email sign-in link to save owned and wanted state without changing the static catalog experience.'
+                : 'Supabase browser auth is not configured in this environment yet, so the public slice stays browseable in anonymous mode.'
+            }
             eyebrow="Session"
-            title="Collector session not available"
+            title="Sign in to keep your collector state"
           />
+          <form
+            className={styles.authForm}
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSignIn?.();
+            }}
+          >
+            <label className={styles.formField}>
+              <span className={styles.fieldLabel}>Email address</span>
+              <input
+                autoComplete="email"
+                className={styles.textInput}
+                inputMode="email"
+                name="email"
+                placeholder="collector@example.com"
+                type="email"
+                value={authEmail ?? ''}
+                onChange={(event) => onAuthEmailChange?.(event.target.value)}
+              />
+            </label>
+            <div className={styles.sessionActions}>
+              <Button
+                disabled={!isAuthAvailable}
+                isLoading={Boolean(isAuthActionPending)}
+                tone="accent"
+                type="submit"
+              >
+                {isAuthActionPending ? 'Sending link...' : 'Email sign-in link'}
+              </Button>
+              {!isAuthAvailable ? (
+                <Badge tone="warning">auth unavailable</Badge>
+              ) : null}
+            </div>
+          </form>
+          {authStatusMessage ? (
+            <p aria-live="polite" className={styles.infoText}>
+              {authStatusMessage}
+            </p>
+          ) : null}
           {errorMessage ? (
             <p aria-live="polite" className={styles.errorText}>
               {errorMessage}
@@ -115,6 +178,9 @@ export function UserSessionCard({
               <p className={styles.metaText}>
                 {userSession.collector.location} · {userSession.collector.id}
               </p>
+              {userSession.account?.email ? (
+                <p className={styles.metaText}>{userSession.account.email}</p>
+              ) : null}
             </div>
           </div>
           <p className={styles.description}>
@@ -125,6 +191,22 @@ export function UserSessionCard({
           <Badge tone="positive">{collectorSetCounts.ownedCount} owned</Badge>
           <Badge tone="info">{collectorSetCounts.wantedCount} wanted</Badge>
         </div>
+        <div className={styles.sessionActions}>
+          <Button
+            isLoading={Boolean(isAuthActionPending)}
+            tone="secondary"
+            type="button"
+            onClick={onSignOut}
+          >
+            Sign out
+          </Button>
+          <VisuallyHidden>Ends the current authenticated browser session.</VisuallyHidden>
+        </div>
+        {authStatusMessage ? (
+          <p aria-live="polite" className={styles.infoText}>
+            {authStatusMessage}
+          </p>
+        ) : null}
         {errorMessage ? (
           <p aria-live="polite" className={styles.errorText}>
             {errorMessage}

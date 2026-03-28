@@ -27,12 +27,12 @@
         }
       }
     },
-   "run": {
-  "executor": "nx:run-commands",
-  "dependsOn": ["build"],
-  "options": {
-    "command": "node dist/apps/catalog-sync/main.cjs"
-  }
-}
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-sync/main.cjs"
+      }
+    }
   }
 }

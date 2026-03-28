@@ -1,56 +1,129 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getUserSession } from '@lego-platform/user/data-access';
+import { useEffect, useRef, useState } from 'react';
+import {
+  getUserSession,
+  isUserAuthAvailable,
+  requestUserSignIn,
+  signOutCurrentUser,
+  subscribeToUserAuthChanges,
+} from '@lego-platform/user/data-access';
 import { UserSessionCard } from '@lego-platform/user/ui';
-import { createAnonymousUserSession } from '@lego-platform/user/util';
+import {
+  createAnonymousUserSession,
+  isAuthenticatedSession,
+} from '@lego-platform/user/util';
 import type { UserSession } from '@lego-platform/user/util';
 
 export function UserFeatureAuth() {
   const [userSession, setUserSession] = useState<UserSession>(
     createAnonymousUserSession(),
   );
+  const [authEmail, setAuthEmail] = useState('');
+  const [authStatusMessage, setAuthStatusMessage] = useState<string>();
+  const [isAuthActionPending, setIsAuthActionPending] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>();
+  const isMountedRef = useRef(true);
+  const authAvailable = isUserAuthAvailable();
 
-  useEffect(() => {
-    let isMounted = true;
+  async function loadUserSession() {
+    try {
+      const nextUserSession = await getUserSession();
 
-    async function loadUserSession() {
-      try {
-        const nextUserSession = await getUserSession();
+      if (!isMountedRef.current) {
+        return;
+      }
 
-        if (!isMounted) {
-          return;
-        }
+      setUserSession(nextUserSession);
+      setErrorMessage(undefined);
 
-        setUserSession(nextUserSession);
-        setErrorMessage(undefined);
-      } catch {
-        if (!isMounted) {
-          return;
-        }
+      if (isAuthenticatedSession(nextUserSession)) {
+        setAuthEmail(nextUserSession.account?.email ?? '');
+        setAuthStatusMessage(undefined);
+      }
+    } catch {
+      if (!isMountedRef.current) {
+        return;
+      }
 
-        setUserSession(createAnonymousUserSession());
-        setErrorMessage('Unable to load the current session right now.');
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      setUserSession(createAnonymousUserSession());
+      setErrorMessage('Unable to load the current session right now.');
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoading(false);
       }
     }
+  }
 
+  useEffect(() => {
+    isMountedRef.current = true;
     void loadUserSession();
+    const unsubscribe = subscribeToUserAuthChanges(() => {
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setIsLoading(true);
+      void loadUserSession();
+    });
 
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
+      unsubscribe();
     };
   }, []);
 
+  async function handleSignIn() {
+    const nextEmail = authEmail.trim();
+
+    if (!nextEmail) {
+      setErrorMessage('Enter the email address you want to use for sign-in.');
+      return;
+    }
+
+    setIsAuthActionPending(true);
+    setErrorMessage(undefined);
+
+    try {
+      await requestUserSignIn({
+        email: nextEmail,
+      });
+      setAuthStatusMessage(`Check ${nextEmail} for your sign-in link.`);
+    } catch {
+      setErrorMessage('Unable to start email sign-in right now.');
+    } finally {
+      setIsAuthActionPending(false);
+    }
+  }
+
+  async function handleSignOut() {
+    setIsAuthActionPending(true);
+    setErrorMessage(undefined);
+
+    try {
+      await signOutCurrentUser();
+      setAuthStatusMessage(undefined);
+      setIsLoading(true);
+      await loadUserSession();
+    } catch {
+      setErrorMessage('Unable to sign out right now.');
+    } finally {
+      setIsAuthActionPending(false);
+    }
+  }
+
   return (
     <UserSessionCard
+      authEmail={authEmail}
+      authStatusMessage={authStatusMessage}
       errorMessage={errorMessage}
+      isAuthActionPending={isAuthActionPending}
+      isAuthAvailable={authAvailable}
       isLoading={isLoading}
+      onAuthEmailChange={setAuthEmail}
+      onSignIn={handleSignIn}
+      onSignOut={handleSignOut}
       userSession={userSession}
     />
   );

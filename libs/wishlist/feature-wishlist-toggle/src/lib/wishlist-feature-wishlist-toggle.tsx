@@ -6,6 +6,7 @@ import {
   getWantedSetState,
   removeWantedSet,
 } from '@lego-platform/wishlist/data-access';
+import { subscribeToSupabaseAuthChanges } from '@lego-platform/shared/data-access-auth';
 import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
 import { WantedSetState } from '@lego-platform/wishlist/util';
 
@@ -42,9 +43,18 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
     }
 
     void loadWantedSetState();
+    const unsubscribe = subscribeToSupabaseAuthChanges(() => {
+      if (!isMounted) {
+        return;
+      }
+
+      setIsLoading(true);
+      void loadWantedSetState();
+    });
 
     return () => {
       isMounted = false;
+      unsubscribe();
     };
   }, [setId]);
 
