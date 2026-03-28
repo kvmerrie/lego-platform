@@ -104,6 +104,8 @@ Examples:
 - Add Contentful delivery and preview clients under `content/data-access`
 - Keep the initial Contentful model aligned with `docs/architecture/contentful-editorial-model.md`
 - Use `docs/architecture/contentful-space-setup.md` for repeatable space setup and editor workflow
+- Use `docs/architecture/contentful-preview-usage.md` for local draft-mode preview usage
+- Use `docs/architecture/contentful-validation-rollout-checklist.md` when validating a real Contentful space against the implemented routes and metadata flow
 - Treat external LEGO APIs as sync sources, not page-critical runtime dependencies
 - Keep catalog truth outside Contentful; use Contentful for editorial structure and SEO-driven page composition
 - Add admin-specific Angular domain libraries when admin workflows need reusable domain surfaces

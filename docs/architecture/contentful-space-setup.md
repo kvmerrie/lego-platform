@@ -4,6 +4,9 @@
 
 This document explains how to set up the first Contentful space for the current editorial skeleton in this repo.
 
+For day-to-day local preview usage, see `docs/architecture/contentful-preview-usage.md`.
+For first-space validation and rollout checks, see `docs/architecture/contentful-validation-rollout-checklist.md`.
+
 It is scoped to:
 
 - homepage editorial content
