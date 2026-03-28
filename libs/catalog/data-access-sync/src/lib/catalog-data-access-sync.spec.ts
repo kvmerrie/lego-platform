@@ -227,4 +227,16 @@ describe('catalog sync artifacts', () => {
     expect(snapshotModule).toContain('"canonicalId": "10316"');
     expect(manifestModule).toContain('"homepageFeaturedSetIds": [');
   });
+
+  test('fails validation when homepage featured ids drift outside the snapshot', () => {
+    expect(
+      buildCatalogSyncArtifacts({
+        now: new Date('2026-03-28T00:00:00.000Z'),
+        rebrickableClient: createMockRebrickableClient(),
+        curatedSetNumbers: ['10316-1'],
+      }),
+    ).rejects.toThrow(
+      'Homepage featured set 21348 is missing from the generated catalog snapshot.',
+    );
+  });
 });

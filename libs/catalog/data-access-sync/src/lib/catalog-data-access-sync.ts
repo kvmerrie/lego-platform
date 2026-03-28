@@ -13,7 +13,11 @@ import {
   createRebrickableClient,
   type RebrickableClient,
 } from './rebrickable-client';
-import { writeCatalogGeneratedArtifacts } from './catalog-artifact-writer';
+import {
+  checkCatalogGeneratedArtifacts,
+  type CatalogGeneratedArtifactCheckResult,
+  writeCatalogGeneratedArtifacts,
+} from './catalog-artifact-writer';
 
 interface ValidatedRebrickableSet {
   imageUrl?: string;
@@ -34,6 +38,11 @@ export interface CatalogSyncArtifacts {
   catalogSyncManifest: CatalogSyncManifest;
 }
 
+export interface CatalogSyncRunResult extends CatalogSyncArtifacts {
+  artifactCheck: CatalogGeneratedArtifactCheckResult;
+  mode: 'check' | 'write';
+}
+
 export interface BuildCatalogSyncArtifactsOptions {
   curatedSetNumbers?: readonly string[];
   now?: Date;
@@ -44,6 +53,7 @@ export interface RunCatalogSyncOptions {
   apiKey: string;
   baseUrl?: string;
   fetchImpl?: typeof fetch;
+  mode?: 'check' | 'write';
   now?: Date;
   workspaceRoot: string;
 }
@@ -175,6 +185,57 @@ function mapRebrickableSetToCatalogSetRecord({
   });
 }
 
+export function validateCatalogSyncArtifacts({
+  catalogSnapshot,
+  catalogSyncManifest,
+}: CatalogSyncArtifacts): void {
+  if (catalogSnapshot.setRecords.length === 0) {
+    throw new Error('Catalog sync produced no set records.');
+  }
+
+  if (catalogSyncManifest.recordCount !== catalogSnapshot.setRecords.length) {
+    throw new Error(
+      'Catalog sync manifest recordCount does not match the snapshot record count.',
+    );
+  }
+
+  const canonicalIds = new Set<string>();
+  const sourceSetNumbers = new Set<string>();
+  const slugs = new Set<string>();
+
+  for (const catalogSetRecord of catalogSnapshot.setRecords) {
+    if (canonicalIds.has(catalogSetRecord.canonicalId)) {
+      throw new Error(
+        `Catalog sync produced a duplicate canonicalId: ${catalogSetRecord.canonicalId}.`,
+      );
+    }
+
+    if (sourceSetNumbers.has(catalogSetRecord.sourceSetNumber)) {
+      throw new Error(
+        `Catalog sync produced a duplicate sourceSetNumber: ${catalogSetRecord.sourceSetNumber}.`,
+      );
+    }
+
+    if (slugs.has(catalogSetRecord.slug)) {
+      throw new Error(
+        `Catalog sync produced a duplicate slug: ${catalogSetRecord.slug}.`,
+      );
+    }
+
+    canonicalIds.add(catalogSetRecord.canonicalId);
+    sourceSetNumbers.add(catalogSetRecord.sourceSetNumber);
+    slugs.add(catalogSetRecord.slug);
+  }
+
+  for (const homepageFeaturedSetId of catalogSyncManifest.homepageFeaturedSetIds) {
+    if (!canonicalIds.has(homepageFeaturedSetId)) {
+      throw new Error(
+        `Homepage featured set ${homepageFeaturedSetId} is missing from the generated catalog snapshot.`,
+      );
+    }
+  }
+}
+
 export async function buildCatalogSyncArtifacts({
   curatedSetNumbers = curatedCatalogSyncSetNumbers,
   now = new Date(),
@@ -211,7 +272,7 @@ export async function buildCatalogSyncArtifacts({
 
   const generatedAt = now.toISOString();
 
-  return {
+  const artifacts = {
     catalogSnapshot: {
       source: 'rebrickable-api-v3',
       generatedAt,
@@ -226,15 +287,20 @@ export async function buildCatalogSyncArtifacts({
         'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
     },
   };
+
+  validateCatalogSyncArtifacts(artifacts);
+
+  return artifacts;
 }
 
 export async function runCatalogSync({
   apiKey,
   baseUrl,
   fetchImpl,
+  mode = 'write',
   now,
   workspaceRoot,
-}: RunCatalogSyncOptions): Promise<CatalogSyncArtifacts> {
+}: RunCatalogSyncOptions): Promise<CatalogSyncRunResult> {
   const rebrickableClient = createRebrickableClient({
     apiKey,
     baseUrl,
@@ -244,14 +310,24 @@ export async function runCatalogSync({
     now,
     rebrickableClient,
   });
+  const artifactCheck =
+    mode === 'check'
+      ? await checkCatalogGeneratedArtifacts({
+          catalogSnapshot: artifacts.catalogSnapshot,
+          catalogSyncManifest: artifacts.catalogSyncManifest,
+          workspaceRoot,
+        })
+      : await writeCatalogGeneratedArtifacts({
+          catalogSnapshot: artifacts.catalogSnapshot,
+          catalogSyncManifest: artifacts.catalogSyncManifest,
+          workspaceRoot,
+        });
 
-  await writeCatalogGeneratedArtifacts({
-    catalogSnapshot: artifacts.catalogSnapshot,
-    catalogSyncManifest: artifacts.catalogSyncManifest,
-    workspaceRoot,
-  });
-
-  return artifacts;
+  return {
+    ...artifacts,
+    artifactCheck,
+    mode,
+  };
 }
 
 export function toHomepageFeaturedSetIds(

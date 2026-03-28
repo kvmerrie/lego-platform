@@ -10,7 +10,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "libs/catalog/data-access",
-        "command": "vitest run src/lib/catalog-data-access.spec.ts --config ../vitest.config.mts"
+        "command": "vitest run src/lib/catalog-data-access.spec.ts src/lib/catalog-generated-artifacts.spec.ts --config ../vitest.config.mts"
       }
     }
   }

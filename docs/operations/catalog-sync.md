@@ -40,10 +40,27 @@ Or directly:
 pnpm nx run catalog-sync:run
 ```
 
+## Check Mode
+
+Check mode fetches the curated source records, builds the next snapshot in memory, and fails if the committed generated artifacts would change.
+
+```bash
+pnpm sync:catalog:check
+```
+
+Use this before overwriting artifacts when you want a safe drift check first.
+
 ## Operator Notes
 
 - The current sync scope is intentionally small and curated.
 - Homepage featured-set curation remains local and is written into the generated manifest.
 - Collector-facing fields such as pricing posture, collector angle, tagline, availability, and highlights remain local overlays.
-- The sync app writes generated artifacts in place. Review the resulting diff before committing.
+- The sync app validates duplicate ids, slugs, source set numbers, manifest counts, and homepage-featured ids before writing artifacts.
+- `pnpm sync:catalog` writes generated artifacts in place only when the rendered output actually changes.
+- `pnpm sync:catalog:check` is the safer first step when reviewing upstream changes.
+- Review the resulting diff before committing, especially:
+  - `libs/catalog/data-access/src/lib/catalog-snapshot.generated.ts`
+  - `libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts`
+  - any local overlay changes made alongside the sync
+- The catalog test suite also checks that committed generated artifacts remain in canonical writer format, which helps catch accidental manual edits or formatter drift.
 - This documentation only covers the technical workflow. Rebrickable licensing and usage terms still need separate manual review before production operations.
