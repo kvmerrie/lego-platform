@@ -1,0 +1,9 @@
+{
+  "name": "user-data-access-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/user/data-access-server/src",
+  "projectType": "library",
+  "tags": ["scope:user", "type:data-access", "platform:server"],
+  "// targets": "to see all targets run: nx show project user-data-access-server --web",
+  "targets": {}
+}

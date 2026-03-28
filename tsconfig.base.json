@@ -33,6 +33,12 @@
       "@lego-platform/shared/util": [
         "libs/shared/util/src/index.ts"
       ],
+      "@lego-platform/shared/data-access-auth": [
+        "libs/shared/data-access-auth/src/index.ts"
+      ],
+      "@lego-platform/shared/data-access-auth-server": [
+        "libs/shared/data-access-auth-server/src/index.ts"
+      ],
       "@lego-platform/shared/design-tokens": [
         "libs/shared/design-tokens/src/index.ts"
       ],
@@ -86,6 +92,9 @@
       ],
       "@lego-platform/user/data-access": [
         "libs/user/data-access/src/index.ts"
+      ],
+      "@lego-platform/user/data-access-server": [
+        "libs/user/data-access-server/src/index.ts"
       ],
       "@lego-platform/catalog/ui": [
         "libs/catalog/ui/src/index.ts"

@@ -6,6 +6,11 @@ export interface CollectorIdentity {
   collectionFocus: string;
 }
 
+export interface AuthenticatedAccountIdentity {
+  userId: string;
+  email: string | null;
+}
+
 export interface AnonymousUserSession {
   state: 'anonymous';
   ownedSetIds: string[];
@@ -14,6 +19,7 @@ export interface AnonymousUserSession {
 
 export interface AuthenticatedUserSession {
   state: 'authenticated';
+  account?: AuthenticatedAccountIdentity;
   collector: CollectorIdentity;
   ownedSetIds: string[];
   wantedSetIds: string[];

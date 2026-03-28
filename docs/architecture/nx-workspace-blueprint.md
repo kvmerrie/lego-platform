@@ -24,6 +24,8 @@ This workspace is built for long-term maintainability, low initial cost, and cle
 - `libs/shared/config`
 - `libs/shared/types`
 - `libs/shared/util`
+- `libs/shared/data-access-auth`
+- `libs/shared/data-access-auth-server`
 - `libs/shared/design-tokens`
 - `libs/shared/ui`
 - `libs/shared/testing`
@@ -53,6 +55,7 @@ Each domain uses a predictable structure when needed:
 
 - `util`
 - `data-access`
+- `data-access-server` when BFF-backed persistence or integration logic needs a server-only boundary
 - `ui`
 - `feature-*`
 
@@ -76,6 +79,7 @@ The repo also uses shared support types:
 Current reality in this workspace:
 
 - Domain `util` and `data-access` libraries are `platform:shared`
+- Server-only persistence and integration adapters live in `platform:server` data-access libraries when a BFF or sync runtime needs secret-backed access
 - Domain `ui` and `feature-*` libraries are currently `platform:web`
 - `libs/shell/admin` is Angular-based and may use shared and domain `util` or `data-access` libraries, but it stays separate from the web React UI layer
 

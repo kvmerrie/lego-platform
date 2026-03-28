@@ -49,6 +49,71 @@ export const apiPaths = {
   wantedSets: '/api/v1/me/wanted-sets',
 } as const;
 
+export const supabaseEnvKeys = {
+  browserUrl: 'NEXT_PUBLIC_SUPABASE_URL',
+  browserAnonKey: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+  serverUrl: 'SUPABASE_URL',
+  serverServiceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY',
+} as const;
+
+export interface BrowserSupabaseConfig {
+  anonKey: string;
+  url: string;
+}
+
+export interface ServerSupabaseConfig {
+  serviceRoleKey: string;
+  url: string;
+}
+
+function requireEnvValue({
+  environment,
+  key,
+}: {
+  environment: Record<string, string | undefined>;
+  key: string;
+}): string {
+  const value = environment[key];
+
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}.`);
+  }
+
+  return value;
+}
+
+export function getBrowserSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): BrowserSupabaseConfig {
+  return {
+    url: requireEnvValue({
+      environment,
+      key: supabaseEnvKeys.browserUrl,
+    }),
+    anonKey: requireEnvValue({
+      environment,
+      key: supabaseEnvKeys.browserAnonKey,
+    }),
+  };
+}
+
+export function getServerSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): ServerSupabaseConfig {
+  return {
+    url:
+      environment[supabaseEnvKeys.serverUrl] ??
+      requireEnvValue({
+        environment,
+        key: supabaseEnvKeys.browserUrl,
+      }),
+    serviceRoleKey: requireEnvValue({
+      environment,
+      key: supabaseEnvKeys.serverServiceRoleKey,
+    }),
+  };
+}
+
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {
   return platformConfig.runtimes[runtimeName].baseUrl;
 }

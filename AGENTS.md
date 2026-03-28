@@ -76,4 +76,5 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - `docs/architecture/dependency-rules.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`
+- `docs/operations/supabase-auth-foundation.md`
 - `docs/standards/coding-constitution.md`
