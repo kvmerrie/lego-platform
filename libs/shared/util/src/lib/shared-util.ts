@@ -34,3 +34,22 @@ export function uniqueBy<T, K>(
     return true;
   });
 }
+
+export function readStringArrayProperty(
+  payload: unknown,
+  propertyName: string,
+): string[] {
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+
+  const propertyValue = (payload as Record<string, unknown>)[propertyName];
+
+  if (!Array.isArray(propertyValue)) {
+    return [];
+  }
+
+  return propertyValue.filter(
+    (value): value is string => typeof value === 'string',
+  );
+}

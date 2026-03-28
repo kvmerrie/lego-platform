@@ -1,37 +1,24 @@
-import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
-import { buildCatalogMetrics } from '@lego-platform/catalog/util';
+import { listHomepageSets } from '@lego-platform/catalog/data-access';
 import { CatalogSetCard } from '@lego-platform/catalog/ui';
 
 export function CatalogFeatureSetList() {
-  const catalogSetSummaries = listCatalogSetSummaries();
-  const catalogMetrics = buildCatalogMetrics(catalogSetSummaries);
+  const homepageSets = listHomepageSets();
 
   return (
-    <section id="catalog" className="section-stack">
+    <section id="featured-sets" className="section-stack">
       <header className="section-heading">
-        <p className="eyebrow">Catalog</p>
-        <h2>
-          Curated flagship sets ready for static rendering and future ISR
-          expansion.
-        </h2>
+        <p className="eyebrow">Featured sets</p>
+        <h2>Start with a focused set list that proves the read-side architecture.</h2>
         <p className="section-copy">
-          The catalog layer is intentionally library-driven so future CMS,
-          pricing, and affiliate integrations can plug into stable boundaries.
+          Each card links into a static-friendly detail route backed by the
+          catalog domain contract rather than page-local data.
         </p>
       </header>
-      <div className="metric-grid">
-        {catalogMetrics.map((catalogMetric) => (
-          <article className="metric-card" key={catalogMetric.label}>
-            <p className="eyebrow">{catalogMetric.label}</p>
-            <h3 className="metric-value">{catalogMetric.value}</h3>
-            <p className="muted">{catalogMetric.detail}</p>
-          </article>
-        ))}
-      </div>
       <div className="surface-grid">
-        {catalogSetSummaries.map((catalogSetSummary) => (
+        {homepageSets.map((catalogSetSummary) => (
           <CatalogSetCard
             key={catalogSetSummary.id}
+            href={`/sets/${catalogSetSummary.slug}`}
             setSummary={catalogSetSummary}
           />
         ))}

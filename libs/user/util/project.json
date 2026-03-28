@@ -5,5 +5,13 @@
   "projectType": "library",
   "tags": ["scope:user", "type:util", "platform:shared"],
   "// targets": "to see all targets run: nx show project user-util --web",
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/user/util",
+        "command": "vitest run src/lib/user-util.spec.ts"
+      }
+    }
+  }
 }

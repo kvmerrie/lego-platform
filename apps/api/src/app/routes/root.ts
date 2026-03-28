@@ -1,5 +1,5 @@
 import { platformConfig } from '@lego-platform/shared/config';
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
   fastify.get('/', async function () {

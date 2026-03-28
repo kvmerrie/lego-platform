@@ -32,6 +32,49 @@ export function CollectionShelfCard({
   );
 }
 
+export function OwnedSetToggleCard({
+  errorMessage,
+  isLoading,
+  isOwned,
+  isPending,
+  onToggle,
+  setId,
+}: {
+  errorMessage?: string;
+  isLoading?: boolean;
+  isOwned: boolean;
+  isPending?: boolean;
+  onToggle: () => void;
+  setId: string;
+}) {
+  const title = isOwned
+    ? 'This set is already in your owned ledger.'
+    : 'Mark this set as owned when it is part of your collection.';
+  const actionLabel = isOwned ? 'Remove from owned' : 'Mark as owned';
+
+  return (
+    <article className="surface split-card">
+      <div className="stack">
+        <p className="eyebrow">Owned status</p>
+        <h2 className="surface-title">{title}</h2>
+        <p className="muted">
+          Set {setId} keeps an independent owned flag, separate from wanted
+          state.
+        </p>
+        {errorMessage ? <p className="muted">{errorMessage}</p> : null}
+      </div>
+      <button
+        className="action-button"
+        disabled={Boolean(isLoading || isPending)}
+        type="button"
+        onClick={onToggle}
+      >
+        {isLoading ? 'Checking owned state...' : isPending ? 'Saving...' : actionLabel}
+      </button>
+    </article>
+  );
+}
+
 export function CollectionUi() {
   return (
     <section className="surface stack">

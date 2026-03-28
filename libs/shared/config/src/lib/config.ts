@@ -2,7 +2,7 @@ export const platformConfig = {
   workspaceName: 'lego-platform',
   productName: 'Brick Ledger',
   tagline:
-    'A collector platform for catalog discovery, collection curation, wishlist planning, and pricing intelligence.',
+    'Browse standout LEGO sets and build a cleaner ledger for what you own and want next.',
   defaultThemeMode: 'light',
   supportEmail: 'platform@example.test',
   runtimes: {
@@ -32,26 +32,22 @@ export type RuntimeName = keyof typeof platformConfig.runtimes;
 
 export const webNavigation = [
   {
-    label: 'Catalog',
-    href: '#catalog',
-    description: 'Set discovery and theme coverage.',
+    label: 'Home',
+    href: '/',
+    description: 'Phase-1 collector landing page.',
   },
   {
-    label: 'Collection',
-    href: '#collection',
-    description: 'Collection health and curation.',
-  },
-  {
-    label: 'Pricing',
-    href: '#pricing',
-    description: 'Value tracking and offer intelligence.',
-  },
-  {
-    label: 'Content',
-    href: '#content',
-    description: 'Editorial storytelling and previews.',
+    label: 'Featured sets',
+    href: '/#featured-sets',
+    description: 'Static-friendly discovery slice.',
   },
 ] as const;
+
+export const apiPaths = {
+  session: '/api/v1/session',
+  ownedSets: '/api/v1/me/owned-sets',
+  wantedSets: '/api/v1/me/wanted-sets',
+} as const;
 
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {
   return platformConfig.runtimes[runtimeName].baseUrl;

@@ -21,6 +21,11 @@ export interface CollectionEditorSection {
   fields: readonly string[];
 }
 
+export interface OwnedSetState {
+  setId: string;
+  isOwned: boolean;
+}
+
 export function buildCollectionMetrics(
   collectionSnapshot: CollectionDashboardSnapshot,
 ): MetricCard[] {

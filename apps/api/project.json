@@ -5,6 +5,13 @@
   "projectType": "application",
   "tags": ["scope:api", "type:app", "platform:server"],
   "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/api",
+        "command": "vitest run --config vitest.config.mts"
+      }
+    },
     "build": {
       "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],

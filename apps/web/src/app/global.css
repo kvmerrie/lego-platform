@@ -146,6 +146,7 @@ ul {
   color: var(--lego-text-muted);
 }
 
+.action-button,
 .theme-toggle,
 .link-button {
   background: transparent;

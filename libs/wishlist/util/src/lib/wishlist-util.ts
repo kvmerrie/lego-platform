@@ -14,6 +14,11 @@ export interface WishlistItem {
   urgency: 'High' | 'Medium' | 'Low';
 }
 
+export interface WantedSetState {
+  setId: string;
+  isWanted: boolean;
+}
+
 export function buildWishlistMetrics(
   wishlistOverview: WishlistOverview,
 ): MetricCard[] {

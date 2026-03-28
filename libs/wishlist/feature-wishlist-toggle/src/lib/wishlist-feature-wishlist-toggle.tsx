@@ -1,25 +1,83 @@
-import { getWishlistOverview } from '@lego-platform/wishlist/data-access';
+'use client';
 
-export function WishlistFeatureWishlistToggle() {
-  const wishlistOverview = getWishlistOverview();
+import { useEffect, useState } from 'react';
+import {
+  addWantedSet,
+  getWantedSetState,
+  removeWantedSet,
+} from '@lego-platform/wishlist/data-access';
+import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
+import { WantedSetState } from '@lego-platform/wishlist/util';
+
+export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
+  const [wantedSetState, setWantedSetState] = useState<WantedSetState>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPending, setIsPending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadWantedSetState() {
+      try {
+        const nextWantedSetState = await getWantedSetState(setId);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setWantedSetState(nextWantedSetState);
+        setErrorMessage(undefined);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setErrorMessage('Unable to load the wanted state for this set.');
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadWantedSetState();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setId]);
+
+  async function handleToggleWantedState() {
+    if (!wantedSetState || isPending) {
+      return;
+    }
+
+    setIsPending(true);
+    setErrorMessage(undefined);
+
+    try {
+      const nextWantedSetState = wantedSetState.isWanted
+        ? await removeWantedSet(setId)
+        : await addWantedSet(setId);
+
+      setWantedSetState(nextWantedSetState);
+    } catch {
+      setErrorMessage('Unable to save the wanted state right now.');
+    } finally {
+      setIsPending(false);
+    }
+  }
 
   return (
-    <section className="surface split-card">
-      <div className="stack">
-        <p className="eyebrow">Quick action</p>
-        <h2 className="surface-title">
-          Keep {wishlistOverview.highPriority} high-priority sets under active
-          review.
-        </h2>
-        <p className="muted">
-          This foundation keeps future toggle behavior in a feature library
-          rather than scattering domain events through page code.
-        </p>
-      </div>
-      <a className="link-button" href="#pricing">
-        Inspect price signals
-      </a>
-    </section>
+    <WantedSetToggleCard
+      errorMessage={errorMessage}
+      isLoading={isLoading}
+      isPending={isPending}
+      isWanted={wantedSetState?.isWanted ?? false}
+      setId={setId}
+      onToggle={handleToggleWantedState}
+    />
   );
 }
 

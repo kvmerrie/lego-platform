@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { platformConfig, webNavigation } from '@lego-platform/shared/config';
 import { ShellWebThemeToggle } from './theme-toggle';
 
@@ -8,7 +9,7 @@ export function ShellWeb({ children }: { children: ReactNode }) {
       <header className="shell-header">
         <div className="shell-header__row">
           <div className="stack">
-            <p className="eyebrow">Public portal</p>
+            <p className="eyebrow">Phase 1 public portal</p>
             <div className="shell-brand">
               <span className="brand-mark">B</span>
               <div className="stack">
@@ -21,19 +22,18 @@ export function ShellWeb({ children }: { children: ReactNode }) {
         </div>
         <nav aria-label="Primary" className="shell-nav">
           {webNavigation.map((navigationItem) => (
-            <a href={navigationItem.href} key={navigationItem.href}>
+            <Link href={navigationItem.href} key={navigationItem.href}>
               <span>{navigationItem.label}</span>
               <small>{navigationItem.description}</small>
-            </a>
+            </Link>
           ))}
         </nav>
       </header>
       <main className="stack-xl">{children}</main>
       <footer className="shell-footer">
         <p>
-          Built as an Nx monorepo with strict boundaries so future Contentful,
-          Supabase, pricing, and mobile integrations can scale without undoing
-          the foundation.
+          Phase 1 keeps catalog reads static-friendly while detail routes prove
+          the first session-backed collection actions through the BFF.
         </p>
       </footer>
     </div>

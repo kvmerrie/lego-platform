@@ -1,22 +1,19 @@
-import { AuthSummary, UserProfile } from '@lego-platform/user/util';
+import { apiPaths } from '@lego-platform/shared/config';
+import { phaseOneCollectorIdentity } from '@lego-platform/user/util';
+import type { UserProfile, UserSession } from '@lego-platform/user/util';
 
-const authSummary: AuthSummary = {
-  state: 'authenticated',
-  message: 'Signed in as a returning collector.',
-  nextAction: 'Review watchlist activity',
-};
+export async function getUserSession(): Promise<UserSession> {
+  const response = await fetch(apiPaths.session, {
+    cache: 'no-store',
+  });
 
-const userProfile: UserProfile = {
-  name: 'Alex Rivera',
-  tier: 'Founding Collector',
-  location: 'Amsterdam',
-  collectionFocus: 'Premium display sets and licensed flagships',
-};
+  if (!response.ok) {
+    throw new Error('Unable to load the current session.');
+  }
 
-export function getAuthSummary(): AuthSummary {
-  return authSummary;
+  return (await response.json()) as UserSession;
 }
 
 export function getUserProfile(): UserProfile {
-  return userProfile;
+  return phaseOneCollectorIdentity;
 }

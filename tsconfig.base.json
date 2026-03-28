@@ -10,48 +10,83 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@lego-platform/shared/config": ["libs/shared/config/src/index.ts"],
-      "@lego-platform/shell/web": ["libs/shell/web/src/index.ts"],
-      "@lego-platform/shell/admin": ["libs/shell/admin/src/index.ts"],
-      "@lego-platform/shared/types": ["libs/shared/types/src/index.ts"],
-      "@lego-platform/shared/util": ["libs/shared/util/src/index.ts"],
+      "@lego-platform/shared/config": [
+        "libs/shared/config/src/index.ts"
+      ],
+      "@lego-platform/shell/web": [
+        "libs/shell/web/src/index.ts"
+      ],
+      "@lego-platform/shell/admin": [
+        "libs/shell/admin/src/index.ts"
+      ],
+      "@lego-platform/shared/types": [
+        "libs/shared/types/src/index.ts"
+      ],
+      "@lego-platform/shared/util": [
+        "libs/shared/util/src/index.ts"
+      ],
       "@lego-platform/shared/design-tokens": [
         "libs/shared/design-tokens/src/index.ts"
       ],
-      "@lego-platform/shared/ui": ["libs/shared/ui/src/index.ts"],
-      "@lego-platform/shared/testing": ["libs/shared/testing/src/index.ts"],
-      "@lego-platform/catalog/util": ["libs/catalog/util/src/index.ts"],
+      "@lego-platform/shared/ui": [
+        "libs/shared/ui/src/index.ts"
+      ],
+      "@lego-platform/shared/testing": [
+        "libs/shared/testing/src/index.ts"
+      ],
+      "@lego-platform/catalog/util": [
+        "libs/catalog/util/src/index.ts"
+      ],
       "@lego-platform/catalog/data-access": [
         "libs/catalog/data-access/src/index.ts"
       ],
-      "@lego-platform/collection/util": ["libs/collection/util/src/index.ts"],
+      "@lego-platform/collection/util": [
+        "libs/collection/util/src/index.ts"
+      ],
       "@lego-platform/collection/data-access": [
         "libs/collection/data-access/src/index.ts"
       ],
-      "@lego-platform/wishlist/util": ["libs/wishlist/util/src/index.ts"],
+      "@lego-platform/wishlist/util": [
+        "libs/wishlist/util/src/index.ts"
+      ],
       "@lego-platform/wishlist/data-access": [
         "libs/wishlist/data-access/src/index.ts"
       ],
-      "@lego-platform/pricing/util": ["libs/pricing/util/src/index.ts"],
+      "@lego-platform/pricing/util": [
+        "libs/pricing/util/src/index.ts"
+      ],
       "@lego-platform/pricing/data-access": [
         "libs/pricing/data-access/src/index.ts"
       ],
-      "@lego-platform/affiliate/util": ["libs/affiliate/util/src/index.ts"],
+      "@lego-platform/affiliate/util": [
+        "libs/affiliate/util/src/index.ts"
+      ],
       "@lego-platform/affiliate/data-access": [
         "libs/affiliate/data-access/src/index.ts"
       ],
-      "@lego-platform/content/util": ["libs/content/util/src/index.ts"],
+      "@lego-platform/content/util": [
+        "libs/content/util/src/index.ts"
+      ],
       "@lego-platform/content/data-access": [
         "libs/content/data-access/src/index.ts"
       ],
-      "@lego-platform/user/util": ["libs/user/util/src/index.ts"],
-      "@lego-platform/user/data-access": ["libs/user/data-access/src/index.ts"],
-      "@lego-platform/catalog/ui": ["libs/catalog/ui/src/index.ts"],
+      "@lego-platform/user/util": [
+        "libs/user/util/src/index.ts"
+      ],
+      "@lego-platform/user/data-access": [
+        "libs/user/data-access/src/index.ts"
+      ],
+      "@lego-platform/catalog/ui": [
+        "libs/catalog/ui/src/index.ts"
+      ],
       "@lego-platform/catalog/feature-set-list": [
         "libs/catalog/feature-set-list/src/index.ts"
       ],
@@ -61,46 +96,64 @@
       "@lego-platform/catalog/feature-theme-list": [
         "libs/catalog/feature-theme-list/src/index.ts"
       ],
-      "@lego-platform/collection/ui": ["libs/collection/ui/src/index.ts"],
+      "@lego-platform/collection/ui": [
+        "libs/collection/ui/src/index.ts"
+      ],
       "@lego-platform/collection/feature-collection-overview": [
         "libs/collection/feature-collection-overview/src/index.ts"
       ],
       "@lego-platform/collection/feature-collection-editor": [
         "libs/collection/feature-collection-editor/src/index.ts"
       ],
-      "@lego-platform/wishlist/ui": ["libs/wishlist/ui/src/index.ts"],
+      "@lego-platform/wishlist/ui": [
+        "libs/wishlist/ui/src/index.ts"
+      ],
       "@lego-platform/wishlist/feature-wishlist-overview": [
         "libs/wishlist/feature-wishlist-overview/src/index.ts"
       ],
       "@lego-platform/wishlist/feature-wishlist-toggle": [
         "libs/wishlist/feature-wishlist-toggle/src/index.ts"
       ],
-      "@lego-platform/pricing/ui": ["libs/pricing/ui/src/index.ts"],
+      "@lego-platform/pricing/ui": [
+        "libs/pricing/ui/src/index.ts"
+      ],
       "@lego-platform/pricing/feature-price-panel": [
         "libs/pricing/feature-price-panel/src/index.ts"
       ],
       "@lego-platform/pricing/feature-price-history": [
         "libs/pricing/feature-price-history/src/index.ts"
       ],
-      "@lego-platform/affiliate/ui": ["libs/affiliate/ui/src/index.ts"],
+      "@lego-platform/affiliate/ui": [
+        "libs/affiliate/ui/src/index.ts"
+      ],
       "@lego-platform/affiliate/feature-offers": [
         "libs/affiliate/feature-offers/src/index.ts"
       ],
-      "@lego-platform/content/ui": ["libs/content/ui/src/index.ts"],
+      "@lego-platform/content/ui": [
+        "libs/content/ui/src/index.ts"
+      ],
       "@lego-platform/content/feature-page-renderer": [
         "libs/content/feature-page-renderer/src/index.ts"
       ],
       "@lego-platform/content/feature-preview": [
         "libs/content/feature-preview/src/index.ts"
       ],
-      "@lego-platform/user/ui": ["libs/user/ui/src/index.ts"],
+      "@lego-platform/user/ui": [
+        "libs/user/ui/src/index.ts"
+      ],
       "@lego-platform/user/feature-auth": [
         "libs/user/feature-auth/src/index.ts"
       ],
       "@lego-platform/user/feature-profile": [
         "libs/user/feature-profile/src/index.ts"
+      ],
+      "@lego-platform/collection/feature-owned-toggle": [
+        "libs/collection/feature-owned-toggle/src/index.ts"
       ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

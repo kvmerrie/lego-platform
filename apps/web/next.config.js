@@ -7,6 +7,16 @@ const { composePlugins, withNx } = require('@nx/next');
  **/
 const nextConfig = {
   nx: {},
+  async rewrites() {
+    const apiProxyTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:3333';
+
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${apiProxyTarget}/api/:path*`,
+      },
+    ];
+  },
 };
 
 const plugins = [withNx];

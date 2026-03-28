@@ -1,17 +1,58 @@
-import { getAuthSummary } from '@lego-platform/user/data-access';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getUserSession } from '@lego-platform/user/data-access';
+import { UserSessionCard } from '@lego-platform/user/ui';
+import { createAnonymousUserSession } from '@lego-platform/user/util';
+import type { UserSession } from '@lego-platform/user/util';
 
 export function UserFeatureAuth() {
-  const authSummary = getAuthSummary();
+  const [userSession, setUserSession] = useState<UserSession>(
+    createAnonymousUserSession(),
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string>();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadUserSession() {
+      try {
+        const nextUserSession = await getUserSession();
+
+        if (!isMounted) {
+          return;
+        }
+
+        setUserSession(nextUserSession);
+        setErrorMessage(undefined);
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+
+        setUserSession(createAnonymousUserSession());
+        setErrorMessage('Unable to reach the mock session endpoint right now.');
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadUserSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
-    <section className="surface split-card">
-      <div className="stack">
-        <p className="eyebrow">Auth state</p>
-        <h2 className="surface-title">{authSummary.message}</h2>
-        <p className="muted">Next action: {authSummary.nextAction}</p>
-      </div>
-      <span className="pill">{authSummary.state}</span>
-    </section>
+    <UserSessionCard
+      errorMessage={errorMessage}
+      isLoading={isLoading}
+      userSession={userSession}
+    />
   );
 }
 

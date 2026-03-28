@@ -1,4 +1,10 @@
-import { WishlistItem, WishlistOverview } from '@lego-platform/wishlist/util';
+import {
+  WantedSetState,
+  WishlistItem,
+  WishlistOverview,
+} from '@lego-platform/wishlist/util';
+import { apiPaths } from '@lego-platform/shared/config';
+import { readStringArrayProperty } from '@lego-platform/shared/util';
 
 const wishlistOverview: WishlistOverview = {
   trackedSets: 19,
@@ -36,4 +42,48 @@ export function getWishlistOverview(): WishlistOverview {
 
 export function listWishlistItems(): WishlistItem[] {
   return [...wishlistItems];
+}
+
+export async function getWantedSetState(setId: string): Promise<WantedSetState> {
+  const response = await fetch(apiPaths.session, {
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error('Unable to load wanted-set state.');
+  }
+
+  const wantedSetIds = readStringArrayProperty(
+    await response.json(),
+    'wantedSetIds',
+  );
+
+  return {
+    setId,
+    isWanted: wantedSetIds.includes(setId),
+  };
+}
+
+export async function addWantedSet(setId: string): Promise<WantedSetState> {
+  const response = await fetch(`${apiPaths.wantedSets}/${encodeURIComponent(setId)}`, {
+    method: 'PUT',
+  });
+
+  if (!response.ok) {
+    throw new Error('Unable to mark the set as wanted.');
+  }
+
+  return (await response.json()) as WantedSetState;
+}
+
+export async function removeWantedSet(setId: string): Promise<WantedSetState> {
+  const response = await fetch(`${apiPaths.wantedSets}/${encodeURIComponent(setId)}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error('Unable to remove the set from wanted items.');
+  }
+
+  return (await response.json()) as WantedSetState;
 }
