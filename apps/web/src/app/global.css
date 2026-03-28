@@ -54,7 +54,6 @@ ul {
   padding-left: 1.2rem;
 }
 
-.hero-panel,
 .surface,
 .metric-card {
   backdrop-filter: blur(16px);
@@ -90,8 +89,6 @@ ul {
   min-width: 3rem;
 }
 
-.hero-panel h1,
-.hero-panel h2,
 .section-heading h2,
 .surface-title,
 .metric-value {
@@ -103,8 +100,7 @@ ul {
   color: var(--lego-text-muted);
 }
 
-.action-button,
-.link-button {
+.action-button {
   background: linear-gradient(
     180deg,
     color-mix(in srgb, var(--lego-surface-raised) 98%, transparent),
@@ -128,14 +124,12 @@ ul {
     color var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
 }
 
-.action-button:focus-visible,
-.link-button:focus-visible {
+.action-button:focus-visible {
   box-shadow: 0 0 0 4px var(--lego-focus-ring);
   outline: none;
 }
 
-.action-button:active,
-.link-button:active {
+.action-button:active {
   transform: translateY(0);
 }
 
@@ -165,11 +159,6 @@ ul {
 .section-copy {
   color: var(--lego-text-muted);
   max-width: 62ch;
-}
-
-.hero-panel {
-  display: grid;
-  gap: 1rem;
 }
 
 .eyebrow {
@@ -262,11 +251,6 @@ ul {
 }
 
 @media (min-width: 900px) {
-  .hero-panel {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    padding: 2rem;
-  }
-
   .surface-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }

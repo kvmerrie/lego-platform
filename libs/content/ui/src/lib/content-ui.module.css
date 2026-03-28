@@ -1,0 +1,55 @@
+.heroPanel {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.heroContent {
+  display: grid;
+  gap: var(--lego-space-5);
+  max-width: var(--lego-max-width-reading);
+}
+
+.heroBody {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-font-size-lg);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.heroLink {
+  justify-self: flex-start;
+}
+
+.panel {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.panelHeader {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.panelTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-text-role-card-title-weight);
+  letter-spacing: -0.02em;
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.panelBody {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.panelLink {
+  justify-self: flex-start;
+}
+
+.demo {
+  display: grid;
+  gap: var(--lego-space-4);
+}

@@ -1,0 +1,117 @@
+.setCard {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.cardHeader {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.cardTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-text-role-card-title-weight);
+  letter-spacing: -0.02em;
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.cardCopy,
+.mutedCopy,
+.availability {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.metaGrid {
+  display: grid;
+  gap: var(--lego-space-3);
+  margin: 0;
+}
+
+.metaItem {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.metaLabel {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.14em;
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.metaValue {
+  margin: 0;
+}
+
+.actionLink {
+  justify-self: flex-start;
+}
+
+.heroPanel {
+  display: grid;
+  gap: var(--lego-space-6);
+}
+
+.heroPrimary,
+.heroSecondary {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.heroBody {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-font-size-lg);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.highlightsCard {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.highlightsList {
+  display: grid;
+  gap: var(--lego-space-2);
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.themeCard {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.themeHeader {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.demo {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+@media (min-width: 56rem) {
+  .heroPanel {
+    grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.95fr);
+    align-items: start;
+  }
+
+  .metaGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

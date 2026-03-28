@@ -1,26 +1,51 @@
-import Link from 'next/link';
 import type {
   CalloutEditorialSection,
   EditorialSection,
   HeroEditorialSection,
   RichTextEditorialSection,
 } from '@lego-platform/content/util';
+import { ActionLink, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import styles from './content-ui.module.css';
+
+type BodyEditorialSection =
+  | CalloutEditorialSection
+  | HeroEditorialSection
+  | RichTextEditorialSection;
+
+function getEditorialCtaTone(
+  editorialSectionType: EditorialSection['type'],
+  variant: 'hero' | 'panel',
+): 'accent' | 'inline' | 'secondary' {
+  if (variant === 'hero' || editorialSectionType === 'callout') {
+    return 'accent';
+  }
+
+  return editorialSectionType === 'richText' ? 'inline' : 'secondary';
+}
 
 function EditorialSectionCta({
   ctaHref,
   ctaLabel,
+  editorialSectionType,
+  variant,
 }: {
   ctaHref?: string;
   ctaLabel?: string;
+  editorialSectionType: EditorialSection['type'];
+  variant: 'hero' | 'panel';
 }) {
   if (!ctaHref || !ctaLabel) {
     return null;
   }
 
   return (
-    <Link className="link-button" href={ctaHref}>
+    <ActionLink
+      className={variant === 'hero' ? styles.heroLink : styles.panelLink}
+      href={ctaHref}
+      tone={getEditorialCtaTone(editorialSectionType, variant)}
+    >
       {ctaLabel}
-    </Link>
+    </ActionLink>
   );
 }
 
@@ -30,42 +55,64 @@ export function EditorialHeroPanel({
   editorialSection: HeroEditorialSection;
 }) {
   return (
-    <article className="hero-panel">
-      <div className="stack">
-        {editorialSection.eyebrow ? (
-          <p className="eyebrow">{editorialSection.eyebrow}</p>
-        ) : null}
-        <h1>{editorialSection.title}</h1>
-        <p className="section-copy">{editorialSection.body}</p>
+    <Surface
+      as="article"
+      className={styles.heroPanel}
+      elevation="floating"
+      padding="lg"
+      tone="accent"
+    >
+      <div className={styles.heroContent}>
+        <SectionHeading
+          description={editorialSection.body}
+          eyebrow={editorialSection.eyebrow}
+          title={editorialSection.title}
+          titleAs="h1"
+          tone="hero"
+        />
         <EditorialSectionCta
           ctaHref={editorialSection.ctaHref}
           ctaLabel={editorialSection.ctaLabel}
+          editorialSectionType={editorialSection.type}
+          variant="hero"
         />
       </div>
-    </article>
+    </Surface>
   );
 }
 
 function EditorialBodySectionCard({
   editorialSection,
 }: {
-  editorialSection:
-    | CalloutEditorialSection
-    | HeroEditorialSection
-    | RichTextEditorialSection;
+  editorialSection: BodyEditorialSection;
 }) {
+  const eyebrowLabel = editorialSection.eyebrow ?? editorialSection.type;
+  const badgeTone =
+    editorialSection.type === 'callout'
+      ? 'accent'
+      : editorialSection.type === 'richText'
+        ? 'info'
+        : 'neutral';
+
   return (
-    <article className="surface stack">
-      <p className="eyebrow">
-        {editorialSection.eyebrow ?? editorialSection.type}
-      </p>
-      <h3 className="surface-title">{editorialSection.title}</h3>
-      <p>{editorialSection.body}</p>
+    <Surface
+      as="article"
+      className={styles.panel}
+      elevation={editorialSection.type === 'callout' ? 'floating' : 'default'}
+      tone={editorialSection.type === 'callout' ? 'accent' : 'default'}
+    >
+      <div className={styles.panelHeader}>
+        <Badge tone={badgeTone}>{eyebrowLabel}</Badge>
+        <h3 className={styles.panelTitle}>{editorialSection.title}</h3>
+      </div>
+      <p className={styles.panelBody}>{editorialSection.body}</p>
       <EditorialSectionCta
         ctaHref={editorialSection.ctaHref}
         ctaLabel={editorialSection.ctaLabel}
+        editorialSectionType={editorialSection.type}
+        variant="panel"
       />
-    </article>
+    </Surface>
   );
 }
 
@@ -79,13 +126,13 @@ export function EditorialPanel({
 
 export function ContentUi() {
   return (
-    <section className="surface stack">
-      <p className="eyebrow">Content UI</p>
-      <h2 className="surface-title">
-        Editorial panels that can move cleanly from static copy to CMS-backed
-        rendering.
-      </h2>
-    </section>
+    <Surface as="section" className={styles.demo} tone="muted">
+      <SectionHeading
+        description="Editorial panels that can move cleanly from static copy to CMS-backed rendering."
+        eyebrow="Content UI"
+        title="Warm, curated surfaces for editorial storytelling."
+      />
+    </Surface>
   );
 }
 

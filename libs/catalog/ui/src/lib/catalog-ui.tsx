@@ -1,9 +1,27 @@
-import Link from 'next/link';
 import type {
   CatalogSetDetail,
   CatalogSetSummary,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
+import { ActionLink, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import styles from './catalog-ui.module.css';
+
+function CatalogSetMetadata({
+  items,
+}: {
+  items: Array<{ label: string; value: string | number }>;
+}) {
+  return (
+    <dl className={styles.metaGrid}>
+      {items.map((item) => (
+        <div className={styles.metaItem} key={item.label}>
+          <dt className={styles.metaLabel}>{item.label}</dt>
+          <dd className={styles.metaValue}>{item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 export function CatalogSetCard({
   href,
@@ -13,60 +31,61 @@ export function CatalogSetCard({
   setSummary: CatalogSetSummary;
 }) {
   return (
-    <article className="surface stack">
-      <p className="eyebrow">{setSummary.theme}</p>
-      <h3 className="surface-title">{setSummary.name}</h3>
-      <p className="muted">{setSummary.collectorAngle}</p>
-      <dl className="detail-list">
-        <div>
-          <dt>Pieces</dt>
-          <dd>{setSummary.pieces.toLocaleString()}</dd>
-        </div>
-        <div>
-          <dt>Release</dt>
-          <dd>{setSummary.releaseYear}</dd>
-        </div>
-        <div>
-          <dt>Range</dt>
-          <dd>{setSummary.priceRange}</dd>
-        </div>
-      </dl>
+    <Surface as="article" className={styles.setCard}>
+      <div className={styles.cardHeader}>
+        <Badge tone="accent">{setSummary.theme}</Badge>
+        <h3 className={styles.cardTitle}>{setSummary.name}</h3>
+      </div>
+      <p className={styles.cardCopy}>{setSummary.collectorAngle}</p>
+      <CatalogSetMetadata
+        items={[
+          { label: 'Pieces', value: setSummary.pieces.toLocaleString() },
+          { label: 'Release', value: setSummary.releaseYear },
+          { label: 'Range', value: setSummary.priceRange },
+        ]}
+      />
       {href ? (
-        <Link className="link-button" href={href}>
+        <ActionLink className={styles.actionLink} href={href} tone="secondary">
           View set details
-        </Link>
+        </ActionLink>
       ) : null}
-    </article>
+    </Surface>
   );
 }
 
 export function CatalogHomepageIntro() {
   return (
-    <section className="hero-panel">
-      <div className="stack">
-        <p className="eyebrow">Catalog discovery</p>
-        <h2>Browse a focused first slice of the LEGO collector experience.</h2>
-        <p className="section-copy">
-          The homepage stays intentionally small: a short introduction, a
-          curated featured list, and detail routes powered by stable catalog
-          contracts.
-        </p>
-        <div className="pill-row">
-          <span className="pill">Static-friendly reads</span>
-          <span className="pill">Library-driven composition</span>
+    <Surface
+      as="section"
+      className={styles.heroPanel}
+      elevation="floating"
+      padding="lg"
+      tone="accent"
+    >
+      <div className={styles.heroPrimary}>
+        <SectionHeading
+          description="The homepage stays intentionally small: a short introduction, a curated featured list, and detail routes powered by stable catalog contracts."
+          eyebrow="Catalog discovery"
+          title="Browse a focused first slice of the LEGO collector experience."
+          tone="hero"
+        />
+        <div className={styles.badgeRow}>
+          <Badge tone="accent">Static-friendly reads</Badge>
+          <Badge tone="info">Library-driven composition</Badge>
         </div>
       </div>
-      <div className="stack">
-        <p className="eyebrow">Phase-1 scope</p>
-        <p className="muted">
-          Keep the homepage read-focused while the detail routes prove the first
-          session-backed collector actions.
-        </p>
-        <Link className="link-button" href="#featured-sets">
+      <div className={styles.heroSecondary}>
+        <SectionHeading
+          description="Keep the homepage read-focused while the detail routes prove the first session-backed collector actions."
+          eyebrow="Phase-1 scope"
+          title="A narrow slice built for confidence."
+          titleAs="h2"
+        />
+        <ActionLink className={styles.actionLink} href="#featured-sets" tone="accent">
           Browse featured sets
-        </Link>
+        </ActionLink>
       </div>
-    </section>
+    </Surface>
   );
 }
 
@@ -78,45 +97,57 @@ export function CatalogSetDetailPanel({
   homeHref?: string;
 }) {
   return (
-    <section className="hero-panel">
-      <div className="stack">
-        <p className="eyebrow">Set detail</p>
-        <h2>{catalogSetDetail.name}</h2>
-        <p className="section-copy">{catalogSetDetail.tagline}</p>
-        <div className="pill-row">
-          <span className="pill">{catalogSetDetail.theme}</span>
-          <span className="pill">{catalogSetDetail.releaseYear}</span>
-          <span className="pill">{catalogSetDetail.priceRange}</span>
+    <section className={styles.heroPanel}>
+      <Surface
+        as="section"
+        className={styles.heroPrimary}
+        elevation="floating"
+        padding="lg"
+        tone="accent"
+      >
+        <SectionHeading
+          description={catalogSetDetail.tagline}
+          eyebrow="Set detail"
+          title={catalogSetDetail.name}
+          titleAs="h2"
+          tone="hero"
+        />
+        <div className={styles.badgeRow}>
+          <Badge tone="accent">{catalogSetDetail.theme}</Badge>
+          <Badge>{catalogSetDetail.releaseYear}</Badge>
+          <Badge tone="info">{catalogSetDetail.priceRange}</Badge>
         </div>
-        <dl className="detail-list">
-          <div>
-            <dt>Set number</dt>
-            <dd>{catalogSetDetail.id}</dd>
-          </div>
-          <div>
-            <dt>Pieces</dt>
-            <dd>{catalogSetDetail.pieces.toLocaleString()}</dd>
-          </div>
-          <div>
-            <dt>Collector angle</dt>
-            <dd>{catalogSetDetail.collectorAngle}</dd>
-          </div>
-        </dl>
+        <CatalogSetMetadata
+          items={[
+            { label: 'Set number', value: catalogSetDetail.id },
+            { label: 'Pieces', value: catalogSetDetail.pieces.toLocaleString() },
+            { label: 'Collector angle', value: catalogSetDetail.collectorAngle },
+          ]}
+        />
         {homeHref ? (
-          <Link className="link-button" href={homeHref}>
+          <ActionLink className={styles.actionLink} href={homeHref} tone="secondary">
             Back to featured sets
-          </Link>
+          </ActionLink>
         ) : null}
-      </div>
-      <div className="surface stack">
-        <p className="eyebrow">Collector highlights</p>
-        <ul className="list">
+      </Surface>
+      <Surface
+        as="aside"
+        className={styles.highlightsCard}
+        elevation="rested"
+        tone="muted"
+      >
+        <div className={styles.cardHeader}>
+          <Badge tone="info">Collector highlights</Badge>
+          <p className={styles.availability}>
+            Availability: {catalogSetDetail.availability}
+          </p>
+        </div>
+        <ul className={styles.highlightsList}>
           {catalogSetDetail.collectorHighlights.map((collectorHighlight) => (
             <li key={collectorHighlight}>{collectorHighlight}</li>
           ))}
         </ul>
-        <p className="muted">Availability: {catalogSetDetail.availability}</p>
-      </div>
+      </Surface>
     </section>
   );
 }
@@ -127,23 +158,26 @@ export function CatalogThemeHighlight({
   themeSnapshot: CatalogThemeSnapshot;
 }) {
   return (
-    <article className="surface stack">
-      <p className="eyebrow">{themeSnapshot.name}</p>
-      <h3 className="surface-title">{themeSnapshot.signatureSet}</h3>
-      <p className="muted">{themeSnapshot.momentum}</p>
-      <p className="pill">{themeSnapshot.setCount} tracked sets</p>
-    </article>
+    <Surface as="article" className={styles.themeCard} tone="muted">
+      <div className={styles.themeHeader}>
+        <Badge tone="accent">{themeSnapshot.name}</Badge>
+        <h3 className={styles.cardTitle}>{themeSnapshot.signatureSet}</h3>
+      </div>
+      <p className={styles.mutedCopy}>{themeSnapshot.momentum}</p>
+      <Badge tone="info">{themeSnapshot.setCount} tracked sets</Badge>
+    </Surface>
   );
 }
 
 export function CatalogUi() {
   return (
-    <section className="surface stack">
-      <p className="eyebrow">Catalog UI</p>
-      <h2 className="surface-title">
-        Presentational building blocks for set discovery and detail storytelling.
-      </h2>
-    </section>
+    <Surface as="section" className={styles.demo} tone="muted">
+      <SectionHeading
+        description="Presentational building blocks for set discovery and detail storytelling."
+        eyebrow="Catalog UI"
+        title="Retail-grade catalog surfaces with collector-friendly metadata."
+      />
+    </Surface>
   );
 }
 

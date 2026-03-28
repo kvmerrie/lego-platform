@@ -13,7 +13,14 @@ function joinClasses(
   return classNames.filter(Boolean).join(' ');
 }
 
-type SurfaceElement = 'article' | 'div' | 'footer' | 'header' | 'nav' | 'section';
+type SurfaceElement =
+  | 'article'
+  | 'aside'
+  | 'div'
+  | 'footer'
+  | 'header'
+  | 'nav'
+  | 'section';
 type SurfaceElevation = 'default' | 'floating' | 'rested';
 type SurfaceTone = 'default' | 'muted' | 'accent';
 type SurfacePadding = 'md' | 'lg';
