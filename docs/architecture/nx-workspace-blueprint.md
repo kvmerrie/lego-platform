@@ -102,6 +102,8 @@ Examples:
 ## Evolution Guidance
 
 - Add Contentful delivery and preview clients under `content/data-access`
+- Keep the initial Contentful model aligned with `docs/architecture/contentful-editorial-model.md`
+- Use `docs/architecture/contentful-space-setup.md` for repeatable space setup and editor workflow
 - Treat external LEGO APIs as sync sources, not page-critical runtime dependencies
 - Keep catalog truth outside Contentful; use Contentful for editorial structure and SEO-driven page composition
 - Add admin-specific Angular domain libraries when admin workflows need reusable domain surfaces

@@ -1,32 +1,34 @@
-import { listLandingPageSections } from '@lego-platform/content/data-access';
-import { EditorialPanel } from '@lego-platform/content/ui';
+import { EditorialPanel, EditorialHeroPanel } from '@lego-platform/content/ui';
+import { getHeroSection } from '@lego-platform/content/util';
+import type { EditorialPage } from '@lego-platform/content/util';
 
-export function ContentFeaturePageRenderer() {
-  const landingPageSections = listLandingPageSections();
-  const [heroSection, ...supportingSections] = landingPageSections;
+export function ContentFeaturePageRenderer({
+  editorialPage,
+}: {
+  editorialPage: EditorialPage;
+}) {
+  const heroSection = getHeroSection(editorialPage.sections);
+  const supportingSections = heroSection
+    ? editorialPage.sections.slice(1)
+    : editorialPage.sections;
 
   return (
-    <section id="content" className="section-stack">
-      <article className="hero-panel">
-        <div className="stack">
-          <p className="eyebrow">{heroSection.eyebrow}</p>
-          <h1>{heroSection.title}</h1>
-          <p className="section-copy">{heroSection.copy}</p>
-          {heroSection.ctaLabel && heroSection.ctaHref ? (
-            <a className="link-button" href={heroSection.ctaHref}>
-              {heroSection.ctaLabel}
-            </a>
-          ) : null}
+    <section
+      aria-label={editorialPage.title}
+      className="section-stack"
+      id={editorialPage.pageType === 'homepage' ? 'editorial-homepage' : 'content'}
+    >
+      {heroSection ? <EditorialHeroPanel editorialSection={heroSection} /> : null}
+      {supportingSections.length ? (
+        <div className="surface-grid">
+          {supportingSections.map((editorialSection) => (
+            <EditorialPanel
+              editorialSection={editorialSection}
+              key={editorialSection.id}
+            />
+          ))}
         </div>
-      </article>
-      <div className="surface-grid">
-        {supportingSections.map((supportingSection) => (
-          <EditorialPanel
-            key={supportingSection.id}
-            editorialSection={supportingSection}
-          />
-        ))}
-      </div>
+      ) : null}
     </section>
   );
 }

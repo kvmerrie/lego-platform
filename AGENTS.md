@@ -69,5 +69,7 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 
 - `docs/architecture/product-vision.md`
 - `docs/architecture/nx-workspace-blueprint.md`
+- `docs/architecture/contentful-editorial-model.md`
+- `docs/architecture/contentful-space-setup.md`
 - `docs/architecture/dependency-rules.md`
 - `docs/standards/coding-constitution.md`
