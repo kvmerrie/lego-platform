@@ -1,6 +1,7 @@
 import { EditorialPanel, EditorialHeroPanel } from '@lego-platform/content/ui';
 import { getHeroSection } from '@lego-platform/content/util';
 import type { EditorialPage } from '@lego-platform/content/util';
+import styles from './content-feature-page-renderer.module.css';
 
 export function ContentFeaturePageRenderer({
   editorialPage,
@@ -15,12 +16,12 @@ export function ContentFeaturePageRenderer({
   return (
     <section
       aria-label={editorialPage.title}
-      className="section-stack"
+      className={styles.page}
       id={editorialPage.pageType === 'homepage' ? 'editorial-homepage' : 'content'}
     >
       {heroSection ? <EditorialHeroPanel editorialSection={heroSection} /> : null}
       {supportingSections.length ? (
-        <div className="surface-grid">
+        <div className={styles.grid}>
           {supportingSections.map((editorialSection) => (
             <EditorialPanel
               editorialSection={editorialSection}

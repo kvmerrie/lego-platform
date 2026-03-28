@@ -72,6 +72,7 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
   return (
     <OwnedSetToggleCard
       errorMessage={errorMessage}
+      hasResolvedState={Boolean(ownedSetState)}
       isLoading={isLoading}
       isOwned={ownedSetState?.isOwned ?? false}
       isPending={isPending}

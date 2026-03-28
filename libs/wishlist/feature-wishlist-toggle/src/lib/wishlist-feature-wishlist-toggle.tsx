@@ -72,6 +72,7 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
   return (
     <WantedSetToggleCard
       errorMessage={errorMessage}
+      hasResolvedState={Boolean(wantedSetState)}
       isLoading={isLoading}
       isPending={isPending}
       isWanted={wantedSetState?.isWanted ?? false}

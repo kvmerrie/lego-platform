@@ -53,6 +53,7 @@ export function CollectionShelfCard({
 
 export function OwnedSetToggleCard({
   errorMessage,
+  hasResolvedState,
   isLoading,
   isOwned,
   isPending,
@@ -60,36 +61,67 @@ export function OwnedSetToggleCard({
   setId,
 }: {
   errorMessage?: string;
+  hasResolvedState: boolean;
   isLoading?: boolean;
   isOwned: boolean;
   isPending?: boolean;
   onToggle: () => void;
   setId: string;
 }) {
-  const title = isOwned
-    ? 'This set is already in your owned ledger.'
-    : 'Mark this set as owned when it is part of your collection.';
-  const actionLabel = isOwned ? 'Remove from owned' : 'Mark as owned';
+  const isUnavailable = !isLoading && !hasResolvedState;
+  const title = isLoading
+    ? 'Checking owned status for this set.'
+    : isUnavailable
+      ? 'Owned status is unavailable right now.'
+      : isOwned
+        ? 'This set is already in your owned ledger.'
+        : 'Mark this set as owned when it is part of your collection.';
+  const description = isLoading
+    ? `Loading the current owned flag for set ${setId}.`
+    : isUnavailable
+      ? `Set ${setId} cannot be updated until the owned-state query succeeds.`
+      : `Set ${setId} keeps an independent owned flag, separate from wanted state.`;
+  const actionLabel = isUnavailable
+    ? 'Owned status unavailable'
+    : isOwned
+      ? 'Remove from owned'
+      : 'Mark as owned';
+  const statusTone = isLoading
+    ? 'info'
+    : isUnavailable
+      ? 'error'
+      : isOwned
+        ? 'positive'
+        : 'neutral';
+  const statusLabel = isLoading
+    ? 'Loading state'
+    : isUnavailable
+      ? 'State unavailable'
+      : isOwned
+        ? 'Owned'
+        : 'Not owned';
 
   return (
     <Surface
       as="article"
       className={styles.toggleCard}
       elevation="rested"
-      tone={isOwned ? 'accent' : 'default'}
+      tone={isLoading || isUnavailable ? 'muted' : isOwned ? 'accent' : 'default'}
     >
       <div className={styles.toggleMeta}>
-        <Badge tone={isOwned ? 'positive' : 'neutral'}>Owned status</Badge>
+        <Badge tone={statusTone}>{statusLabel}</Badge>
         <Badge tone="info">Set {setId}</Badge>
+        {isPending ? <Badge tone="info">Saving</Badge> : null}
       </div>
-      <SectionHeading
-        description={`Set ${setId} keeps an independent owned flag, separate from wanted state.`}
-        title={title}
-        titleAs="h2"
-      />
-      {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
+      <SectionHeading description={description} title={title} titleAs="h2" />
+      {errorMessage ? (
+        <p aria-live="polite" className={styles.errorText}>
+          {errorMessage}
+        </p>
+      ) : null}
       <Button
         className={styles.toggleButton}
+        disabled={isUnavailable}
         isLoading={Boolean(isLoading || isPending)}
         tone={isOwned ? 'secondary' : 'accent'}
         type="button"

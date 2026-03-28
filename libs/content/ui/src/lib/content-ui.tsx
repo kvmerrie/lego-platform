@@ -12,6 +12,21 @@ type BodyEditorialSection =
   | HeroEditorialSection
   | RichTextEditorialSection;
 
+function getEditorialSectionLabel(editorialSection: EditorialSection): string {
+  if (editorialSection.eyebrow) {
+    return editorialSection.eyebrow;
+  }
+
+  switch (editorialSection.type) {
+    case 'callout':
+      return 'Callout';
+    case 'richText':
+      return 'Editorial note';
+    case 'hero':
+      return 'Hero';
+  }
+}
+
 function getEditorialCtaTone(
   editorialSectionType: EditorialSection['type'],
   variant: 'hero' | 'panel',
@@ -86,7 +101,6 @@ function EditorialBodySectionCard({
 }: {
   editorialSection: BodyEditorialSection;
 }) {
-  const eyebrowLabel = editorialSection.eyebrow ?? editorialSection.type;
   const badgeTone =
     editorialSection.type === 'callout'
       ? 'accent'
@@ -102,7 +116,7 @@ function EditorialBodySectionCard({
       tone={editorialSection.type === 'callout' ? 'accent' : 'default'}
     >
       <div className={styles.panelHeader}>
-        <Badge tone={badgeTone}>{eyebrowLabel}</Badge>
+        <Badge tone={badgeTone}>{getEditorialSectionLabel(editorialSection)}</Badge>
         <h3 className={styles.panelTitle}>{editorialSection.title}</h3>
       </div>
       <p className={styles.panelBody}>{editorialSection.body}</p>

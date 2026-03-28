@@ -21,6 +21,7 @@ export function WishlistItemCard({
 
 export function WantedSetToggleCard({
   errorMessage,
+  hasResolvedState,
   isLoading,
   isPending,
   isWanted,
@@ -28,36 +29,67 @@ export function WantedSetToggleCard({
   setId,
 }: {
   errorMessage?: string;
+  hasResolvedState: boolean;
   isLoading?: boolean;
   isPending?: boolean;
   isWanted: boolean;
   onToggle: () => void;
   setId: string;
 }) {
-  const title = isWanted
-    ? 'This set is currently on your wanted list.'
-    : 'Keep this set on your radar for a future purchase.';
-  const actionLabel = isWanted ? 'Remove from wanted' : 'Mark as wanted';
+  const isUnavailable = !isLoading && !hasResolvedState;
+  const title = isLoading
+    ? 'Checking wanted status for this set.'
+    : isUnavailable
+      ? 'Wanted status is unavailable right now.'
+      : isWanted
+        ? 'This set is currently on your wanted list.'
+        : 'Keep this set on your radar for a future purchase.';
+  const description = isLoading
+    ? `Loading the current wanted flag for set ${setId}.`
+    : isUnavailable
+      ? `Set ${setId} cannot be updated until the wanted-state query succeeds.`
+      : `Set ${setId} keeps its wanted flag independently from owned state.`;
+  const actionLabel = isUnavailable
+    ? 'Wanted status unavailable'
+    : isWanted
+      ? 'Remove from wanted'
+      : 'Mark as wanted';
+  const statusTone = isLoading
+    ? 'info'
+    : isUnavailable
+      ? 'error'
+      : isWanted
+        ? 'accent'
+        : 'neutral';
+  const statusLabel = isLoading
+    ? 'Loading state'
+    : isUnavailable
+      ? 'State unavailable'
+      : isWanted
+        ? 'Wanted'
+        : 'Not wanted';
 
   return (
     <Surface
       as="article"
       className={styles.toggleCard}
       elevation="rested"
-      tone={isWanted ? 'accent' : 'default'}
+      tone={isLoading || isUnavailable ? 'muted' : isWanted ? 'accent' : 'default'}
     >
       <div className={styles.toggleMeta}>
-        <Badge tone={isWanted ? 'accent' : 'neutral'}>Wanted status</Badge>
+        <Badge tone={statusTone}>{statusLabel}</Badge>
         <Badge tone="info">Set {setId}</Badge>
+        {isPending ? <Badge tone="info">Saving</Badge> : null}
       </div>
-      <SectionHeading
-        description={`Set ${setId} keeps its wanted flag independently from owned state.`}
-        title={title}
-        titleAs="h2"
-      />
-      {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
+      <SectionHeading description={description} title={title} titleAs="h2" />
+      {errorMessage ? (
+        <p aria-live="polite" className={styles.errorText}>
+          {errorMessage}
+        </p>
+      ) : null}
       <Button
         className={styles.toggleButton}
+        disabled={isUnavailable}
         isLoading={Boolean(isLoading || isPending)}
         tone={isWanted ? 'secondary' : 'accent'}
         type="button"

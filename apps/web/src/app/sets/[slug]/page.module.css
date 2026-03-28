@@ -1,0 +1,10 @@
+.collectorActions {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+@media (min-width: 48rem) {
+  .collectorActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

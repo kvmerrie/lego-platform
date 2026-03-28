@@ -65,13 +65,6 @@
   gap: var(--lego-space-4);
 }
 
-.heroBody {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-font-size-lg);
-  line-height: var(--lego-line-height-relaxed);
-  margin: 0;
-}
-
 .badgeRow {
   display: flex;
   flex-wrap: wrap;

@@ -79,7 +79,11 @@ export function UserSessionCard({
             eyebrow="Session"
             title="Collector session not available"
           />
-          {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
+          {errorMessage ? (
+            <p aria-live="polite" className={styles.errorText}>
+              {errorMessage}
+            </p>
+          ) : null}
         </div>
         <Badge className={styles.sessionStatus} tone="warning">
           anonymous
@@ -121,7 +125,11 @@ export function UserSessionCard({
           <Badge tone="positive">{collectorSetCounts.ownedCount} owned</Badge>
           <Badge tone="info">{collectorSetCounts.wantedCount} wanted</Badge>
         </div>
-        {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
+        {errorMessage ? (
+          <p aria-live="polite" className={styles.errorText}>
+            {errorMessage}
+          </p>
+        ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
         {userSession.state}

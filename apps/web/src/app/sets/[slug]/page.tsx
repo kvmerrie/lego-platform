@@ -5,6 +5,7 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import { UserFeatureAuth } from '@lego-platform/user/feature-auth';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { notFound } from 'next/navigation';
+import styles from './page.module.css';
 
 export const dynamicParams = false;
 
@@ -28,7 +29,7 @@ export default async function SetDetailPage({
     <ShellWeb>
       <CatalogFeatureSetDetail catalogSetDetail={catalogSetDetail} />
       <UserFeatureAuth />
-      <section className="surface-grid" aria-label="Collector actions">
+      <section aria-label="Collector actions" className={styles.collectorActions}>
         <CollectionFeatureOwnedToggle setId={catalogSetDetail.id} />
         <WishlistFeatureWishlistToggle setId={catalogSetDetail.id} />
       </section>

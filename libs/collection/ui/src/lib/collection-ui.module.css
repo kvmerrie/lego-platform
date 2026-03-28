@@ -13,8 +13,7 @@
 }
 
 .description,
-.metaText,
-.errorText {
+.metaText {
   color: var(--lego-text-muted);
   line-height: var(--lego-line-height-relaxed);
   margin: 0;
@@ -23,6 +22,12 @@
 .metaText {
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
+}
+
+.errorText {
+  color: var(--lego-error);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
 }
 
 .shelfCard {

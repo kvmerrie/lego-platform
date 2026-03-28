@@ -9,13 +9,6 @@
   max-width: var(--lego-max-width-reading);
 }
 
-.heroBody {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-font-size-lg);
-  line-height: var(--lego-line-height-relaxed);
-  margin: 0;
-}
-
 .heroLink {
   justify-self: flex-start;
 }
