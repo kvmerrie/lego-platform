@@ -1,0 +1,53 @@
+.itemCard {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.itemHeader {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.title {
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-text-role-card-title-weight);
+  letter-spacing: -0.02em;
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.description,
+.metaText,
+.errorText {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.metaText {
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.toggleCard {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.toggleMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.toggleButton {
+  justify-self: flex-start;
+}
+
+.demo {
+  display: grid;
+  gap: var(--lego-space-4);
+}

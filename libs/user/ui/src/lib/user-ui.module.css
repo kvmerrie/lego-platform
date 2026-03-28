@@ -1,0 +1,129 @@
+.card {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.splitCard {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.identityCard {
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.avatarBadge {
+  align-items: center;
+  background:
+    radial-gradient(
+      circle at 30% 24%,
+      color-mix(in srgb, white 24%, transparent),
+      transparent 32%
+    ),
+    linear-gradient(
+      150deg,
+      color-mix(in srgb, var(--lego-accent) 94%, white 6%),
+      color-mix(in srgb, var(--lego-accent-hover) 92%, black 8%)
+    );
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-accent) 64%, black 36%);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+    var(--lego-shadow-sm);
+  color: var(--lego-accent-contrast);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-font-size-xl);
+  font-weight: var(--lego-font-weight-bold);
+  height: 3.4rem;
+  justify-content: center;
+  min-width: 3.4rem;
+}
+
+.identityMeta {
+  display: grid;
+  gap: var(--lego-space-3);
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-text-role-card-title-weight);
+  letter-spacing: -0.02em;
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.description,
+.metaText,
+.errorText {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.metaText {
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.statusRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.sessionContent {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sessionHeader {
+  align-items: flex-start;
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sessionIdentity {
+  align-items: center;
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.sessionIdentityText {
+  display: grid;
+  gap: var(--lego-space-2);
+  min-width: 0;
+}
+
+.sessionCounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.sessionStatus {
+  justify-self: flex-start;
+}
+
+.demo {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+@media (min-width: 56rem) {
+  .splitCard {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sessionStatus {
+    justify-self: end;
+  }
+}

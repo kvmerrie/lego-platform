@@ -1,5 +1,7 @@
 import { CollectionShelf } from '@lego-platform/collection/util';
+import { Button, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import { MetricCard } from '@lego-platform/shared/types';
+import styles from './collection-ui.module.css';
 
 export function CollectionMetricCard({
   metricCard,
@@ -7,11 +9,28 @@ export function CollectionMetricCard({
   metricCard: MetricCard;
 }) {
   return (
-    <article className="metric-card">
-      <p className="eyebrow">{metricCard.label}</p>
-      <h3 className="metric-value">{metricCard.value}</h3>
-      {metricCard.detail ? <p className="muted">{metricCard.detail}</p> : null}
-    </article>
+    <Surface
+      as="article"
+      className={styles.metricCard}
+      elevation="rested"
+      tone={metricCard.tone === 'positive' ? 'accent' : 'default'}
+    >
+      <Badge
+        tone={
+          metricCard.tone === 'positive'
+            ? 'positive'
+            : metricCard.tone === 'warning'
+              ? 'warning'
+              : metricCard.tone === 'accent'
+                ? 'accent'
+                : 'neutral'
+        }
+      >
+        {metricCard.label}
+      </Badge>
+      <h3 className={styles.metricValue}>{metricCard.value}</h3>
+      {metricCard.detail ? <p className={styles.description}>{metricCard.detail}</p> : null}
+    </Surface>
   );
 }
 
@@ -21,14 +40,14 @@ export function CollectionShelfCard({
   collectionShelf: CollectionShelf;
 }) {
   return (
-    <article className="surface stack">
-      <div className="split-row">
-        <h3 className="surface-title">{collectionShelf.name}</h3>
-        <span className="pill">{collectionShelf.completion}</span>
+    <Surface as="article" className={styles.shelfCard} tone="muted">
+      <div className={styles.shelfHeader}>
+        <h3 className={styles.title}>{collectionShelf.name}</h3>
+        <Badge tone="info">{collectionShelf.completion}</Badge>
       </div>
       <p>{collectionShelf.focus}</p>
-      <p className="muted">{collectionShelf.notes}</p>
-    </article>
+      <p className={styles.description}>{collectionShelf.notes}</p>
+    </Surface>
   );
 }
 
@@ -53,37 +72,44 @@ export function OwnedSetToggleCard({
   const actionLabel = isOwned ? 'Remove from owned' : 'Mark as owned';
 
   return (
-    <article className="surface split-card">
-      <div className="stack">
-        <p className="eyebrow">Owned status</p>
-        <h2 className="surface-title">{title}</h2>
-        <p className="muted">
-          Set {setId} keeps an independent owned flag, separate from wanted
-          state.
-        </p>
-        {errorMessage ? <p className="muted">{errorMessage}</p> : null}
+    <Surface
+      as="article"
+      className={styles.toggleCard}
+      elevation="rested"
+      tone={isOwned ? 'accent' : 'default'}
+    >
+      <div className={styles.toggleMeta}>
+        <Badge tone={isOwned ? 'positive' : 'neutral'}>Owned status</Badge>
+        <Badge tone="info">Set {setId}</Badge>
       </div>
-      <button
-        className="action-button"
-        disabled={Boolean(isLoading || isPending)}
+      <SectionHeading
+        description={`Set ${setId} keeps an independent owned flag, separate from wanted state.`}
+        title={title}
+        titleAs="h2"
+      />
+      {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
+      <Button
+        className={styles.toggleButton}
+        isLoading={Boolean(isLoading || isPending)}
+        tone={isOwned ? 'secondary' : 'accent'}
         type="button"
         onClick={onToggle}
       >
         {isLoading ? 'Checking owned state...' : isPending ? 'Saving...' : actionLabel}
-      </button>
-    </article>
+      </Button>
+    </Surface>
   );
 }
 
 export function CollectionUi() {
   return (
-    <section className="surface stack">
-      <p className="eyebrow">Collection UI</p>
-      <h2 className="surface-title">
-        Display metrics, shelves, and curation surfaces without embedding
-        business rules.
-      </h2>
-    </section>
+    <Surface as="section" className={styles.demo} tone="muted">
+      <SectionHeading
+        description="Display metrics, shelves, and curation surfaces without embedding business rules."
+        eyebrow="Collection UI"
+        title="Collector-state surfaces with crisp status and action treatment."
+      />
+    </Surface>
   );
 }
 

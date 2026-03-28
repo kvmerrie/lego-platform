@@ -1,4 +1,6 @@
+import { Button, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import { WishlistItem } from '@lego-platform/wishlist/util';
+import styles from './wishlist-ui.module.css';
 
 export function WishlistItemCard({
   wishlistItem,
@@ -6,14 +8,14 @@ export function WishlistItemCard({
   wishlistItem: WishlistItem;
 }) {
   return (
-    <article className="surface stack">
-      <div className="split-row">
-        <h3 className="surface-title">{wishlistItem.name}</h3>
-        <span className="pill">{wishlistItem.urgency}</span>
+    <Surface as="article" className={styles.itemCard} tone="muted">
+      <div className={styles.itemHeader}>
+        <h3 className={styles.title}>{wishlistItem.name}</h3>
+        <Badge tone="accent">{wishlistItem.urgency}</Badge>
       </div>
       <p>{wishlistItem.reason}</p>
-      <p className="muted">Target price: {wishlistItem.targetPrice}</p>
-    </article>
+      <p className={styles.metaText}>Target price: {wishlistItem.targetPrice}</p>
+    </Surface>
   );
 }
 
@@ -38,35 +40,44 @@ export function WantedSetToggleCard({
   const actionLabel = isWanted ? 'Remove from wanted' : 'Mark as wanted';
 
   return (
-    <article className="surface split-card">
-      <div className="stack">
-        <p className="eyebrow">Wanted status</p>
-        <h2 className="surface-title">{title}</h2>
-        <p className="muted">
-          Set {setId} keeps its wanted flag independently from owned state.
-        </p>
-        {errorMessage ? <p className="muted">{errorMessage}</p> : null}
+    <Surface
+      as="article"
+      className={styles.toggleCard}
+      elevation="rested"
+      tone={isWanted ? 'accent' : 'default'}
+    >
+      <div className={styles.toggleMeta}>
+        <Badge tone={isWanted ? 'accent' : 'neutral'}>Wanted status</Badge>
+        <Badge tone="info">Set {setId}</Badge>
       </div>
-      <button
-        className="action-button"
-        disabled={Boolean(isLoading || isPending)}
+      <SectionHeading
+        description={`Set ${setId} keeps its wanted flag independently from owned state.`}
+        title={title}
+        titleAs="h2"
+      />
+      {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
+      <Button
+        className={styles.toggleButton}
+        isLoading={Boolean(isLoading || isPending)}
+        tone={isWanted ? 'secondary' : 'accent'}
         type="button"
         onClick={onToggle}
       >
         {isLoading ? 'Checking wanted state...' : isPending ? 'Saving...' : actionLabel}
-      </button>
-    </article>
+      </Button>
+    </Surface>
   );
 }
 
 export function WishlistUi() {
   return (
-    <section className="surface stack">
-      <p className="eyebrow">Wishlist UI</p>
-      <h2 className="surface-title">
-        Focus cards and watchlist-ready states for future price triggers.
-      </h2>
-    </section>
+    <Surface as="section" className={styles.demo} tone="muted">
+      <SectionHeading
+        description="Focus cards and watchlist-ready states for future price triggers."
+        eyebrow="Wishlist UI"
+        title="Wanted-state surfaces that stay clear, calm, and collector-first."
+      />
+    </Surface>
   );
 }
 

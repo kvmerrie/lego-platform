@@ -70,25 +70,6 @@ ul {
   padding: var(--lego-space-5);
 }
 
-.avatar-badge {
-  align-items: center;
-  background: linear-gradient(
-    135deg,
-    var(--lego-accent),
-    color-mix(in srgb, var(--lego-accent) 50%, white)
-  );
-  border-radius: var(--lego-radius-md);
-  box-shadow: var(--lego-shadow-sm);
-  color: var(--lego-background);
-  display: inline-flex;
-  font-family: var(--lego-font-family-heading);
-  font-size: var(--lego-font-size-xl);
-  font-weight: var(--lego-font-weight-bold);
-  height: 3rem;
-  justify-content: center;
-  min-width: 3rem;
-}
-
 .section-heading h2,
 .surface-title,
 .metric-value {
@@ -98,39 +79,6 @@ ul {
 
 .muted {
   color: var(--lego-text-muted);
-}
-
-.action-button {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-surface-raised) 98%, transparent),
-    color-mix(in srgb, var(--lego-surface-muted) 92%, transparent)
-  );
-  border: var(--lego-border-width-1) solid color-mix(in srgb, var(--lego-border) 92%, transparent);
-  border-radius: var(--lego-radius-sm);
-  box-shadow: var(--lego-shadow-sm);
-  color: inherit;
-  cursor: pointer;
-  display: inline-flex;
-  font: inherit;
-  justify-content: center;
-  padding: 0.85rem 1rem;
-  transition:
-    background-color var(--lego-motion-duration-fast)
-      var(--lego-motion-ease-standard),
-    border-color var(--lego-motion-duration-fast)
-      var(--lego-motion-ease-standard),
-    box-shadow var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
-    color var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
-}
-
-.action-button:focus-visible {
-  box-shadow: 0 0 0 4px var(--lego-focus-ring);
-  outline: none;
-}
-
-.action-button:active {
-  transform: translateY(0);
 }
 
 .stack,
@@ -189,7 +137,6 @@ ul {
   line-height: var(--lego-text-role-card-title-line-height);
 }
 
-.pill-row,
 .detail-list,
 .split-row,
 .split-card {
@@ -205,17 +152,6 @@ ul {
 
 .split-card {
   flex-direction: column;
-}
-
-.pill {
-  background: color-mix(in srgb, var(--lego-surface-muted) 82%, transparent);
-  border: var(--lego-border-width-1) solid color-mix(in srgb, var(--lego-border) 58%, transparent);
-  border-radius: var(--lego-radius-sm);
-  color: var(--lego-text);
-  display: inline-flex;
-  font-size: var(--lego-text-role-meta-size);
-  font-weight: var(--lego-font-weight-semibold);
-  padding: 0.4rem 0.7rem;
 }
 
 .detail-list {
@@ -244,6 +180,21 @@ ul {
 .dense-row {
   align-items: baseline;
   gap: 1rem;
+}
+
+.pill {
+  align-items: center;
+  background: color-mix(in srgb, var(--lego-surface-muted) 88%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 86%, transparent);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text-muted);
+  display: inline-flex;
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  gap: 0.35rem;
+  line-height: 1;
+  padding: 0.4rem 0.7rem;
 }
 
 .mono {

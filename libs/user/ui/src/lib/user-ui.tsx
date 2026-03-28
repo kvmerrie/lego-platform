@@ -5,6 +5,8 @@ import {
   UserProfile,
   UserSession,
 } from '@lego-platform/user/util';
+import { Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import styles from './user-ui.module.css';
 
 export function UserIdentityCard({
   userProfile,
@@ -12,16 +14,25 @@ export function UserIdentityCard({
   userProfile: UserProfile;
 }) {
   return (
-    <article className="surface split-card">
-      <div className="avatar-badge">{getUserInitials(userProfile.name)}</div>
-      <div className="stack">
-        <p className="eyebrow">{userProfile.tier}</p>
-        <h3 className="surface-title">{userProfile.name}</h3>
-        <p className="muted">
+    <Surface
+      as="article"
+      className={`${styles.card} ${styles.identityCard}`}
+      elevation="rested"
+      tone="muted"
+    >
+      <div aria-hidden="true" className={styles.avatarBadge}>
+        {getUserInitials(userProfile.name)}
+      </div>
+      <div className={styles.identityMeta}>
+        <div className={styles.statusRow}>
+          <Badge tone="accent">{userProfile.tier}</Badge>
+        </div>
+        <h3 className={styles.title}>{userProfile.name}</h3>
+        <p className={styles.description}>
           {userProfile.location} · {userProfile.collectionFocus}
         </p>
       </div>
-    </article>
+    </Surface>
   );
 }
 
@@ -36,71 +47,98 @@ export function UserSessionCard({
 }) {
   if (isLoading) {
     return (
-      <article className="surface split-card">
-        <div className="stack">
-          <p className="eyebrow">Session</p>
-          <h2 className="surface-title">Checking collector session</h2>
-          <p className="muted">Loading the phase-1 authenticated mock session.</p>
+      <Surface
+        as="article"
+        className={`${styles.card} ${styles.splitCard}`}
+        tone="muted"
+      >
+        <div className={styles.sessionContent}>
+          <SectionHeading
+            description="Loading the phase-1 authenticated mock session."
+            eyebrow="Session"
+            title="Checking collector session"
+          />
         </div>
-        <span className="pill">loading</span>
-      </article>
+        <Badge className={styles.sessionStatus} tone="info">
+          loading
+        </Badge>
+      </Surface>
     );
   }
 
   if (!isAuthenticatedSession(userSession)) {
     return (
-      <article className="surface split-card">
-        <div className="stack">
-          <p className="eyebrow">Session</p>
-          <h2 className="surface-title">Collector session not available</h2>
-          <p className="muted">
-            Phase 1 keeps auth mocked, but the UI still renders against the
-            real session contract.
-          </p>
-          {errorMessage ? <p className="muted">{errorMessage}</p> : null}
+      <Surface
+        as="article"
+        className={`${styles.card} ${styles.splitCard}`}
+        tone="muted"
+      >
+        <div className={styles.sessionContent}>
+          <SectionHeading
+            description="Phase 1 keeps auth mocked, but the UI still renders against the real session contract."
+            eyebrow="Session"
+            title="Collector session not available"
+          />
+          {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
         </div>
-        <span className="pill">anonymous</span>
-      </article>
+        <Badge className={styles.sessionStatus} tone="warning">
+          anonymous
+        </Badge>
+      </Surface>
     );
   }
 
   const collectorSetCounts = getCollectorSetCounts(userSession);
 
   return (
-    <article className="surface split-card">
-      <div className="stack">
-        <p className="eyebrow">Collector session</p>
-        <div className="split-row">
-          <div className="avatar-badge">
-            {getUserInitials(userSession.collector.name)}
-          </div>
-          <div className="stack">
-            <h2 className="surface-title">{userSession.collector.name}</h2>
-            <p className="muted">
-              {userSession.collector.tier} · {userSession.collector.location}
-            </p>
-          </div>
+    <Surface
+      as="article"
+      className={`${styles.card} ${styles.splitCard}`}
+      elevation="rested"
+    >
+      <div className={styles.sessionContent}>
+        <div className={styles.statusRow}>
+          <Badge tone="accent">Collector session</Badge>
+          <Badge tone="positive">{userSession.collector.tier}</Badge>
         </div>
-        <p className="muted">{userSession.collector.collectionFocus}</p>
-        <div className="pill-row">
-          <span className="pill">{collectorSetCounts.ownedCount} owned</span>
-          <span className="pill">{collectorSetCounts.wantedCount} wanted</span>
+        <div className={styles.sessionHeader}>
+          <div className={styles.sessionIdentity}>
+            <div aria-hidden="true" className={styles.avatarBadge}>
+              {getUserInitials(userSession.collector.name)}
+            </div>
+            <div className={styles.sessionIdentityText}>
+              <h2 className={styles.title}>{userSession.collector.name}</h2>
+              <p className={styles.metaText}>
+                {userSession.collector.location} · {userSession.collector.id}
+              </p>
+            </div>
+          </div>
+          <p className={styles.description}>
+            {userSession.collector.collectionFocus}
+          </p>
         </div>
-        {errorMessage ? <p className="muted">{errorMessage}</p> : null}
+        <div className={styles.sessionCounts}>
+          <Badge tone="positive">{collectorSetCounts.ownedCount} owned</Badge>
+          <Badge tone="info">{collectorSetCounts.wantedCount} wanted</Badge>
+        </div>
+        {errorMessage ? <p className={styles.errorText}>{errorMessage}</p> : null}
       </div>
-      <span className="pill">{userSession.state}</span>
-    </article>
+      <Badge className={styles.sessionStatus} tone="positive">
+        {userSession.state}
+      </Badge>
+    </Surface>
   );
 }
 
 export function UserUi() {
   return (
-    <section className="surface stack">
-      <p className="eyebrow">User UI</p>
-      <h2 className="surface-title">
-        Identity surfaces for account, profile, and collector-tier presentation.
-      </h2>
-    </section>
+    <Surface as="section" className={styles.demo} tone="muted">
+      <SectionHeading
+        description="Identity surfaces for account, profile, and collector-tier presentation."
+        eyebrow="User UI"
+        title="Collector identity with calm, utility-oriented status cues."
+      />
+    </Surface>
   );
 }
 
