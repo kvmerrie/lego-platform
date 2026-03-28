@@ -1,0 +1,135 @@
+.shell {
+  display: grid;
+  gap: var(--lego-space-8);
+  margin: 0 auto;
+  max-width: var(--lego-max-width-page);
+  padding: var(--lego-space-6) var(--lego-space-4) var(--lego-space-16);
+}
+
+.header {
+  display: grid;
+  gap: var(--lego-space-6);
+}
+
+.headerRow {
+  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lego-space-4);
+}
+
+.brandBlock {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.brand {
+  align-items: center;
+  display: flex;
+  gap: var(--lego-space-4);
+}
+
+.brandMark {
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    var(--lego-accent),
+    color-mix(in srgb, var(--lego-accent) 45%, white)
+  );
+  border-radius: var(--lego-radius-md);
+  box-shadow: var(--lego-shadow-sm);
+  color: var(--lego-background);
+  display: inline-flex;
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-font-size-xl);
+  font-weight: var(--lego-font-weight-bold);
+  height: 3rem;
+  justify-content: center;
+  min-width: 3rem;
+}
+
+.brandText {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.eyebrow {
+  color: var(--lego-accent);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.14em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.brandTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: -0.02em;
+  line-height: var(--lego-text-role-display-line-height);
+  margin: 0;
+}
+
+.tagline,
+.footerCopy,
+.navDescription {
+  color: var(--lego-text-muted);
+}
+
+.tagline,
+.footerCopy {
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.toggle {
+  align-self: flex-start;
+}
+
+.nav {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.navLink {
+  border-radius: var(--lego-radius-md);
+  padding: 0.95rem 1rem;
+}
+
+.navLabel {
+  font-size: var(--lego-font-size-body);
+  font-weight: var(--lego-font-weight-semibold);
+}
+
+.navDescription {
+  font-size: var(--lego-font-size-sm);
+}
+
+.main {
+  display: grid;
+  gap: var(--lego-space-8);
+}
+
+.footer {
+  color: var(--lego-text-muted);
+}
+
+@media (min-width: 56rem) {
+  .shell {
+    padding: var(--lego-space-8) var(--lego-space-6) var(--lego-space-16);
+  }
+
+  .headerRow {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .toggle {
+    align-self: auto;
+  }
+
+  .nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

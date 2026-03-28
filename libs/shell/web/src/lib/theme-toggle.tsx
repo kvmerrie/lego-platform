@@ -7,10 +7,11 @@ import {
   persistThemeMode,
   toggleThemeMode,
 } from '@lego-platform/shared/design-tokens';
-import { getThemeToggleLabel } from '@lego-platform/shared/ui';
+import { Button } from '@lego-platform/shared/ui';
 import { ThemeMode } from '@lego-platform/shared/types';
+import { getThemeToggleLabel } from '@lego-platform/shared/util';
 
-export function ShellWebThemeToggle() {
+export function ShellWebThemeToggle({ className }: { className?: string }) {
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
 
   useEffect(() => {
@@ -29,8 +30,15 @@ export function ShellWebThemeToggle() {
   }
 
   return (
-    <button className="theme-toggle" type="button" onClick={handleToggleTheme}>
+    <Button
+      aria-pressed={themeMode === 'dark'}
+      className={className}
+      title={getThemeToggleLabel(themeMode)}
+      tone="ghost"
+      type="button"
+      onClick={handleToggleTheme}
+    >
       {getThemeToggleLabel(themeMode)}
-    </button>
+    </Button>
   );
 }

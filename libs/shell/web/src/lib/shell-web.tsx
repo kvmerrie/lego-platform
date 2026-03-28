@@ -1,41 +1,53 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { platformConfig, webNavigation } from '@lego-platform/shared/config';
+import { ActionLink, Surface } from '@lego-platform/shared/ui';
+import styles from './shell-web.module.css';
 import { ShellWebThemeToggle } from './theme-toggle';
 
 export function ShellWeb({ children }: { children: ReactNode }) {
   return (
-    <div className="app-shell">
-      <header className="shell-header">
-        <div className="shell-header__row">
-          <div className="stack">
-            <p className="eyebrow">Phase 1 public portal</p>
-            <div className="shell-brand">
-              <span className="brand-mark">B</span>
-              <div className="stack">
-                <h1>{platformConfig.productName}</h1>
-                <p className="muted">{platformConfig.tagline}</p>
+    <div className={styles.shell}>
+      <Surface as="header" className={styles.header} padding="lg">
+        <div className={styles.headerRow}>
+          <div className={styles.brandBlock}>
+            <p className={styles.eyebrow}>Phase 1 public portal</p>
+            <div className={styles.brand}>
+              <span aria-hidden="true" className={styles.brandMark}>
+                B
+              </span>
+              <div className={styles.brandText}>
+                <h1 className={styles.brandTitle}>{platformConfig.productName}</h1>
+                <p className={styles.tagline}>{platformConfig.tagline}</p>
               </div>
             </div>
           </div>
-          <ShellWebThemeToggle />
+          <ShellWebThemeToggle className={styles.toggle} />
         </div>
-        <nav aria-label="Primary" className="shell-nav">
+        <nav aria-label="Primary" className={styles.nav}>
           {webNavigation.map((navigationItem) => (
-            <Link href={navigationItem.href} key={navigationItem.href}>
-              <span>{navigationItem.label}</span>
-              <small>{navigationItem.description}</small>
-            </Link>
+            <ActionLink
+              className={styles.navLink}
+              href={navigationItem.href}
+              key={navigationItem.href}
+              tone="card"
+            >
+              <span className={styles.navLabel}>{navigationItem.label}</span>
+              {navigationItem.description ? (
+                <span className={styles.navDescription}>
+                  {navigationItem.description}
+                </span>
+              ) : null}
+            </ActionLink>
           ))}
         </nav>
-      </header>
-      <main className="stack-xl">{children}</main>
-      <footer className="shell-footer">
-        <p>
+      </Surface>
+      <main className={styles.main}>{children}</main>
+      <Surface as="footer" className={styles.footer}>
+        <p className={styles.footerCopy}>
           Phase 1 keeps catalog reads static-friendly while detail routes prove
           the first session-backed collection actions through the BFF.
         </p>
-      </footer>
+      </Surface>
     </div>
   );
 }

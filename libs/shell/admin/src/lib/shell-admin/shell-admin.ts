@@ -18,8 +18,8 @@ import {
   persistThemeMode,
   toggleThemeMode,
 } from '@lego-platform/shared/design-tokens';
-import { getThemeToggleLabel } from '@lego-platform/shared/ui';
 import { ThemeMode } from '@lego-platform/shared/types';
+import { getThemeToggleLabel } from '@lego-platform/shared/util';
 import { getUserProfile } from '@lego-platform/user/data-access';
 import { getWishlistOverview } from '@lego-platform/wishlist/data-access';
 
