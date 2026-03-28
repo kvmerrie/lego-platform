@@ -135,7 +135,7 @@ describe('catalog data-access contracts', () => {
       name: "Lion Knights' Castle",
       theme: 'Icons',
       releaseYear: 2022,
-      pieces: 4514,
+      pieces: 4515,
       priceRange: '$359 to $429',
       collectorAngle: 'Castle nostalgia tentpole',
       tagline:
@@ -154,7 +154,7 @@ describe('catalog data-access contracts', () => {
       name: 'A-Frame Cabin',
       theme: 'Ideas',
       releaseYear: 2023,
-      pieces: 2082,
+      pieces: 2083,
       priceRange: '$179 to $239',
       collectorAngle: 'Cabin-core conversation piece',
       tagline:

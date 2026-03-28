@@ -45,7 +45,7 @@ function createMockRebrickableClient(): RebrickableClient {
             set_num: '10305-1',
             name: "Lion Knights' Castle",
             year: 2022,
-            num_parts: 4514,
+            num_parts: 4515,
             theme_id: 1,
             set_img_url: 'https://images.example/lion-knights-castle.jpg',
           };
@@ -54,7 +54,7 @@ function createMockRebrickableClient(): RebrickableClient {
             set_num: '21338-1',
             name: 'A-Frame Cabin',
             year: 2023,
-            num_parts: 2082,
+            num_parts: 2083,
             theme_id: 2,
             set_img_url: 'https://images.example/a-frame-cabin.jpg',
           };
@@ -125,7 +125,7 @@ describe('catalog sync artifacts', () => {
           name: "Lion Knights' Castle",
           theme: 'Icons',
           releaseYear: 2022,
-          pieces: 4514,
+          pieces: 4515,
           imageUrl: 'https://images.example/lion-knights-castle.jpg',
         },
         {
@@ -135,7 +135,7 @@ describe('catalog sync artifacts', () => {
           name: 'A-Frame Cabin',
           theme: 'LEGO Ideas and CUUSOO',
           releaseYear: 2023,
-          pieces: 2082,
+          pieces: 2083,
           imageUrl: 'https://images.example/a-frame-cabin.jpg',
         },
       ],
@@ -248,7 +248,7 @@ describe('catalog sync artifacts', () => {
               set_num: '10305-1',
               name: "Lion Knights' Castle",
               year: 2022,
-              num_parts: 4514,
+              num_parts: 4515,
               theme_id: 1,
             }),
             { status: 200 },
@@ -261,7 +261,7 @@ describe('catalog sync artifacts', () => {
               set_num: '21338-1',
               name: 'A-Frame Cabin',
               year: 2023,
-              num_parts: 2082,
+              num_parts: 2083,
               theme_id: 2,
             }),
             { status: 200 },
@@ -347,7 +347,7 @@ describe('catalog sync artifacts', () => {
               name: "Lion Knights' Castle",
               theme: 'Icons',
               releaseYear: 2022,
-              pieces: 4514,
+              pieces: 4515,
             },
           ],
         },
@@ -381,8 +381,8 @@ describe('catalog sync artifacts', () => {
     ).toThrow('Catalog sync produced a duplicate product slug: shared-product-slug.');
   });
 
-  test('fails validation when homepage featured ids drift outside the snapshot', () => {
-    expect(
+  test('fails validation when homepage featured ids drift outside the snapshot', async () => {
+    await expect(
       buildCatalogSyncArtifacts({
         now: new Date('2026-03-28T00:00:00.000Z'),
         rebrickableClient: createMockRebrickableClient(),
