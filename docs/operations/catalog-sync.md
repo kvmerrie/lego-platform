@@ -2,6 +2,10 @@
 
 This repository keeps runtime catalog reads static-friendly by generating local snapshot artifacts ahead of time. The web app reads those generated artifacts through `libs/catalog/data-access`; it does not call Rebrickable at request time.
 
+See also:
+
+- `docs/operations/catalog-sync-validation.md`
+
 ## Current Scope
 
 - Source: Rebrickable
