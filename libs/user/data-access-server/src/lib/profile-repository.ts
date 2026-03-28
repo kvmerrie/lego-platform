@@ -123,10 +123,14 @@ function mapProfileRow(profileRow: ProfileRow): UserProfileRecord {
 }
 
 export function createUserProfileRepository(
-  supabaseAdminClient: SupabaseClient = getServerSupabaseAdminClient(),
+  supabaseAdminClient?: SupabaseClient,
 ): UserProfileRepository {
+  function getSupabaseAdminClient() {
+    return supabaseAdminClient ?? getServerSupabaseAdminClient();
+  }
+
   async function getByUserId(userId: string): Promise<UserProfileRecord | null> {
-    const { data, error } = await supabaseAdminClient
+    const { data, error } = await getSupabaseAdminClient()
       .from('profiles')
       .select(profileColumns)
       .eq('user_id', userId)
@@ -136,7 +140,7 @@ export function createUserProfileRepository(
       throw new Error('Unable to load the collector profile.');
     }
 
-    return data ? mapProfileRow(data as ProfileRow) : null;
+    return data ? mapProfileRow(data as unknown as ProfileRow) : null;
   }
 
   return {
@@ -149,7 +153,7 @@ export function createUserProfileRepository(
         return existingProfile;
       }
 
-      const { data, error } = await supabaseAdminClient
+      const { data, error } = await getSupabaseAdminClient()
         .from('profiles')
         .upsert(buildDefaultProfileUpsertRow(ensureUserProfileInput), {
           onConflict: 'user_id',
@@ -161,7 +165,7 @@ export function createUserProfileRepository(
         throw new Error('Unable to create the collector profile.');
       }
 
-      return mapProfileRow(data as ProfileRow);
+      return mapProfileRow(data as unknown as ProfileRow);
     },
   };
 }

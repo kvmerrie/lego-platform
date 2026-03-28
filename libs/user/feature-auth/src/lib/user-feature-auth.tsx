@@ -32,7 +32,7 @@ export function UserFeatureAuth() {
         }
 
         setUserSession(createAnonymousUserSession());
-        setErrorMessage('Unable to reach the mock session endpoint right now.');
+        setErrorMessage('Unable to load the current session right now.');
       } finally {
         if (isMounted) {
           setIsLoading(false);

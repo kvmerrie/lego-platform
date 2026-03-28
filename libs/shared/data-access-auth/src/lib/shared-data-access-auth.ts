@@ -1,5 +1,8 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { getBrowserSupabaseConfig } from '@lego-platform/shared/config';
+import {
+  getBrowserSupabaseConfig,
+  hasBrowserSupabaseConfig,
+} from '@lego-platform/shared/config';
 
 let browserSupabaseClient: SupabaseClient | undefined;
 
@@ -26,11 +29,28 @@ export function getBrowserSupabaseClient(): SupabaseClient {
 }
 
 export async function getBrowserAccessToken(): Promise<string | undefined> {
+  if (!hasBrowserSupabaseConfig()) {
+    return undefined;
+  }
+
   const {
     data: { session },
   } = await getBrowserSupabaseClient().auth.getSession();
 
   return session?.access_token;
+}
+
+export async function buildSupabaseAuthorizationHeaders(
+  headers?: HeadersInit,
+): Promise<Headers> {
+  const nextHeaders = new Headers(headers);
+  const accessToken = await getBrowserAccessToken();
+
+  if (accessToken) {
+    nextHeaders.set('Authorization', `Bearer ${accessToken}`);
+  }
+
+  return nextHeaders;
 }
 
 export async function signInWithSupabaseOtp(options: {

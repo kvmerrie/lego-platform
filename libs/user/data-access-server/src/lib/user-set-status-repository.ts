@@ -109,17 +109,21 @@ async function upsertUserSetStatusRow({
     throw new Error('Unable to persist the user set status.');
   }
 
-  return mapUserSetStatusRow(data as UserSetStatusRow);
+  return mapUserSetStatusRow(data as unknown as UserSetStatusRow);
 }
 
 export function createUserSetStatusRepository(
-  supabaseAdminClient: SupabaseClient = getServerSupabaseAdminClient(),
+  supabaseAdminClient?: SupabaseClient,
 ): UserSetStatusRepository {
+  function getSupabaseAdminClient() {
+    return supabaseAdminClient ?? getServerSupabaseAdminClient();
+  }
+
   async function getByUserIdAndSetId(
     userId: string,
     setId: string,
   ): Promise<UserSetStatusRecord | null> {
-    const { data, error } = await supabaseAdminClient
+    const { data, error } = await getSupabaseAdminClient()
       .from('user_set_statuses')
       .select(userSetStatusColumns)
       .eq('user_id', userId)
@@ -130,12 +134,14 @@ export function createUserSetStatusRepository(
       throw new Error('Unable to load the user set status.');
     }
 
-    return data ? mapUserSetStatusRow(data as UserSetStatusRow) : null;
+    return data
+      ? mapUserSetStatusRow(data as unknown as UserSetStatusRow)
+      : null;
   }
 
   return {
     async listByUserId(userId: string) {
-      const { data, error } = await supabaseAdminClient
+      const { data, error } = await getSupabaseAdminClient()
         .from('user_set_statuses')
         .select(userSetStatusColumns)
         .eq('user_id', userId)
@@ -145,7 +151,7 @@ export function createUserSetStatusRepository(
         throw new Error('Unable to load the user set statuses.');
       }
 
-      return (data as UserSetStatusRow[]).map(mapUserSetStatusRow);
+      return (data as unknown as UserSetStatusRow[]).map(mapUserSetStatusRow);
     },
 
     getByUserIdAndSetId,
@@ -162,7 +168,7 @@ export function createUserSetStatusRepository(
       if (!nextStatus.is_owned && !nextStatus.is_wanted) {
         await deleteUserSetStatusRow({
           setId,
-          supabaseAdminClient,
+          supabaseAdminClient: getSupabaseAdminClient(),
           userId,
         });
 
@@ -171,7 +177,7 @@ export function createUserSetStatusRepository(
 
       return upsertUserSetStatusRow({
         row: nextStatus,
-        supabaseAdminClient,
+        supabaseAdminClient: getSupabaseAdminClient(),
       });
     },
 
@@ -187,7 +193,7 @@ export function createUserSetStatusRepository(
       if (!nextStatus.is_owned && !nextStatus.is_wanted) {
         await deleteUserSetStatusRow({
           setId,
-          supabaseAdminClient,
+          supabaseAdminClient: getSupabaseAdminClient(),
           userId,
         });
 
@@ -196,7 +202,7 @@ export function createUserSetStatusRepository(
 
       return upsertUserSetStatusRow({
         row: nextStatus,
-        supabaseAdminClient,
+        supabaseAdminClient: getSupabaseAdminClient(),
       });
     },
   };

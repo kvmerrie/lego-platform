@@ -1,6 +1,6 @@
 # Supabase Auth Foundation
 
-This document describes the phase-1 Supabase foundation for real auth and owned or wanted persistence. It adds config, SQL schema, and server or browser utility layers without changing the current runtime API behavior yet.
+This document describes the current Supabase foundation for real auth and owned or wanted persistence. The repo now has the first browser and API wiring in place, while the sign-in UX still remains intentionally minimal.
 
 ## Current Intent
 
@@ -9,6 +9,9 @@ This document describes the phase-1 Supabase foundation for real auth and owned 
 - `apps/api` remains the BFF, auth-verification boundary, and persistence boundary.
 - `apps/web` remains static-friendly. Catalog and set-detail routes do not become auth-dependent at render time.
 - The current `/api/v1` route shapes remain the long-term contract.
+- Browser clients attach `Authorization: Bearer <token>` when a Supabase session exists.
+- `GET /api/v1/session` returns an anonymous session when there is no valid bearer token.
+- Owned or wanted mutations now require a valid bearer token and return `401` otherwise.
 
 ## Required Environment Variables
 
@@ -61,9 +64,9 @@ Design intent:
 - Do not let browser clients write directly to Postgres in this product slice.
 - Keep runtime writes behind `apps/api`.
 - Keep `collector.id` product-facing. It must not be repurposed as the raw Supabase user UUID.
-- When phase 2 begins, verify bearer tokens in the API before replacing the in-memory store.
+- Keep unauthenticated behavior graceful: anonymous session reads may continue, but writes must stay protected.
 
-## Repo Surface Added In Phase 1
+## Current Repo Surface
 
 - `libs/shared/data-access-auth`
   Browser-only Supabase client utilities.
@@ -72,4 +75,4 @@ Design intent:
 - `libs/user/data-access-server`
   Profile repository, user set status repository, and session assembly service.
 
-These are foundation layers only. The current UI, web routes, and in-memory API behavior remain unchanged until phase 2.
+The current UI and web routes remain unchanged. The `/api/v1` handlers now use Supabase-backed repositories, while the sign-in UX and richer profile management still wait for the next phase.

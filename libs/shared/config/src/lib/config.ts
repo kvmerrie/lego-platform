@@ -97,6 +97,15 @@ export function getBrowserSupabaseConfig(
   };
 }
 
+export function hasBrowserSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(
+    environment[supabaseEnvKeys.browserUrl] &&
+      environment[supabaseEnvKeys.browserAnonKey],
+  );
+}
+
 export function getServerSupabaseConfig(
   environment: Record<string, string | undefined> = process.env,
 ): ServerSupabaseConfig {
@@ -112,6 +121,16 @@ export function getServerSupabaseConfig(
       key: supabaseEnvKeys.serverServiceRoleKey,
     }),
   };
+}
+
+export function hasServerSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(
+    (environment[supabaseEnvKeys.serverUrl] ??
+      environment[supabaseEnvKeys.browserUrl]) &&
+      environment[supabaseEnvKeys.serverServiceRoleKey],
+  );
 }
 
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {

@@ -4,6 +4,7 @@ import {
   WishlistOverview,
 } from '@lego-platform/wishlist/util';
 import { apiPaths } from '@lego-platform/shared/config';
+import { buildSupabaseAuthorizationHeaders } from '@lego-platform/shared/data-access-auth';
 import { readStringArrayProperty } from '@lego-platform/shared/util';
 
 const wishlistOverview: WishlistOverview = {
@@ -45,8 +46,10 @@ export function listWishlistItems(): WishlistItem[] {
 }
 
 export async function getWantedSetState(setId: string): Promise<WantedSetState> {
+  const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(apiPaths.session, {
     cache: 'no-store',
+    headers,
   });
 
   if (!response.ok) {
@@ -65,7 +68,9 @@ export async function getWantedSetState(setId: string): Promise<WantedSetState> 
 }
 
 export async function addWantedSet(setId: string): Promise<WantedSetState> {
+  const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(`${apiPaths.wantedSets}/${encodeURIComponent(setId)}`, {
+    headers,
     method: 'PUT',
   });
 
@@ -77,7 +82,9 @@ export async function addWantedSet(setId: string): Promise<WantedSetState> {
 }
 
 export async function removeWantedSet(setId: string): Promise<WantedSetState> {
+  const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(`${apiPaths.wantedSets}/${encodeURIComponent(setId)}`, {
+    headers,
     method: 'DELETE',
   });
 

@@ -1,5 +1,8 @@
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
-import { getServerSupabaseConfig } from '@lego-platform/shared/config';
+import {
+  getServerSupabaseConfig,
+  hasServerSupabaseConfig,
+} from '@lego-platform/shared/config';
 
 export interface AnonymousRequestPrincipal {
   state: 'anonymous';
@@ -68,9 +71,10 @@ export function extractBearerToken(
 
 export async function verifySupabaseAccessToken(
   accessToken: string,
-  supabaseAdminClient: SupabaseClient = getServerSupabaseAdminClient(),
+  supabaseAdminClient?: SupabaseClient,
 ): Promise<AuthenticatedRequestPrincipal> {
-  const { data, error } = await supabaseAdminClient.auth.getUser(accessToken);
+  const client = supabaseAdminClient ?? getServerSupabaseAdminClient();
+  const { data, error } = await client.auth.getUser(accessToken);
 
   if (error || !data.user) {
     throw new Error('Unable to verify the Supabase access token.');
@@ -81,11 +85,15 @@ export async function verifySupabaseAccessToken(
 
 export async function resolveRequestPrincipalFromAuthHeader(
   authorizationHeader?: string,
-  supabaseAdminClient: SupabaseClient = getServerSupabaseAdminClient(),
+  supabaseAdminClient?: SupabaseClient,
 ): Promise<RequestPrincipal> {
   const accessToken = extractBearerToken(authorizationHeader);
 
   if (!accessToken) {
+    return createAnonymousRequestPrincipal();
+  }
+
+  if (!hasServerSupabaseConfig()) {
     return createAnonymousRequestPrincipal();
   }
 
