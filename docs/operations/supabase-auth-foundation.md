@@ -19,6 +19,8 @@ This document describes the current Supabase foundation for real auth and owned 
 - The web auth surface now offers a minimal email sign-in flow backed by Supabase Auth.
 - Sign-in starts with an email magic-link or OTP request from the browser.
 - After the browser session changes, the existing `/api/v1/session` route is reloaded so the current collector state stays in sync.
+- Signed-in collectors can edit a compact profile card backed by `/api/v1/me/profile`.
+- After a successful profile save, the profile editor and the session-backed auth card refresh so collector-facing identity stays aligned.
 - Sign-out stays browser-driven and clears the current Supabase session without changing the static catalog or editorial route model.
 
 ## Required Environment Variables
@@ -86,4 +88,4 @@ Design intent:
 - `libs/user/data-access-server`
   Profile repository, user set status repository, and session assembly service.
 
-The current UI and web routes remain unchanged. The `/api/v1` handlers now use Supabase-backed repositories, the web auth surface now supports minimal sign-in or sign-out, and richer profile management still waits for a later phase.
+The current UI and web routes remain unchanged. The `/api/v1` handlers now use Supabase-backed repositories, the web auth surface supports minimal sign-in or sign-out, and signed-in collectors can edit a compact product-facing profile while broader account-management work still waits for a later phase.

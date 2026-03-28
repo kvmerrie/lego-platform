@@ -1,7 +1,9 @@
 import {
+  CollectorProfile,
   getCollectorSetCounts,
   getUserInitials,
   isAuthenticatedSession,
+  UpdateCollectorProfileInput,
   UserProfile,
   UserSession,
 } from '@lego-platform/user/util';
@@ -215,6 +217,208 @@ export function UserSessionCard({
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
         {userSession.state}
+      </Badge>
+    </Surface>
+  );
+}
+
+export function UserProfileEditorCard({
+  collectorProfile,
+  draft,
+  errorMessage,
+  isDirty,
+  isLoading,
+  isSaving,
+  onDraftChange,
+  onSubmit,
+  successMessage,
+}: {
+  collectorProfile?: CollectorProfile;
+  draft?: UpdateCollectorProfileInput;
+  errorMessage?: string;
+  isDirty?: boolean;
+  isLoading?: boolean;
+  isSaving?: boolean;
+  onDraftChange?: (
+    field: keyof UpdateCollectorProfileInput,
+    value: string,
+  ) => void;
+  onSubmit?: () => void;
+  successMessage?: string;
+}) {
+  if (isLoading) {
+    return (
+      <Surface
+        as="article"
+        className={`${styles.card} ${styles.splitCard}`}
+        tone="muted"
+      >
+        <div className={styles.sessionContent}>
+          <SectionHeading
+            description="Loading the signed-in collector profile and editable identity details."
+            eyebrow="Profile"
+            title="Preparing your collector profile"
+          />
+        </div>
+        <Badge className={styles.sessionStatus} tone="info">
+          loading
+        </Badge>
+      </Surface>
+    );
+  }
+
+  if (!collectorProfile || !draft) {
+    return (
+      <Surface
+        as="article"
+        className={`${styles.card} ${styles.splitCard}`}
+        tone="muted"
+      >
+        <div className={styles.sessionContent}>
+          <SectionHeading
+            description="The signed-in collector profile could not be loaded right now, but the rest of the product slice remains available."
+            eyebrow="Profile"
+            title="Collector profile unavailable"
+          />
+          {errorMessage ? (
+            <p aria-live="polite" className={styles.errorText}>
+              {errorMessage}
+            </p>
+          ) : null}
+        </div>
+        <Badge className={styles.sessionStatus} tone="warning">
+          unavailable
+        </Badge>
+      </Surface>
+    );
+  }
+
+  return (
+    <Surface
+      as="article"
+      className={`${styles.card} ${styles.splitCard}`}
+      elevation="rested"
+    >
+      <div className={styles.sessionContent}>
+        <div className={styles.statusRow}>
+          <Badge tone="accent">Profile</Badge>
+          <Badge tone="info">{collectorProfile.tier}</Badge>
+        </div>
+        <SectionHeading
+          description="Refine the product-facing collector identity that appears alongside your owned and wanted set state."
+          eyebrow="Account"
+          title="Edit collector profile"
+        />
+        <form
+          className={styles.profileForm}
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit?.();
+          }}
+        >
+          <div className={styles.profileFieldGrid}>
+            <label className={styles.formField}>
+              <span className={styles.fieldLabel}>Display name</span>
+              <input
+                className={styles.textInput}
+                maxLength={80}
+                name="displayName"
+                required
+                type="text"
+                value={draft.displayName}
+                onChange={(event) =>
+                  onDraftChange?.('displayName', event.target.value)
+                }
+              />
+            </label>
+            <label className={styles.formField}>
+              <span className={styles.fieldLabel}>Collector handle</span>
+              <input
+                className={styles.textInput}
+                maxLength={32}
+                name="collectorHandle"
+                required
+                type="text"
+                value={draft.collectorHandle}
+                onChange={(event) =>
+                  onDraftChange?.('collectorHandle', event.target.value)
+                }
+              />
+            </label>
+          </div>
+          <div className={styles.profileFieldGrid}>
+            <label className={styles.formField}>
+              <span className={styles.fieldLabel}>Email</span>
+              <input
+                className={styles.textInput}
+                name="email"
+                readOnly
+                type="text"
+                value={collectorProfile.email ?? 'Connected via Supabase auth'}
+              />
+            </label>
+            <label className={styles.formField}>
+              <span className={styles.fieldLabel}>Tier</span>
+              <input
+                className={styles.textInput}
+                name="tier"
+                readOnly
+                type="text"
+                value={collectorProfile.tier}
+              />
+            </label>
+          </div>
+          <label className={styles.formField}>
+            <span className={styles.fieldLabel}>Location</span>
+            <input
+              className={styles.textInput}
+              maxLength={80}
+              name="location"
+              required
+              type="text"
+              value={draft.location}
+              onChange={(event) => onDraftChange?.('location', event.target.value)}
+            />
+          </label>
+          <label className={styles.formField}>
+            <span className={styles.fieldLabel}>Collection focus</span>
+            <textarea
+              className={`${styles.textInput} ${styles.textArea}`}
+              maxLength={140}
+              name="collectionFocus"
+              required
+              rows={3}
+              value={draft.collectionFocus}
+              onChange={(event) =>
+                onDraftChange?.('collectionFocus', event.target.value)
+              }
+            />
+          </label>
+          <div className={styles.sessionActions}>
+            <Button
+              disabled={!isDirty}
+              isLoading={Boolean(isSaving)}
+              tone="accent"
+              type="submit"
+            >
+              {isSaving ? 'Saving profile...' : 'Save profile'}
+            </Button>
+            {!isDirty ? <Badge tone="neutral">No changes</Badge> : null}
+          </div>
+        </form>
+        {successMessage ? (
+          <p aria-live="polite" className={styles.successText}>
+            {successMessage}
+          </p>
+        ) : null}
+        {errorMessage ? (
+          <p aria-live="polite" className={styles.errorText}>
+            {errorMessage}
+          </p>
+        ) : null}
+      </div>
+      <Badge className={styles.sessionStatus} tone="positive">
+        signed in
       </Badge>
     </Surface>
   );

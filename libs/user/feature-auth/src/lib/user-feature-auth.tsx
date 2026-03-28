@@ -6,6 +6,7 @@ import {
   isUserAuthAvailable,
   requestUserSignIn,
   signOutCurrentUser,
+  subscribeToUserAccountChanges,
   subscribeToUserAuthChanges,
 } from '@lego-platform/user/data-access';
 import { UserSessionCard } from '@lego-platform/user/ui';
@@ -59,7 +60,7 @@ export function UserFeatureAuth() {
   useEffect(() => {
     isMountedRef.current = true;
     void loadUserSession();
-    const unsubscribe = subscribeToUserAuthChanges(() => {
+    const unsubscribeAuth = subscribeToUserAuthChanges(() => {
       if (!isMountedRef.current) {
         return;
       }
@@ -67,10 +68,18 @@ export function UserFeatureAuth() {
       setIsLoading(true);
       void loadUserSession();
     });
+    const unsubscribeAccount = subscribeToUserAccountChanges(() => {
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      void loadUserSession();
+    });
 
     return () => {
       isMountedRef.current = false;
-      unsubscribe();
+      unsubscribeAuth();
+      unsubscribeAccount();
     };
   }, []);
 

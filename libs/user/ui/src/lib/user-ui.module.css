@@ -135,6 +135,16 @@
   gap: var(--lego-space-3);
 }
 
+.profileForm {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.profileFieldGrid {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
 .formField {
   display: grid;
   gap: var(--lego-space-2);
@@ -173,10 +183,26 @@
   border-color: color-mix(in srgb, var(--lego-accent) 26%, var(--lego-border));
 }
 
+.textInput:read-only {
+  background: color-mix(in srgb, var(--lego-surface-muted) 84%, transparent);
+  color: var(--lego-text-muted);
+}
+
 .textInput:focus-visible {
   border-color: color-mix(in srgb, var(--lego-accent) 44%, var(--lego-border));
   box-shadow: 0 0 0 4px var(--lego-focus-ring);
   outline: none;
+}
+
+.textArea {
+  min-height: 7.2rem;
+  resize: vertical;
+}
+
+.successText {
+  color: var(--lego-positive);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
 }
 
 .demo {
@@ -185,6 +211,10 @@
 }
 
 @media (min-width: 56rem) {
+  .profileFieldGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .splitCard {
     align-items: start;
     grid-template-columns: minmax(0, 1fr) auto;

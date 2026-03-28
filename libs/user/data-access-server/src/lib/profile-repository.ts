@@ -1,6 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
-import { phaseOneCollectorIdentity } from '@lego-platform/user/util';
+import {
+  phaseOneCollectorIdentity,
+  type UpdateCollectorProfileInput,
+} from '@lego-platform/user/util';
 
 const profileColumns = [
   'user_id',
@@ -54,6 +57,17 @@ export interface UserProfileRepository {
     ensureUserProfileInput: EnsureUserProfileInput,
   ): Promise<UserProfileRecord>;
   getByUserId(userId: string): Promise<UserProfileRecord | null>;
+  updateProfile(input: {
+    updateCollectorProfileInput: UpdateCollectorProfileInput;
+    userId: string;
+  }): Promise<UserProfileRecord>;
+}
+
+export class CollectorHandleConflictError extends Error {
+  constructor() {
+    super('Collector handle is already in use.');
+    this.name = 'CollectorHandleConflictError';
+  }
 }
 
 function toTitleCase(value: string): string {
@@ -122,6 +136,13 @@ function mapProfileRow(profileRow: ProfileRow): UserProfileRecord {
   };
 }
 
+function isCollectorHandleConflict(error: { code?: string; message?: string }) {
+  return (
+    error.code === '23505' &&
+    error.message?.toLowerCase().includes('collector_handle')
+  );
+}
+
 export function createUserProfileRepository(
   supabaseAdminClient?: SupabaseClient,
 ): UserProfileRepository {
@@ -163,6 +184,30 @@ export function createUserProfileRepository(
 
       if (error) {
         throw new Error('Unable to create the collector profile.');
+      }
+
+      return mapProfileRow(data as unknown as ProfileRow);
+    },
+
+    async updateProfile({ updateCollectorProfileInput, userId }) {
+      const { data, error } = await getSupabaseAdminClient()
+        .from('profiles')
+        .update({
+          display_name: updateCollectorProfileInput.displayName,
+          collector_handle: updateCollectorProfileInput.collectorHandle,
+          location: updateCollectorProfileInput.location,
+          collection_focus: updateCollectorProfileInput.collectionFocus,
+        })
+        .eq('user_id', userId)
+        .select(profileColumns)
+        .single();
+
+      if (error) {
+        if (isCollectorHandleConflict(error)) {
+          throw new CollectorHandleConflictError();
+        }
+
+        throw new Error('Unable to update the collector profile.');
       }
 
       return mapProfileRow(data as unknown as ProfileRow);

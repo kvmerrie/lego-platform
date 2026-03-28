@@ -3,6 +3,7 @@ import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-deta
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { UserFeatureAuth } from '@lego-platform/user/feature-auth';
+import { UserFeatureProfile } from '@lego-platform/user/feature-profile';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { notFound } from 'next/navigation';
 import styles from './page.module.css';
@@ -28,7 +29,10 @@ export default async function SetDetailPage({
   return (
     <ShellWeb>
       <CatalogFeatureSetDetail catalogSetDetail={catalogSetDetail} />
-      <UserFeatureAuth />
+      <section aria-label="Collector account" className={styles.accountPanels}>
+        <UserFeatureAuth />
+        <UserFeatureProfile />
+      </section>
       <section aria-label="Collector actions" className={styles.collectorActions}>
         <CollectionFeatureOwnedToggle setId={catalogSetDetail.id} />
         <WishlistFeatureWishlistToggle setId={catalogSetDetail.id} />

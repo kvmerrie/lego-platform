@@ -45,6 +45,7 @@ export const webNavigation = [
 
 export const apiPaths = {
   session: '/api/v1/session',
+  profile: '/api/v1/me/profile',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
 } as const;

@@ -1,15 +1,22 @@
 import { apiPaths } from '@lego-platform/shared/config';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
 import {
+  CollectorHandleConflictError,
   createUserProfileRepository,
   createUserSessionService,
   createUserSetStatusRepository,
+  type UserProfileRepository,
   type UserSessionService,
   type UserSetStatusRepository,
 } from '@lego-platform/user/data-access-server';
+import {
+  type CollectorProfile,
+  validateUpdateCollectorProfileInput,
+} from '@lego-platform/user/util';
 import type { FastifyInstance } from 'fastify';
 
 export interface ApiV1RouteDependencies {
+  userProfileRepository?: UserProfileRepository;
   userSessionService?: UserSessionService;
   userSetStatusRepository?: UserSetStatusRepository;
 }
@@ -30,18 +37,103 @@ function getRequestPrincipal(
   );
 }
 
+function toCollectorProfile({
+  email,
+  userProfileRepositoryRecord,
+}: {
+  email: string | null;
+  userProfileRepositoryRecord: Awaited<
+    ReturnType<UserProfileRepository['ensureProfile']>
+  >;
+}): CollectorProfile {
+  return {
+    displayName: userProfileRepositoryRecord.displayName,
+    collectorHandle: userProfileRepositoryRecord.collectorHandle,
+    location: userProfileRepositoryRecord.location,
+    collectionFocus: userProfileRepositoryRecord.collectionFocus,
+    tier: userProfileRepositoryRecord.tier,
+    email,
+  };
+}
+
 export function createApiV1Routes({
-  userSessionService = createUserSessionService({
-    userProfileRepository: createUserProfileRepository(),
-    userSetStatusRepository: createUserSetStatusRepository(),
-  }),
+  userProfileRepository = createUserProfileRepository(),
   userSetStatusRepository = createUserSetStatusRepository(),
+  userSessionService = createUserSessionService({
+    userProfileRepository,
+    userSetStatusRepository,
+  }),
 }: ApiV1RouteDependencies = {}) {
   return async function (fastify: FastifyInstance) {
     fastify.get(apiPaths.session, async function (request) {
       return userSessionService.getUserSession(
         getRequestPrincipal(request.requestPrincipal),
       );
+    });
+
+    fastify.get(apiPaths.profile, async function (request, reply) {
+      if (request.requestPrincipal?.state !== 'authenticated') {
+        return reply.status(401).send(createUnauthorizedResponse());
+      }
+
+      const userProfileRepositoryRecord = await userProfileRepository.ensureProfile({
+        email: request.requestPrincipal.email,
+        userId: request.requestPrincipal.userId,
+      });
+
+      return toCollectorProfile({
+        email: request.requestPrincipal.email,
+        userProfileRepositoryRecord,
+      });
+    });
+
+    fastify.patch<{ Body: unknown }>(apiPaths.profile, async function (
+      request,
+      reply,
+    ) {
+      if (request.requestPrincipal?.state !== 'authenticated') {
+        return reply.status(401).send(createUnauthorizedResponse());
+      }
+
+      let updateCollectorProfileInput;
+
+      try {
+        updateCollectorProfileInput = validateUpdateCollectorProfileInput(
+          request.body,
+        );
+      } catch (error) {
+        return reply.status(400).send({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Collector profile input is invalid.',
+        });
+      }
+
+      await userProfileRepository.ensureProfile({
+        email: request.requestPrincipal.email,
+        userId: request.requestPrincipal.userId,
+      });
+
+      try {
+        const updatedUserProfileRecord = await userProfileRepository.updateProfile({
+          userId: request.requestPrincipal.userId,
+          updateCollectorProfileInput,
+        });
+
+        return toCollectorProfile({
+          email: request.requestPrincipal.email,
+          userProfileRepositoryRecord: updatedUserProfileRecord,
+        });
+      } catch (error) {
+        if (error instanceof CollectorHandleConflictError) {
+          return reply.status(409).send({
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
     });
 
     fastify.put<{ Params: { setId: string } }>(
