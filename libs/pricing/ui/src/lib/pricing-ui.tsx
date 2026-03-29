@@ -278,7 +278,9 @@ export function PriceSummaryCard({
         />
         <PricingMetaItem
           label="Reviewed coverage"
-          value={getDutchReviewedCoverageLabel(pricePanelSnapshot.merchantCount)}
+          value={getDutchReviewedCoverageLabel(
+            pricePanelSnapshot.merchantCount,
+          )}
         />
       </dl>
       <p className={styles.referenceNote}>

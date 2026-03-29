@@ -65,6 +65,15 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - If you change a boundary rule, update both the lint enforcement and the docs in the same change.
 - If current reality differs from the intended target architecture, document the current state and the intended evolution explicitly instead of hiding the mismatch.
 
+## Completion And Validation Rules
+
+- Before declaring work complete, run the relevant format, lint, test, build, and check commands for the area you changed.
+- If the change touches catalog, pricing, affiliate, commerce sync, or generated data read facades, run the relevant drift checks before claiming completion.
+- Catalog-related changes require `pnpm sync:catalog:check` when the source-backed path is available.
+- Pricing, affiliate, or commerce-related changes require `pnpm sync:commerce:check`.
+- If a formatter, sync writer, or generated-artifact check reveals expected file updates, do not claim the task is complete until those updates are either committed intentionally or explicitly called out as still outstanding.
+- Do not report “done” while the working tree still contains expected generated-artifact or formatter changes from the task.
+
 ## Reference Docs
 
 - `docs/architecture/product-vision.md`
@@ -79,6 +88,7 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - `docs/operations/commerce-sync.md`
 - `docs/operations/commerce-sync-validation.md`
 - `docs/operations/pricing-history.md`
+- `docs/operations/developer-workflow-guardrails.md`
 - `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
 - `docs/operations/mvp-operator-troubleshooting.md`

@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "prepare": "node scripts/hooks/install-hooks.mjs",
     "dev:web": "pnpm nx dev web",
     "dev:admin": "pnpm nx serve admin",
     "dev:api": "pnpm nx serve api",
@@ -16,6 +17,8 @@
     "test": "pnpm nx run-many -t test --all",
     "format:check": "pnpm nx format:check --all",
     "format:write": "pnpm nx format:write --all",
+    "hooks:pre-commit": "node scripts/hooks/pre-commit.mjs",
+    "hooks:pre-push": "node scripts/hooks/pre-push.mjs",
     "graph": "pnpm nx graph"
   },
   "private": true,
@@ -67,6 +70,7 @@
     "eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "husky": "^9.1.7",
     "jsdom": "^27.1.0",
     "nx": "22.6.3",
     "prettier": "~3.6.2",
