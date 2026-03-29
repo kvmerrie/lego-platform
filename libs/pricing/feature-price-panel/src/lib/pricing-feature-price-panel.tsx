@@ -3,6 +3,7 @@ import {
   PriceSummaryCard,
   PricingUnavailableCard,
 } from '@lego-platform/pricing/ui';
+import { PricingFeaturePricePanelSummary } from './pricing-feature-price-panel-summary';
 
 export function PricingFeaturePricePanel({ setId }: { setId: string }) {
   const pricePanelSnapshot = getPricePanelSnapshot(setId);
@@ -11,7 +12,11 @@ export function PricingFeaturePricePanel({ setId }: { setId: string }) {
     return <PricingUnavailableCard id="pricing" />;
   }
 
-  return <PriceSummaryCard id="pricing" pricePanelSnapshot={pricePanelSnapshot} />;
+  return (
+    <PriceSummaryCard id="pricing" pricePanelSnapshot={pricePanelSnapshot}>
+      <PricingFeaturePricePanelSummary setId={setId} />
+    </PriceSummaryCard>
+  );
 }
 
 export default PricingFeaturePricePanel;

@@ -60,6 +60,16 @@ export interface PriceHistoryPoint {
   setId: string;
 }
 
+export interface PriceHistorySummary {
+  averagePriceMinor: number;
+  currencyCode: PricingCurrencyCode;
+  currentHeadlinePriceMinor: number;
+  deltaVsAverageMinor: number;
+  highPriceMinor: number;
+  lowPriceMinor: number;
+  pointCount: number;
+}
+
 export function getPriceDirection(
   deltaMinor?: number,
 ): 'up' | 'down' | 'flat' {

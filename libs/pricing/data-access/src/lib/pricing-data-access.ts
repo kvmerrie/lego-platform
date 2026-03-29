@@ -4,6 +4,7 @@ import {
   NEW_OFFER_CONDITION,
   PRICING_HISTORY_TABLE,
   type PriceHistoryPoint,
+  type PriceHistorySummary,
   type PricePanelSnapshot,
   type PricingObservation,
 } from '@lego-platform/pricing/util';
@@ -31,6 +32,11 @@ interface PriceHistoryRowRecord {
   set_id: string;
 }
 
+export interface PriceHistorySummaryState {
+  pointCount: number;
+  priceHistorySummary?: PriceHistorySummary;
+}
+
 export function getPricePanelSnapshot(
   setId: string,
 ): PricePanelSnapshot | undefined {
@@ -41,6 +47,40 @@ export function listPricingObservations(setId: string): PricingObservation[] {
   return pricingObservations.filter(
     (pricingObservation) => pricingObservation.setId === setId,
   );
+}
+
+export function buildPriceHistorySummary({
+  currentHeadlinePriceMinor,
+  priceHistoryPoints,
+}: {
+  currentHeadlinePriceMinor: number;
+  priceHistoryPoints: readonly PriceHistoryPoint[];
+}): PriceHistorySummary | undefined {
+  if (priceHistoryPoints.length < 2) {
+    return undefined;
+  }
+
+  const values = priceHistoryPoints.map(
+    (priceHistoryPoint) => priceHistoryPoint.headlinePriceMinor,
+  );
+  const averagePriceMinor = Math.round(
+    values.reduce((sum, value) => sum + value, 0) / values.length,
+  );
+  const firstPriceHistoryPoint = priceHistoryPoints[0];
+
+  if (!firstPriceHistoryPoint) {
+    return undefined;
+  }
+
+  return {
+    currencyCode: firstPriceHistoryPoint.currencyCode,
+    currentHeadlinePriceMinor,
+    averagePriceMinor,
+    deltaVsAverageMinor: currentHeadlinePriceMinor - averagePriceMinor,
+    lowPriceMinor: Math.min(...values),
+    highPriceMinor: Math.max(...values),
+    pointCount: priceHistoryPoints.length,
+  };
 }
 
 function normalizePriceHistoryRowRecord(
@@ -112,4 +152,32 @@ export async function listPriceHistory(setId: string): Promise<PriceHistoryPoint
         priceHistoryPoint !== undefined,
     )
     .reverse();
+}
+
+export async function getPriceHistorySummary(
+  setId: string,
+): Promise<PriceHistorySummary | undefined> {
+  const priceHistorySummaryState = await getPriceHistorySummaryState(setId);
+
+  return priceHistorySummaryState?.priceHistorySummary;
+}
+
+export async function getPriceHistorySummaryState(
+  setId: string,
+): Promise<PriceHistorySummaryState | undefined> {
+  const pricePanelSnapshot = getPricePanelSnapshot(setId);
+
+  if (!pricePanelSnapshot) {
+    return undefined;
+  }
+
+  const priceHistoryPoints = await listPriceHistory(setId);
+
+  return {
+    pointCount: priceHistoryPoints.length,
+    priceHistorySummary: buildPriceHistorySummary({
+      currentHeadlinePriceMinor: pricePanelSnapshot.headlinePriceMinor,
+      priceHistoryPoints,
+    }),
+  };
 }

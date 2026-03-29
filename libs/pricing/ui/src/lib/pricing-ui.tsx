@@ -1,6 +1,8 @@
+import type { ReactNode } from 'react';
 import {
   formatPriceMinor,
   type PriceHistoryPoint,
+  type PriceHistorySummary,
   type PricePanelSnapshot,
 } from '@lego-platform/pricing/util';
 import {
@@ -65,6 +67,42 @@ function getDeltaTone(
   return 'info';
 }
 
+function getAverageDeltaLabel({
+  currencyCode,
+  deltaVsAverageMinor,
+}: {
+  currencyCode: string;
+  deltaVsAverageMinor: number;
+}): string {
+  if (deltaVsAverageMinor < 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: Math.abs(deltaVsAverageMinor),
+    })} below 30-day average`;
+  }
+
+  if (deltaVsAverageMinor > 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: deltaVsAverageMinor,
+    })} above 30-day average`;
+  }
+
+  return 'At 30-day average';
+}
+
+function getDailyPointLabel(pointCount: number): string {
+  return `${pointCount} daily point${pointCount === 1 ? '' : 's'}`;
+}
+
+function getTrackedOfferLabel(offerCount: number): string {
+  return `${offerCount} offer${offerCount === 1 ? '' : 's'} tracked`;
+}
+
+function getDutchOfferCoverageLabel(offerCount: number): string {
+  return `${offerCount} Dutch offer${offerCount === 1 ? '' : 's'}`;
+}
+
 function PricingMetaItem({
   label,
   value,
@@ -123,18 +161,27 @@ function getHistoryRangeSummary(
   const sortedByValue = [...priceHistoryPoints].sort(
     (left, right) => left.headlinePriceMinor - right.headlinePriceMinor,
   );
+  const low = sortedByValue[0];
+  const high = sortedByValue.at(-1);
+  const latest = priceHistoryPoints.at(-1);
+
+  if (!low || !high || !latest) {
+    throw new Error('Price history summary requires at least one history point.');
+  }
 
   return {
-    low: sortedByValue[0]!,
-    high: sortedByValue.at(-1)!,
-    latest: priceHistoryPoints.at(-1)!,
+    low,
+    high,
+    latest,
   };
 }
 
 export function PriceSummaryCard({
+  children,
   id,
   pricePanelSnapshot,
 }: {
+  children?: ReactNode;
   id?: string;
   pricePanelSnapshot: PricePanelSnapshot;
 }) {
@@ -154,7 +201,7 @@ export function PriceSummaryCard({
       <div className={styles.badgeRow}>
         <Badge tone="accent">NL / EUR</Badge>
         <Badge tone="info">New condition</Badge>
-        <Badge>{pricePanelSnapshot.merchantCount} offers tracked</Badge>
+        <Badge>{getTrackedOfferLabel(pricePanelSnapshot.merchantCount)}</Badge>
       </div>
       <div className={styles.metricBlock}>
         <p className={styles.metricLabel}>Headline current price</p>
@@ -185,6 +232,7 @@ export function PriceSummaryCard({
           </p>
         )}
       </div>
+      {children}
       <dl className={styles.metaGrid}>
         <PricingMetaItem
           label="Reference price"
@@ -203,7 +251,7 @@ export function PriceSummaryCard({
         />
         <PricingMetaItem
           label="Coverage"
-          value={`${pricePanelSnapshot.merchantCount} Dutch offers`}
+          value={getDutchOfferCoverageLabel(pricePanelSnapshot.merchantCount)}
         />
       </dl>
       <p className={styles.referenceNote}>
@@ -212,6 +260,64 @@ export function PriceSummaryCard({
           : 'Reference pricing can be added later without changing the current reviewed-offer snapshot.'}
       </p>
     </Surface>
+  );
+}
+
+export function PriceHistorySummaryCallout({
+  historyPointCount,
+  priceHistorySummary,
+}: {
+  historyPointCount?: number;
+  priceHistorySummary?: PriceHistorySummary;
+}) {
+  if (!priceHistorySummary) {
+    return (
+      <section aria-label="30-day price summary" className={styles.summaryBlock}>
+        <p className={styles.summaryLabel}>30-day summary</p>
+        <p className={styles.summaryNote}>
+          {historyPointCount === 1
+            ? 'History is building. One daily point has been recorded so far, so 30-day range and average comparisons will appear after the next reviewed point.'
+            : 'History is building. 30-day summary will appear after a little more daily pricing history is recorded.'}
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section aria-label="30-day price summary" className={styles.summaryBlock}>
+      <p className={styles.summaryLabel}>30-day summary</p>
+      <dl className={styles.summaryGrid}>
+        <PricingMetaItem
+          label="30-day low"
+          value={formatPriceMinor({
+            currencyCode: priceHistorySummary.currencyCode,
+            minorUnits: priceHistorySummary.lowPriceMinor,
+          })}
+        />
+        <PricingMetaItem
+          label="30-day high"
+          value={formatPriceMinor({
+            currencyCode: priceHistorySummary.currencyCode,
+            minorUnits: priceHistorySummary.highPriceMinor,
+          })}
+        />
+        <PricingMetaItem
+          label="Current vs average"
+          value={getAverageDeltaLabel({
+            currencyCode: priceHistorySummary.currencyCode,
+            deltaVsAverageMinor: priceHistorySummary.deltaVsAverageMinor,
+          })}
+        />
+      </dl>
+      <p className={styles.summaryNote}>
+        30-day average:{' '}
+        {formatPriceMinor({
+          currencyCode: priceHistorySummary.currencyCode,
+          minorUnits: priceHistorySummary.averagePriceMinor,
+        })}{' '}
+        from {getDailyPointLabel(priceHistorySummary.pointCount)}.
+      </p>
+    </section>
   );
 }
 
@@ -248,6 +354,60 @@ export function PriceHistoryCard({
   id?: string;
   priceHistoryPoints: readonly PriceHistoryPoint[];
 }) {
+  const firstPriceHistoryPoint = priceHistoryPoints[0];
+
+  if (!firstPriceHistoryPoint) {
+    return <PriceHistoryEmptyCard id={id} />;
+  }
+
+  if (priceHistoryPoints.length === 1) {
+    return (
+      <Surface
+        as="section"
+        className={styles.panel}
+        elevation="rested"
+        id={id}
+        tone="muted"
+      >
+        <SectionHeading
+          description="History is building. One reviewed Dutch daily point has been recorded so far for this set."
+          eyebrow="Price history"
+          title="30-day price history"
+        />
+        <div className={styles.badgeRow}>
+          <Badge tone="accent">NL / EUR</Badge>
+          <Badge tone="info">New condition</Badge>
+          <Badge>{getDailyPointLabel(1)}</Badge>
+        </div>
+        <div className={styles.metricBlock}>
+          <p className={styles.metricLabel}>Latest recorded price</p>
+          <p className={styles.metricValue}>
+            {formatPriceMinor({
+              currencyCode: firstPriceHistoryPoint.currencyCode,
+              minorUnits: firstPriceHistoryPoint.headlinePriceMinor,
+            })}
+          </p>
+          <p className={styles.metricContext}>History is building</p>
+          <p className={styles.metricContextSecondary}>
+            Reviewed {formatObservedAt(firstPriceHistoryPoint.observedAt)}
+          </p>
+        </div>
+        <dl className={styles.metaGrid}>
+          <PricingMetaItem
+            label="Recorded on"
+            value={formatRecordedOn(firstPriceHistoryPoint.recordedOn)}
+          />
+          <PricingMetaItem label="Status" value="Range building" />
+          <PricingMetaItem label="Coverage" value={getDailyPointLabel(1)} />
+        </dl>
+        <p className={styles.referenceNote}>
+          The chart, 30-day low, and 30-day high will fill in automatically as
+          more daily points are stored.
+        </p>
+      </Surface>
+    );
+  }
+
   const { high, latest, low } = getHistoryRangeSummary(priceHistoryPoints);
 
   return (
@@ -266,7 +426,7 @@ export function PriceHistoryCard({
       <div className={styles.badgeRow}>
         <Badge tone="accent">NL / EUR</Badge>
         <Badge tone="info">New condition</Badge>
-        <Badge>{priceHistoryPoints.length} daily points</Badge>
+        <Badge>{getDailyPointLabel(priceHistoryPoints.length)}</Badge>
       </div>
       <div className={styles.historyChartShell}>
         <div className={styles.historyAxis}>
@@ -312,7 +472,7 @@ export function PriceHistoryCard({
         </svg>
       </div>
       <div className={styles.historyLabels}>
-        <span>{formatRecordedOn(priceHistoryPoints[0]!.recordedOn)}</span>
+        <span>{formatRecordedOn(firstPriceHistoryPoint.recordedOn)}</span>
         <span>{formatRecordedOn(latest.recordedOn)}</span>
       </div>
       <dl className={styles.metaGrid}>
@@ -385,7 +545,7 @@ export function PriceHistoryEmptyCard({
       <p className={styles.unavailableCopy}>
         {isLoading
           ? 'Loading the latest reviewed history points.'
-          : 'No 30-day pricing history is available for this set yet.'}
+          : 'History is building. No reviewed daily point has been stored for this set yet.'}
       </p>
     </Surface>
   );

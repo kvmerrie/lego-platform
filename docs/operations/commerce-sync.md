@@ -78,6 +78,7 @@ Use check mode before overwriting artifacts when reviewing changes.
 - No runtime merchant calls and no click tracking are included.
 - The current snapshot-backed price panel remains unchanged.
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
+- Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
 - `pnpm sync:commerce:check` remains a generated-artifact drift check only and does not write history rows.
 - Merchant allowlist, disclosure copy, reference pricing, and enabled set scope remain curated locally.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.

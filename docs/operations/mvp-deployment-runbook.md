@@ -3,6 +3,7 @@
 This document describes the smallest reliable deployment setup for the current LEGO collector MVP. It is the provider-specific companion to:
 
 - `docs/operations/mvp-release-checklist.md`
+- `docs/operations/mvp-production-rollout-checklist.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`
@@ -55,6 +56,12 @@ Recommended environment split:
 - Preview deployments use staging API, staging Supabase browser keys, and either staging Contentful or mock editorial posture.
 - Production deployment uses production API, production Supabase browser keys, and production Contentful delivery.
 
+Production guardrails:
+
+- only browser-safe `NEXT_PUBLIC_*` Supabase values belong in Vercel
+- do not copy `SUPABASE_SERVICE_ROLE_KEY` into Vercel
+- keep production Contentful unset entirely if launch is still using mock editorial posture
+
 ### Render For `apps/api`
 
 Use one Render web service for the Fastify BFF.
@@ -85,6 +92,10 @@ Keep the MVP setup minimal:
 - apply `supabase/migrations/20260329134500_pricing_daily_set_history.sql`
 - enable the chosen email auth method
 - configure site URL and redirect URLs for staging and production web hosts
+
+Production auth guardrail:
+
+- make the production site URL and redirect URLs point only at the production web origin before launch day
 
 ### Contentful
 
@@ -183,6 +194,8 @@ Note:
 
 - the catalog drift check in CI depends on `REBRICKABLE_API_KEY`
 - forked pull requests may not receive that secret, so the workflow is expected to skip only that one secret-backed check in those contexts
+- the normal MVP CI path does not need Supabase write credentials because `pnpm sync:commerce:check` is artifact-only
+- only add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to CI if you intentionally introduce a secret-backed commerce write job later
 
 ### Production
 
@@ -234,6 +247,10 @@ CI:
 10. Promote the same reviewed git revision to production.
 11. Run production smoke checks.
 
+For the final production-only pass, use:
+
+- `docs/operations/mvp-production-rollout-checklist.md`
+
 ## Staging Rehearsal Flow
 
 Use staging as the full dry run for production launch.
@@ -257,6 +274,24 @@ Use staging as the full dry run for production launch.
    - Supabase auth callback issues
    - Contentful preview or delivery misconfiguration
 9. Only use a production launch after staging passes on the same branch or commit line.
+
+## Production Rollout
+
+Use production as a mirror of the validated staging environment, not as a place to introduce last-minute config drift.
+
+1. Confirm the exact release candidate commit already passed staging rehearsal.
+2. Confirm production provider envs match the approved production matrix.
+3. Confirm Supabase production auth URLs point at the production web origin only.
+4. Run:
+   - `pnpm sync:catalog:check`
+   - `pnpm sync:commerce:check`
+   - `pnpm nx run api:test`
+   - `pnpm nx run api:build`
+   - `pnpm nx run web:build`
+5. Deploy Render API production.
+6. Deploy Vercel web production.
+7. Run the command and UI smoke checks from `docs/operations/mvp-production-rollout-checklist.md`.
+8. If any production smoke check fails, roll back the failing deployment first instead of changing unrelated production settings live.
 
 ## Launch-Day Smoke Checks
 

@@ -39,6 +39,7 @@ Notes:
 
 - `SUPABASE_URL` may match `NEXT_PUBLIC_SUPABASE_URL`, but it is configured separately so server environments can stay explicit.
 - `SUPABASE_SERVICE_ROLE_KEY` must never be exposed to browser code, client bundles, or public docs.
+- production auth setup should explicitly set the Supabase site URL and redirect URLs to the production web origin before launch.
 
 ## Local Setup
 
@@ -58,6 +59,12 @@ Example boilerplate files at the repo root:
 5. Apply the SQL migration in `supabase/migrations/20260328223000_initial_auth_foundation.sql`.
 6. In the Supabase dashboard, enable the email auth provider you want to use for this phase.
 7. Configure the auth redirect or site URL so the local web app can receive the sign-in callback. For local work, this should point at your `apps/web` runtime, typically `http://localhost:3000`.
+
+For deployed environments:
+
+- staging Supabase auth URLs should point only at the staging web host
+- production Supabase auth URLs should point only at the production web host
+- avoid carrying staging callback URLs into production unless they are still intentionally needed for admin or operator testing
 
 This repo does not currently enforce a root `.env` convention. Use the example files only as reference templates, then keep real credentials in your normal untracked shell or environment-file workflow.
 

@@ -19,6 +19,11 @@ Historical pricing points are stored in Supabase Postgres in:
 
 - `public.pricing_daily_set_history`
 
+Storage horizon:
+
+- daily pricing rows are stored indefinitely for now
+- no retention window is enforced in the current MVP slice
+
 Migration:
 
 - `supabase/migrations/20260329134500_pricing_daily_set_history.sql`
@@ -46,8 +51,13 @@ Check mode behavior:
 ## Read Path
 
 - the current price panel remains snapshot-backed
-- the new 30-day history chart is an additive browser read surface
+- the 30-day history chart and additive summary metrics are browser read surfaces
+- the current UI only reads the last 30 days from the stored history table
 - browser reads use the existing browser-safe Supabase configuration and the public select policy on `pricing_daily_set_history`
+
+Future scope note:
+
+- later product metrics such as “lowest tracked price” or “highest tracked price” can be derived from the full stored history without changing today’s storage shape
 
 Required browser env for the set-detail history chart:
 
@@ -60,3 +70,4 @@ Required browser env for the set-detail history chart:
 2. Keep `pnpm sync:commerce:check` in the normal drift-review workflow.
 3. Run `pnpm sync:commerce` with Supabase server env configured when you want to write daily history points.
 4. Expect the history chart to remain empty until at least one successful `write` run has recorded a point for a commerce-enabled set.
+5. Expect the first recorded point to show a “History is building” state until more daily rows exist.

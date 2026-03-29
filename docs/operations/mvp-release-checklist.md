@@ -5,6 +5,7 @@ This checklist is the launch-oriented view of the current repository. It is inte
 Use this document alongside:
 
 - `docs/operations/mvp-deployment-runbook.md`
+- `docs/operations/mvp-production-rollout-checklist.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`
@@ -29,12 +30,12 @@ The current release scope includes:
 - signed-in owned and wanted persistence
 - compact signed-in collector profile editing
 - snapshot-backed catalog, pricing, and affiliate guidance
+- 30-day Dutch price history on commerce-enabled set-detail pages
 - editorial Contentful support with preview routes
 
 It does not include:
 
 - admin launch requirements
-- price history
 - click tracking or redirect links
 - alerts
 - broader catalog browsing features
@@ -116,6 +117,7 @@ The additive 30-day history slice also writes one daily Dutch price-history poin
 - `apps/api` now fails fast at startup if Supabase server configuration is missing.
 - `apps/catalog-sync` fails fast if `REBRICKABLE_API_KEY` is missing.
 - `apps/web` keeps browsing available when browser Supabase env vars are missing, but the auth surface disables sign-in and warns in the browser console.
+- production rollout should keep `SUPABASE_SERVICE_ROLE_KEY` out of Vercel and browser-safe Supabase vars out of Render-only operator workflows unless intentionally needed
 - Contentful delivery and preview already follow the current documented fallback behavior:
   - delivery may fall back to mock editorial content
   - preview only falls back to mock content when no Contentful credentials exist at all
@@ -141,6 +143,7 @@ The additive 30-day history slice also writes one daily Dutch price-history poin
 5. Deploy the API with valid Supabase server env vars.
 6. Deploy the web app with the intended browser Supabase and Contentful env vars.
 7. Run the smoke checks against the deployed or pre-production environment.
+8. Use `docs/operations/mvp-production-rollout-checklist.md` for the final production-only pass after staging is already validated.
 
 ## Smoke Test Checklist
 
@@ -191,6 +194,8 @@ Check these product states before launch:
 3. One commerce-enabled set-detail page renders:
    - catalog detail
    - pricing panel
+   - 30-day summary block or its compact “History is building” state
+   - 30-day price history or its compact “History is building” state
    - affiliate offers
    - auth card
    - profile card after sign-in
