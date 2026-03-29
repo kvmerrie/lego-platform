@@ -6,6 +6,7 @@ Use this document alongside:
 
 - `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 - `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
@@ -207,6 +208,27 @@ Check these product states before launch:
 7. If resend behavior is tested, wait about one minute before requesting another link.
 8. After sign-in, session state refreshes and profile editing works.
 9. After sign-out, the session returns to anonymous state cleanly.
+
+Interpretation notes:
+
+- `/api/v1/session` returning anonymous is healthy before sign-in.
+- rate-limit or resend messaging during auth validation is not automatically a production outage; wait about one minute before retrying.
+- compact unavailable commerce states are expected for non-commerce-enabled sets and should not be treated as broken layout.
+
+## Post-Deploy Validation
+
+After any deploy candidate passes the basic smoke checks:
+
+1. Open one commerce-enabled set-detail page.
+2. Confirm the current price panel, 30-day summary, history chart, and offer list all render in their expected populated or compact-building states.
+3. Open one non-commerce-enabled set-detail page and confirm the compact unavailable commerce surfaces are still intentional and stable.
+4. Complete one real sign-in flow.
+5. Save one profile change.
+6. Toggle one owned state and one wanted state.
+7. Refresh the page and confirm the saved state persists.
+8. Confirm the latest scheduled catalog and commerce sync jobs completed successfully.
+
+Use `docs/operations/mvp-operator-troubleshooting.md` if any of those steps fail.
 
 ## Release Data Review
 

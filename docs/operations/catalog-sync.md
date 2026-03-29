@@ -5,6 +5,7 @@ This repository keeps runtime catalog reads static-friendly by generating local 
 See also:
 
 - `docs/operations/catalog-sync-validation.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 
 ## Current Scope
 
@@ -100,3 +101,14 @@ Render scheduled job notes:
 - run this as a scheduled background job, not as an always-on service
 - keep `REBRICKABLE_API_KEY` scoped to the scheduled job only
 - use `pnpm sync:catalog:check` manually or in CI when you want a drift review without writing artifacts
+- a healthy scheduled job should log one `start` line and one `end` line with curated set counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
+
+## Troubleshooting Notes
+
+Use `docs/operations/mvp-operator-troubleshooting.md` for the fast triage flow.
+
+Common catalog sync interpretations:
+
+- `Generated catalog artifacts are stale` means drift was detected and needs review; it is not a signal to bypass check mode
+- missing `REBRICKABLE_API_KEY` is a scheduled-job or operator-shell env issue
+- payload validation failures usually mean upstream source shape changed and the last known-good generated artifacts should stay in place until reviewed

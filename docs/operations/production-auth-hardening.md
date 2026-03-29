@@ -14,6 +14,7 @@ Use this document alongside:
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 
 ## What Broke In Production Validation
 
@@ -142,6 +143,16 @@ Without changing the architecture, keep these guardrails in place:
 - avoid repeated rapid retry instructions in runbooks
 - prefer calm user-facing copy that explains when to wait
 - keep browser auth env and server auth env clearly separated
+
+## Failure Interpretation
+
+Use `docs/operations/mvp-operator-troubleshooting.md` for the fast triage flow.
+
+Auth-specific interpretation reminders:
+
+- sign-in unavailable in the web UI usually means missing browser-safe Supabase envs, not a broken public catalog route
+- resend or rate-limit errors are often expected healthy behavior under repeated retry attempts
+- sign-in links arriving but leaving the session anonymous usually point at site URL or redirect URL mistakes before deeper code issues
 
 ## What This MVP Still Defers
 

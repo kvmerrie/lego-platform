@@ -5,6 +5,7 @@ This repository keeps the first pricing and affiliate slice snapshot-backed. The
 See also:
 
 - `docs/operations/pricing-history.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 
 ## Current Scope
 
@@ -108,3 +109,14 @@ Render scheduled job notes:
 - run this as a scheduled background job, not as an always-on service
 - keep `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job only
 - use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without writing history rows
+- a healthy scheduled job should log one `start` line and one `end` line with enabled set, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
+
+## Troubleshooting Notes
+
+Use `docs/operations/mvp-operator-troubleshooting.md` for the fast triage flow.
+
+Common commerce sync interpretations:
+
+- `Generated commerce artifacts are stale` means artifact drift was detected and needs review
+- `pnpm sync:commerce:check` does not write history rows; only `pnpm sync:commerce` does
+- missing Supabase write envs on the scheduled job will surface as history-write failures even when artifact generation itself is healthy

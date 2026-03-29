@@ -4,6 +4,7 @@ This document describes the smallest reliable deployment setup for the current L
 
 - `docs/operations/mvp-release-checklist.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 - `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
@@ -21,6 +22,10 @@ The deployment model stays intentionally small:
 - Supabase hosted for auth and Postgres
 - Contentful managed for editorial content
 - `catalog-sync` and `commerce-sync` as operator or CI jobs, not always-on services
+
+For day-two troubleshooting and post-deploy diagnosis, use:
+
+- `docs/operations/mvp-operator-troubleshooting.md`
 
 Tracked example env boilerplate files at the repo root:
 
@@ -258,15 +263,34 @@ CI:
 5. If data changed intentionally, regenerate and commit artifacts before deploy.
    - `pnpm sync:catalog`
    - `pnpm sync:commerce`
-6. Run the MVP readiness checks.
+6. Run the release build and test commands.
    - `pnpm nx run api:test`
    - `pnpm nx run api:build`
    - `pnpm nx run web:build`
 7. Deploy the API first.
-8. Deploy the web app second.
-9. Run staging smoke checks.
-10. Promote the same reviewed git revision to production.
-11. Run production smoke checks.
+8. Deploy the web second.
+9. Run the smoke checks immediately after deploy.
+10. Run the manual signed-in validation flow before treating the environment as accepted.
+
+## Post-Deploy Validation
+
+After every staging rehearsal or production deploy:
+
+1. Run:
+   - `curl -sSf https://<api-host>/health`
+   - `curl -sSf https://<api-host>/api/v1/session`
+   - `curl -sSf https://<web-host>/sets/rivendell-10316`
+2. Run `pnpm smoke:mvp` with deployed host overrides.
+3. Open one commerce-enabled set-detail page and one non-commerce-enabled set-detail page.
+4. Complete one real sign-in flow.
+5. After sign-in:
+   - save a profile change
+   - toggle one owned state
+   - toggle one wanted state
+   - refresh the page and confirm persistence
+6. Confirm the most recent Render scheduled jobs completed cleanly.
+
+If any of those checks fail, use `docs/operations/mvp-operator-troubleshooting.md` before widening rollout.
 
 For the final production-only pass, use:
 

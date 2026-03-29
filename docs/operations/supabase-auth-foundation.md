@@ -5,6 +5,7 @@ This document describes the current Supabase foundation for real auth and owned 
 See also:
 
 - `docs/operations/production-auth-hardening.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 
 ## Current Intent
 
@@ -95,6 +96,13 @@ Design intent:
 - Keep `collector.id` product-facing. It must not be repurposed as the raw Supabase user UUID.
 - Keep unauthenticated behavior graceful: anonymous session reads may continue, but writes must stay protected.
 - If local browser auth env vars are absent, the public product slice should still browse cleanly in anonymous mode and the sign-in control should be treated as unavailable rather than partially wired.
+
+## Operational Notes
+
+- `GET /api/v1/session` returning an anonymous session for an unsigned request is healthy.
+- successful sign-in should be validated from the browser context, not from an unsigned `curl` call alone.
+- if profile, owned, or wanted writes fail after sign-in, check bearer-token verification and server-side Supabase envs before changing UI code.
+- use `docs/operations/mvp-operator-troubleshooting.md` for the short production diagnosis flow.
 
 ## Current Repo Surface
 

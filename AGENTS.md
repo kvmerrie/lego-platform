@@ -81,6 +81,7 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - `docs/operations/pricing-history.md`
 - `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 - `docs/operations/production-auth-hardening.md`
 - `docs/operations/mvp-release-checklist.md`
 - `docs/operations/supabase-auth-foundation.md`

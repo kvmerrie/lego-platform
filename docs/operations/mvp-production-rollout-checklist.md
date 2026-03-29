@@ -4,6 +4,7 @@ This checklist is the shortest production-facing companion to:
 
 - `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-release-checklist.md`
+- `docs/operations/mvp-operator-troubleshooting.md`
 - `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
@@ -146,7 +147,17 @@ pnpm smoke:mvp
 8. Owned and wanted toggles persist after refresh.
 9. Sign-out returns the session to anonymous state.
 
-## 6. Rollback
+If any smoke or manual check fails, stop rollout and use `docs/operations/mvp-operator-troubleshooting.md` before retrying or widening exposure.
+
+## 6. Post-Deploy Validation Notes
+
+Treat these outcomes carefully:
+
+- `/api/v1/session` returning anonymous for an unsigned request is healthy.
+- sign-in resend or rate-limit messaging can still be healthy behavior; wait about one minute before retrying.
+- `pnpm sync:catalog:check` and `pnpm sync:commerce:check` surfacing stale artifacts means drift was detected, not that production runtime is immediately broken.
+
+## 7. Rollback
 
 If production is not acceptable:
 
@@ -162,7 +173,7 @@ If production is not acceptable:
    - verify production Supabase envs first
    - if needed, roll back only the API while leaving the web browseable
 
-## 7. Launch Gate
+## 8. Launch Gate
 
 Production rollout is ready only when:
 
