@@ -184,7 +184,7 @@ export function UserSessionCard({
           <Badge tone="positive">{userSession.collector.tier}</Badge>
         </div>
         <SectionHeading
-          description="Owned, wanted, and profile changes save back to this signed-in collector account and refresh this collector area automatically."
+          description="Keep browsing the public set pages, then use this signed-in collector account to save owned, wanted, and profile changes privately."
           eyebrow="Signed in"
           title="Collector account active"
         />
@@ -255,8 +255,8 @@ export function UserSessionCard({
         <div className={styles.destinationPanel}>
           <p className={styles.paneLabel}>Collector destinations</p>
           <p className={styles.paneNote}>
-            Jump between your private collection and wishlist while this
-            signed-in collector account stays active.
+            After you browse a set, jump between your private collection and
+            wishlist while this signed-in collector account stays active.
           </p>
           <div className={styles.destinationLinks}>
             <ActionLink href="/collection" tone="secondary">

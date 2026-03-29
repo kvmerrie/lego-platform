@@ -2,7 +2,7 @@ export const platformConfig = {
   workspaceName: 'lego-platform',
   productName: 'Brick Ledger',
   tagline:
-    'Browse standout LEGO sets and build a cleaner ledger for what you own and want next.',
+    'Browse standout LEGO sets first, then save what you own and want next.',
   defaultThemeMode: 'light',
   supportEmail: 'platform@example.test',
   runtimes: {
@@ -33,14 +33,13 @@ export type RuntimeName = keyof typeof platformConfig.runtimes;
 export const webNavigationSections = [
   {
     id: 'browse',
-    title: 'Public browse',
-    description: 'Curated discovery and featured sets.',
+    title: 'Start here',
+    description: 'Browse the curated homepage and featured shortlist first.',
   },
   {
     id: 'collector',
-    title: 'Collector destinations',
-    description:
-      'Private destinations for owned, wanted, and signed-in collector state.',
+    title: 'Your collector space',
+    description: 'Private follow-through after you start saving sets.',
   },
 ] as const;
 
@@ -48,28 +47,28 @@ export const webNavigation = [
   {
     label: 'Home',
     href: '/',
-    description: 'Start with the curated collector homepage.',
+    description: 'Main entry point for curated set discovery.',
     contextLabel: 'Public route',
     sectionId: 'browse',
   },
   {
-    label: 'Featured sets',
+    label: 'Featured shortlist',
     href: '/#featured-sets',
-    description: 'Jump into the current featured shortlist.',
+    description: 'Compare the current standout sets at a glance.',
     contextLabel: 'Public route',
     sectionId: 'browse',
   },
   {
-    label: 'My collection',
+    label: 'Collection',
     href: '/collection',
-    description: 'Review the sets you already own.',
+    description: 'Your private record of the sets you already own.',
     contextLabel: 'Private route',
     sectionId: 'collector',
   },
   {
-    label: 'My wishlist',
+    label: 'Wishlist',
     href: '/wishlist',
-    description: 'Track the sets you still want next.',
+    description: 'Your private list of sets you still want next.',
     contextLabel: 'Private route',
     sectionId: 'collector',
   },

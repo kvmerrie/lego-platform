@@ -31,9 +31,9 @@ export function CatalogFeatureSetList({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          description="Compare a short collector-ready shortlist with calmer cues around why each set matters, how availability feels, and where reviewed Dutch pricing currently sits."
+          description="Start here: compare a short collector-ready shortlist with calmer cues around why each set matters, how availability feels, and where reviewed Dutch pricing currently sits."
           eyebrow="Featured sets"
-          title="Browse a curated shortlist built for quick collector decisions."
+          title="Start with a curated shortlist built for quick collector decisions."
         />
         <div className={styles.signalRow}>
           <Badge tone="accent">{homepageSets.length} curated picks</Badge>
@@ -42,7 +42,7 @@ export function CatalogFeatureSetList({
               {reviewedSetCount} with reviewed Dutch price context
             </Badge>
           ) : null}
-          <Badge>Static-friendly browsing</Badge>
+          <Badge>Primary browsing flow</Badge>
         </div>
       </div>
       <div className={styles.grid}>

@@ -10,17 +10,19 @@ describe('ShellWeb', () => {
       </ShellWeb>,
     );
 
-    expect(markup).toContain('Curated public browse');
-    expect(markup).toContain('Collector destinations');
-    expect(markup).toContain('Public browse');
-    expect(markup).toContain('Curated discovery and featured sets.');
+    expect(markup).toContain('Start with set discovery');
+    expect(markup).toContain('Save privately as you go');
+    expect(markup).toContain('Start here');
     expect(markup).toContain(
-      'Private destinations for owned, wanted, and signed-in collector state.',
+      'Browse the curated homepage and featured shortlist first.',
+    );
+    expect(markup).toContain(
+      'Private follow-through after you start saving sets.',
     );
     expect(markup).toContain('Home');
-    expect(markup).toContain('Featured sets');
-    expect(markup).toContain('My collection');
-    expect(markup).toContain('My wishlist');
+    expect(markup).toContain('Featured shortlist');
+    expect(markup).toContain('Collection');
+    expect(markup).toContain('Wishlist');
     expect(markup).toContain('Public route');
     expect(markup).toContain('Private route');
   });

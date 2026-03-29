@@ -38,8 +38,8 @@ export function ShellWeb({ children }: { children: ReactNode }) {
                 tone="hero"
               />
               <div className={styles.badgeRow}>
-                <Badge tone="accent">Curated public browse</Badge>
-                <Badge tone="info">Collector destinations</Badge>
+                <Badge tone="accent">Start with set discovery</Badge>
+                <Badge tone="info">Save privately as you go</Badge>
               </div>
             </div>
           </div>

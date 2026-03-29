@@ -26,7 +26,9 @@ describe('UserSessionCard', () => {
     );
 
     expect(markup).toContain('Collector account active');
-    expect(markup).toContain('refresh this collector area automatically');
+    expect(markup).toContain(
+      'Keep browsing the public set pages, then use this signed-in collector account',
+    );
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wanted saved');
     expect(markup).toContain('Private account');
@@ -34,6 +36,7 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('Collector destinations');
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
+    expect(markup).toContain('After you browse a set');
     expect(markup).toContain(
       'Used for sign-in and saved collector state. It is not shown as public catalog information.',
     );

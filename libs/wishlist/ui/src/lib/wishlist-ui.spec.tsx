@@ -37,7 +37,7 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('Browse featured sets');
     expect(markup).toContain('Open collection');
     expect(markup).toContain(
-      'Use your wishlist and collection as separate private destinations',
+      'This private wishlist extends the public browse flow',
     );
     expect(markup).toContain(
       'Public set facts, reviewed pricing, and curated buying guidance remain shared catalog information.',

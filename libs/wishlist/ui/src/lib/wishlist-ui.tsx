@@ -222,8 +222,8 @@ export function CollectorWishlistPanel({
       </p>
       <div className={styles.destinationPanel}>
         <p className={styles.metaText}>
-          Use your wishlist and collection as separate private destinations so
-          future targets stay distinct from the sets already on your shelf.
+          This private wishlist extends the public browse flow, so future
+          targets stay distinct from the sets already on your shelf.
         </p>
         <div className={styles.destinationLinks}>
           <ActionLink href="/collection" tone="secondary">

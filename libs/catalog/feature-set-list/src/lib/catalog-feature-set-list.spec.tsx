@@ -44,10 +44,10 @@ describe('CatalogFeatureSetList', () => {
     );
 
     expect(markup).toContain(
-      'Browse a curated shortlist built for quick collector decisions.',
+      'Start with a curated shortlist built for quick collector decisions.',
     );
     expect(markup).toContain('2 curated picks');
     expect(markup).toContain('1 with reviewed Dutch price context');
-    expect(markup).toContain('Static-friendly browsing');
+    expect(markup).toContain('Primary browsing flow');
   });
 });
