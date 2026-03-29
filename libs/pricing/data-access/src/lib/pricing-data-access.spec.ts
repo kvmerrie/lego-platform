@@ -44,6 +44,23 @@ describe('pricing data access', () => {
     });
   });
 
+  test('returns a set-aware snapshot for newly enabled curated commerce coverage', () => {
+    expect(getPricePanelSnapshot('10333')).toEqual({
+      setId: '10333',
+      regionCode: 'NL',
+      currencyCode: 'EUR',
+      condition: 'new',
+      headlinePriceMinor: 44999,
+      lowestAvailabilityLabel: 'In stock',
+      lowestMerchantId: 'bol',
+      lowestMerchantName: 'bol',
+      merchantCount: 3,
+      observedAt: '2026-03-29T09:45:00.000Z',
+      referencePriceMinor: 45999,
+      deltaMinor: -1000,
+    });
+  });
+
   test('builds a compact featured-set price context from the current snapshot', () => {
     expect(getFeaturedSetPriceContext('10316')).toEqual({
       setId: '10316',

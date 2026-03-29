@@ -35,7 +35,7 @@ Curated local inputs currently live in:
 
 This phase intentionally uses a very small, operator-reviewed allowlist:
 
-- featured set ids only
+- a small reviewed set allowlist drawn from the current public curated catalog
 - `LEGO NL`
 - `bol`
 - `Intertoys`

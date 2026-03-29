@@ -8,7 +8,15 @@ import {
 describe('pricing data access server', () => {
   test('builds Dutch pricing artifacts for the curated commerce-enabled sets', () => {
     const result = buildPricingSyncArtifacts({
-      enabledSetIds: ['10316', '21348', '76269'],
+      enabledSetIds: [
+        '10316',
+        '21348',
+        '76269',
+        '10332',
+        '10333',
+        '21333',
+        '21349',
+      ],
       merchantSummaries: [
         { merchantId: 'lego-nl', displayName: 'LEGO NL' },
         { merchantId: 'bol', displayName: 'bol' },
@@ -16,14 +24,14 @@ describe('pricing data access server', () => {
       ],
     });
 
-    expect(result.pricingObservations).toHaveLength(9);
-    expect(result.pricePanelSnapshots).toHaveLength(3);
+    expect(result.pricingObservations).toHaveLength(21);
+    expect(result.pricePanelSnapshots).toHaveLength(7);
     expect(result.pricePanelSnapshots[0]).toMatchObject({
       lowestMerchantName: 'bol',
       lowestAvailabilityLabel: 'In stock',
     });
     expect(result.pricingSyncManifest.generatedAt).toBe(
-      '2026-03-29T09:40:00.000Z',
+      '2026-03-29T10:40:00.000Z',
     );
   });
 
@@ -82,7 +90,15 @@ describe('pricing data access server', () => {
 
   test('builds one daily price-history point per set from the headline pricing snapshots', () => {
     const result = buildPricingSyncArtifacts({
-      enabledSetIds: ['10316', '21348', '76269'],
+      enabledSetIds: [
+        '10316',
+        '21348',
+        '76269',
+        '10332',
+        '10333',
+        '21333',
+        '21349',
+      ],
       merchantSummaries: [
         { merchantId: 'lego-nl', displayName: 'LEGO NL' },
         { merchantId: 'bol', displayName: 'bol' },
@@ -108,6 +124,39 @@ describe('pricing data access server', () => {
         recordedOn: '2026-03-30',
       },
       {
+        setId: '10332',
+        regionCode: 'NL',
+        currencyCode: 'EUR',
+        condition: 'new',
+        headlinePriceMinor: 21999,
+        referencePriceMinor: 22999,
+        lowestMerchantId: 'bol',
+        observedAt: '2026-03-29T10:00:00.000Z',
+        recordedOn: '2026-03-30',
+      },
+      {
+        setId: '10333',
+        regionCode: 'NL',
+        currencyCode: 'EUR',
+        condition: 'new',
+        headlinePriceMinor: 44999,
+        referencePriceMinor: 45999,
+        lowestMerchantId: 'bol',
+        observedAt: '2026-03-29T09:45:00.000Z',
+        recordedOn: '2026-03-30',
+      },
+      {
+        setId: '21333',
+        regionCode: 'NL',
+        currencyCode: 'EUR',
+        condition: 'new',
+        headlinePriceMinor: 15999,
+        referencePriceMinor: 16999,
+        lowestMerchantId: 'bol',
+        observedAt: '2026-03-29T10:15:00.000Z',
+        recordedOn: '2026-03-30',
+      },
+      {
         setId: '21348',
         regionCode: 'NL',
         currencyCode: 'EUR',
@@ -116,6 +165,17 @@ describe('pricing data access server', () => {
         referencePriceMinor: 35999,
         lowestMerchantId: 'bol',
         observedAt: '2026-03-29T09:15:00.000Z',
+        recordedOn: '2026-03-30',
+      },
+      {
+        setId: '21349',
+        regionCode: 'NL',
+        currencyCode: 'EUR',
+        condition: 'new',
+        headlinePriceMinor: 9999,
+        referencePriceMinor: 10999,
+        lowestMerchantId: 'bol',
+        observedAt: '2026-03-29T10:30:00.000Z',
         recordedOn: '2026-03-30',
       },
       {

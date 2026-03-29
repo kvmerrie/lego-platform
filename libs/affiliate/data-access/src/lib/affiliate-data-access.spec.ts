@@ -10,6 +10,14 @@ describe('affiliate data access', () => {
     ).toEqual(['bol', 'intertoys', 'lego-nl']);
   });
 
+  test('returns curated reviewed offers for newly commerce-enabled sets', () => {
+    expect(
+      listAffiliateOffers('10333').map(
+        (affiliateOffer) => affiliateOffer.merchantId,
+      ),
+    ).toEqual(['bol', 'intertoys', 'lego-nl']);
+  });
+
   test('returns no affiliate offers for sets outside the commerce slice', () => {
     expect(listAffiliateOffers('10305')).toEqual([]);
   });

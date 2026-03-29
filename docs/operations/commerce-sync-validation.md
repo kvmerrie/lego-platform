@@ -1,6 +1,6 @@
 # Commerce Sync Validation Plan
 
-This checklist validates the first Dutch-market pricing and affiliate foundation before any UI composition is enabled on the set detail page.
+This checklist validates the current Dutch-market pricing and affiliate slice whenever the reviewed set allowlist or merchant inputs change.
 
 ## 1. Safe Local Run
 
@@ -70,9 +70,9 @@ If the generated artifacts are not acceptable:
 2. Restore the generated files to the last known-good committed state.
 3. Fix curation, pricing seeds, or merchant config before rerunning.
 
-## 6. Readiness For UI Composition
+## 6. Readiness For Commerce Slice Changes
 
-Only move to set-detail UI composition when:
+Only accept a reviewed-set slice expansion when:
 
 - check mode is clean or the artifact diff is intentionally accepted
 - the Dutch merchant allowlist is stable
