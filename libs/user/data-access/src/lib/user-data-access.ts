@@ -1,7 +1,9 @@
 import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
 import { apiPaths } from '@lego-platform/shared/config';
 import {
+  buildSupabaseAuthCallbackUrl,
   buildSupabaseAuthorizationHeaders,
+  completeSupabaseAuthCallback,
   notifyBrowserAccountDataChanged,
   signInWithSupabaseOtp,
   signOutSupabaseBrowserSession,
@@ -39,7 +41,7 @@ function getDefaultEmailRedirectUrl(): string | undefined {
     return undefined;
   }
 
-  return window.location.href;
+  return buildSupabaseAuthCallbackUrl(window.location);
 }
 
 function getSignInErrorMessage(error: {
@@ -111,6 +113,12 @@ export async function requestUserSignIn(options: {
   if (error) {
     throw new Error(getSignInErrorMessage(error));
   }
+}
+
+export async function completeUserSignInCallback(): Promise<{
+  nextPath: string;
+}> {
+  return completeSupabaseAuthCallback();
 }
 
 export async function signOutCurrentUser() {

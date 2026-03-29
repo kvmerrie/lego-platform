@@ -23,6 +23,7 @@ See also:
 - Anonymous visitors can still browse the public slice without auth.
 - The web auth surface now offers a minimal email sign-in flow backed by Supabase Auth.
 - Sign-in starts with an email magic-link or OTP request from the browser.
+- Passwordless email links now return through `/auth/callback`, where the browser session is completed explicitly before the app redirects back to the intended page.
 - After the browser session changes, the existing `/api/v1/session` route is reloaded so the current collector state stays in sync.
 - Signed-in collectors can edit a compact profile card backed by `/api/v1/me/profile`.
 - After a successful profile save, the profile editor and the session-backed auth card refresh so collector-facing identity stays aligned.
@@ -63,12 +64,19 @@ Example boilerplate files at the repo root:
    - `SUPABASE_SERVICE_ROLE_KEY`
 5. Apply the SQL migration in `supabase/migrations/20260328223000_initial_auth_foundation.sql`.
 6. In the Supabase dashboard, enable the email auth provider you want to use for this phase.
-7. Configure the auth redirect or site URL so the local web app can receive the sign-in callback. For local work, this should point at your `apps/web` runtime, typically `http://localhost:3000`.
+7. Configure the auth site URL and redirect URLs so the local web app can receive the sign-in callback at `http://localhost:3000/auth/callback`.
+
+Recommended redirect URL setup:
+
+- localhost: `http://localhost:3000/auth/callback`
+- staging: `https://<staging-web-host>/auth/callback`
+- production: `https://<production-web-host>/auth/callback`
 
 For deployed environments:
 
 - staging Supabase auth URLs should point only at the staging web host
 - production Supabase auth URLs should point only at the production web host
+- keep `/auth/callback` on every allowed redirect URL so the callback flow stays deterministic across environments
 - avoid carrying staging callback URLs into production unless they are still intentionally needed for admin or operator testing
 - production-ready auth for real users should use custom SMTP configured inside Supabase rather than relying on the built-in mailer
 
@@ -101,6 +109,7 @@ Design intent:
 
 - `GET /api/v1/session` returning an anonymous session for an unsigned request is healthy.
 - successful sign-in should be validated from the browser context, not from an unsigned `curl` call alone.
+- a successful passwordless sign-in should briefly land on `/auth/callback` before returning to the intended catalog or collector page.
 - if profile, owned, or wanted writes fail after sign-in, check bearer-token verification and server-side Supabase envs before changing UI code.
 - use `docs/operations/mvp-operator-troubleshooting.md` for the short production diagnosis flow.
 

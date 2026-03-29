@@ -37,9 +37,10 @@ The current MVP should be considered production-ready only when all of these are
 1. Custom SMTP is configured in Supabase Auth.
 2. Production auth emails come from a domain the team controls.
 3. Production site URL and redirect URLs point at the production web origin.
-4. Real external email addresses can complete sign-in successfully.
-5. The team understands and accepts the resend window and auth rate-limit behavior.
-6. The current UI messaging about resend timing is visible and calm for users.
+4. Passwordless email links return through `/auth/callback` on that same origin.
+5. Real external email addresses can complete sign-in successfully.
+6. The team understands and accepts the resend window and auth rate-limit behavior.
+7. The current UI messaging about resend timing is visible and calm for users.
 
 ## Custom SMTP
 
@@ -119,10 +120,10 @@ Those SMTP settings should live in Supabase’s auth email configuration, not in
 Run this validation on production after custom SMTP is configured:
 
 1. Confirm Supabase auth site URL is the production web origin.
-2. Confirm Supabase auth redirect URLs include the production web origin.
+2. Confirm Supabase auth redirect URLs include `https://<production-web-host>/auth/callback`.
 3. Request sign-in for at least one real external email address.
 4. Confirm the email arrives from the expected production sender identity.
-5. Confirm the sign-in link lands back on the production web app.
+5. Confirm the sign-in link lands on `/auth/callback` and then returns to the intended production page.
 6. Confirm `/api/v1/session` becomes authenticated after sign-in.
 7. Confirm owned or wanted toggles persist correctly.
 8. Confirm profile save still works.
@@ -152,7 +153,7 @@ Auth-specific interpretation reminders:
 
 - sign-in unavailable in the web UI usually means missing browser-safe Supabase envs, not a broken public catalog route
 - resend or rate-limit errors are often expected healthy behavior under repeated retry attempts
-- sign-in links arriving but leaving the session anonymous usually point at site URL or redirect URL mistakes before deeper code issues
+- sign-in links arriving but leaving the session anonymous usually point at callback URL, site URL, or redirect URL mistakes before deeper code issues
 
 ## What This MVP Still Defers
 

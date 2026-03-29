@@ -1,0 +1,9 @@
+{
+  "name": "user-feature-auth-callback",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/user/feature-auth-callback/src",
+  "projectType": "library",
+  "tags": ["scope:user", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project user-feature-auth-callback --web",
+  "targets": {}
+}

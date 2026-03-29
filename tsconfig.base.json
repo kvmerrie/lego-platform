@@ -118,6 +118,9 @@
       "@lego-platform/user/feature-auth": [
         "libs/user/feature-auth/src/index.ts"
       ],
+      "@lego-platform/user/feature-auth-callback": [
+        "libs/user/feature-auth-callback/src/index.ts"
+      ],
       "@lego-platform/user/feature-profile": [
         "libs/user/feature-profile/src/index.ts"
       ],

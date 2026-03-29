@@ -94,7 +94,7 @@ Required for production commerce write runs:
 3. Confirm email auth is enabled for the chosen production sign-in flow.
 4. Confirm Supabase auth URLs:
    - site URL = `https://<production-web-host>`
-   - redirect URLs include the production web origin and the expected callback return path
+   - redirect URLs include `https://<production-web-host>/auth/callback`
 5. Confirm custom SMTP is configured before treating auth as production-ready for real users.
 6. Confirm the anon key is used only in Vercel and the service-role key is used only in Render or operator workflows.
 

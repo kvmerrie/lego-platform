@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { apiPaths } from '@lego-platform/shared/config';
 import {
+  completeUserSignInCallback,
   getCurrentUserProfile,
   getUserSession,
   requestUserSignIn,
@@ -12,7 +13,18 @@ import {
 import type { CollectorProfile, UserSession } from '@lego-platform/user/util';
 
 vi.mock('@lego-platform/shared/data-access-auth', () => ({
+  buildSupabaseAuthCallbackUrl: vi.fn((location: Location) => {
+    const callbackUrl = new URL('/auth/callback', location.origin);
+
+    callbackUrl.searchParams.set(
+      'next',
+      `${location.pathname}${location.search ?? ''}`,
+    );
+
+    return callbackUrl.toString();
+  }),
   buildSupabaseAuthorizationHeaders: vi.fn(),
+  completeSupabaseAuthCallback: vi.fn(),
   notifyBrowserAccountDataChanged: vi.fn(),
   signInWithSupabaseOtp: vi.fn(),
   signOutSupabaseBrowserSession: vi.fn(),
@@ -21,7 +33,9 @@ vi.mock('@lego-platform/shared/data-access-auth', () => ({
 }));
 
 import {
+  buildSupabaseAuthCallbackUrl,
   buildSupabaseAuthorizationHeaders,
+  completeSupabaseAuthCallback,
   notifyBrowserAccountDataChanged,
   signInWithSupabaseOtp,
   signOutSupabaseBrowserSession,
@@ -80,12 +94,14 @@ describe('user data access', () => {
     );
   });
 
-  test('starts email sign-in with a redirect back to the current page', async () => {
+  test('starts email sign-in with a redirect through the dedicated auth callback route', async () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
     vi.stubGlobal('window', {
       location: {
-        href: 'http://localhost:3000/sets/rivendell-10316',
+        origin: 'http://localhost:3000',
+        pathname: '/sets/rivendell-10316',
+        search: '',
       },
     });
     vi.mocked(signInWithSupabaseOtp).mockResolvedValue({
@@ -102,8 +118,10 @@ describe('user data access', () => {
 
     expect(signInWithSupabaseOtp).toHaveBeenCalledWith({
       email: 'collector@example.com',
-      emailRedirectTo: 'http://localhost:3000/sets/rivendell-10316',
+      emailRedirectTo:
+        'http://localhost:3000/auth/callback?next=%2Fsets%2Frivendell-10316',
     });
+    expect(buildSupabaseAuthCallbackUrl).toHaveBeenCalledWith(window.location);
   });
 
   test('fails fast when browser auth environment variables are missing', async () => {
@@ -124,7 +142,9 @@ describe('user data access', () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
     vi.stubGlobal('window', {
       location: {
-        href: 'http://localhost:3000/sets/rivendell-10316',
+        origin: 'http://localhost:3000',
+        pathname: '/sets/rivendell-10316',
+        search: '',
       },
     });
     vi.mocked(signInWithSupabaseOtp).mockResolvedValue({
@@ -153,7 +173,9 @@ describe('user data access', () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
     vi.stubGlobal('window', {
       location: {
-        href: 'http://localhost:3000/sets/rivendell-10316',
+        origin: 'http://localhost:3000',
+        pathname: '/sets/rivendell-10316',
+        search: '',
       },
     });
     vi.mocked(signInWithSupabaseOtp).mockResolvedValue({
@@ -184,6 +206,17 @@ describe('user data access', () => {
     await signOutCurrentUser();
 
     expect(signOutSupabaseBrowserSession).toHaveBeenCalledTimes(1);
+  });
+
+  test('completes sign-in callbacks through the shared Supabase callback helper', async () => {
+    vi.mocked(completeSupabaseAuthCallback).mockResolvedValue({
+      nextPath: '/collection',
+    });
+
+    await expect(completeUserSignInCallback()).resolves.toEqual({
+      nextPath: '/collection',
+    });
+    expect(completeSupabaseAuthCallback).toHaveBeenCalledTimes(1);
   });
 
   test('returns null when loading the current collector profile without a valid session', async () => {

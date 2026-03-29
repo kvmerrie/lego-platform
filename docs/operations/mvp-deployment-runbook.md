@@ -133,11 +133,13 @@ Keep the MVP setup minimal:
 - apply `supabase/migrations/20260329134500_pricing_daily_set_history.sql`
 - enable the chosen email auth method
 - configure site URL and redirect URLs for staging and production web hosts
+  - use `https://<host>/auth/callback` as the allowed passwordless callback URL in every environment
 - configure custom SMTP before treating passwordless email sign-in as production-ready for real users
 
 Production auth guardrail:
 
 - make the production site URL and redirect URLs point only at the production web origin before launch day
+- keep `/auth/callback` on the allowed production redirect list so passwordless email links complete through the dedicated callback route
 
 ### Contentful
 
@@ -317,7 +319,7 @@ For the final production-only pass, use:
 Use staging as the full dry run for production launch.
 
 1. Confirm staging secrets are populated in Vercel, Render, and CI.
-2. Confirm Supabase auth redirect URLs include the staging web host.
+2. Confirm Supabase auth redirect URLs include `https://<staging-web-host>/auth/callback`.
 3. Confirm Contentful staging content is published if live editorial is part of rehearsal.
 4. Run the sync checks and required build or test targets locally or in CI.
 5. Deploy staging API.
