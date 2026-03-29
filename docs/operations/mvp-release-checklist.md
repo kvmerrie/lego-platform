@@ -4,6 +4,7 @@ This checklist is the launch-oriented view of the current repository. It is inte
 
 Use this document alongside:
 
+- `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`

@@ -78,6 +78,7 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - `docs/operations/catalog-sync-validation.md`
 - `docs/operations/commerce-sync.md`
 - `docs/operations/commerce-sync-validation.md`
+- `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-release-checklist.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/standards/coding-constitution.md`
