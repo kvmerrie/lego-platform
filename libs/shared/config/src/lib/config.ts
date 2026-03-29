@@ -67,6 +67,30 @@ export interface ServerSupabaseConfig {
   url: string;
 }
 
+function getDefaultBrowserSupabaseUrl(): string | undefined {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL;
+}
+
+function getDefaultBrowserSupabaseAnonKey(): string | undefined {
+  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+}
+
+function getBrowserSupabaseUrl(
+  environment: Record<string, string | undefined>,
+): string | undefined {
+  return environment === process.env
+    ? getDefaultBrowserSupabaseUrl()
+    : environment[supabaseEnvKeys.browserUrl];
+}
+
+function getBrowserSupabaseAnonKey(
+  environment: Record<string, string | undefined>,
+): string | undefined {
+  return environment === process.env
+    ? getDefaultBrowserSupabaseAnonKey()
+    : environment[supabaseEnvKeys.browserAnonKey];
+}
+
 function getSupabaseServerUrl(
   environment: Record<string, string | undefined>,
 ): string | undefined {
@@ -95,15 +119,24 @@ function requireEnvValue({
 export function getBrowserSupabaseConfig(
   environment: Record<string, string | undefined> = process.env,
 ): BrowserSupabaseConfig {
+  const url = getBrowserSupabaseUrl(environment);
+  const anonKey = getBrowserSupabaseAnonKey(environment);
+
+  if (!url) {
+    throw new Error(
+      `Missing required environment variable: ${supabaseEnvKeys.browserUrl}.`,
+    );
+  }
+
+  if (!anonKey) {
+    throw new Error(
+      `Missing required environment variable: ${supabaseEnvKeys.browserAnonKey}.`,
+    );
+  }
+
   return {
-    url: requireEnvValue({
-      environment,
-      key: supabaseEnvKeys.browserUrl,
-    }),
-    anonKey: requireEnvValue({
-      environment,
-      key: supabaseEnvKeys.browserAnonKey,
-    }),
+    url,
+    anonKey,
   };
 }
 
@@ -111,8 +144,8 @@ export function hasBrowserSupabaseConfig(
   environment: Record<string, string | undefined> = process.env,
 ): boolean {
   return Boolean(
-    environment[supabaseEnvKeys.browserUrl] &&
-      environment[supabaseEnvKeys.browserAnonKey],
+    getBrowserSupabaseUrl(environment) &&
+      getBrowserSupabaseAnonKey(environment),
   );
 }
 
@@ -121,11 +154,11 @@ export function getMissingBrowserSupabaseEnvKeys(
 ): string[] {
   const missingKeys: string[] = [];
 
-  if (!environment[supabaseEnvKeys.browserUrl]) {
+  if (!getBrowserSupabaseUrl(environment)) {
     missingKeys.push(supabaseEnvKeys.browserUrl);
   }
 
-  if (!environment[supabaseEnvKeys.browserAnonKey]) {
+  if (!getBrowserSupabaseAnonKey(environment)) {
     missingKeys.push(supabaseEnvKeys.browserAnonKey);
   }
 
