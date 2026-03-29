@@ -35,6 +35,12 @@ This phase intentionally uses a very small, operator-reviewed allowlist:
 - `bol`
 - `Intertoys`
 
+Example boilerplate:
+
+- `.env.sync.example`
+
+The current commerce sync slice does not require external secrets, but the shared sync example file documents the operator-side Rebrickable variables used by the catalog workflow and leaves room for future operator-only sync secrets.
+
 ## Run The Sync
 
 From the workspace root:

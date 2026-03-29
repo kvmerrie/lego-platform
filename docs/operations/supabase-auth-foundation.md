@@ -42,6 +42,11 @@ Notes:
 
 ## Local Setup
 
+Example boilerplate files at the repo root:
+
+- `.env.web.example`
+- `.env.api.example`
+
 1. Create a Supabase project for the repo.
 2. Copy the project URL into:
    - `NEXT_PUBLIC_SUPABASE_URL`
@@ -54,7 +59,7 @@ Notes:
 6. In the Supabase dashboard, enable the email auth provider you want to use for this phase.
 7. Configure the auth redirect or site URL so the local web app can receive the sign-in callback. For local work, this should point at your `apps/web` runtime, typically `http://localhost:3000`.
 
-This repo does not currently enforce a root `.env` convention. Keep local credentials in your normal untracked shell or environment-file workflow.
+This repo does not currently enforce a root `.env` convention. Use the example files only as reference templates, then keep real credentials in your normal untracked shell or environment-file workflow.
 
 ## Schema
 

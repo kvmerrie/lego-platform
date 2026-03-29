@@ -13,6 +13,12 @@ Use this document alongside:
 - `docs/architecture/contentful-preview-usage.md`
 - `docs/architecture/contentful-validation-rollout-checklist.md`
 
+Tracked example env boilerplate files at the repo root:
+
+- `.env.web.example`
+- `.env.api.example`
+- `.env.sync.example`
+
 ## Current MVP Scope
 
 The current release scope includes:

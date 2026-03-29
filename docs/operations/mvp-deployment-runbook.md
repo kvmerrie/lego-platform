@@ -19,6 +19,12 @@ The deployment model stays intentionally small:
 - Contentful managed for editorial content
 - `catalog-sync` and `commerce-sync` as operator or CI jobs, not always-on services
 
+Tracked example env boilerplate files at the repo root:
+
+- `.env.web.example`
+- `.env.api.example`
+- `.env.sync.example`
+
 ## Current Deployment Shape
 
 - The public web app stays static-friendly and continues to read catalog, pricing, and affiliate data from committed generated artifacts.

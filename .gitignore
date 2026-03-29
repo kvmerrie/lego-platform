@@ -41,6 +41,9 @@ testem.log
 .env
 .env.*
 !.env.example
+!.env.web.example
+!.env.api.example
+!.env.sync.example
 
 # deployment / local platform tooling
 .vercel/

@@ -23,6 +23,10 @@ See also:
   - Required.
   - Used by the server-side sync app when calling the Rebrickable API.
 
+Example boilerplate:
+
+- `.env.sync.example`
+
 ## Optional Environment Variables
 
 - `REBRICKABLE_BASE_URL`
