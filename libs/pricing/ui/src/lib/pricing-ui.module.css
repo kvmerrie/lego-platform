@@ -58,6 +58,16 @@
   padding: var(--lego-space-4);
 }
 
+.summarySection {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.summarySection + .summarySection {
+  border-top: 1px solid color-mix(in srgb, var(--lego-border) 72%, transparent);
+  padding-top: var(--lego-space-3);
+}
+
 .summaryGrid {
   display: grid;
   gap: var(--lego-space-3);

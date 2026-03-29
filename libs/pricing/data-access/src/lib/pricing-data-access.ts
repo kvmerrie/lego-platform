@@ -7,6 +7,7 @@ import {
   type PriceHistorySummary,
   type PricePanelSnapshot,
   type PricingObservation,
+  type TrackedPriceSummary,
 } from '@lego-platform/pricing/util';
 import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
 import { getBrowserSupabaseClient } from '@lego-platform/shared/data-access-auth';
@@ -35,6 +36,7 @@ interface PriceHistoryRowRecord {
 export interface PriceHistorySummaryState {
   pointCount: number;
   priceHistorySummary?: PriceHistorySummary;
+  trackedPriceSummary?: TrackedPriceSummary;
 }
 
 export function getPricePanelSnapshot(
@@ -80,6 +82,37 @@ export function buildPriceHistorySummary({
     lowPriceMinor: Math.min(...values),
     highPriceMinor: Math.max(...values),
     pointCount: priceHistoryPoints.length,
+  };
+}
+
+export function buildTrackedPriceSummary({
+  currentHeadlinePriceMinor,
+  priceHistoryPoints,
+}: {
+  currentHeadlinePriceMinor: number;
+  priceHistoryPoints: readonly PriceHistoryPoint[];
+}): TrackedPriceSummary | undefined {
+  const firstPriceHistoryPoint = priceHistoryPoints[0];
+
+  if (!firstPriceHistoryPoint) {
+    return undefined;
+  }
+
+  const values = priceHistoryPoints.map(
+    (priceHistoryPoint) => priceHistoryPoint.headlinePriceMinor,
+  );
+  const trackedLowPriceMinor = Math.min(...values);
+  const trackedHighPriceMinor = Math.max(...values);
+
+  return {
+    currencyCode: firstPriceHistoryPoint.currencyCode,
+    currentHeadlinePriceMinor,
+    deltaVsTrackedLowMinor: currentHeadlinePriceMinor - trackedLowPriceMinor,
+    deltaVsTrackedHighMinor: currentHeadlinePriceMinor - trackedHighPriceMinor,
+    pointCount: priceHistoryPoints.length,
+    trackedHighPriceMinor,
+    trackedLowPriceMinor,
+    trackedSinceRecordedOn: firstPriceHistoryPoint.recordedOn,
   };
 }
 
@@ -154,6 +187,41 @@ export async function listPriceHistory(setId: string): Promise<PriceHistoryPoint
     .reverse();
 }
 
+export async function listTrackedPriceHistory(
+  setId: string,
+): Promise<PriceHistoryPoint[]> {
+  if (!hasBrowserSupabaseConfig()) {
+    return [];
+  }
+
+  const { data, error } = await getBrowserSupabaseClient()
+    .from(PRICING_HISTORY_TABLE)
+    .select(
+      'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on',
+    )
+    .eq('set_id', setId)
+    .eq('region_code', DUTCH_REGION_CODE)
+    .eq('currency_code', EURO_CURRENCY_CODE)
+    .eq('condition', NEW_OFFER_CONDITION)
+    .order('recorded_on', { ascending: true })
+    .limit(5000);
+
+  if (error || !Array.isArray(data)) {
+    return [];
+  }
+
+  return data
+    .map((priceHistoryRowRecord) =>
+      normalizePriceHistoryRowRecord(
+        priceHistoryRowRecord as PriceHistoryRowRecord,
+      ),
+    )
+    .filter(
+      (priceHistoryPoint): priceHistoryPoint is PriceHistoryPoint =>
+        priceHistoryPoint !== undefined,
+    );
+}
+
 export async function getPriceHistorySummary(
   setId: string,
 ): Promise<PriceHistorySummary | undefined> {
@@ -171,13 +239,18 @@ export async function getPriceHistorySummaryState(
     return undefined;
   }
 
-  const priceHistoryPoints = await listPriceHistory(setId);
+  const trackedPriceHistoryPoints = await listTrackedPriceHistory(setId);
+  const priceHistoryPoints = trackedPriceHistoryPoints.slice(-30);
 
   return {
     pointCount: priceHistoryPoints.length,
     priceHistorySummary: buildPriceHistorySummary({
       currentHeadlinePriceMinor: pricePanelSnapshot.headlinePriceMinor,
       priceHistoryPoints,
+    }),
+    trackedPriceSummary: buildTrackedPriceSummary({
+      currentHeadlinePriceMinor: pricePanelSnapshot.headlinePriceMinor,
+      priceHistoryPoints: trackedPriceHistoryPoints,
     }),
   };
 }

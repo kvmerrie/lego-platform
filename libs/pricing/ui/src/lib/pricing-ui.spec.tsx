@@ -108,6 +108,16 @@ describe('pricing ui history surfaces', () => {
             highPriceMinor: 49499,
             pointCount: 2,
           }}
+          trackedPriceSummary={{
+            currencyCode: 'EUR',
+            currentHeadlinePriceMinor: 48999,
+            deltaVsTrackedLowMinor: 0,
+            deltaVsTrackedHighMinor: -2000,
+            pointCount: 3,
+            trackedLowPriceMinor: 48999,
+            trackedHighPriceMinor: 50999,
+            trackedSinceRecordedOn: '2026-03-20',
+          }}
         />
       </PriceSummaryCard>,
     );
@@ -118,16 +128,37 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('Current vs average');
     expect(markup).toContain('below 30-day average');
     expect(markup).toContain('30-day average:');
+    expect(markup).toContain('Tracked price range');
+    expect(markup).toContain('Lowest tracked price');
+    expect(markup).toContain('Highest tracked price');
+    expect(markup).toContain('Tracked since');
+    expect(markup).toContain('Current vs tracked low');
+    expect(markup).toContain('Current vs tracked high');
   });
 
   it('renders a calm fallback when only one history point exists so far', () => {
     const markup = renderToStaticMarkup(
-      <PriceHistorySummaryCallout historyPointCount={1} />,
+      <PriceHistorySummaryCallout
+        historyPointCount={1}
+        trackedPriceSummary={{
+          currencyCode: 'EUR',
+          currentHeadlinePriceMinor: 48999,
+          deltaVsTrackedLowMinor: 0,
+          deltaVsTrackedHighMinor: 0,
+          pointCount: 1,
+          trackedLowPriceMinor: 48999,
+          trackedHighPriceMinor: 48999,
+          trackedSinceRecordedOn: '2026-03-29',
+        }}
+      />,
     );
 
     expect(markup).toContain('30-day summary');
     expect(markup).toContain(
       'History is building. One daily point has been recorded so far, so 30-day range and average comparisons will appear after the next reviewed point.',
     );
+    expect(markup).toContain('Tracked price range');
+    expect(markup).toContain('Matches tracked low');
+    expect(markup).toContain('Matches tracked high');
   });
 });

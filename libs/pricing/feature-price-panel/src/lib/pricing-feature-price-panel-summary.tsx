@@ -44,6 +44,7 @@ export function PricingFeaturePricePanelSummary({
     <PriceHistorySummaryCallout
       historyPointCount={priceHistorySummaryState?.pointCount}
       priceHistorySummary={priceHistorySummaryState?.priceHistorySummary}
+      trackedPriceSummary={priceHistorySummaryState?.trackedPriceSummary}
     />
   );
 }

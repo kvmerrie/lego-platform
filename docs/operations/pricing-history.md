@@ -52,7 +52,8 @@ Check mode behavior:
 
 - the current price panel remains snapshot-backed
 - the 30-day history chart and additive summary metrics are browser read surfaces
-- the current UI only reads the last 30 days from the stored history table
+- the current UI reads the last 30 days for the chart and 30-day average/low/high summary
+- the current price panel also derives tracked low, tracked high, tracked since, and current-vs-tracked deltas from the full stored history for that set
 - browser reads use the existing browser-safe Supabase configuration and the public select policy on `pricing_daily_set_history`
 
 Future scope note:
@@ -70,4 +71,5 @@ Required browser env for the set-detail history chart:
 2. Keep `pnpm sync:commerce:check` in the normal drift-review workflow.
 3. Run `pnpm sync:commerce` with Supabase server env configured when you want to write daily history points.
 4. Expect the history chart to remain empty until at least one successful `write` run has recorded a point for a commerce-enabled set.
-5. Expect the first recorded point to show a “History is building” state until more daily rows exist.
+5. Expect the first recorded point to show a “History is building” 30-day summary state until more daily rows exist.
+6. Even with one tracked row, the current price panel can still show tracked-since and tracked-range context from the stored history table.

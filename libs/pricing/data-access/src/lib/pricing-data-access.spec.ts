@@ -12,6 +12,7 @@ import { getBrowserSupabaseClient } from '@lego-platform/shared/data-access-auth
 import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
 import {
   buildPriceHistorySummary,
+  buildTrackedPriceSummary,
   getPriceHistorySummary,
   getPriceHistorySummaryState,
   getPricePanelSnapshot,
@@ -171,6 +172,52 @@ describe('pricing data access', () => {
     ).toBeUndefined();
   });
 
+  test('builds tracked price context from the full stored history slice', () => {
+    expect(
+      buildTrackedPriceSummary({
+        currentHeadlinePriceMinor: 48999,
+        priceHistoryPoints: [
+          {
+            setId: '10316',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 50999,
+            observedAt: '2026-03-20T09:00:00.000Z',
+            recordedOn: '2026-03-20',
+          },
+          {
+            setId: '10316',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 49499,
+            observedAt: '2026-03-28T09:00:00.000Z',
+            recordedOn: '2026-03-28',
+          },
+          {
+            setId: '10316',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 48999,
+            observedAt: '2026-03-29T09:00:00.000Z',
+            recordedOn: '2026-03-29',
+          },
+        ],
+      }),
+    ).toEqual({
+      currencyCode: 'EUR',
+      currentHeadlinePriceMinor: 48999,
+      deltaVsTrackedLowMinor: 0,
+      deltaVsTrackedHighMinor: -2000,
+      pointCount: 3,
+      trackedHighPriceMinor: 50999,
+      trackedLowPriceMinor: 48999,
+      trackedSinceRecordedOn: '2026-03-20',
+    });
+  });
+
   test('derives the set summary from the current panel snapshot and history slice', async () => {
     const queryBuilder = {
       select: vi.fn().mockReturnThis(),
@@ -183,11 +230,11 @@ describe('pricing data access', () => {
             region_code: 'NL',
             currency_code: 'EUR',
             condition: 'new',
-            headline_price_minor: 48999,
+            headline_price_minor: 50999,
             reference_price_minor: 49999,
-            lowest_merchant_id: 'bol',
-            observed_at: '2026-03-29T09:00:00.000Z',
-            recorded_on: '2026-03-29',
+            lowest_merchant_id: 'lego-nl',
+            observed_at: '2026-03-20T09:00:00.000Z',
+            recorded_on: '2026-03-20',
           },
           {
             set_id: '10316',
@@ -199,6 +246,17 @@ describe('pricing data access', () => {
             lowest_merchant_id: 'lego-nl',
             observed_at: '2026-03-28T09:00:00.000Z',
             recorded_on: '2026-03-28',
+          },
+          {
+            set_id: '10316',
+            region_code: 'NL',
+            currency_code: 'EUR',
+            condition: 'new',
+            headline_price_minor: 48999,
+            reference_price_minor: 49999,
+            lowest_merchant_id: 'bol',
+            observed_at: '2026-03-29T09:00:00.000Z',
+            recorded_on: '2026-03-29',
           },
         ],
         error: null,
@@ -213,11 +271,85 @@ describe('pricing data access', () => {
     await expect(getPriceHistorySummary('10316')).resolves.toEqual({
       currencyCode: 'EUR',
       currentHeadlinePriceMinor: 48999,
-      averagePriceMinor: 49249,
-      deltaVsAverageMinor: -250,
+      averagePriceMinor: 49832,
+      deltaVsAverageMinor: -833,
       lowPriceMinor: 48999,
-      highPriceMinor: 49499,
-      pointCount: 2,
+      highPriceMinor: 50999,
+      pointCount: 3,
+    });
+  });
+
+  test('returns both the 30-day summary and tracked price context for the panel', async () => {
+    const queryBuilder = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({
+        data: [
+          {
+            set_id: '10316',
+            region_code: 'NL',
+            currency_code: 'EUR',
+            condition: 'new',
+            headline_price_minor: 50999,
+            reference_price_minor: 49999,
+            lowest_merchant_id: 'lego-nl',
+            observed_at: '2026-03-20T09:00:00.000Z',
+            recorded_on: '2026-03-20',
+          },
+          {
+            set_id: '10316',
+            region_code: 'NL',
+            currency_code: 'EUR',
+            condition: 'new',
+            headline_price_minor: 49499,
+            reference_price_minor: 49999,
+            lowest_merchant_id: 'lego-nl',
+            observed_at: '2026-03-28T09:00:00.000Z',
+            recorded_on: '2026-03-28',
+          },
+          {
+            set_id: '10316',
+            region_code: 'NL',
+            currency_code: 'EUR',
+            condition: 'new',
+            headline_price_minor: 48999,
+            reference_price_minor: 49999,
+            lowest_merchant_id: 'bol',
+            observed_at: '2026-03-29T09:00:00.000Z',
+            recorded_on: '2026-03-29',
+          },
+        ],
+        error: null,
+      }),
+    };
+
+    vi.mocked(hasBrowserSupabaseConfig).mockReturnValue(true);
+    vi.mocked(getBrowserSupabaseClient).mockReturnValue({
+      from: vi.fn().mockReturnValue(queryBuilder),
+    } as never);
+
+    await expect(getPriceHistorySummaryState('10316')).resolves.toEqual({
+      pointCount: 3,
+      priceHistorySummary: {
+        currencyCode: 'EUR',
+        currentHeadlinePriceMinor: 48999,
+        averagePriceMinor: 49832,
+        deltaVsAverageMinor: -833,
+        lowPriceMinor: 48999,
+        highPriceMinor: 50999,
+        pointCount: 3,
+      },
+      trackedPriceSummary: {
+        currencyCode: 'EUR',
+        currentHeadlinePriceMinor: 48999,
+        deltaVsTrackedHighMinor: -2000,
+        deltaVsTrackedLowMinor: 0,
+        pointCount: 3,
+        trackedHighPriceMinor: 50999,
+        trackedLowPriceMinor: 48999,
+        trackedSinceRecordedOn: '2026-03-20',
+      },
     });
   });
 
@@ -252,6 +384,16 @@ describe('pricing data access', () => {
     await expect(getPriceHistorySummaryState('10316')).resolves.toEqual({
       pointCount: 1,
       priceHistorySummary: undefined,
+      trackedPriceSummary: {
+        currencyCode: 'EUR',
+        currentHeadlinePriceMinor: 48999,
+        deltaVsTrackedHighMinor: 0,
+        deltaVsTrackedLowMinor: 0,
+        pointCount: 1,
+        trackedHighPriceMinor: 48999,
+        trackedLowPriceMinor: 48999,
+        trackedSinceRecordedOn: '2026-03-29',
+      },
     });
   });
 

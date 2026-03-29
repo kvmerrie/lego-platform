@@ -70,6 +70,17 @@ export interface PriceHistorySummary {
   pointCount: number;
 }
 
+export interface TrackedPriceSummary {
+  currencyCode: PricingCurrencyCode;
+  currentHeadlinePriceMinor: number;
+  deltaVsTrackedHighMinor: number;
+  deltaVsTrackedLowMinor: number;
+  pointCount: number;
+  trackedHighPriceMinor: number;
+  trackedLowPriceMinor: number;
+  trackedSinceRecordedOn: string;
+}
+
 export function getPriceDirection(
   deltaMinor?: number,
 ): 'up' | 'down' | 'flat' {

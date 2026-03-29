@@ -4,6 +4,7 @@ import {
   type PriceHistoryPoint,
   type PriceHistorySummary,
   type PricePanelSnapshot,
+  type TrackedPriceSummary,
 } from '@lego-platform/pricing/util';
 import {
   Badge,
@@ -91,6 +92,32 @@ function getAverageDeltaLabel({
   return 'At 30-day average';
 }
 
+function getTrackedDeltaLabel({
+  currencyCode,
+  deltaMinor,
+  label,
+}: {
+  currencyCode: string;
+  deltaMinor: number;
+  label: 'tracked high' | 'tracked low';
+}): string {
+  if (deltaMinor === 0) {
+    return `Matches ${label}`;
+  }
+
+  if (deltaMinor < 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: Math.abs(deltaMinor),
+    })} below ${label}`;
+  }
+
+  return `${formatPriceMinor({
+    currencyCode,
+    minorUnits: deltaMinor,
+  })} above ${label}`;
+}
+
 function getDailyPointLabel(pointCount: number): string {
   return `${pointCount} daily point${pointCount === 1 ? '' : 's'}`;
 }
@@ -101,6 +128,10 @@ function getTrackedOfferLabel(offerCount: number): string {
 
 function getDutchOfferCoverageLabel(offerCount: number): string {
   return `${offerCount} Dutch offer${offerCount === 1 ? '' : 's'}`;
+}
+
+function getTrackedDailyPointLabel(pointCount: number): string {
+  return `${pointCount} tracked daily point${pointCount === 1 ? '' : 's'}`;
 }
 
 function PricingMetaItem({
@@ -266,11 +297,13 @@ export function PriceSummaryCard({
 export function PriceHistorySummaryCallout({
   historyPointCount,
   priceHistorySummary,
+  trackedPriceSummary,
 }: {
   historyPointCount?: number;
   priceHistorySummary?: PriceHistorySummary;
+  trackedPriceSummary?: TrackedPriceSummary;
 }) {
-  if (!priceHistorySummary) {
+  if (!priceHistorySummary && !trackedPriceSummary) {
     return (
       <section aria-label="30-day price summary" className={styles.summaryBlock}>
         <p className={styles.summaryLabel}>30-day summary</p>
@@ -285,38 +318,99 @@ export function PriceHistorySummaryCallout({
 
   return (
     <section aria-label="30-day price summary" className={styles.summaryBlock}>
-      <p className={styles.summaryLabel}>30-day summary</p>
-      <dl className={styles.summaryGrid}>
-        <PricingMetaItem
-          label="30-day low"
-          value={formatPriceMinor({
-            currencyCode: priceHistorySummary.currencyCode,
-            minorUnits: priceHistorySummary.lowPriceMinor,
-          })}
-        />
-        <PricingMetaItem
-          label="30-day high"
-          value={formatPriceMinor({
-            currencyCode: priceHistorySummary.currencyCode,
-            minorUnits: priceHistorySummary.highPriceMinor,
-          })}
-        />
-        <PricingMetaItem
-          label="Current vs average"
-          value={getAverageDeltaLabel({
-            currencyCode: priceHistorySummary.currencyCode,
-            deltaVsAverageMinor: priceHistorySummary.deltaVsAverageMinor,
-          })}
-        />
-      </dl>
-      <p className={styles.summaryNote}>
-        30-day average:{' '}
-        {formatPriceMinor({
-          currencyCode: priceHistorySummary.currencyCode,
-          minorUnits: priceHistorySummary.averagePriceMinor,
-        })}{' '}
-        from {getDailyPointLabel(priceHistorySummary.pointCount)}.
-      </p>
+      <section aria-label="30-day price summary" className={styles.summarySection}>
+        <p className={styles.summaryLabel}>30-day summary</p>
+        {priceHistorySummary ? (
+          <>
+            <dl className={styles.summaryGrid}>
+              <PricingMetaItem
+                label="30-day low"
+                value={formatPriceMinor({
+                  currencyCode: priceHistorySummary.currencyCode,
+                  minorUnits: priceHistorySummary.lowPriceMinor,
+                })}
+              />
+              <PricingMetaItem
+                label="30-day high"
+                value={formatPriceMinor({
+                  currencyCode: priceHistorySummary.currencyCode,
+                  minorUnits: priceHistorySummary.highPriceMinor,
+                })}
+              />
+              <PricingMetaItem
+                label="Current vs average"
+                value={getAverageDeltaLabel({
+                  currencyCode: priceHistorySummary.currencyCode,
+                  deltaVsAverageMinor: priceHistorySummary.deltaVsAverageMinor,
+                })}
+              />
+            </dl>
+            <p className={styles.summaryNote}>
+              30-day average:{' '}
+              {formatPriceMinor({
+                currencyCode: priceHistorySummary.currencyCode,
+                minorUnits: priceHistorySummary.averagePriceMinor,
+              })}{' '}
+              from {getDailyPointLabel(priceHistorySummary.pointCount)}.
+            </p>
+          </>
+        ) : (
+          <p className={styles.summaryNote}>
+            {historyPointCount === 1
+              ? 'History is building. One daily point has been recorded so far, so 30-day range and average comparisons will appear after the next reviewed point.'
+              : 'History is building. 30-day summary will appear after a little more daily pricing history is recorded.'}
+          </p>
+        )}
+      </section>
+      {trackedPriceSummary ? (
+        <section
+          aria-label="Tracked price range"
+          className={styles.summarySection}
+        >
+          <p className={styles.summaryLabel}>Tracked price range</p>
+          <dl className={styles.summaryGrid}>
+            <PricingMetaItem
+              label="Lowest tracked price"
+              value={formatPriceMinor({
+                currencyCode: trackedPriceSummary.currencyCode,
+                minorUnits: trackedPriceSummary.trackedLowPriceMinor,
+              })}
+            />
+            <PricingMetaItem
+              label="Highest tracked price"
+              value={formatPriceMinor({
+                currencyCode: trackedPriceSummary.currencyCode,
+                minorUnits: trackedPriceSummary.trackedHighPriceMinor,
+              })}
+            />
+            <PricingMetaItem
+              label="Tracked since"
+              value={formatRecordedOn(trackedPriceSummary.trackedSinceRecordedOn)}
+            />
+            <PricingMetaItem
+              label="Current vs tracked low"
+              value={getTrackedDeltaLabel({
+                currencyCode: trackedPriceSummary.currencyCode,
+                deltaMinor: trackedPriceSummary.deltaVsTrackedLowMinor,
+                label: 'tracked low',
+              })}
+            />
+            <PricingMetaItem
+              label="Current vs tracked high"
+              value={getTrackedDeltaLabel({
+                currencyCode: trackedPriceSummary.currencyCode,
+                deltaMinor: trackedPriceSummary.deltaVsTrackedHighMinor,
+                label: 'tracked high',
+              })}
+            />
+          </dl>
+          <p className={styles.summaryNote}>
+            Based on{' '}
+            {getTrackedDailyPointLabel(trackedPriceSummary.pointCount)} stored
+            for this set.
+          </p>
+        </section>
+      ) : null}
     </section>
   );
 }
