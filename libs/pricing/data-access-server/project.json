@@ -1,0 +1,17 @@
+{
+  "name": "pricing-data-access-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/pricing/data-access-server/src",
+  "projectType": "library",
+  "tags": ["scope:pricing", "type:data-access", "platform:server"],
+  "// targets": "to see all targets run: nx show project pricing-data-access-server --web",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/pricing/data-access-server",
+        "command": "vitest run src/lib/pricing-data-access-server.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

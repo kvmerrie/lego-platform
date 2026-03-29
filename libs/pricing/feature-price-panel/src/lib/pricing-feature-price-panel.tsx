@@ -1,10 +1,15 @@
 import { getPricePanelSnapshot } from '@lego-platform/pricing/data-access';
-import { getPriceDirection } from '@lego-platform/pricing/util';
+import { formatPriceMinor, getPriceDirection } from '@lego-platform/pricing/util';
 import { PriceSummaryCard } from '@lego-platform/pricing/ui';
 
-export function PricingFeaturePricePanel() {
-  const pricePanelSnapshot = getPricePanelSnapshot();
-  const priceDirection = getPriceDirection(pricePanelSnapshot.delta);
+export function PricingFeaturePricePanel({ setId }: { setId: string }) {
+  const pricePanelSnapshot = getPricePanelSnapshot(setId);
+
+  if (!pricePanelSnapshot) {
+    return null;
+  }
+
+  const priceDirection = getPriceDirection(pricePanelSnapshot.deltaMinor);
 
   return (
     <section id="pricing" className="section-stack">
@@ -15,9 +20,8 @@ export function PricingFeaturePricePanel() {
           boundaries.
         </h2>
         <p className="section-copy">
-          Today this is static reference data. Tomorrow it can become
-          Supabase-backed history without changing the public-facing composition
-          layer.
+          Today this is a generated Dutch current-price snapshot. History and
+          broader market coverage remain intentionally out of scope.
         </p>
       </header>
       <div className="surface-grid">
@@ -25,7 +29,17 @@ export function PricingFeaturePricePanel() {
         <article className="surface stack">
           <p className="eyebrow">Signal</p>
           <h3 className="surface-title">Direction: {priceDirection}</h3>
-          <p className="muted">Delta reference: {pricePanelSnapshot.delta}</p>
+          {typeof pricePanelSnapshot.deltaMinor === 'number' ? (
+            <p className="muted">
+              Delta reference:{' '}
+              {formatPriceMinor({
+                currencyCode: pricePanelSnapshot.currencyCode,
+                minorUnits: Math.abs(pricePanelSnapshot.deltaMinor),
+              })}
+            </p>
+          ) : (
+            <p className="muted">Reference pricing is not configured yet.</p>
+          )}
         </article>
       </div>
     </section>

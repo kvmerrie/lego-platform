@@ -75,11 +75,17 @@
       "@lego-platform/pricing/data-access": [
         "libs/pricing/data-access/src/index.ts"
       ],
+      "@lego-platform/pricing/data-access-server": [
+        "libs/pricing/data-access-server/src/index.ts"
+      ],
       "@lego-platform/affiliate/util": [
         "libs/affiliate/util/src/index.ts"
       ],
       "@lego-platform/affiliate/data-access": [
         "libs/affiliate/data-access/src/index.ts"
+      ],
+      "@lego-platform/affiliate/data-access-server": [
+        "libs/affiliate/data-access-server/src/index.ts"
       ],
       "@lego-platform/content/util": [
         "libs/content/util/src/index.ts"

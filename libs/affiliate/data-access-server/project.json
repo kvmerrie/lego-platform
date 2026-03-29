@@ -1,0 +1,17 @@
+{
+  "name": "affiliate-data-access-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/affiliate/data-access-server/src",
+  "projectType": "library",
+  "tags": ["scope:affiliate", "type:data-access", "platform:server"],
+  "// targets": "to see all targets run: nx show project affiliate-data-access-server --web",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/affiliate/data-access-server",
+        "command": "vitest run src/lib/affiliate-data-access-server.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

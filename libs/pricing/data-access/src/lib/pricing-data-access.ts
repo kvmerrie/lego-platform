@@ -1,27 +1,34 @@
 import {
-  PriceHistoryPoint,
-  PricePanelSnapshot,
+  type PriceHistoryPoint,
+  type PricePanelSnapshot,
+  type PricingObservation,
 } from '@lego-platform/pricing/util';
+import { pricePanelSnapshots } from './price-panel-snapshots.generated';
+import { pricingObservations } from './pricing-observations.generated';
 
-const pricePanelSnapshot: PricePanelSnapshot = {
-  setName: 'Rivendell',
-  currentMarketValue: '$541',
-  msrp: '$499',
-  delta: '+8.4%',
-  confidence: 'High confidence from direct-to-consumer and reseller blends.',
-};
+const pricePanelSnapshotBySetId = new Map(
+  pricePanelSnapshots.map((pricePanelSnapshot) => [
+    pricePanelSnapshot.setId,
+    pricePanelSnapshot,
+  ]),
+);
 
-const priceHistory: readonly PriceHistoryPoint[] = [
-  { label: 'Jan', value: 498, annotation: 'Launch floor' },
-  { label: 'Feb', value: 504, annotation: 'Early secondary demand' },
-  { label: 'Mar', value: 517, annotation: 'Collector content lift' },
-  { label: 'Apr', value: 541, annotation: 'Current reference point' },
+const placeholderPriceHistory: readonly PriceHistoryPoint[] = [
+  { label: 'Jan', value: 0, annotation: 'Pricing history is intentionally out of scope for this phase.' },
 ];
 
-export function getPricePanelSnapshot(): PricePanelSnapshot {
-  return pricePanelSnapshot;
+export function getPricePanelSnapshot(
+  setId: string,
+): PricePanelSnapshot | undefined {
+  return pricePanelSnapshotBySetId.get(setId);
+}
+
+export function listPricingObservations(setId: string): PricingObservation[] {
+  return pricingObservations.filter(
+    (pricingObservation) => pricingObservation.setId === setId,
+  );
 }
 
 export function listPriceHistory(): PriceHistoryPoint[] {
-  return [...priceHistory];
+  return [...placeholderPriceHistory];
 }

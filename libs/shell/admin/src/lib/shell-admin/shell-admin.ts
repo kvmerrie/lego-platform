@@ -10,6 +10,7 @@ import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import { getCollectionSnapshot } from '@lego-platform/collection/data-access';
 import { getPreviewPanel } from '@lego-platform/content/data-access';
 import { getPricePanelSnapshot } from '@lego-platform/pricing/data-access';
+import { formatPriceMinor, getPriceDirection } from '@lego-platform/pricing/util';
 import { platformConfig } from '@lego-platform/shared/config';
 import {
   applyThemeMode,
@@ -43,6 +44,7 @@ interface AdminQueueItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShellAdminComponent {
+  readonly commerceReferenceSetId = '10316';
   readonly themeStyles = getThemeStyles();
   readonly productName = platformConfig.productName;
   readonly themeMode = signal<ThemeMode>(getPreferredThemeMode());
@@ -50,7 +52,10 @@ export class ShellAdminComponent {
   readonly overviewCards = computed<AdminCard[]>(() => {
     const collectionSnapshot = getCollectionSnapshot();
     const wishlistOverview = getWishlistOverview();
-    const pricePanelSnapshot = getPricePanelSnapshot();
+    const pricePanelSnapshot = getPricePanelSnapshot(this.commerceReferenceSetId);
+    const commerceReferenceSet = listCatalogSetSummaries().find(
+      (catalogSetSummary) => catalogSetSummary.id === this.commerceReferenceSetId,
+    );
 
     return [
       {
@@ -70,8 +75,18 @@ export class ShellAdminComponent {
       },
       {
         label: 'Market signal',
-        value: pricePanelSnapshot.delta,
-        detail: `${pricePanelSnapshot.setName} currently ${pricePanelSnapshot.currentMarketValue}`,
+        value: pricePanelSnapshot
+          ? `${getPriceDirection(pricePanelSnapshot.deltaMinor)} ${formatPriceMinor({
+              currencyCode: pricePanelSnapshot.currencyCode,
+              minorUnits: Math.abs(pricePanelSnapshot.deltaMinor ?? 0),
+            })}`
+          : 'No snapshot',
+        detail: pricePanelSnapshot
+          ? `${commerceReferenceSet?.name ?? this.commerceReferenceSetId} currently ${formatPriceMinor({
+              currencyCode: pricePanelSnapshot.currencyCode,
+              minorUnits: pricePanelSnapshot.headlinePriceMinor,
+            })}`
+          : 'Pricing snapshot still unavailable.',
       },
     ];
   });
@@ -89,7 +104,7 @@ export class ShellAdminComponent {
     },
     {
       domain: 'Affiliate',
-      summary: `${listAffiliateOffers().length} offer placeholders demonstrate a bounded commerce layer.`,
+      summary: `${listAffiliateOffers(this.commerceReferenceSetId).length} Dutch-market offers demonstrate a bounded commerce layer.`,
       nextStep: 'Wire merchant adapters without leaking into feature shells.',
     },
     {

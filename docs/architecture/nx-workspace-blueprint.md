@@ -16,6 +16,12 @@ This workspace is built for long-term maintainability, low initial cost, and cle
 - `apps/api`
   - Node/Fastify BFF
   - Owns orchestration, integration boundaries, aggregation, and future auth or job concerns
+- `apps/catalog-sync`
+  - server-only catalog snapshot runtime
+  - writes generated catalog artifacts for static-friendly reads
+- `apps/commerce-sync`
+  - server-only pricing and affiliate snapshot runtime
+  - writes generated Dutch-market commerce artifacts for static-friendly reads
 
 ## Workspace Shape
 
@@ -106,6 +112,7 @@ Examples:
 ## Evolution Guidance
 
 - Add Contentful delivery and preview clients under `content/data-access`
+- Add pricing and affiliate sync adapters under their server-only `data-access-server` libraries, and keep cross-domain orchestration inside `apps/commerce-sync`
 - Keep the initial Contentful model aligned with `docs/architecture/contentful-editorial-model.md`
 - Use `docs/architecture/contentful-space-setup.md` for repeatable space setup and editor workflow
 - Use `docs/architecture/contentful-preview-usage.md` for local draft-mode preview usage

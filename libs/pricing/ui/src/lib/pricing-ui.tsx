@@ -1,4 +1,5 @@
 import {
+  formatPriceMinor,
   PriceHistoryPoint,
   PricePanelSnapshot,
 } from '@lego-platform/pricing/util';
@@ -10,12 +11,25 @@ export function PriceSummaryCard({
 }) {
   return (
     <article className="surface stack">
-      <p className="eyebrow">{pricePanelSnapshot.setName}</p>
-      <h3 className="metric-value">{pricePanelSnapshot.currentMarketValue}</h3>
+      <p className="eyebrow">Set {pricePanelSnapshot.setId}</p>
+      <h3 className="metric-value">
+        {formatPriceMinor({
+          currencyCode: pricePanelSnapshot.currencyCode,
+          minorUnits: pricePanelSnapshot.headlinePriceMinor,
+        })}
+      </h3>
       <p className="muted">
-        MSRP {pricePanelSnapshot.msrp} · Delta {pricePanelSnapshot.delta}
+        Lowest merchant {pricePanelSnapshot.lowestMerchantId} · {pricePanelSnapshot.merchantCount} offers
       </p>
-      <p>{pricePanelSnapshot.confidence}</p>
+      {typeof pricePanelSnapshot.referencePriceMinor === 'number' ? (
+        <p>
+          Reference{' '}
+          {formatPriceMinor({
+            currencyCode: pricePanelSnapshot.currencyCode,
+            minorUnits: pricePanelSnapshot.referencePriceMinor,
+          })}
+        </p>
+      ) : null}
     </article>
   );
 }
@@ -39,7 +53,7 @@ export function PricingUi() {
     <section className="surface stack">
       <p className="eyebrow">Pricing UI</p>
       <h2 className="surface-title">
-        Presentational cards and history rows for market intelligence.
+        Presentational cards and rows for Dutch-market current-price guidance.
       </h2>
     </section>
   );
