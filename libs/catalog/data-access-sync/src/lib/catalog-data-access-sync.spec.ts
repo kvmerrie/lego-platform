@@ -76,6 +76,51 @@ function createMockRebrickableClient(): RebrickableClient {
             theme_id: 2,
             set_img_url: 'https://images.example/motorized-lighthouse.jpg',
           };
+        case '10333-1':
+          return {
+            set_num: '10333-1',
+            name: 'The Lord of the Rings: Barad-dur',
+            year: 2024,
+            num_parts: 5471,
+            theme_id: 1,
+            set_img_url: 'https://images.example/barad-dur.jpg',
+          };
+        case '10332-1':
+          return {
+            set_num: '10332-1',
+            name: 'Medieval Town Square',
+            year: 2024,
+            num_parts: 3304,
+            theme_id: 1,
+            set_img_url: 'https://images.example/medieval-town-square.jpg',
+          };
+        case '10315-1':
+          return {
+            set_num: '10315-1',
+            name: 'Tranquil Garden',
+            year: 2023,
+            num_parts: 1363,
+            theme_id: 1,
+            set_img_url: 'https://images.example/tranquil-garden.jpg',
+          };
+        case '21333-1':
+          return {
+            set_num: '21333-1',
+            name: 'The Starry Night',
+            year: 2022,
+            num_parts: 2316,
+            theme_id: 2,
+            set_img_url: 'https://images.example/the-starry-night.jpg',
+          };
+        case '21342-1':
+          return {
+            set_num: '21342-1',
+            name: 'The Insect Collection',
+            year: 2023,
+            num_parts: 1111,
+            theme_id: 2,
+            set_img_url: 'https://images.example/the-insect-collection.jpg',
+          };
         default:
           throw new Error(`Unexpected set lookup for ${setNumber}.`);
       }
@@ -176,12 +221,62 @@ describe('catalog sync artifacts', () => {
           pieces: 2065,
           imageUrl: 'https://images.example/motorized-lighthouse.jpg',
         },
+        {
+          canonicalId: '10333',
+          sourceSetNumber: '10333-1',
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          name: 'The Lord of the Rings: Barad-dur',
+          theme: 'Icons',
+          releaseYear: 2024,
+          pieces: 5471,
+          imageUrl: 'https://images.example/barad-dur.jpg',
+        },
+        {
+          canonicalId: '10332',
+          sourceSetNumber: '10332-1',
+          slug: 'medieval-town-square-10332',
+          name: 'Medieval Town Square',
+          theme: 'Icons',
+          releaseYear: 2024,
+          pieces: 3304,
+          imageUrl: 'https://images.example/medieval-town-square.jpg',
+        },
+        {
+          canonicalId: '10315',
+          sourceSetNumber: '10315-1',
+          slug: 'tranquil-garden-10315',
+          name: 'Tranquil Garden',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 1363,
+          imageUrl: 'https://images.example/tranquil-garden.jpg',
+        },
+        {
+          canonicalId: '21333',
+          sourceSetNumber: '21333-1',
+          slug: 'the-starry-night-21333',
+          name: 'The Starry Night',
+          theme: 'LEGO Ideas and CUUSOO',
+          releaseYear: 2022,
+          pieces: 2316,
+          imageUrl: 'https://images.example/the-starry-night.jpg',
+        },
+        {
+          canonicalId: '21342',
+          sourceSetNumber: '21342-1',
+          slug: 'the-insect-collection-21342',
+          name: 'The Insect Collection',
+          theme: 'LEGO Ideas and CUUSOO',
+          releaseYear: 2023,
+          pieces: 1111,
+          imageUrl: 'https://images.example/the-insect-collection.jpg',
+        },
       ],
     });
     expect(artifacts.catalogSyncManifest).toEqual({
       source: 'rebrickable-api-v3',
       generatedAt: '2026-03-28T00:00:00.000Z',
-      recordCount: 7,
+      recordCount: 12,
       homepageFeaturedSetIds: ['10316', '21348', '76269'],
       notes:
         'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
@@ -332,6 +427,71 @@ describe('catalog sync artifacts', () => {
           );
         }
 
+        if (url.endsWith('/lego/sets/10333-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10333-1',
+              name: 'The Lord of the Rings: Barad-dur',
+              year: 2024,
+              num_parts: 5471,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/10332-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10332-1',
+              name: 'Medieval Town Square',
+              year: 2024,
+              num_parts: 3304,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/10315-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10315-1',
+              name: 'Tranquil Garden',
+              year: 2023,
+              num_parts: 1363,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21333-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21333-1',
+              name: 'The Starry Night',
+              year: 2022,
+              num_parts: 2316,
+              theme_id: 2,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21342-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21342-1',
+              name: 'The Insect Collection',
+              year: 2023,
+              num_parts: 1111,
+              theme_id: 2,
+            }),
+            { status: 200 },
+          );
+        }
+
         return new Response(null, { status: 404 });
       },
       now: new Date('2026-03-28T00:00:00.000Z'),
@@ -450,6 +610,71 @@ describe('catalog sync artifacts', () => {
             name: 'Motorized Lighthouse',
             year: 2022,
             num_parts: 2065,
+            theme_id: 2,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10333-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10333-1',
+            name: 'The Lord of the Rings: Barad-dur',
+            year: 2024,
+            num_parts: 5471,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10332-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10332-1',
+            name: 'Medieval Town Square',
+            year: 2024,
+            num_parts: 3304,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10315-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10315-1',
+            name: 'Tranquil Garden',
+            year: 2023,
+            num_parts: 1363,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21333-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21333-1',
+            name: 'The Starry Night',
+            year: 2022,
+            num_parts: 2316,
+            theme_id: 2,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21342-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21342-1',
+            name: 'The Insect Collection',
+            year: 2023,
+            num_parts: 1111,
             theme_id: 2,
           }),
           { status: 200 },

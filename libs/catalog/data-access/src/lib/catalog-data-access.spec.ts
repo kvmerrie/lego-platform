@@ -13,7 +13,7 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(7);
+    expect(catalogSnapshot.setRecords).toHaveLength(12);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
@@ -67,6 +67,31 @@ describe('catalog snapshot artifacts', () => {
         slug: 'motorized-lighthouse-21335',
         sourceSetNumber: '21335-1',
       },
+      {
+        canonicalId: '10333',
+        slug: 'the-lord-of-the-rings-barad-dur-10333',
+        sourceSetNumber: '10333-1',
+      },
+      {
+        canonicalId: '10332',
+        slug: 'medieval-town-square-10332',
+        sourceSetNumber: '10332-1',
+      },
+      {
+        canonicalId: '10315',
+        slug: 'tranquil-garden-10315',
+        sourceSetNumber: '10315-1',
+      },
+      {
+        canonicalId: '21333',
+        slug: 'the-starry-night-21333',
+        sourceSetNumber: '21333-1',
+      },
+      {
+        canonicalId: '21342',
+        slug: 'the-insect-collection-21342',
+        sourceSetNumber: '21342-1',
+      },
     ]);
   });
 });
@@ -81,6 +106,11 @@ describe('catalog data-access contracts', () => {
       'a-frame-cabin-21338',
       'eldorado-fortress-10320',
       'motorized-lighthouse-21335',
+      'the-lord-of-the-rings-barad-dur-10333',
+      'medieval-town-square-10332',
+      'tranquil-garden-10315',
+      'vincent-van-gogh-the-starry-night-21333',
+      'the-insect-collection-21342',
     ]);
   });
 
@@ -279,7 +309,8 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 2509,
-      imageUrl: undefined,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/10320-1/127861.jpg/1000x800p.jpg',
       priceRange: '$189 to $259',
       collectorAngle: 'Pirates nostalgia centerpiece',
       tagline:
@@ -299,7 +330,8 @@ describe('catalog data-access contracts', () => {
       theme: 'Ideas',
       releaseYear: 2022,
       pieces: 2065,
-      imageUrl: undefined,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/21335-1/107884.jpg/1000x800p.jpg',
       priceRange: '$259 to $319',
       collectorAngle: 'Kinetic display standout',
       tagline:
@@ -311,10 +343,119 @@ describe('catalog data-access contracts', () => {
         'Good candidate for editorial storytelling around function-first collector design',
       ],
     });
+
+    expect(
+      getCatalogSetBySlug('the-lord-of-the-rings-barad-dur-10333'),
+    ).toEqual({
+      id: '10333',
+      slug: 'the-lord-of-the-rings-barad-dur-10333',
+      name: 'The Lord of the Rings: Barad-dur',
+      theme: 'Icons',
+      releaseYear: 2024,
+      pieces: 5471,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/10333-1/140959.jpg/1000x800p.jpg',
+      priceRange: '$459 to $529',
+      collectorAngle: 'Middle-earth display monolith',
+      tagline:
+        'A towering fantasy centerpiece with unusually strong shelf drama and cross-fandom recognizability.',
+      availability: 'High-visibility premium demand',
+      collectorHighlights: [
+        'Vertical silhouette gives the curated assortment a more dramatic shelf profile than most wide-format display sets',
+        'Large minifigure cast and franchise recognition strengthen both collector appeal and editorial storytelling potential',
+        'Natural companion to Rivendell for a tighter premium Middle-earth collector arc',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('medieval-town-square-10332')).toEqual({
+      id: '10332',
+      slug: 'medieval-town-square-10332',
+      name: 'Medieval Town Square',
+      theme: 'Icons',
+      releaseYear: 2024,
+      pieces: 3304,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/10332-1/137285.jpg/1000x800p.jpg',
+      priceRange: '$189 to $249',
+      collectorAngle: 'Castle-world village expansion',
+      tagline:
+        'A bustling medieval streetscape that broadens castle collecting beyond fortress-only display pieces.',
+      availability: 'Broad but enthusiast-led availability',
+      collectorHighlights: [
+        "Pairs naturally with Lion Knights' Castle without feeling like a redundant second fortress",
+        'Dense civilian scene-building helps the public catalog feel more rounded and collectible at a glance',
+        'High minifigure and storefront variety make it especially useful for photography and editorial merchandising',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('tranquil-garden-10315')).toEqual({
+      id: '10315',
+      slug: 'tranquil-garden-10315',
+      name: 'Tranquil Garden',
+      theme: 'Icons',
+      releaseYear: 2023,
+      pieces: 1363,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/10315-1/132380.jpg/1000x800p.jpg',
+      priceRange: '$95 to $129',
+      collectorAngle: 'Mindful display palate-cleanser',
+      tagline:
+        'A calmer sculptural garden build that gives the curated lineup a lighter, design-forward counterpoint.',
+      availability: 'Accessible premium availability',
+      collectorHighlights: [
+        'Lower price point makes it a cleaner entry into the premium collector assortment',
+        'Lifestyle-friendly display posture broadens the catalog beyond nostalgia and licensed fandom',
+        'Strong visual contrast with towers, castles, and cabins helps the homepage feel less samey',
+      ],
+    });
+
+    expect(
+      getCatalogSetBySlug('vincent-van-gogh-the-starry-night-21333'),
+    ).toEqual({
+      id: '21333',
+      slug: 'vincent-van-gogh-the-starry-night-21333',
+      name: 'Vincent van Gogh - The Starry Night',
+      theme: 'Ideas',
+      releaseYear: 2022,
+      pieces: 2316,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/21333-1/102873.jpg/1000x800p.jpg',
+      priceRange: '$149 to $189',
+      collectorAngle: 'Art-crossover wall display piece',
+      tagline:
+        'A museum-linked display set that sits comfortably between art object, gift piece, and collector conversation starter.',
+      availability: 'Steady crossover demand',
+      collectorHighlights: [
+        'Instant subject recognition reaches well beyond the usual AFOL and franchise collector audience',
+        'Wall-mount and shelf-display flexibility makes it more versatile than most curated centerpiece sets',
+        'Useful proof point that the public catalog can feel collector-grade without leaning on nostalgia alone',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('the-insect-collection-21342')).toEqual({
+      id: '21342',
+      slug: 'the-insect-collection-21342',
+      name: 'The Insect Collection',
+      theme: 'Ideas',
+      releaseYear: 2023,
+      pieces: 1111,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/21342-1/126471.jpg/1000x800p.jpg',
+      priceRange: '$69 to $99',
+      collectorAngle: 'Nature-display gateway',
+      tagline:
+        'A smaller-scale Ideas release that adds approachable, giftable variety without breaking the premium collector tone.',
+      availability: 'Healthy specialty availability',
+      collectorHighlights: [
+        'Lower-friction price point helps the curated public catalog feel easier to enter',
+        'Three-display composition adds visual variety without introducing a new product domain or route type',
+        'Broadens the Ideas slice with a subject that feels thoughtful and shelf-friendly rather than franchise-led',
+      ],
+    });
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(7);
+    expect(listCatalogSetSummaries()).toHaveLength(12);
     expect(listCatalogThemes()).toEqual([
       {
         name: 'Icons',

@@ -74,6 +74,11 @@ Current expected source slugs:
 - `a-frame-cabin-21338`
 - `eldorado-fortress-10320`
 - `motorized-lighthouse-21335`
+- `the-lord-of-the-rings-barad-dur-10333`
+- `medieval-town-square-10332`
+- `tranquil-garden-10315`
+- `the-starry-night-21333`
+- `the-insect-collection-21342`
 
 Current expected public route slugs from the product-facing layer:
 
@@ -84,6 +89,11 @@ Current expected public route slugs from the product-facing layer:
 - `a-frame-cabin-21338`
 - `eldorado-fortress-10320`
 - `motorized-lighthouse-21335`
+- `the-lord-of-the-rings-barad-dur-10333`
+- `medieval-town-square-10332`
+- `tranquil-garden-10315`
+- `vincent-van-gogh-the-starry-night-21333`
+- `the-insect-collection-21342`
 
 ### Canonical Id Assumptions
 
@@ -96,6 +106,11 @@ Check that each source set number still maps correctly:
 - `21338-1` -> `21338`
 - `10320-1` -> `10320`
 - `21335-1` -> `21335`
+- `10333-1` -> `10333`
+- `10332-1` -> `10332`
+- `10315-1` -> `10315`
+- `21333-1` -> `21333`
+- `21342-1` -> `21342`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 

@@ -100,6 +100,75 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Good candidate for editorial storytelling around function-first collector design',
     ],
   },
+  {
+    canonicalId: '10333',
+    priceRange: '$459 to $529',
+    collectorAngle: 'Middle-earth display monolith',
+    tagline:
+      'A towering fantasy centerpiece with unusually strong shelf drama and cross-fandom recognizability.',
+    availability: 'High-visibility premium demand',
+    collectorHighlights: [
+      'Vertical silhouette gives the curated assortment a more dramatic shelf profile than most wide-format display sets',
+      'Large minifigure cast and franchise recognition strengthen both collector appeal and editorial storytelling potential',
+      'Natural companion to Rivendell for a tighter premium Middle-earth collector arc',
+    ],
+  },
+  {
+    canonicalId: '10332',
+    priceRange: '$189 to $249',
+    collectorAngle: 'Castle-world village expansion',
+    tagline:
+      'A bustling medieval streetscape that broadens castle collecting beyond fortress-only display pieces.',
+    availability: 'Broad but enthusiast-led availability',
+    collectorHighlights: [
+      "Pairs naturally with Lion Knights' Castle without feeling like a redundant second fortress",
+      'Dense civilian scene-building helps the public catalog feel more rounded and collectible at a glance',
+      'High minifigure and storefront variety make it especially useful for photography and editorial merchandising',
+    ],
+  },
+  {
+    canonicalId: '10315',
+    priceRange: '$95 to $129',
+    collectorAngle: 'Mindful display palate-cleanser',
+    tagline:
+      'A calmer sculptural garden build that gives the curated lineup a lighter, design-forward counterpoint.',
+    availability: 'Accessible premium availability',
+    collectorHighlights: [
+      'Lower price point makes it a cleaner entry into the premium collector assortment',
+      'Lifestyle-friendly display posture broadens the catalog beyond nostalgia and licensed fandom',
+      'Strong visual contrast with towers, castles, and cabins helps the homepage feel less samey',
+    ],
+  },
+  {
+    canonicalId: '21333',
+    productSlug: 'vincent-van-gogh-the-starry-night-21333',
+    displayName: 'Vincent van Gogh - The Starry Night',
+    displayTheme: 'Ideas',
+    priceRange: '$149 to $189',
+    collectorAngle: 'Art-crossover wall display piece',
+    tagline:
+      'A museum-linked display set that sits comfortably between art object, gift piece, and collector conversation starter.',
+    availability: 'Steady crossover demand',
+    collectorHighlights: [
+      'Instant subject recognition reaches well beyond the usual AFOL and franchise collector audience',
+      'Wall-mount and shelf-display flexibility makes it more versatile than most curated centerpiece sets',
+      'Useful proof point that the public catalog can feel collector-grade without leaning on nostalgia alone',
+    ],
+  },
+  {
+    canonicalId: '21342',
+    displayTheme: 'Ideas',
+    priceRange: '$69 to $99',
+    collectorAngle: 'Nature-display gateway',
+    tagline:
+      'A smaller-scale Ideas release that adds approachable, giftable variety without breaking the premium collector tone.',
+    availability: 'Healthy specialty availability',
+    collectorHighlights: [
+      'Lower-friction price point helps the curated public catalog feel easier to enter',
+      'Three-display composition adds visual variety without introducing a new product domain or route type',
+      'Broadens the Ideas slice with a subject that feels thoughtful and shelf-friendly rather than franchise-led',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
