@@ -1,5 +1,7 @@
+import { type ReactNode } from 'react';
 import { CollectionShelf } from '@lego-platform/collection/util';
 import {
+  ActionLink,
   Button,
   Badge,
   SectionHeading,
@@ -156,6 +158,110 @@ export function OwnedSetToggleCard({
             ? 'Saving...'
             : actionLabel}
       </Button>
+    </Surface>
+  );
+}
+
+function formatOwnedSetCount(count: number): string {
+  return `${count} owned set${count === 1 ? '' : 's'}`;
+}
+
+export function CollectorCollectionPanel({
+  children,
+  collectorName,
+  errorMessage,
+  hiddenOwnedCount = 0,
+  ownedCount = 0,
+  state,
+}: {
+  children?: ReactNode;
+  collectorName?: string;
+  errorMessage?: string;
+  hiddenOwnedCount?: number;
+  ownedCount?: number;
+  state: 'empty' | 'loading' | 'populated' | 'signed-out';
+}) {
+  const title =
+    state === 'loading'
+      ? 'Loading your collector collection'
+      : state === 'signed-out'
+        ? 'Sign in to view your private owned collection'
+        : state === 'empty'
+          ? collectorName
+            ? `${collectorName}, your collection is ready for its first saved set`
+            : 'Your collection is ready for its first saved set'
+          : collectorName
+            ? `${collectorName}, here is your owned collection`
+            : 'Your owned collection';
+  const description =
+    state === 'loading'
+      ? 'Checking the sets privately saved as owned on your collector account.'
+      : state === 'signed-out'
+        ? 'This page only shows sets saved to your signed-in collector account. Public catalog browsing still works for everyone.'
+        : state === 'empty'
+          ? hiddenOwnedCount > 0
+            ? `You have ${formatOwnedSetCount(
+                hiddenOwnedCount,
+              )} saved outside the current public catalog slice. Save a featured set as owned to start building the visible collection here.`
+            : 'Save sets as owned from their detail pages and they will appear here as your private collection ledger.'
+          : hiddenOwnedCount > 0
+            ? `Showing ${formatOwnedSetCount(
+                ownedCount,
+              )} from the current public catalog slice. ${formatOwnedSetCount(
+                hiddenOwnedCount,
+              )} stay saved on your account but sit outside the public curated catalog right now.`
+            : `This page shows ${formatOwnedSetCount(
+                ownedCount,
+              )} privately saved on your collector account.`;
+
+  return (
+    <Surface
+      as="section"
+      className={styles.collectionPagePanel}
+      elevation="rested"
+      tone={state === 'populated' ? 'default' : 'muted'}
+    >
+      <div className={styles.collectionHeader}>
+        <SectionHeading
+          description={description}
+          eyebrow="Collector collection"
+          title={title}
+          titleAs="h2"
+        />
+        <div className={styles.collectionMeta}>
+          <Badge tone={state === 'populated' ? 'positive' : 'info'}>
+            {state === 'loading'
+              ? 'Loading private state'
+              : state === 'signed-out'
+                ? 'Private collector page'
+                : `${ownedCount} visible`}
+          </Badge>
+          <Badge>Owned ledger</Badge>
+          {hiddenOwnedCount > 0 ? (
+            <Badge tone="warning">
+              {hiddenOwnedCount} outside public slice
+            </Badge>
+          ) : null}
+        </div>
+      </div>
+      <p className={styles.metaText}>
+        Private to your collector account. Public set facts, reviewed pricing,
+        and curated buying guidance remain shared catalog information.
+      </p>
+      {errorMessage ? (
+        <p aria-live="polite" className={styles.errorText}>
+          {errorMessage}
+        </p>
+      ) : null}
+      {state === 'populated' ? (
+        <div className={styles.collectionGrid}>{children}</div>
+      ) : (
+        <div className={styles.collectionEmptyActions}>
+          <ActionLink href="/#featured-sets" tone="secondary">
+            Browse featured sets
+          </ActionLink>
+        </div>
+      )}
     </Surface>
   );
 }

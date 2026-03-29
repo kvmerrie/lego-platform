@@ -17,6 +17,9 @@
     "paths": {
       "@lego-platform/shared/config": ["libs/shared/config/src/index.ts"],
       "@lego-platform/shell/web": ["libs/shell/web/src/index.ts"],
+      "@lego-platform/shell/feature-collector-collection": [
+        "libs/shell/feature-collector-collection/src/index.ts"
+      ],
       "@lego-platform/shell/admin": ["libs/shell/admin/src/index.ts"],
       "@lego-platform/shared/types": ["libs/shared/types/src/index.ts"],
       "@lego-platform/shared/util": ["libs/shared/util/src/index.ts"],

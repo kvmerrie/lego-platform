@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   getCatalogSetBySlug,
+  listCatalogSetCardsByIds,
   listCatalogSetSlugs,
   listHomepageSetCards,
   listCatalogSetSummaries,
@@ -187,6 +188,41 @@ describe('catalog data-access contracts', () => {
         availability: 'Healthy but premium availability',
       },
     ]);
+  });
+
+  test('maps curated ids to card-ready reads while skipping ids outside the public catalog slice', () => {
+    expect(listCatalogSetCardsByIds(['76269', 'missing-set', '10316'])).toEqual(
+      [
+        {
+          id: '76269',
+          slug: 'avengers-tower-76269',
+          name: 'Avengers Tower',
+          theme: 'Marvel',
+          releaseYear: 2023,
+          pieces: 5202,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+          priceRange: '$449 to $519',
+          collectorAngle: 'Marvel flagship showcase',
+          tagline:
+            'A marquee licensed set with broad household recognizability.',
+          availability: 'Stable with strong seasonal demand',
+        },
+        {
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+          priceRange: '$499 to $569',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        },
+      ],
+    );
   });
 
   test('does not expose upstream slug drift through the product route contract', () => {

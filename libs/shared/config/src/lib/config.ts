@@ -41,6 +41,11 @@ export const webNavigation = [
     href: '/#featured-sets',
     description: 'Static-friendly discovery slice.',
   },
+  {
+    label: 'My collection',
+    href: '/collection',
+    description: 'Private owned-set destination.',
+  },
 ] as const;
 
 export const apiPaths = {

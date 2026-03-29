@@ -173,6 +173,20 @@ export function listHomepageSetCards(): CatalogHomepageSetCard[] {
     .slice(0, HOMEPAGE_SET_LIMIT);
 }
 
+export function listCatalogSetCardsByIds(
+  canonicalIds: readonly string[],
+): CatalogHomepageSetCard[] {
+  return canonicalIds.flatMap((canonicalId) => {
+    const catalogSetRecord = catalogSetRecordById.get(canonicalId);
+
+    if (!catalogSetRecord) {
+      return [];
+    }
+
+    return [toCatalogHomepageSetCard(toCatalogSetDetail(catalogSetRecord))];
+  });
+}
+
 export function listCatalogSetSlugs(): string[] {
   return catalogSnapshot.setRecords.map((catalogSetRecord) =>
     getCatalogProductSlug({

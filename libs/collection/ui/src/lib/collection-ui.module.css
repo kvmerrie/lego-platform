@@ -72,7 +72,40 @@
   justify-self: flex-start;
 }
 
+.collectionPagePanel {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.collectionHeader {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.collectionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.collectionGrid {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.collectionEmptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+}
+
 .demo {
   display: grid;
   gap: var(--lego-space-4);
+}
+
+@media (min-width: 48rem) {
+  .collectionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
