@@ -1,6 +1,8 @@
+import { AffiliateFeatureOffers } from '@lego-platform/affiliate/feature-offers';
 import { getCatalogSetBySlug, listCatalogSetSlugs } from '@lego-platform/catalog/data-access';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
+import { PricingFeaturePricePanel } from '@lego-platform/pricing/feature-price-panel';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { UserFeatureAuth } from '@lego-platform/user/feature-auth';
 import { UserFeatureProfile } from '@lego-platform/user/feature-profile';
@@ -29,6 +31,10 @@ export default async function SetDetailPage({
   return (
     <ShellWeb>
       <CatalogFeatureSetDetail catalogSetDetail={catalogSetDetail} />
+      <section aria-label="Set buying guidance" className={styles.commercePanels}>
+        <PricingFeaturePricePanel setId={catalogSetDetail.id} />
+        <AffiliateFeatureOffers setId={catalogSetDetail.id} />
+      </section>
       <section aria-label="Collector account" className={styles.accountPanels}>
         <UserFeatureAuth />
         <UserFeatureProfile />

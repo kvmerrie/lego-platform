@@ -5,5 +5,13 @@
   "projectType": "library",
   "tags": ["scope:affiliate", "type:feature", "platform:web"],
   "// targets": "to see all targets run: nx show project affiliate-feature-offers --web",
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/affiliate/feature-offers",
+        "command": "vitest run src/lib/affiliate-feature-offers.spec.tsx --config ../../vitest.config.mts"
+      }
+    }
+  }
 }

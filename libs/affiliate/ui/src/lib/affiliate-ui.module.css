@@ -1,0 +1,81 @@
+.panel,
+.demo {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.panelBadges,
+.offerBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.offerList {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.offerCard {
+  display: grid;
+  gap: var(--lego-space-3);
+  padding: var(--lego-space-4);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 74%, transparent);
+  border-radius: var(--lego-radius-md);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--lego-surface-raised) 98%, transparent),
+    color-mix(in srgb, var(--lego-surface) 88%, transparent)
+  );
+}
+
+.offerHeader,
+.offerFooter {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.offerHeading {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.offerTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-text-role-card-title-weight);
+  letter-spacing: -0.02em;
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.offerPrice {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0;
+}
+
+.offerPerks,
+.offerDisclosure,
+.offerFreshness,
+.unavailableCopy {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.offerLink {
+  justify-self: flex-start;
+}
+
+@media (min-width: 48rem) {
+  .offerHeader,
+  .offerFooter {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

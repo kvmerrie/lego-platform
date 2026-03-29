@@ -3,34 +3,162 @@ import {
   PriceHistoryPoint,
   PricePanelSnapshot,
 } from '@lego-platform/pricing/util';
+import { Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import styles from './pricing-ui.module.css';
+
+function formatObservedAt(observedAt: string): string {
+  return new Intl.DateTimeFormat('nl-NL', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(observedAt));
+}
+
+function getDeltaLabel(
+  currencyCode: string,
+  deltaMinor?: number,
+): string {
+  if (typeof deltaMinor !== 'number') {
+    return 'No reference configured';
+  }
+
+  if (deltaMinor < 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: Math.abs(deltaMinor),
+    })} below reference`;
+  }
+
+  if (deltaMinor > 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: deltaMinor,
+    })} above reference`;
+  }
+
+  return 'At reference';
+}
+
+function getDeltaTone(
+  deltaMinor?: number,
+): 'info' | 'neutral' | 'positive' | 'warning' {
+  if (typeof deltaMinor !== 'number') {
+    return 'neutral';
+  }
+
+  if (deltaMinor < 0) {
+    return 'positive';
+  }
+
+  if (deltaMinor > 0) {
+    return 'warning';
+  }
+
+  return 'info';
+}
+
+function PricingMetaItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className={styles.metaItem}>
+      <dt className={styles.metaLabel}>{label}</dt>
+      <dd className={styles.metaValue}>{value}</dd>
+    </div>
+  );
+}
 
 export function PriceSummaryCard({
+  id,
   pricePanelSnapshot,
 }: {
+  id?: string;
   pricePanelSnapshot: PricePanelSnapshot;
 }) {
   return (
-    <article className="surface stack">
-      <p className="eyebrow">Set {pricePanelSnapshot.setId}</p>
-      <h3 className="metric-value">
-        {formatPriceMinor({
-          currencyCode: pricePanelSnapshot.currencyCode,
-          minorUnits: pricePanelSnapshot.headlinePriceMinor,
-        })}
-      </h3>
-      <p className="muted">
-        Lowest merchant {pricePanelSnapshot.lowestMerchantId} · {pricePanelSnapshot.merchantCount} offers
-      </p>
-      {typeof pricePanelSnapshot.referencePriceMinor === 'number' ? (
-        <p>
-          Reference{' '}
+    <Surface
+      as="section"
+      className={styles.panel}
+      elevation="rested"
+      id={id}
+      tone="muted"
+    >
+      <SectionHeading
+        description="Current reviewed Dutch market guidance from the small allowlisted EUR offer slice."
+        eyebrow="Buy guidance"
+        title="Current Dutch market price"
+      />
+      <div className={styles.badgeRow}>
+        <Badge tone="accent">NL / EUR</Badge>
+        <Badge tone="info">New condition</Badge>
+        <Badge>{pricePanelSnapshot.merchantCount} offers tracked</Badge>
+      </div>
+      <div className={styles.metricBlock}>
+        <p className={styles.metricLabel}>Headline current price</p>
+        <p className={styles.metricValue}>
           {formatPriceMinor({
             currencyCode: pricePanelSnapshot.currencyCode,
-            minorUnits: pricePanelSnapshot.referencePriceMinor,
+            minorUnits: pricePanelSnapshot.headlinePriceMinor,
           })}
         </p>
-      ) : null}
-    </article>
+        <Badge tone={getDeltaTone(pricePanelSnapshot.deltaMinor)}>
+          {getDeltaLabel(
+            pricePanelSnapshot.currencyCode,
+            pricePanelSnapshot.deltaMinor,
+          )}
+        </Badge>
+      </div>
+      <dl className={styles.metaGrid}>
+        <PricingMetaItem
+          label="Reference"
+          value={
+            typeof pricePanelSnapshot.referencePriceMinor === 'number'
+              ? formatPriceMinor({
+                  currencyCode: pricePanelSnapshot.currencyCode,
+                  minorUnits: pricePanelSnapshot.referencePriceMinor,
+                })
+              : 'Not set yet'
+          }
+        />
+        <PricingMetaItem
+          label="Freshness"
+          value={formatObservedAt(pricePanelSnapshot.observedAt)}
+        />
+        <PricingMetaItem
+          label="Coverage"
+          value={`${pricePanelSnapshot.merchantCount} Dutch offers`}
+        />
+      </dl>
+    </Surface>
+  );
+}
+
+export function PricingUnavailableCard({ id }: { id?: string }) {
+  return (
+    <Surface
+      as="section"
+      className={styles.panel}
+      elevation="rested"
+      id={id}
+      tone="muted"
+    >
+      <SectionHeading
+        description="This set is outside the current reviewed Dutch pricing slice, so no current snapshot is shown yet."
+        eyebrow="Buy guidance"
+        title="Current Dutch market price"
+      />
+      <div className={styles.badgeRow}>
+        <Badge tone="accent">NL / EUR</Badge>
+        <Badge tone="info">New condition</Badge>
+      </div>
+      <p className={styles.unavailableCopy}>
+        Pricing snapshots are only published for the small commerce-enabled set
+        allowlist right now.
+      </p>
+    </Surface>
   );
 }
 
@@ -40,22 +168,25 @@ export function PriceHistoryRow({
   priceHistoryPoint: PriceHistoryPoint;
 }) {
   return (
-    <li className="split-row dense-row">
+    <li className={styles.historyRow}>
       <span>{priceHistoryPoint.label}</span>
-      <span className="mono">${priceHistoryPoint.value}</span>
-      <span className="muted">{priceHistoryPoint.annotation}</span>
+      <span className={styles.mono}>${priceHistoryPoint.value}</span>
+      <span className={styles.historyAnnotation}>
+        {priceHistoryPoint.annotation}
+      </span>
     </li>
   );
 }
 
 export function PricingUi() {
   return (
-    <section className="surface stack">
-      <p className="eyebrow">Pricing UI</p>
-      <h2 className="surface-title">
-        Presentational cards and rows for Dutch-market current-price guidance.
-      </h2>
-    </section>
+    <Surface as="section" className={styles.demo} tone="muted">
+      <SectionHeading
+        description="Compact buying guidance surfaces for current-price snapshots and future history work."
+        eyebrow="Pricing UI"
+        title="Dutch-market price guidance with product-facing restraint."
+      />
+    </Surface>
   );
 }
 

@@ -1,36 +1,17 @@
 import { listAffiliateOffers } from '@lego-platform/affiliate/data-access';
-import { AffiliateOfferCard } from '@lego-platform/affiliate/ui';
+import {
+  AffiliateOffersPanel,
+  AffiliateUnavailableCard,
+} from '@lego-platform/affiliate/ui';
 
 export function AffiliateFeatureOffers({ setId }: { setId: string }) {
-  const affiliateOffers = listAffiliateOffers(setId);
+  const affiliateOffers = listAffiliateOffers(setId).slice(0, 3);
 
   if (affiliateOffers.length === 0) {
-    return null;
+    return <AffiliateUnavailableCard id="offers" />;
   }
 
-  return (
-    <section className="section-stack">
-      <header className="section-heading">
-        <p className="eyebrow">Affiliate offers</p>
-        <h2>
-          Commerce surfaces are segmented so monetization does not leak through
-          the rest of the app.
-        </h2>
-        <p className="section-copy">
-          This foundation phase keeps outbound links direct and operator-reviewed
-          while the Dutch merchant allowlist stays intentionally small.
-        </p>
-      </header>
-      <div className="surface-grid">
-        {affiliateOffers.map((affiliateOffer) => (
-          <AffiliateOfferCard
-            key={affiliateOffer.merchantId}
-            affiliateOffer={affiliateOffer}
-          />
-        ))}
-      </div>
-    </section>
-  );
+  return <AffiliateOffersPanel affiliateOffers={affiliateOffers} id="offers" />;
 }
 
 export default AffiliateFeatureOffers;
