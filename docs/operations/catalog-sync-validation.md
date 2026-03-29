@@ -79,6 +79,10 @@ Current expected source slugs:
 - `tranquil-garden-10315`
 - `the-starry-night-21333`
 - `the-insect-collection-21342`
+- `concorde-10318`
+- `kingfisher-bird-10331`
+- `nasa-artemis-space-launch-system-10341`
+- `tuxedo-cat-21349`
 
 Current expected public route slugs from the product-facing layer:
 
@@ -94,6 +98,10 @@ Current expected public route slugs from the product-facing layer:
 - `tranquil-garden-10315`
 - `vincent-van-gogh-the-starry-night-21333`
 - `the-insect-collection-21342`
+- `concorde-10318`
+- `kingfisher-bird-10331`
+- `nasa-artemis-space-launch-system-10341`
+- `tuxedo-cat-21349`
 
 ### Canonical Id Assumptions
 
@@ -111,6 +119,10 @@ Check that each source set number still maps correctly:
 - `10315-1` -> `10315`
 - `21333-1` -> `21333`
 - `21342-1` -> `21342`
+- `10318-1` -> `10318`
+- `10331-1` -> `10331`
+- `10341-1` -> `10341`
+- `21349-1` -> `21349`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 

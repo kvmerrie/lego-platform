@@ -169,6 +169,59 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Broadens the Ideas slice with a subject that feels thoughtful and shelf-friendly rather than franchise-led',
     ],
   },
+  {
+    canonicalId: '10318',
+    priceRange: '$169 to $229',
+    collectorAngle: 'Engineering icon centerpiece',
+    tagline:
+      'A long-format aviation display build that adds sleek technical prestige to the curated lineup.',
+    availability: 'Reliable premium availability',
+    collectorHighlights: [
+      'Instant silhouette recognition helps the public catalog feel broader without losing its collector-grade tone',
+      'Large display footprint brings a very different kind of shelf presence than towers, castles, and architecture-led sets',
+      'Strong fit for editorial storytelling around design icons, transport history, and adult display culture',
+    ],
+  },
+  {
+    canonicalId: '10331',
+    priceRange: '$49 to $69',
+    collectorAngle: 'Color-pop display accent',
+    tagline:
+      'A compact nature study that gives the catalog a sharper, more playful entry point without feeling toy-like.',
+    availability: 'Widely accessible availability',
+    collectorHighlights: [
+      'Smaller scale lowers the barrier to entry for first-time collectors browsing the public catalog',
+      'Vivid subject matter adds visual contrast to the current lineup of towers, buildings, and large-format displays',
+      'Useful bridge between giftable design-led sets and the more expensive flagship collector pieces',
+    ],
+  },
+  {
+    canonicalId: '10341',
+    priceRange: '$239 to $299',
+    collectorAngle: 'Space-program display monument',
+    tagline:
+      'A towering spaceflight display build that expands the catalog into engineering-first collecting with real visual gravity.',
+    availability: 'Specialist but steady premium demand',
+    collectorHighlights: [
+      'Vertical rocket-and-tower silhouette gives the public catalog a distinct display posture that is neither fortress nor fantasy spire',
+      'NASA subject matter broadens collector relevance without relying on a licensed entertainment franchise',
+      'Strong fit for detailed product storytelling around scale, engineering, and adult build ambition',
+    ],
+  },
+  {
+    canonicalId: '21349',
+    displayTheme: 'Ideas',
+    priceRange: '$99 to $139',
+    collectorAngle: 'Characterful home-display crowd-pleaser',
+    tagline:
+      'A poseable domestic display piece that keeps the collector tone warm, recognizable, and broadly giftable.',
+    availability: 'Strong mainstream enthusiast availability',
+    collectorHighlights: [
+      'Highly recognizable subject gives the curated catalog another easy on-ramp for casual adult browsers',
+      'Display-led personality helps the public set mix feel less architecture-heavy and more emotionally varied',
+      'Good fit for social-proof, gifting, and home-display storytelling without expanding product scope',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [

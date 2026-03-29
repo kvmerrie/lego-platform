@@ -13,6 +13,10 @@ export const curatedCatalogSyncSetNumbers = [
   '10315-1',
   '21333-1',
   '21342-1',
+  '10318-1',
+  '10331-1',
+  '10341-1',
+  '21349-1',
 ] as const;
 
 export const curatedHomepageFeaturedSetNumbers = [

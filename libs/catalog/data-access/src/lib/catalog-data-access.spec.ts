@@ -13,7 +13,7 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(12);
+    expect(catalogSnapshot.setRecords).toHaveLength(16);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
@@ -92,6 +92,26 @@ describe('catalog snapshot artifacts', () => {
         slug: 'the-insect-collection-21342',
         sourceSetNumber: '21342-1',
       },
+      {
+        canonicalId: '10318',
+        slug: 'concorde-10318',
+        sourceSetNumber: '10318-1',
+      },
+      {
+        canonicalId: '10331',
+        slug: 'kingfisher-bird-10331',
+        sourceSetNumber: '10331-1',
+      },
+      {
+        canonicalId: '10341',
+        slug: 'nasa-artemis-space-launch-system-10341',
+        sourceSetNumber: '10341-1',
+      },
+      {
+        canonicalId: '21349',
+        slug: 'tuxedo-cat-21349',
+        sourceSetNumber: '21349-1',
+      },
     ]);
   });
 });
@@ -111,6 +131,10 @@ describe('catalog data-access contracts', () => {
       'tranquil-garden-10315',
       'vincent-van-gogh-the-starry-night-21333',
       'the-insect-collection-21342',
+      'concorde-10318',
+      'kingfisher-bird-10331',
+      'nasa-artemis-space-launch-system-10341',
+      'tuxedo-cat-21349',
     ]);
   });
 
@@ -452,10 +476,96 @@ describe('catalog data-access contracts', () => {
         'Broadens the Ideas slice with a subject that feels thoughtful and shelf-friendly rather than franchise-led',
       ],
     });
+
+    expect(getCatalogSetBySlug('concorde-10318')).toEqual({
+      id: '10318',
+      slug: 'concorde-10318',
+      name: 'Concorde',
+      theme: 'Icons',
+      releaseYear: 2023,
+      pieces: 2083,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/10318-1/132335.jpg/1000x800p.jpg',
+      priceRange: '$169 to $229',
+      collectorAngle: 'Engineering icon centerpiece',
+      tagline:
+        'A long-format aviation display build that adds sleek technical prestige to the curated lineup.',
+      availability: 'Reliable premium availability',
+      collectorHighlights: [
+        'Instant silhouette recognition helps the public catalog feel broader without losing its collector-grade tone',
+        'Large display footprint brings a very different kind of shelf presence than towers, castles, and architecture-led sets',
+        'Strong fit for editorial storytelling around design icons, transport history, and adult display culture',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('kingfisher-bird-10331')).toEqual({
+      id: '10331',
+      slug: 'kingfisher-bird-10331',
+      name: 'Kingfisher Bird',
+      theme: 'Icons',
+      releaseYear: 2024,
+      pieces: 834,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/10331-1/135670.jpg/1000x800p.jpg',
+      priceRange: '$49 to $69',
+      collectorAngle: 'Color-pop display accent',
+      tagline:
+        'A compact nature study that gives the catalog a sharper, more playful entry point without feeling toy-like.',
+      availability: 'Widely accessible availability',
+      collectorHighlights: [
+        'Smaller scale lowers the barrier to entry for first-time collectors browsing the public catalog',
+        'Vivid subject matter adds visual contrast to the current lineup of towers, buildings, and large-format displays',
+        'Useful bridge between giftable design-led sets and the more expensive flagship collector pieces',
+      ],
+    });
+
+    expect(
+      getCatalogSetBySlug('nasa-artemis-space-launch-system-10341'),
+    ).toEqual({
+      id: '10341',
+      slug: 'nasa-artemis-space-launch-system-10341',
+      name: 'NASA Artemis Space Launch System',
+      theme: 'Icons',
+      releaseYear: 2024,
+      pieces: 3601,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/10341-1/139647.jpg/1000x800p.jpg',
+      priceRange: '$239 to $299',
+      collectorAngle: 'Space-program display monument',
+      tagline:
+        'A towering spaceflight display build that expands the catalog into engineering-first collecting with real visual gravity.',
+      availability: 'Specialist but steady premium demand',
+      collectorHighlights: [
+        'Vertical rocket-and-tower silhouette gives the public catalog a distinct display posture that is neither fortress nor fantasy spire',
+        'NASA subject matter broadens collector relevance without relying on a licensed entertainment franchise',
+        'Strong fit for detailed product storytelling around scale, engineering, and adult build ambition',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('tuxedo-cat-21349')).toEqual({
+      id: '21349',
+      slug: 'tuxedo-cat-21349',
+      name: 'Tuxedo Cat',
+      theme: 'Ideas',
+      releaseYear: 2024,
+      pieces: 1710,
+      imageUrl:
+        'https://cdn.rebrickable.com/media/thumbs/sets/21349-1/140411.jpg/1000x800p.jpg',
+      priceRange: '$99 to $139',
+      collectorAngle: 'Characterful home-display crowd-pleaser',
+      tagline:
+        'A poseable domestic display piece that keeps the collector tone warm, recognizable, and broadly giftable.',
+      availability: 'Strong mainstream enthusiast availability',
+      collectorHighlights: [
+        'Highly recognizable subject gives the curated catalog another easy on-ramp for casual adult browsers',
+        'Display-led personality helps the public set mix feel less architecture-heavy and more emotionally varied',
+        'Good fit for social-proof, gifting, and home-display storytelling without expanding product scope',
+      ],
+    });
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(12);
+    expect(listCatalogSetSummaries()).toHaveLength(16);
     expect(listCatalogThemes()).toEqual([
       {
         name: 'Icons',

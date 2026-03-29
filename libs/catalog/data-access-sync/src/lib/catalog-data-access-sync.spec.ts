@@ -121,6 +121,42 @@ function createMockRebrickableClient(): RebrickableClient {
             theme_id: 2,
             set_img_url: 'https://images.example/the-insect-collection.jpg',
           };
+        case '10318-1':
+          return {
+            set_num: '10318-1',
+            name: 'Concorde',
+            year: 2023,
+            num_parts: 2083,
+            theme_id: 1,
+            set_img_url: 'https://images.example/concorde.jpg',
+          };
+        case '10331-1':
+          return {
+            set_num: '10331-1',
+            name: 'Kingfisher Bird',
+            year: 2024,
+            num_parts: 834,
+            theme_id: 1,
+            set_img_url: 'https://images.example/kingfisher-bird.jpg',
+          };
+        case '10341-1':
+          return {
+            set_num: '10341-1',
+            name: 'NASA Artemis Space Launch System',
+            year: 2024,
+            num_parts: 3601,
+            theme_id: 1,
+            set_img_url: 'https://images.example/nasa-artemis.jpg',
+          };
+        case '21349-1':
+          return {
+            set_num: '21349-1',
+            name: 'Tuxedo Cat',
+            year: 2024,
+            num_parts: 1710,
+            theme_id: 2,
+            set_img_url: 'https://images.example/tuxedo-cat.jpg',
+          };
         default:
           throw new Error(`Unexpected set lookup for ${setNumber}.`);
       }
@@ -271,12 +307,52 @@ describe('catalog sync artifacts', () => {
           pieces: 1111,
           imageUrl: 'https://images.example/the-insect-collection.jpg',
         },
+        {
+          canonicalId: '10318',
+          sourceSetNumber: '10318-1',
+          slug: 'concorde-10318',
+          name: 'Concorde',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 2083,
+          imageUrl: 'https://images.example/concorde.jpg',
+        },
+        {
+          canonicalId: '10331',
+          sourceSetNumber: '10331-1',
+          slug: 'kingfisher-bird-10331',
+          name: 'Kingfisher Bird',
+          theme: 'Icons',
+          releaseYear: 2024,
+          pieces: 834,
+          imageUrl: 'https://images.example/kingfisher-bird.jpg',
+        },
+        {
+          canonicalId: '10341',
+          sourceSetNumber: '10341-1',
+          slug: 'nasa-artemis-space-launch-system-10341',
+          name: 'NASA Artemis Space Launch System',
+          theme: 'Icons',
+          releaseYear: 2024,
+          pieces: 3601,
+          imageUrl: 'https://images.example/nasa-artemis.jpg',
+        },
+        {
+          canonicalId: '21349',
+          sourceSetNumber: '21349-1',
+          slug: 'tuxedo-cat-21349',
+          name: 'Tuxedo Cat',
+          theme: 'LEGO Ideas and CUUSOO',
+          releaseYear: 2024,
+          pieces: 1710,
+          imageUrl: 'https://images.example/tuxedo-cat.jpg',
+        },
       ],
     });
     expect(artifacts.catalogSyncManifest).toEqual({
       source: 'rebrickable-api-v3',
       generatedAt: '2026-03-28T00:00:00.000Z',
-      recordCount: 12,
+      recordCount: 16,
       homepageFeaturedSetIds: ['10316', '21348', '76269'],
       notes:
         'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
@@ -492,6 +568,58 @@ describe('catalog sync artifacts', () => {
           );
         }
 
+        if (url.endsWith('/lego/sets/10318-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10318-1',
+              name: 'Concorde',
+              year: 2023,
+              num_parts: 2083,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/10331-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10331-1',
+              name: 'Kingfisher Bird',
+              year: 2024,
+              num_parts: 834,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/10341-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10341-1',
+              name: 'NASA Artemis Space Launch System',
+              year: 2024,
+              num_parts: 3601,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21349-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21349-1',
+              name: 'Tuxedo Cat',
+              year: 2024,
+              num_parts: 1710,
+              theme_id: 2,
+            }),
+            { status: 200 },
+          );
+        }
+
         return new Response(null, { status: 404 });
       },
       now: new Date('2026-03-28T00:00:00.000Z'),
@@ -675,6 +803,58 @@ describe('catalog sync artifacts', () => {
             name: 'The Insect Collection',
             year: 2023,
             num_parts: 1111,
+            theme_id: 2,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10318-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10318-1',
+            name: 'Concorde',
+            year: 2023,
+            num_parts: 2083,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10331-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10331-1',
+            name: 'Kingfisher Bird',
+            year: 2024,
+            num_parts: 834,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10341-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10341-1',
+            name: 'NASA Artemis Space Launch System',
+            year: 2024,
+            num_parts: 3601,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21349-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21349-1',
+            name: 'Tuxedo Cat',
+            year: 2024,
+            num_parts: 1710,
             theme_id: 2,
           }),
           { status: 200 },
