@@ -74,3 +74,29 @@ Use this before overwriting artifacts when you want a safe drift check first.
   - any local overlay changes made alongside the sync
 - The catalog test suite also checks that committed generated artifacts remain in canonical writer format, which helps catch accidental manual edits or formatter drift.
 - This documentation only covers the technical workflow. Rebrickable licensing and usage terms still need separate manual review before production operations.
+
+## Production Scheduling
+
+Catalog sync is safe to run repeatedly in production.
+
+Why it is idempotent:
+
+- generated artifacts are deterministic
+- the sync writer only overwrites artifact files when the rendered output actually changes
+- repeated runs with unchanged upstream source data keep the same committed artifact shape
+
+Recommended production schedule:
+
+- once per day
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:catalog
+```
+
+Render scheduled job notes:
+
+- run this as a scheduled background job, not as an always-on service
+- keep `REBRICKABLE_API_KEY` scoped to the scheduled job only
+- use `pnpm sync:catalog:check` manually or in CI when you want a drift review without writing artifacts

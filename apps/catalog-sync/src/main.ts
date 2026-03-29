@@ -15,12 +15,17 @@ async function main() {
   const apiKey = process.env['REBRICKABLE_API_KEY'];
   const baseUrl = process.env['REBRICKABLE_BASE_URL'];
   const mode = getSyncMode(process.argv.slice(2));
+  const startedAt = Date.now();
 
   if (!apiKey) {
     throw new Error(
       'REBRICKABLE_API_KEY is required to run the catalog sync.',
     );
   }
+
+  console.log(
+    `[catalog-sync] start mode=${mode} curated_set_numbers=${curatedCatalogSyncSetNumbers.length}`,
+  );
 
   const artifacts = await runCatalogSync({
     apiKey,
@@ -39,18 +44,25 @@ async function main() {
     }
 
     console.log(
-      `[catalog-sync] check passed for ${artifacts.catalogSnapshot.setRecords.length} catalog records.`,
+      `[catalog-sync] end mode=check status=clean curated_set_numbers=${curatedCatalogSyncSetNumbers.length} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
     );
     return;
   }
 
   console.log(
-    `[catalog-sync] ${artifacts.artifactCheck.isClean ? 'verified' : 'updated'} ${artifacts.catalogSnapshot.setRecords.length} catalog records for ${curatedCatalogSyncSetNumbers.length} curated set numbers.`,
+    `[catalog-sync] end mode=write status=${artifacts.artifactCheck.isClean ? 'verified' : 'updated'} curated_set_numbers=${curatedCatalogSyncSetNumbers.length} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
 main().catch((error) => {
-  console.error('[catalog-sync] failed');
+  const mode = getSyncMode(process.argv.slice(2));
+
+  console.error(
+    `[catalog-sync] failed mode=${mode} curated_set_numbers=${curatedCatalogSyncSetNumbers.length}`,
+  );
+  if (error instanceof Error) {
+    console.error(`[catalog-sync] error=${error.message}`);
+  }
   console.error(error);
   process.exit(1);
 });

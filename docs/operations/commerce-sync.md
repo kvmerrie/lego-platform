@@ -82,3 +82,29 @@ Use check mode before overwriting artifacts when reviewing changes.
 - `pnpm sync:commerce:check` remains a generated-artifact drift check only and does not write history rows.
 - Merchant allowlist, disclosure copy, reference pricing, and enabled set scope remain curated locally.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.
+
+## Production Scheduling
+
+Commerce sync is safe to run repeatedly in production.
+
+Why it is idempotent:
+
+- generated pricing and affiliate artifacts are deterministic
+- artifact writers only overwrite files when the rendered output actually changes
+- daily price-history writes use an upsert keyed by `(set_id, region_code, currency_code, condition, recorded_on)`, so reruns on the same day update the same row instead of creating duplicates
+
+Recommended production schedule:
+
+- every 6 hours
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:commerce
+```
+
+Render scheduled job notes:
+
+- run this as a scheduled background job, not as an always-on service
+- keep `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job only
+- use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without writing history rows

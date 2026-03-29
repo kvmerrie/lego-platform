@@ -20,7 +20,13 @@ export interface CommerceGeneratedArtifactCheckResult {
 
 export interface CommerceSyncRunResult {
   affiliateArtifactCheck: CommerceGeneratedArtifactCheckResult;
+  affiliateOfferCount: number;
+  dailyHistoryPointCount: number;
+  enabledSetCount: number;
+  merchantCount: number;
   mode: 'check' | 'write';
+  pricePanelSnapshotCount: number;
+  pricingObservationCount: number;
   pricingArtifactCheck: CommerceGeneratedArtifactCheckResult;
 }
 
@@ -104,16 +110,26 @@ export async function runCommerceSync({
           workspaceRoot,
         });
 
-  if (mode === 'write') {
-    await upsertDailyPriceHistoryPoints({
-      now,
-      pricePanelSnapshots: pricingArtifacts.pricePanelSnapshots,
-    });
-  }
+  const dailyPriceHistoryPoints =
+    mode === 'write'
+      ? await upsertDailyPriceHistoryPoints({
+          now,
+          pricePanelSnapshots: pricingArtifacts.pricePanelSnapshots,
+        })
+      : [];
 
   return {
     mode,
     pricingArtifactCheck,
     affiliateArtifactCheck,
+    enabledSetCount: curatedCommerceEnabledSetIds.length,
+    pricingObservationCount: pricingArtifacts.pricingObservations.length,
+    pricePanelSnapshotCount: pricingArtifacts.pricePanelSnapshots.length,
+    affiliateOfferCount: affiliateArtifacts.affiliateOfferSnapshots.length,
+    merchantCount: dutchAffiliateMerchantConfigs.length,
+    dailyHistoryPointCount:
+      mode === 'write'
+        ? dailyPriceHistoryPoints.length
+        : pricingArtifacts.pricePanelSnapshots.length,
   };
 }

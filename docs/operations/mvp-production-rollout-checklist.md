@@ -17,6 +17,9 @@ Confirm these production services already exist and are pointed at the current r
 
 - one Vercel production project for `apps/web`
 - one Render production web service for `apps/api`
+- two Render scheduled jobs for sync automation
+  - `commerce-sync-production`
+  - `catalog-sync-production`
 - one Supabase production project
 - optional live Contentful production posture
   - either `master` delivery is enabled intentionally
@@ -100,7 +103,10 @@ Required for production commerce write runs:
    - `pnpm nx run web:build`
 5. Deploy Render API production first.
 6. Deploy Vercel web production second.
-7. Run production smoke checks immediately.
+7. Confirm Render scheduled jobs are enabled with the intended schedules.
+   - commerce sync every 6 hours
+   - catalog sync once per day
+8. Run production smoke checks immediately.
 
 ## 5. Production Smoke Checks
 

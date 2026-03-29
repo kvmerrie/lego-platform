@@ -79,6 +79,25 @@ Recommended service settings:
 - let Render provide `PORT`
 - enable automatic deploys from the protected release branch only after staging rehearsal is trusted
 
+### Render Scheduled Jobs
+
+Use Render scheduled jobs for the current sync automation layer instead of adding workers or always-on background services.
+
+Recommended production jobs:
+
+- `commerce-sync-production`
+  - schedule: every 6 hours
+  - command: `pnpm sync:commerce`
+- `catalog-sync-production`
+  - schedule: once per day
+  - command: `pnpm sync:catalog`
+
+Recommended guardrails:
+
+- keep each sync secret only on the scheduled job that needs it
+- do not add sync write commands to the always-on API service
+- use the same repository root and install strategy as the normal Render API build setup
+
 ### Supabase
 
 Use two hosted Supabase projects:
