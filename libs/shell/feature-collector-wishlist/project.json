@@ -1,0 +1,9 @@
+{
+  "name": "shell-feature-collector-wishlist",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shell/feature-collector-wishlist/src",
+  "projectType": "library",
+  "tags": ["scope:shell", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project shell-feature-collector-wishlist --web",
+  "targets": {}
+}

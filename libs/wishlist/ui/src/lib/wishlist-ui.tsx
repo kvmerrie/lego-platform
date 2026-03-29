@@ -1,6 +1,8 @@
+import { type ReactNode } from 'react';
 import {
-  Button,
+  ActionLink,
   Badge,
+  Button,
   SectionHeading,
   Surface,
 } from '@lego-platform/shared/ui';
@@ -124,6 +126,114 @@ export function WantedSetToggleCard({
             ? 'Saving...'
             : actionLabel}
       </Button>
+    </Surface>
+  );
+}
+
+function formatWantedSetCount(count: number): string {
+  return `${count} wanted set${count === 1 ? '' : 's'}`;
+}
+
+export function CollectorWishlistPanel({
+  children,
+  collectorName,
+  errorMessage,
+  hiddenWantedCount = 0,
+  state,
+  wantedCount = 0,
+}: {
+  children?: ReactNode;
+  collectorName?: string;
+  errorMessage?: string;
+  hiddenWantedCount?: number;
+  state: 'empty' | 'loading' | 'populated' | 'signed-out';
+  wantedCount?: number;
+}) {
+  const title =
+    state === 'loading'
+      ? 'Loading your collector wishlist'
+      : state === 'signed-out'
+        ? 'Sign in to view your private wanted list'
+        : state === 'empty'
+          ? collectorName
+            ? `${collectorName}, your wishlist is ready for its first tracked set`
+            : 'Your wishlist is ready for its first tracked set'
+          : collectorName
+            ? `${collectorName}, here is your wanted list`
+            : 'Your wanted list';
+  const description =
+    state === 'loading'
+      ? 'Checking the sets privately saved as wanted on your collector account.'
+      : state === 'signed-out'
+        ? 'This page only shows sets saved to your signed-in collector account as wanted. Public catalog browsing still works for everyone.'
+        : state === 'empty'
+          ? hiddenWantedCount > 0
+            ? `You have ${formatWantedSetCount(
+                hiddenWantedCount,
+              )} saved outside the current public catalog slice. Save a featured set as wanted to start building the visible wishlist here.`
+            : 'Save sets as wanted from their detail pages and they will appear here as your private wishlist for future tracking.'
+          : hiddenWantedCount > 0
+            ? `Showing ${formatWantedSetCount(
+                wantedCount,
+              )} from the current public catalog slice. ${formatWantedSetCount(
+                hiddenWantedCount,
+              )} ${
+                hiddenWantedCount === 1 ? 'stays' : 'stay'
+              } saved on your account but ${
+                hiddenWantedCount === 1 ? 'sits' : 'sit'
+              } outside the public curated catalog right now.`
+            : `This page shows ${formatWantedSetCount(
+                wantedCount,
+              )} privately saved on your collector account as future targets.`;
+
+  return (
+    <Surface
+      as="section"
+      className={styles.wishlistPagePanel}
+      elevation="rested"
+      tone={state === 'populated' ? 'default' : 'muted'}
+    >
+      <div className={styles.wishlistHeader}>
+        <SectionHeading
+          description={description}
+          eyebrow="Collector wishlist"
+          title={title}
+          titleAs="h2"
+        />
+        <div className={styles.wishlistMeta}>
+          <Badge tone={state === 'populated' ? 'accent' : 'info'}>
+            {state === 'loading'
+              ? 'Loading private state'
+              : state === 'signed-out'
+                ? 'Private collector page'
+                : `${wantedCount} visible`}
+          </Badge>
+          <Badge tone="warning">Wanted radar</Badge>
+          {hiddenWantedCount > 0 ? (
+            <Badge tone="warning">
+              {hiddenWantedCount} outside public slice
+            </Badge>
+          ) : null}
+        </div>
+      </div>
+      <p className={styles.metaText}>
+        Private to your collector account. Public set facts, reviewed pricing,
+        and curated buying guidance remain shared catalog information.
+      </p>
+      {errorMessage ? (
+        <p aria-live="polite" className={styles.errorText}>
+          {errorMessage}
+        </p>
+      ) : null}
+      {state === 'populated' ? (
+        <div className={styles.wishlistGrid}>{children}</div>
+      ) : (
+        <div className={styles.wishlistEmptyActions}>
+          <ActionLink href="/#featured-sets" tone="secondary">
+            Browse featured sets
+          </ActionLink>
+        </div>
+      )}
     </Surface>
   );
 }

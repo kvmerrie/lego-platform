@@ -58,7 +58,40 @@
   justify-self: flex-start;
 }
 
+.wishlistPagePanel {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.wishlistHeader {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.wishlistMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.wishlistGrid {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.wishlistEmptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+}
+
 .demo {
   display: grid;
   gap: var(--lego-space-4);
+}
+
+@media (min-width: 48rem) {
+  .wishlistGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

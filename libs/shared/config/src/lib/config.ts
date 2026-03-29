@@ -46,6 +46,11 @@ export const webNavigation = [
     href: '/collection',
     description: 'Private owned-set destination.',
   },
+  {
+    label: 'My wishlist',
+    href: '/wishlist',
+    description: 'Private wanted-set destination.',
+  },
 ] as const;
 
 export const apiPaths = {
