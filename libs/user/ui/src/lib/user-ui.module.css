@@ -82,6 +82,13 @@
   margin: 0;
 }
 
+.supportNote {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
 .statusRow {
   align-items: center;
   display: flex;

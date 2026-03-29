@@ -59,6 +59,7 @@ export function OwnedSetToggleCard({
   isPending,
   onToggle,
   setId,
+  successMessage,
 }: {
   errorMessage?: string;
   hasResolvedState: boolean;
@@ -67,25 +68,28 @@ export function OwnedSetToggleCard({
   isPending?: boolean;
   onToggle: () => void;
   setId: string;
+  successMessage?: string;
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Syncing owned state for this set.'
+    ? 'Checking your owned save for this set.'
     : isUnavailable
       ? 'Owned status is unavailable right now.'
       : isOwned
-        ? 'This set is already in your owned ledger.'
-        : 'Mark this set as owned when it is part of your collection.';
+        ? 'Saved to your owned collection.'
+        : 'Add this set to your owned collection.';
   const description = isLoading
-    ? `Checking whether set ${setId} is already saved in your owned ledger.`
+    ? `Loading whether set ${setId} is already attached to your signed-in collector account as owned.`
     : isUnavailable
       ? `Set ${setId} cannot be updated until the owned-state query succeeds.`
-      : `Set ${setId} keeps an independent owned flag, separate from wanted state.`;
+      : isOwned
+        ? `Set ${setId} is currently saved as owned on your collector account. This stays independent from wanted state.`
+        : `Save set ${setId} as owned so it stays attached to your collector account without affecting wanted state.`;
   const actionLabel = isUnavailable
     ? 'Owned status unavailable'
     : isOwned
       ? 'Remove from owned'
-      : 'Mark as owned';
+      : 'Save as owned';
   const statusTone = isLoading
     ? 'info'
     : isUnavailable
@@ -98,8 +102,8 @@ export function OwnedSetToggleCard({
     : isUnavailable
       ? 'State unavailable'
       : isOwned
-        ? 'Owned'
-        : 'Not owned';
+        ? 'Owned saved'
+        : 'Not saved yet';
 
   return (
     <Surface
@@ -117,6 +121,11 @@ export function OwnedSetToggleCard({
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
+        </p>
+      ) : null}
+      {successMessage ? (
+        <p aria-live="polite" className={styles.successText}>
+          {successMessage}
         </p>
       ) : null}
       <Button

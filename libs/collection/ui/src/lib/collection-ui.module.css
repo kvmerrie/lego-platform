@@ -30,6 +30,12 @@
   margin: 0;
 }
 
+.successText {
+  color: var(--lego-positive);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
 .shelfCard {
   display: grid;
   gap: var(--lego-space-4);

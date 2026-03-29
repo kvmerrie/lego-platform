@@ -15,6 +15,7 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [successMessage, setSuccessMessage] = useState<string>();
 
   useEffect(() => {
     let isMounted = true;
@@ -29,6 +30,7 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
 
         setOwnedSetState(nextOwnedSetState);
         setErrorMessage(undefined);
+        setSuccessMessage(undefined);
       } catch {
         if (!isMounted) {
           return;
@@ -49,6 +51,7 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
       }
 
       setIsLoading(true);
+      setSuccessMessage(undefined);
       void loadOwnedSetState();
     });
 
@@ -65,6 +68,7 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
 
     setIsPending(true);
     setErrorMessage(undefined);
+    setSuccessMessage(undefined);
 
     try {
       const nextOwnedSetState = ownedSetState.isOwned
@@ -72,6 +76,11 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
         : await addOwnedSet(setId);
 
       setOwnedSetState(nextOwnedSetState);
+      setSuccessMessage(
+        nextOwnedSetState.isOwned
+          ? 'Saved to your owned collection. Your collector account updated immediately.'
+          : 'Removed from owned. Your collector account updated immediately.',
+      );
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -91,6 +100,7 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
       isOwned={ownedSetState?.isOwned ?? false}
       isPending={isPending}
       setId={setId}
+      successMessage={successMessage}
       onToggle={handleToggleOwnedState}
     />
   );

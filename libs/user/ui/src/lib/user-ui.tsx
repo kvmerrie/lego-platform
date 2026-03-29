@@ -76,9 +76,9 @@ export function UserSessionCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Syncing your signed-in account and saved owned or wanted state for this set."
-            eyebrow="Session"
-            title="Syncing collector session"
+            description="Loading the signed-in collector account that keeps owned, wanted, and profile state attached to this set."
+            eyebrow="Collector account"
+            title="Checking saved collector session"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
@@ -99,11 +99,11 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Use an email sign-in link to save owned and wanted state, profile changes, and future collector progress without changing the static catalog experience.'
+                ? 'Use a passwordless email sign-in link to save owned and wanted state, keep your collector profile in sync, and come back to the same collector progress later.'
                 : 'Browser sign-in is not configured in this environment yet, so browsing still works but saved collector actions stay disabled.'
             }
-            eyebrow="Session"
-            title="Sign in to keep your collector state"
+            eyebrow="Collector account"
+            title="Sign in to save this set to your account"
           />
           <form
             className={styles.authForm}
@@ -125,7 +125,7 @@ export function UserSessionCard({
                 onChange={(event) => onAuthEmailChange?.(event.target.value)}
               />
               <span className={styles.fieldHint}>
-                Wait about a minute before requesting another sign-in link.
+                One link is enough. Wait about a minute before requesting another sign-in link.
               </span>
             </label>
             <div className={styles.sessionActions}>
@@ -146,6 +146,10 @@ export function UserSessionCard({
               ) : null}
             </div>
           </form>
+          <p className={styles.supportNote}>
+            Saved owned and wanted state stays with your collector account, while
+            the set-detail page stays static-friendly and fast.
+          </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
               {authStatusMessage}
@@ -158,7 +162,7 @@ export function UserSessionCard({
           ) : null}
         </div>
         <Badge className={styles.sessionStatus} tone="warning">
-          anonymous
+          not signed in
         </Badge>
       </Surface>
     );
@@ -174,9 +178,14 @@ export function UserSessionCard({
     >
       <div className={styles.sessionContent}>
         <div className={styles.statusRow}>
-          <Badge tone="accent">Collector session</Badge>
+          <Badge tone="accent">Collector account</Badge>
           <Badge tone="positive">{userSession.collector.tier}</Badge>
         </div>
+        <SectionHeading
+          description="Owned, wanted, and profile changes save back to this signed-in collector account and refresh this section automatically."
+          eyebrow="Signed in"
+          title="Collector account ready"
+        />
         <div className={styles.sessionHeader}>
           <div className={styles.sessionIdentity}>
             <div aria-hidden="true" className={styles.avatarBadge}>
@@ -197,9 +206,17 @@ export function UserSessionCard({
           </p>
         </div>
         <div className={styles.sessionCounts}>
-          <Badge tone="positive">{collectorSetCounts.ownedCount} owned</Badge>
-          <Badge tone="info">{collectorSetCounts.wantedCount} wanted</Badge>
+          <Badge tone="positive">
+            {collectorSetCounts.ownedCount} owned saved
+          </Badge>
+          <Badge tone="info">
+            {collectorSetCounts.wantedCount} wanted saved
+          </Badge>
         </div>
+        <p className={styles.supportNote}>
+          This collector identity is the source of truth for the saved state
+          shown on this set page.
+        </p>
         <div className={styles.sessionActions}>
           <Button
             isLoading={Boolean(isAuthActionPending)}
@@ -223,7 +240,7 @@ export function UserSessionCard({
         ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
-        {userSession.state}
+        signed in
       </Badge>
     </Surface>
   );
@@ -262,9 +279,9 @@ export function UserProfileEditorCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Syncing the editable collector profile that follows your signed-in session."
+            description="Loading the editable collector details that appear alongside your signed-in account."
             eyebrow="Profile"
-            title="Syncing collector profile"
+            title="Loading collector profile"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
@@ -283,7 +300,7 @@ export function UserProfileEditorCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="The signed-in collector profile could not be loaded right now, but the rest of the product slice remains available."
+            description="The signed-in collector profile could not be loaded right now, but your saved account state is still intact."
             eyebrow="Profile"
             title="Collector profile unavailable"
           />
@@ -309,13 +326,17 @@ export function UserProfileEditorCard({
       <div className={styles.sessionContent}>
         <div className={styles.statusRow}>
           <Badge tone="accent">Profile</Badge>
-          <Badge tone="info">{collectorProfile.tier}</Badge>
+          <Badge tone="info">Signed-in account</Badge>
         </div>
         <SectionHeading
-          description="Refine the product-facing collector identity that appears alongside your owned and wanted set state."
-          eyebrow="Account"
-          title="Edit collector profile"
+          description="Refine the collector identity that appears with your saved owned and wanted state across this product slice."
+          eyebrow="Collector identity"
+          title="Refine your collector profile"
         />
+        <p className={styles.supportNote}>
+          Keep these details concise and recognizable. They help your signed-in
+          collector area feel consistent anywhere this account appears.
+        </p>
         <form
           className={styles.profileForm}
           onSubmit={(event) => {
@@ -337,6 +358,9 @@ export function UserProfileEditorCard({
                   onDraftChange?.('displayName', event.target.value)
                 }
               />
+              <span className={styles.fieldHint}>
+                Use the name you want shown on your collector card.
+              </span>
             </label>
             <label className={styles.formField}>
               <span className={styles.fieldLabel}>Collector handle</span>
@@ -352,8 +376,8 @@ export function UserProfileEditorCard({
                 }
               />
               <span className={styles.fieldHint}>
-                Use letters, numbers, and hyphens. This stays product-facing on
-                your collector card.
+                Use letters, numbers, and hyphens. After saving, this stays
+                product-facing anywhere your collector handle appears.
               </span>
             </label>
           </div>
@@ -390,6 +414,9 @@ export function UserProfileEditorCard({
               value={draft.location}
               onChange={(event) => onDraftChange?.('location', event.target.value)}
             />
+            <span className={styles.fieldHint}>
+              Keep it short and recognizable for your collector identity.
+            </span>
           </label>
           <label className={styles.formField}>
             <span className={styles.fieldLabel}>Collection focus</span>
@@ -404,6 +431,9 @@ export function UserProfileEditorCard({
                 onDraftChange?.('collectionFocus', event.target.value)
               }
             />
+            <span className={styles.fieldHint}>
+              A short line about the sets and themes you care about most.
+            </span>
           </label>
           <div className={styles.sessionActions}>
             <Button
@@ -414,7 +444,7 @@ export function UserProfileEditorCard({
             >
               {isSaving ? 'Saving profile...' : 'Save profile'}
             </Button>
-            {!isDirty ? <Badge tone="neutral">No changes</Badge> : null}
+            {!isDirty ? <Badge tone="neutral">Up to date</Badge> : null}
           </div>
         </form>
         {successMessage ? (
@@ -429,7 +459,7 @@ export function UserProfileEditorCard({
         ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
-        signed in
+        ready
       </Badge>
     </Surface>
   );

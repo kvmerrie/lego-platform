@@ -15,6 +15,7 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [successMessage, setSuccessMessage] = useState<string>();
 
   useEffect(() => {
     let isMounted = true;
@@ -29,6 +30,7 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
 
         setWantedSetState(nextWantedSetState);
         setErrorMessage(undefined);
+        setSuccessMessage(undefined);
       } catch {
         if (!isMounted) {
           return;
@@ -49,6 +51,7 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
       }
 
       setIsLoading(true);
+      setSuccessMessage(undefined);
       void loadWantedSetState();
     });
 
@@ -65,6 +68,7 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
 
     setIsPending(true);
     setErrorMessage(undefined);
+    setSuccessMessage(undefined);
 
     try {
       const nextWantedSetState = wantedSetState.isWanted
@@ -72,6 +76,11 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
         : await addWantedSet(setId);
 
       setWantedSetState(nextWantedSetState);
+      setSuccessMessage(
+        nextWantedSetState.isWanted
+          ? 'Saved to your wanted list. Your collector account updated immediately.'
+          : 'Removed from wanted. Your collector account updated immediately.',
+      );
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -91,6 +100,7 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
       isPending={isPending}
       isWanted={wantedSetState?.isWanted ?? false}
       setId={setId}
+      successMessage={successMessage}
       onToggle={handleToggleWantedState}
     />
   );
