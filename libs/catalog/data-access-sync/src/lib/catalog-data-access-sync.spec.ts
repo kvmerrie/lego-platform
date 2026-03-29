@@ -58,6 +58,24 @@ function createMockRebrickableClient(): RebrickableClient {
             theme_id: 2,
             set_img_url: 'https://images.example/a-frame-cabin.jpg',
           };
+        case '10320-1':
+          return {
+            set_num: '10320-1',
+            name: 'Eldorado Fortress',
+            year: 2023,
+            num_parts: 2509,
+            theme_id: 1,
+            set_img_url: 'https://images.example/eldorado-fortress.jpg',
+          };
+        case '21335-1':
+          return {
+            set_num: '21335-1',
+            name: 'Motorized Lighthouse',
+            year: 2022,
+            num_parts: 2065,
+            theme_id: 2,
+            set_img_url: 'https://images.example/motorized-lighthouse.jpg',
+          };
         default:
           throw new Error(`Unexpected set lookup for ${setNumber}.`);
       }
@@ -138,12 +156,32 @@ describe('catalog sync artifacts', () => {
           pieces: 2083,
           imageUrl: 'https://images.example/a-frame-cabin.jpg',
         },
+        {
+          canonicalId: '10320',
+          sourceSetNumber: '10320-1',
+          slug: 'eldorado-fortress-10320',
+          name: 'Eldorado Fortress',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 2509,
+          imageUrl: 'https://images.example/eldorado-fortress.jpg',
+        },
+        {
+          canonicalId: '21335',
+          sourceSetNumber: '21335-1',
+          slug: 'motorized-lighthouse-21335',
+          name: 'Motorized Lighthouse',
+          theme: 'LEGO Ideas and CUUSOO',
+          releaseYear: 2022,
+          pieces: 2065,
+          imageUrl: 'https://images.example/motorized-lighthouse.jpg',
+        },
       ],
     });
     expect(artifacts.catalogSyncManifest).toEqual({
       source: 'rebrickable-api-v3',
       generatedAt: '2026-03-28T00:00:00.000Z',
-      recordCount: 5,
+      recordCount: 7,
       homepageFeaturedSetIds: ['10316', '21348', '76269'],
       notes:
         'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
@@ -268,6 +306,32 @@ describe('catalog sync artifacts', () => {
           );
         }
 
+        if (url.endsWith('/lego/sets/10320-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10320-1',
+              name: 'Eldorado Fortress',
+              year: 2023,
+              num_parts: 2509,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21335-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21335-1',
+              name: 'Motorized Lighthouse',
+              year: 2022,
+              num_parts: 2065,
+              theme_id: 2,
+            }),
+            { status: 200 },
+          );
+        }
+
         return new Response(null, { status: 404 });
       },
       now: new Date('2026-03-28T00:00:00.000Z'),
@@ -360,6 +424,32 @@ describe('catalog sync artifacts', () => {
             name: 'A-Frame Cabin',
             year: 2023,
             num_parts: 2083,
+            theme_id: 2,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10320-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10320-1',
+            name: 'Eldorado Fortress',
+            year: 2023,
+            num_parts: 2509,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21335-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21335-1',
+            name: 'Motorized Lighthouse',
+            year: 2022,
+            num_parts: 2065,
             theme_id: 2,
           }),
           { status: 200 },
@@ -469,12 +559,21 @@ describe('catalog sync artifacts', () => {
               releaseYear: 2022,
               pieces: 4515,
             },
+            {
+              canonicalId: '10320',
+              sourceSetNumber: '10320-1',
+              slug: 'eldorado-fortress-10320',
+              name: 'Eldorado Fortress',
+              theme: 'Icons',
+              releaseYear: 2023,
+              pieces: 2509,
+            },
           ],
         },
         catalogSyncManifest: {
           source: 'rebrickable-api-v3',
           generatedAt: '2026-03-28T00:00:00.000Z',
-          recordCount: 2,
+          recordCount: 3,
           homepageFeaturedSetIds: ['10316'],
         },
         catalogSetOverlays: [

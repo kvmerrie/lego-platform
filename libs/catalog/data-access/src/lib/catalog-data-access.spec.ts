@@ -12,7 +12,7 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(5);
+    expect(catalogSnapshot.setRecords).toHaveLength(7);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
@@ -56,6 +56,16 @@ describe('catalog snapshot artifacts', () => {
         slug: 'a-frame-cabin-21338',
         sourceSetNumber: '21338-1',
       },
+      {
+        canonicalId: '10320',
+        slug: 'eldorado-fortress-10320',
+        sourceSetNumber: '10320-1',
+      },
+      {
+        canonicalId: '21335',
+        slug: 'motorized-lighthouse-21335',
+        sourceSetNumber: '21335-1',
+      },
     ]);
   });
 });
@@ -68,6 +78,8 @@ describe('catalog data-access contracts', () => {
       'avengers-tower-76269',
       'lion-knights-castle-10305',
       'a-frame-cabin-21338',
+      'eldorado-fortress-10320',
+      'motorized-lighthouse-21335',
     ]);
   });
 
@@ -214,10 +226,48 @@ describe('catalog data-access contracts', () => {
         'Useful test case for editorial storytelling beyond licensed fandoms',
       ],
     });
+
+    expect(getCatalogSetBySlug('eldorado-fortress-10320')).toEqual({
+      id: '10320',
+      slug: 'eldorado-fortress-10320',
+      name: 'Eldorado Fortress',
+      theme: 'Icons',
+      releaseYear: 2023,
+      pieces: 2509,
+      priceRange: '$189 to $259',
+      collectorAngle: 'Pirates nostalgia centerpiece',
+      tagline:
+        'A reconfigurable fortress throwback that lands as both a nostalgia play and a shelf-friendly adventure display.',
+      availability: 'Measured enthusiast demand',
+      collectorHighlights: [
+        'Strong adult nostalgia pull without relying on a licensed franchise',
+        'Modular island layout makes it easier to photograph, restyle, and merchandise',
+        'Useful bridge set between display collectors and classic play-theme fans',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('motorized-lighthouse-21335')).toEqual({
+      id: '21335',
+      slug: 'motorized-lighthouse-21335',
+      name: 'Motorized Lighthouse',
+      theme: 'Ideas',
+      releaseYear: 2022,
+      pieces: 2065,
+      priceRange: '$259 to $319',
+      collectorAngle: 'Kinetic display standout',
+      tagline:
+        'A mechanically animated coastal build that feels equally at home in premium display shelves and gift-led collector curation.',
+      availability: 'Selective premium availability',
+      collectorHighlights: [
+        'Motorized light and rotating beacon create stronger live display presence than most static shelf pieces',
+        'Distinct silhouette broadens the curated assortment beyond castles, cabins, and towers',
+        'Good candidate for editorial storytelling around function-first collector design',
+      ],
+    });
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(5);
+    expect(listCatalogSetSummaries()).toHaveLength(7);
     expect(listCatalogThemes()).toEqual([
       {
         name: 'Icons',

@@ -72,6 +72,8 @@ Current expected source slugs:
 - `avengers-tower-76269`
 - `lion-knights-castle-10305`
 - `a-frame-cabin-21338`
+- `eldorado-fortress-10320`
+- `motorized-lighthouse-21335`
 
 Current expected public route slugs from the product-facing layer:
 
@@ -80,6 +82,8 @@ Current expected public route slugs from the product-facing layer:
 - `avengers-tower-76269`
 - `lion-knights-castle-10305`
 - `a-frame-cabin-21338`
+- `eldorado-fortress-10320`
+- `motorized-lighthouse-21335`
 
 ### Canonical Id Assumptions
 
@@ -90,6 +94,8 @@ Check that each source set number still maps correctly:
 - `76269-1` -> `76269`
 - `10305-1` -> `10305`
 - `21338-1` -> `21338`
+- `10320-1` -> `10320`
+- `21335-1` -> `21335`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 

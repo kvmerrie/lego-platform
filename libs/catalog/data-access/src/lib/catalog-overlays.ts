@@ -73,6 +73,33 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Useful test case for editorial storytelling beyond licensed fandoms',
     ],
   },
+  {
+    canonicalId: '10320',
+    priceRange: '$189 to $259',
+    collectorAngle: 'Pirates nostalgia centerpiece',
+    tagline:
+      'A reconfigurable fortress throwback that lands as both a nostalgia play and a shelf-friendly adventure display.',
+    availability: 'Measured enthusiast demand',
+    collectorHighlights: [
+      'Strong adult nostalgia pull without relying on a licensed franchise',
+      'Modular island layout makes it easier to photograph, restyle, and merchandise',
+      'Useful bridge set between display collectors and classic play-theme fans',
+    ],
+  },
+  {
+    canonicalId: '21335',
+    displayTheme: 'Ideas',
+    priceRange: '$259 to $319',
+    collectorAngle: 'Kinetic display standout',
+    tagline:
+      'A mechanically animated coastal build that feels equally at home in premium display shelves and gift-led collector curation.',
+    availability: 'Selective premium availability',
+    collectorHighlights: [
+      'Motorized light and rotating beacon create stronger live display presence than most static shelf pieces',
+      'Distinct silhouette broadens the curated assortment beyond castles, cabins, and towers',
+      'Good candidate for editorial storytelling around function-first collector design',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
