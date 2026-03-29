@@ -78,7 +78,7 @@ export function UserSessionCard({
           <SectionHeading
             description="Loading the signed-in collector account that keeps owned, wanted, and profile state attached to this set."
             eyebrow="Collector account"
-            title="Checking saved collector session"
+            title="Checking collector account"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
@@ -99,11 +99,11 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Use a passwordless email sign-in link to save owned and wanted state, keep your collector profile in sync, and come back to the same collector progress later.'
+                ? 'Use a passwordless email sign-in link to save personal owned and wanted state, keep your collector identity in sync, and come back to the same collector progress later.'
                 : 'Browser sign-in is not configured in this environment yet, so browsing still works but saved collector actions stay disabled.'
             }
             eyebrow="Collector account"
-            title="Sign in to save this set to your account"
+            title="Sign in to save this set to your collector account"
           />
           <form
             className={styles.authForm}
@@ -148,8 +148,8 @@ export function UserSessionCard({
             </div>
           </form>
           <p className={styles.supportNote}>
-            Saved owned and wanted state stays with your collector account,
-            while the set-detail page stays static-friendly and fast.
+            Your sign-in email stays private to your account. Public catalog
+            details and reviewed buy guidance stay the same for every visitor.
           </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
@@ -183,9 +183,9 @@ export function UserSessionCard({
           <Badge tone="positive">{userSession.collector.tier}</Badge>
         </div>
         <SectionHeading
-          description="Owned, wanted, and profile changes save back to this signed-in collector account and refresh this section automatically."
+          description="Owned, wanted, and profile changes save back to this signed-in collector account and refresh this collector area automatically."
           eyebrow="Signed in"
-          title="Collector account ready"
+          title="Collector account active"
         />
         <div className={styles.sessionHeader}>
           <div className={styles.sessionIdentity}>
@@ -206,6 +206,26 @@ export function UserSessionCard({
             {userSession.collector.collectionFocus}
           </p>
         </div>
+        <div className={styles.identitySplitGrid}>
+          <div className={styles.identityPane}>
+            <p className={styles.paneLabel}>Private account</p>
+            <p className={styles.paneValue}>
+              {userSession.account?.email ?? 'Signed in collector session'}
+            </p>
+            <p className={styles.paneNote}>
+              Used for sign-in and saved collector state. It is not shown as
+              public catalog information.
+            </p>
+          </div>
+          <div className={styles.identityPane}>
+            <p className={styles.paneLabel}>Collector identity</p>
+            <p className={styles.paneValue}>@{userSession.collector.id}</p>
+            <p className={styles.paneNote}>
+              Shown across your signed-in collector surfaces so owned, wanted,
+              and profile details feel consistent.
+            </p>
+          </div>
+        </div>
         <div className={styles.sessionCounts}>
           <Badge tone="positive">
             {collectorSetCounts.ownedCount} owned saved
@@ -215,8 +235,8 @@ export function UserSessionCard({
           </Badge>
         </div>
         <p className={styles.supportNote}>
-          This collector identity is the source of truth for the saved state
-          shown on this set page.
+          Owned and wanted saves are personal account state. Public set facts,
+          pricing guidance, and reviewed offers remain shared catalog surfaces.
         </p>
         <div className={styles.sessionActions}>
           <Button
@@ -337,8 +357,9 @@ export function UserProfileEditorCard({
           title="Refine your collector profile"
         />
         <p className={styles.supportNote}>
-          Keep these details concise and recognizable. They help your signed-in
-          collector area feel consistent anywhere this account appears.
+          Keep these details concise and recognizable. Display name, handle,
+          location, and collection focus are your collector-facing identity.
+          Your sign-in email stays private to account access.
         </p>
         <form
           className={styles.profileForm}
@@ -394,9 +415,13 @@ export function UserProfileEditorCard({
                 type="text"
                 value={collectorProfile.email ?? 'Connected via Supabase auth'}
               />
+              <span className={styles.fieldHint}>
+                Private sign-in email. This is used for account access, not as
+                public catalog identity.
+              </span>
             </label>
             <label className={styles.formField}>
-              <span className={styles.fieldLabel}>Tier</span>
+              <span className={styles.fieldLabel}>Collector tier</span>
               <input
                 className={styles.textInput}
                 name="tier"
@@ -404,6 +429,10 @@ export function UserProfileEditorCard({
                 type="text"
                 value={collectorProfile.tier}
               />
+              <span className={styles.fieldHint}>
+                Product-facing account status shown in your signed-in collector
+                surfaces.
+              </span>
             </label>
           </div>
           <label className={styles.formField}>
@@ -437,7 +466,8 @@ export function UserProfileEditorCard({
               }
             />
             <span className={styles.fieldHint}>
-              A short line about the sets and themes you care about most.
+              A short line about the sets and themes you care about most in this
+              signed-in collector area.
             </span>
           </label>
           <div className={styles.sessionActions}>

@@ -78,8 +78,8 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
       setWantedSetState(nextWantedSetState);
       setSuccessMessage(
         nextWantedSetState.isWanted
-          ? 'Saved to your wanted list. Your collector account updated immediately.'
-          : 'Removed from wanted. Your collector account updated immediately.',
+          ? 'Saved to your private wanted list. Your collector account is up to date.'
+          : 'Removed from your wanted list. Your collector account is up to date.',
       );
     } catch (error) {
       setErrorMessage(

@@ -58,8 +58,8 @@ export function WantedSetToggleCard({
     : isUnavailable
       ? `Set ${setId} cannot be updated until the wanted-state query succeeds.`
       : isWanted
-        ? `Set ${setId} is currently saved as wanted on your collector account. This stays independent from owned state.`
-        : `Save set ${setId} to your wanted list so it stays on your radar without changing owned state.`;
+        ? `Set ${setId} is privately saved as wanted on your collector account. This stays independent from owned state and does not change public catalog information.`
+        : `Save set ${setId} to your private wanted list so it stays on your radar without changing owned state or public catalog information.`;
   const actionLabel = isUnavailable
     ? 'Wanted status unavailable'
     : isWanted
@@ -91,10 +91,15 @@ export function WantedSetToggleCard({
     >
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>
+        <Badge>Private collector state</Badge>
         <Badge tone="info">Set {setId}</Badge>
         {isPending ? <Badge tone="info">Saving</Badge> : null}
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
+      <p className={styles.metaText}>
+        Personal to your collector account. Public set facts and reviewed buying
+        guidance stay unchanged for other visitors.
+      </p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}

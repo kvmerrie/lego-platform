@@ -25,11 +25,18 @@ describe('UserSessionCard', () => {
       />,
     );
 
-    expect(markup).toContain('Collector account ready');
-    expect(markup).toContain('Owned, wanted, and profile changes save back');
+    expect(markup).toContain('Collector account active');
+    expect(markup).toContain('refresh this collector area automatically');
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wanted saved');
-    expect(markup).toContain('This collector identity is the source of truth');
+    expect(markup).toContain('Private account');
+    expect(markup).toContain('Collector identity');
+    expect(markup).toContain(
+      'Used for sign-in and saved collector state. It is not shown as public catalog information.',
+    );
+    expect(markup).toContain(
+      'Public set facts, pricing guidance, and reviewed offers remain shared catalog surfaces.',
+    );
   });
 });
 
@@ -57,13 +64,19 @@ describe('UserProfileEditorCard', () => {
     );
 
     expect(markup).toContain('Refine your collector profile');
-    expect(markup).toContain('Keep these details concise and recognizable');
+    expect(markup).toContain(
+      'Display name, handle, location, and collection focus are your collector-facing identity.',
+    );
     expect(markup).toContain(
       'Use the name you want shown on your collector card.',
     );
     expect(markup).toContain('After saving, this stays product-facing');
     expect(markup).toContain(
-      'A short line about the sets and themes you care about most.',
+      'Private sign-in email. This is used for account access, not as public catalog identity.',
+    );
+    expect(markup).toContain('Product-facing account status shown');
+    expect(markup).toContain(
+      'A short line about the sets and themes you care about most in this signed-in collector area.',
     );
   });
 });

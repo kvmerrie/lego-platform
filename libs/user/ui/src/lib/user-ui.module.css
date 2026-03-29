@@ -126,6 +126,45 @@
   gap: var(--lego-space-2);
 }
 
+.identitySplitGrid {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.identityPane {
+  display: grid;
+  gap: var(--lego-space-1);
+  padding: var(--lego-space-3);
+  background: color-mix(in srgb, var(--lego-surface-muted) 76%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 84%, transparent);
+  border-radius: var(--lego-radius-sm);
+}
+
+.paneLabel {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.14em;
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.paneValue {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.paneNote {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
 .sessionActions {
   align-items: center;
   display: flex;
@@ -225,6 +264,10 @@
 
 @media (min-width: 56rem) {
   .profileFieldGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .identitySplitGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 

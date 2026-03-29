@@ -78,8 +78,8 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
       setOwnedSetState(nextOwnedSetState);
       setSuccessMessage(
         nextOwnedSetState.isOwned
-          ? 'Saved to your owned collection. Your collector account updated immediately.'
-          : 'Removed from owned. Your collector account updated immediately.',
+          ? 'Saved to your private owned collection. Your collector account is up to date.'
+          : 'Removed from your owned collection. Your collector account is up to date.',
       );
     } catch (error) {
       setErrorMessage(

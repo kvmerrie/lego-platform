@@ -90,8 +90,8 @@ export function OwnedSetToggleCard({
     : isUnavailable
       ? `Set ${setId} cannot be updated until the owned-state query succeeds.`
       : isOwned
-        ? `Set ${setId} is currently saved as owned on your collector account. This stays independent from wanted state.`
-        : `Save set ${setId} as owned so it stays attached to your collector account without affecting wanted state.`;
+        ? `Set ${setId} is privately saved as owned on your collector account. This stays independent from wanted state and does not change public catalog information.`
+        : `Save set ${setId} as privately owned on your collector account without affecting wanted state or public catalog information.`;
   const actionLabel = isUnavailable
     ? 'Owned status unavailable'
     : isOwned
@@ -123,10 +123,15 @@ export function OwnedSetToggleCard({
     >
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>
+        <Badge>Private collector state</Badge>
         <Badge tone="info">Set {setId}</Badge>
         {isPending ? <Badge tone="info">Saving</Badge> : null}
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
+      <p className={styles.metaText}>
+        Personal to your collector account. Public set facts and reviewed buying
+        guidance stay unchanged for other visitors.
+      </p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
