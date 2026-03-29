@@ -10,6 +10,7 @@
     "sync:catalog:check": "pnpm nx run catalog-sync:run -- --check",
     "sync:commerce": "pnpm nx run commerce-sync:run",
     "sync:commerce:check": "pnpm nx run commerce-sync:run -- --check",
+    "smoke:mvp": "node scripts/mvp-smoke-check.mjs",
     "build": "pnpm nx run-many -t build --all",
     "lint": "pnpm nx run-many -t lint --all",
     "test": "pnpm nx run-many -t test --all",

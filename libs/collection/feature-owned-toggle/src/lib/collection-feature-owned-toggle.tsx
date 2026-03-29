@@ -72,8 +72,12 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
         : await addOwnedSet(setId);
 
       setOwnedSetState(nextOwnedSetState);
-    } catch {
-      setErrorMessage('Unable to save the owned state right now.');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to save the owned state right now.',
+      );
     } finally {
       setIsPending(false);
     }

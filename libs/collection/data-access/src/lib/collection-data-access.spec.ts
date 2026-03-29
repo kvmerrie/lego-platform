@@ -56,4 +56,15 @@ describe('collection data access', () => {
       'Bearer browser-token',
     );
   });
+
+  test('returns a sign-in-required error for anonymous owned writes', async () => {
+    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+
+    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(new Headers());
+    fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
+
+    await expect(addOwnedSet('10316')).rejects.toThrow(
+      'Sign in to save this set to your owned list.',
+    );
+  });
 });

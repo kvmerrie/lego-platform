@@ -72,8 +72,12 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
         : await addWantedSet(setId);
 
       setWantedSetState(nextWantedSetState);
-    } catch {
-      setErrorMessage('Unable to save the wanted state right now.');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to save the wanted state right now.',
+      );
     } finally {
       setIsPending(false);
     }

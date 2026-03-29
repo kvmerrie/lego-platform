@@ -99,8 +99,8 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Use a Supabase email sign-in link to save owned and wanted state without changing the static catalog experience.'
-                : 'Supabase browser auth is not configured in this environment yet, so the public slice stays browseable in anonymous mode.'
+                ? 'Use an email sign-in link to save owned and wanted state, profile changes, and future collector progress without changing the static catalog experience.'
+                : 'Browser sign-in is not configured in this environment yet, so browsing still works but saved collector actions stay disabled.'
             }
             eyebrow="Session"
             title="Sign in to keep your collector state"
@@ -132,10 +132,10 @@ export function UserSessionCard({
                 tone="accent"
                 type="submit"
               >
-                {isAuthActionPending ? 'Sending link...' : 'Email sign-in link'}
+                {isAuthActionPending ? 'Sending sign-in link...' : 'Send sign-in link'}
               </Button>
               {!isAuthAvailable ? (
-                <Badge tone="warning">auth unavailable</Badge>
+                <Badge tone="warning">sign-in unavailable</Badge>
               ) : null}
             </div>
           </form>
@@ -344,6 +344,10 @@ export function UserProfileEditorCard({
                   onDraftChange?.('collectorHandle', event.target.value)
                 }
               />
+              <span className={styles.fieldHint}>
+                Use letters, numbers, and hyphens. This stays product-facing on
+                your collector card.
+              </span>
             </label>
           </div>
           <div className={styles.profileFieldGrid}>

@@ -74,6 +74,10 @@ export async function addWantedSet(setId: string): Promise<WantedSetState> {
     method: 'PUT',
   });
 
+  if (response.status === 401) {
+    throw new Error('Sign in to save this set to your wanted list.');
+  }
+
   if (!response.ok) {
     throw new Error('Unable to mark the set as wanted.');
   }
@@ -87,6 +91,10 @@ export async function removeWantedSet(setId: string): Promise<WantedSetState> {
     headers,
     method: 'DELETE',
   });
+
+  if (response.status === 401) {
+    throw new Error('Sign in to update your wanted list.');
+  }
 
   if (!response.ok) {
     throw new Error('Unable to remove the set from wanted items.');

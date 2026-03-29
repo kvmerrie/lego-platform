@@ -157,6 +157,12 @@
   line-height: var(--lego-text-role-meta-line-height);
 }
 
+.fieldHint {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
 .textInput {
   appearance: none;
   background: color-mix(in srgb, var(--lego-surface-raised) 96%, transparent);

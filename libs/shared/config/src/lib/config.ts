@@ -67,6 +67,15 @@ export interface ServerSupabaseConfig {
   url: string;
 }
 
+function getSupabaseServerUrl(
+  environment: Record<string, string | undefined>,
+): string | undefined {
+  return (
+    environment[supabaseEnvKeys.serverUrl] ??
+    environment[supabaseEnvKeys.browserUrl]
+  );
+}
+
 function requireEnvValue({
   environment,
   key,
@@ -107,12 +116,28 @@ export function hasBrowserSupabaseConfig(
   );
 }
 
+export function getMissingBrowserSupabaseEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const missingKeys: string[] = [];
+
+  if (!environment[supabaseEnvKeys.browserUrl]) {
+    missingKeys.push(supabaseEnvKeys.browserUrl);
+  }
+
+  if (!environment[supabaseEnvKeys.browserAnonKey]) {
+    missingKeys.push(supabaseEnvKeys.browserAnonKey);
+  }
+
+  return missingKeys;
+}
+
 export function getServerSupabaseConfig(
   environment: Record<string, string | undefined> = process.env,
 ): ServerSupabaseConfig {
   return {
     url:
-      environment[supabaseEnvKeys.serverUrl] ??
+      getSupabaseServerUrl(environment) ??
       requireEnvValue({
         environment,
         key: supabaseEnvKeys.browserUrl,
@@ -128,10 +153,27 @@ export function hasServerSupabaseConfig(
   environment: Record<string, string | undefined> = process.env,
 ): boolean {
   return Boolean(
-    (environment[supabaseEnvKeys.serverUrl] ??
-      environment[supabaseEnvKeys.browserUrl]) &&
+    getSupabaseServerUrl(environment) &&
       environment[supabaseEnvKeys.serverServiceRoleKey],
   );
+}
+
+export function getMissingServerSupabaseEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const missingKeys: string[] = [];
+
+  if (!getSupabaseServerUrl(environment)) {
+    missingKeys.push(
+      `${supabaseEnvKeys.serverUrl} (or ${supabaseEnvKeys.browserUrl})`,
+    );
+  }
+
+  if (!environment[supabaseEnvKeys.serverServiceRoleKey]) {
+    missingKeys.push(supabaseEnvKeys.serverServiceRoleKey);
+  }
+
+  return missingKeys;
 }
 
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {

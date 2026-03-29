@@ -26,11 +26,14 @@ import {
 } from '@lego-platform/shared/data-access-auth';
 
 describe('user data access', () => {
+  const originalEnv = { ...process.env };
+
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn());
   });
 
   afterEach(() => {
+    process.env = { ...originalEnv };
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
@@ -74,6 +77,8 @@ describe('user data access', () => {
   });
 
   test('starts email sign-in with a redirect back to the current page', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
     vi.stubGlobal('window', {
       location: {
         href: 'http://localhost:3000/sets/rivendell-10316',
@@ -95,6 +100,17 @@ describe('user data access', () => {
       email: 'collector@example.com',
       emailRedirectTo: 'http://localhost:3000/sets/rivendell-10316',
     });
+  });
+
+  test('fails fast when browser auth environment variables are missing', async () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    await expect(
+      requestUserSignIn({
+        email: 'collector@example.com',
+      }),
+    ).rejects.toThrow('Email sign-in is not available in this environment yet.');
   });
 
   test('signs out through the shared browser auth utility', async () => {
@@ -181,6 +197,41 @@ describe('user data access', () => {
     } finally {
       unsubscribe();
     }
+  });
+
+  test('returns a readable conflict error when the collector handle is already taken', async () => {
+    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+
+    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
+      new Headers({
+        Authorization: 'Bearer browser-token',
+        'Content-Type': 'application/json',
+      }),
+    );
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          message: 'Collector handle is already in use.',
+        }),
+        {
+          status: 409,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(
+      updateCurrentUserProfile({
+        displayName: 'Alex Rivera',
+        collectorHandle: 'alex-rivera',
+        location: 'Rotterdam',
+        collectionFocus: 'Castle icons and Ideas cabins',
+      }),
+    ).rejects.toThrow(
+      'That collector handle is already taken. Try a more distinctive version.',
+    );
   });
 
   test('delegates auth-change subscriptions through the shared browser auth utility', () => {

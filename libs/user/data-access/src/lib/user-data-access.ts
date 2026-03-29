@@ -74,6 +74,10 @@ export async function requestUserSignIn(options: {
   email: string;
   emailRedirectTo?: string;
 }) {
+  if (!hasBrowserSupabaseConfig()) {
+    throw new Error('Email sign-in is not available in this environment yet.');
+  }
+
   const nextEmail = options.email.trim();
 
   if (!nextEmail) {
@@ -86,7 +90,7 @@ export async function requestUserSignIn(options: {
   });
 
   if (error) {
-    throw new Error('Unable to start the Supabase sign-in flow.');
+    throw new Error('Unable to send the sign-in link right now.');
   }
 }
 
@@ -94,7 +98,7 @@ export async function signOutCurrentUser() {
   const { error } = await signOutSupabaseBrowserSession();
 
   if (error) {
-    throw new Error('Unable to sign out of the current Supabase session.');
+    throw new Error('Unable to sign out right now.');
   }
 }
 
@@ -130,7 +134,9 @@ export async function updateCurrentUserProfile(
   }
 
   if (response.status === 409) {
-    throw new Error('Collector handle is already in use.');
+    throw new Error(
+      'That collector handle is already taken. Try a more distinctive version.',
+    );
   }
 
   if (response.status === 400) {

@@ -100,7 +100,9 @@ export function UserFeatureProfile() {
 
       setCollectorProfile(updatedCollectorProfile);
       setDraft(createCollectorProfileDraft(updatedCollectorProfile));
-      setSuccessMessage('Collector profile saved.');
+      setSuccessMessage(
+        'Collector profile saved. Your signed-in account surfaces have been refreshed.',
+      );
     } catch (error) {
       if (!isMountedRef.current) {
         return;

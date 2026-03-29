@@ -9,6 +9,7 @@ import {
   subscribeToUserAccountChanges,
   subscribeToUserAuthChanges,
 } from '@lego-platform/user/data-access';
+import { warnAboutMissingBrowserSupabaseConfig } from '@lego-platform/shared/data-access-auth';
 import { UserSessionCard } from '@lego-platform/user/ui';
 import {
   createAnonymousUserSession,
@@ -59,6 +60,9 @@ export function UserFeatureAuth() {
 
   useEffect(() => {
     isMountedRef.current = true;
+    if (!authAvailable) {
+      warnAboutMissingBrowserSupabaseConfig();
+    }
     void loadUserSession();
     const unsubscribeAuth = subscribeToUserAuthChanges(() => {
       if (!isMountedRef.current) {
@@ -81,7 +85,7 @@ export function UserFeatureAuth() {
       unsubscribeAuth();
       unsubscribeAccount();
     };
-  }, []);
+  }, [authAvailable]);
 
   async function handleSignIn() {
     const nextEmail = authEmail.trim();
@@ -98,9 +102,15 @@ export function UserFeatureAuth() {
       await requestUserSignIn({
         email: nextEmail,
       });
-      setAuthStatusMessage(`Check ${nextEmail} for your sign-in link.`);
-    } catch {
-      setErrorMessage('Unable to start email sign-in right now.');
+      setAuthStatusMessage(
+        `Check ${nextEmail} for your sign-in link. After you finish sign-in, this card will refresh automatically.`,
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : 'Unable to start email sign-in right now.',
+      );
     } finally {
       setIsAuthActionPending(false);
     }
@@ -112,11 +122,15 @@ export function UserFeatureAuth() {
 
     try {
       await signOutCurrentUser();
-      setAuthStatusMessage(undefined);
+      setAuthStatusMessage(
+        'Signed out. Your saved collector state stays attached to your account.',
+      );
       setIsLoading(true);
       await loadUserSession();
-    } catch {
-      setErrorMessage('Unable to sign out right now.');
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Unable to sign out right now.',
+      );
     } finally {
       setIsAuthActionPending(false);
     }

@@ -4,11 +4,13 @@ import {
   type SupabaseClient,
 } from '@supabase/supabase-js';
 import {
+  getMissingBrowserSupabaseEnvKeys,
   getBrowserSupabaseConfig,
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 
 let browserSupabaseClient: SupabaseClient | undefined;
+let hasWarnedAboutMissingBrowserSupabaseConfig = false;
 
 export type BrowserSupabaseAuthChangeListener = (
   authChangeEvent: AuthChangeEvent,
@@ -38,6 +40,21 @@ export function getBrowserSupabaseClient(): SupabaseClient {
 
 export function isBrowserSupabaseAuthAvailable(): boolean {
   return hasBrowserSupabaseConfig();
+}
+
+export function warnAboutMissingBrowserSupabaseConfig(): void {
+  if (
+    hasWarnedAboutMissingBrowserSupabaseConfig ||
+    typeof window === 'undefined' ||
+    hasBrowserSupabaseConfig()
+  ) {
+    return;
+  }
+
+  console.warn(
+    `[auth] Browser sign-in is disabled because these environment variables are missing: ${getMissingBrowserSupabaseEnvKeys().join(', ')}.`,
+  );
+  hasWarnedAboutMissingBrowserSupabaseConfig = true;
 }
 
 export async function getBrowserAccessToken(): Promise<string | undefined> {
@@ -103,4 +120,5 @@ export async function signOutSupabaseBrowserSession() {
 
 export function resetBrowserSupabaseClientForTests() {
   browserSupabaseClient = undefined;
+  hasWarnedAboutMissingBrowserSupabaseConfig = false;
 }

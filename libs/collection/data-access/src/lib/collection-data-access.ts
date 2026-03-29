@@ -96,6 +96,10 @@ export async function addOwnedSet(setId: string): Promise<OwnedSetState> {
     method: 'PUT',
   });
 
+  if (response.status === 401) {
+    throw new Error('Sign in to save this set to your owned list.');
+  }
+
   if (!response.ok) {
     throw new Error('Unable to mark the set as owned.');
   }
@@ -109,6 +113,10 @@ export async function removeOwnedSet(setId: string): Promise<OwnedSetState> {
     headers,
     method: 'DELETE',
   });
+
+  if (response.status === 401) {
+    throw new Error('Sign in to update your owned list.');
+  }
 
   if (!response.ok) {
     throw new Error('Unable to remove the set from owned items.');
