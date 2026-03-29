@@ -1,6 +1,9 @@
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
-import { createAnonymousUserSession, type UserSession } from '@lego-platform/user/util';
+import {
+  createAnonymousUserSession,
+  type UserSession,
+} from '@lego-platform/user/util';
 import {
   CollectorHandleConflictError,
   type UserProfileRepository,

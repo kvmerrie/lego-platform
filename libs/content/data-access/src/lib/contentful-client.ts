@@ -143,12 +143,15 @@ export async function fetchContentfulEditorialPages(
     urlSearchParams.set('fields.slug', searchParams.slug);
   }
 
-  const response = await fetch(buildContentfulEntriesUrl(config, urlSearchParams), {
-    cache: mode === 'preview' ? 'no-store' : undefined,
-    headers: {
-      Authorization: `Bearer ${config.accessToken}`,
+  const response = await fetch(
+    buildContentfulEntriesUrl(config, urlSearchParams),
+    {
+      cache: mode === 'preview' ? 'no-store' : undefined,
+      headers: {
+        Authorization: `Bearer ${config.accessToken}`,
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Unable to load ${mode} editorial pages from Contentful.`);

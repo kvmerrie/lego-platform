@@ -13,7 +13,9 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
     expect(catalogSnapshot.setRecords).toHaveLength(5);
-    expect(catalogSyncManifest.recordCount).toBe(catalogSnapshot.setRecords.length);
+    expect(catalogSyncManifest.recordCount).toBe(
+      catalogSnapshot.setRecords.length,
+    );
     expect(catalogSyncManifest.homepageFeaturedSetIds).toEqual([
       '10316',
       '21348',
@@ -149,8 +151,7 @@ describe('catalog data-access contracts', () => {
         pieces: 5202,
         priceRange: '$449 to $519',
         collectorAngle: 'Marvel flagship showcase',
-        tagline:
-          'A marquee licensed set with broad household recognizability.',
+        tagline: 'A marquee licensed set with broad household recognizability.',
         availability: 'Stable with strong seasonal demand',
       },
       {
@@ -170,7 +171,9 @@ describe('catalog data-access contracts', () => {
   });
 
   test('does not expose upstream slug drift through the product route contract', () => {
-    expect(getCatalogSetBySlug('lord-of-the-rings-rivendell-10316')).toBeUndefined();
+    expect(
+      getCatalogSetBySlug('lord-of-the-rings-rivendell-10316'),
+    ).toBeUndefined();
   });
 
   test('keeps newly curated sets product-ready through local overlay coverage', () => {

@@ -1,9 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import {
-  UserProfileEditorCard,
-  UserSessionCard,
-} from './user-ui';
+import { UserProfileEditorCard, UserSessionCard } from './user-ui';
 
 describe('UserSessionCard', () => {
   it('renders a more productized signed-in collector account surface', () => {
@@ -61,8 +58,12 @@ describe('UserProfileEditorCard', () => {
 
     expect(markup).toContain('Refine your collector profile');
     expect(markup).toContain('Keep these details concise and recognizable');
-    expect(markup).toContain('Use the name you want shown on your collector card.');
+    expect(markup).toContain(
+      'Use the name you want shown on your collector card.',
+    );
     expect(markup).toContain('After saving, this stays product-facing');
-    expect(markup).toContain('A short line about the sets and themes you care about most.');
+    expect(markup).toContain(
+      'A short line about the sets and themes you care about most.',
+    );
   });
 });

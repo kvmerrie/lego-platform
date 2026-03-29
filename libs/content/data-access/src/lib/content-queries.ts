@@ -23,10 +23,13 @@ function resolveContentQueryMode(
   return options?.mode ?? 'delivery';
 }
 
-async function loadEditorialPages(searchParams: {
-  pageType?: 'homepage' | 'page';
-  slug?: string;
-}, options?: ContentQueryOptions): Promise<EditorialPage[] | null> {
+async function loadEditorialPages(
+  searchParams: {
+    pageType?: 'homepage' | 'page';
+    slug?: string;
+  },
+  options?: ContentQueryOptions,
+): Promise<EditorialPage[] | null> {
   const mode = resolveContentQueryMode(options);
 
   if (!isContentfulModeEnabled(mode)) {

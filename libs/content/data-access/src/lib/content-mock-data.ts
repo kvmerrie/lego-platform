@@ -23,7 +23,8 @@ export const homepageEditorialPage: EditorialPage = {
       id: 'home-foundation',
       type: 'richText',
       eyebrow: 'Editorial foundation',
-      title: 'Keep storytelling flexible while core product data stays system-owned.',
+      title:
+        'Keep storytelling flexible while core product data stays system-owned.',
       body: 'Homepage content is shaped like a future Contentful page, but the featured set list still comes from the catalog domain so editorial content never becomes the source of truth for collector data.',
     },
     {
@@ -52,7 +53,8 @@ export const editorialPages: readonly EditorialPage[] = [
         id: 'about-hero',
         type: 'hero',
         eyebrow: 'About',
-        title: 'Brick Ledger is built to respect both collectors and the systems behind the product.',
+        title:
+          'Brick Ledger is built to respect both collectors and the systems behind the product.',
         body: 'The platform starts narrow on purpose: browse sets, track ownership, and layer in editorial depth without collapsing product structure into page-specific code.',
       },
       {

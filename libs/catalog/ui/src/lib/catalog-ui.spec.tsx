@@ -33,7 +33,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Current reviewed price');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('In stock at bol');
-    expect(markup).toContain('Availability posture: Healthy but premium availability');
+    expect(markup).toContain(
+      'Availability posture: Healthy but premium availability',
+    );
     expect(markup).toContain('Prestige display anchor');
     expect(markup).toContain('EUR 10.00 below ref');
   });

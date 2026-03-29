@@ -498,7 +498,9 @@ describe('catalog sync artifacts', () => {
           },
         ],
       }),
-    ).toThrow('Catalog sync produced a duplicate product slug: shared-product-slug.');
+    ).toThrow(
+      'Catalog sync produced a duplicate product slug: shared-product-slug.',
+    );
   });
 
   test('fails validation when homepage featured ids drift outside the snapshot', async () => {

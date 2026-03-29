@@ -134,13 +134,7 @@ function getTrackedDailyPointLabel(pointCount: number): string {
   return `${pointCount} tracked daily point${pointCount === 1 ? '' : 's'}`;
 }
 
-function PricingMetaItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function PricingMetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div className={styles.metaItem}>
       <dt className={styles.metaLabel}>{label}</dt>
@@ -197,7 +191,9 @@ function getHistoryRangeSummary(
   const latest = priceHistoryPoints.at(-1);
 
   if (!low || !high || !latest) {
-    throw new Error('Price history summary requires at least one history point.');
+    throw new Error(
+      'Price history summary requires at least one history point.',
+    );
   }
 
   return {
@@ -305,7 +301,10 @@ export function PriceHistorySummaryCallout({
 }) {
   if (!priceHistorySummary && !trackedPriceSummary) {
     return (
-      <section aria-label="30-day price summary" className={styles.summaryBlock}>
+      <section
+        aria-label="30-day price summary"
+        className={styles.summaryBlock}
+      >
         <p className={styles.summaryLabel}>30-day summary</p>
         <p className={styles.summaryNote}>
           {historyPointCount === 1
@@ -318,7 +317,10 @@ export function PriceHistorySummaryCallout({
 
   return (
     <section aria-label="30-day price summary" className={styles.summaryBlock}>
-      <section aria-label="30-day price summary" className={styles.summarySection}>
+      <section
+        aria-label="30-day price summary"
+        className={styles.summarySection}
+      >
         <p className={styles.summaryLabel}>30-day summary</p>
         {priceHistorySummary ? (
           <>
@@ -385,7 +387,9 @@ export function PriceHistorySummaryCallout({
             />
             <PricingMetaItem
               label="Tracked since"
-              value={formatRecordedOn(trackedPriceSummary.trackedSinceRecordedOn)}
+              value={formatRecordedOn(
+                trackedPriceSummary.trackedSinceRecordedOn,
+              )}
             />
             <PricingMetaItem
               label="Current vs tracked low"
@@ -405,9 +409,8 @@ export function PriceHistorySummaryCallout({
             />
           </dl>
           <p className={styles.summaryNote}>
-            Based on{' '}
-            {getTrackedDailyPointLabel(trackedPriceSummary.pointCount)} stored
-            for this set.
+            Based on {getTrackedDailyPointLabel(trackedPriceSummary.pointCount)}{' '}
+            stored for this set.
           </p>
         </section>
       ) : null}
@@ -543,7 +546,13 @@ export function PriceHistoryCard({
           role="img"
           viewBox="0 0 100 48"
         >
-          <line className={styles.historyGridLine} x1="6" x2="94" y1="8" y2="8" />
+          <line
+            className={styles.historyGridLine}
+            x1="6"
+            x2="94"
+            y1="8"
+            y2="8"
+          />
           <line
             className={styles.historyGridLine}
             x1="6"

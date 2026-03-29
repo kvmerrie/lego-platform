@@ -76,10 +76,11 @@ export function createApiV1Routes({
         return reply.status(401).send(createUnauthorizedResponse());
       }
 
-      const userProfileRepositoryRecord = await userProfileRepository.ensureProfile({
-        email: request.requestPrincipal.email,
-        userId: request.requestPrincipal.userId,
-      });
+      const userProfileRepositoryRecord =
+        await userProfileRepository.ensureProfile({
+          email: request.requestPrincipal.email,
+          userId: request.requestPrincipal.userId,
+        });
 
       return toCollectorProfile({
         email: request.requestPrincipal.email,
@@ -87,54 +88,55 @@ export function createApiV1Routes({
       });
     });
 
-    fastify.patch<{ Body: unknown }>(apiPaths.profile, async function (
-      request,
-      reply,
-    ) {
-      if (request.requestPrincipal?.state !== 'authenticated') {
-        return reply.status(401).send(createUnauthorizedResponse());
-      }
+    fastify.patch<{ Body: unknown }>(
+      apiPaths.profile,
+      async function (request, reply) {
+        if (request.requestPrincipal?.state !== 'authenticated') {
+          return reply.status(401).send(createUnauthorizedResponse());
+        }
 
-      let updateCollectorProfileInput;
+        let updateCollectorProfileInput;
 
-      try {
-        updateCollectorProfileInput = validateUpdateCollectorProfileInput(
-          request.body,
-        );
-      } catch (error) {
-        return reply.status(400).send({
-          message:
-            error instanceof Error
-              ? error.message
-              : 'Collector profile input is invalid.',
-        });
-      }
-
-      await userProfileRepository.ensureProfile({
-        email: request.requestPrincipal.email,
-        userId: request.requestPrincipal.userId,
-      });
-
-      try {
-        const updatedUserProfileRecord = await userProfileRepository.updateProfile({
-          userId: request.requestPrincipal.userId,
-          updateCollectorProfileInput,
-        });
-
-        return toCollectorProfile({
-          email: request.requestPrincipal.email,
-          userProfileRepositoryRecord: updatedUserProfileRecord,
-        });
-      } catch (error) {
-        if (error instanceof CollectorHandleConflictError) {
-          return reply.status(409).send({
-            message: error.message,
+        try {
+          updateCollectorProfileInput = validateUpdateCollectorProfileInput(
+            request.body,
+          );
+        } catch (error) {
+          return reply.status(400).send({
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Collector profile input is invalid.',
           });
         }
 
-        throw error;
-      }
-    });
+        await userProfileRepository.ensureProfile({
+          email: request.requestPrincipal.email,
+          userId: request.requestPrincipal.userId,
+        });
+
+        try {
+          const updatedUserProfileRecord =
+            await userProfileRepository.updateProfile({
+              userId: request.requestPrincipal.userId,
+              updateCollectorProfileInput,
+            });
+
+          return toCollectorProfile({
+            email: request.requestPrincipal.email,
+            userProfileRepositoryRecord: updatedUserProfileRecord,
+          });
+        } catch (error) {
+          if (error instanceof CollectorHandleConflictError) {
+            return reply.status(409).send({
+              message: error.message,
+            });
+          }
+
+          throw error;
+        }
+      },
+    );
 
     fastify.put<{ Params: { setId: string } }>(
       `${apiPaths.ownedSets}/:setId`,

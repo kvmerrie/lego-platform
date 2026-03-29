@@ -129,7 +129,9 @@ async function stabilizeCatalogGeneratedAt({
     catalogSnapshot,
     catalogSyncManifest,
   };
-  const currentArtifacts = await readCatalogGeneratedArtifacts({ workspaceRoot });
+  const currentArtifacts = await readCatalogGeneratedArtifacts({
+    workspaceRoot,
+  });
 
   if (!currentArtifacts) {
     return artifacts;

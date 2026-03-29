@@ -1,4 +1,9 @@
-import { Button, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import {
+  Button,
+  Badge,
+  SectionHeading,
+  Surface,
+} from '@lego-platform/shared/ui';
 import { WishlistItem } from '@lego-platform/wishlist/util';
 import styles from './wishlist-ui.module.css';
 
@@ -14,7 +19,9 @@ export function WishlistItemCard({
         <Badge tone="accent">{wishlistItem.urgency}</Badge>
       </div>
       <p>{wishlistItem.reason}</p>
-      <p className={styles.metaText}>Target price: {wishlistItem.targetPrice}</p>
+      <p className={styles.metaText}>
+        Target price: {wishlistItem.targetPrice}
+      </p>
     </Surface>
   );
 }
@@ -78,7 +85,9 @@ export function WantedSetToggleCard({
       as="article"
       className={styles.toggleCard}
       elevation="rested"
-      tone={isLoading || isUnavailable ? 'muted' : isWanted ? 'accent' : 'default'}
+      tone={
+        isLoading || isUnavailable ? 'muted' : isWanted ? 'accent' : 'default'
+      }
     >
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>

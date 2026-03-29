@@ -12,9 +12,14 @@ import type {
   SeoFields,
 } from '@lego-platform/content/util';
 
-type ContentfulFields = ContentfulEditorialPageFields | ContentfulEditorialSectionFields;
+type ContentfulFields =
+  | ContentfulEditorialPageFields
+  | ContentfulEditorialSectionFields;
 
-function readStringField(fields: ContentfulFields, fieldName: string): string | undefined {
+function readStringField(
+  fields: ContentfulFields,
+  fieldName: string,
+): string | undefined {
   const fieldValue = fields[fieldName as keyof ContentfulFields];
 
   return typeof fieldValue === 'string' ? fieldValue : undefined;
@@ -41,7 +46,9 @@ function mapSeoFields(
   pageFields: ContentfulEditorialPageFields,
   openGraphImageUrl?: string,
 ): SeoFields {
-  const title = readStringField(pageFields, 'seoTitle') ?? readStringField(pageFields, 'title');
+  const title =
+    readStringField(pageFields, 'seoTitle') ??
+    readStringField(pageFields, 'title');
   const description = readStringField(pageFields, 'seoDescription');
 
   if (!title || !description) {
@@ -105,7 +112,10 @@ export function mapContentfulEditorialPages(
     (collection.includes?.Asset ?? []).map((asset) => [asset.sys.id, asset]),
   );
   const sectionById = new Map(
-    (collection.includes?.Entry ?? []).map((section) => [section.sys.id, section]),
+    (collection.includes?.Entry ?? []).map((section) => [
+      section.sys.id,
+      section,
+    ]),
   );
 
   return collection.items.flatMap((pageEntry) => {
@@ -122,24 +132,26 @@ export function mapContentfulEditorialPages(
         ? assetById.get(openGraphImageLink.sys.id)
         : undefined;
 
-    const sections = (pageEntry.fields.sections ?? []).flatMap((sectionLink) => {
-      if (sectionLink.sys.linkType !== 'Entry') {
-        return [];
-      }
+    const sections = (pageEntry.fields.sections ?? []).flatMap(
+      (sectionLink) => {
+        if (sectionLink.sys.linkType !== 'Entry') {
+          return [];
+        }
 
-      const linkedSection = sectionById.get(sectionLink.sys.id);
+        const linkedSection = sectionById.get(sectionLink.sys.id);
 
-      if (!linkedSection) {
-        return [];
-      }
+        if (!linkedSection) {
+          return [];
+        }
 
-      const editorialSection = mapEditorialSection(
-        linkedSection.sys.id,
-        linkedSection.fields,
-      );
+        const editorialSection = mapEditorialSection(
+          linkedSection.sys.id,
+          linkedSection.fields,
+        );
 
-      return editorialSection ? [editorialSection] : [];
-    });
+        return editorialSection ? [editorialSection] : [];
+      },
+    );
 
     try {
       return [

@@ -6,12 +6,15 @@ import {
   type AffiliateOfferSnapshot,
   type AffiliateSyncManifest,
 } from '@lego-platform/affiliate/util';
-import {
-  dutchAffiliateMerchantConfigs,
-} from './merchant-config';
+import { dutchAffiliateMerchantConfigs } from './merchant-config';
 
 export interface AffiliateOfferCandidateInput {
-  availability: 'in_stock' | 'limited' | 'out_of_stock' | 'preorder' | 'unknown';
+  availability:
+    | 'in_stock'
+    | 'limited'
+    | 'out_of_stock'
+    | 'preorder'
+    | 'unknown';
   condition: 'new';
   currencyCode: 'EUR';
   merchantId: string;
@@ -55,10 +58,12 @@ function getGeneratedAt({
     return now.toISOString();
   }
 
-  return [...affiliateOfferSnapshots]
-    .map((affiliateOfferSnapshot) => affiliateOfferSnapshot.observedAt)
-    .sort()
-    .at(-1) ?? new Date(0).toISOString();
+  return (
+    [...affiliateOfferSnapshots]
+      .map((affiliateOfferSnapshot) => affiliateOfferSnapshot.observedAt)
+      .sort()
+      .at(-1) ?? new Date(0).toISOString()
+  );
 }
 
 export function validateAffiliateMerchantConfigs(
@@ -182,7 +187,9 @@ export function buildAffiliateSyncArtifacts({
       ]),
   );
   const affiliateOfferSnapshots = offerCandidateInputs
-    .filter((offerCandidateInput) => enabledSetIds.includes(offerCandidateInput.setId))
+    .filter((offerCandidateInput) =>
+      enabledSetIds.includes(offerCandidateInput.setId),
+    )
     .map((offerCandidateInput) => {
       const affiliateMerchantConfig = merchantConfigById.get(
         offerCandidateInput.merchantId,
@@ -228,7 +235,9 @@ export function buildAffiliateSyncArtifacts({
         currencyCode: offerCandidateInput.currencyCode,
         condition: offerCandidateInput.condition,
         totalPriceMinor: offerCandidateInput.totalPriceMinor,
-        availabilityLabel: toAvailabilityLabel(offerCandidateInput.availability),
+        availabilityLabel: toAvailabilityLabel(
+          offerCandidateInput.availability,
+        ),
         outboundUrl: outboundUrl.toString(),
         disclosureCopy: affiliateMerchantConfig.disclosureCopy,
         observedAt: offerCandidateInput.observedAt,

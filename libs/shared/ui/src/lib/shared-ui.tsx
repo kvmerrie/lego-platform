@@ -35,12 +35,14 @@ type BadgeTone =
 type SectionHeadingLevel = 'h1' | 'h2' | 'h3';
 type SectionHeadingTone = 'default' | 'hero';
 
-const buttonToneClasses: Record<Exclude<ActionTone, 'card' | 'inline'>, string> =
-  {
-    accent: styles.buttonAccent,
-    ghost: styles.buttonGhost,
-    secondary: styles.buttonSecondary,
-  };
+const buttonToneClasses: Record<
+  Exclude<ActionTone, 'card' | 'inline'>,
+  string
+> = {
+  accent: styles.buttonAccent,
+  ghost: styles.buttonGhost,
+  secondary: styles.buttonSecondary,
+};
 
 const linkToneClasses: Record<ActionTone, string> = {
   accent: styles.linkAccent,
@@ -71,11 +73,13 @@ const surfaceToneClasses: Record<SurfaceTone, string | undefined> = {
   muted: styles.surfaceMuted,
 };
 
-const sectionHeadingToneClasses: Record<SectionHeadingTone, string | undefined> =
-  {
-    default: undefined,
-    hero: styles.sectionHeadingHero,
-  };
+const sectionHeadingToneClasses: Record<
+  SectionHeadingTone,
+  string | undefined
+> = {
+  default: undefined,
+  hero: styles.sectionHeadingHero,
+};
 
 export function Surface({
   as = 'div',

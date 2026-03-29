@@ -176,7 +176,9 @@ function normalizePriceHistoryRowRecord(
   };
 }
 
-export async function listPriceHistory(setId: string): Promise<PriceHistoryPoint[]> {
+export async function listPriceHistory(
+  setId: string,
+): Promise<PriceHistoryPoint[]> {
   if (!hasBrowserSupabaseConfig()) {
     return [];
   }

@@ -3,11 +3,7 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/collection/feature-owned-toggle/src",
   "projectType": "library",
-  "tags": [
-    "scope:collection",
-    "type:feature",
-    "platform:web"
-  ],
+  "tags": ["scope:collection", "type:feature", "platform:web"],
   "// targets": "to see all targets run: nx show project collection-feature-owned-toggle --web",
   "targets": {}
 }

@@ -150,7 +150,9 @@ export function createUserProfileRepository(
     return supabaseAdminClient ?? getServerSupabaseAdminClient();
   }
 
-  async function getByUserId(userId: string): Promise<UserProfileRecord | null> {
+  async function getByUserId(
+    userId: string,
+  ): Promise<UserProfileRecord | null> {
     const { data, error } = await getSupabaseAdminClient()
       .from('profiles')
       .select(profileColumns)

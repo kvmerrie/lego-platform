@@ -125,7 +125,8 @@ export function UserSessionCard({
                 onChange={(event) => onAuthEmailChange?.(event.target.value)}
               />
               <span className={styles.fieldHint}>
-                One link is enough. Wait about a minute before requesting another sign-in link.
+                One link is enough. Wait about a minute before requesting
+                another sign-in link.
               </span>
             </label>
             <div className={styles.sessionActions}>
@@ -147,8 +148,8 @@ export function UserSessionCard({
             </div>
           </form>
           <p className={styles.supportNote}>
-            Saved owned and wanted state stays with your collector account, while
-            the set-detail page stays static-friendly and fast.
+            Saved owned and wanted state stays with your collector account,
+            while the set-detail page stays static-friendly and fast.
           </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
@@ -226,7 +227,9 @@ export function UserSessionCard({
           >
             Sign out
           </Button>
-          <VisuallyHidden>Ends the current authenticated browser session.</VisuallyHidden>
+          <VisuallyHidden>
+            Ends the current authenticated browser session.
+          </VisuallyHidden>
         </div>
         {authStatusMessage ? (
           <p aria-live="polite" className={styles.infoText}>
@@ -412,7 +415,9 @@ export function UserProfileEditorCard({
               required
               type="text"
               value={draft.location}
-              onChange={(event) => onDraftChange?.('location', event.target.value)}
+              onChange={(event) =>
+                onDraftChange?.('location', event.target.value)
+              }
             />
             <span className={styles.fieldHint}>
               Keep it short and recognizable for your collector identity.

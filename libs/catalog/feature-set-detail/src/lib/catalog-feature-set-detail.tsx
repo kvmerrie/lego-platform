@@ -7,7 +7,10 @@ export function CatalogFeatureSetDetail({
   catalogSetDetail: CatalogSetDetail;
 }) {
   return (
-    <CatalogSetDetailPanel catalogSetDetail={catalogSetDetail} homeHref="/#featured-sets" />
+    <CatalogSetDetailPanel
+      catalogSetDetail={catalogSetDetail}
+      homeHref="/#featured-sets"
+    />
   );
 }
 

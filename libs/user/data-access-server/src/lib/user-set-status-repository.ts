@@ -41,20 +41,16 @@ export interface UserSetStatusRepository {
     setId: string,
   ): Promise<UserSetStatusRecord | null>;
   listByUserId(userId: string): Promise<UserSetStatusRecord[]>;
-  setOwnedState(
-    input: {
-      userId: string;
-      setId: string;
-      isOwned: boolean;
-    },
-  ): Promise<UserSetStatusRecord | null>;
-  setWantedState(
-    input: {
-      userId: string;
-      setId: string;
-      isWanted: boolean;
-    },
-  ): Promise<UserSetStatusRecord | null>;
+  setOwnedState(input: {
+    userId: string;
+    setId: string;
+    isOwned: boolean;
+  }): Promise<UserSetStatusRecord | null>;
+  setWantedState(input: {
+    userId: string;
+    setId: string;
+    isWanted: boolean;
+  }): Promise<UserSetStatusRecord | null>;
 }
 
 function mapUserSetStatusRow(

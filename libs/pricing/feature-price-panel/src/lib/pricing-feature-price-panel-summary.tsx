@@ -7,11 +7,7 @@ import {
 import { PriceHistorySummaryCallout } from '@lego-platform/pricing/ui';
 import { useEffect, useState } from 'react';
 
-export function PricingFeaturePricePanelSummary({
-  setId,
-}: {
-  setId: string;
-}) {
+export function PricingFeaturePricePanelSummary({ setId }: { setId: string }) {
   const [priceHistorySummaryState, setPriceHistorySummaryState] = useState<
     PriceHistorySummaryState | null | undefined
   >(undefined);

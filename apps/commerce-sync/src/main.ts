@@ -15,7 +15,9 @@ async function main() {
   const mode = getSyncMode(process.argv.slice(2));
   const startedAt = Date.now();
 
-  console.log(`[commerce-sync] start mode=${mode} scope=dutch-curated-set-detail`);
+  console.log(
+    `[commerce-sync] start mode=${mode} scope=dutch-curated-set-detail`,
+  );
   const result = await runCommerceSync({
     mode,
     workspaceRoot: process.cwd(),

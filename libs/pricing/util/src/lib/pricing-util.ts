@@ -93,9 +93,7 @@ export interface TrackedPriceSummary {
   trackedSinceRecordedOn: string;
 }
 
-export function getPriceDirection(
-  deltaMinor?: number,
-): 'up' | 'down' | 'flat' {
+export function getPriceDirection(deltaMinor?: number): 'up' | 'down' | 'flat' {
   if (typeof deltaMinor !== 'number' || deltaMinor === 0) {
     return 'flat';
   }
@@ -121,7 +119,10 @@ export function formatPriceMinor({
 }
 
 function renderPricingGeneratedModule<
-  T extends PricingSyncManifest | readonly PricePanelSnapshot[] | readonly PricingObservation[],
+  T extends
+    | PricingSyncManifest
+    | readonly PricePanelSnapshot[]
+    | readonly PricingObservation[],
 >({
   exportName,
   importNames,

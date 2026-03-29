@@ -65,7 +65,9 @@ describe('wishlist data access', () => {
   test('returns a sign-in-required error for anonymous wanted writes', async () => {
     const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
 
-    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(new Headers());
+    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
+      new Headers(),
+    );
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
     await expect(addWantedSet('21348')).rejects.toThrow(

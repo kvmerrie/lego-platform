@@ -67,9 +67,7 @@ function parseGeneratedArtifactPayload<T>({
   moduleSource: string;
 }): T {
   const match = moduleSource.match(
-    new RegExp(
-      `export const ${exportName}: [^=]+ = ([\\s\\S]+);\\s*$`,
-    ),
+    new RegExp(`export const ${exportName}: [^=]+ = ([\\s\\S]+);\\s*$`),
   );
 
   if (!match?.[1]) {

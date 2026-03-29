@@ -89,7 +89,9 @@ function normalizeCatalogText(value: string): string {
 
 export function getCanonicalCatalogSetId(sourceSetNumber: string): string {
   const normalizedSourceSetNumber = normalizeCatalogText(sourceSetNumber);
-  const variantMatch = normalizedSourceSetNumber.match(/^([0-9A-Za-z]+)-[0-9A-Za-z]+$/);
+  const variantMatch = normalizedSourceSetNumber.match(
+    /^([0-9A-Za-z]+)-[0-9A-Za-z]+$/,
+  );
 
   return variantMatch ? variantMatch[1] : normalizedSourceSetNumber;
 }

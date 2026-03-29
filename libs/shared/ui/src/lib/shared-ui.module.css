@@ -5,7 +5,8 @@
     color-mix(in srgb, var(--lego-surface-raised) 97%, transparent),
     color-mix(in srgb, var(--lego-surface) 92%, transparent)
   );
-  border: var(--lego-border-width-1) solid color-mix(in srgb, var(--lego-border) 92%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 92%, transparent);
   border-radius: var(--lego-radius-lg);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, white 50%, transparent),
@@ -42,7 +43,11 @@
 .surfaceAccent {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--lego-accent-subtle) 34%, var(--lego-surface-raised)),
+    color-mix(
+      in srgb,
+      var(--lego-accent-subtle) 34%,
+      var(--lego-surface-raised)
+    ),
     color-mix(in srgb, var(--lego-surface-accent) 82%, transparent)
   );
   border-color: color-mix(in srgb, var(--lego-accent) 16%, var(--lego-border));
@@ -266,7 +271,8 @@
 .badge {
   align-items: center;
   background: color-mix(in srgb, var(--lego-surface-muted) 80%, transparent);
-  border: var(--lego-border-width-1) solid color-mix(in srgb, var(--lego-border) 66%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 66%, transparent);
   border-radius: var(--lego-radius-sm);
   color: var(--lego-text);
   display: inline-flex;
@@ -278,31 +284,55 @@
 }
 
 .badgeAccent {
-  background: color-mix(in srgb, var(--lego-accent-subtle) 72%, var(--lego-surface-raised));
+  background: color-mix(
+    in srgb,
+    var(--lego-accent-subtle) 72%,
+    var(--lego-surface-raised)
+  );
   border-color: color-mix(in srgb, var(--lego-accent) 22%, var(--lego-border));
   color: var(--lego-accent);
 }
 
 .badgePositive {
-  background: color-mix(in srgb, var(--lego-positive) 16%, var(--lego-surface-raised));
-  border-color: color-mix(in srgb, var(--lego-positive) 22%, var(--lego-border));
+  background: color-mix(
+    in srgb,
+    var(--lego-positive) 16%,
+    var(--lego-surface-raised)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--lego-positive) 22%,
+    var(--lego-border)
+  );
   color: var(--lego-positive);
 }
 
 .badgeWarning {
-  background: color-mix(in srgb, var(--lego-warning) 18%, var(--lego-surface-raised));
+  background: color-mix(
+    in srgb,
+    var(--lego-warning) 18%,
+    var(--lego-surface-raised)
+  );
   border-color: color-mix(in srgb, var(--lego-warning) 22%, var(--lego-border));
   color: var(--lego-warning);
 }
 
 .badgeInfo {
-  background: color-mix(in srgb, var(--lego-info) 16%, var(--lego-surface-raised));
+  background: color-mix(
+    in srgb,
+    var(--lego-info) 16%,
+    var(--lego-surface-raised)
+  );
   border-color: color-mix(in srgb, var(--lego-info) 22%, var(--lego-border));
   color: var(--lego-info);
 }
 
 .badgeError {
-  background: color-mix(in srgb, var(--lego-error) 16%, var(--lego-surface-raised));
+  background: color-mix(
+    in srgb,
+    var(--lego-error) 16%,
+    var(--lego-surface-raised)
+  );
   border-color: color-mix(in srgb, var(--lego-error) 22%, var(--lego-border));
   color: var(--lego-error);
 }

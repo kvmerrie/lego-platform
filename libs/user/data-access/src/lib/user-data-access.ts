@@ -46,7 +46,8 @@ function getSignInErrorMessage(error: {
   code?: string;
   message?: string;
 }): string {
-  const authErrorText = `${error.code ?? ''} ${error.message ?? ''}`.toLowerCase();
+  const authErrorText =
+    `${error.code ?? ''} ${error.message ?? ''}`.toLowerCase();
 
   if (
     authErrorText.includes('rate') ||
@@ -126,14 +127,17 @@ export function subscribeToUserAuthChanges(onChange: () => void): () => void {
   });
 }
 
-export function subscribeToUserAccountChanges(onChange: () => void): () => void {
+export function subscribeToUserAccountChanges(
+  onChange: () => void,
+): () => void {
   return subscribeToBrowserAccountDataChanges(onChange);
 }
 
 export async function updateCurrentUserProfile(
   input: UpdateCollectorProfileInput,
 ): Promise<CollectorProfile> {
-  const updateCollectorProfileInput = validateUpdateCollectorProfileInput(input);
+  const updateCollectorProfileInput =
+    validateUpdateCollectorProfileInput(input);
   const headers = await buildSupabaseAuthorizationHeaders({
     'Content-Type': 'application/json',
   });

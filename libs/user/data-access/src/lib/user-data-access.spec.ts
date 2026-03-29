@@ -114,7 +114,9 @@ describe('user data access', () => {
       requestUserSignIn({
         email: 'collector@example.com',
       }),
-    ).rejects.toThrow('Email sign-in is not available in this environment yet.');
+    ).rejects.toThrow(
+      'Email sign-in is not available in this environment yet.',
+    );
   });
 
   test('returns a calmer resend message when Supabase rate-limits sign-in emails', async () => {
@@ -132,7 +134,8 @@ describe('user data access', () => {
       },
       error: {
         code: 'over_email_send_rate_limit',
-        message: 'For security purposes, you can only request this after 60 seconds.',
+        message:
+          'For security purposes, you can only request this after 60 seconds.',
       },
     });
 
@@ -291,7 +294,9 @@ describe('user data access', () => {
     const onChange = vi.fn();
     const unsubscribe = vi.fn();
 
-    vi.mocked(subscribeToSupabaseAuthChanges).mockImplementation(() => unsubscribe);
+    vi.mocked(subscribeToSupabaseAuthChanges).mockImplementation(
+      () => unsubscribe,
+    );
 
     const nextUnsubscribe = subscribeToUserAuthChanges(onChange);
 

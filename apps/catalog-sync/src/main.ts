@@ -1,4 +1,7 @@
-import { curatedCatalogSyncSetNumbers, runCatalogSync } from '@lego-platform/catalog/data-access-sync';
+import {
+  curatedCatalogSyncSetNumbers,
+  runCatalogSync,
+} from '@lego-platform/catalog/data-access-sync';
 
 function getSyncMode(argv: readonly string[]): 'check' | 'write' {
   const hasCheckFlag = argv.includes('--check');
@@ -18,9 +21,7 @@ async function main() {
   const startedAt = Date.now();
 
   if (!apiKey) {
-    throw new Error(
-      'REBRICKABLE_API_KEY is required to run the catalog sync.',
-    );
+    throw new Error('REBRICKABLE_API_KEY is required to run the catalog sync.');
   }
 
   console.log(

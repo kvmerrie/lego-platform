@@ -26,7 +26,8 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
       enabled: true,
       displayRank: 2,
       urlHost: 'www.bol.com',
-      disclosureCopy: 'Direct merchant link. Affiliate parameters may be added later.',
+      disclosureCopy:
+        'Direct merchant link. Affiliate parameters may be added later.',
       ctaLabel: 'Shop at bol',
       perks: 'Wide Dutch retail reach',
     },
@@ -38,7 +39,8 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
       enabled: true,
       displayRank: 3,
       urlHost: 'www.intertoys.nl',
-      disclosureCopy: 'Direct merchant link. Affiliate parameters may be added later.',
+      disclosureCopy:
+        'Direct merchant link. Affiliate parameters may be added later.',
       ctaLabel: 'Shop at Intertoys',
       perks: 'Strong toy-specialist relevance',
     },

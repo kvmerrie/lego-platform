@@ -17,9 +17,13 @@ export function ContentFeaturePageRenderer({
     <section
       aria-label={editorialPage.title}
       className={styles.page}
-      id={editorialPage.pageType === 'homepage' ? 'editorial-homepage' : 'content'}
+      id={
+        editorialPage.pageType === 'homepage' ? 'editorial-homepage' : 'content'
+      }
     >
-      {heroSection ? <EditorialHeroPanel editorialSection={heroSection} /> : null}
+      {heroSection ? (
+        <EditorialHeroPanel editorialSection={heroSection} />
+      ) : null}
       {supportingSections.length ? (
         <div className={styles.grid}>
           {supportingSections.map((editorialSection) => (

@@ -124,7 +124,9 @@ function assertMaxLength({
 }
 
 export function normalizeCollectorHandle(value: string): string {
-  return sanitizeCollectorHandle(readRequiredTextField(value, 'Collector handle'));
+  return sanitizeCollectorHandle(
+    readRequiredTextField(value, 'Collector handle'),
+  );
 }
 
 export function createCollectorProfileDraft(

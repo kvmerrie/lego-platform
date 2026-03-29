@@ -18,9 +18,8 @@ function readErrorMessage(error: unknown, fallback: string): string {
 }
 
 export function UserFeatureProfile() {
-  const [collectorProfile, setCollectorProfile] = useState<CollectorProfile | null>(
-    null,
-  );
+  const [collectorProfile, setCollectorProfile] =
+    useState<CollectorProfile | null>(null);
   const [draft, setDraft] = useState<UpdateCollectorProfileInput>();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

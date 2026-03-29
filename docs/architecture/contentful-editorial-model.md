@@ -50,14 +50,17 @@ Do not add separate SEO, catalog, pricing, or navigation content types in this p
 ## Content Type: `editorialPage`
 
 Purpose:
+
 - Represents the homepage or one generic editorial page under `/pages/[slug]`
 
 Recommended display name:
+
 - `Editorial Page`
 
 Fields:
 
 1. `internalName`
+
 - Type: `Short text`
 - Required: yes
 - Validation:
@@ -68,6 +71,7 @@ Fields:
   - not used by the app
 
 2. `pageType`
+
 - Type: `Short text`
 - Required: yes
 - Validation:
@@ -76,6 +80,7 @@ Fields:
   - maps to `EditorialPage.pageType`
 
 3. `slug`
+
 - Type: `Short text`
 - Required: only for `page`
 - Validation:
@@ -87,6 +92,7 @@ Fields:
   - maps to `/pages/[slug]`
 
 4. `title`
+
 - Type: `Short text`
 - Required: yes
 - Validation:
@@ -95,6 +101,7 @@ Fields:
   - maps to `EditorialPage.title`
 
 5. `seoTitle`
+
 - Type: `Short text`
 - Required: yes
 - Validation:
@@ -103,6 +110,7 @@ Fields:
   - maps to `SeoFields.title`
 
 6. `seoDescription`
+
 - Type: `Short text`
 - Required: yes
 - Validation:
@@ -111,6 +119,7 @@ Fields:
   - maps to `SeoFields.description`
 
 7. `seoNoIndex`
+
 - Type: `Boolean`
 - Required: no
 - Default: `false`
@@ -118,6 +127,7 @@ Fields:
   - maps to `SeoFields.noIndex`
 
 8. `seoOpenGraphImage`
+
 - Type: `Media`
 - Required: no
 - Validation:
@@ -126,6 +136,7 @@ Fields:
   - maps to `SeoFields.openGraphImageUrl`
 
 9. `sections`
+
 - Type: `Reference, many`
 - Required: yes
 - Validation:
@@ -139,14 +150,17 @@ Fields:
 ## Content Type: `editorialSection`
 
 Purpose:
+
 - Represents one ordered section inside an editorial page
 
 Recommended display name:
+
 - `Editorial Section`
 
 Fields:
 
 1. `internalName`
+
 - Type: `Short text`
 - Required: yes
 - Validation:
@@ -155,6 +169,7 @@ Fields:
   - editorial-only admin label
 
 2. `sectionType`
+
 - Type: `Short text`
 - Required: yes
 - Validation:
@@ -163,6 +178,7 @@ Fields:
   - maps to `EditorialSection.type`
 
 3. `eyebrow`
+
 - Type: `Short text`
 - Required: no
 - Validation:
@@ -171,12 +187,14 @@ Fields:
   - maps to `EditorialSection.eyebrow`
 
 4. `title`
+
 - Type: `Short text`
 - Required: yes
 - Notes:
   - maps to `EditorialSection.title`
 
 5. `body`
+
 - Type: `Long text`
 - Required: yes
 - Notes:
@@ -185,12 +203,14 @@ Fields:
   - do not introduce rich text documents yet
 
 6. `ctaLabel`
+
 - Type: `Short text`
 - Required: no
 - Notes:
   - maps to `EditorialSection.ctaLabel`
 
 7. `ctaHref`
+
 - Type: `Short text`
 - Required: no
 - Validation:

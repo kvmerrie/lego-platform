@@ -4,7 +4,12 @@ import type {
   CatalogSetSummary,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
-import { ActionLink, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import {
+  ActionLink,
+  Badge,
+  SectionHeading,
+  Surface,
+} from '@lego-platform/shared/ui';
 import styles from './catalog-ui.module.css';
 
 type CatalogSetCardSummary = CatalogSetSummary &
@@ -72,7 +77,9 @@ export function CatalogSetCard({
           <p className={styles.priceLabel}>Current reviewed price</p>
           <p className={styles.priceValue}>{priceContext.currentPrice}</p>
           <p className={styles.priceMeta}>{priceContext.merchantSummary}</p>
-          <p className={styles.priceMetaSecondary}>{priceContext.reviewedLabel}</p>
+          <p className={styles.priceMetaSecondary}>
+            {priceContext.reviewedLabel}
+          </p>
         </div>
       ) : null}
       {setSummary.tagline ? (
@@ -127,7 +134,11 @@ export function CatalogHomepageIntro() {
           title="A narrow slice built for confidence."
           titleAs="h2"
         />
-        <ActionLink className={styles.actionLink} href="#featured-sets" tone="accent">
+        <ActionLink
+          className={styles.actionLink}
+          href="#featured-sets"
+          tone="accent"
+        >
           Browse featured sets
         </ActionLink>
       </div>
@@ -166,12 +177,22 @@ export function CatalogSetDetailPanel({
         <CatalogSetMetadata
           items={[
             { label: 'Set number', value: catalogSetDetail.id },
-            { label: 'Pieces', value: catalogSetDetail.pieces.toLocaleString() },
-            { label: 'Collector angle', value: catalogSetDetail.collectorAngle },
+            {
+              label: 'Pieces',
+              value: catalogSetDetail.pieces.toLocaleString(),
+            },
+            {
+              label: 'Collector angle',
+              value: catalogSetDetail.collectorAngle,
+            },
           ]}
         />
         {homeHref ? (
-          <ActionLink className={styles.actionLink} href={homeHref} tone="secondary">
+          <ActionLink
+            className={styles.actionLink}
+            href={homeHref}
+            tone="secondary"
+          >
             Back to featured sets
           </ActionLink>
         ) : null}

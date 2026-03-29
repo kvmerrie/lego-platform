@@ -63,7 +63,8 @@ ul {
     color-mix(in srgb, var(--lego-surface-raised) 97%, transparent),
     color-mix(in srgb, var(--lego-surface) 92%, transparent)
   );
-  border: var(--lego-border-width-1) solid color-mix(in srgb, var(--lego-border) 92%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 92%, transparent);
   border-radius: var(--lego-radius-lg);
   box-shadow:
     inset 0 1px 0 color-mix(in srgb, white 48%, transparent),

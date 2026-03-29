@@ -1,5 +1,10 @@
 import { CollectionShelf } from '@lego-platform/collection/util';
-import { Button, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import {
+  Button,
+  Badge,
+  SectionHeading,
+  Surface,
+} from '@lego-platform/shared/ui';
 import { MetricCard } from '@lego-platform/shared/types';
 import styles from './collection-ui.module.css';
 
@@ -29,7 +34,9 @@ export function CollectionMetricCard({
         {metricCard.label}
       </Badge>
       <h3 className={styles.metricValue}>{metricCard.value}</h3>
-      {metricCard.detail ? <p className={styles.description}>{metricCard.detail}</p> : null}
+      {metricCard.detail ? (
+        <p className={styles.description}>{metricCard.detail}</p>
+      ) : null}
     </Surface>
   );
 }
@@ -110,7 +117,9 @@ export function OwnedSetToggleCard({
       as="article"
       className={styles.toggleCard}
       elevation="rested"
-      tone={isLoading || isUnavailable ? 'muted' : isOwned ? 'accent' : 'default'}
+      tone={
+        isLoading || isUnavailable ? 'muted' : isOwned ? 'accent' : 'default'
+      }
     >
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>

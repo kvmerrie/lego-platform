@@ -94,10 +94,13 @@ export async function getOwnedSetState(setId: string): Promise<OwnedSetState> {
 
 export async function addOwnedSet(setId: string): Promise<OwnedSetState> {
   const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(`${apiPaths.ownedSets}/${encodeURIComponent(setId)}`, {
-    headers,
-    method: 'PUT',
-  });
+  const response = await fetch(
+    `${apiPaths.ownedSets}/${encodeURIComponent(setId)}`,
+    {
+      headers,
+      method: 'PUT',
+    },
+  );
 
   if (response.status === 401) {
     throw new Error('Sign in to save this set to your owned list.');
@@ -116,10 +119,13 @@ export async function addOwnedSet(setId: string): Promise<OwnedSetState> {
 
 export async function removeOwnedSet(setId: string): Promise<OwnedSetState> {
   const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(`${apiPaths.ownedSets}/${encodeURIComponent(setId)}`, {
-    headers,
-    method: 'DELETE',
-  });
+  const response = await fetch(
+    `${apiPaths.ownedSets}/${encodeURIComponent(setId)}`,
+    {
+      headers,
+      method: 'DELETE',
+    },
+  );
 
   if (response.status === 401) {
     throw new Error('Sign in to update your owned list.');

@@ -62,10 +62,12 @@ export async function checkAffiliateGeneratedArtifacts({
 }): Promise<AffiliateGeneratedArtifactCheckResult> {
   const { manifestPath, offersPath } =
     getAffiliateGeneratedArtifactPaths(workspaceRoot);
-  const nextOffersModule =
-    renderAffiliateOfferSnapshotsModule(affiliateOfferSnapshots);
-  const nextManifestModule =
-    renderAffiliateSyncManifestModule(affiliateSyncManifest);
+  const nextOffersModule = renderAffiliateOfferSnapshotsModule(
+    affiliateOfferSnapshots,
+  );
+  const nextManifestModule = renderAffiliateSyncManifestModule(
+    affiliateSyncManifest,
+  );
   const [currentOffersModule, currentManifestModule] = await Promise.all([
     readArtifactFile(offersPath),
     readArtifactFile(manifestPath),

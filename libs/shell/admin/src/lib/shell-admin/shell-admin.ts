@@ -10,7 +10,10 @@ import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import { getCollectionSnapshot } from '@lego-platform/collection/data-access';
 import { getPreviewPanel } from '@lego-platform/content/data-access';
 import { getPricePanelSnapshot } from '@lego-platform/pricing/data-access';
-import { formatPriceMinor, getPriceDirection } from '@lego-platform/pricing/util';
+import {
+  formatPriceMinor,
+  getPriceDirection,
+} from '@lego-platform/pricing/util';
 import { platformConfig } from '@lego-platform/shared/config';
 import {
   applyThemeMode,
@@ -52,9 +55,12 @@ export class ShellAdminComponent {
   readonly overviewCards = computed<AdminCard[]>(() => {
     const collectionSnapshot = getCollectionSnapshot();
     const wishlistOverview = getWishlistOverview();
-    const pricePanelSnapshot = getPricePanelSnapshot(this.commerceReferenceSetId);
+    const pricePanelSnapshot = getPricePanelSnapshot(
+      this.commerceReferenceSetId,
+    );
     const commerceReferenceSet = listCatalogSetSummaries().find(
-      (catalogSetSummary) => catalogSetSummary.id === this.commerceReferenceSetId,
+      (catalogSetSummary) =>
+        catalogSetSummary.id === this.commerceReferenceSetId,
     );
 
     return [
@@ -76,16 +82,20 @@ export class ShellAdminComponent {
       {
         label: 'Market signal',
         value: pricePanelSnapshot
-          ? `${getPriceDirection(pricePanelSnapshot.deltaMinor)} ${formatPriceMinor({
-              currencyCode: pricePanelSnapshot.currencyCode,
-              minorUnits: Math.abs(pricePanelSnapshot.deltaMinor ?? 0),
-            })}`
+          ? `${getPriceDirection(pricePanelSnapshot.deltaMinor)} ${formatPriceMinor(
+              {
+                currencyCode: pricePanelSnapshot.currencyCode,
+                minorUnits: Math.abs(pricePanelSnapshot.deltaMinor ?? 0),
+              },
+            )}`
           : 'No snapshot',
         detail: pricePanelSnapshot
-          ? `${commerceReferenceSet?.name ?? this.commerceReferenceSetId} currently ${formatPriceMinor({
-              currencyCode: pricePanelSnapshot.currencyCode,
-              minorUnits: pricePanelSnapshot.headlinePriceMinor,
-            })}`
+          ? `${commerceReferenceSet?.name ?? this.commerceReferenceSetId} currently ${formatPriceMinor(
+              {
+                currencyCode: pricePanelSnapshot.currencyCode,
+                minorUnits: pricePanelSnapshot.headlinePriceMinor,
+              },
+            )}`
           : 'Pricing snapshot still unavailable.',
       },
     ];

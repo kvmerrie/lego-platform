@@ -27,7 +27,9 @@ const catalogSetRecordById = new Map(
   ]),
 );
 
-function toCatalogSetSummary(catalogSetDetail: CatalogSetDetail): CatalogSetSummary {
+function toCatalogSetSummary(
+  catalogSetDetail: CatalogSetDetail,
+): CatalogSetSummary {
   return {
     id: catalogSetDetail.id,
     slug: catalogSetDetail.slug,
@@ -53,7 +55,9 @@ function toCatalogHomepageSetCard(
 function requireCatalogSetOverlay(
   catalogSetRecord: CatalogSetRecord,
 ): CatalogSetOverlay {
-  const catalogSetOverlay = catalogSetOverlayById.get(catalogSetRecord.canonicalId);
+  const catalogSetOverlay = catalogSetOverlayById.get(
+    catalogSetRecord.canonicalId,
+  );
 
   if (!catalogSetOverlay) {
     throw new Error(
@@ -100,7 +104,9 @@ function createCatalogSetRecordByProductSlug() {
 
 const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
 
-function toCatalogSetDetail(catalogSetRecord: CatalogSetRecord): CatalogSetDetail {
+function toCatalogSetDetail(
+  catalogSetRecord: CatalogSetRecord,
+): CatalogSetDetail {
   const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
 
   return {
@@ -145,7 +151,9 @@ export function listHomepageSets(): CatalogSetSummary[] {
   return sortCatalogSetSummaries(
     catalogSyncManifest.homepageFeaturedSetIds
       .slice(0, HOMEPAGE_SET_LIMIT)
-      .map((canonicalId) => toCatalogSetSummary(getCatalogSetDetailById(canonicalId))),
+      .map((canonicalId) =>
+        toCatalogSetSummary(getCatalogSetDetailById(canonicalId)),
+      ),
   ).slice(0, HOMEPAGE_SET_LIMIT);
 }
 

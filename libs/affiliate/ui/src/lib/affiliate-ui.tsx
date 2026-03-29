@@ -1,5 +1,10 @@
 import { AffiliateOfferSnapshot } from '@lego-platform/affiliate/util';
-import { ActionLink, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import {
+  ActionLink,
+  Badge,
+  SectionHeading,
+  Surface,
+} from '@lego-platform/shared/ui';
 import styles from './affiliate-ui.module.css';
 
 function formatAffiliatePrice(totalPriceMinor: number, currencyCode: string) {

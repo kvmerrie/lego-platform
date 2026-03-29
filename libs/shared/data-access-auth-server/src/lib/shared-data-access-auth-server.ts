@@ -1,4 +1,8 @@
-import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
+import {
+  createClient,
+  type SupabaseClient,
+  type User,
+} from '@supabase/supabase-js';
 import {
   getServerSupabaseConfig,
   hasServerSupabaseConfig,

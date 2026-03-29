@@ -82,7 +82,9 @@ async function main() {
     logPass(`Set detail page responded from ${webBaseUrl}${setDetailPath}`);
     console.log('[smoke] MVP smoke checks passed.');
   } catch (error) {
-    logFail(error instanceof Error ? error.message : 'Unknown smoke-check failure.');
+    logFail(
+      error instanceof Error ? error.message : 'Unknown smoke-check failure.',
+    );
     process.exit(1);
   }
 }

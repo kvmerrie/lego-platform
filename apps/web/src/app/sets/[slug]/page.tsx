@@ -1,5 +1,8 @@
 import { AffiliateFeatureOffers } from '@lego-platform/affiliate/feature-offers';
-import { getCatalogSetBySlug, listCatalogSetSlugs } from '@lego-platform/catalog/data-access';
+import {
+  getCatalogSetBySlug,
+  listCatalogSetSlugs,
+} from '@lego-platform/catalog/data-access';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
@@ -32,7 +35,10 @@ export default async function SetDetailPage({
   return (
     <ShellWeb>
       <CatalogFeatureSetDetail catalogSetDetail={catalogSetDetail} />
-      <section aria-label="Set buying guidance" className={styles.commercePanels}>
+      <section
+        aria-label="Set buying guidance"
+        className={styles.commercePanels}
+      >
         <PricingFeaturePricePanel setId={catalogSetDetail.id} />
         <PricingFeaturePriceHistory setId={catalogSetDetail.id} />
         <AffiliateFeatureOffers setId={catalogSetDetail.id} />
@@ -41,7 +47,10 @@ export default async function SetDetailPage({
         <UserFeatureAuth />
         <UserFeatureProfile />
       </section>
-      <section aria-label="Collector actions" className={styles.collectorActions}>
+      <section
+        aria-label="Collector actions"
+        className={styles.collectorActions}
+      >
         <CollectionFeatureOwnedToggle setId={catalogSetDetail.id} />
         <WishlistFeatureWishlistToggle setId={catalogSetDetail.id} />
       </section>

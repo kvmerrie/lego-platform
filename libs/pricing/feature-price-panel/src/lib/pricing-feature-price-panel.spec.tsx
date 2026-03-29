@@ -20,6 +20,8 @@ describe('PricingFeaturePricePanel', () => {
     );
 
     expect(markup).toContain('Current Dutch market price');
-    expect(markup).toContain('outside the current reviewed Dutch pricing slice');
+    expect(markup).toContain(
+      'outside the current reviewed Dutch pricing slice',
+    );
   });
 });

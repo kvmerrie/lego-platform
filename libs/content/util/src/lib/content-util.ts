@@ -58,7 +58,9 @@ export function getHeroSection(
   return firstSection;
 }
 
-export function cloneEditorialPage(editorialPage: EditorialPage): EditorialPage {
+export function cloneEditorialPage(
+  editorialPage: EditorialPage,
+): EditorialPage {
   return {
     ...editorialPage,
     seo: { ...editorialPage.seo },

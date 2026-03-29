@@ -10,9 +10,7 @@ import {
   type PricingObservation,
   type PricingSyncManifest,
 } from '@lego-platform/pricing/util';
-import {
-  getServerSupabaseAdminClient,
-} from '@lego-platform/shared/data-access-auth-server';
+import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   curatedDutchPricingObservationSeeds,
@@ -127,7 +125,9 @@ function validatePricingObservationSeed(
     !Number.isInteger(pricingObservationSeed.totalPriceMinor) ||
     pricingObservationSeed.totalPriceMinor <= 0
   ) {
-    throw new Error(`${seedLabel} must include a positive totalPriceMinor value.`);
+    throw new Error(
+      `${seedLabel} must include a positive totalPriceMinor value.`,
+    );
   }
 
   let merchantProductUrl: URL;
@@ -147,7 +147,10 @@ function validatePricingObservationSeed(
       pricingObservationSeed.availability,
       seedLabel,
     ),
-    observedAt: validateObservedAt(pricingObservationSeed.observedAt, seedLabel),
+    observedAt: validateObservedAt(
+      pricingObservationSeed.observedAt,
+      seedLabel,
+    ),
     regionCode: pricingObservationSeed.regionCode,
     currencyCode: pricingObservationSeed.currencyCode,
     condition: pricingObservationSeed.condition,
@@ -217,7 +220,9 @@ function buildPricePanelSnapshot({
     currencyCode: headlineObservation.currencyCode,
     condition: headlineObservation.condition,
     headlinePriceMinor: headlineObservation.totalPriceMinor,
-    lowestAvailabilityLabel: toAvailabilityLabel(headlineObservation.availability),
+    lowestAvailabilityLabel: toAvailabilityLabel(
+      headlineObservation.availability,
+    ),
     lowestMerchantId: headlineObservation.merchantId,
     lowestMerchantName:
       merchantNameById.get(headlineObservation.merchantId) ??
@@ -240,10 +245,12 @@ function getGeneratedAt({
     return now.toISOString();
   }
 
-  return [...validatedOfferInputs]
-    .map((validatedOfferInput) => validatedOfferInput.observedAt)
-    .sort()
-    .at(-1) ?? new Date(0).toISOString();
+  return (
+    [...validatedOfferInputs]
+      .map((validatedOfferInput) => validatedOfferInput.observedAt)
+      .sort()
+      .at(-1) ?? new Date(0).toISOString()
+  );
 }
 
 export function buildDailyPriceHistoryPoints({
@@ -392,16 +399,18 @@ export function buildPricingSyncArtifacts({
         left.totalPriceMinor - right.totalPriceMinor ||
         left.merchantId.localeCompare(right.merchantId),
     );
-  const pricingObservations = validatedOfferInputs.map((validatedOfferInput) => ({
-    setId: validatedOfferInput.setId,
-    merchantId: validatedOfferInput.merchantId,
-    regionCode: validatedOfferInput.regionCode,
-    currencyCode: validatedOfferInput.currencyCode,
-    condition: validatedOfferInput.condition,
-    totalPriceMinor: validatedOfferInput.totalPriceMinor,
-    availability: validatedOfferInput.availability,
-    observedAt: validatedOfferInput.observedAt,
-  }));
+  const pricingObservations = validatedOfferInputs.map(
+    (validatedOfferInput) => ({
+      setId: validatedOfferInput.setId,
+      merchantId: validatedOfferInput.merchantId,
+      regionCode: validatedOfferInput.regionCode,
+      currencyCode: validatedOfferInput.currencyCode,
+      condition: validatedOfferInput.condition,
+      totalPriceMinor: validatedOfferInput.totalPriceMinor,
+      availability: validatedOfferInput.availability,
+      observedAt: validatedOfferInput.observedAt,
+    }),
+  );
   const referencePriceBySetId = new Map(
     pricingReferenceValues.map((pricingReferenceValue) => [
       pricingReferenceValue.setId,

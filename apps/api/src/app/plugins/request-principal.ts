@@ -26,10 +26,7 @@ export function createRequestPrincipalPlugin({
 }: RequestPrincipalPluginOptions = {}) {
   return fp(
     async function (fastify: FastifyInstance) {
-      fastify.decorateRequest(
-        'requestPrincipal',
-        null,
-      );
+      fastify.decorateRequest('requestPrincipal', null);
 
       fastify.addHook('onRequest', async (request) => {
         try {

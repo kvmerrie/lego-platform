@@ -48,7 +48,9 @@ export function listWishlistItems(): WishlistItem[] {
   return [...wishlistItems];
 }
 
-export async function getWantedSetState(setId: string): Promise<WantedSetState> {
+export async function getWantedSetState(
+  setId: string,
+): Promise<WantedSetState> {
   const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(apiPaths.session, {
     cache: 'no-store',
@@ -72,10 +74,13 @@ export async function getWantedSetState(setId: string): Promise<WantedSetState> 
 
 export async function addWantedSet(setId: string): Promise<WantedSetState> {
   const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(`${apiPaths.wantedSets}/${encodeURIComponent(setId)}`, {
-    headers,
-    method: 'PUT',
-  });
+  const response = await fetch(
+    `${apiPaths.wantedSets}/${encodeURIComponent(setId)}`,
+    {
+      headers,
+      method: 'PUT',
+    },
+  );
 
   if (response.status === 401) {
     throw new Error('Sign in to save this set to your wanted list.');
@@ -94,10 +99,13 @@ export async function addWantedSet(setId: string): Promise<WantedSetState> {
 
 export async function removeWantedSet(setId: string): Promise<WantedSetState> {
   const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(`${apiPaths.wantedSets}/${encodeURIComponent(setId)}`, {
-    headers,
-    method: 'DELETE',
-  });
+  const response = await fetch(
+    `${apiPaths.wantedSets}/${encodeURIComponent(setId)}`,
+    {
+      headers,
+      method: 'DELETE',
+    },
+  );
 
   if (response.status === 401) {
     throw new Error('Sign in to update your wanted list.');

@@ -1,4 +1,7 @@
-import type { AuthenticatedRequestPrincipal, RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
+import type {
+  AuthenticatedRequestPrincipal,
+  RequestPrincipal,
+} from '@lego-platform/shared/data-access-auth-server';
 import {
   createAnonymousUserSession,
   type CollectorIdentity,
@@ -19,7 +22,9 @@ export interface UserSessionService {
   getUserSession(requestPrincipal: RequestPrincipal): Promise<UserSession>;
 }
 
-function toCollectorIdentity(userProfileRecord: UserProfileRecord): CollectorIdentity {
+function toCollectorIdentity(
+  userProfileRecord: UserProfileRecord,
+): CollectorIdentity {
   return {
     id: userProfileRecord.collectorHandle,
     name: userProfileRecord.displayName,

@@ -130,7 +130,9 @@ export function UserFeatureAuth() {
       await loadUserSession();
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : 'Unable to sign out right now.',
+        error instanceof Error
+          ? error.message
+          : 'Unable to sign out right now.',
       );
     } finally {
       setIsAuthActionPending(false);

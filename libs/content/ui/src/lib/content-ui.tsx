@@ -4,7 +4,12 @@ import type {
   HeroEditorialSection,
   RichTextEditorialSection,
 } from '@lego-platform/content/util';
-import { ActionLink, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import {
+  ActionLink,
+  Badge,
+  SectionHeading,
+  Surface,
+} from '@lego-platform/shared/ui';
 import styles from './content-ui.module.css';
 
 type BodyEditorialSection =
@@ -116,7 +121,9 @@ function EditorialBodySectionCard({
       tone={editorialSection.type === 'callout' ? 'accent' : 'default'}
     >
       <div className={styles.panelHeader}>
-        <Badge tone={badgeTone}>{getEditorialSectionLabel(editorialSection)}</Badge>
+        <Badge tone={badgeTone}>
+          {getEditorialSectionLabel(editorialSection)}
+        </Badge>
         <h3 className={styles.panelTitle}>{editorialSection.title}</h3>
       </div>
       <p className={styles.panelBody}>{editorialSection.body}</p>

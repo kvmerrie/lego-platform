@@ -71,7 +71,9 @@ export default async function HomePage() {
     mode: queryMode,
   });
   const homepageSetCards = listHomepageSetCards().map((homepageSetCard) => {
-    const featuredSetPriceContext = getFeaturedSetPriceContext(homepageSetCard.id);
+    const featuredSetPriceContext = getFeaturedSetPriceContext(
+      homepageSetCard.id,
+    );
 
     return {
       ...homepageSetCard,
