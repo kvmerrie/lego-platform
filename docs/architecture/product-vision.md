@@ -23,6 +23,7 @@ The initial experience should already feel polished, fast, and trustworthy.
 
 Near and mid-term expansion is expected in these areas:
 
+- search and broader catalog discovery once public set breadth justifies it
 - pricing history
 - affiliate offers
 - editorial content and curated landing pages
