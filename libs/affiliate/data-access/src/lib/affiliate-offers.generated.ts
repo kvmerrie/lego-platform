@@ -12,10 +12,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 48999,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-10316",
-    "disclosureCopy": "Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
     "observedAt": "2026-03-29T09:00:00.000Z",
     "displayRank": 2,
-    "ctaLabel": "View offer",
+    "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
   },
   {
@@ -28,10 +28,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 49499,
     "availabilityLabel": "Limited stock",
     "outboundUrl": "https://www.intertoys.nl/product/lego-10316",
-    "disclosureCopy": "Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
     "observedAt": "2026-03-29T09:05:00.000Z",
     "displayRank": 3,
-    "ctaLabel": "View offer",
+    "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
   },
   {
@@ -44,10 +44,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 49999,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/10316",
-    "disclosureCopy": "Official direct merchant reference for the Dutch market.",
+    "disclosureCopy": "Direct official merchant link.",
     "observedAt": "2026-03-29T09:10:00.000Z",
     "displayRank": 1,
-    "ctaLabel": "Shop direct",
+    "ctaLabel": "Shop at LEGO NL",
     "perks": "Direct brand purchase and reference pricing"
   },
   {
@@ -60,10 +60,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 34999,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-21348",
-    "disclosureCopy": "Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
     "observedAt": "2026-03-29T09:15:00.000Z",
     "displayRank": 2,
-    "ctaLabel": "View offer",
+    "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
   },
   {
@@ -76,10 +76,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 35499,
     "availabilityLabel": "Limited stock",
     "outboundUrl": "https://www.intertoys.nl/product/lego-21348",
-    "disclosureCopy": "Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
     "observedAt": "2026-03-29T09:20:00.000Z",
     "displayRank": 3,
-    "ctaLabel": "View offer",
+    "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
   },
   {
@@ -92,10 +92,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 35999,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/21348",
-    "disclosureCopy": "Official direct merchant reference for the Dutch market.",
+    "disclosureCopy": "Direct official merchant link.",
     "observedAt": "2026-03-29T09:25:00.000Z",
     "displayRank": 1,
-    "ctaLabel": "Shop direct",
+    "ctaLabel": "Shop at LEGO NL",
     "perks": "Direct brand purchase and reference pricing"
   },
   {
@@ -108,10 +108,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 47999,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-76269",
-    "disclosureCopy": "Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
     "observedAt": "2026-03-29T09:30:00.000Z",
     "displayRank": 2,
-    "ctaLabel": "View offer",
+    "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
   },
   {
@@ -124,10 +124,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 48999,
     "availabilityLabel": "Limited stock",
     "outboundUrl": "https://www.intertoys.nl/product/lego-76269",
-    "disclosureCopy": "Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
     "observedAt": "2026-03-29T09:35:00.000Z",
     "displayRank": 3,
-    "ctaLabel": "View offer",
+    "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
   },
   {
@@ -140,10 +140,10 @@ export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = [
     "totalPriceMinor": 49999,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/76269",
-    "disclosureCopy": "Official direct merchant reference for the Dutch market.",
+    "disclosureCopy": "Direct official merchant link.",
     "observedAt": "2026-03-29T09:40:00.000Z",
     "displayRank": 1,
-    "ctaLabel": "Shop direct",
+    "ctaLabel": "Shop at LEGO NL",
     "perks": "Direct brand purchase and reference pricing"
   }
 ];

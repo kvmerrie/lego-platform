@@ -30,7 +30,9 @@ export interface PricePanelSnapshot {
   currencyCode: PricingCurrencyCode;
   deltaMinor?: number;
   headlinePriceMinor: number;
+  lowestAvailabilityLabel?: string;
   lowestMerchantId: string;
+  lowestMerchantName: string;
   merchantCount: number;
   observedAt: string;
   referencePriceMinor?: number;

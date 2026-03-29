@@ -20,6 +20,11 @@ export interface ValidatedPricingOfferInput extends PricingObservation {
   merchantProductUrl: string;
 }
 
+export interface PricingMerchantSummary {
+  displayName: string;
+  merchantId: string;
+}
+
 export interface PricingGeneratedArtifacts {
   pricePanelSnapshots: readonly PricePanelSnapshot[];
   pricingObservations: readonly PricingObservation[];
@@ -120,11 +125,28 @@ function isHeadlineEligibleAvailability(
   return availability === 'in_stock' || availability === 'limited';
 }
 
+function toAvailabilityLabel(availability: PricingAvailability): string {
+  switch (availability) {
+    case 'in_stock':
+      return 'In stock';
+    case 'limited':
+      return 'Limited stock';
+    case 'out_of_stock':
+      return 'Out of stock';
+    case 'preorder':
+      return 'Pre-order';
+    default:
+      return 'Availability unknown';
+  }
+}
+
 function buildPricePanelSnapshot({
+  merchantNameById,
   pricingObservations,
   referencePriceBySetId,
   setId,
 }: {
+  merchantNameById: ReadonlyMap<string, string>;
   pricingObservations: readonly PricingObservation[];
   referencePriceBySetId: ReadonlyMap<string, number>;
   setId: string;
@@ -160,7 +182,11 @@ function buildPricePanelSnapshot({
     currencyCode: headlineObservation.currencyCode,
     condition: headlineObservation.condition,
     headlinePriceMinor: headlineObservation.totalPriceMinor,
+    lowestAvailabilityLabel: toAvailabilityLabel(headlineObservation.availability),
     lowestMerchantId: headlineObservation.merchantId,
+    lowestMerchantName:
+      merchantNameById.get(headlineObservation.merchantId) ??
+      headlineObservation.merchantId,
     merchantCount: eligibleObservations.length,
     observedAt: headlineObservation.observedAt,
     referencePriceMinor,
@@ -234,15 +260,25 @@ export function validatePricingSyncArtifacts({
       );
     }
   }
+
+  for (const pricePanelSnapshot of pricePanelSnapshots) {
+    if (!pricePanelSnapshot.lowestMerchantName.trim()) {
+      throw new Error(
+        `Price panel snapshot ${pricePanelSnapshot.setId} is missing a lowest merchant display name.`,
+      );
+    }
+  }
 }
 
 export function buildPricingSyncArtifacts({
   enabledSetIds,
+  merchantSummaries = [],
   now,
   pricingObservationSeeds = curatedDutchPricingObservationSeeds,
   pricingReferenceValues = dutchPricingReferenceValues,
 }: {
   enabledSetIds: readonly string[];
+  merchantSummaries?: readonly PricingMerchantSummary[];
   now?: Date;
   pricingObservationSeeds?: readonly PricingObservationSeed[];
   pricingReferenceValues?: readonly PricingReferenceValue[];
@@ -274,9 +310,16 @@ export function buildPricingSyncArtifacts({
       pricingReferenceValue.referencePriceMinor,
     ]),
   );
+  const merchantNameById = new Map(
+    merchantSummaries.map((merchantSummary) => [
+      merchantSummary.merchantId,
+      merchantSummary.displayName,
+    ]),
+  );
   const pricePanelSnapshots = enabledSetIds
     .map((enabledSetId) =>
       buildPricePanelSnapshot({
+        merchantNameById,
         pricingObservations,
         referencePriceBySetId,
         setId: enabledSetId,

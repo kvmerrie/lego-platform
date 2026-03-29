@@ -10,7 +10,8 @@ describe('PricingFeaturePricePanel', () => {
 
     expect(markup).toContain('Current Dutch market price');
     expect(markup).toContain('489,99');
-    expect(markup).toContain('offers tracked');
+    expect(markup).toContain('Lowest current offer from bol');
+    expect(markup).toContain('Reviewed');
   });
 
   it('renders a compact unavailable state outside the current commerce slice', () => {

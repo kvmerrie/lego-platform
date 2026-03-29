@@ -56,14 +56,13 @@ export function AffiliateOfferCard({
           )}
         </p>
       </div>
+      <p className={styles.offerFreshness}>
+        Reviewed {formatObservedAt(affiliateOffer.observedAt)}
+      </p>
       {affiliateOffer.perks ? (
         <p className={styles.offerPerks}>{affiliateOffer.perks}</p>
       ) : null}
-      <p className={styles.offerDisclosure}>{affiliateOffer.disclosureCopy}</p>
       <div className={styles.offerFooter}>
-        <p className={styles.offerFreshness}>
-          Updated {formatObservedAt(affiliateOffer.observedAt)}
-        </p>
         <ActionLink
           className={styles.offerLink}
           href={affiliateOffer.outboundUrl}
@@ -74,6 +73,7 @@ export function AffiliateOfferCard({
           {affiliateOffer.ctaLabel}
         </ActionLink>
       </div>
+      <p className={styles.offerDisclosure}>{affiliateOffer.disclosureCopy}</p>
     </article>
   );
 }
@@ -94,7 +94,7 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description="Direct outbound Dutch merchant links from the current reviewed allowlist."
+        description="Reviewed Dutch merchant pages from the current allowlist."
         eyebrow="Buy guidance"
         title="Current Dutch offers"
       />

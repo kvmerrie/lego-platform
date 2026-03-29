@@ -32,6 +32,34 @@
   margin: 0;
 }
 
+.metricContext,
+.metricContextSecondary,
+.referenceNote {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.metricContext {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+}
+
+.metricContextSecondary {
+  font-size: var(--lego-text-role-meta-size);
+}
+
+.referenceFallback {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.referenceNote {
+  font-size: var(--lego-text-role-meta-size);
+}
+
 .metaGrid {
   display: grid;
   gap: var(--lego-space-3);

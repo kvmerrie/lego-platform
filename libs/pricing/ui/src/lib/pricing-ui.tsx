@@ -87,7 +87,7 @@ export function PriceSummaryCard({
       tone="muted"
     >
       <SectionHeading
-        description="Current reviewed Dutch market guidance from the small allowlisted EUR offer slice."
+        description="Reviewed Dutch-market guidance from the current allowlisted EUR offer slice."
         eyebrow="Buy guidance"
         title="Current Dutch market price"
       />
@@ -104,16 +104,30 @@ export function PriceSummaryCard({
             minorUnits: pricePanelSnapshot.headlinePriceMinor,
           })}
         </p>
-        <Badge tone={getDeltaTone(pricePanelSnapshot.deltaMinor)}>
-          {getDeltaLabel(
-            pricePanelSnapshot.currencyCode,
-            pricePanelSnapshot.deltaMinor,
-          )}
-        </Badge>
+        <p className={styles.metricContext}>
+          Lowest current offer from {pricePanelSnapshot.lowestMerchantName}
+        </p>
+        {pricePanelSnapshot.lowestAvailabilityLabel ? (
+          <p className={styles.metricContextSecondary}>
+            Availability: {pricePanelSnapshot.lowestAvailabilityLabel}
+          </p>
+        ) : null}
+        {typeof pricePanelSnapshot.referencePriceMinor === 'number' ? (
+          <Badge tone={getDeltaTone(pricePanelSnapshot.deltaMinor)}>
+            {getDeltaLabel(
+              pricePanelSnapshot.currencyCode,
+              pricePanelSnapshot.deltaMinor,
+            )}
+          </Badge>
+        ) : (
+          <p className={styles.referenceFallback}>
+            Reference price not configured yet.
+          </p>
+        )}
       </div>
       <dl className={styles.metaGrid}>
         <PricingMetaItem
-          label="Reference"
+          label="Reference price"
           value={
             typeof pricePanelSnapshot.referencePriceMinor === 'number'
               ? formatPriceMinor({
@@ -124,7 +138,7 @@ export function PriceSummaryCard({
           }
         />
         <PricingMetaItem
-          label="Freshness"
+          label="Reviewed"
           value={formatObservedAt(pricePanelSnapshot.observedAt)}
         />
         <PricingMetaItem
@@ -132,6 +146,11 @@ export function PriceSummaryCard({
           value={`${pricePanelSnapshot.merchantCount} Dutch offers`}
         />
       </dl>
+      <p className={styles.referenceNote}>
+        {typeof pricePanelSnapshot.referencePriceMinor === 'number'
+          ? 'Reference price is a local Dutch benchmark for comparing reviewed offers.'
+          : 'Reference pricing can be added later without changing the current reviewed-offer snapshot.'}
+      </p>
     </Surface>
   );
 }

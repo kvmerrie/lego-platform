@@ -1,6 +1,7 @@
 import {
   buildAffiliateSyncArtifacts,
   checkAffiliateGeneratedArtifacts,
+  dutchAffiliateMerchantConfigs,
   writeAffiliateGeneratedArtifacts,
 } from '@lego-platform/affiliate/data-access-server';
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
@@ -49,6 +50,12 @@ export async function runCommerceSync({
 
   const pricingArtifacts = buildPricingSyncArtifacts({
     enabledSetIds: curatedCommerceEnabledSetIds,
+    merchantSummaries: dutchAffiliateMerchantConfigs.map(
+      (affiliateMerchantConfig) => ({
+        merchantId: affiliateMerchantConfig.merchantId,
+        displayName: affiliateMerchantConfig.displayName,
+      }),
+    ),
     now,
   });
   const affiliateArtifacts = buildAffiliateSyncArtifacts({

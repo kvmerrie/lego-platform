@@ -10,7 +10,8 @@ describe('AffiliateFeatureOffers', () => {
 
     expect(markup).toContain('Current Dutch offers');
     expect(markup).toContain('LEGO NL');
-    expect(markup).toContain('Shop direct');
+    expect(markup).toContain('Shop at LEGO NL');
+    expect(markup).toContain('Direct official merchant link.');
   });
 
   it('renders a compact unavailable state when no offer snapshot exists', () => {

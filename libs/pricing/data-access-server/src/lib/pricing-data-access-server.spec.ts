@@ -7,10 +7,19 @@ describe('pricing data access server', () => {
   test('builds Dutch pricing artifacts for the curated commerce-enabled sets', () => {
     const result = buildPricingSyncArtifacts({
       enabledSetIds: ['10316', '21348', '76269'],
+      merchantSummaries: [
+        { merchantId: 'lego-nl', displayName: 'LEGO NL' },
+        { merchantId: 'bol', displayName: 'bol' },
+        { merchantId: 'intertoys', displayName: 'Intertoys' },
+      ],
     });
 
     expect(result.pricingObservations).toHaveLength(9);
     expect(result.pricePanelSnapshots).toHaveLength(3);
+    expect(result.pricePanelSnapshots[0]).toMatchObject({
+      lowestMerchantName: 'bol',
+      lowestAvailabilityLabel: 'In stock',
+    });
     expect(result.pricingSyncManifest.generatedAt).toBe(
       '2026-03-29T09:40:00.000Z',
     );

@@ -14,8 +14,8 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
       enabled: true,
       displayRank: 1,
       urlHost: 'www.lego.com',
-      disclosureCopy: 'Official direct merchant reference for the Dutch market.',
-      ctaLabel: 'Shop direct',
+      disclosureCopy: 'Direct official merchant link.',
+      ctaLabel: 'Shop at LEGO NL',
       perks: 'Direct brand purchase and reference pricing',
     },
     {
@@ -26,9 +26,8 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
       enabled: true,
       displayRank: 2,
       urlHost: 'www.bol.com',
-      disclosureCopy:
-        'Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.',
-      ctaLabel: 'View offer',
+      disclosureCopy: 'Direct merchant link. Affiliate parameters may be added later.',
+      ctaLabel: 'Shop at bol',
       perks: 'Wide Dutch retail reach',
     },
     {
@@ -39,9 +38,8 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
       enabled: true,
       displayRank: 3,
       urlHost: 'www.intertoys.nl',
-      disclosureCopy:
-        'Affiliate parameters can be appended later. This foundation currently keeps outbound links direct and operator-reviewed.',
-      ctaLabel: 'View offer',
+      disclosureCopy: 'Direct merchant link. Affiliate parameters may be added later.',
+      ctaLabel: 'Shop at Intertoys',
       perks: 'Strong toy-specialist relevance',
     },
   ];

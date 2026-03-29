@@ -60,12 +60,24 @@
 }
 
 .offerPerks,
-.offerDisclosure,
-.offerFreshness,
 .unavailableCopy {
   color: var(--lego-text-muted);
   line-height: var(--lego-line-height-relaxed);
   margin: 0;
+}
+
+.offerFreshness,
+.offerDisclosure {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.offerDisclosure {
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 56%, transparent);
+  padding-top: var(--lego-space-3);
 }
 
 .offerLink {
