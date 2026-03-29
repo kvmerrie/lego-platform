@@ -35,6 +35,10 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('Private collector page');
     expect(markup).toContain('Wanted radar');
     expect(markup).toContain('Browse featured sets');
+    expect(markup).toContain('Open collection');
+    expect(markup).toContain(
+      'Use your wishlist and collection as separate private destinations',
+    );
     expect(markup).toContain(
       'Public set facts, reviewed pricing, and curated buying guidance remain shared catalog information.',
     );
@@ -57,5 +61,6 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('Wanted radar');
     expect(markup).toContain('1 outside public slice');
     expect(markup).toContain('Wanted set card');
+    expect(markup).toContain('Open collection');
   });
 });

@@ -1,5 +1,9 @@
 import type { ReactNode } from 'react';
-import { platformConfig, webNavigation } from '@lego-platform/shared/config';
+import {
+  platformConfig,
+  webNavigation,
+  webNavigationSections,
+} from '@lego-platform/shared/config';
 import {
   ActionLink,
   Badge,
@@ -34,29 +38,55 @@ export function ShellWeb({ children }: { children: ReactNode }) {
                 tone="hero"
               />
               <div className={styles.badgeRow}>
-                <Badge tone="accent">Phase 1 public portal</Badge>
-                <Badge tone="info">Static-friendly discovery</Badge>
+                <Badge tone="accent">Curated public browse</Badge>
+                <Badge tone="info">Collector destinations</Badge>
               </div>
             </div>
           </div>
           <ShellWebThemeToggle className={styles.toggle} />
         </div>
         <nav aria-label="Primary" className={styles.nav}>
-          {webNavigation.map((navigationItem) => (
-            <ActionLink
-              className={styles.navLink}
-              href={navigationItem.href}
-              key={navigationItem.href}
-              tone="card"
-            >
-              <span className={styles.navLabel}>{navigationItem.label}</span>
-              {navigationItem.description ? (
-                <span className={styles.navDescription}>
-                  {navigationItem.description}
-                </span>
-              ) : null}
-            </ActionLink>
-          ))}
+          {webNavigationSections.map((navigationSection) => {
+            const navigationItems = webNavigation.filter(
+              (navigationItem) =>
+                navigationItem.sectionId === navigationSection.id,
+            );
+
+            return (
+              <div className={styles.navSection} key={navigationSection.id}>
+                <div className={styles.navSectionHeader}>
+                  <p className={styles.navSectionTitle}>
+                    {navigationSection.title}
+                  </p>
+                  <p className={styles.navSectionDescription}>
+                    {navigationSection.description}
+                  </p>
+                </div>
+                <div className={styles.navSectionLinks}>
+                  {navigationItems.map((navigationItem) => (
+                    <ActionLink
+                      className={styles.navLink}
+                      href={navigationItem.href}
+                      key={navigationItem.href}
+                      tone="card"
+                    >
+                      <span className={styles.navContext}>
+                        {navigationItem.contextLabel}
+                      </span>
+                      <span className={styles.navLabel}>
+                        {navigationItem.label}
+                      </span>
+                      {navigationItem.description ? (
+                        <span className={styles.navDescription}>
+                          {navigationItem.description}
+                        </span>
+                      ) : null}
+                    </ActionLink>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </nav>
       </Surface>
       <main className={styles.main}>{children}</main>

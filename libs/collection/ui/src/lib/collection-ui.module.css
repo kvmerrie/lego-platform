@@ -88,6 +88,17 @@
   gap: var(--lego-space-2);
 }
 
+.destinationPanel {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.destinationLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+}
+
 .collectionGrid {
   display: grid;
   gap: var(--lego-space-4);

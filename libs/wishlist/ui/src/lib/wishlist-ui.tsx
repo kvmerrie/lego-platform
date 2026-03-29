@@ -220,6 +220,20 @@ export function CollectorWishlistPanel({
         Private to your collector account. Public set facts, reviewed pricing,
         and curated buying guidance remain shared catalog information.
       </p>
+      <div className={styles.destinationPanel}>
+        <p className={styles.metaText}>
+          Use your wishlist and collection as separate private destinations so
+          future targets stay distinct from the sets already on your shelf.
+        </p>
+        <div className={styles.destinationLinks}>
+          <ActionLink href="/collection" tone="secondary">
+            Open collection
+          </ActionLink>
+          <ActionLink href="/#featured-sets" tone="secondary">
+            Browse featured sets
+          </ActionLink>
+        </div>
+      </div>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}

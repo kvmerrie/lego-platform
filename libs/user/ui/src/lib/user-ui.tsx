@@ -8,6 +8,7 @@ import {
   UserSession,
 } from '@lego-platform/user/util';
 import {
+  ActionLink,
   Badge,
   Button,
   SectionHeading,
@@ -250,6 +251,21 @@ export function UserSessionCard({
           <VisuallyHidden>
             Ends the current authenticated browser session.
           </VisuallyHidden>
+        </div>
+        <div className={styles.destinationPanel}>
+          <p className={styles.paneLabel}>Collector destinations</p>
+          <p className={styles.paneNote}>
+            Jump between your private collection and wishlist while this
+            signed-in collector account stays active.
+          </p>
+          <div className={styles.destinationLinks}>
+            <ActionLink href="/collection" tone="secondary">
+              Open collection
+            </ActionLink>
+            <ActionLink href="/wishlist" tone="secondary">
+              Open wishlist
+            </ActionLink>
+          </div>
         </div>
         {authStatusMessage ? (
           <p aria-live="polite" className={styles.infoText}>

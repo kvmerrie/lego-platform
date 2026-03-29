@@ -30,26 +30,48 @@ export const platformConfig = {
 
 export type RuntimeName = keyof typeof platformConfig.runtimes;
 
+export const webNavigationSections = [
+  {
+    id: 'browse',
+    title: 'Public browse',
+    description: 'Curated discovery and featured sets.',
+  },
+  {
+    id: 'collector',
+    title: 'Collector destinations',
+    description:
+      'Private destinations for owned, wanted, and signed-in collector state.',
+  },
+] as const;
+
 export const webNavigation = [
   {
     label: 'Home',
     href: '/',
-    description: 'Phase-1 collector landing page.',
+    description: 'Start with the curated collector homepage.',
+    contextLabel: 'Public route',
+    sectionId: 'browse',
   },
   {
     label: 'Featured sets',
     href: '/#featured-sets',
-    description: 'Static-friendly discovery slice.',
+    description: 'Jump into the current featured shortlist.',
+    contextLabel: 'Public route',
+    sectionId: 'browse',
   },
   {
     label: 'My collection',
     href: '/collection',
-    description: 'Private owned-set destination.',
+    description: 'Review the sets you already own.',
+    contextLabel: 'Private route',
+    sectionId: 'collector',
   },
   {
     label: 'My wishlist',
     href: '/wishlist',
-    description: 'Private wanted-set destination.',
+    description: 'Track the sets you still want next.',
+    contextLabel: 'Private route',
+    sectionId: 'collector',
   },
 ] as const;
 

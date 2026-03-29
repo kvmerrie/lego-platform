@@ -34,6 +34,10 @@ describe('CollectorCollectionPanel', () => {
     expect(markup).toContain('Sign in to view your private owned collection');
     expect(markup).toContain('Private collector page');
     expect(markup).toContain('Browse featured sets');
+    expect(markup).toContain('Open wishlist');
+    expect(markup).toContain(
+      'Use your collection and wishlist as separate private destinations',
+    );
     expect(markup).toContain(
       'Public set facts, reviewed pricing, and curated buying guidance remain shared catalog information.',
     );
@@ -55,5 +59,6 @@ describe('CollectorCollectionPanel', () => {
     expect(markup).toContain('2 visible');
     expect(markup).toContain('1 outside public slice');
     expect(markup).toContain('Owned set card');
+    expect(markup).toContain('Open wishlist');
   });
 });

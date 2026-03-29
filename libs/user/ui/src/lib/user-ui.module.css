@@ -172,6 +172,22 @@
   gap: var(--lego-space-3);
 }
 
+.destinationPanel {
+  display: grid;
+  gap: var(--lego-space-2);
+  padding: var(--lego-space-3);
+  background: color-mix(in srgb, var(--lego-surface-muted) 82%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 86%, transparent);
+  border-radius: var(--lego-radius-sm);
+}
+
+.destinationLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+}
+
 .sessionStatus {
   justify-self: flex-start;
 }

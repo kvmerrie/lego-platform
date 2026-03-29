@@ -31,6 +31,9 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('1 wanted saved');
     expect(markup).toContain('Private account');
     expect(markup).toContain('Collector identity');
+    expect(markup).toContain('Collector destinations');
+    expect(markup).toContain('Open collection');
+    expect(markup).toContain('Open wishlist');
     expect(markup).toContain(
       'Used for sign-in and saved collector state. It is not shown as public catalog information.',
     );

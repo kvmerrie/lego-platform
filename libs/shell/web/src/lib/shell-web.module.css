@@ -106,6 +106,39 @@
 
 .nav {
   display: grid;
+  gap: var(--lego-space-4);
+}
+
+.navSection {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.navSectionHeader {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.navSectionTitle {
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.14em;
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.navSectionDescription {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+  max-width: 38ch;
+}
+
+.navSectionLinks {
+  display: grid;
   gap: var(--lego-space-3);
 }
 
@@ -127,12 +160,22 @@
   top: 0.95rem;
 }
 
+.navContext {
+  color: var(--lego-text-muted);
+  display: block;
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.12em;
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  text-transform: uppercase;
+}
+
 .navLabel {
   display: block;
   font-size: var(--lego-text-role-card-title-size);
   font-weight: var(--lego-text-role-card-title-weight);
   line-height: var(--lego-text-role-card-title-line-height);
-  margin-top: var(--lego-space-4);
+  margin-top: var(--lego-space-2);
 }
 
 .navDescription {
