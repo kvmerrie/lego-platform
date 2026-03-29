@@ -3,6 +3,7 @@
 This checklist is the shortest production-facing companion to:
 
 - `docs/operations/mvp-deployment-runbook.md`
+- `docs/operations/mvp-alerting-observability.md`
 - `docs/operations/mvp-release-checklist.md`
 - `docs/operations/mvp-operator-troubleshooting.md`
 - `docs/operations/production-auth-hardening.md`
@@ -26,6 +27,13 @@ Confirm these production services already exist and are pointed at the current r
 - optional live Contentful production posture
   - either `master` delivery is enabled intentionally
   - or production continues to use mock editorial fallback
+
+Also confirm the minimum alerting posture:
+
+- Render workspace notifications route to at least one operator email
+- API health check path is set to `/health`
+- API notifications are enabled
+- both scheduled jobs have failure notifications enabled
 
 ## 2. Production Secrets And Env
 

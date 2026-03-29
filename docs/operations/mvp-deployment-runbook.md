@@ -4,6 +4,7 @@ This document describes the smallest reliable deployment setup for the current L
 
 - `docs/operations/mvp-release-checklist.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
+- `docs/operations/mvp-alerting-observability.md`
 - `docs/operations/mvp-operator-troubleshooting.md`
 - `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
@@ -26,6 +27,7 @@ The deployment model stays intentionally small:
 For day-two troubleshooting and post-deploy diagnosis, use:
 
 - `docs/operations/mvp-operator-troubleshooting.md`
+- `docs/operations/mvp-alerting-observability.md`
 
 Tracked example env boilerplate files at the repo root:
 
@@ -84,6 +86,8 @@ Recommended service settings:
 - set `HOST=0.0.0.0`
 - let Render provide `PORT`
 - enable automatic deploys from the protected release branch only after staging rehearsal is trusted
+- set the Render health check path to `/health`
+- keep service notifications enabled at `Only failure notifications`
 
 ### Render Scheduled Jobs
 
@@ -103,6 +107,18 @@ Recommended guardrails:
 - keep each sync secret only on the scheduled job that needs it
 - do not add sync write commands to the always-on API service
 - use the same repository root and install strategy as the normal Render API build setup
+- keep scheduled job notifications enabled at `Only failure notifications`
+
+### Minimum Alerting Posture
+
+For the current MVP, the minimum production alerting setup is:
+
+- Render workspace notifications configured to email at least one operator
+- API service health check path set to `/health`
+- API service notifications enabled at `Only failure notifications`
+- scheduled job notifications enabled at `Only failure notifications`
+
+Use `docs/operations/mvp-alerting-observability.md` for the detailed operator alert categories and triage flow.
 
 ### Supabase
 

@@ -6,6 +6,7 @@ Use it alongside:
 
 - `docs/operations/mvp-release-checklist.md`
 - `docs/operations/mvp-deployment-runbook.md`
+- `docs/operations/mvp-alerting-observability.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`
