@@ -6,6 +6,7 @@ Use this document alongside:
 
 - `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
+- `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`
@@ -203,8 +204,9 @@ Check these product states before launch:
 4. One non-commerce-enabled set-detail page renders compact unavailable commerce states, not broken gaps.
 5. Anonymous owned or wanted action attempts show a clear sign-in-to-save message.
 6. Email sign-in flow starts successfully.
-7. After sign-in, session state refreshes and profile editing works.
-8. After sign-out, the session returns to anonymous state cleanly.
+7. If resend behavior is tested, wait about one minute before requesting another link.
+8. After sign-in, session state refreshes and profile editing works.
+9. After sign-out, the session returns to anonymous state cleanly.
 
 ## Release Data Review
 

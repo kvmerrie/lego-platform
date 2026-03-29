@@ -42,6 +42,30 @@ function getDefaultEmailRedirectUrl(): string | undefined {
   return window.location.href;
 }
 
+function getSignInErrorMessage(error: {
+  code?: string;
+  message?: string;
+}): string {
+  const authErrorText = `${error.code ?? ''} ${error.message ?? ''}`.toLowerCase();
+
+  if (
+    authErrorText.includes('rate') ||
+    authErrorText.includes('security purposes') ||
+    authErrorText.includes('too many')
+  ) {
+    return 'A sign-in link was sent recently. Wait about a minute, then try again.';
+  }
+
+  if (
+    authErrorText.includes('not authorized') ||
+    authErrorText.includes('address not authorized')
+  ) {
+    return 'Sign-in email delivery is not ready for this address yet. Please try again later or contact support.';
+  }
+
+  return 'Unable to send the sign-in link right now.';
+}
+
 export function isUserAuthAvailable(): boolean {
   return hasBrowserSupabaseConfig();
 }
@@ -84,19 +108,7 @@ export async function requestUserSignIn(options: {
   });
 
   if (error) {
-    const authErrorText = `${error.code ?? ''} ${error.message ?? ''}`.toLowerCase();
-
-    if (
-      authErrorText.includes('rate') ||
-      authErrorText.includes('security purposes') ||
-      authErrorText.includes('too many')
-    ) {
-      throw new Error(
-        'A sign-in link was sent recently. Wait a minute, then try again.',
-      );
-    }
-
-    throw new Error('Unable to send the sign-in link right now.');
+    throw new Error(getSignInErrorMessage(error));
   }
 }
 

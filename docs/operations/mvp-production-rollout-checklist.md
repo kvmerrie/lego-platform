@@ -4,6 +4,7 @@ This checklist is the shortest production-facing companion to:
 
 - `docs/operations/mvp-deployment-runbook.md`
 - `docs/operations/mvp-release-checklist.md`
+- `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/commerce-sync.md`
@@ -85,7 +86,8 @@ Required for production commerce write runs:
 4. Confirm Supabase auth URLs:
    - site URL = `https://<production-web-host>`
    - redirect URLs include the production web origin and the expected callback return path
-5. Confirm the anon key is used only in Vercel and the service-role key is used only in Render or operator workflows.
+5. Confirm custom SMTP is configured before treating auth as production-ready for real users.
+6. Confirm the anon key is used only in Vercel and the service-role key is used only in Render or operator workflows.
 
 ## 4. Production Deploy Order
 
@@ -138,10 +140,11 @@ pnpm smoke:mvp
    - affiliate offers
 3. One non-commerce-enabled set-detail page shows compact unavailable commerce states.
 4. Email sign-in starts successfully.
-5. Signed-in session refreshes cleanly.
-6. Profile save works.
-7. Owned and wanted toggles persist after refresh.
-8. Sign-out returns the session to anonymous state.
+5. If resend behavior is tested, wait about one minute before requesting another link.
+6. Signed-in session refreshes cleanly.
+7. Profile save works.
+8. Owned and wanted toggles persist after refresh.
+9. Sign-out returns the session to anonymous state.
 
 ## 6. Rollback
 

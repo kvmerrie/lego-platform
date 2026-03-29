@@ -2,6 +2,10 @@
 
 This document describes the current Supabase foundation for real auth and owned or wanted persistence. The repo now has the first browser and API wiring in place, while the sign-in UX still remains intentionally minimal.
 
+See also:
+
+- `docs/operations/production-auth-hardening.md`
+
 ## Current Intent
 
 - Supabase Auth will become the real auth provider.
@@ -65,6 +69,7 @@ For deployed environments:
 - staging Supabase auth URLs should point only at the staging web host
 - production Supabase auth URLs should point only at the production web host
 - avoid carrying staging callback URLs into production unless they are still intentionally needed for admin or operator testing
+- production-ready auth for real users should use custom SMTP configured inside Supabase rather than relying on the built-in mailer
 
 This repo does not currently enforce a root `.env` convention. Use the example files only as reference templates, then keep real credentials in your normal untracked shell or environment-file workflow.
 

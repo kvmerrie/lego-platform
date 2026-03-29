@@ -124,6 +124,9 @@ export function UserSessionCard({
                 value={authEmail ?? ''}
                 onChange={(event) => onAuthEmailChange?.(event.target.value)}
               />
+              <span className={styles.fieldHint}>
+                Wait about a minute before requesting another sign-in link.
+              </span>
             </label>
             <div className={styles.sessionActions}>
               <Button

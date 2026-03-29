@@ -4,6 +4,7 @@ This document describes the smallest reliable deployment setup for the current L
 
 - `docs/operations/mvp-release-checklist.md`
 - `docs/operations/mvp-production-rollout-checklist.md`
+- `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`
@@ -111,6 +112,7 @@ Keep the MVP setup minimal:
 - apply `supabase/migrations/20260329134500_pricing_daily_set_history.sql`
 - enable the chosen email auth method
 - configure site URL and redirect URLs for staging and production web hosts
+- configure custom SMTP before treating passwordless email sign-in as production-ready for real users
 
 Production auth guardrail:
 

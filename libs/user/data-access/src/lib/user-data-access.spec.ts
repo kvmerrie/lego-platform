@@ -141,7 +141,35 @@ describe('user data access', () => {
         email: 'collector@example.com',
       }),
     ).rejects.toThrow(
-      'A sign-in link was sent recently. Wait a minute, then try again.',
+      'A sign-in link was sent recently. Wait about a minute, then try again.',
+    );
+  });
+
+  test('returns a readable delivery message when the address is not authorized yet', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.stubGlobal('window', {
+      location: {
+        href: 'http://localhost:3000/sets/rivendell-10316',
+      },
+    });
+    vi.mocked(signInWithSupabaseOtp).mockResolvedValue({
+      data: {
+        session: null,
+        user: null,
+      },
+      error: {
+        code: 'email_address_not_authorized',
+        message: 'Email address not authorized',
+      },
+    });
+
+    await expect(
+      requestUserSignIn({
+        email: 'collector@example.com',
+      }),
+    ).rejects.toThrow(
+      'Sign-in email delivery is not ready for this address yet. Please try again later or contact support.',
     );
   });
 

@@ -104,7 +104,7 @@ export function UserFeatureAuth() {
         email: nextEmail,
       });
       setAuthStatusMessage(
-        `Check ${nextEmail} for your sign-in link. If it does not arrive right away, wait a little before requesting another one.`,
+        `Check ${nextEmail} for your sign-in link. If it does not arrive right away, wait about a minute before requesting another one.`,
       );
     } catch (error) {
       setErrorMessage(
