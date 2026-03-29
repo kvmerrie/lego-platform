@@ -10,6 +10,7 @@ Use this document alongside:
 - `docs/operations/catalog-sync-validation.md`
 - `docs/operations/commerce-sync.md`
 - `docs/operations/commerce-sync-validation.md`
+- `docs/operations/pricing-history.md`
 - `docs/architecture/contentful-preview-usage.md`
 - `docs/architecture/contentful-validation-rollout-checklist.md`
 
@@ -92,9 +93,14 @@ Optional:
 
 ### Commerce Sync
 
-Required:
+Required for `write` mode:
 
-- none for the current curated Dutch snapshot slice
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+Required for catalog-backed validation:
+
+- `REBRICKABLE_API_KEY`
 
 Operator-reviewed local inputs still live in:
 
@@ -102,6 +108,8 @@ Operator-reviewed local inputs still live in:
 - `libs/pricing/data-access-server/src/lib/pricing-reference-values.ts`
 - `libs/pricing/data-access-server/src/lib/pricing-observation-seeds.ts`
 - `libs/affiliate/data-access-server/src/lib/merchant-config.ts`
+
+The additive 30-day history slice also writes one daily Dutch price-history point per commerce-enabled set into Supabase during `pnpm sync:commerce`.
 
 ## Expected Runtime Validation
 

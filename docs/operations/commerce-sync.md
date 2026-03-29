@@ -2,6 +2,10 @@
 
 This repository keeps the first pricing and affiliate slice snapshot-backed. The public web app reads generated Dutch-market buy guidance through `libs/pricing/data-access` and `libs/affiliate/data-access`; it does not call merchants at request time.
 
+See also:
+
+- `docs/operations/pricing-history.md`
+
 ## Current Scope
 
 - market: Netherlands only
@@ -39,7 +43,10 @@ Example boilerplate:
 
 - `.env.sync.example`
 
-The current commerce sync slice does not require external secrets, but the shared sync example file documents the operator-side Rebrickable variables used by the catalog workflow and leaves room for future operator-only sync secrets.
+The current commerce sync slice does not require external feed secrets, but `write` mode now also persists daily price-history rows and therefore needs the normal server-side Supabase credentials:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ## Run The Sync
 
@@ -68,6 +75,9 @@ Use check mode before overwriting artifacts when reviewing changes.
 ## Operator Notes
 
 - The current slice is set-detail only.
-- No runtime merchant calls, no click tracking, no price history, and no database persistence are included.
+- No runtime merchant calls and no click tracking are included.
+- The current snapshot-backed price panel remains unchanged.
+- `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
+- `pnpm sync:commerce:check` remains a generated-artifact drift check only and does not write history rows.
 - Merchant allowlist, disclosure copy, reference pricing, and enabled set scope remain curated locally.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.

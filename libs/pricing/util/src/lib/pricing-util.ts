@@ -1,8 +1,8 @@
-import { TimelinePoint } from '@lego-platform/shared/types';
-
 export const DUTCH_REGION_CODE = 'NL';
 export const EURO_CURRENCY_CODE = 'EUR';
 export const NEW_OFFER_CONDITION = 'new';
+export const PRICING_HISTORY_TABLE = 'pricing_daily_set_history';
+export const PRICE_HISTORY_WINDOW_DAYS = 30;
 
 export type PricingRegionCode = typeof DUTCH_REGION_CODE;
 export type PricingCurrencyCode = typeof EURO_CURRENCY_CODE;
@@ -48,7 +48,17 @@ export interface PricingSyncManifest {
   source: string;
 }
 
-export type PriceHistoryPoint = TimelinePoint;
+export interface PriceHistoryPoint {
+  condition: PricingCondition;
+  currencyCode: PricingCurrencyCode;
+  headlinePriceMinor: number;
+  lowestMerchantId?: string;
+  observedAt: string;
+  recordedOn: string;
+  referencePriceMinor?: number;
+  regionCode: PricingRegionCode;
+  setId: string;
+}
 
 export function getPriceDirection(
   deltaMinor?: number,

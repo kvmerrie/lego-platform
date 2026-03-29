@@ -66,6 +66,50 @@
   margin: 0;
 }
 
+.historyChartShell {
+  align-items: stretch;
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.historyAxis,
+.historyLabels {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.historyAxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 4.75rem;
+}
+
+.historyChart {
+  display: block;
+  height: auto;
+  inline-size: 100%;
+}
+
+.historyGridLine {
+  stroke: color-mix(in srgb, var(--lego-border) 72%, transparent);
+  stroke-width: 1;
+}
+
+.historyLine {
+  stroke: var(--lego-accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
+.historyLabels {
+  display: flex;
+  justify-content: space-between;
+}
+
 .metaItem {
   display: grid;
   gap: var(--lego-space-1);
@@ -85,22 +129,10 @@
   margin: 0;
 }
 
-.unavailableCopy,
-.historyAnnotation {
+.unavailableCopy {
   color: var(--lego-text-muted);
   line-height: var(--lego-line-height-relaxed);
   margin: 0;
-}
-
-.historyRow {
-  align-items: baseline;
-  display: flex;
-  gap: var(--lego-space-4);
-  justify-content: space-between;
-}
-
-.mono {
-  font-family: var(--lego-font-family-mono);
 }
 
 @media (min-width: 48rem) {

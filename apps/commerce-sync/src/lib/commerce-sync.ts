@@ -8,6 +8,7 @@ import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import {
   buildPricingSyncArtifacts,
   checkPricingGeneratedArtifacts,
+  upsertDailyPriceHistoryPoints,
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
 import { curatedCommerceEnabledSetIds } from './commerce-sync-curation';
@@ -102,6 +103,13 @@ export async function runCommerceSync({
           affiliateSyncManifest: affiliateArtifacts.affiliateSyncManifest,
           workspaceRoot,
         });
+
+  if (mode === 'write') {
+    await upsertDailyPriceHistoryPoints({
+      now,
+      pricePanelSnapshots: pricingArtifacts.pricePanelSnapshots,
+    });
+  }
 
   return {
     mode,

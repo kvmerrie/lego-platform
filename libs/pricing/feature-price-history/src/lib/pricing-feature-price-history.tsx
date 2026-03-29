@@ -1,29 +1,51 @@
-import { listPriceHistory } from '@lego-platform/pricing/data-access';
-import { PriceHistoryRow } from '@lego-platform/pricing/ui';
+'use client';
 
-export function PricingFeaturePriceHistory() {
-  const priceHistory = listPriceHistory();
+import { listPriceHistory } from '@lego-platform/pricing/data-access';
+import {
+  PriceHistoryCard,
+  PriceHistoryEmptyCard,
+} from '@lego-platform/pricing/ui';
+import type { PriceHistoryPoint } from '@lego-platform/pricing/util';
+import { useEffect, useState } from 'react';
+
+export function PricingFeaturePriceHistory({ setId }: { setId: string }) {
+  const [priceHistoryPoints, setPriceHistoryPoints] = useState<
+    readonly PriceHistoryPoint[] | undefined
+  >(undefined);
+
+  useEffect(() => {
+    let isActive = true;
+
+    void listPriceHistory(setId)
+      .then((nextPriceHistoryPoints) => {
+        if (isActive) {
+          setPriceHistoryPoints(nextPriceHistoryPoints);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setPriceHistoryPoints([]);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [setId]);
+
+  if (!priceHistoryPoints) {
+    return <PriceHistoryEmptyCard id="pricing-history" isLoading />;
+  }
+
+  if (priceHistoryPoints.length === 0) {
+    return <PriceHistoryEmptyCard id="pricing-history" />;
+  }
 
   return (
-    <section className="section-stack">
-      <header className="section-heading">
-        <p className="eyebrow">Price history</p>
-        <h2>
-          Small, typed time-series slices that can later be swapped for
-          persisted history.
-        </h2>
-      </header>
-      <article className="surface stack">
-        <ul className="list">
-          {priceHistory.map((priceHistoryPoint) => (
-            <PriceHistoryRow
-              key={priceHistoryPoint.label}
-              priceHistoryPoint={priceHistoryPoint}
-            />
-          ))}
-        </ul>
-      </article>
-    </section>
+    <PriceHistoryCard
+      id="pricing-history"
+      priceHistoryPoints={priceHistoryPoints}
+    />
   );
 }
 

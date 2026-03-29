@@ -1,8 +1,14 @@
 import {
+  DUTCH_REGION_CODE,
+  EURO_CURRENCY_CODE,
+  NEW_OFFER_CONDITION,
+  PRICING_HISTORY_TABLE,
   type PriceHistoryPoint,
   type PricePanelSnapshot,
   type PricingObservation,
 } from '@lego-platform/pricing/util';
+import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
+import { getBrowserSupabaseClient } from '@lego-platform/shared/data-access-auth';
 import { pricePanelSnapshots } from './price-panel-snapshots.generated';
 import { pricingObservations } from './pricing-observations.generated';
 
@@ -13,9 +19,17 @@ const pricePanelSnapshotBySetId = new Map(
   ]),
 );
 
-const placeholderPriceHistory: readonly PriceHistoryPoint[] = [
-  { label: 'Jan', value: 0, annotation: 'Pricing history is intentionally out of scope for this phase.' },
-];
+interface PriceHistoryRowRecord {
+  condition: string;
+  currency_code: string;
+  headline_price_minor: number;
+  lowest_merchant_id: string | null;
+  observed_at: string;
+  recorded_on: string;
+  reference_price_minor: number | null;
+  region_code: string;
+  set_id: string;
+}
 
 export function getPricePanelSnapshot(
   setId: string,
@@ -29,6 +43,73 @@ export function listPricingObservations(setId: string): PricingObservation[] {
   );
 }
 
-export function listPriceHistory(): PriceHistoryPoint[] {
-  return [...placeholderPriceHistory];
+function normalizePriceHistoryRowRecord(
+  priceHistoryRowRecord: PriceHistoryRowRecord,
+): PriceHistoryPoint | undefined {
+  if (
+    priceHistoryRowRecord.region_code !== DUTCH_REGION_CODE ||
+    priceHistoryRowRecord.currency_code !== EURO_CURRENCY_CODE ||
+    priceHistoryRowRecord.condition !== NEW_OFFER_CONDITION
+  ) {
+    return undefined;
+  }
+
+  if (
+    !priceHistoryRowRecord.set_id ||
+    !Number.isInteger(priceHistoryRowRecord.headline_price_minor) ||
+    priceHistoryRowRecord.headline_price_minor <= 0 ||
+    !priceHistoryRowRecord.recorded_on ||
+    !priceHistoryRowRecord.observed_at
+  ) {
+    return undefined;
+  }
+
+  return {
+    setId: priceHistoryRowRecord.set_id,
+    regionCode: DUTCH_REGION_CODE,
+    currencyCode: EURO_CURRENCY_CODE,
+    condition: NEW_OFFER_CONDITION,
+    headlinePriceMinor: priceHistoryRowRecord.headline_price_minor,
+    referencePriceMinor:
+      typeof priceHistoryRowRecord.reference_price_minor === 'number'
+        ? priceHistoryRowRecord.reference_price_minor
+        : undefined,
+    lowestMerchantId: priceHistoryRowRecord.lowest_merchant_id ?? undefined,
+    observedAt: priceHistoryRowRecord.observed_at,
+    recordedOn: priceHistoryRowRecord.recorded_on,
+  };
+}
+
+export async function listPriceHistory(setId: string): Promise<PriceHistoryPoint[]> {
+  if (!hasBrowserSupabaseConfig()) {
+    return [];
+  }
+
+  const { data, error } = await getBrowserSupabaseClient()
+    .from(PRICING_HISTORY_TABLE)
+    .select(
+      'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on',
+    )
+    .eq('set_id', setId)
+    .eq('region_code', DUTCH_REGION_CODE)
+    .eq('currency_code', EURO_CURRENCY_CODE)
+    .eq('condition', NEW_OFFER_CONDITION)
+    .order('recorded_on', { ascending: false })
+    .limit(30);
+
+  if (error || !Array.isArray(data)) {
+    return [];
+  }
+
+  return data
+    .map((priceHistoryRowRecord) =>
+      normalizePriceHistoryRowRecord(
+        priceHistoryRowRecord as PriceHistoryRowRecord,
+      ),
+    )
+    .filter(
+      (priceHistoryPoint): priceHistoryPoint is PriceHistoryPoint =>
+        priceHistoryPoint !== undefined,
+    )
+    .reverse();
 }

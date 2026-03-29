@@ -8,6 +8,7 @@ This document describes the smallest reliable deployment setup for the current L
 - `docs/operations/catalog-sync-validation.md`
 - `docs/operations/commerce-sync.md`
 - `docs/operations/commerce-sync-validation.md`
+- `docs/operations/pricing-history.md`
 - `docs/architecture/contentful-preview-usage.md`
 - `docs/architecture/contentful-validation-rollout-checklist.md`
 
@@ -81,6 +82,7 @@ Use two hosted Supabase projects:
 Keep the MVP setup minimal:
 
 - apply `supabase/migrations/20260328223000_initial_auth_foundation.sql`
+- apply `supabase/migrations/20260329134500_pricing_daily_set_history.sql`
 - enable the chosen email auth method
 - configure site URL and redirect URLs for staging and production web hosts
 
@@ -122,6 +124,8 @@ These are only needed for sync or validation jobs:
 
 - `REBRICKABLE_API_KEY`
 - optional `REBRICKABLE_BASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ### Local Development
 
@@ -147,6 +151,8 @@ Sync operators:
 
 - `REBRICKABLE_API_KEY`
 - optional `REBRICKABLE_BASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ### Staging
 

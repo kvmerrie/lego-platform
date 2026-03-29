@@ -6,9 +6,18 @@
 }
 
 @media (min-width: 48rem) {
-  .commercePanels,
   .accountPanels,
   .collectorActions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .commercePanels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 72rem) {
+  .commercePanels {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

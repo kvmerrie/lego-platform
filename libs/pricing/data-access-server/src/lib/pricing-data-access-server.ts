@@ -1,12 +1,19 @@
 import {
+  PRICE_HISTORY_WINDOW_DAYS,
+  PRICING_HISTORY_TABLE,
   DUTCH_REGION_CODE,
   EURO_CURRENCY_CODE,
   NEW_OFFER_CONDITION,
+  type PriceHistoryPoint,
   type PricePanelSnapshot,
   type PricingAvailability,
   type PricingObservation,
   type PricingSyncManifest,
 } from '@lego-platform/pricing/util';
+import {
+  getServerSupabaseAdminClient,
+} from '@lego-platform/shared/data-access-auth-server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   curatedDutchPricingObservationSeeds,
   type PricingObservationSeed,
@@ -34,6 +41,34 @@ export interface PricingGeneratedArtifacts {
 export interface BuildPricingSyncArtifactsResult
   extends PricingGeneratedArtifacts {
   validatedOfferInputs: readonly ValidatedPricingOfferInput[];
+}
+
+export type PricingHistorySupabaseClient = Pick<SupabaseClient, 'from'>;
+
+export interface BuildDailyPriceHistoryPointsOptions {
+  now?: Date;
+  pricePanelSnapshots: readonly PricePanelSnapshot[];
+}
+
+export interface UpsertDailyPriceHistoryPointsOptions
+  extends BuildDailyPriceHistoryPointsOptions {
+  supabaseClient?: PricingHistorySupabaseClient;
+}
+
+interface PersistedPriceHistoryRow {
+  condition: PriceHistoryPoint['condition'];
+  currency_code: PriceHistoryPoint['currencyCode'];
+  headline_price_minor: PriceHistoryPoint['headlinePriceMinor'];
+  lowest_merchant_id: PriceHistoryPoint['lowestMerchantId'] | null;
+  observed_at: PriceHistoryPoint['observedAt'];
+  recorded_on: PriceHistoryPoint['recordedOn'];
+  reference_price_minor: PriceHistoryPoint['referencePriceMinor'] | null;
+  region_code: PriceHistoryPoint['regionCode'];
+  set_id: PriceHistoryPoint['setId'];
+}
+
+function toRecordedOn(now?: Date): string {
+  return (now ?? new Date()).toISOString().slice(0, 10);
 }
 
 function validateObservedAt(value: string, seedLabel: string): string {
@@ -209,6 +244,69 @@ function getGeneratedAt({
     .map((validatedOfferInput) => validatedOfferInput.observedAt)
     .sort()
     .at(-1) ?? new Date(0).toISOString();
+}
+
+export function buildDailyPriceHistoryPoints({
+  now,
+  pricePanelSnapshots,
+}: BuildDailyPriceHistoryPointsOptions): PriceHistoryPoint[] {
+  const recordedOn = toRecordedOn(now);
+
+  return [...pricePanelSnapshots]
+    .map((pricePanelSnapshot) => ({
+      setId: pricePanelSnapshot.setId,
+      regionCode: pricePanelSnapshot.regionCode,
+      currencyCode: pricePanelSnapshot.currencyCode,
+      condition: pricePanelSnapshot.condition,
+      headlinePriceMinor: pricePanelSnapshot.headlinePriceMinor,
+      referencePriceMinor: pricePanelSnapshot.referencePriceMinor,
+      lowestMerchantId: pricePanelSnapshot.lowestMerchantId,
+      observedAt: pricePanelSnapshot.observedAt,
+      recordedOn,
+    }))
+    .sort((left, right) => left.setId.localeCompare(right.setId));
+}
+
+export async function upsertDailyPriceHistoryPoints({
+  now,
+  pricePanelSnapshots,
+  supabaseClient,
+}: UpsertDailyPriceHistoryPointsOptions): Promise<PriceHistoryPoint[]> {
+  const dailyPriceHistoryPoints = buildDailyPriceHistoryPoints({
+    now,
+    pricePanelSnapshots,
+  });
+
+  if (dailyPriceHistoryPoints.length === 0) {
+    return [];
+  }
+
+  const persistedPriceHistoryRows: PersistedPriceHistoryRow[] =
+    dailyPriceHistoryPoints.map((dailyPriceHistoryPoint) => ({
+      set_id: dailyPriceHistoryPoint.setId,
+      region_code: dailyPriceHistoryPoint.regionCode,
+      currency_code: dailyPriceHistoryPoint.currencyCode,
+      condition: dailyPriceHistoryPoint.condition,
+      headline_price_minor: dailyPriceHistoryPoint.headlinePriceMinor,
+      reference_price_minor: dailyPriceHistoryPoint.referencePriceMinor ?? null,
+      lowest_merchant_id: dailyPriceHistoryPoint.lowestMerchantId ?? null,
+      observed_at: dailyPriceHistoryPoint.observedAt,
+      recorded_on: dailyPriceHistoryPoint.recordedOn,
+    }));
+  const client = supabaseClient ?? getServerSupabaseAdminClient();
+  const { error } = await client
+    .from(PRICING_HISTORY_TABLE)
+    .upsert(persistedPriceHistoryRows, {
+      onConflict: 'set_id,region_code,currency_code,condition,recorded_on',
+    });
+
+  if (error) {
+    throw new Error(
+      `Unable to persist ${PRICE_HISTORY_WINDOW_DAYS}-day pricing history points.`,
+    );
+  }
+
+  return dailyPriceHistoryPoints;
 }
 
 export function validatePricingSyncArtifacts({
