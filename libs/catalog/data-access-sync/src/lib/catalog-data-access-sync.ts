@@ -19,6 +19,7 @@ import {
 import {
   checkCatalogGeneratedArtifacts,
   type CatalogGeneratedArtifactCheckResult,
+  readCatalogGeneratedArtifacts,
   writeCatalogGeneratedArtifacts,
 } from './catalog-artifact-writer';
 
@@ -59,6 +60,103 @@ export interface RunCatalogSyncOptions {
   mode?: 'check' | 'write';
   now?: Date;
   workspaceRoot: string;
+}
+
+function haveCatalogArtifactsChanged({
+  currentCatalogSnapshot,
+  currentCatalogSyncManifest,
+  nextCatalogSnapshot,
+  nextCatalogSyncManifest,
+}: {
+  currentCatalogSnapshot: CatalogSnapshot;
+  currentCatalogSyncManifest: CatalogSyncManifest;
+  nextCatalogSnapshot: CatalogSnapshot;
+  nextCatalogSyncManifest: CatalogSyncManifest;
+}): boolean {
+  return (
+    JSON.stringify({
+      source: currentCatalogSnapshot.source,
+      setRecords: currentCatalogSnapshot.setRecords,
+    }) !==
+      JSON.stringify({
+        source: nextCatalogSnapshot.source,
+        setRecords: nextCatalogSnapshot.setRecords,
+      }) ||
+    JSON.stringify({
+      source: currentCatalogSyncManifest.source,
+      recordCount: currentCatalogSyncManifest.recordCount,
+      homepageFeaturedSetIds: currentCatalogSyncManifest.homepageFeaturedSetIds,
+      notes: currentCatalogSyncManifest.notes,
+    }) !==
+      JSON.stringify({
+        source: nextCatalogSyncManifest.source,
+        recordCount: nextCatalogSyncManifest.recordCount,
+        homepageFeaturedSetIds: nextCatalogSyncManifest.homepageFeaturedSetIds,
+        notes: nextCatalogSyncManifest.notes,
+      })
+  );
+}
+
+function withCatalogGeneratedAt({
+  artifacts,
+  generatedAt,
+}: {
+  artifacts: CatalogSyncArtifacts;
+  generatedAt: string;
+}): CatalogSyncArtifacts {
+  return {
+    catalogSnapshot: {
+      ...artifacts.catalogSnapshot,
+      generatedAt,
+    },
+    catalogSyncManifest: {
+      ...artifacts.catalogSyncManifest,
+      generatedAt,
+    },
+  };
+}
+
+async function stabilizeCatalogGeneratedAt({
+  catalogSnapshot,
+  catalogSyncManifest,
+  workspaceRoot,
+}: {
+  catalogSnapshot: CatalogSnapshot;
+  catalogSyncManifest: CatalogSyncManifest;
+  workspaceRoot: string;
+}): Promise<CatalogSyncArtifacts> {
+  const artifacts = {
+    catalogSnapshot,
+    catalogSyncManifest,
+  };
+  const currentArtifacts = await readCatalogGeneratedArtifacts({ workspaceRoot });
+
+  if (!currentArtifacts) {
+    return artifacts;
+  }
+
+  if (
+    currentArtifacts.catalogSnapshot.generatedAt !==
+    currentArtifacts.catalogSyncManifest.generatedAt
+  ) {
+    return artifacts;
+  }
+
+  if (
+    haveCatalogArtifactsChanged({
+      currentCatalogSnapshot: currentArtifacts.catalogSnapshot,
+      currentCatalogSyncManifest: currentArtifacts.catalogSyncManifest,
+      nextCatalogSnapshot: artifacts.catalogSnapshot,
+      nextCatalogSyncManifest: artifacts.catalogSyncManifest,
+    })
+  ) {
+    return artifacts;
+  }
+
+  return withCatalogGeneratedAt({
+    artifacts,
+    generatedAt: currentArtifacts.catalogSnapshot.generatedAt,
+  });
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
@@ -342,9 +440,13 @@ export async function runCatalogSync({
     baseUrl,
     fetchImpl,
   });
-  const artifacts = await buildCatalogSyncArtifacts({
+  const nextArtifacts = await buildCatalogSyncArtifacts({
     now,
     rebrickableClient,
+  });
+  const artifacts = await stabilizeCatalogGeneratedAt({
+    ...nextArtifacts,
+    workspaceRoot,
   });
   const artifactCheck =
     mode === 'check'

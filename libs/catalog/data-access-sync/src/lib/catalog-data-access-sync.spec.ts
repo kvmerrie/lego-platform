@@ -296,6 +296,126 @@ describe('catalog sync artifacts', () => {
     expect(manifestModule).toContain('"homepageFeaturedSetIds": [');
   });
 
+  test('keeps generated artifacts stable across repeated runs when source data is unchanged', async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), 'catalog-sync-stable-'));
+    const fetchImpl: typeof fetch = async (input) => {
+      const url = String(input);
+
+      if (url.endsWith('/lego/sets/10316-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10316-1',
+            name: 'Lord of the Rings: Rivendell',
+            year: 2023,
+            num_parts: 6181,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21348-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21348-1',
+            name: "Dungeons & Dragons: Red Dragon's Tale",
+            year: 2024,
+            num_parts: 3747,
+            theme_id: 2,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/76269-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '76269-1',
+            name: 'Avengers Tower',
+            year: 2023,
+            num_parts: 5202,
+            theme_id: 3,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10305-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10305-1',
+            name: "Lion Knights' Castle",
+            year: 2022,
+            num_parts: 4515,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21338-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21338-1',
+            name: 'A-Frame Cabin',
+            year: 2023,
+            num_parts: 2083,
+            theme_id: 2,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/themes/1/')) {
+        return new Response(JSON.stringify({ id: 1, name: 'Icons' }), {
+          status: 200,
+        });
+      }
+
+      if (url.endsWith('/lego/themes/2/')) {
+        return new Response(
+          JSON.stringify({ id: 2, name: 'LEGO Ideas and CUUSOO' }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/themes/3/')) {
+        return new Response(JSON.stringify({ id: 3, name: 'Avengers' }), {
+          status: 200,
+        });
+      }
+
+      return new Response(null, { status: 404 });
+    };
+
+    const writeResult = await runCatalogSync({
+      apiKey: 'test-key',
+      fetchImpl,
+      now: new Date('2026-03-28T00:00:00.000Z'),
+      workspaceRoot,
+    });
+
+    const checkResult = await runCatalogSync({
+      apiKey: 'test-key',
+      fetchImpl,
+      mode: 'check',
+      now: new Date('2026-03-29T00:00:00.000Z'),
+      workspaceRoot,
+    });
+
+    expect(writeResult.catalogSnapshot.generatedAt).toBe(
+      '2026-03-28T00:00:00.000Z',
+    );
+    expect(checkResult.catalogSnapshot.generatedAt).toBe(
+      '2026-03-28T00:00:00.000Z',
+    );
+    expect(checkResult.catalogSyncManifest.generatedAt).toBe(
+      '2026-03-28T00:00:00.000Z',
+    );
+    expect(checkResult.artifactCheck.isClean).toBe(true);
+    expect(checkResult.artifactCheck.stalePaths).toEqual([]);
+  });
+
   test('fails validation when a synced set is missing a local product overlay', () => {
     expect(() =>
       validateCatalogSyncArtifacts({

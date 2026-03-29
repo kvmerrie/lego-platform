@@ -24,6 +24,11 @@ export interface CatalogGeneratedArtifactCheckResult {
   stalePaths: string[];
 }
 
+export interface ExistingCatalogGeneratedArtifacts {
+  catalogSnapshot: CatalogSnapshot;
+  catalogSyncManifest: CatalogSyncManifest;
+}
+
 export function getCatalogGeneratedArtifactPaths(
   workspaceRoot: string,
 ): CatalogGeneratedArtifactPaths {
@@ -50,6 +55,60 @@ async function readArtifactFile(
 
     throw error;
   }
+}
+
+function parseGeneratedArtifactPayload<T>({
+  artifactPath,
+  exportName,
+  moduleSource,
+}: {
+  artifactPath: string;
+  exportName: 'catalogSnapshot' | 'catalogSyncManifest';
+  moduleSource: string;
+}): T {
+  const match = moduleSource.match(
+    new RegExp(
+      `export const ${exportName}: [^=]+ = ([\\s\\S]+);\\s*$`,
+    ),
+  );
+
+  if (!match?.[1]) {
+    throw new Error(
+      `Unable to parse generated catalog artifact payload from ${artifactPath}.`,
+    );
+  }
+
+  return JSON.parse(match[1]) as T;
+}
+
+export async function readCatalogGeneratedArtifacts({
+  workspaceRoot,
+}: {
+  workspaceRoot: string;
+}): Promise<ExistingCatalogGeneratedArtifacts | undefined> {
+  const { manifestPath, snapshotPath } =
+    getCatalogGeneratedArtifactPaths(workspaceRoot);
+  const [currentSnapshotModule, currentManifestModule] = await Promise.all([
+    readArtifactFile(snapshotPath),
+    readArtifactFile(manifestPath),
+  ]);
+
+  if (!currentSnapshotModule || !currentManifestModule) {
+    return undefined;
+  }
+
+  return {
+    catalogSnapshot: parseGeneratedArtifactPayload<CatalogSnapshot>({
+      artifactPath: snapshotPath,
+      exportName: 'catalogSnapshot',
+      moduleSource: currentSnapshotModule,
+    }),
+    catalogSyncManifest: parseGeneratedArtifactPayload<CatalogSyncManifest>({
+      artifactPath: manifestPath,
+      exportName: 'catalogSyncManifest',
+      moduleSource: currentManifestModule,
+    }),
+  };
 }
 
 export async function checkCatalogGeneratedArtifacts({
