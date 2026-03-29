@@ -4,7 +4,7 @@ import type { PricingSyncManifest } from '@lego-platform/pricing/util';
 export const pricingSyncManifest: PricingSyncManifest = {
   "source": "curated-dutch-commerce-foundation",
   "generatedAt": "2026-03-29T10:40:00.000Z",
-  "observationCount": 21,
+  "observationCount": 15,
   "setCount": 7,
   "notes": "Generated from a small Dutch-market commerce foundation. No runtime merchant calls or history are included."
 };

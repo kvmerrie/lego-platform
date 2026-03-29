@@ -14,16 +14,6 @@ export const pricingObservations: readonly PricingObservation[] = [
   },
   {
     "setId": "10316",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 49499,
-    "availability": "limited",
-    "observedAt": "2026-03-29T09:05:00.000Z"
-  },
-  {
-    "setId": "10316",
     "merchantId": "lego-nl",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -41,16 +31,6 @@ export const pricingObservations: readonly PricingObservation[] = [
     "totalPriceMinor": 21999,
     "availability": "in_stock",
     "observedAt": "2026-03-29T10:00:00.000Z"
-  },
-  {
-    "setId": "10332",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 22499,
-    "availability": "limited",
-    "observedAt": "2026-03-29T10:05:00.000Z"
   },
   {
     "setId": "10332",
@@ -74,16 +54,6 @@ export const pricingObservations: readonly PricingObservation[] = [
   },
   {
     "setId": "10333",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 45499,
-    "availability": "limited",
-    "observedAt": "2026-03-29T09:50:00.000Z"
-  },
-  {
-    "setId": "10333",
     "merchantId": "lego-nl",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -101,16 +71,6 @@ export const pricingObservations: readonly PricingObservation[] = [
     "totalPriceMinor": 15999,
     "availability": "in_stock",
     "observedAt": "2026-03-29T10:15:00.000Z"
-  },
-  {
-    "setId": "21333",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 16499,
-    "availability": "limited",
-    "observedAt": "2026-03-29T10:20:00.000Z"
   },
   {
     "setId": "21333",
@@ -134,16 +94,6 @@ export const pricingObservations: readonly PricingObservation[] = [
   },
   {
     "setId": "21348",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 35499,
-    "availability": "limited",
-    "observedAt": "2026-03-29T09:20:00.000Z"
-  },
-  {
-    "setId": "21348",
     "merchantId": "lego-nl",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -161,16 +111,6 @@ export const pricingObservations: readonly PricingObservation[] = [
     "totalPriceMinor": 9999,
     "availability": "in_stock",
     "observedAt": "2026-03-29T10:30:00.000Z"
-  },
-  {
-    "setId": "21349",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 10499,
-    "availability": "limited",
-    "observedAt": "2026-03-29T10:35:00.000Z"
   },
   {
     "setId": "21349",

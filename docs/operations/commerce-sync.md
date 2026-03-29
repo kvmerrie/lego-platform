@@ -33,6 +33,9 @@ Curated local inputs currently live in:
 - `libs/pricing/data-access-server/src/lib/pricing-observation-seeds.ts`
 - `libs/affiliate/data-access-server/src/lib/merchant-config.ts`
 
+Reviewed merchant destination URLs are curated per set inside the pricing observation seed file.
+Do not synthesize product paths from merchant host patterns or set ids.
+
 This phase intentionally uses a very small, operator-reviewed allowlist:
 
 - a small reviewed set allowlist drawn from the current public curated catalog
@@ -81,7 +84,8 @@ Use check mode before overwriting artifacts when reviewing changes.
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
 - Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
 - `pnpm sync:commerce:check` remains a generated-artifact drift check only and does not write history rows.
-- Merchant allowlist, disclosure copy, reference pricing, and enabled set scope remain curated locally.
+- Merchant allowlist, disclosure copy, reference pricing, enabled set scope, and reviewed direct product URLs remain curated locally.
+- If a stable merchant product page cannot be verified for an enabled set, remove that offer instead of guessing a slug.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.
 
 ## Production Scheduling

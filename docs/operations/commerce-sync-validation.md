@@ -35,6 +35,7 @@ Confirm that:
 - merchant ids are unique
 - merchant display ranks are unique within `NL`
 - outbound URLs stay on the expected merchant host
+- outbound URLs point to reviewed direct product pages, not synthesized set-id slugs
 
 ## 4. Expected Failure Signals
 

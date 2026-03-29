@@ -9,7 +9,7 @@ describe('affiliate data access server', () => {
         {
           setId: '10316',
           merchantId: 'lego-nl',
-          merchantProductUrl: 'https://www.lego.com/nl-nl/product/10316',
+          merchantProductUrl: 'https://www.lego.com/nl-nl/product/lotr-10316',
           totalPriceMinor: 49999,
           availability: 'in_stock',
           observedAt: '2026-03-29T09:10:00.000Z',

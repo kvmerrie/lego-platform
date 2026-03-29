@@ -4,7 +4,7 @@ import type { AffiliateSyncManifest } from '@lego-platform/affiliate/util';
 export const affiliateSyncManifest: AffiliateSyncManifest = {
   "source": "curated-dutch-commerce-foundation",
   "generatedAt": "2026-03-29T10:40:00.000Z",
-  "offerCount": 21,
+  "offerCount": 15,
   "setCount": 7,
   "merchantCount": 3,
   "notes": "Generated from a small Dutch-market merchant allowlist. Outbound URLs remain direct in this first foundation phase."

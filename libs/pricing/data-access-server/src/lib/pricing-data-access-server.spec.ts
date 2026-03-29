@@ -24,7 +24,7 @@ describe('pricing data access server', () => {
       ],
     });
 
-    expect(result.pricingObservations).toHaveLength(21);
+    expect(result.pricingObservations).toHaveLength(15);
     expect(result.pricePanelSnapshots).toHaveLength(7);
     expect(result.pricePanelSnapshots[0]).toMatchObject({
       lowestMerchantName: 'bol',
@@ -43,7 +43,7 @@ describe('pricing data access server', () => {
           {
             setId: '10316',
             merchantId: 'lego-nl',
-            merchantProductUrl: 'https://www.lego.com/nl-nl/product/10316',
+            merchantProductUrl: 'https://www.lego.com/nl-nl/product/lotr-10316',
             totalPriceMinor: 49999,
             availability: 'in_stock',
             observedAt: '2026-03-29T09:10:00.000Z',
@@ -54,7 +54,7 @@ describe('pricing data access server', () => {
           {
             setId: '10316',
             merchantId: 'lego-nl',
-            merchantProductUrl: 'https://www.lego.com/nl-nl/product/10316',
+            merchantProductUrl: 'https://www.lego.com/nl-nl/product/lotr-10316',
             totalPriceMinor: 49999,
             availability: 'limited',
             observedAt: '2026-03-29T09:11:00.000Z',
@@ -75,7 +75,7 @@ describe('pricing data access server', () => {
           {
             setId: '10316',
             merchantId: 'lego-nl',
-            merchantProductUrl: 'https://www.lego.com/nl-nl/product/10316',
+            merchantProductUrl: 'https://www.lego.com/nl-nl/product/lotr-10316',
             totalPriceMinor: 49999,
             availability: 'in_stock',
             observedAt: '2026-03-29T09:10:00.000Z',
@@ -205,7 +205,8 @@ describe('pricing data access server', () => {
         {
           setId: '10316',
           merchantId: 'bol',
-          merchantProductUrl: 'https://www.bol.com/nl/nl/p/lego-10316',
+          merchantProductUrl:
+            'https://www.bol.com/nl/nl/p/lego-10316-the-lord-of-the-rings-rivendell/9300000144104277/',
           totalPriceMinor: 48999,
           availability: 'in_stock',
           observedAt: '2026-03-29T09:00:00.000Z',

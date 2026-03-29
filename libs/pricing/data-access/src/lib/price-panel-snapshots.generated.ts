@@ -11,7 +11,7 @@ export const pricePanelSnapshots: readonly PricePanelSnapshot[] = [
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 3,
+    "merchantCount": 2,
     "observedAt": "2026-03-29T09:00:00.000Z",
     "referencePriceMinor": 49999,
     "deltaMinor": -1000
@@ -25,7 +25,7 @@ export const pricePanelSnapshots: readonly PricePanelSnapshot[] = [
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 3,
+    "merchantCount": 2,
     "observedAt": "2026-03-29T09:15:00.000Z",
     "referencePriceMinor": 35999,
     "deltaMinor": -1000
@@ -53,7 +53,7 @@ export const pricePanelSnapshots: readonly PricePanelSnapshot[] = [
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 3,
+    "merchantCount": 2,
     "observedAt": "2026-03-29T10:00:00.000Z",
     "referencePriceMinor": 22999,
     "deltaMinor": -1000
@@ -67,7 +67,7 @@ export const pricePanelSnapshots: readonly PricePanelSnapshot[] = [
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 3,
+    "merchantCount": 2,
     "observedAt": "2026-03-29T09:45:00.000Z",
     "referencePriceMinor": 45999,
     "deltaMinor": -1000
@@ -81,7 +81,7 @@ export const pricePanelSnapshots: readonly PricePanelSnapshot[] = [
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 3,
+    "merchantCount": 2,
     "observedAt": "2026-03-29T10:15:00.000Z",
     "referencePriceMinor": 16999,
     "deltaMinor": -1000
@@ -95,7 +95,7 @@ export const pricePanelSnapshots: readonly PricePanelSnapshot[] = [
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 3,
+    "merchantCount": 2,
     "observedAt": "2026-03-29T10:30:00.000Z",
     "referencePriceMinor": 10999,
     "deltaMinor": -1000

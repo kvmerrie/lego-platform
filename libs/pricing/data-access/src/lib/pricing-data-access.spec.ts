@@ -37,7 +37,7 @@ describe('pricing data access', () => {
       lowestAvailabilityLabel: 'In stock',
       lowestMerchantId: 'bol',
       lowestMerchantName: 'bol',
-      merchantCount: 3,
+      merchantCount: 2,
       observedAt: '2026-03-29T09:00:00.000Z',
       referencePriceMinor: 49999,
       deltaMinor: -1000,
@@ -54,7 +54,7 @@ describe('pricing data access', () => {
       lowestAvailabilityLabel: 'In stock',
       lowestMerchantId: 'bol',
       lowestMerchantName: 'bol',
-      merchantCount: 3,
+      merchantCount: 2,
       observedAt: '2026-03-29T09:45:00.000Z',
       referencePriceMinor: 45999,
       deltaMinor: -1000,
@@ -68,7 +68,7 @@ describe('pricing data access', () => {
       headlinePriceMinor: 48999,
       availabilityLabel: 'In stock',
       merchantName: 'bol',
-      merchantCount: 3,
+      merchantCount: 2,
       observedAt: '2026-03-29T09:00:00.000Z',
       referencePriceMinor: 49999,
       deltaMinor: -1000,
@@ -76,7 +76,7 @@ describe('pricing data access', () => {
   });
 
   test('lists pricing observations for a single set only', () => {
-    expect(listPricingObservations('21348')).toHaveLength(3);
+    expect(listPricingObservations('21348')).toHaveLength(2);
     expect(
       listPricingObservations('21348').every(
         (pricingObservation) => pricingObservation.setId === '21348',
