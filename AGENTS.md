@@ -84,6 +84,7 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - `docs/architecture/contentful-validation-rollout-checklist.md`
 - `docs/architecture/dependency-rules.md`
 - `docs/architecture/mvp-search-spike.md`
+- `docs/architecture/next-phase-roadmap.md`
 - `docs/operations/catalog-sync.md`
 - `docs/operations/catalog-sync-validation.md`
 - `docs/operations/commerce-sync.md`

@@ -31,6 +31,8 @@ Near and mid-term expansion is expected in these areas:
 - more advanced collection and wishlist workflows
 - mobile or native clients
 
+Use `docs/architecture/next-phase-roadmap.md` for the practical sequencing of what should happen now, next, and later.
+
 ## Content Strategy
 
 Contentful is reserved for editorial and page-builder use cases:
