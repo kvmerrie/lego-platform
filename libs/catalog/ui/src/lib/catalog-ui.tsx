@@ -23,11 +23,27 @@ type CatalogSetCardPriceContextTone =
   | 'warning';
 
 export interface CatalogSetCardPriceContext {
+  coverageLabel: string;
   currentPrice: string;
-  merchantSummary: string;
+  merchantLabel: string;
   pricePositionLabel?: string;
   pricePositionTone?: CatalogSetCardPriceContextTone;
   reviewedLabel: string;
+}
+
+function CatalogSupportingDetail({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className={styles.supportingDetail}>
+      <p className={styles.supportingLabel}>{label}</p>
+      <p className={styles.supportingValue}>{value}</p>
+    </div>
+  );
 }
 
 function CatalogSetMetadata({
@@ -61,11 +77,7 @@ export function CatalogSetCard({
       <div className={styles.cardHeader}>
         <div className={styles.cardBadgeRow}>
           <Badge tone="accent">{setSummary.theme}</Badge>
-          {priceContext?.pricePositionLabel ? (
-            <Badge tone={priceContext.pricePositionTone ?? 'info'}>
-              {priceContext.pricePositionLabel}
-            </Badge>
-          ) : null}
+          <Badge tone="info">{setSummary.releaseYear}</Badge>
         </div>
         <h3 className={styles.cardTitle}>{setSummary.name}</h3>
         <p className={styles.cardTagline}>
@@ -74,22 +86,40 @@ export function CatalogSetCard({
       </div>
       {priceContext ? (
         <div className={styles.priceBlock}>
-          <p className={styles.priceLabel}>Current reviewed price</p>
+          <div className={styles.priceHeader}>
+            <p className={styles.priceLabel}>Current reviewed price</p>
+            {priceContext.pricePositionLabel ? (
+              <Badge tone={priceContext.pricePositionTone ?? 'info'}>
+                {priceContext.pricePositionLabel}
+              </Badge>
+            ) : null}
+          </div>
           <p className={styles.priceValue}>{priceContext.currentPrice}</p>
-          <p className={styles.priceMeta}>{priceContext.merchantSummary}</p>
-          <p className={styles.priceMetaSecondary}>
-            {priceContext.reviewedLabel}
-          </p>
+          <p className={styles.priceMeta}>{priceContext.merchantLabel}</p>
+          <div className={styles.supportingGrid}>
+            <CatalogSupportingDetail
+              label="Coverage"
+              value={priceContext.coverageLabel}
+            />
+            <CatalogSupportingDetail
+              label="Freshness"
+              value={priceContext.reviewedLabel}
+            />
+          </div>
         </div>
       ) : null}
-      {setSummary.tagline ? (
-        <p className={styles.cardCopy}>{setSummary.collectorAngle}</p>
-      ) : null}
-      {setSummary.availability ? (
-        <p className={styles.availability}>
-          Availability posture: {setSummary.availability}
-        </p>
-      ) : null}
+      <div className={styles.collectorContext}>
+        <CatalogSupportingDetail
+          label="Collector angle"
+          value={setSummary.collectorAngle}
+        />
+        {setSummary.availability ? (
+          <CatalogSupportingDetail
+            label="Availability posture"
+            value={setSummary.availability}
+          />
+        ) : null}
+      </div>
       <CatalogSetMetadata
         items={[
           { label: 'Pieces', value: setSummary.pieces.toLocaleString() },

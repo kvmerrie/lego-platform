@@ -8,8 +8,9 @@ describe('CatalogSetCard', () => {
       <CatalogSetCard
         href="/sets/rivendell-10316"
         priceContext={{
+          coverageLabel: 'In stock · 3 reviewed offers',
           currentPrice: 'EUR 489.99',
-          merchantSummary: 'In stock at bol · 3 offers reviewed',
+          merchantLabel: 'Lowest current offer from bol',
           pricePositionLabel: 'EUR 10.00 below ref',
           pricePositionTone: 'positive',
           reviewedLabel: 'Reviewed 29 mrt',
@@ -32,10 +33,12 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Current reviewed price');
     expect(markup).toContain('EUR 489.99');
-    expect(markup).toContain('In stock at bol');
-    expect(markup).toContain(
-      'Availability posture: Healthy but premium availability',
-    );
+    expect(markup).toContain('Lowest current offer from bol');
+    expect(markup).toContain('Coverage');
+    expect(markup).toContain('Freshness');
+    expect(markup).toContain('Collector angle');
+    expect(markup).toContain('Availability posture');
+    expect(markup).toContain('Healthy but premium availability');
     expect(markup).toContain('Prestige display anchor');
     expect(markup).toContain('EUR 10.00 below ref');
   });

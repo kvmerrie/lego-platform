@@ -79,10 +79,14 @@ export default async function HomePage() {
       ...homepageSetCard,
       priceContext: featuredSetPriceContext
         ? {
+            coverageLabel: featuredSetPriceContext.availabilityLabel
+              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} reviewed offers`
+              : `${featuredSetPriceContext.merchantCount} reviewed offers`,
             currentPrice: formatPriceMinor({
               currencyCode: featuredSetPriceContext.currencyCode,
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
             }),
+            merchantLabel: `Lowest current offer from ${featuredSetPriceContext.merchantName}`,
             pricePositionLabel: getPricePositionLabel({
               currencyCode: featuredSetPriceContext.currencyCode,
               deltaMinor: featuredSetPriceContext.deltaMinor,
@@ -90,9 +94,6 @@ export default async function HomePage() {
             pricePositionTone: getPricePositionTone(
               featuredSetPriceContext.deltaMinor,
             ),
-            merchantSummary: featuredSetPriceContext.availabilityLabel
-              ? `${featuredSetPriceContext.availabilityLabel} at ${featuredSetPriceContext.merchantName} · ${featuredSetPriceContext.merchantCount} offers reviewed`
-              : `From ${featuredSetPriceContext.merchantName} · ${featuredSetPriceContext.merchantCount} offers reviewed`,
             reviewedLabel: `Reviewed ${formatReviewedOn(
               featuredSetPriceContext.observedAt,
             )}`,

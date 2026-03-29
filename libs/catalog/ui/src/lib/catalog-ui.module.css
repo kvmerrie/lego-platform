@@ -1,6 +1,6 @@
 .setCard {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-4);
 }
 
 .cardHeader {
@@ -31,7 +31,6 @@
   max-width: 28ch;
 }
 
-.cardCopy,
 .mutedCopy,
 .availability {
   color: var(--lego-text-muted);
@@ -41,7 +40,7 @@
 
 .priceBlock {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-3);
   padding: var(--lego-space-4);
   background: var(--lego-surface-muted);
   border: var(--lego-border-width-1) solid
@@ -49,11 +48,31 @@
   border-radius: var(--lego-radius-md);
 }
 
+.priceHeader {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+  justify-content: space-between;
+}
+
 .priceLabel,
-.priceMetaSecondary {
+.supportingLabel {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.supportingLabel {
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.supportingValue {
+  color: var(--lego-text);
+  line-height: var(--lego-line-height-relaxed);
   margin: 0;
 }
 
@@ -70,19 +89,44 @@
 .priceMeta {
   color: var(--lego-text);
   font-weight: var(--lego-font-weight-semibold);
-  line-height: 1.4;
+  line-height: 1.35;
   margin: 0;
+}
+
+.supportingGrid,
+.collectorContext {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.collectorContext {
+  padding-top: var(--lego-space-1);
+}
+
+.supportingDetail {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.priceBlock .supportingValue {
+  color: var(--lego-text-muted);
 }
 
 .metaGrid {
   display: grid;
   gap: var(--lego-space-3);
   margin: 0;
+  padding-top: var(--lego-space-1);
 }
 
 .metaItem {
   display: grid;
   gap: var(--lego-space-1);
+  padding: var(--lego-space-3);
+  background: color-mix(in srgb, var(--lego-surface-muted) 72%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 86%, transparent);
+  border-radius: var(--lego-radius-sm);
 }
 
 .metaLabel {
@@ -159,6 +203,11 @@
 
   .setCard:first-child .priceValue {
     font-size: clamp(2.2rem, 4vw, 3rem);
+  }
+
+  .supportingGrid,
+  .collectorContext {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .heroPanel {

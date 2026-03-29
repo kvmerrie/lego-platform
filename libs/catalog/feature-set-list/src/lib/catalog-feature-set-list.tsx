@@ -4,7 +4,7 @@ import {
   CatalogSetCard,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
-import { SectionHeading } from '@lego-platform/shared/ui';
+import { Badge, SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-set-list.module.css';
 
 export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
@@ -22,15 +22,29 @@ export function CatalogFeatureSetList({
       ...catalogHomepageSetCard,
       priceContext: undefined,
     }));
+  const reviewedSetCount = homepageSets.filter(
+    (catalogHomepageSetCard) => catalogHomepageSetCard.priceContext,
+  ).length;
 
   return (
     <section className={styles.section} id="featured-sets">
-      <SectionHeading
-        className={styles.header}
-        description="Each featured set keeps the homepage static-friendly while adding calmer collector cues around reviewed price posture, availability, and why the set matters."
-        eyebrow="Featured sets"
-        title="Start with a focused shortlist built for collector decisions."
-      />
+      <div className={styles.headerBlock}>
+        <SectionHeading
+          className={styles.header}
+          description="Compare a short collector-ready shortlist with calmer cues around why each set matters, how availability feels, and where reviewed Dutch pricing currently sits."
+          eyebrow="Featured sets"
+          title="Browse a curated shortlist built for quick collector decisions."
+        />
+        <div className={styles.signalRow}>
+          <Badge tone="accent">{homepageSets.length} curated picks</Badge>
+          {reviewedSetCount ? (
+            <Badge tone="info">
+              {reviewedSetCount} with reviewed Dutch price context
+            </Badge>
+          ) : null}
+          <Badge>Static-friendly browsing</Badge>
+        </div>
+      </div>
       <div className={styles.grid}>
         {homepageSets.map((catalogSetSummary) => (
           <CatalogSetCard
