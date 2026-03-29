@@ -39,6 +39,7 @@ function toCatalogSetSummary(
     pieces: catalogSetDetail.pieces,
     priceRange: catalogSetDetail.priceRange,
     collectorAngle: catalogSetDetail.collectorAngle,
+    imageUrl: catalogSetDetail.imageUrl,
   };
 }
 
@@ -119,6 +120,7 @@ function toCatalogSetDetail(
     theme: getCatalogDisplayTheme(catalogSetRecord, catalogSetOverlay),
     releaseYear: catalogSetRecord.releaseYear,
     pieces: catalogSetRecord.pieces,
+    imageUrl: catalogSetRecord.imageUrl,
     priceRange: catalogSetOverlay.priceRange,
     collectorAngle: catalogSetOverlay.collectorAngle,
     tagline: catalogSetOverlay.tagline,

@@ -10,6 +10,7 @@ export interface CatalogSetSummary {
   pieces: number;
   priceRange: string;
   collectorAngle: string;
+  imageUrl?: string;
 }
 
 export interface CatalogHomepageSetCard extends CatalogSetSummary {

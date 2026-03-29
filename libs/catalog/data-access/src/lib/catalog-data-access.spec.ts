@@ -91,6 +91,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 6181,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
       priceRange: '$499 to $569',
       collectorAngle: 'Prestige display anchor',
       tagline:
@@ -113,6 +114,7 @@ describe('catalog data-access contracts', () => {
         theme: 'Ideas',
         releaseYear: 2024,
         pieces: 3747,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
         priceRange: '$359 to $409',
         collectorAngle: 'Crossover audience magnet',
       },
@@ -123,6 +125,7 @@ describe('catalog data-access contracts', () => {
         theme: 'Marvel',
         releaseYear: 2023,
         pieces: 5202,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
         priceRange: '$449 to $519',
         collectorAngle: 'Marvel flagship showcase',
       },
@@ -133,6 +136,7 @@ describe('catalog data-access contracts', () => {
         theme: 'Icons',
         releaseYear: 2023,
         pieces: 6181,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
         priceRange: '$499 to $569',
         collectorAngle: 'Prestige display anchor',
       },
@@ -148,6 +152,7 @@ describe('catalog data-access contracts', () => {
         theme: 'Ideas',
         releaseYear: 2024,
         pieces: 3747,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
         priceRange: '$359 to $409',
         collectorAngle: 'Crossover audience magnet',
         tagline:
@@ -161,6 +166,7 @@ describe('catalog data-access contracts', () => {
         theme: 'Marvel',
         releaseYear: 2023,
         pieces: 5202,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
         priceRange: '$449 to $519',
         collectorAngle: 'Marvel flagship showcase',
         tagline: 'A marquee licensed set with broad household recognizability.',
@@ -173,6 +179,7 @@ describe('catalog data-access contracts', () => {
         theme: 'Icons',
         releaseYear: 2023,
         pieces: 6181,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
         priceRange: '$499 to $569',
         collectorAngle: 'Prestige display anchor',
         tagline:
@@ -196,6 +203,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2022,
       pieces: 4515,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10305-1/152495.jpg',
       priceRange: '$359 to $429',
       collectorAngle: 'Castle nostalgia tentpole',
       tagline:
@@ -215,6 +223,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Ideas',
       releaseYear: 2023,
       pieces: 2083,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21338-1/116515.jpg',
       priceRange: '$179 to $239',
       collectorAngle: 'Cabin-core conversation piece',
       tagline:
@@ -234,6 +243,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 2509,
+      imageUrl: undefined,
       priceRange: '$189 to $259',
       collectorAngle: 'Pirates nostalgia centerpiece',
       tagline:
@@ -253,6 +263,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Ideas',
       releaseYear: 2022,
       pieces: 2065,
+      imageUrl: undefined,
       priceRange: '$259 to $319',
       collectorAngle: 'Kinetic display standout',
       tagline:

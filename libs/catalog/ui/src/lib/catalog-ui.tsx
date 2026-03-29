@@ -31,6 +31,47 @@ export interface CatalogSetCardPriceContext {
   reviewedLabel: string;
 }
 
+function CatalogSetVisual({
+  imageUrl,
+  name,
+  setId,
+  theme,
+  variant,
+}: {
+  imageUrl?: string;
+  name: string;
+  setId: string;
+  theme: string;
+  variant: 'card' | 'hero';
+}) {
+  const visualClassName =
+    variant === 'hero'
+      ? `${styles.setVisual} ${styles.heroVisual}`
+      : `${styles.setVisual} ${styles.cardVisual}`;
+
+  if (imageUrl) {
+    return (
+      <div className={visualClassName}>
+        <img
+          alt={`${name} set`}
+          className={styles.setImage}
+          decoding="async"
+          loading={variant === 'hero' ? 'eager' : 'lazy'}
+          src={imageUrl}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${visualClassName} ${styles.visualFallback}`}>
+      <Badge tone="accent">{theme}</Badge>
+      <p className={styles.visualFallbackTitle}>Collector image coming soon</p>
+      <p className={styles.visualFallbackMeta}>Set {setId}</p>
+    </div>
+  );
+}
+
 function CatalogSupportingDetail({
   label,
   value,
@@ -74,6 +115,13 @@ export function CatalogSetCard({
 }) {
   return (
     <Surface as="article" className={styles.setCard}>
+      <CatalogSetVisual
+        imageUrl={setSummary.imageUrl}
+        name={setSummary.name}
+        setId={setSummary.id}
+        theme={setSummary.theme}
+        variant="card"
+      />
       <div className={styles.cardHeader}>
         <div className={styles.cardBadgeRow}>
           <Badge tone="accent">{setSummary.theme}</Badge>
@@ -192,17 +240,28 @@ export function CatalogSetDetailPanel({
         padding="lg"
         tone="accent"
       >
-        <SectionHeading
-          description={catalogSetDetail.tagline}
-          eyebrow="Set detail"
-          title={catalogSetDetail.name}
-          titleAs="h2"
-          tone="hero"
-        />
-        <div className={styles.badgeRow}>
-          <Badge tone="accent">{catalogSetDetail.theme}</Badge>
-          <Badge>{catalogSetDetail.releaseYear}</Badge>
-          <Badge tone="info">{catalogSetDetail.priceRange}</Badge>
+        <div className={styles.heroPrimaryContent}>
+          <div className={styles.heroCopy}>
+            <SectionHeading
+              description={catalogSetDetail.tagline}
+              eyebrow="Set detail"
+              title={catalogSetDetail.name}
+              titleAs="h2"
+              tone="hero"
+            />
+            <div className={styles.badgeRow}>
+              <Badge tone="accent">{catalogSetDetail.theme}</Badge>
+              <Badge>{catalogSetDetail.releaseYear}</Badge>
+              <Badge tone="info">{catalogSetDetail.priceRange}</Badge>
+            </div>
+          </div>
+          <CatalogSetVisual
+            imageUrl={catalogSetDetail.imageUrl}
+            name={catalogSetDetail.name}
+            setId={catalogSetDetail.id}
+            theme={catalogSetDetail.theme}
+            variant="hero"
+          />
         </div>
         <CatalogSetMetadata
           items={[

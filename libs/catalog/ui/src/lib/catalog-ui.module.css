@@ -3,6 +3,59 @@
   gap: var(--lego-space-4);
 }
 
+.setVisual {
+  overflow: hidden;
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 88%, transparent);
+  border-radius: var(--lego-radius-lg);
+  background: color-mix(in srgb, var(--lego-surface-muted) 92%, white);
+  min-height: 12rem;
+}
+
+.cardVisual {
+  aspect-ratio: 4 / 3;
+}
+
+.heroVisual {
+  aspect-ratio: 1 / 1;
+  min-height: 16rem;
+}
+
+.setImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: color-mix(in srgb, var(--lego-surface-muted) 92%, white);
+}
+
+.visualFallback {
+  align-content: center;
+  display: grid;
+  gap: var(--lego-space-3);
+  justify-items: start;
+  padding: var(--lego-space-5);
+}
+
+.visualFallbackTitle,
+.visualFallbackMeta {
+  margin: 0;
+}
+
+.visualFallbackTitle {
+  color: var(--lego-text);
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-font-size-lg);
+  font-weight: var(--lego-font-weight-bold);
+  line-height: 1.1;
+}
+
+.visualFallbackMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
 .cardHeader {
   display: grid;
   gap: var(--lego-space-3);
@@ -158,6 +211,16 @@
   gap: var(--lego-space-4);
 }
 
+.heroPrimaryContent {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.heroCopy {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
@@ -212,6 +275,11 @@
 
   .heroPanel {
     grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.95fr);
+    align-items: start;
+  }
+
+  .heroPrimaryContent {
+    grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr);
     align-items: start;
   }
 

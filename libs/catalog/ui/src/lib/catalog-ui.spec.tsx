@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { CatalogSetCard } from './catalog-ui';
+import { CatalogSetCard, CatalogSetDetailPanel } from './catalog-ui';
 
 describe('CatalogSetCard', () => {
-  it('renders enriched featured-set discovery context when provided', () => {
+  it('renders set imagery alongside featured-set discovery context when available', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/rivendell-10316"
@@ -22,6 +22,7 @@ describe('CatalogSetCard', () => {
           theme: 'Icons',
           releaseYear: 2023,
           pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
           priceRange: '$499 to $569',
           collectorAngle: 'Prestige display anchor',
           tagline:
@@ -34,6 +35,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Current reviewed price');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest current offer from bol');
+    expect(markup).toContain('src="https://images.example/rivendell.jpg"');
+    expect(markup).toContain('alt="Rivendell set"');
     expect(markup).toContain('Coverage');
     expect(markup).toContain('Freshness');
     expect(markup).toContain('Collector angle');
@@ -41,5 +44,34 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Healthy but premium availability');
     expect(markup).toContain('Prestige display anchor');
     expect(markup).toContain('EUR 10.00 below ref');
+  });
+
+  it('renders a calm image fallback on set detail pages when no catalog image is available', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '21335',
+          slug: 'motorized-lighthouse-21335',
+          name: 'Motorized Lighthouse',
+          theme: 'Ideas',
+          releaseYear: 2022,
+          pieces: 2065,
+          imageUrl: undefined,
+          priceRange: '$259 to $319',
+          collectorAngle: 'Kinetic display standout',
+          tagline:
+            'A mechanically animated coastal build that feels equally at home in premium display shelves and gift-led collector curation.',
+          availability: 'Selective premium availability',
+          collectorHighlights: [
+            'Motorized light and rotating beacon create stronger live display presence than most static shelf pieces',
+          ],
+        }}
+        homeHref="/#featured-sets"
+      />,
+    );
+
+    expect(markup).toContain('Collector image coming soon');
+    expect(markup).toContain('Set 21335');
+    expect(markup).toContain('Back to featured sets');
   });
 });
