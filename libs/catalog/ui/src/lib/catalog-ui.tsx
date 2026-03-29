@@ -1,10 +1,29 @@
 import type {
+  CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetSummary,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import { ActionLink, Badge, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-ui.module.css';
+
+type CatalogSetCardSummary = CatalogSetSummary &
+  Partial<Pick<CatalogHomepageSetCard, 'availability' | 'tagline'>>;
+
+type CatalogSetCardPriceContextTone =
+  | 'accent'
+  | 'info'
+  | 'neutral'
+  | 'positive'
+  | 'warning';
+
+export interface CatalogSetCardPriceContext {
+  currentPrice: string;
+  merchantSummary: string;
+  pricePositionLabel?: string;
+  pricePositionTone?: CatalogSetCardPriceContextTone;
+  reviewedLabel: string;
+}
 
 function CatalogSetMetadata({
   items,
@@ -25,18 +44,45 @@ function CatalogSetMetadata({
 
 export function CatalogSetCard({
   href,
+  priceContext,
   setSummary,
 }: {
   href?: string;
-  setSummary: CatalogSetSummary;
+  priceContext?: CatalogSetCardPriceContext;
+  setSummary: CatalogSetCardSummary;
 }) {
   return (
     <Surface as="article" className={styles.setCard}>
       <div className={styles.cardHeader}>
-        <Badge tone="accent">{setSummary.theme}</Badge>
+        <div className={styles.cardBadgeRow}>
+          <Badge tone="accent">{setSummary.theme}</Badge>
+          {priceContext?.pricePositionLabel ? (
+            <Badge tone={priceContext.pricePositionTone ?? 'info'}>
+              {priceContext.pricePositionLabel}
+            </Badge>
+          ) : null}
+        </div>
         <h3 className={styles.cardTitle}>{setSummary.name}</h3>
+        <p className={styles.cardTagline}>
+          {setSummary.tagline ?? setSummary.collectorAngle}
+        </p>
       </div>
-      <p className={styles.cardCopy}>{setSummary.collectorAngle}</p>
+      {priceContext ? (
+        <div className={styles.priceBlock}>
+          <p className={styles.priceLabel}>Current reviewed price</p>
+          <p className={styles.priceValue}>{priceContext.currentPrice}</p>
+          <p className={styles.priceMeta}>{priceContext.merchantSummary}</p>
+          <p className={styles.priceMetaSecondary}>{priceContext.reviewedLabel}</p>
+        </div>
+      ) : null}
+      {setSummary.tagline ? (
+        <p className={styles.cardCopy}>{setSummary.collectorAngle}</p>
+      ) : null}
+      {setSummary.availability ? (
+        <p className={styles.availability}>
+          Availability posture: {setSummary.availability}
+        </p>
+      ) : null}
       <CatalogSetMetadata
         items={[
           { label: 'Pieces', value: setSummary.pieces.toLocaleString() },

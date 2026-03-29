@@ -12,6 +12,11 @@ export interface CatalogSetSummary {
   collectorAngle: string;
 }
 
+export interface CatalogHomepageSetCard extends CatalogSetSummary {
+  tagline: string;
+  availability: string;
+}
+
 export interface CatalogSetDetail extends CatalogSetSummary {
   tagline: string;
   availability: string;

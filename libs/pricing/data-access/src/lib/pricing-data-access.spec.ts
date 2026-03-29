@@ -13,6 +13,7 @@ import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
 import {
   buildPriceHistorySummary,
   buildTrackedPriceSummary,
+  getFeaturedSetPriceContext,
   getPriceHistorySummary,
   getPriceHistorySummaryState,
   getPricePanelSnapshot,
@@ -36,6 +37,20 @@ describe('pricing data access', () => {
       lowestAvailabilityLabel: 'In stock',
       lowestMerchantId: 'bol',
       lowestMerchantName: 'bol',
+      merchantCount: 3,
+      observedAt: '2026-03-29T09:00:00.000Z',
+      referencePriceMinor: 49999,
+      deltaMinor: -1000,
+    });
+  });
+
+  test('builds a compact featured-set price context from the current snapshot', () => {
+    expect(getFeaturedSetPriceContext('10316')).toEqual({
+      setId: '10316',
+      currencyCode: 'EUR',
+      headlinePriceMinor: 48999,
+      availabilityLabel: 'In stock',
+      merchantName: 'bol',
       merchantCount: 3,
       observedAt: '2026-03-29T09:00:00.000Z',
       referencePriceMinor: 49999,

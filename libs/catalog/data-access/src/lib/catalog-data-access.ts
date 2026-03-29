@@ -1,4 +1,5 @@
 import {
+  CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetOverlay,
   CatalogSetRecord,
@@ -36,6 +37,16 @@ function toCatalogSetSummary(catalogSetDetail: CatalogSetDetail): CatalogSetSumm
     pieces: catalogSetDetail.pieces,
     priceRange: catalogSetDetail.priceRange,
     collectorAngle: catalogSetDetail.collectorAngle,
+  };
+}
+
+function toCatalogHomepageSetCard(
+  catalogSetDetail: CatalogSetDetail,
+): CatalogHomepageSetCard {
+  return {
+    ...toCatalogSetSummary(catalogSetDetail),
+    tagline: catalogSetDetail.tagline,
+    availability: catalogSetDetail.availability,
   };
 }
 
@@ -136,6 +147,20 @@ export function listHomepageSets(): CatalogSetSummary[] {
       .slice(0, HOMEPAGE_SET_LIMIT)
       .map((canonicalId) => toCatalogSetSummary(getCatalogSetDetailById(canonicalId))),
   ).slice(0, HOMEPAGE_SET_LIMIT);
+}
+
+export function listHomepageSetCards(): CatalogHomepageSetCard[] {
+  return [...catalogSyncManifest.homepageFeaturedSetIds]
+    .slice(0, HOMEPAGE_SET_LIMIT)
+    .map((canonicalId) =>
+      toCatalogHomepageSetCard(getCatalogSetDetailById(canonicalId)),
+    )
+    .sort(
+      (left, right) =>
+        right.releaseYear - left.releaseYear ||
+        left.name.localeCompare(right.name),
+    )
+    .slice(0, HOMEPAGE_SET_LIMIT);
 }
 
 export function listCatalogSetSlugs(): string[] {

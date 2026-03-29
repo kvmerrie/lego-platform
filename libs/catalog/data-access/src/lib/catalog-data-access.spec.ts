@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   getCatalogSetBySlug,
   listCatalogSetSlugs,
+  listHomepageSetCards,
   listCatalogSetSummaries,
   listCatalogThemes,
   listHomepageSets,
@@ -120,6 +121,50 @@ describe('catalog data-access contracts', () => {
         pieces: 6181,
         priceRange: '$499 to $569',
         collectorAngle: 'Prestige display anchor',
+      },
+    ]);
+  });
+
+  test('builds richer homepage card reads with curated availability and tagline context', () => {
+    expect(listHomepageSetCards()).toEqual([
+      {
+        id: '21348',
+        slug: 'dungeons-and-dragons-red-dragons-tale-21348',
+        name: "Dungeons & Dragons: Red Dragon's Tale",
+        theme: 'Ideas',
+        releaseYear: 2024,
+        pieces: 3747,
+        priceRange: '$359 to $409',
+        collectorAngle: 'Crossover audience magnet',
+        tagline:
+          'A community-driven release with rich minifigure storytelling hooks.',
+        availability: 'Strong launch momentum',
+      },
+      {
+        id: '76269',
+        slug: 'avengers-tower-76269',
+        name: 'Avengers Tower',
+        theme: 'Marvel',
+        releaseYear: 2023,
+        pieces: 5202,
+        priceRange: '$449 to $519',
+        collectorAngle: 'Marvel flagship showcase',
+        tagline:
+          'A marquee licensed set with broad household recognizability.',
+        availability: 'Stable with strong seasonal demand',
+      },
+      {
+        id: '10316',
+        slug: 'rivendell-10316',
+        name: 'Rivendell',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 6181,
+        priceRange: '$499 to $569',
+        collectorAngle: 'Prestige display anchor',
+        tagline:
+          'A flagship fantasy build that rewards both display space and patience.',
+        availability: 'Healthy but premium availability',
       },
     ]);
   });

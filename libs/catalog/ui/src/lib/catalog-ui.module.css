@@ -1,11 +1,17 @@
 .setCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-5);
 }
 
 .cardHeader {
   display: grid;
   gap: var(--lego-space-3);
+}
+
+.cardBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
 }
 
 .cardTitle {
@@ -17,11 +23,54 @@
   margin: 0;
 }
 
+.cardTagline {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.45;
+  margin: 0;
+  max-width: 28ch;
+}
+
 .cardCopy,
 .mutedCopy,
 .availability {
   color: var(--lego-text-muted);
   line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.priceBlock {
+  display: grid;
+  gap: var(--lego-space-2);
+  padding: var(--lego-space-4);
+  background: var(--lego-surface-muted);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 92%, transparent);
+  border-radius: var(--lego-radius-md);
+}
+
+.priceLabel,
+.priceMetaSecondary {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.priceValue {
+  color: var(--lego-text);
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.8rem, 4vw, 2.45rem);
+  font-weight: var(--lego-text-role-hero-weight);
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  margin: 0;
+}
+
+.priceMeta {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -99,6 +148,19 @@
 }
 
 @media (min-width: 56rem) {
+  .setCard:first-child .cardTitle {
+    font-size: var(--lego-font-size-2xl);
+  }
+
+  .setCard:first-child .cardTagline {
+    font-size: var(--lego-font-size-lg);
+    max-width: 32ch;
+  }
+
+  .setCard:first-child .priceValue {
+    font-size: clamp(2.2rem, 4vw, 3rem);
+  }
+
   .heroPanel {
     grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.95fr);
     align-items: start;

@@ -7,6 +7,7 @@ import {
   type PriceHistorySummary,
   type PricePanelSnapshot,
   type PricingObservation,
+  type FeaturedSetPriceContext,
   type TrackedPriceSummary,
 } from '@lego-platform/pricing/util';
 import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
@@ -43,6 +44,28 @@ export function getPricePanelSnapshot(
   setId: string,
 ): PricePanelSnapshot | undefined {
   return pricePanelSnapshotBySetId.get(setId);
+}
+
+export function getFeaturedSetPriceContext(
+  setId: string,
+): FeaturedSetPriceContext | undefined {
+  const pricePanelSnapshot = getPricePanelSnapshot(setId);
+
+  if (!pricePanelSnapshot) {
+    return undefined;
+  }
+
+  return {
+    setId: pricePanelSnapshot.setId,
+    currencyCode: pricePanelSnapshot.currencyCode,
+    headlinePriceMinor: pricePanelSnapshot.headlinePriceMinor,
+    referencePriceMinor: pricePanelSnapshot.referencePriceMinor,
+    deltaMinor: pricePanelSnapshot.deltaMinor,
+    merchantName: pricePanelSnapshot.lowestMerchantName,
+    merchantCount: pricePanelSnapshot.merchantCount,
+    availabilityLabel: pricePanelSnapshot.lowestAvailabilityLabel,
+    observedAt: pricePanelSnapshot.observedAt,
+  };
 }
 
 export function listPricingObservations(setId: string): PricingObservation[] {

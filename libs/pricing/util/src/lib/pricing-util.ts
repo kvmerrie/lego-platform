@@ -40,6 +40,18 @@ export interface PricePanelSnapshot {
   setId: string;
 }
 
+export interface FeaturedSetPriceContext {
+  availabilityLabel?: string;
+  currencyCode: PricingCurrencyCode;
+  deltaMinor?: number;
+  headlinePriceMinor: number;
+  merchantCount: number;
+  merchantName: string;
+  observedAt: string;
+  referencePriceMinor?: number;
+  setId: string;
+}
+
 export interface PricingSyncManifest {
   generatedAt: string;
   notes?: string;
