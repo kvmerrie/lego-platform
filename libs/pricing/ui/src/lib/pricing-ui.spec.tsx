@@ -43,6 +43,7 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('30-day Dutch price history');
     expect(markup).toContain('30-day low');
     expect(markup).toContain('30-day high');
+    expect(markup).toContain('recent 30-day window');
   });
 
   it('renders a calm building state when only one daily history point exists', () => {
@@ -71,6 +72,9 @@ describe('pricing ui history surfaces', () => {
     expect(markup).not.toContain('1 daily points');
     expect(markup).toContain('First tracked daily price');
     expect(markup).toContain('Recent range building');
+    expect(markup).toContain(
+      'The tracked summary above can already use this first point.',
+    );
   });
 
   it('renders a compact empty state when history is not available yet', () => {
@@ -78,7 +82,7 @@ describe('pricing ui history surfaces', () => {
 
     expect(markup).toContain('30-day price history');
     expect(markup).toContain(
-      'Tracked history has not started for this set yet. Current reviewed pricing may still appear above while the first daily point is being recorded.',
+      'Recent 30-day history is not available for this set yet. If the set is in the commerce-enabled slice, current reviewed pricing may still appear above while the first daily point is being recorded.',
     );
   });
 
@@ -124,18 +128,21 @@ describe('pricing ui history surfaces', () => {
       </PriceSummaryCard>,
     );
 
-    expect(markup).toContain('Recent 30-day view');
+    expect(markup).not.toContain('Recent 30-day view');
+    expect(markup).toContain('Recent 30-day history');
     expect(markup).toContain('30-day low');
     expect(markup).toContain('30-day high');
     expect(markup).toContain('Current vs average');
     expect(markup).toContain('below 30-day average');
     expect(markup).toContain('Recent 30-day average:');
-    expect(markup).toContain('Tracked price range');
+    expect(markup).toContain('latest stored 30-day window');
+    expect(markup).toContain('Full tracked history');
     expect(markup).toContain('Lowest tracked price');
     expect(markup).toContain('Highest tracked price');
     expect(markup).toContain('Tracked since');
     expect(markup).toContain('Current vs tracked low');
     expect(markup).toContain('Current vs tracked high');
+    expect(markup).toContain('full tracked range');
   });
 
   it('renders a calm fallback when only one history point exists so far', () => {
@@ -155,11 +162,11 @@ describe('pricing ui history surfaces', () => {
       />,
     );
 
-    expect(markup).toContain('Recent 30-day view');
+    expect(markup).toContain('Recent 30-day history');
     expect(markup).toContain(
-      'Tracked history is building. One reviewed daily point is stored so far, so recent 30-day comparisons will appear after the next reviewed point.',
+      'History is building. One reviewed daily point is stored so far, so recent 30-day comparisons will appear after the next reviewed point.',
     );
-    expect(markup).toContain('Tracked price range');
+    expect(markup).toContain('Full tracked history');
     expect(markup).toContain('Matches tracked low');
     expect(markup).toContain('Matches tracked high');
     expect(markup).toContain(

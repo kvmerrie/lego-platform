@@ -54,15 +54,18 @@ export function AffiliateOfferCard({
             <Badge tone="info">New condition</Badge>
           </div>
         </div>
-        <p className={styles.offerPrice}>
-          {formatAffiliatePrice(
-            affiliateOffer.totalPriceMinor,
-            affiliateOffer.currencyCode,
-          )}
-        </p>
+        <div className={styles.offerPriceBlock}>
+          <p className={styles.offerPriceLabel}>Reviewed offer</p>
+          <p className={styles.offerPrice}>
+            {formatAffiliatePrice(
+              affiliateOffer.totalPriceMinor,
+              affiliateOffer.currencyCode,
+            )}
+          </p>
+        </div>
       </div>
       <p className={styles.offerFreshness}>
-        Reviewed {formatObservedAt(affiliateOffer.observedAt)}
+        Offer page reviewed {formatObservedAt(affiliateOffer.observedAt)}
       </p>
       {affiliateOffer.perks ? (
         <p className={styles.offerPerks}>{affiliateOffer.perks}</p>
@@ -99,7 +102,7 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description="Reviewed Dutch merchant pages from the current allowlist."
+        description="Reviewed Dutch merchant pages from the current allowlist. Use these as reviewed offer snapshots, and use the price panel for the calmest benchmark and history context."
         eyebrow="Buy guidance"
         title="Current Dutch offers"
       />
@@ -139,8 +142,9 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
         <Badge tone="info">New condition</Badge>
       </div>
       <p className={styles.unavailableCopy}>
-        Affiliate offers are only published for the small commerce-enabled set
-        allowlist right now.
+        Reviewed offers are only published for the small commerce-enabled set
+        allowlist right now. If this set joins the slice later, the price panel
+        and offer list will appear together.
       </p>
     </Surface>
   );

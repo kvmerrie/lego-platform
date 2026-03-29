@@ -41,6 +41,19 @@
   gap: var(--lego-space-2);
 }
 
+.offerPriceBlock {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.offerPriceLabel {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
 .offerTitle {
   font-family: var(--lego-font-family-heading);
   font-size: var(--lego-text-role-card-title-size);

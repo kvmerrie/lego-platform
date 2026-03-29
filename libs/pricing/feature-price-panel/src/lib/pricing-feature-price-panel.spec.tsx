@@ -12,6 +12,9 @@ describe('PricingFeaturePricePanel', () => {
     expect(markup).toContain('489,99');
     expect(markup).toContain('Current reviewed price');
     expect(markup).toContain('Lowest reviewed offer from bol');
+    expect(markup).toContain(
+      'Reference price is a local Dutch benchmark for comparing the reviewed offer snapshot above.',
+    );
     expect(markup).toContain('Reviewed');
   });
 
@@ -22,8 +25,9 @@ describe('PricingFeaturePricePanel', () => {
 
     expect(markup).toContain('Current Dutch market price');
     expect(markup).toContain(
-      'not in the current reviewed Dutch commerce slice',
+      'outside the current reviewed Dutch commerce slice',
     );
     expect(markup).toContain('Collector browsing still works normally');
+    expect(markup).toContain('recent 30-day history');
   });
 });

@@ -10,6 +10,8 @@ describe('AffiliateFeatureOffers', () => {
 
     expect(markup).toContain('Current Dutch offers');
     expect(markup).toContain('LEGO NL');
+    expect(markup).toContain('Reviewed offer');
+    expect(markup).toContain('Offer page reviewed');
     expect(markup).toContain('Shop at LEGO NL');
     expect(markup).toContain('Direct official merchant link.');
   });
@@ -21,5 +23,8 @@ describe('AffiliateFeatureOffers', () => {
 
     expect(markup).toContain('Current Dutch offers');
     expect(markup).toContain('does not have a reviewed Dutch offer list');
+    expect(markup).toContain(
+      'Reviewed offers are only published for the small commerce-enabled set allowlist right now.',
+    );
   });
 });
