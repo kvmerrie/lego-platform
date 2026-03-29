@@ -11,10 +11,13 @@ import {
 
 let browserSupabaseClient: SupabaseClient | undefined;
 let hasWarnedAboutMissingBrowserSupabaseConfig = false;
+const browserAccountDataChangeListeners = new Set<() => void>();
 
 export type BrowserSupabaseAuthChangeListener = (
   authChangeEvent: AuthChangeEvent,
 ) => void;
+
+export type BrowserAccountDataChangeListener = () => void;
 
 export function createBrowserSupabaseClient(): SupabaseClient {
   const browserSupabaseConfig = getBrowserSupabaseConfig();
@@ -118,7 +121,24 @@ export async function signOutSupabaseBrowserSession() {
   return getBrowserSupabaseClient().auth.signOut();
 }
 
+export function notifyBrowserAccountDataChanged(): void {
+  browserAccountDataChangeListeners.forEach((listener) => {
+    listener();
+  });
+}
+
+export function subscribeToBrowserAccountDataChanges(
+  listener: BrowserAccountDataChangeListener,
+): () => void {
+  browserAccountDataChangeListeners.add(listener);
+
+  return () => {
+    browserAccountDataChangeListeners.delete(listener);
+  };
+}
+
 export function resetBrowserSupabaseClientForTests() {
   browserSupabaseClient = undefined;
   hasWarnedAboutMissingBrowserSupabaseConfig = false;
+  browserAccountDataChangeListeners.clear();
 }

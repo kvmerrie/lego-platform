@@ -4,9 +4,13 @@ import { addOwnedSet } from './collection-data-access';
 
 vi.mock('@lego-platform/shared/data-access-auth', () => ({
   buildSupabaseAuthorizationHeaders: vi.fn(),
+  notifyBrowserAccountDataChanged: vi.fn(),
 }));
 
-import { buildSupabaseAuthorizationHeaders } from '@lego-platform/shared/data-access-auth';
+import {
+  buildSupabaseAuthorizationHeaders,
+  notifyBrowserAccountDataChanged,
+} from '@lego-platform/shared/data-access-auth';
 
 describe('collection data access', () => {
   beforeEach(() => {
@@ -55,6 +59,7 @@ describe('collection data access', () => {
     expect(new Headers(requestInit.headers).get('Authorization')).toBe(
       'Bearer browser-token',
     );
+    expect(notifyBrowserAccountDataChanged).toHaveBeenCalledTimes(1);
   });
 
   test('returns a sign-in-required error for anonymous owned writes', async () => {

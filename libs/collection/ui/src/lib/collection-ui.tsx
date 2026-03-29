@@ -70,14 +70,14 @@ export function OwnedSetToggleCard({
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Checking owned status for this set.'
+    ? 'Syncing owned state for this set.'
     : isUnavailable
       ? 'Owned status is unavailable right now.'
       : isOwned
         ? 'This set is already in your owned ledger.'
         : 'Mark this set as owned when it is part of your collection.';
   const description = isLoading
-    ? `Loading the current owned flag for set ${setId}.`
+    ? `Checking whether set ${setId} is already saved in your owned ledger.`
     : isUnavailable
       ? `Set ${setId} cannot be updated until the owned-state query succeeds.`
       : `Set ${setId} keeps an independent owned flag, separate from wanted state.`;
@@ -94,7 +94,7 @@ export function OwnedSetToggleCard({
         ? 'positive'
         : 'neutral';
   const statusLabel = isLoading
-    ? 'Loading state'
+    ? 'Syncing'
     : isUnavailable
       ? 'State unavailable'
       : isOwned
@@ -127,7 +127,11 @@ export function OwnedSetToggleCard({
         type="button"
         onClick={onToggle}
       >
-        {isLoading ? 'Checking owned state...' : isPending ? 'Saving...' : actionLabel}
+        {isLoading
+          ? 'Syncing owned state...'
+          : isPending
+            ? 'Saving...'
+            : actionLabel}
       </Button>
     </Surface>
   );

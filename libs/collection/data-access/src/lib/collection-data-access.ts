@@ -5,7 +5,10 @@ import {
   OwnedSetState,
 } from '@lego-platform/collection/util';
 import { apiPaths } from '@lego-platform/shared/config';
-import { buildSupabaseAuthorizationHeaders } from '@lego-platform/shared/data-access-auth';
+import {
+  buildSupabaseAuthorizationHeaders,
+  notifyBrowserAccountDataChanged,
+} from '@lego-platform/shared/data-access-auth';
 import { readStringArrayProperty } from '@lego-platform/shared/util';
 
 const collectionSnapshot: CollectionDashboardSnapshot = {
@@ -104,7 +107,11 @@ export async function addOwnedSet(setId: string): Promise<OwnedSetState> {
     throw new Error('Unable to mark the set as owned.');
   }
 
-  return (await response.json()) as OwnedSetState;
+  const ownedSetState = (await response.json()) as OwnedSetState;
+
+  notifyBrowserAccountDataChanged();
+
+  return ownedSetState;
 }
 
 export async function removeOwnedSet(setId: string): Promise<OwnedSetState> {
@@ -122,5 +129,9 @@ export async function removeOwnedSet(setId: string): Promise<OwnedSetState> {
     throw new Error('Unable to remove the set from owned items.');
   }
 
-  return (await response.json()) as OwnedSetState;
+  const ownedSetState = (await response.json()) as OwnedSetState;
+
+  notifyBrowserAccountDataChanged();
+
+  return ownedSetState;
 }

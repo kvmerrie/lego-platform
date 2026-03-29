@@ -38,14 +38,14 @@ export function WantedSetToggleCard({
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Checking wanted status for this set.'
+    ? 'Syncing wanted state for this set.'
     : isUnavailable
       ? 'Wanted status is unavailable right now.'
       : isWanted
         ? 'This set is currently on your wanted list.'
         : 'Keep this set on your radar for a future purchase.';
   const description = isLoading
-    ? `Loading the current wanted flag for set ${setId}.`
+    ? `Checking whether set ${setId} is already saved to your wanted list.`
     : isUnavailable
       ? `Set ${setId} cannot be updated until the wanted-state query succeeds.`
       : `Set ${setId} keeps its wanted flag independently from owned state.`;
@@ -62,7 +62,7 @@ export function WantedSetToggleCard({
         ? 'accent'
         : 'neutral';
   const statusLabel = isLoading
-    ? 'Loading state'
+    ? 'Syncing'
     : isUnavailable
       ? 'State unavailable'
       : isWanted
@@ -95,7 +95,11 @@ export function WantedSetToggleCard({
         type="button"
         onClick={onToggle}
       >
-        {isLoading ? 'Checking wanted state...' : isPending ? 'Saving...' : actionLabel}
+        {isLoading
+          ? 'Syncing wanted state...'
+          : isPending
+            ? 'Saving...'
+            : actionLabel}
       </Button>
     </Surface>
   );

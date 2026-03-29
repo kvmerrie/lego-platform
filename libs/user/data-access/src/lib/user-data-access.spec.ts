@@ -13,15 +13,19 @@ import type { CollectorProfile, UserSession } from '@lego-platform/user/util';
 
 vi.mock('@lego-platform/shared/data-access-auth', () => ({
   buildSupabaseAuthorizationHeaders: vi.fn(),
+  notifyBrowserAccountDataChanged: vi.fn(),
   signInWithSupabaseOtp: vi.fn(),
   signOutSupabaseBrowserSession: vi.fn(),
+  subscribeToBrowserAccountDataChanges: vi.fn(),
   subscribeToSupabaseAuthChanges: vi.fn(),
 }));
 
 import {
   buildSupabaseAuthorizationHeaders,
+  notifyBrowserAccountDataChanged,
   signInWithSupabaseOtp,
   signOutSupabaseBrowserSession,
+  subscribeToBrowserAccountDataChanges,
   subscribeToSupabaseAuthChanges,
 } from '@lego-platform/shared/data-access-auth';
 
@@ -113,6 +117,34 @@ describe('user data access', () => {
     ).rejects.toThrow('Email sign-in is not available in this environment yet.');
   });
 
+  test('returns a calmer resend message when Supabase rate-limits sign-in emails', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.stubGlobal('window', {
+      location: {
+        href: 'http://localhost:3000/sets/rivendell-10316',
+      },
+    });
+    vi.mocked(signInWithSupabaseOtp).mockResolvedValue({
+      data: {
+        session: null,
+        user: null,
+      },
+      error: {
+        code: 'over_email_send_rate_limit',
+        message: 'For security purposes, you can only request this after 60 seconds.',
+      },
+    });
+
+    await expect(
+      requestUserSignIn({
+        email: 'collector@example.com',
+      }),
+    ).rejects.toThrow(
+      'A sign-in link was sent recently. Wait a minute, then try again.',
+    );
+  });
+
   test('signs out through the shared browser auth utility', async () => {
     vi.mocked(signOutSupabaseBrowserSession).mockResolvedValue({
       error: null,
@@ -153,7 +185,6 @@ describe('user data access', () => {
       tier: 'Founding Collector',
       email: 'alex@example.test',
     };
-    const onAccountChange = vi.fn();
 
     vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
       new Headers({
@@ -169,34 +200,28 @@ describe('user data access', () => {
         },
       }),
     );
-    const unsubscribe = subscribeToUserAccountChanges(onAccountChange);
+    const updatedCollectorProfile = await updateCurrentUserProfile({
+      displayName: 'Alex Rivera',
+      collectorHandle: ' Alex Rivera ',
+      location: 'Rotterdam',
+      collectionFocus: 'Castle icons and Ideas cabins',
+    });
 
-    try {
-      const updatedCollectorProfile = await updateCurrentUserProfile({
-        displayName: 'Alex Rivera',
-        collectorHandle: ' Alex Rivera ',
-        location: 'Rotterdam',
-        collectionFocus: 'Castle icons and Ideas cabins',
-      });
-
-      expect(updatedCollectorProfile).toEqual(collectorProfile);
-      expect(fetchMock).toHaveBeenCalledWith(
-        apiPaths.profile,
-        expect.objectContaining({
-          body: JSON.stringify({
-            displayName: 'Alex Rivera',
-            collectorHandle: 'alex-rivera',
-            location: 'Rotterdam',
-            collectionFocus: 'Castle icons and Ideas cabins',
-          }),
-          headers: expect.any(Headers),
-          method: 'PATCH',
+    expect(updatedCollectorProfile).toEqual(collectorProfile);
+    expect(fetchMock).toHaveBeenCalledWith(
+      apiPaths.profile,
+      expect.objectContaining({
+        body: JSON.stringify({
+          displayName: 'Alex Rivera',
+          collectorHandle: 'alex-rivera',
+          location: 'Rotterdam',
+          collectionFocus: 'Castle icons and Ideas cabins',
         }),
-      );
-      expect(onAccountChange).toHaveBeenCalledTimes(1);
-    } finally {
-      unsubscribe();
-    }
+        headers: expect.any(Headers),
+        method: 'PATCH',
+      }),
+    );
+    expect(notifyBrowserAccountDataChanged).toHaveBeenCalledTimes(1);
   });
 
   test('returns a readable conflict error when the collector handle is already taken', async () => {
@@ -243,6 +268,20 @@ describe('user data access', () => {
     const nextUnsubscribe = subscribeToUserAuthChanges(onChange);
 
     expect(subscribeToSupabaseAuthChanges).toHaveBeenCalledTimes(1);
+    expect(nextUnsubscribe).toBe(unsubscribe);
+  });
+
+  test('delegates account-change subscriptions through the shared browser notifier', () => {
+    const onChange = vi.fn();
+    const unsubscribe = vi.fn();
+
+    vi.mocked(subscribeToBrowserAccountDataChanges).mockImplementation(
+      () => unsubscribe,
+    );
+
+    const nextUnsubscribe = subscribeToUserAccountChanges(onChange);
+
+    expect(subscribeToBrowserAccountDataChanges).toHaveBeenCalledWith(onChange);
     expect(nextUnsubscribe).toBe(unsubscribe);
   });
 });

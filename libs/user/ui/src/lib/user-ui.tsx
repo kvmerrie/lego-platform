@@ -76,13 +76,13 @@ export function UserSessionCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading the current collector session and set-state ledger."
+            description="Syncing your signed-in account and saved owned or wanted state for this set."
             eyebrow="Session"
-            title="Checking collector session"
+            title="Syncing collector session"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
-          loading
+          syncing
         </Badge>
       </Surface>
     );
@@ -132,7 +132,11 @@ export function UserSessionCard({
                 tone="accent"
                 type="submit"
               >
-                {isAuthActionPending ? 'Sending sign-in link...' : 'Send sign-in link'}
+                {isAuthActionPending
+                  ? 'Sending sign-in link...'
+                  : authStatusMessage
+                    ? 'Send another sign-in link'
+                    : 'Send sign-in link'}
               </Button>
               {!isAuthAvailable ? (
                 <Badge tone="warning">sign-in unavailable</Badge>
@@ -255,13 +259,13 @@ export function UserProfileEditorCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading the signed-in collector profile and editable identity details."
+            description="Syncing the editable collector profile that follows your signed-in session."
             eyebrow="Profile"
-            title="Preparing your collector profile"
+            title="Syncing collector profile"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
-          loading
+          syncing
         </Badge>
       </Surface>
     );

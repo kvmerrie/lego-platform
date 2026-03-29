@@ -2,8 +2,10 @@ import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
 import { apiPaths } from '@lego-platform/shared/config';
 import {
   buildSupabaseAuthorizationHeaders,
+  notifyBrowserAccountDataChanged,
   signInWithSupabaseOtp,
   signOutSupabaseBrowserSession,
+  subscribeToBrowserAccountDataChanges,
   subscribeToSupabaseAuthChanges,
 } from '@lego-platform/shared/data-access-auth';
 import {
@@ -18,8 +20,6 @@ import type {
   UserSession,
 } from '@lego-platform/user/util';
 
-const userAccountChangeListeners = new Set<() => void>();
-
 export async function getUserSession(): Promise<UserSession> {
   const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(apiPaths.session, {
@@ -32,12 +32,6 @@ export async function getUserSession(): Promise<UserSession> {
   }
 
   return (await response.json()) as UserSession;
-}
-
-function notifyUserAccountChanged() {
-  userAccountChangeListeners.forEach((listener) => {
-    listener();
-  });
 }
 
 function getDefaultEmailRedirectUrl(): string | undefined {
@@ -90,6 +84,18 @@ export async function requestUserSignIn(options: {
   });
 
   if (error) {
+    const authErrorText = `${error.code ?? ''} ${error.message ?? ''}`.toLowerCase();
+
+    if (
+      authErrorText.includes('rate') ||
+      authErrorText.includes('security purposes') ||
+      authErrorText.includes('too many')
+    ) {
+      throw new Error(
+        'A sign-in link was sent recently. Wait a minute, then try again.',
+      );
+    }
+
     throw new Error('Unable to send the sign-in link right now.');
   }
 }
@@ -109,11 +115,7 @@ export function subscribeToUserAuthChanges(onChange: () => void): () => void {
 }
 
 export function subscribeToUserAccountChanges(onChange: () => void): () => void {
-  userAccountChangeListeners.add(onChange);
-
-  return () => {
-    userAccountChangeListeners.delete(onChange);
-  };
+  return subscribeToBrowserAccountDataChanges(onChange);
 }
 
 export async function updateCurrentUserProfile(
@@ -153,7 +155,7 @@ export async function updateCurrentUserProfile(
 
   const collectorProfile = (await response.json()) as CollectorProfile;
 
-  notifyUserAccountChanged();
+  notifyBrowserAccountDataChanged();
 
   return collectorProfile;
 }

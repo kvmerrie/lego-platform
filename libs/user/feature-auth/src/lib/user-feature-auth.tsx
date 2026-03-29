@@ -97,13 +97,14 @@ export function UserFeatureAuth() {
 
     setIsAuthActionPending(true);
     setErrorMessage(undefined);
+    setAuthStatusMessage(undefined);
 
     try {
       await requestUserSignIn({
         email: nextEmail,
       });
       setAuthStatusMessage(
-        `Check ${nextEmail} for your sign-in link. After you finish sign-in, this card will refresh automatically.`,
+        `Check ${nextEmail} for your sign-in link. If it does not arrive right away, wait a little before requesting another one.`,
       );
     } catch (error) {
       setErrorMessage(
@@ -144,7 +145,11 @@ export function UserFeatureAuth() {
       isAuthActionPending={isAuthActionPending}
       isAuthAvailable={authAvailable}
       isLoading={isLoading}
-      onAuthEmailChange={setAuthEmail}
+      onAuthEmailChange={(value) => {
+        setAuthEmail(value);
+        setErrorMessage(undefined);
+        setAuthStatusMessage(undefined);
+      }}
       onSignIn={handleSignIn}
       onSignOut={handleSignOut}
       userSession={userSession}

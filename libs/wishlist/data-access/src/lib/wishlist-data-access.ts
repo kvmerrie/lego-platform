@@ -4,7 +4,10 @@ import {
   WishlistOverview,
 } from '@lego-platform/wishlist/util';
 import { apiPaths } from '@lego-platform/shared/config';
-import { buildSupabaseAuthorizationHeaders } from '@lego-platform/shared/data-access-auth';
+import {
+  buildSupabaseAuthorizationHeaders,
+  notifyBrowserAccountDataChanged,
+} from '@lego-platform/shared/data-access-auth';
 import { readStringArrayProperty } from '@lego-platform/shared/util';
 
 const wishlistOverview: WishlistOverview = {
@@ -82,7 +85,11 @@ export async function addWantedSet(setId: string): Promise<WantedSetState> {
     throw new Error('Unable to mark the set as wanted.');
   }
 
-  return (await response.json()) as WantedSetState;
+  const wantedSetState = (await response.json()) as WantedSetState;
+
+  notifyBrowserAccountDataChanged();
+
+  return wantedSetState;
 }
 
 export async function removeWantedSet(setId: string): Promise<WantedSetState> {
@@ -100,5 +107,9 @@ export async function removeWantedSet(setId: string): Promise<WantedSetState> {
     throw new Error('Unable to remove the set from wanted items.');
   }
 
-  return (await response.json()) as WantedSetState;
+  const wantedSetState = (await response.json()) as WantedSetState;
+
+  notifyBrowserAccountDataChanged();
+
+  return wantedSetState;
 }
