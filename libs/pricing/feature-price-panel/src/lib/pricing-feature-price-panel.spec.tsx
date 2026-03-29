@@ -10,7 +10,8 @@ describe('PricingFeaturePricePanel', () => {
 
     expect(markup).toContain('Current Dutch market price');
     expect(markup).toContain('489,99');
-    expect(markup).toContain('Lowest current offer from bol');
+    expect(markup).toContain('Current reviewed price');
+    expect(markup).toContain('Lowest reviewed offer from bol');
     expect(markup).toContain('Reviewed');
   });
 
@@ -21,7 +22,8 @@ describe('PricingFeaturePricePanel', () => {
 
     expect(markup).toContain('Current Dutch market price');
     expect(markup).toContain(
-      'outside the current reviewed Dutch pricing slice',
+      'not in the current reviewed Dutch commerce slice',
     );
+    expect(markup).toContain('Collector browsing still works normally');
   });
 });

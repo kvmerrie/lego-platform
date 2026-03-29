@@ -65,10 +65,12 @@ describe('pricing ui history surfaces', () => {
     );
 
     expect(markup).toContain('30-day price history');
-    expect(markup).toContain('History is building');
+    expect(markup).toContain('Tracked history has started');
+    expect(markup).toContain('History building');
     expect(markup).toContain('1 daily point');
     expect(markup).not.toContain('1 daily points');
-    expect(markup).toContain('Latest recorded price');
+    expect(markup).toContain('First tracked daily price');
+    expect(markup).toContain('Recent range building');
   });
 
   it('renders a compact empty state when history is not available yet', () => {
@@ -76,7 +78,7 @@ describe('pricing ui history surfaces', () => {
 
     expect(markup).toContain('30-day price history');
     expect(markup).toContain(
-      'History is building. No reviewed daily point has been stored for this set yet.',
+      'Tracked history has not started for this set yet. Current reviewed pricing may still appear above while the first daily point is being recorded.',
     );
   });
 
@@ -122,12 +124,12 @@ describe('pricing ui history surfaces', () => {
       </PriceSummaryCard>,
     );
 
-    expect(markup).toContain('30-day summary');
+    expect(markup).toContain('Recent 30-day view');
     expect(markup).toContain('30-day low');
     expect(markup).toContain('30-day high');
     expect(markup).toContain('Current vs average');
     expect(markup).toContain('below 30-day average');
-    expect(markup).toContain('30-day average:');
+    expect(markup).toContain('Recent 30-day average:');
     expect(markup).toContain('Tracked price range');
     expect(markup).toContain('Lowest tracked price');
     expect(markup).toContain('Highest tracked price');
@@ -153,12 +155,15 @@ describe('pricing ui history surfaces', () => {
       />,
     );
 
-    expect(markup).toContain('30-day summary');
+    expect(markup).toContain('Recent 30-day view');
     expect(markup).toContain(
-      'History is building. One daily point has been recorded so far, so 30-day range and average comparisons will appear after the next reviewed point.',
+      'Tracked history is building. One reviewed daily point is stored so far, so recent 30-day comparisons will appear after the next reviewed point.',
     );
     expect(markup).toContain('Tracked price range');
     expect(markup).toContain('Matches tracked low');
     expect(markup).toContain('Matches tracked high');
+    expect(markup).toContain(
+      'Tracked history started with the first reviewed daily point for this set.',
+    );
   });
 });
