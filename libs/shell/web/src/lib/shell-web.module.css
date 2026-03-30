@@ -123,12 +123,17 @@
   background: transparent;
   border: var(--lego-border-width-1) solid var(--lego-border-subtle);
   border-radius: var(--lego-radius-pill);
-  display: inline-flex;
+  display: grid;
   gap: 0.55rem;
-  max-width: min(17rem, calc(100vw - 11rem));
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  inline-size: min(14.5rem, calc(100vw - 10.75rem));
   min-height: 2.5rem;
   min-width: 0;
   padding: 0.28rem 0.34rem 0.28rem 0.72rem;
+}
+
+.accountStatus[aria-busy='true'] {
+  opacity: 0.92;
 }
 
 .statusDot {
@@ -166,6 +171,18 @@
 .accountActionButton {
   flex: 0 0 auto;
   min-height: 2rem;
+  min-width: 4.75rem;
+  justify-content: center;
+}
+
+.accountActionPlaceholder {
+  background: color-mix(in srgb, var(--lego-surface-muted) 88%, white 12%);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 78%, transparent);
+  border-radius: var(--lego-radius-pill);
+  display: inline-flex;
+  height: 2rem;
+  min-width: 4.75rem;
 }
 
 .mobileMenu {

@@ -31,7 +31,8 @@ export function ShellWebAccountStatus({
   );
   const [statusMessage, setStatusMessage] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAuthActionPending, setIsAuthActionPending] = useState(false);
   const isMountedRef = useRef(true);
   const latestUserSessionRef = useRef<UserSession>(createInitialUserSession());
@@ -42,36 +43,46 @@ export function ShellWebAccountStatus({
     setUserSession(nextUserSession);
   }, []);
 
-  const loadUserSession = useCallback(async () => {
-    try {
-      const nextUserSession = await getUserSession();
-
-      if (!isMountedRef.current) {
-        return;
+  const loadUserSession = useCallback(
+    async ({
+      isBackgroundRefresh = false,
+    }: { isBackgroundRefresh?: boolean } = {}) => {
+      if (isBackgroundRefresh && isMountedRef.current) {
+        setIsRefreshing(true);
       }
 
-      applyUserSession(nextUserSession);
-      setErrorMessage(undefined);
+      try {
+        const nextUserSession = await getUserSession();
 
-      if (nextUserSession.state === 'authenticated') {
-        setStatusMessage(undefined);
-      }
-    } catch {
-      if (!isMountedRef.current) {
-        return;
-      }
+        if (!isMountedRef.current) {
+          return;
+        }
 
-      if (latestUserSessionRef.current.state === 'anonymous') {
-        applyUserSession(createAnonymousUserSession());
-      }
+        applyUserSession(nextUserSession);
+        setErrorMessage(undefined);
 
-      setErrorMessage('Unable to refresh collector status right now.');
-    } finally {
-      if (isMountedRef.current) {
-        setIsLoading(false);
+        if (nextUserSession.state === 'authenticated') {
+          setStatusMessage(undefined);
+        }
+      } catch {
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        if (latestUserSessionRef.current.state === 'anonymous') {
+          applyUserSession(createAnonymousUserSession());
+        }
+
+        setErrorMessage('Unable to refresh collector status right now.');
+      } finally {
+        if (isMountedRef.current) {
+          setIsBootstrapping(false);
+          setIsRefreshing(false);
+        }
       }
-    }
-  }, [applyUserSession]);
+    },
+    [applyUserSession],
+  );
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -87,15 +98,14 @@ export function ShellWebAccountStatus({
         return;
       }
 
-      setIsLoading(true);
-      void loadUserSession();
+      void loadUserSession({ isBackgroundRefresh: true });
     });
     const unsubscribeAccount = subscribeToUserAccountChanges(() => {
       if (!isMountedRef.current) {
         return;
       }
 
-      void loadUserSession();
+      void loadUserSession({ isBackgroundRefresh: true });
     });
 
     return () => {
@@ -119,8 +129,7 @@ export function ShellWebAccountStatus({
       setStatusMessage(
         'Signed out. Your private saves will be here when you return.',
       );
-      setIsLoading(true);
-      await loadUserSession();
+      await loadUserSession({ isBackgroundRefresh: true });
     } catch (error) {
       if (!isMountedRef.current) {
         return;
@@ -138,14 +147,15 @@ export function ShellWebAccountStatus({
     }
   }
 
-  if (isLoading) {
+  if (isBootstrapping) {
     return variant === 'header' ? (
-      <div className={styles.accountStatus} aria-live="polite">
+      <div aria-busy="true" aria-live="polite" className={styles.accountStatus}>
         <span
           aria-hidden="true"
           className={`${styles.statusDot} ${styles.statusDotInfo}`}
         />
         <span className={styles.accountStatusText}>Checking</span>
+        <span aria-hidden="true" className={styles.accountActionPlaceholder} />
       </div>
     ) : (
       <div className={styles.menuAccountStatus} aria-live="polite">
@@ -156,7 +166,10 @@ export function ShellWebAccountStatus({
 
   if (!isAuthenticatedSession(userSession)) {
     return variant === 'header' ? (
-      <div className={styles.accountStatus}>
+      <div
+        aria-busy={isRefreshing || undefined}
+        className={styles.accountStatus}
+      >
         <span
           aria-hidden="true"
           className={`${styles.statusDot} ${styles.statusDotWarning}`}
@@ -196,7 +209,7 @@ export function ShellWebAccountStatus({
   }
 
   return variant === 'header' ? (
-    <div className={styles.accountStatus}>
+    <div aria-busy={isRefreshing || undefined} className={styles.accountStatus}>
       <span
         aria-hidden="true"
         className={`${styles.statusDot} ${styles.statusDotPositive}`}
