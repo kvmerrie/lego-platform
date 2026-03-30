@@ -49,6 +49,25 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - Take inspiration from the quality bar of `lego.com`, but do not clone it.
 - Accessibility, consistency, and performance are mandatory.
 
+## Product Tone And Voice
+
+- Product copy should feel clear, human, calm, and confident.
+- The brand should reflect imagination, creativity, fun, learning, caring, and quality without becoming fluffy or childish.
+- Write like a thoughtful collector guide: warm, practical, and slightly playful when it helps clarity.
+- Favor concrete language that explains what the user can do, what happened, and what comes next.
+- Keep trust high: be explicit about what is reviewed, tracked, private, public, available, unavailable, or still building.
+- Prefer short, product-shaped phrasing over corporate or marketing-heavy language.
+- When in doubt, choose clarity first, charm second.
+
+Short examples:
+
+- Avoid: `Optimize your collection management workflow`
+- Prefer: `Keep track of what you own and what you still want`
+- Avoid: `Pricing intelligence is unavailable at this time`
+- Prefer: `Reviewed pricing is not published for this set yet`
+- Avoid: `Unlock premium personalization`
+- Prefer: `Sign in to save your private collector state`
+
 ## Content And Data Guidance
 
 - Contentful is only for editorial and page-builder use cases.
