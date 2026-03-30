@@ -29,38 +29,49 @@
 }
 
 .setVisual {
-  align-items: center;
-  overflow: hidden;
+  align-items: stretch;
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 82%, transparent);
   border-radius: var(--lego-radius-md);
   background: var(--lego-surface-muted);
   display: grid;
-  justify-items: center;
+  overflow: hidden;
   min-height: 12rem;
-  padding: var(--lego-space-3);
-  place-items: center;
 }
 
 .cardVisual {
-  aspect-ratio: 1.05;
+  aspect-ratio: 1 / 1.08;
 }
 
 .heroVisual {
-  aspect-ratio: 1;
-  min-height: 17.5rem;
+  aspect-ratio: 1 / 1.02;
+  min-height: 18.5rem;
+}
+
+.visualMedia {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
   padding: var(--lego-space-4);
+  width: 100%;
+}
+
+.heroVisual .visualMedia {
+  padding: clamp(1.25rem, 1rem + 1vw, 2rem);
 }
 
 .setImage {
   display: block;
-  height: auto;
-  margin: 0 auto;
-  max-height: 100%;
-  max-width: 100%;
+  height: 100%;
+  margin: 0;
+  max-height: none;
+  max-width: none;
   object-fit: contain;
   object-position: center;
-  width: auto;
+  width: 100%;
 }
 
 .visualFallback {
@@ -445,7 +456,7 @@
   }
 
   .heroVisual {
-    min-height: 20rem;
+    min-height: 21.5rem;
   }
 
   .supportingRow {

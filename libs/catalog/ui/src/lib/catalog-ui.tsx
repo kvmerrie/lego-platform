@@ -55,13 +55,15 @@ function CatalogSetVisual({
   if (imageUrl) {
     return (
       <div className={visualClassName}>
-        <img
-          alt={`${name} set`}
-          className={styles.setImage}
-          decoding="async"
-          loading={variant === 'hero' ? 'eager' : 'lazy'}
-          src={imageUrl}
-        />
+        <div className={styles.visualMedia}>
+          <img
+            alt={`${name} set`}
+            className={styles.setImage}
+            decoding="async"
+            loading={variant === 'hero' ? 'eager' : 'lazy'}
+            src={imageUrl}
+          />
+        </div>
       </div>
     );
   }
