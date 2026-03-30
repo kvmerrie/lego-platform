@@ -2,10 +2,7 @@ import {
   AffiliateFeatureOffers,
   AffiliateFeaturePrimaryOfferAction,
 } from '@lego-platform/affiliate/feature-offers';
-import {
-  getCatalogSetBySlug,
-  listCatalogSetRouteSlugs,
-} from '@lego-platform/catalog/data-access';
+import { getCatalogSetBySlug, listCatalogSetSlugs } from '@lego-platform/catalog/data-access';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
@@ -18,7 +15,7 @@ import styles from './page.module.css';
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return listCatalogSetRouteSlugs().map((slug) => ({ slug }));
+  return listCatalogSetSlugs().map((slug) => ({ slug }));
 }
 
 export default async function SetDetailPage({

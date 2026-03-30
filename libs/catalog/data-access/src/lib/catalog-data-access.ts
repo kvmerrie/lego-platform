@@ -1,5 +1,4 @@
 import {
-  buildLegacyCatalogSetSlug,
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetOverlay,
@@ -106,13 +105,6 @@ function registerCatalogSetRecordForSlug({
   map.set(slug, catalogSetRecord);
 }
 
-function getLegacyCatalogRouteSlug(catalogSetRecord: CatalogSetRecord): string {
-  return buildLegacyCatalogSetSlug(
-    catalogSetRecord.name,
-    catalogSetRecord.canonicalId,
-  );
-}
-
 function createCatalogSetRecordByProductSlug() {
   const catalogSetRecordByProductSlug = new Map<string, CatalogSetRecord>();
 
@@ -122,50 +114,18 @@ function createCatalogSetRecordByProductSlug() {
       catalogSetRecord,
       catalogSetOverlay,
     });
-    const legacyCatalogRouteSlug = getLegacyCatalogRouteSlug(catalogSetRecord);
 
     registerCatalogSetRecordForSlug({
       catalogSetRecord,
       map: catalogSetRecordByProductSlug,
       slug: productSlug,
     });
-
-    if (!catalogSetOverlay.productSlug && legacyCatalogRouteSlug !== productSlug) {
-      registerCatalogSetRecordForSlug({
-        catalogSetRecord,
-        map: catalogSetRecordByProductSlug,
-        slug: legacyCatalogRouteSlug,
-      });
-    }
   }
 
   return catalogSetRecordByProductSlug;
 }
 
 const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
-
-function createCatalogSetRouteSlugs() {
-  const routeSlugs = new Set<string>();
-
-  for (const catalogSetRecord of catalogSnapshot.setRecords) {
-    const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
-    const productSlug = getCatalogProductSlug({
-      catalogSetRecord,
-      catalogSetOverlay,
-    });
-    const legacyCatalogRouteSlug = getLegacyCatalogRouteSlug(catalogSetRecord);
-
-    routeSlugs.add(productSlug);
-
-    if (!catalogSetOverlay.productSlug && legacyCatalogRouteSlug !== productSlug) {
-      routeSlugs.add(legacyCatalogRouteSlug);
-    }
-  }
-
-  return [...routeSlugs];
-}
-
-const catalogSetRouteSlugs = createCatalogSetRouteSlugs();
 
 interface CatalogSearchIndexEntry {
   canonicalIdToken: string;
@@ -371,10 +331,6 @@ export function listCatalogSetSlugs(): string[] {
       catalogSetOverlay: requireCatalogSetOverlay(catalogSetRecord),
     }),
   );
-}
-
-export function listCatalogSetRouteSlugs(): string[] {
-  return [...catalogSetRouteSlugs];
 }
 
 export function getCatalogSetBySlug(slug: string) {

@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest';
 import {
   getCatalogSetBySlug,
   listCatalogSetCardsByIds,
-  listCatalogSetRouteSlugs,
   listCatalogSetSlugs,
   listHomepageSetCards,
   listCatalogSetSummaries,
@@ -186,15 +185,6 @@ describe('catalog data-access contracts', () => {
       'at-at-75313',
       'polaroid-onestep-sx-70-camera-21345',
     ]);
-  });
-
-  test('keeps static route generation backward compatible for corrected slugs', () => {
-    expect(listCatalogSetRouteSlugs()).toContain(
-      'the-lord-of-the-rings-barad-dur-10333',
-    );
-    expect(listCatalogSetRouteSlugs()).toContain(
-      'the-lord-of-the-rings-barad-d-r-10333',
-    );
   });
 
   test('merges source-truth records with local product overlays for set detail reads', () => {
@@ -503,15 +493,6 @@ describe('catalog data-access contracts', () => {
         'Natural companion to Rivendell for a tighter premium Middle-earth collector arc',
       ],
     });
-
-    expect(
-      getCatalogSetBySlug('the-lord-of-the-rings-barad-d-r-10333'),
-    ).toEqual(
-      expect.objectContaining({
-        id: '10333',
-        slug: 'the-lord-of-the-rings-barad-dur-10333',
-      }),
-    );
 
     expect(getCatalogSetBySlug('medieval-town-square-10332')).toEqual({
       id: '10332',

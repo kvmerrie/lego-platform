@@ -135,17 +135,6 @@ export function buildCatalogSetSlug(name: string, canonicalId: string): string {
   });
 }
 
-export function buildLegacyCatalogSetSlug(
-  name: string,
-  canonicalId: string,
-): string {
-  return buildCatalogSlugBase({
-    canonicalId,
-    name: normalizeCatalogText(name),
-    stripDiacritics: false,
-  });
-}
-
 export function getCatalogProductSlug({
   catalogSetRecord,
   catalogSetOverlay,
