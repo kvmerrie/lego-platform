@@ -222,6 +222,115 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Good fit for social-proof, gifting, and home-display storytelling without expanding product scope',
     ],
   },
+  {
+    canonicalId: '10300',
+    priceRange: '$179 to $229',
+    collectorAngle: 'Pop-culture vehicle icon',
+    tagline:
+      'A movie-car display set that is instantly recognizable even beyond core LEGO collectors.',
+    availability: 'Broad enthusiast availability',
+    collectorHighlights: [
+      'Three film variants make it more replayable than most single-vehicle display sets',
+      'Strong search target thanks to one of the most recognizable movie cars in pop culture',
+      'Balances premium collector tone with a more approachable size and price than the biggest flagships',
+    ],
+  },
+  {
+    canonicalId: '10294',
+    priceRange: '$629 to $749',
+    collectorAngle: 'Monumental display statement',
+    tagline:
+      'A massive ocean-liner build that reads as both engineering feat and living-room conversation piece.',
+    availability: 'Selective flagship availability',
+    collectorHighlights: [
+      'One of the most recognizable large-format display sets in the broader adult market',
+      'Extreme scale gives the public catalog a true top-end centerpiece beyond castles and towers',
+      'Excellent search target for collectors who browse by iconic real-world subjects',
+    ],
+  },
+  {
+    canonicalId: '21061',
+    priceRange: '$199 to $249',
+    collectorAngle: 'Architecture prestige landmark',
+    tagline:
+      'A globally recognizable landmark build that adds architectural gravitas without feeling cold or corporate.',
+    availability: 'Healthy premium availability',
+    collectorHighlights: [
+      'Highly recognizable subject broadens search relevance far beyond existing fandom-led sets',
+      'Dense silhouette and historical subject matter strengthen editorial and gift-led merchandising',
+      'Brings a cleaner architecture entry point than the current fantasy- and franchise-heavy mix',
+    ],
+  },
+  {
+    canonicalId: '31208',
+    displayTheme: 'Art',
+    priceRange: '$79 to $109',
+    collectorAngle: 'Wall-display art crossover',
+    tagline:
+      'A framed wave composition that makes the public catalog feel more design-led and giftable at a glance.',
+    availability: 'Consistent art-line availability',
+    collectorHighlights: [
+      'Instant visual recognition makes it a strong search target even for casual browsers',
+      'Wall-friendly format adds a new display posture without adding product complexity',
+      'Helps the catalog feel more varied than a lineup of only buildings, towers, and vehicles',
+    ],
+  },
+  {
+    canonicalId: '76419',
+    priceRange: '$149 to $189',
+    collectorAngle: 'Wizarding World display overview',
+    tagline:
+      'A compact Hogwarts panorama that brings one of LEGO’s most searched fantasy subjects into a cleaner display format.',
+    availability: 'Strong mainstream availability',
+    collectorHighlights: [
+      'Broad franchise recognition makes it one of the easiest search-entry sets beyond Marvel and Middle-earth',
+      'More shelf-manageable than the largest Hogwarts releases while still reading as collector-grade',
+      'Adds a major fantasy license without crowding the premium lineup with another oversized flagship',
+    ],
+  },
+  {
+    canonicalId: '43222',
+    priceRange: '$349 to $429',
+    collectorAngle: 'Fairytale flagship centerpiece',
+    tagline:
+      'A castle display icon with unusually broad household recognition and strong gift-led appeal.',
+    availability: 'Healthy flagship availability',
+    collectorHighlights: [
+      'One of the most recognizable display silhouettes in the broader LEGO catalog',
+      'Adds a warmer, more family-adjacent flagship without losing adult collector credibility',
+      'Powerful search target for Disney and castle collectors alike',
+    ],
+  },
+  {
+    canonicalId: '75313',
+    displayTheme: 'Star Wars',
+    priceRange: '$649 to $799',
+    collectorAngle: 'Star Wars collector monument',
+    tagline:
+      'A towering Ultimate Collector Series build that signals serious collector depth the moment it appears in search.',
+    availability: 'Selective UCS availability',
+    collectorHighlights: [
+      'One of the most recognizable high-end Star Wars sets in the modern catalog',
+      'Massive scale and franchise pull make it a strong anchor for premium search demand',
+      'Expands the curated mix into Star Wars without widening product scope or behavior',
+    ],
+  },
+  {
+    canonicalId: '21345',
+    productSlug: 'polaroid-onestep-sx-70-camera-21345',
+    displayName: 'Polaroid OneStep SX-70 Camera',
+    displayTheme: 'Ideas',
+    priceRange: '$69 to $99',
+    collectorAngle: 'Retro design-object crowd-pleaser',
+    tagline:
+      'A playful camera build that feels instantly familiar, giftable, and display-ready without becoming novelty-first.',
+    availability: 'Accessible enthusiast availability',
+    collectorHighlights: [
+      'Recognizable real-world object makes it an easy search and gifting on-ramp',
+      'Compact footprint adds a lower-commitment collector option to the public mix',
+      'Keeps the Ideas slice warm and design-led rather than only scenic or fandom-heavy',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [

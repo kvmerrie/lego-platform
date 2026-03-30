@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   getCatalogSetBySlug,
   listCatalogSetCardsByIds,
+  listCatalogSetRouteSlugs,
   listCatalogSetSlugs,
   listHomepageSetCards,
   listCatalogSetSummaries,
@@ -14,7 +15,7 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(16);
+    expect(catalogSnapshot.setRecords).toHaveLength(24);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
@@ -70,7 +71,7 @@ describe('catalog snapshot artifacts', () => {
       },
       {
         canonicalId: '10333',
-        slug: 'the-lord-of-the-rings-barad-d-r-10333',
+        slug: 'the-lord-of-the-rings-barad-dur-10333',
         sourceSetNumber: '10333-1',
       },
       {
@@ -113,12 +114,52 @@ describe('catalog snapshot artifacts', () => {
         slug: 'tuxedo-cat-21349',
         sourceSetNumber: '21349-1',
       },
+      {
+        canonicalId: '10300',
+        slug: 'back-to-the-future-time-machine-10300',
+        sourceSetNumber: '10300-1',
+      },
+      {
+        canonicalId: '10294',
+        slug: 'titanic-10294',
+        sourceSetNumber: '10294-1',
+      },
+      {
+        canonicalId: '21061',
+        slug: 'notre-dame-de-paris-21061',
+        sourceSetNumber: '21061-1',
+      },
+      {
+        canonicalId: '31208',
+        slug: 'hokusai-the-great-wave-31208',
+        sourceSetNumber: '31208-1',
+      },
+      {
+        canonicalId: '76419',
+        slug: 'hogwarts-castle-and-grounds-76419',
+        sourceSetNumber: '76419-1',
+      },
+      {
+        canonicalId: '43222',
+        slug: 'disney-castle-43222',
+        sourceSetNumber: '43222-1',
+      },
+      {
+        canonicalId: '75313',
+        slug: 'at-at-75313',
+        sourceSetNumber: '75313-1',
+      },
+      {
+        canonicalId: '21345',
+        slug: 'polaroid-onestep-sx-70-21345',
+        sourceSetNumber: '21345-1',
+      },
     ]);
   });
 });
 
 describe('catalog data-access contracts', () => {
-  test('keeps static params generation stable through product-facing slugs', () => {
+  test('keeps product-facing slugs clean and stable', () => {
     expect(listCatalogSetSlugs()).toEqual([
       'rivendell-10316',
       'dungeons-and-dragons-red-dragons-tale-21348',
@@ -127,7 +168,7 @@ describe('catalog data-access contracts', () => {
       'a-frame-cabin-21338',
       'eldorado-fortress-10320',
       'motorized-lighthouse-21335',
-      'the-lord-of-the-rings-barad-d-r-10333',
+      'the-lord-of-the-rings-barad-dur-10333',
       'medieval-town-square-10332',
       'tranquil-garden-10315',
       'vincent-van-gogh-the-starry-night-21333',
@@ -136,7 +177,24 @@ describe('catalog data-access contracts', () => {
       'kingfisher-bird-10331',
       'nasa-artemis-space-launch-system-10341',
       'tuxedo-cat-21349',
+      'back-to-the-future-time-machine-10300',
+      'titanic-10294',
+      'notre-dame-de-paris-21061',
+      'hokusai-the-great-wave-31208',
+      'hogwarts-castle-and-grounds-76419',
+      'disney-castle-43222',
+      'at-at-75313',
+      'polaroid-onestep-sx-70-camera-21345',
     ]);
+  });
+
+  test('keeps static route generation backward compatible for corrected slugs', () => {
+    expect(listCatalogSetRouteSlugs()).toContain(
+      'the-lord-of-the-rings-barad-dur-10333',
+    );
+    expect(listCatalogSetRouteSlugs()).toContain(
+      'the-lord-of-the-rings-barad-d-r-10333',
+    );
   });
 
   test('merges source-truth records with local product overlays for set detail reads', () => {
@@ -224,6 +282,36 @@ describe('catalog data-access contracts', () => {
     ]);
 
     expect(searchCatalogSetCards('   ')).toEqual([]);
+  });
+
+  test('keeps the expanded catalog search useful for iconic names and numbers', () => {
+    expect(searchCatalogSetCards('titanic')).toEqual([
+      expect.objectContaining({
+        id: '10294',
+        name: 'Titanic',
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('hogwarts')).toEqual([
+      expect.objectContaining({
+        id: '76419',
+        name: 'Hogwarts Castle and Grounds',
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('21061')).toEqual([
+      expect.objectContaining({
+        id: '21061',
+        name: 'Notre-Dame de Paris',
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('barad dur')).toEqual([
+      expect.objectContaining({
+        id: '10333',
+        name: 'The Lord of the Rings: Barad-dûr',
+      }),
+    ]);
   });
 
   test('builds richer homepage card reads with curated availability and tagline context', () => {
@@ -395,10 +483,10 @@ describe('catalog data-access contracts', () => {
     });
 
     expect(
-      getCatalogSetBySlug('the-lord-of-the-rings-barad-d-r-10333'),
+      getCatalogSetBySlug('the-lord-of-the-rings-barad-dur-10333'),
     ).toEqual({
       id: '10333',
-      slug: 'the-lord-of-the-rings-barad-d-r-10333',
+      slug: 'the-lord-of-the-rings-barad-dur-10333',
       name: 'The Lord of the Rings: Barad-dûr',
       theme: 'Icons',
       releaseYear: 2024,
@@ -415,6 +503,15 @@ describe('catalog data-access contracts', () => {
         'Natural companion to Rivendell for a tighter premium Middle-earth collector arc',
       ],
     });
+
+    expect(
+      getCatalogSetBySlug('the-lord-of-the-rings-barad-d-r-10333'),
+    ).toEqual(
+      expect.objectContaining({
+        id: '10333',
+        slug: 'the-lord-of-the-rings-barad-dur-10333',
+      }),
+    );
 
     expect(getCatalogSetBySlug('medieval-town-square-10332')).toEqual({
       id: '10332',
@@ -579,10 +676,172 @@ describe('catalog data-access contracts', () => {
         'Good fit for social-proof, gifting, and home-display storytelling without expanding product scope',
       ],
     });
+
+    expect(
+      getCatalogSetBySlug('back-to-the-future-time-machine-10300'),
+    ).toEqual({
+      id: '10300',
+      slug: 'back-to-the-future-time-machine-10300',
+      name: 'Back to the Future Time Machine',
+      theme: 'Icons',
+      releaseYear: 2022,
+      pieces: 1872,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10300-1/99954.jpg',
+      priceRange: '$179 to $229',
+      collectorAngle: 'Pop-culture vehicle icon',
+      tagline:
+        'A movie-car display set that is instantly recognizable even beyond core LEGO collectors.',
+      availability: 'Broad enthusiast availability',
+      collectorHighlights: [
+        'Three film variants make it more replayable than most single-vehicle display sets',
+        'Strong search target thanks to one of the most recognizable movie cars in pop culture',
+        'Balances premium collector tone with a more approachable size and price than the biggest flagships',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('titanic-10294')).toEqual({
+      id: '10294',
+      slug: 'titanic-10294',
+      name: 'Titanic',
+      theme: 'Icons',
+      releaseYear: 2021,
+      pieces: 9092,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10294-1/93446.jpg',
+      priceRange: '$629 to $749',
+      collectorAngle: 'Monumental display statement',
+      tagline:
+        'A massive ocean-liner build that reads as both engineering feat and living-room conversation piece.',
+      availability: 'Selective flagship availability',
+      collectorHighlights: [
+        'One of the most recognizable large-format display sets in the broader adult market',
+        'Extreme scale gives the public catalog a true top-end centerpiece beyond castles and towers',
+        'Excellent search target for collectors who browse by iconic real-world subjects',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('notre-dame-de-paris-21061')).toEqual({
+      id: '21061',
+      slug: 'notre-dame-de-paris-21061',
+      name: 'Notre-Dame de Paris',
+      theme: 'Architecture',
+      releaseYear: 2024,
+      pieces: 4382,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
+      priceRange: '$199 to $249',
+      collectorAngle: 'Architecture prestige landmark',
+      tagline:
+        'A globally recognizable landmark build that adds architectural gravitas without feeling cold or corporate.',
+      availability: 'Healthy premium availability',
+      collectorHighlights: [
+        'Highly recognizable subject broadens search relevance far beyond existing fandom-led sets',
+        'Dense silhouette and historical subject matter strengthen editorial and gift-led merchandising',
+        'Brings a cleaner architecture entry point than the current fantasy- and franchise-heavy mix',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('hokusai-the-great-wave-31208')).toEqual({
+      id: '31208',
+      slug: 'hokusai-the-great-wave-31208',
+      name: 'Hokusai - The Great Wave',
+      theme: 'Art',
+      releaseYear: 2023,
+      pieces: 1810,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/31208-1/131769.jpg',
+      priceRange: '$79 to $109',
+      collectorAngle: 'Wall-display art crossover',
+      tagline:
+        'A framed wave composition that makes the public catalog feel more design-led and giftable at a glance.',
+      availability: 'Consistent art-line availability',
+      collectorHighlights: [
+        'Instant visual recognition makes it a strong search target even for casual browsers',
+        'Wall-friendly format adds a new display posture without adding product complexity',
+        'Helps the catalog feel more varied than a lineup of only buildings, towers, and vehicles',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('hogwarts-castle-and-grounds-76419')).toEqual({
+      id: '76419',
+      slug: 'hogwarts-castle-and-grounds-76419',
+      name: 'Hogwarts Castle and Grounds',
+      theme: 'Harry Potter',
+      releaseYear: 2023,
+      pieces: 2660,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/76419-1/123597.jpg',
+      priceRange: '$149 to $189',
+      collectorAngle: 'Wizarding World display overview',
+      tagline:
+        'A compact Hogwarts panorama that brings one of LEGO’s most searched fantasy subjects into a cleaner display format.',
+      availability: 'Strong mainstream availability',
+      collectorHighlights: [
+        'Broad franchise recognition makes it one of the easiest search-entry sets beyond Marvel and Middle-earth',
+        'More shelf-manageable than the largest Hogwarts releases while still reading as collector-grade',
+        'Adds a major fantasy license without crowding the premium lineup with another oversized flagship',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('disney-castle-43222')).toEqual({
+      id: '43222',
+      slug: 'disney-castle-43222',
+      name: 'Disney Castle',
+      theme: 'Disney',
+      releaseYear: 2023,
+      pieces: 4837,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/43222-1/130721.jpg',
+      priceRange: '$349 to $429',
+      collectorAngle: 'Fairytale flagship centerpiece',
+      tagline:
+        'A castle display icon with unusually broad household recognition and strong gift-led appeal.',
+      availability: 'Healthy flagship availability',
+      collectorHighlights: [
+        'One of the most recognizable display silhouettes in the broader LEGO catalog',
+        'Adds a warmer, more family-adjacent flagship without losing adult collector credibility',
+        'Powerful search target for Disney and castle collectors alike',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('at-at-75313')).toEqual({
+      id: '75313',
+      slug: 'at-at-75313',
+      name: 'AT-AT',
+      theme: 'Star Wars',
+      releaseYear: 2021,
+      pieces: 6785,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
+      priceRange: '$649 to $799',
+      collectorAngle: 'Star Wars collector monument',
+      tagline:
+        'A towering Ultimate Collector Series build that signals serious collector depth the moment it appears in search.',
+      availability: 'Selective UCS availability',
+      collectorHighlights: [
+        'One of the most recognizable high-end Star Wars sets in the modern catalog',
+        'Massive scale and franchise pull make it a strong anchor for premium search demand',
+        'Expands the curated mix into Star Wars without widening product scope or behavior',
+      ],
+    });
+
+    expect(getCatalogSetBySlug('polaroid-onestep-sx-70-camera-21345')).toEqual({
+      id: '21345',
+      slug: 'polaroid-onestep-sx-70-camera-21345',
+      name: 'Polaroid OneStep SX-70 Camera',
+      theme: 'Ideas',
+      releaseYear: 2024,
+      pieces: 516,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21345-1/134647.jpg',
+      priceRange: '$69 to $99',
+      collectorAngle: 'Retro design-object crowd-pleaser',
+      tagline:
+        'A playful camera build that feels instantly familiar, giftable, and display-ready without becoming novelty-first.',
+      availability: 'Accessible enthusiast availability',
+      collectorHighlights: [
+        'Recognizable real-world object makes it an easy search and gifting on-ramp',
+        'Compact footprint adds a lower-commitment collector option to the public mix',
+        'Keeps the Ideas slice warm and design-led rather than only scenic or fandom-heavy',
+      ],
+    });
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(16);
+    expect(listCatalogSetSummaries()).toHaveLength(24);
     expect(listCatalogThemes()).toEqual([
       {
         name: 'Icons',

@@ -83,6 +83,14 @@ Current expected source slugs:
 - `kingfisher-bird-10331`
 - `nasa-artemis-space-launch-system-10341`
 - `tuxedo-cat-21349`
+- `back-to-the-future-time-machine-10300`
+- `titanic-10294`
+- `notre-dame-de-paris-21061`
+- `hokusai-the-great-wave-31208`
+- `hogwarts-castle-and-grounds-76419`
+- `disney-castle-43222`
+- `at-at-75313`
+- `polaroid-onestep-sx-70-21345`
 
 Current expected public route slugs from the product-facing layer:
 
@@ -102,6 +110,14 @@ Current expected public route slugs from the product-facing layer:
 - `kingfisher-bird-10331`
 - `nasa-artemis-space-launch-system-10341`
 - `tuxedo-cat-21349`
+- `back-to-the-future-time-machine-10300`
+- `titanic-10294`
+- `notre-dame-de-paris-21061`
+- `hokusai-the-great-wave-31208`
+- `hogwarts-castle-and-grounds-76419`
+- `disney-castle-43222`
+- `at-at-75313`
+- `polaroid-onestep-sx-70-camera-21345`
 
 ### Canonical Id Assumptions
 
@@ -123,6 +139,14 @@ Check that each source set number still maps correctly:
 - `10331-1` -> `10331`
 - `10341-1` -> `10341`
 - `21349-1` -> `21349`
+- `10300-1` -> `10300`
+- `10294-1` -> `10294`
+- `21061-1` -> `21061`
+- `31208-1` -> `31208`
+- `76419-1` -> `76419`
+- `43222-1` -> `43222`
+- `75313-1` -> `75313`
+- `21345-1` -> `21345`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 

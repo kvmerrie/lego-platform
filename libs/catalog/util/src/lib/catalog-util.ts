@@ -88,6 +88,36 @@ function normalizeCatalogText(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
 }
 
+function stripCatalogDiacritics(value: string): string {
+  return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+}
+
+export function normalizeCatalogAsciiText(value: string): string {
+  return stripCatalogDiacritics(normalizeCatalogText(value));
+}
+
+function buildCatalogSlugBase({
+  canonicalId,
+  name,
+  stripDiacritics,
+}: {
+  canonicalId: string;
+  name: string;
+  stripDiacritics: boolean;
+}): string {
+  const normalizedName = (
+    stripDiacritics ? normalizeCatalogAsciiText(name) : name
+  )
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return `${normalizedName}-${canonicalId}`;
+}
+
 export function getCanonicalCatalogSetId(sourceSetNumber: string): string {
   const normalizedSourceSetNumber = normalizeCatalogText(sourceSetNumber);
   const variantMatch = normalizedSourceSetNumber.match(
@@ -98,15 +128,22 @@ export function getCanonicalCatalogSetId(sourceSetNumber: string): string {
 }
 
 export function buildCatalogSetSlug(name: string, canonicalId: string): string {
-  const normalizedName = normalizeCatalogText(name)
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/&/g, ' and ')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/-{2,}/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return buildCatalogSlugBase({
+    canonicalId,
+    name,
+    stripDiacritics: true,
+  });
+}
 
-  return `${normalizedName}-${canonicalId}`;
+export function buildLegacyCatalogSetSlug(
+  name: string,
+  canonicalId: string,
+): string {
+  return buildCatalogSlugBase({
+    canonicalId,
+    name: normalizeCatalogText(name),
+    stripDiacritics: false,
+  });
 }
 
 export function getCatalogProductSlug({

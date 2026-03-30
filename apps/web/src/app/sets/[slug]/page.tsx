@@ -4,7 +4,7 @@ import {
 } from '@lego-platform/affiliate/feature-offers';
 import {
   getCatalogSetBySlug,
-  listCatalogSetSlugs,
+  listCatalogSetRouteSlugs,
 } from '@lego-platform/catalog/data-access';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
@@ -18,7 +18,7 @@ import styles from './page.module.css';
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return listCatalogSetSlugs().map((slug) => ({ slug }));
+  return listCatalogSetRouteSlugs().map((slug) => ({ slug }));
 }
 
 export default async function SetDetailPage({

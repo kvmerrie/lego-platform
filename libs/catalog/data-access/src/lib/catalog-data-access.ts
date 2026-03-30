@@ -1,4 +1,5 @@
 import {
+  buildLegacyCatalogSetSlug,
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetOverlay,
@@ -6,6 +7,7 @@ import {
   CatalogSetSummary,
   CatalogThemeSnapshot,
   getCatalogProductSlug,
+  normalizeCatalogAsciiText,
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import { catalogSetOverlays, catalogThemeOverlays } from './catalog-overlays';
@@ -83,6 +85,34 @@ function getCatalogDisplayTheme(
   return catalogSetOverlay.displayTheme ?? catalogSetRecord.theme;
 }
 
+function registerCatalogSetRecordForSlug({
+  catalogSetRecord,
+  map,
+  slug,
+}: {
+  catalogSetRecord: CatalogSetRecord;
+  map: Map<string, CatalogSetRecord>;
+  slug: string;
+}) {
+  const existingCatalogSetRecord = map.get(slug);
+
+  if (
+    existingCatalogSetRecord &&
+    existingCatalogSetRecord.canonicalId !== catalogSetRecord.canonicalId
+  ) {
+    throw new Error(`Duplicate product catalog slug: ${slug}.`);
+  }
+
+  map.set(slug, catalogSetRecord);
+}
+
+function getLegacyCatalogRouteSlug(catalogSetRecord: CatalogSetRecord): string {
+  return buildLegacyCatalogSetSlug(
+    catalogSetRecord.name,
+    catalogSetRecord.canonicalId,
+  );
+}
+
 function createCatalogSetRecordByProductSlug() {
   const catalogSetRecordByProductSlug = new Map<string, CatalogSetRecord>();
 
@@ -92,18 +122,50 @@ function createCatalogSetRecordByProductSlug() {
       catalogSetRecord,
       catalogSetOverlay,
     });
+    const legacyCatalogRouteSlug = getLegacyCatalogRouteSlug(catalogSetRecord);
 
-    if (catalogSetRecordByProductSlug.has(productSlug)) {
-      throw new Error(`Duplicate product catalog slug: ${productSlug}.`);
+    registerCatalogSetRecordForSlug({
+      catalogSetRecord,
+      map: catalogSetRecordByProductSlug,
+      slug: productSlug,
+    });
+
+    if (!catalogSetOverlay.productSlug && legacyCatalogRouteSlug !== productSlug) {
+      registerCatalogSetRecordForSlug({
+        catalogSetRecord,
+        map: catalogSetRecordByProductSlug,
+        slug: legacyCatalogRouteSlug,
+      });
     }
-
-    catalogSetRecordByProductSlug.set(productSlug, catalogSetRecord);
   }
 
   return catalogSetRecordByProductSlug;
 }
 
 const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
+
+function createCatalogSetRouteSlugs() {
+  const routeSlugs = new Set<string>();
+
+  for (const catalogSetRecord of catalogSnapshot.setRecords) {
+    const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
+    const productSlug = getCatalogProductSlug({
+      catalogSetRecord,
+      catalogSetOverlay,
+    });
+    const legacyCatalogRouteSlug = getLegacyCatalogRouteSlug(catalogSetRecord);
+
+    routeSlugs.add(productSlug);
+
+    if (!catalogSetOverlay.productSlug && legacyCatalogRouteSlug !== productSlug) {
+      routeSlugs.add(legacyCatalogRouteSlug);
+    }
+  }
+
+  return [...routeSlugs];
+}
+
+const catalogSetRouteSlugs = createCatalogSetRouteSlugs();
 
 interface CatalogSearchIndexEntry {
   canonicalIdToken: string;
@@ -114,7 +176,7 @@ interface CatalogSearchIndexEntry {
 }
 
 function normalizeCatalogSearchText(value: string): string {
-  return value
+  return normalizeCatalogAsciiText(value)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
@@ -122,7 +184,9 @@ function normalizeCatalogSearchText(value: string): string {
 }
 
 function normalizeCatalogSearchToken(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return normalizeCatalogAsciiText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
 }
 
 function toCatalogSetDetail(
@@ -307,6 +371,10 @@ export function listCatalogSetSlugs(): string[] {
       catalogSetOverlay: requireCatalogSetOverlay(catalogSetRecord),
     }),
   );
+}
+
+export function listCatalogSetRouteSlugs(): string[] {
+  return [...catalogSetRouteSlugs];
 }
 
 export function getCatalogSetBySlug(slug: string) {

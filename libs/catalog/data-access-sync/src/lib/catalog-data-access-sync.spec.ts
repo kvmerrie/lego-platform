@@ -84,9 +84,9 @@ function createMockRebrickableClient(): RebrickableClient {
         case '10333-1':
           return {
             set_num: '10333-1',
-            name: 'The Lord of the Rings: Barad-dur',
+            name: 'The Lord of the Rings: Barad-dûr',
             year: 2024,
-            num_parts: 5471,
+            num_parts: 5478,
             theme_id: 1,
             set_img_url: 'https://images.example/barad-dur.jpg',
           };
@@ -95,7 +95,7 @@ function createMockRebrickableClient(): RebrickableClient {
             set_num: '10332-1',
             name: 'Medieval Town Square',
             year: 2024,
-            num_parts: 3304,
+            num_parts: 3308,
             theme_id: 1,
             set_img_url: 'https://images.example/medieval-town-square.jpg',
           };
@@ -162,6 +162,79 @@ function createMockRebrickableClient(): RebrickableClient {
             theme_id: 2,
             set_img_url: 'https://images.example/tuxedo-cat.jpg',
           };
+        case '10300-1':
+          return {
+            set_num: '10300-1',
+            name: 'Back to the Future Time Machine',
+            year: 2022,
+            num_parts: 1872,
+            theme_id: 1,
+            set_img_url: 'https://images.example/back-to-the-future.jpg',
+          };
+        case '10294-1':
+          return {
+            set_num: '10294-1',
+            name: 'Titanic',
+            year: 2021,
+            num_parts: 9092,
+            theme_id: 1,
+            set_img_url: 'https://images.example/titanic.jpg',
+          };
+        case '21061-1':
+          return {
+            set_num: '21061-1',
+            name: 'Notre-Dame de Paris',
+            year: 2024,
+            num_parts: 4382,
+            theme_id: 4,
+            set_img_url: 'https://images.example/notre-dame.jpg',
+          };
+        case '31208-1':
+          return {
+            set_num: '31208-1',
+            name: 'Hokusai - The Great Wave',
+            year: 2023,
+            num_parts: 1810,
+            theme_id: 5,
+            set_img_url: 'https://images.example/the-great-wave.jpg',
+          };
+        case '76419-1':
+          return {
+            set_num: '76419-1',
+            name: 'Hogwarts Castle and Grounds',
+            year: 2023,
+            num_parts: 2660,
+            theme_id: 6,
+            set_img_url:
+              'https://images.example/hogwarts-castle-and-grounds.jpg',
+          };
+        case '43222-1':
+          return {
+            set_num: '43222-1',
+            name: 'Disney Castle',
+            year: 2023,
+            num_parts: 4837,
+            theme_id: 7,
+            set_img_url: 'https://images.example/disney-castle.jpg',
+          };
+        case '75313-1':
+          return {
+            set_num: '75313-1',
+            name: 'AT-AT',
+            year: 2021,
+            num_parts: 6785,
+            theme_id: 8,
+            set_img_url: 'https://images.example/at-at.jpg',
+          };
+        case '21345-1':
+          return {
+            set_num: '21345-1',
+            name: 'Polaroid OneStep SX-70',
+            year: 2024,
+            num_parts: 516,
+            theme_id: 2,
+            set_img_url: 'https://images.example/polaroid.jpg',
+          };
         default:
           throw new Error(`Unexpected set lookup for ${setNumber}.`);
       }
@@ -174,6 +247,16 @@ function createMockRebrickableClient(): RebrickableClient {
           return { id: 2, name: 'LEGO Ideas and CUUSOO' };
         case 3:
           return { id: 3, name: 'Avengers' };
+        case 4:
+          return { id: 4, name: 'Architecture' };
+        case 5:
+          return { id: 5, name: 'LEGO Art' };
+        case 6:
+          return { id: 6, name: 'Harry Potter' };
+        case 7:
+          return { id: 7, name: 'Disney' };
+        case 8:
+          return { id: 8, name: 'Star Wars > Ultimate Collector Series' };
         default:
           throw new Error(`Unexpected theme lookup for ${themeId}.`);
       }
@@ -386,10 +469,10 @@ export const catalogSnapshot: CatalogSnapshot = {
           canonicalId: '10333',
           sourceSetNumber: '10333-1',
           slug: 'the-lord-of-the-rings-barad-dur-10333',
-          name: 'The Lord of the Rings: Barad-dur',
+          name: 'The Lord of the Rings: Barad-dûr',
           theme: 'Icons',
           releaseYear: 2024,
-          pieces: 5471,
+          pieces: 5478,
           imageUrl: 'https://images.example/barad-dur.jpg',
         },
         {
@@ -399,7 +482,7 @@ export const catalogSnapshot: CatalogSnapshot = {
           name: 'Medieval Town Square',
           theme: 'Icons',
           releaseYear: 2024,
-          pieces: 3304,
+          pieces: 3308,
           imageUrl: 'https://images.example/medieval-town-square.jpg',
         },
         {
@@ -472,12 +555,92 @@ export const catalogSnapshot: CatalogSnapshot = {
           pieces: 1710,
           imageUrl: 'https://images.example/tuxedo-cat.jpg',
         },
+        {
+          canonicalId: '10300',
+          sourceSetNumber: '10300-1',
+          slug: 'back-to-the-future-time-machine-10300',
+          name: 'Back to the Future Time Machine',
+          theme: 'Icons',
+          releaseYear: 2022,
+          pieces: 1872,
+          imageUrl: 'https://images.example/back-to-the-future.jpg',
+        },
+        {
+          canonicalId: '10294',
+          sourceSetNumber: '10294-1',
+          slug: 'titanic-10294',
+          name: 'Titanic',
+          theme: 'Icons',
+          releaseYear: 2021,
+          pieces: 9092,
+          imageUrl: 'https://images.example/titanic.jpg',
+        },
+        {
+          canonicalId: '21061',
+          sourceSetNumber: '21061-1',
+          slug: 'notre-dame-de-paris-21061',
+          name: 'Notre-Dame de Paris',
+          theme: 'Architecture',
+          releaseYear: 2024,
+          pieces: 4382,
+          imageUrl: 'https://images.example/notre-dame.jpg',
+        },
+        {
+          canonicalId: '31208',
+          sourceSetNumber: '31208-1',
+          slug: 'hokusai-the-great-wave-31208',
+          name: 'Hokusai - The Great Wave',
+          theme: 'LEGO Art',
+          releaseYear: 2023,
+          pieces: 1810,
+          imageUrl: 'https://images.example/the-great-wave.jpg',
+        },
+        {
+          canonicalId: '76419',
+          sourceSetNumber: '76419-1',
+          slug: 'hogwarts-castle-and-grounds-76419',
+          name: 'Hogwarts Castle and Grounds',
+          theme: 'Harry Potter',
+          releaseYear: 2023,
+          pieces: 2660,
+          imageUrl: 'https://images.example/hogwarts-castle-and-grounds.jpg',
+        },
+        {
+          canonicalId: '43222',
+          sourceSetNumber: '43222-1',
+          slug: 'disney-castle-43222',
+          name: 'Disney Castle',
+          theme: 'Disney',
+          releaseYear: 2023,
+          pieces: 4837,
+          imageUrl: 'https://images.example/disney-castle.jpg',
+        },
+        {
+          canonicalId: '75313',
+          sourceSetNumber: '75313-1',
+          slug: 'at-at-75313',
+          name: 'AT-AT',
+          theme: 'Star Wars > Ultimate Collector Series',
+          releaseYear: 2021,
+          pieces: 6785,
+          imageUrl: 'https://images.example/at-at.jpg',
+        },
+        {
+          canonicalId: '21345',
+          sourceSetNumber: '21345-1',
+          slug: 'polaroid-onestep-sx-70-21345',
+          name: 'Polaroid OneStep SX-70',
+          theme: 'LEGO Ideas and CUUSOO',
+          releaseYear: 2024,
+          pieces: 516,
+          imageUrl: 'https://images.example/polaroid.jpg',
+        },
       ],
     });
     expect(artifacts.catalogSyncManifest).toEqual({
       source: 'rebrickable-api-v3',
       generatedAt: '2026-03-28T00:00:00.000Z',
-      recordCount: 16,
+      recordCount: 24,
       homepageFeaturedSetIds: ['10316', '21348', '76269'],
       notes:
         'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
@@ -576,6 +739,40 @@ export const catalogSnapshot: CatalogSnapshot = {
           });
         }
 
+        if (url.endsWith('/lego/themes/4/')) {
+          return new Response(JSON.stringify({ id: 4, name: 'Architecture' }), {
+            status: 200,
+          });
+        }
+
+        if (url.endsWith('/lego/themes/5/')) {
+          return new Response(JSON.stringify({ id: 5, name: 'LEGO Art' }), {
+            status: 200,
+          });
+        }
+
+        if (url.endsWith('/lego/themes/6/')) {
+          return new Response(JSON.stringify({ id: 6, name: 'Harry Potter' }), {
+            status: 200,
+          });
+        }
+
+        if (url.endsWith('/lego/themes/7/')) {
+          return new Response(JSON.stringify({ id: 7, name: 'Disney' }), {
+            status: 200,
+          });
+        }
+
+        if (url.endsWith('/lego/themes/8/')) {
+          return new Response(
+            JSON.stringify({
+              id: 8,
+              name: 'Star Wars > Ultimate Collector Series',
+            }),
+            { status: 200 },
+          );
+        }
+
         if (url.endsWith('/lego/sets/10305-1/')) {
           return new Response(
             JSON.stringify({
@@ -632,9 +829,9 @@ export const catalogSnapshot: CatalogSnapshot = {
           return new Response(
             JSON.stringify({
               set_num: '10333-1',
-              name: 'The Lord of the Rings: Barad-dur',
+              name: 'The Lord of the Rings: Barad-dûr',
               year: 2024,
-              num_parts: 5471,
+              num_parts: 5478,
               theme_id: 1,
             }),
             { status: 200 },
@@ -647,7 +844,7 @@ export const catalogSnapshot: CatalogSnapshot = {
               set_num: '10332-1',
               name: 'Medieval Town Square',
               year: 2024,
-              num_parts: 3304,
+              num_parts: 3308,
               theme_id: 1,
             }),
             { status: 200 },
@@ -739,6 +936,110 @@ export const catalogSnapshot: CatalogSnapshot = {
               name: 'Tuxedo Cat',
               year: 2024,
               num_parts: 1710,
+              theme_id: 2,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/10300-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10300-1',
+              name: 'Back to the Future Time Machine',
+              year: 2022,
+              num_parts: 1872,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/10294-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '10294-1',
+              name: 'Titanic',
+              year: 2021,
+              num_parts: 9092,
+              theme_id: 1,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21061-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21061-1',
+              name: 'Notre-Dame de Paris',
+              year: 2024,
+              num_parts: 4382,
+              theme_id: 4,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/31208-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '31208-1',
+              name: 'Hokusai - The Great Wave',
+              year: 2023,
+              num_parts: 1810,
+              theme_id: 5,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/76419-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '76419-1',
+              name: 'Hogwarts Castle and Grounds',
+              year: 2023,
+              num_parts: 2660,
+              theme_id: 6,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/43222-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '43222-1',
+              name: 'Disney Castle',
+              year: 2023,
+              num_parts: 4837,
+              theme_id: 7,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/75313-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '75313-1',
+              name: 'AT-AT',
+              year: 2021,
+              num_parts: 6785,
+              theme_id: 8,
+            }),
+            { status: 200 },
+          );
+        }
+
+        if (url.endsWith('/lego/sets/21345-1/')) {
+          return new Response(
+            JSON.stringify({
+              set_num: '21345-1',
+              name: 'Polaroid OneStep SX-70',
+              year: 2024,
+              num_parts: 516,
               theme_id: 2,
             }),
             { status: 200 },
@@ -873,9 +1174,9 @@ export const catalogSnapshot: CatalogSnapshot = {
         return new Response(
           JSON.stringify({
             set_num: '10333-1',
-            name: 'The Lord of the Rings: Barad-dur',
+            name: 'The Lord of the Rings: Barad-dûr',
             year: 2024,
-            num_parts: 5471,
+            num_parts: 5478,
             theme_id: 1,
           }),
           { status: 200 },
@@ -888,7 +1189,7 @@ export const catalogSnapshot: CatalogSnapshot = {
             set_num: '10332-1',
             name: 'Medieval Town Square',
             year: 2024,
-            num_parts: 3304,
+            num_parts: 3308,
             theme_id: 1,
           }),
           { status: 200 },
@@ -986,6 +1287,110 @@ export const catalogSnapshot: CatalogSnapshot = {
         );
       }
 
+      if (url.endsWith('/lego/sets/10300-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10300-1',
+            name: 'Back to the Future Time Machine',
+            year: 2022,
+            num_parts: 1872,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/10294-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '10294-1',
+            name: 'Titanic',
+            year: 2021,
+            num_parts: 9092,
+            theme_id: 1,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21061-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21061-1',
+            name: 'Notre-Dame de Paris',
+            year: 2024,
+            num_parts: 4382,
+            theme_id: 4,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/31208-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '31208-1',
+            name: 'Hokusai - The Great Wave',
+            year: 2023,
+            num_parts: 1810,
+            theme_id: 5,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/76419-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '76419-1',
+            name: 'Hogwarts Castle and Grounds',
+            year: 2023,
+            num_parts: 2660,
+            theme_id: 6,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/43222-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '43222-1',
+            name: 'Disney Castle',
+            year: 2023,
+            num_parts: 4837,
+            theme_id: 7,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/75313-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '75313-1',
+            name: 'AT-AT',
+            year: 2021,
+            num_parts: 6785,
+            theme_id: 8,
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.endsWith('/lego/sets/21345-1/')) {
+        return new Response(
+          JSON.stringify({
+            set_num: '21345-1',
+            name: 'Polaroid OneStep SX-70',
+            year: 2024,
+            num_parts: 516,
+            theme_id: 2,
+          }),
+          { status: 200 },
+        );
+      }
+
       if (url.endsWith('/lego/themes/1/')) {
         return new Response(JSON.stringify({ id: 1, name: 'Icons' }), {
           status: 200,
@@ -1003,6 +1408,40 @@ export const catalogSnapshot: CatalogSnapshot = {
         return new Response(JSON.stringify({ id: 3, name: 'Avengers' }), {
           status: 200,
         });
+      }
+
+      if (url.endsWith('/lego/themes/4/')) {
+        return new Response(JSON.stringify({ id: 4, name: 'Architecture' }), {
+          status: 200,
+        });
+      }
+
+      if (url.endsWith('/lego/themes/5/')) {
+        return new Response(JSON.stringify({ id: 5, name: 'LEGO Art' }), {
+          status: 200,
+        });
+      }
+
+      if (url.endsWith('/lego/themes/6/')) {
+        return new Response(JSON.stringify({ id: 6, name: 'Harry Potter' }), {
+          status: 200,
+        });
+      }
+
+      if (url.endsWith('/lego/themes/7/')) {
+        return new Response(JSON.stringify({ id: 7, name: 'Disney' }), {
+          status: 200,
+        });
+      }
+
+      if (url.endsWith('/lego/themes/8/')) {
+        return new Response(
+          JSON.stringify({
+            id: 8,
+            name: 'Star Wars > Ultimate Collector Series',
+          }),
+          { status: 200 },
+        );
       }
 
       return new Response(null, { status: 404 });
