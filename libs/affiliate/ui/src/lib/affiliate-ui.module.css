@@ -5,8 +5,7 @@
 }
 
 .primaryOfferAction {
-  display: grid;
-  gap: var(--lego-space-1);
+  display: block;
 }
 
 .primaryOfferLink {
@@ -22,12 +21,6 @@
 .primaryOfferLink:hover {
   background: var(--lego-commerce-hover);
   border-color: transparent;
-}
-
-.offerBadges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-2);
 }
 
 .panelMeta {
@@ -83,57 +76,46 @@
   padding-left: var(--lego-space-3);
 }
 
-.offerPriceLabel {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-text-role-meta-line-height);
-  margin: 0;
-}
-
 .offerTitle {
   font-family: var(--lego-font-family-heading);
-  font-size: var(--lego-text-role-card-title-size);
-  font-weight: var(--lego-text-role-card-title-weight);
+  font-size: 1.05rem;
+  font-weight: var(--lego-font-weight-semibold);
   letter-spacing: -0.02em;
-  line-height: var(--lego-text-role-card-title-line-height);
+  line-height: 1.25;
   margin: 0;
 }
 
 .offerPrice {
   font-family: var(--lego-font-family-heading);
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: clamp(1.35rem, 2.4vw, 1.8rem);
   font-weight: var(--lego-font-weight-bold);
   letter-spacing: -0.03em;
   line-height: 1;
   margin: 0;
 }
 
-.offerPerks,
-.unavailableCopy,
-.panelNote {
+.offerAvailability,
+.offerFreshness {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
-  line-height: 1.5;
+  line-height: 1.4;
   margin: 0;
 }
 
-.offerFreshness,
-.offerDisclosure {
+.offerAvailabilityInStock {
+  color: var(--lego-success);
+}
+
+.offerAvailabilityOutOfStock {
+  color: var(--lego-text);
+}
+
+.offerAvailabilityUnknown {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-line-height-relaxed);
-  margin: 0;
 }
 
 .offerLink {
-  background: var(--lego-commerce);
-  border: var(--lego-border-width-1) solid transparent;
-  color: #ffffff;
-}
-
-.offerLink:hover {
-  background: var(--lego-commerce-hover);
-  border-color: transparent;
+  justify-content: center;
 }
 
 .offerActionCell {
@@ -142,10 +124,6 @@
 }
 
 .offerPriceCell {
-  text-align: right;
+  min-width: 8.5rem;
   white-space: nowrap;
-}
-
-.panelNote {
-  padding-top: var(--lego-space-1);
 }

@@ -1,13 +1,15 @@
-import { listAffiliateOffers } from '@lego-platform/affiliate/data-access';
+import { type CatalogOffer, getBestOffer } from '@lego-platform/affiliate/util';
 import {
   AffiliateOffersPanel,
   AffiliatePrimaryOfferAction,
   AffiliateUnavailableCard,
 } from '@lego-platform/affiliate/ui';
 
-export function AffiliateFeatureOffers({ setId }: { setId: string }) {
-  const affiliateOffers = listAffiliateOffers(setId).slice(0, 3);
-
+export function AffiliateFeatureOffers({
+  affiliateOffers,
+}: {
+  affiliateOffers: readonly CatalogOffer[];
+}) {
   if (affiliateOffers.length === 0) {
     return <AffiliateUnavailableCard id="offers" />;
   }
@@ -16,11 +18,11 @@ export function AffiliateFeatureOffers({ setId }: { setId: string }) {
 }
 
 export function AffiliateFeaturePrimaryOfferAction({
-  setId,
+  affiliateOffers,
 }: {
-  setId: string;
+  affiliateOffers: readonly CatalogOffer[];
 }) {
-  const primaryOffer = listAffiliateOffers(setId)[0];
+  const primaryOffer = getBestOffer(affiliateOffers);
 
   if (!primaryOffer) {
     return null;

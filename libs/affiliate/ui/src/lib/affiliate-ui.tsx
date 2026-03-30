@@ -1,15 +1,13 @@
-import { AffiliateOfferSnapshot } from '@lego-platform/affiliate/util';
+import {
+  CatalogOffer,
+  getCatalogOfferAvailabilityLabel,
+} from '@lego-platform/affiliate/util';
 import {
   getDefaultFormattingLocale,
   getDefaultMarketAdjective,
   getDefaultMarketScopeLabel,
 } from '@lego-platform/shared/config';
-import {
-  ActionLink,
-  Badge,
-  SectionHeading,
-  Surface,
-} from '@lego-platform/shared/ui';
+import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './affiliate-ui.module.css';
 
 function formatAffiliatePrice(totalPriceMinor: number, currencyCode: string) {
@@ -33,70 +31,59 @@ function getOfferScopeLabel(suffix?: string): string {
   });
 }
 
-function getAvailabilityTone(
-  availabilityLabel: string,
-): 'info' | 'neutral' | 'positive' | 'warning' {
-  if (availabilityLabel.toLowerCase().includes('stock')) {
-    return availabilityLabel.toLowerCase().includes('low')
-      ? 'warning'
-      : 'positive';
+function getAvailabilityClassName(availability: CatalogOffer['availability']) {
+  if (availability === 'in_stock') {
+    return styles.offerAvailabilityInStock;
   }
 
-  if (availabilityLabel.toLowerCase().includes('pre')) {
-    return 'info';
+  if (availability === 'out_of_stock') {
+    return styles.offerAvailabilityOutOfStock;
   }
 
-  return 'neutral';
+  return styles.offerAvailabilityUnknown;
 }
 
 export function AffiliateOfferCard({
   affiliateOffer,
 }: {
-  affiliateOffer: AffiliateOfferSnapshot;
+  affiliateOffer: CatalogOffer;
 }) {
   return (
     <tr className={styles.offerRow}>
       <td className={styles.offerMerchantCell}>
-        <div className={styles.offerMerchantBlock}>
-          <h3 className={styles.offerTitle}>{affiliateOffer.merchantName}</h3>
-          {affiliateOffer.perks ? (
-            <p className={styles.offerPerks}>{affiliateOffer.perks}</p>
-          ) : null}
-          <p className={styles.offerDisclosure}>
-            {affiliateOffer.disclosureCopy}
-          </p>
-        </div>
-      </td>
-      <td className={styles.offerAvailabilityCell}>
-        <div className={styles.offerBadges}>
-          <Badge tone={getAvailabilityTone(affiliateOffer.availabilityLabel)}>
-            {affiliateOffer.availabilityLabel}
-          </Badge>
-        </div>
-      </td>
-      <td className={styles.offerCheckedCell}>
-        <p className={styles.offerFreshness}>
-          Checked {formatObservedAt(affiliateOffer.observedAt)}
-        </p>
+        <p className={styles.offerTitle}>{affiliateOffer.merchantName}</p>
       </td>
       <td className={styles.offerPriceCell}>
         <p className={styles.offerPrice}>
           {formatAffiliatePrice(
-            affiliateOffer.totalPriceMinor,
-            affiliateOffer.currencyCode,
+            affiliateOffer.priceCents,
+            affiliateOffer.currency,
           )}
         </p>
-        <p className={styles.offerPriceLabel}>Reviewed offer</p>
+      </td>
+      <td className={styles.offerAvailabilityCell}>
+        <p
+          className={`${styles.offerAvailability} ${getAvailabilityClassName(
+            affiliateOffer.availability,
+          )}`}
+        >
+          {getCatalogOfferAvailabilityLabel(affiliateOffer.availability)}
+        </p>
+      </td>
+      <td className={styles.offerCheckedCell}>
+        <p className={styles.offerFreshness}>
+          {formatObservedAt(affiliateOffer.checkedAt)}
+        </p>
       </td>
       <td className={styles.offerActionCell}>
         <ActionLink
           className={styles.offerLink}
-          href={affiliateOffer.outboundUrl}
+          href={affiliateOffer.url}
           rel="noreferrer sponsored"
           target="_blank"
           tone="secondary"
         >
-          {affiliateOffer.ctaLabel}
+          Open offer
         </ActionLink>
       </td>
     </tr>
@@ -106,13 +93,13 @@ export function AffiliateOfferCard({
 export function AffiliatePrimaryOfferAction({
   affiliateOffer,
 }: {
-  affiliateOffer: AffiliateOfferSnapshot;
+  affiliateOffer: CatalogOffer;
 }) {
   return (
     <div className={styles.primaryOfferAction}>
       <ActionLink
         className={styles.primaryOfferLink}
-        href={affiliateOffer.outboundUrl}
+        href={affiliateOffer.url}
         rel="noreferrer sponsored"
         target="_blank"
         tone="secondary"
@@ -127,7 +114,7 @@ export function AffiliateOffersPanel({
   affiliateOffers,
   id,
 }: {
-  affiliateOffers: readonly AffiliateOfferSnapshot[];
+  affiliateOffers: readonly CatalogOffer[];
   id?: string;
 }) {
   return (
@@ -139,12 +126,12 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description={`Compare the reviewed ${getDefaultMarketAdjective()} merchant pages in the current pricing slice.`}
+        description={`Compare current ${getDefaultMarketAdjective()} offers side by side.`}
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
       <p className={styles.panelMeta}>
-        {getOfferScopeLabel(`${affiliateOffers.length} merchants shown`)}
+        {getOfferScopeLabel(`${affiliateOffers.length} offers compared`)}
       </p>
       <div className={styles.offerTableWrap}>
         <table className={styles.offerTable}>
@@ -154,13 +141,13 @@ export function AffiliateOffersPanel({
                 Merchant
               </th>
               <th className={styles.offerHeadCell} scope="col">
+                Price
+              </th>
+              <th className={styles.offerHeadCell} scope="col">
                 Availability
               </th>
               <th className={styles.offerHeadCell} scope="col">
-                Checked
-              </th>
-              <th className={styles.offerHeadCell} scope="col">
-                Price
+                Last checked
               </th>
               <th className={styles.offerHeadCell} scope="col">
                 Action
@@ -171,16 +158,12 @@ export function AffiliateOffersPanel({
             {affiliateOffers.map((affiliateOffer) => (
               <AffiliateOfferCard
                 affiliateOffer={affiliateOffer}
-                key={affiliateOffer.merchantId}
+                key={`${affiliateOffer.setId}-${affiliateOffer.merchant}`}
               />
             ))}
           </tbody>
         </table>
       </div>
-      <p className={styles.panelNote}>
-        Prices and availability match the same reviewed snapshot used in the
-        main price summary.
-      </p>
     </Surface>
   );
 }
@@ -195,15 +178,11 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
       tone="muted"
     >
       <SectionHeading
-        description={`Reviewed ${getDefaultMarketAdjective()} offers are live for selected sets.`}
+        description={`Offer comparison is not available for this set right now.`}
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
       <p className={styles.panelMeta}>{getOfferScopeLabel()}</p>
-      <p className={styles.unavailableCopy}>
-        Offers appear together with reviewed price and tracked history when a
-        set joins the current {getDefaultMarketAdjective()} pricing selection.
-      </p>
     </Surface>
   );
 }

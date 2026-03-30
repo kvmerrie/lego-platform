@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+  getCatalogOffersBySetId,
   getCatalogSetBySlug,
   listCatalogBrowseThemeGroups,
   listCatalogSetCardsByIds,
@@ -610,6 +611,49 @@ describe('catalog data-access contracts', () => {
         },
       ],
     );
+  });
+
+  test('returns comparable catalog offers for every public set', () => {
+    expect(getCatalogOffersBySetId('10316')).toEqual([
+      expect.objectContaining({
+        setId: '10316',
+        merchant: 'bol',
+        merchantName: 'bol',
+        market: 'NL',
+        currency: 'EUR',
+        availability: 'in_stock',
+        condition: 'new',
+        priceCents: 48999,
+      }),
+      expect.objectContaining({
+        setId: '10316',
+        merchant: 'lego',
+        merchantName: 'LEGO',
+        market: 'NL',
+        currency: 'EUR',
+        availability: 'in_stock',
+        condition: 'new',
+        priceCents: 49999,
+      }),
+    ]);
+
+    expect(getCatalogOffersBySetId('42143')[0]).toEqual(
+      expect.objectContaining({
+        merchant: 'amazon',
+        merchantName: 'Amazon',
+        priceCents: 40999,
+      }),
+    );
+
+    expect(
+      listCatalogSetSummaries().every((catalogSetSummary) => {
+        const catalogOffers = getCatalogOffersBySetId(catalogSetSummary.id);
+
+        return catalogOffers.length >= 2 && catalogOffers.length <= 3;
+      }),
+    ).toBe(true);
+
+    expect(getCatalogOffersBySetId('missing-set')).toEqual([]);
   });
 
   test('groups the discover browse catalog by theme in a stable retail order', () => {

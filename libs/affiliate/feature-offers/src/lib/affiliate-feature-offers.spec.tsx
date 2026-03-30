@@ -1,44 +1,91 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import type { CatalogOffer } from '@lego-platform/affiliate/util';
 import {
   AffiliateFeatureOffers,
   AffiliateFeaturePrimaryOfferAction,
 } from './affiliate-feature-offers';
 
+const catalogOffers: readonly CatalogOffer[] = [
+  {
+    setId: '10316',
+    merchant: 'bol',
+    merchantName: 'bol',
+    url: 'https://www.bol.com/nl/nl/s/?searchtext=LEGO%2010316-1',
+    priceCents: 48999,
+    currency: 'EUR',
+    availability: 'in_stock',
+    condition: 'new',
+    checkedAt: '2026-03-30T11:30:00.000Z',
+    market: 'NL',
+  },
+  {
+    setId: '10316',
+    merchant: 'lego',
+    merchantName: 'LEGO',
+    url: 'https://www.lego.com/nl-nl/search?q=10316-1',
+    priceCents: 49999,
+    currency: 'EUR',
+    availability: 'in_stock',
+    condition: 'new',
+    checkedAt: '2026-03-30T11:30:00.000Z',
+    market: 'NL',
+  },
+];
+
 describe('AffiliateFeatureOffers', () => {
   it('renders the reviewed Dutch merchant offers for a commerce-enabled set', () => {
     const markup = renderToStaticMarkup(
-      <AffiliateFeatureOffers setId="10316" />,
+      <AffiliateFeatureOffers affiliateOffers={catalogOffers} />,
     );
 
     expect(markup).toContain('Reviewed offers');
     expect(markup).toContain('Merchant');
-    expect(markup).toContain('Availability');
     expect(markup).toContain('Price');
-    expect(markup).toContain('LEGO NL');
-    expect(markup).toContain('Reviewed offer');
-    expect(markup).toContain('Checked');
-    expect(markup).toContain('Shop at LEGO NL');
-    expect(markup).toContain('Direct official merchant link.');
+    expect(markup).toContain('Availability');
+    expect(markup).toContain('Last checked');
+    expect(markup).toContain('LEGO');
+    expect(markup).toContain('Open offer');
   });
 
   it('renders a compact unavailable state when no offer snapshot exists', () => {
     const markup = renderToStaticMarkup(
-      <AffiliateFeatureOffers setId="10305" />,
+      <AffiliateFeatureOffers affiliateOffers={[]} />,
     );
 
     expect(markup).toContain('Reviewed offers');
     expect(markup).toContain(
-      'Reviewed Dutch offers are live for selected sets.',
+      'Offer comparison is not available for this set right now.',
     );
   });
 
-  it('renders the cheapest reviewed merchant CTA for the set-detail hero', () => {
+  it('renders the best in-stock merchant CTA for the set-detail hero', () => {
     const markup = renderToStaticMarkup(
-      <AffiliateFeaturePrimaryOfferAction setId="10316" />,
+      <AffiliateFeaturePrimaryOfferAction
+        affiliateOffers={[
+          {
+            ...catalogOffers[0],
+            setId: '42143',
+            priceCents: 41999,
+          },
+          {
+            ...catalogOffers[0],
+            setId: '42143',
+            merchant: 'amazon',
+            merchantName: 'Amazon',
+            url: 'https://www.amazon.nl/s?k=LEGO%2042143-1',
+            priceCents: 40999,
+          },
+          {
+            ...catalogOffers[1],
+            setId: '42143',
+            priceCents: 42999,
+          },
+        ]}
+      />,
     );
 
-    expect(markup).toContain('Shop at bol');
+    expect(markup).toContain('Shop at Amazon');
     expect(markup).not.toContain('Cheapest reviewed offer');
     expect(markup).not.toContain('Checked');
   });

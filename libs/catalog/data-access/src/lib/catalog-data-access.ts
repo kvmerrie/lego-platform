@@ -9,6 +9,10 @@ import {
   normalizeCatalogAsciiText,
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
+import {
+  catalogOffers,
+  type CatalogOfferRecord,
+} from './catalog-offers.generated';
 import { catalogSetOverlays, catalogThemeOverlays } from './catalog-overlays';
 import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
@@ -35,6 +39,33 @@ const catalogSetRecordById = new Map(
     catalogSetRecord,
   ]),
 );
+const catalogOffersBySetId = new Map<string, CatalogOfferRecord[]>();
+
+function getCatalogOfferAvailabilityRank(
+  availability: CatalogOfferRecord['availability'],
+): number {
+  if (availability === 'in_stock') {
+    return 0;
+  }
+
+  if (availability === 'unknown') {
+    return 1;
+  }
+
+  return 2;
+}
+
+function sortCatalogOffers(
+  offers: readonly CatalogOfferRecord[],
+): CatalogOfferRecord[] {
+  return [...offers].sort(
+    (left, right) =>
+      getCatalogOfferAvailabilityRank(left.availability) -
+        getCatalogOfferAvailabilityRank(right.availability) ||
+      left.priceCents - right.priceCents ||
+      left.merchantName.localeCompare(right.merchantName),
+  );
+}
 
 function toCatalogSetSummary(
   catalogSetDetail: CatalogSetDetail,
@@ -203,6 +234,14 @@ function createCatalogSearchIndex(): CatalogSearchIndexEntry[] {
 
 const catalogSearchIndex = createCatalogSearchIndex();
 
+for (const catalogOffer of catalogOffers) {
+  const existingCatalogOffers =
+    catalogOffersBySetId.get(catalogOffer.setId) ?? [];
+
+  existingCatalogOffers.push(catalogOffer);
+  catalogOffersBySetId.set(catalogOffer.setId, existingCatalogOffers);
+}
+
 function sortCatalogHomepageSetCards(
   setCards: readonly CatalogHomepageSetCard[],
 ): CatalogHomepageSetCard[] {
@@ -312,6 +351,10 @@ export function listCatalogSetCardsByIds(
 
     return [toCatalogHomepageSetCard(toCatalogSetDetail(catalogSetRecord))];
   });
+}
+
+export function getCatalogOffersBySetId(setId: string): CatalogOfferRecord[] {
+  return sortCatalogOffers(catalogOffersBySetId.get(setId) ?? []);
 }
 
 export function listCatalogBrowseThemeGroups(): CatalogBrowseThemeGroup[] {

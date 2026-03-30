@@ -2,7 +2,11 @@ import {
   AffiliateFeatureOffers,
   AffiliateFeaturePrimaryOfferAction,
 } from '@lego-platform/affiliate/feature-offers';
-import { getCatalogSetBySlug, listCatalogSetSlugs } from '@lego-platform/catalog/data-access';
+import {
+  getCatalogOffersBySetId,
+  getCatalogSetBySlug,
+  listCatalogSetSlugs,
+} from '@lego-platform/catalog/data-access';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
@@ -30,6 +34,8 @@ export default async function SetDetailPage({
     notFound();
   }
 
+  const catalogOffers = getCatalogOffersBySetId(catalogSetDetail.id);
+
   return (
     <ShellWeb>
       <CatalogFeatureSetDetail
@@ -40,7 +46,9 @@ export default async function SetDetailPage({
               setId={catalogSetDetail.id}
               variant="product"
             />
-            <AffiliateFeaturePrimaryOfferAction setId={catalogSetDetail.id} />
+            <AffiliateFeaturePrimaryOfferAction
+              affiliateOffers={catalogOffers}
+            />
             <div className={styles.productActions}>
               <CollectionFeatureOwnedToggle
                 setId={catalogSetDetail.id}
@@ -57,7 +65,7 @@ export default async function SetDetailPage({
           <PricingFeaturePriceHistory setId={catalogSetDetail.id} />
         }
       />
-      <AffiliateFeatureOffers setId={catalogSetDetail.id} />
+      <AffiliateFeatureOffers affiliateOffers={catalogOffers} />
     </ShellWeb>
   );
 }
