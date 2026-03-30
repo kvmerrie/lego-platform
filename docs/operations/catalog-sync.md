@@ -74,6 +74,7 @@ Use this before overwriting artifacts when you want a safe drift check first.
   - `libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts`
   - any local overlay changes made alongside the sync
 - The catalog test suite also checks that committed generated artifacts remain in canonical writer format, which helps catch accidental manual edits or formatter drift.
+- Canonical writer format means a TypeScript module that stores the generated JSON in a `String.raw` template payload and exports it through `JSON.parse(...)`. Do not hand-convert these files into plain object-literal style.
 - This documentation only covers the technical workflow. Rebrickable licensing and usage terms still need separate manual review before production operations.
 
 ## Production Scheduling

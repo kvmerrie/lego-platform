@@ -66,17 +66,34 @@ function parseGeneratedArtifactPayload<T>({
   exportName: 'catalogSnapshot' | 'catalogSyncManifest';
   moduleSource: string;
 }): T {
-  const match = moduleSource.match(
-    new RegExp(`export const ${exportName}: [^=]+ = ([\\s\\S]+);\\s*$`),
-  );
+  const payloadPrefix = `const ${exportName}Payload = String.raw\``;
+  const payloadStart = moduleSource.indexOf(payloadPrefix);
+  const payloadEnd =
+    payloadStart === -1
+      ? -1
+      : moduleSource.indexOf('`;', payloadStart + payloadPrefix.length);
 
-  if (!match?.[1]) {
+  if (payloadStart === -1 || payloadEnd === -1) {
     throw new Error(
-      `Unable to parse generated catalog artifact payload from ${artifactPath}.`,
+      `Unable to parse generated catalog artifact payload from ${artifactPath}. Expected the canonical JSON template payload format.`,
     );
   }
 
-  return JSON.parse(match[1]) as T;
+  const payload = moduleSource.slice(
+    payloadStart + payloadPrefix.length,
+    payloadEnd,
+  );
+
+  try {
+    return JSON.parse(payload) as T;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Unknown JSON parse failure.';
+
+    throw new Error(
+      `Generated catalog artifact at ${artifactPath} is not in canonical JSON template payload format. ${message}`,
+    );
+  }
 }
 
 export async function readCatalogGeneratedArtifacts({

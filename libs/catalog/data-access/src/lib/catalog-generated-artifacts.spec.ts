@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import {
   renderCatalogSnapshotModule,
@@ -10,11 +10,14 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 describe('generated catalog artifacts', () => {
   test('stay in canonical writer format', async () => {
-    const snapshotPath = fileURLToPath(
-      new URL('./catalog-snapshot.generated.ts', import.meta.url),
+    const workspaceRoot = resolve(__dirname, '../../../../..');
+    const snapshotPath = resolve(
+      workspaceRoot,
+      'libs/catalog/data-access/src/lib/catalog-snapshot.generated.ts',
     );
-    const manifestPath = fileURLToPath(
-      new URL('./catalog-sync-manifest.generated.ts', import.meta.url),
+    const manifestPath = resolve(
+      workspaceRoot,
+      'libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts',
     );
 
     expect(await readFile(snapshotPath, 'utf8')).toBe(
