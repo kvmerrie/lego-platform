@@ -1,6 +1,68 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { UserProfileEditorCard, UserSessionCard } from './user-ui';
+import {
+  UserProfileEditorCard,
+  UserSessionCard,
+  UserShellAccountStatusCard,
+} from './user-ui';
+
+describe('UserShellAccountStatusCard', () => {
+  it('renders a clear signed-out collector status surface for the shell', () => {
+    const markup = renderToStaticMarkup(
+      <UserShellAccountStatusCard
+        isAuthAvailable
+        userSession={{
+          state: 'anonymous',
+          ownedSetIds: [],
+          wantedSetIds: [],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Private collector state is not active yet');
+    expect(markup).toContain('Browse the public catalog first');
+    expect(markup).toContain('Sign in to save privately');
+    expect(markup).toContain('Open wishlist');
+    expect(markup).toContain(
+      'Public set facts and reviewed pricing stay visible without an account.',
+    );
+    expect(markup).toContain('signed out');
+  });
+
+  it('renders a signed-in collector summary with collection and wishlist access', () => {
+    const markup = renderToStaticMarkup(
+      <UserShellAccountStatusCard
+        userSession={{
+          state: 'authenticated',
+          account: {
+            userId: 'collector-1',
+            email: 'collector@example.com',
+          },
+          collector: {
+            id: 'brick-curator',
+            name: 'Alex Rivera',
+            tier: 'Founding Collector',
+            location: 'Amsterdam',
+            collectionFocus: 'Display-scale fantasy and castle icons',
+          },
+          ownedSetIds: ['10316', '10305'],
+          wantedSetIds: ['21348'],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Alex Rivera');
+    expect(markup).toContain('@brick-curator');
+    expect(markup).toContain('2 owned saved');
+    expect(markup).toContain('1 wanted saved');
+    expect(markup).toContain('Open collection');
+    expect(markup).toContain('Open wishlist');
+    expect(markup).toContain('Sign out');
+    expect(markup).toContain(
+      'Collection, wishlist, and profile are private collector state.',
+    );
+  });
+});
 
 describe('UserSessionCard', () => {
   it('renders a more productized signed-in collector account surface', () => {

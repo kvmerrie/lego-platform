@@ -45,6 +45,182 @@ export function UserIdentityCard({
   );
 }
 
+export function UserShellAccountStatusCard({
+  errorMessage,
+  isAuthActionPending,
+  isAuthAvailable = true,
+  isLoading,
+  onSignOut,
+  statusMessage,
+  userSession,
+}: {
+  errorMessage?: string;
+  isAuthActionPending?: boolean;
+  isAuthAvailable?: boolean;
+  isLoading?: boolean;
+  onSignOut?: () => void;
+  statusMessage?: string;
+  userSession: UserSession;
+}) {
+  if (isLoading) {
+    return (
+      <Surface
+        as="aside"
+        className={`${styles.card} ${styles.shellStatusCard}`}
+        tone="muted"
+      >
+        <div className={styles.sessionContent}>
+          <SectionHeading
+            description="Loading the private collector status that unlocks collection, wishlist, and profile access across the product."
+            eyebrow="Collector status"
+            title="Checking collector status"
+          />
+        </div>
+        <Badge className={styles.sessionStatus} tone="info">
+          syncing
+        </Badge>
+      </Surface>
+    );
+  }
+
+  if (!isAuthenticatedSession(userSession)) {
+    return (
+      <Surface
+        as="aside"
+        className={`${styles.card} ${styles.shellStatusCard}`}
+        tone="muted"
+      >
+        <div className={styles.sessionContent}>
+          <div className={styles.statusRow}>
+            <Badge tone="warning">Not signed in</Badge>
+            {isAuthAvailable ? (
+              <Badge tone="info">Private saves after sign-in</Badge>
+            ) : (
+              <Badge tone="warning">Sign-in unavailable</Badge>
+            )}
+          </div>
+          <SectionHeading
+            description={
+              isAuthAvailable
+                ? 'Browse the public catalog first, then sign in once to keep your collection, wishlist, and collector profile private across visits.'
+                : 'Browsing still works here, but private collector saves are unavailable until browser sign-in is configured in this environment.'
+            }
+            eyebrow="Collector status"
+            title="Private collector state is not active yet"
+          />
+          <div className={styles.shellStatusActions}>
+            <ActionLink
+              href="/collection"
+              tone={isAuthAvailable ? 'accent' : 'secondary'}
+            >
+              {isAuthAvailable
+                ? 'Sign in to save privately'
+                : 'Open collection'}
+            </ActionLink>
+            <ActionLink href="/wishlist" tone="secondary">
+              Open wishlist
+            </ActionLink>
+          </div>
+          <p className={styles.shellStatusSupport}>
+            Public set facts and reviewed pricing stay visible without an
+            account. Signing in only adds your private collector state.
+          </p>
+          {statusMessage ? (
+            <p aria-live="polite" className={styles.infoText}>
+              {statusMessage}
+            </p>
+          ) : null}
+          {errorMessage ? (
+            <p aria-live="polite" className={styles.errorText}>
+              {errorMessage}
+            </p>
+          ) : null}
+        </div>
+        <Badge className={styles.sessionStatus} tone="warning">
+          signed out
+        </Badge>
+      </Surface>
+    );
+  }
+
+  const collectorSetCounts = getCollectorSetCounts(userSession);
+
+  return (
+    <Surface
+      as="aside"
+      className={`${styles.card} ${styles.shellStatusCard}`}
+      elevation="rested"
+    >
+      <div className={styles.sessionContent}>
+        <div className={styles.statusRow}>
+          <Badge tone="positive">Signed in</Badge>
+          <Badge tone="accent">{userSession.collector.tier}</Badge>
+        </div>
+        <SectionHeading
+          description="Your private collection, wishlist, and collector profile are ready from the header while public set facts and reviewed pricing stay shared catalog context."
+          eyebrow="Collector status"
+          title={userSession.collector.name}
+        />
+        <div className={styles.shellStatusIdentity}>
+          <div aria-hidden="true" className={styles.avatarBadge}>
+            {getUserInitials(userSession.collector.name)}
+          </div>
+          <div className={styles.shellStatusMeta}>
+            <p className={styles.paneValue}>@{userSession.collector.id}</p>
+            <p className={styles.metaText}>
+              {userSession.collector.location} · {userSession.collector.tier}
+            </p>
+          </div>
+        </div>
+        <p className={styles.supportNote}>
+          {userSession.collector.collectionFocus}
+        </p>
+        <div className={styles.sessionCounts}>
+          <Badge tone="positive">
+            {collectorSetCounts.ownedCount} owned saved
+          </Badge>
+          <Badge tone="info">
+            {collectorSetCounts.wantedCount} wanted saved
+          </Badge>
+        </div>
+        <div className={styles.shellStatusActions}>
+          <ActionLink href="/collection" tone="secondary">
+            Open collection
+          </ActionLink>
+          <ActionLink href="/wishlist" tone="secondary">
+            Open wishlist
+          </ActionLink>
+          <Button
+            isLoading={Boolean(isAuthActionPending)}
+            tone="ghost"
+            type="button"
+            onClick={onSignOut}
+          >
+            Sign out
+          </Button>
+        </div>
+        <p className={styles.shellStatusSupport}>
+          Collection, wishlist, and profile are private collector state. Public
+          set facts and reviewed pricing stay the same for everyone.
+        </p>
+        {statusMessage ? (
+          <p aria-live="polite" className={styles.infoText}>
+            {statusMessage}
+          </p>
+        ) : null}
+        {errorMessage ? (
+          <p aria-live="polite" className={styles.errorText}>
+            {errorMessage}
+          </p>
+        ) : null}
+      </div>
+      <Badge className={styles.sessionStatus} tone="positive">
+        ready
+      </Badge>
+    </Surface>
+  );
+}
+
 export function UserSessionCard({
   authEmail,
   authStatusMessage,

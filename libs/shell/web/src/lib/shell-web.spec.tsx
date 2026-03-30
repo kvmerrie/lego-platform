@@ -25,5 +25,7 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Wishlist');
     expect(markup).toContain('Public route');
     expect(markup).toContain('Private route');
+    expect(markup).toContain('Checking collector status');
+    expect(markup).toContain('Collector status');
   });
 });

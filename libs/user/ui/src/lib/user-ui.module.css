@@ -49,6 +49,39 @@
   min-width: 0;
 }
 
+.shellStatusCard {
+  align-items: start;
+  gap: var(--lego-space-4);
+  min-width: 0;
+}
+
+.shellStatusIdentity {
+  align-items: center;
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.shellStatusMeta {
+  display: grid;
+  gap: var(--lego-space-1);
+  min-width: 0;
+}
+
+.shellStatusActions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.shellStatusSupport {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
 .title {
   font-family: var(--lego-font-family-heading);
   font-size: var(--lego-text-role-card-title-size);

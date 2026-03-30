@@ -47,10 +47,18 @@
   gap: var(--lego-space-5);
 }
 
+.headerUtilities {
+  display: grid;
+  gap: var(--lego-space-3);
+  width: 100%;
+}
+
 .brand {
   align-items: flex-start;
   display: flex;
+  flex: 1 1 auto;
   gap: var(--lego-space-5);
+  min-width: 0;
 }
 
 .brandMark {
@@ -100,8 +108,8 @@
 }
 
 .toggle {
-  align-self: flex-start;
   box-shadow: none;
+  justify-self: flex-start;
 }
 
 .nav {
@@ -208,14 +216,19 @@
   }
 
   .headerRow {
-    align-items: center;
+    align-items: start;
     flex-direction: row;
     justify-content: space-between;
   }
 
+  .headerUtilities {
+    flex: 0 0 min(100%, 24rem);
+    max-width: 24rem;
+    width: min(100%, 24rem);
+  }
+
   .toggle {
-    align-self: flex-start;
-    margin-left: var(--lego-space-6);
+    justify-self: end;
   }
 
   .nav {

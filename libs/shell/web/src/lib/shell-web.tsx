@@ -11,6 +11,7 @@ import {
   Surface,
 } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
+import { ShellWebAccountStatus } from './shell-web-account-status';
 import { ShellWebThemeToggle } from './theme-toggle';
 
 export function ShellWeb({ children }: { children: ReactNode }) {
@@ -43,7 +44,10 @@ export function ShellWeb({ children }: { children: ReactNode }) {
               </div>
             </div>
           </div>
-          <ShellWebThemeToggle className={styles.toggle} />
+          <div className={styles.headerUtilities}>
+            <ShellWebAccountStatus />
+            <ShellWebThemeToggle className={styles.toggle} />
+          </div>
         </div>
         <nav aria-label="Primary" className={styles.nav}>
           {webNavigationSections.map((navigationSection) => {
