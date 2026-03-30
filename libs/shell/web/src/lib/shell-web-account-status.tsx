@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import { warnAboutMissingBrowserSupabaseConfig } from '@lego-platform/shared/data-access-auth';
 import { ActionLink } from '@lego-platform/shared/ui';
 import {
@@ -138,7 +139,7 @@ export function ShellWebAccountStatus({
         <span className={styles.accountStatusText}>Signed out</span>
         <ActionLink
           className={styles.accountActionLink}
-          href="/account"
+          href={buildWebPath(webPathnames.account)}
           tone="secondary"
         >
           Sign in
@@ -151,7 +152,7 @@ export function ShellWebAccountStatus({
           Sign in to open your collection, wishlist, and collector details.
         </p>
         <div className={styles.menuAccountActions}>
-          <ActionLink href="/account" tone="accent">
+          <ActionLink href={buildWebPath(webPathnames.account)} tone="accent">
             Sign in
           </ActionLink>
         </div>
@@ -170,12 +171,15 @@ export function ShellWebAccountStatus({
         aria-hidden="true"
         className={`${styles.statusDot} ${styles.statusDotPositive}`}
       />
-      <a className={styles.accountStatusNameLink} href="/account">
+      <a
+        className={styles.accountStatusNameLink}
+        href={buildWebPath(webPathnames.account)}
+      >
         {userSession.collector.name}
       </a>
       <ActionLink
         className={styles.accountActionLink}
-        href="/account"
+        href={buildWebPath(webPathnames.account)}
         tone="secondary"
       >
         Account
@@ -188,7 +192,7 @@ export function ShellWebAccountStatus({
         @{userSession.collector.id} · Collection and wishlist live here.
       </p>
       <div className={styles.menuAccountActions}>
-        <ActionLink href="/account" tone="secondary">
+        <ActionLink href={buildWebPath(webPathnames.account)} tone="secondary">
           Open account
         </ActionLink>
       </div>

@@ -1,3 +1,46 @@
+type ValueOf<T> = T[keyof T];
+
+export const appLanguageConfigs = {
+  en: {
+    code: 'en',
+    displayName: 'English',
+    htmlLang: 'en',
+  },
+} as const;
+
+export const appMarketConfigs = {
+  NL: {
+    code: 'NL',
+    displayName: 'Dutch market',
+    adjectiveName: 'Dutch',
+    currencyCode: 'EUR',
+    formattingLocale: 'nl-NL',
+    merchantRegionCode: 'NL',
+  },
+} as const;
+
+export type AppLanguageCode = keyof typeof appLanguageConfigs;
+export type AppMarketCode = keyof typeof appMarketConfigs;
+export type AppCurrencyCode = ValueOf<typeof appMarketConfigs>['currencyCode'];
+export type AppLocaleCode = `${AppLanguageCode}-${Lowercase<AppMarketCode>}`;
+export type AppRouteLocalePrefixStrategy = 'never' | 'always';
+
+export interface AppLocaleContext {
+  currencyCode: AppCurrencyCode;
+  formattingLocale: string;
+  htmlLang: string;
+  languageCode: AppLanguageCode;
+  localeCode: AppLocaleCode;
+  marketAdjectiveName: string;
+  marketCode: AppMarketCode;
+  marketDisplayName: string;
+  merchantRegionCode: string;
+  routeSegment: string;
+}
+
+export const DEFAULT_APP_LANGUAGE_CODE: AppLanguageCode = 'en';
+export const DEFAULT_APP_MARKET_CODE: AppMarketCode = 'NL';
+
 export const platformConfig = {
   workspaceName: 'lego-platform',
   productName: 'Brick Ledger',
@@ -5,6 +48,13 @@ export const platformConfig = {
     'Browse standout LEGO sets, then keep track of what you own and still want.',
   defaultThemeMode: 'light',
   supportEmail: 'platform@example.test',
+  experience: {
+    defaultLanguageCode: DEFAULT_APP_LANGUAGE_CODE,
+    defaultMarketCode: DEFAULT_APP_MARKET_CODE,
+    routeLocalePrefixStrategy: 'never' as AppRouteLocalePrefixStrategy,
+    supportedLanguageCodes: [DEFAULT_APP_LANGUAGE_CODE],
+    supportedMarketCodes: [DEFAULT_APP_MARKET_CODE],
+  },
   runtimes: {
     web: {
       port: 3000,
@@ -30,14 +80,24 @@ export const platformConfig = {
 
 export type RuntimeName = keyof typeof platformConfig.runtimes;
 
-export const webNavigation = [
+export const webPathnames = {
+  home: '/',
+  discover: '/discover',
+  search: '/search',
+  account: '/account',
+  collection: '/collection',
+  wishlist: '/wishlist',
+  sets: '/sets',
+} as const;
+
+const webNavigationItems = [
   {
     label: 'Discover',
-    href: '/discover',
+    pathname: webPathnames.discover,
   },
   {
     label: 'Account',
-    href: '/account',
+    pathname: webPathnames.account,
   },
 ] as const;
 
@@ -64,6 +124,116 @@ export interface ServerSupabaseConfig {
   serviceRoleKey: string;
   url: string;
 }
+
+function normalizePathname(pathname: string): string {
+  if (!pathname) {
+    return '/';
+  }
+
+  if (pathname === '/') {
+    return pathname;
+  }
+
+  const withLeadingSlash = pathname.startsWith('/') ? pathname : `/${pathname}`;
+
+  return withLeadingSlash.replace(/\/+$/, '') || '/';
+}
+
+export function createLocaleCode({
+  languageCode,
+  marketCode,
+}: {
+  languageCode: AppLanguageCode;
+  marketCode: AppMarketCode;
+}): AppLocaleCode {
+  return `${languageCode}-${marketCode.toLowerCase()}` as AppLocaleCode;
+}
+
+export function getDefaultAppLocaleContext(): AppLocaleContext {
+  const languageConfig =
+    appLanguageConfigs[platformConfig.experience.defaultLanguageCode];
+  const marketConfig =
+    appMarketConfigs[platformConfig.experience.defaultMarketCode];
+  const localeCode = createLocaleCode({
+    languageCode: languageConfig.code,
+    marketCode: marketConfig.code,
+  });
+
+  return {
+    languageCode: languageConfig.code,
+    marketCode: marketConfig.code,
+    currencyCode: marketConfig.currencyCode,
+    localeCode,
+    htmlLang: languageConfig.htmlLang,
+    formattingLocale: marketConfig.formattingLocale,
+    marketDisplayName: marketConfig.displayName,
+    marketAdjectiveName: marketConfig.adjectiveName,
+    merchantRegionCode: marketConfig.merchantRegionCode,
+    routeSegment: localeCode,
+  };
+}
+
+export function getDefaultFormattingLocale(): string {
+  return getDefaultAppLocaleContext().formattingLocale;
+}
+
+export function buildWebPath(
+  pathname: string,
+  {
+    forceLocalePrefix,
+    localeCode = getDefaultAppLocaleContext().localeCode,
+  }: {
+    forceLocalePrefix?: boolean;
+    localeCode?: AppLocaleCode;
+  } = {},
+): string {
+  const normalizedPathname = normalizePathname(pathname);
+  const shouldPrefix =
+    forceLocalePrefix ??
+    platformConfig.experience.routeLocalePrefixStrategy === 'always';
+
+  if (!shouldPrefix) {
+    return normalizedPathname;
+  }
+
+  return normalizedPathname === '/'
+    ? `/${localeCode}`
+    : `/${localeCode}${normalizedPathname}`;
+}
+
+export function getDefaultMarketScopeLabel({
+  conditionLabel,
+  suffix,
+}: {
+  conditionLabel?: string;
+  suffix?: string;
+} = {}): string {
+  const localeContext = getDefaultAppLocaleContext();
+  const parts = [localeContext.marketDisplayName, localeContext.currencyCode];
+
+  if (conditionLabel) {
+    parts.push(conditionLabel);
+  }
+
+  if (suffix) {
+    parts.push(suffix);
+  }
+
+  return parts.join(' · ');
+}
+
+export function getDefaultMarketAdjective(): string {
+  return getDefaultAppLocaleContext().marketAdjectiveName;
+}
+
+export function buildSetDetailPath(slug: string): string {
+  return buildWebPath(`${webPathnames.sets}/${slug}`);
+}
+
+export const webNavigation = webNavigationItems.map((navigationItem) => ({
+  label: navigationItem.label,
+  href: buildWebPath(navigationItem.pathname),
+})) as ReadonlyArray<{ href: string; label: string }>;
 
 function getDefaultBrowserSupabaseUrl(): string | undefined {
   return process.env.NEXT_PUBLIC_SUPABASE_URL;

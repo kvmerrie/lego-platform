@@ -4,6 +4,7 @@ import {
   CatalogSetCard,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
+import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-set-list.module.css';
 
@@ -44,7 +45,7 @@ export function CatalogFeatureSetList({
         {homepageSets.map((catalogSetSummary) => (
           <CatalogSetCard
             key={catalogSetSummary.id}
-            href={`/sets/${catalogSetSummary.slug}`}
+            href={buildSetDetailPath(catalogSetSummary.slug)}
             priceContext={catalogSetSummary.priceContext}
             setSummary={catalogSetSummary}
             variant="featured"

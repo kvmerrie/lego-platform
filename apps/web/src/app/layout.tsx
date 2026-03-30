@@ -4,7 +4,10 @@ import {
   getThemeBootstrapScript,
   getThemeStyles,
 } from '@lego-platform/shared/design-tokens';
-import { platformConfig } from '@lego-platform/shared/config';
+import {
+  getDefaultAppLocaleContext,
+  platformConfig,
+} from '@lego-platform/shared/config';
 import './global.css';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -24,9 +27,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const defaultAppLocaleContext = getDefaultAppLocaleContext();
+
   return (
     <html
-      lang="en"
+      lang={defaultAppLocaleContext.htmlLang}
       className={plusJakartaSans.variable}
       data-theme="light"
       suppressHydrationWarning

@@ -7,6 +7,11 @@ import {
   type TrackedPriceSummary,
 } from '@lego-platform/pricing/util';
 import {
+  getDefaultFormattingLocale,
+  getDefaultMarketAdjective,
+  getDefaultMarketScopeLabel,
+} from '@lego-platform/shared/config';
+import {
   Badge,
   SectionHeading,
   Surface,
@@ -15,14 +20,14 @@ import {
 import styles from './pricing-ui.module.css';
 
 function formatObservedAt(observedAt: string): string {
-  return new Intl.DateTimeFormat('nl-NL', {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(observedAt));
 }
 
 function formatRecordedOn(recordedOn: string): string {
-  return new Intl.DateTimeFormat('nl-NL', {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
     month: 'short',
   }).format(new Date(`${recordedOn}T00:00:00.000Z`));
@@ -126,8 +131,8 @@ function getReviewedOfferLabel(offerCount: number): string {
   return `${offerCount} offer${offerCount === 1 ? '' : 's'} reviewed`;
 }
 
-function getDutchReviewedCoverageLabel(offerCount: number): string {
-  return `${offerCount} Dutch offer${offerCount === 1 ? '' : 's'} reviewed`;
+function getReviewedCoverageLabel(offerCount: number): string {
+  return `${offerCount} ${getDefaultMarketAdjective()} offer${offerCount === 1 ? '' : 's'} reviewed`;
 }
 
 function getTrackedDailyPointLabel(pointCount: number): string {
@@ -145,6 +150,13 @@ function PricingMetaItem({ label, value }: { label: string; value: string }) {
 
 function PricingScopeLine({ children }: { children: ReactNode }) {
   return <p className={styles.scopeLine}>{children}</p>;
+}
+
+function getPricingScopeLabel(suffix?: string): string {
+  return getDefaultMarketScopeLabel({
+    conditionLabel: 'new condition',
+    suffix,
+  });
 }
 
 function buildHistoryChartPoints(
@@ -237,8 +249,9 @@ export function PriceSummaryCard({
           </p>
         ) : null}
         <PricingScopeLine>
-          Dutch market · EUR · new condition ·{' '}
-          {getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}
+          {getPricingScopeLabel(
+            getReviewedOfferLabel(pricePanelSnapshot.merchantCount),
+          )}
         </PricingScopeLine>
         <div className={styles.productMetaRow}>
           {typeof pricePanelSnapshot.referencePriceMinor === 'number' ? (
@@ -268,13 +281,14 @@ export function PriceSummaryCard({
       tone="muted"
     >
       <SectionHeading
-        description="Latest reviewed Dutch snapshot for this set."
+        description={`Latest reviewed ${getDefaultMarketAdjective()} snapshot for this set.`}
         eyebrow="Buy guidance"
         title="Current reviewed price"
       />
       <PricingScopeLine>
-        Dutch market · EUR · new condition ·{' '}
-        {getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}
+        {getPricingScopeLabel(
+          getReviewedOfferLabel(pricePanelSnapshot.merchantCount),
+        )}
       </PricingScopeLine>
       <div className={styles.metricBlock}>
         <p className={styles.metricLabel}>Reviewed price</p>
@@ -322,9 +336,7 @@ export function PriceSummaryCard({
         />
         <PricingMetaItem
           label="Reviewed offers"
-          value={getDutchReviewedCoverageLabel(
-            pricePanelSnapshot.merchantCount,
-          )}
+          value={getReviewedCoverageLabel(pricePanelSnapshot.merchantCount)}
         />
       </dl>
       <p className={styles.referenceNote}>
@@ -482,9 +494,10 @@ function PricingUnavailableCardContent({
         <p className={styles.metricLabel}>Reviewed price</p>
         <p className={styles.productUnavailableValue}>Not published yet</p>
         <p className={styles.unavailableCopy}>
-          Reviewed Dutch pricing appears for selected sets.
+          Reviewed {getDefaultMarketAdjective()} pricing appears for selected
+          sets.
         </p>
-        <PricingScopeLine>Dutch market · EUR · new condition</PricingScopeLine>
+        <PricingScopeLine>{getPricingScopeLabel()}</PricingScopeLine>
       </div>
     );
   }
@@ -498,16 +511,17 @@ function PricingUnavailableCardContent({
       tone="muted"
     >
       <SectionHeading
-        description="Reviewed Dutch pricing is live for selected sets."
+        description={`Reviewed ${getDefaultMarketAdjective()} pricing is live for selected sets.`}
         eyebrow="Buy guidance"
         title="Current reviewed price"
       />
       <PricingScopeLine>
-        Dutch market · EUR · new condition · Not published yet
+        {getPricingScopeLabel('Not published yet')}
       </PricingScopeLine>
       <p className={styles.unavailableCopy}>
         Browsing and private saves still work. Price, history, and offers appear
-        together when this set joins the Dutch pricing selection.
+        together when this set joins the current {getDefaultMarketAdjective()}
+        pricing selection.
       </p>
     </Surface>
   );
@@ -545,8 +559,7 @@ export function PriceHistoryCard({
           title="30-day price history"
         />
         <PricingScopeLine>
-          Dutch market · EUR · new condition · History building ·{' '}
-          {getDailyPointLabel(1)}
+          {getPricingScopeLabel(`History building · ${getDailyPointLabel(1)}`)}
         </PricingScopeLine>
         <div className={styles.metricBlock}>
           <p className={styles.metricLabel}>First tracked price</p>
@@ -591,8 +604,7 @@ export function PriceHistoryCard({
         title="30-day price history"
       />
       <PricingScopeLine>
-        Dutch market · EUR · new condition ·{' '}
-        {getDailyPointLabel(priceHistoryPoints.length)}
+        {getPricingScopeLabel(getDailyPointLabel(priceHistoryPoints.length))}
       </PricingScopeLine>
       <div className={styles.historyChartShell}>
         <div className={styles.historyAxis}>
@@ -610,7 +622,7 @@ export function PriceHistoryCard({
           </span>
         </div>
         <svg
-          aria-label="30-day Dutch price history"
+          aria-label={`30-day ${getDefaultMarketAdjective()} price history`}
           className={styles.historyChart}
           role="img"
           viewBox="0 0 100 48"
@@ -711,12 +723,12 @@ export function PriceHistoryEmptyCard({
         title="30-day price history"
       />
       <PricingScopeLine>
-        Dutch market · EUR · new condition · History building
+        {getPricingScopeLabel('History building')}
       </PricingScopeLine>
       <p className={styles.unavailableCopy}>
         {isLoading
           ? 'Loading the latest tracked daily prices.'
-          : 'No daily history is stored for this set yet. If a reviewed price appears above, history is still building. If not, this set is outside the current Dutch pricing selection.'}
+          : `No daily history is stored for this set yet. If a reviewed price appears above, history is still building. If not, this set is outside the current ${getDefaultMarketAdjective()} pricing selection.`}
       </p>
     </Surface>
   );
@@ -728,7 +740,7 @@ export function PricingUi() {
       <SectionHeading
         description="Compact buying guidance surfaces for current-price snapshots and 30-day history."
         eyebrow="Pricing UI"
-        title="Dutch-market price guidance with product-facing restraint."
+        title="Market-ready price guidance with product-facing restraint."
       />
     </Surface>
   );

@@ -1,11 +1,17 @@
+import {
+  getDefaultFormattingLocale,
+  type AppCurrencyCode,
+  type AppMarketCode,
+} from '@lego-platform/shared/config';
+
 export const DUTCH_REGION_CODE = 'NL';
 export const EURO_CURRENCY_CODE = 'EUR';
 export const NEW_OFFER_CONDITION = 'new';
 export const PRICING_HISTORY_TABLE = 'pricing_daily_set_history';
 export const PRICE_HISTORY_WINDOW_DAYS = 30;
 
-export type PricingRegionCode = typeof DUTCH_REGION_CODE;
-export type PricingCurrencyCode = typeof EURO_CURRENCY_CODE;
+export type PricingRegionCode = AppMarketCode;
+export type PricingCurrencyCode = AppCurrencyCode;
 export type PricingCondition = typeof NEW_OFFER_CONDITION;
 export type PricingAvailability =
   | 'in_stock'
@@ -103,7 +109,7 @@ export function getPriceDirection(deltaMinor?: number): 'up' | 'down' | 'flat' {
 
 export function formatPriceMinor({
   currencyCode,
-  locale = 'nl-NL',
+  locale = getDefaultFormattingLocale(),
   minorUnits,
 }: {
   currencyCode: string;

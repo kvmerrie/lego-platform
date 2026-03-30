@@ -1,5 +1,10 @@
 import { AffiliateOfferSnapshot } from '@lego-platform/affiliate/util';
 import {
+  getDefaultFormattingLocale,
+  getDefaultMarketAdjective,
+  getDefaultMarketScopeLabel,
+} from '@lego-platform/shared/config';
+import {
   ActionLink,
   Badge,
   SectionHeading,
@@ -8,17 +13,24 @@ import {
 import styles from './affiliate-ui.module.css';
 
 function formatAffiliatePrice(totalPriceMinor: number, currencyCode: string) {
-  return new Intl.NumberFormat('nl-NL', {
+  return new Intl.NumberFormat(getDefaultFormattingLocale(), {
     style: 'currency',
     currency: currencyCode,
   }).format(totalPriceMinor / 100);
 }
 
 function formatObservedAt(observedAt: string): string {
-  return new Intl.DateTimeFormat('nl-NL', {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(observedAt));
+}
+
+function getOfferScopeLabel(suffix?: string): string {
+  return getDefaultMarketScopeLabel({
+    conditionLabel: 'new condition',
+    suffix,
+  });
 }
 
 function getAvailabilityTone(
@@ -127,13 +139,12 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description="Compare the reviewed Dutch merchant pages in the current pricing slice."
+        description={`Compare the reviewed ${getDefaultMarketAdjective()} merchant pages in the current pricing slice.`}
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
       <p className={styles.panelMeta}>
-        Dutch market · EUR · new condition · {affiliateOffers.length} merchants
-        shown
+        {getOfferScopeLabel(`${affiliateOffers.length} merchants shown`)}
       </p>
       <div className={styles.offerTableWrap}>
         <table className={styles.offerTable}>
@@ -184,14 +195,14 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
       tone="muted"
     >
       <SectionHeading
-        description="Reviewed Dutch offers are live for selected sets."
+        description={`Reviewed ${getDefaultMarketAdjective()} offers are live for selected sets.`}
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
-      <p className={styles.panelMeta}>Dutch market · EUR · new condition</p>
+      <p className={styles.panelMeta}>{getOfferScopeLabel()}</p>
       <p className={styles.unavailableCopy}>
         Offers appear together with reviewed price and tracked history when a
-        set joins the Dutch pricing selection.
+        set joins the current {getDefaultMarketAdjective()} pricing selection.
       </p>
     </Surface>
   );
@@ -201,7 +212,7 @@ export function AffiliateUi() {
   return (
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
-        description="Compact offer cards that keep Dutch-market merchant guidance direct and presentational."
+        description="Compact offer cards that keep current-market merchant guidance direct and presentational."
         eyebrow="Affiliate UI"
         title="Outbound offer surfaces without runtime commerce coupling."
       />

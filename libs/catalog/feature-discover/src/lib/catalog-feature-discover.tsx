@@ -3,6 +3,7 @@ import {
   listHomepageSetCards,
 } from '@lego-platform/catalog/data-access';
 import { CatalogSetCard } from '@lego-platform/catalog/ui';
+import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-discover.module.css';
 
@@ -63,7 +64,7 @@ export function CatalogFeatureDiscover() {
           <div className={styles.featuredGrid}>
             {featuredSetCards.map((featuredSetCard) => (
               <CatalogSetCard
-                href={`/sets/${featuredSetCard.slug}`}
+                href={buildSetDetailPath(featuredSetCard.slug)}
                 key={featuredSetCard.id}
                 setSummary={featuredSetCard}
                 variant="featured"
@@ -93,7 +94,7 @@ export function CatalogFeatureDiscover() {
             <div className={styles.themeGrid}>
               {themeGroup.setCards.map((setCard) => (
                 <CatalogSetCard
-                  href={`/sets/${setCard.slug}`}
+                  href={buildSetDetailPath(setCard.slug)}
                   key={setCard.id}
                   setSummary={setCard}
                   variant="browse"

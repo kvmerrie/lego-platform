@@ -7,6 +7,7 @@ import {
   UserProfile,
   UserSession,
 } from '@lego-platform/user/util';
+import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import {
   ActionLink,
   Badge,
@@ -105,14 +106,17 @@ export function UserShellAccountStatusCard({
           />
           <div className={styles.shellStatusActions}>
             <ActionLink
-              href="/collection"
+              href={buildWebPath(webPathnames.collection)}
               tone={isAuthAvailable ? 'accent' : 'secondary'}
             >
               {isAuthAvailable
                 ? 'Sign in to save privately'
                 : 'Open collection'}
             </ActionLink>
-            <ActionLink href="/wishlist" tone="secondary">
+            <ActionLink
+              href={buildWebPath(webPathnames.wishlist)}
+              tone="secondary"
+            >
               Open wishlist
             </ActionLink>
           </div>
@@ -170,10 +174,16 @@ export function UserShellAccountStatusCard({
           {collectorSetCounts.wantedCount} wanted saved
         </p>
         <div className={styles.shellStatusActions}>
-          <ActionLink href="/collection" tone="secondary">
+          <ActionLink
+            href={buildWebPath(webPathnames.collection)}
+            tone="secondary"
+          >
             Open collection
           </ActionLink>
-          <ActionLink href="/wishlist" tone="secondary">
+          <ActionLink
+            href={buildWebPath(webPathnames.wishlist)}
+            tone="secondary"
+          >
             Open wishlist
           </ActionLink>
           <Button
@@ -397,10 +407,16 @@ export function UserSessionCard({
         <div className={styles.destinationPanel}>
           <p className={styles.paneLabel}>Your saves</p>
           <div className={styles.destinationLinks}>
-            <ActionLink href="/collection" tone="secondary">
+            <ActionLink
+              href={buildWebPath(webPathnames.collection)}
+              tone="secondary"
+            >
               Open collection
             </ActionLink>
-            <ActionLink href="/wishlist" tone="secondary">
+            <ActionLink
+              href={buildWebPath(webPathnames.wishlist)}
+              tone="secondary"
+            >
               Open wishlist
             </ActionLink>
           </div>

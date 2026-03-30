@@ -1,9 +1,14 @@
+import type {
+  AppCurrencyCode,
+  AppMarketCode,
+} from '@lego-platform/shared/config';
+
 export const DUTCH_AFFILIATE_REGION_CODE = 'NL';
 export const EURO_AFFILIATE_CURRENCY_CODE = 'EUR';
 export const NEW_AFFILIATE_OFFER_CONDITION = 'new';
 
-export type AffiliateRegionCode = typeof DUTCH_AFFILIATE_REGION_CODE;
-export type AffiliateCurrencyCode = typeof EURO_AFFILIATE_CURRENCY_CODE;
+export type AffiliateRegionCode = AppMarketCode;
+export type AffiliateCurrencyCode = AppCurrencyCode;
 export type AffiliateCondition = typeof NEW_AFFILIATE_OFFER_CONDITION;
 
 export interface AffiliateMerchantConfig {

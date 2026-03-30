@@ -6,6 +6,7 @@ import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import { formatPriceMinor } from '@lego-platform/pricing/util';
+import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
 import type { Metadata } from 'next';
 
@@ -50,7 +51,7 @@ function getPricePositionTone(
 }
 
 function formatReviewedOn(observedAt: string): string {
-  return new Intl.DateTimeFormat('nl-NL', {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
     month: 'short',
   }).format(new Date(observedAt));

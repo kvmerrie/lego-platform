@@ -1,5 +1,10 @@
 import { searchCatalogSetCards } from '@lego-platform/catalog/data-access';
 import { CatalogSetCard } from '@lego-platform/catalog/ui';
+import {
+  buildSetDetailPath,
+  buildWebPath,
+  webPathnames,
+} from '@lego-platform/shared/config';
 import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-search-results.module.css';
 
@@ -23,7 +28,10 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
           title="Search the catalog"
         />
         <div className={styles.stateActions}>
-          <ActionLink href="/discover" tone="secondary">
+          <ActionLink
+            href={buildWebPath(webPathnames.discover)}
+            tone="secondary"
+          >
             Browse the catalog
           </ActionLink>
         </div>
@@ -46,7 +54,10 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
           title={`No results for "${searchQuery}"`}
         />
         <div className={styles.stateActions}>
-          <ActionLink href="/discover" tone="secondary">
+          <ActionLink
+            href={buildWebPath(webPathnames.discover)}
+            tone="secondary"
+          >
             Browse the catalog
           </ActionLink>
         </div>
@@ -70,7 +81,7 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
       <div className={styles.resultsGrid}>
         {searchResults.map((searchResult) => (
           <CatalogSetCard
-            href={`/sets/${searchResult.slug}`}
+            href={buildSetDetailPath(searchResult.slug)}
             key={searchResult.id}
             setSummary={searchResult}
             variant="browse"

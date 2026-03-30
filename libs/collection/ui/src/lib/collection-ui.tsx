@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
 import { CollectionShelf } from '@lego-platform/collection/util';
+import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import {
   ActionLink,
   Button,
@@ -272,14 +273,23 @@ export function CollectorCollectionPanel({
       </p>
       <div className={styles.destinationPanel}>
         <div className={styles.destinationLinks}>
-          <ActionLink href="/account" tone="secondary">
+          <ActionLink
+            href={buildWebPath(webPathnames.account)}
+            tone="secondary"
+          >
             Open account
           </ActionLink>
-          <ActionLink href="/wishlist" tone="secondary">
+          <ActionLink
+            href={buildWebPath(webPathnames.wishlist)}
+            tone="secondary"
+          >
             Open wishlist
           </ActionLink>
-          <ActionLink href="/#featured-sets" tone="secondary">
-            Browse featured sets
+          <ActionLink
+            href={buildWebPath(webPathnames.discover)}
+            tone="secondary"
+          >
+            Browse catalog
           </ActionLink>
         </div>
       </div>
@@ -292,11 +302,17 @@ export function CollectorCollectionPanel({
         <div className={styles.collectionGrid}>{children}</div>
       ) : (
         <div className={styles.collectionEmptyActions}>
-          <ActionLink href="/account" tone="secondary">
+          <ActionLink
+            href={buildWebPath(webPathnames.account)}
+            tone="secondary"
+          >
             Open account
           </ActionLink>
-          <ActionLink href="/#featured-sets" tone="secondary">
-            Browse featured sets
+          <ActionLink
+            href={buildWebPath(webPathnames.discover)}
+            tone="secondary"
+          >
+            Browse catalog
           </ActionLink>
         </div>
       )}

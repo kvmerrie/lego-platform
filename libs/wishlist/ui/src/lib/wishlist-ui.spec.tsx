@@ -50,7 +50,7 @@ describe('CollectorWishlistPanel', () => {
 
     expect(markup).toContain('Sign in to open your private wishlist');
     expect(markup).toContain('Private account area');
-    expect(markup).toContain('Browse featured sets');
+    expect(markup).toContain('Browse catalog');
     expect(markup).toContain('Open account');
     expect(markup).toContain('Open collection');
   });

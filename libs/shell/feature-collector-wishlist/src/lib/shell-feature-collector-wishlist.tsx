@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
 import { CatalogSetCard } from '@lego-platform/catalog/ui';
+import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { CollectorWishlistPanel } from '@lego-platform/wishlist/ui';
 import {
   getUserSession,
@@ -111,7 +112,7 @@ export function ShellFeatureCollectorWishlist() {
     >
       {wantedSetCards.map((catalogSetCard) => (
         <CatalogSetCard
-          href={`/sets/${catalogSetCard.slug}`}
+          href={buildSetDetailPath(catalogSetCard.slug)}
           key={catalogSetCard.id}
           setSummary={catalogSetCard}
         />

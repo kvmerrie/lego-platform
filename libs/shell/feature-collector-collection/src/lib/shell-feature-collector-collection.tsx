@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
 import { CatalogSetCard } from '@lego-platform/catalog/ui';
 import { CollectorCollectionPanel } from '@lego-platform/collection/ui';
+import { buildSetDetailPath } from '@lego-platform/shared/config';
 import {
   getUserSession,
   subscribeToUserAccountChanges,
@@ -114,7 +115,7 @@ export function ShellFeatureCollectorCollection() {
     >
       {ownedSetCards.map((catalogSetCard) => (
         <CatalogSetCard
-          href={`/sets/${catalogSetCard.slug}`}
+          href={buildSetDetailPath(catalogSetCard.slug)}
           key={catalogSetCard.id}
           setSummary={catalogSetCard}
         />

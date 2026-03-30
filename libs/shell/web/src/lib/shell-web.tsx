@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
-import { platformConfig, webNavigation } from '@lego-platform/shared/config';
+import {
+  buildWebPath,
+  getDefaultMarketAdjective,
+  platformConfig,
+  webNavigation,
+  webPathnames,
+} from '@lego-platform/shared/config';
 import { VisuallyHidden } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import { ShellWebAccountStatus } from './shell-web-account-status';
@@ -24,7 +30,11 @@ function renderSearchForm({
   query?: string;
 }) {
   return (
-    <form action="/search" className={className} role="search">
+    <form
+      action={buildWebPath(webPathnames.search)}
+      className={className}
+      role="search"
+    >
       <VisuallyHidden>Search the catalog</VisuallyHidden>
       <input
         aria-label="Search sets by name or set number"
@@ -53,7 +63,10 @@ export function ShellWeb({
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.headerBar}>
-            <a className={styles.brandLink} href="/">
+            <a
+              className={styles.brandLink}
+              href={buildWebPath(webPathnames.home)}
+            >
               <span aria-hidden="true" className={styles.brandMark}>
                 B
               </span>
@@ -95,8 +108,8 @@ export function ShellWeb({
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <p className={styles.footerCopy}>
-            Curated browsing, private collector saves, and reviewed Dutch price
-            guidance where available.
+            Curated browsing, private collector saves, and reviewed{' '}
+            {getDefaultMarketAdjective()} price guidance where available.
           </p>
         </div>
       </footer>
