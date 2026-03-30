@@ -13,9 +13,367 @@ import {
 import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
+const expectedGeneratedCatalogRecords = [
+  {
+    canonicalId: '10316',
+    slug: 'lord-of-the-rings-rivendell-10316',
+    sourceSetNumber: '10316-1',
+  },
+  {
+    canonicalId: '21348',
+    slug: 'dungeons-and-dragons-red-dragons-tale-21348',
+    sourceSetNumber: '21348-1',
+  },
+  {
+    canonicalId: '76269',
+    slug: 'avengers-tower-76269',
+    sourceSetNumber: '76269-1',
+  },
+  {
+    canonicalId: '10305',
+    slug: 'lion-knights-castle-10305',
+    sourceSetNumber: '10305-1',
+  },
+  {
+    canonicalId: '21338',
+    slug: 'a-frame-cabin-21338',
+    sourceSetNumber: '21338-1',
+  },
+  {
+    canonicalId: '10320',
+    slug: 'eldorado-fortress-10320',
+    sourceSetNumber: '10320-1',
+  },
+  {
+    canonicalId: '21335',
+    slug: 'motorized-lighthouse-21335',
+    sourceSetNumber: '21335-1',
+  },
+  {
+    canonicalId: '10333',
+    slug: 'the-lord-of-the-rings-barad-dur-10333',
+    sourceSetNumber: '10333-1',
+  },
+  {
+    canonicalId: '10332',
+    slug: 'medieval-town-square-10332',
+    sourceSetNumber: '10332-1',
+  },
+  {
+    canonicalId: '10315',
+    slug: 'tranquil-garden-10315',
+    sourceSetNumber: '10315-1',
+  },
+  {
+    canonicalId: '21333',
+    slug: 'the-starry-night-21333',
+    sourceSetNumber: '21333-1',
+  },
+  {
+    canonicalId: '21342',
+    slug: 'the-insect-collection-21342',
+    sourceSetNumber: '21342-1',
+  },
+  {
+    canonicalId: '10318',
+    slug: 'concorde-10318',
+    sourceSetNumber: '10318-1',
+  },
+  {
+    canonicalId: '10331',
+    slug: 'kingfisher-bird-10331',
+    sourceSetNumber: '10331-1',
+  },
+  {
+    canonicalId: '10341',
+    slug: 'nasa-artemis-space-launch-system-10341',
+    sourceSetNumber: '10341-1',
+  },
+  {
+    canonicalId: '21349',
+    slug: 'tuxedo-cat-21349',
+    sourceSetNumber: '21349-1',
+  },
+  {
+    canonicalId: '10300',
+    slug: 'back-to-the-future-time-machine-10300',
+    sourceSetNumber: '10300-1',
+  },
+  {
+    canonicalId: '10294',
+    slug: 'titanic-10294',
+    sourceSetNumber: '10294-1',
+  },
+  {
+    canonicalId: '21061',
+    slug: 'notre-dame-de-paris-21061',
+    sourceSetNumber: '21061-1',
+  },
+  {
+    canonicalId: '31208',
+    slug: 'hokusai-the-great-wave-31208',
+    sourceSetNumber: '31208-1',
+  },
+  {
+    canonicalId: '76419',
+    slug: 'hogwarts-castle-and-grounds-76419',
+    sourceSetNumber: '76419-1',
+  },
+  {
+    canonicalId: '43222',
+    slug: 'disney-castle-43222',
+    sourceSetNumber: '43222-1',
+  },
+  {
+    canonicalId: '75313',
+    slug: 'at-at-75313',
+    sourceSetNumber: '75313-1',
+  },
+  {
+    canonicalId: '21345',
+    slug: 'polaroid-onestep-sx-70-21345',
+    sourceSetNumber: '21345-1',
+  },
+  {
+    canonicalId: '10326',
+    slug: 'natural-history-museum-10326',
+    sourceSetNumber: '10326-1',
+  },
+  {
+    canonicalId: '10323',
+    slug: 'pac-man-arcade-10323',
+    sourceSetNumber: '10323-1',
+  },
+  {
+    canonicalId: '10306',
+    slug: 'atari-2600-10306',
+    sourceSetNumber: '10306-1',
+  },
+  {
+    canonicalId: '10280',
+    slug: 'flower-bouquet-10280',
+    sourceSetNumber: '10280-1',
+  },
+  {
+    canonicalId: '10311',
+    slug: 'orchid-10311',
+    sourceSetNumber: '10311-1',
+  },
+  {
+    canonicalId: '21327',
+    slug: 'typewriter-21327',
+    sourceSetNumber: '21327-1',
+  },
+  {
+    canonicalId: '21343',
+    slug: 'viking-village-21343',
+    sourceSetNumber: '21343-1',
+  },
+  {
+    canonicalId: '42115',
+    slug: 'lamborghini-sian-fkp-37-42115',
+    sourceSetNumber: '42115-1',
+  },
+  {
+    canonicalId: '42143',
+    slug: 'ferrari-daytona-sp3-42143',
+    sourceSetNumber: '42143-1',
+  },
+  {
+    canonicalId: '71411',
+    slug: 'the-mighty-bowser-71411',
+    sourceSetNumber: '71411-1',
+  },
+  {
+    canonicalId: '71741',
+    slug: 'ninjago-city-gardens-71741',
+    sourceSetNumber: '71741-1',
+  },
+  {
+    canonicalId: '76218',
+    slug: 'sanctum-sanctorum-76218',
+    sourceSetNumber: '76218-1',
+  },
+  {
+    canonicalId: '76956',
+    slug: 't-rex-breakout-76956',
+    sourceSetNumber: '76956-1',
+  },
+  {
+    canonicalId: '75331',
+    slug: 'the-razor-crest-75331',
+    sourceSetNumber: '75331-1',
+  },
+  {
+    canonicalId: '76417',
+    slug: 'gringotts-wizarding-bank-collectors-edition-76417',
+    sourceSetNumber: '76417-1',
+  },
+];
+
+const expectedProductSlugs = [
+  'rivendell-10316',
+  'dungeons-and-dragons-red-dragons-tale-21348',
+  'avengers-tower-76269',
+  'lion-knights-castle-10305',
+  'a-frame-cabin-21338',
+  'eldorado-fortress-10320',
+  'motorized-lighthouse-21335',
+  'the-lord-of-the-rings-barad-dur-10333',
+  'medieval-town-square-10332',
+  'tranquil-garden-10315',
+  'vincent-van-gogh-the-starry-night-21333',
+  'the-insect-collection-21342',
+  'concorde-10318',
+  'kingfisher-bird-10331',
+  'nasa-artemis-space-launch-system-10341',
+  'tuxedo-cat-21349',
+  'back-to-the-future-time-machine-10300',
+  'titanic-10294',
+  'notre-dame-de-paris-21061',
+  'hokusai-the-great-wave-31208',
+  'hogwarts-castle-and-grounds-76419',
+  'disney-castle-43222',
+  'at-at-75313',
+  'polaroid-onestep-sx-70-camera-21345',
+  'natural-history-museum-10326',
+  'pac-man-arcade-10323',
+  'atari-2600-10306',
+  'flower-bouquet-10280',
+  'orchid-10311',
+  'typewriter-21327',
+  'viking-village-21343',
+  'lamborghini-sian-fkp-37-42115',
+  'ferrari-daytona-sp3-42143',
+  'the-mighty-bowser-71411',
+  'ninjago-city-gardens-71741',
+  'sanctum-sanctorum-76218',
+  't-rex-breakout-76956',
+  'the-razor-crest-75331',
+  'gringotts-wizarding-bank-collectors-edition-76417',
+];
+
+const expectedBrowseThemeGroups = [
+  { theme: 'Icons', count: 13 },
+  { theme: 'Ideas', count: 9 },
+  { theme: 'Marvel', count: 2 },
+  { theme: 'Modular Buildings', count: 1 },
+  { theme: 'Botanicals', count: 2 },
+  { theme: 'Technic', count: 2 },
+  { theme: 'Super Mario', count: 1 },
+  { theme: 'NINJAGO', count: 1 },
+  { theme: 'Jurassic World', count: 1 },
+  { theme: 'Star Wars', count: 2 },
+  { theme: 'Harry Potter', count: 2 },
+  { theme: 'Architecture', count: 1 },
+  { theme: 'Art', count: 1 },
+  { theme: 'Disney', count: 1 },
+];
+
+const expectedCatalogThemes = [
+  {
+    name: 'Icons',
+    setCount: 13,
+    momentum:
+      'Premium collectors are consolidating around large display pieces.',
+    signatureSet: 'Rivendell',
+  },
+  {
+    name: 'Ideas',
+    setCount: 9,
+    momentum:
+      'Community-voted display builds keep balancing fandom, nostalgia, and design-object appeal.',
+    signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
+  },
+  {
+    name: 'Marvel',
+    setCount: 2,
+    momentum:
+      'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
+    signatureSet: 'Avengers Tower',
+  },
+  {
+    name: 'Modular Buildings',
+    setCount: 1,
+    momentum:
+      'Collector interest in premium street-scale buildings stays strong because they photograph and display so well.',
+    signatureSet: 'Natural History Museum',
+  },
+  {
+    name: 'Botanicals',
+    setCount: 2,
+    momentum:
+      'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
+    signatureSet: 'Flower Bouquet',
+  },
+  {
+    name: 'Technic',
+    setCount: 2,
+    momentum:
+      'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
+    signatureSet: 'Ferrari Daytona SP3',
+  },
+  {
+    name: 'Super Mario',
+    setCount: 1,
+    momentum:
+      'Character-led display pieces give the public catalog a broader gaming entry without turning into a play-focused assortment.',
+    signatureSet: 'The Mighty Bowser',
+  },
+  {
+    name: 'NINJAGO',
+    setCount: 1,
+    momentum:
+      'Collector appetite for dense NINJAGO city builds stays strong even outside the core franchise audience.',
+    signatureSet: 'NINJAGO City Gardens',
+  },
+  {
+    name: 'Jurassic World',
+    setCount: 1,
+    momentum:
+      'Film-scene nostalgia keeps Jurassic builds easy to understand and easy to search for in a curated public catalog.',
+    signatureSet: 'T. rex Breakout',
+  },
+  {
+    name: 'Star Wars',
+    setCount: 2,
+    momentum:
+      'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
+    signatureSet: 'AT-AT',
+  },
+  {
+    name: 'Harry Potter',
+    setCount: 2,
+    momentum:
+      'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
+    signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
+  },
+  {
+    name: 'Architecture',
+    setCount: 1,
+    momentum:
+      'Globally recognizable landmarks keep architecture sets valuable as broad search-entry anchors.',
+    signatureSet: 'Notre-Dame de Paris',
+  },
+  {
+    name: 'Art',
+    setCount: 1,
+    momentum:
+      'Wall-friendly art builds keep the catalog from feeling limited to buildings, vehicles, and franchise landmarks.',
+    signatureSet: 'Hokusai - The Great Wave',
+  },
+  {
+    name: 'Disney',
+    setCount: 1,
+    momentum:
+      'Disney display icons bring family recognition and gifting appeal into a mostly adult-collector public mix.',
+    signatureSet: 'Disney Castle',
+  },
+];
+
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(24);
+    expect(catalogSnapshot.setRecords).toHaveLength(39);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
@@ -33,159 +391,13 @@ describe('catalog snapshot artifacts', () => {
         slug: catalogSetRecord.slug,
         sourceSetNumber: catalogSetRecord.sourceSetNumber,
       })),
-    ).toEqual([
-      {
-        canonicalId: '10316',
-        slug: 'lord-of-the-rings-rivendell-10316',
-        sourceSetNumber: '10316-1',
-      },
-      {
-        canonicalId: '21348',
-        slug: 'dungeons-and-dragons-red-dragons-tale-21348',
-        sourceSetNumber: '21348-1',
-      },
-      {
-        canonicalId: '76269',
-        slug: 'avengers-tower-76269',
-        sourceSetNumber: '76269-1',
-      },
-      {
-        canonicalId: '10305',
-        slug: 'lion-knights-castle-10305',
-        sourceSetNumber: '10305-1',
-      },
-      {
-        canonicalId: '21338',
-        slug: 'a-frame-cabin-21338',
-        sourceSetNumber: '21338-1',
-      },
-      {
-        canonicalId: '10320',
-        slug: 'eldorado-fortress-10320',
-        sourceSetNumber: '10320-1',
-      },
-      {
-        canonicalId: '21335',
-        slug: 'motorized-lighthouse-21335',
-        sourceSetNumber: '21335-1',
-      },
-      {
-        canonicalId: '10333',
-        slug: 'the-lord-of-the-rings-barad-dur-10333',
-        sourceSetNumber: '10333-1',
-      },
-      {
-        canonicalId: '10332',
-        slug: 'medieval-town-square-10332',
-        sourceSetNumber: '10332-1',
-      },
-      {
-        canonicalId: '10315',
-        slug: 'tranquil-garden-10315',
-        sourceSetNumber: '10315-1',
-      },
-      {
-        canonicalId: '21333',
-        slug: 'the-starry-night-21333',
-        sourceSetNumber: '21333-1',
-      },
-      {
-        canonicalId: '21342',
-        slug: 'the-insect-collection-21342',
-        sourceSetNumber: '21342-1',
-      },
-      {
-        canonicalId: '10318',
-        slug: 'concorde-10318',
-        sourceSetNumber: '10318-1',
-      },
-      {
-        canonicalId: '10331',
-        slug: 'kingfisher-bird-10331',
-        sourceSetNumber: '10331-1',
-      },
-      {
-        canonicalId: '10341',
-        slug: 'nasa-artemis-space-launch-system-10341',
-        sourceSetNumber: '10341-1',
-      },
-      {
-        canonicalId: '21349',
-        slug: 'tuxedo-cat-21349',
-        sourceSetNumber: '21349-1',
-      },
-      {
-        canonicalId: '10300',
-        slug: 'back-to-the-future-time-machine-10300',
-        sourceSetNumber: '10300-1',
-      },
-      {
-        canonicalId: '10294',
-        slug: 'titanic-10294',
-        sourceSetNumber: '10294-1',
-      },
-      {
-        canonicalId: '21061',
-        slug: 'notre-dame-de-paris-21061',
-        sourceSetNumber: '21061-1',
-      },
-      {
-        canonicalId: '31208',
-        slug: 'hokusai-the-great-wave-31208',
-        sourceSetNumber: '31208-1',
-      },
-      {
-        canonicalId: '76419',
-        slug: 'hogwarts-castle-and-grounds-76419',
-        sourceSetNumber: '76419-1',
-      },
-      {
-        canonicalId: '43222',
-        slug: 'disney-castle-43222',
-        sourceSetNumber: '43222-1',
-      },
-      {
-        canonicalId: '75313',
-        slug: 'at-at-75313',
-        sourceSetNumber: '75313-1',
-      },
-      {
-        canonicalId: '21345',
-        slug: 'polaroid-onestep-sx-70-21345',
-        sourceSetNumber: '21345-1',
-      },
-    ]);
+    ).toEqual(expectedGeneratedCatalogRecords);
   });
 });
 
 describe('catalog data-access contracts', () => {
   test('keeps product-facing slugs clean and stable', () => {
-    expect(listCatalogSetSlugs()).toEqual([
-      'rivendell-10316',
-      'dungeons-and-dragons-red-dragons-tale-21348',
-      'avengers-tower-76269',
-      'lion-knights-castle-10305',
-      'a-frame-cabin-21338',
-      'eldorado-fortress-10320',
-      'motorized-lighthouse-21335',
-      'the-lord-of-the-rings-barad-dur-10333',
-      'medieval-town-square-10332',
-      'tranquil-garden-10315',
-      'vincent-van-gogh-the-starry-night-21333',
-      'the-insect-collection-21342',
-      'concorde-10318',
-      'kingfisher-bird-10331',
-      'nasa-artemis-space-launch-system-10341',
-      'tuxedo-cat-21349',
-      'back-to-the-future-time-machine-10300',
-      'titanic-10294',
-      'notre-dame-de-paris-21061',
-      'hokusai-the-great-wave-31208',
-      'hogwarts-castle-and-grounds-76419',
-      'disney-castle-43222',
-      'at-at-75313',
-      'polaroid-onestep-sx-70-camera-21345',
-    ]);
+    expect(listCatalogSetSlugs()).toEqual(expectedProductSlugs);
   });
 
   test('merges source-truth records with local product overlays for set detail reads', () => {
@@ -303,6 +515,20 @@ describe('catalog data-access contracts', () => {
         name: 'The Lord of the Rings: Barad-dûr',
       }),
     ]);
+
+    expect(searchCatalogSetCards('bowser')).toEqual([
+      expect.objectContaining({
+        id: '71411',
+        name: 'The Mighty Bowser',
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('10326')).toEqual([
+      expect.objectContaining({
+        id: '10326',
+        name: 'Natural History Museum',
+      }),
+    ]);
   });
 
   test('builds richer homepage card reads with curated availability and tagline context', () => {
@@ -392,20 +618,11 @@ describe('catalog data-access contracts', () => {
         count: catalogThemeGroup.setCards.length,
         theme: catalogThemeGroup.theme,
       })),
-    ).toEqual([
-      { theme: 'Icons', count: 11 },
-      { theme: 'Ideas', count: 7 },
-      { theme: 'Marvel', count: 1 },
-      { theme: 'Architecture', count: 1 },
-      { theme: 'Art', count: 1 },
-      { theme: 'Disney', count: 1 },
-      { theme: 'Harry Potter', count: 1 },
-      { theme: 'Star Wars', count: 1 },
-    ]);
+    ).toEqual(expectedBrowseThemeGroups);
 
     expect(
-      listCatalogBrowseThemeGroups()[0]?.setCards.map((catalogSetCard) =>
-        catalogSetCard.id,
+      listCatalogBrowseThemeGroups()[0]?.setCards.map(
+        (catalogSetCard) => catalogSetCard.id,
       ),
     ).toContain('10333');
   });
@@ -847,29 +1064,7 @@ describe('catalog data-access contracts', () => {
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(24);
-    expect(listCatalogThemes()).toEqual([
-      {
-        name: 'Icons',
-        setCount: 14,
-        momentum:
-          'Premium collectors are consolidating around large display pieces.',
-        signatureSet: 'Rivendell',
-      },
-      {
-        name: 'Ideas',
-        setCount: 11,
-        momentum:
-          'Community-voted launches continue to produce sharp launch-week demand.',
-        signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
-      },
-      {
-        name: 'Marvel',
-        setCount: 23,
-        momentum:
-          'Licensed tentpoles keep price visibility high and affiliate conversion strong.',
-        signatureSet: 'Avengers Tower',
-      },
-    ]);
+    expect(listCatalogSetSummaries()).toHaveLength(39);
+    expect(listCatalogThemes()).toEqual(expectedCatalogThemes);
   });
 });

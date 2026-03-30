@@ -2,6 +2,8 @@
 
 This checklist is for the current Rebrickable-backed sync run using the curated product-ready catalog scope. It assumes the current sync runtime, generated artifacts, overlays, and tests are already in place.
 
+The current curated public catalog scope is `39` sets.
+
 ## 1. First Real Sync Run Checklist
 
 1. Start from a clean branch and confirm the workspace is not carrying unrelated catalog changes.
@@ -91,6 +93,21 @@ Current expected source slugs:
 - `disney-castle-43222`
 - `at-at-75313`
 - `polaroid-onestep-sx-70-21345`
+- `natural-history-museum-10326`
+- `pac-man-arcade-10323`
+- `atari-2600-10306`
+- `flower-bouquet-10280`
+- `orchid-10311`
+- `typewriter-21327`
+- `viking-village-21343`
+- `lamborghini-sian-fkp-37-42115`
+- `ferrari-daytona-sp3-42143`
+- `the-mighty-bowser-71411`
+- `ninjago-city-gardens-71741`
+- `sanctum-sanctorum-76218`
+- `t-rex-breakout-76956`
+- `the-razor-crest-75331`
+- `gringotts-wizarding-bank-collectors-edition-76417`
 
 Current expected public route slugs from the product-facing layer:
 
@@ -118,6 +135,21 @@ Current expected public route slugs from the product-facing layer:
 - `disney-castle-43222`
 - `at-at-75313`
 - `polaroid-onestep-sx-70-camera-21345`
+- `natural-history-museum-10326`
+- `pac-man-arcade-10323`
+- `atari-2600-10306`
+- `flower-bouquet-10280`
+- `orchid-10311`
+- `typewriter-21327`
+- `viking-village-21343`
+- `lamborghini-sian-fkp-37-42115`
+- `ferrari-daytona-sp3-42143`
+- `the-mighty-bowser-71411`
+- `ninjago-city-gardens-71741`
+- `sanctum-sanctorum-76218`
+- `t-rex-breakout-76956`
+- `the-razor-crest-75331`
+- `gringotts-wizarding-bank-collectors-edition-76417`
 
 ### Canonical Id Assumptions
 
@@ -147,6 +179,21 @@ Check that each source set number still maps correctly:
 - `43222-1` -> `43222`
 - `75313-1` -> `75313`
 - `21345-1` -> `21345`
+- `10326-1` -> `10326`
+- `10323-1` -> `10323`
+- `10306-1` -> `10306`
+- `10280-1` -> `10280`
+- `10311-1` -> `10311`
+- `21327-1` -> `21327`
+- `21343-1` -> `21343`
+- `42115-1` -> `42115`
+- `42143-1` -> `42143`
+- `71411-1` -> `71411`
+- `71741-1` -> `71741`
+- `76218-1` -> `76218`
+- `76956-1` -> `76956`
+- `75331-1` -> `75331`
+- `76417-1` -> `76417`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 

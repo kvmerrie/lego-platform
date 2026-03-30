@@ -331,28 +331,314 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Keeps the Ideas slice warm and design-led rather than only scenic or fandom-heavy',
     ],
   },
+  {
+    canonicalId: '10326',
+    displayTheme: 'Modular Buildings',
+    priceRange: '$269 to $329',
+    collectorAngle: 'City-scale modular showpiece',
+    tagline:
+      'A museum-sized modular build that reads instantly as a flagship display piece without leaning on a licensed franchise.',
+    availability: 'Healthy modular demand',
+    collectorHighlights: [
+      'Recognizable museum silhouette gives discover and search a strong architecture-led anchor',
+      'Large footprint broadens the public catalog beyond castles, towers, and fantasy landmarks',
+      'Natural fit for collectors who browse for modular streets and premium city display builds',
+    ],
+  },
+  {
+    canonicalId: '10323',
+    displayName: 'PAC-MAN Arcade',
+    priceRange: '$229 to $289',
+    collectorAngle: 'Retro gaming display icon',
+    tagline:
+      'A cabinet-style arcade build that feels instantly familiar, visual, and easy to search for beyond LEGO-first audiences.',
+    availability: 'Steady crossover availability',
+    collectorHighlights: [
+      'Strong nostalgia pull makes it one of the cleanest gaming-led search targets in the catalog',
+      'Animated side-scene and bright cabinet profile give the public mix another high-recognition silhouette',
+      'Bridges design-object collecting and pop-culture display without adding new product behavior',
+    ],
+  },
+  {
+    canonicalId: '10306',
+    priceRange: '$179 to $239',
+    collectorAngle: 'Retro console conversation piece',
+    tagline:
+      'A brick-built console and cartridge set that lands as both display object and broad pop-culture collector signal.',
+    availability: 'Broad enthusiast availability',
+    collectorHighlights: [
+      'Atari remains a highly searchable name even outside dedicated LEGO collecting circles',
+      'Lower size and price than the biggest Icons flagships make it a friendlier discovery entry point',
+      'Adds another retro-tech object that sits naturally beside Polaroid and PAC-MAN',
+    ],
+  },
+  {
+    canonicalId: '10280',
+    displayTheme: 'Botanicals',
+    priceRange: '$49 to $69',
+    collectorAngle: 'Accessible giftable display staple',
+    tagline:
+      'A breakout adult-build bouquet that makes the public catalog feel more approachable without losing display credibility.',
+    availability: 'Very broad availability',
+    collectorHighlights: [
+      'One of the easiest search-entry sets for casual adult browsers and gifting shoppers',
+      'Lower price point adds a true entry-level collectible to the public catalog',
+      'Helps discover feel more retail-like by balancing giant centerpieces with a proven bestseller',
+    ],
+  },
+  {
+    canonicalId: '10311',
+    displayTheme: 'Botanicals',
+    priceRange: '$39 to $59',
+    collectorAngle: 'Compact home-display favorite',
+    tagline:
+      'A smaller botanical build with strong shelf appeal that keeps the catalog warm, giftable, and easy to browse into.',
+    availability: 'Very broad availability',
+    collectorHighlights: [
+      'Recognizable subject and manageable scale make it a strong search and discover on-ramp',
+      'Pairs naturally with Flower Bouquet to give the catalog a clearer accessible botanical lane',
+      'Adds calm visual variety without making the public product mix feel novelty-led',
+    ],
+  },
+  {
+    canonicalId: '21327',
+    displayTheme: 'Ideas',
+    priceRange: '$199 to $259',
+    collectorAngle: 'Design-object collector classic',
+    tagline:
+      'A typewriter display set that feels iconic, editorially rich, and unusually recognizable for a non-licensed LEGO model.',
+    availability: 'Selective but recognizable availability',
+    collectorHighlights: [
+      'One of the strongest Ideas search targets thanks to instant object recognition',
+      'Mechanical detailing and writerly subject matter strengthen product-page storytelling',
+      'Adds another warm real-world collectible beside Polaroid without crowding the same price tier',
+    ],
+  },
+  {
+    canonicalId: '21343',
+    displayTheme: 'Ideas',
+    priceRange: '$119 to $159',
+    collectorAngle: 'Ideas-era fantasy village scene',
+    tagline:
+      'A compact Viking settlement that broadens the fantasy slice with a more approachable display footprint.',
+    availability: 'Healthy enthusiast availability',
+    collectorHighlights: [
+      'Strong search target for medieval and Viking collectors who are not only castle buyers',
+      'Adds scene-building variety within Ideas without repeating cabins, lighthouses, or art pieces',
+      'Sits at a more reachable price point than the largest fantasy flagships',
+    ],
+  },
+  {
+    canonicalId: '42115',
+    displayTheme: 'Technic',
+    priceRange: '$369 to $449',
+    collectorAngle: 'Supercar prestige anchor',
+    tagline:
+      'A bright-green Lamborghini flagship that makes the catalog feel deeper in high-end automotive collecting immediately.',
+    availability: 'Selective premium availability',
+    collectorHighlights: [
+      'Strong name recognition gives search another premium automotive tentpole',
+      'Distinct color and 1:8 scale make it visually powerful in discover grids and detail pages',
+      'Introduces Technic in a way that still feels collector-grade and display-first',
+    ],
+  },
+  {
+    canonicalId: '42143',
+    displayTheme: 'Technic',
+    priceRange: '$329 to $429',
+    collectorAngle: 'Modern Ferrari flagship',
+    tagline:
+      'A large-format Ferrari that complements the Lamborghini with a second instantly recognizable Technic collector centerpiece.',
+    availability: 'Healthy premium enthusiast demand',
+    collectorHighlights: [
+      'Ferrari is one of the clearest search magnets available for adult LEGO browsing',
+      'Creates a more credible Technic lane in discover instead of a one-set cameo',
+      'Strong fit for image-first retail browsing because the silhouette is recognizable at a glance',
+    ],
+  },
+  {
+    canonicalId: '71411',
+    displayTheme: 'Super Mario',
+    priceRange: '$199 to $259',
+    collectorAngle: 'Character-led gaming centerpiece',
+    tagline:
+      'A large Bowser build that brings broad gaming recognition into the catalog without feeling toy-first.',
+    availability: 'Strong mainstream enthusiast availability',
+    collectorHighlights: [
+      'Bowser is an easy search target for casual browsers as well as dedicated Nintendo fans',
+      'Character-led display posture helps the catalog feel more varied than buildings and vehicles alone',
+      'Brings in a gaming franchise with a cleaner collector profile than a full playset assortment',
+    ],
+  },
+  {
+    canonicalId: '71741',
+    displayTheme: 'NINJAGO',
+    priceRange: '$299 to $379',
+    collectorAngle: 'Dense city-display world builder',
+    tagline:
+      'A stacked urban NINJAGO display that feels deep, rewarding, and visually rich even to non-franchise collectors.',
+    availability: 'Strong specialist enthusiast demand',
+    collectorHighlights: [
+      'Cult-favorite status makes it a strong search target for experienced LEGO collectors',
+      'Dense vertical city format adds a very different visual rhythm to discover sections',
+      'Lets the public catalog acknowledge NINJAGO with a true collector-grade anchor rather than a token set',
+    ],
+  },
+  {
+    canonicalId: '76218',
+    displayTheme: 'Marvel',
+    priceRange: '$219 to $279',
+    collectorAngle: 'Marvel location-display companion',
+    tagline:
+      'A detailed Sanctum build that broadens Marvel beyond a single mega-tower while keeping the collector tone intact.',
+    availability: 'Steady franchise-driven demand',
+    collectorHighlights: [
+      'Recognizable Doctor Strange landmark adds a second strong Marvel search target',
+      'Building format keeps the Marvel slice visually varied rather than relying only on skyscraper spectacle',
+      'Pairs naturally with Avengers Tower in a more coherent franchise lane',
+    ],
+  },
+  {
+    canonicalId: '76956',
+    displayTheme: 'Jurassic World',
+    priceRange: '$79 to $119',
+    collectorAngle: 'Film-scene nostalgia display',
+    tagline:
+      'A compact movie moment set that gives the catalog a famous cinematic subject without adding another oversized flagship.',
+    availability: 'Broad enthusiast availability',
+    collectorHighlights: [
+      'Jurassic Park recognition makes it an excellent search target for casual collectors',
+      'Adds a film-first display piece at a more approachable price point',
+      'Helps the public mix feel broader in franchise coverage without changing the product model',
+    ],
+  },
+  {
+    canonicalId: '75331',
+    displayTheme: 'Star Wars',
+    priceRange: '$499 to $649',
+    collectorAngle: 'Star Wars flagship ship anchor',
+    tagline:
+      'A massive Razor Crest that gives the Star Wars slice a second premium search magnet alongside the AT-AT.',
+    availability: 'Selective UCS availability',
+    collectorHighlights: [
+      'Recognizable ship silhouette broadens Star Wars coverage beyond walkers only',
+      'Creates a more credible Star Wars browse lane for discover and search',
+      'Strengthens high-intent collector search without touching commerce scope',
+    ],
+  },
+  {
+    canonicalId: '76417',
+    displayTheme: 'Harry Potter',
+    priceRange: '$369 to $449',
+    collectorAngle: 'Wizarding World premium landmark',
+    tagline:
+      'A major Gringotts display build that gives Harry Potter a stronger premium anchor beyond the smaller Hogwarts panorama.',
+    availability: 'High-visibility franchise demand',
+    collectorHighlights: [
+      'Broad franchise recognition makes it a strong search target for casual and deep collectors alike',
+      'Adds a second Harry Potter flagship so the theme reads as a real browse lane, not a one-off',
+      'Combines architecture-like display appeal with high-fandom recognizability',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   {
     name: 'Icons',
-    setCount: 14,
+    setCount: 13,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
     signatureSet: 'Rivendell',
   },
   {
     name: 'Ideas',
-    setCount: 11,
+    setCount: 9,
     momentum:
-      'Community-voted launches continue to produce sharp launch-week demand.',
+      'Community-voted display builds keep balancing fandom, nostalgia, and design-object appeal.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
     name: 'Marvel',
-    setCount: 23,
+    setCount: 2,
     momentum:
-      'Licensed tentpoles keep price visibility high and affiliate conversion strong.',
+      'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
     signatureSet: 'Avengers Tower',
+  },
+  {
+    name: 'Modular Buildings',
+    setCount: 1,
+    momentum:
+      'Collector interest in premium street-scale buildings stays strong because they photograph and display so well.',
+    signatureSet: 'Natural History Museum',
+  },
+  {
+    name: 'Botanicals',
+    setCount: 2,
+    momentum:
+      'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
+    signatureSet: 'Flower Bouquet',
+  },
+  {
+    name: 'Technic',
+    setCount: 2,
+    momentum:
+      'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
+    signatureSet: 'Ferrari Daytona SP3',
+  },
+  {
+    name: 'Super Mario',
+    setCount: 1,
+    momentum:
+      'Character-led display pieces give the public catalog a broader gaming entry without turning into a play-focused assortment.',
+    signatureSet: 'The Mighty Bowser',
+  },
+  {
+    name: 'NINJAGO',
+    setCount: 1,
+    momentum:
+      'Collector appetite for dense NINJAGO city builds stays strong even outside the core franchise audience.',
+    signatureSet: 'NINJAGO City Gardens',
+  },
+  {
+    name: 'Jurassic World',
+    setCount: 1,
+    momentum:
+      'Film-scene nostalgia keeps Jurassic builds easy to understand and easy to search for in a curated public catalog.',
+    signatureSet: 'T. rex Breakout',
+  },
+  {
+    name: 'Star Wars',
+    setCount: 2,
+    momentum:
+      'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
+    signatureSet: 'AT-AT',
+  },
+  {
+    name: 'Harry Potter',
+    setCount: 2,
+    momentum:
+      'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
+    signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
+  },
+  {
+    name: 'Architecture',
+    setCount: 1,
+    momentum:
+      'Globally recognizable landmarks keep architecture sets valuable as broad search-entry anchors.',
+    signatureSet: 'Notre-Dame de Paris',
+  },
+  {
+    name: 'Art',
+    setCount: 1,
+    momentum:
+      'Wall-friendly art builds keep the catalog from feeling limited to buildings, vehicles, and franchise landmarks.',
+    signatureSet: 'Hokusai - The Great Wave',
+  },
+  {
+    name: 'Disney',
+    setCount: 1,
+    momentum:
+      'Disney display icons bring family recognition and gifting appeal into a mostly adult-collector public mix.',
+    signatureSet: 'Disney Castle',
   },
 ];
