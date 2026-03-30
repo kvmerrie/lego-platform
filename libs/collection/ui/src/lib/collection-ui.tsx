@@ -81,19 +81,19 @@ export function OwnedSetToggleCard({
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Checking your owned save.'
+    ? 'Checking owned save.'
     : isUnavailable
-      ? 'Owned save is unavailable right now.'
+      ? 'Owned save unavailable.'
       : isOwned
-        ? 'Saved to owned.'
+        ? 'Owned saved.'
         : 'Save to owned.';
   const description = isLoading
-    ? `Checking whether set ${setId} is saved as owned.`
+    ? 'Checking your private owned save for this set.'
     : isUnavailable
-      ? `We could not load the owned save for set ${setId}.`
+      ? 'We could not load the private owned save right now.'
       : isOwned
-        ? `Set ${setId} is saved in your private owned collection.`
-        : `Save set ${setId} in your private owned collection.`;
+        ? 'Saved in your private collection.'
+        : 'Save this set to your private collection.';
   const actionLabel = isUnavailable
     ? 'Owned status unavailable'
     : isOwned
@@ -126,13 +126,10 @@ export function OwnedSetToggleCard({
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>
         <Badge>Private collector state</Badge>
-        <Badge tone="info">Set {setId}</Badge>
         {isPending ? <Badge tone="info">Saving</Badge> : null}
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
-      <p className={styles.metaText}>
-        Private to you. Set facts and pricing stay public.
-      </p>
+      <p className={styles.metaText}>Private to you. Set facts stay public.</p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
@@ -194,14 +191,14 @@ export function CollectorCollectionPanel({
             : 'Your collection';
   const description =
     state === 'loading'
-      ? 'Loading sets saved as owned on your collector account.'
+      ? 'Loading the sets saved as owned on your account.'
       : state === 'signed-out'
         ? 'This page shows the sets you have saved as owned.'
         : state === 'empty'
           ? hiddenOwnedCount > 0
             ? `You have ${formatOwnedSetCount(
                 hiddenOwnedCount,
-              )} saved outside the current public catalog. Save a featured set here to start the visible collection.`
+              )} saved outside the current public catalog. Save a featured set to start the visible collection.`
             : 'Save an owned set from any set page and it will appear here.'
           : hiddenOwnedCount > 0
             ? `Showing ${formatOwnedSetCount(
@@ -209,9 +206,7 @@ export function CollectorCollectionPanel({
               )} from the current public catalog. ${formatOwnedSetCount(
                 hiddenOwnedCount,
               )} stay saved outside it.`
-            : `Here are the ${formatOwnedSetCount(
-                ownedCount,
-              )} you have saved as owned.`;
+            : `Showing ${formatOwnedSetCount(ownedCount)}.`;
 
   return (
     <Surface
@@ -247,9 +242,6 @@ export function CollectorCollectionPanel({
         Private to you. Set facts and pricing stay public.
       </p>
       <div className={styles.destinationPanel}>
-        <p className={styles.metaText}>
-          Owned sets live here. Wishlist picks stay separate.
-        </p>
         <div className={styles.destinationLinks}>
           <ActionLink href="/wishlist" tone="secondary">
             Open wishlist

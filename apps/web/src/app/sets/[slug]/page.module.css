@@ -3,7 +3,7 @@
 .collectorActions {
   align-items: start;
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 @media (min-width: 48rem) {

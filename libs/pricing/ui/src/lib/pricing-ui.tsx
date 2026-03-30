@@ -221,7 +221,7 @@ export function PriceSummaryCard({
       tone="muted"
     >
       <SectionHeading
-        description="A reviewed Dutch price snapshot for this set. The history and offers below come from the same tracked market view."
+        description="Latest reviewed Dutch snapshot for this set."
         eyebrow="Buy guidance"
         title="Current reviewed price"
       />
@@ -283,8 +283,8 @@ export function PriceSummaryCard({
       </dl>
       <p className={styles.referenceNote}>
         {typeof pricePanelSnapshot.referencePriceMinor === 'number'
-          ? 'This is the latest reviewed snapshot. The chart tracks stored daily prices, and the offer cards open the same reviewed shops.'
-          : 'History and offers can still show up before a reference price is ready.'}
+          ? 'History and offers below use the same reviewed market view.'
+          : 'History and offers can appear before a reference price is set.'}
       </p>
     </Surface>
   );
@@ -308,8 +308,8 @@ export function PriceHistorySummaryCallout({
         <p className={styles.summaryLabel}>Recent price history</p>
         <p className={styles.summaryNote}>
           {historyPointCount === 1
-            ? 'History is still building. One daily price has been tracked so far.'
-            : 'History is still building. Recent comparisons show up after a few more daily prices.'}
+            ? 'History is building from the first daily price.'
+            : 'History is building. Recent comparisons appear after a few more daily prices.'}
         </p>
       </section>
     );
@@ -359,8 +359,8 @@ export function PriceHistorySummaryCallout({
         ) : (
           <p className={styles.summaryNote}>
             {historyPointCount === 1
-              ? 'History is still building. One daily price has been tracked so far.'
-              : 'History is still building. Recent comparisons show up after a few more daily prices.'}
+              ? 'History is building from the first daily price.'
+              : 'History is building. Recent comparisons appear after a few more daily prices.'}
           </p>
         )}
       </section>
@@ -410,8 +410,8 @@ export function PriceHistorySummaryCallout({
           </dl>
           <p className={styles.summaryNote}>
             {trackedPriceSummary.pointCount === 1
-              ? 'Tracked history has just started with one daily price.'
-              : `Based on ${getTrackedDailyPointLabel(trackedPriceSummary.pointCount)}.`}
+              ? 'Tracked history starts with one daily price.'
+              : `Tracked from ${getTrackedDailyPointLabel(trackedPriceSummary.pointCount)}.`}
           </p>
         </section>
       ) : null}
@@ -439,9 +439,8 @@ export function PricingUnavailableCard({ id }: { id?: string }) {
         <Badge>Not published yet</Badge>
       </div>
       <p className={styles.unavailableCopy}>
-        You can still browse this set and save it privately. Price, history, and
-        offers appear together when a set joins the current Dutch pricing
-        selection.
+        Browsing and private saves still work. Price, history, and offers appear
+        together when this set joins the Dutch pricing selection.
       </p>
     </Surface>
   );
@@ -470,7 +469,7 @@ export function PriceHistoryCard({
         tone="muted"
       >
         <SectionHeading
-          description="History has started. One daily reviewed price is tracked so far."
+          description="One daily reviewed price is stored so far."
           eyebrow="Price history"
           title="30-day price history"
         />
@@ -488,7 +487,7 @@ export function PriceHistoryCard({
               minorUnits: firstPriceHistoryPoint.headlinePriceMinor,
             })}
           </p>
-          <p className={styles.metricContext}>First daily point</p>
+          <p className={styles.metricContext}>First daily price</p>
           <p className={styles.metricContextSecondary}>
             Reviewed {formatObservedAt(firstPriceHistoryPoint.observedAt)}
           </p>
@@ -499,14 +498,9 @@ export function PriceHistoryCard({
             value={formatRecordedOn(firstPriceHistoryPoint.recordedOn)}
           />
           <PricingMetaItem label="Status" value="30-day range building" />
-          <PricingMetaItem
-            label="Tracked coverage"
-            value={getDailyPointLabel(1)}
-          />
         </dl>
         <p className={styles.referenceNote}>
-          The tracked summary above can already use this first point while the
-          30-day view builds.
+          The tracked summary above can already use this first point.
         </p>
       </Surface>
     );
@@ -523,7 +517,7 @@ export function PriceHistoryCard({
       tone="muted"
     >
       <SectionHeading
-        description="One reviewed headline price is stored per day. This chart shows the latest 30 days."
+        description="One reviewed headline price is stored per day. Showing the latest 30 days."
         eyebrow="Price history"
         title="30-day price history"
       />
@@ -609,7 +603,7 @@ export function PriceHistoryCard({
         />
       </dl>
       <p className={styles.referenceNote}>
-        Latest daily price reviewed {formatObservedAt(latest.observedAt)}.
+        Last checked {formatObservedAt(latest.observedAt)}.
       </p>
       <VisuallyHidden>
         <ol>
@@ -644,7 +638,7 @@ export function PriceHistoryEmptyCard({
       tone="muted"
     >
       <SectionHeading
-        description="Tracked history uses stored daily prices for sets with reviewed Dutch pricing."
+        description="Tracked history uses stored daily prices."
         eyebrow="Price history"
         title="30-day price history"
       />

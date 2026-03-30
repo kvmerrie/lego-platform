@@ -1,10 +1,18 @@
 import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import {
   getThemeBootstrapScript,
   getThemeStyles,
 } from '@lego-platform/shared/design-tokens';
 import { platformConfig } from '@lego-platform/shared/config';
 import './global.css';
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-plus-jakarta-sans',
+  weight: ['400', '500', '600', '700', '800'],
+});
 
 export const metadata: Metadata = {
   title: platformConfig.productName,
@@ -17,8 +25,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
-      <body>
+    <html
+      lang="en"
+      className={plusJakartaSans.variable}
+      data-theme="light"
+      suppressHydrationWarning
+    >
+      <body className={plusJakartaSans.className}>
         <style dangerouslySetInnerHTML={{ __html: getThemeStyles() }} />
         <script
           dangerouslySetInnerHTML={{ __html: getThemeBootstrapScript() }}

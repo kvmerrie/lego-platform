@@ -14,13 +14,11 @@ describe('WantedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Saved to wishlist.');
+    expect(markup).toContain('Wishlist saved.');
     expect(markup).toContain('Wanted saved');
     expect(markup).toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
-    expect(markup).toContain(
-      'Private to you. Set facts and pricing stay public.',
-    );
+    expect(markup).toContain('Private to you. Set facts stay public.');
     expect(markup).toContain('Remove from wanted');
   });
 });
@@ -36,9 +34,6 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('Wishlist');
     expect(markup).toContain('Browse featured sets');
     expect(markup).toContain('Open collection');
-    expect(markup).toContain(
-      'Wishlist picks stay separate from your collection.',
-    );
   });
 
   it('renders populated wishlist context with hidden-set messaging when needed', () => {

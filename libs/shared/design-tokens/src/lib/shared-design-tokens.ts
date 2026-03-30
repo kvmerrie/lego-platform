@@ -14,9 +14,9 @@ const baseTokens: ThemeTokenMap = {
   'lego-breakpoint-md': designBreakpoints.md,
   'lego-breakpoint-lg': designBreakpoints.lg,
   'lego-font-family-body':
-    "'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
+    "var(--font-plus-jakarta-sans), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
   'lego-font-family-heading':
-    "'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif",
+    "var(--font-plus-jakarta-sans), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
   'lego-font-family-mono': "'SFMono-Regular', 'Cascadia Code', monospace",
   'lego-font-size-caption': '0.78rem',
   'lego-font-size-sm': '0.92rem',
@@ -25,7 +25,7 @@ const baseTokens: ThemeTokenMap = {
   'lego-font-size-xl': '1.35rem',
   'lego-font-size-2xl': '1.85rem',
   'lego-font-size-3xl': '2.4rem',
-  'lego-font-size-4xl': 'clamp(2.9rem, 5vw, 4.4rem)',
+  'lego-font-size-4xl': 'clamp(2.45rem, 4vw, 3.55rem)',
   'lego-font-size-5xl': 'clamp(3.45rem, 7vw, 5.75rem)',
   'lego-font-weight-medium': '500',
   'lego-font-weight-semibold': '600',
@@ -34,17 +34,14 @@ const baseTokens: ThemeTokenMap = {
   'lego-line-height-heading': '1.12',
   'lego-line-height-body': '1.6',
   'lego-line-height-relaxed': '1.72',
-  'lego-radius-xs': '8px',
-  'lego-radius-sm': '14px',
-  'lego-radius-md': '18px',
-  'lego-radius-lg': '24px',
+  'lego-radius-xs': '6px',
+  'lego-radius-sm': '10px',
+  'lego-radius-md': '12px',
+  'lego-radius-lg': '14px',
   'lego-radius-pill': '999px',
-  'lego-shadow-sm':
-    '0 8px 18px rgba(24, 22, 18, 0.07), 0 2px 6px rgba(24, 22, 18, 0.04)',
-  'lego-shadow-md':
-    '0 16px 34px rgba(24, 22, 18, 0.1), 0 6px 14px rgba(24, 22, 18, 0.06)',
-  'lego-shadow-lg':
-    '0 24px 56px rgba(24, 22, 18, 0.13), 0 10px 24px rgba(24, 22, 18, 0.08)',
+  'lego-shadow-sm': '0 1px 2px rgba(20, 27, 38, 0.04)',
+  'lego-shadow-md': '0 2px 6px rgba(20, 27, 38, 0.05)',
+  'lego-shadow-lg': '0 8px 18px rgba(20, 27, 38, 0.08)',
   'lego-shadow': 'var(--lego-shadow-md)',
   'lego-space-1': '0.25rem',
   'lego-space-2': '0.5rem',
@@ -88,49 +85,49 @@ const baseTokens: ThemeTokenMap = {
 };
 
 const lightThemeTokens: ThemeTokenMap = {
-  'lego-background': '#f5efe6',
-  'lego-surface': '#fff9f2',
-  'lego-surface-muted': '#f2e7da',
-  'lego-surface-raised': '#fffdf8',
-  'lego-surface-accent': '#f9eee7',
-  'lego-text': '#1d2230',
-  'lego-text-muted': '#615d65',
-  'lego-border': '#d8cab8',
-  'lego-accent': '#c25a2f',
-  'lego-accent-hover': '#a94a23',
-  'lego-accent-subtle': '#f6d9ca',
-  'lego-accent-contrast': '#fff8f2',
-  'lego-positive': '#1d7a61',
-  'lego-warning': '#9f6a00',
-  'lego-info': '#2c6ca8',
-  'lego-error': '#b5453f',
-  'lego-focus-ring': 'rgba(194, 90, 47, 0.26)',
-  'lego-disabled': '#b9ad9a',
-  'lego-interactive-pressed': 'rgba(42, 32, 22, 0.08)',
-  'lego-interactive-pressed-strong': 'rgba(42, 32, 22, 0.14)',
+  'lego-background': '#f4f6f9',
+  'lego-surface': '#ffffff',
+  'lego-surface-muted': '#eef2f7',
+  'lego-surface-raised': '#ffffff',
+  'lego-surface-accent': '#fff3ea',
+  'lego-text': '#17202c',
+  'lego-text-muted': '#5d6776',
+  'lego-border': '#d8e0ea',
+  'lego-accent': '#d84533',
+  'lego-accent-hover': '#bf3424',
+  'lego-accent-subtle': '#fde1da',
+  'lego-accent-contrast': '#fff8f5',
+  'lego-positive': '#1c8a5a',
+  'lego-warning': '#c8920c',
+  'lego-info': '#2d69ca',
+  'lego-error': '#c7423a',
+  'lego-focus-ring': 'rgba(216, 69, 51, 0.22)',
+  'lego-disabled': '#aeb7c4',
+  'lego-interactive-pressed': 'rgba(23, 32, 44, 0.06)',
+  'lego-interactive-pressed-strong': 'rgba(23, 32, 44, 0.11)',
 };
 
 const darkThemeTokens: ThemeTokenMap = {
-  'lego-background': '#11161d',
-  'lego-surface': '#181f29',
-  'lego-surface-muted': '#222c39',
-  'lego-surface-raised': '#202b38',
-  'lego-surface-accent': '#332720',
-  'lego-text': '#f4ede4',
-  'lego-text-muted': '#b7beca',
-  'lego-border': '#39475d',
-  'lego-accent': '#ff8f64',
-  'lego-accent-hover': '#ffa785',
-  'lego-accent-subtle': '#3d2a23',
-  'lego-accent-contrast': '#1b1410',
-  'lego-positive': '#66d0a2',
-  'lego-warning': '#e4bd61',
-  'lego-info': '#82b7eb',
-  'lego-error': '#ff8d82',
-  'lego-focus-ring': 'rgba(255, 201, 178, 0.28)',
-  'lego-disabled': '#657286',
-  'lego-interactive-pressed': 'rgba(255, 255, 255, 0.08)',
-  'lego-interactive-pressed-strong': 'rgba(255, 255, 255, 0.12)',
+  'lego-background': '#0f1621',
+  'lego-surface': '#171f2b',
+  'lego-surface-muted': '#1e2938',
+  'lego-surface-raised': '#1b2532',
+  'lego-surface-accent': '#2c1f1a',
+  'lego-text': '#f4f7fb',
+  'lego-text-muted': '#b8c1cf',
+  'lego-border': '#334255',
+  'lego-accent': '#ff7d69',
+  'lego-accent-hover': '#ff9786',
+  'lego-accent-subtle': '#412621',
+  'lego-accent-contrast': '#1f1411',
+  'lego-positive': '#63d29a',
+  'lego-warning': '#efc35d',
+  'lego-info': '#88bbff',
+  'lego-error': '#ff8a80',
+  'lego-focus-ring': 'rgba(255, 185, 172, 0.24)',
+  'lego-disabled': '#637187',
+  'lego-interactive-pressed': 'rgba(255, 255, 255, 0.06)',
+  'lego-interactive-pressed-strong': 'rgba(255, 255, 255, 0.1)',
 };
 
 const themeTokens: Record<ThemeMode, ThemeTokenMap> = {
@@ -172,14 +169,19 @@ html {
 body {
   background:
     radial-gradient(
-      circle at 14% 0%,
-      color-mix(in srgb, var(--lego-accent-subtle) 58%, transparent),
-      transparent 34%
+      circle at 12% 0%,
+      color-mix(in srgb, var(--lego-accent-subtle) 62%, transparent),
+      transparent 28%
     ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--lego-surface-raised) 42%, transparent),
-      transparent 22rem
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--lego-warning) 10%, transparent),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      color-mix(in srgb, var(--lego-info) 10%, transparent),
+      transparent 26%
     ),
     var(--lego-background);
   color: var(--lego-text);

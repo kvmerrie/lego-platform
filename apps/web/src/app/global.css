@@ -20,14 +20,19 @@ body {
 body::before {
   background:
     radial-gradient(
-      circle at top right,
-      color-mix(in srgb, var(--lego-accent-subtle) 78%, transparent),
-      transparent 38%
+      circle at top left,
+      color-mix(in srgb, var(--lego-accent-subtle) 28%, transparent),
+      transparent 24%
     ),
     radial-gradient(
-      circle at bottom left,
-      color-mix(in srgb, var(--lego-info) 14%, transparent),
-      transparent 32%
+      circle at top right,
+      color-mix(in srgb, var(--lego-warning) 6%, transparent),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      color-mix(in srgb, var(--lego-info) 6%, transparent),
+      transparent 22%
     );
   content: '';
   inset: 0;
@@ -57,19 +62,12 @@ ul {
 /* Legacy shared utilities remain here until non-slice overview, demo, and placeholder surfaces migrate. */
 .surface,
 .metric-card {
-  backdrop-filter: blur(16px);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-surface-raised) 97%, transparent),
-    color-mix(in srgb, var(--lego-surface) 92%, transparent)
-  );
+  background: var(--lego-surface-raised);
   border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 92%, transparent);
+    color-mix(in srgb, var(--lego-border) 88%, transparent);
   border-radius: var(--lego-radius-lg);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 48%, transparent),
-    var(--lego-shadow-md);
-  padding: var(--lego-space-5);
+  box-shadow: none;
+  padding: var(--lego-space-4);
 }
 
 .section-heading h2,

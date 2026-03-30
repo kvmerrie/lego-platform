@@ -31,6 +31,8 @@ export interface CatalogSetCardPriceContext {
   reviewedLabel: string;
 }
 
+type CatalogSetCardVariant = 'default' | 'featured';
+
 function CatalogSetVisual({
   imageUrl,
   name,
@@ -108,11 +110,76 @@ export function CatalogSetCard({
   href,
   priceContext,
   setSummary,
+  variant = 'default',
 }: {
   href?: string;
   priceContext?: CatalogSetCardPriceContext;
   setSummary: CatalogSetCardSummary;
+  variant?: CatalogSetCardVariant;
 }) {
+  if (variant === 'featured') {
+    const featuredCardContent = (
+      <>
+        <CatalogSetVisual
+          imageUrl={setSummary.imageUrl}
+          name={setSummary.name}
+          setId={setSummary.id}
+          theme={setSummary.theme}
+          variant="card"
+        />
+        <div className={styles.cardCompactBody}>
+          <div className={styles.cardCompactBadgeRow}>
+            <Badge tone="accent">{setSummary.theme}</Badge>
+          </div>
+          <h3 className={styles.cardTitle}>{setSummary.name}</h3>
+          <div className={styles.priceCompactBlock}>
+            <p className={styles.priceLabel}>Reviewed price</p>
+            {priceContext ? (
+              <>
+                <p className={styles.priceValue}>{priceContext.currentPrice}</p>
+                <p className={styles.cardCompactSupporting}>
+                  {priceContext.merchantLabel}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className={styles.priceUnavailableValue}>
+                  Not published yet
+                </p>
+                <p className={styles.cardCompactSupporting}>
+                  Reviewed pricing is live for selected sets.
+                </p>
+              </>
+            )}
+          </div>
+          <div className={styles.cardCompactFooter}>
+            <p className={styles.cardCompactMeta}>
+              {priceContext ? priceContext.reviewedLabel : 'Public set page'}
+            </p>
+            {href ? (
+              <span className={styles.cardCompactAction}>Open set</span>
+            ) : null}
+          </div>
+        </div>
+      </>
+    );
+
+    return (
+      <Surface
+        as="article"
+        className={`${styles.setCard} ${styles.setCardCompact}`}
+      >
+        {href ? (
+          <ActionLink className={styles.setCardLink} href={href} tone="card">
+            {featuredCardContent}
+          </ActionLink>
+        ) : (
+          featuredCardContent
+        )}
+      </Surface>
+    );
+  }
+
   return (
     <Surface as="article" className={styles.setCard}>
       <CatalogSetVisual
@@ -200,8 +267,7 @@ export function CatalogHomepageIntro() {
       as="section"
       className={styles.heroPanel}
       elevation="floating"
-      padding="lg"
-      tone="accent"
+      tone="default"
     >
       <div className={styles.heroPrimary}>
         <SectionHeading
@@ -247,8 +313,7 @@ export function CatalogSetDetailPanel({
         as="section"
         className={styles.heroPrimary}
         elevation="floating"
-        padding="lg"
-        tone="accent"
+        tone="default"
       >
         <div className={styles.heroPrimaryContent}>
           <div className={styles.heroCopy}>

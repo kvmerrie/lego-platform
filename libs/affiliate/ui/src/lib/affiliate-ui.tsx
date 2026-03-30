@@ -51,7 +51,6 @@ export function AffiliateOfferCard({
             <Badge tone={getAvailabilityTone(affiliateOffer.availabilityLabel)}>
               {affiliateOffer.availabilityLabel}
             </Badge>
-            <Badge tone="info">New condition</Badge>
           </div>
         </div>
         <div className={styles.offerPriceBlock}>
@@ -102,7 +101,7 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description="These cards open reviewed Dutch merchant pages from the current selection. Use the price panel for the latest snapshot and tracked history."
+        description="Reviewed Dutch merchant pages for the current set selection."
         eyebrow="Buy guidance"
         title="Current reviewed offers"
       />
@@ -142,8 +141,8 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
         <Badge tone="info">New condition</Badge>
       </div>
       <p className={styles.unavailableCopy}>
-        Offers show up together with the matching reviewed price and tracked
-        history when a set joins the current Dutch pricing selection.
+        Offers appear together with reviewed price and tracked history when a
+        set joins the Dutch pricing selection.
       </p>
     </Surface>
   );

@@ -43,7 +43,7 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('30-day Dutch price history');
     expect(markup).toContain('30-day low');
     expect(markup).toContain('30-day high');
-    expect(markup).toContain('latest 30 days');
+    expect(markup).toContain('Showing the latest 30 days');
   });
 
   it('renders a calm building state when only one daily history point exists', () => {
@@ -66,14 +66,14 @@ describe('pricing ui history surfaces', () => {
     );
 
     expect(markup).toContain('30-day price history');
-    expect(markup).toContain('History has started');
+    expect(markup).toContain('One daily reviewed price is stored so far.');
     expect(markup).toContain('History building');
     expect(markup).toContain('1 daily point');
     expect(markup).not.toContain('1 daily points');
     expect(markup).toContain('First tracked price');
     expect(markup).toContain('30-day range building');
     expect(markup).toContain(
-      'The tracked summary above can already use this first point',
+      'The tracked summary above can already use this first point.',
     );
   });
 
@@ -81,9 +81,7 @@ describe('pricing ui history surfaces', () => {
     const markup = renderToStaticMarkup(<PriceHistoryEmptyCard />);
 
     expect(markup).toContain('30-day price history');
-    expect(markup).toContain(
-      'No daily history is stored for this set yet. If a reviewed price appears above, history is still building. If not, this set is outside the current Dutch pricing selection.',
-    );
+    expect(markup).toContain('No daily history is stored for this set yet.');
   });
 
   it('renders a compact 30-day summary block for the current price panel', () => {
@@ -141,7 +139,7 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('Tracked since');
     expect(markup).toContain('Current vs tracked low');
     expect(markup).toContain('Current vs tracked high');
-    expect(markup).toContain('tracked daily points');
+    expect(markup).toContain('Tracked from');
   });
 
   it('renders a calm fallback when only one history point exists so far', () => {
@@ -162,14 +160,10 @@ describe('pricing ui history surfaces', () => {
     );
 
     expect(markup).toContain('Recent price history');
-    expect(markup).toContain(
-      'History is still building. One daily price has been tracked so far.',
-    );
+    expect(markup).toContain('History is building from the first daily price.');
     expect(markup).toContain('Tracked price range');
     expect(markup).toContain('Matches tracked low');
     expect(markup).toContain('Matches tracked high');
-    expect(markup).toContain(
-      'Tracked history has just started with one daily price.',
-    );
+    expect(markup).toContain('Tracked history starts with one daily price.');
   });
 });

@@ -1,11 +1,11 @@
 .section {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-3);
 }
 
 .headerBlock {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-1);
 }
 
 .header {
@@ -20,18 +20,28 @@
 
 .grid {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 @media (min-width: 48rem) {
   .grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .headerBlock {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .signalRow {
+    justify-content: flex-end;
   }
 }
 
 @media (min-width: 72rem) {
   .grid {
-    align-items: start;
-    grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

@@ -20,7 +20,7 @@ describe('UserShellAccountStatusCard', () => {
     );
 
     expect(markup).toContain('Sign in to start saving privately');
-    expect(markup).toContain('Browse the public catalog');
+    expect(markup).toContain('Sign in once to save your collection');
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('signed out');
@@ -55,9 +55,7 @@ describe('UserShellAccountStatusCard', () => {
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('Sign out');
-    expect(markup).toContain(
-      'Your collection, wishlist, and profile are ready from the header.',
-    );
+    expect(markup).toContain('Your private collector state is ready.');
   });
 });
 
@@ -86,7 +84,7 @@ describe('UserSessionCard', () => {
 
     expect(markup).toContain('Collector account ready');
     expect(markup).toContain(
-      'This signed-in account keeps your owned sets, wishlist, and profile private to you.',
+      'Your owned sets, wishlist, and profile stay private to you.',
     );
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wanted saved');
@@ -95,10 +93,9 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('Collector destinations');
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
-    expect(markup).toContain('Jump to your collection or wishlist.');
     expect(markup).toContain('For sign-in and private saves.');
     expect(markup).toContain(
-      'Your owned sets and wishlist stay private. Set facts and pricing stay public.',
+      'Owned sets and wishlist stay private. Set facts and pricing stay public.',
     );
   });
 });
@@ -128,14 +125,14 @@ describe('UserProfileEditorCard', () => {
 
     expect(markup).toContain('Shape your collector profile');
     expect(markup).toContain(
-      'Display name, handle, location, and focus shape how your collector profile feels.',
+      'Edit the collector details shown with your saved sets.',
     );
     expect(markup).toContain('Shown on your collector card.');
     expect(markup).toContain('Letters, numbers, and hyphens only.');
     expect(markup).toContain('Private sign-in email.');
-    expect(markup).toContain('Shown in signed-in collector surfaces.');
+    expect(markup).toContain('Shown with your signed-in account.');
     expect(markup).toContain(
-      'A short line about the sets and themes you follow.',
+      'One short line about the sets and themes you follow.',
     );
   });
 });

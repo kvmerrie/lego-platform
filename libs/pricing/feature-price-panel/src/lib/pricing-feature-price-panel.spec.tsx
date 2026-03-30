@@ -12,7 +12,9 @@ describe('PricingFeaturePricePanel', () => {
     expect(markup).toContain('489,99');
     expect(markup).toContain('Reviewed price');
     expect(markup).toContain('Lowest reviewed price at bol');
-    expect(markup).toContain('This is the latest reviewed snapshot.');
+    expect(markup).toContain(
+      'History and offers below use the same reviewed market view.',
+    );
     expect(markup).toContain('Last reviewed');
   });
 
@@ -23,6 +25,6 @@ describe('PricingFeaturePricePanel', () => {
 
     expect(markup).toContain('Current reviewed price');
     expect(markup).toContain('live for selected sets');
-    expect(markup).toContain('Price, history, and offers appear together');
+    expect(markup).toContain('Browsing and private saves still work.');
   });
 });

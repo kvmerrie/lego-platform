@@ -14,13 +14,11 @@ describe('OwnedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Saved to owned.');
+    expect(markup).toContain('Owned saved.');
     expect(markup).toContain('Owned saved');
     expect(markup).toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
-    expect(markup).toContain(
-      'Private to you. Set facts and pricing stay public.',
-    );
+    expect(markup).toContain('Private to you. Set facts stay public.');
     expect(markup).toContain('Remove from owned');
   });
 });
@@ -35,9 +33,6 @@ describe('CollectorCollectionPanel', () => {
     expect(markup).toContain('Private collector page');
     expect(markup).toContain('Browse featured sets');
     expect(markup).toContain('Open wishlist');
-    expect(markup).toContain(
-      'Owned sets live here. Wishlist picks stay separate.',
-    );
   });
 
   it('renders populated collection context with hidden-set messaging when needed', () => {

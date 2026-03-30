@@ -3,6 +3,47 @@ import { describe, expect, it } from 'vitest';
 import { CatalogSetCard, CatalogSetDetailPanel } from './catalog-ui';
 
 describe('CatalogSetCard', () => {
+  it('renders a compact featured-card variant for homepage browsing', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'In stock · 3 reviewed offers',
+          currentPrice: 'EUR 489.99',
+          merchantLabel: 'Lowest reviewed price at bol',
+          pricePositionLabel: 'EUR 10.00 below ref',
+          pricePositionTone: 'positive',
+          reviewedLabel: 'Checked 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          priceRange: '$499 to $569',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).toContain('Reviewed price');
+    expect(markup).toContain('EUR 489.99');
+    expect(markup).toContain('Lowest reviewed price at bol');
+    expect(markup).toContain('Checked 29 mrt');
+    expect(markup).toContain('Open set');
+    expect(markup).not.toContain('Coverage');
+    expect(markup).not.toContain('Freshness');
+    expect(markup).not.toContain('Why collectors like it');
+  });
+
   it('renders set imagery alongside featured-set discovery context when available', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard

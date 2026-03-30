@@ -5,10 +5,8 @@
 }
 
 .header {
-  background: color-mix(in srgb, var(--lego-surface) 95%, white 5%);
+  background: color-mix(in srgb, var(--lego-surface) 97%, white 3%);
   border-bottom: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  box-shadow: 0 8px 20px
-    color-mix(in srgb, var(--lego-shadow-color) 6%, transparent);
   position: sticky;
   top: 0;
   z-index: 30;
@@ -49,18 +47,16 @@
   background: var(--lego-accent);
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-accent) 72%, black 28%);
-  border-radius: 16px;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
-    var(--lego-shadow-sm);
+  border-radius: 14px;
+  box-shadow: var(--lego-shadow-sm);
   color: var(--lego-accent-contrast);
   display: inline-flex;
   flex: 0 0 auto;
   font-size: var(--lego-font-size-lg);
   font-weight: var(--lego-font-weight-bold);
-  height: 2.45rem;
+  height: 2.3rem;
   justify-content: center;
-  width: 2.45rem;
+  width: 2.3rem;
 }
 
 .brandName {
@@ -124,7 +120,7 @@
 
 .accountStatus {
   align-items: center;
-  background: var(--lego-surface);
+  background: transparent;
   border: var(--lego-border-width-1) solid var(--lego-border-subtle);
   border-radius: var(--lego-radius-pill);
   display: inline-flex;
@@ -215,7 +211,6 @@
   background: var(--lego-surface);
   border: var(--lego-border-width-1) solid var(--lego-border-subtle);
   border-radius: var(--lego-radius-lg);
-  box-shadow: var(--lego-shadow-lg);
   margin-top: var(--lego-space-2);
   min-width: min(18rem, calc(100vw - 2rem));
   padding: var(--lego-space-3);
@@ -288,8 +283,8 @@
 
 .mainInner {
   display: grid;
-  gap: var(--lego-space-8);
-  padding-bottom: var(--lego-space-16);
+  gap: var(--lego-space-6);
+  padding-bottom: var(--lego-space-14);
   padding-top: var(--lego-space-4);
 }
 

@@ -1,11 +1,11 @@
 .card {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .splitCard {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .identityCard {
@@ -94,7 +94,8 @@
 .description,
 .metaText {
   color: var(--lego-text-muted);
-  line-height: var(--lego-line-height-relaxed);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -111,14 +112,15 @@
 
 .infoText {
   color: var(--lego-text-muted);
-  line-height: var(--lego-line-height-relaxed);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.5;
   margin: 0;
 }
 
 .supportNote {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-line-height-relaxed);
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -131,7 +133,7 @@
 
 .sessionContent {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .sessionHeader {
@@ -167,11 +169,9 @@
 .identityPane {
   display: grid;
   gap: var(--lego-space-1);
-  padding: var(--lego-space-3);
-  background: color-mix(in srgb, var(--lego-surface-muted) 76%, transparent);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 84%, transparent);
-  border-radius: var(--lego-radius-sm);
+  padding-top: var(--lego-space-2);
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 76%, transparent);
 }
 
 .paneLabel {
@@ -208,11 +208,9 @@
 .destinationPanel {
   display: grid;
   gap: var(--lego-space-2);
-  padding: var(--lego-space-3);
-  background: color-mix(in srgb, var(--lego-surface-muted) 82%, transparent);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 86%, transparent);
-  border-radius: var(--lego-radius-sm);
+  padding-top: var(--lego-space-2);
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 76%, transparent);
 }
 
 .destinationLinks {

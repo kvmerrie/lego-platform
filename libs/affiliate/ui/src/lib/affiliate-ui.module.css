@@ -1,7 +1,7 @@
 .panel,
 .demo {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .panelBadges,
@@ -23,11 +23,7 @@
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 74%, transparent);
   border-radius: var(--lego-radius-md);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-surface-raised) 98%, transparent),
-    color-mix(in srgb, var(--lego-surface) 88%, transparent)
-  );
+  background: var(--lego-surface);
 }
 
 .offerHeader,
@@ -75,7 +71,8 @@
 .offerPerks,
 .unavailableCopy {
   color: var(--lego-text-muted);
-  line-height: var(--lego-line-height-relaxed);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.5;
   margin: 0;
 }
 

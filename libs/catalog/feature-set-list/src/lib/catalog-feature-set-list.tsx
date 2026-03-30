@@ -50,6 +50,7 @@ export function CatalogFeatureSetList({
             href={`/sets/${catalogSetSummary.slug}`}
             priceContext={catalogSetSummary.priceContext}
             setSummary={catalogSetSummary}
+            variant="featured"
           />
         ))}
       </div>

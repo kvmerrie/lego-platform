@@ -1,7 +1,7 @@
 .panel,
 .demo {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .badgeRow {
@@ -36,7 +36,8 @@
 .metricContextSecondary,
 .referenceNote {
   color: var(--lego-text-muted);
-  line-height: var(--lego-line-height-relaxed);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -50,12 +51,10 @@
 }
 
 .summaryBlock {
-  background: color-mix(in srgb, var(--lego-surface) 76%, transparent);
-  border: 1px solid color-mix(in srgb, var(--lego-border) 72%, transparent);
-  border-radius: var(--lego-radius-md);
   display: grid;
   gap: var(--lego-space-2);
-  padding: var(--lego-space-3);
+  padding-top: var(--lego-space-2);
+  border-top: 1px solid color-mix(in srgb, var(--lego-border) 72%, transparent);
 }
 
 .summarySection {
@@ -102,7 +101,7 @@
 
 .metaGrid {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
   margin: 0;
 }
 
@@ -171,7 +170,8 @@
 
 .unavailableCopy {
   color: var(--lego-text-muted);
-  line-height: var(--lego-line-height-relaxed);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.5;
   margin: 0;
 }
 

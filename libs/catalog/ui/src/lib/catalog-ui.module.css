@@ -1,40 +1,72 @@
 .setCard {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
+}
+
+.setCardCompact {
+  overflow: hidden;
+  padding: 0;
+}
+
+.setCardLink {
+  align-items: stretch;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  box-shadow: none;
+  color: inherit;
+  display: grid;
+  gap: var(--lego-space-2);
+  min-height: auto;
+  padding: var(--lego-space-3);
+  text-align: left;
+  width: 100%;
+}
+
+.setCardLink:hover {
+  background: transparent;
+  border-color: transparent;
 }
 
 .setVisual {
+  align-items: center;
   overflow: hidden;
   border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 88%, transparent);
+    color-mix(in srgb, var(--lego-border) 82%, transparent);
   border-radius: var(--lego-radius-md);
-  background: color-mix(in srgb, var(--lego-surface-muted) 92%, white);
-  min-height: 12rem;
+  background: var(--lego-surface-muted);
+  display: grid;
+  justify-items: center;
+  min-height: 10.5rem;
+  padding: var(--lego-space-2);
 }
 
 .cardVisual {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1.18;
 }
 
 .heroVisual {
-  aspect-ratio: 1 / 1;
-  min-height: 16rem;
+  aspect-ratio: 1.12;
+  min-height: 15.5rem;
+  order: -1;
+  padding: var(--lego-space-2);
 }
 
 .setImage {
   display: block;
-  width: 100%;
   height: 100%;
+  margin: 0 auto;
+  max-height: 100%;
   object-fit: contain;
-  background: color-mix(in srgb, var(--lego-surface-muted) 92%, white);
+  width: 100%;
 }
 
 .visualFallback {
   align-content: center;
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   justify-items: start;
-  padding: var(--lego-space-5);
+  padding: var(--lego-space-4);
 }
 
 .visualFallbackTitle,
@@ -44,7 +76,6 @@
 
 .visualFallbackTitle {
   color: var(--lego-text);
-  font-family: var(--lego-font-family-heading);
   font-size: var(--lego-font-size-lg);
   font-weight: var(--lego-font-weight-bold);
   line-height: 1.1;
@@ -58,7 +89,18 @@
 
 .cardHeader {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
+}
+
+.cardCompactBody {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.cardCompactBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-1);
 }
 
 .cardBadgeRow {
@@ -68,7 +110,6 @@
 }
 
 .cardTitle {
-  font-family: var(--lego-font-family-heading);
   font-size: var(--lego-text-role-card-title-size);
   font-weight: var(--lego-text-role-card-title-weight);
   letter-spacing: -0.02em;
@@ -77,11 +118,17 @@
 }
 
 .cardTagline {
-  color: var(--lego-text);
-  font-weight: var(--lego-font-weight-semibold);
+  color: var(--lego-text-muted);
+  font-size: 0.98rem;
+  font-weight: var(--lego-font-weight-medium);
   line-height: 1.45;
   margin: 0;
-  max-width: 28ch;
+  max-width: 34ch;
+}
+
+.setCardCompact .cardTitle {
+  font-size: 1.14rem;
+  line-height: 1.2;
 }
 
 .mutedCopy,
@@ -93,12 +140,10 @@
 
 .priceBlock {
   display: grid;
-  gap: var(--lego-space-2);
-  padding: var(--lego-space-3);
-  background: var(--lego-surface-muted);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 92%, transparent);
-  border-radius: var(--lego-radius-md);
+  gap: var(--lego-space-1);
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 76%, transparent);
+  padding-top: var(--lego-space-2);
 }
 
 .priceHeader {
@@ -131,11 +176,10 @@
 
 .priceValue {
   color: var(--lego-text);
-  font-family: var(--lego-font-family-heading);
-  font-size: clamp(1.8rem, 4vw, 2.45rem);
+  font-size: clamp(1.55rem, 3.2vw, 2.05rem);
   font-weight: var(--lego-text-role-hero-weight);
-  letter-spacing: -0.05em;
-  line-height: 0.95;
+  letter-spacing: -0.04em;
+  line-height: 0.98;
   margin: 0;
 }
 
@@ -152,6 +196,56 @@
   margin: 0;
 }
 
+.priceUnavailableValue {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-font-size-lg);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.priceCompactBlock {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.cardCompactSupporting {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.35;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardCompactFooter {
+  align-items: center;
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 76%, transparent);
+  display: flex;
+  gap: var(--lego-space-2);
+  justify-content: space-between;
+  margin-top: var(--lego-space-1);
+  padding-top: var(--lego-space-2);
+}
+
+.cardCompactMeta,
+.cardCompactAction {
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.cardCompactMeta {
+  color: var(--lego-text-muted);
+}
+
+.cardCompactAction {
+  color: var(--lego-accent);
+  font-weight: var(--lego-font-weight-semibold);
+}
+
 .supportingGrid,
 .collectorContext {
   display: grid;
@@ -159,7 +253,9 @@
 }
 
 .collectorContext {
-  padding-top: var(--lego-space-1);
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 76%, transparent);
+  padding-top: var(--lego-space-2);
 }
 
 .supportingDetail {
@@ -173,7 +269,7 @@
 
 .metaGrid {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
   margin: 0;
   padding-top: var(--lego-space-1);
 }
@@ -181,11 +277,7 @@
 .metaItem {
   display: grid;
   gap: var(--lego-space-1);
-  padding: var(--lego-space-2);
-  background: color-mix(in srgb, var(--lego-surface-muted) 72%, transparent);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 86%, transparent);
-  border-radius: var(--lego-radius-sm);
+  padding: 0;
 }
 
 .metaLabel {
@@ -208,23 +300,23 @@
 
 .heroPanel {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-2);
 }
 
 .heroPrimary,
 .heroSecondary {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-1);
 }
 
 .heroPrimaryContent {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-2);
 }
 
 .heroCopy {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .badgeRow {
@@ -235,7 +327,7 @@
 
 .highlightsCard {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-1);
 }
 
 .highlightsList {
@@ -261,32 +353,24 @@
 }
 
 @media (min-width: 56rem) {
-  .setCard:first-child .cardTitle {
-    font-size: var(--lego-font-size-2xl);
-  }
-
-  .setCard:first-child .cardTagline {
-    font-size: var(--lego-font-size-lg);
-    max-width: 32ch;
-  }
-
-  .setCard:first-child .priceValue {
-    font-size: clamp(2.2rem, 4vw, 3rem);
-  }
-
   .supportingGrid,
   .collectorContext {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .heroPanel {
-    grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.95fr);
+    grid-template-columns: minmax(0, 1.28fr) minmax(18rem, 0.92fr);
     align-items: start;
   }
 
   .heroPrimaryContent {
-    grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr);
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.94fr);
     align-items: start;
+  }
+
+  .heroVisual {
+    min-height: 17.5rem;
+    order: 0;
   }
 
   .metaGrid {
