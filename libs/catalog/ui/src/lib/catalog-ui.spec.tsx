@@ -10,7 +10,7 @@ describe('CatalogSetCard', () => {
         priceContext={{
           coverageLabel: 'In stock · 3 reviewed offers',
           currentPrice: 'EUR 489.99',
-          merchantLabel: 'Lowest current offer from bol',
+          merchantLabel: 'Reviewed low from bol',
           pricePositionLabel: 'EUR 10.00 below ref',
           pricePositionTone: 'positive',
           reviewedLabel: 'Reviewed 29 mrt',
@@ -32,9 +32,9 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Current reviewed price');
+    expect(markup).toContain('Reviewed price');
     expect(markup).toContain('EUR 489.99');
-    expect(markup).toContain('Lowest current offer from bol');
+    expect(markup).toContain('Reviewed low from bol');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
     expect(markup).toContain('alt="Rivendell set"');
     expect(markup).toContain('Coverage');
@@ -72,6 +72,6 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Collector image coming soon');
     expect(markup).toContain('Set 21335');
-    expect(markup).toContain('Back to featured sets');
+    expect(markup).toContain('Back to browse');
   });
 });

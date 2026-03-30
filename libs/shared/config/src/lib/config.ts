@@ -34,12 +34,12 @@ export const webNavigationSections = [
   {
     id: 'browse',
     title: 'Start here',
-    description: 'Browse the curated homepage and featured shortlist first.',
+    description: 'Curated homepage and featured shortlist.',
   },
   {
     id: 'collector',
     title: 'Your collector space',
-    description: 'Private follow-through after you start saving sets.',
+    description: 'Private saves, collection, and wishlist.',
   },
 ] as const;
 
@@ -47,28 +47,28 @@ export const webNavigation = [
   {
     label: 'Home',
     href: '/',
-    description: 'Main entry point for curated set discovery.',
+    description: 'Curated set discovery.',
     contextLabel: 'Public route',
     sectionId: 'browse',
   },
   {
     label: 'Featured shortlist',
     href: '/#featured-sets',
-    description: 'Compare the current standout sets at a glance.',
+    description: 'Compare standout sets quickly.',
     contextLabel: 'Public route',
     sectionId: 'browse',
   },
   {
     label: 'Collection',
     href: '/collection',
-    description: 'Your private record of the sets you already own.',
+    description: 'Sets you already own.',
     contextLabel: 'Private route',
     sectionId: 'collector',
   },
   {
     label: 'Wishlist',
     href: '/wishlist',
-    description: 'Your private list of sets you still want next.',
+    description: 'Sets you still want.',
     contextLabel: 'Private route',
     sectionId: 'collector',
   },

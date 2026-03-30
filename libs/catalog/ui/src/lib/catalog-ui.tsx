@@ -135,7 +135,7 @@ export function CatalogSetCard({
       {priceContext ? (
         <div className={styles.priceBlock}>
           <div className={styles.priceHeader}>
-            <p className={styles.priceLabel}>Reviewed Dutch price</p>
+            <p className={styles.priceLabel}>Reviewed price</p>
             {priceContext.pricePositionLabel ? (
               <Badge tone={priceContext.pricePositionTone ?? 'info'}>
                 {priceContext.pricePositionLabel}
@@ -158,12 +158,11 @@ export function CatalogSetCard({
       ) : (
         <div className={styles.priceBlock}>
           <div className={styles.priceHeader}>
-            <p className={styles.priceLabel}>Reviewed Dutch price</p>
+            <p className={styles.priceLabel}>Reviewed price</p>
             <Badge tone="neutral">Not published yet</Badge>
           </div>
           <p className={styles.priceUnavailableCopy}>
-            This set is in the public catalog now. Reviewed Dutch pricing is
-            only published for selected sets in the current slice.
+            Reviewed Dutch pricing is published for selected sets only.
           </p>
         </div>
       )}
@@ -188,7 +187,7 @@ export function CatalogSetCard({
       />
       {href ? (
         <ActionLink className={styles.actionLink} href={href} tone="secondary">
-          Open set page
+          View set
         </ActionLink>
       ) : null}
     </Surface>
@@ -293,7 +292,7 @@ export function CatalogSetDetailPanel({
             href={homeHref}
             tone="secondary"
           >
-            Back to curated browse
+            Back to browse
           </ActionLink>
         ) : null}
       </Surface>

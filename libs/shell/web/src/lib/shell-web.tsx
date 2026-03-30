@@ -33,14 +33,14 @@ export function ShellWeb({ children }: { children: ReactNode }) {
               <SectionHeading
                 className={styles.heading}
                 description={platformConfig.tagline}
-                eyebrow="Collector warmth with retail precision"
+                eyebrow="Curated LEGO collecting"
                 title={platformConfig.productName}
                 titleAs="h1"
                 tone="hero"
               />
               <div className={styles.badgeRow}>
-                <Badge tone="accent">Start with set discovery</Badge>
-                <Badge tone="info">Save privately as you go</Badge>
+                <Badge tone="accent">Browse curated sets</Badge>
+                <Badge tone="info">Save privately</Badge>
               </div>
             </div>
           </div>
@@ -101,8 +101,8 @@ export function ShellWeb({ children }: { children: ReactNode }) {
         tone="muted"
       >
         <p className={styles.footerCopy}>
-          Phase 1 keeps catalog reads static-friendly while detail routes prove
-          the first session-backed collection actions through the BFF.
+          Static-friendly catalog reads, with private collector saves through
+          the BFF.
         </p>
       </Surface>
     </div>

@@ -20,12 +20,9 @@ describe('UserShellAccountStatusCard', () => {
     );
 
     expect(markup).toContain('Private collector state is not active yet');
-    expect(markup).toContain('Browse the public catalog first');
+    expect(markup).toContain('Browse the public catalog');
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Open wishlist');
-    expect(markup).toContain(
-      'Public set facts and reviewed pricing stay visible without an account.',
-    );
     expect(markup).toContain('signed out');
   });
 
@@ -59,7 +56,7 @@ describe('UserShellAccountStatusCard', () => {
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('Sign out');
     expect(markup).toContain(
-      'Collection, wishlist, and profile are private collector state.',
+      'Collection, wishlist, and profile are ready from the header.',
     );
   });
 });
@@ -88,9 +85,7 @@ describe('UserSessionCard', () => {
     );
 
     expect(markup).toContain('Collector account active');
-    expect(markup).toContain(
-      'Keep browsing the public set pages, then use this signed-in collector account',
-    );
+    expect(markup).toContain('Use this signed-in account to save');
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wanted saved');
     expect(markup).toContain('Private account');
@@ -98,12 +93,10 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('Collector destinations');
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
-    expect(markup).toContain('After you browse a set');
+    expect(markup).toContain('Jump to your collection or wishlist.');
+    expect(markup).toContain('Used for sign-in and saved collector state.');
     expect(markup).toContain(
-      'Used for sign-in and saved collector state. It is not shown as public catalog information.',
-    );
-    expect(markup).toContain(
-      'Public set facts, pricing guidance, and reviewed offers remain shared catalog surfaces.',
+      'Owned and wanted saves are private. Public set facts and pricing stay shared.',
     );
   });
 });
@@ -133,18 +126,14 @@ describe('UserProfileEditorCard', () => {
 
     expect(markup).toContain('Refine your collector profile');
     expect(markup).toContain(
-      'Display name, handle, location, and collection focus are your collector-facing identity.',
+      'Display name, handle, location, and focus shape your collector identity.',
     );
+    expect(markup).toContain('Shown on your collector card.');
+    expect(markup).toContain('Letters, numbers, and hyphens only.');
+    expect(markup).toContain('Private sign-in email.');
+    expect(markup).toContain('Shown in signed-in collector surfaces.');
     expect(markup).toContain(
-      'Use the name you want shown on your collector card.',
-    );
-    expect(markup).toContain('After saving, this stays product-facing');
-    expect(markup).toContain(
-      'Private sign-in email. This is used for account access, not as public catalog identity.',
-    );
-    expect(markup).toContain('Product-facing account status shown');
-    expect(markup).toContain(
-      'A short line about the sets and themes you care about most in this signed-in collector area.',
+      'A short line about the sets and themes you follow.',
     );
   });
 });

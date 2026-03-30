@@ -71,7 +71,7 @@ export function UserShellAccountStatusCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading the private collector status that unlocks collection, wishlist, and profile access across the product."
+            description="Loading collection, wishlist, and profile access."
             eyebrow="Collector status"
             title="Checking collector status"
           />
@@ -102,8 +102,8 @@ export function UserShellAccountStatusCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Browse the public catalog first, then sign in once to keep your collection, wishlist, and collector profile private across visits.'
-                : 'Browsing still works here, but private collector saves are unavailable until browser sign-in is configured in this environment.'
+                ? 'Browse the public catalog, then sign in once to save collection, wishlist, and profile state privately.'
+                : 'Browsing still works here, but private collector saves are unavailable in this environment.'
             }
             eyebrow="Collector status"
             title="Private collector state is not active yet"
@@ -121,10 +121,6 @@ export function UserShellAccountStatusCard({
               Open wishlist
             </ActionLink>
           </div>
-          <p className={styles.shellStatusSupport}>
-            Public set facts and reviewed pricing stay visible without an
-            account. Signing in only adds your private collector state.
-          </p>
           {statusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
               {statusMessage}
@@ -157,7 +153,7 @@ export function UserShellAccountStatusCard({
           <Badge tone="accent">{userSession.collector.tier}</Badge>
         </div>
         <SectionHeading
-          description="Your private collection, wishlist, and collector profile are ready from the header while public set facts and reviewed pricing stay shared catalog context."
+          description="Collection, wishlist, and profile are ready from the header. Public set facts and reviewed pricing stay shared."
           eyebrow="Collector status"
           title={userSession.collector.name}
         />
@@ -199,10 +195,6 @@ export function UserShellAccountStatusCard({
             Sign out
           </Button>
         </div>
-        <p className={styles.shellStatusSupport}>
-          Collection, wishlist, and profile are private collector state. Public
-          set facts and reviewed pricing stay the same for everyone.
-        </p>
         {statusMessage ? (
           <p aria-live="polite" className={styles.infoText}>
             {statusMessage}
@@ -253,7 +245,7 @@ export function UserSessionCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading the signed-in collector account that keeps owned, wanted, and profile state attached to this set."
+            description="Loading the collector account for this set."
             eyebrow="Collector account"
             title="Checking collector account"
           />
@@ -276,8 +268,8 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Browse the public catalog freely. Sign in with one email link to save owned and wanted sets privately, keep a collector profile, and come back to the same collector state later.'
-                : 'Browser sign-in is not configured in this environment yet, so browsing still works but saved collector actions stay disabled.'
+                ? 'Sign in with one email link to save owned and wanted sets privately.'
+                : 'Browsing still works here, but saved collector actions stay disabled in this environment.'
             }
             eyebrow="Collector account"
             title="Sign in to save your collector state"
@@ -302,8 +294,7 @@ export function UserSessionCard({
                 onChange={(event) => onAuthEmailChange?.(event.target.value)}
               />
               <span className={styles.fieldHint}>
-                One link is enough. Wait about a minute before requesting
-                another sign-in link.
+                Wait about a minute before requesting another link.
               </span>
             </label>
             <div className={styles.sessionActions}>
@@ -325,8 +316,8 @@ export function UserSessionCard({
             </div>
           </form>
           <p className={styles.supportNote}>
-            Signing in only unlocks your private collector state. Public catalog
-            pages and reviewed buy guidance stay visible without an account.
+            Public catalog pages and reviewed pricing stay visible without an
+            account.
           </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
@@ -360,7 +351,7 @@ export function UserSessionCard({
           <Badge tone="positive">{userSession.collector.tier}</Badge>
         </div>
         <SectionHeading
-          description="Keep browsing the public set pages, then use this signed-in collector account to save owned, wanted, and profile changes privately."
+          description="Use this signed-in account to save owned, wanted, and profile changes privately."
           eyebrow="Signed in"
           title="Collector account active"
         />
@@ -390,16 +381,14 @@ export function UserSessionCard({
               {userSession.account?.email ?? 'Signed in collector session'}
             </p>
             <p className={styles.paneNote}>
-              Used for sign-in and saved collector state. It is not shown as
-              public catalog information.
+              Used for sign-in and saved collector state.
             </p>
           </div>
           <div className={styles.identityPane}>
             <p className={styles.paneLabel}>Collector identity</p>
             <p className={styles.paneValue}>@{userSession.collector.id}</p>
             <p className={styles.paneNote}>
-              Shown across your signed-in collector surfaces so owned, wanted,
-              and profile details feel consistent.
+              Used across your signed-in collector surfaces.
             </p>
           </div>
         </div>
@@ -412,8 +401,8 @@ export function UserSessionCard({
           </Badge>
         </div>
         <p className={styles.supportNote}>
-          Owned and wanted saves are personal account state. Public set facts,
-          pricing guidance, and reviewed offers remain shared catalog surfaces.
+          Owned and wanted saves are private. Public set facts and pricing stay
+          shared.
         </p>
         <div className={styles.sessionActions}>
           <Button
@@ -431,8 +420,7 @@ export function UserSessionCard({
         <div className={styles.destinationPanel}>
           <p className={styles.paneLabel}>Collector destinations</p>
           <p className={styles.paneNote}>
-            After you browse a set, jump between your private collection and
-            wishlist while this signed-in collector account stays active.
+            Jump to your collection or wishlist.
           </p>
           <div className={styles.destinationLinks}>
             <ActionLink href="/collection" tone="secondary">
@@ -544,14 +532,13 @@ export function UserProfileEditorCard({
           <Badge tone="info">Signed-in account</Badge>
         </div>
         <SectionHeading
-          description="Refine the collector identity that appears with your saved owned and wanted state across this product slice."
+          description="Edit the collector identity shown with your saved sets."
           eyebrow="Collector identity"
           title="Refine your collector profile"
         />
         <p className={styles.supportNote}>
-          Keep these details concise and recognizable. Display name, handle,
-          location, and collection focus are your collector-facing identity.
-          Your sign-in email stays private to account access.
+          Display name, handle, location, and focus shape your collector
+          identity. Sign-in email stays private.
         </p>
         <form
           className={styles.profileForm}
@@ -575,7 +562,7 @@ export function UserProfileEditorCard({
                 }
               />
               <span className={styles.fieldHint}>
-                Use the name you want shown on your collector card.
+                Shown on your collector card.
               </span>
             </label>
             <label className={styles.formField}>
@@ -592,8 +579,7 @@ export function UserProfileEditorCard({
                 }
               />
               <span className={styles.fieldHint}>
-                Use letters, numbers, and hyphens. After saving, this stays
-                product-facing anywhere your collector handle appears.
+                Letters, numbers, and hyphens only.
               </span>
             </label>
           </div>
@@ -607,10 +593,7 @@ export function UserProfileEditorCard({
                 type="text"
                 value={collectorProfile.email ?? 'Connected via Supabase auth'}
               />
-              <span className={styles.fieldHint}>
-                Private sign-in email. This is used for account access, not as
-                public catalog identity.
-              </span>
+              <span className={styles.fieldHint}>Private sign-in email.</span>
             </label>
             <label className={styles.formField}>
               <span className={styles.fieldLabel}>Collector tier</span>
@@ -622,8 +605,7 @@ export function UserProfileEditorCard({
                 value={collectorProfile.tier}
               />
               <span className={styles.fieldHint}>
-                Product-facing account status shown in your signed-in collector
-                surfaces.
+                Shown in signed-in collector surfaces.
               </span>
             </label>
           </div>
@@ -641,7 +623,7 @@ export function UserProfileEditorCard({
               }
             />
             <span className={styles.fieldHint}>
-              Keep it short and recognizable for your collector identity.
+              Keep it short and recognizable.
             </span>
           </label>
           <label className={styles.formField}>
@@ -658,8 +640,7 @@ export function UserProfileEditorCard({
               }
             />
             <span className={styles.fieldHint}>
-              A short line about the sets and themes you care about most in this
-              signed-in collector area.
+              A short line about the sets and themes you follow.
             </span>
           </label>
           <div className={styles.sessionActions}>

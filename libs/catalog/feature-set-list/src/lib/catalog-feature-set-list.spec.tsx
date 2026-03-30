@@ -43,11 +43,9 @@ describe('CatalogFeatureSetList', () => {
       />,
     );
 
-    expect(markup).toContain(
-      'Start with a curated shortlist built for quick collector decisions.',
-    );
+    expect(markup).toContain('Start with the standout sets.');
     expect(markup).toContain('2 curated picks');
     expect(markup).toContain('1 with reviewed Dutch price context');
-    expect(markup).toContain('Primary browsing flow');
+    expect(markup).toContain('Public browse');
   });
 });

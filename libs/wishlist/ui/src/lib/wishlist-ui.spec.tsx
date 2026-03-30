@@ -19,7 +19,7 @@ describe('WantedSetToggleCard', () => {
     expect(markup).toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
     expect(markup).toContain(
-      'Public set facts and reviewed buying guidance stay unchanged for other visitors.',
+      'Private to your account. Public set facts and pricing stay shared.',
     );
     expect(markup).toContain('Remove from wanted');
   });
@@ -37,10 +37,7 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('Browse featured sets');
     expect(markup).toContain('Open collection');
     expect(markup).toContain(
-      'This private wishlist extends the public browse flow',
-    );
-    expect(markup).toContain(
-      'Public set facts, reviewed pricing, and curated buying guidance remain shared catalog information.',
+      'Wishlist sets stay separate from your collection.',
     );
   });
 

@@ -86,7 +86,7 @@ export default async function HomePage() {
               currencyCode: featuredSetPriceContext.currencyCode,
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
             }),
-            merchantLabel: `Current reviewed low from ${featuredSetPriceContext.merchantName}`,
+            merchantLabel: `Reviewed low from ${featuredSetPriceContext.merchantName}`,
             pricePositionLabel: getPricePositionLabel({
               currencyCode: featuredSetPriceContext.currencyCode,
               deltaMinor: featuredSetPriceContext.deltaMinor,
@@ -94,7 +94,7 @@ export default async function HomePage() {
             pricePositionTone: getPricePositionTone(
               featuredSetPriceContext.deltaMinor,
             ),
-            reviewedLabel: `Snapshot reviewed ${formatReviewedOn(
+            reviewedLabel: `Reviewed ${formatReviewedOn(
               featuredSetPriceContext.observedAt,
             )}`,
           }

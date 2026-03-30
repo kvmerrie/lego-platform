@@ -10,15 +10,11 @@ describe('ShellWeb', () => {
       </ShellWeb>,
     );
 
-    expect(markup).toContain('Start with set discovery');
-    expect(markup).toContain('Save privately as you go');
+    expect(markup).toContain('Browse curated sets');
+    expect(markup).toContain('Save privately');
     expect(markup).toContain('Start here');
-    expect(markup).toContain(
-      'Browse the curated homepage and featured shortlist first.',
-    );
-    expect(markup).toContain(
-      'Private follow-through after you start saving sets.',
-    );
+    expect(markup).toContain('Curated homepage and featured shortlist.');
+    expect(markup).toContain('Private saves, collection, and wishlist.');
     expect(markup).toContain('Home');
     expect(markup).toContain('Featured shortlist');
     expect(markup).toContain('Collection');

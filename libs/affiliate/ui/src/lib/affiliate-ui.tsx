@@ -55,7 +55,7 @@ export function AffiliateOfferCard({
           </div>
         </div>
         <div className={styles.offerPriceBlock}>
-          <p className={styles.offerPriceLabel}>Current reviewed offer</p>
+          <p className={styles.offerPriceLabel}>Reviewed offer</p>
           <p className={styles.offerPrice}>
             {formatAffiliatePrice(
               affiliateOffer.totalPriceMinor,
@@ -65,7 +65,7 @@ export function AffiliateOfferCard({
         </div>
       </div>
       <p className={styles.offerFreshness}>
-        Merchant page reviewed {formatObservedAt(affiliateOffer.observedAt)}
+        Reviewed {formatObservedAt(affiliateOffer.observedAt)}
       </p>
       {affiliateOffer.perks ? (
         <p className={styles.offerPerks}>{affiliateOffer.perks}</p>
@@ -102,7 +102,7 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description="Direct reviewed merchant pages from the current Dutch allowlist. Use the price panel for the current benchmark and tracked history, then use these cards when you want to open a reviewed destination."
+        description="Reviewed merchant pages from the current Dutch allowlist. Use the price panel for the latest snapshot and tracked history."
         eyebrow="Buy guidance"
         title="Current Dutch offers"
       />
@@ -133,7 +133,7 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
       tone="muted"
     >
       <SectionHeading
-        description="This set is still in the public catalog, but reviewed Dutch offer cards are not published here yet."
+        description="Reviewed Dutch offer cards are published for selected sets only."
         eyebrow="Buy guidance"
         title="Current Dutch offers"
       />
@@ -142,9 +142,8 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
         <Badge tone="info">New condition</Badge>
       </div>
       <p className={styles.unavailableCopy}>
-        Nothing is broken. Reviewed offers only appear for selected sets in the
-        current Dutch slice, and they appear together with the matching price
-        snapshot and tracked history.
+        Offers appear together with the matching price snapshot and history when
+        a set is in the current Dutch slice.
       </p>
     </Surface>
   );

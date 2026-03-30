@@ -88,12 +88,12 @@ export function OwnedSetToggleCard({
         ? 'Saved to your owned collection.'
         : 'Add this set to your owned collection.';
   const description = isLoading
-    ? `Loading whether set ${setId} is already attached to your signed-in collector account as owned.`
+    ? `Checking whether set ${setId} is saved as owned.`
     : isUnavailable
-      ? `Set ${setId} cannot be updated until the owned-state query succeeds.`
+      ? `Owned state could not be loaded for set ${setId}.`
       : isOwned
-        ? `Set ${setId} is privately saved as owned on your collector account. This stays independent from wanted state and does not change public catalog information.`
-        : `Save set ${setId} as privately owned on your collector account without affecting wanted state or public catalog information.`;
+        ? `Set ${setId} is saved as owned on your collector account.`
+        : `Save set ${setId} as owned on your collector account.`;
   const actionLabel = isUnavailable
     ? 'Owned status unavailable'
     : isOwned
@@ -131,8 +131,7 @@ export function OwnedSetToggleCard({
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
       <p className={styles.metaText}>
-        Personal to your collector account. Public set facts and reviewed buying
-        guidance stay unchanged for other visitors.
+        Private to your account. Public set facts and pricing stay shared.
       </p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
@@ -195,24 +194,24 @@ export function CollectorCollectionPanel({
             : 'Your owned collection';
   const description =
     state === 'loading'
-      ? 'Checking the sets privately saved as owned on your collector account.'
+      ? 'Loading sets saved as owned on your collector account.'
       : state === 'signed-out'
-        ? 'This page only shows sets saved to your signed-in collector account. Public catalog browsing still works for everyone.'
+        ? 'This page shows sets saved to your private collector account.'
         : state === 'empty'
           ? hiddenOwnedCount > 0
             ? `You have ${formatOwnedSetCount(
                 hiddenOwnedCount,
-              )} saved outside the current public catalog slice. Save a featured set as owned to start building the visible collection here.`
-            : 'Save sets as owned from their detail pages and they will appear here as your private collection ledger.'
+              )} saved outside the current public slice. Save a featured set here to start the visible collection.`
+            : 'Save owned sets from set pages and they will appear here.'
           : hiddenOwnedCount > 0
             ? `Showing ${formatOwnedSetCount(
                 ownedCount,
-              )} from the current public catalog slice. ${formatOwnedSetCount(
+              )} from the current public slice. ${formatOwnedSetCount(
                 hiddenOwnedCount,
-              )} stay saved on your account but sit outside the public curated catalog right now.`
+              )} stay saved outside it.`
             : `This page shows ${formatOwnedSetCount(
                 ownedCount,
-              )} privately saved on your collector account.`;
+              )} saved as owned on your collector account.`;
 
   return (
     <Surface
@@ -245,13 +244,11 @@ export function CollectorCollectionPanel({
         </div>
       </div>
       <p className={styles.metaText}>
-        Private to your collector account. Public set facts, reviewed pricing,
-        and curated buying guidance remain shared catalog information.
+        Private to your account. Public set facts and pricing stay shared.
       </p>
       <div className={styles.destinationPanel}>
         <p className={styles.metaText}>
-          This private collection extends the public browse flow, so owned sets
-          stay distinct from the sets you still want next.
+          Owned sets stay separate from your wishlist.
         </p>
         <div className={styles.destinationLinks}>
           <ActionLink href="/wishlist" tone="secondary">
