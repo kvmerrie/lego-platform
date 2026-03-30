@@ -10,7 +10,13 @@ import { subscribeToSupabaseAuthChanges } from '@lego-platform/shared/data-acces
 import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
 import { WantedSetState } from '@lego-platform/wishlist/util';
 
-export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
+export function WishlistFeatureWishlistToggle({
+  setId,
+  variant = 'default',
+}: {
+  setId: string;
+  variant?: 'default' | 'product';
+}) {
   const [wantedSetState, setWantedSetState] = useState<WantedSetState>();
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, setIsPending] = useState(false);
@@ -101,6 +107,7 @@ export function WishlistFeatureWishlistToggle({ setId }: { setId: string }) {
       isWanted={wantedSetState?.isWanted ?? false}
       setId={setId}
       successMessage={successMessage}
+      variant={variant}
       onToggle={handleToggleWantedState}
     />
   );

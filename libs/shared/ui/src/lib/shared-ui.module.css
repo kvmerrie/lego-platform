@@ -1,8 +1,7 @@
 .surface {
   background: var(--lego-surface-raised);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 84%, transparent);
-  border-radius: var(--lego-radius-lg);
+  border: var(--lego-border-width-1) solid transparent;
+  border-radius: var(--lego-radius-md);
   box-shadow: none;
   overflow: hidden;
   position: relative;
@@ -22,20 +21,21 @@
 }
 
 .surfaceMuted {
-  background: var(--lego-surface-muted);
+  background: var(--lego-surface-subtle);
+  border-color: transparent;
 }
 
 .surfaceAccent {
-  background: var(--lego-surface-raised);
-  border-color: color-mix(in srgb, var(--lego-accent) 20%, var(--lego-border));
+  background: var(--lego-surface-subtle);
+  border-color: transparent;
 }
 
 .surfacePaddingMd {
-  padding: var(--lego-space-3);
+  padding: var(--lego-space-4);
 }
 
 .surfacePaddingLg {
-  padding: var(--lego-space-4);
+  padding: var(--lego-space-5);
 }
 
 .surfaceElevationRested {
@@ -47,7 +47,7 @@
 }
 
 .surfaceElevationFloating {
-  box-shadow: var(--lego-shadow-md);
+  box-shadow: var(--lego-shadow-sm);
 }
 
 .interactiveBase {
@@ -61,9 +61,9 @@
   font-weight: var(--lego-font-weight-semibold);
   gap: var(--lego-space-2);
   justify-content: center;
-  min-height: 2.35rem;
+  min-height: 2.3rem;
   overflow: hidden;
-  padding: 0.56rem 0.8rem;
+  padding: 0.54rem 0.84rem;
   position: relative;
   text-decoration: none;
   transition:
@@ -118,40 +118,41 @@
 
 .buttonSecondary,
 .linkSecondary {
-  background: var(--lego-surface);
-  border-color: color-mix(in srgb, var(--lego-border) 88%, transparent);
+  background: var(--lego-surface-muted);
+  border-color: transparent;
   color: var(--lego-text);
 }
 
 .buttonSecondary:hover,
 .linkSecondary:hover {
-  border-color: color-mix(in srgb, var(--lego-accent) 34%, var(--lego-border));
+  background: var(--lego-surface-subtle);
+  border-color: transparent;
 }
 
 .buttonGhost,
 .linkGhost {
-  background: color-mix(in srgb, var(--lego-surface-muted) 62%, white 38%);
-  border-color: color-mix(in srgb, var(--lego-border) 86%, transparent);
+  background: transparent;
+  border-color: transparent;
   color: var(--lego-text);
 }
 
 .buttonGhost:hover,
 .linkGhost:hover {
-  background: color-mix(in srgb, var(--lego-surface-muted) 82%, white 18%);
-  border-color: color-mix(in srgb, var(--lego-accent) 22%, var(--lego-border));
+  background: var(--lego-surface-subtle);
+  border-color: transparent;
 }
 
 .buttonAccent,
 .linkAccent {
   background: var(--lego-accent);
-  border-color: color-mix(in srgb, var(--lego-accent) 82%, black 18%);
+  border-color: transparent;
   color: var(--lego-accent-contrast);
 }
 
 .buttonAccent:hover,
 .linkAccent:hover {
   background: var(--lego-accent-hover);
-  border-color: color-mix(in srgb, var(--lego-accent-hover) 84%, black 16%);
+  border-color: transparent;
 }
 
 .buttonAccent:active::after,
@@ -162,8 +163,8 @@
 
 .linkCard {
   align-items: flex-start;
-  background: var(--lego-surface);
-  border-color: color-mix(in srgb, var(--lego-border) 72%, transparent);
+  background: transparent;
+  border-color: transparent;
   color: var(--lego-text);
   display: grid;
   gap: var(--lego-space-1);
@@ -173,8 +174,8 @@
 }
 
 .linkCard:hover {
-  background: color-mix(in srgb, var(--lego-accent-subtle) 14%, white 86%);
-  border-color: color-mix(in srgb, var(--lego-accent) 30%, var(--lego-border));
+  background: color-mix(in srgb, var(--lego-surface-subtle) 84%, transparent);
+  border-color: transparent;
 }
 
 .linkInline {
@@ -208,70 +209,41 @@
 .badge {
   align-items: center;
   background: var(--lego-surface-muted);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 66%, transparent);
-  border-radius: var(--lego-radius-pill);
+  border: 0;
+  border-radius: var(--lego-radius-xs);
   color: var(--lego-text);
   display: inline-flex;
-  font-size: var(--lego-text-role-meta-size);
+  font-size: var(--lego-font-size-caption);
   font-weight: var(--lego-font-weight-semibold);
   gap: var(--lego-space-1);
-  line-height: var(--lego-text-role-meta-line-height);
-  min-height: 1.5rem;
-  padding: 0.08rem 0.5rem;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  min-height: 1.25rem;
+  padding: 0.14rem 0.42rem;
 }
 
 .badgeAccent {
-  background: color-mix(
-    in srgb,
-    var(--lego-accent-subtle) 72%,
-    var(--lego-surface-raised)
-  );
-  border-color: color-mix(in srgb, var(--lego-accent) 22%, var(--lego-border));
+  background: var(--lego-accent-subtle);
   color: var(--lego-accent);
 }
 
 .badgePositive {
-  background: color-mix(
-    in srgb,
-    var(--lego-positive) 16%,
-    var(--lego-surface-raised)
-  );
-  border-color: color-mix(
-    in srgb,
-    var(--lego-positive) 22%,
-    var(--lego-border)
-  );
+  background: var(--lego-positive-subtle);
   color: var(--lego-positive);
 }
 
 .badgeWarning {
-  background: color-mix(
-    in srgb,
-    var(--lego-warning) 18%,
-    var(--lego-surface-raised)
-  );
-  border-color: color-mix(in srgb, var(--lego-warning) 22%, var(--lego-border));
-  color: var(--lego-warning);
+  background: var(--lego-commerce-subtle);
+  color: var(--lego-commerce);
 }
 
 .badgeInfo {
-  background: color-mix(
-    in srgb,
-    var(--lego-info) 16%,
-    var(--lego-surface-raised)
-  );
-  border-color: color-mix(in srgb, var(--lego-info) 22%, var(--lego-border));
+  background: var(--lego-info-subtle);
   color: var(--lego-info);
 }
 
 .badgeError {
-  background: color-mix(
-    in srgb,
-    var(--lego-error) 16%,
-    var(--lego-surface-raised)
-  );
-  border-color: color-mix(in srgb, var(--lego-error) 22%, var(--lego-border));
+  background: var(--lego-error-subtle);
   color: var(--lego-error);
 }
 
@@ -312,14 +284,14 @@
 
 .sectionDescription {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-body-size);
-  line-height: var(--lego-line-height-relaxed);
+  font-size: 0.92rem;
+  line-height: 1.58;
   margin: 0;
   max-width: var(--lego-max-width-reading);
 }
 
 .sectionHeadingHero .sectionDescription {
-  font-size: 1.02rem;
+  font-size: 0.98rem;
   max-width: 56ch;
 }
 

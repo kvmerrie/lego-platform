@@ -142,6 +142,36 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('Tracked from');
   });
 
+  it('renders a compact product-page pricing summary variant', () => {
+    const markup = renderToStaticMarkup(
+      <PriceSummaryCard
+        pricePanelSnapshot={{
+          setId: '10316',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          condition: 'new',
+          headlinePriceMinor: 48999,
+          lowestMerchantId: 'bol',
+          lowestMerchantName: 'bol',
+          lowestAvailabilityLabel: 'In stock',
+          merchantCount: 3,
+          observedAt: '2026-03-29T09:00:00.000Z',
+          referencePriceMinor: 49999,
+          deltaMinor: -1000,
+        }}
+        variant="product"
+      />,
+    );
+
+    expect(markup).toContain('Lowest reviewed price');
+    expect(markup).toContain('Currently lowest at bol');
+    expect(markup).toContain('Checked');
+    expect(markup).not.toContain('Current reviewed price');
+    expect(markup).not.toContain(
+      'History and offers below use the same reviewed market view.',
+    );
+  });
+
   it('renders a calm fallback when only one history point exists so far', () => {
     const markup = renderToStaticMarkup(
       <PriceHistorySummaryCallout

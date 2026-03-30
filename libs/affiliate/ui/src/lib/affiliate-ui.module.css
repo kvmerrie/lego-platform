@@ -11,41 +11,55 @@
   gap: var(--lego-space-2);
 }
 
-.offerList {
-  display: grid;
-  gap: var(--lego-space-2);
+.offerTableWrap {
+  overflow-x: auto;
 }
 
-.offerCard {
-  display: grid;
-  gap: var(--lego-space-2);
-  padding: var(--lego-space-3);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 74%, transparent);
-  border-radius: var(--lego-radius-md);
-  background: var(--lego-surface);
+.offerTable {
+  border-collapse: collapse;
+  min-width: 44rem;
+  width: 100%;
 }
 
-.offerHeader,
-.offerFooter {
-  display: grid;
-  gap: var(--lego-space-2);
+.offerHeadCell {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.12em;
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  padding: 0 0 var(--lego-space-2);
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.offerHeading {
+.offerRow td {
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 64%, transparent);
+  padding: var(--lego-space-3) 0;
+  vertical-align: top;
+}
+
+.offerMerchantCell {
+  min-width: 13rem;
+  padding-right: var(--lego-space-3);
+}
+
+.offerMerchantBlock {
   display: grid;
   gap: var(--lego-space-1);
 }
 
-.offerPriceBlock {
-  display: grid;
-  gap: var(--lego-space-1);
+.offerAvailabilityCell,
+.offerCheckedCell,
+.offerPriceCell,
+.offerActionCell {
+  padding-left: var(--lego-space-3);
 }
 
 .offerPriceLabel {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
-  font-weight: var(--lego-font-weight-semibold);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
 }
@@ -69,7 +83,8 @@
 }
 
 .offerPerks,
-.unavailableCopy {
+.unavailableCopy,
+.panelNote {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: 1.5;
@@ -84,20 +99,27 @@
   margin: 0;
 }
 
-.offerDisclosure {
-  border-top: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 56%, transparent);
-  padding-top: var(--lego-space-2);
-}
-
 .offerLink {
-  justify-self: flex-start;
+  background: var(--lego-commerce);
+  border: var(--lego-border-width-1) solid transparent;
+  color: #ffffff;
 }
 
-@media (min-width: 48rem) {
-  .offerHeader,
-  .offerFooter {
-    align-items: start;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
+.offerLink:hover {
+  background: var(--lego-commerce-hover);
+  border-color: transparent;
+}
+
+.offerActionCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.offerPriceCell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.panelNote {
+  padding-top: var(--lego-space-1);
 }

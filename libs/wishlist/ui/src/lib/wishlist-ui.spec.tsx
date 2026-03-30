@@ -21,6 +21,24 @@ describe('WantedSetToggleCard', () => {
     expect(markup).toContain('Private to you. Set facts stay public.');
     expect(markup).toContain('Remove from wanted');
   });
+
+  it('renders a compact product-page variant for set detail actions', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        hasResolvedState
+        isWanted={false}
+        setId="21348"
+        variant="product"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Wishlist');
+    expect(markup).toContain('Save to wishlist');
+    expect(markup).toContain('Private to you.');
+    expect(markup).toContain('Save as wanted');
+    expect(markup).not.toContain('Private collector state');
+  });
 });
 
 describe('CollectorWishlistPanel', () => {

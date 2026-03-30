@@ -1,11 +1,14 @@
 .section {
+  background: var(--lego-surface-subtle);
+  border-radius: var(--lego-radius-md);
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-4);
+  padding: var(--lego-space-5);
 }
 
 .headerBlock {
   display: grid;
-  gap: var(--lego-space-1);
+  gap: var(--lego-space-2);
 }
 
 .header {

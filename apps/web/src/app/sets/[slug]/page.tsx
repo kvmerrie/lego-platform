@@ -8,8 +8,6 @@ import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
 import { PricingFeaturePricePanel } from '@lego-platform/pricing/feature-price-panel';
 import { ShellWeb } from '@lego-platform/shell/web';
-import { UserFeatureAuth } from '@lego-platform/user/feature-auth';
-import { UserFeatureProfile } from '@lego-platform/user/feature-profile';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { notFound } from 'next/navigation';
 import styles from './page.module.css';
@@ -34,26 +32,31 @@ export default async function SetDetailPage({
 
   return (
     <ShellWeb>
-      <CatalogFeatureSetDetail catalogSetDetail={catalogSetDetail} />
-      <section
-        aria-label="Set buying guidance"
-        className={styles.commercePanels}
-      >
-        <PricingFeaturePricePanel setId={catalogSetDetail.id} />
-        <PricingFeaturePriceHistory setId={catalogSetDetail.id} />
-        <AffiliateFeatureOffers setId={catalogSetDetail.id} />
-      </section>
-      <section aria-label="Collector account" className={styles.accountPanels}>
-        <UserFeatureAuth />
-        <UserFeatureProfile />
-      </section>
-      <section
-        aria-label="Collector actions"
-        className={styles.collectorActions}
-      >
-        <CollectionFeatureOwnedToggle setId={catalogSetDetail.id} />
-        <WishlistFeatureWishlistToggle setId={catalogSetDetail.id} />
-      </section>
+      <CatalogFeatureSetDetail
+        catalogSetDetail={catalogSetDetail}
+        productSummary={
+          <div className={styles.productSummaryStack}>
+            <PricingFeaturePricePanel
+              setId={catalogSetDetail.id}
+              variant="product"
+            />
+            <div className={styles.productActions}>
+              <CollectionFeatureOwnedToggle
+                setId={catalogSetDetail.id}
+                variant="product"
+              />
+              <WishlistFeatureWishlistToggle
+                setId={catalogSetDetail.id}
+                variant="product"
+              />
+            </div>
+          </div>
+        }
+        supportingPanel={
+          <PricingFeaturePriceHistory setId={catalogSetDetail.id} />
+        }
+      />
+      <AffiliateFeatureOffers setId={catalogSetDetail.id} />
     </ShellWeb>
   );
 }

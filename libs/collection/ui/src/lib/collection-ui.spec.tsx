@@ -21,6 +21,24 @@ describe('OwnedSetToggleCard', () => {
     expect(markup).toContain('Private to you. Set facts stay public.');
     expect(markup).toContain('Remove from owned');
   });
+
+  it('renders a compact product-page variant for set detail actions', () => {
+    const markup = renderToStaticMarkup(
+      <OwnedSetToggleCard
+        hasResolvedState
+        isOwned={false}
+        setId="10316"
+        variant="product"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Owned');
+    expect(markup).toContain('Save to owned');
+    expect(markup).toContain('Private to you.');
+    expect(markup).toContain('Save as owned');
+    expect(markup).not.toContain('Private collector state');
+  });
 });
 
 describe('CollectorCollectionPanel', () => {

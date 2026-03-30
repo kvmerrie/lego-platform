@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type {
   CatalogHomepageSetCard,
   CatalogSetDetail,
@@ -303,19 +304,32 @@ export function CatalogHomepageIntro() {
 export function CatalogSetDetailPanel({
   catalogSetDetail,
   homeHref,
+  productSummary,
+  supportingPanel,
 }: {
   catalogSetDetail: CatalogSetDetail;
   homeHref?: string;
+  productSummary?: ReactNode;
+  supportingPanel?: ReactNode;
 }) {
   return (
-    <section className={styles.heroPanel}>
+    <section className={styles.detailPage}>
       <Surface
         as="section"
-        className={styles.heroPrimary}
+        className={styles.productHero}
         elevation="floating"
         tone="default"
       >
-        <div className={styles.heroPrimaryContent}>
+        <div className={styles.productMedia}>
+          <CatalogSetVisual
+            imageUrl={catalogSetDetail.imageUrl}
+            name={catalogSetDetail.name}
+            setId={catalogSetDetail.id}
+            theme={catalogSetDetail.theme}
+            variant="hero"
+          />
+        </div>
+        <div className={styles.productInfo}>
           <div className={styles.heroCopy}>
             <SectionHeading
               description={catalogSetDetail.tagline}
@@ -330,55 +344,69 @@ export function CatalogSetDetailPanel({
               <Badge tone="info">{catalogSetDetail.priceRange}</Badge>
             </div>
           </div>
-          <CatalogSetVisual
-            imageUrl={catalogSetDetail.imageUrl}
-            name={catalogSetDetail.name}
-            setId={catalogSetDetail.id}
-            theme={catalogSetDetail.theme}
-            variant="hero"
-          />
+          {productSummary ? (
+            <div className={styles.productSummarySlot}>{productSummary}</div>
+          ) : null}
+          {homeHref ? (
+            <ActionLink
+              className={styles.productBackLink}
+              href={homeHref}
+              tone="secondary"
+            >
+              Back to shortlist
+            </ActionLink>
+          ) : null}
         </div>
-        <CatalogSetMetadata
-          items={[
-            { label: 'Set number', value: catalogSetDetail.id },
-            {
-              label: 'Pieces',
-              value: catalogSetDetail.pieces.toLocaleString(),
-            },
-            {
-              label: 'Collector angle',
-              value: catalogSetDetail.collectorAngle,
-            },
-          ]}
-        />
-        {homeHref ? (
-          <ActionLink
-            className={styles.actionLink}
-            href={homeHref}
-            tone="secondary"
-          >
-            Back to shortlist
-          </ActionLink>
-        ) : null}
       </Surface>
-      <Surface
-        as="aside"
-        className={styles.highlightsCard}
-        elevation="rested"
-        tone="muted"
+
+      <section
+        className={`${styles.supportingRow} ${
+          supportingPanel ? '' : styles.supportingRowSingle
+        }`}
       >
-        <div className={styles.cardHeader}>
-          <Badge tone="info">Collector notes</Badge>
-          <p className={styles.availability}>
-            Availability: {catalogSetDetail.availability}
-          </p>
-        </div>
-        <ul className={styles.highlightsList}>
-          {catalogSetDetail.collectorHighlights.map((collectorHighlight) => (
-            <li key={collectorHighlight}>{collectorHighlight}</li>
-          ))}
-        </ul>
-      </Surface>
+        <Surface
+          as="aside"
+          className={styles.notesPanel}
+          elevation="rested"
+          tone="muted"
+        >
+          <div className={styles.notesHeader}>
+            <SectionHeading
+              description={catalogSetDetail.collectorAngle}
+              eyebrow="Collector notes"
+              title="Why this set stands out"
+              titleAs="h3"
+            />
+            <p className={styles.availability}>
+              Availability: {catalogSetDetail.availability}
+            </p>
+          </div>
+          <CatalogSetMetadata
+            items={[
+              { label: 'Set number', value: catalogSetDetail.id },
+              { label: 'Release', value: catalogSetDetail.releaseYear },
+              {
+                label: 'Pieces',
+                value: catalogSetDetail.pieces.toLocaleString(),
+              },
+              {
+                label: 'Price range',
+                value: catalogSetDetail.priceRange,
+              },
+            ]}
+          />
+          {catalogSetDetail.collectorHighlights.length > 0 ? (
+            <ul className={styles.highlightsList}>
+              {catalogSetDetail.collectorHighlights.map(
+                (collectorHighlight) => (
+                  <li key={collectorHighlight}>{collectorHighlight}</li>
+                ),
+              )}
+            </ul>
+          ) : null}
+        </Surface>
+        {supportingPanel}
+      </section>
     </section>
   );
 }

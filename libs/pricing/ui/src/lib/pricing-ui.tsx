@@ -207,11 +207,57 @@ export function PriceSummaryCard({
   children,
   id,
   pricePanelSnapshot,
+  variant = 'default',
 }: {
   children?: ReactNode;
   id?: string;
   pricePanelSnapshot: PricePanelSnapshot;
+  variant?: 'default' | 'product';
 }) {
+  if (variant === 'product') {
+    return (
+      <div className={`${styles.panel} ${styles.productPanel}`} id={id}>
+        <p className={styles.metricLabel}>Lowest reviewed price</p>
+        <p className={styles.metricValue}>
+          {formatPriceMinor({
+            currencyCode: pricePanelSnapshot.currencyCode,
+            minorUnits: pricePanelSnapshot.headlinePriceMinor,
+          })}
+        </p>
+        <p className={styles.metricContext}>
+          Currently lowest at {pricePanelSnapshot.lowestMerchantName}
+        </p>
+        {pricePanelSnapshot.lowestAvailabilityLabel ? (
+          <p className={styles.metricContextSecondary}>
+            Availability: {pricePanelSnapshot.lowestAvailabilityLabel}
+          </p>
+        ) : null}
+        <div className={styles.badgeRow}>
+          <Badge tone="accent">NL / EUR</Badge>
+          <Badge tone="info">New condition</Badge>
+          <Badge>
+            {getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}
+          </Badge>
+        </div>
+        <div className={styles.productMetaRow}>
+          {typeof pricePanelSnapshot.referencePriceMinor === 'number' ? (
+            <Badge tone={getDeltaTone(pricePanelSnapshot.deltaMinor)}>
+              {getDeltaLabel(
+                pricePanelSnapshot.currencyCode,
+                pricePanelSnapshot.deltaMinor,
+              )}
+            </Badge>
+          ) : (
+            <p className={styles.referenceFallback}>No reference price yet.</p>
+          )}
+          <p className={styles.productMeta}>
+            Checked {formatObservedAt(pricePanelSnapshot.observedAt)}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Surface
       as="section"
@@ -420,6 +466,32 @@ export function PriceHistorySummaryCallout({
 }
 
 export function PricingUnavailableCard({ id }: { id?: string }) {
+  return <PricingUnavailableCardContent id={id} variant="default" />;
+}
+
+function PricingUnavailableCardContent({
+  id,
+  variant,
+}: {
+  id?: string;
+  variant: 'default' | 'product';
+}) {
+  if (variant === 'product') {
+    return (
+      <div className={`${styles.panel} ${styles.productPanel}`} id={id}>
+        <p className={styles.metricLabel}>Reviewed price</p>
+        <p className={styles.productUnavailableValue}>Not published yet</p>
+        <p className={styles.unavailableCopy}>
+          Reviewed Dutch pricing appears for selected sets.
+        </p>
+        <div className={styles.badgeRow}>
+          <Badge tone="accent">NL / EUR</Badge>
+          <Badge tone="info">New condition</Badge>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Surface
       as="section"
@@ -444,6 +516,10 @@ export function PricingUnavailableCard({ id }: { id?: string }) {
       </p>
     </Surface>
   );
+}
+
+export function ProductPricingUnavailableCard({ id }: { id?: string }) {
+  return <PricingUnavailableCardContent id={id} variant="product" />;
 }
 
 export function PriceHistoryCard({

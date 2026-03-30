@@ -69,6 +69,7 @@ export function OwnedSetToggleCard({
   onToggle,
   setId,
   successMessage,
+  variant = 'default',
 }: {
   errorMessage?: string;
   hasResolvedState: boolean;
@@ -78,6 +79,7 @@ export function OwnedSetToggleCard({
   onToggle: () => void;
   setId: string;
   successMessage?: string;
+  variant?: 'default' | 'product';
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
@@ -113,6 +115,57 @@ export function OwnedSetToggleCard({
       : isOwned
         ? 'Owned saved'
         : 'Not saved yet';
+
+  if (variant === 'product') {
+    return (
+      <article className={styles.productToggle}>
+        <div className={styles.productToggleHeader}>
+          <div className={styles.productToggleCopy}>
+            <p className={styles.productToggleEyebrow}>Owned</p>
+            <h3 className={styles.productToggleTitle}>
+              {isLoading
+                ? 'Checking your owned save'
+                : isUnavailable
+                  ? 'Owned save unavailable'
+                  : isOwned
+                    ? 'Saved in your collection'
+                    : 'Save to owned'}
+            </h3>
+          </div>
+          <Badge tone={statusTone}>{statusLabel}</Badge>
+        </div>
+        <p className={styles.metaText}>
+          {isLoading
+            ? 'Checking your private owned save for this set.'
+            : isUnavailable
+              ? 'We could not load the private owned save right now.'
+              : isOwned
+                ? 'Private to you. Remove it any time.'
+                : 'Private to you. Save it when this set is already on your shelf.'}
+        </p>
+        {errorMessage ? (
+          <p aria-live="polite" className={styles.errorText}>
+            {errorMessage}
+          </p>
+        ) : null}
+        {successMessage ? (
+          <p aria-live="polite" className={styles.successText}>
+            {successMessage}
+          </p>
+        ) : null}
+        <Button
+          className={styles.productToggleButton}
+          disabled={isUnavailable}
+          isLoading={Boolean(isLoading || isPending)}
+          tone={isOwned ? 'secondary' : 'accent'}
+          type="button"
+          onClick={onToggle}
+        >
+          {isLoading ? 'Syncing...' : isPending ? 'Saving...' : actionLabel}
+        </Button>
+      </article>
+    );
+  }
 
   return (
     <Surface

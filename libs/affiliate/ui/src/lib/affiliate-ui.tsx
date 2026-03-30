@@ -43,33 +43,40 @@ export function AffiliateOfferCard({
   affiliateOffer: AffiliateOfferSnapshot;
 }) {
   return (
-    <article className={styles.offerCard}>
-      <div className={styles.offerHeader}>
-        <div className={styles.offerHeading}>
+    <tr className={styles.offerRow}>
+      <td className={styles.offerMerchantCell}>
+        <div className={styles.offerMerchantBlock}>
           <h3 className={styles.offerTitle}>{affiliateOffer.merchantName}</h3>
-          <div className={styles.offerBadges}>
-            <Badge tone={getAvailabilityTone(affiliateOffer.availabilityLabel)}>
-              {affiliateOffer.availabilityLabel}
-            </Badge>
-          </div>
-        </div>
-        <div className={styles.offerPriceBlock}>
-          <p className={styles.offerPriceLabel}>Reviewed offer</p>
-          <p className={styles.offerPrice}>
-            {formatAffiliatePrice(
-              affiliateOffer.totalPriceMinor,
-              affiliateOffer.currencyCode,
-            )}
+          {affiliateOffer.perks ? (
+            <p className={styles.offerPerks}>{affiliateOffer.perks}</p>
+          ) : null}
+          <p className={styles.offerDisclosure}>
+            {affiliateOffer.disclosureCopy}
           </p>
         </div>
-      </div>
-      <p className={styles.offerFreshness}>
-        Checked {formatObservedAt(affiliateOffer.observedAt)}
-      </p>
-      {affiliateOffer.perks ? (
-        <p className={styles.offerPerks}>{affiliateOffer.perks}</p>
-      ) : null}
-      <div className={styles.offerFooter}>
+      </td>
+      <td className={styles.offerAvailabilityCell}>
+        <div className={styles.offerBadges}>
+          <Badge tone={getAvailabilityTone(affiliateOffer.availabilityLabel)}>
+            {affiliateOffer.availabilityLabel}
+          </Badge>
+        </div>
+      </td>
+      <td className={styles.offerCheckedCell}>
+        <p className={styles.offerFreshness}>
+          Checked {formatObservedAt(affiliateOffer.observedAt)}
+        </p>
+      </td>
+      <td className={styles.offerPriceCell}>
+        <p className={styles.offerPrice}>
+          {formatAffiliatePrice(
+            affiliateOffer.totalPriceMinor,
+            affiliateOffer.currencyCode,
+          )}
+        </p>
+        <p className={styles.offerPriceLabel}>Reviewed offer</p>
+      </td>
+      <td className={styles.offerActionCell}>
         <ActionLink
           className={styles.offerLink}
           href={affiliateOffer.outboundUrl}
@@ -79,9 +86,8 @@ export function AffiliateOfferCard({
         >
           {affiliateOffer.ctaLabel}
         </ActionLink>
-      </div>
-      <p className={styles.offerDisclosure}>{affiliateOffer.disclosureCopy}</p>
-    </article>
+      </td>
+    </tr>
   );
 }
 
@@ -101,23 +107,50 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description="Reviewed Dutch merchant pages for the current set selection."
+        description="Compare the reviewed Dutch merchant pages in the current pricing slice."
         eyebrow="Buy guidance"
-        title="Current reviewed offers"
+        title="Reviewed offers"
       />
       <div className={styles.panelBadges}>
         <Badge tone="accent">NL / EUR</Badge>
         <Badge tone="info">New condition</Badge>
         <Badge>{affiliateOffers.length} merchants shown</Badge>
       </div>
-      <div className={styles.offerList}>
-        {affiliateOffers.map((affiliateOffer) => (
-          <AffiliateOfferCard
-            affiliateOffer={affiliateOffer}
-            key={affiliateOffer.merchantId}
-          />
-        ))}
+      <div className={styles.offerTableWrap}>
+        <table className={styles.offerTable}>
+          <thead>
+            <tr>
+              <th className={styles.offerHeadCell} scope="col">
+                Merchant
+              </th>
+              <th className={styles.offerHeadCell} scope="col">
+                Availability
+              </th>
+              <th className={styles.offerHeadCell} scope="col">
+                Checked
+              </th>
+              <th className={styles.offerHeadCell} scope="col">
+                Price
+              </th>
+              <th className={styles.offerHeadCell} scope="col">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {affiliateOffers.map((affiliateOffer) => (
+              <AffiliateOfferCard
+                affiliateOffer={affiliateOffer}
+                key={affiliateOffer.merchantId}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
+      <p className={styles.panelNote}>
+        Prices and availability match the same reviewed snapshot used in the
+        main price summary.
+      </p>
     </Surface>
   );
 }
@@ -134,7 +167,7 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
       <SectionHeading
         description="Reviewed Dutch offers are live for selected sets."
         eyebrow="Buy guidance"
-        title="Current reviewed offers"
+        title="Reviewed offers"
       />
       <div className={styles.panelBadges}>
         <Badge tone="accent">NL / EUR</Badge>

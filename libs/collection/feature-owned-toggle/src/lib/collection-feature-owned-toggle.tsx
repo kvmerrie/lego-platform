@@ -10,7 +10,13 @@ import { subscribeToSupabaseAuthChanges } from '@lego-platform/shared/data-acces
 import { OwnedSetToggleCard } from '@lego-platform/collection/ui';
 import { OwnedSetState } from '@lego-platform/collection/util';
 
-export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
+export function CollectionFeatureOwnedToggle({
+  setId,
+  variant = 'default',
+}: {
+  setId: string;
+  variant?: 'default' | 'product';
+}) {
   const [ownedSetState, setOwnedSetState] = useState<OwnedSetState>();
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, setIsPending] = useState(false);
@@ -101,6 +107,7 @@ export function CollectionFeatureOwnedToggle({ setId }: { setId: string }) {
       isPending={isPending}
       setId={setId}
       successMessage={successMessage}
+      variant={variant}
       onToggle={handleToggleOwnedState}
     />
   );

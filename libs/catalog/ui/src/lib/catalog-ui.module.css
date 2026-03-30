@@ -48,7 +48,6 @@
 .heroVisual {
   aspect-ratio: 1.12;
   min-height: 15.5rem;
-  order: -1;
   padding: var(--lego-space-2);
 }
 
@@ -319,22 +318,85 @@
   gap: var(--lego-space-2);
 }
 
+.detailPage {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.productHero {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.productMedia {
+  display: grid;
+  align-items: start;
+}
+
+.productInfo {
+  display: grid;
+  align-content: start;
+  gap: var(--lego-space-3);
+}
+
+.productSummarySlot {
+  display: grid;
+  gap: var(--lego-space-2);
+  padding-top: var(--lego-space-2);
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 72%, transparent);
+}
+
+.productBackLink {
+  justify-self: flex-start;
+}
+
+.supportingRow {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.supportingRowSingle {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.notesPanel {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.notesHeader {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.notesPanel .metaGrid {
+  padding-top: 0;
+}
+
+.notesPanel .metaItem {
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 64%, transparent);
+  gap: var(--lego-space-1);
+  padding-top: var(--lego-space-2);
+}
+
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lego-space-2);
 }
 
-.highlightsCard {
-  display: grid;
-  gap: var(--lego-space-1);
-}
-
 .highlightsList {
   display: grid;
   gap: var(--lego-space-2);
   margin: 0;
-  padding-left: 1.2rem;
+  padding-left: var(--lego-space-3);
+  color: var(--lego-text-muted);
+}
+
+.highlightsList li {
+  line-height: var(--lego-line-height-relaxed);
 }
 
 .themeCard {
@@ -358,19 +420,21 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .heroPanel {
-    grid-template-columns: minmax(0, 1.28fr) minmax(18rem, 0.92fr);
-    align-items: start;
-  }
-
-  .heroPrimaryContent {
-    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.94fr);
+  .productHero {
+    grid-template-columns: minmax(0, 1.08fr) minmax(20rem, 0.92fr);
     align-items: start;
   }
 
   .heroVisual {
     min-height: 17.5rem;
-    order: 0;
+  }
+
+  .supportingRow {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .supportingRowSingle {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .metaGrid {

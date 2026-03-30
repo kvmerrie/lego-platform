@@ -4,6 +4,13 @@
   gap: var(--lego-space-2);
 }
 
+.productPanel {
+  align-content: start;
+  padding: var(--lego-space-3);
+  border-radius: var(--lego-radius-md);
+  background: var(--lego-surface-subtle);
+}
+
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
@@ -92,6 +99,30 @@
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.productMetaRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+  justify-content: space-between;
+}
+
+.productMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.productUnavailableValue {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.4rem, 3vw, 1.8rem);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: 1;
   margin: 0;
 }
 

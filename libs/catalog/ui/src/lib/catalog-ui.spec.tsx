@@ -108,11 +108,16 @@ describe('CatalogSetCard', () => {
           ],
         }}
         homeHref="/#featured-sets"
+        productSummary={<div>Lowest reviewed price</div>}
+        supportingPanel={<div>30-day price history</div>}
       />,
     );
 
     expect(markup).toContain('Collector image coming soon');
     expect(markup).toContain('Set 21335');
+    expect(markup).toContain('Lowest reviewed price');
+    expect(markup).toContain('30-day price history');
+    expect(markup).toContain('Why this set stands out');
     expect(markup).toContain('Back to shortlist');
   });
 });

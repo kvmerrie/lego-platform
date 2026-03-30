@@ -37,6 +37,7 @@ export function WantedSetToggleCard({
   onToggle,
   setId,
   successMessage,
+  variant = 'default',
 }: {
   errorMessage?: string;
   hasResolvedState: boolean;
@@ -46,6 +47,7 @@ export function WantedSetToggleCard({
   onToggle: () => void;
   setId: string;
   successMessage?: string;
+  variant?: 'default' | 'product';
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
@@ -81,6 +83,57 @@ export function WantedSetToggleCard({
       : isWanted
         ? 'Wanted saved'
         : 'Not saved yet';
+
+  if (variant === 'product') {
+    return (
+      <article className={styles.productToggle}>
+        <div className={styles.productToggleHeader}>
+          <div className={styles.productToggleCopy}>
+            <p className={styles.productToggleEyebrow}>Wishlist</p>
+            <h3 className={styles.productToggleTitle}>
+              {isLoading
+                ? 'Checking your wishlist save'
+                : isUnavailable
+                  ? 'Wishlist save unavailable'
+                  : isWanted
+                    ? 'Saved in your wishlist'
+                    : 'Save to wishlist'}
+            </h3>
+          </div>
+          <Badge tone={statusTone}>{statusLabel}</Badge>
+        </div>
+        <p className={styles.metaText}>
+          {isLoading
+            ? 'Checking your private wishlist save for this set.'
+            : isUnavailable
+              ? 'We could not load the private wishlist save right now.'
+              : isWanted
+                ? 'Private to you. Remove it any time.'
+                : 'Private to you. Save it when you want to track it.'}
+        </p>
+        {errorMessage ? (
+          <p aria-live="polite" className={styles.errorText}>
+            {errorMessage}
+          </p>
+        ) : null}
+        {successMessage ? (
+          <p aria-live="polite" className={styles.successText}>
+            {successMessage}
+          </p>
+        ) : null}
+        <Button
+          className={styles.productToggleButton}
+          disabled={isUnavailable}
+          isLoading={Boolean(isLoading || isPending)}
+          tone={isWanted ? 'secondary' : 'accent'}
+          type="button"
+          onClick={onToggle}
+        >
+          {isLoading ? 'Syncing...' : isPending ? 'Saving...' : actionLabel}
+        </Button>
+      </article>
+    );
+  }
 
   return (
     <Surface

@@ -18,22 +18,7 @@ body {
 }
 
 body::before {
-  background:
-    radial-gradient(
-      circle at top left,
-      color-mix(in srgb, var(--lego-accent-subtle) 28%, transparent),
-      transparent 24%
-    ),
-    radial-gradient(
-      circle at top right,
-      color-mix(in srgb, var(--lego-warning) 6%, transparent),
-      transparent 18%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      color-mix(in srgb, var(--lego-info) 6%, transparent),
-      transparent 22%
-    );
+  background: none;
   content: '';
   inset: 0;
   pointer-events: none;
@@ -62,12 +47,11 @@ ul {
 /* Legacy shared utilities remain here until non-slice overview, demo, and placeholder surfaces migrate. */
 .surface,
 .metric-card {
-  background: var(--lego-surface-raised);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 88%, transparent);
-  border-radius: var(--lego-radius-lg);
+  background: var(--lego-surface-subtle);
+  border: var(--lego-border-width-1) solid transparent;
+  border-radius: var(--lego-radius-md);
   box-shadow: none;
-  padding: var(--lego-space-4);
+  padding: var(--lego-space-5);
 }
 
 .section-heading h2,
@@ -106,6 +90,8 @@ ul {
 
 .section-copy {
   color: var(--lego-text-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
   max-width: 62ch;
 }
 
@@ -184,17 +170,16 @@ ul {
 
 .pill {
   align-items: center;
-  background: color-mix(in srgb, var(--lego-surface-muted) 88%, transparent);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 86%, transparent);
+  background: var(--lego-surface-subtle);
+  border: 0;
   border-radius: var(--lego-radius-pill);
   color: var(--lego-text-muted);
   display: inline-flex;
-  font-size: var(--lego-text-role-meta-size);
+  font-size: var(--lego-font-size-caption);
   font-weight: var(--lego-font-weight-semibold);
   gap: 0.35rem;
   line-height: 1;
-  padding: 0.4rem 0.7rem;
+  padding: 0.3rem 0.6rem;
 }
 
 .mono {

@@ -5,8 +5,9 @@
 }
 
 .header {
-  background: color-mix(in srgb, var(--lego-surface) 97%, white 3%);
-  border-bottom: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  background: var(--lego-shell-header-background);
+  border-bottom: var(--lego-border-width-1) solid
+    var(--lego-shell-header-border);
   position: sticky;
   top: 0;
   z-index: 30;
@@ -31,6 +32,7 @@
   display: grid;
   gap: var(--lego-space-2);
   grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 2.75rem;
 }
 
 .brandLink {
@@ -44,12 +46,12 @@
 
 .brandMark {
   align-items: center;
-  background: var(--lego-accent);
+  background: var(--lego-brand);
   border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-accent) 72%, black 28%);
+    color-mix(in srgb, var(--lego-brand) 74%, black 26%);
   border-radius: 14px;
-  box-shadow: var(--lego-shadow-sm);
-  color: var(--lego-accent-contrast);
+  box-shadow: none;
+  color: #ffffff;
   display: inline-flex;
   flex: 0 0 auto;
   font-size: var(--lego-font-size-lg);
@@ -60,7 +62,7 @@
 }
 
 .brandName {
-  color: var(--lego-text);
+  color: var(--lego-shell-header-text);
   font-size: clamp(1rem, 0.98rem + 0.3vw, 1.18rem);
   font-weight: var(--lego-font-weight-bold);
   letter-spacing: -0.02em;
@@ -81,7 +83,7 @@
 .navLink,
 .mobileNavLink {
   border-radius: var(--lego-radius-pill);
-  color: var(--lego-text);
+  color: var(--lego-shell-header-text);
   font-size: var(--lego-font-size-sm);
   font-weight: var(--lego-font-weight-semibold);
   line-height: 1;
@@ -98,12 +100,8 @@
 
 .navLink:hover,
 .navLink:focus-visible {
-  background: color-mix(in srgb, var(--lego-accent-subtle) 66%, white 34%);
-  border-color: color-mix(
-    in srgb,
-    var(--lego-accent) 34%,
-    var(--lego-border-subtle)
-  );
+  background: color-mix(in srgb, white 34%, transparent);
+  border-color: transparent;
   outline: none;
 }
 
@@ -112,6 +110,7 @@
   display: flex;
   gap: var(--lego-space-2);
   justify-content: flex-end;
+  min-height: 2.75rem;
 }
 
 .toggle {
@@ -120,14 +119,14 @@
 
 .accountStatus {
   align-items: center;
-  background: transparent;
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  background: color-mix(in srgb, white 72%, transparent);
+  border: var(--lego-border-width-1) solid transparent;
   border-radius: var(--lego-radius-pill);
+  block-size: 2.75rem;
   display: grid;
   gap: 0.55rem;
   grid-template-columns: auto minmax(0, 1fr) auto;
   inline-size: min(14.5rem, calc(100vw - 10.75rem));
-  min-height: 2.5rem;
   min-width: 0;
   padding: 0.28rem 0.34rem 0.28rem 0.72rem;
 }
@@ -158,7 +157,7 @@
 
 .accountStatusText,
 .accountStatusName {
-  color: var(--lego-text);
+  color: var(--lego-shell-header-text);
   font-size: var(--lego-font-size-sm);
   font-weight: var(--lego-font-weight-semibold);
   line-height: 1;
@@ -170,18 +169,20 @@
 .accountActionLink,
 .accountActionButton {
   flex: 0 0 auto;
+  block-size: 2rem;
   min-height: 2rem;
   min-width: 4.75rem;
+  padding-block: 0;
+  padding-inline: 0.75rem;
   justify-content: center;
 }
 
 .accountActionPlaceholder {
-  background: color-mix(in srgb, var(--lego-surface-muted) 88%, white 12%);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 78%, transparent);
+  background: color-mix(in srgb, white 84%, transparent);
+  border: var(--lego-border-width-1) solid transparent;
   border-radius: var(--lego-radius-pill);
   display: inline-flex;
-  height: 2rem;
+  block-size: 2rem;
   min-width: 4.75rem;
 }
 
@@ -191,10 +192,10 @@
 
 .mobileMenuSummary {
   align-items: center;
-  background: var(--lego-surface-subtle);
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  background: color-mix(in srgb, white 72%, transparent);
+  border: var(--lego-border-width-1) solid transparent;
   border-radius: var(--lego-radius-pill);
-  color: var(--lego-text);
+  color: var(--lego-shell-header-text);
   cursor: pointer;
   display: inline-flex;
   font-size: var(--lego-font-size-sm);
@@ -212,12 +213,8 @@
 }
 
 .mobileMenu[open] .mobileMenuSummary {
-  background: color-mix(in srgb, var(--lego-accent-subtle) 66%, white 34%);
-  border-color: color-mix(
-    in srgb,
-    var(--lego-accent) 34%,
-    var(--lego-border-subtle)
-  );
+  background: color-mix(in srgb, white 88%, transparent);
+  border-color: transparent;
 }
 
 .mobileMenuLabel {
@@ -252,7 +249,7 @@
 
 .mobileNavLink {
   background: var(--lego-surface-subtle);
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border: 0;
 }
 
 .menuAccountStatus {
@@ -306,8 +303,9 @@
 }
 
 .footer {
-  border-top: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  color: var(--lego-text-muted);
+  background: var(--lego-shell-footer-background);
+  border-top: 0;
+  color: var(--lego-shell-footer-text-muted);
 }
 
 .footerInner {
@@ -316,6 +314,7 @@
 }
 
 .footerCopy {
+  color: var(--lego-shell-footer-text-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-line-height-relaxed);
   margin: 0;

@@ -8,7 +8,10 @@ describe('AffiliateFeatureOffers', () => {
       <AffiliateFeatureOffers setId="10316" />,
     );
 
-    expect(markup).toContain('Current reviewed offers');
+    expect(markup).toContain('Reviewed offers');
+    expect(markup).toContain('Merchant');
+    expect(markup).toContain('Availability');
+    expect(markup).toContain('Price');
     expect(markup).toContain('LEGO NL');
     expect(markup).toContain('Reviewed offer');
     expect(markup).toContain('Checked');
@@ -21,7 +24,7 @@ describe('AffiliateFeatureOffers', () => {
       <AffiliateFeatureOffers setId="10305" />,
     );
 
-    expect(markup).toContain('Current reviewed offers');
+    expect(markup).toContain('Reviewed offers');
     expect(markup).toContain(
       'Reviewed Dutch offers are live for selected sets.',
     );
