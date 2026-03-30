@@ -16,9 +16,10 @@
 }
 
 .signalRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.45;
+  margin: 0;
 }
 
 .grid {
@@ -39,7 +40,7 @@
   }
 
   .signalRow {
-    justify-content: flex-end;
+    text-align: right;
   }
 }
 

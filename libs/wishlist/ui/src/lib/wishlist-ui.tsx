@@ -87,49 +87,32 @@ export function WantedSetToggleCard({
   if (variant === 'product') {
     return (
       <article className={styles.productToggle}>
-        <div className={styles.productToggleHeader}>
-          <div className={styles.productToggleCopy}>
-            <p className={styles.productToggleEyebrow}>Wishlist</p>
-            <h3 className={styles.productToggleTitle}>
-              {isLoading
-                ? 'Checking your wishlist save'
-                : isUnavailable
-                  ? 'Wishlist save unavailable'
-                  : isWanted
-                    ? 'Saved in your wishlist'
-                    : 'Save to wishlist'}
-            </h3>
-          </div>
-          <Badge tone={statusTone}>{statusLabel}</Badge>
-        </div>
-        <p className={styles.metaText}>
-          {isLoading
-            ? 'Checking your private wishlist save for this set.'
-            : isUnavailable
-              ? 'We could not load the private wishlist save right now.'
-              : isWanted
-                ? 'Private to you. Remove it any time.'
-                : 'Private to you. Save it when you want to track it.'}
-        </p>
         {errorMessage ? (
           <p aria-live="polite" className={styles.errorText}>
             {errorMessage}
           </p>
         ) : null}
-        {successMessage ? (
-          <p aria-live="polite" className={styles.successText}>
-            {successMessage}
-          </p>
-        ) : null}
         <Button
-          className={styles.productToggleButton}
+          className={`${styles.productToggleButton} ${
+            isWanted
+              ? styles.productToggleButtonActive
+              : styles.productToggleButtonIdle
+          }`}
           disabled={isUnavailable}
           isLoading={Boolean(isLoading || isPending)}
-          tone={isWanted ? 'secondary' : 'accent'}
+          tone="ghost"
           type="button"
           onClick={onToggle}
         >
-          {isLoading ? 'Syncing...' : isPending ? 'Saving...' : actionLabel}
+          {isLoading
+            ? 'Syncing...'
+            : isPending
+              ? 'Saving...'
+              : isUnavailable
+                ? 'Wanted unavailable'
+                : isWanted
+                  ? 'Remove wanted'
+                  : 'Save as wanted'}
         </Button>
       </article>
     );
@@ -146,8 +129,6 @@ export function WantedSetToggleCard({
     >
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>
-        <Badge>Private collector state</Badge>
-        {isPending ? <Badge tone="info">Saving</Badge> : null}
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
       <p className={styles.metaText}>Private to you. Set facts stay public.</p>
@@ -243,21 +224,16 @@ export function CollectorWishlistPanel({
           title={title}
           titleAs="h2"
         />
-        <div className={styles.wishlistMeta}>
-          <Badge tone={state === 'populated' ? 'accent' : 'info'}>
-            {state === 'loading'
-              ? 'Loading private state'
-              : state === 'signed-out'
-                ? 'Private collector page'
-                : `${wantedCount} visible`}
-          </Badge>
-          <Badge tone="warning">Wishlist</Badge>
-          {hiddenWantedCount > 0 ? (
-            <Badge tone="warning">
-              {hiddenWantedCount} outside public catalog
-            </Badge>
-          ) : null}
-        </div>
+        <p className={styles.wishlistMeta}>
+          {state === 'loading'
+            ? 'Loading private state'
+            : state === 'signed-out'
+              ? 'Private collector page'
+              : `${wantedCount} visible`}
+          {hiddenWantedCount > 0
+            ? ` · ${hiddenWantedCount} outside public catalog`
+            : ''}
+        </p>
       </div>
       <p className={styles.metaText}>
         Private to you. Set facts and pricing stay public.

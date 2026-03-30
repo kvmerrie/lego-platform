@@ -33,13 +33,11 @@ export function UserIdentityCard({
         {getUserInitials(userProfile.name)}
       </div>
       <div className={styles.identityMeta}>
-        <div className={styles.statusRow}>
-          <Badge tone="accent">{userProfile.tier}</Badge>
-        </div>
         <h3 className={styles.title}>{userProfile.name}</h3>
         <p className={styles.description}>
-          {userProfile.location} · {userProfile.collectionFocus}
+          {userProfile.location} · {userProfile.tier}
         </p>
+        <p className={styles.supportNote}>{userProfile.collectionFocus}</p>
       </div>
     </Surface>
   );
@@ -91,14 +89,11 @@ export function UserShellAccountStatusCard({
         tone="muted"
       >
         <div className={styles.sessionContent}>
-          <div className={styles.statusRow}>
-            <Badge tone="warning">Not signed in</Badge>
-            {isAuthAvailable ? (
-              <Badge tone="info">Private saves after sign-in</Badge>
-            ) : (
-              <Badge tone="warning">Sign-in unavailable</Badge>
-            )}
-          </div>
+          <p className={styles.statusMeta}>
+            {isAuthAvailable
+              ? 'Signed out · Private saves after sign-in'
+              : 'Signed out · Sign-in unavailable'}
+          </p>
           <SectionHeading
             description={
               isAuthAvailable
@@ -148,10 +143,9 @@ export function UserShellAccountStatusCard({
       elevation="rested"
     >
       <div className={styles.sessionContent}>
-        <div className={styles.statusRow}>
-          <Badge tone="positive">Signed in</Badge>
-          <Badge tone="accent">{userSession.collector.tier}</Badge>
-        </div>
+        <p className={styles.statusMeta}>
+          Signed in · {userSession.collector.tier}
+        </p>
         <SectionHeading
           description="Your private collector state is ready."
           eyebrow="Collector status"
@@ -171,14 +165,10 @@ export function UserShellAccountStatusCard({
         <p className={styles.supportNote}>
           {userSession.collector.collectionFocus}
         </p>
-        <div className={styles.sessionCounts}>
-          <Badge tone="positive">
-            {collectorSetCounts.ownedCount} owned saved
-          </Badge>
-          <Badge tone="info">
-            {collectorSetCounts.wantedCount} wanted saved
-          </Badge>
-        </div>
+        <p className={styles.sessionCounts}>
+          {collectorSetCounts.ownedCount} owned saved ·{' '}
+          {collectorSetCounts.wantedCount} wanted saved
+        </p>
         <div className={styles.shellStatusActions}>
           <ActionLink href="/collection" tone="secondary">
             Open collection
@@ -310,9 +300,6 @@ export function UserSessionCard({
                     ? 'Send another email link'
                     : 'Email sign-in link'}
               </Button>
-              {!isAuthAvailable ? (
-                <Badge tone="warning">sign-in unavailable</Badge>
-              ) : null}
             </div>
           </form>
           <p className={styles.supportNote}>
@@ -345,10 +332,9 @@ export function UserSessionCard({
       elevation="rested"
     >
       <div className={styles.sessionContent}>
-        <div className={styles.statusRow}>
-          <Badge tone="accent">Collector account</Badge>
-          <Badge tone="positive">{userSession.collector.tier}</Badge>
-        </div>
+        <p className={styles.statusMeta}>
+          Collector account · {userSession.collector.tier}
+        </p>
         <SectionHeading
           description="Your owned sets, wishlist, and profile stay private to you."
           eyebrow="Signed in"
@@ -387,14 +373,10 @@ export function UserSessionCard({
             <p className={styles.paneNote}>Shown on collector surfaces.</p>
           </div>
         </div>
-        <div className={styles.sessionCounts}>
-          <Badge tone="positive">
-            {collectorSetCounts.ownedCount} owned saved
-          </Badge>
-          <Badge tone="info">
-            {collectorSetCounts.wantedCount} wanted saved
-          </Badge>
-        </div>
+        <p className={styles.sessionCounts}>
+          {collectorSetCounts.ownedCount} owned saved ·{' '}
+          {collectorSetCounts.wantedCount} wanted saved
+        </p>
         <p className={styles.supportNote}>
           Owned sets and wishlist stay private. Set facts and pricing stay
           public.
@@ -519,10 +501,7 @@ export function UserProfileEditorCard({
       elevation="rested"
     >
       <div className={styles.sessionContent}>
-        <div className={styles.statusRow}>
-          <Badge tone="accent">Profile</Badge>
-          <Badge tone="info">Signed-in account</Badge>
-        </div>
+        <p className={styles.statusMeta}>Profile · Signed-in account</p>
         <SectionHeading
           description="Edit the collector details shown with your saved sets."
           eyebrow="Collector identity"
@@ -638,7 +617,7 @@ export function UserProfileEditorCard({
             >
               {isSaving ? 'Saving profile...' : 'Save profile'}
             </Button>
-            {!isDirty ? <Badge tone="neutral">Up to date</Badge> : null}
+            {!isDirty ? <p className={styles.statusMeta}>Up to date</p> : null}
           </div>
         </form>
         {successMessage ? (

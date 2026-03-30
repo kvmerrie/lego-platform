@@ -46,6 +46,6 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('Start with a few standout sets.');
     expect(markup).toContain('2 curated picks');
     expect(markup).toContain('1 with reviewed price');
-    expect(markup).toContain('Public catalog');
+    expect(markup).not.toContain('Public catalog');
   });
 });

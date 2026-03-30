@@ -1,4 +1,7 @@
-import { AffiliateFeatureOffers } from '@lego-platform/affiliate/feature-offers';
+import {
+  AffiliateFeatureOffers,
+  AffiliateFeaturePrimaryOfferAction,
+} from '@lego-platform/affiliate/feature-offers';
 import {
   getCatalogSetBySlug,
   listCatalogSetSlugs,
@@ -40,6 +43,7 @@ export default async function SetDetailPage({
               setId={catalogSetDetail.id}
               variant="product"
             />
+            <AffiliateFeaturePrimaryOfferAction setId={catalogSetDetail.id} />
             <div className={styles.productActions}>
               <CollectionFeatureOwnedToggle
                 setId={catalogSetDetail.id}

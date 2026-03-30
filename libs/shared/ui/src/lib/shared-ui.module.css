@@ -207,6 +207,7 @@
 }
 
 .badge {
+  align-self: flex-start;
   align-items: center;
   background: var(--lego-surface-muted);
   border: 0;
@@ -216,10 +217,13 @@
   font-size: var(--lego-font-size-caption);
   font-weight: var(--lego-font-weight-semibold);
   gap: var(--lego-space-1);
+  inline-size: fit-content;
   letter-spacing: 0.02em;
   line-height: 1.1;
+  max-inline-size: 100%;
   min-height: 1.25rem;
   padding: 0.14rem 0.42rem;
+  white-space: nowrap;
 }
 
 .badgeAccent {
@@ -238,8 +242,8 @@
 }
 
 .badgeInfo {
-  background: var(--lego-info-subtle);
-  color: var(--lego-info);
+  background: var(--lego-surface-muted);
+  color: var(--lego-text-muted);
 }
 
 .badgeError {

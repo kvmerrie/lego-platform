@@ -143,6 +143,10 @@ function PricingMetaItem({ label, value }: { label: string; value: string }) {
   );
 }
 
+function PricingScopeLine({ children }: { children: ReactNode }) {
+  return <p className={styles.scopeLine}>{children}</p>;
+}
+
 function buildHistoryChartPoints(
   priceHistoryPoints: readonly PriceHistoryPoint[],
 ): string {
@@ -232,13 +236,10 @@ export function PriceSummaryCard({
             Availability: {pricePanelSnapshot.lowestAvailabilityLabel}
           </p>
         ) : null}
-        <div className={styles.badgeRow}>
-          <Badge tone="accent">NL / EUR</Badge>
-          <Badge tone="info">New condition</Badge>
-          <Badge>
-            {getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}
-          </Badge>
-        </div>
+        <PricingScopeLine>
+          Dutch market · EUR · new condition ·{' '}
+          {getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}
+        </PricingScopeLine>
         <div className={styles.productMetaRow}>
           {typeof pricePanelSnapshot.referencePriceMinor === 'number' ? (
             <Badge tone={getDeltaTone(pricePanelSnapshot.deltaMinor)}>
@@ -271,11 +272,10 @@ export function PriceSummaryCard({
         eyebrow="Buy guidance"
         title="Current reviewed price"
       />
-      <div className={styles.badgeRow}>
-        <Badge tone="accent">NL / EUR</Badge>
-        <Badge tone="info">New condition</Badge>
-        <Badge>{getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}</Badge>
-      </div>
+      <PricingScopeLine>
+        Dutch market · EUR · new condition ·{' '}
+        {getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}
+      </PricingScopeLine>
       <div className={styles.metricBlock}>
         <p className={styles.metricLabel}>Reviewed price</p>
         <p className={styles.metricValue}>
@@ -484,10 +484,7 @@ function PricingUnavailableCardContent({
         <p className={styles.unavailableCopy}>
           Reviewed Dutch pricing appears for selected sets.
         </p>
-        <div className={styles.badgeRow}>
-          <Badge tone="accent">NL / EUR</Badge>
-          <Badge tone="info">New condition</Badge>
-        </div>
+        <PricingScopeLine>Dutch market · EUR · new condition</PricingScopeLine>
       </div>
     );
   }
@@ -505,11 +502,9 @@ function PricingUnavailableCardContent({
         eyebrow="Buy guidance"
         title="Current reviewed price"
       />
-      <div className={styles.badgeRow}>
-        <Badge tone="accent">NL / EUR</Badge>
-        <Badge tone="info">New condition</Badge>
-        <Badge>Not published yet</Badge>
-      </div>
+      <PricingScopeLine>
+        Dutch market · EUR · new condition · Not published yet
+      </PricingScopeLine>
       <p className={styles.unavailableCopy}>
         Browsing and private saves still work. Price, history, and offers appear
         together when this set joins the Dutch pricing selection.
@@ -549,12 +544,10 @@ export function PriceHistoryCard({
           eyebrow="Price history"
           title="30-day price history"
         />
-        <div className={styles.badgeRow}>
-          <Badge tone="accent">NL / EUR</Badge>
-          <Badge tone="info">New condition</Badge>
-          <Badge>History building</Badge>
-          <Badge>{getDailyPointLabel(1)}</Badge>
-        </div>
+        <PricingScopeLine>
+          Dutch market · EUR · new condition · History building ·{' '}
+          {getDailyPointLabel(1)}
+        </PricingScopeLine>
         <div className={styles.metricBlock}>
           <p className={styles.metricLabel}>First tracked price</p>
           <p className={styles.metricValue}>
@@ -597,11 +590,10 @@ export function PriceHistoryCard({
         eyebrow="Price history"
         title="30-day price history"
       />
-      <div className={styles.badgeRow}>
-        <Badge tone="accent">NL / EUR</Badge>
-        <Badge tone="info">New condition</Badge>
-        <Badge>{getDailyPointLabel(priceHistoryPoints.length)}</Badge>
-      </div>
+      <PricingScopeLine>
+        Dutch market · EUR · new condition ·{' '}
+        {getDailyPointLabel(priceHistoryPoints.length)}
+      </PricingScopeLine>
       <div className={styles.historyChartShell}>
         <div className={styles.historyAxis}>
           <span>
@@ -718,11 +710,9 @@ export function PriceHistoryEmptyCard({
         eyebrow="Price history"
         title="30-day price history"
       />
-      <div className={styles.badgeRow}>
-        <Badge tone="accent">NL / EUR</Badge>
-        <Badge tone="info">New condition</Badge>
-        <Badge>History building</Badge>
-      </div>
+      <PricingScopeLine>
+        Dutch market · EUR · new condition · History building
+      </PricingScopeLine>
       <p className={styles.unavailableCopy}>
         {isLoading
           ? 'Loading the latest tracked daily prices.'

@@ -91,6 +91,26 @@ export function AffiliateOfferCard({
   );
 }
 
+export function AffiliatePrimaryOfferAction({
+  affiliateOffer,
+}: {
+  affiliateOffer: AffiliateOfferSnapshot;
+}) {
+  return (
+    <div className={styles.primaryOfferAction}>
+      <ActionLink
+        className={styles.primaryOfferLink}
+        href={affiliateOffer.outboundUrl}
+        rel="noreferrer sponsored"
+        target="_blank"
+        tone="secondary"
+      >
+        Shop at {affiliateOffer.merchantName}
+      </ActionLink>
+    </div>
+  );
+}
+
 export function AffiliateOffersPanel({
   affiliateOffers,
   id,
@@ -111,11 +131,10 @@ export function AffiliateOffersPanel({
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
-      <div className={styles.panelBadges}>
-        <Badge tone="accent">NL / EUR</Badge>
-        <Badge tone="info">New condition</Badge>
-        <Badge>{affiliateOffers.length} merchants shown</Badge>
-      </div>
+      <p className={styles.panelMeta}>
+        Dutch market · EUR · new condition · {affiliateOffers.length} merchants
+        shown
+      </p>
       <div className={styles.offerTableWrap}>
         <table className={styles.offerTable}>
           <thead>
@@ -169,10 +188,7 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
-      <div className={styles.panelBadges}>
-        <Badge tone="accent">NL / EUR</Badge>
-        <Badge tone="info">New condition</Badge>
-      </div>
+      <p className={styles.panelMeta}>Dutch market · EUR · new condition</p>
       <p className={styles.unavailableCopy}>
         Offers appear together with reviewed price and tracked history when a
         set joins the Dutch pricing selection.

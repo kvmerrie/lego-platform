@@ -50,11 +50,9 @@
 }
 
 .productToggle {
-  background: var(--lego-surface-subtle);
   border-radius: var(--lego-radius-md);
   display: grid;
-  gap: var(--lego-space-2);
-  padding: var(--lego-space-3);
+  gap: var(--lego-space-1);
 }
 
 .toggleMeta {
@@ -63,43 +61,38 @@
   gap: var(--lego-space-2);
 }
 
-.productToggleHeader,
-.productToggleCopy {
-  display: grid;
-  gap: var(--lego-space-1);
-}
-
-.productToggleHeader {
-  align-items: start;
-}
-
-.productToggleEyebrow {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-eyebrow-size);
-  font-weight: var(--lego-font-weight-bold);
-  letter-spacing: 0.14em;
-  line-height: var(--lego-text-role-eyebrow-line-height);
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.productToggleTitle {
-  color: var(--lego-text);
-  font-family: var(--lego-font-family-heading);
-  font-size: var(--lego-text-role-card-title-size);
-  font-weight: var(--lego-text-role-card-title-weight);
-  letter-spacing: -0.02em;
-  line-height: 1.18;
-  margin: 0;
-}
-
 .toggleButton {
   justify-self: flex-start;
 }
 
 .productToggleButton {
+  border: var(--lego-border-width-2) solid var(--lego-info);
+  border-radius: var(--lego-radius-pill);
   inline-size: 100%;
   justify-content: center;
+  min-height: 2.6rem;
+  padding-inline: 0.8rem;
+}
+
+.productToggleButtonIdle {
+  background: #ffffff;
+  color: var(--lego-info);
+}
+
+.productToggleButtonIdle:hover {
+  background: color-mix(in srgb, var(--lego-info) 6%, white);
+  border-color: var(--lego-info);
+}
+
+.productToggleButtonActive {
+  background: var(--lego-info);
+  border-color: var(--lego-info);
+  color: #ffffff;
+}
+
+.productToggleButtonActive:hover {
+  background: color-mix(in srgb, var(--lego-info) 88%, black 12%);
+  border-color: color-mix(in srgb, var(--lego-info) 88%, black 12%);
 }
 
 .wishlistPagePanel {
@@ -113,9 +106,10 @@
 }
 
 .wishlistMeta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.45;
+  margin: 0;
 }
 
 .destinationPanel {
@@ -149,12 +143,6 @@
 }
 
 @media (min-width: 48rem) {
-  .productToggleHeader {
-    align-items: start;
-    gap: var(--lego-space-2);
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
   .wishlistGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

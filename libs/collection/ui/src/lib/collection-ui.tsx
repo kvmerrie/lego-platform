@@ -119,49 +119,32 @@ export function OwnedSetToggleCard({
   if (variant === 'product') {
     return (
       <article className={styles.productToggle}>
-        <div className={styles.productToggleHeader}>
-          <div className={styles.productToggleCopy}>
-            <p className={styles.productToggleEyebrow}>Owned</p>
-            <h3 className={styles.productToggleTitle}>
-              {isLoading
-                ? 'Checking your owned save'
-                : isUnavailable
-                  ? 'Owned save unavailable'
-                  : isOwned
-                    ? 'Saved in your collection'
-                    : 'Save to owned'}
-            </h3>
-          </div>
-          <Badge tone={statusTone}>{statusLabel}</Badge>
-        </div>
-        <p className={styles.metaText}>
-          {isLoading
-            ? 'Checking your private owned save for this set.'
-            : isUnavailable
-              ? 'We could not load the private owned save right now.'
-              : isOwned
-                ? 'Private to you. Remove it any time.'
-                : 'Private to you. Save it when this set is already on your shelf.'}
-        </p>
         {errorMessage ? (
           <p aria-live="polite" className={styles.errorText}>
             {errorMessage}
           </p>
         ) : null}
-        {successMessage ? (
-          <p aria-live="polite" className={styles.successText}>
-            {successMessage}
-          </p>
-        ) : null}
         <Button
-          className={styles.productToggleButton}
+          className={`${styles.productToggleButton} ${
+            isOwned
+              ? styles.productToggleButtonActive
+              : styles.productToggleButtonIdle
+          }`}
           disabled={isUnavailable}
           isLoading={Boolean(isLoading || isPending)}
-          tone={isOwned ? 'secondary' : 'accent'}
+          tone="ghost"
           type="button"
           onClick={onToggle}
         >
-          {isLoading ? 'Syncing...' : isPending ? 'Saving...' : actionLabel}
+          {isLoading
+            ? 'Syncing...'
+            : isPending
+              ? 'Saving...'
+              : isUnavailable
+                ? 'Owned unavailable'
+                : isOwned
+                  ? 'Remove owned'
+                  : 'Save as owned'}
         </Button>
       </article>
     );
@@ -178,8 +161,6 @@ export function OwnedSetToggleCard({
     >
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>
-        <Badge>Private collector state</Badge>
-        {isPending ? <Badge tone="info">Saving</Badge> : null}
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
       <p className={styles.metaText}>Private to you. Set facts stay public.</p>
@@ -275,21 +256,16 @@ export function CollectorCollectionPanel({
           title={title}
           titleAs="h2"
         />
-        <div className={styles.collectionMeta}>
-          <Badge tone={state === 'populated' ? 'positive' : 'info'}>
-            {state === 'loading'
-              ? 'Loading private state'
-              : state === 'signed-out'
-                ? 'Private collector page'
-                : `${ownedCount} visible`}
-          </Badge>
-          <Badge>Owned collection</Badge>
-          {hiddenOwnedCount > 0 ? (
-            <Badge tone="warning">
-              {hiddenOwnedCount} outside public catalog
-            </Badge>
-          ) : null}
-        </div>
+        <p className={styles.collectionMeta}>
+          {state === 'loading'
+            ? 'Loading private state'
+            : state === 'signed-out'
+              ? 'Private collector page'
+              : `${ownedCount} visible`}
+          {hiddenOwnedCount > 0
+            ? ` · ${hiddenOwnedCount} outside public catalog`
+            : ''}
+        </p>
       </div>
       <p className={styles.metaText}>
         Private to you. Set facts and pricing stay public.

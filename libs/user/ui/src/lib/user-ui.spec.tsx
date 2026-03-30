@@ -56,6 +56,7 @@ describe('UserShellAccountStatusCard', () => {
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('Sign out');
     expect(markup).toContain('Your private collector state is ready.');
+    expect(markup).toContain('Signed in · Founding Collector');
   });
 });
 
@@ -97,6 +98,7 @@ describe('UserSessionCard', () => {
     expect(markup).toContain(
       'Owned sets and wishlist stay private. Set facts and pricing stay public.',
     );
+    expect(markup).toContain('Collector account · Founding Collector');
   });
 });
 

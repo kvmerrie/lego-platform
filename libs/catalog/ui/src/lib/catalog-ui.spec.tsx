@@ -107,7 +107,6 @@ describe('CatalogSetCard', () => {
             'Motorized light and rotating beacon create stronger live display presence than most static shelf pieces',
           ],
         }}
-        homeHref="/#featured-sets"
         productSummary={<div>Lowest reviewed price</div>}
         supportingPanel={<div>30-day price history</div>}
       />,
@@ -118,6 +117,6 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Lowest reviewed price');
     expect(markup).toContain('30-day price history');
     expect(markup).toContain('Why this set stands out');
-    expect(markup).toContain('Back to shortlist');
+    expect(markup).not.toContain('Back to shortlist');
   });
 });

@@ -4,11 +4,37 @@
   gap: var(--lego-space-2);
 }
 
-.panelBadges,
+.primaryOfferAction {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.primaryOfferLink {
+  background: var(--lego-commerce);
+  border: 0;
+  border-radius: var(--lego-radius-pill);
+  color: #ffffff;
+  inline-size: 100%;
+  justify-content: center;
+  min-height: 3rem;
+}
+
+.primaryOfferLink:hover {
+  background: var(--lego-commerce-hover);
+  border-color: transparent;
+}
+
 .offerBadges {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lego-space-2);
+}
+
+.panelMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.45;
+  margin: 0;
 }
 
 .offerTableWrap {

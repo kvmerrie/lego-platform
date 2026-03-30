@@ -4,7 +4,7 @@ import {
   CatalogSetCard,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
-import { Badge, SectionHeading } from '@lego-platform/shared/ui';
+import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-set-list.module.css';
 
 export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
@@ -35,13 +35,10 @@ export function CatalogFeatureSetList({
           eyebrow="Featured sets"
           title="Start with a few standout sets."
         />
-        <div className={styles.signalRow}>
-          <Badge tone="accent">{homepageSets.length} curated picks</Badge>
-          {reviewedSetCount ? (
-            <Badge tone="info">{reviewedSetCount} with reviewed price</Badge>
-          ) : null}
-          <Badge>Public catalog</Badge>
-        </div>
+        <p className={styles.signalRow}>
+          {homepageSets.length} curated picks
+          {reviewedSetCount ? ` · ${reviewedSetCount} with reviewed price` : ''}
+        </p>
       </div>
       <div className={styles.grid}>
         {homepageSets.map((catalogSetSummary) => (

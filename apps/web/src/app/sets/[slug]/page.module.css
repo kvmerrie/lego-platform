@@ -4,8 +4,7 @@
   gap: var(--lego-space-2);
 }
 
-@media (min-width: 72rem) {
-  .productActions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.productActions {
+  gap: var(--lego-space-1);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }

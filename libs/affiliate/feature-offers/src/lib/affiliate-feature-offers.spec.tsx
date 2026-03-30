@@ -1,6 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { AffiliateFeatureOffers } from './affiliate-feature-offers';
+import {
+  AffiliateFeatureOffers,
+  AffiliateFeaturePrimaryOfferAction,
+} from './affiliate-feature-offers';
 
 describe('AffiliateFeatureOffers', () => {
   it('renders the reviewed Dutch merchant offers for a commerce-enabled set', () => {
@@ -28,5 +31,15 @@ describe('AffiliateFeatureOffers', () => {
     expect(markup).toContain(
       'Reviewed Dutch offers are live for selected sets.',
     );
+  });
+
+  it('renders the cheapest reviewed merchant CTA for the set-detail hero', () => {
+    const markup = renderToStaticMarkup(
+      <AffiliateFeaturePrimaryOfferAction setId="10316" />,
+    );
+
+    expect(markup).toContain('Shop at bol');
+    expect(markup).not.toContain('Cheapest reviewed offer');
+    expect(markup).not.toContain('Checked');
   });
 });

@@ -14,7 +14,6 @@ export function CatalogFeatureSetDetail({
   return (
     <CatalogSetDetailPanel
       catalogSetDetail={catalogSetDetail}
-      homeHref="/#featured-sets"
       productSummary={productSummary}
       supportingPanel={supportingPanel}
     />

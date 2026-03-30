@@ -191,9 +191,11 @@ export function CatalogSetCard({
         variant="card"
       />
       <div className={styles.cardHeader}>
-        <div className={styles.cardBadgeRow}>
+        <div className={styles.cardMetaRow}>
           <Badge tone="accent">{setSummary.theme}</Badge>
-          <Badge tone="info">{setSummary.releaseYear}</Badge>
+          <p className={styles.cardMetaText}>
+            {setSummary.releaseYear} · {setSummary.priceRange}
+          </p>
         </div>
         <h3 className={styles.cardTitle}>{setSummary.name}</h3>
         <p className={styles.cardTagline}>
@@ -202,16 +204,14 @@ export function CatalogSetCard({
       </div>
       {priceContext ? (
         <div className={styles.priceBlock}>
-          <div className={styles.priceHeader}>
-            <p className={styles.priceLabel}>Reviewed price</p>
-            {priceContext.pricePositionLabel ? (
-              <Badge tone={priceContext.pricePositionTone ?? 'info'}>
-                {priceContext.pricePositionLabel}
-              </Badge>
-            ) : null}
-          </div>
+          <p className={styles.priceLabel}>Reviewed price</p>
           <p className={styles.priceValue}>{priceContext.currentPrice}</p>
           <p className={styles.priceMeta}>{priceContext.merchantLabel}</p>
+          {priceContext.pricePositionLabel ? (
+            <p className={styles.pricePosition}>
+              {priceContext.pricePositionLabel}
+            </p>
+          ) : null}
           <div className={styles.supportingGrid}>
             <CatalogSupportingDetail
               label="Coverage"
@@ -225,10 +225,7 @@ export function CatalogSetCard({
         </div>
       ) : (
         <div className={styles.priceBlock}>
-          <div className={styles.priceHeader}>
-            <p className={styles.priceLabel}>Reviewed price</p>
-            <Badge tone="neutral">Not published yet</Badge>
-          </div>
+          <p className={styles.priceLabel}>Reviewed price</p>
           <p className={styles.priceUnavailableCopy}>
             Reviewed pricing is live for selected sets.
           </p>
@@ -277,10 +274,9 @@ export function CatalogHomepageIntro() {
           title="A collector-friendly way to browse standout sets."
           tone="hero"
         />
-        <div className={styles.badgeRow}>
-          <Badge tone="accent">Static-friendly reads</Badge>
-          <Badge tone="info">Private saves</Badge>
-        </div>
+        <p className={styles.heroMeta}>
+          Static-friendly reads with private saves on set pages.
+        </p>
       </div>
       <div className={styles.heroSecondary}>
         <SectionHeading
@@ -303,12 +299,10 @@ export function CatalogHomepageIntro() {
 
 export function CatalogSetDetailPanel({
   catalogSetDetail,
-  homeHref,
   productSummary,
   supportingPanel,
 }: {
   catalogSetDetail: CatalogSetDetail;
-  homeHref?: string;
   productSummary?: ReactNode;
   supportingPanel?: ReactNode;
 }) {
@@ -340,21 +334,13 @@ export function CatalogSetDetailPanel({
             />
             <div className={styles.badgeRow}>
               <Badge tone="accent">{catalogSetDetail.theme}</Badge>
-              <Badge>{catalogSetDetail.releaseYear}</Badge>
-              <Badge tone="info">{catalogSetDetail.priceRange}</Badge>
             </div>
+            <p className={styles.heroMeta}>
+              {catalogSetDetail.releaseYear} · {catalogSetDetail.priceRange}
+            </p>
           </div>
           {productSummary ? (
             <div className={styles.productSummarySlot}>{productSummary}</div>
-          ) : null}
-          {homeHref ? (
-            <ActionLink
-              className={styles.productBackLink}
-              href={homeHref}
-              tone="secondary"
-            >
-              Back to shortlist
-            </ActionLink>
           ) : null}
         </div>
       </Surface>
