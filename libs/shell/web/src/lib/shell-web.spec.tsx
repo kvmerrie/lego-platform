@@ -27,6 +27,9 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Shortlist');
     expect(markup).toContain('Account');
     expect(markup).toContain('Checking');
+    expect(markup).toContain('action="/search"');
+    expect(markup).toContain('name="q"');
+    expect(markup).toContain('Search sets or number');
     expect(markup).toContain('Curated browsing, private collector saves');
     expect(markup).not.toContain('Home');
     expect(markup).not.toContain('Featured shortlist');

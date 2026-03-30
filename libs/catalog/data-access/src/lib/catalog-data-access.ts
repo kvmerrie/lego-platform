@@ -105,6 +105,26 @@ function createCatalogSetRecordByProductSlug() {
 
 const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
 
+interface CatalogSearchIndexEntry {
+  canonicalIdToken: string;
+  compactName: string;
+  normalizedName: string;
+  setCard: CatalogHomepageSetCard;
+  sourceSetNumberToken: string;
+}
+
+function normalizeCatalogSearchText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeCatalogSearchToken(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
 function toCatalogSetDetail(
   catalogSetRecord: CatalogSetRecord,
 ): CatalogSetDetail {
@@ -127,6 +147,65 @@ function toCatalogSetDetail(
     availability: catalogSetOverlay.availability,
     collectorHighlights: [...catalogSetOverlay.collectorHighlights],
   };
+}
+
+function createCatalogSearchIndex(): CatalogSearchIndexEntry[] {
+  return catalogSnapshot.setRecords.map((catalogSetRecord) => {
+    const catalogSetCard = toCatalogHomepageSetCard(
+      toCatalogSetDetail(catalogSetRecord),
+    );
+
+    return {
+      canonicalIdToken: normalizeCatalogSearchToken(
+        catalogSetRecord.canonicalId,
+      ),
+      compactName: normalizeCatalogSearchToken(catalogSetCard.name),
+      normalizedName: normalizeCatalogSearchText(catalogSetCard.name),
+      setCard: catalogSetCard,
+      sourceSetNumberToken: normalizeCatalogSearchToken(
+        catalogSetRecord.sourceSetNumber,
+      ),
+    };
+  });
+}
+
+const catalogSearchIndex = createCatalogSearchIndex();
+
+function getCatalogSearchScore({
+  entry,
+  queryText,
+  queryToken,
+}: {
+  entry: CatalogSearchIndexEntry;
+  queryText: string;
+  queryToken: string;
+}): number | undefined {
+  if (
+    entry.canonicalIdToken === queryToken ||
+    entry.sourceSetNumberToken === queryToken
+  ) {
+    return 0;
+  }
+
+  if (
+    entry.canonicalIdToken.startsWith(queryToken) ||
+    entry.sourceSetNumberToken.startsWith(queryToken)
+  ) {
+    return 1;
+  }
+
+  if (entry.normalizedName.startsWith(queryText)) {
+    return 2;
+  }
+
+  if (
+    entry.normalizedName.includes(queryText) ||
+    entry.compactName.includes(queryToken)
+  ) {
+    return 3;
+  }
+
+  return undefined;
 }
 
 function getCatalogSetDetailById(canonicalId: string): CatalogSetDetail {
@@ -185,6 +264,40 @@ export function listCatalogSetCardsByIds(
 
     return [toCatalogHomepageSetCard(toCatalogSetDetail(catalogSetRecord))];
   });
+}
+
+export function searchCatalogSetCards(query: string): CatalogHomepageSetCard[] {
+  const normalizedQueryText = normalizeCatalogSearchText(query);
+  const normalizedQueryToken = normalizeCatalogSearchToken(query);
+
+  if (!normalizedQueryText || !normalizedQueryToken) {
+    return [];
+  }
+
+  return catalogSearchIndex
+    .flatMap((entry) => {
+      const score = getCatalogSearchScore({
+        entry,
+        queryText: normalizedQueryText,
+        queryToken: normalizedQueryToken,
+      });
+
+      return typeof score === 'number'
+        ? [
+            {
+              score,
+              setCard: entry.setCard,
+            },
+          ]
+        : [];
+    })
+    .sort(
+      (left, right) =>
+        left.score - right.score ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
+        left.setCard.name.localeCompare(right.setCard.name),
+    )
+    .map((entry) => entry.setCard);
 }
 
 export function listCatalogSetSlugs(): string[] {

@@ -72,6 +72,10 @@
   display: none;
 }
 
+.desktopSearch {
+  display: none;
+}
+
 .navLink,
 .mobileNavLink {
   border-radius: var(--lego-radius-pill);
@@ -100,6 +104,52 @@
   gap: var(--lego-space-2);
   justify-content: flex-end;
   min-height: 2.75rem;
+}
+
+.searchInput {
+  appearance: none;
+  background: var(--lego-surface);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text);
+  font: inherit;
+  min-height: 2.5rem;
+  min-width: 0;
+  padding: 0.72rem 0.9rem;
+  width: 100%;
+}
+
+.searchInput::placeholder {
+  color: var(--lego-text-muted);
+}
+
+.searchInput:focus-visible {
+  border-color: var(--lego-accent);
+  outline: none;
+}
+
+.searchSubmit {
+  align-items: center;
+  appearance: none;
+  background: var(--lego-surface-subtle);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: var(--lego-font-size-sm);
+  font-weight: var(--lego-font-weight-semibold);
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.72rem 0.95rem;
+  white-space: nowrap;
+}
+
+.searchSubmit:hover,
+.searchSubmit:focus-visible {
+  background: color-mix(in srgb, var(--lego-surface-subtle) 72%, white 28%);
+  outline: none;
 }
 
 .accountStatus {
@@ -237,6 +287,13 @@
   top: 100%;
 }
 
+.mobileSearch {
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: var(--lego-space-3);
+}
+
 .mobileNav {
   display: grid;
   gap: var(--lego-space-2);
@@ -325,14 +382,20 @@
   }
 
   .headerBar {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(15rem, 22rem) auto;
   }
 
   .desktopNav {
     align-items: center;
     display: flex;
     gap: var(--lego-space-3);
-    justify-content: center;
+    justify-content: flex-start;
+  }
+
+  .desktopSearch {
+    display: grid;
+    gap: var(--lego-space-2);
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .mobileMenu {

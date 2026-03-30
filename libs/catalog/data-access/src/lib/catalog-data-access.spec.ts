@@ -7,6 +7,7 @@ import {
   listCatalogSetSummaries,
   listCatalogThemes,
   listHomepageSets,
+  searchCatalogSetCards,
 } from './catalog-data-access';
 import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
@@ -69,7 +70,7 @@ describe('catalog snapshot artifacts', () => {
       },
       {
         canonicalId: '10333',
-        slug: 'the-lord-of-the-rings-barad-dur-10333',
+        slug: 'the-lord-of-the-rings-barad-d-r-10333',
         sourceSetNumber: '10333-1',
       },
       {
@@ -126,7 +127,7 @@ describe('catalog data-access contracts', () => {
       'a-frame-cabin-21338',
       'eldorado-fortress-10320',
       'motorized-lighthouse-21335',
-      'the-lord-of-the-rings-barad-dur-10333',
+      'the-lord-of-the-rings-barad-d-r-10333',
       'medieval-town-square-10332',
       'tranquil-garden-10315',
       'vincent-van-gogh-the-starry-night-21333',
@@ -196,6 +197,33 @@ describe('catalog data-access contracts', () => {
         collectorAngle: 'Prestige display anchor',
       },
     ]);
+  });
+
+  test('searches curated sets by product name and canonical id', () => {
+    expect(searchCatalogSetCards('avengers')).toEqual([
+      expect.objectContaining({
+        id: '76269',
+        name: 'Avengers Tower',
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('10316')).toEqual([
+      expect.objectContaining({
+        id: '10316',
+        name: 'Rivendell',
+      }),
+    ]);
+  });
+
+  test('matches source set numbers and returns no results for an empty query', () => {
+    expect(searchCatalogSetCards('10316-1')).toEqual([
+      expect.objectContaining({
+        id: '10316',
+        name: 'Rivendell',
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('   ')).toEqual([]);
   });
 
   test('builds richer homepage card reads with curated availability and tagline context', () => {
@@ -333,8 +361,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 2509,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/10320-1/127861.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10320-1/127861.jpg',
       priceRange: '$189 to $259',
       collectorAngle: 'Pirates nostalgia centerpiece',
       tagline:
@@ -354,8 +381,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Ideas',
       releaseYear: 2022,
       pieces: 2065,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/21335-1/107884.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21335-1/107884.jpg',
       priceRange: '$259 to $319',
       collectorAngle: 'Kinetic display standout',
       tagline:
@@ -369,16 +395,15 @@ describe('catalog data-access contracts', () => {
     });
 
     expect(
-      getCatalogSetBySlug('the-lord-of-the-rings-barad-dur-10333'),
+      getCatalogSetBySlug('the-lord-of-the-rings-barad-d-r-10333'),
     ).toEqual({
       id: '10333',
-      slug: 'the-lord-of-the-rings-barad-dur-10333',
-      name: 'The Lord of the Rings: Barad-dur',
+      slug: 'the-lord-of-the-rings-barad-d-r-10333',
+      name: 'The Lord of the Rings: Barad-dûr',
       theme: 'Icons',
       releaseYear: 2024,
-      pieces: 5471,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/10333-1/140959.jpg/1000x800p.jpg',
+      pieces: 5478,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
       priceRange: '$459 to $529',
       collectorAngle: 'Middle-earth display monolith',
       tagline:
@@ -397,9 +422,8 @@ describe('catalog data-access contracts', () => {
       name: 'Medieval Town Square',
       theme: 'Icons',
       releaseYear: 2024,
-      pieces: 3304,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/10332-1/137285.jpg/1000x800p.jpg',
+      pieces: 3308,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10332-1/137285.jpg',
       priceRange: '$189 to $249',
       collectorAngle: 'Castle-world village expansion',
       tagline:
@@ -419,8 +443,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 1363,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/10315-1/132380.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10315-1/132380.jpg',
       priceRange: '$95 to $129',
       collectorAngle: 'Mindful display palate-cleanser',
       tagline:
@@ -442,8 +465,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Ideas',
       releaseYear: 2022,
       pieces: 2316,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/21333-1/102873.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
       priceRange: '$149 to $189',
       collectorAngle: 'Art-crossover wall display piece',
       tagline:
@@ -463,8 +485,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Ideas',
       releaseYear: 2023,
       pieces: 1111,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/21342-1/126471.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21342-1/126471.jpg',
       priceRange: '$69 to $99',
       collectorAngle: 'Nature-display gateway',
       tagline:
@@ -484,8 +505,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 2083,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/10318-1/132335.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10318-1/132335.jpg',
       priceRange: '$169 to $229',
       collectorAngle: 'Engineering icon centerpiece',
       tagline:
@@ -505,8 +525,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2024,
       pieces: 834,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/10331-1/135670.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10331-1/135670.jpg',
       priceRange: '$49 to $69',
       collectorAngle: 'Color-pop display accent',
       tagline:
@@ -528,8 +547,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2024,
       pieces: 3601,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/10341-1/139647.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10341-1/139647.jpg',
       priceRange: '$239 to $299',
       collectorAngle: 'Space-program display monument',
       tagline:
@@ -549,8 +567,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Ideas',
       releaseYear: 2024,
       pieces: 1710,
-      imageUrl:
-        'https://cdn.rebrickable.com/media/thumbs/sets/21349-1/140411.jpg/1000x800p.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21349-1/140411.jpg',
       priceRange: '$99 to $139',
       collectorAngle: 'Characterful home-display crowd-pleaser',
       tagline:

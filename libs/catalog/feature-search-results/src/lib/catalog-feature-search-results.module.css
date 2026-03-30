@@ -1,0 +1,51 @@
+.resultsSection {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.resultsHeader {
+  align-items: end;
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.resultsMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.resultsGrid {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.statePanel {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.stateActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+@media (min-width: 48rem) {
+  .resultsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .resultsHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 72rem) {
+  .resultsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
