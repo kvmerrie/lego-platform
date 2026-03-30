@@ -1,0 +1,86 @@
+.page {
+  display: grid;
+  gap: var(--lego-space-6);
+}
+
+.intro {
+  display: grid;
+  gap: var(--lego-space-3);
+  max-width: min(60rem, 100%);
+}
+
+.introMeta,
+.sectionMeta,
+.themeEyebrow {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.featuredSection,
+.themeSection,
+.emptyState {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sectionHeader,
+.themeHeader {
+  align-items: end;
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.featuredGrid,
+.themeGrid {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.themeSections {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.themeHeadingBlock {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.themeEyebrow {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.themeTitle {
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+@media (min-width: 48rem) {
+  .featuredGrid,
+  .themeGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .sectionHeader,
+  .themeHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 75rem) {
+  .featuredGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .themeGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

@@ -3,6 +3,37 @@ import { describe, expect, it } from 'vitest';
 import { CatalogSetCard, CatalogSetDetailPanel } from './catalog-ui';
 
 describe('CatalogSetCard', () => {
+  it('renders a lighter browse-card variant for catalog exploration', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          priceRange: '$499 to $569',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        variant="browse"
+      />,
+    );
+
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).toContain('Rivendell');
+    expect(markup).toContain('A flagship fantasy build');
+    expect(markup).toContain('2023 · $499 to $569');
+    expect(markup).toContain('Open set');
+    expect(markup).not.toContain('Reviewed price');
+    expect(markup).not.toContain('Coverage');
+  });
+
   it('renders a compact featured-card variant for homepage browsing', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard

@@ -24,7 +24,7 @@ describe('ShellWeb', () => {
 
     expect(markup).toContain('Brick Ledger');
     expect(markup).toContain('Menu');
-    expect(markup).toContain('Shortlist');
+    expect(markup).toContain('Discover');
     expect(markup).toContain('Account');
     expect(markup).toContain('Checking');
     expect(markup).toContain('action="/search"');

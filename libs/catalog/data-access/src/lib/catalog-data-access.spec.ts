@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   getCatalogSetBySlug,
+  listCatalogBrowseThemeGroups,
   listCatalogSetCardsByIds,
   listCatalogSetSlugs,
   listHomepageSetCards,
@@ -383,6 +384,30 @@ describe('catalog data-access contracts', () => {
         },
       ],
     );
+  });
+
+  test('groups the discover browse catalog by theme in a stable retail order', () => {
+    expect(
+      listCatalogBrowseThemeGroups().map((catalogThemeGroup) => ({
+        count: catalogThemeGroup.setCards.length,
+        theme: catalogThemeGroup.theme,
+      })),
+    ).toEqual([
+      { theme: 'Icons', count: 11 },
+      { theme: 'Ideas', count: 7 },
+      { theme: 'Marvel', count: 1 },
+      { theme: 'Architecture', count: 1 },
+      { theme: 'Art', count: 1 },
+      { theme: 'Disney', count: 1 },
+      { theme: 'Harry Potter', count: 1 },
+      { theme: 'Star Wars', count: 1 },
+    ]);
+
+    expect(
+      listCatalogBrowseThemeGroups()[0]?.setCards.map((catalogSetCard) =>
+        catalogSetCard.id,
+      ),
+    ).toContain('10333');
   });
 
   test('does not expose upstream slug drift through the product route contract', () => {

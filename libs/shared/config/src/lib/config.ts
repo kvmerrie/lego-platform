@@ -32,8 +32,8 @@ export type RuntimeName = keyof typeof platformConfig.runtimes;
 
 export const webNavigation = [
   {
-    label: 'Shortlist',
-    href: '/#featured-sets',
+    label: 'Discover',
+    href: '/discover',
   },
   {
     label: 'Account',

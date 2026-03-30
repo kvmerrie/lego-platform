@@ -13,7 +13,8 @@ describe('CatalogFeatureSearchResults', () => {
     expect(markup).toContain(
       'Search by set name or set number to jump straight into the catalog.',
     );
-    expect(markup).toContain('Browse featured sets');
+    expect(markup).toContain('Browse the catalog');
+    expect(markup).toContain('href="/discover"');
   });
 
   it('renders matching catalog cards for a query', () => {
@@ -25,6 +26,7 @@ describe('CatalogFeatureSearchResults', () => {
     expect(markup).toContain('1 matching set');
     expect(markup).toContain('Avengers Tower');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
+    expect(markup).not.toContain('Reviewed price');
   });
 
   it('renders a no-results state when nothing matches', () => {
@@ -34,7 +36,7 @@ describe('CatalogFeatureSearchResults', () => {
 
     expect(markup).toContain('No results for &quot;pirates hideout&quot;');
     expect(markup).toContain('Try a set name or number.');
-    expect(markup).toContain('Browse featured sets');
+    expect(markup).toContain('Browse the catalog');
   });
 });
 

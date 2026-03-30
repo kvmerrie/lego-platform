@@ -252,6 +252,17 @@
   white-space: nowrap;
 }
 
+.cardBrowseSupporting {
+  color: var(--lego-text-muted);
+  display: -webkit-box;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin: 0;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
 .cardCompactFooter {
   align-items: center;
   border-top: var(--lego-border-width-1) solid

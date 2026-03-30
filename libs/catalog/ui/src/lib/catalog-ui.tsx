@@ -32,7 +32,7 @@ export interface CatalogSetCardPriceContext {
   reviewedLabel: string;
 }
 
-type CatalogSetCardVariant = 'default' | 'featured';
+type CatalogSetCardVariant = 'browse' | 'default' | 'featured';
 
 function CatalogSetVisual({
   imageUrl,
@@ -120,6 +120,52 @@ export function CatalogSetCard({
   setSummary: CatalogSetCardSummary;
   variant?: CatalogSetCardVariant;
 }) {
+  if (variant === 'browse') {
+    const browseCardContent = (
+      <>
+        <CatalogSetVisual
+          imageUrl={setSummary.imageUrl}
+          name={setSummary.name}
+          setId={setSummary.id}
+          theme={setSummary.theme}
+          variant="card"
+        />
+        <div className={styles.cardCompactBody}>
+          <div className={styles.cardCompactBadgeRow}>
+            <Badge tone="accent">{setSummary.theme}</Badge>
+          </div>
+          <h3 className={styles.cardTitle}>{setSummary.name}</h3>
+          <p className={styles.cardBrowseSupporting}>
+            {setSummary.tagline ?? setSummary.collectorAngle}
+          </p>
+          <div className={styles.cardCompactFooter}>
+            <p className={styles.cardCompactMeta}>
+              {setSummary.releaseYear} · {setSummary.priceRange}
+            </p>
+            {href ? (
+              <span className={styles.cardCompactAction}>Open set</span>
+            ) : null}
+          </div>
+        </div>
+      </>
+    );
+
+    return (
+      <Surface
+        as="article"
+        className={`${styles.setCard} ${styles.setCardCompact}`}
+      >
+        {href ? (
+          <ActionLink className={styles.setCardLink} href={href} tone="card">
+            {browseCardContent}
+          </ActionLink>
+        ) : (
+          browseCardContent
+        )}
+      </Surface>
+    );
+  }
+
   if (variant === 'featured') {
     const featuredCardContent = (
       <>

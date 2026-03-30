@@ -1,0 +1,17 @@
+{
+  "name": "catalog-feature-discover",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/feature-discover/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:feature", "platform:web"],
+  "// targets": "to see all targets run: nx show project catalog-feature-discover --web",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/catalog/feature-discover",
+        "command": "vitest run src/lib/catalog-feature-discover.spec.tsx --config ../vitest.config.mts"
+      }
+    }
+  }
+}

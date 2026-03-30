@@ -85,6 +85,9 @@
       "@lego-platform/catalog/feature-search-results": [
         "libs/catalog/feature-search-results/src/index.ts"
       ],
+      "@lego-platform/catalog/feature-discover": [
+        "libs/catalog/feature-discover/src/index.ts"
+      ],
       "@lego-platform/catalog/feature-theme-list": [
         "libs/catalog/feature-theme-list/src/index.ts"
       ],

@@ -23,8 +23,8 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
           title="Search the catalog"
         />
         <div className={styles.stateActions}>
-          <ActionLink href="/#featured-sets" tone="secondary">
-            Browse featured sets
+          <ActionLink href="/discover" tone="secondary">
+            Browse the catalog
           </ActionLink>
         </div>
       </Surface>
@@ -46,8 +46,8 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
           title={`No results for "${searchQuery}"`}
         />
         <div className={styles.stateActions}>
-          <ActionLink href="/#featured-sets" tone="secondary">
-            Browse featured sets
+          <ActionLink href="/discover" tone="secondary">
+            Browse the catalog
           </ActionLink>
         </div>
       </Surface>
@@ -73,6 +73,7 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
             href={`/sets/${searchResult.slug}`}
             key={searchResult.id}
             setSummary={searchResult}
+            variant="browse"
           />
         ))}
       </div>

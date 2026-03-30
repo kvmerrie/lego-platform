@@ -14,6 +14,14 @@ import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 const HOMEPAGE_SET_LIMIT = 3;
+const catalogThemeOrder = catalogThemeOverlays.map(
+  (catalogThemeOverlay) => catalogThemeOverlay.name,
+);
+
+export interface CatalogBrowseThemeGroup {
+  setCards: CatalogHomepageSetCard[];
+  theme: string;
+}
 
 const catalogSetOverlayById = new Map(
   catalogSetOverlays.map((catalogSetOverlay) => [
@@ -195,6 +203,22 @@ function createCatalogSearchIndex(): CatalogSearchIndexEntry[] {
 
 const catalogSearchIndex = createCatalogSearchIndex();
 
+function sortCatalogHomepageSetCards(
+  setCards: readonly CatalogHomepageSetCard[],
+): CatalogHomepageSetCard[] {
+  return [...setCards].sort(
+    (left, right) =>
+      right.releaseYear - left.releaseYear ||
+      left.name.localeCompare(right.name),
+  );
+}
+
+function getCatalogThemeBrowseOrder(theme: string): number {
+  const themeOrderIndex = catalogThemeOrder.indexOf(theme);
+
+  return themeOrderIndex === -1 ? Number.MAX_SAFE_INTEGER : themeOrderIndex;
+}
+
 function getCatalogSearchScore({
   entry,
   queryText,
@@ -288,6 +312,32 @@ export function listCatalogSetCardsByIds(
 
     return [toCatalogHomepageSetCard(toCatalogSetDetail(catalogSetRecord))];
   });
+}
+
+export function listCatalogBrowseThemeGroups(): CatalogBrowseThemeGroup[] {
+  const setCardsByTheme = new Map<string, CatalogHomepageSetCard[]>();
+
+  for (const catalogSetRecord of catalogSnapshot.setRecords) {
+    const catalogSetCard = toCatalogHomepageSetCard(
+      toCatalogSetDetail(catalogSetRecord),
+    );
+    const existingSetCards = setCardsByTheme.get(catalogSetCard.theme) ?? [];
+
+    existingSetCards.push(catalogSetCard);
+    setCardsByTheme.set(catalogSetCard.theme, existingSetCards);
+  }
+
+  return [...setCardsByTheme.entries()]
+    .map(([theme, setCards]) => ({
+      theme,
+      setCards: sortCatalogHomepageSetCards(setCards),
+    }))
+    .sort(
+      (left, right) =>
+        getCatalogThemeBrowseOrder(left.theme) -
+          getCatalogThemeBrowseOrder(right.theme) ||
+        left.theme.localeCompare(right.theme),
+    );
 }
 
 export function searchCatalogSetCards(query: string): CatalogHomepageSetCard[] {
