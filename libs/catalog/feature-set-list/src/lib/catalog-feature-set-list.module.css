@@ -2,13 +2,13 @@
   background: var(--lego-surface-subtle);
   border-radius: var(--lego-radius-md);
   display: grid;
-  gap: var(--lego-space-4);
-  padding: var(--lego-space-5);
+  gap: var(--lego-space-5);
+  padding: var(--lego-space-6);
 }
 
 .headerBlock {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-3);
 }
 
 .header {
@@ -24,7 +24,7 @@
 
 .grid {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-4);
 }
 
 @media (min-width: 48rem) {

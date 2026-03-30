@@ -353,3 +353,12 @@
     padding-top: var(--lego-space-5);
   }
 }
+
+@media (min-width: 90rem) {
+  .headerInner,
+  .mainInner,
+  .footerInner {
+    padding-left: var(--lego-space-8);
+    padding-right: var(--lego-space-8);
+  }
+}
