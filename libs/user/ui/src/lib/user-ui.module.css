@@ -1,11 +1,11 @@
 .card {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .splitCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .identityCard {
@@ -45,13 +45,13 @@
 
 .identityMeta {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   min-width: 0;
 }
 
 .shellStatusCard {
   align-items: start;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
   min-width: 0;
 }
 
@@ -131,13 +131,13 @@
 
 .sessionContent {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .sessionHeader {
   align-items: flex-start;
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .sessionIdentity {
@@ -149,7 +149,7 @@
 
 .sessionIdentityText {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
   min-width: 0;
 }
 
@@ -161,7 +161,7 @@
 
 .identitySplitGrid {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .identityPane {
@@ -202,7 +202,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .destinationPanel {
@@ -218,7 +218,7 @@
 .destinationLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .sessionStatus {
@@ -227,17 +227,17 @@
 
 .authForm {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .profileForm {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .profileFieldGrid {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .formField {
@@ -266,8 +266,8 @@
   border-radius: var(--lego-radius-sm);
   color: var(--lego-text);
   font: inherit;
-  min-height: 2.85rem;
-  padding: 0.88rem 0.96rem;
+  min-height: 2.65rem;
+  padding: 0.76rem 0.9rem;
   transition:
     border-color var(--lego-motion-duration-fast)
       var(--lego-motion-ease-standard),
@@ -296,7 +296,7 @@
 }
 
 .textArea {
-  min-height: 7.2rem;
+  min-height: 6.4rem;
   resize: vertical;
 }
 

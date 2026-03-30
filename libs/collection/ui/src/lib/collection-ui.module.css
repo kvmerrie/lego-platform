@@ -1,6 +1,6 @@
 .metricCard {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .metricValue {
@@ -38,7 +38,7 @@
 
 .shelfCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .shelfHeader {
@@ -59,7 +59,7 @@
 
 .toggleCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .toggleMeta {
@@ -74,12 +74,12 @@
 
 .collectionPagePanel {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-4);
 }
 
 .collectionHeader {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .collectionMeta {
@@ -90,24 +90,24 @@
 
 .destinationPanel {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .destinationLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .collectionGrid {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .collectionEmptyActions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .demo {

@@ -34,16 +34,17 @@ const baseTokens: ThemeTokenMap = {
   'lego-line-height-heading': '1.12',
   'lego-line-height-body': '1.6',
   'lego-line-height-relaxed': '1.72',
-  'lego-radius-xs': '10px',
+  'lego-radius-xs': '8px',
+  'lego-radius-sm': '14px',
   'lego-radius-md': '18px',
-  'lego-radius-lg': '30px',
-  'lego-radius-sm': '999px',
+  'lego-radius-lg': '24px',
+  'lego-radius-pill': '999px',
   'lego-shadow-sm':
-    '0 12px 24px rgba(24, 22, 18, 0.08), 0 4px 10px rgba(24, 22, 18, 0.05)',
+    '0 8px 18px rgba(24, 22, 18, 0.07), 0 2px 6px rgba(24, 22, 18, 0.04)',
   'lego-shadow-md':
-    '0 22px 48px rgba(24, 22, 18, 0.12), 0 10px 20px rgba(24, 22, 18, 0.08)',
+    '0 16px 34px rgba(24, 22, 18, 0.1), 0 6px 14px rgba(24, 22, 18, 0.06)',
   'lego-shadow-lg':
-    '0 30px 88px rgba(24, 22, 18, 0.16), 0 12px 30px rgba(24, 22, 18, 0.1)',
+    '0 24px 56px rgba(24, 22, 18, 0.13), 0 10px 24px rgba(24, 22, 18, 0.08)',
   'lego-shadow': 'var(--lego-shadow-md)',
   'lego-space-1': '0.25rem',
   'lego-space-2': '0.5rem',

@@ -1,6 +1,6 @@
 .itemCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .itemHeader {
@@ -45,7 +45,7 @@
 
 .toggleCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .toggleMeta {
@@ -60,12 +60,12 @@
 
 .wishlistPagePanel {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-4);
 }
 
 .wishlistHeader {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .wishlistMeta {
@@ -76,24 +76,24 @@
 
 .destinationPanel {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .destinationLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .wishlistGrid {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .wishlistEmptyActions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .demo {

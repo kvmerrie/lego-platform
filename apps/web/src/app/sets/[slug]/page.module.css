@@ -1,8 +1,9 @@
 .commercePanels,
 .accountPanels,
 .collectorActions {
+  align-items: start;
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 @media (min-width: 48rem) {

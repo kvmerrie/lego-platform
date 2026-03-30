@@ -1,6 +1,6 @@
 .shell {
   display: grid;
-  gap: var(--lego-space-8);
+  gap: var(--lego-space-6);
   margin: 0 auto;
   max-width: var(--lego-max-width-page);
   padding: var(--lego-space-6) var(--lego-space-4) var(--lego-space-16);
@@ -8,7 +8,7 @@
 
 .header {
   display: grid;
-  gap: var(--lego-space-6);
+  gap: var(--lego-space-5);
   isolation: isolate;
 }
 
@@ -49,7 +49,7 @@
 
 .headerUtilities {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   width: 100%;
 }
 
@@ -93,7 +93,7 @@
 
 .brandContent {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
   min-width: 0;
 }
 
@@ -114,12 +114,12 @@
 
 .nav {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .navSection {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .navSectionHeader {
@@ -147,25 +147,25 @@
 
 .navSectionLinks {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .navLink {
   border-radius: var(--lego-radius-md);
-  min-height: 5.2rem;
-  padding: 1rem 1rem 1.1rem;
+  min-height: 4.55rem;
+  padding: 0.86rem 0.94rem 0.96rem;
   position: relative;
 }
 
 .navLink::before {
   background: linear-gradient(90deg, var(--lego-accent), transparent);
-  border-radius: var(--lego-radius-sm);
+  border-radius: var(--lego-radius-xs);
   content: '';
   height: 3px;
   left: 1rem;
   position: absolute;
   right: 38%;
-  top: 0.95rem;
+  top: 0.82rem;
 }
 
 .navContext {
@@ -183,7 +183,7 @@
   font-size: var(--lego-text-role-card-title-size);
   font-weight: var(--lego-text-role-card-title-weight);
   line-height: var(--lego-text-role-card-title-line-height);
-  margin-top: var(--lego-space-2);
+  margin-top: var(--lego-space-1);
 }
 
 .navDescription {
@@ -222,9 +222,9 @@
   }
 
   .headerUtilities {
-    flex: 0 0 min(100%, 24rem);
-    max-width: 24rem;
-    width: min(100%, 24rem);
+    flex: 0 0 min(100%, 22rem);
+    max-width: 22rem;
+    width: min(100%, 22rem);
   }
 
   .toggle {

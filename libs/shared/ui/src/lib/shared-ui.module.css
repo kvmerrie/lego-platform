@@ -54,11 +54,11 @@
 }
 
 .surfacePaddingMd {
-  padding: var(--lego-space-5);
+  padding: var(--lego-space-4);
 }
 
 .surfacePaddingLg {
-  padding: var(--lego-space-8);
+  padding: var(--lego-space-6);
 }
 
 .surfaceElevationRested {
@@ -82,7 +82,7 @@
 .interactiveBase {
   align-items: center;
   border: var(--lego-border-width-1) solid transparent;
-  border-radius: var(--lego-radius-sm);
+  border-radius: var(--lego-radius-pill);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
@@ -90,9 +90,9 @@
   font-weight: var(--lego-font-weight-semibold);
   gap: var(--lego-space-2);
   justify-content: center;
-  min-height: 2.85rem;
+  min-height: 2.65rem;
   overflow: hidden;
-  padding: 0.88rem 1.05rem;
+  padding: 0.72rem 0.98rem;
   position: relative;
   text-decoration: none;
   transition:
@@ -273,14 +273,15 @@
   background: color-mix(in srgb, var(--lego-surface-muted) 80%, transparent);
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 66%, transparent);
-  border-radius: var(--lego-radius-sm);
+  border-radius: var(--lego-radius-pill);
   color: var(--lego-text);
   display: inline-flex;
   font-size: var(--lego-text-role-meta-size);
   font-weight: var(--lego-font-weight-semibold);
   gap: var(--lego-space-1);
   line-height: var(--lego-text-role-meta-line-height);
-  padding: 0.38rem 0.72rem;
+  min-height: 1.8rem;
+  padding: 0.22rem 0.62rem;
 }
 
 .badgeAccent {
@@ -339,11 +340,11 @@
 
 .sectionHeading {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .sectionHeadingHero {
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .eyebrow {

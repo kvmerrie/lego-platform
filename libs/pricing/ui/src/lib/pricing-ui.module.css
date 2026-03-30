@@ -1,7 +1,7 @@
 .panel,
 .demo {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .badgeRow {
@@ -12,7 +12,7 @@
 
 .metricBlock {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
 }
 
 .metricLabel {
@@ -25,7 +25,7 @@
 
 .metricValue {
   font-family: var(--lego-font-family-heading);
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(1.85rem, 4.6vw, 2.65rem);
   font-weight: var(--lego-text-role-hero-weight);
   letter-spacing: -0.04em;
   line-height: 0.95;
@@ -52,25 +52,25 @@
 .summaryBlock {
   background: color-mix(in srgb, var(--lego-surface) 76%, transparent);
   border: 1px solid color-mix(in srgb, var(--lego-border) 72%, transparent);
-  border-radius: var(--lego-radius-lg);
+  border-radius: var(--lego-radius-md);
   display: grid;
-  gap: var(--lego-space-3);
-  padding: var(--lego-space-4);
+  gap: var(--lego-space-2);
+  padding: var(--lego-space-3);
 }
 
 .summarySection {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .summarySection + .summarySection {
   border-top: 1px solid color-mix(in srgb, var(--lego-border) 72%, transparent);
-  padding-top: var(--lego-space-3);
+  padding-top: var(--lego-space-2);
 }
 
 .summaryGrid {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   margin: 0;
 }
 
@@ -102,14 +102,14 @@
 
 .metaGrid {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   margin: 0;
 }
 
 .historyChartShell {
   align-items: stretch;
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   grid-template-columns: auto minmax(0, 1fr);
 }
 

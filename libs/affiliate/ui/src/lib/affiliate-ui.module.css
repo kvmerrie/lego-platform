@@ -1,7 +1,7 @@
 .panel,
 .demo {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .panelBadges,
@@ -13,13 +13,13 @@
 
 .offerList {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .offerCard {
   display: grid;
-  gap: var(--lego-space-3);
-  padding: var(--lego-space-4);
+  gap: var(--lego-space-2);
+  padding: var(--lego-space-3);
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 74%, transparent);
   border-radius: var(--lego-radius-md);
@@ -33,12 +33,12 @@
 .offerHeader,
 .offerFooter {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .offerHeading {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
 }
 
 .offerPriceBlock {
@@ -90,7 +90,7 @@
 .offerDisclosure {
   border-top: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 56%, transparent);
-  padding-top: var(--lego-space-3);
+  padding-top: var(--lego-space-2);
 }
 
 .offerLink {

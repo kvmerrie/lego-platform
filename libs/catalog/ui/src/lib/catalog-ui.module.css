@@ -1,13 +1,13 @@
 .setCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .setVisual {
   overflow: hidden;
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 88%, transparent);
-  border-radius: var(--lego-radius-lg);
+  border-radius: var(--lego-radius-md);
   background: color-mix(in srgb, var(--lego-surface-muted) 92%, white);
   min-height: 12rem;
 }
@@ -58,7 +58,7 @@
 
 .cardHeader {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .cardBadgeRow {
@@ -93,8 +93,8 @@
 
 .priceBlock {
   display: grid;
-  gap: var(--lego-space-3);
-  padding: var(--lego-space-4);
+  gap: var(--lego-space-2);
+  padding: var(--lego-space-3);
   background: var(--lego-surface-muted);
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 92%, transparent);
@@ -155,7 +155,7 @@
 .supportingGrid,
 .collectorContext {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .collectorContext {
@@ -173,7 +173,7 @@
 
 .metaGrid {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   margin: 0;
   padding-top: var(--lego-space-1);
 }
@@ -181,7 +181,7 @@
 .metaItem {
   display: grid;
   gap: var(--lego-space-1);
-  padding: var(--lego-space-3);
+  padding: var(--lego-space-2);
   background: color-mix(in srgb, var(--lego-surface-muted) 72%, transparent);
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 86%, transparent);
@@ -208,23 +208,23 @@
 
 .heroPanel {
   display: grid;
-  gap: var(--lego-space-6);
+  gap: var(--lego-space-4);
 }
 
 .heroPrimary,
 .heroSecondary {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .heroPrimaryContent {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-4);
 }
 
 .heroCopy {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .badgeRow {
@@ -235,7 +235,7 @@
 
 .highlightsCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .highlightsList {
@@ -247,12 +247,12 @@
 
 .themeCard {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .themeHeader {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .demo {
