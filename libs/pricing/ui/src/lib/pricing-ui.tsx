@@ -221,7 +221,7 @@ export function PriceSummaryCard({
       tone="muted"
     >
       <SectionHeading
-        description="Reviewed Dutch-market guidance from the current allowlisted EUR offer slice. This is the current reviewed snapshot for this set, not a live merchant feed."
+        description="Current reviewed Dutch price from the latest stored merchant snapshot for this set. It is not a live feed: tracked history below uses stored daily points, and offers open reviewed merchant pages from the same slice."
         eyebrow="Buy guidance"
         title="Current Dutch market price"
       />
@@ -231,7 +231,7 @@ export function PriceSummaryCard({
         <Badge>{getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}</Badge>
       </div>
       <div className={styles.metricBlock}>
-        <p className={styles.metricLabel}>Current reviewed price</p>
+        <p className={styles.metricLabel}>Current reviewed Dutch price</p>
         <p className={styles.metricValue}>
           {formatPriceMinor({
             currencyCode: pricePanelSnapshot.currencyCode,
@@ -239,7 +239,7 @@ export function PriceSummaryCard({
           })}
         </p>
         <p className={styles.metricContext}>
-          Lowest reviewed offer from {pricePanelSnapshot.lowestMerchantName}
+          Current reviewed low from {pricePanelSnapshot.lowestMerchantName}
         </p>
         {pricePanelSnapshot.lowestAvailabilityLabel ? (
           <p className={styles.metricContextSecondary}>
@@ -255,7 +255,7 @@ export function PriceSummaryCard({
           </Badge>
         ) : (
           <p className={styles.referenceFallback}>
-            No reference price is configured for this set yet.
+            Reference price is not configured for this set yet.
           </p>
         )}
       </div>
@@ -285,8 +285,8 @@ export function PriceSummaryCard({
       </dl>
       <p className={styles.referenceNote}>
         {typeof pricePanelSnapshot.referencePriceMinor === 'number'
-          ? 'Reference price is a local Dutch benchmark for comparing the reviewed offer snapshot above. Recent 30-day history and full tracked history appear below as stored daily points build up.'
-          : 'Reference pricing can be added later without changing the current reviewed-offer snapshot or tracked history surfaces.'}
+          ? 'Current reviewed price is the latest stored snapshot. Tracked history below uses daily headline points, and offer cards open reviewed merchant pages from the same Dutch slice.'
+          : 'Tracked history and reviewed offers can still appear even when a reference price has not been configured yet.'}
       </p>
     </Surface>
   );
@@ -432,19 +432,20 @@ export function PricingUnavailableCard({ id }: { id?: string }) {
       tone="muted"
     >
       <SectionHeading
-        description="This set is outside the current reviewed Dutch commerce slice, so current reviewed pricing is not published here yet."
+        description="This set is in the public catalog, but reviewed Dutch pricing is only published for selected sets right now."
         eyebrow="Buy guidance"
         title="Current Dutch market price"
       />
       <div className={styles.badgeRow}>
         <Badge tone="accent">NL / EUR</Badge>
         <Badge tone="info">New condition</Badge>
-        <Badge>Not enabled</Badge>
+        <Badge>Not published yet</Badge>
       </div>
       <p className={styles.unavailableCopy}>
-        Collector browsing still works normally. Reviewed pricing, tracked
-        history, recent 30-day history, and offer guidance are only published
-        for the small commerce-enabled set allowlist right now.
+        Nothing is broken. You can still browse the set and save private
+        collector state. Current reviewed price, tracked history, and reviewed
+        offers appear together only when a set is in the active Dutch commerce
+        slice.
       </p>
     </Surface>
   );
@@ -473,7 +474,7 @@ export function PriceHistoryCard({
         tone="muted"
       >
         <SectionHeading
-          description="Tracked history has started. One reviewed Dutch daily point is stored so far, so this recent 30-day view is still building."
+          description="Tracked history has started. One stored daily reviewed headline price exists so far, so this recent 30-day view is still building."
           eyebrow="Price history"
           title="30-day price history"
         />
@@ -491,7 +492,7 @@ export function PriceHistoryCard({
               minorUnits: firstPriceHistoryPoint.headlinePriceMinor,
             })}
           </p>
-          <p className={styles.metricContext}>Tracked history has started</p>
+          <p className={styles.metricContext}>First stored daily point</p>
           <p className={styles.metricContextSecondary}>
             Reviewed {formatObservedAt(firstPriceHistoryPoint.observedAt)}
           </p>
@@ -501,16 +502,16 @@ export function PriceHistoryCard({
             label="Recorded on"
             value={formatRecordedOn(firstPriceHistoryPoint.recordedOn)}
           />
-          <PricingMetaItem label="Status" value="Recent range building" />
+          <PricingMetaItem label="Status" value="30-day range building" />
           <PricingMetaItem
             label="Tracked coverage"
             value={getDailyPointLabel(1)}
           />
         </dl>
         <p className={styles.referenceNote}>
-          The chart and recent 30-day range will fill in automatically as more
-          reviewed daily points are stored. The tracked summary above can
-          already use this first point.
+          This is the first stored daily point for the recent history view. The
+          tracked summary above can already use it while the 30-day range
+          builds.
         </p>
       </Surface>
     );
@@ -527,7 +528,7 @@ export function PriceHistoryCard({
       tone="muted"
     >
       <SectionHeading
-        description="One reviewed Dutch headline point per day from the current commerce-enabled set slice. This chart shows only the recent 30-day window, while the summary above can also reference the full tracked history."
+        description="One stored reviewed Dutch headline point per day from the active commerce slice. This chart shows only the recent 30-day window, while the summary above can also reference the full tracked history."
         eyebrow="Price history"
         title="30-day price history"
       />
@@ -649,7 +650,7 @@ export function PriceHistoryEmptyCard({
       tone="muted"
     >
       <SectionHeading
-        description="This chart fills in as reviewed daily points are written into the Dutch history slice for commerce-enabled sets."
+        description="Tracked history uses stored daily reviewed headline prices for commerce-enabled sets in the Dutch slice."
         eyebrow="Price history"
         title="30-day price history"
       />
@@ -661,7 +662,7 @@ export function PriceHistoryEmptyCard({
       <p className={styles.unavailableCopy}>
         {isLoading
           ? 'Loading the latest reviewed daily history points.'
-          : 'Recent 30-day history is not available for this set yet. If the set is in the commerce-enabled slice, current reviewed pricing may still appear above while the first daily point is being recorded.'}
+          : 'No stored daily history is available for this set yet. If a current reviewed price is already shown above, history is still building. If no pricing is shown above, this set is outside the current reviewed slice right now.'}
       </p>
     </Surface>
   );

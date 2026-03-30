@@ -26,14 +26,14 @@ function getPricePositionLabel({
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: Math.abs(deltaMinor),
-    })} below ref`;
+    })} below reference`;
   }
 
   if (deltaMinor > 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: deltaMinor,
-    })} above ref`;
+    })} above reference`;
   }
 
   return 'At reference';
@@ -86,7 +86,7 @@ export default async function HomePage() {
               currencyCode: featuredSetPriceContext.currencyCode,
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
             }),
-            merchantLabel: `Lowest current offer from ${featuredSetPriceContext.merchantName}`,
+            merchantLabel: `Current reviewed low from ${featuredSetPriceContext.merchantName}`,
             pricePositionLabel: getPricePositionLabel({
               currencyCode: featuredSetPriceContext.currencyCode,
               deltaMinor: featuredSetPriceContext.deltaMinor,
@@ -94,7 +94,7 @@ export default async function HomePage() {
             pricePositionTone: getPricePositionTone(
               featuredSetPriceContext.deltaMinor,
             ),
-            reviewedLabel: `Reviewed ${formatReviewedOn(
+            reviewedLabel: `Snapshot reviewed ${formatReviewedOn(
               featuredSetPriceContext.observedAt,
             )}`,
           }

@@ -146,6 +146,12 @@
   margin: 0;
 }
 
+.priceUnavailableCopy {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
 .supportingGrid,
 .collectorContext {
   display: grid;

@@ -100,11 +100,11 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Use a passwordless email sign-in link to save personal owned and wanted state, keep your collector identity in sync, and come back to the same collector progress later.'
+                ? 'Browse the public catalog freely. Sign in with one email link to save owned and wanted sets privately, keep a collector profile, and come back to the same collector state later.'
                 : 'Browser sign-in is not configured in this environment yet, so browsing still works but saved collector actions stay disabled.'
             }
             eyebrow="Collector account"
-            title="Sign in to save this set to your collector account"
+            title="Sign in to save your collector state"
           />
           <form
             className={styles.authForm}
@@ -140,8 +140,8 @@ export function UserSessionCard({
                 {isAuthActionPending
                   ? 'Sending sign-in link...'
                   : authStatusMessage
-                    ? 'Send another sign-in link'
-                    : 'Send sign-in link'}
+                    ? 'Send another email link'
+                    : 'Email sign-in link'}
               </Button>
               {!isAuthAvailable ? (
                 <Badge tone="warning">sign-in unavailable</Badge>
@@ -149,8 +149,8 @@ export function UserSessionCard({
             </div>
           </form>
           <p className={styles.supportNote}>
-            Your sign-in email stays private to your account. Public catalog
-            details and reviewed buy guidance stay the same for every visitor.
+            Signing in only unlocks your private collector state. Public catalog
+            pages and reviewed buy guidance stay visible without an account.
           </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>

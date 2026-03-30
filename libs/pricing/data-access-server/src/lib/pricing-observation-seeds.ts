@@ -158,8 +158,7 @@ export const curatedDutchPricingObservationSeeds: readonly PricingObservationSee
     {
       setId: '21349',
       merchantId: 'lego-nl',
-      merchantProductUrl:
-        'https://www.lego.com/nl-nl/product/tuxedo-cat-21349',
+      merchantProductUrl: 'https://www.lego.com/nl-nl/product/tuxedo-cat-21349',
       totalPriceMinor: 10999,
       availability: 'in_stock',
       observedAt: '2026-03-29T10:40:00.000Z',
