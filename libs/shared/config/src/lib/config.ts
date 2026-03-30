@@ -30,47 +30,14 @@ export const platformConfig = {
 
 export type RuntimeName = keyof typeof platformConfig.runtimes;
 
-export const webNavigationSections = [
-  {
-    id: 'browse',
-    title: 'Start here',
-    description: 'Curated sets and set pages.',
-  },
-  {
-    id: 'collector',
-    title: 'Your collector space',
-    description: 'Your private collection and wishlist.',
-  },
-] as const;
-
 export const webNavigation = [
   {
-    label: 'Home',
-    href: '/',
-    description: 'Start with the curated shortlist.',
-    contextLabel: 'Public route',
-    sectionId: 'browse',
-  },
-  {
-    label: 'Featured shortlist',
+    label: 'Shortlist',
     href: '/#featured-sets',
-    description: 'Compare a few standout sets.',
-    contextLabel: 'Public route',
-    sectionId: 'browse',
   },
   {
-    label: 'Collection',
-    href: '/collection',
-    description: 'Sets you have saved as owned.',
-    contextLabel: 'Private route',
-    sectionId: 'collector',
-  },
-  {
-    label: 'Wishlist',
-    href: '/wishlist',
-    description: 'Sets you still want to add.',
-    contextLabel: 'Private route',
-    sectionId: 'collector',
+    label: 'Account',
+    href: '/account',
   },
 ] as const;
 

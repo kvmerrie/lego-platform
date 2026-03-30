@@ -24,11 +24,12 @@ describe('ShellWeb', () => {
 
     expect(markup).toContain('Brick Ledger');
     expect(markup).toContain('Menu');
-    expect(markup).toContain('Home');
-    expect(markup).toContain('Featured shortlist');
-    expect(markup).toContain('Collection');
-    expect(markup).toContain('Wishlist');
+    expect(markup).toContain('Shortlist');
+    expect(markup).toContain('Account');
     expect(markup).toContain('Checking');
     expect(markup).toContain('Curated browsing, private collector saves');
+    expect(markup).not.toContain('Home');
+    expect(markup).not.toContain('Featured shortlist');
+    expect(markup).not.toContain('Sign out');
   });
 });

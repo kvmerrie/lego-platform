@@ -6,8 +6,6 @@
 
 .header {
   background: var(--lego-shell-header-background);
-  border-bottom: var(--lego-border-width-1) solid
-    var(--lego-shell-header-border);
   position: sticky;
   top: 0;
   z-index: 30;
@@ -74,12 +72,6 @@
   display: none;
 }
 
-.navCluster,
-.mobileNavCluster {
-  display: flex;
-  gap: var(--lego-space-2);
-}
-
 .navLink,
 .mobileNavLink {
   border-radius: var(--lego-radius-pill);
@@ -90,9 +82,6 @@
   min-height: 2.25rem;
   padding: 0.62rem 0.9rem;
   text-decoration: none;
-}
-
-.navLink {
   background: transparent;
   border: var(--lego-border-width-1) solid transparent;
   white-space: nowrap;
@@ -111,10 +100,6 @@
   gap: var(--lego-space-2);
   justify-content: flex-end;
   min-height: 2.75rem;
-}
-
-.toggle {
-  box-shadow: none;
 }
 
 .accountStatus {
@@ -164,6 +149,25 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.accountStatusNameLink {
+  color: var(--lego-shell-header-text);
+  display: block;
+  font-size: var(--lego-font-size-sm);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountStatusNameLink:hover,
+.accountStatusNameLink:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
 }
 
 .accountActionLink,
@@ -236,15 +240,6 @@
 .mobileNav {
   display: grid;
   gap: var(--lego-space-2);
-}
-
-.mobileNavCluster {
-  flex-direction: column;
-}
-
-.mobileNavCluster + .mobileNavCluster {
-  border-top: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  padding-top: var(--lego-space-2);
 }
 
 .mobileNavLink {
@@ -338,11 +333,6 @@
     display: flex;
     gap: var(--lego-space-3);
     justify-content: center;
-  }
-
-  .navCluster + .navCluster {
-    border-left: var(--lego-border-width-1) solid var(--lego-border-subtle);
-    padding-left: var(--lego-space-3);
   }
 
   .mobileMenu {

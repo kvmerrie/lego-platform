@@ -228,7 +228,7 @@ export function CollectorWishlistPanel({
           {state === 'loading'
             ? 'Loading private state'
             : state === 'signed-out'
-              ? 'Private collector page'
+              ? 'Private account area'
               : `${wantedCount} visible`}
           {hiddenWantedCount > 0
             ? ` · ${hiddenWantedCount} outside public catalog`
@@ -240,6 +240,9 @@ export function CollectorWishlistPanel({
       </p>
       <div className={styles.destinationPanel}>
         <div className={styles.destinationLinks}>
+          <ActionLink href="/account" tone="secondary">
+            Open account
+          </ActionLink>
           <ActionLink href="/collection" tone="secondary">
             Open collection
           </ActionLink>
@@ -257,6 +260,9 @@ export function CollectorWishlistPanel({
         <div className={styles.wishlistGrid}>{children}</div>
       ) : (
         <div className={styles.wishlistEmptyActions}>
+          <ActionLink href="/account" tone="secondary">
+            Open account
+          </ActionLink>
           <ActionLink href="/#featured-sets" tone="secondary">
             Browse featured sets
           </ActionLink>

@@ -2,36 +2,16 @@ import type { ReactNode } from 'react';
 import { platformConfig, webNavigation } from '@lego-platform/shared/config';
 import styles from './shell-web.module.css';
 import { ShellWebAccountStatus } from './shell-web-account-status';
-import { ShellWebThemeToggle } from './theme-toggle';
 
 function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
-  const browseLinks = webNavigation.filter(
-    (navigationItem) => navigationItem.sectionId === 'browse',
-  );
-  const collectorLinks = webNavigation.filter(
-    (navigationItem) => navigationItem.sectionId === 'collector',
-  );
-  const clusters = [browseLinks, collectorLinks];
-
-  return clusters.map((navigationCluster, clusterIndex) => (
-    <div
-      className={
-        variant === 'desktop' ? styles.navCluster : styles.mobileNavCluster
-      }
-      key={`cluster-${clusterIndex + 1}`}
+  return webNavigation.map((navigationItem) => (
+    <a
+      className={variant === 'desktop' ? styles.navLink : styles.mobileNavLink}
+      href={navigationItem.href}
+      key={navigationItem.href}
     >
-      {navigationCluster.map((navigationItem) => (
-        <a
-          className={
-            variant === 'desktop' ? styles.navLink : styles.mobileNavLink
-          }
-          href={navigationItem.href}
-          key={navigationItem.href}
-        >
-          {navigationItem.label}
-        </a>
-      ))}
-    </div>
+      {navigationItem.label}
+    </a>
   ));
 }
 
@@ -54,7 +34,6 @@ export function ShellWeb({ children }: { children: ReactNode }) {
             </nav>
             <div className={styles.headerUtilities}>
               <ShellWebAccountStatus variant="header" />
-              <ShellWebThemeToggle className={styles.toggle} />
               <details className={styles.mobileMenu}>
                 <summary className={styles.mobileMenuSummary}>
                   <span className={styles.mobileMenuLabel}>Menu</span>

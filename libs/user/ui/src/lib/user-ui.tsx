@@ -258,11 +258,11 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Use one email link to save sets and your collector profile privately.'
+                ? 'Use one email link to open your collection, wishlist, and collector details.'
                 : 'Browsing still works here, but saved collector actions stay disabled in this environment.'
             }
-            eyebrow="Collector account"
-            title="Sign in to save privately"
+            eyebrow="Account"
+            title="Sign in to open your account"
           />
           <form
             className={styles.authForm}
@@ -333,12 +333,12 @@ export function UserSessionCard({
     >
       <div className={styles.sessionContent}>
         <p className={styles.statusMeta}>
-          Collector account · {userSession.collector.tier}
+          Account · {userSession.collector.tier}
         </p>
         <SectionHeading
-          description="Your owned sets, wishlist, and profile stay private to you."
-          eyebrow="Signed in"
-          title="Collector account ready"
+          description="Your collection, wishlist, and collector details live here."
+          eyebrow="Collector account"
+          title="Your account"
         />
         <div className={styles.sessionHeader}>
           <div className={styles.sessionIdentity}>
@@ -361,16 +361,16 @@ export function UserSessionCard({
         </div>
         <div className={styles.identitySplitGrid}>
           <div className={styles.identityPane}>
-            <p className={styles.paneLabel}>Private account</p>
+            <p className={styles.paneLabel}>Sign-in email</p>
             <p className={styles.paneValue}>
               {userSession.account?.email ?? 'Signed in collector session'}
             </p>
-            <p className={styles.paneNote}>For sign-in and private saves.</p>
+            <p className={styles.paneNote}>Used only for account access.</p>
           </div>
           <div className={styles.identityPane}>
-            <p className={styles.paneLabel}>Collector identity</p>
+            <p className={styles.paneLabel}>Collector handle</p>
             <p className={styles.paneValue}>@{userSession.collector.id}</p>
-            <p className={styles.paneNote}>Shown on collector surfaces.</p>
+            <p className={styles.paneNote}>Shown across your collector area.</p>
           </div>
         </div>
         <p className={styles.sessionCounts}>
@@ -378,7 +378,7 @@ export function UserSessionCard({
           {collectorSetCounts.wantedCount} wanted saved
         </p>
         <p className={styles.supportNote}>
-          Owned sets and wishlist stay private. Set facts and pricing stay
+          Collection and wishlist stay private. Set facts and pricing stay
           public.
         </p>
         <div className={styles.sessionActions}>
@@ -395,7 +395,7 @@ export function UserSessionCard({
           </VisuallyHidden>
         </div>
         <div className={styles.destinationPanel}>
-          <p className={styles.paneLabel}>Collector destinations</p>
+          <p className={styles.paneLabel}>Your saves</p>
           <div className={styles.destinationLinks}>
             <ActionLink href="/collection" tone="secondary">
               Open collection
@@ -501,11 +501,11 @@ export function UserProfileEditorCard({
       elevation="rested"
     >
       <div className={styles.sessionContent}>
-        <p className={styles.statusMeta}>Profile · Signed-in account</p>
+        <p className={styles.statusMeta}>Account details</p>
         <SectionHeading
-          description="Edit the collector details shown with your saved sets."
-          eyebrow="Collector identity"
-          title="Shape your collector profile"
+          description="Update the name and details used across your collector area."
+          eyebrow="Collector details"
+          title="Edit your collector details"
         />
         <form
           className={styles.profileForm}
@@ -529,7 +529,7 @@ export function UserProfileEditorCard({
                 }
               />
               <span className={styles.fieldHint}>
-                Shown on your collector card.
+                Shown across your account and saved sets.
               </span>
             </label>
             <label className={styles.formField}>
@@ -572,7 +572,7 @@ export function UserProfileEditorCard({
                 value={collectorProfile.tier}
               />
               <span className={styles.fieldHint}>
-                Shown with your signed-in account.
+                Shown in your collector area.
               </span>
             </label>
           </div>

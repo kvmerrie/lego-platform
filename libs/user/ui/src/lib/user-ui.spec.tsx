@@ -83,22 +83,22 @@ describe('UserSessionCard', () => {
       />,
     );
 
-    expect(markup).toContain('Collector account ready');
+    expect(markup).toContain('Your account');
     expect(markup).toContain(
-      'Your owned sets, wishlist, and profile stay private to you.',
+      'Your collection, wishlist, and collector details live here.',
     );
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wanted saved');
-    expect(markup).toContain('Private account');
-    expect(markup).toContain('Collector identity');
-    expect(markup).toContain('Collector destinations');
+    expect(markup).toContain('Sign-in email');
+    expect(markup).toContain('Collector handle');
+    expect(markup).toContain('Your saves');
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
-    expect(markup).toContain('For sign-in and private saves.');
+    expect(markup).toContain('Used only for account access.');
     expect(markup).toContain(
-      'Owned sets and wishlist stay private. Set facts and pricing stay public.',
+      'Collection and wishlist stay private. Set facts and pricing stay public.',
     );
-    expect(markup).toContain('Collector account · Founding Collector');
+    expect(markup).toContain('Account · Founding Collector');
   });
 });
 
@@ -125,14 +125,14 @@ describe('UserProfileEditorCard', () => {
       />,
     );
 
-    expect(markup).toContain('Shape your collector profile');
+    expect(markup).toContain('Edit your collector details');
     expect(markup).toContain(
-      'Edit the collector details shown with your saved sets.',
+      'Update the name and details used across your collector area.',
     );
-    expect(markup).toContain('Shown on your collector card.');
+    expect(markup).toContain('Shown across your account and saved sets.');
     expect(markup).toContain('Letters, numbers, and hyphens only.');
     expect(markup).toContain('Private sign-in email.');
-    expect(markup).toContain('Shown with your signed-in account.');
+    expect(markup).toContain('Shown in your collector area.');
     expect(markup).toContain(
       'One short line about the sets and themes you follow.',
     );

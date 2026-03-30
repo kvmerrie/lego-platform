@@ -49,8 +49,9 @@ describe('CollectorCollectionPanel', () => {
     );
 
     expect(markup).toContain('Sign in to open your private collection');
-    expect(markup).toContain('Private collector page');
+    expect(markup).toContain('Private account area');
     expect(markup).toContain('Browse featured sets');
+    expect(markup).toContain('Open account');
     expect(markup).toContain('Open wishlist');
   });
 
@@ -70,6 +71,7 @@ describe('CollectorCollectionPanel', () => {
     expect(markup).toContain('2 visible');
     expect(markup).toContain('1 outside public catalog');
     expect(markup).toContain('Owned set card');
+    expect(markup).toContain('Open account');
     expect(markup).toContain('Open wishlist');
     expect(markup).not.toContain('Owned collection');
   });

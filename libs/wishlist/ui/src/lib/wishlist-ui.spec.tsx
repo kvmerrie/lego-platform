@@ -49,8 +49,9 @@ describe('CollectorWishlistPanel', () => {
     );
 
     expect(markup).toContain('Sign in to open your private wishlist');
-    expect(markup).toContain('Private collector page');
+    expect(markup).toContain('Private account area');
     expect(markup).toContain('Browse featured sets');
+    expect(markup).toContain('Open account');
     expect(markup).toContain('Open collection');
   });
 
@@ -70,6 +71,7 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('2 visible');
     expect(markup).toContain('1 outside public catalog');
     expect(markup).toContain('Wanted set card');
+    expect(markup).toContain('Open account');
     expect(markup).toContain('Open collection');
   });
 });

@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { warnAboutMissingBrowserSupabaseConfig } from '@lego-platform/shared/data-access-auth';
-import { ActionLink, Button } from '@lego-platform/shared/ui';
+import { ActionLink } from '@lego-platform/shared/ui';
 import {
   getUserSession,
   isUserAuthAvailable,
-  signOutCurrentUser,
   subscribeToUserAccountChanges,
   subscribeToUserAuthChanges,
 } from '@lego-platform/user/data-access';
@@ -29,11 +28,9 @@ export function ShellWebAccountStatus({
   const [userSession, setUserSession] = useState<UserSession>(
     createInitialUserSession(),
   );
-  const [statusMessage, setStatusMessage] = useState<string>();
   const [errorMessage, setErrorMessage] = useState<string>();
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isAuthActionPending, setIsAuthActionPending] = useState(false);
   const isMountedRef = useRef(true);
   const latestUserSessionRef = useRef<UserSession>(createInitialUserSession());
   const authAvailable = isUserAuthAvailable();
@@ -60,10 +57,6 @@ export function ShellWebAccountStatus({
 
         applyUserSession(nextUserSession);
         setErrorMessage(undefined);
-
-        if (nextUserSession.state === 'authenticated') {
-          setStatusMessage(undefined);
-        }
       } catch {
         if (!isMountedRef.current) {
           return;
@@ -115,38 +108,6 @@ export function ShellWebAccountStatus({
     };
   }, [authAvailable, loadUserSession]);
 
-  async function handleSignOut() {
-    setIsAuthActionPending(true);
-    setErrorMessage(undefined);
-
-    try {
-      await signOutCurrentUser();
-
-      if (!isMountedRef.current) {
-        return;
-      }
-
-      setStatusMessage(
-        'Signed out. Your private saves will be here when you return.',
-      );
-      await loadUserSession({ isBackgroundRefresh: true });
-    } catch (error) {
-      if (!isMountedRef.current) {
-        return;
-      }
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : 'Unable to sign out right now.',
-      );
-    } finally {
-      if (isMountedRef.current) {
-        setIsAuthActionPending(false);
-      }
-    }
-  }
-
   if (isBootstrapping) {
     return variant === 'header' ? (
       <div aria-busy="true" aria-live="polite" className={styles.accountStatus}>
@@ -177,7 +138,7 @@ export function ShellWebAccountStatus({
         <span className={styles.accountStatusText}>Signed out</span>
         <ActionLink
           className={styles.accountActionLink}
-          href="/collection"
+          href="/account"
           tone="secondary"
         >
           Sign in
@@ -187,18 +148,13 @@ export function ShellWebAccountStatus({
       <div className={styles.menuAccountStatus}>
         <p className={styles.menuAccountTitle}>Signed out</p>
         <p className={styles.menuAccountMeta}>
-          Sign in to save your collection and wishlist privately.
+          Sign in to open your collection, wishlist, and collector details.
         </p>
         <div className={styles.menuAccountActions}>
-          <ActionLink href="/collection" tone="accent">
+          <ActionLink href="/account" tone="accent">
             Sign in
           </ActionLink>
         </div>
-        {statusMessage ? (
-          <p aria-live="polite" className={styles.menuAccountInfo}>
-            {statusMessage}
-          </p>
-        ) : null}
         {errorMessage ? (
           <p aria-live="polite" className={styles.menuAccountError}>
             {errorMessage}
@@ -214,39 +170,28 @@ export function ShellWebAccountStatus({
         aria-hidden="true"
         className={`${styles.statusDot} ${styles.statusDotPositive}`}
       />
-      <span className={styles.accountStatusName}>
+      <a className={styles.accountStatusNameLink} href="/account">
         {userSession.collector.name}
-      </span>
-      <Button
-        className={styles.accountActionButton}
-        isLoading={Boolean(isAuthActionPending)}
-        tone="ghost"
-        type="button"
-        onClick={handleSignOut}
+      </a>
+      <ActionLink
+        className={styles.accountActionLink}
+        href="/account"
+        tone="secondary"
       >
-        Sign out
-      </Button>
+        Account
+      </ActionLink>
     </div>
   ) : (
     <div className={styles.menuAccountStatus}>
       <p className={styles.menuAccountTitle}>{userSession.collector.name}</p>
-      <p className={styles.menuAccountMeta}>@{userSession.collector.id}</p>
+      <p className={styles.menuAccountMeta}>
+        @{userSession.collector.id} · Collection and wishlist live here.
+      </p>
       <div className={styles.menuAccountActions}>
-        <Button
-          className={styles.accountActionButton}
-          isLoading={Boolean(isAuthActionPending)}
-          tone="ghost"
-          type="button"
-          onClick={handleSignOut}
-        >
-          Sign out
-        </Button>
+        <ActionLink href="/account" tone="secondary">
+          Open account
+        </ActionLink>
       </div>
-      {statusMessage ? (
-        <p aria-live="polite" className={styles.menuAccountInfo}>
-          {statusMessage}
-        </p>
-      ) : null}
       {errorMessage ? (
         <p aria-live="polite" className={styles.menuAccountError}>
           {errorMessage}
