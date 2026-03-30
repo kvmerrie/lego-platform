@@ -2,7 +2,7 @@ export const platformConfig = {
   workspaceName: 'lego-platform',
   productName: 'Brick Ledger',
   tagline:
-    'Browse standout LEGO sets first, then save what you own and want next.',
+    'Browse standout LEGO sets, then keep track of what you own and still want.',
   defaultThemeMode: 'light',
   supportEmail: 'platform@example.test',
   runtimes: {
@@ -34,12 +34,12 @@ export const webNavigationSections = [
   {
     id: 'browse',
     title: 'Start here',
-    description: 'Curated homepage and featured shortlist.',
+    description: 'Curated sets and set pages.',
   },
   {
     id: 'collector',
     title: 'Your collector space',
-    description: 'Private saves, collection, and wishlist.',
+    description: 'Your private collection and wishlist.',
   },
 ] as const;
 
@@ -47,28 +47,28 @@ export const webNavigation = [
   {
     label: 'Home',
     href: '/',
-    description: 'Curated set discovery.',
+    description: 'Start with the curated shortlist.',
     contextLabel: 'Public route',
     sectionId: 'browse',
   },
   {
     label: 'Featured shortlist',
     href: '/#featured-sets',
-    description: 'Compare standout sets quickly.',
+    description: 'Compare a few standout sets.',
     contextLabel: 'Public route',
     sectionId: 'browse',
   },
   {
     label: 'Collection',
     href: '/collection',
-    description: 'Sets you already own.',
+    description: 'Sets you have saved as owned.',
     contextLabel: 'Private route',
     sectionId: 'collector',
   },
   {
     label: 'Wishlist',
     href: '/wishlist',
-    description: 'Sets you still want.',
+    description: 'Sets you still want to add.',
     contextLabel: 'Private route',
     sectionId: 'collector',
   },

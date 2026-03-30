@@ -31,18 +31,16 @@ export function CatalogFeatureSetList({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          description="Browse a short curated catalog, then open set pages to save what you own or still want."
+          description="Browse a small curated shortlist, then open a set page to save what you own or still want."
           eyebrow="Featured sets"
-          title="Start with the standout sets."
+          title="Start with a few standout sets."
         />
         <div className={styles.signalRow}>
           <Badge tone="accent">{homepageSets.length} curated picks</Badge>
           {reviewedSetCount ? (
-            <Badge tone="info">
-              {reviewedSetCount} with reviewed Dutch price context
-            </Badge>
+            <Badge tone="info">{reviewedSetCount} with reviewed price</Badge>
           ) : null}
-          <Badge>Public browse</Badge>
+          <Badge>Public catalog</Badge>
         </div>
       </div>
       <div className={styles.grid}>

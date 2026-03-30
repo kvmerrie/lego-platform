@@ -65,7 +65,7 @@ export function AffiliateOfferCard({
         </div>
       </div>
       <p className={styles.offerFreshness}>
-        Reviewed {formatObservedAt(affiliateOffer.observedAt)}
+        Checked {formatObservedAt(affiliateOffer.observedAt)}
       </p>
       {affiliateOffer.perks ? (
         <p className={styles.offerPerks}>{affiliateOffer.perks}</p>
@@ -102,9 +102,9 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description="Reviewed merchant pages from the current Dutch allowlist. Use the price panel for the latest snapshot and tracked history."
+        description="These cards open reviewed Dutch merchant pages from the current selection. Use the price panel for the latest snapshot and tracked history."
         eyebrow="Buy guidance"
-        title="Current Dutch offers"
+        title="Current reviewed offers"
       />
       <div className={styles.panelBadges}>
         <Badge tone="accent">NL / EUR</Badge>
@@ -133,17 +133,17 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
       tone="muted"
     >
       <SectionHeading
-        description="Reviewed Dutch offer cards are published for selected sets only."
+        description="Reviewed Dutch offers are live for selected sets."
         eyebrow="Buy guidance"
-        title="Current Dutch offers"
+        title="Current reviewed offers"
       />
       <div className={styles.panelBadges}>
         <Badge tone="accent">NL / EUR</Badge>
         <Badge tone="info">New condition</Badge>
       </div>
       <p className={styles.unavailableCopy}>
-        Offers appear together with the matching price snapshot and history when
-        a set is in the current Dutch slice.
+        Offers show up together with the matching reviewed price and tracked
+        history when a set joins the current Dutch pricing selection.
       </p>
     </Surface>
   );

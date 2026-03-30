@@ -8,12 +8,12 @@ describe('PricingFeaturePricePanel', () => {
       <PricingFeaturePricePanel setId="10316" />,
     );
 
-    expect(markup).toContain('Current Dutch market price');
+    expect(markup).toContain('Current reviewed price');
     expect(markup).toContain('489,99');
     expect(markup).toContain('Reviewed price');
-    expect(markup).toContain('Reviewed low from bol');
-    expect(markup).toContain('Snapshot above is current.');
-    expect(markup).toContain('Reviewed');
+    expect(markup).toContain('Lowest reviewed price at bol');
+    expect(markup).toContain('This is the latest reviewed snapshot.');
+    expect(markup).toContain('Last reviewed');
   });
 
   it('renders a compact unavailable state outside the current commerce slice', () => {
@@ -21,8 +21,8 @@ describe('PricingFeaturePricePanel', () => {
       <PricingFeaturePricePanel setId="10305" />,
     );
 
-    expect(markup).toContain('Current Dutch market price');
-    expect(markup).toContain('published for selected sets only');
+    expect(markup).toContain('Current reviewed price');
+    expect(markup).toContain('live for selected sets');
     expect(markup).toContain('Price, history, and offers appear together');
   });
 });

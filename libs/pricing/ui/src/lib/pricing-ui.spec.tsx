@@ -70,10 +70,10 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('History building');
     expect(markup).toContain('1 daily point');
     expect(markup).not.toContain('1 daily points');
-    expect(markup).toContain('First tracked daily price');
+    expect(markup).toContain('First tracked price');
     expect(markup).toContain('30-day range building');
     expect(markup).toContain(
-      'The tracked summary above can already use this point',
+      'The tracked summary above can already use this first point',
     );
   });
 
@@ -82,7 +82,7 @@ describe('pricing ui history surfaces', () => {
 
     expect(markup).toContain('30-day price history');
     expect(markup).toContain(
-      'No daily history is stored for this set yet. If a reviewed price appears above, history is still building. If not, this set is outside the current reviewed slice.',
+      'No daily history is stored for this set yet. If a reviewed price appears above, history is still building. If not, this set is outside the current Dutch pricing selection.',
     );
   });
 
@@ -129,13 +129,13 @@ describe('pricing ui history surfaces', () => {
     );
 
     expect(markup).not.toContain('Recent 30-day view');
-    expect(markup).toContain('Recent 30-day history');
+    expect(markup).toContain('Recent price history');
     expect(markup).toContain('30-day low');
     expect(markup).toContain('30-day high');
     expect(markup).toContain('Current vs average');
     expect(markup).toContain('below 30-day average');
     expect(markup).toContain('30-day average:');
-    expect(markup).toContain('Tracked history');
+    expect(markup).toContain('Tracked price range');
     expect(markup).toContain('Lowest tracked price');
     expect(markup).toContain('Highest tracked price');
     expect(markup).toContain('Tracked since');
@@ -161,13 +161,15 @@ describe('pricing ui history surfaces', () => {
       />,
     );
 
-    expect(markup).toContain('Recent 30-day history');
+    expect(markup).toContain('Recent price history');
     expect(markup).toContain(
-      'History is building. One daily point is stored so far.',
+      'History is still building. One daily price has been tracked so far.',
     );
-    expect(markup).toContain('Tracked history');
+    expect(markup).toContain('Tracked price range');
     expect(markup).toContain('Matches tracked low');
     expect(markup).toContain('Matches tracked high');
-    expect(markup).toContain('Tracked history has one daily point so far.');
+    expect(markup).toContain(
+      'Tracked history has just started with one daily price.',
+    );
   });
 });

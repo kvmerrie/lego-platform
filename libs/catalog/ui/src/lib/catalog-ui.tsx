@@ -162,18 +162,18 @@ export function CatalogSetCard({
             <Badge tone="neutral">Not published yet</Badge>
           </div>
           <p className={styles.priceUnavailableCopy}>
-            Reviewed Dutch pricing is published for selected sets only.
+            Reviewed pricing is live for selected sets.
           </p>
         </div>
       )}
       <div className={styles.collectorContext}>
         <CatalogSupportingDetail
-          label="Collector angle"
+          label="Why collectors like it"
           value={setSummary.collectorAngle}
         />
         {setSummary.availability ? (
           <CatalogSupportingDetail
-            label="Availability posture"
+            label="Availability"
             value={setSummary.availability}
           />
         ) : null}
@@ -187,7 +187,7 @@ export function CatalogSetCard({
       />
       {href ? (
         <ActionLink className={styles.actionLink} href={href} tone="secondary">
-          View set
+          See set
         </ActionLink>
       ) : null}
     </Surface>
@@ -205,21 +205,21 @@ export function CatalogHomepageIntro() {
     >
       <div className={styles.heroPrimary}>
         <SectionHeading
-          description="The homepage stays intentionally small: a short introduction, a curated featured list, and detail routes powered by stable catalog contracts."
-          eyebrow="Catalog discovery"
-          title="Browse a focused first slice of the LEGO collector experience."
+          description="Start with a small curated shortlist, then open set pages for pricing context and private saves."
+          eyebrow="Curated discovery"
+          title="A collector-friendly way to browse standout sets."
           tone="hero"
         />
         <div className={styles.badgeRow}>
           <Badge tone="accent">Static-friendly reads</Badge>
-          <Badge tone="info">Library-driven composition</Badge>
+          <Badge tone="info">Private saves</Badge>
         </div>
       </div>
       <div className={styles.heroSecondary}>
         <SectionHeading
-          description="Keep the homepage read-focused while the detail routes prove the first session-backed collector actions."
-          eyebrow="Phase-1 scope"
-          title="A narrow slice built for confidence."
+          description="The homepage stays light and browse-first while set pages carry the deeper collector tools."
+          eyebrow="Focused scope"
+          title="A small slice that already feels useful."
           titleAs="h2"
         />
         <ActionLink
@@ -254,7 +254,7 @@ export function CatalogSetDetailPanel({
           <div className={styles.heroCopy}>
             <SectionHeading
               description={catalogSetDetail.tagline}
-              eyebrow="Set detail"
+              eyebrow="Curated set"
               title={catalogSetDetail.name}
               titleAs="h2"
               tone="hero"
@@ -292,7 +292,7 @@ export function CatalogSetDetailPanel({
             href={homeHref}
             tone="secondary"
           >
-            Back to browse
+            Back to shortlist
           </ActionLink>
         ) : null}
       </Surface>
@@ -303,7 +303,7 @@ export function CatalogSetDetailPanel({
         tone="muted"
       >
         <div className={styles.cardHeader}>
-          <Badge tone="info">Collector highlights</Badge>
+          <Badge tone="info">Collector notes</Badge>
           <p className={styles.availability}>
             Availability: {catalogSetDetail.availability}
           </p>

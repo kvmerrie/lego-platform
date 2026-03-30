@@ -8,10 +8,10 @@ describe('AffiliateFeatureOffers', () => {
       <AffiliateFeatureOffers setId="10316" />,
     );
 
-    expect(markup).toContain('Current Dutch offers');
+    expect(markup).toContain('Current reviewed offers');
     expect(markup).toContain('LEGO NL');
     expect(markup).toContain('Reviewed offer');
-    expect(markup).toContain('Reviewed');
+    expect(markup).toContain('Checked');
     expect(markup).toContain('Shop at LEGO NL');
     expect(markup).toContain('Direct official merchant link.');
   });
@@ -21,9 +21,9 @@ describe('AffiliateFeatureOffers', () => {
       <AffiliateFeatureOffers setId="10305" />,
     );
 
-    expect(markup).toContain('Current Dutch offers');
+    expect(markup).toContain('Current reviewed offers');
     expect(markup).toContain(
-      'Reviewed Dutch offer cards are published for selected sets only.',
+      'Reviewed Dutch offers are live for selected sets.',
     );
   });
 });

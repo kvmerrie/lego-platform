@@ -49,19 +49,19 @@ export function WantedSetToggleCard({
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Checking your wanted save for this set.'
+    ? 'Checking your wishlist save.'
     : isUnavailable
-      ? 'Wanted status is unavailable right now.'
+      ? 'Wishlist save is unavailable right now.'
       : isWanted
-        ? 'Saved to your wanted list.'
-        : 'Track this set on your wanted list.';
+        ? 'Saved to wishlist.'
+        : 'Save to wishlist.';
   const description = isLoading
     ? `Checking whether set ${setId} is saved as wanted.`
     : isUnavailable
-      ? `Wanted state could not be loaded for set ${setId}.`
+      ? `We could not load the wishlist save for set ${setId}.`
       : isWanted
-        ? `Set ${setId} is saved as wanted on your collector account.`
-        : `Save set ${setId} to your wanted list.`;
+        ? `Set ${setId} is saved in your private wishlist.`
+        : `Save set ${setId} in your private wishlist.`;
   const actionLabel = isUnavailable
     ? 'Wanted status unavailable'
     : isWanted
@@ -99,7 +99,7 @@ export function WantedSetToggleCard({
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
       <p className={styles.metaText}>
-        Private to your account. Public set facts and pricing stay shared.
+        Private to you. Set facts and pricing stay public.
       </p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
@@ -150,36 +150,36 @@ export function CollectorWishlistPanel({
 }) {
   const title =
     state === 'loading'
-      ? 'Loading your collector wishlist'
+      ? 'Loading your wishlist'
       : state === 'signed-out'
-        ? 'Sign in to view your private wanted list'
+        ? 'Sign in to open your private wishlist'
         : state === 'empty'
           ? collectorName
-            ? `${collectorName}, your wishlist is ready for its first tracked set`
-            : 'Your wishlist is ready for its first tracked set'
+            ? `${collectorName}, your wishlist is ready for its first set`
+            : 'Your wishlist is ready for its first set'
           : collectorName
-            ? `${collectorName}, here is your wanted list`
-            : 'Your wanted list';
+            ? `${collectorName}, here is your wishlist`
+            : 'Your wishlist';
   const description =
     state === 'loading'
       ? 'Loading sets saved as wanted on your collector account.'
       : state === 'signed-out'
-        ? 'This page shows sets saved to your private collector account as wanted.'
+        ? 'This page shows the sets you have saved to your wishlist.'
         : state === 'empty'
           ? hiddenWantedCount > 0
             ? `You have ${formatWantedSetCount(
                 hiddenWantedCount,
-              )} saved outside the current public slice. Save a featured set here to start the visible wishlist.`
-            : 'Save wanted sets from set pages and they will appear here.'
+              )} saved outside the current public catalog. Save a featured set here to start the visible wishlist.`
+            : 'Save a wanted set from any set page and it will appear here.'
           : hiddenWantedCount > 0
             ? `Showing ${formatWantedSetCount(
                 wantedCount,
-              )} from the current public slice. ${formatWantedSetCount(
+              )} from the current public catalog. ${formatWantedSetCount(
                 hiddenWantedCount,
               )} stay saved outside it.`
-            : `This page shows ${formatWantedSetCount(
+            : `Here are the ${formatWantedSetCount(
                 wantedCount,
-              )} saved as wanted on your collector account.`;
+              )} you have saved to your wishlist.`;
 
   return (
     <Surface
@@ -203,20 +203,20 @@ export function CollectorWishlistPanel({
                 ? 'Private collector page'
                 : `${wantedCount} visible`}
           </Badge>
-          <Badge tone="warning">Wanted radar</Badge>
+          <Badge tone="warning">Wishlist</Badge>
           {hiddenWantedCount > 0 ? (
             <Badge tone="warning">
-              {hiddenWantedCount} outside public slice
+              {hiddenWantedCount} outside public catalog
             </Badge>
           ) : null}
         </div>
       </div>
       <p className={styles.metaText}>
-        Private to your account. Public set facts and pricing stay shared.
+        Private to you. Set facts and pricing stay public.
       </p>
       <div className={styles.destinationPanel}>
         <p className={styles.metaText}>
-          Wishlist sets stay separate from your collection.
+          Wishlist picks stay separate from your collection.
         </p>
         <div className={styles.destinationLinks}>
           <ActionLink href="/collection" tone="secondary">

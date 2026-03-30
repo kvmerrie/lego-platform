@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { warnAboutMissingBrowserSupabaseConfig } from '@lego-platform/shared/data-access-auth';
+import { ActionLink, Button } from '@lego-platform/shared/ui';
 import {
   getUserSession,
   isUserAuthAvailable,
@@ -9,17 +10,22 @@ import {
   subscribeToUserAccountChanges,
   subscribeToUserAuthChanges,
 } from '@lego-platform/user/data-access';
-import { UserShellAccountStatusCard } from '@lego-platform/user/ui';
 import {
   createAnonymousUserSession,
+  isAuthenticatedSession,
   type UserSession,
 } from '@lego-platform/user/util';
+import styles from './shell-web.module.css';
 
 function createInitialUserSession(): UserSession {
   return createAnonymousUserSession();
 }
 
-export function ShellWebAccountStatus() {
+export function ShellWebAccountStatus({
+  variant,
+}: {
+  variant: 'header' | 'menu';
+}) {
   const [userSession, setUserSession] = useState<UserSession>(
     createInitialUserSession(),
   );
@@ -111,7 +117,7 @@ export function ShellWebAccountStatus() {
       }
 
       setStatusMessage(
-        'Signed out. Your private collector state will be waiting when you sign back in.',
+        'Signed out. Your private saves will be here when you return.',
       );
       setIsLoading(true);
       await loadUserSession();
@@ -132,16 +138,108 @@ export function ShellWebAccountStatus() {
     }
   }
 
-  return (
-    <UserShellAccountStatusCard
-      errorMessage={errorMessage}
-      isAuthActionPending={isAuthActionPending}
-      isAuthAvailable={authAvailable}
-      isLoading={isLoading}
-      statusMessage={statusMessage}
-      userSession={userSession}
-      onSignOut={handleSignOut}
-    />
+  if (isLoading) {
+    return variant === 'header' ? (
+      <div className={styles.accountStatus} aria-live="polite">
+        <span
+          aria-hidden="true"
+          className={`${styles.statusDot} ${styles.statusDotInfo}`}
+        />
+        <span className={styles.accountStatusText}>Checking</span>
+      </div>
+    ) : (
+      <div className={styles.menuAccountStatus} aria-live="polite">
+        <p className={styles.menuAccountTitle}>Checking collector status</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticatedSession(userSession)) {
+    return variant === 'header' ? (
+      <div className={styles.accountStatus}>
+        <span
+          aria-hidden="true"
+          className={`${styles.statusDot} ${styles.statusDotWarning}`}
+        />
+        <span className={styles.accountStatusText}>Signed out</span>
+        <ActionLink
+          className={styles.accountActionLink}
+          href="/collection"
+          tone="secondary"
+        >
+          Sign in
+        </ActionLink>
+      </div>
+    ) : (
+      <div className={styles.menuAccountStatus}>
+        <p className={styles.menuAccountTitle}>Signed out</p>
+        <p className={styles.menuAccountMeta}>
+          Sign in to save your collection and wishlist privately.
+        </p>
+        <div className={styles.menuAccountActions}>
+          <ActionLink href="/collection" tone="accent">
+            Sign in
+          </ActionLink>
+        </div>
+        {statusMessage ? (
+          <p aria-live="polite" className={styles.menuAccountInfo}>
+            {statusMessage}
+          </p>
+        ) : null}
+        {errorMessage ? (
+          <p aria-live="polite" className={styles.menuAccountError}>
+            {errorMessage}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  return variant === 'header' ? (
+    <div className={styles.accountStatus}>
+      <span
+        aria-hidden="true"
+        className={`${styles.statusDot} ${styles.statusDotPositive}`}
+      />
+      <span className={styles.accountStatusName}>
+        {userSession.collector.name}
+      </span>
+      <Button
+        className={styles.accountActionButton}
+        isLoading={Boolean(isAuthActionPending)}
+        tone="ghost"
+        type="button"
+        onClick={handleSignOut}
+      >
+        Sign out
+      </Button>
+    </div>
+  ) : (
+    <div className={styles.menuAccountStatus}>
+      <p className={styles.menuAccountTitle}>{userSession.collector.name}</p>
+      <p className={styles.menuAccountMeta}>@{userSession.collector.id}</p>
+      <div className={styles.menuAccountActions}>
+        <Button
+          className={styles.accountActionButton}
+          isLoading={Boolean(isAuthActionPending)}
+          tone="ghost"
+          type="button"
+          onClick={handleSignOut}
+        >
+          Sign out
+        </Button>
+      </div>
+      {statusMessage ? (
+        <p aria-live="polite" className={styles.menuAccountInfo}>
+          {statusMessage}
+        </p>
+      ) : null}
+      {errorMessage ? (
+        <p aria-live="polite" className={styles.menuAccountError}>
+          {errorMessage}
+        </p>
+      ) : null}
+    </div>
   );
 }
 

@@ -19,7 +19,7 @@ describe('UserShellAccountStatusCard', () => {
       />,
     );
 
-    expect(markup).toContain('Private collector state is not active yet');
+    expect(markup).toContain('Sign in to start saving privately');
     expect(markup).toContain('Browse the public catalog');
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Open wishlist');
@@ -56,7 +56,7 @@ describe('UserShellAccountStatusCard', () => {
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('Sign out');
     expect(markup).toContain(
-      'Collection, wishlist, and profile are ready from the header.',
+      'Your collection, wishlist, and profile are ready from the header.',
     );
   });
 });
@@ -84,8 +84,10 @@ describe('UserSessionCard', () => {
       />,
     );
 
-    expect(markup).toContain('Collector account active');
-    expect(markup).toContain('Use this signed-in account to save');
+    expect(markup).toContain('Collector account ready');
+    expect(markup).toContain(
+      'This signed-in account keeps your owned sets, wishlist, and profile private to you.',
+    );
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wanted saved');
     expect(markup).toContain('Private account');
@@ -94,9 +96,9 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('Jump to your collection or wishlist.');
-    expect(markup).toContain('Used for sign-in and saved collector state.');
+    expect(markup).toContain('For sign-in and private saves.');
     expect(markup).toContain(
-      'Owned and wanted saves are private. Public set facts and pricing stay shared.',
+      'Your owned sets and wishlist stay private. Set facts and pricing stay public.',
     );
   });
 });
@@ -124,9 +126,9 @@ describe('UserProfileEditorCard', () => {
       />,
     );
 
-    expect(markup).toContain('Refine your collector profile');
+    expect(markup).toContain('Shape your collector profile');
     expect(markup).toContain(
-      'Display name, handle, location, and focus shape your collector identity.',
+      'Display name, handle, location, and focus shape how your collector profile feels.',
     );
     expect(markup).toContain('Shown on your collector card.');
     expect(markup).toContain('Letters, numbers, and hyphens only.');

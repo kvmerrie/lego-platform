@@ -22,8 +22,8 @@ describe('CatalogFeatureSetList', () => {
             priceContext: {
               coverageLabel: 'In stock · 3 reviewed offers',
               currentPrice: 'EUR 359.99',
-              merchantLabel: 'Lowest current offer from bol',
-              reviewedLabel: 'Reviewed 29 mrt',
+              merchantLabel: 'Lowest reviewed price at bol',
+              reviewedLabel: 'Checked 29 mrt',
             },
           },
           {
@@ -43,9 +43,9 @@ describe('CatalogFeatureSetList', () => {
       />,
     );
 
-    expect(markup).toContain('Start with the standout sets.');
+    expect(markup).toContain('Start with a few standout sets.');
     expect(markup).toContain('2 curated picks');
-    expect(markup).toContain('1 with reviewed Dutch price context');
-    expect(markup).toContain('Public browse');
+    expect(markup).toContain('1 with reviewed price');
+    expect(markup).toContain('Public catalog');
   });
 });

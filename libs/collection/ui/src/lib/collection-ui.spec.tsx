@@ -14,12 +14,12 @@ describe('OwnedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Saved to your owned collection.');
+    expect(markup).toContain('Saved to owned.');
     expect(markup).toContain('Owned saved');
     expect(markup).toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
     expect(markup).toContain(
-      'Private to your account. Public set facts and pricing stay shared.',
+      'Private to you. Set facts and pricing stay public.',
     );
     expect(markup).toContain('Remove from owned');
   });
@@ -31,11 +31,13 @@ describe('CollectorCollectionPanel', () => {
       <CollectorCollectionPanel state="signed-out" />,
     );
 
-    expect(markup).toContain('Sign in to view your private owned collection');
+    expect(markup).toContain('Sign in to open your private collection');
     expect(markup).toContain('Private collector page');
     expect(markup).toContain('Browse featured sets');
     expect(markup).toContain('Open wishlist');
-    expect(markup).toContain('Owned sets stay separate from your wishlist.');
+    expect(markup).toContain(
+      'Owned sets live here. Wishlist picks stay separate.',
+    );
   });
 
   it('renders populated collection context with hidden-set messaging when needed', () => {
@@ -50,9 +52,9 @@ describe('CollectorCollectionPanel', () => {
       </CollectorCollectionPanel>,
     );
 
-    expect(markup).toContain('Alex Rivera, here is your owned collection');
+    expect(markup).toContain('Alex Rivera, here is your collection');
     expect(markup).toContain('2 visible');
-    expect(markup).toContain('1 outside public slice');
+    expect(markup).toContain('1 outside public catalog');
     expect(markup).toContain('Owned set card');
     expect(markup).toContain('Open wishlist');
   });

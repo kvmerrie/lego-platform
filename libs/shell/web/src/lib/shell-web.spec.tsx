@@ -3,25 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { ShellWeb } from './shell-web';
 
 describe('ShellWeb', () => {
-  it('renders grouped public and collector destinations in the primary navigation', () => {
+  it('renders a compact shell header with direct nav links and account access', () => {
     const markup = renderToStaticMarkup(
       <ShellWeb>
         <div>Collector page content</div>
       </ShellWeb>,
     );
 
-    expect(markup).toContain('Browse curated sets');
-    expect(markup).toContain('Save privately');
-    expect(markup).toContain('Start here');
-    expect(markup).toContain('Curated homepage and featured shortlist.');
-    expect(markup).toContain('Private saves, collection, and wishlist.');
+    expect(markup).toContain('Brick Ledger');
+    expect(markup).toContain('Menu');
     expect(markup).toContain('Home');
     expect(markup).toContain('Featured shortlist');
     expect(markup).toContain('Collection');
     expect(markup).toContain('Wishlist');
-    expect(markup).toContain('Public route');
-    expect(markup).toContain('Private route');
-    expect(markup).toContain('Checking collector status');
-    expect(markup).toContain('Collector status');
+    expect(markup).toContain('Checking');
+    expect(markup).toContain('Curated browsing, private collector saves');
   });
 });
