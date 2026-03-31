@@ -8,14 +8,14 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
   [
     {
       merchantId: 'lego-nl',
-      displayName: 'LEGO NL',
+      displayName: 'LEGO',
       regionCode: DUTCH_AFFILIATE_REGION_CODE,
       currencyCode: EURO_AFFILIATE_CURRENCY_CODE,
       enabled: true,
       displayRank: 1,
       urlHost: 'www.lego.com',
       disclosureCopy: 'Direct official merchant link.',
-      ctaLabel: 'Shop at LEGO NL',
+      ctaLabel: 'Shop at LEGO',
       perks: 'Direct brand purchase and reference pricing',
     },
     {

@@ -2,7 +2,11 @@ import {
   listCatalogBrowseThemeGroups,
   listHomepageSetCards,
 } from '@lego-platform/catalog/data-access';
-import { CatalogSetCard } from '@lego-platform/catalog/ui';
+import {
+  CatalogSetCard,
+  type CatalogSetCardPriceContext,
+} from '@lego-platform/catalog/ui';
+import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-discover.module.css';
@@ -15,7 +19,15 @@ function formatSetCount(count: number): string {
   return `${count} set${count === 1 ? '' : 's'}`;
 }
 
-export function CatalogFeatureDiscover() {
+export interface CatalogFeatureDiscoverDealItem extends CatalogHomepageSetCard {
+  priceContext?: CatalogSetCardPriceContext;
+}
+
+export function CatalogFeatureDiscover({
+  dealSetCards = [],
+}: {
+  dealSetCards?: readonly CatalogFeatureDiscoverDealItem[];
+}) {
   const featuredSetCards = listHomepageSetCards();
   const themeGroups = listCatalogBrowseThemeGroups();
   const totalSetCount = themeGroups.reduce(
@@ -39,7 +51,7 @@ export function CatalogFeatureDiscover() {
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Browse the sets we have already shaped into full product pages, grouped by theme for quick scanning."
+          description="Browse the public catalog by theme, with the strongest flagship, franchise, and crossover sets surfaced first in each lane."
           eyebrow="Discover"
           title="Browse the catalog by theme"
         />
@@ -52,9 +64,9 @@ export function CatalogFeatureDiscover() {
         <Surface as="section" className={styles.featuredSection} tone="muted">
           <div className={styles.sectionHeader}>
             <SectionHeading
-              description="A few reliable starting points with strong set pages, price context, and clean save actions."
+              description="A compact mix of premium flagships, recognizable icons, and easier ways into the catalog."
               eyebrow="Featured"
-              title="A few good places to begin"
+              title="Start with the sets people open first"
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
@@ -67,6 +79,33 @@ export function CatalogFeatureDiscover() {
                 href={buildSetDetailPath(featuredSetCard.slug)}
                 key={featuredSetCard.id}
                 setSummary={featuredSetCard}
+                variant="featured"
+              />
+            ))}
+          </div>
+        </Surface>
+      ) : null}
+
+      {dealSetCards.length ? (
+        <Surface as="section" className={styles.dealSection} tone="default">
+          <div className={styles.sectionHeader}>
+            <SectionHeading
+              description="The clearest current price gaps among the biggest flagships and recognizable sets already in the catalog."
+              eyebrow="Deals"
+              title="Good time to buy"
+              titleAs="h2"
+            />
+            <p className={styles.sectionMeta}>
+              {formatSetCount(dealSetCards.length)}
+            </p>
+          </div>
+          <div className={styles.dealGrid}>
+            {dealSetCards.map((dealSetCard) => (
+              <CatalogSetCard
+                href={buildSetDetailPath(dealSetCard.slug)}
+                key={dealSetCard.id}
+                priceContext={dealSetCard.priceContext}
+                setSummary={dealSetCard}
                 variant="featured"
               />
             ))}

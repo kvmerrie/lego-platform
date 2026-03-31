@@ -1,10 +1,20 @@
 import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
-import { CatalogFeatureSetList } from '@lego-platform/catalog/feature-set-list';
-import { listHomepageSetCards } from '@lego-platform/catalog/data-access';
+import {
+  CatalogFeatureSetList,
+  type CatalogFeatureSetListItem,
+} from '@lego-platform/catalog/feature-set-list';
+import {
+  listCatalogSetCardsByIds,
+  listHomepageDealCandidateSetCards,
+  listHomepageSetCards,
+} from '@lego-platform/catalog/data-access';
 import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
-import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
+import {
+  getFeaturedSetPriceContext,
+  listDealSpotlightPriceContexts,
+} from '@lego-platform/pricing/data-access';
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
@@ -57,21 +67,10 @@ function formatReviewedOn(observedAt: string): string {
   }).format(new Date(observedAt));
 }
 
-export async function generateMetadata(): Promise<Metadata> {
-  const queryMode = await getEditorialQueryMode();
-  const homepagePage = await getHomepagePage({
-    mode: queryMode,
-  });
-
-  return getMetadataFromSeoFields(homepagePage.seo);
-}
-
-export default async function HomePage() {
-  const queryMode = await getEditorialQueryMode();
-  const homepagePage = await getHomepagePage({
-    mode: queryMode,
-  });
-  const homepageSetCards = listHomepageSetCards().map((homepageSetCard) => {
+function toFeatureSetListItems(
+  setCards: ReturnType<typeof listCatalogSetCardsByIds>,
+): CatalogFeatureSetListItem[] {
+  return setCards.map((homepageSetCard) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(
       homepageSetCard.id,
     );
@@ -102,11 +101,48 @@ export default async function HomePage() {
         : undefined,
     };
   });
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const queryMode = await getEditorialQueryMode();
+  const homepagePage = await getHomepagePage({
+    mode: queryMode,
+  });
+
+  return getMetadataFromSeoFields(homepagePage.seo);
+}
+
+export default async function HomePage() {
+  const queryMode = await getEditorialQueryMode();
+  const homepagePage = await getHomepagePage({
+    mode: queryMode,
+  });
+  const homepageSetCards = toFeatureSetListItems(listHomepageSetCards());
+  const homepageDealSetCards = toFeatureSetListItems(
+    listCatalogSetCardsByIds(
+      listDealSpotlightPriceContexts({
+        candidateSetIds: listHomepageDealCandidateSetCards().map(
+          (catalogSetCard) => catalogSetCard.id,
+        ),
+        limit: 3,
+      }).map((priceContext) => priceContext.setId),
+    ),
+  );
 
   return (
     <ShellWeb>
       <ContentFeaturePageRenderer editorialPage={homepagePage} />
       <CatalogFeatureSetList setCards={homepageSetCards} />
+      {homepageDealSetCards.length ? (
+        <CatalogFeatureSetList
+          description="Reviewed Dutch prices currently showing the clearest gaps below reference across the sets most likely to earn a click."
+          eyebrow="Deals"
+          sectionId="best-current-deals"
+          setCards={homepageDealSetCards}
+          signalText={`${homepageDealSetCards.length} sets worth a closer look`}
+          title="Best current deals"
+        />
+      ) : null}
     </ShellWeb>
   );
 }

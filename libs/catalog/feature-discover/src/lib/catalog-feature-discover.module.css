@@ -19,6 +19,7 @@
 }
 
 .featuredSection,
+.dealSection,
 .themeSection,
 .emptyState {
   display: grid;
@@ -33,6 +34,7 @@
 }
 
 .featuredGrid,
+.dealGrid,
 .themeGrid {
   display: grid;
   gap: var(--lego-space-4);
@@ -63,6 +65,7 @@
 
 @media (min-width: 48rem) {
   .featuredGrid,
+  .dealGrid,
   .themeGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -78,6 +81,10 @@
 @media (min-width: 75rem) {
   .featuredGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dealGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .themeGrid {

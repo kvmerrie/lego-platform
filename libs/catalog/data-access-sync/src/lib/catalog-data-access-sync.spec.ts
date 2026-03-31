@@ -41,6 +41,7 @@ const mockCatalogThemes = new Map<number, string>([
   [13, 'Ninjago'],
   [14, 'The Infinity Saga'],
   [15, 'Jurassic World'],
+  [16, 'Spider-Man'],
 ]);
 
 const mockCatalogSets: readonly MockCatalogSet[] = [
@@ -434,6 +435,56 @@ const mockCatalogSets: readonly MockCatalogSet[] = [
     theme_id: 6,
     set_img_url: 'https://images.example/gringotts.jpg',
   },
+  {
+    canonicalId: '76178',
+    slug: 'daily-bugle-76178',
+    set_num: '76178-1',
+    name: 'Daily Bugle',
+    year: 2021,
+    num_parts: 3803,
+    theme_id: 16,
+    set_img_url: 'https://images.example/daily-bugle.jpg',
+  },
+  {
+    canonicalId: '75367',
+    slug: 'venator-class-republic-attack-cruiser-75367',
+    set_num: '75367-1',
+    name: 'Venator-Class Republic Attack Cruiser',
+    year: 2023,
+    num_parts: 5381,
+    theme_id: 8,
+    set_img_url: 'https://images.example/venator.jpg',
+  },
+  {
+    canonicalId: '21350',
+    slug: 'jaws-21350',
+    set_num: '21350-1',
+    name: 'Jaws',
+    year: 2024,
+    num_parts: 1497,
+    theme_id: 2,
+    set_img_url: 'https://images.example/jaws.jpg',
+  },
+  {
+    canonicalId: '10317',
+    slug: 'land-rover-classic-defender-90-10317',
+    set_num: '10317-1',
+    name: 'Land Rover Classic Defender 90',
+    year: 2023,
+    num_parts: 2344,
+    theme_id: 1,
+    set_img_url: 'https://images.example/land-rover-classic-defender-90.jpg',
+  },
+  {
+    canonicalId: '76437',
+    slug: 'the-burrow-collectors-edition-76437',
+    set_num: '76437-1',
+    name: "The Burrow – Collectors' Edition",
+    year: 2024,
+    num_parts: 2403,
+    theme_id: 6,
+    set_img_url: 'https://images.example/the-burrow-collectors-edition.jpg',
+  },
 ];
 
 function toRebrickableSetPayload(mockCatalogSet: MockCatalogSet) {
@@ -476,7 +527,7 @@ const expectedCatalogSyncManifest = {
   source: 'rebrickable-api-v3',
   generatedAt: '2026-03-28T00:00:00.000Z',
   recordCount: mockCatalogSets.length,
-  homepageFeaturedSetIds: ['10316', '21348', '76269'],
+  homepageFeaturedSetIds: ['10316', '10333', '21333'],
   notes:
     'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
 };
@@ -855,7 +906,7 @@ export const catalogSnapshot: CatalogSnapshot = {
         curatedSetNumbers: ['10316-1'],
       }),
     ).rejects.toThrow(
-      'Homepage featured set 21348 is missing from the generated catalog snapshot.',
+      'Homepage featured set 10333 is missing from the generated catalog snapshot.',
     );
   });
 });

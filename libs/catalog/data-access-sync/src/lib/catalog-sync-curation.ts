@@ -40,12 +40,17 @@ export const curatedCatalogSyncSetNumbers = [
   '76956-1',
   '75331-1',
   '76417-1',
+  '76178-1',
+  '75367-1',
+  '21350-1',
+  '10317-1',
+  '76437-1',
 ] as const;
 
 export const curatedHomepageFeaturedSetNumbers = [
   '10316-1',
-  '21348-1',
-  '76269-1',
+  '10333-1',
+  '21333-1',
 ] as const;
 
 export function getCuratedHomepageFeaturedSetIds(): string[] {

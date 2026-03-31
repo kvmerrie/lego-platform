@@ -68,6 +68,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Reviewed price');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest reviewed price at bol');
+    expect(markup).toContain('EUR 10.00 below ref');
     expect(markup).toContain('Checked 29 mrt');
     expect(markup).toContain('Open set');
     expect(markup).not.toContain('Coverage');

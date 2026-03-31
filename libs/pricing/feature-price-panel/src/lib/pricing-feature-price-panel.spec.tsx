@@ -9,7 +9,7 @@ describe('PricingFeaturePricePanel', () => {
     );
 
     expect(markup).toContain('Current reviewed price');
-    expect(markup).toContain('489,99');
+    expect(markup).toContain('469,99');
     expect(markup).toContain('Reviewed price');
     expect(markup).toContain('Lowest reviewed price at bol');
     expect(markup).toContain('Best current deal');
@@ -22,7 +22,7 @@ describe('PricingFeaturePricePanel', () => {
 
   it('renders a compact unavailable state outside the current commerce slice', () => {
     const markup = renderToStaticMarkup(
-      <PricingFeaturePricePanel setId="10305" />,
+      <PricingFeaturePricePanel setId="76419" />,
     );
 
     expect(markup).toContain('Current reviewed price');

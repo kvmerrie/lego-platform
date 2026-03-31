@@ -540,26 +540,95 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Combines architecture-like display appeal with high-fandom recognizability',
     ],
   },
+  {
+    canonicalId: '76178',
+    displayTheme: 'Marvel',
+    priceRange: '$299 to $379',
+    collectorAngle: 'Marvel skyline showpiece',
+    tagline:
+      'A vertical cityscape flagship that turns comic-book nostalgia into one of LEGO’s most recognizable display builds.',
+    availability: 'Reliable flagship demand',
+    collectorHighlights: [
+      'Tall stacked floors create one of the strongest shelf silhouettes in the Marvel lineup',
+      'Big cast and street-scene detail make it easy to merchandise through stories, minifigures, and display photography',
+      'High-intent search target for Marvel collectors who want something more architectural than a vehicle or bust',
+    ],
+  },
+  {
+    canonicalId: '75367',
+    displayTheme: 'Star Wars',
+    priceRange: '$579 to $699',
+    collectorAngle: 'Clone Wars capital-ship flagship',
+    tagline:
+      'A huge Republic cruiser that gives the Star Wars lane a cleaner high-end centerpiece than walkers and scavenger ships alone.',
+    availability: 'Selective UCS demand',
+    collectorHighlights: [
+      'Iconic Clone Wars silhouette broadens Star Wars search intent beyond Original Trilogy nostalgia',
+      'Long low profile reads as a true collector flagship without duplicating the AT-AT shelf shape',
+      'Strong fit for high-intent comparison shopping because the price band is meaningful and easy to benchmark',
+    ],
+  },
+  {
+    canonicalId: '21350',
+    displayTheme: 'Ideas',
+    priceRange: '$129 to $179',
+    collectorAngle: 'Movie-scene display favorite',
+    tagline:
+      'A highly recognizable film build that lands between nostalgia piece, conversation starter, and giftable display set.',
+    availability: 'Strong crossover demand',
+    collectorHighlights: [
+      'Instant subject recognition makes it useful for search beyond regular LEGO collectors',
+      'Boat-and-shark composition gives the Ideas lane a more playful display posture than cabins, art, and cameras alone',
+      'Comfortable premium price point makes it an easier first purchase than the biggest flagship sets',
+    ],
+  },
+  {
+    canonicalId: '10317',
+    priceRange: '$219 to $289',
+    collectorAngle: 'Adventure-vehicle display icon',
+    tagline:
+      'A boxy off-roader build that feels equally at home with design-led display collectors and classic car fans.',
+    availability: 'Steady enthusiast demand',
+    collectorHighlights: [
+      'Alternative build styling makes it feel richer than a one-mode vehicle display piece',
+      'Instant silhouette recognition broadens the Icons lane without adding another building or aircraft',
+      'Useful search target for shoppers who know the real vehicle before they know the set number',
+    ],
+  },
+  {
+    canonicalId: '76437',
+    displayTheme: 'Harry Potter',
+    priceRange: '$229 to $299',
+    collectorAngle: 'Wizarding household flagship',
+    tagline:
+      'A crooked magical home build that adds warmth, character, and major franchise recognition to the Harry Potter slice.',
+    availability: 'High-intent fan demand',
+    collectorHighlights: [
+      'Highly recognizable setting expands Harry Potter beyond castle-overview display builds',
+      'Dense room-by-room storytelling makes it especially strong for set-page browsing and collector saves',
+      'Premium but not top-end pricing makes it easier to act on than the very largest franchise flagships',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   {
     name: 'Icons',
-    setCount: 13,
+    setCount: 14,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
     signatureSet: 'Rivendell',
   },
   {
     name: 'Ideas',
-    setCount: 9,
+    setCount: 10,
     momentum:
       'Community-voted display builds keep balancing fandom, nostalgia, and design-object appeal.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
     name: 'Marvel',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
     signatureSet: 'Avengers Tower',
@@ -608,14 +677,14 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   },
   {
     name: 'Star Wars',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
     signatureSet: 'AT-AT',
   },
   {
     name: 'Harry Potter',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",

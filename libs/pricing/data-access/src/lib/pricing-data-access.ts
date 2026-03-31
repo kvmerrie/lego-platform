@@ -22,6 +22,19 @@ const pricePanelSnapshotBySetId = new Map(
   ]),
 );
 
+function getCandidateRank(
+  setId: string,
+  candidateSetIds?: readonly string[],
+): number {
+  if (!candidateSetIds?.length) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const rank = candidateSetIds.indexOf(setId);
+
+  return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
+}
+
 interface PriceHistoryRowRecord {
   condition: string;
   currency_code: string;
@@ -66,6 +79,55 @@ export function getFeaturedSetPriceContext(
     availabilityLabel: pricePanelSnapshot.lowestAvailabilityLabel,
     observedAt: pricePanelSnapshot.observedAt,
   };
+}
+
+export function listDealSpotlightPriceContexts({
+  candidateSetIds,
+  limit = 4,
+}: {
+  candidateSetIds?: readonly string[];
+  limit?: number;
+} = {}): FeaturedSetPriceContext[] {
+  return pricePanelSnapshots
+    .flatMap((pricePanelSnapshot) => {
+      if (
+        typeof pricePanelSnapshot.deltaMinor !== 'number' ||
+        pricePanelSnapshot.deltaMinor >= 0
+      ) {
+        return [];
+      }
+
+      if (
+        candidateSetIds?.length &&
+        !candidateSetIds.includes(pricePanelSnapshot.setId)
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          setId: pricePanelSnapshot.setId,
+          currencyCode: pricePanelSnapshot.currencyCode,
+          headlinePriceMinor: pricePanelSnapshot.headlinePriceMinor,
+          referencePriceMinor: pricePanelSnapshot.referencePriceMinor,
+          deltaMinor: pricePanelSnapshot.deltaMinor,
+          merchantName: pricePanelSnapshot.lowestMerchantName,
+          merchantCount: pricePanelSnapshot.merchantCount,
+          availabilityLabel: pricePanelSnapshot.lowestAvailabilityLabel,
+          observedAt: pricePanelSnapshot.observedAt,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        left.deltaMinor - right.deltaMinor ||
+        right.merchantCount - left.merchantCount ||
+        getCandidateRank(left.setId, candidateSetIds) -
+          getCandidateRank(right.setId, candidateSetIds) ||
+        right.headlinePriceMinor - left.headlinePriceMinor ||
+        left.setId.localeCompare(right.setId),
+    )
+    .slice(0, limit);
 }
 
 export function listPricingObservations(setId: string): PricingObservation[] {

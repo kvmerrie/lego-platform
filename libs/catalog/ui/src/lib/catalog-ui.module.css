@@ -252,6 +252,14 @@
   white-space: nowrap;
 }
 
+.cardCompactSignal {
+  color: var(--lego-text-default);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
+  margin: 0;
+}
+
 .cardBrowseSupporting {
   color: var(--lego-text-muted);
   display: -webkit-box;

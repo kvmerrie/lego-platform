@@ -191,6 +191,11 @@ export function CatalogSetCard({
                 <p className={styles.cardCompactSupporting}>
                   {priceContext.merchantLabel}
                 </p>
+                {priceContext.pricePositionLabel ? (
+                  <p className={styles.cardCompactSignal}>
+                    {priceContext.pricePositionLabel}
+                  </p>
+                ) : null}
               </>
             ) : (
               <>

@@ -14,6 +14,7 @@ import {
   buildPriceHistorySummary,
   buildTrackedPriceSummary,
   getFeaturedSetPriceContext,
+  listDealSpotlightPriceContexts,
   getPriceHistorySummary,
   getPriceHistorySummaryState,
   getPricePanelSnapshot,
@@ -33,14 +34,14 @@ describe('pricing data access', () => {
       regionCode: 'NL',
       currencyCode: 'EUR',
       condition: 'new',
-      headlinePriceMinor: 48999,
+      headlinePriceMinor: 46999,
       lowestAvailabilityLabel: 'In stock',
       lowestMerchantId: 'bol',
       lowestMerchantName: 'bol',
       merchantCount: 2,
-      observedAt: '2026-03-29T09:00:00.000Z',
+      observedAt: '2026-03-31T09:00:00.000Z',
       referencePriceMinor: 49999,
-      deltaMinor: -1000,
+      deltaMinor: -3000,
     });
   });
 
@@ -50,14 +51,14 @@ describe('pricing data access', () => {
       regionCode: 'NL',
       currencyCode: 'EUR',
       condition: 'new',
-      headlinePriceMinor: 44999,
+      headlinePriceMinor: 43999,
       lowestAvailabilityLabel: 'In stock',
       lowestMerchantId: 'bol',
       lowestMerchantName: 'bol',
       merchantCount: 2,
-      observedAt: '2026-03-29T09:45:00.000Z',
+      observedAt: '2026-03-31T09:56:00.000Z',
       referencePriceMinor: 45999,
-      deltaMinor: -1000,
+      deltaMinor: -2000,
     });
   });
 
@@ -65,14 +66,32 @@ describe('pricing data access', () => {
     expect(getFeaturedSetPriceContext('10316')).toEqual({
       setId: '10316',
       currencyCode: 'EUR',
-      headlinePriceMinor: 48999,
+      headlinePriceMinor: 46999,
       availabilityLabel: 'In stock',
       merchantName: 'bol',
       merchantCount: 2,
-      observedAt: '2026-03-29T09:00:00.000Z',
+      observedAt: '2026-03-31T09:00:00.000Z',
       referencePriceMinor: 49999,
-      deltaMinor: -1000,
+      deltaMinor: -3000,
     });
+  });
+
+  test('surfaces deal spotlights by strongest reviewed price gap first', () => {
+    expect(
+      listDealSpotlightPriceContexts({
+        candidateSetIds: ['21348', '10316', '76269', '10333'],
+        limit: 3,
+      }).map((priceContext) => priceContext.setId),
+    ).toEqual(['76269', '10316', '21348']);
+  });
+
+  test('uses candidate ordering to break ties between similar deal signals', () => {
+    expect(
+      listDealSpotlightPriceContexts({
+        candidateSetIds: ['10333', '21333'],
+        limit: 2,
+      }).map((priceContext) => priceContext.setId),
+    ).toEqual(['10333', '21333']);
   });
 
   test('lists pricing observations for a single set only', () => {
@@ -302,9 +321,9 @@ describe('pricing data access', () => {
 
     await expect(getPriceHistorySummary('10316')).resolves.toEqual({
       currencyCode: 'EUR',
-      currentHeadlinePriceMinor: 48999,
+      currentHeadlinePriceMinor: 46999,
       averagePriceMinor: 49832,
-      deltaVsAverageMinor: -833,
+      deltaVsAverageMinor: -2833,
       lowPriceMinor: 48999,
       highPriceMinor: 50999,
       pointCount: 3,
@@ -365,18 +384,18 @@ describe('pricing data access', () => {
       pointCount: 3,
       priceHistorySummary: {
         currencyCode: 'EUR',
-        currentHeadlinePriceMinor: 48999,
+        currentHeadlinePriceMinor: 46999,
         averagePriceMinor: 49832,
-        deltaVsAverageMinor: -833,
+        deltaVsAverageMinor: -2833,
         lowPriceMinor: 48999,
         highPriceMinor: 50999,
         pointCount: 3,
       },
       trackedPriceSummary: {
         currencyCode: 'EUR',
-        currentHeadlinePriceMinor: 48999,
-        deltaVsTrackedHighMinor: -2000,
-        deltaVsTrackedLowMinor: 0,
+        currentHeadlinePriceMinor: 46999,
+        deltaVsTrackedHighMinor: -4000,
+        deltaVsTrackedLowMinor: -2000,
         pointCount: 3,
         trackedHighPriceMinor: 50999,
         trackedLowPriceMinor: 48999,
@@ -418,9 +437,9 @@ describe('pricing data access', () => {
       priceHistorySummary: undefined,
       trackedPriceSummary: {
         currencyCode: 'EUR',
-        currentHeadlinePriceMinor: 48999,
-        deltaVsTrackedHighMinor: 0,
-        deltaVsTrackedLowMinor: 0,
+        currentHeadlinePriceMinor: 46999,
+        deltaVsTrackedHighMinor: -2000,
+        deltaVsTrackedLowMinor: -2000,
         pointCount: 1,
         trackedHighPriceMinor: 48999,
         trackedLowPriceMinor: 48999,

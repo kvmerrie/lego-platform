@@ -13,9 +13,19 @@ export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
 }
 
 export function CatalogFeatureSetList({
+  description = 'A compact mix of flagship buys, crowd-pulling click magnets, and easier collector entry points.',
+  eyebrow = 'Featured sets',
+  sectionId = 'featured-sets',
   setCards,
+  signalText,
+  title = 'Start with sets worth opening.',
 }: {
+  description?: string;
+  eyebrow?: string;
+  sectionId?: string;
   setCards?: readonly CatalogFeatureSetListItem[];
+  signalText?: string;
+  title?: string;
 }) {
   const homepageSets: readonly CatalogFeatureSetListItem[] =
     setCards ??
@@ -28,19 +38,21 @@ export function CatalogFeatureSetList({
   ).length;
 
   return (
-    <section className={styles.section} id="featured-sets">
+    <section className={styles.section} id={sectionId}>
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          description="A few strong set pages to start with, with reviewed prices where the coverage already holds up."
-          eyebrow="Featured sets"
-          title="Start with sets worth opening."
+          description={description}
+          eyebrow={eyebrow}
+          title={title}
         />
         <p className={styles.signalRow}>
-          {homepageSets.length} featured sets
-          {reviewedSetCount
-            ? ` · ${reviewedSetCount} with reviewed prices`
-            : ''}
+          {signalText ??
+            `${homepageSets.length} featured sets${
+              reviewedSetCount
+                ? ` · ${reviewedSetCount} with reviewed prices`
+                : ''
+            }`}
         </p>
       </div>
       <div className={styles.grid}>

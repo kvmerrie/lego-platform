@@ -18,9 +18,80 @@ import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 const HOMEPAGE_SET_LIMIT = 3;
-const catalogThemeOrder = catalogThemeOverlays.map(
+const fallbackCatalogThemeOrder = catalogThemeOverlays.map(
   (catalogThemeOverlay) => catalogThemeOverlay.name,
 );
+const curatedDiscoverThemeOrder = [
+  'Icons',
+  'Marvel',
+  'Ideas',
+  'Star Wars',
+  'Harry Potter',
+  'Technic',
+  'Modular Buildings',
+  'Botanicals',
+  'Architecture',
+  'Art',
+  'Disney',
+  'NINJAGO',
+  'Super Mario',
+  'Jurassic World',
+] as const;
+const curatedDiscoverSetOrder = [
+  '10316',
+  '10333',
+  '10294',
+  '76269',
+  '76178',
+  '75367',
+  '75313',
+  '75331',
+  '76417',
+  '76419',
+  '76437',
+  '21348',
+  '21350',
+  '10300',
+  '21333',
+  '10280',
+  '10311',
+  '31208',
+  '21345',
+  '21349',
+  '10305',
+  '10326',
+  '10332',
+  '10318',
+  '10341',
+  '10317',
+  '76218',
+  '42143',
+  '42115',
+  '43222',
+  '71411',
+  '71741',
+] as const;
+const homepageDealCandidateIds = [
+  '76269',
+  '21348',
+  '10294',
+  '21349',
+  '10332',
+  '10305',
+  '21061',
+] as const;
+const discoverDealCandidateIds = [
+  '76269',
+  '10316',
+  '21348',
+  '10333',
+  '10294',
+  '21333',
+  '21349',
+  '10332',
+  '10305',
+  '21061',
+] as const;
 
 export interface CatalogBrowseThemeGroup {
   setCards: CatalogHomepageSetCard[];
@@ -242,20 +313,41 @@ for (const catalogOffer of catalogOffers) {
   catalogOffersBySetId.set(catalogOffer.setId, existingCatalogOffers);
 }
 
-function sortCatalogHomepageSetCards(
+function getExplicitBrowseRank(
+  canonicalId: string,
+  rankedIds: readonly string[],
+): number {
+  const rank = rankedIds.indexOf(canonicalId);
+
+  return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
+}
+
+function sortCatalogDiscoverSetCards(
   setCards: readonly CatalogHomepageSetCard[],
 ): CatalogHomepageSetCard[] {
   return [...setCards].sort(
     (left, right) =>
+      getExplicitBrowseRank(left.id, curatedDiscoverSetOrder) -
+        getExplicitBrowseRank(right.id, curatedDiscoverSetOrder) ||
       right.releaseYear - left.releaseYear ||
       left.name.localeCompare(right.name),
   );
 }
 
 function getCatalogThemeBrowseOrder(theme: string): number {
-  const themeOrderIndex = catalogThemeOrder.indexOf(theme);
+  const curatedThemeOrderIndex = curatedDiscoverThemeOrder.indexOf(
+    theme as (typeof curatedDiscoverThemeOrder)[number],
+  );
 
-  return themeOrderIndex === -1 ? Number.MAX_SAFE_INTEGER : themeOrderIndex;
+  if (curatedThemeOrderIndex !== -1) {
+    return curatedThemeOrderIndex;
+  }
+
+  const fallbackThemeOrderIndex = fallbackCatalogThemeOrder.indexOf(theme);
+
+  return fallbackThemeOrderIndex === -1
+    ? Number.MAX_SAFE_INTEGER
+    : fallbackThemeOrderIndex + curatedDiscoverThemeOrder.length;
 }
 
 function getCatalogSearchScore({
@@ -316,13 +408,11 @@ export function listCatalogSetSummaries(): CatalogSetSummary[] {
 }
 
 export function listHomepageSets(): CatalogSetSummary[] {
-  return sortCatalogSetSummaries(
-    catalogSyncManifest.homepageFeaturedSetIds
-      .slice(0, HOMEPAGE_SET_LIMIT)
-      .map((canonicalId) =>
-        toCatalogSetSummary(getCatalogSetDetailById(canonicalId)),
-      ),
-  ).slice(0, HOMEPAGE_SET_LIMIT);
+  return catalogSyncManifest.homepageFeaturedSetIds
+    .slice(0, HOMEPAGE_SET_LIMIT)
+    .map((canonicalId) =>
+      toCatalogSetSummary(getCatalogSetDetailById(canonicalId)),
+    );
 }
 
 export function listHomepageSetCards(): CatalogHomepageSetCard[] {
@@ -330,11 +420,6 @@ export function listHomepageSetCards(): CatalogHomepageSetCard[] {
     .slice(0, HOMEPAGE_SET_LIMIT)
     .map((canonicalId) =>
       toCatalogHomepageSetCard(getCatalogSetDetailById(canonicalId)),
-    )
-    .sort(
-      (left, right) =>
-        right.releaseYear - left.releaseYear ||
-        left.name.localeCompare(right.name),
     )
     .slice(0, HOMEPAGE_SET_LIMIT);
 }
@@ -351,6 +436,14 @@ export function listCatalogSetCardsByIds(
 
     return [toCatalogHomepageSetCard(toCatalogSetDetail(catalogSetRecord))];
   });
+}
+
+export function listHomepageDealCandidateSetCards(): CatalogHomepageSetCard[] {
+  return listCatalogSetCardsByIds(homepageDealCandidateIds);
+}
+
+export function listDiscoverDealCandidateSetCards(): CatalogHomepageSetCard[] {
+  return listCatalogSetCardsByIds(discoverDealCandidateIds);
 }
 
 export function getCatalogOffersBySetId(setId: string): CatalogOfferRecord[] {
@@ -373,7 +466,7 @@ export function listCatalogBrowseThemeGroups(): CatalogBrowseThemeGroup[] {
   return [...setCardsByTheme.entries()]
     .map(([theme, setCards]) => ({
       theme,
-      setCards: sortCatalogHomepageSetCards(setCards),
+      setCards: sortCatalogDiscoverSetCards(setCards),
     }))
     .sort(
       (left, right) =>

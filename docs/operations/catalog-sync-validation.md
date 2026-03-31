@@ -2,7 +2,7 @@
 
 This checklist is for the current Rebrickable-backed sync run using the curated product-ready catalog scope. It assumes the current sync runtime, generated artifacts, overlays, and tests are already in place.
 
-The current curated public catalog scope is `39` sets.
+The current curated public catalog scope is `44` sets.
 
 ## 1. First Real Sync Run Checklist
 
@@ -108,6 +108,11 @@ Current expected source slugs:
 - `t-rex-breakout-76956`
 - `the-razor-crest-75331`
 - `gringotts-wizarding-bank-collectors-edition-76417`
+- `daily-bugle-76178`
+- `venator-class-republic-attack-cruiser-75367`
+- `jaws-21350`
+- `land-rover-classic-defender-90-10317`
+- `the-burrow-collectors-edition-76437`
 
 Current expected public route slugs from the product-facing layer:
 
@@ -150,6 +155,11 @@ Current expected public route slugs from the product-facing layer:
 - `t-rex-breakout-76956`
 - `the-razor-crest-75331`
 - `gringotts-wizarding-bank-collectors-edition-76417`
+- `daily-bugle-76178`
+- `venator-class-republic-attack-cruiser-75367`
+- `jaws-21350`
+- `land-rover-classic-defender-90-10317`
+- `the-burrow-collectors-edition-76437`
 
 ### Canonical Id Assumptions
 
@@ -194,6 +204,11 @@ Check that each source set number still maps correctly:
 - `76956-1` -> `76956`
 - `75331-1` -> `75331`
 - `76417-1` -> `76417`
+- `76178-1` -> `76178`
+- `75367-1` -> `75367`
+- `21350-1` -> `21350`
+- `10317-1` -> `10317`
+- `76437-1` -> `76437`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 
@@ -222,8 +237,8 @@ Check `catalog-sync-manifest.generated.ts`:
 Current expected featured ids:
 
 - `10316`
-- `21348`
-- `76269`
+- `10333`
+- `21333`
 
 The homepage list order is still a read-side concern, not a sync-order concern. The sync only validates the curated inclusion set.
 

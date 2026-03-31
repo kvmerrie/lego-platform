@@ -16,7 +16,8 @@ describe('affiliate data access', () => {
       },
       {
         merchantId: 'lego-nl',
-        outboundUrl: 'https://www.lego.com/nl-nl/product/lotr-10316',
+        outboundUrl:
+          'https://www.lego.com/nl-nl/product/the-lord-of-the-rings-rivendell-10316',
       },
     ]);
   });
@@ -36,6 +37,6 @@ describe('affiliate data access', () => {
   });
 
   test('returns no affiliate offers for sets outside the commerce slice', () => {
-    expect(listAffiliateOffers('10305')).toEqual([]);
+    expect(listAffiliateOffers('76419')).toEqual([]);
   });
 });

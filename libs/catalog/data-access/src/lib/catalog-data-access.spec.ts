@@ -1,9 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import {
+  listDiscoverDealCandidateSetCards,
   getCatalogOffersBySetId,
   getCatalogSetBySlug,
   listCatalogBrowseThemeGroups,
   listCatalogSetCardsByIds,
+  listHomepageDealCandidateSetCards,
   listCatalogSetSlugs,
   listHomepageSetCards,
   listCatalogSetSummaries,
@@ -210,6 +212,31 @@ const expectedGeneratedCatalogRecords = [
     slug: 'gringotts-wizarding-bank-collectors-edition-76417',
     sourceSetNumber: '76417-1',
   },
+  {
+    canonicalId: '76178',
+    slug: 'daily-bugle-76178',
+    sourceSetNumber: '76178-1',
+  },
+  {
+    canonicalId: '75367',
+    slug: 'venator-class-republic-attack-cruiser-75367',
+    sourceSetNumber: '75367-1',
+  },
+  {
+    canonicalId: '21350',
+    slug: 'jaws-21350',
+    sourceSetNumber: '21350-1',
+  },
+  {
+    canonicalId: '10317',
+    slug: 'land-rover-classic-defender-90-10317',
+    sourceSetNumber: '10317-1',
+  },
+  {
+    canonicalId: '76437',
+    slug: 'the-burrow-collectors-edition-76437',
+    sourceSetNumber: '76437-1',
+  },
 ];
 
 const expectedProductSlugs = [
@@ -252,43 +279,48 @@ const expectedProductSlugs = [
   't-rex-breakout-76956',
   'the-razor-crest-75331',
   'gringotts-wizarding-bank-collectors-edition-76417',
+  'daily-bugle-76178',
+  'venator-class-republic-attack-cruiser-75367',
+  'jaws-21350',
+  'land-rover-classic-defender-90-10317',
+  'the-burrow-collectors-edition-76437',
 ];
 
 const expectedBrowseThemeGroups = [
-  { theme: 'Icons', count: 13 },
-  { theme: 'Ideas', count: 9 },
-  { theme: 'Marvel', count: 2 },
+  { theme: 'Icons', count: 14 },
+  { theme: 'Marvel', count: 3 },
+  { theme: 'Ideas', count: 10 },
+  { theme: 'Star Wars', count: 3 },
+  { theme: 'Harry Potter', count: 3 },
+  { theme: 'Technic', count: 2 },
   { theme: 'Modular Buildings', count: 1 },
   { theme: 'Botanicals', count: 2 },
-  { theme: 'Technic', count: 2 },
-  { theme: 'Super Mario', count: 1 },
-  { theme: 'NINJAGO', count: 1 },
-  { theme: 'Jurassic World', count: 1 },
-  { theme: 'Star Wars', count: 2 },
-  { theme: 'Harry Potter', count: 2 },
   { theme: 'Architecture', count: 1 },
   { theme: 'Art', count: 1 },
   { theme: 'Disney', count: 1 },
+  { theme: 'NINJAGO', count: 1 },
+  { theme: 'Super Mario', count: 1 },
+  { theme: 'Jurassic World', count: 1 },
 ];
 
 const expectedCatalogThemes = [
   {
     name: 'Icons',
-    setCount: 13,
+    setCount: 14,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
     signatureSet: 'Rivendell',
   },
   {
     name: 'Ideas',
-    setCount: 9,
+    setCount: 10,
     momentum:
       'Community-voted display builds keep balancing fandom, nostalgia, and design-object appeal.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
     name: 'Marvel',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
     signatureSet: 'Avengers Tower',
@@ -337,14 +369,14 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Star Wars',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
     signatureSet: 'AT-AT',
   },
   {
     name: 'Harry Potter',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
@@ -374,14 +406,14 @@ const expectedCatalogThemes = [
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(39);
+    expect(catalogSnapshot.setRecords).toHaveLength(44);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
     expect(catalogSyncManifest.homepageFeaturedSetIds).toEqual([
       '10316',
-      '21348',
-      '76269',
+      '10333',
+      '21333',
     ]);
   });
 
@@ -426,28 +458,6 @@ describe('catalog data-access contracts', () => {
   test('keeps homepage summaries stable while allowing source facts to refresh', () => {
     expect(listHomepageSets()).toEqual([
       {
-        id: '21348',
-        slug: 'dungeons-and-dragons-red-dragons-tale-21348',
-        name: "Dungeons & Dragons: Red Dragon's Tale",
-        theme: 'Ideas',
-        releaseYear: 2024,
-        pieces: 3747,
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
-        priceRange: '$359 to $409',
-        collectorAngle: 'Crossover audience magnet',
-      },
-      {
-        id: '76269',
-        slug: 'avengers-tower-76269',
-        name: 'Avengers Tower',
-        theme: 'Marvel',
-        releaseYear: 2023,
-        pieces: 5202,
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
-        priceRange: '$449 to $519',
-        collectorAngle: 'Marvel flagship showcase',
-      },
-      {
         id: '10316',
         slug: 'rivendell-10316',
         name: 'Rivendell',
@@ -457,6 +467,28 @@ describe('catalog data-access contracts', () => {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
         priceRange: '$499 to $569',
         collectorAngle: 'Prestige display anchor',
+      },
+      {
+        id: '10333',
+        slug: 'the-lord-of-the-rings-barad-dur-10333',
+        name: 'The Lord of the Rings: Barad-dûr',
+        theme: 'Icons',
+        releaseYear: 2024,
+        pieces: 5478,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
+        priceRange: '$459 to $529',
+        collectorAngle: 'Middle-earth display monolith',
+      },
+      {
+        id: '21333',
+        slug: 'vincent-van-gogh-the-starry-night-21333',
+        name: 'Vincent van Gogh - The Starry Night',
+        theme: 'Ideas',
+        releaseYear: 2022,
+        pieces: 2316,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
+        priceRange: '$149 to $189',
+        collectorAngle: 'Art-crossover wall display piece',
       },
     ]);
   });
@@ -535,33 +567,6 @@ describe('catalog data-access contracts', () => {
   test('builds richer homepage card reads with curated availability and tagline context', () => {
     expect(listHomepageSetCards()).toEqual([
       {
-        id: '21348',
-        slug: 'dungeons-and-dragons-red-dragons-tale-21348',
-        name: "Dungeons & Dragons: Red Dragon's Tale",
-        theme: 'Ideas',
-        releaseYear: 2024,
-        pieces: 3747,
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
-        priceRange: '$359 to $409',
-        collectorAngle: 'Crossover audience magnet',
-        tagline:
-          'A community-driven release with rich minifigure storytelling hooks.',
-        availability: 'Strong launch momentum',
-      },
-      {
-        id: '76269',
-        slug: 'avengers-tower-76269',
-        name: 'Avengers Tower',
-        theme: 'Marvel',
-        releaseYear: 2023,
-        pieces: 5202,
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
-        priceRange: '$449 to $519',
-        collectorAngle: 'Marvel flagship showcase',
-        tagline: 'A marquee licensed set with broad household recognizability.',
-        availability: 'Stable with strong seasonal demand',
-      },
-      {
         id: '10316',
         slug: 'rivendell-10316',
         name: 'Rivendell',
@@ -575,7 +580,51 @@ describe('catalog data-access contracts', () => {
           'A flagship fantasy build that rewards both display space and patience.',
         availability: 'Healthy but premium availability',
       },
+      {
+        id: '10333',
+        slug: 'the-lord-of-the-rings-barad-dur-10333',
+        name: 'The Lord of the Rings: Barad-dûr',
+        theme: 'Icons',
+        releaseYear: 2024,
+        pieces: 5478,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
+        priceRange: '$459 to $529',
+        collectorAngle: 'Middle-earth display monolith',
+        tagline:
+          'A towering fantasy centerpiece with unusually strong shelf drama and cross-fandom recognizability.',
+        availability: 'High-visibility premium demand',
+      },
+      {
+        id: '21333',
+        slug: 'vincent-van-gogh-the-starry-night-21333',
+        name: 'Vincent van Gogh - The Starry Night',
+        theme: 'Ideas',
+        releaseYear: 2022,
+        pieces: 2316,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
+        priceRange: '$149 to $189',
+        collectorAngle: 'Art-crossover wall display piece',
+        tagline:
+          'A museum-linked display set that sits comfortably between art object, gift piece, and collector conversation starter.',
+        availability: 'Steady crossover demand',
+      },
     ]);
+  });
+
+  test('keeps homepage deal candidates focused on reviewed click-magnets outside the main hero row', () => {
+    expect(
+      listHomepageDealCandidateSetCards().map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+    ).toEqual(['76269', '21348', '10294', '21349', '10332', '10305', '21061']);
+  });
+
+  test('keeps discover deal candidates anchored in flagship and high-interest sets', () => {
+    expect(
+      listDiscoverDealCandidateSetCards()
+        .slice(0, 6)
+        .map((catalogSetCard) => catalogSetCard.id),
+    ).toEqual(['76269', '10316', '21348', '10333', '10294', '21333']);
   });
 
   test('maps curated ids to card-ready reads while skipping ids outside the public catalog slice', () => {
@@ -623,7 +672,7 @@ describe('catalog data-access contracts', () => {
         currency: 'EUR',
         availability: 'in_stock',
         condition: 'new',
-        priceCents: 48999,
+        priceCents: 46999,
       }),
       expect.objectContaining({
         setId: '10316',
@@ -637,12 +686,14 @@ describe('catalog data-access contracts', () => {
       }),
     ]);
 
-    expect(getCatalogOffersBySetId('42143')[0]).toEqual(
-      expect.objectContaining({
-        merchant: 'amazon',
-        merchantName: 'Amazon',
-        priceCents: 40999,
-      }),
+    expect(getCatalogOffersBySetId('42143')).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          merchant: 'amazon',
+          merchantName: 'Amazon',
+          priceCents: 42999,
+        }),
+      ]),
     );
 
     expect(
@@ -668,7 +719,28 @@ describe('catalog data-access contracts', () => {
       listCatalogBrowseThemeGroups()[0]?.setCards.map(
         (catalogSetCard) => catalogSetCard.id,
       ),
-    ).toContain('10333');
+    ).toEqual([
+      '10316',
+      '10333',
+      '10294',
+      '10300',
+      '10305',
+      '10332',
+      '10318',
+      '10341',
+      '10317',
+      '10331',
+      '10320',
+      '10323',
+      '10315',
+      '10306',
+    ]);
+
+    expect(
+      listCatalogBrowseThemeGroups()[2]
+        ?.setCards.slice(0, 4)
+        .map((catalogSetCard) => catalogSetCard.id),
+    ).toEqual(['21348', '21350', '21333', '21345']);
   });
 
   test('does not expose upstream slug drift through the product route contract', () => {
@@ -1108,7 +1180,7 @@ describe('catalog data-access contracts', () => {
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(39);
+    expect(listCatalogSetSummaries()).toHaveLength(44);
     expect(listCatalogThemes()).toEqual(expectedCatalogThemes);
   });
 });
