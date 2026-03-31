@@ -94,14 +94,6 @@ const discoverDealCandidateIds = [
   '21061',
 ] as const;
 const HOMEPAGE_THEME_LIMIT = 6;
-const themeLandingPageNames = [
-  'Icons',
-  'Marvel',
-  'Ideas',
-  'Star Wars',
-  'Harry Potter',
-  'Technic',
-] as const;
 
 export interface CatalogBrowseThemeGroup {
   slug: string;
@@ -111,6 +103,11 @@ export interface CatalogBrowseThemeGroup {
 
 export interface CatalogThemeLandingPage {
   setCards: CatalogHomepageSetCard[];
+  themeSnapshot: CatalogThemeSnapshot;
+}
+
+export interface CatalogThemeDirectoryItem {
+  imageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
 }
 
@@ -403,6 +400,24 @@ function getCatalogSearchScore({
   return undefined;
 }
 
+function getCatalogThemeRepresentativeImageUrl({
+  setCards,
+  themeSnapshot,
+}: {
+  setCards: readonly CatalogHomepageSetCard[];
+  themeSnapshot: CatalogThemeSnapshot;
+}): string | undefined {
+  const signatureSetCard = setCards.find(
+    (catalogSetCard) => catalogSetCard.name === themeSnapshot.signatureSet,
+  );
+
+  if (signatureSetCard?.imageUrl) {
+    return signatureSetCard.imageUrl;
+  }
+
+  return setCards.find((catalogSetCard) => catalogSetCard.imageUrl)?.imageUrl;
+}
+
 function getCatalogSetDetailById(canonicalId: string): CatalogSetDetail {
   const catalogSetRecord = catalogSetRecordById.get(canonicalId);
 
@@ -573,6 +588,35 @@ export function listHomepageThemeSnapshots(
     .slice(0, limit);
 }
 
+export function listCatalogThemeDirectoryItems(): CatalogThemeDirectoryItem[] {
+  const catalogThemeSnapshotByName = new Map(
+    listCatalogThemes().map((catalogThemeSnapshot) => [
+      catalogThemeSnapshot.name,
+      catalogThemeSnapshot,
+    ]),
+  );
+
+  return listCatalogBrowseThemeGroups().flatMap((catalogThemeGroup) => {
+    const catalogThemeSnapshot = catalogThemeSnapshotByName.get(
+      catalogThemeGroup.theme,
+    );
+
+    if (!catalogThemeSnapshot) {
+      return [];
+    }
+
+    return [
+      {
+        imageUrl: getCatalogThemeRepresentativeImageUrl({
+          setCards: catalogThemeGroup.setCards,
+          themeSnapshot: catalogThemeSnapshot,
+        }),
+        themeSnapshot: catalogThemeSnapshot,
+      },
+    ];
+  });
+}
+
 function listCatalogThemeLandingPages(): CatalogThemeLandingPage[] {
   const catalogThemeSnapshotByName = new Map(
     listCatalogThemes().map((catalogThemeSnapshot) => [
@@ -580,18 +624,13 @@ function listCatalogThemeLandingPages(): CatalogThemeLandingPage[] {
       catalogThemeSnapshot,
     ]),
   );
-  const catalogThemeGroupByName = new Map(
-    listCatalogBrowseThemeGroups().map((catalogThemeGroup) => [
+
+  return listCatalogBrowseThemeGroups().flatMap((catalogThemeGroup) => {
+    const catalogThemeSnapshot = catalogThemeSnapshotByName.get(
       catalogThemeGroup.theme,
-      catalogThemeGroup,
-    ]),
-  );
+    );
 
-  return themeLandingPageNames.flatMap((themeName) => {
-    const catalogThemeSnapshot = catalogThemeSnapshotByName.get(themeName);
-    const catalogThemeGroup = catalogThemeGroupByName.get(themeName);
-
-    if (!catalogThemeSnapshot || !catalogThemeGroup) {
+    if (!catalogThemeSnapshot) {
       return [];
     }
 

@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { CatalogFeatureThemeIndex } from './catalog-feature-theme-index';
 import { CatalogFeatureThemePage } from './catalog-feature-theme-page';
 
 describe('CatalogFeatureThemePage', () => {
@@ -61,5 +62,46 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('Good time to buy in Marvel');
     expect(markup).toContain('All Marvel sets');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
+  });
+});
+
+describe('CatalogFeatureThemeIndex', () => {
+  it('renders a calm theme directory without set rows', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureThemeIndex
+        themeDirectoryItems={[
+          {
+            imageUrl: 'https://images.example/icons.jpg',
+            themeSnapshot: {
+              name: 'Icons',
+              slug: 'icons',
+              setCount: 14,
+              momentum:
+                'Big display-led builds, nostalgic callbacks, and collector anchors.',
+              signatureSet: 'Rivendell',
+            },
+          },
+          {
+            imageUrl: 'https://images.example/marvel.jpg',
+            themeSnapshot: {
+              name: 'Marvel',
+              slug: 'marvel',
+              setCount: 3,
+              momentum:
+                'Superhero flagships and skyline-style display builds with broad recognition.',
+              signatureSet: 'Avengers Tower',
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('Browse every theme');
+    expect(markup).toContain('2 theme pages');
+    expect(markup).toContain('Discover stays better for mixed browsing');
+    expect(markup).toContain('href="/themes/icons"');
+    expect(markup).toContain('href="/themes/marvel"');
+    expect(markup).toContain('src="https://images.example/icons.jpg"');
+    expect(markup).not.toContain('href="/sets/');
   });
 });

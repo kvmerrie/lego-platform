@@ -376,6 +376,34 @@
   gap: var(--lego-space-4);
 }
 
+.contextRow {
+  align-items: center;
+  color: var(--lego-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.contextLink,
+.contextCurrent,
+.contextDivider {
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.contextLink {
+  color: var(--lego-text-muted);
+}
+
+.contextCurrent {
+  color: var(--lego-text-muted);
+  margin: 0;
+}
+
+.contextDivider {
+  color: var(--lego-border);
+}
+
 .productHero {
   display: grid;
   gap: var(--lego-space-4);
@@ -436,6 +464,16 @@
   gap: var(--lego-space-2);
 }
 
+.themeBadgeLink {
+  gap: 0;
+  min-height: auto;
+  padding: 0;
+}
+
+.themeBadgeLink:hover {
+  background: transparent;
+}
+
 .highlightsList {
   display: grid;
   gap: var(--lego-space-2);
@@ -471,9 +509,10 @@
   border-radius: inherit;
   box-shadow: none;
   color: inherit;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   min-height: 100%;
-  padding: var(--lego-space-5);
+  padding: 0;
   text-align: left;
   width: 100%;
 }
@@ -483,10 +522,29 @@
   border-color: transparent;
 }
 
+.themeTileVisual {
+  align-items: flex-end;
+  background: var(--lego-surface);
+  display: flex;
+  justify-content: center;
+  min-height: 10rem;
+  padding: var(--lego-space-4) var(--lego-space-4) 0;
+}
+
+.themeTileImage {
+  display: block;
+  height: auto;
+  max-height: 12rem;
+  max-width: 100%;
+  width: auto;
+}
+
 .themeTileBody {
   display: grid;
+  flex: 1 1 auto;
   gap: var(--lego-space-3);
   min-height: 100%;
+  padding: var(--lego-space-5);
 }
 
 .themeTileTop {

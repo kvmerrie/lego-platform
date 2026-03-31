@@ -7,6 +7,12 @@ import {
   getCatalogSetBySlug,
   listCatalogSetSlugs,
 } from '@lego-platform/catalog/data-access';
+import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
+import {
+  buildThemePath,
+  buildWebPath,
+  webPathnames,
+} from '@lego-platform/shared/config';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
@@ -64,6 +70,10 @@ export default async function SetDetailPage({
         supportingPanel={
           <PricingFeaturePriceHistory setId={catalogSetDetail.id} />
         }
+        themeDirectoryHref={buildWebPath(webPathnames.themes)}
+        themeHref={buildThemePath(
+          buildCatalogThemeSlug(catalogSetDetail.theme),
+        )}
       />
       <AffiliateFeatureOffers affiliateOffers={catalogOffers} />
     </ShellWeb>

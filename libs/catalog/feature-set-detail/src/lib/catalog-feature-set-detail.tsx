@@ -6,16 +6,22 @@ export function CatalogFeatureSetDetail({
   catalogSetDetail,
   productSummary,
   supportingPanel,
+  themeDirectoryHref,
+  themeHref,
 }: {
   catalogSetDetail: CatalogSetDetail;
   productSummary?: ReactNode;
   supportingPanel?: ReactNode;
+  themeDirectoryHref?: string;
+  themeHref?: string;
 }) {
   return (
     <CatalogSetDetailPanel
       catalogSetDetail={catalogSetDetail}
       productSummary={productSummary}
       supportingPanel={supportingPanel}
+      themeDirectoryHref={themeDirectoryHref}
+      themeHref={themeHref}
     />
   );
 }

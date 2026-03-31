@@ -5,6 +5,7 @@ import {
   getCatalogOffersBySetId,
   getCatalogSetBySlug,
   listCatalogBrowseThemeGroups,
+  listCatalogThemeDirectoryItems,
   listCatalogSetCardsByIds,
   listCatalogThemePageSlugs,
   listHomepageDealCandidateSetCards,
@@ -773,6 +774,87 @@ describe('catalog data-access contracts', () => {
     ]);
   });
 
+  test('builds a full theme directory from the existing theme snapshots and browse order', () => {
+    expect(
+      listCatalogThemeDirectoryItems().map((themeDirectoryItem) => ({
+        imageUrl: themeDirectoryItem.imageUrl,
+        name: themeDirectoryItem.themeSnapshot.name,
+        setCount: themeDirectoryItem.themeSnapshot.setCount,
+      })),
+    ).toEqual([
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        name: 'Icons',
+        setCount: 14,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+        name: 'Marvel',
+        setCount: 3,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
+        name: 'Ideas',
+        setCount: 10,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
+        name: 'Star Wars',
+        setCount: 3,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
+        name: 'Harry Potter',
+        setCount: 3,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
+        name: 'Technic',
+        setCount: 2,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10326-1/129017.jpg',
+        name: 'Modular Buildings',
+        setCount: 1,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10280-1/148035.jpg',
+        name: 'Botanicals',
+        setCount: 2,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
+        name: 'Architecture',
+        setCount: 1,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/31208-1/131769.jpg',
+        name: 'Art',
+        setCount: 1,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/43222-1/130721.jpg',
+        name: 'Disney',
+        setCount: 1,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/71741-1/80116.jpg',
+        name: 'NINJAGO',
+        setCount: 1,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/71411-1/104617.jpg',
+        name: 'Super Mario',
+        setCount: 1,
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76956-1/142003.jpg',
+        name: 'Jurassic World',
+        setCount: 1,
+      },
+    ]);
+  });
+
   test('exposes dedicated slugs for the supported theme landing pages', () => {
     expect(listCatalogThemePageSlugs()).toEqual([
       'icons',
@@ -781,6 +863,14 @@ describe('catalog data-access contracts', () => {
       'star-wars',
       'harry-potter',
       'technic',
+      'modular-buildings',
+      'botanicals',
+      'architecture',
+      'art',
+      'disney',
+      'ninjago',
+      'super-mario',
+      'jurassic-world',
     ]);
   });
 
@@ -803,7 +893,23 @@ describe('catalog data-access contracts', () => {
       ]),
     });
 
-    expect(getCatalogThemePageBySlug('modular-buildings')).toBeUndefined();
+    expect(getCatalogThemePageBySlug('super-mario')).toEqual({
+      themeSnapshot: {
+        name: 'Super Mario',
+        slug: 'super-mario',
+        setCount: 1,
+        momentum:
+          'Character-led display pieces give the public catalog a broader gaming entry without turning into a play-focused assortment.',
+        signatureSet: 'The Mighty Bowser',
+      },
+      setCards: expect.arrayContaining([
+        expect.objectContaining({
+          id: '71411',
+          name: 'The Mighty Bowser',
+          theme: 'Super Mario',
+        }),
+      ]),
+    });
   });
 
   test('does not expose upstream slug drift through the product route contract', () => {

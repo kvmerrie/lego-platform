@@ -354,13 +354,52 @@ export function CatalogSetDetailPanel({
   catalogSetDetail,
   productSummary,
   supportingPanel,
+  themeDirectoryHref,
+  themeHref,
 }: {
   catalogSetDetail: CatalogSetDetail;
   productSummary?: ReactNode;
   supportingPanel?: ReactNode;
+  themeDirectoryHref?: string;
+  themeHref?: string;
 }) {
   return (
     <section className={styles.detailPage}>
+      <nav aria-label="Set context" className={styles.contextRow}>
+        {themeDirectoryHref ? (
+          <ActionLink
+            className={styles.contextLink}
+            href={themeDirectoryHref}
+            tone="inline"
+          >
+            Themes
+          </ActionLink>
+        ) : (
+          <span className={styles.contextCurrent}>Themes</span>
+        )}
+        <span aria-hidden="true" className={styles.contextDivider}>
+          /
+        </span>
+        {themeHref ? (
+          <ActionLink
+            className={styles.contextLink}
+            href={themeHref}
+            tone="inline"
+          >
+            {catalogSetDetail.theme}
+          </ActionLink>
+        ) : (
+          <span className={styles.contextCurrent}>
+            {catalogSetDetail.theme}
+          </span>
+        )}
+        <span aria-hidden="true" className={styles.contextDivider}>
+          /
+        </span>
+        <span aria-current="page" className={styles.contextCurrent}>
+          Set detail
+        </span>
+      </nav>
       <Surface
         as="section"
         className={styles.productHero}
@@ -386,7 +425,17 @@ export function CatalogSetDetailPanel({
               tone="hero"
             />
             <div className={styles.badgeRow}>
-              <Badge tone="accent">{catalogSetDetail.theme}</Badge>
+              {themeHref ? (
+                <ActionLink
+                  className={styles.themeBadgeLink}
+                  href={themeHref}
+                  tone="inline"
+                >
+                  <Badge tone="accent">{catalogSetDetail.theme}</Badge>
+                </ActionLink>
+              ) : (
+                <Badge tone="accent">{catalogSetDetail.theme}</Badge>
+              )}
             </div>
             <p className={styles.heroMeta}>
               {catalogSetDetail.releaseYear} · {catalogSetDetail.priceRange}
@@ -452,28 +501,43 @@ export function CatalogSetDetailPanel({
 
 export function CatalogThemeHighlight({
   href,
+  imageUrl,
   themeSnapshot,
   variant = 'default',
 }: {
   href?: string;
+  imageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
   variant?: 'default' | 'tile';
 }) {
   if (variant === 'tile') {
     const themeTileContent = (
-      <div className={styles.themeTileBody}>
-        <div className={styles.themeTileTop}>
-          <p className={styles.themeTileCount}>
-            {themeSnapshot.setCount} tracked sets
+      <>
+        {imageUrl ? (
+          <div className={styles.themeTileVisual}>
+            <img
+              alt={`${themeSnapshot.signatureSet} LEGO set`}
+              className={styles.themeTileImage}
+              decoding="async"
+              loading="lazy"
+              src={imageUrl}
+            />
+          </div>
+        ) : null}
+        <div className={styles.themeTileBody}>
+          <div className={styles.themeTileTop}>
+            <p className={styles.themeTileCount}>
+              {themeSnapshot.setCount} tracked sets
+            </p>
+            <span className={styles.themeTileAction}>Open theme page</span>
+          </div>
+          <h3 className={styles.themeTileTitle}>{themeSnapshot.name}</h3>
+          <p className={styles.themeTileCopy}>{themeSnapshot.momentum}</p>
+          <p className={styles.themeTileSignature}>
+            Start with {themeSnapshot.signatureSet}
           </p>
-          <span className={styles.themeTileAction}>Open theme page</span>
         </div>
-        <h3 className={styles.themeTileTitle}>{themeSnapshot.name}</h3>
-        <p className={styles.themeTileCopy}>{themeSnapshot.momentum}</p>
-        <p className={styles.themeTileSignature}>
-          Start with {themeSnapshot.signatureSet}
-        </p>
-      </div>
+      </>
     );
 
     return (

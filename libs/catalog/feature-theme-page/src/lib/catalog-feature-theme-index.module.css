@@ -1,0 +1,37 @@
+.page {
+  display: grid;
+  gap: var(--lego-space-6);
+}
+
+.intro {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.introMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  gap: var(--lego-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+@media (min-width: 64rem) {
+  .page {
+    gap: var(--lego-space-7);
+  }
+
+  .intro {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .introMeta {
+    text-align: right;
+  }
+}

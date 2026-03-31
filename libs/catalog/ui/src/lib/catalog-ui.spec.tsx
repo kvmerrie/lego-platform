@@ -145,9 +145,14 @@ describe('CatalogSetCard', () => {
         }}
         productSummary={<div>Lowest reviewed price</div>}
         supportingPanel={<div>30-day price history</div>}
+        themeDirectoryHref="/themes"
+        themeHref="/themes/ideas"
       />,
     );
 
+    expect(markup).toContain('href="/themes"');
+    expect(markup).toContain('href="/themes/ideas"');
+    expect(markup).toContain('Set context');
     expect(markup).toContain('Official image not published yet');
     expect(markup).toContain('Set 21335');
     expect(markup).toContain('Lowest reviewed price');
@@ -161,6 +166,7 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight
         href="/themes/icons"
+        imageUrl="https://images.example/rivendell.jpg"
         themeSnapshot={{
           name: 'Icons',
           slug: 'icons',
@@ -174,6 +180,7 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('href="/themes/icons"');
+    expect(markup).toContain('src="https://images.example/rivendell.jpg"');
     expect(markup).toContain('Open theme page');
     expect(markup).toContain('Start with Rivendell');
   });
