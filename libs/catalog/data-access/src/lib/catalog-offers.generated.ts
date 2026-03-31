@@ -112,32 +112,24 @@ const curatedOfferSeeds: readonly CatalogOfferSeed[] = [
   },
   {
     setId: '10305',
-    bolPriceCents: 39999,
-    amazonPriceCents: 38999,
     legoPriceCents: 37999,
     legoUrl: 'https://www.lego.com/nl-nl/product/lion-knights-castle-10305',
     checkedAt: '2026-03-31T10:24:00.000Z',
   },
   {
     setId: '10294',
-    bolPriceCents: 68999,
-    amazonPriceCents: 67999,
     legoPriceCents: 65999,
     legoUrl: 'https://www.lego.com/nl-nl/product/titanic-10294',
     checkedAt: '2026-03-31T10:28:00.000Z',
   },
   {
     setId: '21061',
-    bolPriceCents: 23999,
-    amazonPriceCents: 22999,
     legoPriceCents: 21999,
     legoUrl: 'https://www.lego.com/nl-nl/product/notre-dame-de-paris-21061',
     checkedAt: '2026-03-31T10:32:00.000Z',
   },
   {
     setId: '76419',
-    bolPriceCents: 15999,
-    amazonPriceCents: 15499,
     legoPriceCents: 14999,
     legoUrl:
       'https://www.lego.com/nl-nl/product/hogwarts-castle-and-grounds-76419',
@@ -145,33 +137,24 @@ const curatedOfferSeeds: readonly CatalogOfferSeed[] = [
   },
   {
     setId: '43222',
-    bolPriceCents: 39999,
-    bolAvailability: 'unknown',
-    amazonPriceCents: 38999,
     legoPriceCents: 37999,
     legoUrl: 'https://www.lego.com/nl-nl/product/disney-castle-43222',
     checkedAt: '2026-03-31T10:36:00.000Z',
   },
   {
     setId: '75331',
-    bolPriceCents: 59999,
-    amazonPriceCents: 58999,
     legoPriceCents: 57999,
     legoUrl: 'https://www.lego.com/nl-nl/product/the-razor-crest-75331',
     checkedAt: '2026-03-31T10:38:00.000Z',
   },
   {
     setId: '42143',
-    bolPriceCents: 43999,
-    amazonPriceCents: 42999,
     legoPriceCents: 41999,
     legoUrl: 'https://www.lego.com/nl-nl/product/ferrari-daytona-sp3-42143',
     checkedAt: '2026-03-31T10:40:00.000Z',
   },
   {
     setId: '76417',
-    bolPriceCents: 41999,
-    amazonPriceCents: 40999,
     legoPriceCents: 39999,
     legoUrl:
       'https://www.lego.com/nl-nl/product/gringotts-wizarding-bank-collectors-edition-76417',
@@ -179,52 +162,44 @@ const curatedOfferSeeds: readonly CatalogOfferSeed[] = [
   },
   {
     setId: '76178',
-    bolPriceCents: 33999,
+    bolPriceCents: 32999,
     bolUrl:
       'https://www.bol.com/nl/nl/p/lego-spider-man-daily-bugle-76178/9300000040027340/',
-    amazonPriceCents: 32999,
-    legoPriceCents: 31999,
+    legoPriceCents: 33999,
     legoUrl: 'https://www.lego.com/nl-nl/product/daily-bugle-76178',
     checkedAt: '2026-03-31T10:44:00.000Z',
   },
   {
     setId: '75367',
-    bolPriceCents: 64999,
+    bolPriceCents: 63999,
     bolUrl:
       'https://www.bol.com/nl/nl/p/lego-star-wars-venator-class-republic-attack-cruiser-75367/9300000161235312/',
-    amazonPriceCents: 63999,
-    legoPriceCents: 62999,
+    legoPriceCents: 64999,
     legoUrl:
       'https://www.lego.com/nl-nl/product/venator-class-republic-attack-cruiser-75367',
-    checkedAt: '2026-03-31T10:46:00.000Z',
+    checkedAt: '2026-03-31T10:52:00.000Z',
   },
   {
     setId: '21350',
-    bolPriceCents: 15999,
+    bolPriceCents: 15499,
     bolUrl:
       'https://www.bol.com/nl/nl/p/lego-21350-jaws-lego-ideas/9300000185934485/',
-    amazonPriceCents: 15499,
-    legoPriceCents: 14999,
+    legoPriceCents: 15999,
     legoUrl: 'https://www.lego.com/nl-nl/product/jaws-21350',
-    checkedAt: '2026-03-31T10:48:00.000Z',
+    checkedAt: '2026-03-31T11:00:00.000Z',
   },
   {
     setId: '10317',
-    bolPriceCents: 24999,
+    bolPriceCents: 22999,
     bolUrl:
       'https://www.bol.com/nl/nl/p/lego-10317-land-rover-classic-defender-90/9300000137836645/',
-    amazonPriceCents: 23999,
-    legoPriceCents: 22999,
+    legoPriceCents: 23999,
     legoUrl:
       'https://www.lego.com/nl-nl/product/land-rover-classic-defender-90-10317',
-    checkedAt: '2026-03-31T10:50:00.000Z',
+    checkedAt: '2026-03-31T11:08:00.000Z',
   },
   {
     setId: '76437',
-    bolPriceCents: 27999,
-    bolUrl:
-      'https://www.bol.com/be/fr/p/lego-harry-potter-le-nest-edition-collector/9300000188627176/',
-    amazonPriceCents: 26999,
     legoPriceCents: 25999,
     legoUrl:
       'https://www.lego.com/nl-nl/product/the-burrow-collectors-edition-76437',
@@ -257,32 +232,16 @@ function getCatalogOfferMerchantName(merchant: CatalogOfferMerchant): string {
 
 function createMerchantUrl({
   merchant,
-  sourceSetNumber,
   url,
 }: {
   merchant: CatalogOfferMerchant;
-  sourceSetNumber: string;
   url?: string;
 }): string {
-  if (url) {
-    return url;
+  if (!url) {
+    throw new Error(`Missing direct ${merchant} offer URL.`);
   }
 
-  const query = encodeURIComponent(`LEGO ${sourceSetNumber}`);
-
-  if (merchant === 'bol') {
-    return `https://www.bol.com/nl/nl/s/?searchtext=${query}`;
-  }
-
-  if (merchant === 'amazon') {
-    return `https://www.amazon.nl/s?k=${query}`;
-  }
-
-  if (merchant === 'lego') {
-    return `https://www.lego.com/nl-nl/search?q=${encodeURIComponent(sourceSetNumber)}`;
-  }
-
-  return `https://www.google.com/search?q=${query}`;
+  return url;
 }
 
 function getOverlayDrivenBasePriceCents(setId: string): number | undefined {
@@ -323,20 +282,13 @@ function createDefaultOfferSeed({
           100,
       ),
     );
-  const bolDiscountCents = Math.max(250, Math.round(basePriceCents * 0.018));
-  const amazonPremiumCents = Math.max(150, Math.round(basePriceCents * 0.012));
-  const legoPremiumCents = Math.max(400, Math.round(basePriceCents * 0.03));
 
   return {
     setId: catalogSetRecord.canonicalId,
-    bolPriceCents: Math.max(
-      1999,
-      basePriceCents - bolDiscountCents - (index % 3) * 100,
-    ),
-    amazonPriceCents: basePriceCents + amazonPremiumCents + (index % 2) * 100,
-    amazonAvailability: index % 6 === 0 ? 'unknown' : 'in_stock',
-    legoPriceCents: basePriceCents + legoPremiumCents,
+    legoPriceCents:
+      basePriceCents + Math.max(300, Math.round(basePriceCents * 0.018)),
     legoAvailability: index % 9 === 0 ? 'out_of_stock' : 'in_stock',
+    legoUrl: `https://www.lego.com/nl-nl/product/${catalogSetRecord.slug}`,
   };
 }
 
@@ -345,7 +297,6 @@ function createCatalogOffer({
   checkedAt,
   merchant,
   priceCents,
-  sourceSetNumber,
   setId,
   url,
 }: {
@@ -353,7 +304,6 @@ function createCatalogOffer({
   checkedAt: string;
   merchant: CatalogOfferMerchant;
   priceCents: number;
-  sourceSetNumber: string;
   setId: string;
   url?: string;
 }): CatalogOfferRecord {
@@ -363,7 +313,6 @@ function createCatalogOffer({
     merchantName: getCatalogOfferMerchantName(merchant),
     url: createMerchantUrl({
       merchant,
-      sourceSetNumber,
       url,
     }),
     priceCents,
@@ -391,11 +340,13 @@ function createCatalogOffersForSet({
   const checkedAt = offerSeed.checkedAt ?? DEFAULT_CHECKED_AT;
   const catalogOffers: CatalogOfferRecord[] = [];
 
-  if (typeof offerSeed.bolPriceCents === 'number') {
+  if (
+    typeof offerSeed.bolPriceCents === 'number' &&
+    typeof offerSeed.bolUrl === 'string'
+  ) {
     catalogOffers.push(
       createCatalogOffer({
         setId: catalogSetRecord.canonicalId,
-        sourceSetNumber: catalogSetRecord.sourceSetNumber,
         merchant: 'bol',
         priceCents: offerSeed.bolPriceCents,
         availability: offerSeed.bolAvailability,
@@ -405,11 +356,13 @@ function createCatalogOffersForSet({
     );
   }
 
-  if (typeof offerSeed.amazonPriceCents === 'number') {
+  if (
+    typeof offerSeed.amazonPriceCents === 'number' &&
+    typeof offerSeed.amazonUrl === 'string'
+  ) {
     catalogOffers.push(
       createCatalogOffer({
         setId: catalogSetRecord.canonicalId,
-        sourceSetNumber: catalogSetRecord.sourceSetNumber,
         merchant: 'amazon',
         priceCents: offerSeed.amazonPriceCents,
         availability: offerSeed.amazonAvailability,
@@ -423,7 +376,6 @@ function createCatalogOffersForSet({
     catalogOffers.push(
       createCatalogOffer({
         setId: catalogSetRecord.canonicalId,
-        sourceSetNumber: catalogSetRecord.sourceSetNumber,
         merchant: 'lego',
         priceCents: offerSeed.legoPriceCents,
         availability: offerSeed.legoAvailability,

@@ -43,6 +43,26 @@ export const pricingObservations: readonly PricingObservation[] = [
     "observedAt": "2026-03-31T09:08:00.000Z"
   },
   {
+    "setId": "10317",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T11:08:00.000Z"
+  },
+  {
+    "setId": "10317",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T11:12:00.000Z"
+  },
+  {
     "setId": "10332",
     "merchantId": "bol",
     "regionCode": "NL",
@@ -151,6 +171,66 @@ export const pricingObservations: readonly PricingObservation[] = [
     "totalPriceMinor": 10999,
     "availability": "in_stock",
     "observedAt": "2026-03-31T10:28:00.000Z"
+  },
+  {
+    "setId": "21350",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15499,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T11:00:00.000Z"
+  },
+  {
+    "setId": "21350",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T11:04:00.000Z"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 63999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T10:52:00.000Z"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 64999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T10:56:00.000Z"
+  },
+  {
+    "setId": "76178",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T10:44:00.000Z"
+  },
+  {
+    "setId": "76178",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 33999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T10:48:00.000Z"
   },
   {
     "setId": "76269",

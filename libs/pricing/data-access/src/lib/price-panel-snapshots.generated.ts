@@ -141,5 +141,61 @@ export const pricePanelSnapshots: readonly PricePanelSnapshot[] = [
     "observedAt": "2026-03-31T10:20:00.000Z",
     "referencePriceMinor": 10999,
     "deltaMinor": -1500
+  },
+  {
+    "setId": "76178",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 32999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 2,
+    "observedAt": "2026-03-31T10:44:00.000Z",
+    "referencePriceMinor": 33999,
+    "deltaMinor": -1000
+  },
+  {
+    "setId": "75367",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 63999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 2,
+    "observedAt": "2026-03-31T10:52:00.000Z",
+    "referencePriceMinor": 64999,
+    "deltaMinor": -1000
+  },
+  {
+    "setId": "21350",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 15499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 2,
+    "observedAt": "2026-03-31T11:00:00.000Z",
+    "referencePriceMinor": 15999,
+    "deltaMinor": -500
+  },
+  {
+    "setId": "10317",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 22999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 2,
+    "observedAt": "2026-03-31T11:08:00.000Z",
+    "referencePriceMinor": 23999,
+    "deltaMinor": -1000
   }
 ];

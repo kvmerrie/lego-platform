@@ -2,6 +2,8 @@ import {
   AffiliateFeatureOffers,
   AffiliateFeaturePrimaryOfferAction,
 } from '@lego-platform/affiliate/feature-offers';
+import { listAffiliateOffers } from '@lego-platform/affiliate/data-access';
+import { toCatalogOffers } from '@lego-platform/affiliate/util';
 import {
   getCatalogOffersBySetId,
   getCatalogSetBySlug,
@@ -40,7 +42,11 @@ export default async function SetDetailPage({
     notFound();
   }
 
-  const catalogOffers = getCatalogOffersBySetId(catalogSetDetail.id);
+  const reviewedAffiliateOffers = listAffiliateOffers(catalogSetDetail.id);
+  const setDetailOffers =
+    reviewedAffiliateOffers.length > 0
+      ? toCatalogOffers(reviewedAffiliateOffers)
+      : getCatalogOffersBySetId(catalogSetDetail.id);
 
   return (
     <ShellWeb>
@@ -53,7 +59,7 @@ export default async function SetDetailPage({
               variant="product"
             />
             <AffiliateFeaturePrimaryOfferAction
-              affiliateOffers={catalogOffers}
+              affiliateOffers={setDetailOffers}
             />
             <div className={styles.productActions}>
               <CollectionFeatureOwnedToggle
@@ -75,7 +81,7 @@ export default async function SetDetailPage({
           buildCatalogThemeSlug(catalogSetDetail.theme),
         )}
       />
-      <AffiliateFeatureOffers affiliateOffers={catalogOffers} />
+      <AffiliateFeatureOffers affiliateOffers={setDetailOffers} />
     </ShellWeb>
   );
 }

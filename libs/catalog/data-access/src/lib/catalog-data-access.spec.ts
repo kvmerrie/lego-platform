@@ -704,21 +704,28 @@ describe('catalog data-access contracts', () => {
       }),
     ]);
 
-    expect(getCatalogOffersBySetId('42143')).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          merchant: 'amazon',
-          merchantName: 'Amazon',
-          priceCents: 42999,
-        }),
-      ]),
-    );
+    expect(getCatalogOffersBySetId('42143')).toEqual([
+      expect.objectContaining({
+        merchant: 'lego',
+        merchantName: 'LEGO',
+        priceCents: 41999,
+        url: 'https://www.lego.com/nl-nl/product/ferrari-daytona-sp3-42143',
+      }),
+    ]);
 
     expect(
       listCatalogSetSummaries().every((catalogSetSummary) => {
         const catalogOffers = getCatalogOffersBySetId(catalogSetSummary.id);
 
-        return catalogOffers.length >= 2 && catalogOffers.length <= 3;
+        return (
+          catalogOffers.length >= 1 &&
+          catalogOffers.every(
+            (catalogOffer) =>
+              !catalogOffer.url.includes('searchtext=') &&
+              !catalogOffer.url.includes('/search?q=') &&
+              !catalogOffer.url.includes('/s?k='),
+          )
+        );
       }),
     ).toBe(true);
 

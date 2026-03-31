@@ -36,6 +36,25 @@ describe('affiliate data access', () => {
     ).toEqual(['bol', 'lego-nl']);
   });
 
+  test('expands direct reviewed merchant coverage for additional high-intent sets', () => {
+    expect(
+      listAffiliateOffers('76178').map((affiliateOffer) => ({
+        merchantId: affiliateOffer.merchantId,
+        outboundUrl: affiliateOffer.outboundUrl,
+      })),
+    ).toEqual([
+      {
+        merchantId: 'bol',
+        outboundUrl:
+          'https://www.bol.com/nl/nl/p/lego-spider-man-daily-bugle-76178/9300000040027340/',
+      },
+      {
+        merchantId: 'lego-nl',
+        outboundUrl: 'https://www.lego.com/nl-nl/product/daily-bugle-76178',
+      },
+    ]);
+  });
+
   test('returns no affiliate offers for sets outside the commerce slice', () => {
     expect(listAffiliateOffers('76419')).toEqual([]);
   });

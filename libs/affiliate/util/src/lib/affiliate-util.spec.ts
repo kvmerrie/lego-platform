@@ -3,6 +3,7 @@ import {
   getBestOffer,
   getCatalogOfferComparisonInsight,
   getCatalogOfferMerchantName,
+  toCatalogOffers,
   type CatalogOffer,
 } from './affiliate-util';
 
@@ -71,6 +72,59 @@ describe('affiliate util catalog offers', () => {
     expect(getCatalogOfferMerchantName('bol')).toBe('bol');
     expect(getCatalogOfferMerchantName('amazon')).toBe('Amazon');
     expect(getCatalogOfferMerchantName('lego')).toBe('LEGO');
+  });
+
+  test('maps reviewed affiliate snapshots into catalog offers without losing ordering', () => {
+    expect(
+      toCatalogOffers([
+        {
+          setId: '76269',
+          merchantId: 'intertoys',
+          merchantName: 'Intertoys',
+          outboundUrl:
+            'https://www.intertoys.nl/lego-marvel-avengers-toren-76269',
+          totalPriceMinor: 48999,
+          currencyCode: 'EUR',
+          availabilityLabel: 'Limited stock',
+          condition: 'new',
+          observedAt: '2026-03-31T09:30:00.000Z',
+          regionCode: 'NL',
+          ctaLabel: 'Shop at Intertoys',
+          disclosureCopy: 'Direct merchant link.',
+          displayRank: 3,
+        },
+        {
+          setId: '76269',
+          merchantId: 'lego-nl',
+          merchantName: 'LEGO',
+          outboundUrl:
+            'https://www.lego.com/nl-nl/product/avengers-tower-76269',
+          totalPriceMinor: 49999,
+          currencyCode: 'EUR',
+          availabilityLabel: 'In stock',
+          condition: 'new',
+          observedAt: '2026-03-31T09:36:00.000Z',
+          regionCode: 'NL',
+          ctaLabel: 'Shop at LEGO',
+          disclosureCopy: 'Direct official merchant link.',
+          displayRank: 1,
+        },
+      ]),
+    ).toEqual([
+      expect.objectContaining({
+        merchant: 'other',
+        merchantName: 'Intertoys',
+        priceCents: 48999,
+        availability: 'in_stock',
+        url: 'https://www.intertoys.nl/lego-marvel-avengers-toren-76269',
+      }),
+      expect.objectContaining({
+        merchant: 'lego',
+        merchantName: 'LEGO',
+        priceCents: 49999,
+        availability: 'in_stock',
+      }),
+    ]);
   });
 
   test('flags limited reviewed coverage when only a couple of offers exist', () => {

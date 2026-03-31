@@ -67,6 +67,38 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "10317",
+    "merchantId": "bol",
+    "merchantName": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-10317-land-rover-classic-defender-90/9300000137836645/",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-03-31T11:08:00.000Z",
+    "displayRank": 2,
+    "ctaLabel": "Shop at bol",
+    "perks": "Wide Dutch retail reach"
+  },
+  {
+    "setId": "10317",
+    "merchantId": "lego-nl",
+    "merchantName": "LEGO",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.lego.com/nl-nl/product/land-rover-classic-defender-90-10317",
+    "disclosureCopy": "Direct official merchant link.",
+    "observedAt": "2026-03-31T11:12:00.000Z",
+    "displayRank": 1,
+    "ctaLabel": "Shop at LEGO",
+    "perks": "Direct brand purchase and reference pricing"
+  },
+  {
     "setId": "10332",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -243,6 +275,102 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "21350",
+    "merchantId": "bol",
+    "merchantName": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15499,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-21350-jaws-lego-ideas/9300000185934485/",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-03-31T11:00:00.000Z",
+    "displayRank": 2,
+    "ctaLabel": "Shop at bol",
+    "perks": "Wide Dutch retail reach"
+  },
+  {
+    "setId": "21350",
+    "merchantId": "lego-nl",
+    "merchantName": "LEGO",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.lego.com/nl-nl/product/jaws-21350",
+    "disclosureCopy": "Direct official merchant link.",
+    "observedAt": "2026-03-31T11:04:00.000Z",
+    "displayRank": 1,
+    "ctaLabel": "Shop at LEGO",
+    "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "bol",
+    "merchantName": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 63999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-venator-class-republic-attack-cruiser-75367/9300000161235312/",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-03-31T10:52:00.000Z",
+    "displayRank": 2,
+    "ctaLabel": "Shop at bol",
+    "perks": "Wide Dutch retail reach"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "lego-nl",
+    "merchantName": "LEGO",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 64999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.lego.com/nl-nl/product/venator-class-republic-attack-cruiser-75367",
+    "disclosureCopy": "Direct official merchant link.",
+    "observedAt": "2026-03-31T10:56:00.000Z",
+    "displayRank": 1,
+    "ctaLabel": "Shop at LEGO",
+    "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "76178",
+    "merchantId": "bol",
+    "merchantName": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-spider-man-daily-bugle-76178/9300000040027340/",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-03-31T10:44:00.000Z",
+    "displayRank": 2,
+    "ctaLabel": "Shop at bol",
+    "perks": "Wide Dutch retail reach"
+  },
+  {
+    "setId": "76178",
+    "merchantId": "lego-nl",
+    "merchantName": "LEGO",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 33999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.lego.com/nl-nl/product/daily-bugle-76178",
+    "disclosureCopy": "Direct official merchant link.",
+    "observedAt": "2026-03-31T10:48:00.000Z",
+    "displayRank": 1,
+    "ctaLabel": "Shop at LEGO",
+    "perks": "Direct brand purchase and reference pricing"
+  },
+  {
     "setId": "76269",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -292,7 +420,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   }
 ]`;
 
-export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] =
-  JSON.parse(
-    affiliateOfferSnapshotsPayload,
-  ) as readonly AffiliateOfferSnapshot[];
+export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = JSON.parse(
+  affiliateOfferSnapshotsPayload,
+) as readonly AffiliateOfferSnapshot[];

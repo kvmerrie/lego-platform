@@ -41,6 +41,22 @@ export const dutchPricingReferenceValues: readonly PricingReferenceValue[] = [
     referencePriceMinor: 10999,
   },
   {
+    setId: '76178',
+    referencePriceMinor: 33999,
+  },
+  {
+    setId: '75367',
+    referencePriceMinor: 64999,
+  },
+  {
+    setId: '21350',
+    referencePriceMinor: 15999,
+  },
+  {
+    setId: '10317',
+    referencePriceMinor: 23999,
+  },
+  {
     setId: '76269',
     referencePriceMinor: 49999,
   },

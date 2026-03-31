@@ -19,6 +19,10 @@ describe('pricing data access server', () => {
         '21061',
         '21333',
         '21349',
+        '76178',
+        '75367',
+        '21350',
+        '10317',
       ],
       merchantSummaries: [
         { merchantId: 'lego-nl', displayName: 'LEGO' },
@@ -27,14 +31,14 @@ describe('pricing data access server', () => {
       ],
     });
 
-    expect(result.pricingObservations).toHaveLength(18);
-    expect(result.pricePanelSnapshots).toHaveLength(10);
+    expect(result.pricingObservations).toHaveLength(26);
+    expect(result.pricePanelSnapshots).toHaveLength(14);
     expect(result.pricePanelSnapshots[0]).toMatchObject({
       lowestMerchantName: 'bol',
       lowestAvailabilityLabel: 'In stock',
     });
     expect(result.pricingSyncManifest.generatedAt).toBe(
-      '2026-03-31T10:36:00.000Z',
+      '2026-03-31T11:12:00.000Z',
     );
   });
 
@@ -107,6 +111,10 @@ describe('pricing data access server', () => {
         '21061',
         '21333',
         '21349',
+        '76178',
+        '75367',
+        '21350',
+        '10317',
       ],
       merchantSummaries: [
         { merchantId: 'lego-nl', displayName: 'LEGO' },
@@ -120,7 +128,7 @@ describe('pricing data access server', () => {
       pricePanelSnapshots: result.pricePanelSnapshots,
     });
 
-    expect(historyPoints).toHaveLength(10);
+    expect(historyPoints).toHaveLength(14);
     expect(historyPoints).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -145,6 +153,14 @@ describe('pricing data access server', () => {
           referencePriceMinor: 67999,
           lowestMerchantId: 'lego-nl',
           observedAt: '2026-03-31T10:32:00.000Z',
+          recordedOn: '2026-03-31',
+        }),
+        expect.objectContaining({
+          setId: '76178',
+          headlinePriceMinor: 32999,
+          referencePriceMinor: 33999,
+          lowestMerchantId: 'bol',
+          observedAt: '2026-03-31T10:44:00.000Z',
           recordedOn: '2026-03-31',
         }),
       ]),
