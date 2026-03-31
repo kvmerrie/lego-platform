@@ -19,8 +19,10 @@ describe('UserShellAccountStatusCard', () => {
       />,
     );
 
-    expect(markup).toContain('Sign in to start saving privately');
-    expect(markup).toContain('Sign in once to save your collection');
+    expect(markup).toContain('Sign in to save sets');
+    expect(markup).toContain(
+      'Sign in once to keep collection, wishlist, and collector details in one place.',
+    );
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('signed out');
@@ -55,7 +57,9 @@ describe('UserShellAccountStatusCard', () => {
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('Sign out');
-    expect(markup).toContain('Your private collector state is ready.');
+    expect(markup).toContain(
+      'Your saved sets and collector details are one click away.',
+    );
     expect(markup).toContain('Signed in · Founding Collector');
   });
 });
@@ -85,7 +89,7 @@ describe('UserSessionCard', () => {
 
     expect(markup).toContain('Your account');
     expect(markup).toContain(
-      'Your collection, wishlist, and collector details live here.',
+      'Collection, wishlist, and account details in one place.',
     );
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wanted saved');
@@ -94,9 +98,9 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('Your saves');
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
-    expect(markup).toContain('Used only for account access.');
+    expect(markup).toContain('Used only for sign-in links.');
     expect(markup).toContain(
-      'Collection and wishlist stay private. Set facts and pricing stay public.',
+      'Your saves stay private. Set pages and price checks stay public.',
     );
     expect(markup).toContain('Account · Founding Collector');
   });
@@ -127,9 +131,9 @@ describe('UserProfileEditorCard', () => {
 
     expect(markup).toContain('Edit your collector details');
     expect(markup).toContain(
-      'Update the name and details used across your collector area.',
+      'Update the name and details shown on your account and saved sets.',
     );
-    expect(markup).toContain('Shown across your account and saved sets.');
+    expect(markup).toContain('Shown on your account and saved sets.');
     expect(markup).toContain('Letters, numbers, and hyphens only.');
     expect(markup).toContain('Private sign-in email.');
     expect(markup).toContain('Shown in your collector area.');

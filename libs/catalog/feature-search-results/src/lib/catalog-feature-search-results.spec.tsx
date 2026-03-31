@@ -9,9 +9,9 @@ describe('CatalogFeatureSearchResults', () => {
   it('renders an empty-query state', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureSearchResults />);
 
-    expect(markup).toContain('Search the catalog');
+    expect(markup).toContain('Search sets');
     expect(markup).toContain(
-      'Search by set name or set number to jump straight into the catalog.',
+      'Search by set name or set number to go straight to a set page.',
     );
     expect(markup).toContain('Browse the catalog');
     expect(markup).toContain('href="/discover"');
@@ -35,7 +35,7 @@ describe('CatalogFeatureSearchResults', () => {
     );
 
     expect(markup).toContain('No results for &quot;pirates hideout&quot;');
-    expect(markup).toContain('Try a set name or number.');
+    expect(markup).toContain('Try another set name or set number.');
     expect(markup).toContain('Browse the catalog');
   });
 });
@@ -45,6 +45,6 @@ describe('CatalogFeatureSearchResultsLoading', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureSearchResultsLoading />);
 
     expect(markup).toContain('Searching sets');
-    expect(markup).toContain('Searching the current curated catalog.');
+    expect(markup).toContain('Looking through the current set catalog.');
   });
 });

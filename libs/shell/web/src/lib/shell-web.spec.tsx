@@ -29,8 +29,10 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Checking');
     expect(markup).toContain('action="/search"');
     expect(markup).toContain('name="q"');
-    expect(markup).toContain('Search sets or number');
-    expect(markup).toContain('Curated browsing, private collector saves');
+    expect(markup).toContain('Search sets or set number');
+    expect(markup).toContain(
+      'Browse standout sets, compare reviewed Dutch offers',
+    );
     expect(markup).not.toContain('Home');
     expect(markup).not.toContain('Featured shortlist');
     expect(markup).not.toContain('Sign out');

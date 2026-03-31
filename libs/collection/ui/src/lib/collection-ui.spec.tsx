@@ -14,11 +14,11 @@ describe('OwnedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Owned saved.');
+    expect(markup).toContain('Saved to owned');
     expect(markup).toContain('Owned saved');
     expect(markup).not.toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
-    expect(markup).toContain('Private to you. Set facts stay public.');
+    expect(markup).toContain('Private save. Set facts stay public.');
     expect(markup).toContain('Remove from owned');
   });
 
@@ -48,8 +48,8 @@ describe('CollectorCollectionPanel', () => {
       <CollectorCollectionPanel state="signed-out" />,
     );
 
-    expect(markup).toContain('Sign in to open your private collection');
-    expect(markup).toContain('Private account area');
+    expect(markup).toContain('Sign in to see your collection');
+    expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Browse catalog');
     expect(markup).toContain('Open account');
     expect(markup).toContain('Open wishlist');
@@ -67,9 +67,9 @@ describe('CollectorCollectionPanel', () => {
       </CollectorCollectionPanel>,
     );
 
-    expect(markup).toContain('Alex Rivera, here is your collection');
-    expect(markup).toContain('2 visible');
-    expect(markup).toContain('1 outside public catalog');
+    expect(markup).toContain('Your collection');
+    expect(markup).toContain('2 shown');
+    expect(markup).toContain('1 outside today&#x27;s catalog');
     expect(markup).toContain('Owned set card');
     expect(markup).toContain('Open account');
     expect(markup).toContain('Open wishlist');

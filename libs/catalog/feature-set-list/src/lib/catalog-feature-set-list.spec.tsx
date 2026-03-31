@@ -43,9 +43,9 @@ describe('CatalogFeatureSetList', () => {
       />,
     );
 
-    expect(markup).toContain('Start with a few standout sets.');
-    expect(markup).toContain('2 curated picks');
-    expect(markup).toContain('1 with reviewed price');
+    expect(markup).toContain('Start with sets worth opening.');
+    expect(markup).toContain('2 featured sets');
+    expect(markup).toContain('1 with reviewed prices');
     expect(markup).not.toContain('Public catalog');
   });
 });

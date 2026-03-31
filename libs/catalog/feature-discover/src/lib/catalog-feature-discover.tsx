@@ -27,9 +27,9 @@ export function CatalogFeatureDiscover() {
     return (
       <Surface as="section" className={styles.emptyState} tone="muted">
         <SectionHeading
-          description="The public catalog is being refreshed."
+          description="We're still expanding the browse catalog."
           eyebrow="Discover"
-          title="No catalog sections are ready yet"
+          title="Discover is filling up"
         />
       </Surface>
     );
@@ -39,12 +39,12 @@ export function CatalogFeatureDiscover() {
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Browse the current public catalog by theme, then open any set page for deeper pricing and collector actions."
+          description="Browse the sets we have already shaped into full product pages, grouped by theme for quick scanning."
           eyebrow="Discover"
-          title="Explore the public set catalog"
+          title="Browse the catalog by theme"
         />
         <p className={styles.introMeta}>
-          {totalSetCount} curated sets · {formatThemeCount(themeGroups.length)}
+          {totalSetCount} sets · {formatThemeCount(themeGroups.length)}
         </p>
       </section>
 
@@ -52,9 +52,9 @@ export function CatalogFeatureDiscover() {
         <Surface as="section" className={styles.featuredSection} tone="muted">
           <div className={styles.sectionHeader}>
             <SectionHeading
-              description="A few strong places to start before you dive into themes."
+              description="A few reliable starting points with strong set pages, price context, and clean save actions."
               eyebrow="Featured"
-              title="Start with a standout shortlist"
+              title="A few good places to begin"
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>

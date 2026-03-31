@@ -52,19 +52,19 @@ export function WantedSetToggleCard({
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Checking wishlist save.'
+    ? 'Checking wishlist save'
     : isUnavailable
-      ? 'Wishlist save unavailable.'
+      ? 'Wishlist save unavailable'
       : isWanted
-        ? 'Wishlist saved.'
-        : 'Save to wishlist.';
+        ? 'Saved to wishlist'
+        : 'Save to wishlist';
   const description = isLoading
-    ? 'Checking your private wishlist save for this set.'
+    ? 'Checking whether this set is already in your wishlist.'
     : isUnavailable
-      ? 'We could not load the private wishlist save right now.'
+      ? 'We could not load your wishlist save right now.'
       : isWanted
-        ? 'Saved in your private wishlist.'
-        : 'Save this set to your private wishlist.';
+        ? 'This set is in your private wishlist.'
+        : 'Keep this set in your private wishlist.';
   const actionLabel = isUnavailable
     ? 'Wanted status unavailable'
     : isWanted
@@ -132,7 +132,7 @@ export function WantedSetToggleCard({
         <Badge tone={statusTone}>{statusLabel}</Badge>
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
-      <p className={styles.metaText}>Private to you. Set facts stay public.</p>
+      <p className={styles.metaText}>Private save. Set facts stay public.</p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
@@ -161,13 +161,8 @@ export function WantedSetToggleCard({
   );
 }
 
-function formatWantedSetCount(count: number): string {
-  return `${count} wanted set${count === 1 ? '' : 's'}`;
-}
-
 export function CollectorWishlistPanel({
   children,
-  collectorName,
   errorMessage,
   hiddenWantedCount = 0,
   state,
@@ -184,32 +179,22 @@ export function CollectorWishlistPanel({
     state === 'loading'
       ? 'Loading your wishlist'
       : state === 'signed-out'
-        ? 'Sign in to open your private wishlist'
+        ? 'Sign in to see your wishlist'
         : state === 'empty'
-          ? collectorName
-            ? `${collectorName}, your wishlist is ready for its first set`
-            : 'Your wishlist is ready for its first set'
-          : collectorName
-            ? `${collectorName}, here is your wishlist`
-            : 'Your wishlist';
+          ? 'Nothing saved as wanted yet'
+          : 'Your wishlist';
   const description =
     state === 'loading'
-      ? 'Loading the sets saved to your wishlist.'
+      ? 'Loading the sets you saved as wanted.'
       : state === 'signed-out'
-        ? 'This page shows the sets you have saved to your wishlist.'
+        ? 'Sign in to see the sets you have marked as wanted.'
         : state === 'empty'
           ? hiddenWantedCount > 0
-            ? `You have ${formatWantedSetCount(
-                hiddenWantedCount,
-              )} saved outside the current public catalog. Save a featured set to start the visible wishlist.`
-            : 'Save a wanted set from any set page and it will appear here.'
+            ? `You have ${hiddenWantedCount} saved outside the sets currently shown on Brick Ledger. Save any visible set and it will show up here too.`
+            : 'Save a set as wanted from any set page and it will appear here.'
           : hiddenWantedCount > 0
-            ? `Showing ${formatWantedSetCount(
-                wantedCount,
-              )} from the current public catalog. ${formatWantedSetCount(
-                hiddenWantedCount,
-              )} stay saved outside it.`
-            : `Showing ${formatWantedSetCount(wantedCount)}.`;
+            ? `Showing ${wantedCount} here today. ${hiddenWantedCount} stay saved outside the current catalog.`
+            : `${wantedCount} saved.`;
 
   return (
     <Surface
@@ -227,17 +212,17 @@ export function CollectorWishlistPanel({
         />
         <p className={styles.wishlistMeta}>
           {state === 'loading'
-            ? 'Loading private state'
+            ? 'Loading saves'
             : state === 'signed-out'
-              ? 'Private account area'
-              : `${wantedCount} visible`}
+              ? 'Sign in to save privately'
+              : `${wantedCount} shown`}
           {hiddenWantedCount > 0
-            ? ` · ${hiddenWantedCount} outside public catalog`
+            ? ` · ${hiddenWantedCount} outside today's catalog`
             : ''}
         </p>
       </div>
       <p className={styles.metaText}>
-        Private to you. Set facts and pricing stay public.
+        Your saves stay private. Set pages and price checks stay public.
       </p>
       <div className={styles.destinationPanel}>
         <div className={styles.destinationLinks}>

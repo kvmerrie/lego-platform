@@ -26,7 +26,11 @@ describe('PricingFeaturePricePanel', () => {
     );
 
     expect(markup).toContain('Current reviewed price');
-    expect(markup).toContain('live for selected sets');
-    expect(markup).toContain('Browsing and private saves still work.');
+    expect(markup).toContain(
+      'We have not reviewed live Dutch pricing for this set yet.',
+    );
+    expect(markup).toContain(
+      'Set pages and save actions still work while price coverage catches up.',
+    );
   });
 });

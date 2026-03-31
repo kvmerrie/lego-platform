@@ -56,7 +56,7 @@ describe('AffiliateFeatureOffers', () => {
 
     expect(markup).toContain('Reviewed offers');
     expect(markup).toContain(
-      'Offer comparison is not available for this set right now.',
+      'We have not reviewed shop offers for this set yet.',
     );
   });
 

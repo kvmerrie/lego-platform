@@ -41,7 +41,7 @@ function renderSearchForm({
         className={styles.searchInput}
         defaultValue={query}
         name="q"
-        placeholder="Search sets or number"
+        placeholder="Search sets or set number"
         type="search"
       />
       <button className={styles.searchSubmit} type="submit">
@@ -108,8 +108,8 @@ export function ShellWeb({
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <p className={styles.footerCopy}>
-            Curated browsing, private collector saves, and reviewed{' '}
-            {getDefaultMarketAdjective()} price guidance where available.
+            Browse standout sets, compare reviewed {getDefaultMarketAdjective()}{' '}
+            offers, and keep your own saves private.
           </p>
         </div>
       </footer>

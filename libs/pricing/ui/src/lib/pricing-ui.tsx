@@ -290,7 +290,7 @@ export function PriceSummaryCard({
       tone="muted"
     >
       <SectionHeading
-        description={`Latest reviewed ${getDefaultMarketAdjective()} snapshot for this set.`}
+        description={`Latest checked price across reviewed ${getDefaultMarketAdjective()} shops.`}
         eyebrow="Buy guidance"
         title="Current reviewed price"
       />
@@ -507,10 +507,9 @@ function PricingUnavailableCardContent({
     return (
       <div className={`${styles.panel} ${styles.productPanel}`} id={id}>
         <p className={styles.metricLabel}>Reviewed price</p>
-        <p className={styles.productUnavailableValue}>Not published yet</p>
+        <p className={styles.productUnavailableValue}>Not reviewed yet</p>
         <p className={styles.unavailableCopy}>
-          Reviewed {getDefaultMarketAdjective()} pricing appears for selected
-          sets.
+          We have not checked live prices for this set yet.
         </p>
         <PricingScopeLine>{getPricingScopeLabel()}</PricingScopeLine>
       </div>
@@ -526,17 +525,15 @@ function PricingUnavailableCardContent({
       tone="muted"
     >
       <SectionHeading
-        description={`Reviewed ${getDefaultMarketAdjective()} pricing is live for selected sets.`}
+        description={`We have not reviewed live ${getDefaultMarketAdjective()} pricing for this set yet.`}
         eyebrow="Buy guidance"
         title="Current reviewed price"
       />
       <PricingScopeLine>
-        {getPricingScopeLabel('Not published yet')}
+        {getPricingScopeLabel('Not reviewed yet')}
       </PricingScopeLine>
       <p className={styles.unavailableCopy}>
-        Browsing and private saves still work. Price, history, and offers appear
-        together when this set joins the current {getDefaultMarketAdjective()}
-        pricing selection.
+        Set pages and save actions still work while price coverage catches up.
       </p>
     </Surface>
   );
@@ -597,7 +594,7 @@ export function PriceHistoryCard({
           <PricingMetaItem label="Status" value="30-day range building" />
         </dl>
         <p className={styles.referenceNote}>
-          The tracked summary above can already use this first point.
+          The tracked price range starts from this first reviewed day.
         </p>
       </Surface>
     );

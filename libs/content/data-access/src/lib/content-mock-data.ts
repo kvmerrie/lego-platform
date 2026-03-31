@@ -5,34 +5,33 @@ export const homepageEditorialPage: EditorialPage = {
   pageType: 'homepage',
   title: 'Brick Ledger',
   seo: {
-    title: 'Brick Ledger | Collector intelligence for serious LEGO fans',
+    title: 'Brick Ledger | Compare LEGO set prices, offers, and saves',
     description:
-      'Explore a polished LEGO collector platform with catalog discovery, clean ownership tracking, and room for curated editorial storytelling.',
+      'Browse standout LEGO sets, compare reviewed Dutch shop prices, and keep track of what you own or still want.',
   },
   sections: [
     {
       id: 'home-hero',
       type: 'hero',
-      eyebrow: 'Collector intelligence',
-      title: 'A premium editorial layer for a modern LEGO collector platform.',
-      body: 'Brick Ledger pairs catalog discovery with curated storytelling so the public experience can grow into richer landing pages without turning the catalog into CMS-managed data.',
+      eyebrow: 'Collector guide',
+      title: 'Find the right set before you buy.',
+      body: 'Brick Ledger brings together standout sets, reviewed shop prices, and private save tools so collectors can decide faster.',
       ctaLabel: 'Browse featured sets',
       ctaHref: '#featured-sets',
     },
     {
       id: 'home-foundation',
       type: 'richText',
-      eyebrow: 'Editorial foundation',
-      title:
-        'Keep storytelling flexible while core product data stays system-owned.',
-      body: 'Homepage content is shaped like a future Contentful page, but the featured set list still comes from the catalog domain so editorial content never becomes the source of truth for collector data.',
+      eyebrow: 'Why it helps',
+      title: 'One set page, the details that matter.',
+      body: 'Open a set page to see why it stands out, where reviewed prices sit today, and which shops are closest on price.',
     },
     {
       id: 'home-callout',
       type: 'callout',
-      eyebrow: 'Phase 1.5',
-      title: 'Start with stable sections, SEO fields, and safe fallbacks.',
-      body: 'The initial CMS skeleton supports homepage storytelling and future editorial pages, while live Contentful fetching remains optional behind a mock-backed facade.',
+      eyebrow: 'Worth checking',
+      title: 'Simple price guidance, not noise.',
+      body: 'We keep the buying read clear: current reviewed price, best current deal, and a clean shop comparison.',
     },
   ],
 };
@@ -46,7 +45,7 @@ export const editorialPages: readonly EditorialPage[] = [
     seo: {
       title: 'About Brick Ledger',
       description:
-        'Learn how Brick Ledger approaches LEGO collecting with a focus on maintainable architecture, strong content foundations, and future editorial flexibility.',
+        'Learn how Brick Ledger helps LEGO collectors browse, compare, and keep track of standout sets.',
     },
     sections: [
       {
@@ -54,15 +53,15 @@ export const editorialPages: readonly EditorialPage[] = [
         type: 'hero',
         eyebrow: 'About',
         title:
-          'Brick Ledger is built to respect both collectors and the systems behind the product.',
-        body: 'The platform starts narrow on purpose: browse sets, track ownership, and layer in editorial depth without collapsing product structure into page-specific code.',
+          'Brick Ledger is built for collectors who want a clear read before they click out.',
+        body: 'The product stays intentionally focused: browse strong sets, compare reviewed prices, and keep private saves close at hand.',
       },
       {
         id: 'about-principles',
         type: 'richText',
         eyebrow: 'Principles',
-        title: 'Editorial pages should be curated, ordered, and SEO-aware.',
-        body: 'Contentful will eventually power flexible pages and sections, but the catalog, pricing, and user state remain domain-owned so content management never replaces business truth.',
+        title: 'The product should stay useful before it gets bigger.',
+        body: 'Catalog pages, price checks, and private saves come first. Editorial depth can grow around that core without turning the product into a content shell.',
       },
     ],
   },

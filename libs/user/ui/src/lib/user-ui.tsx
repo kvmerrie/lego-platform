@@ -70,9 +70,9 @@ export function UserShellAccountStatusCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Checking your collection, wishlist, and profile."
+            description="Loading your account, saves, and profile."
             eyebrow="Collector status"
-            title="Checking collector status"
+            title="Checking your account"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
@@ -92,17 +92,17 @@ export function UserShellAccountStatusCard({
         <div className={styles.sessionContent}>
           <p className={styles.statusMeta}>
             {isAuthAvailable
-              ? 'Signed out · Private saves after sign-in'
+              ? 'Signed out · Save collection and wishlist privately'
               : 'Signed out · Sign-in unavailable'}
           </p>
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Sign in once to save your collection, wishlist, and profile privately.'
+                ? 'Sign in once to keep collection, wishlist, and collector details in one place.'
                 : 'Browsing still works here, but private collector saves are unavailable in this environment.'
             }
             eyebrow="Collector status"
-            title="Sign in to start saving privately"
+            title="Sign in to save sets"
           />
           <div className={styles.shellStatusActions}>
             <ActionLink
@@ -151,7 +151,7 @@ export function UserShellAccountStatusCard({
           Signed in · {userSession.collector.tier}
         </p>
         <SectionHeading
-          description="Your private collector state is ready."
+          description="Your saved sets and collector details are one click away."
           eyebrow="Collector status"
           title={userSession.collector.name}
         />
@@ -207,7 +207,7 @@ export function UserShellAccountStatusCard({
         ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
-        ready
+        signed in
       </Badge>
     </Surface>
   );
@@ -268,7 +268,7 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Use one email link to open your collection, wishlist, and collector details.'
+                ? 'Use one email link to open your account, collection, and wishlist.'
                 : 'Browsing still works here, but saved collector actions stay disabled in this environment.'
             }
             eyebrow="Account"
@@ -313,7 +313,8 @@ export function UserSessionCard({
             </div>
           </form>
           <p className={styles.supportNote}>
-            Browsing and reviewed pricing still work without signing in.
+            You can still browse sets and compare reviewed prices while signed
+            out.
           </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
@@ -346,7 +347,7 @@ export function UserSessionCard({
           Account · {userSession.collector.tier}
         </p>
         <SectionHeading
-          description="Your collection, wishlist, and collector details live here."
+          description="Collection, wishlist, and account details in one place."
           eyebrow="Collector account"
           title="Your account"
         />
@@ -375,12 +376,14 @@ export function UserSessionCard({
             <p className={styles.paneValue}>
               {userSession.account?.email ?? 'Signed in collector session'}
             </p>
-            <p className={styles.paneNote}>Used only for account access.</p>
+            <p className={styles.paneNote}>Used only for sign-in links.</p>
           </div>
           <div className={styles.identityPane}>
             <p className={styles.paneLabel}>Collector handle</p>
             <p className={styles.paneValue}>@{userSession.collector.id}</p>
-            <p className={styles.paneNote}>Shown across your collector area.</p>
+            <p className={styles.paneNote}>
+              Shown on your account and saved sets.
+            </p>
           </div>
         </div>
         <p className={styles.sessionCounts}>
@@ -388,8 +391,7 @@ export function UserSessionCard({
           {collectorSetCounts.wantedCount} wanted saved
         </p>
         <p className={styles.supportNote}>
-          Collection and wishlist stay private. Set facts and pricing stay
-          public.
+          Your saves stay private. Set pages and price checks stay public.
         </p>
         <div className={styles.sessionActions}>
           <Button
@@ -472,9 +474,9 @@ export function UserProfileEditorCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading the collector details used across your signed-in surfaces."
+            description="Loading the details shown on your account and saved sets."
             eyebrow="Profile"
-            title="Loading collector profile"
+            title="Loading profile"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
@@ -493,9 +495,9 @@ export function UserProfileEditorCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Your collector profile could not be loaded right now."
+            description="We could not load your collector details right now."
             eyebrow="Profile"
-            title="Collector profile unavailable"
+            title="Profile unavailable"
           />
           {errorMessage ? (
             <p aria-live="polite" className={styles.errorText}>
@@ -519,7 +521,7 @@ export function UserProfileEditorCard({
       <div className={styles.sessionContent}>
         <p className={styles.statusMeta}>Account details</p>
         <SectionHeading
-          description="Update the name and details used across your collector area."
+          description="Update the name and details shown on your account and saved sets."
           eyebrow="Collector details"
           title="Edit your collector details"
         />
@@ -545,7 +547,7 @@ export function UserProfileEditorCard({
                 }
               />
               <span className={styles.fieldHint}>
-                Shown across your account and saved sets.
+                Shown on your account and saved sets.
               </span>
             </label>
             <label className={styles.formField}>
@@ -648,7 +650,7 @@ export function UserProfileEditorCard({
         ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
-        ready
+        profile
       </Badge>
     </Surface>
   );

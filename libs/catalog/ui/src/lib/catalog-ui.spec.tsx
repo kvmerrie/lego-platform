@@ -143,11 +143,11 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Collector image coming soon');
+    expect(markup).toContain('Official image not published yet');
     expect(markup).toContain('Set 21335');
     expect(markup).toContain('Lowest reviewed price');
     expect(markup).toContain('30-day price history');
-    expect(markup).toContain('Why this set stands out');
+    expect(markup).toContain('Why collectors keep coming back');
     expect(markup).not.toContain('Back to shortlist');
   });
 });

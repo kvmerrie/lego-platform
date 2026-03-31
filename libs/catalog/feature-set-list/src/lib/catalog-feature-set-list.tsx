@@ -32,13 +32,15 @@ export function CatalogFeatureSetList({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          description="Browse a small curated shortlist, then open a set page to save what you own or still want."
+          description="A few strong set pages to start with, with reviewed prices where the coverage already holds up."
           eyebrow="Featured sets"
-          title="Start with a few standout sets."
+          title="Start with sets worth opening."
         />
         <p className={styles.signalRow}>
-          {homepageSets.length} curated picks
-          {reviewedSetCount ? ` · ${reviewedSetCount} with reviewed price` : ''}
+          {homepageSets.length} featured sets
+          {reviewedSetCount
+            ? ` · ${reviewedSetCount} with reviewed prices`
+            : ''}
         </p>
       </div>
       <div className={styles.grid}>

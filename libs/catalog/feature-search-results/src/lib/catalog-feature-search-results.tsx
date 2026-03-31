@@ -23,9 +23,9 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
         tone="muted"
       >
         <SectionHeading
-          description="Search by set name or set number to jump straight into the catalog."
+          description="Search by set name or set number to go straight to a set page."
           eyebrow="Search"
-          title="Search the catalog"
+          title="Search sets"
         />
         <div className={styles.stateActions}>
           <ActionLink
@@ -49,7 +49,7 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
         tone="muted"
       >
         <SectionHeading
-          description={`No curated sets matched "${searchQuery}" yet. Try a set name or number.`}
+          description={`Nothing matched "${searchQuery}". Try another set name or set number.`}
           eyebrow="Search"
           title={`No results for "${searchQuery}"`}
         />
@@ -69,7 +69,7 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
     <section className={styles.resultsSection}>
       <div className={styles.resultsHeader}>
         <SectionHeading
-          description={`Showing curated matches for "${searchQuery}".`}
+          description={`Matching set pages for "${searchQuery}".`}
           eyebrow="Search"
           title={`Results for "${searchQuery}"`}
         />
@@ -100,7 +100,7 @@ export function CatalogFeatureSearchResultsLoading() {
       tone="muted"
     >
       <SectionHeading
-        description="Searching the current curated catalog."
+        description="Looking through the current set catalog."
         eyebrow="Search"
         title="Searching sets"
       />

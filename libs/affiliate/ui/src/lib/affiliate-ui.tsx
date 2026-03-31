@@ -129,7 +129,7 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description={`Compare current ${getDefaultMarketAdjective()} offers side by side.`}
+        description={`Compare the ${getDefaultMarketAdjective()} shops we reviewed for this set.`}
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
@@ -184,7 +184,7 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
       tone="muted"
     >
       <SectionHeading
-        description={`Offer comparison is not available for this set right now.`}
+        description={`We have not reviewed shop offers for this set yet.`}
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />

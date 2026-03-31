@@ -71,7 +71,9 @@ function CatalogSetVisual({
   return (
     <div className={`${visualClassName} ${styles.visualFallback}`}>
       <Badge tone="accent">{theme}</Badge>
-      <p className={styles.visualFallbackTitle}>Collector image coming soon</p>
+      <p className={styles.visualFallbackTitle}>
+        Official image not published yet
+      </p>
       <p className={styles.visualFallbackMeta}>Set {setId}</p>
     </div>
   );
@@ -193,17 +195,17 @@ export function CatalogSetCard({
             ) : (
               <>
                 <p className={styles.priceUnavailableValue}>
-                  Not published yet
+                  Reviewed price not published yet
                 </p>
                 <p className={styles.cardCompactSupporting}>
-                  Reviewed pricing is live for selected sets.
+                  Set page is live.
                 </p>
               </>
             )}
           </div>
           <div className={styles.cardCompactFooter}>
             <p className={styles.cardCompactMeta}>
-              {priceContext ? priceContext.reviewedLabel : 'Public set page'}
+              {priceContext ? priceContext.reviewedLabel : 'Set page live'}
             </p>
             {href ? (
               <span className={styles.cardCompactAction}>Open set</span>
@@ -275,7 +277,7 @@ export function CatalogSetCard({
         <div className={styles.priceBlock}>
           <p className={styles.priceLabel}>Reviewed price</p>
           <p className={styles.priceUnavailableCopy}>
-            Reviewed pricing is live for selected sets.
+            Reviewed price not published yet.
           </p>
         </div>
       )}
@@ -317,20 +319,18 @@ export function CatalogHomepageIntro() {
     >
       <div className={styles.heroPrimary}>
         <SectionHeading
-          description="Start with a small curated shortlist, then open set pages for pricing context and private saves."
+          description="Browse a shortlist on the homepage, then open set pages for price checks, shop comparisons, and private saves."
           eyebrow="Curated discovery"
-          title="A collector-friendly way to browse standout sets."
+          title="Useful set pages, not just a gallery."
           tone="hero"
         />
-        <p className={styles.heroMeta}>
-          Static-friendly reads with private saves on set pages.
-        </p>
+        <p className={styles.heroMeta}>Quick to scan. Clear enough to act.</p>
       </div>
       <div className={styles.heroSecondary}>
         <SectionHeading
-          description="The homepage stays light and browse-first while set pages carry the deeper collector tools."
+          description="The homepage stays lean so the deeper buying and collecting tools can live on each set page."
           eyebrow="Focused scope"
-          title="A small slice that already feels useful."
+          title="Open a set when you want the full picture."
           titleAs="h2"
         />
         <ActionLink
@@ -375,7 +375,7 @@ export function CatalogSetDetailPanel({
           <div className={styles.heroCopy}>
             <SectionHeading
               description={catalogSetDetail.tagline}
-              eyebrow="Curated set"
+              eyebrow="Set detail"
               title={catalogSetDetail.name}
               titleAs="h2"
               tone="hero"
@@ -408,11 +408,11 @@ export function CatalogSetDetailPanel({
             <SectionHeading
               description={catalogSetDetail.collectorAngle}
               eyebrow="Collector notes"
-              title="Why this set stands out"
+              title="Why collectors keep coming back"
               titleAs="h3"
             />
             <p className={styles.availability}>
-              Availability: {catalogSetDetail.availability}
+              Current read: {catalogSetDetail.availability}
             </p>
           </div>
           <CatalogSetMetadata

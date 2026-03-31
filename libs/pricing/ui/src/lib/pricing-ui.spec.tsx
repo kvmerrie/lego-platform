@@ -73,7 +73,7 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('First tracked price');
     expect(markup).toContain('30-day range building');
     expect(markup).toContain(
-      'The tracked summary above can already use this first point.',
+      'The tracked price range starts from this first reviewed day.',
     );
   });
 

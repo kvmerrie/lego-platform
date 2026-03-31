@@ -104,7 +104,7 @@ export function UserFeatureAuth() {
         email: nextEmail,
       });
       setAuthStatusMessage(
-        `Check ${nextEmail} for your sign-in link. Once you open it, this private collector area refreshes automatically. If it does not arrive right away, wait about a minute before requesting another one.`,
+        `Check ${nextEmail} for your sign-in link. Once you open it, your account page refreshes automatically. If it does not arrive right away, wait about a minute before requesting another one.`,
       );
     } catch (error) {
       setErrorMessage(
@@ -124,7 +124,7 @@ export function UserFeatureAuth() {
     try {
       await signOutCurrentUser();
       setAuthStatusMessage(
-        'Signed out. Your saved collector state still lives on your account and will be waiting when you sign back in.',
+        'Signed out. Your saved sets will still be here when you sign back in.',
       );
       setIsLoading(true);
       await loadUserSession();
