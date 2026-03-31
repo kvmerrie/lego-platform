@@ -458,6 +458,79 @@
   gap: var(--lego-space-2);
 }
 
+.themeTile {
+  min-height: 15rem;
+  overflow: hidden;
+  padding: 0;
+}
+
+.themeTileLink {
+  align-items: stretch;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  box-shadow: none;
+  color: inherit;
+  display: grid;
+  min-height: 100%;
+  padding: var(--lego-space-5);
+  text-align: left;
+  width: 100%;
+}
+
+.themeTileLink:hover {
+  background: transparent;
+  border-color: transparent;
+}
+
+.themeTileBody {
+  display: grid;
+  gap: var(--lego-space-3);
+  min-height: 100%;
+}
+
+.themeTileTop {
+  align-items: start;
+  display: grid;
+  gap: var(--lego-space-1);
+  justify-items: start;
+}
+
+.themeTileCount,
+.themeTileAction,
+.themeTileSignature {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.themeTileAction {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+}
+
+.themeTileTitle {
+  font-size: clamp(1.7rem, 2.5vw, 2.3rem);
+  font-weight: var(--lego-text-role-hero-weight);
+  letter-spacing: -0.04em;
+  line-height: 0.98;
+  margin: 0;
+  max-width: 10ch;
+}
+
+.themeTileCopy {
+  color: var(--lego-text);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 28ch;
+}
+
+.themeTileSignature {
+  align-self: end;
+  margin-top: auto;
+}
+
 .demo {
   display: grid;
   gap: var(--lego-space-4);

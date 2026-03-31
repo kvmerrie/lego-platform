@@ -11,6 +11,8 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('Icons');
     expect(markup).toContain('Ideas');
     expect(markup).toContain('Marvel');
+    expect(markup).toContain('id="theme-icons"');
+    expect(markup).toContain('id="theme-marvel"');
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('The Lord of the Rings: Barad-dûr');
     expect(markup).toContain('Vincent van Gogh - The Starry Night');

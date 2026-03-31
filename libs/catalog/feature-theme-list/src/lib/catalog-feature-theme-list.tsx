@@ -1,23 +1,48 @@
-import { listCatalogThemes } from '@lego-platform/catalog/data-access';
+import { listHomepageThemeSnapshots } from '@lego-platform/catalog/data-access';
 import { CatalogThemeHighlight } from '@lego-platform/catalog/ui';
+import {
+  buildCatalogThemeBrowseId,
+  type CatalogThemeSnapshot,
+} from '@lego-platform/catalog/util';
+import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
+import { SectionHeading } from '@lego-platform/shared/ui';
+import styles from './catalog-feature-theme-list.module.css';
 
-export function CatalogFeatureThemeList() {
-  const catalogThemeSnapshots = listCatalogThemes();
+function getThemeBrowseHref(themeName: string): string {
+  return `${buildWebPath(webPathnames.discover)}#${buildCatalogThemeBrowseId(
+    themeName,
+  )}`;
+}
+
+export function CatalogFeatureThemeList({
+  themeSnapshots = listHomepageThemeSnapshots(),
+}: {
+  themeSnapshots?: readonly CatalogThemeSnapshot[];
+}) {
+  if (!themeSnapshots.length) {
+    return null;
+  }
 
   return (
-    <section className="section-stack">
-      <header className="section-heading">
-        <p className="eyebrow">Theme coverage</p>
-        <h2>
-          Theme snapshots stay isolated from page logic and ready for CMS-driven
-          expansion.
-        </h2>
-      </header>
-      <div className="surface-grid">
-        {catalogThemeSnapshots.map((catalogThemeSnapshot) => (
+    <section className={styles.section} id="explore-themes">
+      <div className={styles.headerBlock}>
+        <SectionHeading
+          className={styles.header}
+          description="Jump straight into the strongest lanes first, from flagship display worlds to franchise-heavy shelves."
+          eyebrow="Explore"
+          title="Explore by theme"
+        />
+        <p className={styles.signalRow}>
+          {themeSnapshots.length} browse lanes worth opening
+        </p>
+      </div>
+      <div className={styles.rail}>
+        {themeSnapshots.map((themeSnapshot) => (
           <CatalogThemeHighlight
-            key={catalogThemeSnapshot.name}
-            themeSnapshot={catalogThemeSnapshot}
+            href={getThemeBrowseHref(themeSnapshot.name)}
+            key={themeSnapshot.name}
+            themeSnapshot={themeSnapshot}
+            variant="tile"
           />
         ))}
       </div>

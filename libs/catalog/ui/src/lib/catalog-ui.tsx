@@ -451,10 +451,48 @@ export function CatalogSetDetailPanel({
 }
 
 export function CatalogThemeHighlight({
+  href,
   themeSnapshot,
+  variant = 'default',
 }: {
+  href?: string;
   themeSnapshot: CatalogThemeSnapshot;
+  variant?: 'default' | 'tile';
 }) {
+  if (variant === 'tile') {
+    const themeTileContent = (
+      <div className={styles.themeTileBody}>
+        <div className={styles.themeTileTop}>
+          <p className={styles.themeTileCount}>
+            {themeSnapshot.setCount} tracked sets
+          </p>
+          <span className={styles.themeTileAction}>Browse lane</span>
+        </div>
+        <h3 className={styles.themeTileTitle}>{themeSnapshot.name}</h3>
+        <p className={styles.themeTileCopy}>{themeSnapshot.momentum}</p>
+        <p className={styles.themeTileSignature}>
+          Start with {themeSnapshot.signatureSet}
+        </p>
+      </div>
+    );
+
+    return (
+      <Surface
+        as="article"
+        className={`${styles.themeCard} ${styles.themeTile}`}
+        tone="muted"
+      >
+        {href ? (
+          <ActionLink className={styles.themeTileLink} href={href} tone="card">
+            {themeTileContent}
+          </ActionLink>
+        ) : (
+          themeTileContent
+        )}
+      </Surface>
+    );
+  }
+
   return (
     <Surface as="article" className={styles.themeCard} tone="muted">
       <div className={styles.themeHeader}>

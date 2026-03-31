@@ -135,6 +135,16 @@ export function buildCatalogSetSlug(name: string, canonicalId: string): string {
   });
 }
 
+export function buildCatalogThemeBrowseId(themeName: string): string {
+  const normalizedThemeName = normalizeCatalogAsciiText(themeName)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return `theme-${normalizedThemeName}`;
+}
+
 export function getCatalogProductSlug({
   catalogSetRecord,
   catalogSetOverlay,

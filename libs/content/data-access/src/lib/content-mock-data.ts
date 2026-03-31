@@ -16,8 +16,8 @@ export const homepageEditorialPage: EditorialPage = {
       eyebrow: 'Collector guide',
       title: 'Find the right set before you buy.',
       body: 'Brick Ledger brings together standout sets, reviewed shop prices, and private save tools so collectors can decide faster.',
-      ctaLabel: 'Browse featured sets',
-      ctaHref: '#featured-sets',
+      ctaLabel: 'Explore by theme',
+      ctaHref: '#explore-themes',
     },
     {
       id: 'home-foundation',

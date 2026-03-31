@@ -6,6 +6,7 @@ import {
   listCatalogBrowseThemeGroups,
   listCatalogSetCardsByIds,
   listHomepageDealCandidateSetCards,
+  listHomepageThemeSnapshots,
   listCatalogSetSlugs,
   listHomepageSetCards,
   listCatalogSetSummaries,
@@ -741,6 +742,19 @@ describe('catalog data-access contracts', () => {
         ?.setCards.slice(0, 4)
         .map((catalogSetCard) => catalogSetCard.id),
     ).toEqual(['21348', '21350', '21333', '21345']);
+  });
+
+  test('keeps homepage theme surfacing focused on the strongest browse lanes', () => {
+    expect(
+      listHomepageThemeSnapshots().map((themeSnapshot) => themeSnapshot.name),
+    ).toEqual([
+      'Icons',
+      'Marvel',
+      'Ideas',
+      'Star Wars',
+      'Harry Potter',
+      'Technic',
+    ]);
   });
 
   test('does not expose upstream slug drift through the product route contract', () => {

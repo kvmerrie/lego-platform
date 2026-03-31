@@ -15,16 +15,20 @@ export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
 export function CatalogFeatureSetList({
   description = 'A compact mix of flagship buys, crowd-pulling click magnets, and easier collector entry points.',
   eyebrow = 'Featured sets',
+  layout = 'rail',
   sectionId = 'featured-sets',
   setCards,
   signalText,
+  tone = 'muted',
   title = 'Start with sets worth opening.',
 }: {
   description?: string;
   eyebrow?: string;
+  layout?: 'grid' | 'rail';
   sectionId?: string;
   setCards?: readonly CatalogFeatureSetListItem[];
   signalText?: string;
+  tone?: 'default' | 'muted';
   title?: string;
 }) {
   const homepageSets: readonly CatalogFeatureSetListItem[] =
@@ -38,7 +42,12 @@ export function CatalogFeatureSetList({
   ).length;
 
   return (
-    <section className={styles.section} id={sectionId}>
+    <section
+      className={`${styles.section} ${
+        tone === 'default' ? styles.sectionDefault : styles.sectionMuted
+      }`}
+      id={sectionId}
+    >
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
@@ -55,7 +64,7 @@ export function CatalogFeatureSetList({
             }`}
         </p>
       </div>
-      <div className={styles.grid}>
+      <div className={layout === 'grid' ? styles.grid : styles.rail}>
         {homepageSets.map((catalogSetSummary) => (
           <CatalogSetCard
             key={catalogSetSummary.id}

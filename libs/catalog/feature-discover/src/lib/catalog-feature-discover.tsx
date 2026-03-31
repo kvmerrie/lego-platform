@@ -6,7 +6,10 @@ import {
   CatalogSetCard,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
-import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
+import {
+  buildCatalogThemeBrowseId,
+  type CatalogHomepageSetCard,
+} from '@lego-platform/catalog/util';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-discover.module.css';
@@ -118,6 +121,7 @@ export function CatalogFeatureDiscover({
           <Surface
             as="section"
             className={styles.themeSection}
+            id={buildCatalogThemeBrowseId(themeGroup.theme)}
             key={themeGroup.theme}
             tone={index % 2 === 0 ? 'default' : 'muted'}
           >

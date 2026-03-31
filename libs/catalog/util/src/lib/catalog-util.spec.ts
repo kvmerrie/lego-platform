@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+  buildCatalogThemeBrowseId,
   buildCatalogSetSlug,
   createCatalogSetRecord,
   getCatalogProductSlug,
@@ -27,6 +28,13 @@ describe('catalog snapshot helpers', () => {
 
     expect(buildCatalogSetSlug('Hokusai - The Great Wave', '31208')).toBe(
       'hokusai-the-great-wave-31208',
+    );
+  });
+
+  test('builds stable discover anchors for theme browsing', () => {
+    expect(buildCatalogThemeBrowseId('Star Wars')).toBe('theme-star-wars');
+    expect(buildCatalogThemeBrowseId('Harry Potter')).toBe(
+      'theme-harry-potter',
     );
   });
 

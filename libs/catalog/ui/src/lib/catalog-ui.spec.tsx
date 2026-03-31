@@ -1,6 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { CatalogSetCard, CatalogSetDetailPanel } from './catalog-ui';
+import {
+  CatalogSetCard,
+  CatalogSetDetailPanel,
+  CatalogThemeHighlight,
+} from './catalog-ui';
 
 describe('CatalogSetCard', () => {
   it('renders a lighter browse-card variant for catalog exploration', () => {
@@ -150,5 +154,25 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('30-day price history');
     expect(markup).toContain('Why collectors keep coming back');
     expect(markup).not.toContain('Back to shortlist');
+  });
+
+  it('renders a larger theme tile variant for storefront browsing', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogThemeHighlight
+        href="/discover#theme-icons"
+        themeSnapshot={{
+          name: 'Icons',
+          setCount: 14,
+          momentum:
+            'Premium collectors are consolidating around large display pieces.',
+          signatureSet: 'Rivendell',
+        }}
+        variant="tile"
+      />,
+    );
+
+    expect(markup).toContain('href="/discover#theme-icons"');
+    expect(markup).toContain('Browse lane');
+    expect(markup).toContain('Start with Rivendell');
   });
 });

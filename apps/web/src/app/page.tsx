@@ -4,6 +4,7 @@ import {
   CatalogFeatureSetList,
   type CatalogFeatureSetListItem,
 } from '@lego-platform/catalog/feature-set-list';
+import { CatalogFeatureThemeList } from '@lego-platform/catalog/feature-theme-list';
 import {
   listCatalogSetCardsByIds,
   listHomepageDealCandidateSetCards,
@@ -132,7 +133,12 @@ export default async function HomePage() {
   return (
     <ShellWeb>
       <ContentFeaturePageRenderer editorialPage={homepagePage} />
-      <CatalogFeatureSetList setCards={homepageSetCards} />
+      <CatalogFeatureThemeList />
+      <CatalogFeatureSetList
+        description="A first row of flagship anchors, click-magnet fan favorites, and one easier crossover entry point."
+        setCards={homepageSetCards}
+        title="Start with the sets worth opening first"
+      />
       {homepageDealSetCards.length ? (
         <CatalogFeatureSetList
           description="Reviewed Dutch prices currently showing the clearest gaps below reference across the sets most likely to earn a click."
@@ -140,6 +146,7 @@ export default async function HomePage() {
           sectionId="best-current-deals"
           setCards={homepageDealSetCards}
           signalText={`${homepageDealSetCards.length} sets worth a closer look`}
+          tone="default"
           title="Best current deals"
         />
       ) : null}

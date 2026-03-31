@@ -92,6 +92,7 @@ const discoverDealCandidateIds = [
   '10305',
   '21061',
 ] as const;
+const HOMEPAGE_THEME_LIMIT = 6;
 
 export interface CatalogBrowseThemeGroup {
   setCards: CatalogHomepageSetCard[];
@@ -532,4 +533,25 @@ export function listCatalogThemes(): CatalogThemeSnapshot[] {
     momentum: catalogThemeOverlay.momentum,
     signatureSet: catalogThemeOverlay.signatureSet,
   }));
+}
+
+export function listHomepageThemeSnapshots(
+  limit = HOMEPAGE_THEME_LIMIT,
+): CatalogThemeSnapshot[] {
+  const catalogThemeSnapshotByName = new Map(
+    listCatalogThemes().map((catalogThemeSnapshot) => [
+      catalogThemeSnapshot.name,
+      catalogThemeSnapshot,
+    ]),
+  );
+
+  return listCatalogBrowseThemeGroups()
+    .flatMap((catalogThemeGroup) => {
+      const catalogThemeSnapshot = catalogThemeSnapshotByName.get(
+        catalogThemeGroup.theme,
+      );
+
+      return catalogThemeSnapshot ? [catalogThemeSnapshot] : [];
+    })
+    .slice(0, limit);
 }
