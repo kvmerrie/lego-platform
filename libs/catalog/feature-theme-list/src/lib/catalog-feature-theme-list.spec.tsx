@@ -7,10 +7,10 @@ describe('CatalogFeatureThemeList', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureThemeList />);
 
     expect(markup).toContain('Explore by theme');
-    expect(markup).toContain('browse lanes worth opening');
+    expect(markup).toContain('theme pages worth opening');
     expect(markup).toContain('Icons');
     expect(markup).toContain('Marvel');
-    expect(markup).toContain('href="/discover#theme-icons"');
-    expect(markup).toContain('href="/discover#theme-marvel"');
+    expect(markup).toContain('href="/themes/icons"');
+    expect(markup).toContain('href="/themes/marvel"');
   });
 });

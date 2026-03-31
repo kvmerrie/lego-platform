@@ -5,6 +5,7 @@ import {
   CatalogSetRecord,
   CatalogSetSummary,
   CatalogThemeSnapshot,
+  buildCatalogThemeSlug,
   getCatalogProductSlug,
   normalizeCatalogAsciiText,
   sortCatalogSetSummaries,
@@ -93,10 +94,24 @@ const discoverDealCandidateIds = [
   '21061',
 ] as const;
 const HOMEPAGE_THEME_LIMIT = 6;
+const themeLandingPageNames = [
+  'Icons',
+  'Marvel',
+  'Ideas',
+  'Star Wars',
+  'Harry Potter',
+  'Technic',
+] as const;
 
 export interface CatalogBrowseThemeGroup {
+  slug: string;
   setCards: CatalogHomepageSetCard[];
   theme: string;
+}
+
+export interface CatalogThemeLandingPage {
+  setCards: CatalogHomepageSetCard[];
+  themeSnapshot: CatalogThemeSnapshot;
 }
 
 const catalogSetOverlayById = new Map(
@@ -466,6 +481,7 @@ export function listCatalogBrowseThemeGroups(): CatalogBrowseThemeGroup[] {
 
   return [...setCardsByTheme.entries()]
     .map(([theme, setCards]) => ({
+      slug: buildCatalogThemeSlug(theme),
       theme,
       setCards: sortCatalogDiscoverSetCards(setCards),
     }))
@@ -529,6 +545,7 @@ export function getCatalogSetBySlug(slug: string) {
 export function listCatalogThemes(): CatalogThemeSnapshot[] {
   return catalogThemeOverlays.map((catalogThemeOverlay) => ({
     name: catalogThemeOverlay.name,
+    slug: buildCatalogThemeSlug(catalogThemeOverlay.name),
     setCount: catalogThemeOverlay.setCount,
     momentum: catalogThemeOverlay.momentum,
     signatureSet: catalogThemeOverlay.signatureSet,
@@ -554,4 +571,50 @@ export function listHomepageThemeSnapshots(
       return catalogThemeSnapshot ? [catalogThemeSnapshot] : [];
     })
     .slice(0, limit);
+}
+
+function listCatalogThemeLandingPages(): CatalogThemeLandingPage[] {
+  const catalogThemeSnapshotByName = new Map(
+    listCatalogThemes().map((catalogThemeSnapshot) => [
+      catalogThemeSnapshot.name,
+      catalogThemeSnapshot,
+    ]),
+  );
+  const catalogThemeGroupByName = new Map(
+    listCatalogBrowseThemeGroups().map((catalogThemeGroup) => [
+      catalogThemeGroup.theme,
+      catalogThemeGroup,
+    ]),
+  );
+
+  return themeLandingPageNames.flatMap((themeName) => {
+    const catalogThemeSnapshot = catalogThemeSnapshotByName.get(themeName);
+    const catalogThemeGroup = catalogThemeGroupByName.get(themeName);
+
+    if (!catalogThemeSnapshot || !catalogThemeGroup) {
+      return [];
+    }
+
+    return [
+      {
+        themeSnapshot: catalogThemeSnapshot,
+        setCards: catalogThemeGroup.setCards,
+      },
+    ];
+  });
+}
+
+export function listCatalogThemePageSlugs(): string[] {
+  return listCatalogThemeLandingPages().map(
+    (catalogThemeLandingPage) => catalogThemeLandingPage.themeSnapshot.slug,
+  );
+}
+
+export function getCatalogThemePageBySlug(
+  slug: string,
+): CatalogThemeLandingPage | undefined {
+  return listCatalogThemeLandingPages().find(
+    (catalogThemeLandingPage) =>
+      catalogThemeLandingPage.themeSnapshot.slug === slug,
+  );
 }

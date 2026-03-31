@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
-  buildCatalogThemeBrowseId,
+  buildCatalogThemeSlug,
   buildCatalogSetSlug,
   createCatalogSetRecord,
   getCatalogProductSlug,
@@ -31,11 +31,9 @@ describe('catalog snapshot helpers', () => {
     );
   });
 
-  test('builds stable discover anchors for theme browsing', () => {
-    expect(buildCatalogThemeBrowseId('Star Wars')).toBe('theme-star-wars');
-    expect(buildCatalogThemeBrowseId('Harry Potter')).toBe(
-      'theme-harry-potter',
-    );
+  test('builds stable theme slugs for dedicated theme pages', () => {
+    expect(buildCatalogThemeSlug('Star Wars')).toBe('star-wars');
+    expect(buildCatalogThemeSlug('Harry Potter')).toBe('harry-potter');
   });
 
   test('prefers product slug overrides when present', () => {

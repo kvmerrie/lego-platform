@@ -44,7 +44,7 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 
 ## Design System Guidance
 
-- Light mode and dark mode are both required.
+- The design system must support both light and dark mode, even if only light mode is currently surfaced in the product.
 - The product should feel premium, playful, clean, and retail-grade.
 - Take inspiration from the quality bar of `lego.com`, but do not clone it.
 - Accessibility, consistency, and performance are mandatory.
@@ -74,6 +74,17 @@ Short examples:
 - Contentful owns pages, sections, ordering, curated content, and SEO fields.
 - Set catalog data is not manually maintained in Contentful.
 - Runtime user and catalog experiences must not depend on editorial CMS uptime for core catalog integrity.
+
+## Accessibility And UX Quality
+
+- The product must meet WCAG 2.1 AA accessibility standards as a baseline.
+- Use semantic HTML wherever possible (headings, lists, buttons, landmarks).
+- All interactive elements must be keyboard accessible and have visible focus states.
+- Images must include meaningful alt text where they convey content.
+- Color contrast must meet accessibility guidelines, especially for buttons, badges, and pricing signals.
+- Avoid using color alone to communicate meaning (e.g. deal states).
+- Ensure clear and consistent heading hierarchy for SEO and screen readers.
+- Prefer simple, readable layouts over visually complex patterns.
 
 ## Change Rules
 

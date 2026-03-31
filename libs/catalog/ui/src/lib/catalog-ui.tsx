@@ -466,7 +466,7 @@ export function CatalogThemeHighlight({
           <p className={styles.themeTileCount}>
             {themeSnapshot.setCount} tracked sets
           </p>
-          <span className={styles.themeTileAction}>Browse lane</span>
+          <span className={styles.themeTileAction}>Open theme page</span>
         </div>
         <h3 className={styles.themeTileTitle}>{themeSnapshot.name}</h3>
         <p className={styles.themeTileCopy}>{themeSnapshot.momentum}</p>

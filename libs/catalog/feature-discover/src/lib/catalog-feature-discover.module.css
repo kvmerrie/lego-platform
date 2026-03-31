@@ -63,6 +63,10 @@
   margin: 0;
 }
 
+.themeAction {
+  justify-self: start;
+}
+
 @media (min-width: 48rem) {
   .featuredGrid,
   .dealGrid,

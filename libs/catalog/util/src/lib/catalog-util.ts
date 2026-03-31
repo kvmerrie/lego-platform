@@ -26,6 +26,7 @@ export interface CatalogSetDetail extends CatalogSetSummary {
 
 export interface CatalogThemeSnapshot {
   name: string;
+  slug: string;
   setCount: number;
   momentum: string;
   signatureSet: string;
@@ -135,14 +136,12 @@ export function buildCatalogSetSlug(name: string, canonicalId: string): string {
   });
 }
 
-export function buildCatalogThemeBrowseId(themeName: string): string {
-  const normalizedThemeName = normalizeCatalogAsciiText(themeName)
+export function buildCatalogThemeSlug(themeName: string): string {
+  return normalizeCatalogAsciiText(themeName)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/-{2,}/g, '-')
     .replace(/^-+|-+$/g, '');
-
-  return `theme-${normalizedThemeName}`;
 }
 
 export function getCatalogProductSlug({

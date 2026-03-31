@@ -83,6 +83,7 @@ export type RuntimeName = keyof typeof platformConfig.runtimes;
 export const webPathnames = {
   home: '/',
   discover: '/discover',
+  themes: '/themes',
   search: '/search',
   account: '/account',
   collection: '/collection',
@@ -228,6 +229,10 @@ export function getDefaultMarketAdjective(): string {
 
 export function buildSetDetailPath(slug: string): string {
   return buildWebPath(`${webPathnames.sets}/${slug}`);
+}
+
+export function buildThemePath(slug: string): string {
+  return buildWebPath(`${webPathnames.themes}/${slug}`);
 }
 
 export const webNavigation = webNavigationItems.map((navigationItem) => ({

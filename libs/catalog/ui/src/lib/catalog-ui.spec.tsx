@@ -159,9 +159,10 @@ describe('CatalogSetCard', () => {
   it('renders a larger theme tile variant for storefront browsing', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight
-        href="/discover#theme-icons"
+        href="/themes/icons"
         themeSnapshot={{
           name: 'Icons',
+          slug: 'icons',
           setCount: 14,
           momentum:
             'Premium collectors are consolidating around large display pieces.',
@@ -171,8 +172,8 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('href="/discover#theme-icons"');
-    expect(markup).toContain('Browse lane');
+    expect(markup).toContain('href="/themes/icons"');
+    expect(markup).toContain('Open theme page');
     expect(markup).toContain('Start with Rivendell');
   });
 });

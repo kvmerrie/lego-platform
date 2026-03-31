@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import {
+  buildThemePath,
   buildWebPath,
   createLocaleCode,
   getBrowserSupabaseConfig,
@@ -64,6 +65,7 @@ describe('shared config locale and market foundations', () => {
   test('builds unprefixed routes now while keeping locale-prefixed paths possible later', () => {
     expect(buildWebPath('/discover')).toBe('/discover');
     expect(buildWebPath('account')).toBe('/account');
+    expect(buildThemePath('icons')).toBe('/themes/icons');
     expect(buildWebPath('/', { forceLocalePrefix: true })).toBe('/en-nl');
     expect(
       buildWebPath('/discover', {

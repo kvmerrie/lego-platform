@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import {
   listDiscoverDealCandidateSetCards,
+  getCatalogThemePageBySlug,
   getCatalogOffersBySetId,
   getCatalogSetBySlug,
   listCatalogBrowseThemeGroups,
   listCatalogSetCardsByIds,
+  listCatalogThemePageSlugs,
   listHomepageDealCandidateSetCards,
   listHomepageThemeSnapshots,
   listCatalogSetSlugs,
@@ -307,6 +309,7 @@ const expectedBrowseThemeGroups = [
 const expectedCatalogThemes = [
   {
     name: 'Icons',
+    slug: 'icons',
     setCount: 14,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
@@ -314,6 +317,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Ideas',
+    slug: 'ideas',
     setCount: 10,
     momentum:
       'Community-voted display builds keep balancing fandom, nostalgia, and design-object appeal.',
@@ -321,6 +325,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Marvel',
+    slug: 'marvel',
     setCount: 3,
     momentum:
       'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
@@ -328,6 +333,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Modular Buildings',
+    slug: 'modular-buildings',
     setCount: 1,
     momentum:
       'Collector interest in premium street-scale buildings stays strong because they photograph and display so well.',
@@ -335,6 +341,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Botanicals',
+    slug: 'botanicals',
     setCount: 2,
     momentum:
       'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
@@ -342,6 +349,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Technic',
+    slug: 'technic',
     setCount: 2,
     momentum:
       'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
@@ -349,6 +357,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Super Mario',
+    slug: 'super-mario',
     setCount: 1,
     momentum:
       'Character-led display pieces give the public catalog a broader gaming entry without turning into a play-focused assortment.',
@@ -356,6 +365,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'NINJAGO',
+    slug: 'ninjago',
     setCount: 1,
     momentum:
       'Collector appetite for dense NINJAGO city builds stays strong even outside the core franchise audience.',
@@ -363,6 +373,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Jurassic World',
+    slug: 'jurassic-world',
     setCount: 1,
     momentum:
       'Film-scene nostalgia keeps Jurassic builds easy to understand and easy to search for in a curated public catalog.',
@@ -370,6 +381,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Star Wars',
+    slug: 'star-wars',
     setCount: 3,
     momentum:
       'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
@@ -377,6 +389,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Harry Potter',
+    slug: 'harry-potter',
     setCount: 3,
     momentum:
       'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
@@ -384,6 +397,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Architecture',
+    slug: 'architecture',
     setCount: 1,
     momentum:
       'Globally recognizable landmarks keep architecture sets valuable as broad search-entry anchors.',
@@ -391,6 +405,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Art',
+    slug: 'art',
     setCount: 1,
     momentum:
       'Wall-friendly art builds keep the catalog from feeling limited to buildings, vehicles, and franchise landmarks.',
@@ -398,6 +413,7 @@ const expectedCatalogThemes = [
   },
   {
     name: 'Disney',
+    slug: 'disney',
     setCount: 1,
     momentum:
       'Disney display icons bring family recognition and gifting appeal into a mostly adult-collector public mix.',
@@ -755,6 +771,39 @@ describe('catalog data-access contracts', () => {
       'Harry Potter',
       'Technic',
     ]);
+  });
+
+  test('exposes dedicated slugs for the supported theme landing pages', () => {
+    expect(listCatalogThemePageSlugs()).toEqual([
+      'icons',
+      'marvel',
+      'ideas',
+      'star-wars',
+      'harry-potter',
+      'technic',
+    ]);
+  });
+
+  test('builds dedicated theme landing reads from the existing theme and set data', () => {
+    expect(getCatalogThemePageBySlug('marvel')).toEqual({
+      themeSnapshot: {
+        name: 'Marvel',
+        slug: 'marvel',
+        setCount: 3,
+        momentum:
+          'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
+        signatureSet: 'Avengers Tower',
+      },
+      setCards: expect.arrayContaining([
+        expect.objectContaining({
+          id: '76269',
+          name: 'Avengers Tower',
+          theme: 'Marvel',
+        }),
+      ]),
+    });
+
+    expect(getCatalogThemePageBySlug('modular-buildings')).toBeUndefined();
   });
 
   test('does not expose upstream slug drift through the product route contract', () => {

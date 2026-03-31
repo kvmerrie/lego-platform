@@ -5,5 +5,13 @@
   "projectType": "library",
   "tags": ["scope:catalog", "type:feature", "platform:web"],
   "// targets": "to see all targets run: nx show project catalog-feature-theme-list --web",
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/catalog/feature-theme-list",
+        "command": "vitest run src/lib/catalog-feature-theme-list.spec.tsx --config ../vitest.config.mts"
+      }
+    }
+  }
 }

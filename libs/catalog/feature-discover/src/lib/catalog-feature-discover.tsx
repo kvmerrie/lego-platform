@@ -6,12 +6,12 @@ import {
   CatalogSetCard,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
+import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
-  buildCatalogThemeBrowseId,
-  type CatalogHomepageSetCard,
-} from '@lego-platform/catalog/util';
-import { buildSetDetailPath } from '@lego-platform/shared/config';
-import { SectionHeading, Surface } from '@lego-platform/shared/ui';
+  buildSetDetailPath,
+  buildThemePath,
+} from '@lego-platform/shared/config';
+import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-discover.module.css';
 
 function formatThemeCount(count: number): string {
@@ -54,7 +54,7 @@ export function CatalogFeatureDiscover({
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Browse the public catalog by theme, with the strongest flagship, franchise, and crossover sets surfaced first in each lane."
+          description="Browse the public catalog by theme, with the strongest flagship, franchise, and crossover sets surfaced first in each lane before you open a dedicated theme page."
           eyebrow="Discover"
           title="Browse the catalog by theme"
         />
@@ -121,7 +121,6 @@ export function CatalogFeatureDiscover({
           <Surface
             as="section"
             className={styles.themeSection}
-            id={buildCatalogThemeBrowseId(themeGroup.theme)}
             key={themeGroup.theme}
             tone={index % 2 === 0 ? 'default' : 'muted'}
           >
@@ -129,6 +128,13 @@ export function CatalogFeatureDiscover({
               <div className={styles.themeHeadingBlock}>
                 <p className={styles.themeEyebrow}>Theme</p>
                 <h2 className={styles.themeTitle}>{themeGroup.theme}</h2>
+                <ActionLink
+                  className={styles.themeAction}
+                  href={buildThemePath(themeGroup.slug)}
+                  tone="secondary"
+                >
+                  Open theme page
+                </ActionLink>
               </div>
               <p className={styles.sectionMeta}>
                 {formatSetCount(themeGroup.setCards.length)}

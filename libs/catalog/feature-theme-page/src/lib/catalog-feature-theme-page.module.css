@@ -1,0 +1,59 @@
+.page {
+  display: grid;
+  gap: var(--lego-space-6);
+}
+
+.intro {
+  display: grid;
+  gap: var(--lego-space-3);
+  max-width: min(58rem, 100%);
+}
+
+.introMeta,
+.sectionMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.dealSection,
+.browseSection {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sectionHeader {
+  align-items: end;
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.dealGrid,
+.browseGrid {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+@media (min-width: 48rem) {
+  .dealGrid,
+  .browseGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .sectionHeader {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+@media (min-width: 75rem) {
+  .dealGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .browseGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

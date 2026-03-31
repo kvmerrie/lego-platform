@@ -91,6 +91,9 @@
       "@lego-platform/catalog/feature-theme-list": [
         "libs/catalog/feature-theme-list/src/index.ts"
       ],
+      "@lego-platform/catalog/feature-theme-page": [
+        "libs/catalog/feature-theme-page/src/index.ts"
+      ],
       "@lego-platform/collection/ui": ["libs/collection/ui/src/index.ts"],
       "@lego-platform/collection/feature-collection-overview": [
         "libs/collection/feature-collection-overview/src/index.ts"
