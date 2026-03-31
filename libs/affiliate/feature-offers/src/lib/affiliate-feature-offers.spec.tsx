@@ -47,6 +47,9 @@ describe('AffiliateFeatureOffers', () => {
     expect(markup).toContain('Last checked');
     expect(markup).toContain('LEGO');
     expect(markup).toContain('Open offer');
+    expect(markup).toContain(
+      'Reviewed offers for this set, including merchant, price, availability, last checked time, and outbound action.',
+    );
   });
 
   it('renders a compact unavailable state when no offer snapshot exists', () => {

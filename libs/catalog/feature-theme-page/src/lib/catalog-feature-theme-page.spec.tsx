@@ -57,6 +57,7 @@ describe('CatalogFeatureThemePage', () => {
     );
 
     expect(markup).toContain('Marvel');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('Good time to buy in Marvel');
     expect(markup).toContain('All Marvel sets');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');

@@ -57,7 +57,7 @@ function CatalogSetVisual({
       <div className={visualClassName}>
         <div className={styles.visualMedia}>
           <img
-            alt={`${name} set`}
+            alt={`${name} LEGO set`}
             className={styles.setImage}
             decoding="async"
             loading={variant === 'hero' ? 'eager' : 'lazy'}
@@ -382,7 +382,7 @@ export function CatalogSetDetailPanel({
               description={catalogSetDetail.tagline}
               eyebrow="Set detail"
               title={catalogSetDetail.name}
-              titleAs="h2"
+              titleAs="h1"
               tone="hero"
             />
             <div className={styles.badgeRow}>

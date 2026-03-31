@@ -48,6 +48,18 @@
   width: 100%;
 }
 
+.tableCaption {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 .offerHeadCell {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-eyebrow-size);
@@ -60,14 +72,17 @@
   white-space: nowrap;
 }
 
-.offerRow td {
+.offerRow td,
+.offerRow th {
   border-top: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 64%, transparent);
   padding: var(--lego-space-3) 0;
+  text-align: left;
   vertical-align: top;
 }
 
 .offerMerchantCell {
+  font-weight: inherit;
   min-width: 13rem;
   padding-right: var(--lego-space-3);
 }

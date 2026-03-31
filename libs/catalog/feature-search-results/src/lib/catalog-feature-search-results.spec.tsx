@@ -13,6 +13,7 @@ describe('CatalogFeatureSearchResults', () => {
     expect(markup).toContain(
       'Search by set name or set number to go straight to a set page.',
     );
+    expect(markup).toContain('<h1');
     expect(markup).toContain('Browse the catalog');
     expect(markup).toContain('href="/discover"');
   });
@@ -23,6 +24,7 @@ describe('CatalogFeatureSearchResults', () => {
     );
 
     expect(markup).toContain('Results for &quot;avengers&quot;');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('1 matching set');
     expect(markup).toContain('Avengers Tower');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
@@ -35,6 +37,7 @@ describe('CatalogFeatureSearchResults', () => {
     );
 
     expect(markup).toContain('No results for &quot;pirates hideout&quot;');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('Try another set name or set number.');
     expect(markup).toContain('Browse the catalog');
   });
@@ -45,6 +48,7 @@ describe('CatalogFeatureSearchResultsLoading', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureSearchResultsLoading />);
 
     expect(markup).toContain('Searching sets');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('Looking through the current set catalog.');
   });
 });

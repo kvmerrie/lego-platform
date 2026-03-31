@@ -29,6 +29,7 @@ export function CatalogFeatureThemePage({
           description={themeSnapshot.momentum}
           eyebrow="Theme"
           title={themeSnapshot.name}
+          titleAs="h1"
           tone="hero"
         />
         <p className={styles.introMeta}>

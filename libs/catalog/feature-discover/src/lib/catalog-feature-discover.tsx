@@ -57,6 +57,7 @@ export function CatalogFeatureDiscover({
           description="Browse the public catalog by theme, with the strongest flagship, franchise, and crossover sets surfaced first in each lane before you open a dedicated theme page."
           eyebrow="Discover"
           title="Browse the catalog by theme"
+          titleAs="h1"
         />
         <p className={styles.introMeta}>
           {totalSetCount} sets · {formatThemeCount(themeGroups.length)}

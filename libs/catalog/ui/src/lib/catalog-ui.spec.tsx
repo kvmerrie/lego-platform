@@ -113,7 +113,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest reviewed price at bol');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
-    expect(markup).toContain('alt="Rivendell set"');
+    expect(markup).toContain('alt="Rivendell LEGO set"');
     expect(markup).toContain('Coverage');
     expect(markup).toContain('Freshness');
     expect(markup).toContain('Why collectors like it');
@@ -153,6 +153,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Lowest reviewed price');
     expect(markup).toContain('30-day price history');
     expect(markup).toContain('Why collectors keep coming back');
+    expect(markup).toContain('<h1');
     expect(markup).not.toContain('Back to shortlist');
   });
 

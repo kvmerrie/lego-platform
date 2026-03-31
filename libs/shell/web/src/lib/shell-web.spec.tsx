@@ -27,7 +27,12 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Discover');
     expect(markup).toContain('Account');
     expect(markup).toContain('Checking');
+    expect(markup).toContain('Skip to main content');
+    expect(markup).toContain('href="#main-content"');
+    expect(markup).toContain('id="main-content"');
     expect(markup).toContain('action="/search"');
+    expect(markup).toContain('for="site-search-desktop"');
+    expect(markup).toContain('id="site-search-desktop"');
     expect(markup).toContain('name="q"');
     expect(markup).toContain('Search sets or set number');
     expect(markup).toContain(

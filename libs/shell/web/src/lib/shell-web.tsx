@@ -24,9 +24,11 @@ function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
 
 function renderSearchForm({
   className,
+  inputId,
   query,
 }: {
   className?: string;
+  inputId: string;
   query?: string;
 }) {
   return (
@@ -35,11 +37,13 @@ function renderSearchForm({
       className={className}
       role="search"
     >
-      <VisuallyHidden>Search the catalog</VisuallyHidden>
+      <label className={styles.searchLabel} htmlFor={inputId}>
+        <VisuallyHidden>Search the catalog</VisuallyHidden>
+      </label>
       <input
-        aria-label="Search sets by name or set number"
         className={styles.searchInput}
         defaultValue={query}
+        id={inputId}
         name="q"
         placeholder="Search sets or set number"
         type="search"
@@ -60,6 +64,9 @@ export function ShellWeb({
 }) {
   return (
     <div className={styles.shell}>
+      <a className={styles.skipLink} href="#main-content">
+        Skip to main content
+      </a>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.headerBar}>
@@ -79,6 +86,7 @@ export function ShellWeb({
             </nav>
             {renderSearchForm({
               className: styles.desktopSearch,
+              inputId: 'site-search-desktop',
               query: searchQuery,
             })}
             <div className={styles.headerUtilities}>
@@ -90,6 +98,7 @@ export function ShellWeb({
                 <div className={styles.mobileMenuPanel}>
                   {renderSearchForm({
                     className: styles.mobileSearch,
+                    inputId: 'site-search-mobile',
                     query: searchQuery,
                   })}
                   <nav aria-label="Mobile primary" className={styles.mobileNav}>
@@ -102,7 +111,7 @@ export function ShellWeb({
           </div>
         </div>
       </header>
-      <main className={styles.main}>
+      <main className={styles.main} id="main-content" tabIndex={-1}>
         <div className={styles.mainInner}>{children}</div>
       </main>
       <footer className={styles.footer}>

@@ -208,7 +208,7 @@ export function CollectorWishlistPanel({
           description={description}
           eyebrow="Collector wishlist"
           title={title}
-          titleAs="h2"
+          titleAs="h1"
         />
         <p className={styles.wishlistMeta}>
           {state === 'loading'

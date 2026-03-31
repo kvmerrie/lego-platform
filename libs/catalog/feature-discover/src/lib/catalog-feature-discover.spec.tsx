@@ -7,6 +7,7 @@ describe('CatalogFeatureDiscover', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureDiscover />);
 
     expect(markup).toContain('Browse the catalog by theme');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('Start with the sets people open first');
     expect(markup).toContain('Icons');
     expect(markup).toContain('Ideas');

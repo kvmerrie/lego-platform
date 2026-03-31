@@ -26,6 +26,7 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
           description="Search by set name or set number to go straight to a set page."
           eyebrow="Search"
           title="Search sets"
+          titleAs="h1"
         />
         <div className={styles.stateActions}>
           <ActionLink
@@ -52,6 +53,7 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
           description={`Nothing matched "${searchQuery}". Try another set name or set number.`}
           eyebrow="Search"
           title={`No results for "${searchQuery}"`}
+          titleAs="h1"
         />
         <div className={styles.stateActions}>
           <ActionLink
@@ -72,6 +74,7 @@ export function CatalogFeatureSearchResults({ query }: { query?: string }) {
           description={`Matching set pages for "${searchQuery}".`}
           eyebrow="Search"
           title={`Results for "${searchQuery}"`}
+          titleAs="h1"
         />
         <p className={styles.resultsMeta}>
           {searchResults.length} matching set
@@ -103,6 +106,7 @@ export function CatalogFeatureSearchResultsLoading() {
         description="Looking through the current set catalog."
         eyebrow="Search"
         title="Searching sets"
+        titleAs="h1"
       />
     </Surface>
   );

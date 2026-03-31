@@ -240,7 +240,7 @@ export function CollectorCollectionPanel({
           description={description}
           eyebrow="Collector collection"
           title={title}
-          titleAs="h2"
+          titleAs="h1"
         />
         <p className={styles.collectionMeta}>
           {state === 'loading'

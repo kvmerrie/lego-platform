@@ -248,6 +248,7 @@ export function UserSessionCard({
             description="Checking the collector account for this set."
             eyebrow="Collector account"
             title="Checking collector account"
+            titleAs="h1"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
@@ -273,6 +274,7 @@ export function UserSessionCard({
             }
             eyebrow="Account"
             title="Sign in to open your account"
+            titleAs="h1"
           />
           <form
             className={styles.authForm}
@@ -350,6 +352,7 @@ export function UserSessionCard({
           description="Collection, wishlist, and account details in one place."
           eyebrow="Collector account"
           title="Your account"
+          titleAs="h1"
         />
         <div className={styles.sessionHeader}>
           <div className={styles.sessionIdentity}>

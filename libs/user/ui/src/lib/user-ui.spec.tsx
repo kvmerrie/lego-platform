@@ -88,6 +88,7 @@ describe('UserSessionCard', () => {
     );
 
     expect(markup).toContain('Your account');
+    expect(markup).toContain('<h1');
     expect(markup).toContain(
       'Collection, wishlist, and account details in one place.',
     );

@@ -49,6 +49,7 @@ describe('CollectorWishlistPanel', () => {
     );
 
     expect(markup).toContain('Sign in to see your wishlist');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Browse catalog');
     expect(markup).toContain('Open account');
@@ -68,6 +69,7 @@ describe('CollectorWishlistPanel', () => {
     );
 
     expect(markup).toContain('Your wishlist');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('2 shown');
     expect(markup).toContain('1 outside today&#x27;s catalog');
     expect(markup).toContain('Wanted set card');

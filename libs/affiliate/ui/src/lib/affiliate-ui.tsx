@@ -51,9 +51,9 @@ export function AffiliateOfferCard({
 }) {
   return (
     <tr className={styles.offerRow}>
-      <td className={styles.offerMerchantCell}>
+      <th className={styles.offerMerchantCell} scope="row">
         <p className={styles.offerTitle}>{affiliateOffer.merchantName}</p>
-      </td>
+      </th>
       <td className={styles.offerPriceCell}>
         <p className={styles.offerPrice}>
           {formatAffiliatePrice(
@@ -141,6 +141,10 @@ export function AffiliateOffersPanel({
       </p>
       <div className={styles.offerTableWrap}>
         <table className={styles.offerTable}>
+          <caption className={styles.tableCaption}>
+            Reviewed offers for this set, including merchant, price,
+            availability, last checked time, and outbound action.
+          </caption>
           <thead>
             <tr>
               <th className={styles.offerHeadCell} scope="col">

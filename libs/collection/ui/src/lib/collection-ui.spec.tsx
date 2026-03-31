@@ -49,6 +49,7 @@ describe('CollectorCollectionPanel', () => {
     );
 
     expect(markup).toContain('Sign in to see your collection');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Browse catalog');
     expect(markup).toContain('Open account');
@@ -68,6 +69,7 @@ describe('CollectorCollectionPanel', () => {
     );
 
     expect(markup).toContain('Your collection');
+    expect(markup).toContain('<h1');
     expect(markup).toContain('2 shown');
     expect(markup).toContain('1 outside today&#x27;s catalog');
     expect(markup).toContain('Owned set card');
