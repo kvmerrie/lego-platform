@@ -30,6 +30,14 @@
   margin: 0;
 }
 
+.panelInsight {
+  color: var(--lego-text);
+  font-size: 0.98rem;
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.4;
+  margin: 0;
+}
+
 .offerTableWrap {
   overflow-x: auto;
 }

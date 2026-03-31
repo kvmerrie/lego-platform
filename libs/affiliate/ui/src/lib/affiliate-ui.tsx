@@ -1,6 +1,7 @@
 import {
   CatalogOffer,
   getCatalogOfferAvailabilityLabel,
+  getCatalogOfferComparisonInsight,
 } from '@lego-platform/affiliate/util';
 import {
   getDefaultFormattingLocale,
@@ -117,6 +118,8 @@ export function AffiliateOffersPanel({
   affiliateOffers: readonly CatalogOffer[];
   id?: string;
 }) {
+  const comparisonInsight = getCatalogOfferComparisonInsight(affiliateOffers);
+
   return (
     <Surface
       as="section"
@@ -130,6 +133,9 @@ export function AffiliateOffersPanel({
         eyebrow="Buy guidance"
         title="Reviewed offers"
       />
+      {comparisonInsight ? (
+        <p className={styles.panelInsight}>{comparisonInsight}</p>
+      ) : null}
       <p className={styles.panelMeta}>
         {getOfferScopeLabel(`${affiliateOffers.length} offers compared`)}
       </p>

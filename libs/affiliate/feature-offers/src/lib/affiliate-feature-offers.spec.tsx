@@ -40,6 +40,7 @@ describe('AffiliateFeatureOffers', () => {
     );
 
     expect(markup).toContain('Reviewed offers');
+    expect(markup).toContain('Only 2 reviewed offers so far');
     expect(markup).toContain('Merchant');
     expect(markup).toContain('Price');
     expect(markup).toContain('Availability');

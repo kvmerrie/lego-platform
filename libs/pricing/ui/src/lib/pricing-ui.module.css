@@ -35,6 +35,7 @@
 
 .metricContext,
 .metricContextSecondary,
+.dealSignalSupport,
 .referenceNote {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
@@ -56,6 +57,18 @@
 
 .metricContextSecondary {
   font-size: var(--lego-text-role-meta-size);
+}
+
+.dealSignal {
+  color: var(--lego-text);
+  font-size: 0.98rem;
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.dealSignalSupport {
+  margin: 0;
 }
 
 .summaryBlock {

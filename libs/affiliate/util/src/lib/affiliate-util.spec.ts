@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
   getBestOffer,
+  getCatalogOfferComparisonInsight,
   getCatalogOfferMerchantName,
   type CatalogOffer,
 } from './affiliate-util';
@@ -70,5 +71,59 @@ describe('affiliate util catalog offers', () => {
     expect(getCatalogOfferMerchantName('bol')).toBe('bol');
     expect(getCatalogOfferMerchantName('amazon')).toBe('Amazon');
     expect(getCatalogOfferMerchantName('lego')).toBe('LEGO');
+  });
+
+  test('flags limited reviewed coverage when only a couple of offers exist', () => {
+    expect(
+      getCatalogOfferComparisonInsight([
+        baseOffer,
+        {
+          ...baseOffer,
+          merchant: 'lego',
+          merchantName: 'LEGO',
+          priceCents: 49999,
+        },
+      ]),
+    ).toBe('Only 2 reviewed offers so far');
+  });
+
+  test('describes when reviewed shops are tightly clustered on price', () => {
+    expect(
+      getCatalogOfferComparisonInsight([
+        baseOffer,
+        {
+          ...baseOffer,
+          merchant: 'amazon',
+          merchantName: 'Amazon',
+          priceCents: 49499,
+        },
+        {
+          ...baseOffer,
+          merchant: 'lego',
+          merchantName: 'LEGO',
+          priceCents: 49799,
+        },
+      ]),
+    ).toBe('Small price gap across reviewed shops');
+  });
+
+  test('describes when reviewed shops have a wide price gap', () => {
+    expect(
+      getCatalogOfferComparisonInsight([
+        baseOffer,
+        {
+          ...baseOffer,
+          merchant: 'amazon',
+          merchantName: 'Amazon',
+          priceCents: 51999,
+        },
+        {
+          ...baseOffer,
+          merchant: 'lego',
+          merchantName: 'LEGO',
+          priceCents: 52999,
+        },
+      ]),
+    ).toBe('Wide price gap across reviewed shops');
   });
 });

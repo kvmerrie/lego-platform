@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import {
   formatPriceMinor,
+  getPriceDealSummary,
   type PriceHistoryPoint,
   type PriceHistorySummary,
   type PricePanelSnapshot,
@@ -230,6 +231,8 @@ export function PriceSummaryCard({
   pricePanelSnapshot: PricePanelSnapshot;
   variant?: 'default' | 'product';
 }) {
+  const priceDealSummary = getPriceDealSummary(pricePanelSnapshot);
+
   if (variant === 'product') {
     return (
       <div className={`${styles.panel} ${styles.productPanel}`} id={id}>
@@ -243,9 +246,15 @@ export function PriceSummaryCard({
         <p className={styles.metricContext}>
           Currently lowest at {pricePanelSnapshot.lowestMerchantName}
         </p>
+        <p className={styles.dealSignal}>{priceDealSummary.label}</p>
         {pricePanelSnapshot.lowestAvailabilityLabel ? (
           <p className={styles.metricContextSecondary}>
             Availability: {pricePanelSnapshot.lowestAvailabilityLabel}
+          </p>
+        ) : null}
+        {priceDealSummary.coverageNote ? (
+          <p className={styles.dealSignalSupport}>
+            {priceDealSummary.coverageNote}
           </p>
         ) : null}
         <PricingScopeLine>
@@ -301,9 +310,15 @@ export function PriceSummaryCard({
         <p className={styles.metricContext}>
           Lowest reviewed price at {pricePanelSnapshot.lowestMerchantName}
         </p>
+        <p className={styles.dealSignal}>{priceDealSummary.label}</p>
         {pricePanelSnapshot.lowestAvailabilityLabel ? (
           <p className={styles.metricContextSecondary}>
             Availability: {pricePanelSnapshot.lowestAvailabilityLabel}
+          </p>
+        ) : null}
+        {priceDealSummary.coverageNote ? (
+          <p className={styles.dealSignalSupport}>
+            {priceDealSummary.coverageNote}
           </p>
         ) : null}
         {typeof pricePanelSnapshot.referencePriceMinor === 'number' ? (

@@ -134,12 +134,41 @@ export function getBestOffer(
     return null;
   }
 
-  return [...candidateOffers].sort(
+  const [bestOffer] = [...candidateOffers].sort(
     (left, right) =>
       left.priceCents - right.priceCents ||
       left.checkedAt.localeCompare(right.checkedAt) ||
       left.merchantName.localeCompare(right.merchantName),
-  )[0]!;
+  );
+
+  return bestOffer ?? null;
+}
+
+export function getCatalogOfferComparisonInsight(
+  catalogOffers: readonly CatalogOffer[],
+): string | undefined {
+  if (catalogOffers.length <= 2) {
+    return `Only ${catalogOffers.length} reviewed offer${catalogOffers.length === 1 ? '' : 's'} so far`;
+  }
+
+  if (catalogOffers.length === 0) {
+    return undefined;
+  }
+
+  const priceCents = catalogOffers.map(
+    (catalogOffer) => catalogOffer.priceCents,
+  );
+  const spreadCents = Math.max(...priceCents) - Math.min(...priceCents);
+
+  if (spreadCents <= 1000) {
+    return 'Small price gap across reviewed shops';
+  }
+
+  if (spreadCents >= 3000) {
+    return 'Wide price gap across reviewed shops';
+  }
+
+  return undefined;
 }
 
 export function sortAffiliateOffers(

@@ -99,12 +99,53 @@ export interface TrackedPriceSummary {
   trackedSinceRecordedOn: string;
 }
 
+export interface PriceDealSummary {
+  coverageNote?: string;
+  label: string;
+}
+
 export function getPriceDirection(deltaMinor?: number): 'up' | 'down' | 'flat' {
   if (typeof deltaMinor !== 'number' || deltaMinor === 0) {
     return 'flat';
   }
 
   return deltaMinor > 0 ? 'up' : 'down';
+}
+
+export function getPriceDealSummary({
+  deltaMinor,
+  merchantCount,
+}: Pick<PricePanelSnapshot, 'deltaMinor' | 'merchantCount'>): PriceDealSummary {
+  const coverageNote =
+    merchantCount <= 2
+      ? `Only ${merchantCount} reviewed offer${merchantCount === 1 ? '' : 's'} so far`
+      : undefined;
+
+  if (typeof deltaMinor !== 'number') {
+    return {
+      label: 'Lowest reviewed offer',
+      coverageNote,
+    };
+  }
+
+  if (deltaMinor < 0) {
+    return {
+      label: 'Best current deal',
+      coverageNote,
+    };
+  }
+
+  if (deltaMinor > 0) {
+    return {
+      label: 'Above reference',
+      coverageNote,
+    };
+  }
+
+  return {
+    label: 'Right on reference',
+    coverageNote,
+  };
 }
 
 export function formatPriceMinor({

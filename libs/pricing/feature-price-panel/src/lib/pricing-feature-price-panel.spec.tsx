@@ -12,6 +12,8 @@ describe('PricingFeaturePricePanel', () => {
     expect(markup).toContain('489,99');
     expect(markup).toContain('Reviewed price');
     expect(markup).toContain('Lowest reviewed price at bol');
+    expect(markup).toContain('Best current deal');
+    expect(markup).toContain('Only 2 reviewed offers so far');
     expect(markup).toContain(
       'History and offers below use the same reviewed market view.',
     );

@@ -5,5 +5,13 @@
   "projectType": "library",
   "tags": ["scope:pricing", "type:util", "platform:shared"],
   "// targets": "to see all targets run: nx show project pricing-util --web",
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/pricing/util",
+        "command": "vitest run src/lib/pricing-util.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
 }

@@ -128,6 +128,7 @@ describe('pricing ui history surfaces', () => {
 
     expect(markup).not.toContain('Recent 30-day view');
     expect(markup).toContain('Recent price history');
+    expect(markup).toContain('Best current deal');
     expect(markup).toContain('30-day low');
     expect(markup).toContain('30-day high');
     expect(markup).toContain('Current vs average');
@@ -165,6 +166,7 @@ describe('pricing ui history surfaces', () => {
 
     expect(markup).toContain('Lowest reviewed price');
     expect(markup).toContain('Currently lowest at bol');
+    expect(markup).toContain('Best current deal');
     expect(markup).toContain('Checked');
     expect(markup).not.toContain('Current reviewed price');
     expect(markup).not.toContain(
@@ -195,5 +197,28 @@ describe('pricing ui history surfaces', () => {
     expect(markup).toContain('Matches tracked low');
     expect(markup).toContain('Matches tracked high');
     expect(markup).toContain('Tracked history starts with one daily price.');
+  });
+
+  it('falls back to lowest reviewed offer when no reference price exists yet', () => {
+    const markup = renderToStaticMarkup(
+      <PriceSummaryCard
+        pricePanelSnapshot={{
+          setId: '31208',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          condition: 'new',
+          headlinePriceMinor: 8999,
+          lowestMerchantId: 'lego',
+          lowestMerchantName: 'LEGO',
+          lowestAvailabilityLabel: 'In stock',
+          merchantCount: 1,
+          observedAt: '2026-03-30T09:00:00.000Z',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Lowest reviewed offer');
+    expect(markup).toContain('Only 1 reviewed offer so far');
+    expect(markup).toContain('No reference price yet.');
   });
 });
