@@ -117,8 +117,9 @@ export function ShellWeb({
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
           <p className={styles.footerCopy}>
-            Browse standout sets, compare reviewed {getDefaultMarketAdjective()}{' '}
-            offers, and keep your own saves private.
+            Brickhunt helps you browse standout sets, compare reviewed{' '}
+            {getDefaultMarketAdjective()} offers, and keep your own saves
+            private.
           </p>
         </div>
       </footer>

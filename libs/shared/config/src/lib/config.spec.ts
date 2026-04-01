@@ -9,6 +9,7 @@ import {
   getDefaultMarketScopeLabel,
   getMissingBrowserSupabaseEnvKeys,
   hasBrowserSupabaseConfig,
+  publicSiteRobotsPolicy,
 } from './config';
 
 describe('shared config browser Supabase helpers', () => {
@@ -85,5 +86,24 @@ describe('shared config locale and market foundations', () => {
         suffix: '3 merchants shown',
       }),
     ).toBe('Dutch market · EUR · new condition · 3 merchants shown');
+  });
+
+  test('keeps the public site globally blocked from indexing during pre-launch', () => {
+    expect(publicSiteRobotsPolicy).toEqual({
+      allowIndexing: false,
+      meta: {
+        index: false,
+        follow: false,
+        googleBot: {
+          index: false,
+          follow: false,
+          noimageindex: true,
+        },
+      },
+      robotsTxt: {
+        userAgent: '*',
+        disallow: '/',
+      },
+    });
   });
 });

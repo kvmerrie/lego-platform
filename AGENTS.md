@@ -95,6 +95,26 @@ Short examples:
 - If you change a boundary rule, update both the lint enforcement and the docs in the same change.
 - If current reality differs from the intended target architecture, document the current state and the intended evolution explicitly instead of hiding the mismatch.
 
+## Pre-Launch Indexing And Environment Exposure
+
+- During pre-launch, any publicly reachable environment must remain non-indexable by search engines.
+- Keep `noindex, nofollow` enabled site-wide until the team explicitly decides the public site is ready for indexing.
+- Keep `robots.txt` configured to disallow all crawling during pre-launch.
+- Do not remove or relax search-engine blocking unless explicitly requested.
+- If domains are connected in Vercel or any other public host, verify that indexing protection is still active.
+
+## Next.js Implementation Guidance For Pre-Launch
+
+- Prefer a global robots policy through the Next.js app metadata configuration or root layout.
+- Ensure a `robots.txt` route or static file exists and returns a full-site disallow during pre-launch.
+- Keep the implementation minimal, obvious, and easy to remove at launch.
+- Favor a single source of truth for indexing behavior rather than page-by-page exceptions unless explicitly required.
+
+## Launch Transition Rule
+
+- Only remove `noindex` and crawl blocking when the team explicitly says the site may be indexed.
+- When enabling indexing, also ensure the sitemap, canonical setup, and Google Search Console handoff are ready.
+
 ## Completion And Validation Rules
 
 - Before declaring work complete, run the relevant format, lint, test, build, and check commands for the area you changed.

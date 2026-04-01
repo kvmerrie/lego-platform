@@ -190,7 +190,7 @@ export function CollectorWishlistPanel({
         ? 'Sign in to see the sets you have marked as wanted.'
         : state === 'empty'
           ? hiddenWantedCount > 0
-            ? `You have ${hiddenWantedCount} saved outside the sets currently shown on Brick Ledger. Save any visible set and it will show up here too.`
+            ? `You have ${hiddenWantedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
             : 'Save a set as wanted from any set page and it will appear here.'
           : hiddenWantedCount > 0
             ? `Showing ${wantedCount} here today. ${hiddenWantedCount} stay saved outside the current catalog.`

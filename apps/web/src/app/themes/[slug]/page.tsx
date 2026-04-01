@@ -126,8 +126,8 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${themePage.themeSnapshot.name} LEGO sets | Brick Ledger`,
-    description: `Browse ${themePage.themeSnapshot.name} LEGO sets with reviewed prices, offers, and collector saves. ${themePage.themeSnapshot.momentum}`,
+    title: `Brickhunt – ${themePage.themeSnapshot.name} LEGO sets`,
+    description: `Ontdek ${themePage.themeSnapshot.name} LEGO sets op Brickhunt met reviewed prijzen, shops en private saves. ${themePage.themeSnapshot.momentum}`,
   };
 }
 

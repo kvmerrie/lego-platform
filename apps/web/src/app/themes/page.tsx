@@ -3,9 +3,9 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'LEGO themes | Brick Ledger',
+  title: 'Brickhunt – LEGO thema’s ontdekken',
   description:
-    'Browse every public LEGO theme in Brick Ledger, then open focused theme pages for calmer catalog exploration.',
+    'Blader door alle publieke LEGO thema’s op Brickhunt en open rustige themapagina’s om sets gerichter te ontdekken.',
 };
 
 export default function ThemesPage() {

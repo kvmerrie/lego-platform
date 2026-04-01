@@ -7,6 +7,7 @@ import {
 import {
   getDefaultAppLocaleContext,
   platformConfig,
+  publicSiteRobotsPolicy,
 } from '@lego-platform/shared/config';
 import './global.css';
 
@@ -17,9 +18,26 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   weight: ['400', '500', '600', '700', '800'],
 });
 
+const defaultMetadataTitle = 'Brickhunt – LEGO sets vergelijken & ontdekken';
+const defaultMetadataDescription =
+  'Vergelijk reviewed LEGO prijzen, ontdek sets per thema en vind sneller de beste plek om te kopen.';
+
 export const metadata: Metadata = {
-  title: platformConfig.productName,
-  description: platformConfig.tagline,
+  title: defaultMetadataTitle,
+  description: defaultMetadataDescription,
+  applicationName: platformConfig.productName,
+  robots: publicSiteRobotsPolicy.meta,
+  openGraph: {
+    title: defaultMetadataTitle,
+    description: defaultMetadataDescription,
+    siteName: platformConfig.productName,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: defaultMetadataTitle,
+    description: defaultMetadataDescription,
+  },
 };
 
 export default function RootLayout({

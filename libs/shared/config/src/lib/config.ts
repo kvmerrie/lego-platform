@@ -43,9 +43,8 @@ export const DEFAULT_APP_MARKET_CODE: AppMarketCode = 'NL';
 
 export const platformConfig = {
   workspaceName: 'lego-platform',
-  productName: 'Brick Ledger',
-  tagline:
-    'Browse standout LEGO sets, then keep track of what you own and still want.',
+  productName: 'Brickhunt',
+  tagline: 'LEGO sets vergelijken, ontdekken en slimmer kopen.',
   defaultThemeMode: 'light',
   supportEmail: 'platform@example.test',
   experience: {
@@ -76,6 +75,23 @@ export const platformConfig = {
     'Pricing history',
     'Native clients',
   ],
+} as const;
+
+export const publicSiteRobotsPolicy = {
+  allowIndexing: false,
+  meta: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
+  robotsTxt: {
+    userAgent: '*',
+    disallow: '/',
+  },
 } as const;
 
 export type RuntimeName = keyof typeof platformConfig.runtimes;

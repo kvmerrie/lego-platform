@@ -3,11 +3,11 @@ import type { EditorialPage, PreviewPanel } from '@lego-platform/content/util';
 export const homepageEditorialPage: EditorialPage = {
   id: 'home',
   pageType: 'homepage',
-  title: 'Brick Ledger',
+  title: 'Brickhunt',
   seo: {
-    title: 'Brick Ledger | Compare LEGO set prices, offers, and saves',
+    title: 'Brickhunt – LEGO sets vergelijken & ontdekken',
     description:
-      'Browse standout LEGO sets, compare reviewed Dutch shop prices, and keep track of what you own or still want.',
+      'Vergelijk reviewed LEGO prijzen, ontdek sterke sets per thema en bewaar wat je al hebt of nog zoekt.',
   },
   sections: [
     {
@@ -15,7 +15,7 @@ export const homepageEditorialPage: EditorialPage = {
       type: 'hero',
       eyebrow: 'Collector guide',
       title: 'Find the right set before you buy.',
-      body: 'Brick Ledger brings together standout sets, reviewed shop prices, and private save tools so collectors can decide faster.',
+      body: 'Brickhunt brings together standout sets, reviewed shop prices, and private save tools so collectors can decide faster.',
       ctaLabel: 'Explore by theme',
       ctaHref: '#explore-themes',
     },
@@ -41,11 +41,11 @@ export const editorialPages: readonly EditorialPage[] = [
     id: 'about',
     pageType: 'page',
     slug: 'about',
-    title: 'About Brick Ledger',
+    title: 'About Brickhunt',
     seo: {
-      title: 'About Brick Ledger',
+      title: 'About Brickhunt',
       description:
-        'Learn how Brick Ledger helps LEGO collectors browse, compare, and keep track of standout sets.',
+        'Learn how Brickhunt helps LEGO collectors browse, compare, and keep track of standout sets.',
     },
     sections: [
       {
@@ -53,7 +53,7 @@ export const editorialPages: readonly EditorialPage[] = [
         type: 'hero',
         eyebrow: 'About',
         title:
-          'Brick Ledger is built for collectors who want a clear read before they click out.',
+          'Brickhunt is built for collectors who want a clear read before they click out.',
         body: 'The product stays intentionally focused: browse strong sets, compare reviewed prices, and keep private saves close at hand.',
       },
       {

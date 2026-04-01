@@ -22,7 +22,7 @@ describe('ShellWeb', () => {
       </ShellWeb>,
     );
 
-    expect(markup).toContain('Brick Ledger');
+    expect(markup).toContain('Brickhunt');
     expect(markup).toContain('Menu');
     expect(markup).toContain('Discover');
     expect(markup).toContain('Account');
@@ -36,7 +36,7 @@ describe('ShellWeb', () => {
     expect(markup).toContain('name="q"');
     expect(markup).toContain('Search sets or set number');
     expect(markup).toContain(
-      'Browse standout sets, compare reviewed Dutch offers',
+      'Brickhunt helps you browse standout sets, compare reviewed Dutch offers',
     );
     expect(markup).not.toContain('Home');
     expect(markup).not.toContain('Featured shortlist');

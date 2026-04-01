@@ -222,7 +222,7 @@ export function CollectorCollectionPanel({
         ? 'Sign in to see the sets you have marked as owned.'
         : state === 'empty'
           ? hiddenOwnedCount > 0
-            ? `You have ${hiddenOwnedCount} saved outside the sets currently shown on Brick Ledger. Save any visible set and it will show up here too.`
+            ? `You have ${hiddenOwnedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
             : 'Save a set as owned from any set page and it will appear here.'
           : hiddenOwnedCount > 0
             ? `Showing ${ownedCount} here today. ${hiddenOwnedCount} stay saved outside the current catalog.`
