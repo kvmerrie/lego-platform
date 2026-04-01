@@ -25,6 +25,13 @@ type SurfaceElevation = 'default' | 'floating' | 'rested';
 type SurfaceTone = 'default' | 'muted' | 'accent';
 type SurfacePadding = 'md' | 'lg';
 type ActionTone = 'accent' | 'card' | 'ghost' | 'inline' | 'secondary';
+type ContainerElement =
+  | 'div'
+  | 'footer'
+  | 'header'
+  | 'main'
+  | 'nav'
+  | 'section';
 type BadgeTone =
   | 'accent'
   | 'error'
@@ -109,6 +116,24 @@ export function Surface({
       )}
       {...rest}
     >
+      {children}
+    </Component>
+  );
+}
+
+export function Container({
+  as = 'div',
+  children,
+  className,
+  ...rest
+}: HTMLAttributes<HTMLElement> & {
+  as?: ContainerElement;
+  children: ReactNode;
+}) {
+  const Component = as;
+
+  return (
+    <Component className={joinClasses(styles.container, className)} {...rest}>
       {children}
     </Component>
   );

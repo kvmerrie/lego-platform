@@ -45,7 +45,7 @@
 }
 
 .rail > * {
-  flex: 0 0 min(19rem, calc(100vw - 3rem));
+  flex: 0 0 min(19rem, 100%);
   min-width: 0;
   scroll-snap-align: start;
 }

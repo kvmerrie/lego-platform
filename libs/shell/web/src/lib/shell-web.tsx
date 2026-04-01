@@ -6,7 +6,7 @@ import {
   webNavigation,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { Icon } from '@lego-platform/shared/ui';
+import { Container, Icon } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
@@ -74,7 +74,7 @@ export function ShellWeb({
         Skip to main content
       </a>
       <header className={styles.header}>
-        <div className={styles.headerInner}>
+        <Container className={styles.headerInner}>
           <div className={styles.headerBar}>
             <div className={styles.headerPrimary}>
               <a
@@ -124,19 +124,19 @@ export function ShellWeb({
               </details>
             </div>
           </div>
-        </div>
+        </Container>
       </header>
       <main className={styles.main} id="main-content" tabIndex={-1}>
-        <div className={styles.mainInner}>{children}</div>
+        <Container className={styles.mainInner}>{children}</Container>
       </main>
       <footer className={styles.footer}>
-        <div className={styles.footerInner}>
+        <Container className={styles.footerInner}>
           <p className={styles.footerCopy}>
             Brickhunt helps you browse standout sets, compare reviewed{' '}
             {getDefaultMarketAdjective()} offers, and keep your own saves
             private.
           </p>
-        </div>
+        </Container>
       </footer>
     </div>
   );

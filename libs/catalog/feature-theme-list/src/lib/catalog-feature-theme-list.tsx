@@ -9,15 +9,22 @@ import styles from './catalog-feature-theme-list.module.css';
 
 export function CatalogFeatureThemeList({
   themeItems = listHomepageThemeDirectoryItems(),
+  tone = 'default',
 }: {
   themeItems?: readonly CatalogThemeDirectoryItem[];
+  tone?: 'default' | 'inverse';
 }) {
   if (!themeItems.length) {
     return null;
   }
 
   return (
-    <section className={styles.section} id="explore-themes">
+    <section
+      className={`${styles.section} ${
+        tone === 'inverse' ? styles.sectionInverse : ''
+      }`}
+      id="explore-themes"
+    >
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}

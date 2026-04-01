@@ -1,6 +1,7 @@
 .section {
   display: grid;
   gap: var(--lego-space-4);
+  padding: var(--lego-space-6);
 }
 
 .headerBlock {

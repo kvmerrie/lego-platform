@@ -1,5 +1,6 @@
 import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
+import styles from './page.module.css';
 import {
   CatalogFeatureSetList,
   type CatalogFeatureSetListItem,
@@ -135,27 +136,39 @@ export default async function HomePage() {
 
   return (
     <ShellWeb>
-      <ContentFeaturePageRenderer editorialPage={homepagePage} />
-      <CatalogFeatureThemeList />
-      <CatalogFeatureSetList
-        description="Open with the sets most likely to pull someone deeper into the catalog: premium anchors, broad-recognition favorites, and one easier display-led entry point."
-        eyebrow="Featured sets"
-        setCards={homepageSetCards}
-        title="Featured sets worth opening first"
-        tone="default"
-      />
-      {homepageDealSetCards.length ? (
-        <CatalogFeatureSetList
-          description="Reviewed Dutch prices currently showing the clearest gaps below reference across the sets most likely to reward a closer look."
-          eyebrow="Best current deals"
-          sectionId="best-current-deals"
-          setCards={homepageDealSetCards}
-          signalText={`${homepageDealSetCards.length} sets worth a closer look`}
-          tone="muted"
-          title="Best current deals"
-        />
-      ) : null}
-      <CatalogFeatureThemeSpotlight />
+      <div className={styles.page}>
+        <div className={styles.heroSection}>
+          <ContentFeaturePageRenderer editorialPage={homepagePage} />
+        </div>
+        <div className={styles.themeSection}>
+          <CatalogFeatureThemeList tone="inverse" />
+        </div>
+        <div className={styles.sectionGroup}>
+          <CatalogFeatureSetList
+            description="Open with the sets most likely to pull someone deeper into the catalog: premium anchors, broad-recognition favorites, and one easier display-led entry point."
+            eyebrow="Featured sets"
+            setCards={homepageSetCards}
+            title="Featured sets worth opening first"
+            tone="default"
+          />
+        </div>
+        {homepageDealSetCards.length ? (
+          <div className={styles.sectionGroup}>
+            <CatalogFeatureSetList
+              description="Reviewed Dutch prices currently showing the clearest gaps below reference across the sets most likely to reward a closer look."
+              eyebrow="Best current deals"
+              sectionId="best-current-deals"
+              setCards={homepageDealSetCards}
+              signalText={`${homepageDealSetCards.length} sets worth a closer look`}
+              tone="muted"
+              title="Best current deals"
+            />
+          </div>
+        ) : null}
+        <div className={styles.spotlightSection}>
+          <CatalogFeatureThemeSpotlight />
+        </div>
+      </div>
     </ShellWeb>
   );
 }

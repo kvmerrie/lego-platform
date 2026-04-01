@@ -50,6 +50,14 @@
   box-shadow: var(--lego-shadow-sm);
 }
 
+.container {
+  margin: 0 auto;
+  max-width: var(--lego-max-width-page);
+  padding-left: var(--lego-space-4);
+  padding-right: var(--lego-space-4);
+  width: 100%;
+}
+
 .interactiveBase {
   align-items: center;
   border: var(--lego-border-width-1) solid transparent;
@@ -313,4 +321,18 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+@media (min-width: 64rem) {
+  .container {
+    padding-left: var(--lego-space-6);
+    padding-right: var(--lego-space-6);
+  }
+}
+
+@media (min-width: 90rem) {
+  .container {
+    padding-left: var(--lego-space-8);
+    padding-right: var(--lego-space-8);
+  }
 }
