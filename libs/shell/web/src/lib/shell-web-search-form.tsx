@@ -13,7 +13,7 @@ import {
   buildWebPath,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { VisuallyHidden } from '@lego-platform/shared/ui';
+import { Icon, VisuallyHidden } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import {
   createRecentSearchQueryEntry,
@@ -274,7 +274,7 @@ export function ShellWebSearchForm({
                         }}
                         type="button"
                       >
-                        <span aria-hidden="true">×</span>
+                        <Icon name="close" size={14} />
                       </button>
                     </div>
                   </li>

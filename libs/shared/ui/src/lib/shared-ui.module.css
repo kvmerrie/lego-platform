@@ -91,6 +91,10 @@
   z-index: 1;
 }
 
+.icon {
+  flex: 0 0 auto;
+}
+
 .interactiveBase:active::after,
 .interactiveBase[aria-pressed='true']::after {
   background: var(--lego-interactive-pressed);

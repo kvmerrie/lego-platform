@@ -85,6 +85,19 @@ Short examples:
 - Avoid using color alone to communicate meaning (e.g. deal states).
 - Ensure clear and consistent heading hierarchy for SEO and screen readers.
 - Prefer simple, readable layouts over visually complex patterns.
+  
+## Icons
+
+- Use a single, consistent icon system across the product.
+- Prefer `lucide-react` for all icons.
+- Do not introduce multiple icon libraries.
+- Do not inline custom SVGs unless there is a strong reason.
+- Icons should be used to support clarity and affordance, not decoration.
+- Common actions (search, close, navigation, profile, wishlist) should use consistent icon semantics.
+
+Implementation guidance:
+- Prefer using a shared `<Icon />` component from the design system layer instead of importing icons directly in feature or UI libraries.
+- Keep icons lightweight and consistent in size and stroke.
 
 ## Change Rules
 
