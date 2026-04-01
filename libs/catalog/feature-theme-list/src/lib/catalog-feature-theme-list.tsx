@@ -1,16 +1,18 @@
-import { listHomepageThemeSnapshots } from '@lego-platform/catalog/data-access';
+import {
+  listHomepageThemeDirectoryItems,
+  type CatalogThemeDirectoryItem,
+} from '@lego-platform/catalog/data-access';
 import { CatalogThemeHighlight } from '@lego-platform/catalog/ui';
-import type { CatalogThemeSnapshot } from '@lego-platform/catalog/util';
 import { buildThemePath } from '@lego-platform/shared/config';
 import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-list.module.css';
 
 export function CatalogFeatureThemeList({
-  themeSnapshots = listHomepageThemeSnapshots(),
+  themeItems = listHomepageThemeDirectoryItems(),
 }: {
-  themeSnapshots?: readonly CatalogThemeSnapshot[];
+  themeItems?: readonly CatalogThemeDirectoryItem[];
 }) {
-  if (!themeSnapshots.length) {
+  if (!themeItems.length) {
     return null;
   }
 
@@ -19,20 +21,21 @@ export function CatalogFeatureThemeList({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          description="Jump straight into the strongest theme pages first, from flagship display worlds to franchise-heavy shelves."
-          eyebrow="Explore"
+          description="Start with the strongest theme lanes first, then jump into a focused page when one world pulls you in."
+          eyebrow="Browse themes"
           title="Explore by theme"
         />
         <p className={styles.signalRow}>
-          {themeSnapshots.length} theme pages worth opening
+          {themeItems.length} theme pages ready to browse
         </p>
       </div>
       <div className={styles.rail}>
-        {themeSnapshots.map((themeSnapshot) => (
+        {themeItems.map((themeItem) => (
           <CatalogThemeHighlight
-            href={buildThemePath(themeSnapshot.slug)}
-            key={themeSnapshot.name}
-            themeSnapshot={themeSnapshot}
+            href={buildThemePath(themeItem.themeSnapshot.slug)}
+            imageUrl={themeItem.imageUrl}
+            key={themeItem.themeSnapshot.name}
+            themeSnapshot={themeItem.themeSnapshot}
             variant="tile"
           />
         ))}

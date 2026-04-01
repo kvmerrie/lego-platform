@@ -10,6 +10,8 @@ import {
   listCatalogSetCardsByIds,
   listCatalogThemePageSlugs,
   listHomepageDealCandidateSetCards,
+  listHomepageThemeDirectoryItems,
+  listHomepageThemeSpotlightItems,
   listHomepageThemeSnapshots,
   listCatalogSetSlugs,
   listHomepageSetCards,
@@ -792,6 +794,48 @@ describe('catalog data-access contracts', () => {
       'Harry Potter',
       'Technic',
     ]);
+  });
+
+  test('builds homepage theme directory items with representative images in homepage order', () => {
+    expect(
+      listHomepageThemeDirectoryItems().map((themeDirectoryItem) => ({
+        imageUrl: themeDirectoryItem.imageUrl,
+        name: themeDirectoryItem.themeSnapshot.name,
+      })),
+    ).toEqual([
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        name: 'Icons',
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+        name: 'Marvel',
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
+        name: 'Ideas',
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
+        name: 'Star Wars',
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
+        name: 'Harry Potter',
+      },
+      {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
+        name: 'Technic',
+      },
+    ]);
+  });
+
+  test('keeps theme spotlight browsing focused on four stronger homepage lanes', () => {
+    expect(
+      listHomepageThemeSpotlightItems().map(
+        (themeDirectoryItem) => themeDirectoryItem.themeSnapshot.name,
+      ),
+    ).toEqual(['Icons', 'Marvel', 'Ideas', 'Star Wars']);
   });
 
   test('builds a full theme directory from the existing theme snapshots and browse order', () => {

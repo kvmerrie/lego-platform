@@ -19,6 +19,7 @@ import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 const HOMEPAGE_SET_LIMIT = 3;
+const HOMEPAGE_THEME_SPOTLIGHT_LIMIT = 4;
 const fallbackCatalogThemeOrder = catalogThemeOverlays.map(
   (catalogThemeOverlay) => catalogThemeOverlay.name,
 );
@@ -606,6 +607,31 @@ export function listHomepageThemeSnapshots(
       return catalogThemeSnapshot ? [catalogThemeSnapshot] : [];
     })
     .slice(0, limit);
+}
+
+export function listHomepageThemeDirectoryItems(
+  limit = HOMEPAGE_THEME_LIMIT,
+): CatalogThemeDirectoryItem[] {
+  const catalogThemeDirectoryItemByName = new Map(
+    listCatalogThemeDirectoryItems().map((catalogThemeDirectoryItem) => [
+      catalogThemeDirectoryItem.themeSnapshot.name,
+      catalogThemeDirectoryItem,
+    ]),
+  );
+
+  return listHomepageThemeSnapshots(limit).flatMap((catalogThemeSnapshot) => {
+    const catalogThemeDirectoryItem = catalogThemeDirectoryItemByName.get(
+      catalogThemeSnapshot.name,
+    );
+
+    return catalogThemeDirectoryItem ? [catalogThemeDirectoryItem] : [];
+  });
+}
+
+export function listHomepageThemeSpotlightItems(
+  limit = HOMEPAGE_THEME_SPOTLIGHT_LIMIT,
+): CatalogThemeDirectoryItem[] {
+  return listHomepageThemeDirectoryItems().slice(0, limit);
 }
 
 export function listCatalogThemeDirectoryItems(): CatalogThemeDirectoryItem[] {

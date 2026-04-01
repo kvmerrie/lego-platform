@@ -4,7 +4,10 @@ import {
   CatalogFeatureSetList,
   type CatalogFeatureSetListItem,
 } from '@lego-platform/catalog/feature-set-list';
-import { CatalogFeatureThemeList } from '@lego-platform/catalog/feature-theme-list';
+import {
+  CatalogFeatureThemeList,
+  CatalogFeatureThemeSpotlight,
+} from '@lego-platform/catalog/feature-theme-list';
 import {
   listCatalogSetCardsByIds,
   listHomepageDealCandidateSetCards,
@@ -135,21 +138,24 @@ export default async function HomePage() {
       <ContentFeaturePageRenderer editorialPage={homepagePage} />
       <CatalogFeatureThemeList />
       <CatalogFeatureSetList
-        description="A first row of flagship anchors, click-magnet fan favorites, and one easier crossover entry point."
+        description="Open with the sets most likely to pull someone deeper into the catalog: premium anchors, broad-recognition favorites, and one easier display-led entry point."
+        eyebrow="Featured sets"
         setCards={homepageSetCards}
-        title="Start with the sets worth opening first"
+        title="Featured sets worth opening first"
+        tone="default"
       />
       {homepageDealSetCards.length ? (
         <CatalogFeatureSetList
-          description="Reviewed Dutch prices currently showing the clearest gaps below reference across the sets most likely to earn a click."
-          eyebrow="Deals"
+          description="Reviewed Dutch prices currently showing the clearest gaps below reference across the sets most likely to reward a closer look."
+          eyebrow="Best current deals"
           sectionId="best-current-deals"
           setCards={homepageDealSetCards}
           signalText={`${homepageDealSetCards.length} sets worth a closer look`}
-          tone="default"
+          tone="muted"
           title="Best current deals"
         />
       ) : null}
+      <CatalogFeatureThemeSpotlight />
     </ShellWeb>
   );
 }

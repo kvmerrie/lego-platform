@@ -1,12 +1,14 @@
 .section {
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--lego-surface-subtle) 70%, white 30%),
-    transparent
+    color-mix(in srgb, var(--lego-surface-subtle) 82%, white 18%),
+    var(--lego-surface)
   );
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
   border-radius: var(--lego-radius-lg);
   display: grid;
   gap: var(--lego-space-5);
+  overflow: hidden;
   padding: var(--lego-space-6);
 }
 
@@ -16,7 +18,7 @@
 }
 
 .header {
-  max-width: min(42rem, 100%);
+  max-width: min(44rem, 100%);
 }
 
 .signalRow {
@@ -26,19 +28,23 @@
   margin: 0;
 }
 
-.rail {
-  display: flex;
+.grid {
+  display: grid;
   gap: var(--lego-space-4);
-  margin: 0;
-  overflow-x: auto;
-  padding: 0 0 var(--lego-space-2);
-  scroll-snap-type: x proximity;
 }
 
-.rail > * {
-  flex: 0 0 min(21rem, calc(100vw - 3rem));
+.spotlightItem {
   min-width: 0;
-  scroll-snap-align: start;
+}
+
+.spotlightItem > * {
+  height: 100%;
+}
+
+@media (min-width: 48rem) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 64rem) {
@@ -50,14 +56,12 @@
   .signalRow {
     text-align: right;
   }
-}
 
-@media (min-width: 75rem) {
-  .rail {
-    overflow: visible;
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .rail > * {
-    flex: 1 1 0;
+  .spotlightItemWide {
+    grid-column: span 2;
   }
 }
