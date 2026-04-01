@@ -386,15 +386,26 @@ function getCatalogSearchScore({
     return 1;
   }
 
-  if (entry.normalizedName.startsWith(queryText)) {
+  if (
+    entry.normalizedName.startsWith(queryText) ||
+    entry.compactName.startsWith(queryToken)
+  ) {
     return 2;
+  }
+
+  if (
+    entry.normalizedName
+      .split(' ')
+      .some((normalizedNameWord) => normalizedNameWord.startsWith(queryText))
+  ) {
+    return 3;
   }
 
   if (
     entry.normalizedName.includes(queryText) ||
     entry.compactName.includes(queryToken)
   ) {
-    return 3;
+    return 4;
   }
 
   return undefined;
@@ -509,10 +520,18 @@ export function listCatalogBrowseThemeGroups(): CatalogBrowseThemeGroup[] {
 }
 
 export function searchCatalogSetCards(query: string): CatalogHomepageSetCard[] {
+  return listCatalogSearchSuggestions(query, Number.MAX_SAFE_INTEGER);
+}
+
+export function listCatalogSearchSuggestions(
+  query: string,
+  limit = 6,
+): CatalogHomepageSetCard[] {
   const normalizedQueryText = normalizeCatalogSearchText(query);
   const normalizedQueryToken = normalizeCatalogSearchToken(query);
+  const suggestionLimit = Math.max(0, Math.floor(limit));
 
-  if (!normalizedQueryText || !normalizedQueryToken) {
+  if (!normalizedQueryText || !normalizedQueryToken || suggestionLimit === 0) {
     return [];
   }
 
@@ -539,6 +558,7 @@ export function searchCatalogSetCards(query: string): CatalogHomepageSetCard[] {
         right.setCard.releaseYear - left.setCard.releaseYear ||
         left.setCard.name.localeCompare(right.setCard.name),
     )
+    .slice(0, suggestionLimit)
     .map((entry) => entry.setCard);
 }
 

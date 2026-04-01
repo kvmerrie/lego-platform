@@ -6,9 +6,9 @@ import {
   webNavigation,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { VisuallyHidden } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import { ShellWebAccountStatus } from './shell-web-account-status';
+import { ShellWebSearchForm } from './shell-web-search-form';
 
 function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
   return webNavigation.map((navigationItem) => (
@@ -20,39 +20,6 @@ function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
       {navigationItem.label}
     </a>
   ));
-}
-
-function renderSearchForm({
-  className,
-  inputId,
-  query,
-}: {
-  className?: string;
-  inputId: string;
-  query?: string;
-}) {
-  return (
-    <form
-      action={buildWebPath(webPathnames.search)}
-      className={className}
-      role="search"
-    >
-      <label className={styles.searchLabel} htmlFor={inputId}>
-        <VisuallyHidden>Search the catalog</VisuallyHidden>
-      </label>
-      <input
-        className={styles.searchInput}
-        defaultValue={query}
-        id={inputId}
-        name="q"
-        placeholder="Search sets or set number"
-        type="search"
-      />
-      <button className={styles.searchSubmit} type="submit">
-        Search
-      </button>
-    </form>
-  );
 }
 
 export function ShellWeb({
@@ -84,11 +51,11 @@ export function ShellWeb({
             <nav aria-label="Primary" className={styles.desktopNav}>
               {renderNavigationLinks({ variant: 'desktop' })}
             </nav>
-            {renderSearchForm({
-              className: styles.desktopSearch,
-              inputId: 'site-search-desktop',
-              query: searchQuery,
-            })}
+            <ShellWebSearchForm
+              className={styles.desktopSearch}
+              inputId="site-search-desktop"
+              query={searchQuery}
+            />
             <div className={styles.headerUtilities}>
               <ShellWebAccountStatus variant="header" />
               <details className={styles.mobileMenu}>
@@ -96,11 +63,11 @@ export function ShellWeb({
                   <span className={styles.mobileMenuLabel}>Menu</span>
                 </summary>
                 <div className={styles.mobileMenuPanel}>
-                  {renderSearchForm({
-                    className: styles.mobileSearch,
-                    inputId: 'site-search-mobile',
-                    query: searchQuery,
-                  })}
+                  <ShellWebSearchForm
+                    className={styles.mobileSearch}
+                    inputId="site-search-mobile"
+                    query={searchQuery}
+                  />
                   <nav aria-label="Mobile primary" className={styles.mobileNav}>
                     {renderNavigationLinks({ variant: 'mobile' })}
                   </nav>

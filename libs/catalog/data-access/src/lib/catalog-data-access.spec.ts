@@ -3,6 +3,7 @@ import {
   listDiscoverDealCandidateSetCards,
   getCatalogThemePageBySlug,
   getCatalogOffersBySetId,
+  listCatalogSearchSuggestions,
   getCatalogSetBySlug,
   listCatalogBrowseThemeGroups,
   listCatalogThemeDirectoryItems,
@@ -580,6 +581,18 @@ describe('catalog data-access contracts', () => {
         name: 'Natural History Museum',
       }),
     ]);
+  });
+
+  test('prioritizes prefix-style suggestion matches and keeps typeahead compact', () => {
+    expect(listCatalogSearchSuggestions('tower', 3)).toEqual([
+      expect.objectContaining({
+        id: '76269',
+        name: 'Avengers Tower',
+      }),
+    ]);
+
+    expect(listCatalogSearchSuggestions('103', 3)).toHaveLength(3);
+    expect(listCatalogSearchSuggestions('103', 0)).toEqual([]);
   });
 
   test('builds richer homepage card reads with curated availability and tagline context', () => {

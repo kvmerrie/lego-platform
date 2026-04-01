@@ -99,6 +99,7 @@
 
 .desktopSearch {
   display: none;
+  position: relative;
 }
 
 .searchLabel {
@@ -111,6 +112,13 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+.searchForm {
+  align-items: center;
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .navLink,
@@ -197,6 +205,176 @@
 .searchSubmit:focus-visible {
   background: color-mix(in srgb, var(--lego-surface-subtle) 72%, white 28%);
   outline: none;
+}
+
+.searchPanel {
+  background: var(--lego-surface);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-lg);
+  box-shadow: 0 18px 44px color-mix(in srgb, black 10%, transparent);
+  display: grid;
+  gap: var(--lego-space-3);
+  left: 0;
+  margin-top: var(--lego-space-2);
+  padding: var(--lego-space-3);
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 20;
+}
+
+.searchPanelSection {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.searchPanelHeading,
+.searchPanelHint {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.searchList {
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.searchSuggestionLink,
+.recentSearchLink,
+.searchResultsLink {
+  border-radius: var(--lego-radius-md);
+  color: inherit;
+  text-decoration: none;
+}
+
+.searchSuggestionLink,
+.recentSearchLink {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.72rem 0.78rem;
+}
+
+.recentSearchItem {
+  align-items: center;
+  border-radius: var(--lego-radius-md);
+  column-gap: 0.25rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.searchSuggestionLink {
+  align-items: center;
+  column-gap: 0.78rem;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.searchSuggestionLink:hover,
+.searchSuggestionLink:focus-visible,
+.recentSearchLink:hover,
+.recentSearchLink:focus-visible,
+.recentSearchItem[data-active='true'],
+.searchResultsLink:hover,
+.searchResultsLink:focus-visible,
+.searchSuggestionLink[data-active='true'],
+.searchResultsLink[data-active='true'] {
+  background: var(--lego-surface-subtle);
+  outline: none;
+}
+
+.searchSuggestionLink:focus-visible,
+.recentSearchLink:focus-visible,
+.recentSearchRemove:focus-visible,
+.searchResultsLink:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+}
+
+.searchSuggestionName {
+  color: var(--lego-text);
+  font-size: var(--lego-font-size-sm);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.3;
+}
+
+.searchSuggestionContent {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.searchSuggestionImage {
+  background: color-mix(in srgb, white 74%, var(--lego-surface-subtle) 26%);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: 0.85rem;
+  display: block;
+  height: 3rem;
+  object-fit: contain;
+  object-position: center;
+  padding: 0.2rem;
+  width: 3rem;
+}
+
+.searchSuggestionMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.recentSearchLink {
+  color: var(--lego-text);
+  font-size: var(--lego-font-size-sm);
+  font-weight: var(--lego-font-weight-medium);
+  line-height: 1.3;
+}
+
+.recentSearchLabel {
+  color: var(--lego-text);
+  font-size: var(--lego-font-size-sm);
+  font-weight: var(--lego-font-weight-medium);
+  line-height: 1.3;
+}
+
+.recentSearchMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.recentSearchRemove {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--lego-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 1rem;
+  height: 2rem;
+  justify-content: center;
+  margin-right: 0.28rem;
+  width: 2rem;
+}
+
+.recentSearchRemove:hover,
+.recentSearchRemove:focus-visible {
+  background: color-mix(in srgb, white 40%, transparent);
+  color: var(--lego-text);
+  outline: none;
+}
+
+.searchResultsLink {
+  color: var(--lego-accent);
+  font-size: var(--lego-font-size-sm);
+  font-weight: var(--lego-font-weight-semibold);
+  justify-self: start;
+  padding: 0.62rem 0.78rem;
 }
 
 .accountStatus {
@@ -335,10 +513,8 @@
 }
 
 .mobileSearch {
-  display: grid;
-  gap: var(--lego-space-2);
-  grid-template-columns: minmax(0, 1fr) auto;
   margin-bottom: var(--lego-space-3);
+  position: relative;
 }
 
 .mobileNav {
@@ -441,10 +617,7 @@
   }
 
   .desktopSearch {
-    align-items: center;
-    display: grid;
-    gap: var(--lego-space-2);
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: block;
   }
 
   .mobileMenu {
