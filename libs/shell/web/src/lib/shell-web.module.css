@@ -505,8 +505,6 @@
 .mainInner {
   display: grid;
   gap: var(--lego-space-6);
-  padding-bottom: var(--lego-space-14);
-  padding-top: var(--lego-space-4);
 }
 
 .footer {
@@ -554,9 +552,5 @@
 
   .mobileMenu {
     display: none;
-  }
-
-  .mainInner {
-    padding-top: var(--lego-space-5);
   }
 }
