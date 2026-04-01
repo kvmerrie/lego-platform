@@ -14,7 +14,7 @@ export function Icon({
   className,
   name,
   size = 16,
-  strokeWidth = 1.85,
+  strokeWidth = 2.5,
   ...rest
 }: Omit<LucideProps, 'ref'> & {
   name: IconName;

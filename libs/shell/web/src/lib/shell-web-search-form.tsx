@@ -208,6 +208,9 @@ export function ShellWebSearchForm({
         <label className={styles.searchLabel} htmlFor={inputId}>
           <VisuallyHidden>Search the catalog</VisuallyHidden>
         </label>
+        <span aria-hidden="true" className={styles.searchInputIcon}>
+          <Icon name="search" size={15} />
+        </span>
         <input
           autoComplete="off"
           className={styles.searchInput}
@@ -224,9 +227,6 @@ export function ShellWebSearchForm({
           type="search"
           value={searchValue}
         />
-        <button className={styles.searchSubmit} type="submit">
-          Search
-        </button>
       </form>
       {shouldRenderPanel ? (
         <div className={styles.searchPanel}>

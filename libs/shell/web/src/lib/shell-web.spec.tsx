@@ -1,21 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { ShellWebAccountStatus } from './shell-web-account-status';
 import { ShellWeb } from './shell-web';
 
 describe('ShellWeb', () => {
-  it('renders a stable bootstrapping placeholder for the shell account area', () => {
-    const markup = renderToStaticMarkup(
-      <ShellWebAccountStatus variant="header" />,
-    );
-
-    expect(markup).toContain('Checking');
-    expect(markup).toContain('aria-busy="true"');
-    expect(markup).not.toContain('Sign in');
-    expect(markup).not.toContain('Sign out');
-  });
-
-  it('renders a compact shell header with direct nav links and account access', () => {
+  it('renders a compact retail-style shell header with browse nav and icon actions', () => {
     const markup = renderToStaticMarkup(
       <ShellWeb>
         <div>Collector page content</div>
@@ -25,8 +13,11 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Brickhunt');
     expect(markup).toContain('Menu');
     expect(markup).toContain('Discover');
-    expect(markup).toContain('Account');
-    expect(markup).toContain('Checking');
+    expect(markup).toContain('Themes');
+    expect(markup).toContain('Open profile');
+    expect(markup).toContain('Open saved lists');
+    expect(markup).toContain('Profile');
+    expect(markup).toContain('Lists');
     expect(markup).toContain('Skip to main content');
     expect(markup).toContain('href="#main-content"');
     expect(markup).toContain('id="main-content"');
@@ -35,11 +26,15 @@ describe('ShellWeb', () => {
     expect(markup).toContain('id="site-search-desktop"');
     expect(markup).toContain('name="q"');
     expect(markup).toContain('Search sets or set number');
+    expect(markup).toContain('href="/account"');
+    expect(markup).toContain('href="/wishlist"');
     expect(markup).toContain(
       'Brickhunt helps you browse standout sets, compare reviewed Dutch offers',
     );
     expect(markup).not.toContain('Home');
     expect(markup).not.toContain('Featured shortlist');
+    expect(markup).not.toContain('Checking');
+    expect(markup).not.toContain('Sign in');
     expect(markup).not.toContain('Sign out');
   });
 });

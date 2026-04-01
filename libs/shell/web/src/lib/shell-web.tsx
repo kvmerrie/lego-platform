@@ -6,8 +6,8 @@ import {
   webNavigation,
   webPathnames,
 } from '@lego-platform/shared/config';
+import { Icon } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
-import { ShellWebAccountStatus } from './shell-web-account-status';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
 function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
@@ -20,6 +20,45 @@ function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
       {navigationItem.label}
     </a>
   ));
+}
+
+const shellActionLinks = [
+  {
+    ariaLabel: 'Open profile',
+    href: buildWebPath(webPathnames.account),
+    iconName: 'user' as const,
+    label: 'Profile',
+  },
+  {
+    ariaLabel: 'Open saved lists',
+    href: buildWebPath(webPathnames.wishlist),
+    iconName: 'heart' as const,
+    label: 'Lists',
+  },
+] as const;
+
+function renderActionLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
+  return shellActionLinks.map((actionLink) =>
+    variant === 'desktop' ? (
+      <a
+        aria-label={actionLink.ariaLabel}
+        className={styles.iconActionLink}
+        href={actionLink.href}
+        key={actionLink.href}
+      >
+        <Icon name={actionLink.iconName} size={17} />
+      </a>
+    ) : (
+      <a
+        className={styles.mobileUtilityLink}
+        href={actionLink.href}
+        key={actionLink.href}
+      >
+        <Icon name={actionLink.iconName} size={18} />
+        <span className={styles.mobileUtilityText}>{actionLink.label}</span>
+      </a>
+    ),
+  );
 }
 
 export function ShellWeb({
@@ -37,27 +76,31 @@ export function ShellWeb({
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.headerBar}>
-            <a
-              className={styles.brandLink}
-              href={buildWebPath(webPathnames.home)}
-            >
-              <span aria-hidden="true" className={styles.brandMark}>
-                B
-              </span>
-              <span className={styles.brandName}>
-                {platformConfig.productName}
-              </span>
-            </a>
-            <nav aria-label="Primary" className={styles.desktopNav}>
-              {renderNavigationLinks({ variant: 'desktop' })}
-            </nav>
-            <ShellWebSearchForm
-              className={styles.desktopSearch}
-              inputId="site-search-desktop"
-              query={searchQuery}
-            />
-            <div className={styles.headerUtilities}>
-              <ShellWebAccountStatus variant="header" />
+            <div className={styles.headerPrimary}>
+              <a
+                className={styles.brandLink}
+                href={buildWebPath(webPathnames.home)}
+              >
+                <span aria-hidden="true" className={styles.brandMark}>
+                  B
+                </span>
+                <span className={styles.brandName}>
+                  {platformConfig.productName}
+                </span>
+              </a>
+              <nav aria-label="Primary" className={styles.desktopNav}>
+                {renderNavigationLinks({ variant: 'desktop' })}
+              </nav>
+            </div>
+            <div className={styles.headerSecondary}>
+              <ShellWebSearchForm
+                className={styles.desktopSearch}
+                inputId="site-search-desktop"
+                query={searchQuery}
+              />
+              <nav aria-label="Quick actions" className={styles.desktopActions}>
+                {renderActionLinks({ variant: 'desktop' })}
+              </nav>
               <details className={styles.mobileMenu}>
                 <summary className={styles.mobileMenuSummary}>
                   <span className={styles.mobileMenuLabel}>Menu</span>
@@ -71,7 +114,12 @@ export function ShellWeb({
                   <nav aria-label="Mobile primary" className={styles.mobileNav}>
                     {renderNavigationLinks({ variant: 'mobile' })}
                   </nav>
-                  <ShellWebAccountStatus variant="menu" />
+                  <nav
+                    aria-label="Collector actions"
+                    className={styles.mobileUtilityLinks}
+                  >
+                    {renderActionLinks({ variant: 'mobile' })}
+                  </nav>
                 </div>
               </details>
             </div>

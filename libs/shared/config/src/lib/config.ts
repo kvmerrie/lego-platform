@@ -113,8 +113,8 @@ const webNavigationItems = [
     pathname: webPathnames.discover,
   },
   {
-    label: 'Account',
-    pathname: webPathnames.account,
+    label: 'Themes',
+    pathname: webPathnames.themes,
   },
 ] as const;
 
