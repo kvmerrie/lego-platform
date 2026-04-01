@@ -508,8 +508,53 @@ export function CatalogThemeHighlight({
   href?: string;
   imageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
-  variant?: 'default' | 'tile';
+  variant?: 'default' | 'homepage' | 'tile';
 }) {
+  if (variant === 'homepage') {
+    const themeHomepageContent = (
+      <>
+        {imageUrl ? (
+          <div className={styles.themeHomepageVisual}>
+            <img
+              alt={`${themeSnapshot.signatureSet} LEGO set`}
+              className={styles.themeHomepageImage}
+              decoding="async"
+              loading="lazy"
+              src={imageUrl}
+            />
+          </div>
+        ) : null}
+        <div className={styles.themeHomepageBody}>
+          <h3 className={styles.themeHomepageTitle}>{themeSnapshot.name}</h3>
+          <p className={styles.themeHomepageMeta}>
+            {themeSnapshot.setCount} sets
+          </p>
+        </div>
+      </>
+    );
+
+    return (
+      <Surface
+        as="article"
+        className={`${styles.themeCard} ${styles.themeHomepageCard}`}
+        data-theme={themeSnapshot.slug}
+        tone="muted"
+      >
+        {href ? (
+          <ActionLink
+            className={styles.themeHomepageLink}
+            href={href}
+            tone="card"
+          >
+            {themeHomepageContent}
+          </ActionLink>
+        ) : (
+          themeHomepageContent
+        )}
+      </Surface>
+    );
+  }
+
   if (variant === 'tile') {
     const themeTileContent = (
       <>
@@ -544,6 +589,7 @@ export function CatalogThemeHighlight({
       <Surface
         as="article"
         className={`${styles.themeCard} ${styles.themeTile}`}
+        data-theme={themeSnapshot.slug}
         tone="muted"
       >
         {href ? (

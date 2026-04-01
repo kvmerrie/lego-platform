@@ -184,4 +184,32 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Open theme page');
     expect(markup).toContain('Start with Rivendell');
   });
+
+  it('renders a leaner homepage theme tile variant for fast browsing', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogThemeHighlight
+        href="/themes/icons"
+        imageUrl="https://images.example/rivendell.jpg"
+        themeSnapshot={{
+          name: 'Icons',
+          slug: 'icons',
+          setCount: 14,
+          momentum:
+            'Premium collectors are consolidating around large display pieces.',
+          signatureSet: 'Rivendell',
+        }}
+        variant="homepage"
+      />,
+    );
+
+    expect(markup).toContain('href="/themes/icons"');
+    expect(markup).toContain('src="https://images.example/rivendell.jpg"');
+    expect(markup).toContain('Icons');
+    expect(markup).toContain('14 sets');
+    expect(markup).not.toContain('Open theme page');
+    expect(markup).not.toContain('Start with Rivendell');
+    expect(markup).not.toContain(
+      'Premium collectors are consolidating around large display pieces.',
+    );
+  });
 });

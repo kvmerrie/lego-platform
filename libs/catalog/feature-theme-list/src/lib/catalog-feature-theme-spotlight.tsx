@@ -21,13 +21,10 @@ export function CatalogFeatureThemeSpotlight({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          description="A few theme lanes deserve more room because they keep sending people into deeper set pages."
-          eyebrow="Theme spotlight"
-          title="Pick a theme and keep browsing from there"
+          eyebrow="More themes"
+          title="Keep browsing by theme"
         />
-        <p className={styles.signalRow}>
-          {themeItems.length} stronger catalog lanes, each with its own page
-        </p>
+        <p className={styles.signalRow}>{themeItems.length} standout lanes</p>
       </div>
       <div className={styles.grid}>
         {themeItems.map((themeItem, index) => (
@@ -41,7 +38,7 @@ export function CatalogFeatureThemeSpotlight({
               href={buildThemePath(themeItem.themeSnapshot.slug)}
               imageUrl={themeItem.imageUrl}
               themeSnapshot={themeItem.themeSnapshot}
-              variant="tile"
+              variant="homepage"
             />
           </div>
         ))}

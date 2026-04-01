@@ -1,15 +1,6 @@
 .section {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-surface-subtle) 82%, white 18%),
-    var(--lego-surface)
-  );
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  border-radius: var(--lego-radius-lg);
   display: grid;
-  gap: var(--lego-space-5);
-  overflow: hidden;
-  padding: var(--lego-space-6);
+  gap: var(--lego-space-4);
 }
 
 .headerBlock {
@@ -18,7 +9,7 @@
 }
 
 .header {
-  max-width: min(44rem, 100%);
+  max-width: min(30rem, 100%);
 }
 
 .signalRow {

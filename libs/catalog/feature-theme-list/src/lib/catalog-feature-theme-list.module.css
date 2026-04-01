@@ -1,13 +1,6 @@
 .section {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-surface-subtle) 70%, white 30%),
-    transparent
-  );
-  border-radius: var(--lego-radius-lg);
   display: grid;
-  gap: var(--lego-space-5);
-  padding: var(--lego-space-6);
+  gap: var(--lego-space-4);
 }
 
 .headerBlock {
@@ -16,7 +9,7 @@
 }
 
 .header {
-  max-width: min(42rem, 100%);
+  max-width: min(28rem, 100%);
 }
 
 .signalRow {
@@ -31,12 +24,12 @@
   gap: var(--lego-space-4);
   margin: 0;
   overflow-x: auto;
-  padding: 0 0 var(--lego-space-2);
+  padding: 0 0 var(--lego-space-1);
   scroll-snap-type: x proximity;
 }
 
 .rail > * {
-  flex: 0 0 min(21rem, calc(100vw - 3rem));
+  flex: 0 0 min(18rem, calc(100vw - 3rem));
   min-width: 0;
   scroll-snap-align: start;
 }

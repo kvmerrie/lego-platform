@@ -21,13 +21,10 @@ export function CatalogFeatureThemeList({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          description="Start with the strongest theme lanes first, then jump into a focused page when one world pulls you in."
-          eyebrow="Browse themes"
-          title="Explore by theme"
+          eyebrow="Themes"
+          title="Browse themes"
         />
-        <p className={styles.signalRow}>
-          {themeItems.length} theme pages ready to browse
-        </p>
+        <p className={styles.signalRow}>{themeItems.length} theme pages</p>
       </div>
       <div className={styles.rail}>
         {themeItems.map((themeItem) => (
@@ -36,7 +33,7 @@ export function CatalogFeatureThemeList({
             imageUrl={themeItem.imageUrl}
             key={themeItem.themeSnapshot.name}
             themeSnapshot={themeItem.themeSnapshot}
-            variant="tile"
+            variant="homepage"
           />
         ))}
       </div>
