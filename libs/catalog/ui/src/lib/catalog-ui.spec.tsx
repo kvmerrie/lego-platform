@@ -189,7 +189,12 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight
         href="/themes/icons"
-        imageUrl="https://images.example/rivendell.jpg"
+        homepageVisual={{
+          backgroundColor: '#f0c63b',
+          imageUrl: 'https://images.example/curated-rivendell.jpg',
+          textColor: '#171a22',
+        }}
+        imageUrl="https://images.example/fallback-rivendell.jpg"
         themeSnapshot={{
           name: 'Icons',
           slug: 'icons',
@@ -203,9 +208,13 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('href="/themes/icons"');
-    expect(markup).toContain('src="https://images.example/rivendell.jpg"');
+    expect(markup).toContain(
+      'src="https://images.example/curated-rivendell.jpg"',
+    );
     expect(markup).toContain('Icons');
     expect(markup).toContain('14 sets');
+    expect(markup).toContain('--theme-home-surface:#f0c63b');
+    expect(markup).toContain('--theme-home-text:#171a22');
     expect(markup).not.toContain('Open theme page');
     expect(markup).not.toContain('Start with Rivendell');
     expect(markup).not.toContain(

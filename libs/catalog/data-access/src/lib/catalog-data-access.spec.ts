@@ -830,6 +830,54 @@ describe('catalog data-access contracts', () => {
     ]);
   });
 
+  test('prepares homepage theme tiles with explicit curated visuals', () => {
+    expect(
+      listHomepageThemeDirectoryItems().map((themeDirectoryItem) => ({
+        backgroundColor: themeDirectoryItem.homepageVisual?.backgroundColor,
+        imageUrl: themeDirectoryItem.homepageVisual?.imageUrl,
+        name: themeDirectoryItem.themeSnapshot.name,
+        textColor: themeDirectoryItem.homepageVisual?.textColor,
+      })),
+    ).toEqual([
+      {
+        backgroundColor: '#f0c63b',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        name: 'Icons',
+        textColor: '#171a22',
+      },
+      {
+        backgroundColor: '#cf554c',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+        name: 'Marvel',
+        textColor: '#ffffff',
+      },
+      {
+        backgroundColor: '#68b8a0',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
+        name: 'Ideas',
+        textColor: '#10241f',
+      },
+      {
+        backgroundColor: '#5573b5',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
+        name: 'Star Wars',
+        textColor: '#ffffff',
+      },
+      {
+        backgroundColor: '#7f67bf',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
+        name: 'Harry Potter',
+        textColor: '#ffffff',
+      },
+      {
+        backgroundColor: '#a8b4c2',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
+        name: 'Technic',
+        textColor: '#171a22',
+      },
+    ]);
+  });
+
   test('keeps theme spotlight browsing focused on four stronger homepage lanes', () => {
     expect(
       listHomepageThemeSpotlightItems().map(

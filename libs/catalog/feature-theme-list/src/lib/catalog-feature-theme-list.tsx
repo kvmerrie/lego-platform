@@ -30,6 +30,7 @@ export function CatalogFeatureThemeList({
         {themeItems.map((themeItem) => (
           <CatalogThemeHighlight
             href={buildThemePath(themeItem.themeSnapshot.slug)}
+            homepageVisual={themeItem.homepageVisual}
             imageUrl={themeItem.imageUrl}
             key={themeItem.themeSnapshot.name}
             themeSnapshot={themeItem.themeSnapshot}

@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type {
+  CatalogHomepageThemeVisual,
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetSummary,
@@ -501,26 +502,41 @@ export function CatalogSetDetailPanel({
 
 export function CatalogThemeHighlight({
   href,
+  homepageVisual,
   imageUrl,
   themeSnapshot,
   variant = 'default',
 }: {
   href?: string;
+  homepageVisual?: CatalogHomepageThemeVisual;
   imageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
   variant?: 'default' | 'homepage' | 'tile';
 }) {
   if (variant === 'homepage') {
+    const homepageThemeStyle = {
+      ...(homepageVisual?.backgroundColor
+        ? ({
+            '--theme-home-surface': homepageVisual.backgroundColor,
+          } as CSSProperties)
+        : {}),
+      ...(homepageVisual?.textColor
+        ? ({
+            '--theme-home-text': homepageVisual.textColor,
+          } as CSSProperties)
+        : {}),
+    };
+    const themeHomepageImageUrl = homepageVisual?.imageUrl ?? imageUrl;
     const themeHomepageContent = (
       <>
-        {imageUrl ? (
+        {themeHomepageImageUrl ? (
           <div className={styles.themeHomepageVisual}>
             <img
               alt={`${themeSnapshot.signatureSet} LEGO set`}
               className={styles.themeHomepageImage}
               decoding="async"
               loading="lazy"
-              src={imageUrl}
+              src={themeHomepageImageUrl}
             />
           </div>
         ) : null}
@@ -538,6 +554,11 @@ export function CatalogThemeHighlight({
         as="article"
         className={`${styles.themeCard} ${styles.themeHomepageCard}`}
         data-theme={themeSnapshot.slug}
+        style={
+          Object.keys(homepageThemeStyle).length > 0
+            ? homepageThemeStyle
+            : undefined
+        }
         tone="muted"
       >
         {href ? (

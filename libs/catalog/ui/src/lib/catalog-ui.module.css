@@ -494,8 +494,16 @@
 .themeHomepageCard {
   --theme-home-surface: #d9e4f2;
   --theme-home-text: #171a22;
-  --theme-home-muted: rgba(23, 26, 34, 0.72);
-  --theme-home-shadow: rgba(23, 26, 34, 0.09);
+  --theme-home-muted: color-mix(
+    in srgb,
+    var(--theme-home-text) 72%,
+    transparent
+  );
+  --theme-home-shadow: color-mix(
+    in srgb,
+    var(--theme-home-text) 12%,
+    transparent
+  );
   background: var(--theme-home-surface);
   gap: 0;
   min-height: 12.25rem;
@@ -584,104 +592,6 @@
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
   white-space: nowrap;
-}
-
-.themeHomepageCard[data-theme='icons'] {
-  --theme-home-surface: #f0c63b;
-  --theme-home-text: #171a22;
-  --theme-home-muted: rgba(23, 26, 34, 0.76);
-  --theme-home-shadow: rgba(146, 112, 20, 0.15);
-}
-
-.themeHomepageCard[data-theme='marvel'] {
-  --theme-home-surface: #cf554c;
-  --theme-home-text: #ffffff;
-  --theme-home-muted: rgba(255, 255, 255, 0.84);
-  --theme-home-shadow: rgba(134, 54, 44, 0.15);
-}
-
-.themeHomepageCard[data-theme='ideas'] {
-  --theme-home-surface: #68b8a0;
-  --theme-home-text: #10241f;
-  --theme-home-muted: rgba(16, 36, 31, 0.76);
-  --theme-home-shadow: rgba(46, 101, 88, 0.14);
-}
-
-.themeHomepageCard[data-theme='star-wars'] {
-  --theme-home-surface: #5573b5;
-  --theme-home-text: #ffffff;
-  --theme-home-muted: rgba(255, 255, 255, 0.82);
-  --theme-home-shadow: rgba(51, 69, 109, 0.15);
-}
-
-.themeHomepageCard[data-theme='harry-potter'] {
-  --theme-home-surface: #7f67bf;
-  --theme-home-text: #ffffff;
-  --theme-home-muted: rgba(255, 255, 255, 0.82);
-  --theme-home-shadow: rgba(72, 58, 112, 0.14);
-}
-
-.themeHomepageCard[data-theme='technic'] {
-  --theme-home-surface: #a8b4c2;
-  --theme-home-text: #171a22;
-  --theme-home-muted: rgba(23, 26, 34, 0.72);
-  --theme-home-shadow: rgba(71, 83, 99, 0.13);
-}
-
-.themeHomepageCard[data-theme='modular-buildings'] {
-  --theme-home-surface: #caa06b;
-  --theme-home-text: #2f2418;
-  --theme-home-muted: rgba(47, 36, 24, 0.72);
-  --theme-home-shadow: rgba(108, 82, 49, 0.14);
-}
-
-.themeHomepageCard[data-theme='botanicals'] {
-  --theme-home-surface: #7ebc88;
-  --theme-home-text: #142717;
-  --theme-home-muted: rgba(20, 39, 23, 0.76);
-  --theme-home-shadow: rgba(59, 103, 67, 0.14);
-}
-
-.themeHomepageCard[data-theme='architecture'] {
-  --theme-home-surface: #b1bfce;
-  --theme-home-text: #171a22;
-  --theme-home-muted: rgba(23, 26, 34, 0.72);
-  --theme-home-shadow: rgba(72, 81, 98, 0.13);
-}
-
-.themeHomepageCard[data-theme='art'] {
-  --theme-home-surface: #8a77c9;
-  --theme-home-text: #ffffff;
-  --theme-home-muted: rgba(255, 255, 255, 0.82);
-  --theme-home-shadow: rgba(74, 61, 114, 0.13);
-}
-
-.themeHomepageCard[data-theme='disney'] {
-  --theme-home-surface: #b86e9c;
-  --theme-home-text: #ffffff;
-  --theme-home-muted: rgba(255, 255, 255, 0.82);
-  --theme-home-shadow: rgba(103, 62, 87, 0.13);
-}
-
-.themeHomepageCard[data-theme='ninjago'] {
-  --theme-home-surface: #c9775b;
-  --theme-home-text: #ffffff;
-  --theme-home-muted: rgba(255, 255, 255, 0.82);
-  --theme-home-shadow: rgba(110, 67, 47, 0.13);
-}
-
-.themeHomepageCard[data-theme='super-mario'] {
-  --theme-home-surface: #9fc554;
-  --theme-home-text: #1d290e;
-  --theme-home-muted: rgba(29, 41, 14, 0.76);
-  --theme-home-shadow: rgba(80, 105, 42, 0.13);
-}
-
-.themeHomepageCard[data-theme='jurassic-world'] {
-  --theme-home-surface: #88a95b;
-  --theme-home-text: #13200d;
-  --theme-home-muted: rgba(19, 32, 13, 0.76);
-  --theme-home-shadow: rgba(67, 82, 45, 0.13);
 }
 
 .themeHeader {

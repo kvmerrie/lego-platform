@@ -32,6 +32,12 @@ export interface CatalogThemeSnapshot {
   signatureSet: string;
 }
 
+export interface CatalogHomepageThemeVisual {
+  backgroundColor?: string;
+  imageUrl?: string;
+  textColor?: string;
+}
+
 export interface CatalogSetRecord {
   canonicalId: string;
   sourceSetNumber: string;

@@ -1,4 +1,5 @@
 import {
+  CatalogHomepageThemeVisual,
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetOverlay,
@@ -109,8 +110,63 @@ export interface CatalogThemeLandingPage {
 
 export interface CatalogThemeDirectoryItem {
   imageUrl?: string;
+  homepageVisual?: CatalogHomepageThemeVisual;
   themeSnapshot: CatalogThemeSnapshot;
 }
+
+const curatedHomepageThemeVisualsByName = new Map<
+  string,
+  CatalogHomepageThemeVisual
+>([
+  [
+    'Icons',
+    {
+      backgroundColor: '#f0c63b',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Marvel',
+    {
+      backgroundColor: '#cf554c',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Ideas',
+    {
+      backgroundColor: '#68b8a0',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
+      textColor: '#10241f',
+    },
+  ],
+  [
+    'Star Wars',
+    {
+      backgroundColor: '#5573b5',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Harry Potter',
+    {
+      backgroundColor: '#7f67bf',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Technic',
+    {
+      backgroundColor: '#a8b4c2',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
+      textColor: '#171a22',
+    },
+  ],
+]);
 
 const catalogSetOverlayById = new Map(
   catalogSetOverlays.map((catalogSetOverlay) => [
@@ -175,6 +231,28 @@ function toCatalogHomepageSetCard(
     ...toCatalogSetSummary(catalogSetDetail),
     tagline: catalogSetDetail.tagline,
     availability: catalogSetDetail.availability,
+  };
+}
+
+function getHomepageThemeVisual({
+  fallbackImageUrl,
+  themeSnapshot,
+}: {
+  fallbackImageUrl?: string;
+  themeSnapshot: CatalogThemeSnapshot;
+}): CatalogHomepageThemeVisual | undefined {
+  const curatedHomepageThemeVisual = curatedHomepageThemeVisualsByName.get(
+    themeSnapshot.name,
+  );
+
+  if (!curatedHomepageThemeVisual && !fallbackImageUrl) {
+    return undefined;
+  }
+
+  return {
+    backgroundColor: curatedHomepageThemeVisual?.backgroundColor,
+    imageUrl: curatedHomepageThemeVisual?.imageUrl ?? fallbackImageUrl,
+    textColor: curatedHomepageThemeVisual?.textColor,
   };
 }
 
@@ -624,7 +702,19 @@ export function listHomepageThemeDirectoryItems(
       catalogThemeSnapshot.name,
     );
 
-    return catalogThemeDirectoryItem ? [catalogThemeDirectoryItem] : [];
+    if (!catalogThemeDirectoryItem) {
+      return [];
+    }
+
+    return [
+      {
+        ...catalogThemeDirectoryItem,
+        homepageVisual: getHomepageThemeVisual({
+          fallbackImageUrl: catalogThemeDirectoryItem.imageUrl,
+          themeSnapshot: catalogThemeSnapshot,
+        }),
+      },
+    ];
   });
 }
 
