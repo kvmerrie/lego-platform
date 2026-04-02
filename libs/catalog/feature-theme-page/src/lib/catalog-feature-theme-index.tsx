@@ -33,6 +33,7 @@ export function CatalogFeatureThemeIndex({
       <div className={styles.grid}>
         {themeDirectoryItems.map((themeDirectoryItem) => (
           <CatalogThemeHighlight
+            className={styles.directoryTile}
             href={buildThemePath(themeDirectoryItem.themeSnapshot.slug)}
             imageUrl={themeDirectoryItem.imageUrl}
             key={themeDirectoryItem.themeSnapshot.slug}

@@ -273,6 +273,7 @@ describe('CatalogSetCard', () => {
   it('renders a larger theme tile variant for storefront browsing', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight
+        className="directory-tile"
         href="/themes/icons"
         imageUrl="https://images.example/rivendell.jpg"
         themeSnapshot={{
@@ -289,8 +290,40 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
+    expect(markup).toContain('directory-tile');
     expect(markup).toContain('Open theme page');
     expect(markup).toContain('Start with Rivendell');
+  });
+
+  it('lets non-rail theme tiles reuse curated color and image overrides without using homepage rail sizing', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogThemeHighlight
+        href="/themes/marvel"
+        homepageVisual={{
+          backgroundColor: '#cf554c',
+          imageUrl: 'https://images.example/curated-avengers-tower.jpg',
+          textColor: '#ffffff',
+        }}
+        imageUrl="https://images.example/fallback-avengers-tower.jpg"
+        themeSnapshot={{
+          name: 'Marvel',
+          slug: 'marvel',
+          setCount: 3,
+          momentum:
+            'Superhero flagships and skyline-style display builds with broad recognition.',
+          signatureSet: 'Avengers Tower',
+        }}
+        variant="tile"
+      />,
+    );
+
+    expect(markup).toContain('href="/themes/marvel"');
+    expect(markup).toContain(
+      'src="https://images.example/curated-avengers-tower.jpg"',
+    );
+    expect(markup).toContain('--theme-tile-surface:#cf554c');
+    expect(markup).toContain('--theme-tile-text:#ffffff');
+    expect(markup).toContain('Open theme page');
   });
 
   it('renders a leaner homepage theme tile variant for fast browsing', () => {

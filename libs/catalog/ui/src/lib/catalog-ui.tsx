@@ -614,12 +614,14 @@ export function CatalogSetDetailPanel({
 }
 
 export function CatalogThemeHighlight({
+  className,
   href,
   homepageVisual,
   imageUrl,
   themeSnapshot,
   variant = 'default',
 }: {
+  className?: string;
   href?: string;
   homepageVisual?: CatalogHomepageThemeVisual;
   imageUrl?: string;
@@ -665,7 +667,9 @@ export function CatalogThemeHighlight({
     return (
       <Surface
         as="article"
-        className={`${styles.themeCard} ${styles.themeHomepageCard}`}
+        className={`${styles.themeCard} ${styles.themeHomepageCard}${
+          className ? ` ${className}` : ''
+        }`}
         data-theme={themeSnapshot.slug}
         style={
           Object.keys(homepageThemeStyle).length > 0
@@ -690,16 +694,30 @@ export function CatalogThemeHighlight({
   }
 
   if (variant === 'tile') {
+    const themeTileStyle = {
+      ...(homepageVisual?.backgroundColor
+        ? ({
+            '--theme-tile-surface': homepageVisual.backgroundColor,
+          } as CSSProperties)
+        : {}),
+      ...(homepageVisual?.textColor
+        ? ({
+            '--theme-tile-text': homepageVisual.textColor,
+            '--theme-tile-muted': `color-mix(in srgb, ${homepageVisual.textColor} 78%, transparent)`,
+          } as CSSProperties)
+        : {}),
+    };
+    const themeTileImageUrl = homepageVisual?.imageUrl ?? imageUrl;
     const themeTileContent = (
       <>
-        {imageUrl ? (
+        {themeTileImageUrl ? (
           <div className={styles.themeTileVisual}>
             <img
               alt={`${themeSnapshot.signatureSet} LEGO set`}
               className={styles.themeTileImage}
               decoding="async"
               loading="lazy"
-              src={imageUrl}
+              src={themeTileImageUrl}
             />
           </div>
         ) : null}
@@ -722,8 +740,13 @@ export function CatalogThemeHighlight({
     return (
       <Surface
         as="article"
-        className={`${styles.themeCard} ${styles.themeTile}`}
+        className={`${styles.themeCard} ${styles.themeTile}${
+          className ? ` ${className}` : ''
+        }`}
         data-theme={themeSnapshot.slug}
+        style={
+          Object.keys(themeTileStyle).length > 0 ? themeTileStyle : undefined
+        }
         tone="muted"
       >
         {href ? (
@@ -738,7 +761,11 @@ export function CatalogThemeHighlight({
   }
 
   return (
-    <Surface as="article" className={styles.themeCard} tone="muted">
+    <Surface
+      as="article"
+      className={`${styles.themeCard}${className ? ` ${className}` : ''}`}
+      tone="muted"
+    >
       <div className={styles.themeHeader}>
         <Badge tone="accent">{themeSnapshot.name}</Badge>
         <h3 className={styles.cardTitle}>{themeSnapshot.signatureSet}</h3>

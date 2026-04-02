@@ -27,19 +27,18 @@ export function CatalogFeatureThemeSpotlight({
         <p className={styles.signalRow}>{themeItems.length} standout lanes</p>
       </div>
       <div className={styles.grid}>
-        {themeItems.map((themeItem, index) => (
+        {themeItems.map((themeItem) => (
           <div
-            className={`${styles.spotlightItem} ${
-              index === 0 ? styles.spotlightItemWide : ''
-            }`}
+            className={styles.spotlightItem}
             key={themeItem.themeSnapshot.name}
           >
             <CatalogThemeHighlight
+              className={styles.spotlightTile}
               href={buildThemePath(themeItem.themeSnapshot.slug)}
               homepageVisual={themeItem.homepageVisual}
               imageUrl={themeItem.imageUrl}
               themeSnapshot={themeItem.themeSnapshot}
-              variant="homepage"
+              variant="tile"
             />
           </div>
         ))}

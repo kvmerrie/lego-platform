@@ -94,7 +94,7 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('Good time to buy in Marvel');
     expect(markup).toContain('Scroll Good time to buy in Marvel forward');
     expect(markup).toContain('All Marvel sets');
-    expect(markup).toContain('Scroll All Marvel sets forward');
+    expect(markup).not.toContain('Scroll All Marvel sets forward');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 });

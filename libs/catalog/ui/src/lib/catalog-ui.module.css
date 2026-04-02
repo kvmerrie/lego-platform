@@ -670,10 +670,11 @@
   --theme-tile-text: #171a22;
   --theme-tile-muted: rgba(23, 26, 34, 0.72);
   --theme-shadow: rgba(23, 26, 34, 0.12);
+  aspect-ratio: 4 / 3;
   background: var(--theme-tile-surface);
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--theme-tile-text) 10%, transparent);
-  min-height: 14.5rem;
+  min-height: 0;
   overflow: hidden;
   padding: 0;
 }
@@ -722,16 +723,17 @@
   align-items: flex-end;
   background: transparent;
   display: flex;
+  flex: 0 0 46%;
   justify-content: center;
-  min-height: 9.4rem;
+  min-height: 8.4rem;
   overflow: hidden;
-  padding: var(--lego-space-4) var(--lego-space-4) 0;
+  padding: var(--lego-space-3) var(--lego-space-4) 0;
 }
 
 .themeTileImage {
   display: block;
   height: auto;
-  max-height: 11.25rem;
+  max-height: 10.25rem;
   max-width: 100%;
   transition: transform var(--lego-motion-duration-normal)
     var(--lego-motion-ease-standard);
@@ -781,9 +783,13 @@
 
 .themeTileCopy {
   color: color-mix(in srgb, var(--theme-tile-text) 84%, transparent);
+  display: -webkit-box;
   line-height: 1.5;
   margin: 0;
   max-width: 28ch;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .themeTileSignature {
