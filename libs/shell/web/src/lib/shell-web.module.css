@@ -112,6 +112,10 @@
   position: relative;
 }
 
+.mobileSearchTrigger {
+  position: relative;
+}
+
 .searchLabel {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
@@ -222,6 +226,18 @@
   right: 0;
   top: 100%;
   z-index: 20;
+}
+
+.searchPanelInline {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  left: auto;
+  margin-top: 0;
+  padding: 0;
+  position: static;
+  right: auto;
+  top: auto;
 }
 
 .searchPanelSection {
@@ -384,6 +400,64 @@
   gap: 0.2rem;
 }
 
+.mobileSearchButton,
+.mobileSearchClose {
+  align-items: center;
+  appearance: none;
+  background: color-mix(in srgb, white 72%, transparent);
+  border: var(--lego-border-width-1) solid transparent;
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-shell-header-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  height: 2.5rem;
+  justify-content: center;
+  width: 2.5rem;
+}
+
+.mobileSearchButton:hover,
+.mobileSearchButton:focus-visible,
+.mobileSearchClose:hover,
+.mobileSearchClose:focus-visible {
+  background: color-mix(in srgb, white 88%, transparent);
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+}
+
+.mobileSearchOverlay {
+  background: var(--lego-surface);
+  display: grid;
+  gap: var(--lego-space-4);
+  inset: 0;
+  padding: max(var(--lego-space-4), env(safe-area-inset-top))
+    var(--lego-space-4) max(var(--lego-space-5), env(safe-area-inset-bottom));
+  position: fixed;
+  z-index: 45;
+}
+
+.mobileSearchOverlayBar {
+  align-items: center;
+  display: flex;
+  gap: var(--lego-space-3);
+  justify-content: space-between;
+}
+
+.mobileSearchOverlayTitle {
+  color: var(--lego-text);
+  font-size: var(--lego-font-size-lg);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.mobileSearchOverlayBody {
+  display: grid;
+  gap: var(--lego-space-4);
+  align-content: start;
+}
+
 .iconActionLink {
   align-items: center;
   background: transparent;
@@ -449,11 +523,6 @@
   position: absolute;
   right: 0;
   top: 100%;
-}
-
-.mobileSearch {
-  margin-bottom: var(--lego-space-3);
-  position: relative;
 }
 
 .mobileNav {
@@ -548,6 +617,10 @@
 
   .desktopActions {
     display: flex;
+  }
+
+  .mobileSearchTrigger {
+    display: none;
   }
 
   .mobileMenu {

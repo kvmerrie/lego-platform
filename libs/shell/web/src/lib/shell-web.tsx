@@ -98,6 +98,12 @@ export function ShellWeb({
                 inputId="site-search-desktop"
                 query={searchQuery}
               />
+              <ShellWebSearchForm
+                className={styles.mobileSearchTrigger}
+                inputId="site-search-mobile"
+                query={searchQuery}
+                variant="mobile-overlay"
+              />
               <nav aria-label="Quick actions" className={styles.desktopActions}>
                 {renderActionLinks({ variant: 'desktop' })}
               </nav>
@@ -106,11 +112,6 @@ export function ShellWeb({
                   <span className={styles.mobileMenuLabel}>Menu</span>
                 </summary>
                 <div className={styles.mobileMenuPanel}>
-                  <ShellWebSearchForm
-                    className={styles.mobileSearch}
-                    inputId="site-search-mobile"
-                    query={searchQuery}
-                  />
                   <nav aria-label="Mobile primary" className={styles.mobileNav}>
                     {renderNavigationLinks({ variant: 'mobile' })}
                   </nav>

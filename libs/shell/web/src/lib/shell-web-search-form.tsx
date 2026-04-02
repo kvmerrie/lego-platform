@@ -5,6 +5,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { listCatalogSearchSuggestions } from '@lego-platform/catalog/data-access';
@@ -40,10 +41,12 @@ export function ShellWebSearchForm({
   className,
   inputId,
   query,
+  variant = 'inline',
 }: {
   className?: string;
   inputId: string;
   query?: string;
+  variant?: 'inline' | 'mobile-overlay';
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItemIndex, setActiveItemIndex] = useState(-1);
@@ -51,6 +54,11 @@ export function ShellWebSearchForm({
     ShellWebRecentSearchEntry[]
   >([]);
   const [searchValue, setSearchValue] = useState(query ?? '');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const wasMobileOverlayOpenRef = useRef(false);
+
+  const isMobileOverlay = variant === 'mobile-overlay';
 
   useEffect(() => {
     setSearchValue(query ?? '');
@@ -115,6 +123,28 @@ export function ShellWebSearchForm({
     setActiveItemIndex(-1);
   }, [isOpen, normalizedSearchValue, recentSearches.length]);
 
+  useEffect(() => {
+    if (!isMobileOverlay) {
+      return;
+    }
+
+    if (isOpen) {
+      wasMobileOverlayOpenRef.current = true;
+      searchInputRef.current?.focus();
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+
+    if (wasMobileOverlayOpenRef.current) {
+      mobileTriggerRef.current?.focus();
+      wasMobileOverlayOpenRef.current = false;
+    }
+  }, [isMobileOverlay, isOpen]);
+
   function persistRecentSearch(recentSearchEntry?: ShellWebRecentSearchEntry) {
     if (!recentSearchEntry) {
       return;
@@ -147,9 +177,17 @@ export function ShellWebSearchForm({
 
   function handleSubmit(_event: FormEvent<HTMLFormElement>) {
     persistRecentSearch(createRecentSearchQueryEntry(searchValue));
+
+    if (isMobileOverlay) {
+      setIsOpen(false);
+    }
   }
 
   function handleBlur(event: FocusEvent<HTMLDivElement>) {
+    if (isMobileOverlay) {
+      return;
+    }
+
     if (!event.currentTarget.contains(event.relatedTarget)) {
       setActiveItemIndex(-1);
       setIsOpen(false);
@@ -190,7 +228,237 @@ export function ShellWebSearchForm({
       persistRecentSearch(activePanelItem.recentSearchEntry);
       setIsOpen(false);
       window.location.assign(activePanelItem.href);
+      return;
     }
+
+    if (isMobileOverlay && event.key === 'Escape') {
+      event.preventDefault();
+      setIsOpen(false);
+    }
+  }
+
+  function closeMobileOverlay() {
+    setActiveItemIndex(-1);
+    setIsOpen(false);
+  }
+
+  const searchForm = (
+    <form
+      action={buildWebPath(webPathnames.search)}
+      className={styles.searchForm}
+      onSubmit={handleSubmit}
+      role="search"
+    >
+      <label className={styles.searchLabel} htmlFor={inputId}>
+        <VisuallyHidden>Search the catalog</VisuallyHidden>
+      </label>
+      <span aria-hidden="true" className={styles.searchInputIcon}>
+        <Icon name="search" size={15} />
+      </span>
+      <input
+        autoComplete="off"
+        className={styles.searchInput}
+        enterKeyHint="search"
+        id={inputId}
+        name="q"
+        onChange={(event) => {
+          setActiveItemIndex(-1);
+          setIsOpen(true);
+          setSearchValue(event.target.value);
+        }}
+        onKeyDown={handleKeyDown}
+        placeholder="Search sets or set number"
+        ref={searchInputRef}
+        type="search"
+        value={searchValue}
+      />
+    </form>
+  );
+
+  const searchPanel = shouldRenderPanel ? (
+    <div
+      className={`${styles.searchPanel} ${
+        isMobileOverlay ? styles.searchPanelInline : ''
+      }`}
+    >
+      {showRecentSearches ? (
+        <section
+          aria-label="Recent searches"
+          className={styles.searchPanelSection}
+        >
+          <p className={styles.searchPanelHeading}>Recent searches</p>
+          <ul className={styles.searchList}>
+            {recentSearches.map((recentSearch, index) => (
+              <li key={`${recentSearch.kind}-${recentSearch.label}`}>
+                <div
+                  className={styles.recentSearchItem}
+                  data-active={index === activeItemIndex ? 'true' : undefined}
+                >
+                  <a
+                    className={styles.recentSearchLink}
+                    href={
+                      recentSearch.kind === 'set'
+                        ? recentSearch.href
+                        : buildSearchHref(recentSearch.query)
+                    }
+                    onClick={() => persistRecentSearch(recentSearch)}
+                    onMouseEnter={() => setActiveItemIndex(index)}
+                  >
+                    <span className={styles.recentSearchLabel}>
+                      {recentSearch.label}
+                    </span>
+                    {recentSearch.kind === 'set' ? (
+                      <span className={styles.recentSearchMeta}>
+                        {recentSearch.meta}
+                      </span>
+                    ) : null}
+                  </a>
+                  <button
+                    aria-label={`Remove recent search ${recentSearch.label}`}
+                    className={styles.recentSearchRemove}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      handleRemoveRecentSearch(recentSearch);
+                    }}
+                    type="button"
+                  >
+                    <Icon name="close" size={14} />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {showSuggestionPanel ? (
+        <section
+          aria-label="Matching sets"
+          className={styles.searchPanelSection}
+        >
+          {searchSuggestions.length ? (
+            <>
+              <p className={styles.searchPanelHeading}>Matching sets</p>
+              <ul className={styles.searchList}>
+                {searchSuggestions.map((searchSuggestion, index) => {
+                  const panelItemIndex = showRecentSearches
+                    ? recentSearches.length + index
+                    : index;
+                  const suggestionPanelItem = searchSuggestionPanelItems[index];
+
+                  return (
+                    <li key={searchSuggestion.id}>
+                      <a
+                        className={styles.searchSuggestionLink}
+                        data-active={
+                          panelItemIndex === activeItemIndex
+                            ? 'true'
+                            : undefined
+                        }
+                        href={buildSetDetailPath(searchSuggestion.slug)}
+                        onClick={() =>
+                          persistRecentSearch(
+                            suggestionPanelItem?.recentSearchEntry,
+                          )
+                        }
+                        onMouseEnter={() => setActiveItemIndex(panelItemIndex)}
+                      >
+                        {searchSuggestion.imageUrl ? (
+                          <img
+                            alt=""
+                            className={styles.searchSuggestionImage}
+                            loading="lazy"
+                            src={searchSuggestion.imageUrl}
+                          />
+                        ) : null}
+                        <span className={styles.searchSuggestionContent}>
+                          <span className={styles.searchSuggestionName}>
+                            {searchSuggestion.name}
+                          </span>
+                          <span className={styles.searchSuggestionMeta}>
+                            Set {searchSuggestion.id} · {searchSuggestion.theme}
+                          </span>
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          ) : (
+            <p className={styles.searchPanelHint}>
+              No matching sets yet. Open the full results page to keep looking.
+            </p>
+          )}
+          {searchResultsHref ? (
+            <a
+              className={styles.searchResultsLink}
+              data-active={
+                panelItems.length - 1 === activeItemIndex ? 'true' : undefined
+              }
+              href={searchResultsHref}
+              onClick={() => persistRecentSearch(searchResultEntry)}
+              onMouseEnter={() => setActiveItemIndex(panelItems.length - 1)}
+            >
+              See all results for "{normalizedSearchValue}"
+            </a>
+          ) : null}
+        </section>
+      ) : null}
+    </div>
+  ) : null;
+
+  if (isMobileOverlay) {
+    return (
+      <div className={className}>
+        <button
+          aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          aria-label="Open search"
+          className={styles.mobileSearchButton}
+          onClick={() => setIsOpen(true)}
+          ref={mobileTriggerRef}
+          type="button"
+        >
+          <Icon name="search" size={18} />
+        </button>
+        {isOpen ? (
+          <div
+            aria-labelledby={`${inputId}-overlay-title`}
+            aria-modal="true"
+            className={styles.mobileSearchOverlay}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                closeMobileOverlay();
+              }
+            }}
+            role="dialog"
+          >
+            <div className={styles.mobileSearchOverlayBar}>
+              <p
+                className={styles.mobileSearchOverlayTitle}
+                id={`${inputId}-overlay-title`}
+              >
+                Search
+              </p>
+              <button
+                aria-label="Close search"
+                className={styles.mobileSearchClose}
+                onClick={closeMobileOverlay}
+                type="button"
+              >
+                <Icon name="close" size={18} />
+              </button>
+            </div>
+            <div className={styles.mobileSearchOverlayBody}>
+              {searchForm}
+              {searchPanel}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
   }
 
   return (
@@ -199,172 +467,8 @@ export function ShellWebSearchForm({
       onBlur={handleBlur}
       onFocus={() => setIsOpen(true)}
     >
-      <form
-        action={buildWebPath(webPathnames.search)}
-        className={styles.searchForm}
-        onSubmit={handleSubmit}
-        role="search"
-      >
-        <label className={styles.searchLabel} htmlFor={inputId}>
-          <VisuallyHidden>Search the catalog</VisuallyHidden>
-        </label>
-        <span aria-hidden="true" className={styles.searchInputIcon}>
-          <Icon name="search" size={15} />
-        </span>
-        <input
-          autoComplete="off"
-          className={styles.searchInput}
-          enterKeyHint="search"
-          id={inputId}
-          name="q"
-          onChange={(event) => {
-            setActiveItemIndex(-1);
-            setIsOpen(true);
-            setSearchValue(event.target.value);
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder="Search sets or set number"
-          type="search"
-          value={searchValue}
-        />
-      </form>
-      {shouldRenderPanel ? (
-        <div className={styles.searchPanel}>
-          {showRecentSearches ? (
-            <section
-              aria-label="Recent searches"
-              className={styles.searchPanelSection}
-            >
-              <p className={styles.searchPanelHeading}>Recent searches</p>
-              <ul className={styles.searchList}>
-                {recentSearches.map((recentSearch, index) => (
-                  <li key={`${recentSearch.kind}-${recentSearch.label}`}>
-                    <div
-                      className={styles.recentSearchItem}
-                      data-active={
-                        index === activeItemIndex ? 'true' : undefined
-                      }
-                    >
-                      <a
-                        className={styles.recentSearchLink}
-                        href={
-                          recentSearch.kind === 'set'
-                            ? recentSearch.href
-                            : buildSearchHref(recentSearch.query)
-                        }
-                        onClick={() => persistRecentSearch(recentSearch)}
-                        onMouseEnter={() => setActiveItemIndex(index)}
-                      >
-                        <span className={styles.recentSearchLabel}>
-                          {recentSearch.label}
-                        </span>
-                        {recentSearch.kind === 'set' ? (
-                          <span className={styles.recentSearchMeta}>
-                            {recentSearch.meta}
-                          </span>
-                        ) : null}
-                      </a>
-                      <button
-                        aria-label={`Remove recent search ${recentSearch.label}`}
-                        className={styles.recentSearchRemove}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          handleRemoveRecentSearch(recentSearch);
-                        }}
-                        type="button"
-                      >
-                        <Icon name="close" size={14} />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-          {showSuggestionPanel ? (
-            <section
-              aria-label="Matching sets"
-              className={styles.searchPanelSection}
-            >
-              {searchSuggestions.length ? (
-                <>
-                  <p className={styles.searchPanelHeading}>Matching sets</p>
-                  <ul className={styles.searchList}>
-                    {searchSuggestions.map((searchSuggestion, index) => {
-                      const panelItemIndex = showRecentSearches
-                        ? recentSearches.length + index
-                        : index;
-                      const suggestionPanelItem =
-                        searchSuggestionPanelItems[index];
-
-                      return (
-                        <li key={searchSuggestion.id}>
-                          <a
-                            className={styles.searchSuggestionLink}
-                            data-active={
-                              panelItemIndex === activeItemIndex
-                                ? 'true'
-                                : undefined
-                            }
-                            href={buildSetDetailPath(searchSuggestion.slug)}
-                            onClick={() =>
-                              persistRecentSearch(
-                                suggestionPanelItem?.recentSearchEntry,
-                              )
-                            }
-                            onMouseEnter={() =>
-                              setActiveItemIndex(panelItemIndex)
-                            }
-                          >
-                            {searchSuggestion.imageUrl ? (
-                              <img
-                                alt=""
-                                className={styles.searchSuggestionImage}
-                                loading="lazy"
-                                src={searchSuggestion.imageUrl}
-                              />
-                            ) : null}
-                            <span className={styles.searchSuggestionContent}>
-                              <span className={styles.searchSuggestionName}>
-                                {searchSuggestion.name}
-                              </span>
-                              <span className={styles.searchSuggestionMeta}>
-                                Set {searchSuggestion.id} ·{' '}
-                                {searchSuggestion.theme}
-                              </span>
-                            </span>
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </>
-              ) : (
-                <p className={styles.searchPanelHint}>
-                  No matching sets yet. Open the full results page to keep
-                  looking.
-                </p>
-              )}
-              {searchResultsHref ? (
-                <a
-                  className={styles.searchResultsLink}
-                  data-active={
-                    panelItems.length - 1 === activeItemIndex
-                      ? 'true'
-                      : undefined
-                  }
-                  href={searchResultsHref}
-                  onClick={() => persistRecentSearch(searchResultEntry)}
-                  onMouseEnter={() => setActiveItemIndex(panelItems.length - 1)}
-                >
-                  See all results for "{normalizedSearchValue}"
-                </a>
-              ) : null}
-            </section>
-          ) : null}
-        </div>
-      ) : null}
+      {searchForm}
+      {searchPanel}
     </div>
   );
 }

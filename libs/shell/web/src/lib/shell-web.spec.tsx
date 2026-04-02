@@ -24,8 +24,10 @@ describe('ShellWeb', () => {
     expect(markup).toContain('action="/search"');
     expect(markup).toContain('for="site-search-desktop"');
     expect(markup).toContain('id="site-search-desktop"');
+    expect(markup).toContain('aria-label="Open search"');
     expect(markup).toContain('name="q"');
     expect(markup).toContain('Search sets or set number');
+    expect(markup).not.toContain('id="site-search-mobile"');
     expect(markup).toContain('href="/account"');
     expect(markup).toContain('href="/wishlist"');
     expect(markup).toContain(
