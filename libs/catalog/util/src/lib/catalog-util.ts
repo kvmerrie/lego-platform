@@ -23,6 +23,7 @@ export interface CatalogSetDetail extends CatalogSetSummary {
   availability: string;
   collectorHighlights: readonly string[];
   minifigureCount?: number;
+  minifigureHighlights?: readonly string[];
   setStatus?: CatalogSetStatus;
   subtheme?: string;
 }
@@ -75,6 +76,7 @@ export interface CatalogSetOverlay {
   availability: string;
   collectorHighlights: readonly string[];
   minifigureCount?: number;
+  minifigureHighlights?: readonly string[];
   setStatus?: CatalogSetStatus;
   subtheme?: string;
 }

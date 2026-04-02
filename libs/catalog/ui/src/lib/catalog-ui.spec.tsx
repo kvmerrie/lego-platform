@@ -233,6 +233,42 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('13');
   });
 
+  it('renders curated minifigure highlights as a lightweight includes line', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '75397',
+          slug: 'jabbas-sail-barge-75397',
+          name: "Jabba's Sail Barge",
+          theme: 'Star Wars',
+          releaseYear: 2024,
+          pieces: 3942,
+          imageUrl: 'https://images.example/jabbas-sail-barge.jpg',
+          priceRange: '$429 to $529',
+          collectorAngle: 'Original Trilogy prestige centerpiece',
+          tagline:
+            'A large desert-scene flagship that gives Star Wars collectors a more cinematic shelf landmark than another fighter or walker.',
+          availability: 'Fresh flagship demand',
+          collectorHighlights: [
+            'Return of an iconic trilogy scene makes it highly legible in browse and search',
+          ],
+          minifigureCount: 11,
+          minifigureHighlights: [
+            'Jabba the Hutt',
+            'Princess Leia',
+            'Bib Fortuna',
+            'Max Rebo',
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Includes');
+    expect(markup).toContain(
+      'Jabba the Hutt, Princess Leia, Bib Fortuna, Max Rebo',
+    );
+  });
+
   it('renders a larger theme tile variant for storefront browsing', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight

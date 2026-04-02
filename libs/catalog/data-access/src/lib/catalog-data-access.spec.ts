@@ -1534,6 +1534,11 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2021,
       pieces: 6785,
       minifigureCount: 9,
+      minifigureHighlights: [
+        'Luke Skywalker',
+        'General Veers',
+        'Snowtrooper Commander',
+      ],
       imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
       priceRange: '$649 to $799',
       collectorAngle: 'Star Wars collector monument',
@@ -1635,6 +1640,135 @@ describe('catalog data-access contracts', () => {
           : [];
       }),
     ).toHaveLength(17);
+  });
+
+  test('adds curated minifigure highlights for selected franchise collector sets', () => {
+    expect(
+      [
+        [
+          'at-at-75313',
+          ['Luke Skywalker', 'General Veers', 'Snowtrooper Commander'],
+        ],
+        [
+          'the-razor-crest-75331',
+          ['The Mandalorian', 'Grogu', 'Kuiil', 'The Mythrol'],
+        ],
+        ['x-wing-starfighter-75355', ['Luke Skywalker', 'R2-D2']],
+        [
+          'jabbas-sail-barge-75397',
+          [
+            'Jabba the Hutt',
+            'Princess Leia',
+            'Bib Fortuna',
+            'Max Rebo',
+            'C-3PO',
+          ],
+        ],
+        [
+          'gringotts-wizarding-bank-collectors-edition-76417',
+          [
+            'Harry Potter',
+            'Hermione Granger',
+            'Ron Weasley',
+            'Griphook',
+            'Hagrid',
+          ],
+        ],
+        [
+          'the-burrow-collectors-edition-76437',
+          [
+            'Arthur Weasley',
+            'Molly Weasley',
+            'Ron Weasley',
+            'Ginny Weasley',
+            'Harry Potter',
+          ],
+        ],
+        [
+          'daily-bugle-76178',
+          [
+            'Spider-Man',
+            'Green Goblin',
+            'Daredevil',
+            'J. Jonah Jameson',
+            'Aunt May',
+          ],
+        ],
+        [
+          'the-x-mansion-76294',
+          ['Wolverine', 'Professor X', 'Storm', 'Cyclops', 'Magneto'],
+        ],
+      ].map(([slug]) => ({
+        minifigureHighlights:
+          getCatalogSetBySlug(slug)?.minifigureHighlights ?? undefined,
+        slug,
+      })),
+    ).toEqual(
+      [
+        [
+          'at-at-75313',
+          ['Luke Skywalker', 'General Veers', 'Snowtrooper Commander'],
+        ],
+        [
+          'the-razor-crest-75331',
+          ['The Mandalorian', 'Grogu', 'Kuiil', 'The Mythrol'],
+        ],
+        ['x-wing-starfighter-75355', ['Luke Skywalker', 'R2-D2']],
+        [
+          'jabbas-sail-barge-75397',
+          [
+            'Jabba the Hutt',
+            'Princess Leia',
+            'Bib Fortuna',
+            'Max Rebo',
+            'C-3PO',
+          ],
+        ],
+        [
+          'gringotts-wizarding-bank-collectors-edition-76417',
+          [
+            'Harry Potter',
+            'Hermione Granger',
+            'Ron Weasley',
+            'Griphook',
+            'Hagrid',
+          ],
+        ],
+        [
+          'the-burrow-collectors-edition-76437',
+          [
+            'Arthur Weasley',
+            'Molly Weasley',
+            'Ron Weasley',
+            'Ginny Weasley',
+            'Harry Potter',
+          ],
+        ],
+        [
+          'daily-bugle-76178',
+          [
+            'Spider-Man',
+            'Green Goblin',
+            'Daredevil',
+            'J. Jonah Jameson',
+            'Aunt May',
+          ],
+        ],
+        [
+          'the-x-mansion-76294',
+          ['Wolverine', 'Professor X', 'Storm', 'Cyclops', 'Magneto'],
+        ],
+      ].map(([slug, minifigureHighlights]) => ({
+        minifigureHighlights,
+        slug,
+      })),
+    );
+
+    expect(
+      listCatalogSetSlugs().flatMap((slug) =>
+        getCatalogSetBySlug(slug)?.minifigureHighlights?.length ? [slug] : [],
+      ),
+    ).toHaveLength(8);
   });
 
   test('adds curated subthemes and set-status labels for high-intent collector sets', () => {

@@ -148,6 +148,14 @@ function formatCatalogSetStatus(
   return 'Retired';
 }
 
+function formatMinifigureHighlights(
+  minifigureHighlights?: readonly string[],
+): string | undefined {
+  return minifigureHighlights?.length
+    ? minifigureHighlights.join(', ')
+    : undefined;
+}
+
 export function CatalogSetCard({
   href,
   priceContext,
@@ -401,6 +409,9 @@ export function CatalogSetDetailPanel({
   themeHref?: string;
 }) {
   const setStatusLabel = formatCatalogSetStatus(catalogSetDetail.setStatus);
+  const minifigureHighlightsLabel = formatMinifigureHighlights(
+    catalogSetDetail.minifigureHighlights,
+  );
 
   return (
     <section className={styles.detailPage}>
@@ -533,6 +544,12 @@ export function CatalogSetDetailPanel({
             ]}
           />
           <div className={styles.detailCollectorContext}>
+            {minifigureHighlightsLabel ? (
+              <CatalogSupportingDetail
+                label="Includes"
+                value={minifigureHighlightsLabel}
+              />
+            ) : null}
             <CatalogSupportingDetail
               label="Collector take"
               value={catalogSetDetail.collectorAngle}

@@ -381,6 +381,11 @@ function toCatalogSetDetail(
           minifigureCount: catalogSetOverlay.minifigureCount,
         }
       : {}),
+    ...(catalogSetOverlay.minifigureHighlights?.length
+      ? {
+          minifigureHighlights: [...catalogSetOverlay.minifigureHighlights],
+        }
+      : {}),
     ...(catalogSetOverlay.subtheme
       ? {
           subtheme: catalogSetOverlay.subtheme,
