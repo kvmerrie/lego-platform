@@ -1,6 +1,8 @@
 import {
-  listCatalogBrowseThemeGroups,
-  listHomepageSetCards,
+  listCatalogSetSummaries,
+  listCatalogThemes,
+  listDiscoverBrowseThemeGroups,
+  listDiscoverHighlightSetCards,
 } from '@lego-platform/catalog/data-access';
 import {
   CatalogSetCard,
@@ -10,6 +12,7 @@ import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
   buildThemePath,
+  webPathnames,
 } from '@lego-platform/shared/config';
 import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-discover.module.css';
@@ -22,21 +25,37 @@ function formatSetCount(count: number): string {
   return `${count} set${count === 1 ? '' : 's'}`;
 }
 
+function formatThemeLaneCount({
+  shownCount,
+  totalCount,
+}: {
+  shownCount: number;
+  totalCount: number;
+}): string {
+  if (shownCount >= totalCount) {
+    return formatSetCount(totalCount);
+  }
+
+  return `${shownCount} shown · ${totalCount} total`;
+}
+
 export interface CatalogFeatureDiscoverDealItem extends CatalogHomepageSetCard {
   priceContext?: CatalogSetCardPriceContext;
 }
 
 export function CatalogFeatureDiscover({
   dealSetCards = [],
+  reviewedSetIds = [],
 }: {
   dealSetCards?: readonly CatalogFeatureDiscoverDealItem[];
+  reviewedSetIds?: readonly string[];
 }) {
-  const featuredSetCards = listHomepageSetCards();
-  const themeGroups = listCatalogBrowseThemeGroups();
-  const totalSetCount = themeGroups.reduce(
-    (count, themeGroup) => count + themeGroup.setCards.length,
-    0,
-  );
+  const highlightSetCards = listDiscoverHighlightSetCards();
+  const themeGroups = listDiscoverBrowseThemeGroups({
+    reviewedSetIds,
+  });
+  const totalSetCount = listCatalogSetSummaries().length;
+  const totalThemeCount = listCatalogThemes().length;
 
   if (!themeGroups.length) {
     return (
@@ -54,49 +73,29 @@ export function CatalogFeatureDiscover({
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Browse the public catalog by theme, with the strongest flagship, franchise, and crossover sets surfaced first in each lane before you open a dedicated theme page."
+          description="Start with the clearest current deals, then move into the strongest franchise, flagship, and collector-friendly theme lanes."
           eyebrow="Discover"
-          title="Browse the catalog by theme"
+          title="Open the strongest sets first"
           titleAs="h1"
         />
         <p className={styles.introMeta}>
-          {totalSetCount} sets · {formatThemeCount(themeGroups.length)}
+          {totalSetCount} sets · {formatThemeCount(totalThemeCount)} in the
+          public catalog
         </p>
+        <div className={styles.introActions}>
+          <ActionLink href={webPathnames.themes} tone="secondary">
+            Browse all themes
+          </ActionLink>
+        </div>
       </section>
-
-      {featuredSetCards.length ? (
-        <Surface as="section" className={styles.featuredSection} tone="muted">
-          <div className={styles.sectionHeader}>
-            <SectionHeading
-              description="A compact mix of premium flagships, recognizable icons, and easier ways into the catalog."
-              eyebrow="Featured"
-              title="Start with the sets people open first"
-              titleAs="h2"
-            />
-            <p className={styles.sectionMeta}>
-              {formatSetCount(featuredSetCards.length)}
-            </p>
-          </div>
-          <div className={styles.featuredGrid}>
-            {featuredSetCards.map((featuredSetCard) => (
-              <CatalogSetCard
-                href={buildSetDetailPath(featuredSetCard.slug)}
-                key={featuredSetCard.id}
-                setSummary={featuredSetCard}
-                variant="featured"
-              />
-            ))}
-          </div>
-        </Surface>
-      ) : null}
 
       {dealSetCards.length ? (
         <Surface as="section" className={styles.dealSection} tone="default">
           <div className={styles.sectionHeader}>
             <SectionHeading
-              description="The clearest current price gaps among the biggest flagships and recognizable sets already in the catalog."
+              description="The clearest reviewed price gaps among the strongest flagship and click-magnet sets already in the catalog."
               eyebrow="Deals"
-              title="Good time to buy"
+              title="Best deals to check first"
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
@@ -111,6 +110,32 @@ export function CatalogFeatureDiscover({
                 priceContext={dealSetCard.priceContext}
                 setSummary={dealSetCard}
                 variant="featured"
+              />
+            ))}
+          </div>
+        </Surface>
+      ) : null}
+
+      {highlightSetCards.length ? (
+        <Surface as="section" className={styles.featuredSection} tone="muted">
+          <div className={styles.sectionHeader}>
+            <SectionHeading
+              description="A tighter mix of premium flagships, iconic franchises, and more approachable sets worth opening before you go deeper."
+              eyebrow="Highlights"
+              title="Worth opening first"
+              titleAs="h2"
+            />
+            <p className={styles.sectionMeta}>
+              {formatSetCount(highlightSetCards.length)}
+            </p>
+          </div>
+          <div className={styles.featuredGrid}>
+            {highlightSetCards.map((highlightSetCard) => (
+              <CatalogSetCard
+                href={buildSetDetailPath(highlightSetCard.slug)}
+                key={highlightSetCard.id}
+                setSummary={highlightSetCard}
+                variant="browse"
               />
             ))}
           </div>
@@ -134,11 +159,15 @@ export function CatalogFeatureDiscover({
                   href={buildThemePath(themeGroup.slug)}
                   tone="secondary"
                 >
-                  Open theme page
+                  Open full theme
                 </ActionLink>
               </div>
               <p className={styles.sectionMeta}>
-                {formatSetCount(themeGroup.setCards.length)}
+                {formatThemeLaneCount({
+                  shownCount: themeGroup.setCards.length,
+                  totalCount:
+                    themeGroup.totalSetCount ?? themeGroup.setCards.length,
+                })}
               </p>
             </div>
             <div className={styles.themeGrid}>

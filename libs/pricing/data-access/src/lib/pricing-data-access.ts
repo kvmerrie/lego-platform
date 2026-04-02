@@ -81,6 +81,14 @@ export function getFeaturedSetPriceContext(
   };
 }
 
+export function listReviewedPriceSetIds(): string[] {
+  return [
+    ...new Set(
+      pricePanelSnapshots.map((pricePanelSnapshot) => pricePanelSnapshot.setId),
+    ),
+  ];
+}
+
 export function listDealSpotlightPriceContexts({
   candidateSetIds,
   limit = 4,

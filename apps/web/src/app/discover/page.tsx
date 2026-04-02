@@ -9,6 +9,7 @@ import {
 import {
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
+  listReviewedPriceSetIds,
 } from '@lego-platform/pricing/data-access';
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
@@ -100,14 +101,17 @@ export default function DiscoverPage() {
         candidateSetIds: listDiscoverDealCandidateSetCards().map(
           (catalogSetCard) => catalogSetCard.id,
         ),
-        limit: 4,
+        limit: 6,
       }).map((priceContext) => priceContext.setId),
     ),
   );
 
   return (
     <ShellWeb>
-      <CatalogFeatureDiscover dealSetCards={dealSetCards} />
+      <CatalogFeatureDiscover
+        dealSetCards={dealSetCards}
+        reviewedSetIds={listReviewedPriceSetIds()}
+      />
     </ShellWeb>
   );
 }

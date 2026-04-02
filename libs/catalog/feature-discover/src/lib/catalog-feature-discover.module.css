@@ -1,12 +1,16 @@
 .page {
   display: grid;
-  gap: var(--lego-space-6);
+  gap: var(--lego-space-5);
 }
 
 .intro {
   display: grid;
-  gap: var(--lego-space-3);
-  max-width: min(60rem, 100%);
+  gap: var(--lego-space-4);
+  max-width: min(52rem, 100%);
+}
+
+.introActions {
+  display: flex;
 }
 
 .introMeta,
@@ -37,12 +41,12 @@
 .dealGrid,
 .themeGrid {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .themeSections {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-4);
 }
 
 .themeHeadingBlock {
@@ -88,10 +92,10 @@
   }
 
   .dealGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .themeGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

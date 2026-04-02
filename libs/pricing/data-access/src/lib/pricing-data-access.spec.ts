@@ -15,6 +15,7 @@ import {
   buildTrackedPriceSummary,
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
+  listReviewedPriceSetIds,
   getPriceHistorySummary,
   getPriceHistorySummaryState,
   getPricePanelSnapshot,
@@ -109,6 +110,15 @@ describe('pricing data access', () => {
         limit: 2,
       }).map((priceContext) => priceContext.setId),
     ).toEqual(['10333', '21333']);
+  });
+
+  test('lists the reviewed set ids that can drive curated browse prioritization', () => {
+    expect(listReviewedPriceSetIds()).toEqual(
+      expect.arrayContaining(['10316', '76269', '75397']),
+    );
+    expect(new Set(listReviewedPriceSetIds()).size).toBe(
+      listReviewedPriceSetIds().length,
+    );
   });
 
   test('lists pricing observations for a single set only', () => {

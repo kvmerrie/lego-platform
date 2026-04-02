@@ -2,6 +2,8 @@ import { describe, expect, test } from 'vitest';
 import {
   listDiscoverDealCandidateSetCards,
   getCatalogThemePageBySlug,
+  listDiscoverBrowseThemeGroups,
+  listDiscoverHighlightSetCards,
   getCatalogOffersBySetId,
   listCatalogSearchSuggestions,
   getCatalogSetBySlug,
@@ -719,6 +721,14 @@ describe('catalog data-access contracts', () => {
     ).toEqual(['76269', '10316', '21348', '10333', '10294', '21333']);
   });
 
+  test('keeps discover highlights focused on the strongest curated click-magnets and flagships', () => {
+    expect(
+      listDiscoverHighlightSetCards().map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+    ).toEqual(['10316', '10333', '10294', '76269', '76178', '75367']);
+  });
+
   test('maps curated ids to card-ready reads while skipping ids outside the public catalog slice', () => {
     expect(listCatalogSetCardsByIds(['76269', 'missing-set', '10316'])).toEqual(
       [
@@ -842,6 +852,37 @@ describe('catalog data-access contracts', () => {
         ?.setCards.slice(0, 4)
         .map((catalogSetCard) => catalogSetCard.id),
     ).toEqual(['21348', '21350', '21333', '21345']);
+  });
+
+  test('builds compact discover theme groups with limited lanes and card counts', () => {
+    const discoverBrowseThemeGroups = listDiscoverBrowseThemeGroups({
+      reviewedSetIds: ['75355', '76435', '42172'],
+    });
+
+    expect(
+      discoverBrowseThemeGroups.map(
+        (catalogThemeGroup) => catalogThemeGroup.theme,
+      ),
+    ).toEqual([
+      'Icons',
+      'Marvel',
+      'Ideas',
+      'Star Wars',
+      'Harry Potter',
+      'Technic',
+    ]);
+    expect(
+      discoverBrowseThemeGroups.every(
+        (catalogThemeGroup) => catalogThemeGroup.setCards.length <= 6,
+      ),
+    ).toBe(true);
+    expect(
+      discoverBrowseThemeGroups.every(
+        (catalogThemeGroup) =>
+          typeof catalogThemeGroup.totalSetCount === 'number' &&
+          catalogThemeGroup.totalSetCount >= catalogThemeGroup.setCards.length,
+      ),
+    ).toBe(true);
   });
 
   test('keeps homepage theme surfacing focused on the strongest browse lanes', () => {

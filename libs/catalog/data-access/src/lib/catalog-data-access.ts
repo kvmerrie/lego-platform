@@ -21,6 +21,9 @@ import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
 const HOMEPAGE_SET_LIMIT = 3;
 const HOMEPAGE_THEME_SPOTLIGHT_LIMIT = 4;
+const DISCOVER_HIGHLIGHT_LIMIT = 6;
+const DISCOVER_THEME_LIMIT = 6;
+const DISCOVER_THEME_SET_LIMIT = 6;
 const fallbackCatalogThemeOrder = catalogThemeOverlays.map(
   (catalogThemeOverlay) => catalogThemeOverlay.name,
 );
@@ -101,6 +104,7 @@ export interface CatalogBrowseThemeGroup {
   slug: string;
   setCards: CatalogHomepageSetCard[];
   theme: string;
+  totalSetCount?: number;
 }
 
 export interface CatalogThemeLandingPage {
@@ -426,6 +430,35 @@ function sortCatalogDiscoverSetCards(
   );
 }
 
+function getReviewedCoverageRank(
+  canonicalId: string,
+  reviewedSetIds?: readonly string[],
+): number {
+  if (!reviewedSetIds?.length) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  return reviewedSetIds.includes(canonicalId) ? 0 : 1;
+}
+
+function sortDiscoverThemeSetCards({
+  reviewedSetIds,
+  setCards,
+}: {
+  reviewedSetIds?: readonly string[];
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return [...setCards].sort(
+    (left, right) =>
+      getExplicitBrowseRank(left.id, curatedDiscoverSetOrder) -
+        getExplicitBrowseRank(right.id, curatedDiscoverSetOrder) ||
+      getReviewedCoverageRank(left.id, reviewedSetIds) -
+        getReviewedCoverageRank(right.id, reviewedSetIds) ||
+      right.releaseYear - left.releaseYear ||
+      left.name.localeCompare(right.name),
+  );
+}
+
 function getCatalogThemeBrowseOrder(theme: string): number {
   const curatedThemeOrderIndex = curatedDiscoverThemeOrder.indexOf(
     theme as (typeof curatedDiscoverThemeOrder)[number],
@@ -567,6 +600,12 @@ export function listDiscoverDealCandidateSetCards(): CatalogHomepageSetCard[] {
   return listCatalogSetCardsByIds(discoverDealCandidateIds);
 }
 
+export function listDiscoverHighlightSetCards(
+  limit = DISCOVER_HIGHLIGHT_LIMIT,
+): CatalogHomepageSetCard[] {
+  return listCatalogSetCardsByIds(curatedDiscoverSetOrder).slice(0, limit);
+}
+
 export function getCatalogOffersBySetId(setId: string): CatalogOfferRecord[] {
   return sortCatalogOffers(catalogOffersBySetId.get(setId) ?? []);
 }
@@ -596,6 +635,27 @@ export function listCatalogBrowseThemeGroups(): CatalogBrowseThemeGroup[] {
           getCatalogThemeBrowseOrder(right.theme) ||
         left.theme.localeCompare(right.theme),
     );
+}
+
+export function listDiscoverBrowseThemeGroups({
+  reviewedSetIds,
+  themeLimit = DISCOVER_THEME_LIMIT,
+  setLimit = DISCOVER_THEME_SET_LIMIT,
+}: {
+  reviewedSetIds?: readonly string[];
+  themeLimit?: number;
+  setLimit?: number;
+} = {}): CatalogBrowseThemeGroup[] {
+  return listCatalogBrowseThemeGroups()
+    .slice(0, themeLimit)
+    .map((catalogThemeGroup) => ({
+      ...catalogThemeGroup,
+      setCards: sortDiscoverThemeSetCards({
+        setCards: catalogThemeGroup.setCards,
+        reviewedSetIds,
+      }).slice(0, setLimit),
+      totalSetCount: catalogThemeGroup.setCards.length,
+    }));
 }
 
 export function searchCatalogSetCards(query: string): CatalogHomepageSetCard[] {
