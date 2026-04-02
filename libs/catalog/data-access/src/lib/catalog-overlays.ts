@@ -609,12 +609,150 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Premium but not top-end pricing makes it easier to act on than the very largest franchise flagships',
     ],
   },
+  {
+    canonicalId: '75355',
+    displayTheme: 'Star Wars',
+    priceRange: '$199 to $259',
+    collectorAngle: 'Star Wars icon flagship',
+    tagline:
+      'A large Ultimate Collector Series X-wing that is instantly readable even to casual franchise browsers.',
+    availability: 'Reliable UCS demand',
+    collectorHighlights: [
+      'One of the cleanest Star Wars search-entry silhouettes in the adult collector range',
+      'Broad Original Trilogy recognition makes it easier to browse into than a more obscure ship',
+      'Adds a different flagship shape to the Star Wars lane beside walkers and capital ships',
+    ],
+  },
+  {
+    canonicalId: '75397',
+    displayTheme: 'Star Wars',
+    priceRange: '$429 to $529',
+    collectorAngle: 'Original Trilogy prestige centerpiece',
+    tagline:
+      'A large desert-scene flagship that gives Star Wars collectors a more cinematic shelf landmark than another fighter or walker.',
+    availability: 'Fresh flagship demand',
+    collectorHighlights: [
+      'Return of an iconic trilogy scene makes it highly legible in browse and search',
+      'Wide sail profile adds a different kind of shelf presence to the existing Star Wars mix',
+      'Premium tier makes it a credible comparison-shopping target for deal and merchant coverage',
+    ],
+  },
+  {
+    canonicalId: '76429',
+    displayTheme: 'Harry Potter',
+    priceRange: '$79 to $109',
+    collectorAngle: 'Wizarding display favorite',
+    tagline:
+      'A recognizable magical artifact that keeps the Harry Potter lane searchable, display-friendly, and easier to enter.',
+    availability: 'Broad franchise availability',
+    collectorHighlights: [
+      'Highly recognizable object broadens Harry Potter search intent beyond buildings only',
+      'More accessible price band gives the theme a lighter on-ramp between major flagships',
+      'Kinetic talking feature makes the set page feel more memorable without changing product scope',
+    ],
+  },
+  {
+    canonicalId: '76435',
+    displayTheme: 'Harry Potter',
+    priceRange: '$179 to $239',
+    collectorAngle: 'Hogwarts anchor refresh',
+    tagline:
+      'A new Great Hall build that gives Harry Potter browsing an instantly legible Hogwarts anchor at a more reachable premium tier.',
+    availability: 'Strong mainstream franchise demand',
+    collectorHighlights: [
+      'One of the easiest Harry Potter locations to recognize at a glance in search results',
+      'More approachable than the very largest Hogwarts releases while still reading as collector-grade',
+      'Deepens the Harry Potter lane with another genuine browse and deal-comparison candidate',
+    ],
+  },
+  {
+    canonicalId: '76294',
+    displayTheme: 'Marvel',
+    priceRange: '$279 to $349',
+    collectorAngle: 'X-Men nostalgia flagship',
+    tagline:
+      'A mansion-scale Marvel build that expands the comic side of the theme beyond towers, sanctums, and bugle skylines.',
+    availability: 'High-intent fan demand',
+    collectorHighlights: [
+      'Broad X-Men recognition adds a different Marvel search magnet than Avengers-led landmarks',
+      'Large school-and-mansion silhouette keeps the Marvel lane architectural and display-first',
+      'Premium tier makes it useful for merchant comparison and deal-led browsing',
+    ],
+  },
+  {
+    canonicalId: '10335',
+    priceRange: '$239 to $299',
+    collectorAngle: 'Expedition display monument',
+    tagline:
+      'A large ship display build that brings historical-adventure prestige into the Icons lane without repeating Titanic scale.',
+    availability: 'Healthy premium interest',
+    collectorHighlights: [
+      'Recognizable expedition subject gives Icons another search-friendly non-franchise flagship',
+      'Tall masts and long hull create strong shelf drama without duplicating the Concorde or museum silhouettes',
+      'Broadens premium browse depth for collectors who gravitate toward real-world display icons',
+    ],
+  },
+  {
+    canonicalId: '10327',
+    priceRange: '$139 to $179',
+    collectorAngle: 'Sci-fi display standout',
+    tagline:
+      'A wing-driven sci-fi craft that gives Icons a sharper franchise crossover without making the overall mix feel toy-led.',
+    availability: 'Strong crossover enthusiast demand',
+    collectorHighlights: [
+      'Distinct folding-wing profile makes it one of the most visually memorable aircraft builds in the current catalog',
+      'Recognizable Dune branding broadens search intent without adding a new product model',
+      'Mid-premium price point gives Icons another easier entry between ships, castles, and large landmarks',
+    ],
+  },
+  {
+    canonicalId: '42171',
+    displayTheme: 'Technic',
+    priceRange: '$179 to $239',
+    collectorAngle: 'Motorsport collector flagship',
+    tagline:
+      'A full-scale Formula 1 car that gives Technic a cleaner high-intent search anchor than only road-going hypercars.',
+    availability: 'Strong motorsport-led demand',
+    collectorHighlights: [
+      'Formula 1 recognition brings a broader sports audience into the Technic lane',
+      'Contrasts well with the existing supercar-heavy Technic mix without leaving premium collector territory',
+      'Useful for discover and search because the real-world vehicle name is easy to remember and compare',
+    ],
+  },
+  {
+    canonicalId: '42172',
+    displayTheme: 'Technic',
+    priceRange: '$399 to $499',
+    collectorAngle: 'Technic halo supercar',
+    tagline:
+      'A top-end hybrid hypercar build that pushes the Technic lane further into prestige comparison shopping.',
+    availability: 'Selective flagship demand',
+    collectorHighlights: [
+      'McLaren P1 is one of the strongest car-name search targets in the adult LEGO range',
+      'High price band makes it especially credible for deal and merchant comparison features',
+      'Gives Technic a modern halo piece alongside Ferrari and Formula 1 hardware',
+    ],
+  },
+  {
+    canonicalId: '10328',
+    displayTheme: 'Botanicals',
+    priceRange: '$49 to $69',
+    collectorAngle: 'Botanical best-seller',
+    tagline:
+      'A bright bouquet build that strengthens the botanical lane with another very searchable adult-gifting set.',
+    availability: 'Very broad availability',
+    collectorHighlights: [
+      'High gift intent makes it one of the easiest casual-adult browse entries in the catalog',
+      'Recognizable subject helps Botanicals feel like a real retail lane instead of a two-set accent',
+      'Supports better discover and search coverage at a lower commitment than the major flagships',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   {
     name: 'Icons',
-    setCount: 14,
+    setCount: 16,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
     signatureSet: 'Rivendell',
@@ -628,7 +766,7 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   },
   {
     name: 'Marvel',
-    setCount: 3,
+    setCount: 4,
     momentum:
       'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
     signatureSet: 'Avengers Tower',
@@ -642,14 +780,14 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   },
   {
     name: 'Botanicals',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
     signatureSet: 'Flower Bouquet',
   },
   {
     name: 'Technic',
-    setCount: 2,
+    setCount: 4,
     momentum:
       'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
     signatureSet: 'Ferrari Daytona SP3',
@@ -677,14 +815,14 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   },
   {
     name: 'Star Wars',
-    setCount: 3,
+    setCount: 5,
     momentum:
       'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
     signatureSet: 'AT-AT',
   },
   {
     name: 'Harry Potter',
-    setCount: 3,
+    setCount: 5,
     momentum:
       'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",

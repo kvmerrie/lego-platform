@@ -244,6 +244,56 @@ const expectedGeneratedCatalogRecords = [
     slug: 'the-burrow-collectors-edition-76437',
     sourceSetNumber: '76437-1',
   },
+  {
+    canonicalId: '75355',
+    slug: 'x-wing-starfighter-75355',
+    sourceSetNumber: '75355-1',
+  },
+  {
+    canonicalId: '75397',
+    slug: 'jabbas-sail-barge-75397',
+    sourceSetNumber: '75397-1',
+  },
+  {
+    canonicalId: '76429',
+    slug: 'talking-sorting-hat-76429',
+    sourceSetNumber: '76429-1',
+  },
+  {
+    canonicalId: '76435',
+    slug: 'hogwarts-castle-the-great-hall-76435',
+    sourceSetNumber: '76435-1',
+  },
+  {
+    canonicalId: '76294',
+    slug: 'the-x-mansion-76294',
+    sourceSetNumber: '76294-1',
+  },
+  {
+    canonicalId: '10335',
+    slug: 'the-endurance-10335',
+    sourceSetNumber: '10335-1',
+  },
+  {
+    canonicalId: '10327',
+    slug: 'dune-atreides-royal-ornithopter-10327',
+    sourceSetNumber: '10327-1',
+  },
+  {
+    canonicalId: '42171',
+    slug: 'mercedes-amg-f1-w14-e-performance-42171',
+    sourceSetNumber: '42171-1',
+  },
+  {
+    canonicalId: '42172',
+    slug: 'mclaren-p1-42172',
+    sourceSetNumber: '42172-1',
+  },
+  {
+    canonicalId: '10328',
+    slug: 'bouquet-of-roses-10328',
+    sourceSetNumber: '10328-1',
+  },
 ];
 
 const expectedProductSlugs = [
@@ -291,17 +341,27 @@ const expectedProductSlugs = [
   'jaws-21350',
   'land-rover-classic-defender-90-10317',
   'the-burrow-collectors-edition-76437',
+  'x-wing-starfighter-75355',
+  'jabbas-sail-barge-75397',
+  'talking-sorting-hat-76429',
+  'hogwarts-castle-the-great-hall-76435',
+  'the-x-mansion-76294',
+  'the-endurance-10335',
+  'dune-atreides-royal-ornithopter-10327',
+  'mercedes-amg-f1-w14-e-performance-42171',
+  'mclaren-p1-42172',
+  'bouquet-of-roses-10328',
 ];
 
 const expectedBrowseThemeGroups = [
-  { theme: 'Icons', count: 14 },
-  { theme: 'Marvel', count: 3 },
+  { theme: 'Icons', count: 16 },
+  { theme: 'Marvel', count: 4 },
   { theme: 'Ideas', count: 10 },
-  { theme: 'Star Wars', count: 3 },
-  { theme: 'Harry Potter', count: 3 },
-  { theme: 'Technic', count: 2 },
+  { theme: 'Star Wars', count: 5 },
+  { theme: 'Harry Potter', count: 5 },
+  { theme: 'Technic', count: 4 },
   { theme: 'Modular Buildings', count: 1 },
-  { theme: 'Botanicals', count: 2 },
+  { theme: 'Botanicals', count: 3 },
   { theme: 'Architecture', count: 1 },
   { theme: 'Art', count: 1 },
   { theme: 'Disney', count: 1 },
@@ -314,7 +374,7 @@ const expectedCatalogThemes = [
   {
     name: 'Icons',
     slug: 'icons',
-    setCount: 14,
+    setCount: 16,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
     signatureSet: 'Rivendell',
@@ -330,7 +390,7 @@ const expectedCatalogThemes = [
   {
     name: 'Marvel',
     slug: 'marvel',
-    setCount: 3,
+    setCount: 4,
     momentum:
       'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
     signatureSet: 'Avengers Tower',
@@ -346,7 +406,7 @@ const expectedCatalogThemes = [
   {
     name: 'Botanicals',
     slug: 'botanicals',
-    setCount: 2,
+    setCount: 3,
     momentum:
       'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
     signatureSet: 'Flower Bouquet',
@@ -354,7 +414,7 @@ const expectedCatalogThemes = [
   {
     name: 'Technic',
     slug: 'technic',
-    setCount: 2,
+    setCount: 4,
     momentum:
       'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
     signatureSet: 'Ferrari Daytona SP3',
@@ -386,7 +446,7 @@ const expectedCatalogThemes = [
   {
     name: 'Star Wars',
     slug: 'star-wars',
-    setCount: 3,
+    setCount: 5,
     momentum:
       'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
     signatureSet: 'AT-AT',
@@ -394,7 +454,7 @@ const expectedCatalogThemes = [
   {
     name: 'Harry Potter',
     slug: 'harry-potter',
-    setCount: 3,
+    setCount: 5,
     momentum:
       'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
@@ -427,7 +487,7 @@ const expectedCatalogThemes = [
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(44);
+    expect(catalogSnapshot.setRecords).toHaveLength(54);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
@@ -549,12 +609,11 @@ describe('catalog data-access contracts', () => {
       }),
     ]);
 
-    expect(searchCatalogSetCards('hogwarts')).toEqual([
-      expect.objectContaining({
-        id: '76419',
-        name: 'Hogwarts Castle and Grounds',
-      }),
-    ]);
+    expect(
+      searchCatalogSetCards('hogwarts').map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+    ).toEqual(['76435', '76419']);
 
     expect(searchCatalogSetCards('21061')).toEqual([
       expect.objectContaining({
@@ -769,7 +828,9 @@ describe('catalog data-access contracts', () => {
       '10318',
       '10341',
       '10317',
+      '10327',
       '10331',
+      '10335',
       '10320',
       '10323',
       '10315',
@@ -859,7 +920,7 @@ describe('catalog data-access contracts', () => {
       },
       {
         backgroundColor: '#5573b5',
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
         name: 'Star Wars',
         textColor: '#ffffff',
       },
@@ -897,12 +958,12 @@ describe('catalog data-access contracts', () => {
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
         name: 'Icons',
-        setCount: 14,
+        setCount: 16,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
         name: 'Marvel',
-        setCount: 3,
+        setCount: 4,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
@@ -912,17 +973,17 @@ describe('catalog data-access contracts', () => {
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
         name: 'Star Wars',
-        setCount: 3,
+        setCount: 5,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
         name: 'Harry Potter',
-        setCount: 3,
+        setCount: 5,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
         name: 'Technic',
-        setCount: 2,
+        setCount: 4,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10326-1/129017.jpg',
@@ -932,7 +993,7 @@ describe('catalog data-access contracts', () => {
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10280-1/148035.jpg',
         name: 'Botanicals',
-        setCount: 2,
+        setCount: 3,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
@@ -991,7 +1052,7 @@ describe('catalog data-access contracts', () => {
       themeSnapshot: {
         name: 'Marvel',
         slug: 'marvel',
-        setCount: 3,
+        setCount: 4,
         momentum:
           'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
         signatureSet: 'Avengers Tower',
@@ -1461,7 +1522,7 @@ describe('catalog data-access contracts', () => {
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(44);
+    expect(listCatalogSetSummaries()).toHaveLength(54);
     expect(listCatalogThemes()).toEqual(expectedCatalogThemes);
   });
 });
