@@ -532,8 +532,8 @@
     transparent
   );
   background: var(--theme-home-surface);
+  aspect-ratio: 2 / 3;
   gap: 0;
-  min-height: 12.25rem;
   overflow: hidden;
   padding: 0;
 }
@@ -559,7 +559,7 @@
 .themeHomepageLink:hover {
   background: transparent;
   box-shadow: 0 6px 14px var(--theme-home-shadow);
-  transform: translateY(-1px) scale(1.008);
+  transform: translateY(-1px);
 }
 
 .themeHomepageLink:focus-visible {
@@ -567,12 +567,12 @@
   box-shadow:
     0 6px 14px var(--theme-home-shadow),
     0 0 0 4px var(--lego-focus-ring);
-  transform: translateY(-1px) scale(1.008);
+  transform: translateY(-1px);
 }
 
 .themeHomepageLink:hover .themeHomepageImage,
 .themeHomepageLink:focus-visible .themeHomepageImage {
-  transform: scale(1.015);
+  transform: scale(1.01);
 }
 
 .themeHomepageVisual {
@@ -580,15 +580,15 @@
   background: transparent;
   display: flex;
   justify-content: center;
-  min-height: 7.9rem;
+  min-height: 11.25rem;
   overflow: hidden;
-  padding: var(--lego-space-3) var(--lego-space-4) 0;
+  padding: var(--lego-space-4) var(--lego-space-3) 0;
 }
 
 .themeHomepageImage {
   display: block;
   height: auto;
-  max-height: 8.35rem;
+  max-height: 11rem;
   max-width: 100%;
   transition: transform var(--lego-motion-duration-fast)
     var(--lego-motion-ease-standard);
@@ -596,21 +596,26 @@
 }
 
 .themeHomepageBody {
-  align-items: center;
-  display: flex;
+  align-content: end;
+  display: grid;
   flex: 1 1 auto;
-  gap: var(--lego-space-2);
-  justify-content: space-between;
-  padding: var(--lego-space-4);
+  gap: var(--lego-space-1);
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--lego-space-3) var(--lego-space-3) var(--lego-space-4);
 }
 
 .themeHomepageTitle {
   color: var(--theme-home-text);
-  font-size: clamp(1.25rem, 1.05rem + 0.75vw, 1.65rem);
+  display: -webkit-box;
+  font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
   font-weight: var(--lego-font-weight-bold);
   letter-spacing: -0.03em;
-  line-height: 1;
+  line-height: 1.02;
   margin: 0;
+  min-block-size: 2.05em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .themeHomepageMeta {
@@ -618,7 +623,6 @@
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
-  white-space: nowrap;
 }
 
 .themeHeader {
@@ -627,38 +631,16 @@
 }
 
 .themeTile {
-  --theme-surface-top: color-mix(
-    in srgb,
-    var(--lego-surface-subtle) 84%,
-    white 16%
-  );
-  --theme-surface-bottom: color-mix(
-    in srgb,
-    var(--lego-surface) 90%,
-    white 10%
-  );
-  --theme-visual-top: color-mix(
-    in srgb,
-    var(--lego-accent-subtle) 72%,
-    white 28%
-  );
-  --theme-visual-bottom: color-mix(
-    in srgb,
-    var(--lego-surface) 82%,
-    var(--lego-accent-subtle) 18%
-  );
+  --theme-tile-surface: #eef1f5;
+  --theme-tile-text: #171a22;
+  --theme-tile-muted: rgba(23, 26, 34, 0.72);
   --theme-shadow: rgba(23, 26, 34, 0.12);
-  background: linear-gradient(
-    180deg,
-    var(--theme-surface-top),
-    var(--theme-surface-bottom)
-  );
+  background: var(--theme-tile-surface);
   border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--theme-visual-bottom) 28%, var(--lego-border) 72%);
-  min-height: 15rem;
+    color-mix(in srgb, var(--theme-tile-text) 10%, transparent);
+  min-height: 14.5rem;
   overflow: hidden;
   padding: 0;
-  position: relative;
 }
 
 .themeTileLink {
@@ -684,116 +666,86 @@
 .themeTileLink:hover {
   background: transparent;
   border-color: transparent;
-  box-shadow: 0 14px 28px var(--theme-shadow);
-  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 10px 22px var(--theme-shadow);
+  transform: translateY(-1px);
 }
 
 .themeTileLink:hover .themeTileImage,
 .themeTileLink:focus-visible .themeTileImage {
-  transform: scale(1.025);
+  transform: scale(1.015);
 }
 
 .themeTileLink:focus-visible {
   background: transparent;
   box-shadow:
-    0 14px 28px var(--theme-shadow),
+    0 10px 22px var(--theme-shadow),
     0 0 0 4px var(--lego-focus-ring);
-  transform: translateY(-2px) scale(1.01);
-}
-
-.themeTile::before {
-  background:
-    radial-gradient(
-      circle at top left,
-      color-mix(in srgb, var(--theme-visual-top) 92%, white 8%),
-      transparent 60%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--theme-surface-top) 82%, white 18%),
-      transparent
-    );
-  content: '';
-  inset: 0;
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
+  transform: translateY(-1px);
 }
 
 .themeTileVisual {
   align-items: flex-end;
-  background: linear-gradient(
-    180deg,
-    var(--theme-visual-top),
-    var(--theme-visual-bottom)
-  );
+  background: transparent;
   display: flex;
   justify-content: center;
-  min-height: 10rem;
+  min-height: 9.4rem;
   overflow: hidden;
   padding: var(--lego-space-4) var(--lego-space-4) 0;
-  position: relative;
 }
 
 .themeTileImage {
   display: block;
   height: auto;
-  max-height: 12rem;
+  max-height: 11.25rem;
   max-width: 100%;
-  position: relative;
   transition: transform var(--lego-motion-duration-normal)
     var(--lego-motion-ease-standard);
   width: auto;
-  z-index: 1;
 }
 
 .themeTileBody {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--theme-surface-bottom) 78%, transparent),
-    color-mix(in srgb, var(--lego-surface) 92%, white 8%)
-  );
+  background: transparent;
+  color: var(--theme-tile-text);
   display: grid;
   flex: 1 1 auto;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   min-height: 100%;
-  padding: var(--lego-space-5);
-  position: relative;
-  z-index: 1;
+  padding: var(--lego-space-4);
 }
 
 .themeTileTop {
-  align-items: start;
+  align-items: center;
+  column-gap: var(--lego-space-2);
   display: grid;
-  gap: var(--lego-space-1);
-  justify-items: start;
+  grid-template-columns: minmax(0, 1fr) auto;
 }
 
 .themeTileCount,
 .themeTileAction,
 .themeTileSignature {
-  color: var(--lego-text-muted);
+  color: var(--theme-tile-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
 }
 
 .themeTileAction {
-  color: var(--lego-text);
+  color: var(--theme-tile-text);
   font-weight: var(--lego-font-weight-semibold);
+  white-space: nowrap;
 }
 
 .themeTileTitle {
-  font-size: clamp(1.7rem, 2.5vw, 2.3rem);
+  font-size: clamp(1.55rem, 2vw, 1.95rem);
   font-weight: var(--lego-text-role-hero-weight);
   letter-spacing: -0.04em;
-  line-height: 0.98;
+  line-height: 1;
   margin: 0;
-  max-width: 10ch;
+  max-width: 11ch;
 }
 
 .themeTileCopy {
-  color: var(--lego-text);
+  color: color-mix(in srgb, var(--theme-tile-text) 84%, transparent);
   line-height: 1.5;
   margin: 0;
   max-width: 28ch;
@@ -805,114 +757,90 @@
 }
 
 .themeTile[data-theme='icons'] {
-  --theme-surface-top: #f8f1de;
-  --theme-surface-bottom: #fbf7ef;
-  --theme-visual-top: #f6d98d;
-  --theme-visual-bottom: #f1e2b5;
+  --theme-tile-surface: #f0c63b;
   --theme-shadow: rgba(171, 126, 18, 0.18);
 }
 
 .themeTile[data-theme='marvel'] {
-  --theme-surface-top: #f7e7e8;
-  --theme-surface-bottom: #faf2f2;
-  --theme-visual-top: #f4c2c6;
-  --theme-visual-bottom: #e9d7db;
+  --theme-tile-surface: #cf554c;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(142, 34, 45, 0.16);
 }
 
 .themeTile[data-theme='ideas'] {
-  --theme-surface-top: #ecf6ee;
-  --theme-surface-bottom: #f4faf5;
-  --theme-visual-top: #caead2;
-  --theme-visual-bottom: #dcefe1;
+  --theme-tile-surface: #68b8a0;
+  --theme-tile-text: #10241f;
+  --theme-tile-muted: rgba(16, 36, 31, 0.76);
   --theme-shadow: rgba(42, 120, 73, 0.15);
 }
 
 .themeTile[data-theme='star-wars'] {
-  --theme-surface-top: #e6ebf3;
-  --theme-surface-bottom: #f2f5f9;
-  --theme-visual-top: #c8d2e1;
-  --theme-visual-bottom: #d8e0ec;
+  --theme-tile-surface: #5573b5;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(39, 61, 99, 0.16);
 }
 
 .themeTile[data-theme='harry-potter'] {
-  --theme-surface-top: #efe8f6;
-  --theme-surface-bottom: #f7f4fb;
-  --theme-visual-top: #d7cae7;
-  --theme-visual-bottom: #e5ddef;
+  --theme-tile-surface: #7f67bf;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(91, 61, 127, 0.15);
 }
 
 .themeTile[data-theme='technic'] {
-  --theme-surface-top: #eceef1;
-  --theme-surface-bottom: #f7f8fa;
-  --theme-visual-top: #d9dde4;
-  --theme-visual-bottom: #e6e9ef;
+  --theme-tile-surface: #a8b4c2;
   --theme-shadow: rgba(64, 72, 88, 0.16);
 }
 
 .themeTile[data-theme='modular-buildings'] {
-  --theme-surface-top: #f2ede5;
-  --theme-surface-bottom: #faf7f2;
-  --theme-visual-top: #e5d7c3;
-  --theme-visual-bottom: #efe4d4;
+  --theme-tile-surface: #c9b396;
   --theme-shadow: rgba(118, 96, 64, 0.16);
 }
 
 .themeTile[data-theme='botanicals'] {
-  --theme-surface-top: #eaf5ed;
-  --theme-surface-bottom: #f5fbf6;
-  --theme-visual-top: #cee8d3;
-  --theme-visual-bottom: #deefe0;
+  --theme-tile-surface: #7faa83;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(49, 121, 73, 0.15);
 }
 
 .themeTile[data-theme='architecture'] {
-  --theme-surface-top: #ececf2;
-  --theme-surface-bottom: #f8f8fb;
-  --theme-visual-top: #d7d9e3;
-  --theme-visual-bottom: #e3e5eb;
+  --theme-tile-surface: #aeb7c8;
   --theme-shadow: rgba(76, 82, 112, 0.14);
 }
 
 .themeTile[data-theme='art'] {
-  --theme-surface-top: #f4ecfa;
-  --theme-surface-bottom: #fbf8fe;
-  --theme-visual-top: #e0d1f1;
-  --theme-visual-bottom: #ece3f7;
+  --theme-tile-surface: #8f79b7;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(103, 68, 154, 0.14);
 }
 
 .themeTile[data-theme='disney'] {
-  --theme-surface-top: #f7ebf4;
-  --theme-surface-bottom: #fcf7fb;
-  --theme-visual-top: #eed1e6;
-  --theme-visual-bottom: #f3e0ee;
+  --theme-tile-surface: #b67aa7;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(148, 72, 133, 0.14);
 }
 
 .themeTile[data-theme='ninjago'] {
-  --theme-surface-top: #f7ede8;
-  --theme-surface-bottom: #fcf8f5;
-  --theme-visual-top: #efd0c1;
-  --theme-visual-bottom: #f5e1d6;
+  --theme-tile-surface: #c37d5c;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(153, 78, 55, 0.15);
 }
 
 .themeTile[data-theme='super-mario'] {
-  --theme-surface-top: #eef6e7;
-  --theme-surface-bottom: #f8fbf4;
-  --theme-visual-top: #d5e8c4;
-  --theme-visual-bottom: #e6f0d9;
+  --theme-tile-surface: #90b35d;
   --theme-shadow: rgba(84, 141, 49, 0.15);
 }
 
 .themeTile[data-theme='jurassic-world'] {
-  --theme-surface-top: #edf3e7;
-  --theme-surface-bottom: #f7faf4;
-  --theme-visual-top: #d4e1c5;
-  --theme-visual-bottom: #e3ebd7;
+  --theme-tile-surface: #819567;
+  --theme-tile-text: #ffffff;
+  --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(84, 114, 54, 0.15);
 }
 

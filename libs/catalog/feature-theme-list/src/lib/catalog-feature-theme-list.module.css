@@ -45,7 +45,7 @@
 }
 
 .rail > * {
-  flex: 0 0 min(18rem, 100%);
+  flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
   min-width: 0;
   scroll-snap-align: start;
 }
@@ -67,6 +67,6 @@
   }
 
   .rail > * {
-    flex: 1 1 0;
+    flex: 0 0 clamp(11.5rem, 12vw, 13rem);
   }
 }

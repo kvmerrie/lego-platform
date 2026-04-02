@@ -1,17 +1,66 @@
 .page {
+  --theme-page-accent: #5d6573;
+  --theme-page-surface: #d5dde8;
+  --theme-page-surface-strong: #ffffff;
+  --theme-page-text: #171a22;
   display: grid;
   gap: var(--lego-space-6);
 }
 
+.page[data-theme='icons'] {
+  --theme-page-accent: #f0c63b;
+  --theme-page-surface: #f0c63b;
+}
+
+.page[data-theme='marvel'] {
+  --theme-page-accent: #cf554c;
+  --theme-page-surface: #cf554c;
+  --theme-page-text: #ffffff;
+}
+
+.page[data-theme='ideas'] {
+  --theme-page-accent: #68b8a0;
+  --theme-page-surface: #68b8a0;
+  --theme-page-text: #10241f;
+}
+
+.page[data-theme='star-wars'] {
+  --theme-page-accent: #5573b5;
+  --theme-page-surface: #5573b5;
+  --theme-page-text: #ffffff;
+}
+
+.page[data-theme='harry-potter'] {
+  --theme-page-accent: #7f67bf;
+  --theme-page-surface: #7f67bf;
+  --theme-page-text: #ffffff;
+}
+
+.page[data-theme='technic'] {
+  --theme-page-accent: #a8b4c2;
+  --theme-page-surface: #a8b4c2;
+}
+
 .intro {
+  background: var(--theme-page-surface);
+  border-radius: var(--lego-radius-lg);
   display: grid;
   gap: var(--lego-space-3);
-  max-width: min(58rem, 100%);
+  max-width: min(62rem, 100%);
+  padding: var(--lego-space-6);
+}
+
+.intro :is(h1, h2, h3, p) {
+  color: var(--theme-page-text);
+}
+
+.intro :is(h1, h2, h3) {
+  max-width: 14ch;
 }
 
 .introMeta,
 .sectionMeta {
-  color: var(--lego-text-muted);
+  color: color-mix(in srgb, var(--theme-page-text) 72%, transparent);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
@@ -21,6 +70,29 @@
 .browseSection {
   display: grid;
   gap: var(--lego-space-4);
+}
+
+.dealSection {
+  background: #242424;
+  border-color: transparent;
+}
+
+.dealSection .sectionHeader :is(h1, h2, h3) {
+  color: #ffffff;
+}
+
+.dealSection .sectionHeader p,
+.dealSection .sectionMeta {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.browseSection {
+  background: var(--theme-page-surface-strong);
+  border-color: color-mix(
+    in srgb,
+    var(--theme-page-accent) 12%,
+    var(--lego-border) 88%
+  );
 }
 
 .sectionHeader {
@@ -39,6 +111,10 @@
   .dealGrid,
   .browseGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .intro {
+    padding: var(--lego-space-7);
   }
 }
 

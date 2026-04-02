@@ -4,8 +4,11 @@
 }
 
 .intro {
+  background: var(--lego-surface-subtle);
+  border-radius: var(--lego-radius-lg);
   display: grid;
   gap: var(--lego-space-3);
+  padding: var(--lego-space-6);
 }
 
 .introMeta {
@@ -29,6 +32,7 @@
   .intro {
     align-items: end;
     grid-template-columns: minmax(0, 1fr) auto;
+    padding: var(--lego-space-7);
   }
 
   .introMeta {

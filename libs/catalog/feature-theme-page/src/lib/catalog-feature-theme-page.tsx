@@ -23,7 +23,7 @@ export function CatalogFeatureThemePage({
   const { setCards, themeSnapshot } = themePage;
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} data-theme={themeSnapshot.slug}>
       <section className={styles.intro}>
         <SectionHeading
           description={themeSnapshot.momentum}
