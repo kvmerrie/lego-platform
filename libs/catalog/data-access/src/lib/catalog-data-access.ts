@@ -235,6 +235,11 @@ function toCatalogHomepageSetCard(
     ...toCatalogSetSummary(catalogSetDetail),
     tagline: catalogSetDetail.tagline,
     availability: catalogSetDetail.availability,
+    ...(catalogSetDetail.minifigureHighlights?.length
+      ? {
+          minifigureHighlights: [...catalogSetDetail.minifigureHighlights],
+        }
+      : {}),
   };
 }
 
@@ -461,7 +466,13 @@ function getReviewedCoverageRank(
   return reviewedSetIds.includes(canonicalId) ? 0 : 1;
 }
 
-function sortDiscoverThemeSetCards({
+function getMinifigureHighlightRank(
+  minifigureHighlights?: readonly string[],
+): number {
+  return minifigureHighlights?.length ? 0 : 1;
+}
+
+function sortDiscoverShowcaseSetCards({
   reviewedSetIds,
   setCards,
 }: {
@@ -470,13 +481,28 @@ function sortDiscoverThemeSetCards({
 }): CatalogHomepageSetCard[] {
   return [...setCards].sort(
     (left, right) =>
-      getExplicitBrowseRank(left.id, curatedDiscoverSetOrder) -
-        getExplicitBrowseRank(right.id, curatedDiscoverSetOrder) ||
       getReviewedCoverageRank(left.id, reviewedSetIds) -
         getReviewedCoverageRank(right.id, reviewedSetIds) ||
+      getMinifigureHighlightRank(left.minifigureHighlights) -
+        getMinifigureHighlightRank(right.minifigureHighlights) ||
+      getExplicitBrowseRank(left.id, curatedDiscoverSetOrder) -
+        getExplicitBrowseRank(right.id, curatedDiscoverSetOrder) ||
       right.releaseYear - left.releaseYear ||
       left.name.localeCompare(right.name),
   );
+}
+
+function sortDiscoverThemeSetCards({
+  reviewedSetIds,
+  setCards,
+}: {
+  reviewedSetIds?: readonly string[];
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return sortDiscoverShowcaseSetCards({
+    reviewedSetIds,
+    setCards,
+  });
 }
 
 function getCatalogThemeBrowseOrder(theme: string): number {
@@ -620,10 +646,32 @@ export function listDiscoverDealCandidateSetCards(): CatalogHomepageSetCard[] {
   return listCatalogSetCardsByIds(discoverDealCandidateIds);
 }
 
-export function listDiscoverHighlightSetCards(
+export function listDiscoverHighlightSetCards({
   limit = DISCOVER_HIGHLIGHT_LIMIT,
-): CatalogHomepageSetCard[] {
-  return listCatalogSetCardsByIds(curatedDiscoverSetOrder).slice(0, limit);
+  reviewedSetIds,
+}: {
+  limit?: number;
+  reviewedSetIds?: readonly string[];
+} = {}): CatalogHomepageSetCard[] {
+  return sortDiscoverShowcaseSetCards({
+    reviewedSetIds,
+    setCards: listCatalogSetCardsByIds(curatedDiscoverSetOrder),
+  }).slice(0, limit);
+}
+
+export function listDiscoverCharacterSetCards({
+  limit = DISCOVER_HIGHLIGHT_LIMIT,
+  reviewedSetIds,
+}: {
+  limit?: number;
+  reviewedSetIds?: readonly string[];
+} = {}): CatalogHomepageSetCard[] {
+  return sortDiscoverShowcaseSetCards({
+    reviewedSetIds,
+    setCards: listCatalogSetCardsByIds(curatedDiscoverSetOrder).filter(
+      (catalogSetCard) => catalogSetCard.minifigureHighlights?.length,
+    ),
+  }).slice(0, limit);
 }
 
 export function getCatalogOffersBySetId(setId: string): CatalogOfferRecord[] {

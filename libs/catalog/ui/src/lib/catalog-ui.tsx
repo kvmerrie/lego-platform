@@ -160,11 +160,13 @@ export function CatalogSetCard({
   href,
   priceContext,
   setSummary,
+  supportingNote,
   variant = 'default',
 }: {
   href?: string;
   priceContext?: CatalogSetCardPriceContext;
   setSummary: CatalogSetCardSummary;
+  supportingNote?: string;
   variant?: CatalogSetCardVariant;
 }) {
   if (variant === 'browse') {
@@ -183,7 +185,7 @@ export function CatalogSetCard({
           </div>
           <h3 className={styles.cardTitle}>{setSummary.name}</h3>
           <p className={styles.cardBrowseSupporting}>
-            {setSummary.tagline ?? setSummary.collectorAngle}
+            {supportingNote ?? setSummary.tagline ?? setSummary.collectorAngle}
           </p>
           <div className={styles.cardCompactFooter}>
             <p className={styles.cardCompactMeta}>
@@ -241,6 +243,11 @@ export function CatalogSetCard({
                     {priceContext.pricePositionLabel}
                   </p>
                 ) : null}
+                {supportingNote ? (
+                  <p className={styles.cardCompactSupporting}>
+                    {supportingNote}
+                  </p>
+                ) : null}
               </>
             ) : (
               <>
@@ -248,7 +255,7 @@ export function CatalogSetCard({
                   Reviewed price not published yet
                 </p>
                 <p className={styles.cardCompactSupporting}>
-                  Set page is live.
+                  {supportingNote ?? 'Set page is live.'}
                 </p>
               </>
             )}

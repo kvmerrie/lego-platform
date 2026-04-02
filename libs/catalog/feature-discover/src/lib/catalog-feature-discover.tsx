@@ -1,4 +1,5 @@
 import {
+  listDiscoverCharacterSetCards,
   listCatalogSetSummaries,
   listCatalogThemes,
   listDiscoverBrowseThemeGroups,
@@ -43,6 +44,36 @@ export interface CatalogFeatureDiscoverDealItem extends CatalogHomepageSetCard {
   priceContext?: CatalogSetCardPriceContext;
 }
 
+function formatDiscoverFanContext(
+  setCard: Pick<
+    CatalogHomepageSetCard,
+    'collectorAngle' | 'minifigureHighlights'
+  >,
+): string {
+  if (setCard.minifigureHighlights?.length) {
+    const visibleHighlights = setCard.minifigureHighlights.slice(0, 3);
+
+    if (visibleHighlights.length === 1) {
+      return `Includes ${visibleHighlights[0]}`;
+    }
+
+    if (visibleHighlights.length === 2) {
+      return `Includes ${visibleHighlights[0]} and ${visibleHighlights[1]}`;
+    }
+
+    const lastVisibleHighlight = visibleHighlights.at(-1);
+    const leadingHighlights = visibleHighlights.slice(0, -1);
+
+    if (!lastVisibleHighlight) {
+      return setCard.collectorAngle;
+    }
+
+    return `Includes ${leadingHighlights.join(', ')}, and ${lastVisibleHighlight}`;
+  }
+
+  return setCard.collectorAngle;
+}
+
 export function CatalogFeatureDiscover({
   dealSetCards = [],
   reviewedSetIds = [],
@@ -50,7 +81,12 @@ export function CatalogFeatureDiscover({
   dealSetCards?: readonly CatalogFeatureDiscoverDealItem[];
   reviewedSetIds?: readonly string[];
 }) {
-  const highlightSetCards = listDiscoverHighlightSetCards();
+  const characterSetCards = listDiscoverCharacterSetCards({
+    reviewedSetIds,
+  });
+  const highlightSetCards = listDiscoverHighlightSetCards({
+    reviewedSetIds,
+  });
   const themeGroups = listDiscoverBrowseThemeGroups({
     reviewedSetIds,
   });
@@ -109,7 +145,35 @@ export function CatalogFeatureDiscover({
                 key={dealSetCard.id}
                 priceContext={dealSetCard.priceContext}
                 setSummary={dealSetCard}
+                supportingNote={formatDiscoverFanContext(dealSetCard)}
                 variant="featured"
+              />
+            ))}
+          </div>
+        </Surface>
+      ) : null}
+
+      {characterSetCards.length ? (
+        <Surface as="section" className={styles.featuredSection} tone="muted">
+          <div className={styles.sectionHeader}>
+            <SectionHeading
+              description="Sets where the cast is part of the appeal, from big franchise anchors to collector-friendly story moments."
+              eyebrow="Characters"
+              title="Iconic characters and cast favorites"
+              titleAs="h2"
+            />
+            <p className={styles.sectionMeta}>
+              {formatSetCount(characterSetCards.length)}
+            </p>
+          </div>
+          <div className={styles.featuredGrid}>
+            {characterSetCards.map((characterSetCard) => (
+              <CatalogSetCard
+                href={buildSetDetailPath(characterSetCard.slug)}
+                key={characterSetCard.id}
+                setSummary={characterSetCard}
+                supportingNote={formatDiscoverFanContext(characterSetCard)}
+                variant="browse"
               />
             ))}
           </div>
@@ -135,6 +199,7 @@ export function CatalogFeatureDiscover({
                 href={buildSetDetailPath(highlightSetCard.slug)}
                 key={highlightSetCard.id}
                 setSummary={highlightSetCard}
+                supportingNote={formatDiscoverFanContext(highlightSetCard)}
                 variant="browse"
               />
             ))}

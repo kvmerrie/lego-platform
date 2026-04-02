@@ -19,6 +19,7 @@ describe('CatalogFeatureDiscover', () => {
             tagline:
               'A marquee licensed set with broad household recognizability.',
             availability: 'Stable with strong seasonal demand',
+            minifigureHighlights: ['Iron Man', 'Captain America', 'Thor'],
             priceContext: {
               coverageLabel: 'In stock · 3 reviewed offers',
               currentPrice: 'EUR 479.99',
@@ -35,9 +36,17 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('Open the strongest sets first');
     expect(markup).toContain('<h1');
     expect(markup).toContain('Best deals to check first');
+    expect(markup).toContain('Iconic characters and cast favorites');
     expect(markup).toContain('Worth opening first');
     expect(markup.indexOf('Best deals to check first')).toBeLessThan(
+      markup.indexOf('Iconic characters and cast favorites'),
+    );
+    expect(markup.indexOf('Iconic characters and cast favorites')).toBeLessThan(
       markup.indexOf('Worth opening first'),
+    );
+    expect(markup).toContain('Includes Iron Man, Captain America, and Thor');
+    expect(markup).toContain(
+      'Includes Spider-Man, Green Goblin, and Daredevil',
     );
     expect(markup).toContain('Browse all themes');
     expect(markup).toContain('href="/themes"');
@@ -73,6 +82,7 @@ describe('CatalogFeatureDiscover', () => {
             tagline:
               'A marquee licensed set with broad household recognizability.',
             availability: 'Stable with strong seasonal demand',
+            minifigureHighlights: ['Iron Man', 'Captain America', 'Thor'],
             priceContext: {
               coverageLabel: 'In stock · 3 reviewed offers',
               currentPrice: 'EUR 479.99',
@@ -90,6 +100,7 @@ describe('CatalogFeatureDiscover', () => {
       'The clearest reviewed price gaps among the strongest flagship and click-magnet sets already in the catalog.',
     );
     expect(markup).toContain('EUR 30.00 below reference');
+    expect(markup).toContain('Includes Iron Man, Captain America, and Thor');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 });

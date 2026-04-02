@@ -15,6 +15,21 @@ import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
 
+function getDiscoverMinifigureHighlightRank(
+  minifigureHighlights?: readonly string[],
+): number {
+  return minifigureHighlights?.length ? 0 : 1;
+}
+
+function getDiscoverCandidateRank(
+  setId: string,
+  candidateSetIds: readonly string[],
+): number {
+  const rank = candidateSetIds.indexOf(setId);
+
+  return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
+}
+
 function getPricePositionLabel({
   currencyCode,
   deltaMinor,
@@ -95,22 +110,44 @@ function toDealSetCards(
 }
 
 export default function DiscoverPage() {
+  const discoverDealCandidateSetCards = listDiscoverDealCandidateSetCards();
+  const discoverDealCandidateSetIds = discoverDealCandidateSetCards.map(
+    (catalogSetCard) => catalogSetCard.id,
+  );
+  const dealPriceContexts = listDealSpotlightPriceContexts({
+    candidateSetIds: discoverDealCandidateSetIds,
+    limit: discoverDealCandidateSetIds.length,
+  });
+  const dealPriceContextBySetId = new Map(
+    dealPriceContexts.map((dealPriceContext) => [
+      dealPriceContext.setId,
+      dealPriceContext,
+    ]),
+  );
   const dealSetCards = toDealSetCards(
     listCatalogSetCardsByIds(
-      listDealSpotlightPriceContexts({
-        candidateSetIds: listDiscoverDealCandidateSetCards().map(
-          (catalogSetCard) => catalogSetCard.id,
-        ),
-        limit: 6,
-      }).map((priceContext) => priceContext.setId),
+      dealPriceContexts.map((dealPriceContext) => dealPriceContext.setId),
     ),
-  );
+  )
+    .sort(
+      (left, right) =>
+        (dealPriceContextBySetId.get(left.id)?.deltaMinor ?? 0) -
+          (dealPriceContextBySetId.get(right.id)?.deltaMinor ?? 0) ||
+        getDiscoverMinifigureHighlightRank(left.minifigureHighlights) -
+          getDiscoverMinifigureHighlightRank(right.minifigureHighlights) ||
+        getDiscoverCandidateRank(left.id, discoverDealCandidateSetIds) -
+          getDiscoverCandidateRank(right.id, discoverDealCandidateSetIds) ||
+        right.releaseYear - left.releaseYear ||
+        left.name.localeCompare(right.name),
+    )
+    .slice(0, 6);
+  const reviewedSetIds = listReviewedPriceSetIds();
 
   return (
     <ShellWeb>
       <CatalogFeatureDiscover
         dealSetCards={dealSetCards}
-        reviewedSetIds={listReviewedPriceSetIds()}
+        reviewedSetIds={reviewedSetIds}
       />
     </ShellWeb>
   );

@@ -16,6 +16,7 @@ export interface CatalogSetSummary {
 export interface CatalogHomepageSetCard extends CatalogSetSummary {
   tagline: string;
   availability: string;
+  minifigureHighlights?: readonly string[];
 }
 
 export interface CatalogSetDetail extends CatalogSetSummary {

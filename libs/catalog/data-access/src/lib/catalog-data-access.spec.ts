@@ -3,6 +3,7 @@ import {
   listDiscoverDealCandidateSetCards,
   getCatalogThemePageBySlug,
   listDiscoverBrowseThemeGroups,
+  listDiscoverCharacterSetCards,
   listDiscoverHighlightSetCards,
   getCatalogOffersBySetId,
   listCatalogSearchSuggestions,
@@ -727,7 +728,15 @@ describe('catalog data-access contracts', () => {
       listDiscoverHighlightSetCards().map(
         (catalogSetCard) => catalogSetCard.id,
       ),
-    ).toEqual(['10316', '10333', '10294', '76269', '76178', '75367']);
+    ).toEqual(['76178', '75313', '75331', '76417', '76437', '10316']);
+  });
+
+  test('builds a compact discover character lane from curated sets with minifigure highlights', () => {
+    expect(
+      listDiscoverCharacterSetCards().map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+    ).toEqual(['76178', '75313', '75331', '76417', '76437']);
   });
 
   test('maps curated ids to card-ready reads while skipping ids outside the public catalog slice', () => {
@@ -884,6 +893,11 @@ describe('catalog data-access contracts', () => {
           catalogThemeGroup.totalSetCount >= catalogThemeGroup.setCards.length,
       ),
     ).toBe(true);
+    expect(
+      discoverBrowseThemeGroups.find(
+        (catalogThemeGroup) => catalogThemeGroup.theme === 'Star Wars',
+      )?.setCards[0]?.id,
+    ).toBe('75355');
   });
 
   test('keeps homepage theme surfacing focused on the strongest browse lanes', () => {
