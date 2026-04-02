@@ -49,6 +49,10 @@ describe('CatalogFeatureSetList', () => {
     );
     expect(markup).toContain('2 featured sets');
     expect(markup).toContain('1 with reviewed prices');
+    expect(markup).toContain('Scroll Start with sets worth opening. backward');
+    expect(markup).toContain('Scroll Start with sets worth opening. forward');
+    expect(markup).toContain('Previous');
+    expect(markup).toContain('Next');
     expect(markup).not.toContain('Public catalog');
   });
 

@@ -11,6 +11,7 @@ import {
 } from '@lego-platform/catalog/feature-theme-list';
 import {
   listCatalogSetCardsByIds,
+  listDiscoverHighlightSetCards,
   listHomepageDealCandidateSetCards,
   listHomepageSetCards,
 } from '@lego-platform/catalog/data-access';
@@ -108,6 +109,33 @@ function toFeatureSetListItems(
   });
 }
 
+function createHomepageFeaturedRailItems(): CatalogFeatureSetListItem[] {
+  const featuredSetCards = listHomepageSetCards();
+  const additionalHighlightSetCards = listDiscoverHighlightSetCards({
+    limit: 6,
+  });
+  const mergedSetCards = [...featuredSetCards];
+
+  for (const additionalHighlightSetCard of additionalHighlightSetCards) {
+    if (
+      mergedSetCards.some(
+        (featuredSetCard) =>
+          featuredSetCard.id === additionalHighlightSetCard.id,
+      )
+    ) {
+      continue;
+    }
+
+    mergedSetCards.push(additionalHighlightSetCard);
+
+    if (mergedSetCards.length === 6) {
+      break;
+    }
+  }
+
+  return toFeatureSetListItems(mergedSetCards);
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const queryMode = await getEditorialQueryMode();
   const homepagePage = await getHomepagePage({
@@ -122,7 +150,7 @@ export default async function HomePage() {
   const homepagePage = await getHomepagePage({
     mode: queryMode,
   });
-  const homepageSetCards = toFeatureSetListItems(listHomepageSetCards());
+  const homepageSetCards = createHomepageFeaturedRailItems();
   const homepageDealSetCards = toFeatureSetListItems(
     listCatalogSetCardsByIds(
       listDealSpotlightPriceContexts({

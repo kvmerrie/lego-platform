@@ -1,3 +1,6 @@
+'use client';
+
+import { useId, useRef } from 'react';
 import { listHomepageSetCards } from '@lego-platform/catalog/data-access';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
@@ -5,7 +8,7 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
-import { SectionHeading } from '@lego-platform/shared/ui';
+import { Button, SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-set-list.module.css';
 
 export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
@@ -37,9 +40,27 @@ export function CatalogFeatureSetList({
       ...catalogHomepageSetCard,
       priceContext: undefined,
     }));
+  const railId = useId();
+  const railRef = useRef<HTMLDivElement>(null);
   const reviewedSetCount = homepageSets.filter(
     (catalogHomepageSetCard) => catalogHomepageSetCard.priceContext,
   ).length;
+  const usesRailLayout = layout === 'rail';
+
+  function scrollRail(direction: 'next' | 'previous') {
+    const railElement = railRef.current;
+
+    if (!railElement) {
+      return;
+    }
+
+    const scrollAmount = Math.max(railElement.clientWidth * 0.92, 240);
+
+    railElement.scrollBy({
+      behavior: 'smooth',
+      left: direction === 'next' ? scrollAmount : -scrollAmount,
+    });
+  }
 
   return (
     <section
@@ -55,16 +76,46 @@ export function CatalogFeatureSetList({
           eyebrow={eyebrow}
           title={title}
         />
-        <p className={styles.signalRow}>
-          {signalText ??
-            `${homepageSets.length} featured sets${
-              reviewedSetCount
-                ? ` · ${reviewedSetCount} with reviewed prices`
-                : ''
-            }`}
-        </p>
+        <div className={styles.headerAside}>
+          <p className={styles.signalRow}>
+            {signalText ??
+              `${homepageSets.length} featured sets${
+                reviewedSetCount
+                  ? ` · ${reviewedSetCount} with reviewed prices`
+                  : ''
+              }`}
+          </p>
+          {usesRailLayout && homepageSets.length > 1 ? (
+            <div className={styles.railControls}>
+              <Button
+                aria-controls={railId}
+                aria-label={`Scroll ${title} backward`}
+                className={styles.railButton}
+                onClick={() => scrollRail('previous')}
+                tone="secondary"
+                type="button"
+              >
+                Previous
+              </Button>
+              <Button
+                aria-controls={railId}
+                aria-label={`Scroll ${title} forward`}
+                className={styles.railButton}
+                onClick={() => scrollRail('next')}
+                tone="secondary"
+                type="button"
+              >
+                Next
+              </Button>
+            </div>
+          ) : null}
+        </div>
       </div>
-      <div className={layout === 'grid' ? styles.grid : styles.rail}>
+      <div
+        className={layout === 'grid' ? styles.grid : styles.rail}
+        id={layout === 'rail' ? railId : undefined}
+        ref={layout === 'rail' ? railRef : undefined}
+      >
         {homepageSets.map((catalogSetSummary) => (
           <CatalogSetCard
             key={catalogSetSummary.id}
