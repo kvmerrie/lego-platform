@@ -376,6 +376,21 @@ function toCatalogSetDetail(
     tagline: catalogSetOverlay.tagline,
     availability: catalogSetOverlay.availability,
     collectorHighlights: [...catalogSetOverlay.collectorHighlights],
+    ...(typeof catalogSetOverlay.minifigureCount === 'number'
+      ? {
+          minifigureCount: catalogSetOverlay.minifigureCount,
+        }
+      : {}),
+    ...(catalogSetOverlay.subtheme
+      ? {
+          subtheme: catalogSetOverlay.subtheme,
+        }
+      : {}),
+    ...(catalogSetOverlay.setStatus
+      ? {
+          setStatus: catalogSetOverlay.setStatus,
+        }
+      : {}),
   };
 }
 

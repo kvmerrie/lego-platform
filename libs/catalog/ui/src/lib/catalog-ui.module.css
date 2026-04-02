@@ -299,12 +299,14 @@
 }
 
 .supportingGrid,
-.collectorContext {
+.collectorContext,
+.detailCollectorContext {
   display: grid;
   gap: var(--lego-space-3);
 }
 
-.collectorContext {
+.collectorContext,
+.detailCollectorContext {
   border-top: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 76%, transparent);
   padding-top: var(--lego-space-3);
@@ -451,7 +453,11 @@
   padding-top: 0;
 }
 
-.notesPanel .metaItem {
+.detailSpecsGrid {
+  gap: var(--lego-space-3);
+}
+
+.detailSpecsGrid .metaItem {
   border-top: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 64%, transparent);
   gap: var(--lego-space-1);
@@ -912,7 +918,8 @@
 
 @media (min-width: 56rem) {
   .supportingGrid,
-  .collectorContext {
+  .collectorContext,
+  .detailCollectorContext {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -935,5 +942,9 @@
 
   .metaGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .detailSpecsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

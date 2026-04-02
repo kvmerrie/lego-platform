@@ -157,9 +157,80 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Set 21335');
     expect(markup).toContain('Lowest reviewed price');
     expect(markup).toContain('30-day price history');
-    expect(markup).toContain('Why collectors keep coming back');
+    expect(markup).toContain('What LEGO fans usually check first');
+    expect(markup).toContain('Set number');
+    expect(markup).toContain('Theme');
+    expect(markup).toContain('Release year');
+    expect(markup).toContain('Pieces');
+    expect(markup).toContain('Minifigures');
+    expect(markup).toContain('Not tracked locally yet');
+    expect(markup).toContain('Collector take');
+    expect(markup).toContain('Availability');
     expect(markup).toContain('<h1');
     expect(markup).not.toContain('Back to shortlist');
+  });
+
+  it('renders minifigure count in the detail specs grid when local data exists', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '10305',
+          slug: 'lion-knights-castle-10305',
+          name: "Lion Knights' Castle",
+          theme: 'Icons',
+          releaseYear: 2022,
+          pieces: 4514,
+          imageUrl: 'https://images.example/lion-knights-castle.jpg',
+          priceRange: '$359 to $429',
+          collectorAngle: 'Castle nostalgia tentpole',
+          tagline:
+            'A modern fortress build that lands squarely at the intersection of nostalgia and display value.',
+          availability: 'Steady premium demand',
+          collectorHighlights: [
+            'High perceived value thanks to dense build volume and minifigure count',
+          ],
+          minifigureCount: 22,
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Minifigures');
+    expect(markup).toContain('22');
+    expect(markup).not.toContain('Not tracked locally yet');
+  });
+
+  it('renders curated subtheme and set status when local fan metadata is available', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '76417',
+          slug: 'gringotts-wizarding-bank-collectors-edition-76417',
+          name: "Gringotts Wizarding Bank - Collectors' Edition",
+          theme: 'Harry Potter',
+          subtheme: 'Diagon Alley',
+          setStatus: 'backorder',
+          releaseYear: 2023,
+          pieces: 4803,
+          imageUrl: 'https://images.example/gringotts.jpg',
+          priceRange: '$369 to $449',
+          collectorAngle: 'Wizarding World premium landmark',
+          tagline:
+            'A major Gringotts display build that gives Harry Potter a stronger premium anchor beyond the smaller Hogwarts panorama.',
+          availability: 'High-visibility franchise demand',
+          collectorHighlights: [
+            'Broad franchise recognition makes it a strong search target for casual and deep collectors alike',
+          ],
+          minifigureCount: 13,
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Subtheme');
+    expect(markup).toContain('Diagon Alley');
+    expect(markup).toContain('Status');
+    expect(markup).toContain('Back order');
+    expect(markup).toContain('Minifigures');
+    expect(markup).toContain('13');
   });
 
   it('renders a larger theme tile variant for storefront browsing', () => {

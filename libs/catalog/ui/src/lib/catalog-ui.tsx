@@ -96,12 +96,18 @@ function CatalogSupportingDetail({
 }
 
 function CatalogSetMetadata({
+  className,
   items,
 }: {
+  className?: string;
   items: Array<{ label: string; value: string | number }>;
 }) {
   return (
-    <dl className={styles.metaGrid}>
+    <dl
+      className={
+        className ? `${styles.metaGrid} ${className}` : styles.metaGrid
+      }
+    >
       {items.map((item) => (
         <div className={styles.metaItem} key={item.label}>
           <dt className={styles.metaLabel}>{item.label}</dt>
@@ -110,6 +116,36 @@ function CatalogSetMetadata({
       ))}
     </dl>
   );
+}
+
+function formatMinifigureCount(minifigureCount?: number): string {
+  if (typeof minifigureCount !== 'number') {
+    return 'Not tracked locally yet';
+  }
+
+  return minifigureCount.toLocaleString();
+}
+
+function formatCatalogSetStatus(
+  setStatus: CatalogSetDetail['setStatus'],
+): string | undefined {
+  if (!setStatus) {
+    return undefined;
+  }
+
+  if (setStatus === 'available') {
+    return 'Available now';
+  }
+
+  if (setStatus === 'backorder') {
+    return 'Back order';
+  }
+
+  if (setStatus === 'retiring_soon') {
+    return 'Retiring soon';
+  }
+
+  return 'Retired';
 }
 
 export function CatalogSetCard({
@@ -364,6 +400,8 @@ export function CatalogSetDetailPanel({
   themeDirectoryHref?: string;
   themeHref?: string;
 }) {
+  const setStatusLabel = formatCatalogSetStatus(catalogSetDetail.setStatus);
+
   return (
     <section className={styles.detailPage}>
       <nav aria-label="Set context" className={styles.contextRow}>
@@ -461,29 +499,49 @@ export function CatalogSetDetailPanel({
         >
           <div className={styles.notesHeader}>
             <SectionHeading
-              description={catalogSetDetail.collectorAngle}
-              eyebrow="Collector notes"
-              title="Why collectors keep coming back"
+              description="Core product facts and the collector context that matter before you compare prices."
+              eyebrow="Set details"
+              title="What LEGO fans usually check first"
               titleAs="h3"
             />
-            <p className={styles.availability}>
-              Current read: {catalogSetDetail.availability}
-            </p>
           </div>
           <CatalogSetMetadata
+            className={styles.detailSpecsGrid}
             items={[
               { label: 'Set number', value: catalogSetDetail.id },
-              { label: 'Release', value: catalogSetDetail.releaseYear },
+              { label: 'Theme', value: catalogSetDetail.theme },
+              ...(catalogSetDetail.subtheme
+                ? [{ label: 'Subtheme', value: catalogSetDetail.subtheme }]
+                : []),
+              { label: 'Release year', value: catalogSetDetail.releaseYear },
+              ...(setStatusLabel
+                ? [
+                    {
+                      label: 'Status',
+                      value: setStatusLabel,
+                    },
+                  ]
+                : []),
               {
                 label: 'Pieces',
                 value: catalogSetDetail.pieces.toLocaleString(),
               },
               {
-                label: 'Price range',
-                value: catalogSetDetail.priceRange,
+                label: 'Minifigures',
+                value: formatMinifigureCount(catalogSetDetail.minifigureCount),
               },
             ]}
           />
+          <div className={styles.detailCollectorContext}>
+            <CatalogSupportingDetail
+              label="Collector take"
+              value={catalogSetDetail.collectorAngle}
+            />
+            <CatalogSupportingDetail
+              label="Availability"
+              value={catalogSetDetail.availability}
+            />
+          </div>
           {catalogSetDetail.collectorHighlights.length > 0 ? (
             <ul className={styles.highlightsList}>
               {catalogSetDetail.collectorHighlights.map(

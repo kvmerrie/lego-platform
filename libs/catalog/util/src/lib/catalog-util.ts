@@ -22,7 +22,16 @@ export interface CatalogSetDetail extends CatalogSetSummary {
   tagline: string;
   availability: string;
   collectorHighlights: readonly string[];
+  minifigureCount?: number;
+  setStatus?: CatalogSetStatus;
+  subtheme?: string;
 }
+
+export type CatalogSetStatus =
+  | 'available'
+  | 'backorder'
+  | 'retiring_soon'
+  | 'retired';
 
 export interface CatalogThemeSnapshot {
   name: string;
@@ -65,6 +74,9 @@ export interface CatalogSetOverlay {
   tagline: string;
   availability: string;
   collectorHighlights: readonly string[];
+  minifigureCount?: number;
+  setStatus?: CatalogSetStatus;
+  subtheme?: string;
 }
 
 export interface CatalogThemeOverlay {

@@ -8,6 +8,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     canonicalId: '10316',
     productSlug: 'rivendell-10316',
     displayName: 'Rivendell',
+    minifigureCount: 15,
     priceRange: '$499 to $569',
     collectorAngle: 'Prestige display anchor',
     tagline:
@@ -36,6 +37,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '76269',
     displayTheme: 'Marvel',
+    minifigureCount: 31,
+    setStatus: 'backorder',
+    subtheme: 'Avengers',
     priceRange: '$449 to $519',
     collectorAngle: 'Marvel flagship showcase',
     tagline: 'A marquee licensed set with broad household recognizability.',
@@ -48,6 +52,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '10305',
+    minifigureCount: 22,
     priceRange: '$359 to $429',
     collectorAngle: 'Castle nostalgia tentpole',
     tagline:
@@ -75,6 +80,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '10320',
+    minifigureCount: 8,
     priceRange: '$189 to $259',
     collectorAngle: 'Pirates nostalgia centerpiece',
     tagline:
@@ -102,6 +108,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '10333',
+    minifigureCount: 10,
     priceRange: '$459 to $529',
     collectorAngle: 'Middle-earth display monolith',
     tagline:
@@ -115,6 +122,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '10332',
+    minifigureCount: 8,
     priceRange: '$189 to $249',
     collectorAngle: 'Castle-world village expansion',
     tagline:
@@ -304,6 +312,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '75313',
     displayTheme: 'Star Wars',
+    minifigureCount: 9,
     priceRange: '$649 to $799',
     collectorAngle: 'Star Wars collector monument',
     tagline:
@@ -334,6 +343,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '10326',
     displayTheme: 'Modular Buildings',
+    minifigureCount: 7,
+    setStatus: 'available',
+    subtheme: 'Modular Buildings',
     priceRange: '$269 to $329',
     collectorAngle: 'City-scale modular showpiece',
     tagline:
@@ -487,6 +499,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '76218',
     displayTheme: 'Marvel',
+    minifigureCount: 9,
+    setStatus: 'retired',
+    subtheme: 'Doctor Strange',
     priceRange: '$219 to $279',
     collectorAngle: 'Marvel location-display companion',
     tagline:
@@ -515,6 +530,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '75331',
     displayTheme: 'Star Wars',
+    minifigureCount: 5,
+    setStatus: 'retiring_soon',
+    subtheme: 'Ultimate Collector Series',
     priceRange: '$499 to $649',
     collectorAngle: 'Star Wars flagship ship anchor',
     tagline:
@@ -529,6 +547,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '76417',
     displayTheme: 'Harry Potter',
+    minifigureCount: 13,
+    setStatus: 'backorder',
+    subtheme: 'Diagon Alley',
     priceRange: '$369 to $449',
     collectorAngle: 'Wizarding World premium landmark',
     tagline:
@@ -543,6 +564,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '76178',
     displayTheme: 'Marvel',
+    minifigureCount: 25,
+    setStatus: 'retired',
+    subtheme: 'Spider-Man',
     priceRange: '$299 to $379',
     collectorAngle: 'Marvel skyline showpiece',
     tagline:
@@ -557,6 +581,8 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '75367',
     displayTheme: 'Star Wars',
+    minifigureCount: 2,
+    subtheme: 'Ultimate Collector Series',
     priceRange: '$579 to $699',
     collectorAngle: 'Clone Wars capital-ship flagship',
     tagline:
@@ -598,6 +624,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '76437',
     displayTheme: 'Harry Potter',
+    minifigureCount: 10,
+    setStatus: 'available',
+    subtheme: 'Wizarding homes',
     priceRange: '$229 to $299',
     collectorAngle: 'Wizarding household flagship',
     tagline:
@@ -612,6 +641,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '75355',
     displayTheme: 'Star Wars',
+    minifigureCount: 2,
+    setStatus: 'retiring_soon',
+    subtheme: 'Ultimate Collector Series',
     priceRange: '$199 to $259',
     collectorAngle: 'Star Wars icon flagship',
     tagline:
@@ -626,6 +658,9 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '75397',
     displayTheme: 'Star Wars',
+    minifigureCount: 11,
+    setStatus: 'available',
+    subtheme: 'Return of the Jedi',
     priceRange: '$429 to $529',
     collectorAngle: 'Original Trilogy prestige centerpiece',
     tagline:
@@ -668,6 +703,8 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '76294',
     displayTheme: 'Marvel',
+    minifigureCount: 10,
+    subtheme: 'X-Men',
     priceRange: '$279 to $349',
     collectorAngle: 'X-Men nostalgia flagship',
     tagline:

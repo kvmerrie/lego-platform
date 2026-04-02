@@ -524,6 +524,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 6181,
+      minifigureCount: 15,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
       priceRange: '$499 to $569',
       collectorAngle: 'Prestige display anchor',
@@ -1140,6 +1141,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2022,
       pieces: 4515,
+      minifigureCount: 22,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10305-1/152495.jpg',
       priceRange: '$359 to $429',
       collectorAngle: 'Castle nostalgia tentpole',
@@ -1180,6 +1182,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2023,
       pieces: 2509,
+      minifigureCount: 8,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10320-1/127861.jpg',
       priceRange: '$189 to $259',
       collectorAngle: 'Pirates nostalgia centerpiece',
@@ -1222,6 +1225,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2024,
       pieces: 5478,
+      minifigureCount: 10,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
       priceRange: '$459 to $529',
       collectorAngle: 'Middle-earth display monolith',
@@ -1242,6 +1246,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Icons',
       releaseYear: 2024,
       pieces: 3308,
+      minifigureCount: 8,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10332-1/137285.jpg',
       priceRange: '$189 to $249',
       collectorAngle: 'Castle-world village expansion',
@@ -1528,6 +1533,7 @@ describe('catalog data-access contracts', () => {
       theme: 'Star Wars',
       releaseYear: 2021,
       pieces: 6785,
+      minifigureCount: 9,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
       priceRange: '$649 to $799',
       collectorAngle: 'Star Wars collector monument',
@@ -1565,5 +1571,226 @@ describe('catalog data-access contracts', () => {
   test('preserves the full summary read-model and theme snapshots', () => {
     expect(listCatalogSetSummaries()).toHaveLength(54);
     expect(listCatalogThemes()).toEqual(expectedCatalogThemes);
+  });
+
+  test('adds curated minifigure coverage where character counts matter most to collectors', () => {
+    expect(
+      [
+        ['rivendell-10316', 15],
+        ['avengers-tower-76269', 31],
+        ['lion-knights-castle-10305', 22],
+        ['eldorado-fortress-10320', 8],
+        ['the-lord-of-the-rings-barad-dur-10333', 10],
+        ['medieval-town-square-10332', 8],
+        ['at-at-75313', 9],
+        ['natural-history-museum-10326', 7],
+        ['sanctum-sanctorum-76218', 9],
+        ['the-razor-crest-75331', 5],
+        ['gringotts-wizarding-bank-collectors-edition-76417', 13],
+        ['daily-bugle-76178', 25],
+        ['venator-class-republic-attack-cruiser-75367', 2],
+        ['the-burrow-collectors-edition-76437', 10],
+        ['x-wing-starfighter-75355', 2],
+        ['jabbas-sail-barge-75397', 11],
+        ['the-x-mansion-76294', 10],
+      ].map(([slug]) => {
+        const catalogSetDetail = getCatalogSetBySlug(slug);
+
+        return {
+          minifigureCount: catalogSetDetail?.minifigureCount,
+          slug,
+        };
+      }),
+    ).toEqual(
+      [
+        ['rivendell-10316', 15],
+        ['avengers-tower-76269', 31],
+        ['lion-knights-castle-10305', 22],
+        ['eldorado-fortress-10320', 8],
+        ['the-lord-of-the-rings-barad-dur-10333', 10],
+        ['medieval-town-square-10332', 8],
+        ['at-at-75313', 9],
+        ['natural-history-museum-10326', 7],
+        ['sanctum-sanctorum-76218', 9],
+        ['the-razor-crest-75331', 5],
+        ['gringotts-wizarding-bank-collectors-edition-76417', 13],
+        ['daily-bugle-76178', 25],
+        ['venator-class-republic-attack-cruiser-75367', 2],
+        ['the-burrow-collectors-edition-76437', 10],
+        ['x-wing-starfighter-75355', 2],
+        ['jabbas-sail-barge-75397', 11],
+        ['the-x-mansion-76294', 10],
+      ].map(([slug, minifigureCount]) => ({
+        minifigureCount,
+        slug,
+      })),
+    );
+
+    expect(
+      listCatalogSetSlugs().flatMap((slug) => {
+        const catalogSetDetail = getCatalogSetBySlug(slug);
+
+        return typeof catalogSetDetail?.minifigureCount === 'number'
+          ? [catalogSetDetail.id]
+          : [];
+      }),
+    ).toHaveLength(17);
+  });
+
+  test('adds curated subthemes and set-status labels for high-intent collector sets', () => {
+    expect(
+      [
+        [
+          'avengers-tower-76269',
+          {
+            setStatus: 'backorder',
+            subtheme: 'Avengers',
+          },
+        ],
+        [
+          'natural-history-museum-10326',
+          {
+            setStatus: 'available',
+            subtheme: 'Modular Buildings',
+          },
+        ],
+        [
+          'sanctum-sanctorum-76218',
+          {
+            setStatus: 'retired',
+            subtheme: 'Doctor Strange',
+          },
+        ],
+        [
+          'the-razor-crest-75331',
+          {
+            setStatus: 'retiring_soon',
+            subtheme: 'Ultimate Collector Series',
+          },
+        ],
+        [
+          'gringotts-wizarding-bank-collectors-edition-76417',
+          {
+            setStatus: 'backorder',
+            subtheme: 'Diagon Alley',
+          },
+        ],
+        [
+          'daily-bugle-76178',
+          {
+            setStatus: 'retired',
+            subtheme: 'Spider-Man',
+          },
+        ],
+        [
+          'the-burrow-collectors-edition-76437',
+          {
+            setStatus: 'available',
+            subtheme: 'Wizarding homes',
+          },
+        ],
+        [
+          'x-wing-starfighter-75355',
+          {
+            setStatus: 'retiring_soon',
+            subtheme: 'Ultimate Collector Series',
+          },
+        ],
+        [
+          'jabbas-sail-barge-75397',
+          {
+            setStatus: 'available',
+            subtheme: 'Return of the Jedi',
+          },
+        ],
+        [
+          'the-x-mansion-76294',
+          {
+            setStatus: undefined,
+            subtheme: 'X-Men',
+          },
+        ],
+      ].map(([slug]) => ({
+        slug,
+        setStatus: getCatalogSetBySlug(slug)?.setStatus,
+        subtheme: getCatalogSetBySlug(slug)?.subtheme,
+      })),
+    ).toEqual(
+      [
+        [
+          'avengers-tower-76269',
+          {
+            setStatus: 'backorder',
+            subtheme: 'Avengers',
+          },
+        ],
+        [
+          'natural-history-museum-10326',
+          {
+            setStatus: 'available',
+            subtheme: 'Modular Buildings',
+          },
+        ],
+        [
+          'sanctum-sanctorum-76218',
+          {
+            setStatus: 'retired',
+            subtheme: 'Doctor Strange',
+          },
+        ],
+        [
+          'the-razor-crest-75331',
+          {
+            setStatus: 'retiring_soon',
+            subtheme: 'Ultimate Collector Series',
+          },
+        ],
+        [
+          'gringotts-wizarding-bank-collectors-edition-76417',
+          {
+            setStatus: 'backorder',
+            subtheme: 'Diagon Alley',
+          },
+        ],
+        [
+          'daily-bugle-76178',
+          {
+            setStatus: 'retired',
+            subtheme: 'Spider-Man',
+          },
+        ],
+        [
+          'the-burrow-collectors-edition-76437',
+          {
+            setStatus: 'available',
+            subtheme: 'Wizarding homes',
+          },
+        ],
+        [
+          'x-wing-starfighter-75355',
+          {
+            setStatus: 'retiring_soon',
+            subtheme: 'Ultimate Collector Series',
+          },
+        ],
+        [
+          'jabbas-sail-barge-75397',
+          {
+            setStatus: 'available',
+            subtheme: 'Return of the Jedi',
+          },
+        ],
+        [
+          'the-x-mansion-76294',
+          {
+            setStatus: undefined,
+            subtheme: 'X-Men',
+          },
+        ],
+      ].map(([slug, expected]) => ({
+        slug,
+        ...expected,
+      })),
+    );
   });
 });
