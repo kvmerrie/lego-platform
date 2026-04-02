@@ -518,6 +518,41 @@
   white-space: nowrap;
 }
 
+.setCardRail {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.setCardRailControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+  justify-content: flex-end;
+}
+
+.setCardRailButton {
+  min-height: 2.15rem;
+  padding: 0.46rem 0.72rem;
+}
+
+.setCardRailTrack {
+  display: flex;
+  gap: var(--lego-space-3);
+  margin: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding-bottom: var(--lego-space-2);
+  scroll-padding-inline: 0;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.setCardRailItem {
+  flex: 0 0 calc((100% - (var(--lego-space-3) * 0.35)) / 1.35);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
 .themeHomepageCard {
   --theme-home-surface: #d9e4f2;
   --theme-home-text: #171a22;
@@ -842,6 +877,18 @@
   --theme-tile-text: #ffffff;
   --theme-tile-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(84, 114, 54, 0.15);
+}
+
+@media (min-width: 48rem) {
+  .setCardRailItem {
+    flex-basis: calc((100% - (var(--lego-space-3) * 2)) / 3);
+  }
+}
+
+@media (min-width: 72rem) {
+  .setCardRailItem {
+    flex-basis: calc((100% - (var(--lego-space-3) * 4)) / 5);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

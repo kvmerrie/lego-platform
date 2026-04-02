@@ -7,6 +7,7 @@ import {
 } from '@lego-platform/catalog/data-access';
 import {
   CatalogQuickFilterBar,
+  CatalogSetCardRail,
   CatalogSetCard,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
@@ -248,18 +249,17 @@ export function CatalogFeatureDiscover({
               {formatSetCount(filteredDealSetCards.length)}
             </p>
           </div>
-          <div className={styles.dealGrid}>
-            {filteredDealSetCards.map((dealSetCard) => (
-              <CatalogSetCard
-                href={buildSetDetailPath(dealSetCard.slug)}
-                key={dealSetCard.id}
-                priceContext={dealSetCard.priceContext}
-                setSummary={dealSetCard}
-                supportingNote={formatDiscoverFanContext(dealSetCard)}
-                variant="featured"
-              />
-            ))}
-          </div>
+          <CatalogSetCardRail
+            ariaLabel="Best deals to check first"
+            items={filteredDealSetCards.map((dealSetCard) => ({
+              href: buildSetDetailPath(dealSetCard.slug),
+              id: dealSetCard.id,
+              priceContext: dealSetCard.priceContext,
+              setSummary: dealSetCard,
+              supportingNote: formatDiscoverFanContext(dealSetCard),
+            }))}
+            variant="featured"
+          />
         </Surface>
       ) : null}
 
@@ -276,17 +276,16 @@ export function CatalogFeatureDiscover({
               {formatSetCount(filteredCharacterSetCards.length)}
             </p>
           </div>
-          <div className={styles.featuredGrid}>
-            {filteredCharacterSetCards.map((characterSetCard) => (
-              <CatalogSetCard
-                href={buildSetDetailPath(characterSetCard.slug)}
-                key={characterSetCard.id}
-                setSummary={characterSetCard}
-                supportingNote={formatDiscoverFanContext(characterSetCard)}
-                variant="browse"
-              />
-            ))}
-          </div>
+          <CatalogSetCardRail
+            ariaLabel="Iconic characters and cast favorites"
+            items={filteredCharacterSetCards.map((characterSetCard) => ({
+              href: buildSetDetailPath(characterSetCard.slug),
+              id: characterSetCard.id,
+              setSummary: characterSetCard,
+              supportingNote: formatDiscoverFanContext(characterSetCard),
+            }))}
+            variant="browse"
+          />
         </Surface>
       ) : null}
 
@@ -303,17 +302,16 @@ export function CatalogFeatureDiscover({
               {formatSetCount(filteredHighlightSetCards.length)}
             </p>
           </div>
-          <div className={styles.featuredGrid}>
-            {filteredHighlightSetCards.map((highlightSetCard) => (
-              <CatalogSetCard
-                href={buildSetDetailPath(highlightSetCard.slug)}
-                key={highlightSetCard.id}
-                setSummary={highlightSetCard}
-                supportingNote={formatDiscoverFanContext(highlightSetCard)}
-                variant="browse"
-              />
-            ))}
-          </div>
+          <CatalogSetCardRail
+            ariaLabel="Worth opening first"
+            items={filteredHighlightSetCards.map((highlightSetCard) => ({
+              href: buildSetDetailPath(highlightSetCard.slug),
+              id: highlightSetCard.id,
+              setSummary: highlightSetCard,
+              supportingNote: formatDiscoverFanContext(highlightSetCard),
+            }))}
+            variant="browse"
+          />
         </Surface>
       ) : null}
 

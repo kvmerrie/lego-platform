@@ -28,6 +28,26 @@ describe('CatalogFeatureDiscover', () => {
               reviewedLabel: 'Checked 31 mrt',
             },
           },
+          {
+            id: '10316',
+            slug: 'rivendell-10316',
+            name: 'Rivendell',
+            theme: 'Icons',
+            releaseYear: 2023,
+            pieces: 6167,
+            priceRange: '$449 to $519',
+            collectorAngle: 'Epic fantasy display centerpiece',
+            tagline: 'A premium fantasy build with broad collector reach.',
+            availability: 'Steady flagship demand',
+            minifigureHighlights: ['Elrond', 'Frodo Baggins', 'Arwen'],
+            priceContext: {
+              coverageLabel: 'In stock · 2 reviewed offers',
+              currentPrice: 'EUR 469.99',
+              merchantLabel: 'Lowest reviewed price at LEGO',
+              pricePositionLabel: 'EUR 20.00 below reference',
+              reviewedLabel: 'Checked 31 mrt',
+            },
+          },
         ]}
         reviewedSetIds={['76269', '10316', '10333']}
       />,
@@ -38,6 +58,11 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('Best deals to check first');
     expect(markup).toContain('Iconic characters and cast favorites');
     expect(markup).toContain('Worth opening first');
+    expect(markup).toContain('Scroll Best deals to check first forward');
+    expect(markup).toContain(
+      'Scroll Iconic characters and cast favorites forward',
+    );
+    expect(markup).toContain('Scroll Worth opening first forward');
     expect(markup.indexOf('Best deals to check first')).toBeLessThan(
       markup.indexOf('Iconic characters and cast favorites'),
     );
@@ -91,6 +116,26 @@ describe('CatalogFeatureDiscover', () => {
               reviewedLabel: 'Checked 31 mrt',
             },
           },
+          {
+            id: '10316',
+            slug: 'rivendell-10316',
+            name: 'Rivendell',
+            theme: 'Icons',
+            releaseYear: 2023,
+            pieces: 6167,
+            priceRange: '$449 to $519',
+            collectorAngle: 'Epic fantasy display centerpiece',
+            tagline: 'A premium fantasy build with broad collector reach.',
+            availability: 'Steady flagship demand',
+            minifigureHighlights: ['Elrond', 'Frodo Baggins', 'Arwen'],
+            priceContext: {
+              coverageLabel: 'In stock · 2 reviewed offers',
+              currentPrice: 'EUR 469.99',
+              merchantLabel: 'Lowest reviewed price at LEGO',
+              pricePositionLabel: 'EUR 20.00 below reference',
+              reviewedLabel: 'Checked 31 mrt',
+            },
+          },
         ]}
       />,
     );
@@ -99,6 +144,7 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain(
       'The clearest reviewed price gaps among the strongest flagship and click-magnet sets already in the catalog.',
     );
+    expect(markup).toContain('Scroll Best deals to check first backward');
     expect(markup).toContain('EUR 30.00 below reference');
     expect(markup).toContain('Includes Iron Man, Captain America, and Thor');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');

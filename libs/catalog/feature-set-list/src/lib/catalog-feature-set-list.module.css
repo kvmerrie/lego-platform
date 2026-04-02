@@ -41,42 +41,9 @@
   gap: var(--lego-space-4);
 }
 
-.rail {
-  display: flex;
-  gap: var(--lego-space-3);
-  margin: 0;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  padding-bottom: var(--lego-space-2);
-  scroll-padding-inline: 0;
-  scroll-snap-type: x proximity;
-  scrollbar-width: thin;
-}
-
-.rail > * {
-  flex: 0 0 calc((100% - (var(--lego-space-3) * 0.35)) / 1.35);
-  min-width: 0;
-  scroll-snap-align: start;
-}
-
-.railControls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-2);
-}
-
-.railButton {
-  min-height: 2.15rem;
-  padding: 0.46rem 0.72rem;
-}
-
 @media (min-width: 48rem) {
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .rail > * {
-    flex-basis: calc((100% - (var(--lego-space-3) * 2)) / 3);
   }
 }
 
@@ -98,9 +65,5 @@
 @media (min-width: 72rem) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .rail > * {
-    flex-basis: calc((100% - (var(--lego-space-3) * 4)) / 5);
   }
 }

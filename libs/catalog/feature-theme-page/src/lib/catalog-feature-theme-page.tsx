@@ -1,6 +1,6 @@
 import type { CatalogThemeLandingPage } from '@lego-platform/catalog/data-access';
 import {
-  CatalogSetCard,
+  CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
@@ -49,17 +49,16 @@ export function CatalogFeatureThemePage({
             />
             <p className={styles.sectionMeta}>{dealSetCards.length} sets</p>
           </div>
-          <div className={styles.dealGrid}>
-            {dealSetCards.map((dealSetCard) => (
-              <CatalogSetCard
-                href={buildSetDetailPath(dealSetCard.slug)}
-                key={dealSetCard.id}
-                priceContext={dealSetCard.priceContext}
-                setSummary={dealSetCard}
-                variant="featured"
-              />
-            ))}
-          </div>
+          <CatalogSetCardRail
+            ariaLabel={`Good time to buy in ${themeSnapshot.name}`}
+            items={dealSetCards.map((dealSetCard) => ({
+              href: buildSetDetailPath(dealSetCard.slug),
+              id: dealSetCard.id,
+              priceContext: dealSetCard.priceContext,
+              setSummary: dealSetCard,
+            }))}
+            variant="featured"
+          />
         </Surface>
       ) : null}
 
@@ -73,16 +72,15 @@ export function CatalogFeatureThemePage({
           />
           <p className={styles.sectionMeta}>{setCards.length} sets</p>
         </div>
-        <div className={styles.browseGrid}>
-          {setCards.map((setCard) => (
-            <CatalogSetCard
-              href={buildSetDetailPath(setCard.slug)}
-              key={setCard.id}
-              setSummary={setCard}
-              variant="browse"
-            />
-          ))}
-        </div>
+        <CatalogSetCardRail
+          ariaLabel={`All ${themeSnapshot.name} sets`}
+          items={setCards.map((setCard) => ({
+            href: buildSetDetailPath(setCard.slug),
+            id: setCard.id,
+            setSummary: setCard,
+          }))}
+          variant="browse"
+        />
       </Surface>
     </div>
   );

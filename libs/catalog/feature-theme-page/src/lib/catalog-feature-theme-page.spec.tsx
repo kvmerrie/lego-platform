@@ -28,6 +28,25 @@ describe('CatalogFeatureThemePage', () => {
               reviewedLabel: 'Checked 31 mrt',
             },
           },
+          {
+            id: '76294',
+            slug: 'the-x-mansion-76294',
+            name: 'The X-Mansion',
+            theme: 'Marvel',
+            releaseYear: 2024,
+            pieces: 3093,
+            priceRange: '$309 to $349',
+            collectorAngle: 'Mutant mansion display anchor',
+            tagline: 'A character-led Marvel set with strong crossover appeal.',
+            availability: 'Fresh release momentum',
+            priceContext: {
+              coverageLabel: 'In stock · 2 reviewed offers',
+              currentPrice: 'EUR 289.99',
+              merchantLabel: 'Lowest reviewed price at LEGO',
+              pricePositionLabel: 'EUR 15.00 below reference',
+              reviewedLabel: 'Checked 31 mrt',
+            },
+          },
         ]}
         themePage={{
           themeSnapshot: {
@@ -52,6 +71,19 @@ describe('CatalogFeatureThemePage', () => {
                 'A marquee licensed set with broad household recognizability.',
               availability: 'Stable with strong seasonal demand',
             },
+            {
+              id: '76294',
+              slug: 'the-x-mansion-76294',
+              name: 'The X-Mansion',
+              theme: 'Marvel',
+              releaseYear: 2024,
+              pieces: 3093,
+              priceRange: '$309 to $349',
+              collectorAngle: 'Mutant mansion display anchor',
+              tagline:
+                'A character-led Marvel set with strong crossover appeal.',
+              availability: 'Fresh release momentum',
+            },
           ],
         }}
       />,
@@ -60,7 +92,9 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('Marvel');
     expect(markup).toContain('<h1');
     expect(markup).toContain('Good time to buy in Marvel');
+    expect(markup).toContain('Scroll Good time to buy in Marvel forward');
     expect(markup).toContain('All Marvel sets');
+    expect(markup).toContain('Scroll All Marvel sets forward');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 });
