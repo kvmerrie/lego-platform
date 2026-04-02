@@ -15,9 +15,10 @@ function readQueryParam(value: string | string[] | undefined): string {
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string | string[] }>;
+  searchParams: Promise<{ filter?: string | string[]; q?: string | string[] }>;
 }) {
   const resolvedSearchParams = await searchParams;
+  const activeFilter = readQueryParam(resolvedSearchParams.filter);
   const query = readQueryParam(resolvedSearchParams.q);
   const reviewedPriceContexts: CatalogFeatureSearchReviewedPriceContext[] =
     listReviewedPriceSetIds().flatMap((setId) => {
@@ -39,6 +40,7 @@ export default async function SearchPage({
   return (
     <ShellWeb searchQuery={query}>
       <CatalogFeatureSearchResults
+        activeFilter={activeFilter}
         query={query}
         reviewedPriceContexts={reviewedPriceContexts}
       />

@@ -16,6 +16,7 @@ export interface CatalogSetSummary {
 export interface CatalogHomepageSetCard extends CatalogSetSummary {
   tagline: string;
   availability: string;
+  minifigureCount?: number;
   minifigureHighlights?: readonly string[];
 }
 
@@ -34,6 +35,114 @@ export type CatalogSetStatus =
   | 'backorder'
   | 'retiring_soon'
   | 'retired';
+
+export type CatalogQuickFilterKey =
+  | 'all'
+  | 'best-deals'
+  | 'with-minifigures'
+  | 'star-wars'
+  | 'harry-potter'
+  | 'marvel'
+  | 'icons';
+
+export interface CatalogQuickFilterOption {
+  key: CatalogQuickFilterKey;
+  label: string;
+  theme?: string;
+}
+
+const catalogQuickFilterOptions = [
+  {
+    key: 'all',
+    label: 'All',
+  },
+  {
+    key: 'best-deals',
+    label: 'Best deals',
+  },
+  {
+    key: 'with-minifigures',
+    label: 'With minifigures',
+  },
+  {
+    key: 'star-wars',
+    label: 'Star Wars',
+    theme: 'Star Wars',
+  },
+  {
+    key: 'harry-potter',
+    label: 'Harry Potter',
+    theme: 'Harry Potter',
+  },
+  {
+    key: 'marvel',
+    label: 'Marvel',
+    theme: 'Marvel',
+  },
+  {
+    key: 'icons',
+    label: 'Icons',
+    theme: 'Icons',
+  },
+] as const satisfies readonly CatalogQuickFilterOption[];
+
+export function listCatalogQuickFilterOptions(): readonly CatalogQuickFilterOption[] {
+  return catalogQuickFilterOptions;
+}
+
+export function normalizeCatalogQuickFilterKey(
+  value?: string,
+): CatalogQuickFilterKey {
+  return catalogQuickFilterOptions.some(
+    (catalogQuickFilterOption) => catalogQuickFilterOption.key === value,
+  )
+    ? (value as CatalogQuickFilterKey)
+    : 'all';
+}
+
+function hasCatalogMinifigureSignal({
+  minifigureCount,
+  minifigureHighlights,
+}: Pick<CatalogHomepageSetCard, 'minifigureCount' | 'minifigureHighlights'>) {
+  return (
+    typeof minifigureCount === 'number' || Boolean(minifigureHighlights?.length)
+  );
+}
+
+export function matchesCatalogQuickFilter({
+  filter,
+  setCard,
+  strongDealSetIds = [],
+}: {
+  filter: CatalogQuickFilterKey;
+  setCard: Pick<
+    CatalogHomepageSetCard,
+    'id' | 'theme' | 'minifigureCount' | 'minifigureHighlights'
+  >;
+  strongDealSetIds?: readonly string[];
+}): boolean {
+  if (filter === 'all') {
+    return true;
+  }
+
+  if (filter === 'best-deals') {
+    return strongDealSetIds.includes(setCard.id);
+  }
+
+  if (filter === 'with-minifigures') {
+    return hasCatalogMinifigureSignal(setCard);
+  }
+
+  const catalogQuickFilterOption = catalogQuickFilterOptions.find(
+    (quickFilterOption) => quickFilterOption.key === filter,
+  );
+
+  if (!catalogQuickFilterOption || !('theme' in catalogQuickFilterOption)) {
+    return false;
+  }
+
+  return catalogQuickFilterOption.theme === setCard.theme;
+}
 
 export interface CatalogThemeSnapshot {
   name: string;

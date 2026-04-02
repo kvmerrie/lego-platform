@@ -366,6 +366,37 @@ export function CatalogSetCard({
   );
 }
 
+export function CatalogQuickFilterBar({
+  ariaLabel,
+  items,
+}: {
+  ariaLabel: string;
+  items: readonly {
+    href: string;
+    isActive?: boolean;
+    label: string;
+  }[];
+}) {
+  return (
+    <nav aria-label={ariaLabel} className={styles.quickFilterNav}>
+      <ul className={styles.quickFilterList}>
+        {items.map((item) => (
+          <li className={styles.quickFilterItem} key={item.label}>
+            <ActionLink
+              aria-current={item.isActive ? 'page' : undefined}
+              className={styles.quickFilterChip}
+              href={item.href}
+              tone={item.isActive ? 'accent' : 'secondary'}
+            >
+              {item.label}
+            </ActionLink>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export function CatalogHomepageIntro() {
   return (
     <Surface

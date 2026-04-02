@@ -694,6 +694,7 @@ describe('catalog data-access contracts', () => {
         tagline:
           'A flagship fantasy build that rewards both display space and patience.',
         availability: 'Healthy but premium availability',
+        minifigureCount: 15,
       },
       {
         id: '10333',
@@ -708,6 +709,7 @@ describe('catalog data-access contracts', () => {
         tagline:
           'A towering fantasy centerpiece with unusually strong shelf drama and cross-fandom recognizability.',
         availability: 'High-visibility premium demand',
+        minifigureCount: 10,
       },
       {
         id: '21333',
@@ -774,6 +776,7 @@ describe('catalog data-access contracts', () => {
           tagline:
             'A marquee licensed set with broad household recognizability.',
           availability: 'Stable with strong seasonal demand',
+          minifigureCount: 31,
         },
         {
           id: '10316',
@@ -788,6 +791,7 @@ describe('catalog data-access contracts', () => {
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
           availability: 'Healthy but premium availability',
+          minifigureCount: 15,
         },
       ],
     );

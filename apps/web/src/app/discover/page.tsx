@@ -15,6 +15,10 @@ import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
 
+function readQueryParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
+}
+
 function getDiscoverMinifigureHighlightRank(
   minifigureHighlights?: readonly string[],
 ): number {
@@ -109,11 +113,27 @@ function toDealSetCards(
   });
 }
 
-export default function DiscoverPage() {
+export default async function DiscoverPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string | string[] }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const activeFilter = readQueryParam(resolvedSearchParams.filter);
   const discoverDealCandidateSetCards = listDiscoverDealCandidateSetCards();
   const discoverDealCandidateSetIds = discoverDealCandidateSetCards.map(
     (catalogSetCard) => catalogSetCard.id,
   );
+  const reviewedSetIds = listReviewedPriceSetIds();
+  const strongDealSetIds = reviewedSetIds.flatMap((setId) => {
+    const featuredSetPriceContext = getFeaturedSetPriceContext(setId);
+
+    return featuredSetPriceContext &&
+      typeof featuredSetPriceContext.deltaMinor === 'number' &&
+      featuredSetPriceContext.deltaMinor < 0
+      ? [setId]
+      : [];
+  });
   const dealPriceContexts = listDealSpotlightPriceContexts({
     candidateSetIds: discoverDealCandidateSetIds,
     limit: discoverDealCandidateSetIds.length,
@@ -141,11 +161,12 @@ export default function DiscoverPage() {
         left.name.localeCompare(right.name),
     )
     .slice(0, 6);
-  const reviewedSetIds = listReviewedPriceSetIds();
 
   return (
     <ShellWeb>
       <CatalogFeatureDiscover
+        activeFilter={activeFilter}
+        bestDealSetIds={strongDealSetIds}
         dealSetCards={dealSetCards}
         reviewedSetIds={reviewedSetIds}
       />

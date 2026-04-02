@@ -103,4 +103,27 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('Includes Iron Man, Captain America, and Thor');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
+
+  it('renders discover quick filters and a calm empty state when the active filter has no matches', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureDiscover activeFilter="best-deals" />,
+    );
+
+    expect(markup).toContain('aria-label="Refine discover"');
+    expect(markup).toContain('href="/discover"');
+    expect(markup).toContain('href="/discover?filter=best-deals"');
+    expect(markup).toContain('No matches in Best deals');
+    expect(markup).toContain('Show all sets');
+  });
+
+  it('filters theme lanes down to the selected theme chip', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureDiscover activeFilter="marvel" />,
+    );
+
+    expect(markup).toContain('href="/discover?filter=marvel"');
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('href="/themes/marvel"');
+    expect(markup).not.toContain('href="/themes/icons"');
+  });
 });

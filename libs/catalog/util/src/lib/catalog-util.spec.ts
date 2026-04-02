@@ -5,6 +5,9 @@ import {
   createCatalogSetRecord,
   getCatalogProductSlug,
   getCanonicalCatalogSetId,
+  listCatalogQuickFilterOptions,
+  matchesCatalogQuickFilter,
+  normalizeCatalogQuickFilterKey,
 } from './catalog-util';
 
 describe('catalog snapshot helpers', () => {
@@ -95,5 +98,68 @@ describe('catalog snapshot helpers', () => {
       pieces: 5478,
       imageUrl: undefined,
     });
+  });
+
+  test('normalizes quick-filter keys against the curated filter list', () => {
+    expect(listCatalogQuickFilterOptions().map((option) => option.key)).toEqual(
+      [
+        'all',
+        'best-deals',
+        'with-minifigures',
+        'star-wars',
+        'harry-potter',
+        'marvel',
+        'icons',
+      ],
+    );
+    expect(normalizeCatalogQuickFilterKey('marvel')).toBe('marvel');
+    expect(normalizeCatalogQuickFilterKey('not-a-filter')).toBe('all');
+    expect(normalizeCatalogQuickFilterKey(undefined)).toBe('all');
+  });
+
+  test('matches quick filters using deal, minifigure, and theme signals', () => {
+    expect(
+      matchesCatalogQuickFilter({
+        filter: 'best-deals',
+        setCard: {
+          id: '76269',
+          theme: 'Marvel',
+          minifigureCount: 31,
+          minifigureHighlights: ['Iron Man'],
+        },
+        strongDealSetIds: ['76269'],
+      }),
+    ).toBe(true);
+
+    expect(
+      matchesCatalogQuickFilter({
+        filter: 'with-minifigures',
+        setCard: {
+          id: '10316',
+          theme: 'Icons',
+          minifigureHighlights: ['Elrond'],
+        },
+      }),
+    ).toBe(true);
+
+    expect(
+      matchesCatalogQuickFilter({
+        filter: 'star-wars',
+        setCard: {
+          id: '75355',
+          theme: 'Star Wars',
+        },
+      }),
+    ).toBe(true);
+
+    expect(
+      matchesCatalogQuickFilter({
+        filter: 'harry-potter',
+        setCard: {
+          id: '76269',
+          theme: 'Marvel',
+        },
+      }),
+    ).toBe(false);
   });
 });

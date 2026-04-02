@@ -1,5 +1,14 @@
 import { listCatalogSearchMatches } from '@lego-platform/catalog/data-access';
-import { CatalogSetCard } from '@lego-platform/catalog/ui';
+import {
+  CatalogQuickFilterBar,
+  CatalogSetCard,
+} from '@lego-platform/catalog/ui';
+import {
+  type CatalogQuickFilterKey,
+  listCatalogQuickFilterOptions,
+  matchesCatalogQuickFilter,
+  normalizeCatalogQuickFilterKey,
+} from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
   buildWebPath,
@@ -32,6 +41,24 @@ function formatReviewedPrice({
     currency: currencyCode,
     style: 'currency',
   }).format(minorUnits / 100);
+}
+
+function buildSearchFilterHref({
+  filter,
+  query,
+}: {
+  filter: CatalogQuickFilterKey;
+  query: string;
+}): string {
+  const searchParams = new URLSearchParams({
+    q: query,
+  });
+
+  if (filter !== 'all') {
+    searchParams.set('filter', filter);
+  }
+
+  return `${buildWebPath(webPathnames.search)}?${searchParams.toString()}`;
 }
 
 function formatSearchPriceContext({
@@ -112,18 +139,28 @@ function getSearchResultSupportingNote(searchResult: {
 }
 
 export function CatalogFeatureSearchResults({
+  activeFilter,
   query,
   reviewedPriceContexts = [],
 }: {
+  activeFilter?: string;
   query?: string;
   reviewedPriceContexts?: readonly CatalogFeatureSearchReviewedPriceContext[];
 }) {
   const searchQuery = readSearchQuery(query);
+  const normalizedFilter = normalizeCatalogQuickFilterKey(activeFilter);
   const reviewedPriceContextBySetId = new Map(
     reviewedPriceContexts.map((reviewedPriceContext) => [
       reviewedPriceContext.setId,
       reviewedPriceContext,
     ]),
+  );
+  const strongDealSetIds = reviewedPriceContexts.flatMap(
+    (reviewedPriceContext) =>
+      typeof reviewedPriceContext.deltaMinor === 'number' &&
+      reviewedPriceContext.deltaMinor < 0
+        ? [reviewedPriceContext.setId]
+        : [],
   );
 
   if (!searchQuery) {
@@ -182,6 +219,27 @@ export function CatalogFeatureSearchResults({
   const reviewedResultCount = searchResults.filter(
     (searchResult) => searchResult.priceContext,
   ).length;
+  const filteredSearchResults = searchResults.filter((searchResult) =>
+    matchesCatalogQuickFilter({
+      filter: normalizedFilter,
+      setCard: searchResult,
+      strongDealSetIds,
+    }),
+  );
+  const activeQuickFilterOption = listCatalogQuickFilterOptions().find(
+    (catalogQuickFilterOption) =>
+      catalogQuickFilterOption.key === normalizedFilter,
+  );
+  const quickFilterItems = listCatalogQuickFilterOptions().map(
+    (catalogQuickFilterOption) => ({
+      href: buildSearchFilterHref({
+        filter: catalogQuickFilterOption.key,
+        query: searchQuery,
+      }),
+      isActive: catalogQuickFilterOption.key === normalizedFilter,
+      label: catalogQuickFilterOption.label,
+    }),
+  );
 
   if (!searchResults.length) {
     return (
@@ -218,24 +276,56 @@ export function CatalogFeatureSearchResults({
           titleAs="h1"
         />
         <p className={styles.resultsMeta}>
-          {searchResults.length} matching set
-          {searchResults.length === 1 ? '' : 's'}
-          {reviewedResultCount
-            ? ` · ${reviewedResultCount} with reviewed pricing`
-            : ''}
+          {filteredSearchResults.length} matching set
+          {filteredSearchResults.length === 1 ? '' : 's'}
+          {normalizedFilter !== 'all'
+            ? ` · ${activeQuickFilterOption?.label ?? 'Filtered'}`
+            : reviewedResultCount
+              ? ` · ${reviewedResultCount} with reviewed pricing`
+              : ''}
         </p>
       </div>
-      <div className={styles.resultsGrid}>
-        {searchResults.map((searchResult) => (
-          <CatalogSetCard
-            href={buildSetDetailPath(searchResult.slug)}
-            key={searchResult.id}
-            setSummary={searchResult}
-            supportingNote={getSearchResultSupportingNote(searchResult)}
-            variant="browse"
+      <CatalogQuickFilterBar
+        ariaLabel="Refine search results"
+        items={quickFilterItems}
+      />
+      {filteredSearchResults.length ? (
+        <div className={styles.resultsGrid}>
+          {filteredSearchResults.map((searchResult) => (
+            <CatalogSetCard
+              href={buildSetDetailPath(searchResult.slug)}
+              key={searchResult.id}
+              setSummary={searchResult}
+              supportingNote={getSearchResultSupportingNote(searchResult)}
+              variant="browse"
+            />
+          ))}
+        </div>
+      ) : (
+        <Surface as="section" className={styles.statePanel} tone="muted">
+          <SectionHeading
+            description={`"${searchQuery}" has matches, but none in ${(
+              activeQuickFilterOption?.label ?? 'this filter'
+            ).toLowerCase()}. Try another filter or broaden the search.`}
+            eyebrow="Search"
+            title={`No ${(
+              activeQuickFilterOption?.label ?? 'filtered'
+            ).toLowerCase()} matches`}
+            titleAs="h2"
           />
-        ))}
-      </div>
+          <div className={styles.stateActions}>
+            <ActionLink
+              href={buildSearchFilterHref({
+                filter: 'all',
+                query: searchQuery,
+              })}
+              tone="secondary"
+            >
+              Show all matches
+            </ActionLink>
+          </div>
+        </Surface>
+      )}
     </section>
   );
 }

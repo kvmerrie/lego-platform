@@ -235,6 +235,11 @@ function toCatalogHomepageSetCard(
     ...toCatalogSetSummary(catalogSetDetail),
     tagline: catalogSetDetail.tagline,
     availability: catalogSetDetail.availability,
+    ...(typeof catalogSetDetail.minifigureCount === 'number'
+      ? {
+          minifigureCount: catalogSetDetail.minifigureCount,
+        }
+      : {}),
     ...(catalogSetDetail.minifigureHighlights?.length
       ? {
           minifigureHighlights: [...catalogSetDetail.minifigureHighlights],

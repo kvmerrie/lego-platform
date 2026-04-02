@@ -57,6 +57,56 @@ describe('CatalogFeatureSearchResults', () => {
     );
   });
 
+  it('renders quick filters and keeps best-deal results when a deal filter is active', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSearchResults
+        activeFilter="best-deals"
+        query="avengers"
+        reviewedPriceContexts={[
+          {
+            currencyCode: 'EUR',
+            deltaMinor: -3000,
+            headlinePriceMinor: 46999,
+            merchantName: 'bol',
+            setId: '76269',
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Refine search results"');
+    expect(markup).toContain('href="/search?q=avengers&amp;filter=best-deals"');
+    expect(markup).toContain('1 matching set · Best deals');
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('Avengers Tower');
+  });
+
+  it('renders a filtered empty state when no result matches the selected quick filter', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSearchResults
+        activeFilter="star-wars"
+        query="avengers"
+        reviewedPriceContexts={[
+          {
+            currencyCode: 'EUR',
+            deltaMinor: -3000,
+            headlinePriceMinor: 46999,
+            merchantName: 'bol',
+            setId: '76269',
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Refine search results"');
+    expect(markup).toContain('No star wars matches');
+    expect(markup).toContain(
+      '&quot;avengers&quot; has matches, but none in star wars.',
+    );
+    expect(markup).toContain('href="/search?q=avengers"');
+    expect(markup).toContain('Show all matches');
+  });
+
   it('renders a no-results state when nothing matches', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSearchResults query="pirates hideout" />,

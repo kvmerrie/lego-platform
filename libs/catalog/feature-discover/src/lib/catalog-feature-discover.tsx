@@ -6,12 +6,20 @@ import {
   listDiscoverHighlightSetCards,
 } from '@lego-platform/catalog/data-access';
 import {
+  CatalogQuickFilterBar,
   CatalogSetCard,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
-import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
+import {
+  type CatalogHomepageSetCard,
+  type CatalogQuickFilterKey,
+  listCatalogQuickFilterOptions,
+  matchesCatalogQuickFilter,
+  normalizeCatalogQuickFilterKey,
+} from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
+  buildWebPath,
   buildThemePath,
   webPathnames,
 } from '@lego-platform/shared/config';
@@ -42,6 +50,38 @@ function formatThemeLaneCount({
 
 export interface CatalogFeatureDiscoverDealItem extends CatalogHomepageSetCard {
   priceContext?: CatalogSetCardPriceContext;
+}
+
+function buildDiscoverFilterHref(filter: CatalogQuickFilterKey): string {
+  const discoverPath = buildWebPath(webPathnames.discover);
+
+  if (filter === 'all') {
+    return discoverPath;
+  }
+
+  const searchParams = new URLSearchParams({
+    filter,
+  });
+
+  return `${discoverPath}?${searchParams.toString()}`;
+}
+
+function filterDiscoverSetCards<T extends CatalogHomepageSetCard>({
+  filter,
+  setCards,
+  strongDealSetIds,
+}: {
+  filter: CatalogQuickFilterKey;
+  setCards: readonly T[];
+  strongDealSetIds: readonly string[];
+}): T[] {
+  return setCards.filter((setCard) =>
+    matchesCatalogQuickFilter({
+      filter,
+      setCard,
+      strongDealSetIds,
+    }),
+  );
 }
 
 function formatDiscoverFanContext(
@@ -75,12 +115,17 @@ function formatDiscoverFanContext(
 }
 
 export function CatalogFeatureDiscover({
+  activeFilter,
+  bestDealSetIds = [],
   dealSetCards = [],
   reviewedSetIds = [],
 }: {
+  activeFilter?: string;
+  bestDealSetIds?: readonly string[];
   dealSetCards?: readonly CatalogFeatureDiscoverDealItem[];
   reviewedSetIds?: readonly string[];
 }) {
+  const normalizedFilter = normalizeCatalogQuickFilterKey(activeFilter);
   const characterSetCards = listDiscoverCharacterSetCards({
     reviewedSetIds,
   });
@@ -92,6 +137,47 @@ export function CatalogFeatureDiscover({
   });
   const totalSetCount = listCatalogSetSummaries().length;
   const totalThemeCount = listCatalogThemes().length;
+  const activeQuickFilterOption = listCatalogQuickFilterOptions().find(
+    (catalogQuickFilterOption) =>
+      catalogQuickFilterOption.key === normalizedFilter,
+  );
+  const quickFilterItems = listCatalogQuickFilterOptions().map(
+    (catalogQuickFilterOption) => ({
+      href: buildDiscoverFilterHref(catalogQuickFilterOption.key),
+      isActive: normalizedFilter === catalogQuickFilterOption.key,
+      label: catalogQuickFilterOption.label,
+    }),
+  );
+  const filteredDealSetCards = filterDiscoverSetCards({
+    filter: normalizedFilter,
+    setCards: dealSetCards,
+    strongDealSetIds: bestDealSetIds,
+  });
+  const filteredCharacterSetCards = filterDiscoverSetCards({
+    filter: normalizedFilter,
+    setCards: characterSetCards,
+    strongDealSetIds: bestDealSetIds,
+  });
+  const filteredHighlightSetCards = filterDiscoverSetCards({
+    filter: normalizedFilter,
+    setCards: highlightSetCards,
+    strongDealSetIds: bestDealSetIds,
+  });
+  const filteredThemeGroups = themeGroups
+    .map((themeGroup) => ({
+      ...themeGroup,
+      setCards: filterDiscoverSetCards({
+        filter: normalizedFilter,
+        setCards: themeGroup.setCards,
+        strongDealSetIds: bestDealSetIds,
+      }),
+    }))
+    .filter((themeGroup) => themeGroup.setCards.length > 0);
+  const hasFilteredContent =
+    filteredDealSetCards.length > 0 ||
+    filteredCharacterSetCards.length > 0 ||
+    filteredHighlightSetCards.length > 0 ||
+    filteredThemeGroups.length > 0;
 
   if (!themeGroups.length) {
     return (
@@ -125,7 +211,31 @@ export function CatalogFeatureDiscover({
         </div>
       </section>
 
-      {dealSetCards.length ? (
+      <CatalogQuickFilterBar
+        ariaLabel="Refine discover"
+        items={quickFilterItems}
+      />
+
+      {!hasFilteredContent ? (
+        <Surface as="section" className={styles.emptyState} tone="muted">
+          <SectionHeading
+            description="Try another quick filter or open a full theme lane to keep exploring the current public catalog."
+            eyebrow="Discover"
+            title={`No matches in ${activeQuickFilterOption?.label ?? 'this filter'}`}
+            titleAs="h2"
+          />
+          <div className={styles.introActions}>
+            <ActionLink
+              href={buildWebPath(webPathnames.discover)}
+              tone="secondary"
+            >
+              Show all sets
+            </ActionLink>
+          </div>
+        </Surface>
+      ) : null}
+
+      {hasFilteredContent && filteredDealSetCards.length ? (
         <Surface as="section" className={styles.dealSection} tone="default">
           <div className={styles.sectionHeader}>
             <SectionHeading
@@ -135,11 +245,11 @@ export function CatalogFeatureDiscover({
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
-              {formatSetCount(dealSetCards.length)}
+              {formatSetCount(filteredDealSetCards.length)}
             </p>
           </div>
           <div className={styles.dealGrid}>
-            {dealSetCards.map((dealSetCard) => (
+            {filteredDealSetCards.map((dealSetCard) => (
               <CatalogSetCard
                 href={buildSetDetailPath(dealSetCard.slug)}
                 key={dealSetCard.id}
@@ -153,7 +263,7 @@ export function CatalogFeatureDiscover({
         </Surface>
       ) : null}
 
-      {characterSetCards.length ? (
+      {hasFilteredContent && filteredCharacterSetCards.length ? (
         <Surface as="section" className={styles.featuredSection} tone="muted">
           <div className={styles.sectionHeader}>
             <SectionHeading
@@ -163,11 +273,11 @@ export function CatalogFeatureDiscover({
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
-              {formatSetCount(characterSetCards.length)}
+              {formatSetCount(filteredCharacterSetCards.length)}
             </p>
           </div>
           <div className={styles.featuredGrid}>
-            {characterSetCards.map((characterSetCard) => (
+            {filteredCharacterSetCards.map((characterSetCard) => (
               <CatalogSetCard
                 href={buildSetDetailPath(characterSetCard.slug)}
                 key={characterSetCard.id}
@@ -180,7 +290,7 @@ export function CatalogFeatureDiscover({
         </Surface>
       ) : null}
 
-      {highlightSetCards.length ? (
+      {hasFilteredContent && filteredHighlightSetCards.length ? (
         <Surface as="section" className={styles.featuredSection} tone="muted">
           <div className={styles.sectionHeader}>
             <SectionHeading
@@ -190,11 +300,11 @@ export function CatalogFeatureDiscover({
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
-              {formatSetCount(highlightSetCards.length)}
+              {formatSetCount(filteredHighlightSetCards.length)}
             </p>
           </div>
           <div className={styles.featuredGrid}>
-            {highlightSetCards.map((highlightSetCard) => (
+            {filteredHighlightSetCards.map((highlightSetCard) => (
               <CatalogSetCard
                 href={buildSetDetailPath(highlightSetCard.slug)}
                 key={highlightSetCard.id}
@@ -207,47 +317,49 @@ export function CatalogFeatureDiscover({
         </Surface>
       ) : null}
 
-      <div className={styles.themeSections}>
-        {themeGroups.map((themeGroup, index) => (
-          <Surface
-            as="section"
-            className={styles.themeSection}
-            key={themeGroup.theme}
-            tone={index % 2 === 0 ? 'default' : 'muted'}
-          >
-            <div className={styles.themeHeader}>
-              <div className={styles.themeHeadingBlock}>
-                <p className={styles.themeEyebrow}>Theme</p>
-                <h2 className={styles.themeTitle}>{themeGroup.theme}</h2>
-                <ActionLink
-                  className={styles.themeAction}
-                  href={buildThemePath(themeGroup.slug)}
-                  tone="secondary"
-                >
-                  Open full theme
-                </ActionLink>
+      {hasFilteredContent ? (
+        <div className={styles.themeSections}>
+          {filteredThemeGroups.map((themeGroup, index) => (
+            <Surface
+              as="section"
+              className={styles.themeSection}
+              key={themeGroup.theme}
+              tone={index % 2 === 0 ? 'default' : 'muted'}
+            >
+              <div className={styles.themeHeader}>
+                <div className={styles.themeHeadingBlock}>
+                  <p className={styles.themeEyebrow}>Theme</p>
+                  <h2 className={styles.themeTitle}>{themeGroup.theme}</h2>
+                  <ActionLink
+                    className={styles.themeAction}
+                    href={buildThemePath(themeGroup.slug)}
+                    tone="secondary"
+                  >
+                    Open full theme
+                  </ActionLink>
+                </div>
+                <p className={styles.sectionMeta}>
+                  {formatThemeLaneCount({
+                    shownCount: themeGroup.setCards.length,
+                    totalCount:
+                      themeGroup.totalSetCount ?? themeGroup.setCards.length,
+                  })}
+                </p>
               </div>
-              <p className={styles.sectionMeta}>
-                {formatThemeLaneCount({
-                  shownCount: themeGroup.setCards.length,
-                  totalCount:
-                    themeGroup.totalSetCount ?? themeGroup.setCards.length,
-                })}
-              </p>
-            </div>
-            <div className={styles.themeGrid}>
-              {themeGroup.setCards.map((setCard) => (
-                <CatalogSetCard
-                  href={buildSetDetailPath(setCard.slug)}
-                  key={setCard.id}
-                  setSummary={setCard}
-                  variant="browse"
-                />
-              ))}
-            </div>
-          </Surface>
-        ))}
-      </div>
+              <div className={styles.themeGrid}>
+                {themeGroup.setCards.map((setCard) => (
+                  <CatalogSetCard
+                    href={buildSetDetailPath(setCard.slug)}
+                    key={setCard.id}
+                    setSummary={setCard}
+                    variant="browse"
+                  />
+                ))}
+              </div>
+            </Surface>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

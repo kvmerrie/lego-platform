@@ -497,6 +497,27 @@
   gap: var(--lego-space-3);
 }
 
+.quickFilterNav {
+  overflow-x: auto;
+}
+
+.quickFilterList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.quickFilterItem {
+  display: flex;
+}
+
+.quickFilterChip {
+  white-space: nowrap;
+}
+
 .themeHomepageCard {
   --theme-home-surface: #d9e4f2;
   --theme-home-text: #171a22;

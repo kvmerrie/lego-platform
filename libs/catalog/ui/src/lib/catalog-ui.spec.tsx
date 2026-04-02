@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  CatalogQuickFilterBar,
   CatalogSetCard,
   CatalogSetDetailPanel,
   CatalogThemeHighlight,
@@ -327,5 +328,30 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain(
       'Premium collectors are consolidating around large display pieces.',
     );
+  });
+
+  it('renders a lightweight quick-filter chip row with an active state', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogQuickFilterBar
+        ariaLabel="Refine discover"
+        items={[
+          {
+            href: '/discover',
+            isActive: true,
+            label: 'All',
+          },
+          {
+            href: '/discover?filter=best-deals',
+            label: 'Best deals',
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('aria-label="Refine discover"');
+    expect(markup).toContain('href="/discover"');
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('Best deals');
+    expect(markup).toContain('href="/discover?filter=best-deals"');
   });
 });
