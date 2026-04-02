@@ -1,4 +1,11 @@
-import { CatalogFeatureSearchResults } from '@lego-platform/catalog/feature-search-results';
+import {
+  CatalogFeatureSearchResults,
+  type CatalogFeatureSearchReviewedPriceContext,
+} from '@lego-platform/catalog/feature-search-results';
+import {
+  getFeaturedSetPriceContext,
+  listReviewedPriceSetIds,
+} from '@lego-platform/pricing/data-access';
 import { ShellWeb } from '@lego-platform/shell/web';
 
 function readQueryParam(value: string | string[] | undefined): string {
@@ -12,10 +19,29 @@ export default async function SearchPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const query = readQueryParam(resolvedSearchParams.q);
+  const reviewedPriceContexts: CatalogFeatureSearchReviewedPriceContext[] =
+    listReviewedPriceSetIds().flatMap((setId) => {
+      const featuredSetPriceContext = getFeaturedSetPriceContext(setId);
+
+      return featuredSetPriceContext
+        ? [
+            {
+              currencyCode: featuredSetPriceContext.currencyCode,
+              deltaMinor: featuredSetPriceContext.deltaMinor,
+              headlinePriceMinor: featuredSetPriceContext.headlinePriceMinor,
+              merchantName: featuredSetPriceContext.merchantName,
+              setId: featuredSetPriceContext.setId,
+            },
+          ]
+        : [];
+    });
 
   return (
     <ShellWeb searchQuery={query}>
-      <CatalogFeatureSearchResults query={query} />
+      <CatalogFeatureSearchResults
+        query={query}
+        reviewedPriceContexts={reviewedPriceContexts}
+      />
     </ShellWeb>
   );
 }

@@ -341,9 +341,16 @@ const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
 interface CatalogSearchIndexEntry {
   canonicalIdToken: string;
   compactName: string;
+  discoverRank: number;
   normalizedName: string;
   setCard: CatalogHomepageSetCard;
   sourceSetNumberToken: string;
+}
+
+export interface CatalogSearchMatch {
+  discoverRank: number;
+  score: number;
+  setCard: CatalogHomepageSetCard;
 }
 
 function normalizeCatalogSearchText(value: string): string {
@@ -415,6 +422,10 @@ function createCatalogSearchIndex(): CatalogSearchIndexEntry[] {
         catalogSetRecord.canonicalId,
       ),
       compactName: normalizeCatalogSearchToken(catalogSetCard.name),
+      discoverRank: getExplicitBrowseRank(
+        catalogSetCard.id,
+        curatedDiscoverSetOrder,
+      ),
       normalizedName: normalizeCatalogSearchText(catalogSetCard.name),
       setCard: catalogSetCard,
       sourceSetNumberToken: normalizeCatalogSearchToken(
@@ -727,13 +738,15 @@ export function listDiscoverBrowseThemeGroups({
 }
 
 export function searchCatalogSetCards(query: string): CatalogHomepageSetCard[] {
-  return listCatalogSearchSuggestions(query, Number.MAX_SAFE_INTEGER);
+  return listCatalogSearchMatches(query, Number.MAX_SAFE_INTEGER).map(
+    (catalogSearchMatch) => catalogSearchMatch.setCard,
+  );
 }
 
-export function listCatalogSearchSuggestions(
+export function listCatalogSearchMatches(
   query: string,
   limit = 6,
-): CatalogHomepageSetCard[] {
+): CatalogSearchMatch[] {
   const normalizedQueryText = normalizeCatalogSearchText(query);
   const normalizedQueryToken = normalizeCatalogSearchToken(query);
   const suggestionLimit = Math.max(0, Math.floor(limit));
@@ -753,6 +766,7 @@ export function listCatalogSearchSuggestions(
       return typeof score === 'number'
         ? [
             {
+              discoverRank: entry.discoverRank,
               score,
               setCard: entry.setCard,
             },
@@ -765,8 +779,16 @@ export function listCatalogSearchSuggestions(
         right.setCard.releaseYear - left.setCard.releaseYear ||
         left.setCard.name.localeCompare(right.setCard.name),
     )
-    .slice(0, suggestionLimit)
-    .map((entry) => entry.setCard);
+    .slice(0, suggestionLimit);
+}
+
+export function listCatalogSearchSuggestions(
+  query: string,
+  limit = 6,
+): CatalogHomepageSetCard[] {
+  return listCatalogSearchMatches(query, limit).map(
+    (catalogSearchMatch) => catalogSearchMatch.setCard,
+  );
 }
 
 export function listCatalogSetSlugs(): string[] {

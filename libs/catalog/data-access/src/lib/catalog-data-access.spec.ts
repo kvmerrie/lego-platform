@@ -5,6 +5,7 @@ import {
   listDiscoverBrowseThemeGroups,
   listDiscoverCharacterSetCards,
   listDiscoverHighlightSetCards,
+  listCatalogSearchMatches,
   getCatalogOffersBySetId,
   listCatalogSearchSuggestions,
   getCatalogSetBySlug,
@@ -603,6 +604,24 @@ describe('catalog data-access contracts', () => {
     ]);
 
     expect(searchCatalogSetCards('   ')).toEqual([]);
+  });
+
+  test('exposes stable search-match scores for richer result ranking without changing text-first behavior', () => {
+    expect(
+      listCatalogSearchMatches('hogwarts').map((catalogSearchMatch) => ({
+        id: catalogSearchMatch.setCard.id,
+        score: catalogSearchMatch.score,
+      })),
+    ).toEqual([
+      {
+        id: '76435',
+        score: 2,
+      },
+      {
+        id: '76419',
+        score: 2,
+      },
+    ]);
   });
 
   test('keeps the expanded catalog search useful for iconic names and numbers', () => {
