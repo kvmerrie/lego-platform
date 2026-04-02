@@ -345,8 +345,10 @@ const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
 
 interface CatalogSearchIndexEntry {
   canonicalIdToken: string;
+  compactHighlights?: string;
   compactName: string;
   discoverRank: number;
+  normalizedHighlights?: string;
   normalizedName: string;
   setCard: CatalogHomepageSetCard;
   sourceSetNumberToken: string;
@@ -421,11 +423,20 @@ function createCatalogSearchIndex(): CatalogSearchIndexEntry[] {
     const catalogSetCard = toCatalogHomepageSetCard(
       toCatalogSetDetail(catalogSetRecord),
     );
+    const minifigureHighlights = catalogSetCard.minifigureHighlights?.join(' ');
 
     return {
       canonicalIdToken: normalizeCatalogSearchToken(
         catalogSetRecord.canonicalId,
       ),
+      ...(minifigureHighlights
+        ? {
+            compactHighlights:
+              normalizeCatalogSearchToken(minifigureHighlights),
+            normalizedHighlights:
+              normalizeCatalogSearchText(minifigureHighlights),
+          }
+        : {}),
       compactName: normalizeCatalogSearchToken(catalogSetCard.name),
       discoverRank: getExplicitBrowseRank(
         catalogSetCard.id,
@@ -580,6 +591,23 @@ function getCatalogSearchScore({
     entry.compactName.includes(queryToken)
   ) {
     return 4;
+  }
+
+  if (
+    entry.normalizedHighlights
+      ?.split(' ')
+      .some((normalizedHighlightWord) =>
+        normalizedHighlightWord.startsWith(queryText),
+      )
+  ) {
+    return 5;
+  }
+
+  if (
+    entry.normalizedHighlights?.includes(queryText) ||
+    entry.compactHighlights?.includes(queryToken)
+  ) {
+    return 6;
   }
 
   return undefined;

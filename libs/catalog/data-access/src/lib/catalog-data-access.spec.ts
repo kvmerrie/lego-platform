@@ -659,6 +659,27 @@ describe('catalog data-access contracts', () => {
       }),
     ]);
 
+    expect(searchCatalogSetCards('grogu')).toEqual([
+      expect.objectContaining({
+        id: '75331',
+        name: 'The Razor Crest',
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('hermione')).toEqual([
+      expect.objectContaining({
+        id: '76417',
+        name: "Gringotts Wizarding Bank – Collectors' Edition",
+      }),
+    ]);
+
+    expect(searchCatalogSetCards('wolverine')).toEqual([
+      expect.objectContaining({
+        id: '76294',
+        name: 'The X-Mansion',
+      }),
+    ]);
+
     expect(searchCatalogSetCards('10326')).toEqual([
       expect.objectContaining({
         id: '10326',
@@ -675,8 +696,35 @@ describe('catalog data-access contracts', () => {
       }),
     ]);
 
+    expect(listCatalogSearchSuggestions('grogu', 3)).toEqual([
+      expect.objectContaining({
+        id: '75331',
+        name: 'The Razor Crest',
+      }),
+    ]);
+
     expect(listCatalogSearchSuggestions('103', 3)).toHaveLength(3);
     expect(listCatalogSearchSuggestions('103', 0)).toEqual([]);
+  });
+
+  test('keeps direct set-name matches ahead of character-only matches in score tiers', () => {
+    expect(listCatalogSearchMatches('hogwarts')[0]).toEqual(
+      expect.objectContaining({
+        score: 2,
+        setCard: expect.objectContaining({
+          id: '76435',
+        }),
+      }),
+    );
+
+    expect(listCatalogSearchMatches('grogu')[0]).toEqual(
+      expect.objectContaining({
+        score: 5,
+        setCard: expect.objectContaining({
+          id: '75331',
+        }),
+      }),
+    );
   });
 
   test('builds richer homepage card reads with curated availability and tagline context', () => {

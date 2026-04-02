@@ -57,6 +57,17 @@ describe('CatalogFeatureSearchResults', () => {
     );
   });
 
+  it('renders character-name matches when a query hits curated minifigure highlights', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSearchResults query="grogu" />,
+    );
+
+    expect(markup).toContain('Results for &quot;grogu&quot;');
+    expect(markup).toContain('The Razor Crest');
+    expect(markup).toContain('Includes The Mandalorian, Grogu, and Kuiil');
+    expect(markup).toContain('href="/sets/the-razor-crest-75331"');
+  });
+
   it('renders quick filters and keeps best-deal results when a deal filter is active', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSearchResults
