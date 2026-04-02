@@ -55,6 +55,21 @@ describe('affiliate data access', () => {
     ]);
   });
 
+  test('adds reviewed official-store coverage for newly added curated sets', () => {
+    expect(
+      listAffiliateOffers('10328').map((affiliateOffer) => ({
+        merchantId: affiliateOffer.merchantId,
+        outboundUrl: affiliateOffer.outboundUrl,
+      })),
+    ).toEqual([
+      {
+        merchantId: 'lego-nl',
+        outboundUrl:
+          'https://www.lego.com/nl-nl/product/bouquet-of-roses-10328',
+      },
+    ]);
+  });
+
   test('returns no affiliate offers for sets outside the commerce slice', () => {
     expect(listAffiliateOffers('76419')).toEqual([]);
   });

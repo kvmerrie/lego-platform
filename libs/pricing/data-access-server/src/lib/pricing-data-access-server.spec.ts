@@ -5,25 +5,37 @@ import {
   upsertDailyPriceHistoryPoints,
 } from './pricing-data-access-server';
 
+const expandedCommerceEnabledSetIds = [
+  '10316',
+  '21348',
+  '76269',
+  '10305',
+  '10332',
+  '10333',
+  '10294',
+  '21061',
+  '21333',
+  '21349',
+  '76178',
+  '75367',
+  '21350',
+  '10317',
+  '75355',
+  '75397',
+  '76429',
+  '76435',
+  '76294',
+  '10335',
+  '10327',
+  '42171',
+  '42172',
+  '10328',
+] as const;
+
 describe('pricing data access server', () => {
   test('builds Dutch pricing artifacts for the curated commerce-enabled sets', () => {
     const result = buildPricingSyncArtifacts({
-      enabledSetIds: [
-        '10316',
-        '21348',
-        '76269',
-        '10305',
-        '10332',
-        '10333',
-        '10294',
-        '21061',
-        '21333',
-        '21349',
-        '76178',
-        '75367',
-        '21350',
-        '10317',
-      ],
+      enabledSetIds: expandedCommerceEnabledSetIds,
       merchantSummaries: [
         { merchantId: 'lego-nl', displayName: 'LEGO' },
         { merchantId: 'bol', displayName: 'bol' },
@@ -31,14 +43,14 @@ describe('pricing data access server', () => {
       ],
     });
 
-    expect(result.pricingObservations).toHaveLength(26);
-    expect(result.pricePanelSnapshots).toHaveLength(14);
+    expect(result.pricingObservations).toHaveLength(36);
+    expect(result.pricePanelSnapshots).toHaveLength(24);
     expect(result.pricePanelSnapshots[0]).toMatchObject({
       lowestMerchantName: 'bol',
       lowestAvailabilityLabel: 'In stock',
     });
     expect(result.pricingSyncManifest.generatedAt).toBe(
-      '2026-03-31T11:12:00.000Z',
+      '2026-03-31T11:52:00.000Z',
     );
   });
 
@@ -100,22 +112,7 @@ describe('pricing data access server', () => {
 
   test('builds one daily price-history point per set from the headline pricing snapshots', () => {
     const result = buildPricingSyncArtifacts({
-      enabledSetIds: [
-        '10316',
-        '21348',
-        '76269',
-        '10305',
-        '10332',
-        '10333',
-        '10294',
-        '21061',
-        '21333',
-        '21349',
-        '76178',
-        '75367',
-        '21350',
-        '10317',
-      ],
+      enabledSetIds: expandedCommerceEnabledSetIds,
       merchantSummaries: [
         { merchantId: 'lego-nl', displayName: 'LEGO' },
         { merchantId: 'bol', displayName: 'bol' },
@@ -128,7 +125,7 @@ describe('pricing data access server', () => {
       pricePanelSnapshots: result.pricePanelSnapshots,
     });
 
-    expect(historyPoints).toHaveLength(14);
+    expect(historyPoints).toHaveLength(24);
     expect(historyPoints).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -161,6 +158,14 @@ describe('pricing data access server', () => {
           referencePriceMinor: 33999,
           lowestMerchantId: 'bol',
           observedAt: '2026-03-31T10:44:00.000Z',
+          recordedOn: '2026-03-31',
+        }),
+        expect.objectContaining({
+          setId: '75397',
+          headlinePriceMinor: 49999,
+          referencePriceMinor: 49999,
+          lowestMerchantId: 'lego-nl',
+          observedAt: '2026-03-31T11:20:00.000Z',
           recordedOn: '2026-03-31',
         }),
       ]),

@@ -2,7 +2,7 @@
 
 This checklist validates the current Dutch-market pricing and affiliate slice whenever the reviewed set allowlist or merchant inputs change.
 
-The current reviewed commerce slice covers `10` curated Dutch set-detail pages.
+The current reviewed commerce slice covers `24` curated Dutch set-detail pages.
 
 ## 1. Safe Local Run
 

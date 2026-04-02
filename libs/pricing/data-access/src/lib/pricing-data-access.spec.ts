@@ -62,6 +62,23 @@ describe('pricing data access', () => {
     });
   });
 
+  test('returns reviewed official-store pricing for newly added curated sets', () => {
+    expect(getPricePanelSnapshot('75397')).toEqual({
+      setId: '75397',
+      regionCode: 'NL',
+      currencyCode: 'EUR',
+      condition: 'new',
+      headlinePriceMinor: 49999,
+      lowestAvailabilityLabel: 'In stock',
+      lowestMerchantId: 'lego-nl',
+      lowestMerchantName: 'LEGO',
+      merchantCount: 1,
+      observedAt: '2026-03-31T11:20:00.000Z',
+      referencePriceMinor: 49999,
+      deltaMinor: 0,
+    });
+  });
+
   test('builds a compact featured-set price context from the current snapshot', () => {
     expect(getFeaturedSetPriceContext('10316')).toEqual({
       setId: '10316',
