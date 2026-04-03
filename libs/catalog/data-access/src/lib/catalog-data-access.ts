@@ -1,10 +1,10 @@
 import {
-  CatalogHomepageThemeVisual,
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetOverlay,
   CatalogSetRecord,
   CatalogSetSummary,
+  CatalogThemeVisual,
   CatalogThemeSnapshot,
   buildCatalogThemeSlug,
   getCatalogProductSlug,
@@ -114,14 +114,11 @@ export interface CatalogThemeLandingPage {
 
 export interface CatalogThemeDirectoryItem {
   imageUrl?: string;
-  homepageVisual?: CatalogHomepageThemeVisual;
   themeSnapshot: CatalogThemeSnapshot;
+  visual?: CatalogThemeVisual;
 }
 
-const curatedHomepageThemeVisualsByName = new Map<
-  string,
-  CatalogHomepageThemeVisual
->([
+const curatedThemeVisualsByName = new Map<string, CatalogThemeVisual>([
   [
     'Icons',
     {
@@ -248,25 +245,23 @@ function toCatalogHomepageSetCard(
   };
 }
 
-function getHomepageThemeVisual({
+function getThemeVisual({
   fallbackImageUrl,
   themeSnapshot,
 }: {
   fallbackImageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
-}): CatalogHomepageThemeVisual | undefined {
-  const curatedHomepageThemeVisual = curatedHomepageThemeVisualsByName.get(
-    themeSnapshot.name,
-  );
+}): CatalogThemeVisual | undefined {
+  const curatedThemeVisual = curatedThemeVisualsByName.get(themeSnapshot.name);
 
-  if (!curatedHomepageThemeVisual && !fallbackImageUrl) {
+  if (!curatedThemeVisual && !fallbackImageUrl) {
     return undefined;
   }
 
   return {
-    backgroundColor: curatedHomepageThemeVisual?.backgroundColor,
-    imageUrl: curatedHomepageThemeVisual?.imageUrl ?? fallbackImageUrl,
-    textColor: curatedHomepageThemeVisual?.textColor,
+    backgroundColor: curatedThemeVisual?.backgroundColor,
+    imageUrl: curatedThemeVisual?.imageUrl ?? fallbackImageUrl,
+    textColor: curatedThemeVisual?.textColor,
   };
 }
 
@@ -892,7 +887,7 @@ export function listHomepageThemeDirectoryItems(
     return [
       {
         ...catalogThemeDirectoryItem,
-        homepageVisual: getHomepageThemeVisual({
+        visual: getThemeVisual({
           fallbackImageUrl: catalogThemeDirectoryItem.imageUrl,
           themeSnapshot: catalogThemeSnapshot,
         }),
@@ -924,13 +919,19 @@ export function listCatalogThemeDirectoryItems(): CatalogThemeDirectoryItem[] {
       return [];
     }
 
+    const imageUrl = getCatalogThemeRepresentativeImageUrl({
+      setCards: catalogThemeGroup.setCards,
+      themeSnapshot: catalogThemeSnapshot,
+    });
+
     return [
       {
-        imageUrl: getCatalogThemeRepresentativeImageUrl({
-          setCards: catalogThemeGroup.setCards,
+        imageUrl,
+        themeSnapshot: catalogThemeSnapshot,
+        visual: getThemeVisual({
+          fallbackImageUrl: imageUrl,
           themeSnapshot: catalogThemeSnapshot,
         }),
-        themeSnapshot: catalogThemeSnapshot,
       },
     ];
   });

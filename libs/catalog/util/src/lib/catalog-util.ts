@@ -152,7 +152,7 @@ export interface CatalogThemeSnapshot {
   signatureSet: string;
 }
 
-export interface CatalogHomepageThemeVisual {
+export interface CatalogThemeVisual {
   backgroundColor?: string;
   imageUrl?: string;
   textColor?: string;

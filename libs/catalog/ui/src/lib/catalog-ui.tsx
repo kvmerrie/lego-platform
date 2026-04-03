@@ -665,15 +665,17 @@ export function CatalogThemeHighlight({
   visual?: CatalogThemeVisual;
 }) {
   if (variant === 'portrait') {
-    const portraitThemeStyle = {
+    const portraitVisualStyle = {
       ...(visual?.backgroundColor
         ? ({
-            '--theme-home-surface': visual.backgroundColor,
+            '--theme-surface': visual.backgroundColor,
           } as CSSProperties)
         : {}),
       ...(visual?.textColor
         ? ({
-            '--theme-home-text': visual.textColor,
+            '--theme-text': visual.textColor,
+            '--theme-muted': `color-mix(in srgb, ${visual.textColor} 72%, transparent)`,
+            '--theme-shadow': `color-mix(in srgb, ${visual.textColor} 12%, transparent)`,
           } as CSSProperties)
         : {}),
     };
@@ -681,19 +683,19 @@ export function CatalogThemeHighlight({
     const portraitContent = (
       <>
         {portraitImageUrl ? (
-          <div className={styles.themeHomepageVisual}>
+          <div className={styles.themePortraitVisual}>
             <img
               alt={`${themeSnapshot.signatureSet} LEGO set`}
-              className={styles.themeHomepageImage}
+              className={styles.themePortraitImage}
               decoding="async"
               loading="lazy"
               src={portraitImageUrl}
             />
           </div>
         ) : null}
-        <div className={styles.themeHomepageBody}>
-          <h3 className={styles.themeHomepageTitle}>{themeSnapshot.name}</h3>
-          <p className={styles.themeHomepageMeta}>
+        <div className={styles.themePortraitBody}>
+          <h3 className={styles.themePortraitTitle}>{themeSnapshot.name}</h3>
+          <p className={styles.themePortraitMeta}>
             {themeSnapshot.setCount} sets
           </p>
         </div>
@@ -703,20 +705,20 @@ export function CatalogThemeHighlight({
     return (
       <Surface
         as="article"
-        className={`${styles.themeCard} ${styles.themeHomepageCard}${
+        className={`${styles.themeCard} ${styles.themePortraitCard}${
           className ? ` ${className}` : ''
         }`}
         data-theme={themeSnapshot.slug}
         style={
-          Object.keys(portraitThemeStyle).length > 0
-            ? portraitThemeStyle
+          Object.keys(portraitVisualStyle).length > 0
+            ? portraitVisualStyle
             : undefined
         }
         tone="muted"
       >
         {href ? (
           <ActionLink
-            className={styles.themeHomepageLink}
+            className={styles.themePortraitLink}
             href={href}
             tone="card"
           >
@@ -730,16 +732,16 @@ export function CatalogThemeHighlight({
   }
 
   if (variant === 'feature') {
-    const featureThemeStyle = {
+    const featureVisualStyle = {
       ...(visual?.backgroundColor
         ? ({
-            '--theme-tile-surface': visual.backgroundColor,
+            '--theme-surface': visual.backgroundColor,
           } as CSSProperties)
         : {}),
       ...(visual?.textColor
         ? ({
-            '--theme-tile-text': visual.textColor,
-            '--theme-tile-muted': `color-mix(in srgb, ${visual.textColor} 78%, transparent)`,
+            '--theme-text': visual.textColor,
+            '--theme-muted': `color-mix(in srgb, ${visual.textColor} 78%, transparent)`,
           } as CSSProperties)
         : {}),
     };
@@ -747,26 +749,26 @@ export function CatalogThemeHighlight({
     const featureContent = (
       <>
         {featureImageUrl ? (
-          <div className={styles.themeTileVisual}>
+          <div className={styles.themeFeatureVisual}>
             <img
               alt={`${themeSnapshot.signatureSet} LEGO set`}
-              className={styles.themeTileImage}
+              className={styles.themeFeatureImage}
               decoding="async"
               loading="lazy"
               src={featureImageUrl}
             />
           </div>
         ) : null}
-        <div className={styles.themeTileBody}>
-          <div className={styles.themeTileTop}>
-            <p className={styles.themeTileCount}>
+        <div className={styles.themeFeatureBody}>
+          <div className={styles.themeFeatureTop}>
+            <p className={styles.themeFeatureCount}>
               {themeSnapshot.setCount} tracked sets
             </p>
-            <span className={styles.themeTileAction}>Open theme page</span>
+            <span className={styles.themeFeatureAction}>Open theme page</span>
           </div>
-          <h3 className={styles.themeTileTitle}>{themeSnapshot.name}</h3>
-          <p className={styles.themeTileCopy}>{themeSnapshot.momentum}</p>
-          <p className={styles.themeTileSignature}>
+          <h3 className={styles.themeFeatureTitle}>{themeSnapshot.name}</h3>
+          <p className={styles.themeFeatureCopy}>{themeSnapshot.momentum}</p>
+          <p className={styles.themeFeatureSignature}>
             Start with {themeSnapshot.signatureSet}
           </p>
         </div>
@@ -776,19 +778,23 @@ export function CatalogThemeHighlight({
     return (
       <Surface
         as="article"
-        className={`${styles.themeCard} ${styles.themeTile}${
+        className={`${styles.themeCard} ${styles.themeFeatureCard}${
           className ? ` ${className}` : ''
         }`}
         data-theme={themeSnapshot.slug}
         style={
-          Object.keys(featureThemeStyle).length > 0
-            ? featureThemeStyle
+          Object.keys(featureVisualStyle).length > 0
+            ? featureVisualStyle
             : undefined
         }
         tone="muted"
       >
         {href ? (
-          <ActionLink className={styles.themeTileLink} href={href} tone="card">
+          <ActionLink
+            className={styles.themeFeatureLink}
+            href={href}
+            tone="card"
+          >
             {featureContent}
           </ActionLink>
         ) : (

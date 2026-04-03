@@ -321,8 +321,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain(
       'src="https://images.example/curated-avengers-tower.jpg"',
     );
-    expect(markup).toContain('--theme-tile-surface:#cf554c');
-    expect(markup).toContain('--theme-tile-text:#ffffff');
+    expect(markup).toContain('--theme-surface:#cf554c');
+    expect(markup).toContain('--theme-text:#ffffff');
     expect(markup).toContain('Open theme page');
   });
 
@@ -354,8 +354,8 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).toContain('Icons');
     expect(markup).toContain('14 sets');
-    expect(markup).toContain('--theme-home-surface:#f0c63b');
-    expect(markup).toContain('--theme-home-text:#171a22');
+    expect(markup).toContain('--theme-surface:#f0c63b');
+    expect(markup).toContain('--theme-text:#171a22');
     expect(markup).not.toContain('Open theme page');
     expect(markup).not.toContain('Start with Rivendell');
     expect(markup).not.toContain(

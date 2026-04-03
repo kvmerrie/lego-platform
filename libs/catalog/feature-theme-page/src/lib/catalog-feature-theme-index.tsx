@@ -39,6 +39,7 @@ export function CatalogFeatureThemeIndex({
             key={themeDirectoryItem.themeSnapshot.slug}
             themeSnapshot={themeDirectoryItem.themeSnapshot}
             variant="portrait"
+            visual={themeDirectoryItem.visual}
           />
         ))}
       </div>

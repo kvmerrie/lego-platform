@@ -35,7 +35,7 @@ export function CatalogFeatureThemeSpotlight({
             <CatalogThemeHighlight
               className={styles.spotlightTile}
               href={buildThemePath(themeItem.themeSnapshot.slug)}
-              visual={themeItem.homepageVisual}
+              visual={themeItem.visual}
               imageUrl={themeItem.imageUrl}
               themeSnapshot={themeItem.themeSnapshot}
               variant="feature"

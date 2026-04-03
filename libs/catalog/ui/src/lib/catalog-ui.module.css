@@ -576,27 +576,19 @@
     width var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
 }
 
-.themeHomepageCard {
-  --theme-home-surface: #d9e4f2;
-  --theme-home-text: #171a22;
-  --theme-home-muted: color-mix(
-    in srgb,
-    var(--theme-home-text) 72%,
-    transparent
-  );
-  --theme-home-shadow: color-mix(
-    in srgb,
-    var(--theme-home-text) 12%,
-    transparent
-  );
-  background: var(--theme-home-surface);
+.themePortraitCard {
+  --theme-surface: #d9e4f2;
+  --theme-text: #171a22;
+  --theme-muted: color-mix(in srgb, var(--theme-text) 72%, transparent);
+  --theme-shadow: color-mix(in srgb, var(--theme-text) 12%, transparent);
+  background: var(--theme-surface);
   aspect-ratio: 2 / 3;
   gap: 0;
   overflow: hidden;
   padding: 0;
 }
 
-.themeHomepageLink {
+.themePortraitLink {
   align-items: stretch;
   background: transparent;
   border: 0;
@@ -614,26 +606,26 @@
   width: 100%;
 }
 
-.themeHomepageLink:hover {
+.themePortraitLink:hover {
   background: transparent;
-  box-shadow: 0 6px 14px var(--theme-home-shadow);
+  box-shadow: 0 6px 14px var(--theme-shadow);
   transform: translateY(-1px);
 }
 
-.themeHomepageLink:focus-visible {
+.themePortraitLink:focus-visible {
   background: transparent;
   box-shadow:
-    0 6px 14px var(--theme-home-shadow),
+    0 6px 14px var(--theme-shadow),
     0 0 0 4px var(--lego-focus-ring);
   transform: translateY(-1px);
 }
 
-.themeHomepageLink:hover .themeHomepageImage,
-.themeHomepageLink:focus-visible .themeHomepageImage {
+.themePortraitLink:hover .themePortraitImage,
+.themePortraitLink:focus-visible .themePortraitImage {
   transform: scale(1.01);
 }
 
-.themeHomepageVisual {
+.themePortraitVisual {
   align-items: flex-end;
   background: transparent;
   display: flex;
@@ -643,7 +635,7 @@
   padding: var(--lego-space-4) var(--lego-space-3) 0;
 }
 
-.themeHomepageImage {
+.themePortraitImage {
   display: block;
   height: auto;
   max-height: 11rem;
@@ -653,7 +645,7 @@
   width: auto;
 }
 
-.themeHomepageBody {
+.themePortraitBody {
   align-content: end;
   display: grid;
   flex: 1 1 auto;
@@ -662,8 +654,8 @@
   padding: var(--lego-space-3) var(--lego-space-3) var(--lego-space-4);
 }
 
-.themeHomepageTitle {
-  color: var(--theme-home-text);
+.themePortraitTitle {
+  color: var(--theme-text);
   display: -webkit-box;
   font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
   font-weight: var(--lego-font-weight-bold);
@@ -676,8 +668,8 @@
   -webkit-line-clamp: 2;
 }
 
-.themeHomepageMeta {
-  color: var(--theme-home-muted);
+.themePortraitMeta {
+  color: var(--theme-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
@@ -688,21 +680,21 @@
   gap: var(--lego-space-2);
 }
 
-.themeTile {
-  --theme-tile-surface: #eef1f5;
-  --theme-tile-text: #171a22;
-  --theme-tile-muted: rgba(23, 26, 34, 0.72);
+.themeFeatureCard {
+  --theme-surface: #eef1f5;
+  --theme-text: #171a22;
+  --theme-muted: rgba(23, 26, 34, 0.72);
   --theme-shadow: rgba(23, 26, 34, 0.12);
   aspect-ratio: 4 / 3;
-  background: var(--theme-tile-surface);
+  background: var(--theme-surface);
   border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--theme-tile-text) 10%, transparent);
+    color-mix(in srgb, var(--theme-text) 10%, transparent);
   min-height: 0;
   overflow: hidden;
   padding: 0;
 }
 
-.themeTileLink {
+.themeFeatureLink {
   align-items: stretch;
   background: transparent;
   border: 0;
@@ -722,19 +714,19 @@
   width: 100%;
 }
 
-.themeTileLink:hover {
+.themeFeatureLink:hover {
   background: transparent;
   border-color: transparent;
   box-shadow: 0 10px 22px var(--theme-shadow);
   transform: translateY(-1px);
 }
 
-.themeTileLink:hover .themeTileImage,
-.themeTileLink:focus-visible .themeTileImage {
+.themeFeatureLink:hover .themeFeatureImage,
+.themeFeatureLink:focus-visible .themeFeatureImage {
   transform: scale(1.015);
 }
 
-.themeTileLink:focus-visible {
+.themeFeatureLink:focus-visible {
   background: transparent;
   box-shadow:
     0 10px 22px var(--theme-shadow),
@@ -742,7 +734,7 @@
   transform: translateY(-1px);
 }
 
-.themeTileVisual {
+.themeFeatureVisual {
   align-items: flex-end;
   background: transparent;
   display: flex;
@@ -753,7 +745,7 @@
   padding: var(--lego-space-3) var(--lego-space-4) 0;
 }
 
-.themeTileImage {
+.themeFeatureImage {
   display: block;
   height: auto;
   max-height: 10.25rem;
@@ -763,9 +755,9 @@
   width: auto;
 }
 
-.themeTileBody {
+.themeFeatureBody {
   background: transparent;
-  color: var(--theme-tile-text);
+  color: var(--theme-text);
   display: grid;
   flex: 1 1 auto;
   gap: var(--lego-space-2);
@@ -773,29 +765,29 @@
   padding: var(--lego-space-4);
 }
 
-.themeTileTop {
+.themeFeatureTop {
   align-items: center;
   column-gap: var(--lego-space-2);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
-.themeTileCount,
-.themeTileAction,
-.themeTileSignature {
-  color: var(--theme-tile-muted);
+.themeFeatureCount,
+.themeFeatureAction,
+.themeFeatureSignature {
+  color: var(--theme-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
 }
 
-.themeTileAction {
-  color: var(--theme-tile-text);
+.themeFeatureAction {
+  color: var(--theme-text);
   font-weight: var(--lego-font-weight-semibold);
   white-space: nowrap;
 }
 
-.themeTileTitle {
+.themeFeatureTitle {
   font-size: clamp(1.55rem, 2vw, 1.95rem);
   font-weight: var(--lego-text-role-hero-weight);
   letter-spacing: -0.04em;
@@ -804,8 +796,8 @@
   max-width: 11ch;
 }
 
-.themeTileCopy {
-  color: color-mix(in srgb, var(--theme-tile-text) 84%, transparent);
+.themeFeatureCopy {
+  color: color-mix(in srgb, var(--theme-text) 84%, transparent);
   display: -webkit-box;
   line-height: 1.5;
   margin: 0;
@@ -815,96 +807,110 @@
   -webkit-line-clamp: 2;
 }
 
-.themeTileSignature {
+.themeFeatureSignature {
   align-self: end;
   margin-top: auto;
 }
 
-.themeTile[data-theme='icons'] {
-  --theme-tile-surface: #f0c63b;
+.themePortraitCard[data-theme='icons'],
+.themeFeatureCard[data-theme='icons'] {
+  --theme-surface: #f0c63b;
   --theme-shadow: rgba(171, 126, 18, 0.18);
 }
 
-.themeTile[data-theme='marvel'] {
-  --theme-tile-surface: #cf554c;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='marvel'],
+.themeFeatureCard[data-theme='marvel'] {
+  --theme-surface: #cf554c;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(142, 34, 45, 0.16);
 }
 
-.themeTile[data-theme='ideas'] {
-  --theme-tile-surface: #68b8a0;
-  --theme-tile-text: #10241f;
-  --theme-tile-muted: rgba(16, 36, 31, 0.76);
+.themePortraitCard[data-theme='ideas'],
+.themeFeatureCard[data-theme='ideas'] {
+  --theme-surface: #68b8a0;
+  --theme-text: #10241f;
+  --theme-muted: rgba(16, 36, 31, 0.76);
   --theme-shadow: rgba(42, 120, 73, 0.15);
 }
 
-.themeTile[data-theme='star-wars'] {
-  --theme-tile-surface: #5573b5;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='star-wars'],
+.themeFeatureCard[data-theme='star-wars'] {
+  --theme-surface: #5573b5;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(39, 61, 99, 0.16);
 }
 
-.themeTile[data-theme='harry-potter'] {
-  --theme-tile-surface: #7f67bf;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='harry-potter'],
+.themeFeatureCard[data-theme='harry-potter'] {
+  --theme-surface: #7f67bf;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(91, 61, 127, 0.15);
 }
 
-.themeTile[data-theme='technic'] {
-  --theme-tile-surface: #a8b4c2;
+.themePortraitCard[data-theme='technic'],
+.themeFeatureCard[data-theme='technic'] {
+  --theme-surface: #a8b4c2;
   --theme-shadow: rgba(64, 72, 88, 0.16);
 }
 
-.themeTile[data-theme='modular-buildings'] {
-  --theme-tile-surface: #c9b396;
+.themePortraitCard[data-theme='modular-buildings'],
+.themeFeatureCard[data-theme='modular-buildings'] {
+  --theme-surface: #c9b396;
   --theme-shadow: rgba(118, 96, 64, 0.16);
 }
 
-.themeTile[data-theme='botanicals'] {
-  --theme-tile-surface: #7faa83;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='botanicals'],
+.themeFeatureCard[data-theme='botanicals'] {
+  --theme-surface: #7faa83;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(49, 121, 73, 0.15);
 }
 
-.themeTile[data-theme='architecture'] {
-  --theme-tile-surface: #aeb7c8;
+.themePortraitCard[data-theme='architecture'],
+.themeFeatureCard[data-theme='architecture'] {
+  --theme-surface: #aeb7c8;
   --theme-shadow: rgba(76, 82, 112, 0.14);
 }
 
-.themeTile[data-theme='art'] {
-  --theme-tile-surface: #8f79b7;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='art'],
+.themeFeatureCard[data-theme='art'] {
+  --theme-surface: #8f79b7;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(103, 68, 154, 0.14);
 }
 
-.themeTile[data-theme='disney'] {
-  --theme-tile-surface: #b67aa7;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='disney'],
+.themeFeatureCard[data-theme='disney'] {
+  --theme-surface: #b67aa7;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(148, 72, 133, 0.14);
 }
 
-.themeTile[data-theme='ninjago'] {
-  --theme-tile-surface: #c37d5c;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='ninjago'],
+.themeFeatureCard[data-theme='ninjago'] {
+  --theme-surface: #c37d5c;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(153, 78, 55, 0.15);
 }
 
-.themeTile[data-theme='super-mario'] {
-  --theme-tile-surface: #90b35d;
+.themePortraitCard[data-theme='super-mario'],
+.themeFeatureCard[data-theme='super-mario'] {
+  --theme-surface: #90b35d;
   --theme-shadow: rgba(84, 141, 49, 0.15);
 }
 
-.themeTile[data-theme='jurassic-world'] {
-  --theme-tile-surface: #819567;
-  --theme-tile-text: #ffffff;
-  --theme-tile-muted: rgba(255, 255, 255, 0.82);
+.themePortraitCard[data-theme='jurassic-world'],
+.themeFeatureCard[data-theme='jurassic-world'] {
+  --theme-surface: #819567;
+  --theme-text: #ffffff;
+  --theme-muted: rgba(255, 255, 255, 0.82);
   --theme-shadow: rgba(84, 114, 54, 0.15);
 }
 
@@ -921,18 +927,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .themeHomepageLink,
-  .themeHomepageImage,
-  .themeTileLink,
-  .themeTileImage,
+  .themePortraitLink,
+  .themePortraitImage,
+  .themeFeatureLink,
+  .themeFeatureImage,
   .setCardRailScrollbarThumb {
     transition: none;
   }
 
-  .themeHomepageLink:hover,
-  .themeHomepageLink:focus-visible,
-  .themeTileLink:hover,
-  .themeTileLink:focus-visible {
+  .themePortraitLink:hover,
+  .themePortraitLink:focus-visible,
+  .themeFeatureLink:hover,
+  .themeFeatureLink:focus-visible {
     transform: none;
   }
 }

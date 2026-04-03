@@ -1021,10 +1021,10 @@ describe('catalog data-access contracts', () => {
   test('prepares homepage theme tiles with explicit curated visuals', () => {
     expect(
       listHomepageThemeDirectoryItems().map((themeDirectoryItem) => ({
-        backgroundColor: themeDirectoryItem.homepageVisual?.backgroundColor,
-        imageUrl: themeDirectoryItem.homepageVisual?.imageUrl,
+        backgroundColor: themeDirectoryItem.visual?.backgroundColor,
+        imageUrl: themeDirectoryItem.visual?.imageUrl,
         name: themeDirectoryItem.themeSnapshot.name,
-        textColor: themeDirectoryItem.homepageVisual?.textColor,
+        textColor: themeDirectoryItem.visual?.textColor,
       })),
     ).toEqual([
       {
@@ -1060,6 +1060,49 @@ describe('catalog data-access contracts', () => {
       {
         backgroundColor: '#a8b4c2',
         imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
+        name: 'Technic',
+        textColor: '#171a22',
+      },
+    ]);
+  });
+
+  test('keeps curated theme visuals available in the full theme directory for /themes styling', () => {
+    expect(
+      listCatalogThemeDirectoryItems()
+        .slice(0, 6)
+        .map((themeDirectoryItem) => ({
+          backgroundColor: themeDirectoryItem.visual?.backgroundColor,
+          name: themeDirectoryItem.themeSnapshot.name,
+          textColor: themeDirectoryItem.visual?.textColor,
+        })),
+    ).toEqual([
+      {
+        backgroundColor: '#f0c63b',
+        name: 'Icons',
+        textColor: '#171a22',
+      },
+      {
+        backgroundColor: '#cf554c',
+        name: 'Marvel',
+        textColor: '#ffffff',
+      },
+      {
+        backgroundColor: '#68b8a0',
+        name: 'Ideas',
+        textColor: '#10241f',
+      },
+      {
+        backgroundColor: '#5573b5',
+        name: 'Star Wars',
+        textColor: '#ffffff',
+      },
+      {
+        backgroundColor: '#7f67bf',
+        name: 'Harry Potter',
+        textColor: '#ffffff',
+      },
+      {
+        backgroundColor: '#a8b4c2',
         name: 'Technic',
         textColor: '#171a22',
       },
