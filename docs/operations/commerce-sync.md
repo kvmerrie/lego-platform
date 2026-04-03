@@ -76,6 +76,14 @@ pnpm sync:commerce:check
 
 Use check mode before overwriting artifacts when reviewing changes.
 
+For local-hook clarity, the same deterministic artifact-only path is also available as:
+
+```bash
+pnpm sync:commerce:local:check
+```
+
+This check does not call merchants and does not write Supabase history rows.
+
 ## Operator Notes
 
 - The current slice is set-detail only.
@@ -83,7 +91,7 @@ Use check mode before overwriting artifacts when reviewing changes.
 - The current snapshot-backed price panel remains unchanged.
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
 - Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
-- `pnpm sync:commerce:check` remains a generated-artifact drift check only and does not write history rows.
+- `pnpm sync:commerce:check` and `pnpm sync:commerce:local:check` remain generated-artifact drift checks only and do not write history rows.
 - Merchant allowlist, disclosure copy, reference pricing, enabled set scope, and reviewed direct product URLs remain curated locally.
 - If a stable merchant product page cannot be verified for an enabled set, remove that offer instead of guessing a slug.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.
@@ -112,6 +120,7 @@ Render scheduled job notes:
 
 - run this as a scheduled background job, not as an always-on service
 - keep `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job only
+- use `pnpm sync:commerce:local:check` in local hooks or fast local review
 - use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without writing history rows
 - a healthy scheduled job should log one `start` line and one `end` line with enabled set, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
 

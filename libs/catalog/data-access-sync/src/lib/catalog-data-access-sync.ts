@@ -63,6 +63,11 @@ export interface RunCatalogSyncOptions {
   workspaceRoot: string;
 }
 
+export interface LocalCatalogSyncCheckResult extends CatalogSyncArtifacts {
+  artifactCheck: CatalogGeneratedArtifactCheckResult;
+  mode: 'local-check';
+}
+
 function haveCatalogArtifactsChanged({
   currentCatalogSnapshot,
   currentCatalogSyncManifest,
@@ -373,6 +378,68 @@ export function validateCatalogSyncArtifacts({
   }
 }
 
+function validateCatalogArtifactsAgainstLocalCuration({
+  catalogSnapshot,
+  catalogSyncManifest,
+  curatedSetNumbers = curatedCatalogSyncSetNumbers,
+}: CatalogSyncArtifacts & {
+  curatedSetNumbers?: readonly string[];
+}): void {
+  const expectedSourceSetNumbers = [...curatedSetNumbers];
+  const actualSourceSetNumbers = catalogSnapshot.setRecords.map(
+    (catalogSetRecord) => catalogSetRecord.sourceSetNumber,
+  );
+
+  if (
+    actualSourceSetNumbers.length !== expectedSourceSetNumbers.length ||
+    actualSourceSetNumbers.some(
+      (sourceSetNumber, index) =>
+        sourceSetNumber !== expectedSourceSetNumbers[index],
+    )
+  ) {
+    throw new Error(
+      'Committed catalog snapshot no longer matches curatedCatalogSyncSetNumbers. Run the live catalog sync to regenerate artifacts before pushing.',
+    );
+  }
+
+  const expectedCanonicalIds = curatedSetNumbers.map(getCanonicalCatalogSetId);
+  const actualCanonicalIds = catalogSnapshot.setRecords.map(
+    (catalogSetRecord) => catalogSetRecord.canonicalId,
+  );
+
+  if (
+    actualCanonicalIds.length !== expectedCanonicalIds.length ||
+    actualCanonicalIds.some(
+      (canonicalId, index) => canonicalId !== expectedCanonicalIds[index],
+    )
+  ) {
+    throw new Error(
+      'Committed catalog snapshot canonical ids no longer match the current curated set list. Run the live catalog sync to regenerate artifacts before pushing.',
+    );
+  }
+
+  const expectedHomepageFeaturedSetIds = getCuratedHomepageFeaturedSetIds();
+
+  if (
+    catalogSyncManifest.homepageFeaturedSetIds.length !==
+      expectedHomepageFeaturedSetIds.length ||
+    catalogSyncManifest.homepageFeaturedSetIds.some(
+      (homepageFeaturedSetId, index) =>
+        homepageFeaturedSetId !== expectedHomepageFeaturedSetIds[index],
+    )
+  ) {
+    throw new Error(
+      'Committed catalog manifest homepage featured ids no longer match the current curated homepage set list. Run the live catalog sync to regenerate artifacts before pushing.',
+    );
+  }
+
+  if (catalogSyncManifest.recordCount !== curatedSetNumbers.length) {
+    throw new Error(
+      'Committed catalog manifest recordCount no longer matches the curated sync scope. Run the live catalog sync to regenerate artifacts before pushing.',
+    );
+  }
+}
+
 export async function buildCatalogSyncArtifacts({
   curatedSetNumbers = curatedCatalogSyncSetNumbers,
   now = new Date(),
@@ -428,6 +495,37 @@ export async function buildCatalogSyncArtifacts({
   validateCatalogSyncArtifacts(artifacts);
 
   return artifacts;
+}
+
+export async function runLocalCatalogSyncCheck({
+  workspaceRoot,
+}: {
+  workspaceRoot: string;
+}): Promise<LocalCatalogSyncCheckResult> {
+  const currentArtifacts = await readCatalogGeneratedArtifacts({
+    workspaceRoot,
+  });
+
+  if (!currentArtifacts) {
+    throw new Error(
+      'Generated catalog artifacts are missing. Restore the committed snapshot files or run the live catalog sync first.',
+    );
+  }
+
+  validateCatalogSyncArtifacts(currentArtifacts);
+  validateCatalogArtifactsAgainstLocalCuration(currentArtifacts);
+
+  const artifactCheck = await checkCatalogGeneratedArtifacts({
+    catalogSnapshot: currentArtifacts.catalogSnapshot,
+    catalogSyncManifest: currentArtifacts.catalogSyncManifest,
+    workspaceRoot,
+  });
+
+  return {
+    ...currentArtifacts,
+    artifactCheck,
+    mode: 'local-check',
+  };
 }
 
 export async function runCatalogSync({

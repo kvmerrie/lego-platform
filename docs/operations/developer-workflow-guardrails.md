@@ -51,21 +51,21 @@ This is intended to catch:
 
 ## Pre-Push Hook
 
-The pre-push hook stays check-mode only and focuses on earlier CI parity:
+The pre-push hook stays deterministic and local-only:
 
 1. Prettier check on the files in the push range
 2. Block push if the working tree still contains dirty `*.generated.*` files
 3. If the push touches pricing, affiliate, or commerce sync code:
-   - `pnpm sync:commerce:check`
+   - `pnpm sync:commerce:local:check`
 4. If the push touches catalog or catalog sync code:
-   - require `REBRICKABLE_API_KEY`
-   - run `pnpm sync:catalog:check`
+   - run `pnpm sync:catalog:local:check`
 
-Why the catalog check is conditional:
+The live source-backed or external validation commands stay explicit:
 
-- it depends on the Rebrickable API key
-- it reaches the source-backed validation path
-- it should only run when catalog-related work actually changed
+- `pnpm sync:catalog:check`
+  This is the live Rebrickable-backed drift check.
+- `pnpm sync:commerce`
+  This is the live commerce write path and includes the Supabase history upsert.
 
 ## Manual Completion Expectations
 
@@ -79,8 +79,12 @@ Minimum expectation:
 
 When touching catalog, pricing, affiliate, or commerce-related code, treat drift checks as part of normal completion:
 
-- `pnpm sync:catalog:check`
-- `pnpm sync:commerce:check`
+- local deterministic:
+  - `pnpm sync:catalog:local:check`
+  - `pnpm sync:commerce:local:check`
+- live or external when appropriate:
+  - `pnpm sync:catalog:check`
+  - `pnpm sync:commerce`
 
 Do not treat the task as complete if:
 
@@ -90,16 +94,21 @@ Do not treat the task as complete if:
 
 ## Common Operator Or Developer Fixes
 
-Catalog pre-push failure due to missing key:
-
-- export `REBRICKABLE_API_KEY`
-- rerun `pnpm sync:catalog:check`
-- push again
-
 Commerce pre-push failure:
 
-- rerun `pnpm sync:commerce:check`
+- rerun `pnpm sync:commerce:local:check`
 - review generated artifact drift before pushing
+
+Catalog pre-push failure:
+
+- rerun `pnpm sync:catalog:local:check`
+- review generated artifact drift before pushing
+
+Live catalog validation:
+
+- export `REBRICKABLE_API_KEY`
+- run `pnpm sync:catalog:check`
+- use this outside the default pre-push path when you need source-backed validation
 
 Formatting failure:
 

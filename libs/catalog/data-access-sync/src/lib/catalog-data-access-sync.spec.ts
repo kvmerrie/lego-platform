@@ -9,9 +9,11 @@ import {
 import { readCatalogGeneratedArtifacts } from './catalog-artifact-writer';
 import {
   buildCatalogSyncArtifacts,
+  runLocalCatalogSyncCheck,
   runCatalogSync,
   validateCatalogSyncArtifacts,
 } from './catalog-data-access-sync';
+import { curatedCatalogSyncSetNumbers } from './catalog-sync-curation';
 import {
   createRebrickableClient,
   type RebrickableClient,
@@ -968,6 +970,69 @@ export const catalogSnapshot: CatalogSnapshot = {
     );
     expect(checkResult.artifactCheck.isClean).toBe(true);
     expect(checkResult.artifactCheck.stalePaths).toEqual([]);
+  });
+
+  test('runs a local deterministic catalog artifact check without Rebrickable access', async () => {
+    const workspaceRoot = await mkdtemp(join(tmpdir(), 'catalog-sync-local-'));
+
+    await runCatalogSync({
+      apiKey: 'test-key',
+      fetchImpl: createMockFetchImpl(),
+      minimumRequestSpacingMs: 0,
+      now: new Date('2026-03-28T00:00:00.000Z'),
+      workspaceRoot,
+    });
+
+    const result = await runLocalCatalogSyncCheck({
+      workspaceRoot,
+    });
+
+    expect(result.mode).toBe('local-check');
+    expect(result.artifactCheck.isClean).toBe(true);
+    expect(result.artifactCheck.stalePaths).toEqual([]);
+    expect(result.catalogSnapshot.setRecords).toHaveLength(
+      curatedCatalogSyncSetNumbers.length,
+    );
+  });
+
+  test('fails the local deterministic catalog check when committed artifacts drift from the curated scope', async () => {
+    const workspaceRoot = await mkdtemp(
+      join(tmpdir(), 'catalog-sync-local-drift-'),
+    );
+    const snapshotPath = join(
+      workspaceRoot,
+      'libs/catalog/data-access/src/lib/catalog-snapshot.generated.ts',
+    );
+    const manifestPath = join(
+      workspaceRoot,
+      'libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts',
+    );
+
+    await mkdir(dirname(snapshotPath), { recursive: true });
+    await writeFile(
+      snapshotPath,
+      renderCatalogSnapshotModule({
+        ...expectedCatalogSnapshot,
+        setRecords: expectedCatalogSnapshot.setRecords.slice(0, -1),
+      }),
+      'utf8',
+    );
+    await writeFile(
+      manifestPath,
+      renderCatalogSyncManifestModule({
+        ...expectedCatalogSyncManifest,
+        recordCount: expectedCatalogSyncManifest.recordCount - 1,
+      }),
+      'utf8',
+    );
+
+    await expect(
+      runLocalCatalogSyncCheck({
+        workspaceRoot,
+      }),
+    ).rejects.toThrow(
+      'Committed catalog snapshot no longer matches curatedCatalogSyncSetNumbers.',
+    );
   });
 
   test('fails validation when a synced set is missing a local product overlay', () => {

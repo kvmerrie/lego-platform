@@ -59,6 +59,21 @@ pnpm sync:catalog:check
 
 Use this before overwriting artifacts when you want a safe drift check first.
 
+## Local Deterministic Check
+
+Local check mode does not call Rebrickable. It validates the committed generated artifacts against:
+
+- the canonical generated-module format
+- the current curated set list
+- the current homepage featured set ids
+- the local overlay coverage rules
+
+```bash
+pnpm sync:catalog:local:check
+```
+
+Use this in git hooks and routine local validation when you want a fast deterministic guard with no network dependency.
+
 ## Operator Notes
 
 - The current sync scope is intentionally small and curated.
@@ -68,7 +83,8 @@ Use this before overwriting artifacts when you want a safe drift check first.
 - Product-facing fields such as route slugs, display-name normalization, display-theme normalization, pricing posture, collector angle, tagline, availability, and highlights remain local overlays.
 - The sync app validates overlay coverage, duplicate ids, duplicate source slugs, duplicate product slugs, source set numbers, manifest counts, and homepage-featured ids before writing artifacts.
 - `pnpm sync:catalog` writes generated artifacts in place only when the rendered output actually changes.
-- `pnpm sync:catalog:check` is the safer first step when reviewing upstream changes.
+- `pnpm sync:catalog:local:check` is the fast deterministic local guard.
+- `pnpm sync:catalog:check` remains the source-backed Rebrickable drift check.
 - Review the resulting diff before committing, especially:
   - `libs/catalog/data-access/src/lib/catalog-snapshot.generated.ts`
   - `libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts`
@@ -101,7 +117,8 @@ Render scheduled job notes:
 
 - run this as a scheduled background job, not as an always-on service
 - keep `REBRICKABLE_API_KEY` scoped to the scheduled job only
-- use `pnpm sync:catalog:check` manually or in CI when you want a drift review without writing artifacts
+- use `pnpm sync:catalog:local:check` in local hooks or fast local review
+- use `pnpm sync:catalog:check` manually or in CI when you want a source-backed drift review without writing artifacts
 - a healthy scheduled job should log one `start` line and one `end` line with curated set counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
 
 ## Troubleshooting Notes

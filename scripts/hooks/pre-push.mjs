@@ -118,22 +118,16 @@ if (dirtyGeneratedArtifacts.length > 0) {
 
 if (hasPrefixMatch(changedFiles, commerceGuardPrefixes)) {
   logGuard(
-    'Commerce-related changes detected. Running pnpm sync:commerce:check.',
+    'Commerce-related changes detected. Running pnpm sync:commerce:local:check.',
   );
-  runCommand(pnpmCommand, ['sync:commerce:check']);
+  runCommand(pnpmCommand, ['sync:commerce:local:check']);
 }
 
 if (hasPrefixMatch(changedFiles, catalogGuardPrefixes)) {
-  if (!process.env['REBRICKABLE_API_KEY']) {
-    failGuard(
-      'Catalog-related changes detected, but REBRICKABLE_API_KEY is not set. Export it and run pnpm sync:catalog:check before pushing.',
-    );
-  }
-
   logGuard(
-    'Catalog-related changes detected. Running pnpm sync:catalog:check.',
+    'Catalog-related changes detected. Running pnpm sync:catalog:local:check.',
   );
-  runCommand(pnpmCommand, ['sync:catalog:check']);
+  runCommand(pnpmCommand, ['sync:catalog:local:check']);
 }
 
 logGuard('Pre-push guard checks passed.');
