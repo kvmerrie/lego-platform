@@ -30,6 +30,12 @@ const expandedCommerceEnabledSetIds = [
   '42171',
   '42172',
   '10328',
+  '75398',
+  '76453',
+  '76313',
+  '10354',
+  '42177',
+  '10342',
 ] as const;
 
 describe('pricing data access server', () => {
@@ -43,14 +49,14 @@ describe('pricing data access server', () => {
       ],
     });
 
-    expect(result.pricingObservations).toHaveLength(36);
-    expect(result.pricePanelSnapshots).toHaveLength(24);
+    expect(result.pricingObservations).toHaveLength(48);
+    expect(result.pricePanelSnapshots).toHaveLength(30);
     expect(result.pricePanelSnapshots[0]).toMatchObject({
       lowestMerchantName: 'bol',
       lowestAvailabilityLabel: 'In stock',
     });
     expect(result.pricingSyncManifest.generatedAt).toBe(
-      '2026-03-31T11:52:00.000Z',
+      '2026-04-03T09:44:00.000Z',
     );
   });
 
@@ -121,11 +127,11 @@ describe('pricing data access server', () => {
     });
 
     const historyPoints = buildDailyPriceHistoryPoints({
-      now: new Date('2026-03-31T10:45:00.000Z'),
+      now: new Date('2026-04-03T10:45:00.000Z'),
       pricePanelSnapshots: result.pricePanelSnapshots,
     });
 
-    expect(historyPoints).toHaveLength(24);
+    expect(historyPoints).toHaveLength(30);
     expect(historyPoints).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -134,7 +140,7 @@ describe('pricing data access server', () => {
           referencePriceMinor: 49999,
           lowestMerchantId: 'bol',
           observedAt: '2026-03-31T09:00:00.000Z',
-          recordedOn: '2026-03-31',
+          recordedOn: '2026-04-03',
         }),
         expect.objectContaining({
           setId: '10305',
@@ -142,7 +148,7 @@ describe('pricing data access server', () => {
           referencePriceMinor: 39999,
           lowestMerchantId: 'lego-nl',
           observedAt: '2026-03-31T09:40:00.000Z',
-          recordedOn: '2026-03-31',
+          recordedOn: '2026-04-03',
         }),
         expect.objectContaining({
           setId: '10294',
@@ -150,7 +156,7 @@ describe('pricing data access server', () => {
           referencePriceMinor: 67999,
           lowestMerchantId: 'lego-nl',
           observedAt: '2026-03-31T10:32:00.000Z',
-          recordedOn: '2026-03-31',
+          recordedOn: '2026-04-03',
         }),
         expect.objectContaining({
           setId: '76178',
@@ -158,7 +164,7 @@ describe('pricing data access server', () => {
           referencePriceMinor: 33999,
           lowestMerchantId: 'bol',
           observedAt: '2026-03-31T10:44:00.000Z',
-          recordedOn: '2026-03-31',
+          recordedOn: '2026-04-03',
         }),
         expect.objectContaining({
           setId: '75397',
@@ -166,7 +172,15 @@ describe('pricing data access server', () => {
           referencePriceMinor: 49999,
           lowestMerchantId: 'lego-nl',
           observedAt: '2026-03-31T11:20:00.000Z',
-          recordedOn: '2026-03-31',
+          recordedOn: '2026-04-03',
+        }),
+        expect.objectContaining({
+          setId: '10354',
+          headlinePriceMinor: 24643,
+          referencePriceMinor: 26999,
+          lowestMerchantId: 'bol',
+          observedAt: '2026-04-03T09:24:00.000Z',
+          recordedOn: '2026-04-03',
         }),
       ]),
     );

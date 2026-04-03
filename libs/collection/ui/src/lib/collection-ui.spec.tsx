@@ -9,13 +9,12 @@ describe('OwnedSetToggleCard', () => {
         hasResolvedState
         isOwned
         setId="10316"
-        successMessage="Saved to your private owned collection. Your collector account is up to date."
+        successMessage="Marked as owned. Your collector account is up to date."
         onToggle={() => undefined}
       />,
     );
 
-    expect(markup).toContain('Saved to owned');
-    expect(markup).toContain('Owned saved');
+    expect(markup).toContain('Owned');
     expect(markup).not.toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
     expect(markup).toContain('Private save. Set facts stay public.');
@@ -37,7 +36,7 @@ describe('OwnedSetToggleCard', () => {
     expect(markup).not.toContain('Save to owned');
     expect(markup).not.toContain('Private to you.');
     expect(markup).not.toContain('Not saved yet');
-    expect(markup).toContain('Save as owned');
+    expect(markup).toContain('Mark as owned');
     expect(markup).not.toContain('Private collector state');
   });
 });

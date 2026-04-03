@@ -103,11 +103,11 @@ export async function addOwnedSet(setId: string): Promise<OwnedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to save this set to your owned list.');
+    throw new Error('Sign in to mark this set as owned.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to mark the set as owned.');
+    throw new Error('Unable to mark this set as owned.');
   }
 
   const ownedSetState = (await response.json()) as OwnedSetState;
@@ -128,11 +128,11 @@ export async function removeOwnedSet(setId: string): Promise<OwnedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to update your owned list.');
+    throw new Error('Sign in to update your collection.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to remove the set from owned items.');
+    throw new Error('Unable to remove this set from your collection.');
   }
 
   const ownedSetState = (await response.json()) as OwnedSetState;

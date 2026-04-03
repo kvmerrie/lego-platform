@@ -6,7 +6,10 @@ import {
   getOwnedSetState,
   removeOwnedSet,
 } from '@lego-platform/collection/data-access';
-import { subscribeToSupabaseAuthChanges } from '@lego-platform/shared/data-access-auth';
+import {
+  subscribeToBrowserAccountDataChanges,
+  subscribeToSupabaseAuthChanges,
+} from '@lego-platform/shared/data-access-auth';
 import { OwnedSetToggleCard } from '@lego-platform/collection/ui';
 import { OwnedSetState } from '@lego-platform/collection/util';
 
@@ -60,10 +63,18 @@ export function CollectionFeatureOwnedToggle({
       setSuccessMessage(undefined);
       void loadOwnedSetState();
     });
+    const unsubscribeAccount = subscribeToBrowserAccountDataChanges(() => {
+      if (!isMounted) {
+        return;
+      }
+
+      void loadOwnedSetState();
+    });
 
     return () => {
       isMounted = false;
       unsubscribe();
+      unsubscribeAccount();
     };
   }, [setId]);
 
@@ -84,8 +95,8 @@ export function CollectionFeatureOwnedToggle({
       setOwnedSetState(nextOwnedSetState);
       setSuccessMessage(
         nextOwnedSetState.isOwned
-          ? 'Saved to your private owned collection. Your collector account is up to date.'
-          : 'Removed from your owned collection. Your collector account is up to date.',
+          ? 'Marked as owned. Your collector account is up to date.'
+          : 'Removed from your collection. Your collector account is up to date.',
       );
     } catch (error) {
       setErrorMessage(

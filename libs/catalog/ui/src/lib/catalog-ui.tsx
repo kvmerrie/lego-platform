@@ -48,6 +48,17 @@ export interface CatalogSetCardPriceContext {
 }
 
 type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
+type CatalogSetSavedState = 'owned' | 'wishlist';
+
+function getSavedStateBadgeTone(
+  savedState: CatalogSetSavedState,
+): ComponentProps<typeof Badge>['tone'] {
+  return savedState === 'owned' ? 'positive' : 'neutral';
+}
+
+function getSavedStateLabel(savedState: CatalogSetSavedState): string {
+  return savedState === 'owned' ? 'Owned' : 'In wishlist';
+}
 
 function CatalogSetVisual({
   imageUrl,
@@ -173,12 +184,14 @@ function formatMinifigureHighlights(
 export function CatalogSetCard({
   href,
   priceContext,
+  savedState,
   setSummary,
   supportingNote,
   variant = 'default',
 }: {
   href?: string;
   priceContext?: CatalogSetCardPriceContext;
+  savedState?: CatalogSetSavedState;
   setSummary: CatalogSetCardSummary;
   supportingNote?: string;
   variant?: CatalogSetCardVariant;
@@ -196,6 +209,11 @@ export function CatalogSetCard({
         <div className={styles.cardCompactBody}>
           <div className={styles.cardCompactBadgeRow}>
             <Badge tone="accent">{setSummary.theme}</Badge>
+            {savedState ? (
+              <Badge tone={getSavedStateBadgeTone(savedState)}>
+                {getSavedStateLabel(savedState)}
+              </Badge>
+            ) : null}
           </div>
           <h3 className={styles.cardTitle}>{setSummary.name}</h3>
           <p className={styles.cardBrowseSupporting}>
@@ -242,6 +260,11 @@ export function CatalogSetCard({
         <div className={styles.cardCompactBody}>
           <div className={styles.cardCompactBadgeRow}>
             <Badge tone="accent">{setSummary.theme}</Badge>
+            {savedState ? (
+              <Badge tone={getSavedStateBadgeTone(savedState)}>
+                {getSavedStateLabel(savedState)}
+              </Badge>
+            ) : null}
           </div>
           <h3 className={styles.cardTitle}>{setSummary.name}</h3>
           <div className={styles.priceCompactBlock}>
@@ -314,6 +337,11 @@ export function CatalogSetCard({
       <div className={styles.cardHeader}>
         <div className={styles.cardMetaRow}>
           <Badge tone="accent">{setSummary.theme}</Badge>
+          {savedState ? (
+            <Badge tone={getSavedStateBadgeTone(savedState)}>
+              {getSavedStateLabel(savedState)}
+            </Badge>
+          ) : null}
           <p className={styles.cardMetaText}>
             {setSummary.releaseYear} · {setSummary.priceRange}
           </p>

@@ -88,20 +88,20 @@ export function OwnedSetToggleCard({
     : isUnavailable
       ? 'Owned save unavailable'
       : isOwned
-        ? 'Saved to owned'
-        : 'Save to owned';
+        ? 'Owned'
+        : 'Mark as owned';
   const description = isLoading
-    ? 'Checking whether this set is already in your owned list.'
+    ? 'Checking whether this set is already in your collection.'
     : isUnavailable
       ? 'We could not load your owned save right now.'
       : isOwned
-        ? 'This set is in your private owned list.'
-        : 'Keep this set in your private owned list.';
+        ? 'This set is in your private collection.'
+        : 'Keep this set in your private collection.';
   const actionLabel = isUnavailable
     ? 'Owned status unavailable'
     : isOwned
       ? 'Remove from owned'
-      : 'Save as owned';
+      : 'Mark as owned';
   const statusTone = isLoading
     ? 'info'
     : isUnavailable
@@ -114,7 +114,7 @@ export function OwnedSetToggleCard({
     : isUnavailable
       ? 'State unavailable'
       : isOwned
-        ? 'Owned saved'
+        ? 'Owned'
         : 'Not saved yet';
 
   if (variant === 'product') {
@@ -145,7 +145,7 @@ export function OwnedSetToggleCard({
                 ? 'Owned unavailable'
                 : isOwned
                   ? 'Remove owned'
-                  : 'Save as owned'}
+                  : 'Mark as owned'}
         </Button>
       </article>
     );
@@ -213,17 +213,17 @@ export function CollectorCollectionPanel({
       : state === 'signed-out'
         ? 'Sign in to see your collection'
         : state === 'empty'
-          ? 'Nothing saved as owned yet'
+          ? 'Nothing in your collection yet'
           : 'Your collection';
   const description =
     state === 'loading'
-      ? 'Loading the sets you saved as owned.'
+      ? 'Loading the sets in your collection.'
       : state === 'signed-out'
-        ? 'Sign in to see the sets you have marked as owned.'
+        ? 'Sign in to see the sets in your collection.'
         : state === 'empty'
           ? hiddenOwnedCount > 0
             ? `You have ${hiddenOwnedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
-            : 'Save a set as owned from any set page and it will appear here.'
+            : 'Mark a set as owned from any set page and it will appear here.'
           : hiddenOwnedCount > 0
             ? `Showing ${ownedCount} here today. ${hiddenOwnedCount} stay saved outside the current catalog.`
             : `${ownedCount} saved.`;

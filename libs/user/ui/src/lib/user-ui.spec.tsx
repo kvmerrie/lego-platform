@@ -14,6 +14,7 @@ describe('UserShellAccountStatusCard', () => {
         userSession={{
           state: 'anonymous',
           ownedSetIds: [],
+          setStates: [],
           wantedSetIds: [],
         }}
       />,
@@ -45,6 +46,20 @@ describe('UserShellAccountStatusCard', () => {
             collectionFocus: 'Display-scale fantasy and castle icons',
           },
           ownedSetIds: ['10316', '10305'],
+          setStates: [
+            {
+              setId: '10305',
+              state: 'owned',
+            },
+            {
+              setId: '10316',
+              state: 'owned',
+            },
+            {
+              setId: '21348',
+              state: 'wishlist',
+            },
+          ],
           wantedSetIds: ['21348'],
         }}
       />,
@@ -53,7 +68,7 @@ describe('UserShellAccountStatusCard', () => {
     expect(markup).toContain('Alex Rivera');
     expect(markup).toContain('@brick-curator');
     expect(markup).toContain('2 owned saved');
-    expect(markup).toContain('1 wanted saved');
+    expect(markup).toContain('1 wishlist saved');
     expect(markup).toContain('Open collection');
     expect(markup).toContain('Open wishlist');
     expect(markup).toContain('Sign out');
@@ -82,6 +97,20 @@ describe('UserSessionCard', () => {
             collectionFocus: 'Display-scale fantasy and castle icons',
           },
           ownedSetIds: ['10316', '10305'],
+          setStates: [
+            {
+              setId: '10305',
+              state: 'owned',
+            },
+            {
+              setId: '10316',
+              state: 'owned',
+            },
+            {
+              setId: '21348',
+              state: 'wishlist',
+            },
+          ],
           wantedSetIds: ['21348'],
         }}
       />,
@@ -93,7 +122,7 @@ describe('UserSessionCard', () => {
       'Collection, wishlist, and account details in one place.',
     );
     expect(markup).toContain('2 owned saved');
-    expect(markup).toContain('1 wanted saved');
+    expect(markup).toContain('1 wishlist saved');
     expect(markup).toContain('Sign-in email');
     expect(markup).toContain('Collector handle');
     expect(markup).toContain('Your saves');

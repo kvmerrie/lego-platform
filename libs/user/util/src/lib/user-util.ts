@@ -27,9 +27,17 @@ export interface UpdateCollectorProfileInput {
   location: string;
 }
 
+export type UserSetListState = 'owned' | 'wishlist';
+
+export interface UserSetState {
+  setId: string;
+  state: UserSetListState;
+}
+
 export interface AnonymousUserSession {
   state: 'anonymous';
   ownedSetIds: string[];
+  setStates: UserSetState[];
   wantedSetIds: string[];
 }
 
@@ -38,6 +46,7 @@ export interface AuthenticatedUserSession {
   account?: AuthenticatedAccountIdentity;
   collector: CollectorIdentity;
   ownedSetIds: string[];
+  setStates: UserSetState[];
   wantedSetIds: string[];
 }
 
@@ -57,6 +66,7 @@ export function createAnonymousUserSession(): AnonymousUserSession {
   return {
     state: 'anonymous',
     ownedSetIds: [],
+    setStates: [],
     wantedSetIds: [],
   };
 }
@@ -75,6 +85,42 @@ export function getCollectorSetCounts(userSession: UserSession): {
     ownedCount: userSession.ownedSetIds.length,
     wantedCount: userSession.wantedSetIds.length,
   };
+}
+
+export function listUserSetStates({
+  ownedSetIds,
+  wantedSetIds,
+}: Pick<UserSession, 'ownedSetIds' | 'wantedSetIds'>): UserSetState[] {
+  const ownedSetIdSet = new Set(ownedSetIds);
+  const wantedStates = [...new Set(wantedSetIds)]
+    .filter((setId) => !ownedSetIdSet.has(setId))
+    .map((setId) => ({
+      setId,
+      state: 'wishlist' as const,
+    }));
+  const ownedStates = [...ownedSetIdSet].map((setId) => ({
+    setId,
+    state: 'owned' as const,
+  }));
+
+  return [...wantedStates, ...ownedStates].sort((left, right) =>
+    left.setId.localeCompare(right.setId),
+  );
+}
+
+export function getUserSetState(
+  userSession: Pick<UserSession, 'ownedSetIds' | 'wantedSetIds'>,
+  setId: string,
+): UserSetListState | undefined {
+  if (userSession.ownedSetIds.includes(setId)) {
+    return 'owned';
+  }
+
+  if (userSession.wantedSetIds.includes(setId)) {
+    return 'wishlist';
+  }
+
+  return undefined;
 }
 
 export function getUserInitials(name: string): string {

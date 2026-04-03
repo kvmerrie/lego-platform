@@ -55,17 +55,21 @@ describe('affiliate data access', () => {
     ]);
   });
 
-  test('adds reviewed official-store coverage for newly added curated sets', () => {
+  test('adds reviewed multi-merchant coverage for the latest curated batch', () => {
     expect(
-      listAffiliateOffers('10328').map((affiliateOffer) => ({
+      listAffiliateOffers('10354').map((affiliateOffer) => ({
         merchantId: affiliateOffer.merchantId,
         outboundUrl: affiliateOffer.outboundUrl,
       })),
     ).toEqual([
       {
-        merchantId: 'lego-nl',
+        merchantId: 'bol',
         outboundUrl:
-          'https://www.lego.com/nl-nl/product/bouquet-of-roses-10328',
+          'https://www.bol.com/nl/nl/p/lego-icons-the-lord-of-the-rings-de-gouw-bouwset-10354/9300000223017341/',
+      },
+      {
+        merchantId: 'lego-nl',
+        outboundUrl: 'https://www.lego.com/nl-nl/product/the-shire-10354',
       },
     ]);
   });

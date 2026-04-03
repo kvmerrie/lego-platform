@@ -298,6 +298,36 @@ const expectedGeneratedCatalogRecords = [
     slug: 'bouquet-of-roses-10328',
     sourceSetNumber: '10328-1',
   },
+  {
+    canonicalId: '75398',
+    slug: 'c-3po-75398',
+    sourceSetNumber: '75398-1',
+  },
+  {
+    canonicalId: '76453',
+    slug: 'malfoy-manor-76453',
+    sourceSetNumber: '76453-1',
+  },
+  {
+    canonicalId: '76313',
+    slug: 'marvel-logo-76313',
+    sourceSetNumber: '76313-1',
+  },
+  {
+    canonicalId: '10354',
+    slug: 'the-lord-of-the-rings-the-shire-10354',
+    sourceSetNumber: '10354-1',
+  },
+  {
+    canonicalId: '42177',
+    slug: 'mercedes-benz-g-500-professional-line-42177',
+    sourceSetNumber: '42177-1',
+  },
+  {
+    canonicalId: '10342',
+    slug: 'pretty-pink-flower-bouquet-10342',
+    sourceSetNumber: '10342-1',
+  },
 ];
 
 const expectedProductSlugs = [
@@ -355,17 +385,23 @@ const expectedProductSlugs = [
   'mercedes-amg-f1-w14-e-performance-42171',
   'mclaren-p1-42172',
   'bouquet-of-roses-10328',
+  'c-3po-75398',
+  'malfoy-manor-76453',
+  'marvel-logo-76313',
+  'the-lord-of-the-rings-the-shire-10354',
+  'mercedes-benz-g-500-professional-line-42177',
+  'pretty-pink-flower-bouquet-10342',
 ];
 
 const expectedBrowseThemeGroups = [
-  { theme: 'Icons', count: 16 },
-  { theme: 'Marvel', count: 4 },
+  { theme: 'Icons', count: 17 },
+  { theme: 'Marvel', count: 5 },
   { theme: 'Ideas', count: 10 },
-  { theme: 'Star Wars', count: 5 },
-  { theme: 'Harry Potter', count: 5 },
-  { theme: 'Technic', count: 4 },
+  { theme: 'Star Wars', count: 6 },
+  { theme: 'Harry Potter', count: 6 },
+  { theme: 'Technic', count: 5 },
   { theme: 'Modular Buildings', count: 1 },
-  { theme: 'Botanicals', count: 3 },
+  { theme: 'Botanicals', count: 4 },
   { theme: 'Architecture', count: 1 },
   { theme: 'Art', count: 1 },
   { theme: 'Disney', count: 1 },
@@ -378,7 +414,7 @@ const expectedCatalogThemes = [
   {
     name: 'Icons',
     slug: 'icons',
-    setCount: 16,
+    setCount: 17,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
     signatureSet: 'Rivendell',
@@ -394,7 +430,7 @@ const expectedCatalogThemes = [
   {
     name: 'Marvel',
     slug: 'marvel',
-    setCount: 4,
+    setCount: 5,
     momentum:
       'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
     signatureSet: 'Avengers Tower',
@@ -410,7 +446,7 @@ const expectedCatalogThemes = [
   {
     name: 'Botanicals',
     slug: 'botanicals',
-    setCount: 3,
+    setCount: 4,
     momentum:
       'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
     signatureSet: 'Flower Bouquet',
@@ -418,7 +454,7 @@ const expectedCatalogThemes = [
   {
     name: 'Technic',
     slug: 'technic',
-    setCount: 4,
+    setCount: 5,
     momentum:
       'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
     signatureSet: 'Ferrari Daytona SP3',
@@ -450,7 +486,7 @@ const expectedCatalogThemes = [
   {
     name: 'Star Wars',
     slug: 'star-wars',
-    setCount: 5,
+    setCount: 6,
     momentum:
       'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
     signatureSet: 'AT-AT',
@@ -458,7 +494,7 @@ const expectedCatalogThemes = [
   {
     name: 'Harry Potter',
     slug: 'harry-potter',
-    setCount: 5,
+    setCount: 6,
     momentum:
       'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
@@ -491,7 +527,7 @@ const expectedCatalogThemes = [
 
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
-    expect(catalogSnapshot.setRecords).toHaveLength(54);
+    expect(catalogSnapshot.setRecords).toHaveLength(60);
     expect(catalogSyncManifest.recordCount).toBe(
       catalogSnapshot.setRecords.length,
     );
@@ -666,7 +702,11 @@ describe('catalog data-access contracts', () => {
       }),
     ]);
 
-    expect(searchCatalogSetCards('hermione')).toEqual([
+    expect(searchCatalogSetCards('hermione').slice(0, 2)).toEqual([
+      expect.objectContaining({
+        id: '76453',
+        name: 'Malfoy Manor',
+      }),
       expect.objectContaining({
         id: '76417',
         name: "Gringotts Wizarding Bank – Collectors' Edition",
@@ -919,6 +959,7 @@ describe('catalog data-access contracts', () => {
       '10318',
       '10341',
       '10317',
+      '10354',
       '10327',
       '10331',
       '10335',
@@ -1128,12 +1169,12 @@ describe('catalog data-access contracts', () => {
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
         name: 'Icons',
-        setCount: 16,
+        setCount: 17,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
         name: 'Marvel',
-        setCount: 4,
+        setCount: 5,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
@@ -1143,17 +1184,17 @@ describe('catalog data-access contracts', () => {
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
         name: 'Star Wars',
-        setCount: 5,
+        setCount: 6,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
         name: 'Harry Potter',
-        setCount: 5,
+        setCount: 6,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
         name: 'Technic',
-        setCount: 4,
+        setCount: 5,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10326-1/129017.jpg',
@@ -1163,7 +1204,7 @@ describe('catalog data-access contracts', () => {
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10280-1/148035.jpg',
         name: 'Botanicals',
-        setCount: 3,
+        setCount: 4,
       },
       {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
@@ -1222,7 +1263,7 @@ describe('catalog data-access contracts', () => {
       themeSnapshot: {
         name: 'Marvel',
         slug: 'marvel',
-        setCount: 4,
+        setCount: 5,
         momentum:
           'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
         signatureSet: 'Avengers Tower',
@@ -1702,7 +1743,7 @@ describe('catalog data-access contracts', () => {
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {
-    expect(listCatalogSetSummaries()).toHaveLength(54);
+    expect(listCatalogSetSummaries()).toHaveLength(60);
     expect(listCatalogThemes()).toEqual(expectedCatalogThemes);
   });
 
@@ -1726,6 +1767,10 @@ describe('catalog data-access contracts', () => {
         ['x-wing-starfighter-75355', 2],
         ['jabbas-sail-barge-75397', 11],
         ['the-x-mansion-76294', 10],
+        ['c-3po-75398', 1],
+        ['malfoy-manor-76453', 9],
+        ['marvel-logo-76313', 5],
+        ['the-lord-of-the-rings-the-shire-10354', 9],
       ].map(([slug]) => {
         const catalogSetDetail = getCatalogSetBySlug(slug);
 
@@ -1753,6 +1798,10 @@ describe('catalog data-access contracts', () => {
         ['x-wing-starfighter-75355', 2],
         ['jabbas-sail-barge-75397', 11],
         ['the-x-mansion-76294', 10],
+        ['c-3po-75398', 1],
+        ['malfoy-manor-76453', 9],
+        ['marvel-logo-76313', 5],
+        ['the-lord-of-the-rings-the-shire-10354', 9],
       ].map(([slug, minifigureCount]) => ({
         minifigureCount,
         slug,
@@ -1767,7 +1816,7 @@ describe('catalog data-access contracts', () => {
           ? [catalogSetDetail.id]
           : [];
       }),
-    ).toHaveLength(17);
+    ).toHaveLength(21);
   });
 
   test('adds curated minifigure highlights for selected franchise collector sets', () => {
@@ -1825,6 +1874,31 @@ describe('catalog data-access contracts', () => {
         [
           'the-x-mansion-76294',
           ['Wolverine', 'Professor X', 'Storm', 'Cyclops', 'Magneto'],
+        ],
+        ['c-3po-75398', ['C-3PO']],
+        [
+          'malfoy-manor-76453',
+          [
+            'Lucius Malfoy',
+            'Narcissa Malfoy',
+            'Bellatrix Lestrange',
+            'Hermione Granger',
+            'Dobby',
+          ],
+        ],
+        [
+          'marvel-logo-76313',
+          ['Iron Man', 'Captain America', 'Thor', 'Hulk', 'Black Widow'],
+        ],
+        [
+          'the-lord-of-the-rings-the-shire-10354',
+          [
+            'Bilbo Baggins',
+            'Frodo Baggins',
+            'Samwise Gamgee',
+            'Gandalf',
+            'Rosie Cotton',
+          ],
         ],
       ].map(([slug]) => ({
         minifigureHighlights:
@@ -1886,6 +1960,31 @@ describe('catalog data-access contracts', () => {
           'the-x-mansion-76294',
           ['Wolverine', 'Professor X', 'Storm', 'Cyclops', 'Magneto'],
         ],
+        ['c-3po-75398', ['C-3PO']],
+        [
+          'malfoy-manor-76453',
+          [
+            'Lucius Malfoy',
+            'Narcissa Malfoy',
+            'Bellatrix Lestrange',
+            'Hermione Granger',
+            'Dobby',
+          ],
+        ],
+        [
+          'marvel-logo-76313',
+          ['Iron Man', 'Captain America', 'Thor', 'Hulk', 'Black Widow'],
+        ],
+        [
+          'the-lord-of-the-rings-the-shire-10354',
+          [
+            'Bilbo Baggins',
+            'Frodo Baggins',
+            'Samwise Gamgee',
+            'Gandalf',
+            'Rosie Cotton',
+          ],
+        ],
       ].map(([slug, minifigureHighlights]) => ({
         minifigureHighlights,
         slug,
@@ -1896,7 +1995,7 @@ describe('catalog data-access contracts', () => {
       listCatalogSetSlugs().flatMap((slug) =>
         getCatalogSetBySlug(slug)?.minifigureHighlights?.length ? [slug] : [],
       ),
-    ).toHaveLength(8);
+    ).toHaveLength(12);
   });
 
   test('adds curated subthemes and set-status labels for high-intent collector sets', () => {

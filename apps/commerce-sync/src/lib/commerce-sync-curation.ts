@@ -23,4 +23,10 @@ export const curatedCommerceEnabledSetIds = [
   '42171',
   '42172',
   '10328',
+  '75398',
+  '76453',
+  '76313',
+  '10354',
+  '42177',
+  '10342',
 ] as const;

@@ -101,6 +101,7 @@ describe('api v1 auth and set-status routes', () => {
     expect(response.json()).toEqual({
       state: 'anonymous',
       ownedSetIds: [],
+      setStates: [],
       wantedSetIds: [],
     });
 
@@ -127,6 +128,16 @@ describe('api v1 auth and set-status routes', () => {
         collectionFocus: 'Premium display sets and licensed flagships',
       },
       ownedSetIds: ['10316'],
+      setStates: [
+        {
+          setId: '10316',
+          state: 'owned',
+        },
+        {
+          setId: '21348',
+          state: 'wishlist',
+        },
+      ],
       wantedSetIds: ['21348'],
     };
     const { server, userSessionService } = await createApiServer({

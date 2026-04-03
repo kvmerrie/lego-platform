@@ -39,6 +39,33 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('Coverage');
   });
 
+  it('renders a subtle saved-state badge when a set belongs to a collector list', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        savedState="owned"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          priceRange: '$499 to $569',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Owned');
+    expect(markup).toContain('Rivendell');
+    expect(markup).toContain('Icons');
+  });
+
   it('renders a compact featured-card variant for homepage browsing', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard

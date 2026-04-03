@@ -61,6 +61,7 @@ describe('user data access', () => {
     const anonymousSession: UserSession = {
       state: 'anonymous',
       ownedSetIds: [],
+      setStates: [],
       wantedSetIds: [],
     };
 

@@ -6,7 +6,10 @@ import {
   getWantedSetState,
   removeWantedSet,
 } from '@lego-platform/wishlist/data-access';
-import { subscribeToSupabaseAuthChanges } from '@lego-platform/shared/data-access-auth';
+import {
+  subscribeToBrowserAccountDataChanges,
+  subscribeToSupabaseAuthChanges,
+} from '@lego-platform/shared/data-access-auth';
 import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
 import { WantedSetState } from '@lego-platform/wishlist/util';
 
@@ -60,10 +63,18 @@ export function WishlistFeatureWishlistToggle({
       setSuccessMessage(undefined);
       void loadWantedSetState();
     });
+    const unsubscribeAccount = subscribeToBrowserAccountDataChanges(() => {
+      if (!isMounted) {
+        return;
+      }
+
+      void loadWantedSetState();
+    });
 
     return () => {
       isMounted = false;
       unsubscribe();
+      unsubscribeAccount();
     };
   }, [setId]);
 
@@ -84,8 +95,8 @@ export function WishlistFeatureWishlistToggle({
       setWantedSetState(nextWantedSetState);
       setSuccessMessage(
         nextWantedSetState.isWanted
-          ? 'Saved to your private wanted list. Your collector account is up to date.'
-          : 'Removed from your wanted list. Your collector account is up to date.',
+          ? 'Added to your wishlist. Your collector account is up to date.'
+          : 'Removed from your wishlist. Your collector account is up to date.',
       );
     } catch (error) {
       setErrorMessage(

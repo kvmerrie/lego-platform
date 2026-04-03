@@ -114,6 +114,7 @@ export function ShellFeatureCollectorWishlist() {
         <CatalogSetCard
           href={buildSetDetailPath(catalogSetCard.slug)}
           key={catalogSetCard.id}
+          savedState="wishlist"
           setSummary={catalogSetCard}
         />
       ))}

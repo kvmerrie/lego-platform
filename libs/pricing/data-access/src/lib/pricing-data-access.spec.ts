@@ -80,6 +80,23 @@ describe('pricing data access', () => {
     });
   });
 
+  test('returns reviewed multi-merchant pricing for the newest curated batch', () => {
+    expect(getPricePanelSnapshot('10354')).toEqual({
+      setId: '10354',
+      regionCode: 'NL',
+      currencyCode: 'EUR',
+      condition: 'new',
+      headlinePriceMinor: 24643,
+      lowestAvailabilityLabel: 'In stock',
+      lowestMerchantId: 'bol',
+      lowestMerchantName: 'bol',
+      merchantCount: 2,
+      observedAt: '2026-04-03T09:24:00.000Z',
+      referencePriceMinor: 26999,
+      deltaMinor: -2356,
+    });
+  });
+
   test('builds a compact featured-set price context from the current snapshot', () => {
     expect(getFeaturedSetPriceContext('10316')).toEqual({
       setId: '10316',
@@ -114,7 +131,7 @@ describe('pricing data access', () => {
 
   test('lists the reviewed set ids that can drive curated browse prioritization', () => {
     expect(listReviewedPriceSetIds()).toEqual(
-      expect.arrayContaining(['10316', '76269', '75397']),
+      expect.arrayContaining(['10316', '76269', '75397', '10354', '76453']),
     );
     expect(new Set(listReviewedPriceSetIds()).size).toBe(
       listReviewedPriceSetIds().length,

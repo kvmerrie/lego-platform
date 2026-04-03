@@ -102,8 +102,8 @@ export const webPathnames = {
   themes: '/themes',
   search: '/search',
   account: '/account',
-  collection: '/collection',
-  wishlist: '/wishlist',
+  collection: '/account/collection',
+  wishlist: '/account/wishlist',
   sets: '/sets',
 } as const;
 

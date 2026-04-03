@@ -2,7 +2,9 @@ import { describe, expect, test } from 'vitest';
 import {
   createAnonymousUserSession,
   getCollectorSetCounts,
+  getUserSetState,
   isAuthenticatedSession,
+  listUserSetStates,
   UserSession,
 } from './user-util';
 
@@ -11,6 +13,7 @@ describe('user session contracts', () => {
     expect(createAnonymousUserSession()).toEqual({
       state: 'anonymous',
       ownedSetIds: [],
+      setStates: [],
       wantedSetIds: [],
     });
   });
@@ -26,6 +29,16 @@ describe('user session contracts', () => {
         collectionFocus: 'Premium display sets and licensed flagships',
       },
       ownedSetIds: ['10316', '21348'],
+      setStates: [
+        {
+          setId: '10316',
+          state: 'owned',
+        },
+        {
+          setId: '21348',
+          state: 'owned',
+        },
+      ],
       wantedSetIds: ['10316'],
     };
 
@@ -34,5 +47,57 @@ describe('user session contracts', () => {
       ownedCount: 2,
       wantedCount: 1,
     });
+  });
+
+  test('builds a minimal user-set-state list with owned taking precedence', () => {
+    expect(
+      listUserSetStates({
+        ownedSetIds: ['10316', '21348'],
+        wantedSetIds: ['21348', '42177'],
+      }),
+    ).toEqual([
+      {
+        setId: '10316',
+        state: 'owned',
+      },
+      {
+        setId: '21348',
+        state: 'owned',
+      },
+      {
+        setId: '42177',
+        state: 'wishlist',
+      },
+    ]);
+  });
+
+  test('returns the saved state for one set id', () => {
+    expect(
+      getUserSetState(
+        {
+          ownedSetIds: ['10316'],
+          wantedSetIds: ['42177'],
+        },
+        '10316',
+      ),
+    ).toBe('owned');
+    expect(
+      getUserSetState(
+        {
+          ownedSetIds: ['10316'],
+          wantedSetIds: ['42177'],
+        },
+        '42177',
+      ),
+    ).toBe('wishlist');
+    expect(
+      getUserSetState(
+        {
+          ownedSetIds: ['10316'],
+          wantedSetIds: ['42177'],
+        },
+        '21348',
+      ),
+    ).toBeUndefined();
   });
 });

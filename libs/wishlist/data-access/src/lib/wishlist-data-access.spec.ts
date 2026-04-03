@@ -71,7 +71,7 @@ describe('wishlist data access', () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
     await expect(addWantedSet('21348')).rejects.toThrow(
-      'Sign in to save this set to your wanted list.',
+      'Sign in to add this set to your wishlist.',
     );
   });
 });

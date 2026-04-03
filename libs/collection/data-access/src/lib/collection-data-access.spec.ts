@@ -71,7 +71,7 @@ describe('collection data access', () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
     await expect(addOwnedSet('10316')).rejects.toThrow(
-      'Sign in to save this set to your owned list.',
+      'Sign in to mark this set as owned.',
     );
   });
 });

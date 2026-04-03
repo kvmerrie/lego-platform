@@ -2,7 +2,7 @@
 
 This checklist is for the current Rebrickable-backed sync run using the curated product-ready catalog scope. It assumes the current sync runtime, generated artifacts, overlays, and tests are already in place.
 
-The current curated public catalog scope is `54` sets.
+The current curated public catalog scope is `60` sets.
 
 ## 1. First Real Sync Run Checklist
 
@@ -123,6 +123,12 @@ Current expected source slugs:
 - `mercedes-amg-f1-w14-e-performance-42171`
 - `mclaren-p1-42172`
 - `bouquet-of-roses-10328`
+- `c-3po-75398`
+- `malfoy-manor-76453`
+- `marvel-logo-76313`
+- `the-lord-of-the-rings-the-shire-10354`
+- `mercedes-benz-g-500-professional-line-42177`
+- `pretty-pink-flower-bouquet-10342`
 
 Current expected public route slugs from the product-facing layer:
 
@@ -180,6 +186,12 @@ Current expected public route slugs from the product-facing layer:
 - `mercedes-amg-f1-w14-e-performance-42171`
 - `mclaren-p1-42172`
 - `bouquet-of-roses-10328`
+- `c-3po-75398`
+- `malfoy-manor-76453`
+- `marvel-logo-76313`
+- `the-lord-of-the-rings-the-shire-10354`
+- `mercedes-benz-g-500-professional-line-42177`
+- `pretty-pink-flower-bouquet-10342`
 
 ### Canonical Id Assumptions
 
@@ -239,6 +251,12 @@ Check that each source set number still maps correctly:
 - `42171-1` -> `42171`
 - `42172-1` -> `42172`
 - `10328-1` -> `10328`
+- `75398-1` -> `75398`
+- `76453-1` -> `76453`
+- `76313-1` -> `76313`
+- `10354-1` -> `10354`
+- `42177-1` -> `42177`
+- `10342-1` -> `10342`
 
 If Rebrickable returns a different source variant or an unexpected identifier shape, stop and review the normalization rule before accepting the artifacts.
 

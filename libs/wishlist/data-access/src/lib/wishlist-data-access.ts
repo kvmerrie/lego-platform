@@ -83,11 +83,11 @@ export async function addWantedSet(setId: string): Promise<WantedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to save this set to your wanted list.');
+    throw new Error('Sign in to add this set to your wishlist.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to mark the set as wanted.');
+    throw new Error('Unable to add this set to your wishlist.');
   }
 
   const wantedSetState = (await response.json()) as WantedSetState;
@@ -108,11 +108,11 @@ export async function removeWantedSet(setId: string): Promise<WantedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to update your wanted list.');
+    throw new Error('Sign in to update your wishlist.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to remove the set from wanted items.');
+    throw new Error('Unable to remove this set from your wishlist.');
   }
 
   const wantedSetState = (await response.json()) as WantedSetState;

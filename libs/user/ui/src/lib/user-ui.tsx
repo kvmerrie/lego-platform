@@ -171,7 +171,7 @@ export function UserShellAccountStatusCard({
         </p>
         <p className={styles.sessionCounts}>
           {collectorSetCounts.ownedCount} owned saved ·{' '}
-          {collectorSetCounts.wantedCount} wanted saved
+          {collectorSetCounts.wantedCount} wishlist saved
         </p>
         <div className={styles.shellStatusActions}>
           <ActionLink
@@ -391,7 +391,7 @@ export function UserSessionCard({
         </div>
         <p className={styles.sessionCounts}>
           {collectorSetCounts.ownedCount} owned saved ·{' '}
-          {collectorSetCounts.wantedCount} wanted saved
+          {collectorSetCounts.wantedCount} wishlist saved
         </p>
         <p className={styles.supportNote}>
           Your saves stay private. Set pages and price checks stay public.

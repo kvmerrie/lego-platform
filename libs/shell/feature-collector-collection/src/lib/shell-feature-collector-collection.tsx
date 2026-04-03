@@ -117,6 +117,7 @@ export function ShellFeatureCollectorCollection() {
         <CatalogSetCard
           href={buildSetDetailPath(catalogSetCard.slug)}
           key={catalogSetCard.id}
+          savedState="owned"
           setSummary={catalogSetCard}
         />
       ))}

@@ -544,6 +544,66 @@ const catalogSnapshotPayload = String.raw`{
       "releaseYear": 2024,
       "pieces": 822,
       "imageUrl": "https://cdn.rebrickable.com/media/sets/10328-1/133244.jpg"
+    },
+    {
+      "canonicalId": "75398",
+      "sourceSetNumber": "75398-1",
+      "slug": "c-3po-75398",
+      "name": "C-3PO",
+      "theme": "Star Wars",
+      "releaseYear": 2024,
+      "pieces": 1140,
+      "imageUrl": "https://cdn.rebrickable.com/media/sets/75398-1/142250.jpg"
+    },
+    {
+      "canonicalId": "76453",
+      "sourceSetNumber": "76453-1",
+      "slug": "malfoy-manor-76453",
+      "name": "Malfoy Manor",
+      "theme": "Harry Potter",
+      "releaseYear": 2025,
+      "pieces": 1602,
+      "imageUrl": "https://cdn.rebrickable.com/media/sets/76453-1/148729.jpg"
+    },
+    {
+      "canonicalId": "76313",
+      "sourceSetNumber": "76313-1",
+      "slug": "marvel-logo-76313",
+      "name": "MARVEL Logo",
+      "theme": "The Infinity Saga",
+      "releaseYear": 2025,
+      "pieces": 931,
+      "imageUrl": "https://cdn.rebrickable.com/media/sets/76313-1/148832.jpg"
+    },
+    {
+      "canonicalId": "10354",
+      "sourceSetNumber": "10354-1",
+      "slug": "the-lord-of-the-rings-the-shire-10354",
+      "name": "The Lord of the Rings: The Shire",
+      "theme": "Icons",
+      "releaseYear": 2025,
+      "pieces": 2017,
+      "imageUrl": "https://cdn.rebrickable.com/media/sets/10354-1/153628.jpg"
+    },
+    {
+      "canonicalId": "42177",
+      "sourceSetNumber": "42177-1",
+      "slug": "mercedes-benz-g-500-professional-line-42177",
+      "name": "Mercedes-Benz G 500 PROFESSIONAL Line",
+      "theme": "Icons",
+      "releaseYear": 2024,
+      "pieces": 2891,
+      "imageUrl": "https://cdn.rebrickable.com/media/sets/42177-1/142596.jpg"
+    },
+    {
+      "canonicalId": "10342",
+      "sourceSetNumber": "10342-1",
+      "slug": "pretty-pink-flower-bouquet-10342",
+      "name": "Pretty Pink Flower Bouquet",
+      "theme": "Botanicals",
+      "releaseYear": 2025,
+      "pieces": 749,
+      "imageUrl": "https://cdn.rebrickable.com/media/sets/10342-1/147735.jpg"
     }
   ]
 }`;

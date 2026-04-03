@@ -9,17 +9,17 @@ describe('WantedSetToggleCard', () => {
         hasResolvedState
         isWanted
         setId="21348"
-        successMessage="Saved to your private wanted list. Your collector account is up to date."
+        successMessage="Added to your wishlist. Your collector account is up to date."
         onToggle={() => undefined}
       />,
     );
 
-    expect(markup).toContain('Saved to wishlist');
-    expect(markup).toContain('Wanted saved');
+    expect(markup).toContain('In wishlist');
+    expect(markup).toContain('In wishlist');
     expect(markup).not.toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
     expect(markup).toContain('Private save. Set facts stay public.');
-    expect(markup).toContain('Remove from wanted');
+    expect(markup).toContain('Remove from wishlist');
   });
 
   it('renders a compact product-page variant for set detail actions', () => {
@@ -37,7 +37,7 @@ describe('WantedSetToggleCard', () => {
     expect(markup).not.toContain('Save to wishlist');
     expect(markup).not.toContain('Private to you.');
     expect(markup).not.toContain('Not saved yet');
-    expect(markup).toContain('Save as wanted');
+    expect(markup).toContain('Add to wishlist');
     expect(markup).not.toContain('Private collector state');
   });
 });

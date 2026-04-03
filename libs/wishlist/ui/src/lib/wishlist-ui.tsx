@@ -56,8 +56,8 @@ export function WantedSetToggleCard({
     : isUnavailable
       ? 'Wishlist save unavailable'
       : isWanted
-        ? 'Saved to wishlist'
-        : 'Save to wishlist';
+        ? 'In wishlist'
+        : 'Add to wishlist';
   const description = isLoading
     ? 'Checking whether this set is already in your wishlist.'
     : isUnavailable
@@ -68,8 +68,8 @@ export function WantedSetToggleCard({
   const actionLabel = isUnavailable
     ? 'Wanted status unavailable'
     : isWanted
-      ? 'Remove from wanted'
-      : 'Save as wanted';
+      ? 'Remove from wishlist'
+      : 'Add to wishlist';
   const statusTone = isLoading
     ? 'info'
     : isUnavailable
@@ -82,7 +82,7 @@ export function WantedSetToggleCard({
     : isUnavailable
       ? 'State unavailable'
       : isWanted
-        ? 'Wanted saved'
+        ? 'In wishlist'
         : 'Not saved yet';
 
   if (variant === 'product') {
@@ -112,8 +112,8 @@ export function WantedSetToggleCard({
               : isUnavailable
                 ? 'Wanted unavailable'
                 : isWanted
-                  ? 'Remove wanted'
-                  : 'Save as wanted'}
+                  ? 'Remove from wishlist'
+                  : 'Add to wishlist'}
         </Button>
       </article>
     );
@@ -181,17 +181,17 @@ export function CollectorWishlistPanel({
       : state === 'signed-out'
         ? 'Sign in to see your wishlist'
         : state === 'empty'
-          ? 'Nothing saved as wanted yet'
+          ? 'Nothing in your wishlist yet'
           : 'Your wishlist';
   const description =
     state === 'loading'
-      ? 'Loading the sets you saved as wanted.'
+      ? 'Loading the sets in your wishlist.'
       : state === 'signed-out'
-        ? 'Sign in to see the sets you have marked as wanted.'
+        ? 'Sign in to see the sets in your wishlist.'
         : state === 'empty'
           ? hiddenWantedCount > 0
             ? `You have ${hiddenWantedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
-            : 'Save a set as wanted from any set page and it will appear here.'
+            : 'Add a set to your wishlist from any set page and it will appear here.'
           : hiddenWantedCount > 0
             ? `Showing ${wantedCount} here today. ${hiddenWantedCount} stay saved outside the current catalog.`
             : `${wantedCount} saved.`;

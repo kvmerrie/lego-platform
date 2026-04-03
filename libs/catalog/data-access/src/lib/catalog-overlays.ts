@@ -826,12 +826,128 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Supports better discover and search coverage at a lower commitment than the major flagships',
     ],
   },
+  {
+    canonicalId: '75398',
+    displayTheme: 'Star Wars',
+    minifigureCount: 1,
+    minifigureHighlights: ['C-3PO'],
+    subtheme: 'Droid display',
+    priceRange: '$89 to $149',
+    collectorAngle: 'Character-led Star Wars display icon',
+    tagline:
+      'A display-scale C-3PO that makes Star Wars browsing more character-driven without leaving premium shelf territory.',
+    availability: 'Broad current franchise demand',
+    collectorHighlights: [
+      'Instant character recognition makes it a natural Star Wars search and gift-entry set',
+      'Adds a very different Star Wars silhouette than ships, walkers, and cruisers',
+      'Strong fit for deal comparison because it sits in a high-intent mid-premium band',
+    ],
+  },
+  {
+    canonicalId: '76453',
+    displayTheme: 'Harry Potter',
+    minifigureCount: 9,
+    minifigureHighlights: [
+      'Lucius Malfoy',
+      'Narcissa Malfoy',
+      'Bellatrix Lestrange',
+      'Hermione Granger',
+      'Dobby',
+    ],
+    subtheme: 'Deathly Hallows',
+    priceRange: '$119 to $169',
+    collectorAngle: 'Harry Potter story-scene landmark',
+    tagline:
+      'A major wizarding location set that deepens Harry Potter browsing with one of the saga’s most recognizable late-story settings.',
+    availability: 'Fresh high-intent franchise demand',
+    collectorHighlights: [
+      'Strong cast and location recognition make it a natural character-driven browse candidate',
+      'Room-by-room scene density gives the Harry Potter slice another story-heavy display build',
+      'Premium but reachable pricing makes it useful for deal and merchant comparison coverage',
+    ],
+  },
+  {
+    canonicalId: '76313',
+    displayTheme: 'Marvel',
+    minifigureCount: 5,
+    minifigureHighlights: [
+      'Iron Man',
+      'Captain America',
+      'Thor',
+      'Hulk',
+      'Black Widow',
+    ],
+    subtheme: 'Marvel display',
+    priceRange: '$85 to $109',
+    collectorAngle: 'Marvel desk-display crowd-pleaser',
+    tagline:
+      'A logo-led Marvel display piece that pairs recognizable branding with a core Avengers minifigure lineup.',
+    availability: 'Broad mainstream superhero demand',
+    collectorHighlights: [
+      'Highly recognizable Marvel branding improves search and giftability immediately',
+      'Five familiar characters make it a strong emotional-value set without needing a huge footprint',
+      'Gives Marvel a lighter collector entry beside towers, bugles, and mansions',
+    ],
+  },
+  {
+    canonicalId: '10354',
+    displayTheme: 'Icons',
+    minifigureCount: 9,
+    minifigureHighlights: [
+      'Bilbo Baggins',
+      'Frodo Baggins',
+      'Samwise Gamgee',
+      'Gandalf',
+      'Rosie Cotton',
+    ],
+    subtheme: 'The Lord of the Rings',
+    priceRange: '$249 to $299',
+    collectorAngle: 'Middle-earth comfort-display centerpiece',
+    tagline:
+      'A warm, story-rich Shire build that gives the Icons lane another premium fantasy landmark with broad cross-fandom appeal.',
+    availability: 'Strong collector and gift demand',
+    collectorHighlights: [
+      'Highly legible setting makes it one of the easiest fantasy landmarks to recognize at a glance',
+      'Character-rich cast adds emotional value for both browse and detail-page discovery',
+      'Pairs naturally with Rivendell and Barad-dur without feeling like a duplicate shelf role',
+    ],
+  },
+  {
+    canonicalId: '42177',
+    displayTheme: 'Technic',
+    subtheme: 'Licensed vehicles',
+    priceRange: '$199 to $269',
+    collectorAngle: 'Off-road Technic prestige build',
+    tagline:
+      'A large Mercedes G-Class build that broadens Technic beyond supercars and race cars with a more rugged real-world icon.',
+    availability: 'Healthy enthusiast availability',
+    collectorHighlights: [
+      'Recognizable real-world vehicle name makes it easy to browse and search for directly',
+      'Adds a boxier, utility-led silhouette to a Technic mix dominated by low-slung performance cars',
+      'Strong candidate for deal comparison because it sits at a meaningful premium price point',
+    ],
+  },
+  {
+    canonicalId: '10342',
+    displayTheme: 'Botanicals',
+    subtheme: 'Flower Collection',
+    priceRange: '$45 to $69',
+    collectorAngle: 'Gift-friendly botanical staple',
+    tagline:
+      'A bright bouquet set that strengthens the Botanicals lane with another easy-to-understand adult gift and display pick.',
+    availability: 'Very broad current availability',
+    collectorHighlights: [
+      'Low-friction price point makes it a strong search and discover entry into the catalog',
+      'Recognizable bouquet subject supports gifting, browsing, and deal-led shopping equally well',
+      'Helps Botanicals feel like a true retail lane instead of a small visual accent',
+    ],
+  },
 ];
 
 export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   {
     name: 'Icons',
-    setCount: 16,
+    setCount: 17,
     momentum:
       'Premium collectors are consolidating around large display pieces.',
     signatureSet: 'Rivendell',
@@ -845,7 +961,7 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   },
   {
     name: 'Marvel',
-    setCount: 4,
+    setCount: 5,
     momentum:
       'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
     signatureSet: 'Avengers Tower',
@@ -859,14 +975,14 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   },
   {
     name: 'Botanicals',
-    setCount: 3,
+    setCount: 4,
     momentum:
       'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
     signatureSet: 'Flower Bouquet',
   },
   {
     name: 'Technic',
-    setCount: 4,
+    setCount: 5,
     momentum:
       'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
     signatureSet: 'Ferrari Daytona SP3',
@@ -894,14 +1010,14 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
   },
   {
     name: 'Star Wars',
-    setCount: 5,
+    setCount: 6,
     momentum:
       'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
     signatureSet: 'AT-AT',
   },
   {
     name: 'Harry Potter',
-    setCount: 5,
+    setCount: 6,
     momentum:
       'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",

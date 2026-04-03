@@ -158,7 +158,7 @@ export function createUserSetStatusRepository(
         user_id: userId,
         set_id: setId,
         is_owned: isOwned,
-        is_wanted: currentStatus?.isWanted ?? false,
+        is_wanted: isOwned ? false : (currentStatus?.isWanted ?? false),
       };
 
       if (!nextStatus.is_owned && !nextStatus.is_wanted) {
@@ -182,7 +182,7 @@ export function createUserSetStatusRepository(
       const nextStatus = {
         user_id: userId,
         set_id: setId,
-        is_owned: currentStatus?.isOwned ?? false,
+        is_owned: isWanted ? false : (currentStatus?.isOwned ?? false),
         is_wanted: isWanted,
       };
 

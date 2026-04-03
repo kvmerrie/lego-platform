@@ -100,7 +100,7 @@ export function UserFeatureProfile() {
       setCollectorProfile(updatedCollectorProfile);
       setDraft(createCollectorProfileDraft(updatedCollectorProfile));
       setSuccessMessage(
-        'Collector profile saved. Your signed-in collector identity now reflects these details across your account, owned, and wanted surfaces.',
+        'Collector profile saved. Your signed-in collector identity now reflects these details across your account, collection, and wishlist surfaces.',
       );
     } catch (error) {
       if (!isMountedRef.current) {

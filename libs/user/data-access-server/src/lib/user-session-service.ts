@@ -4,6 +4,7 @@ import type {
 } from '@lego-platform/shared/data-access-auth-server';
 import {
   createAnonymousUserSession,
+  listUserSetStates,
   type CollectorIdentity,
   type UserSession,
 } from '@lego-platform/user/util';
@@ -47,7 +48,10 @@ function toWantedSetIds(
   userSetStatusRecords: readonly UserSetStatusRecord[],
 ): string[] {
   return userSetStatusRecords
-    .filter((userSetStatusRecord) => userSetStatusRecord.isWanted)
+    .filter(
+      (userSetStatusRecord) =>
+        userSetStatusRecord.isWanted && !userSetStatusRecord.isOwned,
+    )
     .map((userSetStatusRecord) => userSetStatusRecord.setId)
     .sort();
 }
@@ -68,6 +72,8 @@ export async function buildAuthenticatedUserSession({
     }),
     userSetStatusRepository.listByUserId(requestPrincipal.userId),
   ]);
+  const ownedSetIds = toOwnedSetIds(userSetStatusRecords);
+  const wantedSetIds = toWantedSetIds(userSetStatusRecords);
 
   return {
     state: 'authenticated',
@@ -76,8 +82,12 @@ export async function buildAuthenticatedUserSession({
       email: requestPrincipal.email,
     },
     collector: toCollectorIdentity(userProfileRecord),
-    ownedSetIds: toOwnedSetIds(userSetStatusRecords),
-    wantedSetIds: toWantedSetIds(userSetStatusRecords),
+    ownedSetIds,
+    setStates: listUserSetStates({
+      ownedSetIds,
+      wantedSetIds,
+    }),
+    wantedSetIds,
   };
 }
 
