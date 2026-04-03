@@ -35,10 +35,10 @@ export function CatalogFeatureThemeSpotlight({
             <CatalogThemeHighlight
               className={styles.spotlightTile}
               href={buildThemePath(themeItem.themeSnapshot.slug)}
-              homepageVisual={themeItem.homepageVisual}
+              visual={themeItem.homepageVisual}
               imageUrl={themeItem.imageUrl}
               themeSnapshot={themeItem.themeSnapshot}
-              variant="tile"
+              variant="feature"
             />
           </div>
         ))}

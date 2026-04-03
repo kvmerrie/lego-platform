@@ -100,6 +100,22 @@ Implementation guidance:
 - Prefer using a shared `<Icon />` component from the design system layer instead of importing icons directly in feature or UI libraries.
 - Keep icons lightweight and consistent in size and stroke.
 
+
+## UI Component API Guidance
+
+- Keep UI-library components dumb and presentational.
+- Do not encode page or route context in UI component APIs.
+- Variant names should describe presentation, density, emphasis, or layout, not where the component is used.
+- Prefer names like `compact`, `portrait`, `featured`, `muted`, or `dense`.
+- Avoid names like `homepage`, `discover`, `detailPage`, or other page-specific semantics in reusable UI libraries.
+- Page and feature layers may decide which visual variant to use, but reusable UI components should remain context-agnostic.
+
+## Storybook Guidance
+
+- Reusable UI primitives and patterns should generally have Storybook coverage.
+- Prioritize stories that help visual refinement, state review, and layout tuning.
+- Favor practical stories over exhaustive documentation.
+
 ## Change Rules
 
 - Preserve the Nx tag model and boundary enforcement.

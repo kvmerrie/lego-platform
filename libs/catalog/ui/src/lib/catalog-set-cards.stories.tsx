@@ -12,7 +12,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const BrowseCard: Story = {
+export const CompactCard: Story = {
   render: () => (
     <div style={{ maxWidth: '18rem', width: '100%' }}>
       <CatalogSetCard
@@ -31,7 +31,37 @@ export const BrowseCard: Story = {
           availability: 'Stable premium demand',
         }}
         supportingNote="Includes Elrond, Frodo Baggins, and Arwen"
-        variant="browse"
+        variant="compact"
+      />
+    </div>
+  ),
+};
+
+export const DefaultCard: Story = {
+  render: () => (
+    <div style={{ maxWidth: '21rem', width: '100%' }}>
+      <CatalogSetCard
+        priceContext={{
+          coverageLabel: 'In stock · 2 reviewed offers',
+          currentPrice: 'EUR 469.99',
+          merchantLabel: 'Lowest reviewed price at LEGO',
+          pricePositionLabel: 'EUR 20.00 below reference',
+          reviewedLabel: 'Checked 2 apr',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6167,
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+          priceRange: '$449 to $519',
+          collectorAngle: 'Prestige fantasy display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy premium availability',
+        }}
       />
     </div>
   ),

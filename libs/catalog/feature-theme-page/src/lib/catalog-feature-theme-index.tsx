@@ -38,7 +38,7 @@ export function CatalogFeatureThemeIndex({
             imageUrl={themeDirectoryItem.imageUrl}
             key={themeDirectoryItem.themeSnapshot.slug}
             themeSnapshot={themeDirectoryItem.themeSnapshot}
-            variant="tile"
+            variant="portrait"
           />
         ))}
       </div>

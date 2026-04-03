@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type {
   CatalogHomepageSetCard,
   CatalogSetSummary,
@@ -20,6 +20,34 @@ export interface CatalogSetCardRailItem {
   supportingNote?: string;
 }
 
+interface CatalogSetCardRailMetrics {
+  hasOverflow: boolean;
+  progress: number;
+  thumbWidthPercent: number;
+}
+
+function getRailMetrics(
+  railElement: HTMLDivElement,
+): CatalogSetCardRailMetrics {
+  const maxScrollLeft = Math.max(
+    railElement.scrollWidth - railElement.clientWidth,
+    0,
+  );
+  const hasOverflow = maxScrollLeft > 1;
+  const thumbWidthPercent = railElement.scrollWidth
+    ? Math.min((railElement.clientWidth / railElement.scrollWidth) * 100, 100)
+    : 100;
+  const progress = maxScrollLeft
+    ? Math.min(Math.max(railElement.scrollLeft / maxScrollLeft, 0), 1)
+    : 0;
+
+  return {
+    hasOverflow,
+    progress,
+    thumbWidthPercent,
+  };
+}
+
 export function CatalogSetCardRail({
   ariaLabel,
   items,
@@ -27,10 +55,54 @@ export function CatalogSetCardRail({
 }: {
   ariaLabel: string;
   items: readonly CatalogSetCardRailItem[];
-  variant?: 'browse' | 'featured';
+  variant?: 'compact' | 'featured';
 }) {
   const railId = useId();
   const railRef = useRef<HTMLDivElement>(null);
+  const [railMetrics, setRailMetrics] = useState<CatalogSetCardRailMetrics>({
+    hasOverflow: false,
+    progress: 0,
+    thumbWidthPercent: 100,
+  });
+
+  useEffect(() => {
+    const railElement = railRef.current;
+
+    if (!railElement) {
+      return undefined;
+    }
+
+    let animationFrameId = 0;
+
+    function syncRailMetrics() {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(() => {
+        const nextRailElement = railRef.current;
+
+        if (!nextRailElement) {
+          return;
+        }
+
+        setRailMetrics(getRailMetrics(nextRailElement));
+      });
+    }
+
+    syncRailMetrics();
+    railElement.addEventListener('scroll', syncRailMetrics, { passive: true });
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(syncRailMetrics)
+        : null;
+
+    resizeObserver?.observe(railElement);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      railElement.removeEventListener('scroll', syncRailMetrics);
+      resizeObserver?.disconnect();
+    };
+  }, [items.length]);
 
   if (!items.length) {
     return null;
@@ -50,6 +122,10 @@ export function CatalogSetCardRail({
       left: direction === 'next' ? scrollAmount : -scrollAmount,
     });
   }
+
+  const thumbOffsetPercent = railMetrics.hasOverflow
+    ? railMetrics.progress * (100 - railMetrics.thumbWidthPercent)
+    : 0;
 
   return (
     <div className={styles.setCardRail}>
@@ -90,6 +166,21 @@ export function CatalogSetCardRail({
           </div>
         ))}
       </div>
+      {railMetrics.hasOverflow ? (
+        <div
+          aria-hidden="true"
+          className={styles.setCardRailScrollbar}
+          role="presentation"
+        >
+          <div
+            className={styles.setCardRailScrollbarThumb}
+            style={{
+              left: `${thumbOffsetPercent}%`,
+              width: `${railMetrics.thumbWidthPercent}%`,
+            }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

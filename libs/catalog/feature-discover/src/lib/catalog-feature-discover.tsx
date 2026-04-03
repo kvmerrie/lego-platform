@@ -284,7 +284,7 @@ export function CatalogFeatureDiscover({
               setSummary: characterSetCard,
               supportingNote: formatDiscoverFanContext(characterSetCard),
             }))}
-            variant="browse"
+            variant="compact"
           />
         </Surface>
       ) : null}
@@ -310,7 +310,7 @@ export function CatalogFeatureDiscover({
               setSummary: highlightSetCard,
               supportingNote: formatDiscoverFanContext(highlightSetCard),
             }))}
-            variant="browse"
+            variant="compact"
           />
         </Surface>
       ) : null}
@@ -350,7 +350,7 @@ export function CatalogFeatureDiscover({
                     href={buildSetDetailPath(setCard.slug)}
                     key={setCard.id}
                     setSummary={setCard}
-                    variant="browse"
+                    variant="compact"
                   />
                 ))}
               </div>

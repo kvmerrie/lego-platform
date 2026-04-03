@@ -1,6 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ComponentProps, ReactNode } from 'react';
 import type {
-  CatalogHomepageThemeVisual,
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetSummary,
@@ -24,6 +23,21 @@ type CatalogSetCardPriceContextTone =
   | 'positive'
   | 'warning';
 
+export interface CatalogThemeVisual {
+  backgroundColor?: string;
+  imageUrl?: string;
+  textColor?: string;
+}
+
+export interface CatalogIntroPanelSection {
+  description?: string;
+  eyebrow?: string;
+  meta?: string;
+  title: string;
+  titleAs?: 'h1' | 'h2' | 'h3';
+  tone?: 'default' | 'display';
+}
+
 export interface CatalogSetCardPriceContext {
   coverageLabel: string;
   currentPrice: string;
@@ -33,7 +47,7 @@ export interface CatalogSetCardPriceContext {
   reviewedLabel: string;
 }
 
-type CatalogSetCardVariant = 'browse' | 'default' | 'featured';
+type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
 
 function CatalogSetVisual({
   imageUrl,
@@ -169,7 +183,7 @@ export function CatalogSetCard({
   supportingNote?: string;
   variant?: CatalogSetCardVariant;
 }) {
-  if (variant === 'browse') {
+  if (variant === 'compact') {
     const browseCardContent = (
       <>
         <CatalogSetVisual
@@ -397,37 +411,59 @@ export function CatalogQuickFilterBar({
   );
 }
 
-export function CatalogHomepageIntro() {
+export function CatalogSplitIntroPanel({
+  actionHref,
+  actionLabel,
+  actionTone = 'accent',
+  className,
+  primary,
+  secondary,
+}: {
+  actionHref?: string;
+  actionLabel?: string;
+  actionTone?: ComponentProps<typeof ActionLink>['tone'];
+  className?: string;
+  primary: CatalogIntroPanelSection;
+  secondary: CatalogIntroPanelSection;
+}) {
   return (
     <Surface
       as="section"
-      className={styles.heroPanel}
+      className={
+        className ? `${styles.heroPanel} ${className}` : styles.heroPanel
+      }
       elevation="floating"
       tone="default"
     >
       <div className={styles.heroPrimary}>
         <SectionHeading
-          description="Browse a shortlist on the homepage, then open set pages for price checks, shop comparisons, and private saves."
-          eyebrow="Curated discovery"
-          title="Useful set pages, not just a gallery."
-          tone="hero"
+          description={primary.description}
+          eyebrow={primary.eyebrow}
+          title={primary.title}
+          titleAs={primary.titleAs}
+          tone={primary.tone}
         />
-        <p className={styles.heroMeta}>Quick to scan. Clear enough to act.</p>
+        {primary.meta ? (
+          <p className={styles.heroMeta}>{primary.meta}</p>
+        ) : null}
       </div>
       <div className={styles.heroSecondary}>
         <SectionHeading
-          description="The homepage stays lean so the deeper buying and collecting tools can live on each set page."
-          eyebrow="Focused scope"
-          title="Open a set when you want the full picture."
-          titleAs="h2"
+          description={secondary.description}
+          eyebrow={secondary.eyebrow}
+          title={secondary.title}
+          titleAs={secondary.titleAs}
+          tone={secondary.tone}
         />
-        <ActionLink
-          className={styles.actionLink}
-          href="#featured-sets"
-          tone="accent"
-        >
-          Browse featured sets
-        </ActionLink>
+        {actionHref && actionLabel ? (
+          <ActionLink
+            className={styles.actionLink}
+            href={actionHref}
+            tone={actionTone}
+          >
+            {actionLabel}
+          </ActionLink>
+        ) : null}
       </div>
     </Surface>
   );
@@ -510,7 +546,7 @@ export function CatalogSetDetailPanel({
               eyebrow="Set detail"
               title={catalogSetDetail.name}
               titleAs="h1"
-              tone="hero"
+              tone="display"
             />
             <div className={styles.badgeRow}>
               {themeHref ? (
@@ -616,42 +652,42 @@ export function CatalogSetDetailPanel({
 export function CatalogThemeHighlight({
   className,
   href,
-  homepageVisual,
   imageUrl,
   themeSnapshot,
   variant = 'default',
+  visual,
 }: {
   className?: string;
   href?: string;
-  homepageVisual?: CatalogHomepageThemeVisual;
   imageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
-  variant?: 'default' | 'homepage' | 'tile';
+  variant?: 'default' | 'feature' | 'portrait';
+  visual?: CatalogThemeVisual;
 }) {
-  if (variant === 'homepage') {
-    const homepageThemeStyle = {
-      ...(homepageVisual?.backgroundColor
+  if (variant === 'portrait') {
+    const portraitThemeStyle = {
+      ...(visual?.backgroundColor
         ? ({
-            '--theme-home-surface': homepageVisual.backgroundColor,
+            '--theme-home-surface': visual.backgroundColor,
           } as CSSProperties)
         : {}),
-      ...(homepageVisual?.textColor
+      ...(visual?.textColor
         ? ({
-            '--theme-home-text': homepageVisual.textColor,
+            '--theme-home-text': visual.textColor,
           } as CSSProperties)
         : {}),
     };
-    const themeHomepageImageUrl = homepageVisual?.imageUrl ?? imageUrl;
-    const themeHomepageContent = (
+    const portraitImageUrl = visual?.imageUrl ?? imageUrl;
+    const portraitContent = (
       <>
-        {themeHomepageImageUrl ? (
+        {portraitImageUrl ? (
           <div className={styles.themeHomepageVisual}>
             <img
               alt={`${themeSnapshot.signatureSet} LEGO set`}
               className={styles.themeHomepageImage}
               decoding="async"
               loading="lazy"
-              src={themeHomepageImageUrl}
+              src={portraitImageUrl}
             />
           </div>
         ) : null}
@@ -672,8 +708,8 @@ export function CatalogThemeHighlight({
         }`}
         data-theme={themeSnapshot.slug}
         style={
-          Object.keys(homepageThemeStyle).length > 0
-            ? homepageThemeStyle
+          Object.keys(portraitThemeStyle).length > 0
+            ? portraitThemeStyle
             : undefined
         }
         tone="muted"
@@ -684,40 +720,40 @@ export function CatalogThemeHighlight({
             href={href}
             tone="card"
           >
-            {themeHomepageContent}
+            {portraitContent}
           </ActionLink>
         ) : (
-          themeHomepageContent
+          portraitContent
         )}
       </Surface>
     );
   }
 
-  if (variant === 'tile') {
-    const themeTileStyle = {
-      ...(homepageVisual?.backgroundColor
+  if (variant === 'feature') {
+    const featureThemeStyle = {
+      ...(visual?.backgroundColor
         ? ({
-            '--theme-tile-surface': homepageVisual.backgroundColor,
+            '--theme-tile-surface': visual.backgroundColor,
           } as CSSProperties)
         : {}),
-      ...(homepageVisual?.textColor
+      ...(visual?.textColor
         ? ({
-            '--theme-tile-text': homepageVisual.textColor,
-            '--theme-tile-muted': `color-mix(in srgb, ${homepageVisual.textColor} 78%, transparent)`,
+            '--theme-tile-text': visual.textColor,
+            '--theme-tile-muted': `color-mix(in srgb, ${visual.textColor} 78%, transparent)`,
           } as CSSProperties)
         : {}),
     };
-    const themeTileImageUrl = homepageVisual?.imageUrl ?? imageUrl;
-    const themeTileContent = (
+    const featureImageUrl = visual?.imageUrl ?? imageUrl;
+    const featureContent = (
       <>
-        {themeTileImageUrl ? (
+        {featureImageUrl ? (
           <div className={styles.themeTileVisual}>
             <img
               alt={`${themeSnapshot.signatureSet} LEGO set`}
               className={styles.themeTileImage}
               decoding="async"
               loading="lazy"
-              src={themeTileImageUrl}
+              src={featureImageUrl}
             />
           </div>
         ) : null}
@@ -745,16 +781,18 @@ export function CatalogThemeHighlight({
         }`}
         data-theme={themeSnapshot.slug}
         style={
-          Object.keys(themeTileStyle).length > 0 ? themeTileStyle : undefined
+          Object.keys(featureThemeStyle).length > 0
+            ? featureThemeStyle
+            : undefined
         }
         tone="muted"
       >
         {href ? (
           <ActionLink className={styles.themeTileLink} href={href} tone="card">
-            {themeTileContent}
+            {featureContent}
           </ActionLink>
         ) : (
-          themeTileContent
+          featureContent
         )}
       </Surface>
     );

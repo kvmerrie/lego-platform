@@ -297,7 +297,7 @@ export function CatalogFeatureSearchResults({
               key={searchResult.id}
               setSummary={searchResult}
               supportingNote={getSearchResultSupportingNote(searchResult)}
-              variant="browse"
+              variant="compact"
             />
           ))}
         </div>

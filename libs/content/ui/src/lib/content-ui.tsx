@@ -88,7 +88,7 @@ export function EditorialHeroPanel({
           eyebrow={editorialSection.eyebrow}
           title={editorialSection.title}
           titleAs="h1"
-          tone="hero"
+          tone="display"
         />
         <EditorialSectionCta
           ctaHref={editorialSection.ctaHref}

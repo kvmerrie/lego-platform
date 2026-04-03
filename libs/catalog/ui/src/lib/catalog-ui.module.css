@@ -541,16 +541,39 @@
   margin: 0;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  padding-bottom: var(--lego-space-2);
+  padding-bottom: var(--lego-space-1);
   scroll-padding-inline: 0;
   scroll-snap-type: x proximity;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 }
 
 .setCardRailItem {
   flex: 0 0 calc((100% - (var(--lego-space-3) * 0.35)) / 1.35);
   min-width: 0;
   scroll-snap-align: start;
+}
+
+.setCardRailTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.setCardRailScrollbar {
+  background: color-mix(in srgb, var(--lego-border) 68%, transparent);
+  border-radius: var(--lego-radius-pill);
+  height: 0.2rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.setCardRailScrollbarThumb {
+  background: color-mix(in srgb, var(--lego-text) 20%, transparent);
+  border-radius: inherit;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  transition:
+    left var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
+    width var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
 }
 
 .themeHomepageCard {
@@ -901,7 +924,8 @@
   .themeHomepageLink,
   .themeHomepageImage,
   .themeTileLink,
-  .themeTileImage {
+  .themeTileImage,
+  .setCardRailScrollbarThumb {
     transition: none;
   }
 

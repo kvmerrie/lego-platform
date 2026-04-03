@@ -31,7 +31,7 @@ export function CatalogFeatureThemePage({
           eyebrow="Theme"
           title={themeSnapshot.name}
           titleAs="h1"
-          tone="hero"
+          tone="display"
         />
         <p className={styles.introMeta}>
           {themeSnapshot.setCount} sets · Start with{' '}
@@ -79,7 +79,7 @@ export function CatalogFeatureThemePage({
               href={buildSetDetailPath(setCard.slug)}
               key={setCard.id}
               setSummary={setCard}
-              variant="browse"
+              variant="compact"
             />
           ))}
         </div>

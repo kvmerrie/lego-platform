@@ -40,7 +40,7 @@ type BadgeTone =
   | 'positive'
   | 'warning';
 type SectionHeadingLevel = 'h1' | 'h2' | 'h3';
-type SectionHeadingTone = 'default' | 'hero';
+type SectionHeadingTone = 'default' | 'display';
 
 const buttonToneClasses: Record<
   Exclude<ActionTone, 'card' | 'inline'>,
@@ -85,7 +85,7 @@ const sectionHeadingToneClasses: Record<
   string | undefined
 > = {
   default: undefined,
-  hero: styles.sectionHeadingHero,
+  display: styles.sectionHeadingDisplay,
 };
 
 export function Surface({

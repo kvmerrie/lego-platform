@@ -8,7 +8,7 @@ import {
 } from './catalog-ui';
 
 describe('CatalogSetCard', () => {
-  it('renders a lighter browse-card variant for catalog exploration', () => {
+  it('renders a lighter compact-card variant for dense catalog exploration', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/rivendell-10316"
@@ -26,7 +26,7 @@ describe('CatalogSetCard', () => {
             'A flagship fantasy build that rewards both display space and patience.',
           availability: 'Healthy but premium availability',
         }}
-        variant="browse"
+        variant="compact"
       />,
     );
 
@@ -270,7 +270,7 @@ describe('CatalogSetCard', () => {
     );
   });
 
-  it('renders a larger theme tile variant for storefront browsing', () => {
+  it('renders a larger feature tile variant for descriptive browsing surfaces', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight
         className="directory-tile"
@@ -284,7 +284,7 @@ describe('CatalogSetCard', () => {
             'Premium collectors are consolidating around large display pieces.',
           signatureSet: 'Rivendell',
         }}
-        variant="tile"
+        variant="feature"
       />,
     );
 
@@ -295,11 +295,11 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Start with Rivendell');
   });
 
-  it('lets non-rail theme tiles reuse curated color and image overrides without using homepage rail sizing', () => {
+  it('lets descriptive theme tiles reuse curated color and image overrides without using portrait rail sizing', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight
         href="/themes/marvel"
-        homepageVisual={{
+        visual={{
           backgroundColor: '#cf554c',
           imageUrl: 'https://images.example/curated-avengers-tower.jpg',
           textColor: '#ffffff',
@@ -313,7 +313,7 @@ describe('CatalogSetCard', () => {
             'Superhero flagships and skyline-style display builds with broad recognition.',
           signatureSet: 'Avengers Tower',
         }}
-        variant="tile"
+        variant="feature"
       />,
     );
 
@@ -326,11 +326,11 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Open theme page');
   });
 
-  it('renders a leaner homepage theme tile variant for fast browsing', () => {
+  it('renders a leaner portrait theme tile variant for fast browsing', () => {
     const markup = renderToStaticMarkup(
       <CatalogThemeHighlight
         href="/themes/icons"
-        homepageVisual={{
+        visual={{
           backgroundColor: '#f0c63b',
           imageUrl: 'https://images.example/curated-rivendell.jpg',
           textColor: '#171a22',
@@ -344,7 +344,7 @@ describe('CatalogSetCard', () => {
             'Premium collectors are consolidating around large display pieces.',
           signatureSet: 'Rivendell',
         }}
-        variant="homepage"
+        variant="portrait"
       />,
     );
 

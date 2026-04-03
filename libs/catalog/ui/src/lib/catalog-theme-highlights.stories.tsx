@@ -12,11 +12,11 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const HomepageRailTile: Story = {
+export const PortraitTile: Story = {
   render: () => (
     <div style={{ maxWidth: '14rem', width: '100%' }}>
       <CatalogThemeHighlight
-        homepageVisual={{
+        visual={{
           backgroundColor: '#f0c63b',
           imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
           textColor: '#171a22',
@@ -29,17 +29,17 @@ export const HomepageRailTile: Story = {
             'Display-led builds, nostalgia anchors, and big collector landmarks.',
           signatureSet: 'Rivendell',
         }}
-        variant="homepage"
+        variant="portrait"
       />
     </div>
   ),
 };
 
-export const DirectoryTile: Story = {
+export const FeatureTile: Story = {
   render: () => (
     <div style={{ maxWidth: '16rem', width: '100%' }}>
       <CatalogThemeHighlight
-        homepageVisual={{
+        visual={{
           backgroundColor: '#cf554c',
           imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/124122.jpg',
           textColor: '#ffffff',
@@ -52,7 +52,23 @@ export const DirectoryTile: Story = {
             'Superhero flagships and skyline-style display builds with broad recognition.',
           signatureSet: 'Avengers Tower',
         }}
-        variant="tile"
+        variant="feature"
+      />
+    </div>
+  ),
+};
+
+export const PlainTile: Story = {
+  render: () => (
+    <div style={{ maxWidth: '18rem', width: '100%' }}>
+      <CatalogThemeHighlight
+        themeSnapshot={{
+          name: 'Botanicals',
+          slug: 'botanicals',
+          setCount: 6,
+          momentum: 'Display-led floral builds with gift-friendly pull.',
+          signatureSet: 'Bouquet of Roses',
+        }}
       />
     </div>
   ),

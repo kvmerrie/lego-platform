@@ -134,3 +134,74 @@ export const FeaturedRail: Story = {
     </div>
   ),
 };
+
+export const CompactRail: Story = {
+  render: () => (
+    <div style={{ margin: '0 auto', maxWidth: '72rem', padding: '1.5rem' }}>
+      <CatalogSetCardRail
+        ariaLabel="Compact rail"
+        items={[
+          {
+            id: '75331',
+            setSummary: {
+              id: '75331',
+              slug: 'the-razor-crest-75331',
+              name: 'The Razor Crest',
+              theme: 'Star Wars',
+              releaseYear: 2022,
+              pieces: 6187,
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/75331-1/116601.jpg',
+              priceRange: '$479 to $599',
+              collectorAngle: 'Original trilogy-adjacent prestige build',
+              tagline:
+                'A large ship build with stronger emotional pull than a generic fleet piece.',
+              availability: 'Reviewed pricing not published yet',
+            },
+            supportingNote: 'Includes Grogu and The Mandalorian',
+          },
+          {
+            id: '76417',
+            setSummary: {
+              id: '76417',
+              slug: 'gringotts-wizarding-bank-collectors-edition-76417',
+              name: "Gringotts Wizarding Bank - Collectors' Edition",
+              theme: 'Harry Potter',
+              releaseYear: 2023,
+              pieces: 4803,
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/76417-1/126166.jpg',
+              priceRange: '$369 to $449',
+              collectorAngle: 'Wizarding World premium landmark',
+              tagline:
+                'A major Gringotts display build with strong franchise recognition.',
+              availability: 'High-visibility franchise demand',
+            },
+            supportingNote:
+              'Includes Harry Potter, Hermione Granger, and Ron Weasley',
+          },
+          {
+            id: '76294',
+            setSummary: {
+              id: '76294',
+              slug: 'the-x-mansion-76294',
+              name: 'The X-Mansion',
+              theme: 'Marvel',
+              releaseYear: 2024,
+              pieces: 3093,
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/76294-1/172998.jpg',
+              priceRange: '$279 to $339',
+              collectorAngle: 'Mutant-team display anchor',
+              tagline:
+                'A franchise landmark with strong cast recognition and shelf presence.',
+              availability: 'Fresh flagship demand',
+            },
+            supportingNote: 'Includes Wolverine, Professor X, and Rogue',
+          },
+        ]}
+        variant="compact"
+      />
+    </div>
+  ),
+};
