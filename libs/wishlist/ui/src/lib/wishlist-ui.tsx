@@ -66,7 +66,7 @@ export function WantedSetToggleCard({
         ? 'This set is in your private wishlist.'
         : 'Keep this set in your private wishlist.';
   const actionLabel = isUnavailable
-    ? 'Wanted status unavailable'
+    ? 'Wishlist status unavailable'
     : isWanted
       ? 'Remove from wishlist'
       : 'Add to wishlist';
@@ -152,7 +152,7 @@ export function WantedSetToggleCard({
         onClick={onToggle}
       >
         {isLoading
-          ? 'Syncing wanted state...'
+          ? 'Syncing wishlist...'
           : isPending
             ? 'Saving...'
             : actionLabel}
@@ -163,15 +163,19 @@ export function WantedSetToggleCard({
 
 export function CollectorWishlistPanel({
   children,
+  controls,
   errorMessage,
   hiddenWantedCount = 0,
+  statusMessage,
   state,
   wantedCount = 0,
 }: {
   children?: ReactNode;
   collectorName?: string;
+  controls?: ReactNode;
   errorMessage?: string;
   hiddenWantedCount?: number;
+  statusMessage?: string;
   state: 'empty' | 'loading' | 'populated' | 'signed-out';
   wantedCount?: number;
 }) {
@@ -191,7 +195,7 @@ export function CollectorWishlistPanel({
         : state === 'empty'
           ? hiddenWantedCount > 0
             ? `You have ${hiddenWantedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
-            : 'Add a set to your wishlist from any set page and it will appear here.'
+            : 'Save a set you want, then come back here to compare the ones worth watching.'
           : hiddenWantedCount > 0
             ? `Showing ${wantedCount} here today. ${hiddenWantedCount} stay saved outside the current catalog.`
             : `${wantedCount} saved.`;
@@ -215,7 +219,7 @@ export function CollectorWishlistPanel({
             ? 'Loading saves'
             : state === 'signed-out'
               ? 'Sign in to save privately'
-              : `${wantedCount} shown`}
+              : `${wantedCount} in wishlist`}
           {hiddenWantedCount > 0
             ? ` · ${hiddenWantedCount} outside today's catalog`
             : ''}
@@ -244,8 +248,19 @@ export function CollectorWishlistPanel({
           >
             Browse catalog
           </ActionLink>
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
+            Browse themes
+          </ActionLink>
         </div>
       </div>
+      {controls ? (
+        <div className={styles.wishlistToolbar}>{controls}</div>
+      ) : null}
+      {statusMessage ? (
+        <p aria-live="polite" className={styles.successText}>
+          {statusMessage}
+        </p>
+      ) : null}
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
@@ -266,6 +281,9 @@ export function CollectorWishlistPanel({
             tone="secondary"
           >
             Browse catalog
+          </ActionLink>
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
+            Browse themes
           </ActionLink>
         </div>
       )}

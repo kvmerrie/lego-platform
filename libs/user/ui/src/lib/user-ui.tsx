@@ -178,13 +178,13 @@ export function UserShellAccountStatusCard({
             href={buildWebPath(webPathnames.collection)}
             tone="secondary"
           >
-            Open collection
+            Open collection ({collectorSetCounts.ownedCount})
           </ActionLink>
           <ActionLink
             href={buildWebPath(webPathnames.wishlist)}
             tone="secondary"
           >
-            Open wishlist
+            Open wishlist ({collectorSetCounts.wantedCount})
           </ActionLink>
           <Button
             isLoading={Boolean(isAuthActionPending)}
@@ -416,13 +416,13 @@ export function UserSessionCard({
               href={buildWebPath(webPathnames.collection)}
               tone="secondary"
             >
-              Open collection
+              Open collection ({collectorSetCounts.ownedCount})
             </ActionLink>
             <ActionLink
               href={buildWebPath(webPathnames.wishlist)}
               tone="secondary"
             >
-              Open wishlist
+              Open wishlist ({collectorSetCounts.wantedCount})
             </ActionLink>
           </div>
         </div>

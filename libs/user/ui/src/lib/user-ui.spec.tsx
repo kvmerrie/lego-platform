@@ -69,8 +69,8 @@ describe('UserShellAccountStatusCard', () => {
     expect(markup).toContain('@brick-curator');
     expect(markup).toContain('2 owned saved');
     expect(markup).toContain('1 wishlist saved');
-    expect(markup).toContain('Open collection');
-    expect(markup).toContain('Open wishlist');
+    expect(markup).toContain('Open collection (2)');
+    expect(markup).toContain('Open wishlist (1)');
     expect(markup).toContain('Sign out');
     expect(markup).toContain(
       'Your saved sets and collector details are one click away.',
@@ -126,8 +126,8 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('Sign-in email');
     expect(markup).toContain('Collector handle');
     expect(markup).toContain('Your saves');
-    expect(markup).toContain('Open collection');
-    expect(markup).toContain('Open wishlist');
+    expect(markup).toContain('Open collection (2)');
+    expect(markup).toContain('Open wishlist (1)');
     expect(markup).toContain('Used only for sign-in links.');
     expect(markup).toContain(
       'Your saves stay private. Set pages and price checks stay public.',

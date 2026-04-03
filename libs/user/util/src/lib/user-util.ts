@@ -103,9 +103,7 @@ export function listUserSetStates({
     state: 'owned' as const,
   }));
 
-  return [...wantedStates, ...ownedStates].sort((left, right) =>
-    left.setId.localeCompare(right.setId),
-  );
+  return [...ownedStates, ...wantedStates];
 }
 
 export function getUserSetState(

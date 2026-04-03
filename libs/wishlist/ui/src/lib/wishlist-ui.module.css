@@ -126,6 +126,12 @@
   gap: var(--lego-space-2);
 }
 
+.wishlistToolbar {
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 76%, transparent);
+  padding-top: var(--lego-space-2);
+}
+
 .wishlistGrid {
   display: grid;
   gap: var(--lego-space-3);

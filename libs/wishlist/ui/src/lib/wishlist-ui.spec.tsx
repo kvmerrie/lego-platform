@@ -52,6 +52,7 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('<h1');
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Browse catalog');
+    expect(markup).toContain('Browse themes');
     expect(markup).toContain('Open account');
     expect(markup).toContain('Open collection');
   });
@@ -60,7 +61,9 @@ describe('CollectorWishlistPanel', () => {
     const markup = renderToStaticMarkup(
       <CollectorWishlistPanel
         collectorName="Alex Rivera"
+        controls={<button type="button">Recent</button>}
         hiddenWantedCount={1}
+        statusMessage="Rivendell moved to your collection."
         state="populated"
         wantedCount={2}
       >
@@ -70,10 +73,13 @@ describe('CollectorWishlistPanel', () => {
 
     expect(markup).toContain('Your wishlist');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('2 shown');
+    expect(markup).toContain('2 in wishlist');
     expect(markup).toContain('1 outside today&#x27;s catalog');
     expect(markup).toContain('Wanted set card');
+    expect(markup).toContain('Recent');
+    expect(markup).toContain('Rivendell moved to your collection.');
     expect(markup).toContain('Open account');
     expect(markup).toContain('Open collection');
+    expect(markup).toContain('Browse themes');
   });
 });

@@ -141,6 +141,7 @@ export function createUserSetStatusRepository(
         .from('user_set_statuses')
         .select(userSetStatusColumns)
         .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
         .order('set_id', { ascending: true });
 
       if (error) {

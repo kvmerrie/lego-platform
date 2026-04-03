@@ -98,9 +98,9 @@ export function OwnedSetToggleCard({
         ? 'This set is in your private collection.'
         : 'Keep this set in your private collection.';
   const actionLabel = isUnavailable
-    ? 'Owned status unavailable'
+    ? 'Collection status unavailable'
     : isOwned
-      ? 'Remove from owned'
+      ? 'Remove from collection'
       : 'Mark as owned';
   const statusTone = isLoading
     ? 'info'
@@ -144,7 +144,7 @@ export function OwnedSetToggleCard({
               : isUnavailable
                 ? 'Owned unavailable'
                 : isOwned
-                  ? 'Remove owned'
+                  ? 'Remove from collection'
                   : 'Mark as owned'}
         </Button>
       </article>
@@ -184,7 +184,7 @@ export function OwnedSetToggleCard({
         onClick={onToggle}
       >
         {isLoading
-          ? 'Syncing owned state...'
+          ? 'Syncing collection...'
           : isPending
             ? 'Saving...'
             : actionLabel}
@@ -195,16 +195,20 @@ export function OwnedSetToggleCard({
 
 export function CollectorCollectionPanel({
   children,
+  controls,
   errorMessage,
   hiddenOwnedCount = 0,
   ownedCount = 0,
+  statusMessage,
   state,
 }: {
   children?: ReactNode;
   collectorName?: string;
+  controls?: ReactNode;
   errorMessage?: string;
   hiddenOwnedCount?: number;
   ownedCount?: number;
+  statusMessage?: string;
   state: 'empty' | 'loading' | 'populated' | 'signed-out';
 }) {
   const title =
@@ -223,7 +227,7 @@ export function CollectorCollectionPanel({
         : state === 'empty'
           ? hiddenOwnedCount > 0
             ? `You have ${hiddenOwnedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
-            : 'Mark a set as owned from any set page and it will appear here.'
+            : 'Mark a set as owned from any set page, then use this space to keep your collection tidy.'
           : hiddenOwnedCount > 0
             ? `Showing ${ownedCount} here today. ${hiddenOwnedCount} stay saved outside the current catalog.`
             : `${ownedCount} saved.`;
@@ -247,7 +251,7 @@ export function CollectorCollectionPanel({
             ? 'Loading saves'
             : state === 'signed-out'
               ? 'Sign in to save privately'
-              : `${ownedCount} shown`}
+              : `${ownedCount} in collection`}
           {hiddenOwnedCount > 0
             ? ` · ${hiddenOwnedCount} outside today's catalog`
             : ''}
@@ -276,8 +280,19 @@ export function CollectorCollectionPanel({
           >
             Browse catalog
           </ActionLink>
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
+            Browse themes
+          </ActionLink>
         </div>
       </div>
+      {controls ? (
+        <div className={styles.collectionToolbar}>{controls}</div>
+      ) : null}
+      {statusMessage ? (
+        <p aria-live="polite" className={styles.successText}>
+          {statusMessage}
+        </p>
+      ) : null}
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
@@ -298,6 +313,9 @@ export function CollectorCollectionPanel({
             tone="secondary"
           >
             Browse catalog
+          </ActionLink>
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
+            Browse themes
           </ActionLink>
         </div>
       )}

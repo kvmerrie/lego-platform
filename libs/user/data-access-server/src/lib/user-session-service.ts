@@ -40,8 +40,7 @@ function toOwnedSetIds(
 ): string[] {
   return userSetStatusRecords
     .filter((userSetStatusRecord) => userSetStatusRecord.isOwned)
-    .map((userSetStatusRecord) => userSetStatusRecord.setId)
-    .sort();
+    .map((userSetStatusRecord) => userSetStatusRecord.setId);
 }
 
 function toWantedSetIds(
@@ -52,8 +51,7 @@ function toWantedSetIds(
       (userSetStatusRecord) =>
         userSetStatusRecord.isWanted && !userSetStatusRecord.isOwned,
     )
-    .map((userSetStatusRecord) => userSetStatusRecord.setId)
-    .sort();
+    .map((userSetStatusRecord) => userSetStatusRecord.setId);
 }
 
 export async function buildAuthenticatedUserSession({

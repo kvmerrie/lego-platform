@@ -182,6 +182,7 @@ function formatMinifigureHighlights(
 }
 
 export function CatalogSetCard({
+  actions,
   href,
   priceContext,
   savedState,
@@ -189,6 +190,7 @@ export function CatalogSetCard({
   supportingNote,
   variant = 'default',
 }: {
+  actions?: ReactNode;
   href?: string;
   priceContext?: CatalogSetCardPriceContext;
   savedState?: CatalogSetSavedState;
@@ -399,6 +401,7 @@ export function CatalogSetCard({
           { label: 'Range', value: setSummary.priceRange },
         ]}
       />
+      {actions ? <div className={styles.cardActions}>{actions}</div> : null}
       {href ? (
         <ActionLink className={styles.actionLink} href={href} tone="secondary">
           See set

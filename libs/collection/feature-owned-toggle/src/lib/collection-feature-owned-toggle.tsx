@@ -45,7 +45,7 @@ export function CollectionFeatureOwnedToggle({
           return;
         }
 
-        setErrorMessage('Unable to load the owned state for this set.');
+        setErrorMessage('Unable to load the collection state for this set.');
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -102,7 +102,7 @@ export function CollectionFeatureOwnedToggle({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to save the owned state right now.',
+          : 'Unable to update your collection right now.',
       );
     } finally {
       setIsPending(false);

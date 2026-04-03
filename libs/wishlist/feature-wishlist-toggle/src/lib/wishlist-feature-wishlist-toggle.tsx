@@ -45,7 +45,7 @@ export function WishlistFeatureWishlistToggle({
           return;
         }
 
-        setErrorMessage('Unable to load the wanted state for this set.');
+        setErrorMessage('Unable to load the wishlist state for this set.');
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -102,7 +102,7 @@ export function WishlistFeatureWishlistToggle({
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to save the wanted state right now.',
+          : 'Unable to update your wishlist right now.',
       );
     } finally {
       setIsPending(false);

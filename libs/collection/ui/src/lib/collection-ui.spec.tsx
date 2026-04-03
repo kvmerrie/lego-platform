@@ -18,7 +18,7 @@ describe('OwnedSetToggleCard', () => {
     expect(markup).not.toContain('Private collector state');
     expect(markup).toContain('Your collector account is up to date.');
     expect(markup).toContain('Private save. Set facts stay public.');
-    expect(markup).toContain('Remove from owned');
+    expect(markup).toContain('Remove from collection');
   });
 
   it('renders a compact product-page variant for set detail actions', () => {
@@ -51,6 +51,7 @@ describe('CollectorCollectionPanel', () => {
     expect(markup).toContain('<h1');
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Browse catalog');
+    expect(markup).toContain('Browse themes');
     expect(markup).toContain('Open account');
     expect(markup).toContain('Open wishlist');
   });
@@ -59,8 +60,10 @@ describe('CollectorCollectionPanel', () => {
     const markup = renderToStaticMarkup(
       <CollectorCollectionPanel
         collectorName="Alex Rivera"
+        controls={<button type="button">Theme</button>}
         hiddenOwnedCount={1}
         ownedCount={2}
+        statusMessage="Rivendell removed from your collection."
         state="populated"
       >
         <article>Owned set card</article>
@@ -69,11 +72,14 @@ describe('CollectorCollectionPanel', () => {
 
     expect(markup).toContain('Your collection');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('2 shown');
+    expect(markup).toContain('2 in collection');
     expect(markup).toContain('1 outside today&#x27;s catalog');
     expect(markup).toContain('Owned set card');
+    expect(markup).toContain('Theme');
+    expect(markup).toContain('Rivendell removed from your collection.');
     expect(markup).toContain('Open account');
     expect(markup).toContain('Open wishlist');
+    expect(markup).toContain('Browse themes');
     expect(markup).not.toContain('Owned collection');
   });
 });
