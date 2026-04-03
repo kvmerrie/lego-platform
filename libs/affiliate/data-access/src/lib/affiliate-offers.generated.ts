@@ -580,6 +580,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   }
 ]`;
 
-export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] = JSON.parse(
-  affiliateOfferSnapshotsPayload,
-) as readonly AffiliateOfferSnapshot[];
+export const affiliateOfferSnapshots: readonly AffiliateOfferSnapshot[] =
+  JSON.parse(
+    affiliateOfferSnapshotsPayload,
+  ) as readonly AffiliateOfferSnapshot[];
