@@ -53,20 +53,34 @@ describe('user session contracts', () => {
     expect(
       listUserSetStates({
         ownedSetIds: ['10316', '21348'],
+        setStateTimingBySetId: {
+          '10316': {
+            createdAt: '2026-04-01T09:00:00.000Z',
+            updatedAt: '2026-04-01T09:00:00.000Z',
+          },
+          '42177': {
+            createdAt: '2026-04-02T09:00:00.000Z',
+            updatedAt: '2026-04-03T09:00:00.000Z',
+          },
+        },
         wantedSetIds: ['21348', '42177'],
       }),
     ).toEqual([
       {
+        createdAt: '2026-04-01T09:00:00.000Z',
         setId: '10316',
         state: 'owned',
+        updatedAt: '2026-04-01T09:00:00.000Z',
       },
       {
         setId: '21348',
         state: 'owned',
       },
       {
+        createdAt: '2026-04-02T09:00:00.000Z',
         setId: '42177',
         state: 'wishlist',
+        updatedAt: '2026-04-03T09:00:00.000Z',
       },
     ]);
   });

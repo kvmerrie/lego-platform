@@ -138,6 +138,10 @@ describe('CatalogSetCard', () => {
   it('renders set imagery alongside featured-set discovery context when available', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
+        contextBadge={{
+          label: 'Strong deal right now',
+          tone: 'accent',
+        }}
         href="/sets/rivendell-10316"
         priceContext={{
           coverageLabel: 'In stock · 3 reviewed offers',
@@ -167,6 +171,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Reviewed price');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest reviewed price at bol');
+    expect(markup).toContain('Strong deal right now');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
     expect(markup).toContain('alt="Rivendell LEGO set"');
     expect(markup).toContain('Coverage');

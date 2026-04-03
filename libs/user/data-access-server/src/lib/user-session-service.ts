@@ -72,6 +72,15 @@ export async function buildAuthenticatedUserSession({
   ]);
   const ownedSetIds = toOwnedSetIds(userSetStatusRecords);
   const wantedSetIds = toWantedSetIds(userSetStatusRecords);
+  const setStateTimingBySetId = Object.fromEntries(
+    userSetStatusRecords.map((userSetStatusRecord) => [
+      userSetStatusRecord.setId,
+      {
+        createdAt: userSetStatusRecord.createdAt,
+        updatedAt: userSetStatusRecord.updatedAt,
+      },
+    ]),
+  );
 
   return {
     state: 'authenticated',
@@ -83,6 +92,7 @@ export async function buildAuthenticatedUserSession({
     ownedSetIds,
     setStates: listUserSetStates({
       ownedSetIds,
+      setStateTimingBySetId,
       wantedSetIds,
     }),
     wantedSetIds,

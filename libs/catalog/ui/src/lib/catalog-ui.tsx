@@ -23,6 +23,8 @@ type CatalogSetCardPriceContextTone =
   | 'positive'
   | 'warning';
 
+type CatalogSetCardBadgeTone = ComponentProps<typeof Badge>['tone'];
+
 export interface CatalogThemeVisual {
   backgroundColor?: string;
   imageUrl?: string;
@@ -45,6 +47,11 @@ export interface CatalogSetCardPriceContext {
   pricePositionLabel?: string;
   pricePositionTone?: CatalogSetCardPriceContextTone;
   reviewedLabel: string;
+}
+
+export interface CatalogSetCardContextBadge {
+  label: string;
+  tone?: CatalogSetCardBadgeTone;
 }
 
 type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
@@ -184,6 +191,7 @@ function formatMinifigureHighlights(
 
 export function CatalogSetCard({
   actions,
+  contextBadge,
   href,
   priceContext,
   priceDisplay = 'default',
@@ -193,6 +201,7 @@ export function CatalogSetCard({
   variant = 'default',
 }: {
   actions?: ReactNode;
+  contextBadge?: CatalogSetCardContextBadge;
   href?: string;
   priceContext?: CatalogSetCardPriceContext;
   priceDisplay?: CatalogSetCardPriceDisplay;
@@ -214,6 +223,11 @@ export function CatalogSetCard({
         <div className={styles.cardCompactBody}>
           <div className={styles.cardCompactBadgeRow}>
             <Badge tone="accent">{setSummary.theme}</Badge>
+            {contextBadge ? (
+              <Badge tone={contextBadge.tone ?? 'neutral'}>
+                {contextBadge.label}
+              </Badge>
+            ) : null}
             {savedState ? (
               <Badge tone={getSavedStateBadgeTone(savedState)}>
                 {getSavedStateLabel(savedState)}
@@ -265,6 +279,11 @@ export function CatalogSetCard({
         <div className={styles.cardCompactBody}>
           <div className={styles.cardCompactBadgeRow}>
             <Badge tone="accent">{setSummary.theme}</Badge>
+            {contextBadge ? (
+              <Badge tone={contextBadge.tone ?? 'neutral'}>
+                {contextBadge.label}
+              </Badge>
+            ) : null}
             {savedState ? (
               <Badge tone={getSavedStateBadgeTone(savedState)}>
                 {getSavedStateLabel(savedState)}
@@ -342,6 +361,11 @@ export function CatalogSetCard({
       <div className={styles.cardHeader}>
         <div className={styles.cardMetaRow}>
           <Badge tone="accent">{setSummary.theme}</Badge>
+          {contextBadge ? (
+            <Badge tone={contextBadge.tone ?? 'neutral'}>
+              {contextBadge.label}
+            </Badge>
+          ) : null}
           {savedState ? (
             <Badge tone={getSavedStateBadgeTone(savedState)}>
               {getSavedStateLabel(savedState)}

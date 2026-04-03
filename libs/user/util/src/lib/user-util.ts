@@ -29,9 +29,16 @@ export interface UpdateCollectorProfileInput {
 
 export type UserSetListState = 'owned' | 'wishlist';
 
+export interface UserSetStateTiming {
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface UserSetState {
+  createdAt?: string;
   setId: string;
   state: UserSetListState;
+  updatedAt?: string;
 }
 
 export interface AnonymousUserSession {
@@ -89,16 +96,21 @@ export function getCollectorSetCounts(userSession: UserSession): {
 
 export function listUserSetStates({
   ownedSetIds,
+  setStateTimingBySetId,
   wantedSetIds,
-}: Pick<UserSession, 'ownedSetIds' | 'wantedSetIds'>): UserSetState[] {
+}: Pick<UserSession, 'ownedSetIds' | 'wantedSetIds'> & {
+  setStateTimingBySetId?: Record<string, UserSetStateTiming | undefined>;
+}): UserSetState[] {
   const ownedSetIdSet = new Set(ownedSetIds);
   const wantedStates = [...new Set(wantedSetIds)]
     .filter((setId) => !ownedSetIdSet.has(setId))
     .map((setId) => ({
+      ...setStateTimingBySetId?.[setId],
       setId,
       state: 'wishlist' as const,
     }));
   const ownedStates = [...ownedSetIdSet].map((setId) => ({
+    ...setStateTimingBySetId?.[setId],
     setId,
     state: 'owned' as const,
   }));

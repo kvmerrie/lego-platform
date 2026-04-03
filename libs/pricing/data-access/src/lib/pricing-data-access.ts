@@ -38,6 +38,13 @@ export interface ReviewedPriceSummary {
   reviewedLabel: string;
 }
 
+export interface WishlistPriceAlert {
+  detail: string;
+  kind: 'new-best-price' | 'price-improved-since-save' | 'strong-deal-now';
+  label: string;
+  tone: 'accent' | 'positive';
+}
+
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
@@ -75,6 +82,20 @@ function getPricePositionLabel({
   }
 
   return 'At reference';
+}
+
+function getAlertCoverageLabel(pricePanelSnapshot: PricePanelSnapshot): string {
+  return (
+    pricePanelSnapshot.lowestAvailabilityLabel ??
+    getReviewedOfferLabel(pricePanelSnapshot.merchantCount)
+  );
+}
+
+function getCurrentPriceLabel(pricePanelSnapshot: PricePanelSnapshot): string {
+  return formatPriceMinor({
+    currencyCode: pricePanelSnapshot.currencyCode,
+    minorUnits: pricePanelSnapshot.headlinePriceMinor,
+  });
 }
 
 function getCandidateRank(
@@ -153,10 +174,7 @@ export function getReviewedPriceSummary(
       ? `${pricePanelSnapshot.lowestAvailabilityLabel} · ${getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}`
       : getReviewedOfferLabel(pricePanelSnapshot.merchantCount),
     coverageNote: priceDealSummary.coverageNote,
-    currentPrice: formatPriceMinor({
-      currencyCode: pricePanelSnapshot.currencyCode,
-      minorUnits: pricePanelSnapshot.headlinePriceMinor,
-    }),
+    currentPrice: getCurrentPriceLabel(pricePanelSnapshot),
     dealLabel: priceDealSummary.label,
     merchantLabel: `Lowest reviewed price at ${pricePanelSnapshot.lowestMerchantName}`,
     pricePositionLabel: getPricePositionLabel({
@@ -401,6 +419,181 @@ export async function listTrackedPriceHistory(
       (priceHistoryPoint): priceHistoryPoint is PriceHistoryPoint =>
         priceHistoryPoint !== undefined,
     );
+}
+
+export function buildWishlistPriceAlert({
+  priceHistoryPoints = [],
+  savedAt,
+  setId,
+}: {
+  priceHistoryPoints?: readonly PriceHistoryPoint[];
+  savedAt?: string;
+  setId: string;
+}): WishlistPriceAlert | undefined {
+  const pricePanelSnapshot = getPricePanelSnapshot(setId);
+
+  if (!pricePanelSnapshot) {
+    return undefined;
+  }
+
+  const currentPriceLabel = getCurrentPriceLabel(pricePanelSnapshot);
+  const coverageLabel = getAlertCoverageLabel(pricePanelSnapshot);
+  const currentObservedAt = new Date(pricePanelSnapshot.observedAt).getTime();
+  const priorTrackedLowMinor = priceHistoryPoints
+    .filter(
+      (priceHistoryPoint) =>
+        new Date(priceHistoryPoint.observedAt).getTime() < currentObservedAt,
+    )
+    .reduce<number | undefined>((trackedLowMinor, priceHistoryPoint) => {
+      if (trackedLowMinor === undefined) {
+        return priceHistoryPoint.headlinePriceMinor;
+      }
+
+      return Math.min(trackedLowMinor, priceHistoryPoint.headlinePriceMinor);
+    }, undefined);
+
+  if (
+    typeof priorTrackedLowMinor === 'number' &&
+    pricePanelSnapshot.headlinePriceMinor < priorTrackedLowMinor
+  ) {
+    return {
+      detail: `${currentPriceLabel} is ${formatPriceMinor({
+        currencyCode: pricePanelSnapshot.currencyCode,
+        minorUnits:
+          priorTrackedLowMinor - pricePanelSnapshot.headlinePriceMinor,
+      })} below the previous tracked low.`,
+      kind: 'new-best-price',
+      label: 'New best reviewed price',
+      tone: 'positive',
+    };
+  }
+
+  const savedAtTimestamp = savedAt ? new Date(savedAt).getTime() : undefined;
+  const baselinePricePoint =
+    typeof savedAtTimestamp === 'number' && Number.isFinite(savedAtTimestamp)
+      ? [...priceHistoryPoints]
+          .reverse()
+          .find(
+            (priceHistoryPoint) =>
+              new Date(priceHistoryPoint.observedAt).getTime() <=
+              savedAtTimestamp,
+          )
+      : undefined;
+
+  if (
+    baselinePricePoint &&
+    typeof savedAtTimestamp === 'number' &&
+    Number.isFinite(savedAtTimestamp) &&
+    new Date(pricePanelSnapshot.observedAt).getTime() > savedAtTimestamp &&
+    pricePanelSnapshot.headlinePriceMinor <
+      baselinePricePoint.headlinePriceMinor
+  ) {
+    return {
+      detail: `${currentPriceLabel} is ${formatPriceMinor({
+        currencyCode: pricePanelSnapshot.currencyCode,
+        minorUnits:
+          baselinePricePoint.headlinePriceMinor -
+          pricePanelSnapshot.headlinePriceMinor,
+      })} lower than when you saved it.`,
+      kind: 'price-improved-since-save',
+      label: 'Lower than when you saved it',
+      tone: 'positive',
+    };
+  }
+
+  const priceDealSummary = getPriceDealSummary(pricePanelSnapshot);
+  const pricePositionLabel = getPricePositionLabel({
+    currencyCode: pricePanelSnapshot.currencyCode,
+    deltaMinor: pricePanelSnapshot.deltaMinor,
+  });
+
+  if (priceDealSummary.label === 'Best current deal') {
+    return {
+      detail: pricePositionLabel
+        ? `${pricePositionLabel} · ${coverageLabel}`
+        : `${currentPriceLabel} · ${coverageLabel}`,
+      kind: 'strong-deal-now',
+      label: 'Strong deal right now',
+      tone: 'accent',
+    };
+  }
+
+  return undefined;
+}
+
+export async function listWishlistPriceAlerts({
+  savedAtBySetId,
+  setIds,
+}: {
+  savedAtBySetId?: Record<string, string | undefined>;
+  setIds: readonly string[];
+}): Promise<Record<string, WishlistPriceAlert | undefined>> {
+  const uniqueSetIds = [...new Set(setIds)].filter((setId) =>
+    Boolean(getPricePanelSnapshot(setId)),
+  );
+
+  if (uniqueSetIds.length === 0) {
+    return {};
+  }
+
+  const buildAlertLookup = (
+    groupedPriceHistoryPoints: Map<string, PriceHistoryPoint[]>,
+  ) =>
+    Object.fromEntries(
+      uniqueSetIds.map((setId) => [
+        setId,
+        buildWishlistPriceAlert({
+          priceHistoryPoints: groupedPriceHistoryPoints.get(setId),
+          savedAt: savedAtBySetId?.[setId],
+          setId,
+        }),
+      ]),
+    );
+
+  if (!hasBrowserSupabaseConfig()) {
+    return buildAlertLookup(new Map());
+  }
+
+  const { data, error } = await getBrowserSupabaseClient()
+    .from(PRICING_HISTORY_TABLE)
+    .select(
+      'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on',
+    )
+    .in('set_id', uniqueSetIds)
+    .eq('region_code', DUTCH_REGION_CODE)
+    .eq('currency_code', EURO_CURRENCY_CODE)
+    .eq('condition', NEW_OFFER_CONDITION)
+    .order('set_id', { ascending: true })
+    .order('recorded_on', { ascending: true })
+    .limit(5000);
+
+  if (error || !Array.isArray(data)) {
+    return buildAlertLookup(new Map());
+  }
+
+  const groupedPriceHistoryPoints = data.reduce<
+    Map<string, PriceHistoryPoint[]>
+  >((priceHistoryPointsBySetId, priceHistoryRowRecord) => {
+    const priceHistoryPoint = normalizePriceHistoryRowRecord(
+      priceHistoryRowRecord as PriceHistoryRowRecord,
+    );
+
+    if (!priceHistoryPoint) {
+      return priceHistoryPointsBySetId;
+    }
+
+    const existingPriceHistoryPoints =
+      priceHistoryPointsBySetId.get(priceHistoryPoint.setId) ?? [];
+
+    priceHistoryPointsBySetId.set(priceHistoryPoint.setId, [
+      ...existingPriceHistoryPoints,
+      priceHistoryPoint,
+    ]);
+
+    return priceHistoryPointsBySetId;
+  }, new Map());
+
+  return buildAlertLookup(groupedPriceHistoryPoints);
 }
 
 export async function getPriceHistorySummary(

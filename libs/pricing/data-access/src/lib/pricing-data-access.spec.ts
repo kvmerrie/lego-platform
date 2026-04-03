@@ -15,11 +15,13 @@ import {
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 import {
+  buildWishlistPriceAlert,
   buildPriceHistorySummary,
   buildTrackedPriceSummary,
   getFeaturedSetPriceContext,
   getReviewedPriceSummary,
   listDealSpotlightPriceContexts,
+  listWishlistPriceAlerts,
   listReviewedPriceSetIds,
   getPriceHistorySummary,
   getPriceHistorySummaryState,
@@ -130,6 +132,95 @@ describe('pricing data access', () => {
     });
   });
 
+  test('prefers a new tracked low when building a wishlist alert', () => {
+    expect(
+      buildWishlistPriceAlert({
+        priceHistoryPoints: [
+          {
+            setId: '10354',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 25999,
+            referencePriceMinor: 26999,
+            lowestMerchantId: 'lego-nl',
+            observedAt: '2026-04-01T09:00:00.000Z',
+            recordedOn: '2026-04-01',
+          },
+          {
+            setId: '10354',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 25499,
+            referencePriceMinor: 26999,
+            lowestMerchantId: 'bol',
+            observedAt: '2026-04-02T09:00:00.000Z',
+            recordedOn: '2026-04-02',
+          },
+        ],
+        savedAt: '2026-04-01T12:00:00.000Z',
+        setId: '10354',
+      }),
+    ).toEqual({
+      detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+      kind: 'new-best-price',
+      label: 'New best reviewed price',
+      tone: 'positive',
+    });
+  });
+
+  test('falls back to a strong-deal alert when no saved baseline is available', () => {
+    expect(
+      buildWishlistPriceAlert({
+        setId: '10354',
+      }),
+    ).toEqual({
+      detail: '€ 23,56 below reference · In stock',
+      kind: 'strong-deal-now',
+      label: 'Strong deal right now',
+      tone: 'accent',
+    });
+  });
+
+  test('shows a lower-than-saved alert when the price improved after save but is not a new low', () => {
+    expect(
+      buildWishlistPriceAlert({
+        priceHistoryPoints: [
+          {
+            setId: '10316',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 45999,
+            referencePriceMinor: 49999,
+            lowestMerchantId: 'bol',
+            observedAt: '2026-03-20T09:00:00.000Z',
+            recordedOn: '2026-03-20',
+          },
+          {
+            setId: '10316',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 48999,
+            referencePriceMinor: 49999,
+            lowestMerchantId: 'lego-nl',
+            observedAt: '2026-03-28T09:00:00.000Z',
+            recordedOn: '2026-03-28',
+          },
+        ],
+        savedAt: '2026-03-28T12:00:00.000Z',
+        setId: '10316',
+      }),
+    ).toEqual({
+      detail: '€ 469,99 is € 20,00 lower than when you saved it.',
+      kind: 'price-improved-since-save',
+      label: 'Lower than when you saved it',
+      tone: 'positive',
+    });
+  });
+
   test('surfaces deal spotlights by strongest reviewed price gap first', () => {
     expect(
       listDealSpotlightPriceContexts({
@@ -229,6 +320,63 @@ describe('pricing data access', () => {
         recordedOn: '2026-03-29',
       },
     ]);
+  });
+
+  test('batches wishlist alerts across saved sets and uses saved timestamps', async () => {
+    const queryBuilder = {
+      select: vi.fn().mockReturnThis(),
+      in: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({
+        data: [
+          {
+            set_id: '10354',
+            region_code: 'NL',
+            currency_code: 'EUR',
+            condition: 'new',
+            headline_price_minor: 25999,
+            reference_price_minor: 26999,
+            lowest_merchant_id: 'lego-nl',
+            observed_at: '2026-04-01T09:00:00.000Z',
+            recorded_on: '2026-04-01',
+          },
+          {
+            set_id: '10354',
+            region_code: 'NL',
+            currency_code: 'EUR',
+            condition: 'new',
+            headline_price_minor: 25499,
+            reference_price_minor: 26999,
+            lowest_merchant_id: 'bol',
+            observed_at: '2026-04-02T09:00:00.000Z',
+            recorded_on: '2026-04-02',
+          },
+        ],
+        error: null,
+      }),
+    };
+
+    vi.mocked(hasBrowserSupabaseConfig).mockReturnValue(true);
+    vi.mocked(getBrowserSupabaseClient).mockReturnValue({
+      from: vi.fn().mockReturnValue(queryBuilder),
+    } as never);
+
+    await expect(
+      listWishlistPriceAlerts({
+        savedAtBySetId: {
+          '10354': '2026-04-01T12:00:00.000Z',
+        },
+        setIds: ['10354'],
+      }),
+    ).resolves.toEqual({
+      '10354': {
+        detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+        kind: 'new-best-price',
+        label: 'New best reviewed price',
+        tone: 'positive',
+      },
+    });
   });
 
   test('builds a compact 30-day summary from history points and the current price', () => {

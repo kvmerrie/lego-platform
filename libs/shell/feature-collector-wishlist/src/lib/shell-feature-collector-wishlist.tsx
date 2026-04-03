@@ -4,10 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
 import {
   CatalogSetCard,
+  type CatalogSetCardContextBadge,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import { addOwnedSet } from '@lego-platform/collection/data-access';
-import { getReviewedPriceSummary } from '@lego-platform/pricing/data-access';
+import {
+  getReviewedPriceSummary,
+  listWishlistPriceAlerts,
+  type WishlistPriceAlert,
+} from '@lego-platform/pricing/data-access';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { Button } from '@lego-platform/shared/ui';
 import { removeWantedSet } from '@lego-platform/wishlist/data-access';
@@ -99,9 +104,17 @@ function toWishlistPriceContext(
   };
 }
 
-function getWishlistBuyingNote(
-  priceSummary: ReturnType<typeof getReviewedPriceSummary>,
-): string | undefined {
+function getWishlistBuyingNote({
+  priceSummary,
+  wishlistAlert,
+}: {
+  priceSummary: ReturnType<typeof getReviewedPriceSummary>;
+  wishlistAlert?: WishlistPriceAlert;
+}): string | undefined {
+  if (wishlistAlert) {
+    return wishlistAlert.detail;
+  }
+
   if (!priceSummary) {
     return undefined;
   }
@@ -121,6 +134,19 @@ function getWishlistBuyingNote(
   );
 }
 
+function toWishlistContextBadge(
+  wishlistAlert?: WishlistPriceAlert,
+): CatalogSetCardContextBadge | undefined {
+  if (!wishlistAlert) {
+    return undefined;
+  }
+
+  return {
+    label: wishlistAlert.label,
+    tone: wishlistAlert.tone,
+  };
+}
+
 export function ShellFeatureCollectorWishlist() {
   const [userSession, setUserSession] = useState<UserSession>(
     createAnonymousUserSession(),
@@ -132,6 +158,9 @@ export function ShellFeatureCollectorWishlist() {
   );
   const [sortOrder, setSortOrder] = useState<SavedSetSortOrder>('recent');
   const [statusMessage, setStatusMessage] = useState<string>();
+  const [wishlistAlerts, setWishlistAlerts] = useState<
+    Record<string, WishlistPriceAlert | undefined>
+  >({});
   const isMountedRef = useRef(true);
 
   async function loadUserSession() {
@@ -186,6 +215,48 @@ export function ShellFeatureCollectorWishlist() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isAuthenticatedSession(userSession)) {
+      setWishlistAlerts({});
+      return;
+    }
+
+    if (userSession.wantedSetIds.length === 0) {
+      setWishlistAlerts({});
+      return;
+    }
+
+    let isCancelled = false;
+    const savedAtBySetId = Object.fromEntries(
+      userSession.setStates
+        .filter((setState) => setState.state === 'wishlist')
+        .map((setState) => [setState.setId, setState.createdAt]),
+    );
+
+    void listWishlistPriceAlerts({
+      savedAtBySetId,
+      setIds: userSession.wantedSetIds,
+    })
+      .then((nextWishlistAlerts) => {
+        if (isCancelled || !isMountedRef.current) {
+          return;
+        }
+
+        setWishlistAlerts(nextWishlistAlerts);
+      })
+      .catch(() => {
+        if (isCancelled || !isMountedRef.current) {
+          return;
+        }
+
+        setWishlistAlerts({});
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [userSession]);
+
   if (isLoading) {
     return <CollectorWishlistPanel state="loading" />;
   }
@@ -198,6 +269,9 @@ export function ShellFeatureCollectorWishlist() {
 
   const wantedSetCards = listCatalogSetCardsByIds(userSession.wantedSetIds);
   const sortedWantedSetCards = sortSetCards(wantedSetCards, sortOrder);
+  const activeWishlistAlertCount = wantedSetCards.filter(
+    (catalogSetCard) => wishlistAlerts[catalogSetCard.id],
+  ).length;
   const hiddenWantedCount = Math.max(
     0,
     userSession.wantedSetIds.length - wantedSetCards.length,
@@ -329,7 +403,14 @@ export function ShellFeatureCollectorWishlist() {
               ))}
             </div>
           </div>
-          <p className={styles.toolbarMeta}>{wantedSetCards.length} saved</p>
+          <p className={styles.toolbarMeta}>
+            {wantedSetCards.length} saved
+            {activeWishlistAlertCount > 0
+              ? ` · ${activeWishlistAlertCount} buy signal${
+                  activeWishlistAlertCount === 1 ? '' : 's'
+                } right now`
+              : ''}
+          </p>
         </div>
       }
       errorMessage={errorMessage}
@@ -340,6 +421,7 @@ export function ShellFeatureCollectorWishlist() {
     >
       {sortedWantedSetCards.map((catalogSetCard) => {
         const reviewedPriceSummary = getReviewedPriceSummary(catalogSetCard.id);
+        const wishlistAlert = wishlistAlerts[catalogSetCard.id];
 
         return (
           <CatalogSetCard
@@ -375,12 +457,16 @@ export function ShellFeatureCollectorWishlist() {
                 </Button>
               </div>
             }
+            contextBadge={toWishlistContextBadge(wishlistAlert)}
             href={buildSetDetailPath(catalogSetCard.slug)}
             key={catalogSetCard.id}
             priceContext={toWishlistPriceContext(reviewedPriceSummary)}
             savedState="wishlist"
             setSummary={catalogSetCard}
-            supportingNote={getWishlistBuyingNote(reviewedPriceSummary)}
+            supportingNote={getWishlistBuyingNote({
+              priceSummary: reviewedPriceSummary,
+              wishlistAlert,
+            })}
           />
         );
       })}
