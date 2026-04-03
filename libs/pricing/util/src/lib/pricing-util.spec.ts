@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { getPriceDealSummary } from './pricing-util';
+import {
+  getPriceDealSummary,
+  renderPricingObservationsModule,
+} from './pricing-util';
 
 describe('pricing util deal summaries', () => {
   test('surfaces a best current deal label with limited coverage copy', () => {
@@ -36,5 +39,28 @@ describe('pricing util deal summaries', () => {
       label: 'Lowest reviewed offer',
       coverageNote: 'Only 1 reviewed offer so far',
     });
+  });
+
+  test('renders pricing generated modules in a Prettier-stable shape', async () => {
+    const { format } = await import('prettier');
+    const renderedModule = renderPricingObservationsModule([
+      {
+        availability: 'in_stock',
+        condition: 'new',
+        currencyCode: 'EUR',
+        merchantId: 'lego-nl',
+        observedAt: '2026-04-03T09:00:00.000Z',
+        regionCode: 'NL',
+        setId: '10316',
+        totalPriceMinor: 49999,
+      },
+    ]);
+
+    await expect(
+      format(renderedModule, {
+        parser: 'typescript',
+        singleQuote: true,
+      }),
+    ).resolves.toBe(renderedModule);
   });
 });

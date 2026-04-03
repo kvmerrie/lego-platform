@@ -3,6 +3,7 @@ import {
   getBestOffer,
   getCatalogOfferComparisonInsight,
   getCatalogOfferMerchantName,
+  renderAffiliateOfferSnapshotsModule,
   toCatalogOffers,
   type CatalogOffer,
 } from './affiliate-util';
@@ -179,5 +180,33 @@ describe('affiliate util catalog offers', () => {
         },
       ]),
     ).toBe('Wide price gap across reviewed shops');
+  });
+
+  test('renders affiliate generated modules in a Prettier-stable shape', async () => {
+    const { format } = await import('prettier');
+    const renderedModule = renderAffiliateOfferSnapshotsModule([
+      {
+        availabilityLabel: 'In stock',
+        condition: 'new',
+        currencyCode: 'EUR',
+        ctaLabel: 'Shop at LEGO',
+        disclosureCopy: 'Direct official merchant link.',
+        displayRank: 1,
+        merchantId: 'lego-nl',
+        merchantName: 'LEGO',
+        observedAt: '2026-04-03T09:00:00.000Z',
+        outboundUrl: 'https://www.lego.com/nl-nl/product/rivendell-10316',
+        regionCode: 'NL',
+        setId: '10316',
+        totalPriceMinor: 49999,
+      },
+    ]);
+
+    await expect(
+      format(renderedModule, {
+        parser: 'typescript',
+        singleQuote: true,
+      }),
+    ).resolves.toBe(renderedModule);
   });
 });
