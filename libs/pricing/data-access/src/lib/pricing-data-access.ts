@@ -68,12 +68,20 @@ export interface WishlistAlertNotificationCandidate extends WishlistPriceAlert {
     | 'first-signal'
     | 'higher-priority-signal';
   priority: 1 | 2 | 3;
+  signalObservedAt?: string;
   setId: string;
   suppressionReason?: 'cooldown-active';
   supersedesPreviousKind?: WishlistPriceAlert['kind'];
 }
 
 export const DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS = 14;
+
+export interface WishlistNewAlertSummary {
+  newCount: number;
+  newBestPriceCount: number;
+  priceImprovedSinceSaveCount: number;
+  strongDealCount: number;
+}
 
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
@@ -699,6 +707,7 @@ export function buildWishlistAlertNotificationCandidate({
   const evaluatedAt = now ?? new Date().toISOString();
   const evaluatedAtTimestamp = parseTimestamp(evaluatedAt) ?? Date.now();
   const priority = getWishlistAlertPriority(alert.kind);
+  const signalObservedAt = getPricePanelSnapshot(setId)?.observedAt;
   const previousNotifiedAtTimestamp = parseTimestamp(
     previousNotificationState?.lastNotifiedAt,
   );
@@ -732,6 +741,7 @@ export function buildWishlistAlertNotificationCandidate({
       evaluatedAt,
       isNewlyNotifiable: false,
       priority,
+      signalObservedAt,
       setId,
       suppressionReason: 'cooldown-active',
     };
@@ -751,6 +761,7 @@ export function buildWishlistAlertNotificationCandidate({
           ? 'higher-priority-signal'
           : 'cooldown-expired',
     priority,
+    signalObservedAt,
     setId,
     supersedesPreviousKind,
   };
@@ -782,6 +793,77 @@ export function listWishlistAlertNotificationCandidates({
       }),
     ]),
   );
+}
+
+export function isWishlistAlertNotificationCandidateNew({
+  lastViewedAt,
+  wishlistAlertNotificationCandidate,
+}: {
+  lastViewedAt?: string;
+  wishlistAlertNotificationCandidate?: WishlistAlertNotificationCandidate;
+}): boolean {
+  if (
+    !wishlistAlertNotificationCandidate ||
+    !wishlistAlertNotificationCandidate.isNewlyNotifiable
+  ) {
+    return false;
+  }
+
+  const candidateTimestamp =
+    parseTimestamp(wishlistAlertNotificationCandidate.signalObservedAt) ??
+    parseTimestamp(wishlistAlertNotificationCandidate.evaluatedAt);
+
+  if (candidateTimestamp === undefined) {
+    return false;
+  }
+
+  const lastViewedTimestamp = parseTimestamp(lastViewedAt);
+
+  if (lastViewedTimestamp === undefined) {
+    return true;
+  }
+
+  return candidateTimestamp > lastViewedTimestamp;
+}
+
+export function summarizeNewWishlistAlertCandidates({
+  lastViewedAt,
+  wishlistAlertNotificationCandidates,
+}: {
+  lastViewedAt?: string;
+  wishlistAlertNotificationCandidates: Record<
+    string,
+    WishlistAlertNotificationCandidate | undefined
+  >;
+}): WishlistNewAlertSummary | undefined {
+  const newWishlistAlertCandidates = Object.values(
+    wishlistAlertNotificationCandidates,
+  ).filter((wishlistAlertNotificationCandidate) =>
+    isWishlistAlertNotificationCandidateNew({
+      lastViewedAt,
+      wishlistAlertNotificationCandidate,
+    }),
+  ) as WishlistAlertNotificationCandidate[];
+
+  if (newWishlistAlertCandidates.length === 0) {
+    return undefined;
+  }
+
+  return {
+    newCount: newWishlistAlertCandidates.length,
+    newBestPriceCount: newWishlistAlertCandidates.filter(
+      (wishlistAlertNotificationCandidate) =>
+        wishlistAlertNotificationCandidate.kind === 'new-best-price',
+    ).length,
+    priceImprovedSinceSaveCount: newWishlistAlertCandidates.filter(
+      (wishlistAlertNotificationCandidate) =>
+        wishlistAlertNotificationCandidate.kind === 'price-improved-since-save',
+    ).length,
+    strongDealCount: newWishlistAlertCandidates.filter(
+      (wishlistAlertNotificationCandidate) =>
+        wishlistAlertNotificationCandidate.kind === 'strong-deal-now',
+    ).length,
+  };
 }
 
 export async function getPriceHistorySummary(

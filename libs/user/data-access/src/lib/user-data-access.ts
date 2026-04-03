@@ -465,6 +465,30 @@ export async function updateCurrentUserProfile(
   return collectorProfile;
 }
 
+export async function markWishlistAlertsViewed(): Promise<string | undefined> {
+  const headers = await buildSupabaseAuthorizationHeaders({
+    'Content-Type': 'application/json',
+  });
+  const response = await fetch(apiPaths.wishlistAlertsViewed, {
+    method: 'POST',
+    headers,
+  });
+
+  if (response.status === 401) {
+    throw new Error('Sign in to track wishlist deal updates.');
+  }
+
+  if (!response.ok) {
+    throw new Error('Unable to update wishlist alert view state right now.');
+  }
+
+  const payload = (await response.json()) as {
+    wishlistAlertsLastViewedAt?: string;
+  };
+
+  return payload.wishlistAlertsLastViewedAt;
+}
+
 export function getUserProfile(): UserProfile {
   return phaseOneCollectorIdentity;
 }

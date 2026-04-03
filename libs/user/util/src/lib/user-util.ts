@@ -31,6 +31,7 @@ export interface UpdateCollectorProfileInput {
 
 export interface UserNotificationPreferences {
   wishlistDealAlerts: boolean;
+  wishlistAlertsLastViewedAt?: string;
 }
 
 export type UserSetListState = 'owned' | 'wishlist';

@@ -121,6 +121,7 @@ const webNavigationItems = [
 export const apiPaths = {
   session: '/api/v1/session',
   profile: '/api/v1/me/profile',
+  wishlistAlertsViewed: '/api/v1/me/profile/wishlist-alerts/viewed',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
 } as const;

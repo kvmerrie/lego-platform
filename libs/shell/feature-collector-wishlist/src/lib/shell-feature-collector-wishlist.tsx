@@ -10,6 +10,8 @@ import {
 import { addOwnedSet } from '@lego-platform/collection/data-access';
 import {
   getReviewedPriceSummary,
+  isWishlistAlertNotificationCandidateNew,
+  listWishlistAlertNotificationCandidates,
   listWishlistPriceAlerts,
   type WishlistPriceAlert,
 } from '@lego-platform/pricing/data-access';
@@ -19,6 +21,7 @@ import { removeWantedSet } from '@lego-platform/wishlist/data-access';
 import { CollectorWishlistPanel } from '@lego-platform/wishlist/ui';
 import {
   getUserSession,
+  markWishlistAlertsViewed,
   subscribeToUserAccountChanges,
   subscribeToUserAuthChanges,
 } from '@lego-platform/user/data-access';
@@ -134,15 +137,19 @@ function getWishlistBuyingNote({
   );
 }
 
-function toWishlistContextBadge(
-  wishlistAlert?: WishlistPriceAlert,
-): CatalogSetCardContextBadge | undefined {
+function toWishlistContextBadge({
+  isNew,
+  wishlistAlert,
+}: {
+  isNew?: boolean;
+  wishlistAlert?: WishlistPriceAlert;
+}): CatalogSetCardContextBadge | undefined {
   if (!wishlistAlert) {
     return undefined;
   }
 
   return {
-    label: wishlistAlert.label,
+    label: isNew ? `New · ${wishlistAlert.label}` : wishlistAlert.label,
     tone: wishlistAlert.tone,
   };
 }
@@ -162,6 +169,7 @@ export function ShellFeatureCollectorWishlist() {
     Record<string, WishlistPriceAlert | undefined>
   >({});
   const isMountedRef = useRef(true);
+  const hasMarkedViewedRef = useRef(false);
 
   async function loadUserSession() {
     try {
@@ -218,6 +226,7 @@ export function ShellFeatureCollectorWishlist() {
   useEffect(() => {
     if (!isAuthenticatedSession(userSession)) {
       setWishlistAlerts({});
+      hasMarkedViewedRef.current = false;
       return;
     }
 
@@ -257,6 +266,20 @@ export function ShellFeatureCollectorWishlist() {
     };
   }, [userSession]);
 
+  useEffect(() => {
+    if (
+      hasMarkedViewedRef.current ||
+      !isAuthenticatedSession(userSession) ||
+      !userSession.notificationPreferences.wishlistDealAlerts ||
+      userSession.wantedSetIds.length === 0
+    ) {
+      return;
+    }
+
+    hasMarkedViewedRef.current = true;
+    void markWishlistAlertsViewed().catch(() => undefined);
+  }, [userSession]);
+
   if (isLoading) {
     return <CollectorWishlistPanel state="loading" />;
   }
@@ -271,6 +294,18 @@ export function ShellFeatureCollectorWishlist() {
   const sortedWantedSetCards = sortSetCards(wantedSetCards, sortOrder);
   const activeWishlistAlertCount = wantedSetCards.filter(
     (catalogSetCard) => wishlistAlerts[catalogSetCard.id],
+  ).length;
+  const wishlistAlertNotificationCandidates =
+    listWishlistAlertNotificationCandidates({
+      wishlistPriceAlerts: wishlistAlerts,
+    });
+  const newWishlistAlertCount = wantedSetCards.filter((catalogSetCard) =>
+    isWishlistAlertNotificationCandidateNew({
+      lastViewedAt:
+        userSession.notificationPreferences.wishlistAlertsLastViewedAt,
+      wishlistAlertNotificationCandidate:
+        wishlistAlertNotificationCandidates[catalogSetCard.id],
+    }),
   ).length;
   const hiddenWantedCount = Math.max(
     0,
@@ -410,6 +445,9 @@ export function ShellFeatureCollectorWishlist() {
                   activeWishlistAlertCount === 1 ? '' : 's'
                 } right now`
               : ''}
+            {newWishlistAlertCount > 0
+              ? ` · ${newWishlistAlertCount} new since your last check`
+              : ''}
           </p>
         </div>
       }
@@ -422,6 +460,12 @@ export function ShellFeatureCollectorWishlist() {
       {sortedWantedSetCards.map((catalogSetCard) => {
         const reviewedPriceSummary = getReviewedPriceSummary(catalogSetCard.id);
         const wishlistAlert = wishlistAlerts[catalogSetCard.id];
+        const isNewWishlistAlert = isWishlistAlertNotificationCandidateNew({
+          lastViewedAt:
+            userSession.notificationPreferences.wishlistAlertsLastViewedAt,
+          wishlistAlertNotificationCandidate:
+            wishlistAlertNotificationCandidates[catalogSetCard.id],
+        });
 
         return (
           <CatalogSetCard
@@ -457,7 +501,10 @@ export function ShellFeatureCollectorWishlist() {
                 </Button>
               </div>
             }
-            contextBadge={toWishlistContextBadge(wishlistAlert)}
+            contextBadge={toWishlistContextBadge({
+              isNew: isNewWishlistAlert,
+              wishlistAlert,
+            })}
             href={buildSetDetailPath(catalogSetCard.slug)}
             key={catalogSetCard.id}
             priceContext={toWishlistPriceContext(reviewedPriceSummary)}

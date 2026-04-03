@@ -4,6 +4,7 @@ import {
   completeUserSignInCallback,
   getCurrentUserProfile,
   getUserSession,
+  markWishlistAlertsViewed,
   requestUserSignIn,
   sendPasswordResetEmail,
   signInWithEmailPassword,
@@ -497,6 +498,42 @@ describe('user data access', () => {
     ).rejects.toThrow(
       'That collector handle is already taken. Try a more distinctive version.',
     );
+  });
+
+  test('marks wishlist alerts as viewed without broadcasting an account refresh', async () => {
+    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+
+    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
+      new Headers({
+        Authorization: 'Bearer browser-token',
+        'Content-Type': 'application/json',
+      }),
+    );
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          wishlistAlertsLastViewedAt: '2026-04-03T21:30:00.000Z',
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      ),
+    );
+
+    await expect(markWishlistAlertsViewed()).resolves.toBe(
+      '2026-04-03T21:30:00.000Z',
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      apiPaths.wishlistAlertsViewed,
+      expect.objectContaining({
+        headers: expect.any(Headers),
+        method: 'POST',
+      }),
+    );
+    expect(notifyBrowserAccountDataChanged).not.toHaveBeenCalled();
   });
 
   test('delegates auth-change subscriptions through the shared browser auth utility', () => {

@@ -139,6 +139,30 @@ export function createApiV1Routes({
       },
     );
 
+    fastify.post(
+      apiPaths.wishlistAlertsViewed,
+      async function (request, reply) {
+        if (request.requestPrincipal?.state !== 'authenticated') {
+          return reply.status(401).send(createUnauthorizedResponse());
+        }
+
+        await userProfileRepository.ensureProfile({
+          email: request.requestPrincipal.email,
+          userId: request.requestPrincipal.userId,
+        });
+
+        const updatedUserProfileRecord =
+          await userProfileRepository.markWishlistAlertsViewed({
+            userId: request.requestPrincipal.userId,
+          });
+
+        return {
+          wishlistAlertsLastViewedAt:
+            updatedUserProfileRecord.wishlistAlertsLastViewedAt,
+        };
+      },
+    );
+
     fastify.put<{ Params: { setId: string } }>(
       `${apiPaths.ownedSets}/:setId`,
       async function (request, reply) {

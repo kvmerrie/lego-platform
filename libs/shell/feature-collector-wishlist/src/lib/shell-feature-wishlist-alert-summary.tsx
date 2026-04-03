@@ -2,14 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
+  listWishlistAlertNotificationCandidates,
   listWishlistPriceAlerts,
+  summarizeNewWishlistAlertCandidates,
   summarizeWishlistPriceAlerts,
+  type WishlistNewAlertSummary,
   type WishlistPriceAlertSummary,
 } from '@lego-platform/pricing/data-access';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import {
   getUserSession,
+  markWishlistAlertsViewed,
   subscribeToUserAccountChanges,
   subscribeToUserAuthChanges,
 } from '@lego-platform/user/data-access';
@@ -36,13 +40,32 @@ function getWishlistAlertDetail(
   return `${wishlistAlertSummary.strongDealCount} marked as a strong deal right now.`;
 }
 
+function getNewWishlistAlertDetail(
+  wishlistNewAlertSummary: WishlistNewAlertSummary,
+): string {
+  if (wishlistNewAlertSummary.newBestPriceCount > 0) {
+    return `${wishlistNewAlertSummary.newBestPriceCount} at a new best reviewed price since you last checked.`;
+  }
+
+  if (wishlistNewAlertSummary.priceImprovedSinceSaveCount > 0) {
+    return `${wishlistNewAlertSummary.priceImprovedSinceSaveCount} lower than when you last checked ${
+      wishlistNewAlertSummary.priceImprovedSinceSaveCount === 1 ? 'it' : 'them'
+    }.`;
+  }
+
+  return `${wishlistNewAlertSummary.strongDealCount} marked as a strong deal since you last checked.`;
+}
+
 export function ShellFeatureWishlistAlertSummary() {
   const [userSession, setUserSession] = useState<UserSession>(
     createAnonymousUserSession(),
   );
   const [wishlistAlertSummary, setWishlistAlertSummary] =
     useState<WishlistPriceAlertSummary>();
+  const [wishlistNewAlertSummary, setWishlistNewAlertSummary] =
+    useState<WishlistNewAlertSummary>();
   const isMountedRef = useRef(true);
+  const hasMarkedViewedRef = useRef(false);
 
   async function loadUserSession() {
     try {
@@ -91,6 +114,8 @@ export function ShellFeatureWishlistAlertSummary() {
   useEffect(() => {
     if (!isAuthenticatedSession(userSession)) {
       setWishlistAlertSummary(undefined);
+      setWishlistNewAlertSummary(undefined);
+      hasMarkedViewedRef.current = false;
       return;
     }
 
@@ -99,6 +124,7 @@ export function ShellFeatureWishlistAlertSummary() {
       userSession.wantedSetIds.length === 0
     ) {
       setWishlistAlertSummary(undefined);
+      setWishlistNewAlertSummary(undefined);
       return;
     }
 
@@ -118,8 +144,20 @@ export function ShellFeatureWishlistAlertSummary() {
           return;
         }
 
+        const wishlistAlertNotificationCandidates =
+          listWishlistAlertNotificationCandidates({
+            wishlistPriceAlerts,
+          });
+
         setWishlistAlertSummary(
           summarizeWishlistPriceAlerts(wishlistPriceAlerts),
+        );
+        setWishlistNewAlertSummary(
+          summarizeNewWishlistAlertCandidates({
+            lastViewedAt:
+              userSession.notificationPreferences.wishlistAlertsLastViewedAt,
+            wishlistAlertNotificationCandidates,
+          }),
         );
       })
       .catch(() => {
@@ -128,11 +166,26 @@ export function ShellFeatureWishlistAlertSummary() {
         }
 
         setWishlistAlertSummary(undefined);
+        setWishlistNewAlertSummary(undefined);
       });
 
     return () => {
       isCancelled = true;
     };
+  }, [userSession]);
+
+  useEffect(() => {
+    if (
+      hasMarkedViewedRef.current ||
+      !isAuthenticatedSession(userSession) ||
+      !userSession.notificationPreferences.wishlistDealAlerts ||
+      userSession.wantedSetIds.length === 0
+    ) {
+      return;
+    }
+
+    hasMarkedViewedRef.current = true;
+    void markWishlistAlertsViewed().catch(() => undefined);
   }, [userSession]);
 
   if (!isAuthenticatedSession(userSession) || !wishlistAlertSummary) {
@@ -151,11 +204,19 @@ export function ShellFeatureWishlistAlertSummary() {
           wishlistAlertSummary.activeCount === 1 ? '' : 's'
         } have a live buy signal right now.`}
         eyebrow="Wishlist signals"
-        title="Good time to check your wishlist"
+        title={
+          wishlistNewAlertSummary
+            ? `${wishlistNewAlertSummary.newCount} new wishlist deal update${
+                wishlistNewAlertSummary.newCount === 1 ? '' : 's'
+              }`
+            : 'Good time to check your wishlist'
+        }
         titleAs="h2"
       />
       <p className={styles.alertSummaryMeta}>
-        {getWishlistAlertDetail(wishlistAlertSummary)}
+        {wishlistNewAlertSummary
+          ? getNewWishlistAlertDetail(wishlistNewAlertSummary)
+          : getWishlistAlertDetail(wishlistAlertSummary)}
       </p>
       <div className={styles.alertSummaryActions}>
         <ActionLink href={buildWebPath(webPathnames.wishlist)} tone="secondary">

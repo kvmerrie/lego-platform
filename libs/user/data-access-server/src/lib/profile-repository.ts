@@ -13,6 +13,7 @@ const profileColumns = [
   'location',
   'collection_focus',
   'wishlist_deal_alerts',
+  'wishlist_alerts_last_viewed_at',
   'created_at',
   'updated_at',
 ].join(',');
@@ -25,6 +26,7 @@ interface ProfileRow {
   location: string;
   collection_focus: string;
   wishlist_deal_alerts: boolean;
+  wishlist_alerts_last_viewed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -37,6 +39,7 @@ interface ProfileUpsertRow {
   location: string;
   collection_focus: string;
   wishlist_deal_alerts: boolean;
+  wishlist_alerts_last_viewed_at?: string | null;
 }
 
 export interface UserProfileRecord {
@@ -47,6 +50,7 @@ export interface UserProfileRecord {
   location: string;
   collectionFocus: string;
   wishlistDealAlerts: boolean;
+  wishlistAlertsLastViewedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -64,6 +68,10 @@ export interface UserProfileRepository {
   updateProfile(input: {
     updateCollectorProfileInput: UpdateCollectorProfileInput;
     userId: string;
+  }): Promise<UserProfileRecord>;
+  markWishlistAlertsViewed(input: {
+    userId: string;
+    viewedAt?: string;
   }): Promise<UserProfileRecord>;
 }
 
@@ -137,6 +145,8 @@ function mapProfileRow(profileRow: ProfileRow): UserProfileRecord {
     location: profileRow.location,
     collectionFocus: profileRow.collection_focus,
     wishlistDealAlerts: profileRow.wishlist_deal_alerts,
+    wishlistAlertsLastViewedAt:
+      profileRow.wishlist_alerts_last_viewed_at ?? undefined,
     createdAt: profileRow.created_at,
     updatedAt: profileRow.updated_at,
   };
@@ -217,6 +227,23 @@ export function createUserProfileRepository(
         }
 
         throw new Error('Unable to update the collector profile.');
+      }
+
+      return mapProfileRow(data as unknown as ProfileRow);
+    },
+
+    async markWishlistAlertsViewed({ userId, viewedAt }) {
+      const { data, error } = await getSupabaseAdminClient()
+        .from('profiles')
+        .update({
+          wishlist_alerts_last_viewed_at: viewedAt ?? new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+        .select(profileColumns)
+        .single();
+
+      if (error) {
+        throw new Error('Unable to update wishlist alert view state.');
       }
 
       return mapProfileRow(data as unknown as ProfileRow);

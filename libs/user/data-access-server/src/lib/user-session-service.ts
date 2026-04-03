@@ -91,6 +91,7 @@ export async function buildAuthenticatedUserSession({
     collector: toCollectorIdentity(userProfileRecord),
     notificationPreferences: {
       wishlistDealAlerts: userProfileRecord.wishlistDealAlerts,
+      wishlistAlertsLastViewedAt: userProfileRecord.wishlistAlertsLastViewedAt,
     },
     ownedSetIds,
     setStates: listUserSetStates({

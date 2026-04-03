@@ -38,10 +38,23 @@ async function createApiServer({
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
         wishlistDealAlerts: true,
+        wishlistAlertsLastViewedAt: undefined,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
       getByUserId: vi.fn().mockResolvedValue(null),
+      markWishlistAlertsViewed: vi.fn().mockResolvedValue({
+        userId: 'user-123',
+        displayName: 'Alex Rivera',
+        collectorHandle: 'alex-rivera',
+        tier: 'Founding Collector',
+        location: 'Amsterdam',
+        collectionFocus: 'Premium display sets and licensed flagships',
+        wishlistDealAlerts: true,
+        wishlistAlertsLastViewedAt: '2026-04-03T21:30:00.000Z',
+        createdAt: '2026-03-28T00:00:00.000Z',
+        updatedAt: '2026-04-03T21:30:00.000Z',
+      }),
       updateProfile: vi.fn().mockResolvedValue({
         userId: 'user-123',
         displayName: 'Alex Rivera',
@@ -50,6 +63,7 @@ async function createApiServer({
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
         wishlistDealAlerts: true,
+        wishlistAlertsLastViewedAt: undefined,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
@@ -232,10 +246,12 @@ describe('api v1 auth and set-status routes', () => {
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
         wishlistDealAlerts: true,
+        wishlistAlertsLastViewedAt: undefined,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
       getByUserId: vi.fn().mockResolvedValue(null),
+      markWishlistAlertsViewed: vi.fn(),
       updateProfile: vi.fn().mockResolvedValue({
         userId: 'user-123',
         displayName: 'Alex Rivera',
@@ -244,6 +260,7 @@ describe('api v1 auth and set-status routes', () => {
         location: 'Rotterdam',
         collectionFocus: 'Castle icons and Ideas cabins',
         wishlistDealAlerts: false,
+        wishlistAlertsLastViewedAt: undefined,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:05:00.000Z',
       }),
@@ -307,10 +324,12 @@ describe('api v1 auth and set-status routes', () => {
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
         wishlistDealAlerts: true,
+        wishlistAlertsLastViewedAt: undefined,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
       getByUserId: vi.fn().mockResolvedValue(null),
+      markWishlistAlertsViewed: vi.fn(),
       updateProfile: vi
         .fn()
         .mockRejectedValue(new CollectorHandleConflictError()),
@@ -338,6 +357,37 @@ describe('api v1 auth and set-status routes', () => {
     expect(response.statusCode).toBe(409);
     expect(response.json()).toEqual({
       message: 'Collector handle is already in use.',
+    });
+
+    await server.close();
+  });
+
+  test('marks wishlist alerts as viewed for authenticated users', async () => {
+    const requestPrincipal: RequestPrincipal = {
+      state: 'authenticated',
+      userId: 'user-123',
+      email: 'alex@example.test',
+    };
+    const { server, userProfileRepository } = await createApiServer({
+      requestPrincipal,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/me/profile/wishlist-alerts/viewed',
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(userProfileRepository.markWishlistAlertsViewed).toHaveBeenCalledWith(
+      {
+        userId: 'user-123',
+      },
+    );
+    expect(response.json()).toEqual({
+      wishlistAlertsLastViewedAt: '2026-04-03T21:30:00.000Z',
     });
 
     await server.close();
