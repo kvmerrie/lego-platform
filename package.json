@@ -19,7 +19,11 @@
     "format:write": "pnpm nx format:write --all",
     "hooks:pre-commit": "node scripts/hooks/pre-commit.mjs",
     "hooks:pre-push": "node scripts/hooks/pre-push.mjs",
-    "graph": "pnpm nx graph"
+    "graph": "pnpm nx graph",
+    "storybook:shared-ui": "pnpm nx run shared-ui:storybook",
+    "storybook:catalog-ui": "pnpm nx run catalog-ui:storybook",
+    "build-storybook:shared-ui": "pnpm nx run shared-ui:build-storybook",
+    "build-storybook:catalog-ui": "pnpm nx run catalog-ui:build-storybook"
   },
   "private": true,
   "devDependencies": {
@@ -46,11 +50,14 @@
     "@nx/next": "22.6.3",
     "@nx/node": "22.6.3",
     "@nx/react": "22.6.3",
+    "@nx/storybook": "22.6.3",
     "@nx/vite": "22.6.3",
     "@nx/web": "22.6.3",
     "@nx/workspace": "22.6.3",
     "@oxc-project/runtime": "^0.115.0",
     "@schematics/angular": "~21.2.0",
+    "@storybook/react": "10.3.4",
+    "@storybook/react-vite": "10.3.4",
     "@swc-node/register": "~1.11.1",
     "@swc/cli": "~0.8.0",
     "@swc/core": "~1.15.5",
@@ -61,6 +68,7 @@
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",
     "@typescript-eslint/utils": "^8.40.0",
+    "@vitejs/plugin-react": "^4.2.0",
     "angular-eslint": "^21.3.1",
     "esbuild": "^0.19.2",
     "eslint": "^9.8.0",
@@ -74,9 +82,12 @@
     "jsdom": "^27.1.0",
     "nx": "22.6.3",
     "prettier": "~3.6.2",
+    "storybook": "10.3.4",
+    "ts-node": "10.9.1",
     "tslib": "^2.3.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.40.0",
+    "vite": "^6.0.0",
     "vitest": "^4.0.8"
   },
   "dependencies": {

@@ -1,0 +1,23 @@
+:root {
+  color-scheme: light;
+  --font-plus-jakarta-sans: 'Plus Jakarta Sans';
+}
+
+html,
+body,
+#storybook-root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f6f3ee;
+  color: var(--lego-color-text-primary, #171a22);
+  font-family: var(--lego-font-family-body, system-ui, sans-serif);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

@@ -3,7 +3,7 @@ import nx from '@nx/eslint-plugin';
 
 export default [
   {
-    ignores: ['**/dist', '**/out-tsc'],
+    ignores: ['**/dist', '**/out-tsc', '**/storybook-static'],
   },
   ...nx.configs['flat/base'],
   {
