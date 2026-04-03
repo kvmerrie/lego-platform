@@ -2,6 +2,7 @@ import {
   createClient,
   type AuthChangeEvent,
   type AuthTokenResponsePassword,
+  type OAuthResponse,
   type SupabaseClient,
 } from '@supabase/supabase-js';
 import {
@@ -15,6 +16,8 @@ let hasWarnedAboutMissingBrowserSupabaseConfig = false;
 const browserAccountDataChangeListeners = new Set<() => void>();
 const DEFAULT_POST_AUTH_REDIRECT_PATH = '/';
 const SUPABASE_AUTH_CALLBACK_PATH = '/auth/callback';
+const AUTH_UNAVAILABLE_ERROR_MESSAGE =
+  'Account sign-in is not available in this environment yet.';
 
 export type BrowserSupabaseAuthChangeListener = (
   authChangeEvent: AuthChangeEvent,
@@ -96,6 +99,12 @@ function formatAuthCallbackErrorMessage(rawMessage?: string): string {
   }
 
   return normalizedMessage;
+}
+
+function assertBrowserSupabaseAuthAvailable(): void {
+  if (!hasBrowserSupabaseConfig()) {
+    throw new Error(AUTH_UNAVAILABLE_ERROR_MESSAGE);
+  }
 }
 
 export function sanitizePostAuthRedirectPath(
@@ -195,9 +204,7 @@ export async function completeSupabaseAuthCallback({
   currentUrl?: URL;
   supabaseClient?: SupabaseBrowserAuthApi;
 } = {}): Promise<{ nextPath: string }> {
-  if (!hasBrowserSupabaseConfig()) {
-    throw new Error('Email sign-in is not available in this environment yet.');
-  }
+  assertBrowserSupabaseAuthAvailable();
 
   if (!currentUrl) {
     throw new Error('Unable to read the auth callback URL.');
@@ -324,6 +331,8 @@ export async function signInWithSupabaseOtp(options: {
   email: string;
   emailRedirectTo?: string;
 }) {
+  assertBrowserSupabaseAuthAvailable();
+
   return getBrowserSupabaseClient().auth.signInWithOtp({
     email: options.email,
     options: options.emailRedirectTo
@@ -334,7 +343,81 @@ export async function signInWithSupabaseOtp(options: {
   });
 }
 
+export async function signInWithSupabasePassword(options: {
+  email: string;
+  password: string;
+}) {
+  assertBrowserSupabaseAuthAvailable();
+
+  return getBrowserSupabaseClient().auth.signInWithPassword({
+    email: options.email,
+    password: options.password,
+  });
+}
+
+export async function signUpWithSupabasePassword(options: {
+  email: string;
+  password: string;
+  emailRedirectTo?: string;
+}) {
+  assertBrowserSupabaseAuthAvailable();
+
+  return getBrowserSupabaseClient().auth.signUp({
+    email: options.email,
+    password: options.password,
+    options: options.emailRedirectTo
+      ? {
+          emailRedirectTo: options.emailRedirectTo,
+        }
+      : undefined,
+  });
+}
+
+export async function resetSupabasePasswordForEmail(options: {
+  email: string;
+  redirectTo?: string;
+}) {
+  assertBrowserSupabaseAuthAvailable();
+
+  return getBrowserSupabaseClient().auth.resetPasswordForEmail(
+    options.email,
+    options.redirectTo
+      ? {
+          redirectTo: options.redirectTo,
+        }
+      : undefined,
+  );
+}
+
+export async function updateSupabaseBrowserPassword(options: {
+  password: string;
+}) {
+  assertBrowserSupabaseAuthAvailable();
+
+  return getBrowserSupabaseClient().auth.updateUser({
+    password: options.password,
+  });
+}
+
+export async function signInWithSupabaseOAuth(options: {
+  provider: 'google';
+  redirectTo?: string;
+}): Promise<OAuthResponse> {
+  assertBrowserSupabaseAuthAvailable();
+
+  return getBrowserSupabaseClient().auth.signInWithOAuth({
+    provider: options.provider,
+    options: options.redirectTo
+      ? {
+          redirectTo: options.redirectTo,
+        }
+      : undefined,
+  });
+}
+
 export async function signOutSupabaseBrowserSession() {
+  assertBrowserSupabaseAuthAvailable();
+
   return getBrowserSupabaseClient().auth.signOut();
 }
 

@@ -227,6 +227,11 @@
   gap: var(--lego-space-2);
 }
 
+.recoveryForm {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
 .sessionStatus {
   justify-self: flex-start;
 }
@@ -236,7 +241,23 @@
   gap: var(--lego-space-2);
 }
 
+.authActionGrid {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.authModeLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
 .profileForm {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.inputCluster {
   display: grid;
   gap: var(--lego-space-2);
 }
@@ -318,6 +339,14 @@
 }
 
 @media (min-width: 56rem) {
+  .authActionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inputCluster {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .profileFieldGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

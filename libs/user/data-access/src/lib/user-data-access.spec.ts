@@ -5,9 +5,14 @@ import {
   getCurrentUserProfile,
   getUserSession,
   requestUserSignIn,
+  sendPasswordResetEmail,
+  signInWithEmailPassword,
+  signInWithGoogle,
+  signUpWithEmailPassword,
   signOutCurrentUser,
   subscribeToUserAccountChanges,
   subscribeToUserAuthChanges,
+  updateCurrentUserPassword,
   updateCurrentUserProfile,
 } from './user-data-access';
 import type { CollectorProfile, UserSession } from '@lego-platform/user/util';
@@ -26,10 +31,15 @@ vi.mock('@lego-platform/shared/data-access-auth', () => ({
   buildSupabaseAuthorizationHeaders: vi.fn(),
   completeSupabaseAuthCallback: vi.fn(),
   notifyBrowserAccountDataChanged: vi.fn(),
+  resetSupabasePasswordForEmail: vi.fn(),
+  signInWithSupabaseOAuth: vi.fn(),
   signInWithSupabaseOtp: vi.fn(),
+  signInWithSupabasePassword: vi.fn(),
   signOutSupabaseBrowserSession: vi.fn(),
+  signUpWithSupabasePassword: vi.fn(),
   subscribeToBrowserAccountDataChanges: vi.fn(),
   subscribeToSupabaseAuthChanges: vi.fn(),
+  updateSupabaseBrowserPassword: vi.fn(),
 }));
 
 import {
@@ -37,16 +47,22 @@ import {
   buildSupabaseAuthorizationHeaders,
   completeSupabaseAuthCallback,
   notifyBrowserAccountDataChanged,
+  resetSupabasePasswordForEmail,
+  signInWithSupabaseOAuth,
   signInWithSupabaseOtp,
+  signInWithSupabasePassword,
   signOutSupabaseBrowserSession,
+  signUpWithSupabasePassword,
   subscribeToBrowserAccountDataChanges,
   subscribeToSupabaseAuthChanges,
+  updateSupabaseBrowserPassword,
 } from '@lego-platform/shared/data-access-auth';
 
 describe('user data access', () => {
   const originalEnv = { ...process.env };
 
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.stubGlobal('fetch', vi.fn());
   });
 
@@ -134,7 +150,7 @@ describe('user data access', () => {
         email: 'collector@example.com',
       }),
     ).rejects.toThrow(
-      'Email sign-in is not available in this environment yet.',
+      'Account sign-in is not available in this environment yet.',
     );
   });
 
@@ -197,6 +213,161 @@ describe('user data access', () => {
     ).rejects.toThrow(
       'Sign-in email delivery is not ready for this address yet. Please try again later or contact support.',
     );
+  });
+
+  test('signs in with email and password through the shared Supabase browser auth helper', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.mocked(signInWithSupabasePassword).mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'access-token',
+        },
+        user: null,
+      },
+      error: null,
+    } as Awaited<ReturnType<typeof signInWithSupabasePassword>>);
+
+    await signInWithEmailPassword({
+      email: 'collector@example.com',
+      password: 'super-secret',
+    });
+
+    expect(signInWithSupabasePassword).toHaveBeenCalledWith({
+      email: 'collector@example.com',
+      password: 'super-secret',
+    });
+    expect(notifyBrowserAccountDataChanged).toHaveBeenCalledTimes(1);
+  });
+
+  test('returns a calm invalid-credentials message for email and password sign-in', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.mocked(signInWithSupabasePassword).mockResolvedValue({
+      data: {
+        session: null,
+        user: null,
+      },
+      error: {
+        code: 'invalid_credentials',
+        message: 'Invalid login credentials',
+      },
+    } as Awaited<ReturnType<typeof signInWithSupabasePassword>>);
+
+    await expect(
+      signInWithEmailPassword({
+        email: 'collector@example.com',
+        password: 'wrong-password',
+      }),
+    ).rejects.toThrow('Email or password is incorrect.');
+  });
+
+  test('creates an email and password account and reports when confirmation is still required', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.stubGlobal('window', {
+      location: {
+        origin: 'http://localhost:3000',
+        pathname: '/account',
+        search: '',
+      },
+    });
+    vi.mocked(signUpWithSupabasePassword).mockResolvedValue({
+      data: {
+        session: null,
+        user: {
+          id: 'collector-1',
+        },
+      },
+      error: null,
+    } as Awaited<ReturnType<typeof signUpWithSupabasePassword>>);
+
+    await expect(
+      signUpWithEmailPassword({
+        email: 'collector@example.com',
+        password: 'super-secret',
+      }),
+    ).resolves.toEqual({
+      requiresEmailConfirmation: true,
+    });
+
+    expect(signUpWithSupabasePassword).toHaveBeenCalledWith({
+      email: 'collector@example.com',
+      password: 'super-secret',
+      emailRedirectTo: 'http://localhost:3000/auth/callback?next=%2Faccount',
+    });
+  });
+
+  test('starts Google sign-in through the shared OAuth helper', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.stubGlobal('window', {
+      location: {
+        origin: 'http://localhost:3000',
+        pathname: '/account',
+        search: '',
+      },
+    });
+    vi.mocked(signInWithSupabaseOAuth).mockResolvedValue({
+      data: {
+        provider: 'google',
+        url: 'https://example.supabase.co/auth/v1/authorize',
+      },
+      error: null,
+    } as Awaited<ReturnType<typeof signInWithSupabaseOAuth>>);
+
+    await signInWithGoogle();
+
+    expect(signInWithSupabaseOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      redirectTo: 'http://localhost:3000/auth/callback?next=%2Faccount',
+    });
+  });
+
+  test('sends password reset emails back through the callback route into account recovery mode', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.stubGlobal('window', {
+      location: {
+        origin: 'http://localhost:3000',
+      },
+    });
+    vi.mocked(resetSupabasePasswordForEmail).mockResolvedValue({
+      data: {},
+      error: null,
+    } as Awaited<ReturnType<typeof resetSupabasePasswordForEmail>>);
+
+    await sendPasswordResetEmail({
+      email: 'collector@example.com',
+    });
+
+    expect(resetSupabasePasswordForEmail).toHaveBeenCalledWith({
+      email: 'collector@example.com',
+      redirectTo:
+        'http://localhost:3000/auth/callback?next=%2Faccount%3Fauth%3Dreset-password',
+    });
+  });
+
+  test('updates the current password through the shared Supabase browser auth helper', async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://example.supabase.co';
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
+    vi.mocked(updateSupabaseBrowserPassword).mockResolvedValue({
+      data: {
+        user: {
+          id: 'collector-1',
+        },
+      },
+      error: null,
+    } as Awaited<ReturnType<typeof updateSupabaseBrowserPassword>>);
+
+    await updateCurrentUserPassword({
+      password: 'new-super-secret',
+    });
+
+    expect(updateSupabaseBrowserPassword).toHaveBeenCalledWith({
+      password: 'new-super-secret',
+    });
+    expect(notifyBrowserAccountDataChanged).toHaveBeenCalledTimes(1);
   });
 
   test('signs out through the shared browser auth utility', async () => {

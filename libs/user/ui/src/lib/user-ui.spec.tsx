@@ -22,7 +22,7 @@ describe('UserShellAccountStatusCard', () => {
 
     expect(markup).toContain('Sign in to save sets');
     expect(markup).toContain(
-      'Sign in once to keep collection, wishlist, and collector details in one place.',
+      'Sign in with email and password or Google to keep collection, wishlist, and collector details in one place.',
     );
     expect(markup).toContain('Sign in to save privately');
     expect(markup).toContain('Open wishlist');
@@ -80,6 +80,37 @@ describe('UserShellAccountStatusCard', () => {
 });
 
 describe('UserSessionCard', () => {
+  it('renders email and password auth as the primary signed-out account flow', () => {
+    const markup = renderToStaticMarkup(
+      <UserSessionCard
+        authEmail="collector@example.com"
+        authMode="sign-in"
+        authPassword="super-secret"
+        isAuthAvailable
+        userSession={{
+          state: 'anonymous',
+          ownedSetIds: [],
+          setStates: [],
+          wantedSetIds: [],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Sign in to open your account');
+    expect(markup).toContain(
+      'Sign in with email and password first. Google is available when this environment supports it, and magic link stays here as a fallback.',
+    );
+    expect(markup).toContain('Email address');
+    expect(markup).toContain('Password');
+    expect(markup).toContain('Continue with Google');
+    expect(markup).toContain('Create an account');
+    expect(markup).toContain('Forgot password?');
+    expect(markup).toContain('Use a magic link instead');
+    expect(markup).toContain(
+      'Account sign-in only unlocks private collector state.',
+    );
+  });
+
   it('renders a more productized signed-in collector account surface', () => {
     const markup = renderToStaticMarkup(
       <UserSessionCard
@@ -128,11 +159,59 @@ describe('UserSessionCard', () => {
     expect(markup).toContain('Your saves');
     expect(markup).toContain('Open collection (2)');
     expect(markup).toContain('Open wishlist (1)');
-    expect(markup).toContain('Used only for sign-in links.');
+    expect(markup).toContain('Used for sign-in and account recovery.');
     expect(markup).toContain(
       'Your saves stay private. Set pages and price checks stay public.',
     );
     expect(markup).toContain('Account · Founding Collector');
+  });
+
+  it('renders a password reset form inside the signed-in account view when recovery is active', () => {
+    const markup = renderToStaticMarkup(
+      <UserSessionCard
+        isPasswordRecoveryMode
+        passwordRecoveryConfirmation="new-password"
+        passwordRecoveryValue="new-password"
+        userSession={{
+          state: 'authenticated',
+          account: {
+            userId: 'collector-1',
+            email: 'collector@example.com',
+          },
+          collector: {
+            id: 'brick-curator',
+            name: 'Alex Rivera',
+            tier: 'Founding Collector',
+            location: 'Amsterdam',
+            collectionFocus: 'Display-scale fantasy and castle icons',
+          },
+          ownedSetIds: ['10316', '10305'],
+          setStates: [
+            {
+              setId: '10305',
+              state: 'owned',
+            },
+            {
+              setId: '10316',
+              state: 'owned',
+            },
+            {
+              setId: '21348',
+              state: 'wishlist',
+            },
+          ],
+          wantedSetIds: ['21348'],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Finish resetting your password');
+    expect(markup).toContain(
+      'Choose a new password for this account. Your collection and wishlist stay in place.',
+    );
+    expect(markup).toContain('New password');
+    expect(markup).toContain('Confirm new password');
+    expect(markup).toContain('Save new password');
   });
 });
 

@@ -98,7 +98,7 @@ export function UserShellAccountStatusCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Sign in once to keep collection, wishlist, and collector details in one place.'
+                ? 'Sign in with email and password or Google to keep collection, wishlist, and collector details in one place.'
                 : 'Browsing still works here, but private collector saves are unavailable in this environment.'
             }
             eyebrow="Collector status"
@@ -214,26 +214,54 @@ export function UserShellAccountStatusCard({
 }
 
 export function UserSessionCard({
+  authMode = 'sign-in',
   authEmail,
+  authPassword,
+  authPasswordConfirmation,
   authStatusMessage,
   errorMessage,
   isAuthActionPending,
   isAuthAvailable = true,
   isLoading,
+  isPasswordRecoveryMode,
   onAuthEmailChange,
-  onSignIn,
+  onAuthModeChange,
+  onAuthPasswordChange,
+  onAuthPasswordConfirmationChange,
+  onCompletePasswordRecovery,
+  onGoogleSignIn,
+  onPasswordRecoveryChange,
+  onPasswordRecoveryConfirmationChange,
+  onPrimaryAuthAction,
   onSignOut,
+  passwordRecoveryConfirmation,
+  passwordRecoveryValue,
   userSession,
 }: {
+  authMode?: 'magic-link' | 'reset-password' | 'sign-in' | 'sign-up';
   authEmail?: string;
+  authPassword?: string;
+  authPasswordConfirmation?: string;
   authStatusMessage?: string;
   errorMessage?: string;
   isAuthActionPending?: boolean;
   isAuthAvailable?: boolean;
   isLoading?: boolean;
+  isPasswordRecoveryMode?: boolean;
   onAuthEmailChange?: (value: string) => void;
-  onSignIn?: () => void;
+  onAuthModeChange?: (
+    mode: 'magic-link' | 'reset-password' | 'sign-in' | 'sign-up',
+  ) => void;
+  onAuthPasswordChange?: (value: string) => void;
+  onAuthPasswordConfirmationChange?: (value: string) => void;
+  onCompletePasswordRecovery?: () => void;
+  onGoogleSignIn?: () => void;
+  onPasswordRecoveryChange?: (value: string) => void;
+  onPasswordRecoveryConfirmationChange?: (value: string) => void;
+  onPrimaryAuthAction?: () => void;
   onSignOut?: () => void;
+  passwordRecoveryConfirmation?: string;
+  passwordRecoveryValue?: string;
   userSession: UserSession;
 }) {
   if (isLoading) {
@@ -259,6 +287,10 @@ export function UserSessionCard({
   }
 
   if (!isAuthenticatedSession(userSession)) {
+    const isMagicLinkMode = authMode === 'magic-link';
+    const isResetMode = authMode === 'reset-password';
+    const isSignUpMode = authMode === 'sign-up';
+
     return (
       <Surface
         as="article"
@@ -269,7 +301,13 @@ export function UserSessionCard({
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Use one email link to open your account, collection, and wishlist.'
+                ? isResetMode
+                  ? 'Send a recovery email, then open the secure link there to choose a new password.'
+                  : isMagicLinkMode
+                    ? 'Prefer not to use a password? Use a one-time email link instead.'
+                    : isSignUpMode
+                      ? 'Create an account to keep wishlist, collection, and collector details in one private place.'
+                      : 'Sign in with email and password first. Google is available when this environment supports it, and magic link stays here as a fallback.'
                 : 'Browsing still works here, but saved collector actions stay disabled in this environment.'
             }
             eyebrow="Account"
@@ -280,26 +318,74 @@ export function UserSessionCard({
             className={styles.authForm}
             onSubmit={(event) => {
               event.preventDefault();
-              onSignIn?.();
+              onPrimaryAuthAction?.();
             }}
           >
-            <label className={styles.formField}>
-              <span className={styles.fieldLabel}>Email address</span>
-              <input
-                autoComplete="email"
-                className={styles.textInput}
-                inputMode="email"
-                name="email"
-                placeholder="collector@example.com"
-                type="email"
-                value={authEmail ?? ''}
-                onChange={(event) => onAuthEmailChange?.(event.target.value)}
-              />
-              <span className={styles.fieldHint}>
-                Give it about a minute before asking for another link.
-              </span>
-            </label>
-            <div className={styles.sessionActions}>
+            <div className={styles.inputCluster}>
+              <label className={styles.formField}>
+                <span className={styles.fieldLabel}>Email address</span>
+                <input
+                  autoComplete="email"
+                  className={styles.textInput}
+                  inputMode="email"
+                  name="email"
+                  placeholder="collector@example.com"
+                  type="email"
+                  value={authEmail ?? ''}
+                  onChange={(event) => onAuthEmailChange?.(event.target.value)}
+                />
+                <span className={styles.fieldHint}>
+                  {isMagicLinkMode
+                    ? 'Give it about a minute before asking for another link.'
+                    : isResetMode
+                      ? 'Use the same email you used to create the account.'
+                      : 'Your collection and wishlist stay tied to this account.'}
+                </span>
+              </label>
+              {!isMagicLinkMode && !isResetMode ? (
+                <label className={styles.formField}>
+                  <span className={styles.fieldLabel}>Password</span>
+                  <input
+                    autoComplete={
+                      isSignUpMode ? 'new-password' : 'current-password'
+                    }
+                    className={styles.textInput}
+                    name="password"
+                    placeholder={
+                      isSignUpMode ? 'Create a password' : 'Enter your password'
+                    }
+                    type="password"
+                    value={authPassword ?? ''}
+                    onChange={(event) =>
+                      onAuthPasswordChange?.(event.target.value)
+                    }
+                  />
+                  <span className={styles.fieldHint}>
+                    Use at least 8 characters.
+                  </span>
+                </label>
+              ) : null}
+              {isSignUpMode ? (
+                <label className={styles.formField}>
+                  <span className={styles.fieldLabel}>Confirm password</span>
+                  <input
+                    autoComplete="new-password"
+                    className={styles.textInput}
+                    name="confirmPassword"
+                    placeholder="Confirm your password"
+                    type="password"
+                    value={authPasswordConfirmation ?? ''}
+                    onChange={(event) =>
+                      onAuthPasswordConfirmationChange?.(event.target.value)
+                    }
+                  />
+                  <span className={styles.fieldHint}>
+                    Repeat the password once so this account is ready to use.
+                  </span>
+                </label>
+              ) : null}
+            </div>
+            <div className={styles.authActionGrid}>
               <Button
                 disabled={!isAuthAvailable}
                 isLoading={Boolean(isAuthActionPending)}
@@ -307,16 +393,80 @@ export function UserSessionCard({
                 type="submit"
               >
                 {isAuthActionPending
-                  ? 'Sending sign-in link...'
-                  : authStatusMessage
-                    ? 'Send another email link'
-                    : 'Email sign-in link'}
+                  ? isResetMode
+                    ? 'Sending reset email...'
+                    : isMagicLinkMode
+                      ? 'Sending sign-in link...'
+                      : isSignUpMode
+                        ? 'Creating account...'
+                        : 'Signing in...'
+                  : isResetMode
+                    ? 'Send reset email'
+                    : isMagicLinkMode
+                      ? authStatusMessage
+                        ? 'Send another email link'
+                        : 'Email sign-in link'
+                      : isSignUpMode
+                        ? 'Create account'
+                        : 'Sign in'}
               </Button>
+              {!isMagicLinkMode && !isResetMode ? (
+                <Button
+                  disabled={!isAuthAvailable}
+                  isLoading={Boolean(isAuthActionPending)}
+                  tone="secondary"
+                  type="button"
+                  onClick={onGoogleSignIn}
+                >
+                  Continue with Google
+                </Button>
+              ) : null}
             </div>
           </form>
+          <div className={styles.authModeLinks}>
+            {authMode !== 'sign-in' ? (
+              <Button
+                disabled={!isAuthAvailable}
+                tone="ghost"
+                type="button"
+                onClick={() => onAuthModeChange?.('sign-in')}
+              >
+                Use email and password
+              </Button>
+            ) : (
+              <Button
+                disabled={!isAuthAvailable}
+                tone="ghost"
+                type="button"
+                onClick={() => onAuthModeChange?.('sign-up')}
+              >
+                Create an account
+              </Button>
+            )}
+            {authMode !== 'reset-password' ? (
+              <Button
+                disabled={!isAuthAvailable}
+                tone="ghost"
+                type="button"
+                onClick={() => onAuthModeChange?.('reset-password')}
+              >
+                Forgot password?
+              </Button>
+            ) : null}
+            {authMode !== 'magic-link' ? (
+              <Button
+                disabled={!isAuthAvailable}
+                tone="ghost"
+                type="button"
+                onClick={() => onAuthModeChange?.('magic-link')}
+              >
+                Use a magic link instead
+              </Button>
+            ) : null}
+          </div>
           <p className={styles.supportNote}>
             You can still browse sets and compare reviewed prices while signed
-            out.
+            out. Account sign-in only unlocks private collector state.
           </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
@@ -379,7 +529,9 @@ export function UserSessionCard({
             <p className={styles.paneValue}>
               {userSession.account?.email ?? 'Signed in collector session'}
             </p>
-            <p className={styles.paneNote}>Used only for sign-in links.</p>
+            <p className={styles.paneNote}>
+              Used for sign-in and account recovery.
+            </p>
           </div>
           <div className={styles.identityPane}>
             <p className={styles.paneLabel}>Collector handle</p>
@@ -393,6 +545,71 @@ export function UserSessionCard({
           {collectorSetCounts.ownedCount} owned saved ·{' '}
           {collectorSetCounts.wantedCount} wishlist saved
         </p>
+        {isPasswordRecoveryMode ? (
+          <form
+            className={styles.recoveryForm}
+            onSubmit={(event) => {
+              event.preventDefault();
+              onCompletePasswordRecovery?.();
+            }}
+          >
+            <div className={styles.destinationPanel}>
+              <SectionHeading
+                description="Choose a new password for this account. Your collection and wishlist stay in place."
+                eyebrow="Password reset"
+                title="Finish resetting your password"
+                titleAs="h2"
+              />
+              <div className={styles.inputCluster}>
+                <label className={styles.formField}>
+                  <span className={styles.fieldLabel}>New password</span>
+                  <input
+                    autoComplete="new-password"
+                    className={styles.textInput}
+                    name="newPassword"
+                    placeholder="Enter a new password"
+                    type="password"
+                    value={passwordRecoveryValue ?? ''}
+                    onChange={(event) =>
+                      onPasswordRecoveryChange?.(event.target.value)
+                    }
+                  />
+                  <span className={styles.fieldHint}>
+                    Use at least 8 characters.
+                  </span>
+                </label>
+                <label className={styles.formField}>
+                  <span className={styles.fieldLabel}>
+                    Confirm new password
+                  </span>
+                  <input
+                    autoComplete="new-password"
+                    className={styles.textInput}
+                    name="confirmNewPassword"
+                    placeholder="Repeat the new password"
+                    type="password"
+                    value={passwordRecoveryConfirmation ?? ''}
+                    onChange={(event) =>
+                      onPasswordRecoveryConfirmationChange?.(event.target.value)
+                    }
+                  />
+                  <span className={styles.fieldHint}>
+                    Repeat the new password once before saving it.
+                  </span>
+                </label>
+              </div>
+              <div className={styles.sessionActions}>
+                <Button
+                  isLoading={Boolean(isAuthActionPending)}
+                  tone="accent"
+                  type="submit"
+                >
+                  Save new password
+                </Button>
+              </div>
+            </div>
+          </form>
+        ) : null}
         <p className={styles.supportNote}>
           Your saves stay private. Set pages and price checks stay public.
         </p>

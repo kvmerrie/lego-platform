@@ -1,10 +1,10 @@
 # Production Auth Hardening
 
-This document describes what should be considered production-ready for the current MVP passwordless email sign-in flow.
+This document describes what should be considered production-ready for the current magic-link fallback flow. Email and password is now the primary account path, but the fallback email flow still needs to stay dependable.
 
 It applies to the existing architecture only:
 
-- Supabase Auth remains the passwordless email provider
+- Supabase Auth remains the provider for the secondary magic-link email flow
 - `apps/web` stays browser-driven for sign-in
 - `apps/api` stays the bearer-token verification and persistence boundary
 - `/api/v1/session` and the current owned or wanted flows remain unchanged
