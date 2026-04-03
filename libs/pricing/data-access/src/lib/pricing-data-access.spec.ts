@@ -28,6 +28,7 @@ import {
   getPricePanelSnapshot,
   listPriceHistory,
   listPricingObservations,
+  summarizeWishlistPriceAlerts,
 } from './pricing-data-access';
 
 describe('pricing data access', () => {
@@ -377,6 +378,38 @@ describe('pricing data access', () => {
         tone: 'positive',
       },
     });
+  });
+
+  test('summarizes active wishlist alerts by kind', () => {
+    expect(
+      summarizeWishlistPriceAlerts({
+        '10354': {
+          detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+          kind: 'new-best-price',
+          label: 'New best reviewed price',
+          tone: 'positive',
+        },
+        '10316': {
+          detail: '€ 469,99 is € 20,00 lower than when you saved it.',
+          kind: 'price-improved-since-save',
+          label: 'Lower than when you saved it',
+          tone: 'positive',
+        },
+        '76453': {
+          detail: '€ 20,00 below reference · In stock',
+          kind: 'strong-deal-now',
+          label: 'Strong deal right now',
+          tone: 'accent',
+        },
+        '21348': undefined,
+      }),
+    ).toEqual({
+      activeCount: 3,
+      newBestPriceCount: 1,
+      priceImprovedSinceSaveCount: 1,
+      strongDealCount: 1,
+    });
+    expect(summarizeWishlistPriceAlerts({})).toBeUndefined();
   });
 
   test('builds a compact 30-day summary from history points and the current price', () => {

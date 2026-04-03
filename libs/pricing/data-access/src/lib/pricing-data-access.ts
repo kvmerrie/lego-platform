@@ -45,6 +45,13 @@ export interface WishlistPriceAlert {
   tone: 'accent' | 'positive';
 }
 
+export interface WishlistPriceAlertSummary {
+  activeCount: number;
+  newBestPriceCount: number;
+  priceImprovedSinceSaveCount: number;
+  strongDealCount: number;
+}
+
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
@@ -594,6 +601,33 @@ export async function listWishlistPriceAlerts({
   }, new Map());
 
   return buildAlertLookup(groupedPriceHistoryPoints);
+}
+
+export function summarizeWishlistPriceAlerts(
+  wishlistPriceAlerts: Record<string, WishlistPriceAlert | undefined>,
+): WishlistPriceAlertSummary | undefined {
+  const activeWishlistAlerts = Object.values(wishlistPriceAlerts).filter(
+    (wishlistPriceAlert): wishlistPriceAlert is WishlistPriceAlert =>
+      wishlistPriceAlert !== undefined,
+  );
+
+  if (activeWishlistAlerts.length === 0) {
+    return undefined;
+  }
+
+  return {
+    activeCount: activeWishlistAlerts.length,
+    newBestPriceCount: activeWishlistAlerts.filter(
+      (wishlistPriceAlert) => wishlistPriceAlert.kind === 'new-best-price',
+    ).length,
+    priceImprovedSinceSaveCount: activeWishlistAlerts.filter(
+      (wishlistPriceAlert) =>
+        wishlistPriceAlert.kind === 'price-improved-since-save',
+    ).length,
+    strongDealCount: activeWishlistAlerts.filter(
+      (wishlistPriceAlert) => wishlistPriceAlert.kind === 'strong-deal-now',
+    ).length,
+  };
 }
 
 export async function getPriceHistorySummary(
