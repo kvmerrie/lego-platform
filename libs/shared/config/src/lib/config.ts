@@ -133,6 +133,13 @@ export const supabaseEnvKeys = {
   serverServiceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY',
 } as const;
 
+export const productEmailEnvKeys = {
+  resendApiKey: 'RESEND_API_KEY',
+  resendFromEmail: 'RESEND_FROM_EMAIL',
+  resendFromName: 'RESEND_FROM_NAME',
+  webBaseUrl: 'WEB_BASE_URL',
+} as const;
+
 export interface BrowserSupabaseConfig {
   anonKey: string;
   url: string;
@@ -141,6 +148,13 @@ export interface BrowserSupabaseConfig {
 export interface ServerSupabaseConfig {
   serviceRoleKey: string;
   url: string;
+}
+
+export interface ProductEmailConfig {
+  apiKey: string;
+  fromEmail: string;
+  fromName: string;
+  webBaseUrl: string;
 }
 
 function normalizePathname(pathname: string): string {
@@ -394,6 +408,58 @@ export function getMissingServerSupabaseEnvKeys(
 
   if (!environment[supabaseEnvKeys.serverServiceRoleKey]) {
     missingKeys.push(supabaseEnvKeys.serverServiceRoleKey);
+  }
+
+  return missingKeys;
+}
+
+export function getServerWebBaseUrl(
+  environment: Record<string, string | undefined> = process.env,
+): string {
+  return (
+    environment[productEmailEnvKeys.webBaseUrl] ?? getRuntimeBaseUrl('web')
+  );
+}
+
+export function getProductEmailConfig(
+  environment: Record<string, string | undefined> = process.env,
+): ProductEmailConfig {
+  return {
+    apiKey: requireEnvValue({
+      environment,
+      key: productEmailEnvKeys.resendApiKey,
+    }),
+    fromEmail: requireEnvValue({
+      environment,
+      key: productEmailEnvKeys.resendFromEmail,
+    }),
+    fromName:
+      environment[productEmailEnvKeys.resendFromName] ??
+      platformConfig.productName,
+    webBaseUrl: getServerWebBaseUrl(environment),
+  };
+}
+
+export function hasProductEmailConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(
+    environment[productEmailEnvKeys.resendApiKey] &&
+      environment[productEmailEnvKeys.resendFromEmail],
+  );
+}
+
+export function getMissingProductEmailEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const missingKeys: string[] = [];
+
+  if (!environment[productEmailEnvKeys.resendApiKey]) {
+    missingKeys.push(productEmailEnvKeys.resendApiKey);
+  }
+
+  if (!environment[productEmailEnvKeys.resendFromEmail]) {
+    missingKeys.push(productEmailEnvKeys.resendFromEmail);
   }
 
   return missingKeys;

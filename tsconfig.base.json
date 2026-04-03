@@ -32,6 +32,9 @@
       "@lego-platform/shared/data-access-auth-server": [
         "libs/shared/data-access-auth-server/src/index.ts"
       ],
+      "@lego-platform/api/data-access-server": [
+        "libs/api/data-access-server/src/index.ts"
+      ],
       "@lego-platform/shared/design-tokens": [
         "libs/shared/design-tokens/src/index.ts"
       ],

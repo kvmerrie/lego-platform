@@ -8,7 +8,11 @@ import {
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
   getMissingBrowserSupabaseEnvKeys,
+  getMissingProductEmailEnvKeys,
+  getProductEmailConfig,
+  getServerWebBaseUrl,
   hasBrowserSupabaseConfig,
+  hasProductEmailConfig,
   publicSiteRobotsPolicy,
 } from './config';
 
@@ -105,5 +109,46 @@ describe('shared config locale and market foundations', () => {
         disallow: '/',
       },
     });
+  });
+});
+
+describe('shared config product email helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads resend email delivery config from server env with a runtime fallback web URL', () => {
+    process.env.RESEND_API_KEY = 'resend-key';
+    process.env.RESEND_FROM_EMAIL = 'alerts@example.test';
+
+    expect(hasProductEmailConfig()).toBe(true);
+    expect(getMissingProductEmailEnvKeys()).toEqual([]);
+    expect(getProductEmailConfig()).toEqual({
+      apiKey: 'resend-key',
+      fromEmail: 'alerts@example.test',
+      fromName: 'Brickhunt',
+      webBaseUrl: 'http://localhost:3000',
+    });
+  });
+
+  test('prefers an explicit WEB_BASE_URL for product emails', () => {
+    expect(
+      getServerWebBaseUrl({
+        WEB_BASE_URL: 'https://brickhunt.example',
+      }),
+    ).toBe('https://brickhunt.example');
+  });
+
+  test('reports missing resend env keys when product email delivery is not configured', () => {
+    delete process.env.RESEND_API_KEY;
+    delete process.env.RESEND_FROM_EMAIL;
+
+    expect(hasProductEmailConfig()).toBe(false);
+    expect(getMissingProductEmailEnvKeys()).toEqual([
+      'RESEND_API_KEY',
+      'RESEND_FROM_EMAIL',
+    ]);
   });
 });

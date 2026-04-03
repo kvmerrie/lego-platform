@@ -14,6 +14,8 @@
     "sync:commerce": "pnpm nx run commerce-sync:run",
     "sync:commerce:check": "pnpm sync:commerce:local:check",
     "sync:commerce:local:check": "pnpm nx run commerce-sync:run -- --check",
+    "alerts:wishlist:check": "pnpm nx run wishlist-alerts:run -- --check",
+    "alerts:wishlist:send": "pnpm nx run wishlist-alerts:run -- --send",
     "smoke:mvp": "node scripts/mvp-smoke-check.mjs",
     "build": "pnpm nx run-many -t build --all",
     "lint": "pnpm nx run-many -t lint --all",
