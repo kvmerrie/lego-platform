@@ -9,8 +9,8 @@ See also:
 
 ## Current Intent
 
-- Supabase Auth will become the real auth provider.
-- Supabase Postgres will become the persistence layer for collector profile and owned or wanted state.
+- Supabase Auth is the real auth provider for collector accounts.
+- Supabase Postgres is the persistence layer for collector profile and owned or wanted state.
 - `apps/api` remains the BFF, auth-verification boundary, and persistence boundary.
 - `apps/web` remains static-friendly. Catalog and set-detail routes do not become auth-dependent at render time.
 - The current `/api/v1` route shapes remain the long-term contract.

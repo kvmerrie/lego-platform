@@ -9,8 +9,13 @@ import {
   type PricingObservation,
   type FeaturedSetPriceContext,
   type TrackedPriceSummary,
+  formatPriceMinor,
+  getPriceDealSummary,
 } from '@lego-platform/pricing/util';
-import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
+import {
+  getDefaultFormattingLocale,
+  hasBrowserSupabaseConfig,
+} from '@lego-platform/shared/config';
 import { getBrowserSupabaseClient } from '@lego-platform/shared/data-access-auth';
 import { pricePanelSnapshots } from './price-panel-snapshots.generated';
 import { pricingObservations } from './pricing-observations.generated';
@@ -21,6 +26,56 @@ const pricePanelSnapshotBySetId = new Map(
     pricePanelSnapshot,
   ]),
 );
+
+export interface ReviewedPriceSummary {
+  availabilityLabel?: string;
+  coverageLabel: string;
+  coverageNote?: string;
+  currentPrice: string;
+  dealLabel: string;
+  merchantLabel: string;
+  pricePositionLabel?: string;
+  reviewedLabel: string;
+}
+
+function formatReviewedOn(observedAt: string): string {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(observedAt));
+}
+
+function getReviewedOfferLabel(merchantCount: number): string {
+  return `${merchantCount} reviewed offer${merchantCount === 1 ? '' : 's'}`;
+}
+
+function getPricePositionLabel({
+  currencyCode,
+  deltaMinor,
+}: {
+  currencyCode: string;
+  deltaMinor?: number;
+}): string | undefined {
+  if (typeof deltaMinor !== 'number') {
+    return undefined;
+  }
+
+  if (deltaMinor < 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: Math.abs(deltaMinor),
+    })} below reference`;
+  }
+
+  if (deltaMinor > 0) {
+    return `${formatPriceMinor({
+      currencyCode,
+      minorUnits: deltaMinor,
+    })} above reference`;
+  }
+
+  return 'At reference';
+}
 
 function getCandidateRank(
   setId: string,
@@ -78,6 +133,37 @@ export function getFeaturedSetPriceContext(
     merchantCount: pricePanelSnapshot.merchantCount,
     availabilityLabel: pricePanelSnapshot.lowestAvailabilityLabel,
     observedAt: pricePanelSnapshot.observedAt,
+  };
+}
+
+export function getReviewedPriceSummary(
+  setId: string,
+): ReviewedPriceSummary | undefined {
+  const pricePanelSnapshot = getPricePanelSnapshot(setId);
+
+  if (!pricePanelSnapshot) {
+    return undefined;
+  }
+
+  const priceDealSummary = getPriceDealSummary(pricePanelSnapshot);
+
+  return {
+    availabilityLabel: pricePanelSnapshot.lowestAvailabilityLabel,
+    coverageLabel: pricePanelSnapshot.lowestAvailabilityLabel
+      ? `${pricePanelSnapshot.lowestAvailabilityLabel} · ${getReviewedOfferLabel(pricePanelSnapshot.merchantCount)}`
+      : getReviewedOfferLabel(pricePanelSnapshot.merchantCount),
+    coverageNote: priceDealSummary.coverageNote,
+    currentPrice: formatPriceMinor({
+      currencyCode: pricePanelSnapshot.currencyCode,
+      minorUnits: pricePanelSnapshot.headlinePriceMinor,
+    }),
+    dealLabel: priceDealSummary.label,
+    merchantLabel: `Lowest reviewed price at ${pricePanelSnapshot.lowestMerchantName}`,
+    pricePositionLabel: getPricePositionLabel({
+      currencyCode: pricePanelSnapshot.currencyCode,
+      deltaMinor: pricePanelSnapshot.deltaMinor,
+    }),
+    reviewedLabel: `Checked ${formatReviewedOn(pricePanelSnapshot.observedAt)}`,
   };
 }
 

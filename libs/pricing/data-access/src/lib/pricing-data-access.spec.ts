@@ -5,15 +5,20 @@ vi.mock('@lego-platform/shared/data-access-auth', () => ({
 }));
 
 vi.mock('@lego-platform/shared/config', () => ({
+  getDefaultFormattingLocale: vi.fn(() => 'nl-NL'),
   hasBrowserSupabaseConfig: vi.fn(),
 }));
 
 import { getBrowserSupabaseClient } from '@lego-platform/shared/data-access-auth';
-import { hasBrowserSupabaseConfig } from '@lego-platform/shared/config';
+import {
+  getDefaultFormattingLocale,
+  hasBrowserSupabaseConfig,
+} from '@lego-platform/shared/config';
 import {
   buildPriceHistorySummary,
   buildTrackedPriceSummary,
   getFeaturedSetPriceContext,
+  getReviewedPriceSummary,
   listDealSpotlightPriceContexts,
   listReviewedPriceSetIds,
   getPriceHistorySummary,
@@ -27,6 +32,7 @@ describe('pricing data access', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
+    vi.mocked(getDefaultFormattingLocale).mockReturnValue('nl-NL');
   });
 
   test('returns a set-aware Dutch price panel snapshot', () => {
@@ -108,6 +114,19 @@ describe('pricing data access', () => {
       observedAt: '2026-03-31T09:00:00.000Z',
       referencePriceMinor: 49999,
       deltaMinor: -3000,
+    });
+  });
+
+  test('builds a formatted reviewed price summary for collector list surfaces', () => {
+    expect(getReviewedPriceSummary('10354')).toEqual({
+      availabilityLabel: 'In stock',
+      coverageLabel: 'In stock · 2 reviewed offers',
+      coverageNote: 'Only 2 reviewed offers so far',
+      currentPrice: '€ 246,43',
+      dealLabel: 'Best current deal',
+      merchantLabel: 'Lowest reviewed price at bol',
+      pricePositionLabel: '€ 23,56 below reference',
+      reviewedLabel: 'Checked 3 apr',
     });
   });
 

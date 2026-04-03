@@ -2,8 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
-import { CatalogSetCard } from '@lego-platform/catalog/ui';
+import {
+  CatalogSetCard,
+  type CatalogSetCardPriceContext,
+} from '@lego-platform/catalog/ui';
 import { addOwnedSet } from '@lego-platform/collection/data-access';
+import { getReviewedPriceSummary } from '@lego-platform/pricing/data-access';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { Button } from '@lego-platform/shared/ui';
 import { removeWantedSet } from '@lego-platform/wishlist/data-access';
@@ -77,6 +81,44 @@ function readActionErrorMessage(
   }
 
   return fallbackMessage;
+}
+
+function toWishlistPriceContext(
+  priceSummary: ReturnType<typeof getReviewedPriceSummary>,
+): CatalogSetCardPriceContext | undefined {
+  if (!priceSummary) {
+    return undefined;
+  }
+
+  return {
+    coverageLabel: priceSummary.coverageLabel,
+    currentPrice: priceSummary.currentPrice,
+    merchantLabel: priceSummary.merchantLabel,
+    pricePositionLabel: priceSummary.pricePositionLabel,
+    reviewedLabel: priceSummary.reviewedLabel,
+  };
+}
+
+function getWishlistBuyingNote(
+  priceSummary: ReturnType<typeof getReviewedPriceSummary>,
+): string | undefined {
+  if (!priceSummary) {
+    return undefined;
+  }
+
+  if (priceSummary.dealLabel === 'Best current deal') {
+    return `${priceSummary.dealLabel} · ${
+      priceSummary.availabilityLabel ??
+      priceSummary.coverageNote ??
+      priceSummary.reviewedLabel
+    }`;
+  }
+
+  return (
+    priceSummary.coverageNote ??
+    priceSummary.availabilityLabel ??
+    priceSummary.reviewedLabel
+  );
 }
 
 export function ShellFeatureCollectorWishlist() {
@@ -296,46 +338,52 @@ export function ShellFeatureCollectorWishlist() {
       state="populated"
       wantedCount={wantedSetCards.length}
     >
-      {sortedWantedSetCards.map((catalogSetCard) => (
-        <CatalogSetCard
-          actions={
-            <div className={styles.cardActions}>
-              <Button
-                disabled={Boolean(pendingSetIds[catalogSetCard.id])}
-                isLoading={pendingSetIds[catalogSetCard.id] === 'move'}
-                tone="accent"
-                type="button"
-                onClick={() =>
-                  void handleMoveToCollection({
-                    name: catalogSetCard.name,
-                    setId: catalogSetCard.id,
-                  })
-                }
-              >
-                Move to collection
-              </Button>
-              <Button
-                disabled={Boolean(pendingSetIds[catalogSetCard.id])}
-                isLoading={pendingSetIds[catalogSetCard.id] === 'remove'}
-                tone="ghost"
-                type="button"
-                onClick={() =>
-                  void handleRemoveFromWishlist({
-                    name: catalogSetCard.name,
-                    setId: catalogSetCard.id,
-                  })
-                }
-              >
-                Remove
-              </Button>
-            </div>
-          }
-          href={buildSetDetailPath(catalogSetCard.slug)}
-          key={catalogSetCard.id}
-          savedState="wishlist"
-          setSummary={catalogSetCard}
-        />
-      ))}
+      {sortedWantedSetCards.map((catalogSetCard) => {
+        const reviewedPriceSummary = getReviewedPriceSummary(catalogSetCard.id);
+
+        return (
+          <CatalogSetCard
+            actions={
+              <div className={styles.cardActions}>
+                <Button
+                  disabled={Boolean(pendingSetIds[catalogSetCard.id])}
+                  isLoading={pendingSetIds[catalogSetCard.id] === 'move'}
+                  tone="accent"
+                  type="button"
+                  onClick={() =>
+                    void handleMoveToCollection({
+                      name: catalogSetCard.name,
+                      setId: catalogSetCard.id,
+                    })
+                  }
+                >
+                  Move to collection
+                </Button>
+                <Button
+                  disabled={Boolean(pendingSetIds[catalogSetCard.id])}
+                  isLoading={pendingSetIds[catalogSetCard.id] === 'remove'}
+                  tone="ghost"
+                  type="button"
+                  onClick={() =>
+                    void handleRemoveFromWishlist({
+                      name: catalogSetCard.name,
+                      setId: catalogSetCard.id,
+                    })
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
+            }
+            href={buildSetDetailPath(catalogSetCard.slug)}
+            key={catalogSetCard.id}
+            priceContext={toWishlistPriceContext(reviewedPriceSummary)}
+            savedState="wishlist"
+            setSummary={catalogSetCard}
+            supportingNote={getWishlistBuyingNote(reviewedPriceSummary)}
+          />
+        );
+      })}
     </CollectorWishlistPanel>
   );
 }

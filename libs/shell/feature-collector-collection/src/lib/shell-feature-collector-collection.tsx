@@ -5,6 +5,7 @@ import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
 import { CatalogSetCard } from '@lego-platform/catalog/ui';
 import { removeOwnedSet } from '@lego-platform/collection/data-access';
 import { CollectorCollectionPanel } from '@lego-platform/collection/ui';
+import { getReviewedPriceSummary } from '@lego-platform/pricing/data-access';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { Button } from '@lego-platform/shared/ui';
 import {
@@ -76,6 +77,19 @@ function readActionErrorMessage(
   }
 
   return fallbackMessage;
+}
+
+function getCollectionMarketNote(
+  priceSummary: ReturnType<typeof getReviewedPriceSummary>,
+): string | undefined {
+  if (!priceSummary) {
+    return undefined;
+  }
+
+  return [
+    priceSummary.dealLabel,
+    priceSummary.availabilityLabel ?? priceSummary.reviewedLabel,
+  ].join(' · ');
 }
 
 export function ShellFeatureCollectorCollection() {
@@ -252,32 +266,49 @@ export function ShellFeatureCollectorCollection() {
       statusMessage={statusMessage}
       state="populated"
     >
-      {sortedOwnedSetCards.map((catalogSetCard) => (
-        <CatalogSetCard
-          actions={
-            <div className={styles.cardActions}>
-              <Button
-                disabled={Boolean(pendingSetIds[catalogSetCard.id])}
-                isLoading={pendingSetIds[catalogSetCard.id] === 'remove'}
-                tone="ghost"
-                type="button"
-                onClick={() =>
-                  void handleRemoveFromCollection({
-                    name: catalogSetCard.name,
-                    setId: catalogSetCard.id,
-                  })
-                }
-              >
-                Remove
-              </Button>
-            </div>
-          }
-          href={buildSetDetailPath(catalogSetCard.slug)}
-          key={catalogSetCard.id}
-          savedState="owned"
-          setSummary={catalogSetCard}
-        />
-      ))}
+      {sortedOwnedSetCards.map((catalogSetCard) => {
+        const reviewedPriceSummary = getReviewedPriceSummary(catalogSetCard.id);
+
+        return (
+          <CatalogSetCard
+            actions={
+              <div className={styles.cardActions}>
+                <Button
+                  disabled={Boolean(pendingSetIds[catalogSetCard.id])}
+                  isLoading={pendingSetIds[catalogSetCard.id] === 'remove'}
+                  tone="ghost"
+                  type="button"
+                  onClick={() =>
+                    void handleRemoveFromCollection({
+                      name: catalogSetCard.name,
+                      setId: catalogSetCard.id,
+                    })
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
+            }
+            href={buildSetDetailPath(catalogSetCard.slug)}
+            key={catalogSetCard.id}
+            priceContext={
+              reviewedPriceSummary
+                ? {
+                    coverageLabel: reviewedPriceSummary.coverageLabel,
+                    currentPrice: reviewedPriceSummary.currentPrice,
+                    merchantLabel: reviewedPriceSummary.merchantLabel,
+                    pricePositionLabel: reviewedPriceSummary.pricePositionLabel,
+                    reviewedLabel: reviewedPriceSummary.reviewedLabel,
+                  }
+                : undefined
+            }
+            priceDisplay="subtle"
+            savedState="owned"
+            setSummary={catalogSetCard}
+            supportingNote={getCollectionMarketNote(reviewedPriceSummary)}
+          />
+        );
+      })}
     </CollectorCollectionPanel>
   );
 }

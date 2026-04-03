@@ -49,6 +49,7 @@ export interface CatalogSetCardPriceContext {
 
 type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
 type CatalogSetSavedState = 'owned' | 'wishlist';
+type CatalogSetCardPriceDisplay = 'default' | 'subtle';
 
 function getSavedStateBadgeTone(
   savedState: CatalogSetSavedState,
@@ -185,6 +186,7 @@ export function CatalogSetCard({
   actions,
   href,
   priceContext,
+  priceDisplay = 'default',
   savedState,
   setSummary,
   supportingNote,
@@ -193,6 +195,7 @@ export function CatalogSetCard({
   actions?: ReactNode;
   href?: string;
   priceContext?: CatalogSetCardPriceContext;
+  priceDisplay?: CatalogSetCardPriceDisplay;
   savedState?: CatalogSetSavedState;
   setSummary: CatalogSetCardSummary;
   supportingNote?: string;
@@ -353,7 +356,7 @@ export function CatalogSetCard({
           {setSummary.tagline ?? setSummary.collectorAngle}
         </p>
       </div>
-      {priceContext ? (
+      {priceContext && priceDisplay === 'default' ? (
         <div className={styles.priceBlock}>
           <p className={styles.priceLabel}>Reviewed price</p>
           <p className={styles.priceValue}>{priceContext.currentPrice}</p>
@@ -374,15 +377,31 @@ export function CatalogSetCard({
             />
           </div>
         </div>
-      ) : (
+      ) : priceDisplay === 'default' ? (
         <div className={styles.priceBlock}>
           <p className={styles.priceLabel}>Reviewed price</p>
           <p className={styles.priceUnavailableCopy}>
             Reviewed price not published yet.
           </p>
         </div>
-      )}
+      ) : null}
       <div className={styles.collectorContext}>
+        {priceContext && priceDisplay === 'subtle' ? (
+          <CatalogSupportingDetail
+            label="Current reviewed price"
+            value={`${priceContext.currentPrice} · ${priceContext.merchantLabel}`}
+          />
+        ) : null}
+        {supportingNote ? (
+          <CatalogSupportingDetail
+            label={
+              priceContext && priceDisplay === 'default'
+                ? 'Buying signal'
+                : 'Current market note'
+            }
+            value={supportingNote}
+          />
+        ) : null}
         <CatalogSupportingDetail
           label="Why collectors like it"
           value={setSummary.collectorAngle}

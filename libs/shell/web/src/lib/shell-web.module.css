@@ -427,6 +427,7 @@
 
 .mobileSearchOverlay {
   background: var(--lego-surface);
+  align-content: baseline;
   display: grid;
   gap: var(--lego-space-4);
   inset: 0;
