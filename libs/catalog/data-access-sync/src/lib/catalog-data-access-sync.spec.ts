@@ -12,7 +12,10 @@ import {
   runCatalogSync,
   validateCatalogSyncArtifacts,
 } from './catalog-data-access-sync';
-import type { RebrickableClient } from './rebrickable-client';
+import {
+  createRebrickableClient,
+  type RebrickableClient,
+} from './rebrickable-client';
 
 type MockCatalogSet = {
   canonicalId: string;
@@ -906,6 +909,7 @@ export const catalogSnapshot: CatalogSnapshot = {
     await runCatalogSync({
       apiKey: 'test-key',
       fetchImpl: createMockFetchImpl(),
+      minimumRequestSpacingMs: 0,
       now: new Date('2026-03-28T00:00:00.000Z'),
       workspaceRoot,
     });
@@ -939,6 +943,7 @@ export const catalogSnapshot: CatalogSnapshot = {
     const writeResult = await runCatalogSync({
       apiKey: 'test-key',
       fetchImpl,
+      minimumRequestSpacingMs: 0,
       now: new Date('2026-03-28T00:00:00.000Z'),
       workspaceRoot,
     });
@@ -946,6 +951,7 @@ export const catalogSnapshot: CatalogSnapshot = {
     const checkResult = await runCatalogSync({
       apiKey: 'test-key',
       fetchImpl,
+      minimumRequestSpacingMs: 0,
       mode: 'check',
       now: new Date('2026-03-29T00:00:00.000Z'),
       workspaceRoot,
@@ -1070,5 +1076,86 @@ export const catalogSnapshot: CatalogSnapshot = {
     ).rejects.toThrow(
       'Homepage featured set 10333 is missing from the generated catalog snapshot.',
     );
+  });
+
+  test('retries Rebrickable 429 responses, respects Retry-After, and eventually succeeds', async () => {
+    let callCount = 0;
+    const sleptDelayMs: number[] = [];
+    const logMessages: string[] = [];
+
+    const rebrickableClient = createRebrickableClient({
+      apiKey: 'test-key',
+      baseUrl: 'https://example.test/api/v3',
+      fetchImpl: async () => {
+        callCount += 1;
+
+        if (callCount < 3) {
+          return new Response(null, {
+            headers: {
+              'Retry-After': '2',
+            },
+            status: 429,
+          });
+        }
+
+        return new Response(
+          JSON.stringify(toRebrickableSetPayload(mockCatalogSets[0])),
+          { status: 200 },
+        );
+      },
+      logImpl(message) {
+        logMessages.push(message);
+      },
+      maxRetries: 3,
+      minimumRequestSpacingMs: 0,
+      sleepImpl: async (delayMs) => {
+        sleptDelayMs.push(delayMs);
+      },
+    });
+
+    await expect(rebrickableClient.getSet('10316-1')).resolves.toEqual(
+      toRebrickableSetPayload(mockCatalogSets[0]),
+    );
+
+    expect(callCount).toBe(3);
+    expect(sleptDelayMs).toEqual([2000, 2000]);
+    expect(logMessages).toEqual([
+      '[catalog-sync] rebrickable 429 endpoint=/lego/sets/10316-1/ retry_attempt=1/3 delay_ms=2000 retry_after_ms=2000 used_retry_after=true',
+      '[catalog-sync] rebrickable 429 endpoint=/lego/sets/10316-1/ retry_attempt=2/3 delay_ms=2000 retry_after_ms=2000 used_retry_after=true',
+    ]);
+  });
+
+  test('fails only after Rebrickable 429 retries are exhausted', async () => {
+    const sleptDelayMs: number[] = [];
+    const logMessages: string[] = [];
+
+    const rebrickableClient = createRebrickableClient({
+      apiKey: 'test-key',
+      baseUrl: 'https://example.test/api/v3',
+      fetchImpl: async () =>
+        new Response(null, {
+          status: 429,
+        }),
+      logImpl(message) {
+        logMessages.push(message);
+      },
+      maxRetries: 2,
+      minimumRequestSpacingMs: 0,
+      retryBaseDelayMs: 250,
+      sleepImpl: async (delayMs) => {
+        sleptDelayMs.push(delayMs);
+      },
+    });
+
+    await expect(rebrickableClient.getSet('10316-1')).rejects.toThrow(
+      'Rebrickable request failed (429) for /lego/sets/10316-1/ after 3 attempts.',
+    );
+
+    expect(sleptDelayMs).toEqual([250, 500]);
+    expect(logMessages).toEqual([
+      '[catalog-sync] rebrickable 429 endpoint=/lego/sets/10316-1/ retry_attempt=1/2 delay_ms=250 retry_after_ms=n/a used_retry_after=false',
+      '[catalog-sync] rebrickable 429 endpoint=/lego/sets/10316-1/ retry_attempt=2/2 delay_ms=500 retry_after_ms=n/a used_retry_after=false',
+      '[catalog-sync] rebrickable 429 endpoint=/lego/sets/10316-1/ retry_attempt=2/2 delay_ms=0 retry_after_ms=n/a used_retry_after=false exhausted=true',
+    ]);
   });
 });

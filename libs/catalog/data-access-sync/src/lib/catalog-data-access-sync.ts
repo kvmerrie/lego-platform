@@ -57,6 +57,7 @@ export interface RunCatalogSyncOptions {
   apiKey: string;
   baseUrl?: string;
   fetchImpl?: typeof fetch;
+  minimumRequestSpacingMs?: number;
   mode?: 'check' | 'write';
   now?: Date;
   workspaceRoot: string;
@@ -433,6 +434,7 @@ export async function runCatalogSync({
   apiKey,
   baseUrl,
   fetchImpl,
+  minimumRequestSpacingMs,
   mode = 'write',
   now,
   workspaceRoot,
@@ -441,6 +443,7 @@ export async function runCatalogSync({
     apiKey,
     baseUrl,
     fetchImpl,
+    minimumRequestSpacingMs,
   });
   const nextArtifacts = await buildCatalogSyncArtifacts({
     now,
