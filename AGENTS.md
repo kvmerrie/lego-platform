@@ -100,7 +100,6 @@ Implementation guidance:
 - Prefer using a shared `<Icon />` component from the design system layer instead of importing icons directly in feature or UI libraries.
 - Keep icons lightweight and consistent in size and stroke.
 
-
 ## UI Component API Guidance
 
 - Keep UI-library components dumb and presentational.
