@@ -15,12 +15,15 @@ import {
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 import {
+  buildWishlistAlertNotificationCandidate,
   buildWishlistPriceAlert,
   buildPriceHistorySummary,
   buildTrackedPriceSummary,
+  DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
   getFeaturedSetPriceContext,
   getReviewedPriceSummary,
   listDealSpotlightPriceContexts,
+  listWishlistAlertNotificationCandidates,
   listWishlistPriceAlerts,
   listReviewedPriceSetIds,
   getPriceHistorySummary,
@@ -410,6 +413,156 @@ describe('pricing data access', () => {
       strongDealCount: 1,
     });
     expect(summarizeWishlistPriceAlerts({})).toBeUndefined();
+  });
+
+  test('builds a first-run wishlist notification candidate from an active alert', () => {
+    expect(
+      buildWishlistAlertNotificationCandidate({
+        alert: {
+          detail: '€ 23,56 below reference · In stock',
+          kind: 'strong-deal-now',
+          label: 'Strong deal right now',
+          tone: 'accent',
+        },
+        now: '2026-04-03T10:00:00.000Z',
+        setId: '10354',
+      }),
+    ).toEqual({
+      cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
+      dedupeKey: '10354:strong-deal-now',
+      detail: '€ 23,56 below reference · In stock',
+      evaluatedAt: '2026-04-03T10:00:00.000Z',
+      isNewlyNotifiable: true,
+      kind: 'strong-deal-now',
+      label: 'Strong deal right now',
+      notificationReason: 'first-signal',
+      priority: 1,
+      setId: '10354',
+      tone: 'accent',
+    });
+  });
+
+  test('suppresses the same wishlist signal while its cooldown is active', () => {
+    expect(
+      buildWishlistAlertNotificationCandidate({
+        alert: {
+          detail: '€ 23,56 below reference · In stock',
+          kind: 'strong-deal-now',
+          label: 'Strong deal right now',
+          tone: 'accent',
+        },
+        now: '2026-04-10T10:00:00.000Z',
+        previousNotificationState: {
+          lastNotifiedAt: '2026-04-03T10:00:00.000Z',
+          lastNotifiedKind: 'strong-deal-now',
+        },
+        setId: '10354',
+      }),
+    ).toEqual({
+      cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
+      cooldownEndsAt: '2026-04-17T10:00:00.000Z',
+      dedupeKey: '10354:strong-deal-now',
+      detail: '€ 23,56 below reference · In stock',
+      evaluatedAt: '2026-04-10T10:00:00.000Z',
+      isNewlyNotifiable: false,
+      kind: 'strong-deal-now',
+      label: 'Strong deal right now',
+      priority: 1,
+      setId: '10354',
+      suppressionReason: 'cooldown-active',
+      tone: 'accent',
+    });
+  });
+
+  test('allows a stronger wishlist signal to supersede a weaker one during cooldown', () => {
+    expect(
+      buildWishlistAlertNotificationCandidate({
+        alert: {
+          detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+          kind: 'new-best-price',
+          label: 'New best reviewed price',
+          tone: 'positive',
+        },
+        now: '2026-04-10T10:00:00.000Z',
+        previousNotificationState: {
+          lastNotifiedAt: '2026-04-03T10:00:00.000Z',
+          lastNotifiedKind: 'strong-deal-now',
+        },
+        setId: '10354',
+      }),
+    ).toEqual({
+      cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
+      cooldownEndsAt: '2026-04-17T10:00:00.000Z',
+      dedupeKey: '10354:new-best-price',
+      detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+      evaluatedAt: '2026-04-10T10:00:00.000Z',
+      isNewlyNotifiable: true,
+      kind: 'new-best-price',
+      label: 'New best reviewed price',
+      notificationReason: 'higher-priority-signal',
+      priority: 3,
+      setId: '10354',
+      supersedesPreviousKind: 'strong-deal-now',
+      tone: 'positive',
+    });
+  });
+
+  test('builds notifiable wishlist candidates in batch and preserves inactive sets', () => {
+    expect(
+      listWishlistAlertNotificationCandidates({
+        now: '2026-04-20T10:00:00.000Z',
+        previousNotificationStateBySetId: {
+          '10316': {
+            lastNotifiedAt: '2026-04-03T10:00:00.000Z',
+            lastNotifiedKind: 'price-improved-since-save',
+          },
+        },
+        wishlistPriceAlerts: {
+          '10316': {
+            detail: '€ 469,99 is € 20,00 lower than when you saved it.',
+            kind: 'price-improved-since-save',
+            label: 'Lower than when you saved it',
+            tone: 'positive',
+          },
+          '10354': {
+            detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+            kind: 'new-best-price',
+            label: 'New best reviewed price',
+            tone: 'positive',
+          },
+          '21348': undefined,
+        },
+      }),
+    ).toEqual({
+      '10316': {
+        cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
+        cooldownEndsAt: '2026-04-17T10:00:00.000Z',
+        dedupeKey: '10316:price-improved-since-save',
+        detail: '€ 469,99 is € 20,00 lower than when you saved it.',
+        evaluatedAt: '2026-04-20T10:00:00.000Z',
+        isNewlyNotifiable: true,
+        kind: 'price-improved-since-save',
+        label: 'Lower than when you saved it',
+        notificationReason: 'cooldown-expired',
+        priority: 2,
+        setId: '10316',
+        tone: 'positive',
+      },
+      '10354': {
+        cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
+        dedupeKey: '10354:new-best-price',
+        detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+        evaluatedAt: '2026-04-20T10:00:00.000Z',
+        isNewlyNotifiable: true,
+        kind: 'new-best-price',
+        label: 'New best reviewed price',
+        notificationReason: 'first-signal',
+        priority: 3,
+        setId: '10354',
+        tone: 'positive',
+      },
+      '21348': undefined,
+    });
   });
 
   test('builds a compact 30-day summary from history points and the current price', () => {

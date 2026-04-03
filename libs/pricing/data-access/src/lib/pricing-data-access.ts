@@ -52,6 +52,29 @@ export interface WishlistPriceAlertSummary {
   strongDealCount: number;
 }
 
+export interface WishlistAlertNotificationState {
+  lastNotifiedAt?: string;
+  lastNotifiedKind?: WishlistPriceAlert['kind'];
+}
+
+export interface WishlistAlertNotificationCandidate extends WishlistPriceAlert {
+  cooldownDays: number;
+  cooldownEndsAt?: string;
+  dedupeKey: string;
+  evaluatedAt: string;
+  isNewlyNotifiable: boolean;
+  notificationReason?:
+    | 'cooldown-expired'
+    | 'first-signal'
+    | 'higher-priority-signal';
+  priority: 1 | 2 | 3;
+  setId: string;
+  suppressionReason?: 'cooldown-active';
+  supersedesPreviousKind?: WishlistPriceAlert['kind'];
+}
+
+export const DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS = 14;
+
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
@@ -103,6 +126,31 @@ function getCurrentPriceLabel(pricePanelSnapshot: PricePanelSnapshot): string {
     currencyCode: pricePanelSnapshot.currencyCode,
     minorUnits: pricePanelSnapshot.headlinePriceMinor,
   });
+}
+
+function getWishlistAlertPriority(kind: WishlistPriceAlert['kind']): 1 | 2 | 3 {
+  switch (kind) {
+    case 'new-best-price':
+      return 3;
+    case 'price-improved-since-save':
+      return 2;
+    case 'strong-deal-now':
+      return 1;
+  }
+}
+
+function parseTimestamp(value?: string): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const timestamp = new Date(value).getTime();
+
+  return Number.isFinite(timestamp) ? timestamp : undefined;
+}
+
+function addDaysToTimestamp(timestamp: number, days: number): string {
+  return new Date(timestamp + days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 function getCandidateRank(
@@ -628,6 +676,112 @@ export function summarizeWishlistPriceAlerts(
       (wishlistPriceAlert) => wishlistPriceAlert.kind === 'strong-deal-now',
     ).length,
   };
+}
+
+export function buildWishlistAlertNotificationCandidate({
+  alert,
+  cooldownDays = DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
+  now,
+  previousNotificationState,
+  setId,
+}: {
+  alert?: WishlistPriceAlert;
+  cooldownDays?: number;
+  now?: string;
+  previousNotificationState?: WishlistAlertNotificationState;
+  setId: string;
+}): WishlistAlertNotificationCandidate | undefined {
+  if (!alert) {
+    return undefined;
+  }
+
+  const normalizedCooldownDays = Math.max(0, Math.trunc(cooldownDays));
+  const evaluatedAt = now ?? new Date().toISOString();
+  const evaluatedAtTimestamp = parseTimestamp(evaluatedAt) ?? Date.now();
+  const priority = getWishlistAlertPriority(alert.kind);
+  const previousNotifiedAtTimestamp = parseTimestamp(
+    previousNotificationState?.lastNotifiedAt,
+  );
+  const previousNotifiedKind = previousNotificationState?.lastNotifiedKind;
+  const previousPriority = previousNotifiedKind
+    ? getWishlistAlertPriority(previousNotifiedKind)
+    : undefined;
+  const cooldownEndsAt =
+    previousNotifiedAtTimestamp === undefined
+      ? undefined
+      : addDaysToTimestamp(previousNotifiedAtTimestamp, normalizedCooldownDays);
+  const cooldownEndsAtTimestamp = parseTimestamp(cooldownEndsAt);
+  const cooldownActive =
+    cooldownEndsAtTimestamp !== undefined &&
+    cooldownEndsAtTimestamp > evaluatedAtTimestamp;
+  const supersedesPreviousKind =
+    previousPriority !== undefined && priority > previousPriority
+      ? previousNotifiedKind
+      : undefined;
+
+  if (
+    cooldownActive &&
+    previousNotifiedKind !== undefined &&
+    !supersedesPreviousKind
+  ) {
+    return {
+      ...alert,
+      cooldownDays: normalizedCooldownDays,
+      cooldownEndsAt,
+      dedupeKey: `${setId}:${alert.kind}`,
+      evaluatedAt,
+      isNewlyNotifiable: false,
+      priority,
+      setId,
+      suppressionReason: 'cooldown-active',
+    };
+  }
+
+  return {
+    ...alert,
+    cooldownDays: normalizedCooldownDays,
+    cooldownEndsAt,
+    dedupeKey: `${setId}:${alert.kind}`,
+    evaluatedAt,
+    isNewlyNotifiable: true,
+    notificationReason:
+      previousNotifiedKind === undefined
+        ? 'first-signal'
+        : supersedesPreviousKind
+          ? 'higher-priority-signal'
+          : 'cooldown-expired',
+    priority,
+    setId,
+    supersedesPreviousKind,
+  };
+}
+
+export function listWishlistAlertNotificationCandidates({
+  cooldownDays = DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
+  now,
+  previousNotificationStateBySetId,
+  wishlistPriceAlerts,
+}: {
+  cooldownDays?: number;
+  now?: string;
+  previousNotificationStateBySetId?: Record<
+    string,
+    WishlistAlertNotificationState | undefined
+  >;
+  wishlistPriceAlerts: Record<string, WishlistPriceAlert | undefined>;
+}): Record<string, WishlistAlertNotificationCandidate | undefined> {
+  return Object.fromEntries(
+    Object.entries(wishlistPriceAlerts).map(([setId, alert]) => [
+      setId,
+      buildWishlistAlertNotificationCandidate({
+        alert,
+        cooldownDays,
+        now,
+        previousNotificationState: previousNotificationStateBySetId?.[setId],
+        setId,
+      }),
+    ]),
+  );
 }
 
 export async function getPriceHistorySummary(
