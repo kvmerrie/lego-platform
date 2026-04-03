@@ -100,7 +100,7 @@ export function UserFeatureProfile() {
       setCollectorProfile(updatedCollectorProfile);
       setDraft(createCollectorProfileDraft(updatedCollectorProfile));
       setSuccessMessage(
-        'Collector profile saved. Your signed-in collector identity now reflects these details across your account, collection, and wishlist surfaces.',
+        'Collector profile saved. Your signed-in collector details and wishlist deal alert preference are up to date.',
       );
     } catch (error) {
       if (!isMountedRef.current) {
@@ -146,7 +146,7 @@ export function UserFeatureProfile() {
           return {
             ...currentDraft,
             [field]: value,
-          };
+          } as UpdateCollectorProfileInput;
         });
         setErrorMessage(undefined);
         setSuccessMessage(undefined);

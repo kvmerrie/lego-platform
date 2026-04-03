@@ -53,6 +53,7 @@ function toCollectorProfile({
     collectionFocus: userProfileRepositoryRecord.collectionFocus,
     tier: userProfileRepositoryRecord.tier,
     email,
+    wishlistDealAlerts: userProfileRepositoryRecord.wishlistDealAlerts,
   };
 }
 

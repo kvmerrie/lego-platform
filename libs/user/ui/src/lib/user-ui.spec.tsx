@@ -45,6 +45,9 @@ describe('UserShellAccountStatusCard', () => {
             location: 'Amsterdam',
             collectionFocus: 'Display-scale fantasy and castle icons',
           },
+          notificationPreferences: {
+            wishlistDealAlerts: true,
+          },
           ownedSetIds: ['10316', '10305'],
           setStates: [
             {
@@ -127,6 +130,9 @@ describe('UserSessionCard', () => {
             location: 'Amsterdam',
             collectionFocus: 'Display-scale fantasy and castle icons',
           },
+          notificationPreferences: {
+            wishlistDealAlerts: true,
+          },
           ownedSetIds: ['10316', '10305'],
           setStates: [
             {
@@ -185,6 +191,9 @@ describe('UserSessionCard', () => {
             location: 'Amsterdam',
             collectionFocus: 'Display-scale fantasy and castle icons',
           },
+          notificationPreferences: {
+            wishlistDealAlerts: true,
+          },
           ownedSetIds: ['10316', '10305'],
           setStates: [
             {
@@ -226,12 +235,14 @@ describe('UserProfileEditorCard', () => {
           collectionFocus: 'Display-scale fantasy and castle icons',
           tier: 'Founding Collector',
           email: 'collector@example.com',
+          wishlistDealAlerts: true,
         }}
         draft={{
           displayName: 'Alex Rivera',
           collectorHandle: 'alex-rivera',
           location: 'Amsterdam',
           collectionFocus: 'Display-scale fantasy and castle icons',
+          wishlistDealAlerts: true,
         }}
         onDraftChange={() => undefined}
         onSubmit={() => undefined}
@@ -249,5 +260,13 @@ describe('UserProfileEditorCard', () => {
     expect(markup).toContain(
       'One short line about the sets and themes you follow.',
     );
+    expect(markup).toContain(
+      'Notify me when a wishlist set becomes a better deal',
+    );
+    expect(markup).toContain(
+      'This only saves your preference for future wishlist deal alerts.',
+    );
+    expect(markup).toContain('type="checkbox"');
+    expect(markup).toContain('checked=""');
   });
 });

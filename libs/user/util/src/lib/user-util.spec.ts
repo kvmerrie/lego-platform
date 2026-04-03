@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'vitest';
 import {
+  createCollectorProfileDraft,
   createAnonymousUserSession,
   getCollectorSetCounts,
   getUserSetState,
   isAuthenticatedSession,
   listUserSetStates,
   UserSession,
+  validateUpdateCollectorProfileInput,
 } from './user-util';
 
 describe('user session contracts', () => {
@@ -27,6 +29,9 @@ describe('user session contracts', () => {
         tier: 'Founding Collector',
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
+      },
+      notificationPreferences: {
+        wishlistDealAlerts: true,
       },
       ownedSetIds: ['10316', '21348'],
       setStates: [
@@ -113,5 +118,40 @@ describe('user session contracts', () => {
         '21348',
       ),
     ).toBeUndefined();
+  });
+
+  test('keeps wishlist deal alerts enabled by default in normalized profile input', () => {
+    expect(
+      validateUpdateCollectorProfileInput({
+        displayName: 'Alex Rivera',
+        collectorHandle: 'alex-rivera',
+        location: 'Amsterdam',
+        collectionFocus: 'Display-scale fantasy and castle icons',
+      }),
+    ).toEqual({
+      displayName: 'Alex Rivera',
+      collectorHandle: 'alex-rivera',
+      location: 'Amsterdam',
+      collectionFocus: 'Display-scale fantasy and castle icons',
+      wishlistDealAlerts: true,
+    });
+
+    expect(
+      createCollectorProfileDraft({
+        displayName: 'Alex Rivera',
+        collectorHandle: 'alex-rivera',
+        location: 'Amsterdam',
+        collectionFocus: 'Display-scale fantasy and castle icons',
+        tier: 'Founding Collector',
+        email: 'collector@example.com',
+        wishlistDealAlerts: false,
+      }),
+    ).toEqual({
+      displayName: 'Alex Rivera',
+      collectorHandle: 'alex-rivera',
+      location: 'Amsterdam',
+      collectionFocus: 'Display-scale fantasy and castle icons',
+      wishlistDealAlerts: false,
+    });
   });
 });

@@ -89,6 +89,9 @@ export async function buildAuthenticatedUserSession({
       email: requestPrincipal.email,
     },
     collector: toCollectorIdentity(userProfileRecord),
+    notificationPreferences: {
+      wishlistDealAlerts: userProfileRecord.wishlistDealAlerts,
+    },
     ownedSetIds,
     setStates: listUserSetStates({
       ownedSetIds,

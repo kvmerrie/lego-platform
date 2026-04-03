@@ -12,6 +12,7 @@ const profileColumns = [
   'tier',
   'location',
   'collection_focus',
+  'wishlist_deal_alerts',
   'created_at',
   'updated_at',
 ].join(',');
@@ -23,6 +24,7 @@ interface ProfileRow {
   tier: string;
   location: string;
   collection_focus: string;
+  wishlist_deal_alerts: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +36,7 @@ interface ProfileUpsertRow {
   tier: string;
   location: string;
   collection_focus: string;
+  wishlist_deal_alerts: boolean;
 }
 
 export interface UserProfileRecord {
@@ -43,6 +46,7 @@ export interface UserProfileRecord {
   tier: string;
   location: string;
   collectionFocus: string;
+  wishlistDealAlerts: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -120,6 +124,7 @@ function buildDefaultProfileUpsertRow(
     tier: phaseOneCollectorIdentity.tier,
     location: phaseOneCollectorIdentity.location,
     collection_focus: phaseOneCollectorIdentity.collectionFocus,
+    wishlist_deal_alerts: true,
   };
 }
 
@@ -131,6 +136,7 @@ function mapProfileRow(profileRow: ProfileRow): UserProfileRecord {
     tier: profileRow.tier,
     location: profileRow.location,
     collectionFocus: profileRow.collection_focus,
+    wishlistDealAlerts: profileRow.wishlist_deal_alerts,
     createdAt: profileRow.created_at,
     updatedAt: profileRow.updated_at,
   };
@@ -199,6 +205,7 @@ export function createUserProfileRepository(
           collector_handle: updateCollectorProfileInput.collectorHandle,
           location: updateCollectorProfileInput.location,
           collection_focus: updateCollectorProfileInput.collectionFocus,
+          wishlist_deal_alerts: updateCollectorProfileInput.wishlistDealAlerts,
         })
         .eq('user_id', userId)
         .select(profileColumns)

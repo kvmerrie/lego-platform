@@ -680,7 +680,7 @@ export function UserProfileEditorCard({
   isSaving?: boolean;
   onDraftChange?: (
     field: keyof UpdateCollectorProfileInput,
-    value: string,
+    value: UpdateCollectorProfileInput[keyof UpdateCollectorProfileInput],
   ) => void;
   onSubmit?: () => void;
   successMessage?: string;
@@ -845,6 +845,25 @@ export function UserProfileEditorCard({
             <span className={styles.fieldHint}>
               One short line about the sets and themes you follow.
             </span>
+          </label>
+          <label className={styles.preferenceRow}>
+            <input
+              checked={draft.wishlistDealAlerts}
+              className={styles.checkboxInput}
+              name="wishlistDealAlerts"
+              type="checkbox"
+              onChange={(event) =>
+                onDraftChange?.('wishlistDealAlerts', event.target.checked)
+              }
+            />
+            <div className={styles.preferenceCopy}>
+              <span className={styles.fieldLabel}>
+                Notify me when a wishlist set becomes a better deal
+              </span>
+              <span className={styles.fieldHint}>
+                This only saves your preference for future wishlist deal alerts.
+              </span>
+            </div>
           </label>
           <div className={styles.sessionActions}>
             <Button

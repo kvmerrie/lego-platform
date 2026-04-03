@@ -37,6 +37,7 @@ async function createApiServer({
         tier: 'Founding Collector',
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
+        wishlistDealAlerts: true,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
@@ -48,6 +49,7 @@ async function createApiServer({
         tier: 'Founding Collector',
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
+        wishlistDealAlerts: true,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
@@ -126,6 +128,9 @@ describe('api v1 auth and set-status routes', () => {
         tier: 'Founding Collector',
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
+      },
+      notificationPreferences: {
+        wishlistDealAlerts: true,
       },
       ownedSetIds: ['10316'],
       setStates: [
@@ -206,6 +211,7 @@ describe('api v1 auth and set-status routes', () => {
       collectionFocus: 'Premium display sets and licensed flagships',
       tier: 'Founding Collector',
       email: 'alex@example.test',
+      wishlistDealAlerts: true,
     });
 
     await server.close();
@@ -225,6 +231,7 @@ describe('api v1 auth and set-status routes', () => {
         tier: 'Founding Collector',
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
+        wishlistDealAlerts: true,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
@@ -236,6 +243,7 @@ describe('api v1 auth and set-status routes', () => {
         tier: 'Founding Collector',
         location: 'Rotterdam',
         collectionFocus: 'Castle icons and Ideas cabins',
+        wishlistDealAlerts: false,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:05:00.000Z',
       }),
@@ -256,6 +264,7 @@ describe('api v1 auth and set-status routes', () => {
         collectorHandle: ' Alex Rivera ',
         location: 'Rotterdam',
         collectionFocus: 'Castle icons and Ideas cabins',
+        wishlistDealAlerts: false,
       },
     });
 
@@ -267,6 +276,7 @@ describe('api v1 auth and set-status routes', () => {
         collectorHandle: 'alex-rivera',
         location: 'Rotterdam',
         collectionFocus: 'Castle icons and Ideas cabins',
+        wishlistDealAlerts: false,
       },
     });
     expect(response.json()).toEqual({
@@ -276,6 +286,7 @@ describe('api v1 auth and set-status routes', () => {
       collectionFocus: 'Castle icons and Ideas cabins',
       tier: 'Founding Collector',
       email: 'alex@example.test',
+      wishlistDealAlerts: false,
     });
 
     await server.close();
@@ -295,6 +306,7 @@ describe('api v1 auth and set-status routes', () => {
         tier: 'Founding Collector',
         location: 'Amsterdam',
         collectionFocus: 'Premium display sets and licensed flagships',
+        wishlistDealAlerts: true,
         createdAt: '2026-03-28T00:00:00.000Z',
         updatedAt: '2026-03-28T00:00:00.000Z',
       }),
@@ -319,6 +331,7 @@ describe('api v1 auth and set-status routes', () => {
         collectorHandle: 'alex-rivera',
         location: 'Rotterdam',
         collectionFocus: 'Castle icons and Ideas cabins',
+        wishlistDealAlerts: true,
       },
     });
 

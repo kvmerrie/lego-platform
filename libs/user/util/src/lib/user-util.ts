@@ -18,6 +18,7 @@ export interface CollectorProfile {
   email: string | null;
   location: string;
   tier: string;
+  wishlistDealAlerts: boolean;
 }
 
 export interface UpdateCollectorProfileInput {
@@ -25,6 +26,11 @@ export interface UpdateCollectorProfileInput {
   collectionFocus: string;
   displayName: string;
   location: string;
+  wishlistDealAlerts: boolean;
+}
+
+export interface UserNotificationPreferences {
+  wishlistDealAlerts: boolean;
 }
 
 export type UserSetListState = 'owned' | 'wishlist';
@@ -52,6 +58,7 @@ export interface AuthenticatedUserSession {
   state: 'authenticated';
   account?: AuthenticatedAccountIdentity;
   collector: CollectorIdentity;
+  notificationPreferences: UserNotificationPreferences;
   ownedSetIds: string[];
   setStates: UserSetState[];
   wantedSetIds: string[];
@@ -156,6 +163,22 @@ function readRequiredTextField(input: unknown, fieldName: string): string {
   return trimmedInput;
 }
 
+function readBooleanField(
+  input: unknown,
+  fieldName: string,
+  defaultValue: boolean,
+): boolean {
+  if (typeof input === 'undefined') {
+    return defaultValue;
+  }
+
+  if (typeof input !== 'boolean') {
+    throw new Error(`${fieldName} must be true or false.`);
+  }
+
+  return input;
+}
+
 function sanitizeCollectorHandle(value: string): string {
   return value
     .toLowerCase()
@@ -193,6 +216,7 @@ export function createCollectorProfileDraft(
     collectorHandle: collectorProfile.collectorHandle,
     location: collectorProfile.location,
     collectionFocus: collectorProfile.collectionFocus,
+    wishlistDealAlerts: collectorProfile.wishlistDealAlerts,
   };
 }
 
@@ -215,6 +239,11 @@ export function validateUpdateCollectorProfileInput(
   const collectionFocus = readRequiredTextField(
     inputRecord.collectionFocus,
     'Collection focus',
+  );
+  const wishlistDealAlerts = readBooleanField(
+    inputRecord.wishlistDealAlerts,
+    'Wishlist deal alerts',
+    true,
   );
 
   if (collectorHandle.length < 3) {
@@ -247,5 +276,6 @@ export function validateUpdateCollectorProfileInput(
     collectorHandle,
     location,
     collectionFocus,
+    wishlistDealAlerts,
   };
 }

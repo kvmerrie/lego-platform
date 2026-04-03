@@ -272,6 +272,30 @@
   gap: var(--lego-space-2);
 }
 
+.preferenceRow {
+  align-items: start;
+  background: color-mix(in srgb, var(--lego-surface-muted) 78%, transparent);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 82%, transparent);
+  border-radius: var(--lego-radius-sm);
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: var(--lego-space-3);
+}
+
+.preferenceCopy {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.checkboxInput {
+  accent-color: var(--lego-accent);
+  block-size: 1.05rem;
+  inline-size: 1.05rem;
+  margin: 0.15rem 0 0;
+}
+
 .fieldLabel {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);

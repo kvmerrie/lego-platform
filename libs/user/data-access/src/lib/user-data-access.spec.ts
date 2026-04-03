@@ -420,6 +420,7 @@ describe('user data access', () => {
       collectionFocus: 'Castle icons and Ideas cabins',
       tier: 'Founding Collector',
       email: 'alex@example.test',
+      wishlistDealAlerts: false,
     };
 
     vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
@@ -441,6 +442,7 @@ describe('user data access', () => {
       collectorHandle: ' Alex Rivera ',
       location: 'Rotterdam',
       collectionFocus: 'Castle icons and Ideas cabins',
+      wishlistDealAlerts: false,
     });
 
     expect(updatedCollectorProfile).toEqual(collectorProfile);
@@ -452,6 +454,7 @@ describe('user data access', () => {
           collectorHandle: 'alex-rivera',
           location: 'Rotterdam',
           collectionFocus: 'Castle icons and Ideas cabins',
+          wishlistDealAlerts: false,
         }),
         headers: expect.any(Headers),
         method: 'PATCH',
@@ -489,6 +492,7 @@ describe('user data access', () => {
         collectorHandle: 'alex-rivera',
         location: 'Rotterdam',
         collectionFocus: 'Castle icons and Ideas cabins',
+        wishlistDealAlerts: true,
       }),
     ).rejects.toThrow(
       'That collector handle is already taken. Try a more distinctive version.',
