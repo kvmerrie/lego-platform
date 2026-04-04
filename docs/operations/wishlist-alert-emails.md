@@ -6,9 +6,27 @@ Current scope:
 
 - one email type
 - one provider: Resend
-- one explicit server-side run path
+- one explicit server-side job path
 - no notification center
 - no push delivery
+
+## Render Production Shape
+
+Run wishlist alert delivery as its own Render job, not inside the API service.
+
+Recommended production shape:
+
+- service type: separate Render scheduled job or manually triggered job
+- suggested name: `wishlist-alerts-production`
+- keep it separate from `apps/api`, `catalog-sync`, and `commerce-sync`
+- use the same repository root and install strategy as the existing Render jobs
+- keep job notifications enabled at `Only failure notifications`
+
+Controlled rollout posture:
+
+- first run `--check` manually in production
+- then run `--send` manually with a small cap
+- only add a recurring schedule after the manual run logs and Resend delivery look healthy
 
 ## What Sends
 
@@ -51,14 +69,17 @@ Required:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `RESEND_API_KEY`
 - `RESEND_FROM_EMAIL`
+- `WEB_BASE_URL`
 
 Optional but recommended:
 
 - `RESEND_FROM_NAME`
   Defaults to the product name when omitted.
-- `WEB_BASE_URL`
-  Used for wishlist and set links in emails.
-  Defaults to the configured local web runtime URL when omitted.
+- `WISHLIST_ALERT_EMAIL_MAX_SENDS`
+  Optional safety cap for how many recipient emails the job may send in one run.
+  Useful for the first production sends.
+
+`WEB_BASE_URL` should point to the production web host so email links resolve back to the live product.
 
 ## Run Commands
 
@@ -81,9 +102,62 @@ pnpm nx run wishlist-alerts:run -- --check
 pnpm nx run wishlist-alerts:run -- --send
 ```
 
+Run a capped send manually:
+
+```bash
+pnpm alerts:wishlist:send -- --max-emails=25
+```
+
+The CLI flag wins over `WISHLIST_ALERT_EMAIL_MAX_SENDS` when both are present.
+
+## Recommended Render Commands
+
+Build command:
+
+```bash
+pnpm nx run wishlist-alerts:build
+```
+
+Manual production dry run:
+
+```bash
+pnpm alerts:wishlist:check
+```
+
+First controlled production send:
+
+```bash
+pnpm alerts:wishlist:send -- --max-emails=25
+```
+
+After rollout confidence is high, remove or raise the cap intentionally and only then enable a recurring schedule.
+
+## Logging And Guardrails
+
+Every run logs:
+
+- mode
+- provider
+- recipient count
+- recipients with active candidates
+- selected email count
+- deferred email count
+- alert candidate counts
+- notification state write count
+- duration
+
+Current guardrails:
+
+- `--check` is the dry-run path and never sends email
+- `--send` only sends newly notifiable candidates
+- per-user notification state prevents repeat sends for the same signal inside cooldown
+- `--max-emails` or `WISHLIST_ALERT_EMAIL_MAX_SENDS` can cap a run for controlled rollout
+- the job warns when `--send` runs without a cap
+- the job warns when candidates are deferred because the cap was reached
+
 ## Current Limitations
 
 - only one transactional wishlist alert email exists today
-- the sender runs as an explicit command, not a full scheduler platform
+- the sender is production-runnable now, but recurring automation should wait until the first manual production sends are reviewed
 - auth emails remain separate and should stay configured in Supabase auth
 - there is no unsubscribe center yet beyond the in-product `wishlistDealAlerts` preference

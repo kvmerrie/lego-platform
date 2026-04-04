@@ -102,10 +102,17 @@ Recommended production jobs:
   - schedule: once per day
   - command: `pnpm sync:catalog`
 
+Optional controlled-rollout job:
+
+- `wishlist-alerts-production`
+  - rollout: manual first, recurring schedule later
+  - command: `pnpm alerts:wishlist:send -- --max-emails=25`
+
 Recommended guardrails:
 
 - keep each sync secret only on the scheduled job that needs it
-- do not add sync write commands to the always-on API service
+- keep Resend plus wishlist-alert env scoped to the wishlist alert job only
+- do not add sync or wishlist-alert write commands to the always-on API service
 - use the same repository root and install strategy as the normal Render API build setup
 - keep scheduled job notifications enabled at `Only failure notifications`
 

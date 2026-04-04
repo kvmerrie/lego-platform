@@ -124,12 +124,20 @@ export interface WishlistAlertEmailFlowFailure {
 
 export interface WishlistAlertEmailFlowResult {
   alertCandidateCount: number;
+  deferredAlertCandidateCount: number;
+  emailDeferredCount: number;
+  emailSelectedCount: number;
   emailSentCount: number;
   failureCount: number;
   failures: WishlistAlertEmailFlowFailure[];
   notificationStateWriteCount: number;
   recipientCount: number;
   recipientsWithCandidatesCount: number;
+  sendCap?: number;
+}
+
+export interface WishlistAlertEmailFlowOptions {
+  maxEmailsToSend?: number;
 }
 
 export type WishlistAlertEmailFlowMode = 'check' | 'send';
@@ -638,10 +646,13 @@ export function createWishlistAlertEmailFlowDependencies({
 export async function runWishlistAlertEmailFlow({
   dependencies,
   mode,
+  options,
 }: {
   dependencies: WishlistAlertEmailFlowDependencies;
   mode: WishlistAlertEmailFlowMode;
+  options?: WishlistAlertEmailFlowOptions;
 }): Promise<WishlistAlertEmailFlowResult> {
+  const maxEmailsToSend = options?.maxEmailsToSend;
   const recipients = await dependencies.listSubscribers();
   const recipientCount = recipients.length;
   const userIds = recipients.map((recipient) => recipient.userId);
@@ -683,12 +694,16 @@ export async function runWishlistAlertEmailFlow({
 
   const result: WishlistAlertEmailFlowResult = {
     alertCandidateCount: 0,
+    deferredAlertCandidateCount: 0,
+    emailDeferredCount: 0,
+    emailSelectedCount: 0,
     emailSentCount: 0,
     failureCount: 0,
     failures: [],
     notificationStateWriteCount: 0,
     recipientCount,
     recipientsWithCandidatesCount: 0,
+    sendCap: maxEmailsToSend,
   };
 
   for (const recipient of recipients) {
@@ -767,6 +782,17 @@ export async function runWishlistAlertEmailFlow({
 
     result.recipientsWithCandidatesCount += 1;
     result.alertCandidateCount += wishlistDealAlertEmailItems.length;
+
+    if (
+      typeof maxEmailsToSend === 'number' &&
+      result.emailSelectedCount >= maxEmailsToSend
+    ) {
+      result.emailDeferredCount += 1;
+      result.deferredAlertCandidateCount += wishlistDealAlertEmailItems.length;
+      continue;
+    }
+
+    result.emailSelectedCount += 1;
 
     if (mode === 'check') {
       continue;

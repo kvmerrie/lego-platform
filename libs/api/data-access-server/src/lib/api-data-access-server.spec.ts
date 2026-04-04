@@ -142,6 +142,102 @@ describe('api data access server wishlist alert delivery', () => {
     expect(saveNotificationStates).not.toHaveBeenCalled();
   });
 
+  test('defers recipients beyond the configured send cap', async () => {
+    const sendWishlistDealAlertEmail = vi
+      .fn<WishlistAlertEmailFlowDependencies['sendWishlistDealAlertEmail']>()
+      .mockResolvedValue({
+        messageId: 'email-123',
+      });
+    const saveNotificationStates = vi
+      .fn<WishlistAlertEmailFlowDependencies['saveNotificationStates']>()
+      .mockResolvedValue(undefined);
+
+    const result = await runWishlistAlertEmailFlow({
+      dependencies: {
+        getNow: () => new Date('2026-04-03T10:00:00.000Z'),
+        listNotificationStates: vi.fn().mockResolvedValue([]),
+        listPriceHistory: vi.fn().mockResolvedValue([
+          {
+            setId: '10354',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 25999,
+            referencePriceMinor: 26999,
+            lowestMerchantId: 'lego-nl',
+            observedAt: '2026-04-01T09:00:00.000Z',
+            recordedOn: '2026-04-01',
+          },
+          {
+            setId: '10354',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 25499,
+            referencePriceMinor: 26999,
+            lowestMerchantId: 'bol',
+            observedAt: '2026-04-02T09:00:00.000Z',
+            recordedOn: '2026-04-02',
+          },
+          {
+            setId: '10354',
+            regionCode: 'NL',
+            currencyCode: 'EUR',
+            condition: 'new',
+            headlinePriceMinor: 25299,
+            referencePriceMinor: 26999,
+            lowestMerchantId: 'lego-nl',
+            observedAt: '2026-04-03T09:00:00.000Z',
+            recordedOn: '2026-04-03',
+          },
+        ]),
+        listSubscribers: vi.fn().mockResolvedValue([
+          {
+            collectorName: 'Alex Rivera',
+            email: 'alex@example.test',
+            userId: 'user-123',
+          },
+          {
+            collectorName: 'Taylor Chen',
+            email: 'taylor@example.test',
+            userId: 'user-456',
+          },
+        ]),
+        listWishlistStates: vi.fn().mockResolvedValue([
+          {
+            createdAt: '2026-04-01T12:00:00.000Z',
+            setId: '10354',
+            userId: 'user-123',
+          },
+          {
+            createdAt: '2026-04-01T12:00:00.000Z',
+            setId: '10354',
+            userId: 'user-456',
+          },
+        ]),
+        saveNotificationStates,
+        sendWishlistDealAlertEmail,
+        webBaseUrl: 'https://brickhunt.example',
+      },
+      mode: 'send',
+      options: {
+        maxEmailsToSend: 1,
+      },
+    });
+
+    expect(result).toMatchObject({
+      alertCandidateCount: 2,
+      deferredAlertCandidateCount: 1,
+      emailDeferredCount: 1,
+      emailSelectedCount: 1,
+      emailSentCount: 1,
+      recipientsWithCandidatesCount: 2,
+      sendCap: 1,
+    });
+    expect(sendWishlistDealAlertEmail).toHaveBeenCalledTimes(1);
+    expect(saveNotificationStates).toHaveBeenCalledTimes(1);
+  });
+
   test('suppresses duplicate email candidates while the same signal is still inside cooldown', async () => {
     const result = await runWishlistAlertEmailFlow({
       dependencies: {
