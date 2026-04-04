@@ -153,6 +153,39 @@ function formatAlertEmailSubject(itemCount: number): string {
   } worth checking`;
 }
 
+function formatAlertEmailIntro(itemCount: number): string {
+  return itemCount === 1
+    ? 'One set on your wishlist looks worth checking today.'
+    : `${itemCount} sets on your wishlist look worth checking today.`;
+}
+
+function getEmailAlertSupportingLine(alert: WishlistPriceAlert): string {
+  switch (alert.kind) {
+    case 'new-best-price':
+      return alert.detail.replace(
+        'previous tracked low',
+        'previous best reviewed price',
+      );
+    case 'price-improved-since-save':
+      return alert.detail;
+    case 'strong-deal-now':
+      return alert.detail;
+    default:
+      return alert.detail;
+  }
+}
+
+function getEmailAlertPillStyles(alert: WishlistPriceAlert): string {
+  switch (alert.tone) {
+    case 'accent':
+      return 'background:#fff7db;color:#92400e;';
+    case 'positive':
+      return 'background:#ecfdf3;color:#166534;';
+    default:
+      return 'background:#eef2ff;color:#3730a3;';
+  }
+}
+
 function toNotificationPriority(
   wishlistAlertNotificationCandidate: WishlistAlertNotificationCandidate,
 ): number {
@@ -244,52 +277,79 @@ function groupWishlistStatesByUserId(
 }
 
 export function buildWishlistDealAlertEmailMessage({
+  accountUrl,
   collectorName,
   items,
   wishlistUrl,
 }: {
+  accountUrl: string;
   collectorName: string;
   items: readonly WishlistDealAlertEmailItem[];
   wishlistUrl: string;
 }): WishlistDealAlertEmailMessage {
-  const intro =
-    items.length === 1
-      ? 'One wishlist set looks more interesting to buy right now.'
-      : `${items.length} wishlist sets look more interesting to buy right now.`;
+  const intro = formatAlertEmailIntro(items.length);
 
   const htmlItems = items
     .map((item) => {
       const setLinkMarkup = item.setUrl
-        ? ` <a href="${escapeHtml(item.setUrl)}">Open set</a>`
+        ? `<p style="margin:16px 0 0;"><a href="${escapeHtml(item.setUrl)}" style="color:#0f172a;font-weight:600;text-decoration:none;">Open set</a></p>`
         : '';
 
-      return `<li><strong>${escapeHtml(item.name)}</strong> <span style="color:#5f6675;">(${escapeHtml(item.theme)})</span><br />${escapeHtml(item.alert.label)}<br />${escapeHtml(item.alert.detail)}${setLinkMarkup}</li>`;
+      return `<section style="padding:${item === items[0] ? '0' : '24px 0 0'};margin:${item === items[0] ? '0' : '24px 0 0'};border-top:${item === items[0] ? '0' : '1px solid #e5dccd'};"><p style="margin:0 0 10px;color:#6b7280;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">${escapeHtml(
+        item.theme,
+      )}</p><h2 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#171a22;">${escapeHtml(
+        item.name,
+      )}</h2><p style="margin:0 0 10px;"><span style="display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;${getEmailAlertPillStyles(
+        item.alert,
+      )}">${escapeHtml(
+        item.alert.label,
+      )}</span></p><p style="margin:0;color:#374151;font-size:15px;line-height:1.7;">${escapeHtml(
+        getEmailAlertSupportingLine(item.alert),
+      )}</p>${setLinkMarkup}</section>`;
     })
     .join('');
   const textItems = items
     .map(
       (item) =>
-        `- ${item.name} (${item.theme})\n  ${item.alert.label}\n  ${item.alert.detail}${
-          item.setUrl ? `\n  ${item.setUrl}` : ''
-        }`,
+        `- ${item.name}${item.theme ? ` (${item.theme})` : ''}\n  ${item.alert.label}\n  ${getEmailAlertSupportingLine(
+          item.alert,
+        )}${item.setUrl ? `\n  Open set: ${item.setUrl}` : ''}`,
     )
     .join('\n\n');
 
   return {
     subject: formatAlertEmailSubject(items.length),
-    html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#171a22;"><p>Hi ${escapeHtml(
+    html: `<div style="margin:0;padding:32px 16px;background:#f7f2e7;font-family:Arial,sans-serif;color:#171a22;"><div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #eadfce;border-radius:24px;overflow:hidden;"><div style="padding:32px 32px 24px;background:#fbf7ef;border-bottom:1px solid #eadfce;"><p style="margin:0 0 12px;color:#8b5e3c;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">${escapeHtml(
+      platformConfig.productName,
+    )}</p><h1 style="margin:0 0 16px;font-size:32px;line-height:1.15;color:#171a22;">Wishlist deal update</h1><p style="margin:0 0 12px;font-size:16px;line-height:1.7;color:#374151;">Hi ${escapeHtml(
       collectorName,
-    )},</p><p>${escapeHtml(intro)}</p><ul>${htmlItems}</ul><p><a href="${escapeHtml(
+    )},</p><p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:#374151;">${escapeHtml(
+      intro,
+    )}</p><p style="margin:0;"><a href="${escapeHtml(
       wishlistUrl,
-    )}">Open your wishlist</a></p></div>`,
-    text: `Hi ${collectorName},
+    )}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#171a22;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">Open your wishlist</a></p></div><div style="padding:28px 32px;">${htmlItems}</div><div style="padding:24px 32px;background:#fbf7ef;border-top:1px solid #eadfce;"><p style="margin:0 0 10px;font-size:13px;line-height:1.7;color:#5f6675;">You're receiving this because wishlist deal alerts are enabled on your ${escapeHtml(
+      platformConfig.productName,
+    )} account.</p><p style="margin:0;font-size:13px;line-height:1.7;"><a href="${escapeHtml(
+      wishlistUrl,
+    )}" style="color:#0f172a;font-weight:600;text-decoration:none;">Open your wishlist</a> <span style="color:#9ca3af;">·</span> <a href="${escapeHtml(
+      accountUrl,
+    )}" style="color:#0f172a;font-weight:600;text-decoration:none;">Manage alert preferences</a></p></div></div></div>`,
+    text: `${platformConfig.productName}
+Wishlist deal update
+
+Hi ${collectorName},
 
 ${intro}
 
+Open your wishlist:
+${wishlistUrl}
+
 ${textItems}
 
-Open your wishlist:
-${wishlistUrl}`,
+You're receiving this because wishlist deal alerts are enabled on your ${platformConfig.productName} account.
+
+Manage alert preferences:
+${accountUrl}`,
   };
 }
 
@@ -616,6 +676,10 @@ export async function runWishlistAlertEmailFlow({
     buildWebPath(webPathnames.wishlist),
     dependencies.webBaseUrl,
   );
+  const accountUrl = buildAbsoluteUrl(
+    buildWebPath(webPathnames.account),
+    dependencies.webBaseUrl,
+  );
 
   const result: WishlistAlertEmailFlowResult = {
     alertCandidateCount: 0,
@@ -712,6 +776,7 @@ export async function runWishlistAlertEmailFlow({
       await dependencies.sendWishlistDealAlertEmail({
         collectorName: recipient.collectorName,
         message: buildWishlistDealAlertEmailMessage({
+          accountUrl,
           collectorName: recipient.collectorName,
           items: wishlistDealAlertEmailItems,
           wishlistUrl,

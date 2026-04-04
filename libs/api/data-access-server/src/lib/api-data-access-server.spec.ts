@@ -186,46 +186,51 @@ describe('api data access server wishlist alert delivery', () => {
   });
 
   test('builds a compact transactional wishlist alert email message', () => {
-    expect(
-      buildWishlistDealAlertEmailMessage({
-        collectorName: 'Alex Rivera',
-        items: [
-          {
-            alert: {
-              detail: '€ 246,43 is € 8,56 below the previous tracked low.',
-              kind: 'new-best-price',
-              label: 'New best reviewed price',
-              tone: 'positive',
-            },
-            candidate: {
-              cooldownDays: 14,
-              dedupeKey: '10354:new-best-price',
-              detail: '€ 246,43 is € 8,56 below the previous tracked low.',
-              evaluatedAt: '2026-04-03T10:00:00.000Z',
-              isNewlyNotifiable: true,
-              kind: 'new-best-price',
-              label: 'New best reviewed price',
-              notificationReason: 'first-signal',
-              priority: 3,
-              setId: '10354',
-              tone: 'positive',
-            },
-            name: 'The Lord of the Rings: The Shire',
-            setId: '10354',
-            setUrl:
-              'https://brickhunt.example/sets/the-lord-of-the-rings-the-shire-10354',
-            theme: 'Icons',
+    const message = buildWishlistDealAlertEmailMessage({
+      accountUrl: 'https://brickhunt.example/account',
+      collectorName: 'Alex Rivera',
+      items: [
+        {
+          alert: {
+            detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+            kind: 'new-best-price',
+            label: 'New best reviewed price',
+            tone: 'positive',
           },
-        ],
-        wishlistUrl: 'https://brickhunt.example/account/wishlist',
-      }),
-    ).toEqual(
-      expect.objectContaining({
-        subject: 'Brickhunt wishlist deal update: 1 set worth checking',
-        html: expect.stringContaining('Open your wishlist'),
-        text: expect.stringContaining('The Lord of the Rings: The Shire'),
-      }),
+          candidate: {
+            cooldownDays: 14,
+            dedupeKey: '10354:new-best-price',
+            detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+            evaluatedAt: '2026-04-03T10:00:00.000Z',
+            isNewlyNotifiable: true,
+            kind: 'new-best-price',
+            label: 'New best reviewed price',
+            notificationReason: 'first-signal',
+            priority: 3,
+            setId: '10354',
+            tone: 'positive',
+          },
+          name: 'The Lord of the Rings: The Shire',
+          setId: '10354',
+          setUrl:
+            'https://brickhunt.example/sets/the-lord-of-the-rings-the-shire-10354',
+          theme: 'Icons',
+        },
+      ],
+      wishlistUrl: 'https://brickhunt.example/account/wishlist',
+    });
+
+    expect(message.subject).toBe(
+      'Brickhunt wishlist deal update: 1 set worth checking',
     );
+    expect(message.html).toContain('Wishlist deal update');
+    expect(message.html).toContain('Manage alert preferences');
+    expect(message.html).toContain(
+      "You're receiving this because wishlist deal alerts are enabled",
+    );
+    expect(message.text).toContain('The Lord of the Rings: The Shire');
+    expect(message.text).toContain('previous best reviewed price');
+    expect(message.text).toContain('Manage alert preferences');
   });
 
   test('posts transactional email payloads to Resend', async () => {
