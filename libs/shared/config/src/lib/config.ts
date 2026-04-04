@@ -1,18 +1,18 @@
 type ValueOf<T> = T[keyof T];
 
 export const appLanguageConfigs = {
-  en: {
-    code: 'en',
-    displayName: 'English',
-    htmlLang: 'en',
+  nl: {
+    code: 'nl',
+    displayName: 'Nederlands',
+    htmlLang: 'nl',
   },
 } as const;
 
 export const appMarketConfigs = {
   NL: {
     code: 'NL',
-    displayName: 'Dutch market',
-    adjectiveName: 'Dutch',
+    displayName: 'Nederlandse markt',
+    adjectiveName: 'Nederlandse',
     currencyCode: 'EUR',
     formattingLocale: 'nl-NL',
     merchantRegionCode: 'NL',
@@ -38,7 +38,7 @@ export interface AppLocaleContext {
   routeSegment: string;
 }
 
-export const DEFAULT_APP_LANGUAGE_CODE: AppLanguageCode = 'en';
+export const DEFAULT_APP_LANGUAGE_CODE: AppLanguageCode = 'nl';
 export const DEFAULT_APP_MARKET_CODE: AppMarketCode = 'NL';
 
 export const platformConfig = {
@@ -109,11 +109,11 @@ export const webPathnames = {
 
 const webNavigationItems = [
   {
-    label: 'Discover',
+    label: 'Ontdekken',
     pathname: webPathnames.discover,
   },
   {
-    label: 'Themes',
+    label: "Thema's",
     pathname: webPathnames.themes,
   },
 ] as const;

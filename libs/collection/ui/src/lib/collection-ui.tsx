@@ -84,24 +84,24 @@ export function OwnedSetToggleCard({
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Checking owned save'
+    ? 'Collectiestatus wordt gecontroleerd'
     : isUnavailable
-      ? 'Owned save unavailable'
+      ? 'Collectiestatus niet beschikbaar'
       : isOwned
-        ? 'Owned'
-        : 'Mark as owned';
+        ? 'In collectie'
+        : 'Markeer als in collectie';
   const description = isLoading
-    ? 'Checking whether this set is already in your collection.'
+    ? 'Controleren of deze set al in je collectie staat.'
     : isUnavailable
-      ? 'We could not load your owned save right now.'
+      ? 'Je collectiestatus kon nu niet worden geladen.'
       : isOwned
-        ? 'This set is in your private collection.'
-        : 'Keep this set in your private collection.';
+        ? 'Deze set staat in je prive collectie.'
+        : 'Bewaar deze set in je prive collectie.';
   const actionLabel = isUnavailable
-    ? 'Collection status unavailable'
+    ? 'Collectiestatus niet beschikbaar'
     : isOwned
-      ? 'Remove from collection'
-      : 'Mark as owned';
+      ? 'Uit collectie verwijderen'
+      : 'Markeer als in collectie';
   const statusTone = isLoading
     ? 'info'
     : isUnavailable
@@ -110,12 +110,12 @@ export function OwnedSetToggleCard({
         ? 'positive'
         : 'neutral';
   const statusLabel = isLoading
-    ? 'Syncing'
+    ? 'Synchroniseren'
     : isUnavailable
-      ? 'State unavailable'
+      ? 'Status niet beschikbaar'
       : isOwned
-        ? 'Owned'
-        : 'Not saved yet';
+        ? 'In collectie'
+        : 'Nog niet opgeslagen';
 
   if (variant === 'product') {
     return (
@@ -138,14 +138,14 @@ export function OwnedSetToggleCard({
           onClick={onToggle}
         >
           {isLoading
-            ? 'Syncing...'
+            ? 'Synchroniseren...'
             : isPending
-              ? 'Saving...'
+              ? 'Opslaan...'
               : isUnavailable
-                ? 'Owned unavailable'
+                ? 'Collectie niet beschikbaar'
                 : isOwned
-                  ? 'Remove from collection'
-                  : 'Mark as owned'}
+                  ? 'Uit collectie verwijderen'
+                  : 'Markeer als in collectie'}
         </Button>
       </article>
     );
@@ -164,7 +164,9 @@ export function OwnedSetToggleCard({
         <Badge tone={statusTone}>{statusLabel}</Badge>
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
-      <p className={styles.metaText}>Private save. Set facts stay public.</p>
+      <p className={styles.metaText}>
+        Prive opgeslagen. Setinformatie blijft openbaar.
+      </p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
@@ -184,9 +186,9 @@ export function OwnedSetToggleCard({
         onClick={onToggle}
       >
         {isLoading
-          ? 'Syncing collection...'
+          ? 'Collectie synchroniseren...'
           : isPending
-            ? 'Saving...'
+            ? 'Opslaan...'
             : actionLabel}
       </Button>
     </Surface>
@@ -213,24 +215,24 @@ export function CollectorCollectionPanel({
 }) {
   const title =
     state === 'loading'
-      ? 'Loading your collection'
+      ? 'Je collectie wordt geladen'
       : state === 'signed-out'
-        ? 'Sign in to see your collection'
+        ? 'Log in om je collectie te bekijken'
         : state === 'empty'
-          ? 'Nothing in your collection yet'
-          : 'Your collection';
+          ? 'Nog niets in je collectie'
+          : 'Je collectie';
   const description =
     state === 'loading'
-      ? 'Loading the sets in your collection.'
+      ? 'De sets in je collectie worden geladen.'
       : state === 'signed-out'
-        ? 'Sign in to see the sets in your collection.'
+        ? 'Log in om de sets in je collectie te bekijken.'
         : state === 'empty'
           ? hiddenOwnedCount > 0
-            ? `You have ${hiddenOwnedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
-            : 'Mark a set as owned from any set page, then use this space to keep your collection tidy.'
+            ? `Je hebt ${hiddenOwnedCount} sets opgeslagen buiten de sets die nu op Brickhunt zichtbaar zijn. Sla een zichtbare set op en die verschijnt ook hier.`
+            : 'Markeer een set als in collectie vanaf een setpagina en gebruik deze plek daarna om je collectie overzichtelijk te houden.'
           : hiddenOwnedCount > 0
-            ? `Showing ${ownedCount} here today. ${hiddenOwnedCount} stay saved outside the current catalog.`
-            : `${ownedCount} saved.`;
+            ? `Je ziet hier vandaag ${ownedCount}. ${hiddenOwnedCount} blijven opgeslagen buiten de huidige catalogus.`
+            : `${ownedCount} opgeslagen.`;
 
   return (
     <Surface
@@ -242,23 +244,24 @@ export function CollectorCollectionPanel({
       <div className={styles.collectionHeader}>
         <SectionHeading
           description={description}
-          eyebrow="Collector collection"
+          eyebrow="Verzamelaarscollectie"
           title={title}
           titleAs="h1"
         />
         <p className={styles.collectionMeta}>
           {state === 'loading'
-            ? 'Loading saves'
+            ? 'Opslagen laden'
             : state === 'signed-out'
-              ? 'Sign in to save privately'
-              : `${ownedCount} in collection`}
+              ? 'Log in om prive op te slaan'
+              : `${ownedCount} in collectie`}
           {hiddenOwnedCount > 0
-            ? ` · ${hiddenOwnedCount} outside today's catalog`
+            ? ` · ${hiddenOwnedCount} buiten de catalogus van vandaag`
             : ''}
         </p>
       </div>
       <p className={styles.metaText}>
-        Your saves stay private. Set pages and price checks stay public.
+        Je opgeslagen sets blijven prive. Setpagina's en prijschecks blijven
+        openbaar.
       </p>
       <div className={styles.destinationPanel}>
         <div className={styles.destinationLinks}>
@@ -272,16 +275,16 @@ export function CollectorCollectionPanel({
             href={buildWebPath(webPathnames.wishlist)}
             tone="secondary"
           >
-            Open wishlist
+            Open verlanglijst
           </ActionLink>
           <ActionLink
             href={buildWebPath(webPathnames.discover)}
             tone="secondary"
           >
-            Browse catalog
+            Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
-            Browse themes
+            Bekijk thema's
           </ActionLink>
         </div>
       </div>
@@ -312,10 +315,10 @@ export function CollectorCollectionPanel({
             href={buildWebPath(webPathnames.discover)}
             tone="secondary"
           >
-            Browse catalog
+            Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
-            Browse themes
+            Bekijk thema's
           </ActionLink>
         </div>
       )}
@@ -327,9 +330,9 @@ export function CollectionUi() {
   return (
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
-        description="Display metrics, shelves, and curation surfaces without embedding business rules."
-        eyebrow="Collection UI"
-        title="Collector-state surfaces with crisp status and action treatment."
+        description="Displaystatistieken, planken en beheeroppervlakken zonder ingebakken businesslogica."
+        eyebrow="Collectie-UI"
+        title="Verzamelaarsoppervlakken met heldere status en acties."
       />
     </Surface>
   );

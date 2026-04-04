@@ -53,7 +53,7 @@ describe('ShellWebSearchForm', () => {
     });
 
     const openButton = container.querySelector(
-      'button[aria-label="Open search"]',
+      'button[aria-label="Open zoeken"]',
     ) as HTMLButtonElement | null;
 
     expect(openButton).not.toBeNull();
@@ -69,7 +69,7 @@ describe('ShellWebSearchForm', () => {
     expect(container.querySelector('[role="dialog"]')).not.toBeNull();
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.activeElement).toBe(searchInput);
-    expect(container.textContent).toContain('Recent searches');
+    expect(container.textContent).toContain('Recente zoekopdrachten');
     expect(container.textContent).toContain('The Razor Crest');
 
     act(() => {
@@ -85,8 +85,10 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
-    expect(container.textContent).toContain('Matching sets');
-    expect(container.textContent).toContain('See all results for "grogu"');
+    expect(container.textContent).toContain('Passende sets');
+    expect(container.textContent).toContain(
+      'Bekijk alle resultaten voor "grogu"',
+    );
 
     act(() => {
       searchInput?.dispatchEvent(

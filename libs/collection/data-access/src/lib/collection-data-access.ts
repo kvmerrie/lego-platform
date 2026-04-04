@@ -78,7 +78,9 @@ export async function getOwnedSetState(setId: string): Promise<OwnedSetState> {
   });
 
   if (!response.ok) {
-    throw new Error('Unable to load owned-set state.');
+    throw new Error(
+      'De collectiestatus voor deze set kon niet worden geladen.',
+    );
   }
 
   const ownedSetIds = readStringArrayProperty(
@@ -103,11 +105,11 @@ export async function addOwnedSet(setId: string): Promise<OwnedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to mark this set as owned.');
+    throw new Error('Log in om deze set als in collectie te markeren.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to mark this set as owned.');
+    throw new Error('Deze set kon niet als in collectie worden gemarkeerd.');
   }
 
   const ownedSetState = (await response.json()) as OwnedSetState;
@@ -128,11 +130,11 @@ export async function removeOwnedSet(setId: string): Promise<OwnedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to update your collection.');
+    throw new Error('Log in om je collectie bij te werken.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to remove this set from your collection.');
+    throw new Error('Deze set kon niet uit je collectie worden verwijderd.');
   }
 
   const ownedSetState = (await response.json()) as OwnedSetState;

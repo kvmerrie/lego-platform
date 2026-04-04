@@ -24,16 +24,16 @@ function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
 
 const shellActionLinks = [
   {
-    ariaLabel: 'Open profile',
+    ariaLabel: 'Open account',
     href: buildWebPath(webPathnames.account),
     iconName: 'user' as const,
-    label: 'Profile',
+    label: 'Account',
   },
   {
     ariaLabel: 'Open saved lists',
     href: buildWebPath(webPathnames.wishlist),
     iconName: 'heart' as const,
-    label: 'Lists',
+    label: 'Lijsten',
   },
 ] as const;
 
@@ -71,7 +71,7 @@ export function ShellWeb({
   return (
     <div className={styles.shell}>
       <a className={styles.skipLink} href="#main-content">
-        Skip to main content
+        Ga direct naar de hoofdinhoud
       </a>
       <header className={styles.header}>
         <Container className={styles.headerInner}>
@@ -88,7 +88,7 @@ export function ShellWeb({
                   {platformConfig.productName}
                 </span>
               </a>
-              <nav aria-label="Primary" className={styles.desktopNav}>
+              <nav aria-label="Hoofdnavigatie" className={styles.desktopNav}>
                 {renderNavigationLinks({ variant: 'desktop' })}
               </nav>
             </div>
@@ -104,7 +104,7 @@ export function ShellWeb({
                 query={searchQuery}
                 variant="mobile-overlay"
               />
-              <nav aria-label="Quick actions" className={styles.desktopActions}>
+              <nav aria-label="Snelle acties" className={styles.desktopActions}>
                 {renderActionLinks({ variant: 'desktop' })}
               </nav>
               <details className={styles.mobileMenu}>
@@ -112,11 +112,14 @@ export function ShellWeb({
                   <span className={styles.mobileMenuLabel}>Menu</span>
                 </summary>
                 <div className={styles.mobileMenuPanel}>
-                  <nav aria-label="Mobile primary" className={styles.mobileNav}>
+                  <nav
+                    aria-label="Mobiele hoofdnavigatie"
+                    className={styles.mobileNav}
+                  >
                     {renderNavigationLinks({ variant: 'mobile' })}
                   </nav>
                   <nav
-                    aria-label="Collector actions"
+                    aria-label="Collectoracties"
                     className={styles.mobileUtilityLinks}
                   >
                     {renderActionLinks({ variant: 'mobile' })}
@@ -133,9 +136,9 @@ export function ShellWeb({
       <footer className={styles.footer}>
         <Container className={styles.footerInner}>
           <p className={styles.footerCopy}>
-            Brickhunt helps you browse standout sets, compare reviewed{' '}
-            {getDefaultMarketAdjective()} offers, and keep your own saves
-            private.
+            Brickhunt helpt je opvallende sets te ontdekken, reviewed{' '}
+            {getDefaultMarketAdjective()} aanbiedingen te vergelijken en je
+            eigen opgeslagen sets privé te houden.
           </p>
         </Container>
       </footer>

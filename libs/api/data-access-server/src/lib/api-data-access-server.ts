@@ -156,23 +156,23 @@ function buildAbsoluteUrl(pathname: string, webBaseUrl: string): string {
 }
 
 function formatAlertEmailSubject(itemCount: number): string {
-  return `${platformConfig.productName} wishlist deal update: ${itemCount} set${
+  return `${platformConfig.productName} dealupdate voor je verlanglijst: ${itemCount} set${
     itemCount === 1 ? '' : 's'
-  } worth checking`;
+  } om te bekijken`;
 }
 
 function formatAlertEmailIntro(itemCount: number): string {
   return itemCount === 1
-    ? 'One set on your wishlist looks worth checking today.'
-    : `${itemCount} sets on your wishlist look worth checking today.`;
+    ? 'Een set op je verlanglijst lijkt vandaag de moeite waard om te checken.'
+    : `${itemCount} sets op je verlanglijst lijken vandaag de moeite waard om te checken.`;
 }
 
 function getEmailAlertSupportingLine(alert: WishlistPriceAlert): string {
   switch (alert.kind) {
     case 'new-best-price':
       return alert.detail.replace(
-        'previous tracked low',
-        'previous best reviewed price',
+        'vorige beste tracked prijs',
+        'vorige beste reviewed prijs',
       );
     case 'price-improved-since-save':
       return alert.detail;
@@ -300,14 +300,14 @@ export function buildWishlistDealAlertEmailMessage({
   const htmlItems = items
     .map((item) => {
       const setLinkMarkup = item.setUrl
-        ? `<p style="margin:16px 0 0;"><a href="${escapeHtml(item.setUrl)}" style="color:#0f172a;font-weight:600;text-decoration:none;">Open set</a></p>`
+        ? `<p style="margin:16px 0 0;"><a href="${escapeHtml(item.setUrl)}" style="color:#0f172a;font-weight:600;text-decoration:none;">Bekijk set</a></p>`
         : '';
 
       return `<section style="padding:${item === items[0] ? '0' : '24px 0 0'};margin:${item === items[0] ? '0' : '24px 0 0'};border-top:${item === items[0] ? '0' : '1px solid #e5dccd'};"><p style="margin:0 0 10px;color:#6b7280;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">${escapeHtml(
         item.theme,
-      )}</p><h2 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#171a22;">${escapeHtml(
+      )}</p><h2 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:#171a22;"><span translate="no">${escapeHtml(
         item.name,
-      )}</h2><p style="margin:0 0 10px;"><span style="display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;${getEmailAlertPillStyles(
+      )}</span></h2><p style="margin:0 0 10px;"><span style="display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;${getEmailAlertPillStyles(
         item.alert,
       )}">${escapeHtml(
         item.alert.label,
@@ -321,7 +321,7 @@ export function buildWishlistDealAlertEmailMessage({
       (item) =>
         `- ${item.name}${item.theme ? ` (${item.theme})` : ''}\n  ${item.alert.label}\n  ${getEmailAlertSupportingLine(
           item.alert,
-        )}${item.setUrl ? `\n  Open set: ${item.setUrl}` : ''}`,
+        )}${item.setUrl ? `\n  Bekijk set: ${item.setUrl}` : ''}`,
     )
     .join('\n\n');
 
@@ -329,34 +329,34 @@ export function buildWishlistDealAlertEmailMessage({
     subject: formatAlertEmailSubject(items.length),
     html: `<div style="margin:0;padding:32px 16px;background:#f7f2e7;font-family:Arial,sans-serif;color:#171a22;"><div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #eadfce;border-radius:24px;overflow:hidden;"><div style="padding:32px 32px 24px;background:#fbf7ef;border-bottom:1px solid #eadfce;"><p style="margin:0 0 12px;color:#8b5e3c;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">${escapeHtml(
       platformConfig.productName,
-    )}</p><h1 style="margin:0 0 16px;font-size:32px;line-height:1.15;color:#171a22;">Wishlist deal update</h1><p style="margin:0 0 12px;font-size:16px;line-height:1.7;color:#374151;">Hi ${escapeHtml(
+    )}</p><h1 style="margin:0 0 16px;font-size:32px;line-height:1.15;color:#171a22;">Dealupdate voor je verlanglijst</h1><p style="margin:0 0 12px;font-size:16px;line-height:1.7;color:#374151;">Hoi ${escapeHtml(
       collectorName,
     )},</p><p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:#374151;">${escapeHtml(
       intro,
     )}</p><p style="margin:0;"><a href="${escapeHtml(
       wishlistUrl,
-    )}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#171a22;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">Open your wishlist</a></p></div><div style="padding:28px 32px;">${htmlItems}</div><div style="padding:24px 32px;background:#fbf7ef;border-top:1px solid #eadfce;"><p style="margin:0 0 10px;font-size:13px;line-height:1.7;color:#5f6675;">You're receiving this because wishlist deal alerts are enabled on your ${escapeHtml(
+    )}" style="display:inline-block;padding:12px 18px;border-radius:999px;background:#171a22;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">Open je verlanglijst</a></p></div><div style="padding:28px 32px;">${htmlItems}</div><div style="padding:24px 32px;background:#fbf7ef;border-top:1px solid #eadfce;"><p style="margin:0 0 10px;font-size:13px;line-height:1.7;color:#5f6675;">Je ontvangt deze e-mail omdat dealalerts voor je verlanglijst zijn ingeschakeld op je ${escapeHtml(
       platformConfig.productName,
-    )} account.</p><p style="margin:0;font-size:13px;line-height:1.7;"><a href="${escapeHtml(
+    )}-account.</p><p style="margin:0;font-size:13px;line-height:1.7;"><a href="${escapeHtml(
       wishlistUrl,
-    )}" style="color:#0f172a;font-weight:600;text-decoration:none;">Open your wishlist</a> <span style="color:#9ca3af;">·</span> <a href="${escapeHtml(
+    )}" style="color:#0f172a;font-weight:600;text-decoration:none;">Open je verlanglijst</a> <span style="color:#9ca3af;">·</span> <a href="${escapeHtml(
       accountUrl,
-    )}" style="color:#0f172a;font-weight:600;text-decoration:none;">Manage alert preferences</a></p></div></div></div>`,
+    )}" style="color:#0f172a;font-weight:600;text-decoration:none;">Beheer alertvoorkeuren</a></p></div></div></div>`,
     text: `${platformConfig.productName}
-Wishlist deal update
+Dealupdate voor je verlanglijst
 
-Hi ${collectorName},
+Hoi ${collectorName},
 
 ${intro}
 
-Open your wishlist:
+Open je verlanglijst:
 ${wishlistUrl}
 
 ${textItems}
 
-You're receiving this because wishlist deal alerts are enabled on your ${platformConfig.productName} account.
+Je ontvangt deze e-mail omdat dealalerts voor je verlanglijst zijn ingeschakeld op je ${platformConfig.productName}-account.
 
-Manage alert preferences:
+Beheer alertvoorkeuren:
 ${accountUrl}`,
   };
 }

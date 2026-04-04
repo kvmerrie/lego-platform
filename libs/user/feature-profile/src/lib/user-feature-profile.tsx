@@ -52,7 +52,7 @@ export function UserFeatureProfile() {
       setErrorMessage(
         readErrorMessage(
           error,
-          'Unable to load the current collector profile right now.',
+          'Het huidige verzamelaarsprofiel kon nu niet worden geladen.',
         ),
       );
     } finally {
@@ -100,7 +100,7 @@ export function UserFeatureProfile() {
       setCollectorProfile(updatedCollectorProfile);
       setDraft(createCollectorProfileDraft(updatedCollectorProfile));
       setSuccessMessage(
-        'Collector profile saved. Your signed-in collector details and wishlist deal alert preference are up to date.',
+        'Verzamelaarsprofiel opgeslagen. Je ingelogde verzamelaarsgegevens en voorkeur voor dealalerts op je verlanglijst zijn bijgewerkt.',
       );
     } catch (error) {
       if (!isMountedRef.current) {
@@ -110,7 +110,7 @@ export function UserFeatureProfile() {
       setErrorMessage(
         readErrorMessage(
           error,
-          'Unable to save the collector profile right now.',
+          'Het verzamelaarsprofiel kon nu niet worden opgeslagen.',
         ),
       );
     } finally {

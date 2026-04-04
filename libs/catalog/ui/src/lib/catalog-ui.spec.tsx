@@ -34,9 +34,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('A flagship fantasy build');
     expect(markup).toContain('2023 · $499 to $569');
-    expect(markup).toContain('Open set');
-    expect(markup).not.toContain('Reviewed price');
-    expect(markup).not.toContain('Coverage');
+    expect(markup).toContain('Bekijk set');
+    expect(markup).not.toContain('Reviewed prijs');
+    expect(markup).not.toContain('Dekking');
   });
 
   it('renders a subtle saved-state badge when a set belongs to a collector list', () => {
@@ -61,7 +61,7 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Owned');
+    expect(markup).toContain('In collectie');
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('Icons');
   });
@@ -90,7 +90,7 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('Move to collection');
-    expect(markup).toContain('See set');
+    expect(markup).toContain('Bekijk set');
   });
 
   it('renders a compact featured-card variant for homepage browsing', () => {
@@ -124,15 +124,15 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('href="/sets/rivendell-10316"');
-    expect(markup).toContain('Reviewed price');
+    expect(markup).toContain('Reviewed prijs');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest reviewed price at bol');
     expect(markup).toContain('EUR 10.00 below ref');
     expect(markup).toContain('Checked 29 mrt');
-    expect(markup).toContain('Open set');
-    expect(markup).not.toContain('Coverage');
-    expect(markup).not.toContain('Freshness');
-    expect(markup).not.toContain('Why collectors like it');
+    expect(markup).toContain('Bekijk set');
+    expect(markup).not.toContain('Dekking');
+    expect(markup).not.toContain('Actualiteit');
+    expect(markup).not.toContain('Waarom verzamelaars dit kiezen');
   });
 
   it('renders set imagery alongside featured-set discovery context when available', () => {
@@ -168,16 +168,16 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Reviewed price');
+    expect(markup).toContain('Reviewed prijs');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest reviewed price at bol');
     expect(markup).toContain('Strong deal right now');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
-    expect(markup).toContain('alt="Rivendell LEGO set"');
-    expect(markup).toContain('Coverage');
-    expect(markup).toContain('Freshness');
-    expect(markup).toContain('Why collectors like it');
-    expect(markup).toContain('Availability');
+    expect(markup).toContain('alt="Rivendell LEGO-set"');
+    expect(markup).toContain('Dekking');
+    expect(markup).toContain('Actualiteit');
+    expect(markup).toContain('Waarom verzamelaars dit kiezen');
+    expect(markup).toContain('Beschikbaarheid');
     expect(markup).toContain('Healthy but premium availability');
     expect(markup).toContain('Prestige display anchor');
     expect(markup).toContain('EUR 10.00 below ref');
@@ -213,13 +213,13 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Current reviewed price');
+    expect(markup).toContain('Huidige reviewed prijs');
     expect(markup).toContain('EUR 489.99 · Lowest reviewed price at bol');
-    expect(markup).toContain('Current market note');
+    expect(markup).toContain('Huidige marktnotitie');
     expect(markup).toContain('Best current deal · In stock');
-    expect(markup).not.toContain('Coverage');
-    expect(markup).not.toContain('Freshness');
-    expect(markup).not.toContain('Reviewed price not published yet.');
+    expect(markup).not.toContain('Dekking');
+    expect(markup).not.toContain('Actualiteit');
+    expect(markup).not.toContain('Reviewed prijs nog niet gepubliceerd.');
   });
 
   it('renders a calm image fallback on set detail pages when no catalog image is available', () => {
@@ -251,20 +251,20 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="/themes/ideas"');
-    expect(markup).toContain('Set context');
-    expect(markup).toContain('Official image not published yet');
+    expect(markup).toContain('Setcontext');
+    expect(markup).toContain('Officiele afbeelding nog niet gepubliceerd');
     expect(markup).toContain('Set 21335');
     expect(markup).toContain('Lowest reviewed price');
     expect(markup).toContain('30-day price history');
-    expect(markup).toContain('What LEGO fans usually check first');
-    expect(markup).toContain('Set number');
-    expect(markup).toContain('Theme');
-    expect(markup).toContain('Release year');
-    expect(markup).toContain('Pieces');
-    expect(markup).toContain('Minifigures');
-    expect(markup).toContain('Not tracked locally yet');
-    expect(markup).toContain('Collector take');
-    expect(markup).toContain('Availability');
+    expect(markup).toContain('Wat LEGO-fans meestal eerst checken');
+    expect(markup).toContain('Setnummer');
+    expect(markup).toContain('Thema');
+    expect(markup).toContain('Releasejaar');
+    expect(markup).toContain('Steentjes');
+    expect(markup).toContain('Minifiguren');
+    expect(markup).toContain('Nog niet lokaal bijgehouden');
+    expect(markup).toContain('Verzamelaarsblik');
+    expect(markup).toContain('Beschikbaarheid');
     expect(markup).toContain('<h1');
     expect(markup).not.toContain('Back to shortlist');
   });
@@ -293,9 +293,9 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Minifigures');
+    expect(markup).toContain('Minifiguren');
     expect(markup).toContain('22');
-    expect(markup).not.toContain('Not tracked locally yet');
+    expect(markup).not.toContain('Nog niet lokaal bijgehouden');
   });
 
   it('renders curated subtheme and set status when local fan metadata is available', () => {
@@ -324,11 +324,11 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Subtheme');
+    expect(markup).toContain('Subthema');
     expect(markup).toContain('Diagon Alley');
     expect(markup).toContain('Status');
-    expect(markup).toContain('Back order');
-    expect(markup).toContain('Minifigures');
+    expect(markup).toContain('Nabestelling');
+    expect(markup).toContain('Minifiguren');
     expect(markup).toContain('13');
   });
 
@@ -362,7 +362,7 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Includes');
+    expect(markup).toContain('Bevat');
     expect(markup).toContain(
       'Jabba the Hutt, Princess Leia, Bib Fortuna, Max Rebo',
     );
@@ -379,7 +379,7 @@ describe('CatalogSetCard', () => {
           slug: 'icons',
           setCount: 14,
           momentum:
-            'Premium collectors are consolidating around large display pieces.',
+            'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
           signatureSet: 'Rivendell',
         }}
         variant="feature"
@@ -389,8 +389,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
     expect(markup).toContain('directory-tile');
-    expect(markup).toContain('Open theme page');
-    expect(markup).toContain('Start with Rivendell');
+    expect(markup).toContain('Open themapagina');
+    expect(markup).toContain('Begin met');
+    expect(markup).toContain('Rivendell');
   });
 
   it('lets descriptive theme tiles reuse curated color and image overrides without using portrait rail sizing', () => {
@@ -408,7 +409,7 @@ describe('CatalogSetCard', () => {
           slug: 'marvel',
           setCount: 3,
           momentum:
-            'Superhero flagships and skyline-style display builds with broad recognition.',
+            'Superheldenvlaggenschepen en skyline-achtige displaybuilds met brede herkenbaarheid.',
           signatureSet: 'Avengers Tower',
         }}
         variant="feature"
@@ -421,7 +422,7 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).toContain('--theme-surface:#cf554c');
     expect(markup).toContain('--theme-text:#ffffff');
-    expect(markup).toContain('Open theme page');
+    expect(markup).toContain('Open themapagina');
   });
 
   it('renders a leaner portrait theme tile variant for fast browsing', () => {
@@ -439,7 +440,7 @@ describe('CatalogSetCard', () => {
           slug: 'icons',
           setCount: 14,
           momentum:
-            'Premium collectors are consolidating around large display pieces.',
+            'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
           signatureSet: 'Rivendell',
         }}
         variant="portrait"
@@ -454,35 +455,35 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('14 sets');
     expect(markup).toContain('--theme-surface:#f0c63b');
     expect(markup).toContain('--theme-text:#171a22');
-    expect(markup).not.toContain('Open theme page');
-    expect(markup).not.toContain('Start with Rivendell');
+    expect(markup).not.toContain('Open themapagina');
+    expect(markup).not.toContain('Begin met Rivendell');
     expect(markup).not.toContain(
-      'Premium collectors are consolidating around large display pieces.',
+      'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
     );
   });
 
   it('renders a lightweight quick-filter chip row with an active state', () => {
     const markup = renderToStaticMarkup(
       <CatalogQuickFilterBar
-        ariaLabel="Refine discover"
+        ariaLabel="Verfijn ontdekken"
         items={[
           {
             href: '/discover',
             isActive: true,
-            label: 'All',
+            label: 'Alles',
           },
           {
             href: '/discover?filter=best-deals',
-            label: 'Best deals',
+            label: 'Beste deals',
           },
         ]}
       />,
     );
 
-    expect(markup).toContain('aria-label="Refine discover"');
+    expect(markup).toContain('aria-label="Verfijn ontdekken"');
     expect(markup).toContain('href="/discover"');
     expect(markup).toContain('aria-current="page"');
-    expect(markup).toContain('Best deals');
+    expect(markup).toContain('Beste deals');
     expect(markup).toContain('href="/discover?filter=best-deals"');
   });
 });

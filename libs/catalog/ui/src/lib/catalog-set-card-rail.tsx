@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type {
   CatalogHomepageSetCard,
   CatalogSetSummary,
@@ -17,7 +18,7 @@ export interface CatalogSetCardRailItem {
   id: string;
   priceContext?: CatalogSetCardPriceContext;
   setSummary: CatalogSetCardRailSummary;
-  supportingNote?: string;
+  supportingNote?: ReactNode;
 }
 
 interface CatalogSetCardRailMetrics {
@@ -133,23 +134,23 @@ export function CatalogSetCardRail({
         <div className={styles.setCardRailControls}>
           <Button
             aria-controls={railId}
-            aria-label={`Scroll ${ariaLabel} backward`}
+            aria-label={`Scroll ${ariaLabel} naar links`}
             className={styles.setCardRailButton}
             onClick={() => scrollRail('previous')}
             tone="secondary"
             type="button"
           >
-            Previous
+            Vorige
           </Button>
           <Button
             aria-controls={railId}
-            aria-label={`Scroll ${ariaLabel} forward`}
+            aria-label={`Scroll ${ariaLabel} naar rechts`}
             className={styles.setCardRailButton}
             onClick={() => scrollRail('next')}
             tone="secondary"
             type="button"
           >
-            Next
+            Volgende
           </Button>
         </div>
       ) : null}

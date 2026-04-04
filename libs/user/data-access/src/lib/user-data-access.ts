@@ -39,7 +39,7 @@ export async function getUserSession(): Promise<UserSession> {
   });
 
   if (!response.ok) {
-    throw new Error('Unable to load the current session.');
+    throw new Error('De huidige sessie kon niet worden geladen.');
   }
 
   return (await response.json()) as UserSession;
@@ -80,17 +80,17 @@ function getMagicLinkSignInErrorMessage(error: {
     authErrorText.includes('security purposes') ||
     authErrorText.includes('too many')
   ) {
-    return 'A sign-in link was sent recently. Wait about a minute, then try again.';
+    return 'Er is onlangs al een inloglink verstuurd. Wacht ongeveer een minuut en probeer het daarna opnieuw.';
   }
 
   if (
     authErrorText.includes('not authorized') ||
     authErrorText.includes('address not authorized')
   ) {
-    return 'Sign-in email delivery is not ready for this address yet. Please try again later or contact support.';
+    return 'E-mailbezorging voor inloggen is voor dit adres nog niet klaar. Probeer het later opnieuw of neem contact op met support.';
   }
 
-  return 'Unable to send the sign-in link right now.';
+  return 'De inloglink kon nu niet worden verstuurd.';
 }
 
 function getPasswordAuthErrorMessage(error: {
@@ -104,11 +104,11 @@ function getPasswordAuthErrorMessage(error: {
     authErrorText.includes('invalid login credentials') ||
     authErrorText.includes('invalid credentials')
   ) {
-    return 'Email or password is incorrect.';
+    return 'E-mailadres of wachtwoord is onjuist.';
   }
 
   if (authErrorText.includes('email not confirmed')) {
-    return 'Check your email and confirm your account before signing in.';
+    return 'Controleer je e-mail en bevestig je account voordat je inlogt.';
   }
 
   if (
@@ -116,10 +116,10 @@ function getPasswordAuthErrorMessage(error: {
     authErrorText.includes('security purposes') ||
     authErrorText.includes('too many')
   ) {
-    return 'Too many sign-in attempts. Wait about a minute, then try again.';
+    return 'Te veel inlogpogingen. Wacht ongeveer een minuut en probeer het daarna opnieuw.';
   }
 
-  return 'Unable to sign in with email and password right now.';
+  return 'Inloggen met e-mail en wachtwoord kon nu niet worden voltooid.';
 }
 
 function getSignUpErrorMessage(error: {
@@ -133,7 +133,7 @@ function getSignUpErrorMessage(error: {
     authErrorText.includes('already registered') ||
     authErrorText.includes('user already registered')
   ) {
-    return 'That email already has an account. Try signing in instead.';
+    return 'Voor dit e-mailadres bestaat al een account. Probeer in te loggen.';
   }
 
   if (
@@ -141,7 +141,7 @@ function getSignUpErrorMessage(error: {
     authErrorText.includes('password is too short') ||
     authErrorText.includes('weak password')
   ) {
-    return 'Choose a stronger password. Use at least 8 characters.';
+    return 'Kies een sterker wachtwoord. Gebruik minimaal 8 tekens.';
   }
 
   if (
@@ -149,10 +149,10 @@ function getSignUpErrorMessage(error: {
     authErrorText.includes('security purposes') ||
     authErrorText.includes('too many')
   ) {
-    return 'Too many account attempts happened recently. Wait about a minute, then try again.';
+    return 'Er zijn recent te veel accountpogingen geweest. Wacht ongeveer een minuut en probeer het daarna opnieuw.';
   }
 
-  return 'Unable to create your account right now.';
+  return 'Je account kon nu niet worden aangemaakt.';
 }
 
 function getPasswordResetErrorMessage(error: {
@@ -167,10 +167,10 @@ function getPasswordResetErrorMessage(error: {
     authErrorText.includes('security purposes') ||
     authErrorText.includes('too many')
   ) {
-    return 'A reset email was sent recently. Wait about a minute, then try again.';
+    return 'Er is onlangs al een herstelmail verstuurd. Wacht ongeveer een minuut en probeer het daarna opnieuw.';
   }
 
-  return 'Unable to send the password reset email right now.';
+  return 'De wachtwoordherstelmail kon nu niet worden verstuurd.';
 }
 
 function getPasswordUpdateErrorMessage(error: {
@@ -185,10 +185,10 @@ function getPasswordUpdateErrorMessage(error: {
     authErrorText.includes('password is too short') ||
     authErrorText.includes('weak password')
   ) {
-    return 'Choose a stronger password. Use at least 8 characters.';
+    return 'Kies een sterker wachtwoord. Gebruik minimaal 8 tekens.';
   }
 
-  return 'Unable to save the new password right now.';
+  return 'Het nieuwe wachtwoord kon nu niet worden opgeslagen.';
 }
 
 function getGoogleSignInErrorMessage(error: {
@@ -203,10 +203,10 @@ function getGoogleSignInErrorMessage(error: {
     authErrorText.includes('google') ||
     authErrorText.includes('not enabled')
   ) {
-    return 'Google sign-in is not available in this environment yet.';
+    return 'Inloggen met Google is in deze omgeving nog niet beschikbaar.';
   }
 
-  return 'Unable to start Google sign-in right now.';
+  return 'Inloggen met Google kon nu niet worden gestart.';
 }
 
 export function isUserAuthAvailable(): boolean {
@@ -225,7 +225,7 @@ export async function getCurrentUserProfile(): Promise<CollectorProfile | null> 
   }
 
   if (!response.ok) {
-    throw new Error('Unable to load the current collector profile.');
+    throw new Error('Het huidige verzamelaarsprofiel kon niet worden geladen.');
   }
 
   return (await response.json()) as CollectorProfile;
@@ -237,14 +237,14 @@ export async function requestUserSignIn(options: {
 }) {
   if (!hasBrowserSupabaseConfig()) {
     throw new Error(
-      'Account sign-in is not available in this environment yet.',
+      'Accountinloggen is in deze omgeving nog niet beschikbaar.',
     );
   }
 
   const nextEmail = options.email.trim();
 
   if (!nextEmail) {
-    throw new Error('A valid email address is required to sign in.');
+    throw new Error('Er is een geldig e-mailadres nodig om in te loggen.');
   }
 
   const { error } = await signInWithSupabaseOtp({
@@ -263,7 +263,7 @@ export async function signInWithEmailPassword(options: {
 }) {
   if (!hasBrowserSupabaseConfig()) {
     throw new Error(
-      'Account sign-in is not available in this environment yet.',
+      'Accountinloggen is in deze omgeving nog niet beschikbaar.',
     );
   }
 
@@ -271,11 +271,11 @@ export async function signInWithEmailPassword(options: {
   const password = options.password.trim();
 
   if (!email) {
-    throw new Error('A valid email address is required to sign in.');
+    throw new Error('Er is een geldig e-mailadres nodig om in te loggen.');
   }
 
   if (!password) {
-    throw new Error('Enter your password to sign in.');
+    throw new Error('Vul je wachtwoord in om in te loggen.');
   }
 
   const { data, error } = await signInWithSupabasePassword({
@@ -298,7 +298,7 @@ export async function signUpWithEmailPassword(options: {
 }): Promise<{ requiresEmailConfirmation: boolean }> {
   if (!hasBrowserSupabaseConfig()) {
     throw new Error(
-      'Account sign-in is not available in this environment yet.',
+      'Accountinloggen is in deze omgeving nog niet beschikbaar.',
     );
   }
 
@@ -306,11 +306,13 @@ export async function signUpWithEmailPassword(options: {
   const password = options.password.trim();
 
   if (!email) {
-    throw new Error('A valid email address is required to create an account.');
+    throw new Error(
+      'Er is een geldig e-mailadres nodig om een account aan te maken.',
+    );
   }
 
   if (!password) {
-    throw new Error('Choose a password for the new account.');
+    throw new Error('Kies een wachtwoord voor het nieuwe account.');
   }
 
   const { data, error } = await signUpWithSupabasePassword({
@@ -335,14 +337,16 @@ export async function signUpWithEmailPassword(options: {
 export async function sendPasswordResetEmail(options: { email: string }) {
   if (!hasBrowserSupabaseConfig()) {
     throw new Error(
-      'Account sign-in is not available in this environment yet.',
+      'Accountinloggen is in deze omgeving nog niet beschikbaar.',
     );
   }
 
   const email = options.email.trim();
 
   if (!email) {
-    throw new Error('A valid email address is required to reset a password.');
+    throw new Error(
+      'Er is een geldig e-mailadres nodig om een wachtwoord te herstellen.',
+    );
   }
 
   const { error } = await resetSupabasePasswordForEmail({
@@ -358,14 +362,14 @@ export async function sendPasswordResetEmail(options: { email: string }) {
 export async function updateCurrentUserPassword(options: { password: string }) {
   if (!hasBrowserSupabaseConfig()) {
     throw new Error(
-      'Account sign-in is not available in this environment yet.',
+      'Accountinloggen is in deze omgeving nog niet beschikbaar.',
     );
   }
 
   const password = options.password.trim();
 
   if (!password) {
-    throw new Error('Enter a new password before saving it.');
+    throw new Error('Vul eerst een nieuw wachtwoord in voordat je opslaat.');
   }
 
   const { error } = await updateSupabaseBrowserPassword({
@@ -382,7 +386,7 @@ export async function updateCurrentUserPassword(options: { password: string }) {
 export async function signInWithGoogle() {
   if (!hasBrowserSupabaseConfig()) {
     throw new Error(
-      'Account sign-in is not available in this environment yet.',
+      'Accountinloggen is in deze omgeving nog niet beschikbaar.',
     );
   }
 
@@ -406,7 +410,7 @@ export async function signOutCurrentUser() {
   const { error } = await signOutSupabaseBrowserSession();
 
   if (error) {
-    throw new Error('Unable to sign out right now.');
+    throw new Error('Uitloggen kon nu niet worden voltooid.');
   }
 }
 
@@ -437,12 +441,12 @@ export async function updateCurrentUserProfile(
   });
 
   if (response.status === 401) {
-    throw new Error('Sign in to edit your collector profile.');
+    throw new Error('Log in om je verzamelaarsprofiel te bewerken.');
   }
 
   if (response.status === 409) {
     throw new Error(
-      'That collector handle is already taken. Try a more distinctive version.',
+      'Deze verzamelaarsnaam is al in gebruik. Probeer een duidelijkere variant.',
     );
   }
 
@@ -450,12 +454,13 @@ export async function updateCurrentUserProfile(
     const errorResponse = (await response.json()) as { message?: string };
 
     throw new Error(
-      errorResponse.message ?? 'Collector profile input is invalid.',
+      errorResponse.message ??
+        'De invoer voor het verzamelaarsprofiel is ongeldig.',
     );
   }
 
   if (!response.ok) {
-    throw new Error('Unable to save the collector profile right now.');
+    throw new Error('Het verzamelaarsprofiel kon nu niet worden opgeslagen.');
   }
 
   const collectorProfile = (await response.json()) as CollectorProfile;
@@ -475,11 +480,13 @@ export async function markWishlistAlertsViewed(): Promise<string | undefined> {
   });
 
   if (response.status === 401) {
-    throw new Error('Sign in to track wishlist deal updates.');
+    throw new Error('Log in om dealupdates op je verlanglijst te volgen.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to update wishlist alert view state right now.');
+    throw new Error(
+      'De weergavestatus van verlanglijstalerts kon nu niet worden bijgewerkt.',
+    );
   }
 
   const payload = (await response.json()) as {

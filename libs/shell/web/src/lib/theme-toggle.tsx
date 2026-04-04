@@ -39,7 +39,7 @@ export function ShellWebThemeToggle({ className }: { className?: string }) {
       type="button"
       onClick={handleToggleTheme}
     >
-      {themeMode === 'dark' ? 'Dark mode' : 'Light mode'}
+      {themeMode === 'dark' ? 'Donkere modus' : 'Lichte modus'}
     </Button>
   );
 }

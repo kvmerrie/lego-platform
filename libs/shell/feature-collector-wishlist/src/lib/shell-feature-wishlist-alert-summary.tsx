@@ -28,32 +28,28 @@ function getWishlistAlertDetail(
   wishlistAlertSummary: WishlistPriceAlertSummary,
 ): string {
   if (wishlistAlertSummary.newBestPriceCount > 0) {
-    return `${wishlistAlertSummary.newBestPriceCount} at a new best reviewed price.`;
+    return `${wishlistAlertSummary.newBestPriceCount} op een nieuwe beste reviewed prijs.`;
   }
 
   if (wishlistAlertSummary.priceImprovedSinceSaveCount > 0) {
-    return `${wishlistAlertSummary.priceImprovedSinceSaveCount} lower than when you saved ${
-      wishlistAlertSummary.priceImprovedSinceSaveCount === 1 ? 'it' : 'them'
-    }.`;
+    return `${wishlistAlertSummary.priceImprovedSinceSaveCount} lager dan toen je ${wishlistAlertSummary.priceImprovedSinceSaveCount === 1 ? 'die set' : 'ze'} opsloeg.`;
   }
 
-  return `${wishlistAlertSummary.strongDealCount} marked as a strong deal right now.`;
+  return `${wishlistAlertSummary.strongDealCount} gemarkeerd als sterke deal op dit moment.`;
 }
 
 function getNewWishlistAlertDetail(
   wishlistNewAlertSummary: WishlistNewAlertSummary,
 ): string {
   if (wishlistNewAlertSummary.newBestPriceCount > 0) {
-    return `${wishlistNewAlertSummary.newBestPriceCount} at a new best reviewed price since you last checked.`;
+    return `${wishlistNewAlertSummary.newBestPriceCount} op een nieuwe beste reviewed prijs sinds je laatste check.`;
   }
 
   if (wishlistNewAlertSummary.priceImprovedSinceSaveCount > 0) {
-    return `${wishlistNewAlertSummary.priceImprovedSinceSaveCount} lower than when you last checked ${
-      wishlistNewAlertSummary.priceImprovedSinceSaveCount === 1 ? 'it' : 'them'
-    }.`;
+    return `${wishlistNewAlertSummary.priceImprovedSinceSaveCount} lager dan bij je laatste check.`;
   }
 
-  return `${wishlistNewAlertSummary.strongDealCount} marked as a strong deal since you last checked.`;
+  return `${wishlistNewAlertSummary.strongDealCount} gemarkeerd als sterke deal sinds je laatste check.`;
 }
 
 export function ShellFeatureWishlistAlertSummary() {
@@ -200,16 +196,16 @@ export function ShellFeatureWishlistAlertSummary() {
       tone="muted"
     >
       <SectionHeading
-        description={`${wishlistAlertSummary.activeCount} wishlist set${
+        description={`${wishlistAlertSummary.activeCount} set${
           wishlistAlertSummary.activeCount === 1 ? '' : 's'
-        } have a live buy signal right now.`}
-        eyebrow="Wishlist signals"
+        } op je verlanglijst hebben nu een actief koopsignaal.`}
+        eyebrow="Verlanglijstsignalen"
         title={
           wishlistNewAlertSummary
-            ? `${wishlistNewAlertSummary.newCount} new wishlist deal update${
+            ? `${wishlistNewAlertSummary.newCount} nieuwe dealupdate${
                 wishlistNewAlertSummary.newCount === 1 ? '' : 's'
               }`
-            : 'Good time to check your wishlist'
+            : 'Goed moment om je verlanglijst te checken'
         }
         titleAs="h2"
       />
@@ -220,7 +216,7 @@ export function ShellFeatureWishlistAlertSummary() {
       </p>
       <div className={styles.alertSummaryActions}>
         <ActionLink href={buildWebPath(webPathnames.wishlist)} tone="secondary">
-          Review wishlist signals
+          Bekijk signalen op je verlanglijst
         </ActionLink>
       </div>
     </Surface>

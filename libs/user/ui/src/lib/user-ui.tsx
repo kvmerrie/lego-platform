@@ -70,13 +70,13 @@ export function UserShellAccountStatusCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading your account, saves, and profile."
-            eyebrow="Collector status"
-            title="Checking your account"
+            description="Je account, opgeslagen sets en profiel worden geladen."
+            eyebrow="Accountstatus"
+            title="Je account wordt gecontroleerd"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
-          syncing
+          synchroniseren
         </Badge>
       </Surface>
     );
@@ -92,17 +92,17 @@ export function UserShellAccountStatusCard({
         <div className={styles.sessionContent}>
           <p className={styles.statusMeta}>
             {isAuthAvailable
-              ? 'Signed out · Save collection and wishlist privately'
-              : 'Signed out · Sign-in unavailable'}
+              ? 'Uitgelogd · Sla collectie en verlanglijst prive op'
+              : 'Uitgelogd · Inloggen niet beschikbaar'}
           </p>
           <SectionHeading
             description={
               isAuthAvailable
-                ? 'Sign in with email and password or Google to keep collection, wishlist, and collector details in one place.'
-                : 'Browsing still works here, but private collector saves are unavailable in this environment.'
+                ? 'Log in met e-mail en wachtwoord of met Google om je collectie, verlanglijst en verzamelaarsgegevens op een plek te bewaren.'
+                : 'Bladeren werkt hier nog steeds, maar prive opgeslagen verzamelaarsgegevens zijn in deze omgeving niet beschikbaar.'
             }
-            eyebrow="Collector status"
-            title="Sign in to save sets"
+            eyebrow="Accountstatus"
+            title="Log in om sets op te slaan"
           />
           <div className={styles.shellStatusActions}>
             <ActionLink
@@ -110,14 +110,14 @@ export function UserShellAccountStatusCard({
               tone={isAuthAvailable ? 'accent' : 'secondary'}
             >
               {isAuthAvailable
-                ? 'Sign in to save privately'
-                : 'Open collection'}
+                ? 'Log in om prive op te slaan'
+                : 'Open collectie'}
             </ActionLink>
             <ActionLink
               href={buildWebPath(webPathnames.wishlist)}
               tone="secondary"
             >
-              Open wishlist
+              Open verlanglijst
             </ActionLink>
           </div>
           {statusMessage ? (
@@ -132,7 +132,7 @@ export function UserShellAccountStatusCard({
           ) : null}
         </div>
         <Badge className={styles.sessionStatus} tone="warning">
-          signed out
+          uitgelogd
         </Badge>
       </Surface>
     );
@@ -148,11 +148,11 @@ export function UserShellAccountStatusCard({
     >
       <div className={styles.sessionContent}>
         <p className={styles.statusMeta}>
-          Signed in · {userSession.collector.tier}
+          Ingelogd · {userSession.collector.tier}
         </p>
         <SectionHeading
-          description="Your saved sets and collector details are one click away."
-          eyebrow="Collector status"
+          description="Je opgeslagen sets en verzamelaarsgegevens zijn een klik verwijderd."
+          eyebrow="Accountstatus"
           title={userSession.collector.name}
         />
         <div className={styles.shellStatusIdentity}>
@@ -170,21 +170,21 @@ export function UserShellAccountStatusCard({
           {userSession.collector.collectionFocus}
         </p>
         <p className={styles.sessionCounts}>
-          {collectorSetCounts.ownedCount} owned saved ·{' '}
-          {collectorSetCounts.wantedCount} wishlist saved
+          {collectorSetCounts.ownedCount} in collectie opgeslagen ·{' '}
+          {collectorSetCounts.wantedCount} op verlanglijst opgeslagen
         </p>
         <div className={styles.shellStatusActions}>
           <ActionLink
             href={buildWebPath(webPathnames.collection)}
             tone="secondary"
           >
-            Open collection ({collectorSetCounts.ownedCount})
+            Open collectie ({collectorSetCounts.ownedCount})
           </ActionLink>
           <ActionLink
             href={buildWebPath(webPathnames.wishlist)}
             tone="secondary"
           >
-            Open wishlist ({collectorSetCounts.wantedCount})
+            Open verlanglijst ({collectorSetCounts.wantedCount})
           </ActionLink>
           <Button
             isLoading={Boolean(isAuthActionPending)}
@@ -192,7 +192,7 @@ export function UserShellAccountStatusCard({
             type="button"
             onClick={onSignOut}
           >
-            Sign out
+            Uitloggen
           </Button>
         </div>
         {statusMessage ? (
@@ -207,7 +207,7 @@ export function UserShellAccountStatusCard({
         ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
-        signed in
+        ingelogd
       </Badge>
     </Surface>
   );
@@ -273,14 +273,14 @@ export function UserSessionCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Checking the collector account for this set."
-            eyebrow="Collector account"
-            title="Checking collector account"
+            description="Het verzamelaarsaccount voor deze set wordt gecontroleerd."
+            eyebrow="Verzamelaarsaccount"
+            title="Verzamelaarsaccount wordt gecontroleerd"
             titleAs="h1"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
-          syncing
+          synchroniseren
         </Badge>
       </Surface>
     );
@@ -302,16 +302,16 @@ export function UserSessionCard({
             description={
               isAuthAvailable
                 ? isResetMode
-                  ? 'Send a recovery email, then open the secure link there to choose a new password.'
+                  ? 'Stuur een herstelmail en open daarna de veilige link daarin om een nieuw wachtwoord te kiezen.'
                   : isMagicLinkMode
-                    ? 'Prefer not to use a password? Use a one-time email link instead.'
+                    ? 'Gebruik je liever geen wachtwoord? Kies dan voor een eenmalige e-maillink.'
                     : isSignUpMode
-                      ? 'Create an account to keep wishlist, collection, and collector details in one private place.'
-                      : 'Sign in with email and password first. Google is available when this environment supports it, and magic link stays here as a fallback.'
-                : 'Browsing still works here, but saved collector actions stay disabled in this environment.'
+                      ? 'Maak een account aan om verlanglijst, collectie en verzamelaarsgegevens op een prive plek te bewaren.'
+                      : 'Log eerst in met e-mail en wachtwoord. Google is beschikbaar wanneer deze omgeving dat ondersteunt en de magic link blijft hier als terugvaloptie.'
+                : 'Bladeren werkt hier nog steeds, maar opgeslagen verzamelaarsacties blijven in deze omgeving uitgeschakeld.'
             }
             eyebrow="Account"
-            title="Sign in to open your account"
+            title="Log in om je account te openen"
             titleAs="h1"
           />
           <form
@@ -323,7 +323,7 @@ export function UserSessionCard({
           >
             <div className={styles.inputCluster}>
               <label className={styles.formField}>
-                <span className={styles.fieldLabel}>Email address</span>
+                <span className={styles.fieldLabel}>E-mailadres</span>
                 <input
                   autoComplete="email"
                   className={styles.textInput}
@@ -336,15 +336,15 @@ export function UserSessionCard({
                 />
                 <span className={styles.fieldHint}>
                   {isMagicLinkMode
-                    ? 'Give it about a minute before asking for another link.'
+                    ? 'Wacht ongeveer een minuut voordat je om nog een link vraagt.'
                     : isResetMode
-                      ? 'Use the same email you used to create the account.'
-                      : 'Your collection and wishlist stay tied to this account.'}
+                      ? 'Gebruik hetzelfde e-mailadres als waarmee je het account hebt aangemaakt.'
+                      : 'Je collectie en verlanglijst blijven aan dit account gekoppeld.'}
                 </span>
               </label>
               {!isMagicLinkMode && !isResetMode ? (
                 <label className={styles.formField}>
-                  <span className={styles.fieldLabel}>Password</span>
+                  <span className={styles.fieldLabel}>Wachtwoord</span>
                   <input
                     autoComplete={
                       isSignUpMode ? 'new-password' : 'current-password'
@@ -352,7 +352,9 @@ export function UserSessionCard({
                     className={styles.textInput}
                     name="password"
                     placeholder={
-                      isSignUpMode ? 'Create a password' : 'Enter your password'
+                      isSignUpMode
+                        ? 'Kies een wachtwoord'
+                        : 'Vul je wachtwoord in'
                     }
                     type="password"
                     value={authPassword ?? ''}
@@ -361,18 +363,18 @@ export function UserSessionCard({
                     }
                   />
                   <span className={styles.fieldHint}>
-                    Use at least 8 characters.
+                    Gebruik minimaal 8 tekens.
                   </span>
                 </label>
               ) : null}
               {isSignUpMode ? (
                 <label className={styles.formField}>
-                  <span className={styles.fieldLabel}>Confirm password</span>
+                  <span className={styles.fieldLabel}>Bevestig wachtwoord</span>
                   <input
                     autoComplete="new-password"
                     className={styles.textInput}
                     name="confirmPassword"
-                    placeholder="Confirm your password"
+                    placeholder="Bevestig je wachtwoord"
                     type="password"
                     value={authPasswordConfirmation ?? ''}
                     onChange={(event) =>
@@ -380,7 +382,8 @@ export function UserSessionCard({
                     }
                   />
                   <span className={styles.fieldHint}>
-                    Repeat the password once so this account is ready to use.
+                    Herhaal het wachtwoord een keer zodat dit account klaar is
+                    voor gebruik.
                   </span>
                 </label>
               ) : null}
@@ -394,21 +397,21 @@ export function UserSessionCard({
               >
                 {isAuthActionPending
                   ? isResetMode
-                    ? 'Sending reset email...'
+                    ? 'Herstelmail wordt verstuurd...'
                     : isMagicLinkMode
-                      ? 'Sending sign-in link...'
+                      ? 'Inloglink wordt verstuurd...'
                       : isSignUpMode
-                        ? 'Creating account...'
-                        : 'Signing in...'
+                        ? 'Account wordt aangemaakt...'
+                        : 'Inloggen...'
                   : isResetMode
-                    ? 'Send reset email'
+                    ? 'Verstuur herstelmail'
                     : isMagicLinkMode
                       ? authStatusMessage
-                        ? 'Send another email link'
-                        : 'Email sign-in link'
+                        ? 'Verstuur nog een e-maillink'
+                        : 'E-mail-inloglink'
                       : isSignUpMode
-                        ? 'Create account'
-                        : 'Sign in'}
+                        ? 'Account aanmaken'
+                        : 'Inloggen'}
               </Button>
               {!isMagicLinkMode && !isResetMode ? (
                 <Button
@@ -418,7 +421,7 @@ export function UserSessionCard({
                   type="button"
                   onClick={onGoogleSignIn}
                 >
-                  Continue with Google
+                  Doorgaan met Google
                 </Button>
               ) : null}
             </div>
@@ -431,7 +434,7 @@ export function UserSessionCard({
                 type="button"
                 onClick={() => onAuthModeChange?.('sign-in')}
               >
-                Use email and password
+                Gebruik e-mail en wachtwoord
               </Button>
             ) : (
               <Button
@@ -440,7 +443,7 @@ export function UserSessionCard({
                 type="button"
                 onClick={() => onAuthModeChange?.('sign-up')}
               >
-                Create an account
+                Account aanmaken
               </Button>
             )}
             {authMode !== 'reset-password' ? (
@@ -450,7 +453,7 @@ export function UserSessionCard({
                 type="button"
                 onClick={() => onAuthModeChange?.('reset-password')}
               >
-                Forgot password?
+                Wachtwoord vergeten?
               </Button>
             ) : null}
             {authMode !== 'magic-link' ? (
@@ -460,13 +463,13 @@ export function UserSessionCard({
                 type="button"
                 onClick={() => onAuthModeChange?.('magic-link')}
               >
-                Use a magic link instead
+                Gebruik liever een magic link
               </Button>
             ) : null}
           </div>
           <p className={styles.supportNote}>
-            You can still browse sets and compare reviewed prices while signed
-            out. Account sign-in only unlocks private collector state.
+            Je kunt ook uitgelogd sets bekijken en reviewed prijzen vergelijken.
+            Inloggen ontgrendelt alleen je prive verzamelstatus.
           </p>
           {authStatusMessage ? (
             <p aria-live="polite" className={styles.infoText}>
@@ -480,7 +483,7 @@ export function UserSessionCard({
           ) : null}
         </div>
         <Badge className={styles.sessionStatus} tone="warning">
-          not signed in
+          niet ingelogd
         </Badge>
       </Surface>
     );
@@ -499,9 +502,9 @@ export function UserSessionCard({
           Account · {userSession.collector.tier}
         </p>
         <SectionHeading
-          description="Collection, wishlist, and account details in one place."
-          eyebrow="Collector account"
-          title="Your account"
+          description="Collectie, verlanglijst en accountgegevens op een plek."
+          eyebrow="Verzamelaarsaccount"
+          title="Je account"
           titleAs="h1"
         />
         <div className={styles.sessionHeader}>
@@ -525,25 +528,25 @@ export function UserSessionCard({
         </div>
         <div className={styles.identitySplitGrid}>
           <div className={styles.identityPane}>
-            <p className={styles.paneLabel}>Sign-in email</p>
+            <p className={styles.paneLabel}>Inlog-e-mail</p>
             <p className={styles.paneValue}>
-              {userSession.account?.email ?? 'Signed in collector session'}
+              {userSession.account?.email ?? 'Ingelogde verzamelaarsessie'}
             </p>
             <p className={styles.paneNote}>
-              Used for sign-in and account recovery.
+              Gebruikt voor inloggen en accountherstel.
             </p>
           </div>
           <div className={styles.identityPane}>
-            <p className={styles.paneLabel}>Collector handle</p>
+            <p className={styles.paneLabel}>Verzamelaarsnaam</p>
             <p className={styles.paneValue}>@{userSession.collector.id}</p>
             <p className={styles.paneNote}>
-              Shown on your account and saved sets.
+              Zichtbaar op je account en opgeslagen sets.
             </p>
           </div>
         </div>
         <p className={styles.sessionCounts}>
-          {collectorSetCounts.ownedCount} owned saved ·{' '}
-          {collectorSetCounts.wantedCount} wishlist saved
+          {collectorSetCounts.ownedCount} in collectie opgeslagen ·{' '}
+          {collectorSetCounts.wantedCount} op verlanglijst opgeslagen
         </p>
         {isPasswordRecoveryMode ? (
           <form
@@ -555,19 +558,19 @@ export function UserSessionCard({
           >
             <div className={styles.destinationPanel}>
               <SectionHeading
-                description="Choose a new password for this account. Your collection and wishlist stay in place."
-                eyebrow="Password reset"
-                title="Finish resetting your password"
+                description="Kies een nieuw wachtwoord voor dit account. Je collectie en verlanglijst blijven behouden."
+                eyebrow="Wachtwoordherstel"
+                title="Rond je wachtwoordherstel af"
                 titleAs="h2"
               />
               <div className={styles.inputCluster}>
                 <label className={styles.formField}>
-                  <span className={styles.fieldLabel}>New password</span>
+                  <span className={styles.fieldLabel}>Nieuw wachtwoord</span>
                   <input
                     autoComplete="new-password"
                     className={styles.textInput}
                     name="newPassword"
-                    placeholder="Enter a new password"
+                    placeholder="Vul een nieuw wachtwoord in"
                     type="password"
                     value={passwordRecoveryValue ?? ''}
                     onChange={(event) =>
@@ -575,18 +578,18 @@ export function UserSessionCard({
                     }
                   />
                   <span className={styles.fieldHint}>
-                    Use at least 8 characters.
+                    Gebruik minimaal 8 tekens.
                   </span>
                 </label>
                 <label className={styles.formField}>
                   <span className={styles.fieldLabel}>
-                    Confirm new password
+                    Bevestig nieuw wachtwoord
                   </span>
                   <input
                     autoComplete="new-password"
                     className={styles.textInput}
                     name="confirmNewPassword"
-                    placeholder="Repeat the new password"
+                    placeholder="Herhaal het nieuwe wachtwoord"
                     type="password"
                     value={passwordRecoveryConfirmation ?? ''}
                     onChange={(event) =>
@@ -594,7 +597,8 @@ export function UserSessionCard({
                     }
                   />
                   <span className={styles.fieldHint}>
-                    Repeat the new password once before saving it.
+                    Herhaal het nieuwe wachtwoord een keer voordat je het
+                    opslaat.
                   </span>
                 </label>
               </div>
@@ -604,14 +608,15 @@ export function UserSessionCard({
                   tone="accent"
                   type="submit"
                 >
-                  Save new password
+                  Nieuw wachtwoord opslaan
                 </Button>
               </div>
             </div>
           </form>
         ) : null}
         <p className={styles.supportNote}>
-          Your saves stay private. Set pages and price checks stay public.
+          Je opgeslagen sets blijven prive. Setpagina's en prijschecks blijven
+          openbaar.
         </p>
         <div className={styles.sessionActions}>
           <Button
@@ -620,26 +625,26 @@ export function UserSessionCard({
             type="button"
             onClick={onSignOut}
           >
-            Sign out
+            Uitloggen
           </Button>
           <VisuallyHidden>
-            Ends the current authenticated browser session.
+            Beëindigt de huidige geauthenticeerde browsersessie.
           </VisuallyHidden>
         </div>
         <div className={styles.destinationPanel}>
-          <p className={styles.paneLabel}>Your saves</p>
+          <p className={styles.paneLabel}>Je opgeslagen sets</p>
           <div className={styles.destinationLinks}>
             <ActionLink
               href={buildWebPath(webPathnames.collection)}
               tone="secondary"
             >
-              Open collection ({collectorSetCounts.ownedCount})
+              Open collectie ({collectorSetCounts.ownedCount})
             </ActionLink>
             <ActionLink
               href={buildWebPath(webPathnames.wishlist)}
               tone="secondary"
             >
-              Open wishlist ({collectorSetCounts.wantedCount})
+              Open verlanglijst ({collectorSetCounts.wantedCount})
             </ActionLink>
           </div>
         </div>
@@ -655,7 +660,7 @@ export function UserSessionCard({
         ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
-        signed in
+        ingelogd
       </Badge>
     </Surface>
   );
@@ -694,13 +699,13 @@ export function UserProfileEditorCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="Loading the details shown on your account and saved sets."
-            eyebrow="Profile"
-            title="Loading profile"
+            description="De gegevens op je account en opgeslagen sets worden geladen."
+            eyebrow="Profiel"
+            title="Profiel wordt geladen"
           />
         </div>
         <Badge className={styles.sessionStatus} tone="info">
-          syncing
+          synchroniseren
         </Badge>
       </Surface>
     );
@@ -715,9 +720,9 @@ export function UserProfileEditorCard({
       >
         <div className={styles.sessionContent}>
           <SectionHeading
-            description="We could not load your collector details right now."
-            eyebrow="Profile"
-            title="Profile unavailable"
+            description="Je verzamelaarsgegevens konden nu niet worden geladen."
+            eyebrow="Profiel"
+            title="Profiel niet beschikbaar"
           />
           {errorMessage ? (
             <p aria-live="polite" className={styles.errorText}>
@@ -726,7 +731,7 @@ export function UserProfileEditorCard({
           ) : null}
         </div>
         <Badge className={styles.sessionStatus} tone="warning">
-          unavailable
+          niet beschikbaar
         </Badge>
       </Surface>
     );
@@ -739,11 +744,11 @@ export function UserProfileEditorCard({
       elevation="rested"
     >
       <div className={styles.sessionContent}>
-        <p className={styles.statusMeta}>Account details</p>
+        <p className={styles.statusMeta}>Accountgegevens</p>
         <SectionHeading
-          description="Update the name and details shown on your account and saved sets."
-          eyebrow="Collector details"
-          title="Edit your collector details"
+          description="Werk de naam en gegevens bij die op je account en opgeslagen sets zichtbaar zijn."
+          eyebrow="Verzamelaarsgegevens"
+          title="Bewerk je verzamelaarsgegevens"
         />
         <form
           className={styles.profileForm}
@@ -754,7 +759,7 @@ export function UserProfileEditorCard({
         >
           <div className={styles.profileFieldGrid}>
             <label className={styles.formField}>
-              <span className={styles.fieldLabel}>Display name</span>
+              <span className={styles.fieldLabel}>Weergavenaam</span>
               <input
                 className={styles.textInput}
                 maxLength={80}
@@ -767,11 +772,11 @@ export function UserProfileEditorCard({
                 }
               />
               <span className={styles.fieldHint}>
-                Shown on your account and saved sets.
+                Zichtbaar op je account en opgeslagen sets.
               </span>
             </label>
             <label className={styles.formField}>
-              <span className={styles.fieldLabel}>Collector handle</span>
+              <span className={styles.fieldLabel}>Verzamelaarsnaam</span>
               <input
                 className={styles.textInput}
                 maxLength={32}
@@ -784,24 +789,24 @@ export function UserProfileEditorCard({
                 }
               />
               <span className={styles.fieldHint}>
-                Letters, numbers, and hyphens only.
+                Alleen letters, cijfers en koppeltekens.
               </span>
             </label>
           </div>
           <div className={styles.profileFieldGrid}>
             <label className={styles.formField}>
-              <span className={styles.fieldLabel}>Email</span>
+              <span className={styles.fieldLabel}>E-mail</span>
               <input
                 className={styles.textInput}
                 name="email"
                 readOnly
                 type="text"
-                value={collectorProfile.email ?? 'Connected via Supabase auth'}
+                value={collectorProfile.email ?? 'Verbonden via Supabase-auth'}
               />
-              <span className={styles.fieldHint}>Private sign-in email.</span>
+              <span className={styles.fieldHint}>Prive inlog-e-mail.</span>
             </label>
             <label className={styles.formField}>
-              <span className={styles.fieldLabel}>Collector tier</span>
+              <span className={styles.fieldLabel}>Verzamelaarsniveau</span>
               <input
                 className={styles.textInput}
                 name="tier"
@@ -810,12 +815,12 @@ export function UserProfileEditorCard({
                 value={collectorProfile.tier}
               />
               <span className={styles.fieldHint}>
-                Shown in your collector area.
+                Zichtbaar in je verzamelaarsomgeving.
               </span>
             </label>
           </div>
           <label className={styles.formField}>
-            <span className={styles.fieldLabel}>Location</span>
+            <span className={styles.fieldLabel}>Locatie</span>
             <input
               className={styles.textInput}
               maxLength={80}
@@ -827,10 +832,10 @@ export function UserProfileEditorCard({
                 onDraftChange?.('location', event.target.value)
               }
             />
-            <span className={styles.fieldHint}>Keep it short.</span>
+            <span className={styles.fieldHint}>Houd het kort.</span>
           </label>
           <label className={styles.formField}>
-            <span className={styles.fieldLabel}>Collection focus</span>
+            <span className={styles.fieldLabel}>Collectiefocus</span>
             <textarea
               className={`${styles.textInput} ${styles.textArea}`}
               maxLength={140}
@@ -843,7 +848,7 @@ export function UserProfileEditorCard({
               }
             />
             <span className={styles.fieldHint}>
-              One short line about the sets and themes you follow.
+              Een korte zin over de sets en thema's die je volgt.
             </span>
           </label>
           <label className={styles.preferenceRow}>
@@ -858,10 +863,12 @@ export function UserProfileEditorCard({
             />
             <div className={styles.preferenceCopy}>
               <span className={styles.fieldLabel}>
-                Notify me when a wishlist set becomes a better deal
+                Waarschuw me wanneer een set op mijn verlanglijst een betere
+                deal wordt
               </span>
               <span className={styles.fieldHint}>
-                This only saves your preference for future wishlist deal alerts.
+                Dit bewaart alleen je voorkeur voor toekomstige dealalerts op je
+                verlanglijst.
               </span>
             </div>
           </label>
@@ -872,9 +879,11 @@ export function UserProfileEditorCard({
               tone="accent"
               type="submit"
             >
-              {isSaving ? 'Saving profile...' : 'Save profile'}
+              {isSaving ? 'Profiel wordt opgeslagen...' : 'Profiel opslaan'}
             </Button>
-            {!isDirty ? <p className={styles.statusMeta}>Up to date</p> : null}
+            {!isDirty ? (
+              <p className={styles.statusMeta}>Helemaal bijgewerkt</p>
+            ) : null}
           </div>
         </form>
         {successMessage ? (
@@ -889,7 +898,7 @@ export function UserProfileEditorCard({
         ) : null}
       </div>
       <Badge className={styles.sessionStatus} tone="positive">
-        profile
+        profiel
       </Badge>
     </Surface>
   );
@@ -899,9 +908,9 @@ export function UserUi() {
   return (
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
-        description="Identity surfaces for account, profile, and collector-tier presentation."
-        eyebrow="User UI"
-        title="Collector identity with calm, utility-oriented status cues."
+        description="Identiteitsoppervlakken voor account, profiel en verzamelaarsniveau."
+        eyebrow="Gebruikers-UI"
+        title="Verzamelaarsidentiteit met rustige, nuttige statusaccenten."
       />
     </Surface>
   );

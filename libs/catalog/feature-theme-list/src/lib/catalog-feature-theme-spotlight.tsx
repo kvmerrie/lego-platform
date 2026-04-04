@@ -21,10 +21,12 @@ export function CatalogFeatureThemeSpotlight({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          eyebrow="More themes"
-          title="Keep browsing by theme"
+          eyebrow="Meer thema's"
+          title="Blijf verder bladeren per thema"
         />
-        <p className={styles.signalRow}>{themeItems.length} standout lanes</p>
+        <p className={styles.signalRow}>
+          {themeItems.length} opvallende themalijnen
+        </p>
       </div>
       <div className={styles.grid}>
         {themeItems.map((themeItem) => (

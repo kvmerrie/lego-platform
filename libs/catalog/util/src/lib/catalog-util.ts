@@ -54,15 +54,15 @@ export interface CatalogQuickFilterOption {
 const catalogQuickFilterOptions = [
   {
     key: 'all',
-    label: 'All',
+    label: 'Alles',
   },
   {
     key: 'best-deals',
-    label: 'Best deals',
+    label: 'Beste deals',
   },
   {
     key: 'with-minifigures',
-    label: 'With minifigures',
+    label: 'Met minifiguren',
   },
   {
     key: 'star-wars',
@@ -368,21 +368,21 @@ export function buildCatalogMetrics(
 
   return [
     {
-      label: 'Tracked sets',
+      label: 'Gevolgde sets',
       value: String(setSummaries.length),
-      detail: 'Curated flagship inventory',
+      detail: 'Samengestelde vlaggenschipselectie',
     },
     {
-      label: 'Pieces indexed',
+      label: 'Geindexeerde steentjes',
       value: formatCompactNumber(pieceCount),
-      detail: 'Across featured catalog entries',
+      detail: 'Verspreid over uitgelichte catalogusitems',
     },
     {
-      label: 'Freshest release',
+      label: 'Nieuwste release',
       value: String(
         Math.max(...setSummaries.map((setSummary) => setSummary.releaseYear)),
       ),
-      detail: 'Latest collector-ready launch',
+      detail: 'Laatste verzamelklare lancering',
       tone: 'accent',
     },
   ];

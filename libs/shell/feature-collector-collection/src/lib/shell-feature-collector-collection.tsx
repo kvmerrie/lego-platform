@@ -32,11 +32,11 @@ const sortOptions: ReadonlyArray<{
   },
   {
     key: 'release-year',
-    label: 'Release year',
+    label: 'Releasejaar',
   },
   {
     key: 'theme',
-    label: 'Theme',
+    label: 'Thema',
   },
 ];
 
@@ -121,7 +121,7 @@ export function ShellFeatureCollectorCollection() {
       }
 
       setUserSession(createAnonymousUserSession());
-      setErrorMessage('Unable to load your private collection right now.');
+      setErrorMessage('Je prive collectie kon nu niet worden geladen.');
     } finally {
       if (isMountedRef.current) {
         setIsLoading(false);
@@ -198,7 +198,7 @@ export function ShellFeatureCollectorCollection() {
         return;
       }
 
-      setStatusMessage(`${name} removed from your collection.`);
+      setStatusMessage(`${name} is uit je collectie verwijderd.`);
     } catch (error) {
       if (!isMountedRef.current) {
         return;
@@ -207,7 +207,7 @@ export function ShellFeatureCollectorCollection() {
       setErrorMessage(
         readActionErrorMessage(
           error,
-          'Unable to update your collection right now.',
+          'Je collectie kon nu niet worden bijgewerkt.',
         ),
       );
     } finally {
@@ -242,7 +242,7 @@ export function ShellFeatureCollectorCollection() {
       controls={
         <div className={styles.toolbar}>
           <div className={styles.toolbarGroup}>
-            <p className={styles.toolbarLabel}>Sort</p>
+            <p className={styles.toolbarLabel}>Sorteren</p>
             <div className={styles.toolbarActions}>
               {sortOptions.map((sortOption) => (
                 <Button
@@ -257,7 +257,9 @@ export function ShellFeatureCollectorCollection() {
               ))}
             </div>
           </div>
-          <p className={styles.toolbarMeta}>{ownedSetCards.length} saved</p>
+          <p className={styles.toolbarMeta}>
+            {ownedSetCards.length} opgeslagen
+          </p>
         </div>
       }
       errorMessage={errorMessage}
@@ -285,7 +287,7 @@ export function ShellFeatureCollectorCollection() {
                     })
                   }
                 >
-                  Remove
+                  Verwijder
                 </Button>
               </div>
             }

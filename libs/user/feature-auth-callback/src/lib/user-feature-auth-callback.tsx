@@ -29,7 +29,7 @@ export function UserFeatureAuthCallback() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : 'Unable to finish sign-in right now.',
+            : 'Inloggen kon nu niet worden afgerond.',
         );
       });
 
@@ -42,14 +42,14 @@ export function UserFeatureAuthCallback() {
     return (
       <Surface as="section" elevation="rested" tone="muted">
         <SectionHeading
-          description="The sign-in link opened, but the collector session could not be completed from this browser state."
-          eyebrow="Collector account"
-          title="Unable to finish sign-in"
+          description="De inloglink is geopend, maar de verzamelaarsessie kon vanuit deze browserstatus niet worden voltooid."
+          eyebrow="Verzamelaarsaccount"
+          title="Inloggen kon niet worden afgerond"
           titleAs="h2"
         />
         <p>{errorMessage}</p>
         <ActionLink href="/" tone="secondary">
-          Return to the public catalog
+          Terug naar de openbare catalogus
         </ActionLink>
       </Surface>
     );
@@ -58,14 +58,14 @@ export function UserFeatureAuthCallback() {
   return (
     <Surface as="section" elevation="rested" tone="muted">
       <SectionHeading
-        description="Completing the secure sign-in handoff for your collector account and refreshing your saved collector state."
-        eyebrow="Collector account"
-        title="Completing sign-in"
+        description="De veilige inlogoverdracht voor je verzamelaarsaccount wordt afgerond en je opgeslagen verzamelstatus wordt vernieuwd."
+        eyebrow="Verzamelaarsaccount"
+        title="Inloggen wordt afgerond"
         titleAs="h2"
       />
       <p>
-        Please keep this tab open for a moment while the collector session is
-        confirmed.
+        Houd dit tabblad nog even open terwijl de verzamelaarsessie wordt
+        bevestigd.
       </p>
     </Surface>
   );

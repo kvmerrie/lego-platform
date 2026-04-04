@@ -105,7 +105,7 @@ export function AffiliatePrimaryOfferAction({
         target="_blank"
         tone="secondary"
       >
-        Shop at {affiliateOffer.merchantName}
+        Bekijk bij {affiliateOffer.merchantName}
       </ActionLink>
     </div>
   );
@@ -129,38 +129,40 @@ export function AffiliateOffersPanel({
       tone="muted"
     >
       <SectionHeading
-        description={`Compare the ${getDefaultMarketAdjective()} shops we reviewed for this set.`}
-        eyebrow="Buy guidance"
-        title="Reviewed offers"
+        description={`Vergelijk de ${getDefaultMarketAdjective()} winkels die we voor deze set hebben reviewed.`}
+        eyebrow="Koophulp"
+        title="Reviewed aanbiedingen"
       />
       {comparisonInsight ? (
         <p className={styles.panelInsight}>{comparisonInsight}</p>
       ) : null}
       <p className={styles.panelMeta}>
-        {getOfferScopeLabel(`${affiliateOffers.length} offers compared`)}
+        {getOfferScopeLabel(
+          `${affiliateOffers.length} aanbiedingen vergeleken`,
+        )}
       </p>
       <div className={styles.offerTableWrap}>
         <table className={styles.offerTable}>
           <caption className={styles.tableCaption}>
-            Reviewed offers for this set, including merchant, price,
-            availability, last checked time, and outbound action.
+            Reviewed aanbiedingen voor deze set, inclusief winkel, prijs,
+            beschikbaarheid, laatst gecheckte tijd en uitgaande actie.
           </caption>
           <thead>
             <tr>
               <th className={styles.offerHeadCell} scope="col">
-                Merchant
+                Winkel
               </th>
               <th className={styles.offerHeadCell} scope="col">
-                Price
+                Prijs
               </th>
               <th className={styles.offerHeadCell} scope="col">
-                Availability
+                Beschikbaarheid
               </th>
               <th className={styles.offerHeadCell} scope="col">
-                Last checked
+                Laatst gecheckt
               </th>
               <th className={styles.offerHeadCell} scope="col">
-                Action
+                Actie
               </th>
             </tr>
           </thead>
@@ -188,9 +190,9 @@ export function AffiliateUnavailableCard({ id }: { id?: string }) {
       tone="muted"
     >
       <SectionHeading
-        description={`We have not reviewed shop offers for this set yet.`}
-        eyebrow="Buy guidance"
-        title="Reviewed offers"
+        description={`We hebben voor deze set nog geen winkelprijzen reviewed.`}
+        eyebrow="Koophulp"
+        title="Reviewed aanbiedingen"
       />
       <p className={styles.panelMeta}>{getOfferScopeLabel()}</p>
     </Surface>
@@ -201,9 +203,9 @@ export function AffiliateUi() {
   return (
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
-        description="Compact offer cards that keep current-market merchant guidance direct and presentational."
-        eyebrow="Affiliate UI"
-        title="Outbound offer surfaces without runtime commerce coupling."
+        description="Compacte aanbiedingskaarten die actuele winkelcontext direct en presentabel houden."
+        eyebrow="Affiliate-UI"
+        title="Uitgaande aanbodoppervlakken zonder runtime-koppeling met commerce."
       />
     </Surface>
   );

@@ -53,16 +53,16 @@ describe('shared config browser Supabase helpers', () => {
 describe('shared config locale and market foundations', () => {
   test('keeps language, market, currency, and route locale separate in the default app context', () => {
     expect(getDefaultAppLocaleContext()).toEqual({
-      languageCode: 'en',
+      languageCode: 'nl',
       marketCode: 'NL',
       currencyCode: 'EUR',
-      localeCode: 'en-nl',
-      htmlLang: 'en',
+      localeCode: 'nl-nl',
+      htmlLang: 'nl',
       formattingLocale: 'nl-NL',
-      marketDisplayName: 'Dutch market',
-      marketAdjectiveName: 'Dutch',
+      marketDisplayName: 'Nederlandse markt',
+      marketAdjectiveName: 'Nederlandse',
       merchantRegionCode: 'NL',
-      routeSegment: 'en-nl',
+      routeSegment: 'nl-nl',
     });
     expect(getDefaultFormattingLocale()).toBe('nl-NL');
   });
@@ -71,16 +71,16 @@ describe('shared config locale and market foundations', () => {
     expect(buildWebPath('/discover')).toBe('/discover');
     expect(buildWebPath('account')).toBe('/account');
     expect(buildThemePath('icons')).toBe('/themes/icons');
-    expect(buildWebPath('/', { forceLocalePrefix: true })).toBe('/en-nl');
+    expect(buildWebPath('/', { forceLocalePrefix: true })).toBe('/nl-nl');
     expect(
       buildWebPath('/discover', {
         forceLocalePrefix: true,
         localeCode: createLocaleCode({
-          languageCode: 'en',
+          languageCode: 'nl',
           marketCode: 'NL',
         }),
       }),
-    ).toBe('/en-nl/discover');
+    ).toBe('/nl-nl/discover');
   });
 
   test('renders reusable market scope labels from the default market config', () => {
@@ -89,7 +89,7 @@ describe('shared config locale and market foundations', () => {
         conditionLabel: 'new condition',
         suffix: '3 merchants shown',
       }),
-    ).toBe('Dutch market · EUR · new condition · 3 merchants shown');
+    ).toBe('Nederlandse markt · EUR · new condition · 3 merchants shown');
   });
 
   test('keeps the public site globally blocked from indexing during pre-launch', () => {

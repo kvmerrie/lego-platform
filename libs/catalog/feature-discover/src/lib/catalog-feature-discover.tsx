@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   listDiscoverCharacterSetCards,
   listCatalogSetSummaries,
@@ -28,7 +29,7 @@ import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-discover.module.css';
 
 function formatThemeCount(count: number): string {
-  return `${count} theme${count === 1 ? '' : 's'}`;
+  return `${count} thema${count === 1 ? '' : "'s"}`;
 }
 
 function formatSetCount(count: number): string {
@@ -46,7 +47,18 @@ function formatThemeLaneCount({
     return formatSetCount(totalCount);
   }
 
-  return `${shownCount} shown · ${totalCount} total`;
+  return `${shownCount} getoond · ${totalCount} totaal`;
+}
+
+function renderCanonicalNames(names: readonly string[]): ReactNode {
+  return names.map((name, index) => (
+    <span key={`${name}-${index}`}>
+      {index > 0 ? (index === names.length - 1 ? ' en ' : ', ') : null}
+      <span className="notranslate" translate="no">
+        {name}
+      </span>
+    </span>
+  ));
 }
 
 export interface CatalogFeatureDiscoverDealItem extends CatalogHomepageSetCard {
@@ -90,26 +102,10 @@ function formatDiscoverFanContext(
     CatalogHomepageSetCard,
     'collectorAngle' | 'minifigureHighlights'
   >,
-): string {
+): ReactNode {
   if (setCard.minifigureHighlights?.length) {
     const visibleHighlights = setCard.minifigureHighlights.slice(0, 3);
-
-    if (visibleHighlights.length === 1) {
-      return `Includes ${visibleHighlights[0]}`;
-    }
-
-    if (visibleHighlights.length === 2) {
-      return `Includes ${visibleHighlights[0]} and ${visibleHighlights[1]}`;
-    }
-
-    const lastVisibleHighlight = visibleHighlights.at(-1);
-    const leadingHighlights = visibleHighlights.slice(0, -1);
-
-    if (!lastVisibleHighlight) {
-      return setCard.collectorAngle;
-    }
-
-    return `Includes ${leadingHighlights.join(', ')}, and ${lastVisibleHighlight}`;
+    return <>Met {renderCanonicalNames(visibleHighlights)}</>;
   }
 
   return setCard.collectorAngle;
@@ -184,9 +180,9 @@ export function CatalogFeatureDiscover({
     return (
       <Surface as="section" className={styles.emptyState} tone="muted">
         <SectionHeading
-          description="We're still expanding the browse catalog."
-          eyebrow="Discover"
-          title="Discover is filling up"
+          description="We breiden de bladercatalogus nog verder uit."
+          eyebrow="Ontdekken"
+          title="Ontdekken wordt nog aangevuld"
         />
       </Surface>
     );
@@ -196,33 +192,33 @@ export function CatalogFeatureDiscover({
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Start with the clearest current deals, then move into the strongest franchise, flagship, and collector-friendly theme lanes."
-          eyebrow="Discover"
-          title="Open the strongest sets first"
+          description="Begin met de duidelijkste deals van nu en ga daarna verder naar de sterkste franchise-, vlaggenschip- en verzamelaarsvriendelijke themalijnen."
+          eyebrow="Ontdekken"
+          title="Open eerst de sterkste sets"
           titleAs="h1"
         />
         <p className={styles.introMeta}>
-          {totalSetCount} sets · {formatThemeCount(totalThemeCount)} in the
-          public catalog
+          {totalSetCount} sets · {formatThemeCount(totalThemeCount)} in de
+          publieke catalogus
         </p>
         <div className={styles.introActions}>
           <ActionLink href={webPathnames.themes} tone="secondary">
-            Browse all themes
+            Bekijk alle thema's
           </ActionLink>
         </div>
       </section>
 
       <CatalogQuickFilterBar
-        ariaLabel="Refine discover"
+        ariaLabel="Verfijn ontdekken"
         items={quickFilterItems}
       />
 
       {!hasFilteredContent ? (
         <Surface as="section" className={styles.emptyState} tone="muted">
           <SectionHeading
-            description="Try another quick filter or open a full theme lane to keep exploring the current public catalog."
-            eyebrow="Discover"
-            title={`No matches in ${activeQuickFilterOption?.label ?? 'this filter'}`}
+            description="Probeer een andere snelle filter of open een volledige themalijn om verder door de huidige publieke catalogus te bladeren."
+            eyebrow="Ontdekken"
+            title={`Geen treffers in ${activeQuickFilterOption?.label ?? 'deze filter'}`}
             titleAs="h2"
           />
           <div className={styles.introActions}>
@@ -230,7 +226,7 @@ export function CatalogFeatureDiscover({
               href={buildWebPath(webPathnames.discover)}
               tone="secondary"
             >
-              Show all sets
+              Toon alle sets
             </ActionLink>
           </div>
         </Surface>
@@ -240,9 +236,9 @@ export function CatalogFeatureDiscover({
         <Surface as="section" className={styles.dealSection} tone="default">
           <div className={styles.sectionHeader}>
             <SectionHeading
-              description="The clearest reviewed price gaps among the strongest flagship and click-magnet sets already in the catalog."
+              description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
               eyebrow="Deals"
-              title="Best deals to check first"
+              title="Beste deals om eerst te bekijken"
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
@@ -250,7 +246,7 @@ export function CatalogFeatureDiscover({
             </p>
           </div>
           <CatalogSetCardRail
-            ariaLabel="Best deals to check first"
+            ariaLabel="Beste deals om eerst te bekijken"
             items={filteredDealSetCards.map((dealSetCard) => ({
               href: buildSetDetailPath(dealSetCard.slug),
               id: dealSetCard.id,
@@ -267,9 +263,9 @@ export function CatalogFeatureDiscover({
         <Surface as="section" className={styles.featuredSection} tone="muted">
           <div className={styles.sectionHeader}>
             <SectionHeading
-              description="Sets where the cast is part of the appeal, from big franchise anchors to collector-friendly story moments."
-              eyebrow="Characters"
-              title="Iconic characters and cast favorites"
+              description="Sets waarbij de cast deel van de aantrekkingskracht is, van grote franchise-ankers tot verhaalgedreven favorieten voor verzamelaars."
+              eyebrow="Personages"
+              title="Iconische personages en castfavorieten"
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
@@ -277,7 +273,7 @@ export function CatalogFeatureDiscover({
             </p>
           </div>
           <CatalogSetCardRail
-            ariaLabel="Iconic characters and cast favorites"
+            ariaLabel="Iconische personages en castfavorieten"
             items={filteredCharacterSetCards.map((characterSetCard) => ({
               href: buildSetDetailPath(characterSetCard.slug),
               id: characterSetCard.id,
@@ -293,9 +289,9 @@ export function CatalogFeatureDiscover({
         <Surface as="section" className={styles.featuredSection} tone="muted">
           <div className={styles.sectionHeader}>
             <SectionHeading
-              description="A tighter mix of premium flagships, iconic franchises, and more approachable sets worth opening before you go deeper."
+              description="Een strakkere mix van premium vlaggenschepen, iconische franchises en toegankelijkere sets die het waard zijn om eerst te openen."
               eyebrow="Highlights"
-              title="Worth opening first"
+              title="Eerst het openen waard"
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>
@@ -303,7 +299,7 @@ export function CatalogFeatureDiscover({
             </p>
           </div>
           <CatalogSetCardRail
-            ariaLabel="Worth opening first"
+            ariaLabel="Eerst het openen waard"
             items={filteredHighlightSetCards.map((highlightSetCard) => ({
               href: buildSetDetailPath(highlightSetCard.slug),
               id: highlightSetCard.id,
@@ -327,13 +323,18 @@ export function CatalogFeatureDiscover({
               <div className={styles.themeHeader}>
                 <div className={styles.themeHeadingBlock}>
                   <p className={styles.themeEyebrow}>Theme</p>
-                  <h2 className={styles.themeTitle}>{themeGroup.theme}</h2>
+                  <h2
+                    className={`${styles.themeTitle} notranslate`}
+                    translate="no"
+                  >
+                    {themeGroup.theme}
+                  </h2>
                   <ActionLink
                     className={styles.themeAction}
                     href={buildThemePath(themeGroup.slug)}
                     tone="secondary"
                   >
-                    Open full theme
+                    Open volledig thema
                   </ActionLink>
                 </div>
                 <p className={styles.sectionMeta}>

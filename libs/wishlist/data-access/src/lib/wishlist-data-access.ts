@@ -58,7 +58,9 @@ export async function getWantedSetState(
   });
 
   if (!response.ok) {
-    throw new Error('Unable to load wanted-set state.');
+    throw new Error(
+      'De verlanglijststatus voor deze set kon niet worden geladen.',
+    );
   }
 
   const wantedSetIds = readStringArrayProperty(
@@ -83,11 +85,11 @@ export async function addWantedSet(setId: string): Promise<WantedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to add this set to your wishlist.');
+    throw new Error('Log in om deze set aan je verlanglijst toe te voegen.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to add this set to your wishlist.');
+    throw new Error('Deze set kon niet aan je verlanglijst worden toegevoegd.');
   }
 
   const wantedSetState = (await response.json()) as WantedSetState;
@@ -108,11 +110,11 @@ export async function removeWantedSet(setId: string): Promise<WantedSetState> {
   );
 
   if (response.status === 401) {
-    throw new Error('Sign in to update your wishlist.');
+    throw new Error('Log in om je verlanglijst bij te werken.');
   }
 
   if (!response.ok) {
-    throw new Error('Unable to remove this set from your wishlist.');
+    throw new Error('Deze set kon niet van je verlanglijst worden verwijderd.');
   }
 
   const wantedSetState = (await response.json()) as WantedSetState;

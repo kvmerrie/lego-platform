@@ -28,14 +28,20 @@ export function CatalogFeatureThemePage({
       <section className={styles.intro}>
         <SectionHeading
           description={themeSnapshot.momentum}
-          eyebrow="Theme"
-          title={themeSnapshot.name}
+          eyebrow="Thema"
+          title={
+            <span className="notranslate" translate="no">
+              {themeSnapshot.name}
+            </span>
+          }
           titleAs="h1"
           tone="display"
         />
         <p className={styles.introMeta}>
-          {themeSnapshot.setCount} sets · Start with{' '}
-          {themeSnapshot.signatureSet}
+          {themeSnapshot.setCount} sets · Begin met{' '}
+          <span className="notranslate" translate="no">
+            {themeSnapshot.signatureSet}
+          </span>
         </p>
       </section>
 
@@ -43,15 +49,30 @@ export function CatalogFeatureThemePage({
         <Surface as="section" className={styles.dealSection} tone="muted">
           <div className={styles.sectionHeader}>
             <SectionHeading
-              description={`Reviewed price gaps currently standing out inside the ${themeSnapshot.name} lane.`}
+              description={
+                <>
+                  Reviewed prijsverschillen die nu het meest opvallen binnen de{' '}
+                  <span className="notranslate" translate="no">
+                    {themeSnapshot.name}
+                  </span>
+                  -lijn.
+                </>
+              }
               eyebrow="Deals"
-              title={`Good time to buy in ${themeSnapshot.name}`}
+              title={
+                <>
+                  Goed moment om te kopen in{' '}
+                  <span className="notranslate" translate="no">
+                    {themeSnapshot.name}
+                  </span>
+                </>
+              }
               titleAs="h2"
             />
             <p className={styles.sectionMeta}>{dealSetCards.length} sets</p>
           </div>
           <CatalogSetCardRail
-            ariaLabel={`Good time to buy in ${themeSnapshot.name}`}
+            ariaLabel={`Goed moment om te kopen in ${themeSnapshot.name}`}
             items={dealSetCards.map((dealSetCard) => ({
               href: buildSetDetailPath(dealSetCard.slug),
               id: dealSetCard.id,
@@ -66,9 +87,25 @@ export function CatalogFeatureThemePage({
       <Surface as="section" className={styles.browseSection} tone="default">
         <div className={styles.sectionHeader}>
           <SectionHeading
-            description={`Browse every public ${themeSnapshot.name} set currently in the catalog.`}
-            eyebrow="Catalog"
-            title={`All ${themeSnapshot.name} sets`}
+            description={
+              <>
+                Blader door elke publieke{' '}
+                <span className="notranslate" translate="no">
+                  {themeSnapshot.name}
+                </span>
+                -set die nu in de catalogus staat.
+              </>
+            }
+            eyebrow="Catalogus"
+            title={
+              <>
+                Alle{' '}
+                <span className="notranslate" translate="no">
+                  {themeSnapshot.name}
+                </span>
+                -sets
+              </>
+            }
             titleAs="h2"
           />
           <p className={styles.sectionMeta}>{setCards.length} sets</p>

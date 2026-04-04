@@ -226,9 +226,9 @@ export function SectionHeading({
   tone = 'default',
 }: {
   className?: string;
-  description?: string;
+  description?: ReactNode;
   eyebrow?: string;
-  title: string;
+  title: ReactNode;
   titleAs?: SectionHeadingLevel;
   tone?: SectionHeadingTone;
 }) {

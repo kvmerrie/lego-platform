@@ -173,23 +173,23 @@ export default async function HomePage() {
         </div>
         <div className={styles.sectionGroup}>
           <CatalogFeatureSetList
-            description="Open with the sets most likely to pull someone deeper into the catalog: premium anchors, broad-recognition favorites, and one easier display-led entry point."
-            eyebrow="Featured sets"
+            description="Begin met de sets die je het snelst dieper de catalogus in trekken: premium ankers, breed herkenbare favorieten en een toegankelijker displaygericht instappunt."
+            eyebrow="Uitgelichte sets"
             setCards={homepageSetCards}
-            title="Featured sets worth opening first"
+            title="Uitgelichte sets om als eerste te openen"
             tone="default"
           />
         </div>
         {homepageDealSetCards.length ? (
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
-              description="Reviewed Dutch prices currently showing the clearest gaps below reference across the sets most likely to reward a closer look."
-              eyebrow="Best current deals"
+              description="Reviewed Nederlandse prijzen die nu de duidelijkste verschillen onder de referentie laten zien bij sets die extra aandacht verdienen."
+              eyebrow="Beste deals van nu"
               sectionId="best-current-deals"
               setCards={homepageDealSetCards}
-              signalText={`${homepageDealSetCards.length} sets worth a closer look`}
+              signalText={`${homepageDealSetCards.length} sets die extra aandacht waard zijn`}
               tone="muted"
-              title="Best current deals"
+              title="Beste deals van nu"
             />
           </div>
         ) : null}

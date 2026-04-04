@@ -250,7 +250,7 @@ export function ShellWebSearchForm({
       role="search"
     >
       <label className={styles.searchLabel} htmlFor={inputId}>
-        <VisuallyHidden>Search the catalog</VisuallyHidden>
+        <VisuallyHidden>Doorzoek de catalogus</VisuallyHidden>
       </label>
       <span aria-hidden="true" className={styles.searchInputIcon}>
         <Icon name="search" size={15} />
@@ -267,7 +267,7 @@ export function ShellWebSearchForm({
           setSearchValue(event.target.value);
         }}
         onKeyDown={handleKeyDown}
-        placeholder="Search sets or set number"
+        placeholder="Zoek op set of setnummer"
         ref={searchInputRef}
         type="search"
         value={searchValue}
@@ -283,10 +283,10 @@ export function ShellWebSearchForm({
     >
       {showRecentSearches ? (
         <section
-          aria-label="Recent searches"
+          aria-label="Recente zoekopdrachten"
           className={styles.searchPanelSection}
         >
-          <p className={styles.searchPanelHeading}>Recent searches</p>
+          <p className={styles.searchPanelHeading}>Recente zoekopdrachten</p>
           <ul className={styles.searchList}>
             {recentSearches.map((recentSearch, index) => (
               <li key={`${recentSearch.kind}-${recentSearch.label}`}>
@@ -304,17 +304,25 @@ export function ShellWebSearchForm({
                     onClick={() => persistRecentSearch(recentSearch)}
                     onMouseEnter={() => setActiveItemIndex(index)}
                   >
-                    <span className={styles.recentSearchLabel}>
+                    <span
+                      className={`${styles.recentSearchLabel} ${
+                        recentSearch.kind === 'set' ? 'notranslate' : ''
+                      }`}
+                      translate={recentSearch.kind === 'set' ? 'no' : undefined}
+                    >
                       {recentSearch.label}
                     </span>
                     {recentSearch.kind === 'set' ? (
-                      <span className={styles.recentSearchMeta}>
+                      <span
+                        className={`${styles.recentSearchMeta} notranslate`}
+                        translate="no"
+                      >
                         {recentSearch.meta}
                       </span>
                     ) : null}
                   </a>
                   <button
-                    aria-label={`Remove recent search ${recentSearch.label}`}
+                    aria-label={`Verwijder recente zoekopdracht ${recentSearch.label}`}
                     className={styles.recentSearchRemove}
                     onClick={(event) => {
                       event.preventDefault();
@@ -333,12 +341,12 @@ export function ShellWebSearchForm({
       ) : null}
       {showSuggestionPanel ? (
         <section
-          aria-label="Matching sets"
+          aria-label="Passende sets"
           className={styles.searchPanelSection}
         >
           {searchSuggestions.length ? (
             <>
-              <p className={styles.searchPanelHeading}>Matching sets</p>
+              <p className={styles.searchPanelHeading}>Passende sets</p>
               <ul className={styles.searchList}>
                 {searchSuggestions.map((searchSuggestion, index) => {
                   const panelItemIndex = showRecentSearches
@@ -372,10 +380,16 @@ export function ShellWebSearchForm({
                           />
                         ) : null}
                         <span className={styles.searchSuggestionContent}>
-                          <span className={styles.searchSuggestionName}>
+                          <span
+                            className={`${styles.searchSuggestionName} notranslate`}
+                            translate="no"
+                          >
                             {searchSuggestion.name}
                           </span>
-                          <span className={styles.searchSuggestionMeta}>
+                          <span
+                            className={`${styles.searchSuggestionMeta} notranslate`}
+                            translate="no"
+                          >
                             Set {searchSuggestion.id} · {searchSuggestion.theme}
                           </span>
                         </span>
@@ -387,7 +401,8 @@ export function ShellWebSearchForm({
             </>
           ) : (
             <p className={styles.searchPanelHint}>
-              No matching sets yet. Open the full results page to keep looking.
+              Nog geen passende sets. Open de volledige resultatenpagina om
+              verder te zoeken.
             </p>
           )}
           {searchResultsHref ? (
@@ -400,7 +415,7 @@ export function ShellWebSearchForm({
               onClick={() => persistRecentSearch(searchResultEntry)}
               onMouseEnter={() => setActiveItemIndex(panelItems.length - 1)}
             >
-              See all results for "{normalizedSearchValue}"
+              Bekijk alle resultaten voor "{normalizedSearchValue}"
             </a>
           ) : null}
         </section>
@@ -414,7 +429,7 @@ export function ShellWebSearchForm({
         <button
           aria-expanded={isOpen}
           aria-haspopup="dialog"
-          aria-label="Open search"
+          aria-label="Open zoeken"
           className={styles.mobileSearchButton}
           onClick={() => setIsOpen(true)}
           ref={mobileTriggerRef}
@@ -440,10 +455,10 @@ export function ShellWebSearchForm({
                 className={styles.mobileSearchOverlayTitle}
                 id={`${inputId}-overlay-title`}
               >
-                Search
+                Zoeken
               </p>
               <button
-                aria-label="Close search"
+                aria-label="Zoeken sluiten"
                 className={styles.mobileSearchClose}
                 onClick={closeMobileOverlay}
                 type="button"

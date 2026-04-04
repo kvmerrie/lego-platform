@@ -22,9 +22,7 @@ export function WishlistItemCard({
         <Badge tone="accent">{wishlistItem.urgency}</Badge>
       </div>
       <p>{wishlistItem.reason}</p>
-      <p className={styles.metaText}>
-        Target price: {wishlistItem.targetPrice}
-      </p>
+      <p className={styles.metaText}>Doelprijs: {wishlistItem.targetPrice}</p>
     </Surface>
   );
 }
@@ -52,24 +50,24 @@ export function WantedSetToggleCard({
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Checking wishlist save'
+    ? 'Verlanglijststatus wordt gecontroleerd'
     : isUnavailable
-      ? 'Wishlist save unavailable'
+      ? 'Verlanglijststatus niet beschikbaar'
       : isWanted
-        ? 'In wishlist'
-        : 'Add to wishlist';
+        ? 'Op verlanglijst'
+        : 'Aan verlanglijst toevoegen';
   const description = isLoading
-    ? 'Checking whether this set is already in your wishlist.'
+    ? 'Controleren of deze set al op je verlanglijst staat.'
     : isUnavailable
-      ? 'We could not load your wishlist save right now.'
+      ? 'Je verlanglijststatus kon nu niet worden geladen.'
       : isWanted
-        ? 'This set is in your private wishlist.'
-        : 'Keep this set in your private wishlist.';
+        ? 'Deze set staat op je prive verlanglijst.'
+        : 'Bewaar deze set op je prive verlanglijst.';
   const actionLabel = isUnavailable
-    ? 'Wishlist status unavailable'
+    ? 'Verlanglijststatus niet beschikbaar'
     : isWanted
-      ? 'Remove from wishlist'
-      : 'Add to wishlist';
+      ? 'Van verlanglijst verwijderen'
+      : 'Aan verlanglijst toevoegen';
   const statusTone = isLoading
     ? 'info'
     : isUnavailable
@@ -78,12 +76,12 @@ export function WantedSetToggleCard({
         ? 'accent'
         : 'neutral';
   const statusLabel = isLoading
-    ? 'Syncing'
+    ? 'Synchroniseren'
     : isUnavailable
-      ? 'State unavailable'
+      ? 'Status niet beschikbaar'
       : isWanted
-        ? 'In wishlist'
-        : 'Not saved yet';
+        ? 'Op verlanglijst'
+        : 'Nog niet opgeslagen';
 
   if (variant === 'product') {
     return (
@@ -106,14 +104,14 @@ export function WantedSetToggleCard({
           onClick={onToggle}
         >
           {isLoading
-            ? 'Syncing...'
+            ? 'Synchroniseren...'
             : isPending
-              ? 'Saving...'
+              ? 'Opslaan...'
               : isUnavailable
-                ? 'Wanted unavailable'
+                ? 'Verlanglijst niet beschikbaar'
                 : isWanted
-                  ? 'Remove from wishlist'
-                  : 'Add to wishlist'}
+                  ? 'Van verlanglijst verwijderen'
+                  : 'Aan verlanglijst toevoegen'}
         </Button>
       </article>
     );
@@ -132,7 +130,9 @@ export function WantedSetToggleCard({
         <Badge tone={statusTone}>{statusLabel}</Badge>
       </div>
       <SectionHeading description={description} title={title} titleAs="h2" />
-      <p className={styles.metaText}>Private save. Set facts stay public.</p>
+      <p className={styles.metaText}>
+        Prive opgeslagen. Setinformatie blijft openbaar.
+      </p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
@@ -152,9 +152,9 @@ export function WantedSetToggleCard({
         onClick={onToggle}
       >
         {isLoading
-          ? 'Syncing wishlist...'
+          ? 'Verlanglijst synchroniseren...'
           : isPending
-            ? 'Saving...'
+            ? 'Opslaan...'
             : actionLabel}
       </Button>
     </Surface>
@@ -181,24 +181,24 @@ export function CollectorWishlistPanel({
 }) {
   const title =
     state === 'loading'
-      ? 'Loading your wishlist'
+      ? 'Je verlanglijst wordt geladen'
       : state === 'signed-out'
-        ? 'Sign in to see your wishlist'
+        ? 'Log in om je verlanglijst te bekijken'
         : state === 'empty'
-          ? 'Nothing in your wishlist yet'
-          : 'Your wishlist';
+          ? 'Nog niets op je verlanglijst'
+          : 'Je verlanglijst';
   const description =
     state === 'loading'
-      ? 'Loading the sets in your wishlist.'
+      ? 'De sets op je verlanglijst worden geladen.'
       : state === 'signed-out'
-        ? 'Sign in to see the sets in your wishlist.'
+        ? 'Log in om de sets op je verlanglijst te bekijken.'
         : state === 'empty'
           ? hiddenWantedCount > 0
-            ? `You have ${hiddenWantedCount} saved outside the sets currently shown on Brickhunt. Save any visible set and it will show up here too.`
-            : 'Save a set you want, then come back here to compare the ones worth watching.'
+            ? `Je hebt ${hiddenWantedCount} sets opgeslagen buiten de sets die nu op Brickhunt zichtbaar zijn. Sla een zichtbare set op en die verschijnt ook hier.`
+            : 'Sla een set op die je wilt hebben en kom hier terug om te vergelijken welke de moeite waard zijn om in de gaten te houden.'
           : hiddenWantedCount > 0
-            ? `Showing ${wantedCount} here today. ${hiddenWantedCount} stay saved outside the current catalog.`
-            : `${wantedCount} saved.`;
+            ? `Je ziet hier vandaag ${wantedCount}. ${hiddenWantedCount} blijven opgeslagen buiten de huidige catalogus.`
+            : `${wantedCount} opgeslagen.`;
 
   return (
     <Surface
@@ -210,23 +210,24 @@ export function CollectorWishlistPanel({
       <div className={styles.wishlistHeader}>
         <SectionHeading
           description={description}
-          eyebrow="Collector wishlist"
+          eyebrow="Verzamelaarsverlanglijst"
           title={title}
           titleAs="h1"
         />
         <p className={styles.wishlistMeta}>
           {state === 'loading'
-            ? 'Loading saves'
+            ? 'Opslagen laden'
             : state === 'signed-out'
-              ? 'Sign in to save privately'
-              : `${wantedCount} in wishlist`}
+              ? 'Log in om prive op te slaan'
+              : `${wantedCount} op verlanglijst`}
           {hiddenWantedCount > 0
-            ? ` · ${hiddenWantedCount} outside today's catalog`
+            ? ` · ${hiddenWantedCount} buiten de catalogus van vandaag`
             : ''}
         </p>
       </div>
       <p className={styles.metaText}>
-        Your saves stay private. Set pages and price checks stay public.
+        Je opgeslagen sets blijven prive. Setpagina's en prijschecks blijven
+        openbaar.
       </p>
       <div className={styles.destinationPanel}>
         <div className={styles.destinationLinks}>
@@ -240,16 +241,16 @@ export function CollectorWishlistPanel({
             href={buildWebPath(webPathnames.collection)}
             tone="secondary"
           >
-            Open collection
+            Open collectie
           </ActionLink>
           <ActionLink
             href={buildWebPath(webPathnames.discover)}
             tone="secondary"
           >
-            Browse catalog
+            Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
-            Browse themes
+            Bekijk thema's
           </ActionLink>
         </div>
       </div>
@@ -280,10 +281,10 @@ export function CollectorWishlistPanel({
             href={buildWebPath(webPathnames.discover)}
             tone="secondary"
           >
-            Browse catalog
+            Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
-            Browse themes
+            Bekijk thema's
           </ActionLink>
         </div>
       )}
@@ -295,9 +296,9 @@ export function WishlistUi() {
   return (
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
-        description="Focus cards and watchlist-ready states for future price triggers."
-        eyebrow="Wishlist UI"
-        title="Wanted-state surfaces that stay clear, calm, and collector-first."
+        description="Focuskaarten en verlanglijststatussen voor toekomstige prijstriggers."
+        eyebrow="Verlanglijst-UI"
+        title="Verlanglijstoppervlakken die helder, rustig en verzamelaarsgericht blijven."
       />
     </Surface>
   );

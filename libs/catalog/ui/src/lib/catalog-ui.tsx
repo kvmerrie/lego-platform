@@ -65,7 +65,15 @@ function getSavedStateBadgeTone(
 }
 
 function getSavedStateLabel(savedState: CatalogSetSavedState): string {
-  return savedState === 'owned' ? 'Owned' : 'In wishlist';
+  return savedState === 'owned' ? 'In collectie' : 'Op verlanglijst';
+}
+
+function CatalogCanonicalText({ children }: { children: ReactNode }) {
+  return (
+    <span className="notranslate" translate="no">
+      {children}
+    </span>
+  );
 }
 
 function CatalogSetVisual({
@@ -91,7 +99,7 @@ function CatalogSetVisual({
       <div className={visualClassName}>
         <div className={styles.visualMedia}>
           <img
-            alt={`${name} LEGO set`}
+            alt={`${name} LEGO-set`}
             className={styles.setImage}
             decoding="async"
             loading={variant === 'hero' ? 'eager' : 'lazy'}
@@ -104,9 +112,11 @@ function CatalogSetVisual({
 
   return (
     <div className={`${visualClassName} ${styles.visualFallback}`}>
-      <Badge tone="accent">{theme}</Badge>
+      <Badge tone="accent">
+        <CatalogCanonicalText>{theme}</CatalogCanonicalText>
+      </Badge>
       <p className={styles.visualFallbackTitle}>
-        Official image not published yet
+        Officiele afbeelding nog niet gepubliceerd
       </p>
       <p className={styles.visualFallbackMeta}>Set {setId}</p>
     </div>
@@ -118,7 +128,7 @@ function CatalogSupportingDetail({
   value,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
 }) {
   return (
     <div className={styles.supportingDetail}>
@@ -133,7 +143,7 @@ function CatalogSetMetadata({
   items,
 }: {
   className?: string;
-  items: Array<{ label: string; value: string | number }>;
+  items: Array<{ label: string; value: ReactNode }>;
 }) {
   return (
     <dl
@@ -153,7 +163,7 @@ function CatalogSetMetadata({
 
 function formatMinifigureCount(minifigureCount?: number): string {
   if (typeof minifigureCount !== 'number') {
-    return 'Not tracked locally yet';
+    return 'Nog niet lokaal bijgehouden';
   }
 
   return minifigureCount.toLocaleString();
@@ -167,18 +177,18 @@ function formatCatalogSetStatus(
   }
 
   if (setStatus === 'available') {
-    return 'Available now';
+    return 'Nu beschikbaar';
   }
 
   if (setStatus === 'backorder') {
-    return 'Back order';
+    return 'Nabestelling';
   }
 
   if (setStatus === 'retiring_soon') {
-    return 'Retiring soon';
+    return 'Gaat bijna uit assortiment';
   }
 
-  return 'Retired';
+  return 'Uit assortiment';
 }
 
 function formatMinifigureHighlights(
@@ -207,7 +217,7 @@ export function CatalogSetCard({
   priceDisplay?: CatalogSetCardPriceDisplay;
   savedState?: CatalogSetSavedState;
   setSummary: CatalogSetCardSummary;
-  supportingNote?: string;
+  supportingNote?: ReactNode;
   variant?: CatalogSetCardVariant;
 }) {
   if (variant === 'compact') {
@@ -222,7 +232,9 @@ export function CatalogSetCard({
         />
         <div className={styles.cardCompactBody}>
           <div className={styles.cardCompactBadgeRow}>
-            <Badge tone="accent">{setSummary.theme}</Badge>
+            <Badge tone="accent">
+              <CatalogCanonicalText>{setSummary.theme}</CatalogCanonicalText>
+            </Badge>
             {contextBadge ? (
               <Badge tone={contextBadge.tone ?? 'neutral'}>
                 {contextBadge.label}
@@ -234,7 +246,9 @@ export function CatalogSetCard({
               </Badge>
             ) : null}
           </div>
-          <h3 className={styles.cardTitle}>{setSummary.name}</h3>
+          <h3 className={styles.cardTitle}>
+            <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
+          </h3>
           <p className={styles.cardBrowseSupporting}>
             {supportingNote ?? setSummary.tagline ?? setSummary.collectorAngle}
           </p>
@@ -243,7 +257,7 @@ export function CatalogSetCard({
               {setSummary.releaseYear} · {setSummary.priceRange}
             </p>
             {href ? (
-              <span className={styles.cardCompactAction}>Open set</span>
+              <span className={styles.cardCompactAction}>Bekijk set</span>
             ) : null}
           </div>
         </div>
@@ -278,7 +292,9 @@ export function CatalogSetCard({
         />
         <div className={styles.cardCompactBody}>
           <div className={styles.cardCompactBadgeRow}>
-            <Badge tone="accent">{setSummary.theme}</Badge>
+            <Badge tone="accent">
+              <CatalogCanonicalText>{setSummary.theme}</CatalogCanonicalText>
+            </Badge>
             {contextBadge ? (
               <Badge tone={contextBadge.tone ?? 'neutral'}>
                 {contextBadge.label}
@@ -290,9 +306,11 @@ export function CatalogSetCard({
               </Badge>
             ) : null}
           </div>
-          <h3 className={styles.cardTitle}>{setSummary.name}</h3>
+          <h3 className={styles.cardTitle}>
+            <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
+          </h3>
           <div className={styles.priceCompactBlock}>
-            <p className={styles.priceLabel}>Reviewed price</p>
+            <p className={styles.priceLabel}>Reviewed prijs</p>
             {priceContext ? (
               <>
                 <p className={styles.priceValue}>{priceContext.currentPrice}</p>
@@ -313,20 +331,20 @@ export function CatalogSetCard({
             ) : (
               <>
                 <p className={styles.priceUnavailableValue}>
-                  Reviewed price not published yet
+                  Reviewed prijs nog niet gepubliceerd
                 </p>
                 <p className={styles.cardCompactSupporting}>
-                  {supportingNote ?? 'Set page is live.'}
+                  {supportingNote ?? 'Setpagina staat live.'}
                 </p>
               </>
             )}
           </div>
           <div className={styles.cardCompactFooter}>
             <p className={styles.cardCompactMeta}>
-              {priceContext ? priceContext.reviewedLabel : 'Set page live'}
+              {priceContext ? priceContext.reviewedLabel : 'Setpagina live'}
             </p>
             {href ? (
-              <span className={styles.cardCompactAction}>Open set</span>
+              <span className={styles.cardCompactAction}>Bekijk set</span>
             ) : null}
           </div>
         </div>
@@ -360,7 +378,9 @@ export function CatalogSetCard({
       />
       <div className={styles.cardHeader}>
         <div className={styles.cardMetaRow}>
-          <Badge tone="accent">{setSummary.theme}</Badge>
+          <Badge tone="accent">
+            <CatalogCanonicalText>{setSummary.theme}</CatalogCanonicalText>
+          </Badge>
           {contextBadge ? (
             <Badge tone={contextBadge.tone ?? 'neutral'}>
               {contextBadge.label}
@@ -375,14 +395,16 @@ export function CatalogSetCard({
             {setSummary.releaseYear} · {setSummary.priceRange}
           </p>
         </div>
-        <h3 className={styles.cardTitle}>{setSummary.name}</h3>
+        <h3 className={styles.cardTitle}>
+          <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
+        </h3>
         <p className={styles.cardTagline}>
           {setSummary.tagline ?? setSummary.collectorAngle}
         </p>
       </div>
       {priceContext && priceDisplay === 'default' ? (
         <div className={styles.priceBlock}>
-          <p className={styles.priceLabel}>Reviewed price</p>
+          <p className={styles.priceLabel}>Reviewed prijs</p>
           <p className={styles.priceValue}>{priceContext.currentPrice}</p>
           <p className={styles.priceMeta}>{priceContext.merchantLabel}</p>
           {priceContext.pricePositionLabel ? (
@@ -392,27 +414,27 @@ export function CatalogSetCard({
           ) : null}
           <div className={styles.supportingGrid}>
             <CatalogSupportingDetail
-              label="Coverage"
+              label="Dekking"
               value={priceContext.coverageLabel}
             />
             <CatalogSupportingDetail
-              label="Freshness"
+              label="Actualiteit"
               value={priceContext.reviewedLabel}
             />
           </div>
         </div>
       ) : priceDisplay === 'default' ? (
         <div className={styles.priceBlock}>
-          <p className={styles.priceLabel}>Reviewed price</p>
+          <p className={styles.priceLabel}>Reviewed prijs</p>
           <p className={styles.priceUnavailableCopy}>
-            Reviewed price not published yet.
+            Reviewed prijs nog niet gepubliceerd.
           </p>
         </div>
       ) : null}
       <div className={styles.collectorContext}>
         {priceContext && priceDisplay === 'subtle' ? (
           <CatalogSupportingDetail
-            label="Current reviewed price"
+            label="Huidige reviewed prijs"
             value={`${priceContext.currentPrice} · ${priceContext.merchantLabel}`}
           />
         ) : null}
@@ -420,34 +442,34 @@ export function CatalogSetCard({
           <CatalogSupportingDetail
             label={
               priceContext && priceDisplay === 'default'
-                ? 'Buying signal'
-                : 'Current market note'
+                ? 'Koopsignaal'
+                : 'Huidige marktnotitie'
             }
             value={supportingNote}
           />
         ) : null}
         <CatalogSupportingDetail
-          label="Why collectors like it"
+          label="Waarom verzamelaars dit kiezen"
           value={setSummary.collectorAngle}
         />
         {setSummary.availability ? (
           <CatalogSupportingDetail
-            label="Availability"
+            label="Beschikbaarheid"
             value={setSummary.availability}
           />
         ) : null}
       </div>
       <CatalogSetMetadata
         items={[
-          { label: 'Pieces', value: setSummary.pieces.toLocaleString() },
-          { label: 'Release', value: setSummary.releaseYear },
-          { label: 'Range', value: setSummary.priceRange },
+          { label: 'Steentjes', value: setSummary.pieces.toLocaleString() },
+          { label: 'Jaar', value: setSummary.releaseYear },
+          { label: 'Prijsklasse', value: setSummary.priceRange },
         ]}
       />
       {actions ? <div className={styles.cardActions}>{actions}</div> : null}
       {href ? (
         <ActionLink className={styles.actionLink} href={href} tone="secondary">
-          See set
+          Bekijk set
         </ActionLink>
       ) : null}
     </Surface>
@@ -563,17 +585,17 @@ export function CatalogSetDetailPanel({
 
   return (
     <section className={styles.detailPage}>
-      <nav aria-label="Set context" className={styles.contextRow}>
+      <nav aria-label="Setcontext" className={styles.contextRow}>
         {themeDirectoryHref ? (
           <ActionLink
             className={styles.contextLink}
             href={themeDirectoryHref}
             tone="inline"
           >
-            Themes
+            Thema's
           </ActionLink>
         ) : (
-          <span className={styles.contextCurrent}>Themes</span>
+          <span className={styles.contextCurrent}>Thema's</span>
         )}
         <span aria-hidden="true" className={styles.contextDivider}>
           /
@@ -584,18 +606,22 @@ export function CatalogSetDetailPanel({
             href={themeHref}
             tone="inline"
           >
-            {catalogSetDetail.theme}
+            <CatalogCanonicalText>
+              {catalogSetDetail.theme}
+            </CatalogCanonicalText>
           </ActionLink>
         ) : (
           <span className={styles.contextCurrent}>
-            {catalogSetDetail.theme}
+            <CatalogCanonicalText>
+              {catalogSetDetail.theme}
+            </CatalogCanonicalText>
           </span>
         )}
         <span aria-hidden="true" className={styles.contextDivider}>
           /
         </span>
         <span aria-current="page" className={styles.contextCurrent}>
-          Set detail
+          Setdetail
         </span>
       </nav>
       <Surface
@@ -617,8 +643,12 @@ export function CatalogSetDetailPanel({
           <div className={styles.heroCopy}>
             <SectionHeading
               description={catalogSetDetail.tagline}
-              eyebrow="Set detail"
-              title={catalogSetDetail.name}
+              eyebrow="Setdetail"
+              title={
+                <CatalogCanonicalText>
+                  {catalogSetDetail.name}
+                </CatalogCanonicalText>
+              }
               titleAs="h1"
               tone="display"
             />
@@ -629,10 +659,18 @@ export function CatalogSetDetailPanel({
                   href={themeHref}
                   tone="inline"
                 >
-                  <Badge tone="accent">{catalogSetDetail.theme}</Badge>
+                  <Badge tone="accent">
+                    <CatalogCanonicalText>
+                      {catalogSetDetail.theme}
+                    </CatalogCanonicalText>
+                  </Badge>
                 </ActionLink>
               ) : (
-                <Badge tone="accent">{catalogSetDetail.theme}</Badge>
+                <Badge tone="accent">
+                  <CatalogCanonicalText>
+                    {catalogSetDetail.theme}
+                  </CatalogCanonicalText>
+                </Badge>
               )}
             </div>
             <p className={styles.heroMeta}>
@@ -658,21 +696,37 @@ export function CatalogSetDetailPanel({
         >
           <div className={styles.notesHeader}>
             <SectionHeading
-              description="Core product facts and the collector context that matter before you compare prices."
-              eyebrow="Set details"
-              title="What LEGO fans usually check first"
+              description="De belangrijkste productfeiten en verzamelcontext die tellen voordat je prijzen vergelijkt."
+              eyebrow="Setdetails"
+              title="Wat LEGO-fans meestal eerst checken"
               titleAs="h3"
             />
           </div>
           <CatalogSetMetadata
             className={styles.detailSpecsGrid}
             items={[
-              { label: 'Set number', value: catalogSetDetail.id },
-              { label: 'Theme', value: catalogSetDetail.theme },
+              { label: 'Setnummer', value: catalogSetDetail.id },
+              {
+                label: 'Thema',
+                value: (
+                  <CatalogCanonicalText>
+                    {catalogSetDetail.theme}
+                  </CatalogCanonicalText>
+                ),
+              },
               ...(catalogSetDetail.subtheme
-                ? [{ label: 'Subtheme', value: catalogSetDetail.subtheme }]
+                ? [
+                    {
+                      label: 'Subthema',
+                      value: (
+                        <CatalogCanonicalText>
+                          {catalogSetDetail.subtheme}
+                        </CatalogCanonicalText>
+                      ),
+                    },
+                  ]
                 : []),
-              { label: 'Release year', value: catalogSetDetail.releaseYear },
+              { label: 'Releasejaar', value: catalogSetDetail.releaseYear },
               ...(setStatusLabel
                 ? [
                     {
@@ -682,11 +736,11 @@ export function CatalogSetDetailPanel({
                   ]
                 : []),
               {
-                label: 'Pieces',
+                label: 'Steentjes',
                 value: catalogSetDetail.pieces.toLocaleString(),
               },
               {
-                label: 'Minifigures',
+                label: 'Minifiguren',
                 value: formatMinifigureCount(catalogSetDetail.minifigureCount),
               },
             ]}
@@ -694,16 +748,20 @@ export function CatalogSetDetailPanel({
           <div className={styles.detailCollectorContext}>
             {minifigureHighlightsLabel ? (
               <CatalogSupportingDetail
-                label="Includes"
-                value={minifigureHighlightsLabel}
+                label="Bevat"
+                value={
+                  <CatalogCanonicalText>
+                    {minifigureHighlightsLabel}
+                  </CatalogCanonicalText>
+                }
               />
             ) : null}
             <CatalogSupportingDetail
-              label="Collector take"
+              label="Verzamelaarsblik"
               value={catalogSetDetail.collectorAngle}
             />
             <CatalogSupportingDetail
-              label="Availability"
+              label="Beschikbaarheid"
               value={catalogSetDetail.availability}
             />
           </div>
@@ -759,7 +817,7 @@ export function CatalogThemeHighlight({
         {portraitImageUrl ? (
           <div className={styles.themePortraitVisual}>
             <img
-              alt={`${themeSnapshot.signatureSet} LEGO set`}
+              alt={`${themeSnapshot.signatureSet} LEGO-set`}
               className={styles.themePortraitImage}
               decoding="async"
               loading="lazy"
@@ -768,7 +826,9 @@ export function CatalogThemeHighlight({
           </div>
         ) : null}
         <div className={styles.themePortraitBody}>
-          <h3 className={styles.themePortraitTitle}>{themeSnapshot.name}</h3>
+          <h3 className={styles.themePortraitTitle}>
+            <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
+          </h3>
           <p className={styles.themePortraitMeta}>
             {themeSnapshot.setCount} sets
           </p>
@@ -825,7 +885,7 @@ export function CatalogThemeHighlight({
         {featureImageUrl ? (
           <div className={styles.themeFeatureVisual}>
             <img
-              alt={`${themeSnapshot.signatureSet} LEGO set`}
+              alt={`${themeSnapshot.signatureSet} LEGO-set`}
               className={styles.themeFeatureImage}
               decoding="async"
               loading="lazy"
@@ -836,14 +896,19 @@ export function CatalogThemeHighlight({
         <div className={styles.themeFeatureBody}>
           <div className={styles.themeFeatureTop}>
             <p className={styles.themeFeatureCount}>
-              {themeSnapshot.setCount} tracked sets
+              {themeSnapshot.setCount} gevolgde sets
             </p>
-            <span className={styles.themeFeatureAction}>Open theme page</span>
+            <span className={styles.themeFeatureAction}>Open themapagina</span>
           </div>
-          <h3 className={styles.themeFeatureTitle}>{themeSnapshot.name}</h3>
+          <h3 className={styles.themeFeatureTitle}>
+            <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
+          </h3>
           <p className={styles.themeFeatureCopy}>{themeSnapshot.momentum}</p>
           <p className={styles.themeFeatureSignature}>
-            Start with {themeSnapshot.signatureSet}
+            Begin met{' '}
+            <CatalogCanonicalText>
+              {themeSnapshot.signatureSet}
+            </CatalogCanonicalText>
           </p>
         </div>
       </>
@@ -885,11 +950,17 @@ export function CatalogThemeHighlight({
       tone="muted"
     >
       <div className={styles.themeHeader}>
-        <Badge tone="accent">{themeSnapshot.name}</Badge>
-        <h3 className={styles.cardTitle}>{themeSnapshot.signatureSet}</h3>
+        <Badge tone="accent">
+          <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
+        </Badge>
+        <h3 className={styles.cardTitle}>
+          <CatalogCanonicalText>
+            {themeSnapshot.signatureSet}
+          </CatalogCanonicalText>
+        </h3>
       </div>
       <p className={styles.mutedCopy}>{themeSnapshot.momentum}</p>
-      <Badge tone="info">{themeSnapshot.setCount} tracked sets</Badge>
+      <Badge tone="info">{themeSnapshot.setCount} gevolgde sets</Badge>
     </Surface>
   );
 }
@@ -898,9 +969,9 @@ export function CatalogUi() {
   return (
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
-        description="Presentational building blocks for set discovery and detail storytelling."
-        eyebrow="Catalog UI"
-        title="Retail-grade catalog surfaces with collector-friendly metadata."
+        description="Presentatieblokken voor setontdekking en detailverhalen."
+        eyebrow="Catalogus-UI"
+        title="Retailwaardige catalogusoppervlakken met metadata voor verzamelaars."
       />
     </Surface>
   );

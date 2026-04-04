@@ -20,14 +20,14 @@ export function CatalogFeatureThemeIndex({
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Use the theme directory when you already know the world you want to browse, from display-first Icons shelves to franchise-heavy lanes."
-          eyebrow="Themes"
-          title="Browse every theme"
+          description="Gebruik het themaoverzicht als je al weet in welke wereld je wilt bladeren, van displaygerichte Icons-planken tot franchise-zware themalijnen."
+          eyebrow="Thema's"
+          title="Blader door alle thema's"
           titleAs="h1"
         />
         <p className={styles.introMeta}>
-          {themeDirectoryItems.length} theme pages · Discover stays better for
-          mixed browsing
+          {themeDirectoryItems.length} themapagina's · Ontdekken blijft beter
+          voor gemengd bladeren
         </p>
       </section>
       <div className={styles.grid}>

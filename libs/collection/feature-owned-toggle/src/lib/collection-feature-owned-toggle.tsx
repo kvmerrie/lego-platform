@@ -45,7 +45,9 @@ export function CollectionFeatureOwnedToggle({
           return;
         }
 
-        setErrorMessage('Unable to load the collection state for this set.');
+        setErrorMessage(
+          'De collectiestatus voor deze set kon niet worden geladen.',
+        );
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -95,14 +97,14 @@ export function CollectionFeatureOwnedToggle({
       setOwnedSetState(nextOwnedSetState);
       setSuccessMessage(
         nextOwnedSetState.isOwned
-          ? 'Marked as owned. Your collector account is up to date.'
-          : 'Removed from your collection. Your collector account is up to date.',
+          ? 'Gemarkeerd als in collectie. Je account is bijgewerkt.'
+          : 'Verwijderd uit je collectie. Je account is bijgewerkt.',
       );
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to update your collection right now.',
+          : 'Je collectie kon nu niet worden bijgewerkt.',
       );
     } finally {
       setIsPending(false);

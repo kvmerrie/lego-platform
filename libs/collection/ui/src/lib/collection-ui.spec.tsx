@@ -9,16 +9,18 @@ describe('OwnedSetToggleCard', () => {
         hasResolvedState
         isOwned
         setId="10316"
-        successMessage="Marked as owned. Your collector account is up to date."
+        successMessage="Gemarkeerd als in collectie. Je verzamelaarsaccount is bijgewerkt."
         onToggle={() => undefined}
       />,
     );
 
-    expect(markup).toContain('Owned');
+    expect(markup).toContain('In collectie');
     expect(markup).not.toContain('Private collector state');
-    expect(markup).toContain('Your collector account is up to date.');
-    expect(markup).toContain('Private save. Set facts stay public.');
-    expect(markup).toContain('Remove from collection');
+    expect(markup).toContain('Je verzamelaarsaccount is bijgewerkt.');
+    expect(markup).toContain(
+      'Prive opgeslagen. Setinformatie blijft openbaar.',
+    );
+    expect(markup).toContain('Uit collectie verwijderen');
   });
 
   it('renders a compact product-page variant for set detail actions', () => {
@@ -36,7 +38,7 @@ describe('OwnedSetToggleCard', () => {
     expect(markup).not.toContain('Save to owned');
     expect(markup).not.toContain('Private to you.');
     expect(markup).not.toContain('Not saved yet');
-    expect(markup).toContain('Mark as owned');
+    expect(markup).toContain('Markeer als in collectie');
     expect(markup).not.toContain('Private collector state');
   });
 });
@@ -47,39 +49,39 @@ describe('CollectorCollectionPanel', () => {
       <CollectorCollectionPanel state="signed-out" />,
     );
 
-    expect(markup).toContain('Sign in to see your collection');
+    expect(markup).toContain('Log in om je collectie te bekijken');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('Sign in to save privately');
-    expect(markup).toContain('Browse catalog');
-    expect(markup).toContain('Browse themes');
+    expect(markup).toContain('Log in om prive op te slaan');
+    expect(markup).toContain('Bekijk catalogus');
+    expect(markup).toContain('Bekijk thema&#x27;s');
     expect(markup).toContain('Open account');
-    expect(markup).toContain('Open wishlist');
+    expect(markup).toContain('Open verlanglijst');
   });
 
   it('renders populated collection context with hidden-set messaging when needed', () => {
     const markup = renderToStaticMarkup(
       <CollectorCollectionPanel
         collectorName="Alex Rivera"
-        controls={<button type="button">Theme</button>}
+        controls={<button type="button">Thema</button>}
         hiddenOwnedCount={1}
         ownedCount={2}
-        statusMessage="Rivendell removed from your collection."
+        statusMessage="Rivendell is uit je collectie verwijderd."
         state="populated"
       >
         <article>Owned set card</article>
       </CollectorCollectionPanel>,
     );
 
-    expect(markup).toContain('Your collection');
+    expect(markup).toContain('Je collectie');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('2 in collection');
-    expect(markup).toContain('1 outside today&#x27;s catalog');
+    expect(markup).toContain('2 in collectie');
+    expect(markup).toContain('1 buiten de catalogus van vandaag');
     expect(markup).toContain('Owned set card');
-    expect(markup).toContain('Theme');
-    expect(markup).toContain('Rivendell removed from your collection.');
+    expect(markup).toContain('Thema');
+    expect(markup).toContain('Rivendell is uit je collectie verwijderd.');
     expect(markup).toContain('Open account');
-    expect(markup).toContain('Open wishlist');
-    expect(markup).toContain('Browse themes');
+    expect(markup).toContain('Open verlanglijst');
+    expect(markup).toContain('Bekijk thema&#x27;s');
     expect(markup).not.toContain('Owned collection');
   });
 });

@@ -17,7 +17,7 @@ const browserAccountDataChangeListeners = new Set<() => void>();
 const DEFAULT_POST_AUTH_REDIRECT_PATH = '/';
 const SUPABASE_AUTH_CALLBACK_PATH = '/auth/callback';
 const AUTH_UNAVAILABLE_ERROR_MESSAGE =
-  'Account sign-in is not available in this environment yet.';
+  'Inloggen is in deze omgeving nog niet beschikbaar.';
 
 export type BrowserSupabaseAuthChangeListener = (
   authChangeEvent: AuthChangeEvent,
@@ -82,7 +82,7 @@ function normalizeAuthCallbackMessage(value: string): string {
 
 function formatAuthCallbackErrorMessage(rawMessage?: string): string {
   if (!rawMessage) {
-    return 'Unable to finish sign-in right now.';
+    return 'Inloggen kon nu niet worden afgerond.';
   }
 
   const normalizedMessage = normalizeAuthCallbackMessage(rawMessage);
@@ -95,7 +95,7 @@ function formatAuthCallbackErrorMessage(rawMessage?: string): string {
     errorText.includes('invalid') ||
     errorText.includes('otp')
   ) {
-    return 'This sign-in link is no longer valid. Request a fresh one and try again.';
+    return 'Deze inloglink is niet meer geldig. Vraag een nieuwe aan en probeer het opnieuw.';
   }
 
   return normalizedMessage;
@@ -207,7 +207,7 @@ export async function completeSupabaseAuthCallback({
   assertBrowserSupabaseAuthAvailable();
 
   if (!currentUrl) {
-    throw new Error('Unable to read the auth callback URL.');
+    throw new Error('De callback-URL voor inloggen kon niet worden gelezen.');
   }
 
   const nextPath = readSupabaseAuthCallbackNextPath(currentUrl);
@@ -260,7 +260,7 @@ export async function completeSupabaseAuthCallback({
 
   if (!session) {
     throw new Error(
-      'This sign-in link is no longer valid. Request a fresh one and try again.',
+      'Deze inloglink is niet meer geldig. Vraag een nieuwe aan en probeer het opnieuw.',
     );
   }
 
@@ -279,7 +279,7 @@ export function warnAboutMissingBrowserSupabaseConfig(): void {
   }
 
   console.warn(
-    `[auth] Browser sign-in is disabled because these environment variables are missing: ${getMissingBrowserSupabaseEnvKeys().join(', ')}.`,
+    `[auth] Browserinloggen is uitgeschakeld omdat deze omgevingsvariabelen ontbreken: ${getMissingBrowserSupabaseEnvKeys().join(', ')}.`,
   );
   hasWarnedAboutMissingBrowserSupabaseConfig = true;
 }

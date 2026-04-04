@@ -118,32 +118,32 @@ export function getPriceDealSummary({
 }: Pick<PricePanelSnapshot, 'deltaMinor' | 'merchantCount'>): PriceDealSummary {
   const coverageNote =
     merchantCount <= 2
-      ? `Only ${merchantCount} reviewed offer${merchantCount === 1 ? '' : 's'} so far`
+      ? `Tot nu toe pas ${merchantCount} reviewed aanbieding${merchantCount === 1 ? '' : 'en'}`
       : undefined;
 
   if (typeof deltaMinor !== 'number') {
     return {
-      label: 'Lowest reviewed offer',
+      label: 'Laagste reviewed aanbieding',
       coverageNote,
     };
   }
 
   if (deltaMinor < 0) {
     return {
-      label: 'Best current deal',
+      label: 'Beste deal nu',
       coverageNote,
     };
   }
 
   if (deltaMinor > 0) {
     return {
-      label: 'Above reference',
+      label: 'Boven referentie',
       coverageNote,
     };
   }
 
   return {
-    label: 'Right on reference',
+    label: 'Precies op referentie',
     coverageNote,
   };
 }

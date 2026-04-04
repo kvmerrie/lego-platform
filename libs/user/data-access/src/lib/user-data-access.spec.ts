@@ -151,7 +151,7 @@ describe('user data access', () => {
         email: 'collector@example.com',
       }),
     ).rejects.toThrow(
-      'Account sign-in is not available in this environment yet.',
+      'Accountinloggen is in deze omgeving nog niet beschikbaar.',
     );
   });
 
@@ -182,7 +182,7 @@ describe('user data access', () => {
         email: 'collector@example.com',
       }),
     ).rejects.toThrow(
-      'A sign-in link was sent recently. Wait about a minute, then try again.',
+      'Er is onlangs al een inloglink verstuurd. Wacht ongeveer een minuut en probeer het daarna opnieuw.',
     );
   });
 
@@ -212,7 +212,7 @@ describe('user data access', () => {
         email: 'collector@example.com',
       }),
     ).rejects.toThrow(
-      'Sign-in email delivery is not ready for this address yet. Please try again later or contact support.',
+      'E-mailbezorging voor inloggen is voor dit adres nog niet klaar. Probeer het later opnieuw of neem contact op met support.',
     );
   });
 
@@ -260,7 +260,7 @@ describe('user data access', () => {
         email: 'collector@example.com',
         password: 'wrong-password',
       }),
-    ).rejects.toThrow('Email or password is incorrect.');
+    ).rejects.toThrow('E-mailadres of wachtwoord is onjuist.');
   });
 
   test('creates an email and password account and reports when confirmation is still required', async () => {
@@ -496,7 +496,7 @@ describe('user data access', () => {
         wishlistDealAlerts: true,
       }),
     ).rejects.toThrow(
-      'That collector handle is already taken. Try a more distinctive version.',
+      'Deze verzamelaarsnaam is al in gebruik. Probeer een duidelijkere variant.',
     );
   });
 

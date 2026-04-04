@@ -57,10 +57,10 @@ export function readStringArrayProperty(
 }
 
 const toneCopy: Record<StatusTone, string> = {
-  accent: 'Strategic signal',
-  neutral: 'Steady baseline',
-  positive: 'Positive momentum',
-  warning: 'Needs attention',
+  accent: 'Strategisch signaal',
+  neutral: 'Stabiele basis',
+  positive: 'Positief momentum',
+  warning: 'Heeft aandacht nodig',
 };
 
 export function getMetricNarrative(metric: MetricCard): string {
@@ -72,5 +72,7 @@ export function getToneCopy(tone: StatusTone = 'neutral'): string {
 }
 
 export function getThemeToggleLabel(mode: ThemeMode): string {
-  return mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  return mode === 'dark'
+    ? 'Schakel naar lichte modus'
+    : 'Schakel naar donkere modus';
 }

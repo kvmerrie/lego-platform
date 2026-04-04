@@ -44,11 +44,11 @@ const sortOptions: ReadonlyArray<{
   },
   {
     key: 'release-year',
-    label: 'Release year',
+    label: 'Releasejaar',
   },
   {
     key: 'theme',
-    label: 'Theme',
+    label: 'Thema',
   },
 ];
 
@@ -122,7 +122,7 @@ function getWishlistBuyingNote({
     return undefined;
   }
 
-  if (priceSummary.dealLabel === 'Best current deal') {
+  if (priceSummary.dealLabel === 'Beste deal nu') {
     return `${priceSummary.dealLabel} · ${
       priceSummary.availabilityLabel ??
       priceSummary.coverageNote ??
@@ -149,7 +149,7 @@ function toWishlistContextBadge({
   }
 
   return {
-    label: isNew ? `New · ${wishlistAlert.label}` : wishlistAlert.label,
+    label: isNew ? `Nieuw · ${wishlistAlert.label}` : wishlistAlert.label,
     tone: wishlistAlert.tone,
   };
 }
@@ -187,7 +187,7 @@ export function ShellFeatureCollectorWishlist() {
       }
 
       setUserSession(createAnonymousUserSession());
-      setErrorMessage('Unable to load your private wishlist right now.');
+      setErrorMessage('Je prive verlanglijst kon nu niet worden geladen.');
     } finally {
       if (isMountedRef.current) {
         setIsLoading(false);
@@ -333,7 +333,7 @@ export function ShellFeatureCollectorWishlist() {
         return;
       }
 
-      setStatusMessage(`${name} moved to your collection.`);
+      setStatusMessage(`${name} is naar je collectie verplaatst.`);
     } catch (error) {
       if (!isMountedRef.current) {
         return;
@@ -342,7 +342,7 @@ export function ShellFeatureCollectorWishlist() {
       setErrorMessage(
         readActionErrorMessage(
           error,
-          'Unable to move this set to your collection right now.',
+          'Deze set kon nu niet naar je collectie worden verplaatst.',
         ),
       );
     } finally {
@@ -379,7 +379,7 @@ export function ShellFeatureCollectorWishlist() {
         return;
       }
 
-      setStatusMessage(`${name} removed from your wishlist.`);
+      setStatusMessage(`${name} is van je verlanglijst verwijderd.`);
     } catch (error) {
       if (!isMountedRef.current) {
         return;
@@ -388,7 +388,7 @@ export function ShellFeatureCollectorWishlist() {
       setErrorMessage(
         readActionErrorMessage(
           error,
-          'Unable to update your wishlist right now.',
+          'Je verlanglijst kon nu niet worden bijgewerkt.',
         ),
       );
     } finally {
@@ -423,7 +423,7 @@ export function ShellFeatureCollectorWishlist() {
       controls={
         <div className={styles.toolbar}>
           <div className={styles.toolbarGroup}>
-            <p className={styles.toolbarLabel}>Sort</p>
+            <p className={styles.toolbarLabel}>Sorteren</p>
             <div className={styles.toolbarActions}>
               {sortOptions.map((sortOption) => (
                 <Button
@@ -439,14 +439,14 @@ export function ShellFeatureCollectorWishlist() {
             </div>
           </div>
           <p className={styles.toolbarMeta}>
-            {wantedSetCards.length} saved
+            {wantedSetCards.length} opgeslagen
             {activeWishlistAlertCount > 0
-              ? ` · ${activeWishlistAlertCount} buy signal${
+              ? ` · ${activeWishlistAlertCount} koopsignaal${
                   activeWishlistAlertCount === 1 ? '' : 's'
-                } right now`
+                } nu actief`
               : ''}
             {newWishlistAlertCount > 0
-              ? ` · ${newWishlistAlertCount} new since your last check`
+              ? ` · ${newWishlistAlertCount} nieuw sinds je laatste check`
               : ''}
           </p>
         </div>
@@ -483,7 +483,7 @@ export function ShellFeatureCollectorWishlist() {
                     })
                   }
                 >
-                  Move to collection
+                  Verplaats naar collectie
                 </Button>
                 <Button
                   disabled={Boolean(pendingSetIds[catalogSetCard.id])}
@@ -497,7 +497,7 @@ export function ShellFeatureCollectorWishlist() {
                     })
                   }
                 >
-                  Remove
+                  Verwijder
                 </Button>
               </div>
             }

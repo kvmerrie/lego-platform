@@ -128,13 +128,13 @@ describe('pricing data access', () => {
   test('builds a formatted reviewed price summary for collector list surfaces', () => {
     expect(getReviewedPriceSummary('10354')).toEqual({
       availabilityLabel: 'In stock',
-      coverageLabel: 'In stock · 2 reviewed offers',
-      coverageNote: 'Only 2 reviewed offers so far',
+      coverageLabel: 'In stock · 2 reviewed aanbiedingen',
+      coverageNote: 'Tot nu toe pas 2 reviewed aanbiedingen',
       currentPrice: '€ 246,43',
-      dealLabel: 'Best current deal',
-      merchantLabel: 'Lowest reviewed price at bol',
-      pricePositionLabel: '€ 23,56 below reference',
-      reviewedLabel: 'Checked 3 apr',
+      dealLabel: 'Beste deal nu',
+      merchantLabel: 'Laagste reviewed prijs bij bol',
+      pricePositionLabel: '€ 23,56 onder referentie',
+      reviewedLabel: 'Gecheckt 3 apr',
     });
   });
 
@@ -169,9 +169,9 @@ describe('pricing data access', () => {
         setId: '10354',
       }),
     ).toEqual({
-      detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+      detail: '€ 246,43 is € 8,56 onder de vorige beste tracked prijs.',
       kind: 'new-best-price',
-      label: 'New best reviewed price',
+      label: 'Nieuwe beste reviewed prijs',
       tone: 'positive',
     });
   });
@@ -182,9 +182,9 @@ describe('pricing data access', () => {
         setId: '10354',
       }),
     ).toEqual({
-      detail: '€ 23,56 below reference · In stock',
+      detail: '€ 23,56 onder referentie · In stock',
       kind: 'strong-deal-now',
-      label: 'Strong deal right now',
+      label: 'Sterke deal nu',
       tone: 'accent',
     });
   });
@@ -220,9 +220,9 @@ describe('pricing data access', () => {
         setId: '10316',
       }),
     ).toEqual({
-      detail: '€ 469,99 is € 20,00 lower than when you saved it.',
+      detail: '€ 469,99 is € 20,00 lager dan toen je deze set opsloeg.',
       kind: 'price-improved-since-save',
-      label: 'Lower than when you saved it',
+      label: 'Lager dan toen je hem opsloeg',
       tone: 'positive',
     });
   });
@@ -377,9 +377,9 @@ describe('pricing data access', () => {
       }),
     ).resolves.toEqual({
       '10354': {
-        detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+        detail: '€ 246,43 is € 8,56 onder de vorige beste tracked prijs.',
         kind: 'new-best-price',
-        label: 'New best reviewed price',
+        label: 'Nieuwe beste reviewed prijs',
         tone: 'positive',
       },
     });

@@ -45,7 +45,9 @@ export function WishlistFeatureWishlistToggle({
           return;
         }
 
-        setErrorMessage('Unable to load the wishlist state for this set.');
+        setErrorMessage(
+          'De verlanglijststatus voor deze set kon niet worden geladen.',
+        );
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -95,14 +97,14 @@ export function WishlistFeatureWishlistToggle({
       setWantedSetState(nextWantedSetState);
       setSuccessMessage(
         nextWantedSetState.isWanted
-          ? 'Added to your wishlist. Your collector account is up to date.'
-          : 'Removed from your wishlist. Your collector account is up to date.',
+          ? 'Toegevoegd aan je verlanglijst. Je account is bijgewerkt.'
+          : 'Verwijderd van je verlanglijst. Je account is bijgewerkt.',
       );
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to update your wishlist right now.',
+          : 'Je verlanglijst kon nu niet worden bijgewerkt.',
       );
     } finally {
       setIsPending(false);

@@ -163,7 +163,7 @@ const curatedThemeVisualsByName = new Map<string, CatalogThemeVisual>([
     'Technic',
     {
       backgroundColor: '#a8b4c2',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/42177-1/142596.jpg',
       textColor: '#171a22',
     },
   ],

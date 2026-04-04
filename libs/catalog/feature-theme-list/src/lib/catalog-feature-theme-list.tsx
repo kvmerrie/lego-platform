@@ -28,10 +28,10 @@ export function CatalogFeatureThemeList({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          eyebrow="Themes"
-          title="Browse themes"
+          eyebrow="Thema's"
+          title="Blader door thema's"
         />
-        <p className={styles.signalRow}>{themeItems.length} theme pages</p>
+        <p className={styles.signalRow}>{themeItems.length} themapagina's</p>
       </div>
       <div className={styles.rail}>
         {themeItems.map((themeItem) => (

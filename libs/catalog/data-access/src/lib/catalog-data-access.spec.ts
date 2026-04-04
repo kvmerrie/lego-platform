@@ -416,7 +416,7 @@ const expectedCatalogThemes = [
     slug: 'icons',
     setCount: 17,
     momentum:
-      'Premium collectors are consolidating around large display pieces.',
+      'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
     signatureSet: 'Rivendell',
   },
   {
@@ -424,7 +424,7 @@ const expectedCatalogThemes = [
     slug: 'ideas',
     setCount: 10,
     momentum:
-      'Community-voted display builds keep balancing fandom, nostalgia, and design-object appeal.',
+      'Displaybuilds die door de community zijn gekozen blijven fandom, nostalgie en aantrekkingskracht als designobject in balans brengen.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
@@ -432,7 +432,7 @@ const expectedCatalogThemes = [
     slug: 'marvel',
     setCount: 5,
     momentum:
-      'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
+      'Marvel voelt nu als een echte verzamelaarslijn met zowel een vlaggenschiptoren als een markante begeleidende build.',
     signatureSet: 'Avengers Tower',
   },
   {
@@ -440,7 +440,7 @@ const expectedCatalogThemes = [
     slug: 'modular-buildings',
     setCount: 1,
     momentum:
-      'Collector interest in premium street-scale buildings stays strong because they photograph and display so well.',
+      'Interesse van verzamelaars in premium gebouwen op straatniveau blijft sterk omdat ze zo goed fotograferen en tentoonstellen.',
     signatureSet: 'Natural History Museum',
   },
   {
@@ -448,7 +448,7 @@ const expectedCatalogThemes = [
     slug: 'botanicals',
     setCount: 4,
     momentum:
-      'Giftable adult builds keep bringing more casual browsers into the catalog through recognizable botanical subjects.',
+      'Cadeauwaardige adult builds blijven meer casual bezoekers de catalogus in trekken via herkenbare botanische onderwerpen.',
     signatureSet: 'Flower Bouquet',
   },
   {
@@ -456,7 +456,7 @@ const expectedCatalogThemes = [
     slug: 'technic',
     setCount: 5,
     momentum:
-      'Large-scale supercars remain the cleanest path into Technic for collectors who browse for recognizable icons.',
+      'Supercars op grote schaal blijven de duidelijkste route naar Technic voor verzamelaars die op herkenbare iconen browsen.',
     signatureSet: 'Ferrari Daytona SP3',
   },
   {
@@ -464,7 +464,7 @@ const expectedCatalogThemes = [
     slug: 'super-mario',
     setCount: 1,
     momentum:
-      'Character-led display pieces give the public catalog a broader gaming entry without turning into a play-focused assortment.',
+      'Charactergedreven displaystukken geven de publieke catalogus een bredere gaming-ingang zonder in een speelgerichte selectie te veranderen.',
     signatureSet: 'The Mighty Bowser',
   },
   {
@@ -472,7 +472,7 @@ const expectedCatalogThemes = [
     slug: 'ninjago',
     setCount: 1,
     momentum:
-      'Collector appetite for dense NINJAGO city builds stays strong even outside the core franchise audience.',
+      'De belangstelling van verzamelaars voor dichte NINJAGO-stadsbuilds blijft sterk, ook buiten het kernpubliek van de franchise.',
     signatureSet: 'NINJAGO City Gardens',
   },
   {
@@ -480,7 +480,7 @@ const expectedCatalogThemes = [
     slug: 'jurassic-world',
     setCount: 1,
     momentum:
-      'Film-scene nostalgia keeps Jurassic builds easy to understand and easy to search for in a curated public catalog.',
+      'Filmscenenostalgie houdt Jurassic-builds makkelijk te begrijpen en makkelijk te vinden in een gecureerde publieke catalogus.',
     signatureSet: 'T. rex Breakout',
   },
   {
@@ -488,7 +488,7 @@ const expectedCatalogThemes = [
     slug: 'star-wars',
     setCount: 6,
     momentum:
-      'High-end Star Wars collecting lands best when the public mix shows more than one obvious flagship silhouette.',
+      'High-end Star Wars-verzamelen werkt het best wanneer de publieke mix meer dan één duidelijk vlaggenschipsilhouet laat zien.',
     signatureSet: 'AT-AT',
   },
   {
@@ -496,7 +496,7 @@ const expectedCatalogThemes = [
     slug: 'harry-potter',
     setCount: 6,
     momentum:
-      'Wizarding World remains one of the broadest franchise search drivers once the catalog shows both entry and flagship display options.',
+      'Wizarding World blijft een van de breedste franchise-drivers in zoekopdrachten zodra de catalogus zowel instap- als vlaggenschipopties voor display laat zien.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
   },
   {
@@ -504,7 +504,7 @@ const expectedCatalogThemes = [
     slug: 'architecture',
     setCount: 1,
     momentum:
-      'Globally recognizable landmarks keep architecture sets valuable as broad search-entry anchors.',
+      'Wereldwijd herkenbare landmarks houden Architecture-sets waardevol als brede ankers voor zoekinstroom.',
     signatureSet: 'Notre-Dame de Paris',
   },
   {
@@ -512,7 +512,7 @@ const expectedCatalogThemes = [
     slug: 'art',
     setCount: 1,
     momentum:
-      'Wall-friendly art builds keep the catalog from feeling limited to buildings, vehicles, and franchise landmarks.',
+      'Muurvriendelijke art-builds zorgen ervoor dat de catalogus niet beperkt aanvoelt tot gebouwen, voertuigen en franchiselandmarks.',
     signatureSet: 'Hokusai - The Great Wave',
   },
   {
@@ -520,7 +520,7 @@ const expectedCatalogThemes = [
     slug: 'disney',
     setCount: 1,
     momentum:
-      'Disney display icons bring family recognition and gifting appeal into a mostly adult-collector public mix.',
+      'Disney-displayiconen brengen familieherkenning en cadeauwaarde in een publieke mix die vooral op volwassen verzamelaars is gericht.',
     signatureSet: 'Disney Castle',
   },
 ];
@@ -564,15 +564,15 @@ describe('catalog data-access contracts', () => {
       pieces: 6181,
       minifigureCount: 15,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-      priceRange: '$499 to $569',
-      collectorAngle: 'Prestige display anchor',
+      priceRange: '$499 tot $569',
+      collectorAngle: 'Prestige-displayanker',
       tagline:
-        'A flagship fantasy build that rewards both display space and patience.',
-      availability: 'Healthy but premium availability',
+        'Een fantasy-vlaggenschip dat zowel je displayruimte als je geduld beloont.',
+      availability: 'Ruim beschikbaar, maar premium geprijsd',
       collectorHighlights: [
-        'Three-story scene composition with strong shelf presence',
-        'Long-term display value thanks to cross-fandom appeal',
-        'Excellent candidate for future editorial storytelling',
+        'Driedelige scène-opbouw met sterke schappresentatie',
+        'Sterke langetermijnwaarde als displaystuk dankzij brede fandom-aantrekkingskracht',
+        'Uitstekende kandidaat voor toekomstige redactionele storytelling',
       ],
     });
   });
@@ -587,8 +587,8 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 6181,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-        priceRange: '$499 to $569',
-        collectorAngle: 'Prestige display anchor',
+        priceRange: '$499 tot $569',
+        collectorAngle: 'Prestige-displayanker',
       },
       {
         id: '10333',
@@ -598,8 +598,8 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 5478,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-        priceRange: '$459 to $529',
-        collectorAngle: 'Middle-earth display monolith',
+        priceRange: '$459 tot $529',
+        collectorAngle: 'Middle-earth displaymonoliet',
       },
       {
         id: '21333',
@@ -609,8 +609,8 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2022,
         pieces: 2316,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
-        priceRange: '$149 to $189',
-        collectorAngle: 'Art-crossover wall display piece',
+        priceRange: '$149 tot $189',
+        collectorAngle: 'Kunstcrossover voor aan de muur',
       },
     ]);
   });
@@ -777,11 +777,11 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 6181,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-        priceRange: '$499 to $569',
-        collectorAngle: 'Prestige display anchor',
+        priceRange: '$499 tot $569',
+        collectorAngle: 'Prestige-displayanker',
         tagline:
-          'A flagship fantasy build that rewards both display space and patience.',
-        availability: 'Healthy but premium availability',
+          'Een fantasy-vlaggenschip dat zowel je displayruimte als je geduld beloont.',
+        availability: 'Ruim beschikbaar, maar premium geprijsd',
         minifigureCount: 15,
       },
       {
@@ -792,11 +792,11 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 5478,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-        priceRange: '$459 to $529',
-        collectorAngle: 'Middle-earth display monolith',
+        priceRange: '$459 tot $529',
+        collectorAngle: 'Middle-earth displaymonoliet',
         tagline:
-          'A towering fantasy centerpiece with unusually strong shelf drama and cross-fandom recognizability.',
-        availability: 'High-visibility premium demand',
+          'Een torenhoog fantasy-middelpunt met uitzonderlijk veel schapdrama en brede herkenbaarheid over fandoms heen.',
+        availability: 'Zeer zichtbare premiumvraag',
         minifigureCount: 10,
       },
       {
@@ -807,11 +807,11 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2022,
         pieces: 2316,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
-        priceRange: '$149 to $189',
-        collectorAngle: 'Art-crossover wall display piece',
+        priceRange: '$149 tot $189',
+        collectorAngle: 'Kunstcrossover voor aan de muur',
         tagline:
-          'A museum-linked display set that sits comfortably between art object, gift piece, and collector conversation starter.',
-        availability: 'Steady crossover demand',
+          'Een museumgekoppelde displayset die moeiteloos tussen kunstobject, cadeau en gesprekstarter in zit.',
+        availability: 'Stabiele crossover-vraag',
       },
     ]);
   });
@@ -859,11 +859,11 @@ describe('catalog data-access contracts', () => {
           releaseYear: 2023,
           pieces: 5202,
           imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
-          priceRange: '$449 to $519',
-          collectorAngle: 'Marvel flagship showcase',
+          priceRange: '$449 tot $519',
+          collectorAngle: 'Marvel-vlaggenschip',
           tagline:
-            'A marquee licensed set with broad household recognizability.',
-          availability: 'Stable with strong seasonal demand',
+            'Een opvallende licentieset met brede herkenbaarheid in huis.',
+          availability: 'Stabiel met sterke seizoensvraag',
           minifigureCount: 31,
         },
         {
@@ -874,11 +874,11 @@ describe('catalog data-access contracts', () => {
           releaseYear: 2023,
           pieces: 6181,
           imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-          priceRange: '$499 to $569',
-          collectorAngle: 'Prestige display anchor',
+          priceRange: '$499 tot $569',
+          collectorAngle: 'Prestige-displayanker',
           tagline:
-            'A flagship fantasy build that rewards both display space and patience.',
-          availability: 'Healthy but premium availability',
+            'Een fantasy-vlaggenschip dat zowel je displayruimte als je geduld beloont.',
+          availability: 'Ruim beschikbaar, maar premium geprijsd',
           minifigureCount: 15,
         },
       ],
@@ -1100,7 +1100,7 @@ describe('catalog data-access contracts', () => {
       },
       {
         backgroundColor: '#a8b4c2',
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/42143-1/103001.jpg',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/42177-1/142596.jpg',
         name: 'Technic',
         textColor: '#171a22',
       },
@@ -1265,7 +1265,7 @@ describe('catalog data-access contracts', () => {
         slug: 'marvel',
         setCount: 5,
         momentum:
-          'Marvel now reads as a real collector lane with both a flagship tower and a landmark companion build.',
+          'Marvel voelt nu als een echte verzamelaarslijn met zowel een vlaggenschiptoren als een markante begeleidende build.',
         signatureSet: 'Avengers Tower',
       },
       setCards: expect.arrayContaining([
@@ -1283,7 +1283,7 @@ describe('catalog data-access contracts', () => {
         slug: 'super-mario',
         setCount: 1,
         momentum:
-          'Character-led display pieces give the public catalog a broader gaming entry without turning into a play-focused assortment.',
+          'Charactergedreven displaystukken geven de publieke catalogus een bredere gaming-ingang zonder in een speelgerichte selectie te veranderen.',
         signatureSet: 'The Mighty Bowser',
       },
       setCards: expect.arrayContaining([
@@ -1312,15 +1312,15 @@ describe('catalog data-access contracts', () => {
       pieces: 4515,
       minifigureCount: 22,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10305-1/152495.jpg',
-      priceRange: '$359 to $429',
-      collectorAngle: 'Castle nostalgia tentpole',
+      priceRange: '$359 tot $429',
+      collectorAngle: 'Kasteelnostalgie-vlaggenschip',
       tagline:
-        'A modern fortress build that lands squarely at the intersection of nostalgia and display value.',
-      availability: 'Steady premium demand',
+        'Een modern fort dat precies samenkomt op het snijvlak van nostalgie en displaywaarde.',
+      availability: 'Stabiele premiumvraag',
       collectorHighlights: [
-        'Strong crossover appeal between adult nostalgia and fantasy display buyers',
-        'High perceived value thanks to dense build volume and minifigure count',
-        'Excellent anchor set for long-form editorial and collection storytelling',
+        'Sterke crossover-aantrekkingskracht tussen volwassen nostalgie en fantasy-displaykopers',
+        'Hoge gevoelswaarde dankzij dicht bouwvolume en veel minifiguren',
+        'Sterke ankerset voor langere redactionele en collectieverhalen',
       ],
     });
 
@@ -1332,15 +1332,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 2083,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/21338-1/116515.jpg',
-      priceRange: '$179 to $239',
-      collectorAngle: 'Cabin-core conversation piece',
+      priceRange: '$179 tot $239',
+      collectorAngle: 'Cabin-core blikvanger',
       tagline:
-        'A warmly detailed display set with broad shelf appeal beyond traditional franchise collectors.',
-      availability: 'Consistent enthusiast pull',
+        'Een warm gedetailleerde displayset met brede schapaantrekkingskracht buiten traditionele franchisecollectors.',
+      availability: 'Constante aantrekkingskracht bij liefhebbers',
       collectorHighlights: [
-        'Display-friendly footprint with strong giftability and crossover appeal',
-        'Distinct silhouette helps diversify a curated premium set assortment',
-        'Useful test case for editorial storytelling beyond licensed fandoms',
+        'Displayvriendelijk formaat met sterke cadeauwaarde en crossover-aantrekkingskracht',
+        'Een uitgesproken silhouet helpt een premium assortiment beter te spreiden',
+        'Nuttige testcase voor redactionele storytelling buiten licentiefandoms',
       ],
     });
 
@@ -1353,15 +1353,15 @@ describe('catalog data-access contracts', () => {
       pieces: 2509,
       minifigureCount: 8,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10320-1/127861.jpg',
-      priceRange: '$189 to $259',
-      collectorAngle: 'Pirates nostalgia centerpiece',
+      priceRange: '$189 tot $259',
+      collectorAngle: 'Piratennostalgie-middelpunt',
       tagline:
-        'A reconfigurable fortress throwback that lands as both a nostalgia play and a shelf-friendly adventure display.',
-      availability: 'Measured enthusiast demand',
+        'Een herconfigureerbaar fort dat tegelijk werkt als nostalgische knipoog en als avontuurlijk displaystuk.',
+      availability: 'Afgewogen liefhebbersvraag',
       collectorHighlights: [
-        'Strong adult nostalgia pull without relying on a licensed franchise',
-        'Modular island layout makes it easier to photograph, restyle, and merchandise',
-        'Useful bridge set between display collectors and classic play-theme fans',
+        'Sterke volwassen nostalgie zonder te leunen op een licentiefranchise',
+        'De modulaire eilandopbouw maakt fotograferen, restylen en merchandisen makkelijker',
+        'Sterke brugset tussen displayverzamelaars en fans van klassieke speelthema’s',
       ],
     });
 
@@ -1373,15 +1373,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2022,
       pieces: 2065,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/21335-1/107884.jpg',
-      priceRange: '$259 to $319',
-      collectorAngle: 'Kinetic display standout',
+      priceRange: '$259 tot $319',
+      collectorAngle: 'Kinetische displayuitblinker',
       tagline:
-        'A mechanically animated coastal build that feels equally at home in premium display shelves and gift-led collector curation.',
-      availability: 'Selective premium availability',
+        'Een mechanisch geanimeerde kustbuild die zich net zo thuis voelt op premium displays als in cadeaugerichte curatie.',
+      availability: 'Selectieve premiumbeschikbaarheid',
       collectorHighlights: [
-        'Motorized light and rotating beacon create stronger live display presence than most static shelf pieces',
-        'Distinct silhouette broadens the curated assortment beyond castles, cabins, and towers',
-        'Good candidate for editorial storytelling around function-first collector design',
+        'Gemotoriseerd licht en een draaiend baken zorgen voor meer live-displayimpact dan de meeste statische stukken',
+        'Het uitgesproken silhouet verbreedt het gecureerde aanbod voorbij kastelen, cabins en torens',
+        'Sterke kandidaat voor storytelling rond functiegedreven verzamelontwerp',
       ],
     });
 
@@ -1396,15 +1396,15 @@ describe('catalog data-access contracts', () => {
       pieces: 5478,
       minifigureCount: 10,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-      priceRange: '$459 to $529',
-      collectorAngle: 'Middle-earth display monolith',
+      priceRange: '$459 tot $529',
+      collectorAngle: 'Middle-earth displaymonoliet',
       tagline:
-        'A towering fantasy centerpiece with unusually strong shelf drama and cross-fandom recognizability.',
-      availability: 'High-visibility premium demand',
+        'Een torenhoog fantasy-middelpunt met uitzonderlijk veel schapdrama en brede herkenbaarheid over fandoms heen.',
+      availability: 'Zeer zichtbare premiumvraag',
       collectorHighlights: [
-        'Vertical silhouette gives the curated assortment a more dramatic shelf profile than most wide-format display sets',
-        'Large minifigure cast and franchise recognition strengthen both collector appeal and editorial storytelling potential',
-        'Natural companion to Rivendell for a tighter premium Middle-earth collector arc',
+        'Het verticale silhouet geeft het assortiment een dramatischer schapprofiel dan de meeste brede displaysets',
+        'Een grote minifiguurcast en franchiseherkenning versterken zowel verzamelaarswaarde als redactioneel potentieel',
+        'Een natuurlijke aanvulling op Rivendell voor een sterkere premium Middle-earth-lijn',
       ],
     });
 
@@ -1417,15 +1417,15 @@ describe('catalog data-access contracts', () => {
       pieces: 3308,
       minifigureCount: 8,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10332-1/137285.jpg',
-      priceRange: '$189 to $249',
-      collectorAngle: 'Castle-world village expansion',
+      priceRange: '$189 tot $249',
+      collectorAngle: 'Castle-world dorpsuitbreiding',
       tagline:
-        'A bustling medieval streetscape that broadens castle collecting beyond fortress-only display pieces.',
-      availability: 'Broad but enthusiast-led availability',
+        'Een levendige middeleeuwse straat die kasteelverzamelen verbreedt voorbij alleen forten als displaystuk.',
+      availability: 'Breed beschikbaar, maar vooral gedragen door liefhebbers',
       collectorHighlights: [
-        "Pairs naturally with Lion Knights' Castle without feeling like a redundant second fortress",
-        'Dense civilian scene-building helps the public catalog feel more rounded and collectible at a glance',
-        'High minifigure and storefront variety make it especially useful for photography and editorial merchandising',
+        "Combineert vanzelf met Lion Knights' Castle zonder aan te voelen als een overbodig tweede fort",
+        'Dichte burgerlijke scènes laten de publieke catalogus ronder en verzamelwaardiger aanvoelen',
+        'Veel minifiguren en winkelvariatie maken deze set extra bruikbaar voor fotografie en redactionele merchandising',
       ],
     });
 
@@ -1437,15 +1437,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 1363,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10315-1/132380.jpg',
-      priceRange: '$95 to $129',
-      collectorAngle: 'Mindful display palate-cleanser',
+      priceRange: '$95 tot $129',
+      collectorAngle: 'Rustgevend displaytussendoortje',
       tagline:
-        'A calmer sculptural garden build that gives the curated lineup a lighter, design-forward counterpoint.',
-      availability: 'Accessible premium availability',
+        'Een rustiger sculpturale tuinbuild die de line-up een lichter en meer designgericht tegengewicht geeft.',
+      availability: 'Toegankelijke premiumbeschikbaarheid',
       collectorHighlights: [
-        'Lower price point makes it a cleaner entry into the premium collector assortment',
-        'Lifestyle-friendly display posture broadens the catalog beyond nostalgia and licensed fandom',
-        'Strong visual contrast with towers, castles, and cabins helps the homepage feel less samey',
+        'Het lagere prijsniveau maakt dit een helderder instappunt in het premium verzamelassortiment',
+        'De lifestylegerichte displayhouding verbreedt de catalogus voorbij nostalgie en licentiefandom',
+        'Het sterke visuele contrast met torens, kastelen en cabins maakt de homepage minder eenvormig',
       ],
     });
 
@@ -1459,15 +1459,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2022,
       pieces: 2316,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
-      priceRange: '$149 to $189',
-      collectorAngle: 'Art-crossover wall display piece',
+      priceRange: '$149 tot $189',
+      collectorAngle: 'Kunstcrossover voor aan de muur',
       tagline:
-        'A museum-linked display set that sits comfortably between art object, gift piece, and collector conversation starter.',
-      availability: 'Steady crossover demand',
+        'Een museumgekoppelde displayset die moeiteloos tussen kunstobject, cadeau en gesprekstarter in zit.',
+      availability: 'Stabiele crossover-vraag',
       collectorHighlights: [
-        'Instant subject recognition reaches well beyond the usual AFOL and franchise collector audience',
-        'Wall-mount and shelf-display flexibility makes it more versatile than most curated centerpiece sets',
-        'Useful proof point that the public catalog can feel collector-grade without leaning on nostalgia alone',
+        'Directe onderwerpherkenning reikt ver voorbij het gebruikelijke AFOL- en franchisepubliek',
+        'De flexibiliteit van wand- en schappresentatie maakt hem veelzijdiger dan de meeste gecureerde blikvangers',
+        'Een sterk bewijs dat de publieke catalogus verzamelwaardig kan voelen zonder alleen op nostalgie te leunen',
       ],
     });
 
@@ -1479,15 +1479,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 1111,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/21342-1/126471.jpg',
-      priceRange: '$69 to $99',
-      collectorAngle: 'Nature-display gateway',
+      priceRange: '$69 tot $99',
+      collectorAngle: 'Natuurdisplay-instapper',
       tagline:
-        'A smaller-scale Ideas release that adds approachable, giftable variety without breaking the premium collector tone.',
-      availability: 'Healthy specialty availability',
+        'Een Ideas-release op kleinere schaal die toegankelijke, cadeauwaardige variatie toevoegt zonder de premium toon te breken.',
+      availability: 'Goede specialistische beschikbaarheid',
       collectorHighlights: [
-        'Lower-friction price point helps the curated public catalog feel easier to enter',
-        'Three-display composition adds visual variety without introducing a new product domain or route type',
-        'Broadens the Ideas slice with a subject that feels thoughtful and shelf-friendly rather than franchise-led',
+        'Een laagdrempeliger prijsniveau maakt de gecureerde publieke catalogus makkelijker om in te stappen',
+        'De driedelige opbouw voegt visuele variatie toe zonder een nieuw productdomein of routetype te introduceren',
+        'Verbreedt de Ideas-selectie met een onderwerp dat bedachtzaam en schapvriendelijk voelt in plaats van franchisegedreven',
       ],
     });
 
@@ -1499,15 +1499,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 2083,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10318-1/132335.jpg',
-      priceRange: '$169 to $229',
-      collectorAngle: 'Engineering icon centerpiece',
+      priceRange: '$169 tot $229',
+      collectorAngle: 'Engineering-icoon als blikvanger',
       tagline:
-        'A long-format aviation display build that adds sleek technical prestige to the curated lineup.',
-      availability: 'Reliable premium availability',
+        'Een langgerekte luchtvaartbuild die slanke technische prestige toevoegt aan de gecureerde line-up.',
+      availability: 'Betrouwbare premiumbeschikbaarheid',
       collectorHighlights: [
-        'Instant silhouette recognition helps the public catalog feel broader without losing its collector-grade tone',
-        'Large display footprint brings a very different kind of shelf presence than towers, castles, and architecture-led sets',
-        'Strong fit for editorial storytelling around design icons, transport history, and adult display culture',
+        'Directe silhouetherkenning verbreedt de publieke catalogus zonder de verzameltoon te verliezen',
+        'Het grote displayformaat brengt een heel ander soort schappresentatie dan torens, kastelen en architectuursets',
+        'Past sterk bij storytelling rond designiconen, transportgeschiedenis en volwassen displaycultuur',
       ],
     });
 
@@ -1519,15 +1519,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2024,
       pieces: 834,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10331-1/135670.jpg',
-      priceRange: '$49 to $69',
-      collectorAngle: 'Color-pop display accent',
+      priceRange: '$49 tot $69',
+      collectorAngle: 'Kleuraccent voor op display',
       tagline:
-        'A compact nature study that gives the catalog a sharper, more playful entry point without feeling toy-like.',
-      availability: 'Widely accessible availability',
+        'Een compacte natuurstudie die de catalogus een speelser, scherper instappunt geeft zonder speelgoedachtig te voelen.',
+      availability: 'Breed toegankelijk beschikbaar',
       collectorHighlights: [
-        'Smaller scale lowers the barrier to entry for first-time collectors browsing the public catalog',
-        'Vivid subject matter adds visual contrast to the current lineup of towers, buildings, and large-format displays',
-        'Useful bridge between giftable design-led sets and the more expensive flagship collector pieces',
+        'De kleinere schaal verlaagt de instapdrempel voor nieuwe verzamelaars in de publieke catalogus',
+        'Het levendige onderwerp voegt visueel contrast toe aan de huidige mix van torens, gebouwen en grote displays',
+        'Een nuttige brug tussen cadeauwaardige designsets en duurdere vlaggenschipstukken',
       ],
     });
 
@@ -1541,15 +1541,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2024,
       pieces: 3601,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10341-1/139647.jpg',
-      priceRange: '$239 to $299',
-      collectorAngle: 'Space-program display monument',
+      priceRange: '$239 tot $299',
+      collectorAngle: 'Ruimtevaartmonument voor op display',
       tagline:
-        'A towering spaceflight display build that expands the catalog into engineering-first collecting with real visual gravity.',
-      availability: 'Specialist but steady premium demand',
+        'Een torenhoge ruimtevaartbuild die de catalogus uitbreidt richting engineering-first verzamelen met echte visuele zwaarte.',
+      availability: 'Specialistische maar stabiele premiumvraag',
       collectorHighlights: [
-        'Vertical rocket-and-tower silhouette gives the public catalog a distinct display posture that is neither fortress nor fantasy spire',
-        'NASA subject matter broadens collector relevance without relying on a licensed entertainment franchise',
-        'Strong fit for detailed product storytelling around scale, engineering, and adult build ambition',
+        'Het verticale raket-en-toren-silhouet geeft de publieke catalogus een duidelijk eigen displayhouding, los van forten of fantasiespiralen',
+        'Het NASA-onderwerp verbreedt de verzamelrelevantie zonder te leunen op een entertainmentlicentie',
+        'Een sterke match voor productstorytelling rond schaal, techniek en volwassen bouwambitie',
       ],
     });
 
@@ -1561,15 +1561,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2024,
       pieces: 1710,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/21349-1/140411.jpg',
-      priceRange: '$99 to $139',
-      collectorAngle: 'Characterful home-display crowd-pleaser',
+      priceRange: '$99 tot $139',
+      collectorAngle: 'Karaktervolle favoriet voor thuisdisplay',
       tagline:
-        'A poseable domestic display piece that keeps the collector tone warm, recognizable, and broadly giftable.',
-      availability: 'Strong mainstream enthusiast availability',
+        'Een poseerbaar huiselijk displaystuk dat de verzameltoon warm, herkenbaar en breed cadeauwaardig houdt.',
+      availability: 'Sterke brede beschikbaarheid bij liefhebbers',
       collectorHighlights: [
-        'Highly recognizable subject gives the curated catalog another easy on-ramp for casual adult browsers',
-        'Display-led personality helps the public set mix feel less architecture-heavy and more emotionally varied',
-        'Good fit for social-proof, gifting, and home-display storytelling without expanding product scope',
+        'Het zeer herkenbare onderwerp geeft de gecureerde catalogus nog een makkelijk instappunt voor casual volwassen bezoekers',
+        'De displaygerichte persoonlijkheid maakt de publieke setmix minder architectuurzwaar en emotioneel gevarieerder',
+        'Past goed bij social proof, cadeauverhalen en thuisdisplay-storytelling zonder de productscope uit te breiden',
       ],
     });
 
@@ -1583,15 +1583,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2022,
       pieces: 1872,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10300-1/99954.jpg',
-      priceRange: '$179 to $229',
-      collectorAngle: 'Pop-culture vehicle icon',
+      priceRange: '$179 tot $229',
+      collectorAngle: 'Popcultuur-voertuigicoon',
       tagline:
-        'A movie-car display set that is instantly recognizable even beyond core LEGO collectors.',
-      availability: 'Broad enthusiast availability',
+        'Een filmauto-displayset die ook buiten de kern van LEGO-verzamelaars meteen herkenbaar is.',
+      availability: 'Brede beschikbaarheid voor liefhebbers',
       collectorHighlights: [
-        'Three film variants make it more replayable than most single-vehicle display sets',
-        'Strong search target thanks to one of the most recognizable movie cars in pop culture',
-        'Balances premium collector tone with a more approachable size and price than the biggest flagships',
+        'Drie filmvarianten maken hem speelser en herhaalbaarder dan de meeste enkele voertuigdisplays',
+        'Een sterk zoekdoel dankzij een van de bekendste filmauto’s uit de popcultuur',
+        'Houdt de premium verzameltoon vast met een toegankelijker formaat en prijs dan de grootste vlaggenschepen',
       ],
     });
 
@@ -1603,15 +1603,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2021,
       pieces: 9092,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10294-1/93446.jpg',
-      priceRange: '$629 to $749',
-      collectorAngle: 'Monumental display statement',
+      priceRange: '$629 tot $749',
+      collectorAngle: 'Monumentaal displaystatement',
       tagline:
-        'A massive ocean-liner build that reads as both engineering feat and living-room conversation piece.',
-      availability: 'Selective flagship availability',
+        'Een enorme oceaanlijner die tegelijk voelt als technisch hoogstandje en blikvanger in de woonkamer.',
+      availability: 'Selectieve vlaggenschipbeschikbaarheid',
       collectorHighlights: [
-        'One of the most recognizable large-format display sets in the broader adult market',
-        'Extreme scale gives the public catalog a true top-end centerpiece beyond castles and towers',
-        'Excellent search target for collectors who browse by iconic real-world subjects',
+        'Een van de meest herkenbare displaysets op groot formaat in de bredere volwassen markt',
+        'De extreme schaal geeft de publieke catalogus een echt topsegment-middelpunt naast kastelen en torens',
+        'Een uitstekend zoekdoel voor verzamelaars die browsen op iconische echte onderwerpen',
       ],
     });
 
@@ -1623,15 +1623,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2024,
       pieces: 4382,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
-      priceRange: '$199 to $249',
-      collectorAngle: 'Architecture prestige landmark',
+      priceRange: '$199 tot $249',
+      collectorAngle: 'Architectonisch prestigelandmerk',
       tagline:
-        'A globally recognizable landmark build that adds architectural gravitas without feeling cold or corporate.',
-      availability: 'Healthy premium availability',
+        'Een wereldwijd herkenbaar landmark dat architectonische zwaarte toevoegt zonder kil of corporate te voelen.',
+      availability: 'Gezonde premiumbeschikbaarheid',
       collectorHighlights: [
-        'Highly recognizable subject broadens search relevance far beyond existing fandom-led sets',
-        'Dense silhouette and historical subject matter strengthen editorial and gift-led merchandising',
-        'Brings a cleaner architecture entry point than the current fantasy- and franchise-heavy mix',
+        'Het zeer herkenbare onderwerp verbreedt de zoekrelevantie ver voorbij fandomgedreven sets',
+        'Het dichte silhouet en historische onderwerp versterken redactionele en cadeaugerichte merchandising',
+        'Biedt een helderder architectuur-instappunt dan de huidige fantasy- en franchisezware mix',
       ],
     });
 
@@ -1643,15 +1643,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 1810,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/31208-1/131769.jpg',
-      priceRange: '$79 to $109',
-      collectorAngle: 'Wall-display art crossover',
+      priceRange: '$79 tot $109',
+      collectorAngle: 'Kunstcrossover voor aan de muur',
       tagline:
-        'A framed wave composition that makes the public catalog feel more design-led and giftable at a glance.',
-      availability: 'Consistent art-line availability',
+        'Een ingelijste golfcompositie die de publieke catalogus in één oogopslag meer designgericht en cadeauwaardig maakt.',
+      availability: 'Constante beschikbaarheid binnen Art',
       collectorHighlights: [
-        'Instant visual recognition makes it a strong search target even for casual browsers',
-        'Wall-friendly format adds a new display posture without adding product complexity',
-        'Helps the catalog feel more varied than a lineup of only buildings, towers, and vehicles',
+        'Directe visuele herkenning maakt dit een sterk zoekdoel, zelfs voor casual bezoekers',
+        'Het muurvriendelijke formaat voegt een nieuwe displayhouding toe zonder productcomplexiteit toe te voegen',
+        'Helpt de catalogus gevarieerder te voelen dan een rij van alleen gebouwen, torens en voertuigen',
       ],
     });
 
@@ -1663,15 +1663,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 2660,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/76419-1/123597.jpg',
-      priceRange: '$149 to $189',
-      collectorAngle: 'Wizarding World display overview',
+      priceRange: '$149 tot $189',
+      collectorAngle: 'Wizarding World-displayoverzicht',
       tagline:
-        'A compact Hogwarts panorama that brings one of LEGO’s most searched fantasy subjects into a cleaner display format.',
-      availability: 'Strong mainstream availability',
+        'Een compact Hogwarts-panorama dat een van LEGO’s meest gezochte fantasy-onderwerpen in een schoner displayformaat brengt.',
+      availability: 'Sterke brede beschikbaarheid',
       collectorHighlights: [
-        'Broad franchise recognition makes it one of the easiest search-entry sets beyond Marvel and Middle-earth',
-        'More shelf-manageable than the largest Hogwarts releases while still reading as collector-grade',
-        'Adds a major fantasy license without crowding the premium lineup with another oversized flagship',
+        'Brede franchiseherkenning maakt dit een van de makkelijkste zoekinstappers buiten Marvel en Middle-earth',
+        'Beter hanteerbaar op de plank dan de grootste Hogwarts-releases en toch duidelijk verzamelwaardig',
+        'Voegt een grote fantasylicentie toe zonder de premium line-up te vullen met nog een oversized vlaggenschip',
       ],
     });
 
@@ -1683,15 +1683,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 4837,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/43222-1/130721.jpg',
-      priceRange: '$349 to $429',
-      collectorAngle: 'Fairytale flagship centerpiece',
+      priceRange: '$349 tot $429',
+      collectorAngle: 'Sprookjesachtig vlaggenschip',
       tagline:
-        'A castle display icon with unusually broad household recognition and strong gift-led appeal.',
-      availability: 'Healthy flagship availability',
+        'Een kasteelicoon voor op display met uitzonderlijk brede herkenning en sterke cadeau-aantrekkingskracht.',
+      availability: 'Gezonde vlaggenschipbeschikbaarheid',
       collectorHighlights: [
-        'One of the most recognizable display silhouettes in the broader LEGO catalog',
-        'Adds a warmer, more family-adjacent flagship without losing adult collector credibility',
-        'Powerful search target for Disney and castle collectors alike',
+        'Een van de meest herkenbare displaysilhouetten in de bredere LEGO-catalogus',
+        'Voegt een warmer, meer familiegericht vlaggenschip toe zonder volwassen verzamelgeloofwaardigheid te verliezen',
+        'Een krachtig zoekdoel voor zowel Disney- als kasteelverzamelaars',
       ],
     });
 
@@ -1709,15 +1709,15 @@ describe('catalog data-access contracts', () => {
         'Snowtrooper Commander',
       ],
       imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
-      priceRange: '$649 to $799',
-      collectorAngle: 'Star Wars collector monument',
+      priceRange: '$649 tot $799',
+      collectorAngle: 'Star Wars-verzamelmonument',
       tagline:
-        'A towering Ultimate Collector Series build that signals serious collector depth the moment it appears in search.',
-      availability: 'Selective UCS availability',
+        'Een torenhoge Ultimate Collector Series-build die meteen serieuze verzamelaarsdiepte uitstraalt zodra hij in zoekresultaten verschijnt.',
+      availability: 'Selectieve UCS-beschikbaarheid',
       collectorHighlights: [
-        'One of the most recognizable high-end Star Wars sets in the modern catalog',
-        'Massive scale and franchise pull make it a strong anchor for premium search demand',
-        'Expands the curated mix into Star Wars without widening product scope or behavior',
+        'Een van de meest herkenbare high-end Star Wars-sets in de moderne catalogus',
+        'De enorme schaal en franchisekracht maken dit een sterk anker voor premium zoekvraag',
+        'Verbreedt de gecureerde mix richting Star Wars zonder scope of productgedrag te verbreden',
       ],
     });
 
@@ -1729,15 +1729,15 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2024,
       pieces: 516,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/21345-1/134647.jpg',
-      priceRange: '$69 to $99',
-      collectorAngle: 'Retro design-object crowd-pleaser',
+      priceRange: '$69 tot $99',
+      collectorAngle: 'Retro designobject dat meteen aanspreekt',
       tagline:
-        'A playful camera build that feels instantly familiar, giftable, and display-ready without becoming novelty-first.',
-      availability: 'Accessible enthusiast availability',
+        'Een speelse camerabuild die meteen vertrouwd, cadeauwaardig en displayklaar voelt zonder puur een gimmick te worden.',
+      availability: 'Toegankelijke beschikbaarheid voor liefhebbers',
       collectorHighlights: [
-        'Recognizable real-world object makes it an easy search and gifting on-ramp',
-        'Compact footprint adds a lower-commitment collector option to the public mix',
-        'Keeps the Ideas slice warm and design-led rather than only scenic or fandom-heavy',
+        'Het herkenbare echte object maakt dit een makkelijke instapper voor zoeken en cadeaus',
+        'De compacte footprint voegt een verzameloptie met minder drempel toe aan de publieke mix',
+        'Houdt de Ideas-selectie warm en designgericht in plaats van alleen scenisch of fandomzwaar',
       ],
     });
   });

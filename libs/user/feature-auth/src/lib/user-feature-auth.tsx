@@ -79,7 +79,7 @@ export function UserFeatureAuth() {
       }
 
       setUserSession(createAnonymousUserSession());
-      setErrorMessage('Unable to load the current session right now.');
+      setErrorMessage('De huidige sessie kon nu niet worden geladen.');
     } finally {
       if (isMountedRef.current) {
         setIsLoading(false);
@@ -133,7 +133,7 @@ export function UserFeatureAuth() {
       if (authMode === 'sign-in') {
         if (!nextEmail) {
           throw new Error(
-            'Enter the email address you want to use for sign-in.',
+            'Vul het e-mailadres in dat je wilt gebruiken om in te loggen.',
           );
         }
 
@@ -143,7 +143,7 @@ export function UserFeatureAuth() {
         });
         clearPasswordFields();
         setAuthStatusMessage(
-          'Signed in. Your account, wishlist, and collection are ready.',
+          'Je bent ingelogd. Je account, verlanglijst en collectie staan klaar.',
         );
         setIsLoading(true);
         await loadUserSession();
@@ -153,16 +153,16 @@ export function UserFeatureAuth() {
       if (authMode === 'sign-up') {
         if (!nextEmail) {
           throw new Error(
-            'Enter the email address you want to use for the new account.',
+            'Vul het e-mailadres in dat je voor het nieuwe account wilt gebruiken.',
           );
         }
 
         if (!authPassword) {
-          throw new Error('Choose a password for the new account.');
+          throw new Error('Kies een wachtwoord voor het nieuwe account.');
         }
 
         if (authPassword !== authPasswordConfirmation) {
-          throw new Error('The password confirmation does not match yet.');
+          throw new Error('De wachtwoordbevestiging komt nog niet overeen.');
         }
 
         const { requiresEmailConfirmation } = await signUpWithEmailPassword({
@@ -175,13 +175,13 @@ export function UserFeatureAuth() {
         if (requiresEmailConfirmation) {
           setNextAuthMode('sign-in');
           setAuthStatusMessage(
-            `Check ${nextEmail} to confirm your account. After confirmation, you can sign in here with your password.`,
+            `Controleer ${nextEmail} om je account te bevestigen. Daarna kun je hier inloggen met je wachtwoord.`,
           );
           return;
         }
 
         setAuthStatusMessage(
-          'Account created. Your private collector saves are ready to use.',
+          'Account aangemaakt. Je prive verzamelaarsstatus is klaar voor gebruik.',
         );
         setIsLoading(true);
         await loadUserSession();
@@ -190,33 +190,37 @@ export function UserFeatureAuth() {
 
       if (authMode === 'reset-password') {
         if (!nextEmail) {
-          throw new Error('Enter the email address tied to your account.');
+          throw new Error(
+            'Vul het e-mailadres in dat aan je account gekoppeld is.',
+          );
         }
 
         await sendPasswordResetEmail({
           email: nextEmail,
         });
         setAuthStatusMessage(
-          `Check ${nextEmail} for your password reset email. Open the link there to choose a new password.`,
+          `Controleer ${nextEmail} voor je wachtwoordherstelmail. Open daar de link om een nieuw wachtwoord te kiezen.`,
         );
         return;
       }
 
       if (!nextEmail) {
-        throw new Error('Enter the email address you want to use for sign-in.');
+        throw new Error(
+          'Vul het e-mailadres in dat je wilt gebruiken om in te loggen.',
+        );
       }
 
       await requestUserSignIn({
         email: nextEmail,
       });
       setAuthStatusMessage(
-        `Check ${nextEmail} for your sign-in link. Once you open it, your account page refreshes automatically. If it does not arrive right away, wait about a minute before requesting another one.`,
+        `Controleer ${nextEmail} voor je inloglink. Zodra je die opent, ververst je accountpagina automatisch. Komt hij niet meteen binnen, wacht dan ongeveer een minuut voordat je een nieuwe aanvraagt.`,
       );
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to start sign-in right now.',
+          : 'Inloggen kon nu niet worden gestart.',
       );
     } finally {
       setIsAuthActionPending(false);
@@ -230,13 +234,13 @@ export function UserFeatureAuth() {
     try {
       await signInWithGoogle();
       setAuthStatusMessage(
-        'Continuing with Google. If the redirect does not start, try again in a moment.',
+        'Doorgaan met Google. Als de redirect niet start, probeer het zo nog eens.',
       );
     } catch (error) {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to start Google sign-in right now.',
+          : 'Inloggen met Google kon nu niet worden gestart.',
       );
     } finally {
       setIsAuthActionPending(false);
@@ -249,11 +253,15 @@ export function UserFeatureAuth() {
 
     try {
       if (!passwordResetValue) {
-        throw new Error('Enter a new password before saving it.');
+        throw new Error(
+          'Vul eerst een nieuw wachtwoord in voordat je opslaat.',
+        );
       }
 
       if (passwordResetValue !== passwordResetConfirmation) {
-        throw new Error('The new password confirmation does not match yet.');
+        throw new Error(
+          'De bevestiging van het nieuwe wachtwoord komt nog niet overeen.',
+        );
       }
 
       await updateCurrentUserPassword({
@@ -263,7 +271,7 @@ export function UserFeatureAuth() {
       setPasswordResetConfirmation('');
       setIsPasswordRecoveryMode(false);
       setAuthStatusMessage(
-        'Password updated. You can keep using this account with your new password.',
+        'Wachtwoord bijgewerkt. Je kunt dit account blijven gebruiken met je nieuwe wachtwoord.',
       );
 
       if (typeof window !== 'undefined') {
@@ -273,7 +281,7 @@ export function UserFeatureAuth() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to save the new password right now.',
+          : 'Het nieuwe wachtwoord kon nu niet worden opgeslagen.',
       );
     } finally {
       setIsAuthActionPending(false);
@@ -291,7 +299,7 @@ export function UserFeatureAuth() {
       setPasswordResetConfirmation('');
       setIsPasswordRecoveryMode(false);
       setAuthStatusMessage(
-        'Signed out. Your saved sets will still be here when you sign back in.',
+        'Je bent uitgelogd. Je opgeslagen sets staan hier nog steeds zodra je opnieuw inlogt.',
       );
       setIsLoading(true);
       await loadUserSession();
@@ -299,7 +307,7 @@ export function UserFeatureAuth() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : 'Unable to sign out right now.',
+          : 'Uitloggen kon nu niet worden voltooid.',
       );
     } finally {
       setIsAuthActionPending(false);

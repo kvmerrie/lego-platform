@@ -36,24 +36,24 @@ function formatRecordedOn(recordedOn: string): string {
 
 function getDeltaLabel(currencyCode: string, deltaMinor?: number): string {
   if (typeof deltaMinor !== 'number') {
-    return 'No reference configured';
+    return 'Geen referentie ingesteld';
   }
 
   if (deltaMinor < 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: Math.abs(deltaMinor),
-    })} below reference`;
+    })} onder referentie`;
   }
 
   if (deltaMinor > 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: deltaMinor,
-    })} above reference`;
+    })} boven referentie`;
   }
 
-  return 'At reference';
+  return 'Op referentie';
 }
 
 function getDeltaTone(
@@ -85,17 +85,17 @@ function getAverageDeltaLabel({
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: Math.abs(deltaVsAverageMinor),
-    })} below 30-day average`;
+    })} onder het 30-daags gemiddelde`;
   }
 
   if (deltaVsAverageMinor > 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: deltaVsAverageMinor,
-    })} above 30-day average`;
+    })} boven het 30-daags gemiddelde`;
   }
 
-  return 'At 30-day average';
+  return 'Op het 30-daags gemiddelde';
 }
 
 function getTrackedDeltaLabel({
@@ -105,39 +105,39 @@ function getTrackedDeltaLabel({
 }: {
   currencyCode: string;
   deltaMinor: number;
-  label: 'tracked high' | 'tracked low';
+  label: 'bijgehouden hoog' | 'bijgehouden laag';
 }): string {
   if (deltaMinor === 0) {
-    return `Matches ${label}`;
+    return `Gelijk aan ${label}`;
   }
 
   if (deltaMinor < 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: Math.abs(deltaMinor),
-    })} below ${label}`;
+    })} onder ${label}`;
   }
 
   return `${formatPriceMinor({
     currencyCode,
     minorUnits: deltaMinor,
-  })} above ${label}`;
+  })} boven ${label}`;
 }
 
 function getDailyPointLabel(pointCount: number): string {
-  return `${pointCount} daily point${pointCount === 1 ? '' : 's'}`;
+  return `${pointCount} dagpunt${pointCount === 1 ? '' : 'en'}`;
 }
 
 function getReviewedOfferLabel(offerCount: number): string {
-  return `${offerCount} offer${offerCount === 1 ? '' : 's'} reviewed`;
+  return `${offerCount} aanbieding${offerCount === 1 ? '' : 'en'} reviewed`;
 }
 
 function getReviewedCoverageLabel(offerCount: number): string {
-  return `${offerCount} ${getDefaultMarketAdjective()} offer${offerCount === 1 ? '' : 's'} reviewed`;
+  return `${offerCount} ${getDefaultMarketAdjective()} aanbieding${offerCount === 1 ? '' : 'en'} reviewed`;
 }
 
 function getTrackedDailyPointLabel(pointCount: number): string {
-  return `${pointCount} tracked daily point${pointCount === 1 ? '' : 's'}`;
+  return `${pointCount} bijgehouden dagpunt${pointCount === 1 ? '' : 'en'}`;
 }
 
 function PricingMetaItem({ label, value }: { label: string; value: string }) {
@@ -155,7 +155,7 @@ function PricingScopeLine({ children }: { children: ReactNode }) {
 
 function getPricingScopeLabel(suffix?: string): string {
   return getDefaultMarketScopeLabel({
-    conditionLabel: 'new condition',
+    conditionLabel: 'nieuw',
     suffix,
   });
 }
@@ -236,7 +236,7 @@ export function PriceSummaryCard({
   if (variant === 'product') {
     return (
       <div className={`${styles.panel} ${styles.productPanel}`} id={id}>
-        <p className={styles.metricLabel}>Lowest reviewed price</p>
+        <p className={styles.metricLabel}>Laagste reviewed prijs</p>
         <p className={styles.metricValue}>
           {formatPriceMinor({
             currencyCode: pricePanelSnapshot.currencyCode,
@@ -244,12 +244,12 @@ export function PriceSummaryCard({
           })}
         </p>
         <p className={styles.metricContext}>
-          Currently lowest at {pricePanelSnapshot.lowestMerchantName}
+          Nu het laagst bij {pricePanelSnapshot.lowestMerchantName}
         </p>
         <p className={styles.dealSignal}>{priceDealSummary.label}</p>
         {pricePanelSnapshot.lowestAvailabilityLabel ? (
           <p className={styles.metricContextSecondary}>
-            Availability: {pricePanelSnapshot.lowestAvailabilityLabel}
+            Beschikbaarheid: {pricePanelSnapshot.lowestAvailabilityLabel}
           </p>
         ) : null}
         {priceDealSummary.coverageNote ? (
@@ -271,10 +271,12 @@ export function PriceSummaryCard({
               )}
             </Badge>
           ) : (
-            <p className={styles.referenceFallback}>No reference price yet.</p>
+            <p className={styles.referenceFallback}>
+              Nog geen referentieprijs.
+            </p>
           )}
           <p className={styles.productMeta}>
-            Checked {formatObservedAt(pricePanelSnapshot.observedAt)}
+            Gecheckt {formatObservedAt(pricePanelSnapshot.observedAt)}
           </p>
         </div>
       </div>
@@ -290,9 +292,9 @@ export function PriceSummaryCard({
       tone="muted"
     >
       <SectionHeading
-        description={`Latest checked price across reviewed ${getDefaultMarketAdjective()} shops.`}
-        eyebrow="Buy guidance"
-        title="Current reviewed price"
+        description={`Meest recent gecheckte prijs bij reviewed ${getDefaultMarketAdjective()} winkels.`}
+        eyebrow="Koophulp"
+        title="Huidige reviewed prijs"
       />
       <PricingScopeLine>
         {getPricingScopeLabel(
@@ -300,7 +302,7 @@ export function PriceSummaryCard({
         )}
       </PricingScopeLine>
       <div className={styles.metricBlock}>
-        <p className={styles.metricLabel}>Reviewed price</p>
+        <p className={styles.metricLabel}>Reviewed prijs</p>
         <p className={styles.metricValue}>
           {formatPriceMinor({
             currencyCode: pricePanelSnapshot.currencyCode,
@@ -308,12 +310,12 @@ export function PriceSummaryCard({
           })}
         </p>
         <p className={styles.metricContext}>
-          Lowest reviewed price at {pricePanelSnapshot.lowestMerchantName}
+          Laagste reviewed prijs bij {pricePanelSnapshot.lowestMerchantName}
         </p>
         <p className={styles.dealSignal}>{priceDealSummary.label}</p>
         {pricePanelSnapshot.lowestAvailabilityLabel ? (
           <p className={styles.metricContextSecondary}>
-            Availability: {pricePanelSnapshot.lowestAvailabilityLabel}
+            Beschikbaarheid: {pricePanelSnapshot.lowestAvailabilityLabel}
           </p>
         ) : null}
         {priceDealSummary.coverageNote ? (
@@ -329,35 +331,35 @@ export function PriceSummaryCard({
             )}
           </Badge>
         ) : (
-          <p className={styles.referenceFallback}>No reference price yet.</p>
+          <p className={styles.referenceFallback}>Nog geen referentieprijs.</p>
         )}
       </div>
       {children}
       <dl className={styles.metaGrid}>
         <PricingMetaItem
-          label="Reference price"
+          label="Referentieprijs"
           value={
             typeof pricePanelSnapshot.referencePriceMinor === 'number'
               ? formatPriceMinor({
                   currencyCode: pricePanelSnapshot.currencyCode,
                   minorUnits: pricePanelSnapshot.referencePriceMinor,
                 })
-              : 'Not set yet'
+              : 'Nog niet ingesteld'
           }
         />
         <PricingMetaItem
-          label="Last reviewed"
+          label="Laatst reviewed"
           value={formatObservedAt(pricePanelSnapshot.observedAt)}
         />
         <PricingMetaItem
-          label="Reviewed offers"
+          label="Reviewed aanbiedingen"
           value={getReviewedCoverageLabel(pricePanelSnapshot.merchantCount)}
         />
       </dl>
       <p className={styles.referenceNote}>
         {typeof pricePanelSnapshot.referencePriceMinor === 'number'
-          ? 'History and offers below use the same reviewed market view.'
-          : 'History and offers can appear before a reference price is set.'}
+          ? 'Geschiedenis en aanbiedingen hieronder gebruiken dezelfde reviewed marktweergave.'
+          : 'Geschiedenis en aanbiedingen kunnen verschijnen voordat er een referentieprijs is ingesteld.'}
       </p>
     </Surface>
   );
@@ -375,45 +377,48 @@ export function PriceHistorySummaryCallout({
   if (!priceHistorySummary && !trackedPriceSummary) {
     return (
       <section
-        aria-label="30-day price summary"
+        aria-label="30-daagse prijssamenvatting"
         className={styles.summaryBlock}
       >
-        <p className={styles.summaryLabel}>Recent price history</p>
+        <p className={styles.summaryLabel}>Recente prijsgeschiedenis</p>
         <p className={styles.summaryNote}>
           {historyPointCount === 1
-            ? 'History is building from the first daily price.'
-            : 'History is building. Recent comparisons appear after a few more daily prices.'}
+            ? 'De geschiedenis bouwt op vanaf de eerste dagprijs.'
+            : 'De geschiedenis bouwt op. Recente vergelijkingen verschijnen na een paar extra dagprijzen.'}
         </p>
       </section>
     );
   }
 
   return (
-    <section aria-label="30-day price summary" className={styles.summaryBlock}>
+    <section
+      aria-label="30-daagse prijssamenvatting"
+      className={styles.summaryBlock}
+    >
       <section
-        aria-label="30-day price summary"
+        aria-label="30-daagse prijssamenvatting"
         className={styles.summarySection}
       >
-        <p className={styles.summaryLabel}>Recent price history</p>
+        <p className={styles.summaryLabel}>Recente prijsgeschiedenis</p>
         {priceHistorySummary ? (
           <>
             <dl className={styles.summaryGrid}>
               <PricingMetaItem
-                label="30-day low"
+                label="30-daags laag"
                 value={formatPriceMinor({
                   currencyCode: priceHistorySummary.currencyCode,
                   minorUnits: priceHistorySummary.lowPriceMinor,
                 })}
               />
               <PricingMetaItem
-                label="30-day high"
+                label="30-daags hoog"
                 value={formatPriceMinor({
                   currencyCode: priceHistorySummary.currencyCode,
                   minorUnits: priceHistorySummary.highPriceMinor,
                 })}
               />
               <PricingMetaItem
-                label="Current vs average"
+                label="Huidig vs gemiddelde"
                 value={getAverageDeltaLabel({
                   currencyCode: priceHistorySummary.currencyCode,
                   deltaVsAverageMinor: priceHistorySummary.deltaVsAverageMinor,
@@ -421,70 +426,70 @@ export function PriceHistorySummaryCallout({
               />
             </dl>
             <p className={styles.summaryNote}>
-              30-day average:{' '}
+              30-daags gemiddelde:{' '}
               {formatPriceMinor({
                 currencyCode: priceHistorySummary.currencyCode,
                 minorUnits: priceHistorySummary.averagePriceMinor,
               })}{' '}
-              from {getDailyPointLabel(priceHistorySummary.pointCount)}.
+              uit {getDailyPointLabel(priceHistorySummary.pointCount)}.
             </p>
           </>
         ) : (
           <p className={styles.summaryNote}>
             {historyPointCount === 1
-              ? 'History is building from the first daily price.'
-              : 'History is building. Recent comparisons appear after a few more daily prices.'}
+              ? 'De geschiedenis bouwt op vanaf de eerste dagprijs.'
+              : 'De geschiedenis bouwt op. Recente vergelijkingen verschijnen na een paar extra dagprijzen.'}
           </p>
         )}
       </section>
       {trackedPriceSummary ? (
         <section
-          aria-label="Tracked price range"
+          aria-label="Bijgehouden prijsbereik"
           className={styles.summarySection}
         >
-          <p className={styles.summaryLabel}>Tracked price range</p>
+          <p className={styles.summaryLabel}>Bijgehouden prijsbereik</p>
           <dl className={styles.summaryGrid}>
             <PricingMetaItem
-              label="Lowest tracked price"
+              label="Laagste bijgehouden prijs"
               value={formatPriceMinor({
                 currencyCode: trackedPriceSummary.currencyCode,
                 minorUnits: trackedPriceSummary.trackedLowPriceMinor,
               })}
             />
             <PricingMetaItem
-              label="Highest tracked price"
+              label="Hoogste bijgehouden prijs"
               value={formatPriceMinor({
                 currencyCode: trackedPriceSummary.currencyCode,
                 minorUnits: trackedPriceSummary.trackedHighPriceMinor,
               })}
             />
             <PricingMetaItem
-              label="Tracked since"
+              label="Bijgehouden sinds"
               value={formatRecordedOn(
                 trackedPriceSummary.trackedSinceRecordedOn,
               )}
             />
             <PricingMetaItem
-              label="Current vs tracked low"
+              label="Huidig vs bijgehouden laag"
               value={getTrackedDeltaLabel({
                 currencyCode: trackedPriceSummary.currencyCode,
                 deltaMinor: trackedPriceSummary.deltaVsTrackedLowMinor,
-                label: 'tracked low',
+                label: 'bijgehouden laag',
               })}
             />
             <PricingMetaItem
-              label="Current vs tracked high"
+              label="Huidig vs bijgehouden hoog"
               value={getTrackedDeltaLabel({
                 currencyCode: trackedPriceSummary.currencyCode,
                 deltaMinor: trackedPriceSummary.deltaVsTrackedHighMinor,
-                label: 'tracked high',
+                label: 'bijgehouden hoog',
               })}
             />
           </dl>
           <p className={styles.summaryNote}>
             {trackedPriceSummary.pointCount === 1
-              ? 'Tracked history starts with one daily price.'
-              : `Tracked from ${getTrackedDailyPointLabel(trackedPriceSummary.pointCount)}.`}
+              ? 'De bijgehouden geschiedenis start met een dagprijs.'
+              : `Bijgehouden vanaf ${getTrackedDailyPointLabel(trackedPriceSummary.pointCount)}.`}
           </p>
         </section>
       ) : null}
@@ -506,10 +511,10 @@ function PricingUnavailableCardContent({
   if (variant === 'product') {
     return (
       <div className={`${styles.panel} ${styles.productPanel}`} id={id}>
-        <p className={styles.metricLabel}>Reviewed price</p>
-        <p className={styles.productUnavailableValue}>Not reviewed yet</p>
+        <p className={styles.metricLabel}>Reviewed prijs</p>
+        <p className={styles.productUnavailableValue}>Nog niet reviewed</p>
         <p className={styles.unavailableCopy}>
-          We have not checked live prices for this set yet.
+          We hebben voor deze set nog geen live prijzen gecheckt.
         </p>
         <PricingScopeLine>{getPricingScopeLabel()}</PricingScopeLine>
       </div>
@@ -525,15 +530,16 @@ function PricingUnavailableCardContent({
       tone="muted"
     >
       <SectionHeading
-        description={`We have not reviewed live ${getDefaultMarketAdjective()} pricing for this set yet.`}
-        eyebrow="Buy guidance"
-        title="Current reviewed price"
+        description={`We hebben nog geen live ${getDefaultMarketAdjective()} prijzen voor deze set reviewed.`}
+        eyebrow="Koophulp"
+        title="Huidige reviewed prijs"
       />
       <PricingScopeLine>
-        {getPricingScopeLabel('Not reviewed yet')}
+        {getPricingScopeLabel('Nog niet reviewed')}
       </PricingScopeLine>
       <p className={styles.unavailableCopy}>
-        Set pages and save actions still work while price coverage catches up.
+        Setpagina's en opslaan werken nog steeds terwijl prijsdekking wordt
+        opgebouwd.
       </p>
     </Surface>
   );
@@ -566,35 +572,37 @@ export function PriceHistoryCard({
         tone="muted"
       >
         <SectionHeading
-          description="One daily reviewed price is stored so far."
-          eyebrow="Price history"
-          title="30-day price history"
+          description="Tot nu toe is er een dagelijkse reviewed prijs opgeslagen."
+          eyebrow="Prijsgeschiedenis"
+          title="30-daagse prijsgeschiedenis"
         />
         <PricingScopeLine>
-          {getPricingScopeLabel(`History building · ${getDailyPointLabel(1)}`)}
+          {getPricingScopeLabel(
+            `Geschiedenis bouwt op · ${getDailyPointLabel(1)}`,
+          )}
         </PricingScopeLine>
         <div className={styles.metricBlock}>
-          <p className={styles.metricLabel}>First tracked price</p>
+          <p className={styles.metricLabel}>Eerste bijgehouden prijs</p>
           <p className={styles.metricValue}>
             {formatPriceMinor({
               currencyCode: firstPriceHistoryPoint.currencyCode,
               minorUnits: firstPriceHistoryPoint.headlinePriceMinor,
             })}
           </p>
-          <p className={styles.metricContext}>First daily price</p>
+          <p className={styles.metricContext}>Eerste dagprijs</p>
           <p className={styles.metricContextSecondary}>
-            Reviewed {formatObservedAt(firstPriceHistoryPoint.observedAt)}
+            Reviewed op {formatObservedAt(firstPriceHistoryPoint.observedAt)}
           </p>
         </div>
         <dl className={styles.metaGrid}>
           <PricingMetaItem
-            label="Recorded on"
+            label="Opgenomen op"
             value={formatRecordedOn(firstPriceHistoryPoint.recordedOn)}
           />
-          <PricingMetaItem label="Status" value="30-day range building" />
+          <PricingMetaItem label="Status" value="30-daags bereik bouwt op" />
         </dl>
         <p className={styles.referenceNote}>
-          The tracked price range starts from this first reviewed day.
+          Het bijgehouden prijsbereik start vanaf deze eerste reviewed dag.
         </p>
       </Surface>
     );
@@ -611,9 +619,9 @@ export function PriceHistoryCard({
       tone="muted"
     >
       <SectionHeading
-        description="One reviewed headline price is stored per day. Showing the latest 30 days."
-        eyebrow="Price history"
-        title="30-day price history"
+        description="Per dag wordt een reviewed hoofdprijs opgeslagen. Hier zie je de laatste 30 dagen."
+        eyebrow="Prijsgeschiedenis"
+        title="30-daagse prijsgeschiedenis"
       />
       <PricingScopeLine>
         {getPricingScopeLabel(getDailyPointLabel(priceHistoryPoints.length))}
@@ -634,7 +642,7 @@ export function PriceHistoryCard({
           </span>
         </div>
         <svg
-          aria-label={`30-day ${getDefaultMarketAdjective()} price history`}
+          aria-label={`30-daagse ${getDefaultMarketAdjective()} prijsgeschiedenis`}
           className={styles.historyChart}
           role="img"
           viewBox="0 0 100 48"
@@ -673,21 +681,21 @@ export function PriceHistoryCard({
       </div>
       <dl className={styles.metaGrid}>
         <PricingMetaItem
-          label="Latest"
+          label="Recentste"
           value={formatPriceMinor({
             currencyCode: latest.currencyCode,
             minorUnits: latest.headlinePriceMinor,
           })}
         />
         <PricingMetaItem
-          label="30-day low"
+          label="30-daags laag"
           value={formatPriceMinor({
             currencyCode: low.currencyCode,
             minorUnits: low.headlinePriceMinor,
           })}
         />
         <PricingMetaItem
-          label="30-day high"
+          label="30-daags hoog"
           value={formatPriceMinor({
             currencyCode: high.currencyCode,
             minorUnits: high.headlinePriceMinor,
@@ -695,7 +703,7 @@ export function PriceHistoryCard({
         />
       </dl>
       <p className={styles.referenceNote}>
-        Last checked {formatObservedAt(latest.observedAt)}.
+        Laatst gecheckt op {formatObservedAt(latest.observedAt)}.
       </p>
       <VisuallyHidden>
         <ol>
@@ -730,17 +738,17 @@ export function PriceHistoryEmptyCard({
       tone="muted"
     >
       <SectionHeading
-        description="Tracked history uses stored daily prices."
-        eyebrow="Price history"
-        title="30-day price history"
+        description="Bijgehouden geschiedenis gebruikt opgeslagen dagprijzen."
+        eyebrow="Prijsgeschiedenis"
+        title="30-daagse prijsgeschiedenis"
       />
       <PricingScopeLine>
-        {getPricingScopeLabel('History building')}
+        {getPricingScopeLabel('Geschiedenis bouwt op')}
       </PricingScopeLine>
       <p className={styles.unavailableCopy}>
         {isLoading
-          ? 'Loading the latest tracked daily prices.'
-          : `No daily history is stored for this set yet. If a reviewed price appears above, history is still building. If not, this set is outside the current ${getDefaultMarketAdjective()} pricing selection.`}
+          ? 'De nieuwste bijgehouden dagprijzen worden geladen.'
+          : `Voor deze set is nog geen daggeschiedenis opgeslagen. Verschijnt hierboven wel een reviewed prijs, dan bouwt de geschiedenis nog op. Zo niet, dan valt deze set buiten de huidige ${getDefaultMarketAdjective()} prijsselectie.`}
       </p>
     </Surface>
   );
@@ -750,9 +758,9 @@ export function PricingUi() {
   return (
     <Surface as="section" className={styles.demo} tone="muted">
       <SectionHeading
-        description="Compact buying guidance surfaces for current-price snapshots and 30-day history."
-        eyebrow="Pricing UI"
-        title="Market-ready price guidance with product-facing restraint."
+        description="Compacte koopoppervlakken voor actuele prijsmomenten en 30-daagse geschiedenis."
+        eyebrow="Prijs-UI"
+        title="Marktklare prijsbegeleiding met productgerichte terughoudendheid."
       />
     </Surface>
   );

@@ -91,7 +91,7 @@ function formatReviewedOn(observedAt: string): string {
 }
 
 function getReviewedOfferLabel(merchantCount: number): string {
-  return `${merchantCount} reviewed offer${merchantCount === 1 ? '' : 's'}`;
+  return `${merchantCount} reviewed aanbieding${merchantCount === 1 ? '' : 'en'}`;
 }
 
 function getPricePositionLabel({
@@ -109,17 +109,17 @@ function getPricePositionLabel({
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: Math.abs(deltaMinor),
-    })} below reference`;
+    })} onder referentie`;
   }
 
   if (deltaMinor > 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: deltaMinor,
-    })} above reference`;
+    })} boven referentie`;
   }
 
-  return 'At reference';
+  return 'Op referentie';
 }
 
 function getAlertCoverageLabel(pricePanelSnapshot: PricePanelSnapshot): string {
@@ -239,12 +239,12 @@ export function getReviewedPriceSummary(
     coverageNote: priceDealSummary.coverageNote,
     currentPrice: getCurrentPriceLabel(pricePanelSnapshot),
     dealLabel: priceDealSummary.label,
-    merchantLabel: `Lowest reviewed price at ${pricePanelSnapshot.lowestMerchantName}`,
+    merchantLabel: `Laagste reviewed prijs bij ${pricePanelSnapshot.lowestMerchantName}`,
     pricePositionLabel: getPricePositionLabel({
       currencyCode: pricePanelSnapshot.currencyCode,
       deltaMinor: pricePanelSnapshot.deltaMinor,
     }),
-    reviewedLabel: `Checked ${formatReviewedOn(pricePanelSnapshot.observedAt)}`,
+    reviewedLabel: `Gecheckt ${formatReviewedOn(pricePanelSnapshot.observedAt)}`,
   };
 }
 
@@ -524,9 +524,9 @@ export function buildWishlistPriceAlert({
         currencyCode: pricePanelSnapshot.currencyCode,
         minorUnits:
           priorTrackedLowMinor - pricePanelSnapshot.headlinePriceMinor,
-      })} below the previous tracked low.`,
+      })} onder de vorige beste tracked prijs.`,
       kind: 'new-best-price',
-      label: 'New best reviewed price',
+      label: 'Nieuwe beste reviewed prijs',
       tone: 'positive',
     };
   }
@@ -557,9 +557,9 @@ export function buildWishlistPriceAlert({
         minorUnits:
           baselinePricePoint.headlinePriceMinor -
           pricePanelSnapshot.headlinePriceMinor,
-      })} lower than when you saved it.`,
+      })} lager dan toen je deze set opsloeg.`,
       kind: 'price-improved-since-save',
-      label: 'Lower than when you saved it',
+      label: 'Lager dan toen je hem opsloeg',
       tone: 'positive',
     };
   }
@@ -570,13 +570,13 @@ export function buildWishlistPriceAlert({
     deltaMinor: pricePanelSnapshot.deltaMinor,
   });
 
-  if (priceDealSummary.label === 'Best current deal') {
+  if (priceDealSummary.label === 'Beste deal nu') {
     return {
       detail: pricePositionLabel
         ? `${pricePositionLabel} · ${coverageLabel}`
         : `${currentPriceLabel} · ${coverageLabel}`,
       kind: 'strong-deal-now',
-      label: 'Strong deal right now',
+      label: 'Sterke deal nu',
       tone: 'accent',
     };
   }
