@@ -525,6 +525,22 @@ const expectedCatalogThemes = [
   },
 ];
 
+const nonEmptyText = expect.stringMatching(/\S/);
+const bannedCollectorCopyTerms = [
+  'editorial potential',
+  'merchandising',
+  'assortment',
+  'retail lane',
+  'search target',
+  'catalog breadth',
+  'product storytelling',
+  'shelf profile',
+  'franchise pull',
+  'redactioneel potentieel',
+  'assortiment',
+  'schapprofiel',
+] as const;
+
 describe('catalog snapshot artifacts', () => {
   test('keep the generated snapshot and manifest aligned', () => {
     expect(catalogSnapshot.setRecords).toHaveLength(60);
@@ -555,7 +571,9 @@ describe('catalog data-access contracts', () => {
   });
 
   test('merges source-truth records with local product overlays for set detail reads', () => {
-    expect(getCatalogSetBySlug('rivendell-10316')).toEqual({
+    const catalogSetDetail = getCatalogSetBySlug('rivendell-10316');
+
+    expect(catalogSetDetail).toMatchObject({
       id: '10316',
       slug: 'rivendell-10316',
       name: 'Rivendell',
@@ -565,20 +583,21 @@ describe('catalog data-access contracts', () => {
       minifigureCount: 15,
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
       priceRange: '$499 tot $569',
-      collectorAngle: 'Prestige-displayanker',
-      tagline:
-        'Een fantasy-vlaggenschip dat zowel je displayruimte als je geduld beloont.',
-      availability: 'Ruim beschikbaar, maar premium geprijsd',
-      collectorHighlights: [
-        'Driedelige scène-opbouw met sterke schappresentatie',
-        'Sterke langetermijnwaarde als displaystuk dankzij brede fandom-aantrekkingskracht',
-        'Uitstekende kandidaat voor toekomstige redactionele storytelling',
-      ],
+      collectorAngle: nonEmptyText,
+      tagline: nonEmptyText,
+      availability: nonEmptyText,
     });
+    expect(catalogSetDetail?.collectorHighlights).toEqual([
+      nonEmptyText,
+      nonEmptyText,
+      nonEmptyText,
+    ]);
   });
 
   test('keeps homepage summaries stable while allowing source facts to refresh', () => {
-    expect(listHomepageSets()).toEqual([
+    const homepageSets = listHomepageSets();
+
+    expect(homepageSets).toMatchObject([
       {
         id: '10316',
         slug: 'rivendell-10316',
@@ -588,7 +607,7 @@ describe('catalog data-access contracts', () => {
         pieces: 6181,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
         priceRange: '$499 tot $569',
-        collectorAngle: 'Prestige-displayanker',
+        collectorAngle: nonEmptyText,
       },
       {
         id: '10333',
@@ -599,7 +618,7 @@ describe('catalog data-access contracts', () => {
         pieces: 5478,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
         priceRange: '$459 tot $529',
-        collectorAngle: 'Middle-earth displaymonoliet',
+        collectorAngle: nonEmptyText,
       },
       {
         id: '21333',
@@ -610,9 +629,10 @@ describe('catalog data-access contracts', () => {
         pieces: 2316,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
         priceRange: '$149 tot $189',
-        collectorAngle: 'Kunstcrossover voor aan de muur',
+        collectorAngle: nonEmptyText,
       },
     ]);
+    expect(homepageSets).toHaveLength(3);
   });
 
   test('searches curated sets by product name and canonical id', () => {
@@ -768,7 +788,9 @@ describe('catalog data-access contracts', () => {
   });
 
   test('builds richer homepage card reads with curated availability and tagline context', () => {
-    expect(listHomepageSetCards()).toEqual([
+    const homepageSetCards = listHomepageSetCards();
+
+    expect(homepageSetCards).toMatchObject([
       {
         id: '10316',
         slug: 'rivendell-10316',
@@ -778,10 +800,9 @@ describe('catalog data-access contracts', () => {
         pieces: 6181,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
         priceRange: '$499 tot $569',
-        collectorAngle: 'Prestige-displayanker',
-        tagline:
-          'Een fantasy-vlaggenschip dat zowel je displayruimte als je geduld beloont.',
-        availability: 'Ruim beschikbaar, maar premium geprijsd',
+        collectorAngle: nonEmptyText,
+        tagline: nonEmptyText,
+        availability: nonEmptyText,
         minifigureCount: 15,
       },
       {
@@ -793,10 +814,9 @@ describe('catalog data-access contracts', () => {
         pieces: 5478,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
         priceRange: '$459 tot $529',
-        collectorAngle: 'Middle-earth displaymonoliet',
-        tagline:
-          'Een torenhoog fantasy-middelpunt met uitzonderlijk veel schapdrama en brede herkenbaarheid over fandoms heen.',
-        availability: 'Zeer zichtbare premiumvraag',
+        collectorAngle: nonEmptyText,
+        tagline: nonEmptyText,
+        availability: nonEmptyText,
         minifigureCount: 10,
       },
       {
@@ -808,12 +828,12 @@ describe('catalog data-access contracts', () => {
         pieces: 2316,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
         priceRange: '$149 tot $189',
-        collectorAngle: 'Kunstcrossover voor aan de muur',
-        tagline:
-          'Een museumgekoppelde displayset die moeiteloos tussen kunstobject, cadeau en gesprekstarter in zit.',
-        availability: 'Stabiele crossover-vraag',
+        collectorAngle: nonEmptyText,
+        tagline: nonEmptyText,
+        availability: nonEmptyText,
       },
     ]);
+    expect(homepageSetCards).toHaveLength(3);
   });
 
   test('keeps homepage deal candidates focused on reviewed click-magnets outside the main hero row', () => {
@@ -849,40 +869,43 @@ describe('catalog data-access contracts', () => {
   });
 
   test('maps curated ids to card-ready reads while skipping ids outside the public catalog slice', () => {
-    expect(listCatalogSetCardsByIds(['76269', 'missing-set', '10316'])).toEqual(
-      [
-        {
-          id: '76269',
-          slug: 'avengers-tower-76269',
-          name: 'Avengers Tower',
-          theme: 'Marvel',
-          releaseYear: 2023,
-          pieces: 5202,
-          imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
-          priceRange: '$449 tot $519',
-          collectorAngle: 'Marvel-vlaggenschip',
-          tagline:
-            'Een opvallende licentieset met brede herkenbaarheid in huis.',
-          availability: 'Stabiel met sterke seizoensvraag',
-          minifigureCount: 31,
-        },
-        {
-          id: '10316',
-          slug: 'rivendell-10316',
-          name: 'Rivendell',
-          theme: 'Icons',
-          releaseYear: 2023,
-          pieces: 6181,
-          imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-          priceRange: '$499 tot $569',
-          collectorAngle: 'Prestige-displayanker',
-          tagline:
-            'Een fantasy-vlaggenschip dat zowel je displayruimte als je geduld beloont.',
-          availability: 'Ruim beschikbaar, maar premium geprijsd',
-          minifigureCount: 15,
-        },
-      ],
-    );
+    const catalogSetCards = listCatalogSetCardsByIds([
+      '76269',
+      'missing-set',
+      '10316',
+    ]);
+
+    expect(catalogSetCards).toMatchObject([
+      {
+        id: '76269',
+        slug: 'avengers-tower-76269',
+        name: 'Avengers Tower',
+        theme: 'Marvel',
+        releaseYear: 2023,
+        pieces: 5202,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+        priceRange: '$449 tot $519',
+        collectorAngle: nonEmptyText,
+        tagline: nonEmptyText,
+        availability: nonEmptyText,
+        minifigureCount: 31,
+      },
+      {
+        id: '10316',
+        slug: 'rivendell-10316',
+        name: 'Rivendell',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 6181,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+        priceRange: '$499 tot $569',
+        collectorAngle: nonEmptyText,
+        tagline: nonEmptyText,
+        availability: nonEmptyText,
+        minifigureCount: 15,
+      },
+    ]);
+    expect(catalogSetCards).toHaveLength(2);
   });
 
   test('returns comparable catalog offers for every public set', () => {
@@ -1303,443 +1326,264 @@ describe('catalog data-access contracts', () => {
   });
 
   test('keeps newly curated sets product-ready through local overlay coverage', () => {
-    expect(getCatalogSetBySlug('lion-knights-castle-10305')).toEqual({
-      id: '10305',
-      slug: 'lion-knights-castle-10305',
-      name: "Lion Knights' Castle",
-      theme: 'Icons',
-      releaseYear: 2022,
-      pieces: 4515,
-      minifigureCount: 22,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10305-1/152495.jpg',
-      priceRange: '$359 tot $429',
-      collectorAngle: 'Kasteelnostalgie-vlaggenschip',
-      tagline:
-        'Een modern fort dat precies samenkomt op het snijvlak van nostalgie en displaywaarde.',
-      availability: 'Stabiele premiumvraag',
-      collectorHighlights: [
-        'Sterke crossover-aantrekkingskracht tussen volwassen nostalgie en fantasy-displaykopers',
-        'Hoge gevoelswaarde dankzij dicht bouwvolume en veel minifiguren',
-        'Sterke ankerset voor langere redactionele en collectieverhalen',
-      ],
-    });
+    const expectedCatalogSetDetails = [
+      {
+        id: '10305',
+        slug: 'lion-knights-castle-10305',
+        name: "Lion Knights' Castle",
+        theme: 'Icons',
+        releaseYear: 2022,
+        pieces: 4515,
+        minifigureCount: 22,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10305-1/152495.jpg',
+        priceRange: '$359 tot $429',
+      },
+      {
+        id: '21338',
+        slug: 'a-frame-cabin-21338',
+        name: 'A-Frame Cabin',
+        theme: 'Ideas',
+        releaseYear: 2023,
+        pieces: 2083,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21338-1/116515.jpg',
+        priceRange: '$179 tot $239',
+      },
+      {
+        id: '10320',
+        slug: 'eldorado-fortress-10320',
+        name: 'Eldorado Fortress',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 2509,
+        minifigureCount: 8,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10320-1/127861.jpg',
+        priceRange: '$189 tot $259',
+      },
+      {
+        id: '21335',
+        slug: 'motorized-lighthouse-21335',
+        name: 'Motorized Lighthouse',
+        theme: 'Ideas',
+        releaseYear: 2022,
+        pieces: 2065,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21335-1/107884.jpg',
+        priceRange: '$259 tot $319',
+      },
+      {
+        id: '10333',
+        slug: 'the-lord-of-the-rings-barad-dur-10333',
+        name: 'The Lord of the Rings: Barad-dûr',
+        theme: 'Icons',
+        releaseYear: 2024,
+        pieces: 5478,
+        minifigureCount: 10,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
+        priceRange: '$459 tot $529',
+      },
+      {
+        id: '10332',
+        slug: 'medieval-town-square-10332',
+        name: 'Medieval Town Square',
+        theme: 'Icons',
+        releaseYear: 2024,
+        pieces: 3308,
+        minifigureCount: 8,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10332-1/137285.jpg',
+        priceRange: '$189 tot $249',
+      },
+      {
+        id: '10315',
+        slug: 'tranquil-garden-10315',
+        name: 'Tranquil Garden',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 1363,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10315-1/132380.jpg',
+        priceRange: '$95 tot $129',
+      },
+      {
+        id: '21333',
+        slug: 'vincent-van-gogh-the-starry-night-21333',
+        name: 'Vincent van Gogh - The Starry Night',
+        theme: 'Ideas',
+        releaseYear: 2022,
+        pieces: 2316,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
+        priceRange: '$149 tot $189',
+      },
+      {
+        id: '21342',
+        slug: 'the-insect-collection-21342',
+        name: 'The Insect Collection',
+        theme: 'Ideas',
+        releaseYear: 2023,
+        pieces: 1111,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21342-1/126471.jpg',
+        priceRange: '$69 tot $99',
+      },
+      {
+        id: '10318',
+        slug: 'concorde-10318',
+        name: 'Concorde',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 2083,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10318-1/132335.jpg',
+        priceRange: '$169 tot $229',
+      },
+      {
+        id: '10331',
+        slug: 'kingfisher-bird-10331',
+        name: 'Kingfisher Bird',
+        theme: 'Icons',
+        releaseYear: 2024,
+        pieces: 834,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10331-1/135670.jpg',
+        priceRange: '$49 tot $69',
+      },
+      {
+        id: '10341',
+        slug: 'nasa-artemis-space-launch-system-10341',
+        name: 'NASA Artemis Space Launch System',
+        theme: 'Icons',
+        releaseYear: 2024,
+        pieces: 3601,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10341-1/139647.jpg',
+        priceRange: '$239 tot $299',
+      },
+      {
+        id: '21349',
+        slug: 'tuxedo-cat-21349',
+        name: 'Tuxedo Cat',
+        theme: 'Ideas',
+        releaseYear: 2024,
+        pieces: 1710,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21349-1/140411.jpg',
+        priceRange: '$99 tot $139',
+      },
+      {
+        id: '10300',
+        slug: 'back-to-the-future-time-machine-10300',
+        name: 'Back to the Future Time Machine',
+        theme: 'Icons',
+        releaseYear: 2022,
+        pieces: 1872,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10300-1/99954.jpg',
+        priceRange: '$179 tot $229',
+      },
+      {
+        id: '10294',
+        slug: 'titanic-10294',
+        name: 'Titanic',
+        theme: 'Icons',
+        releaseYear: 2021,
+        pieces: 9092,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10294-1/93446.jpg',
+        priceRange: '$629 tot $749',
+      },
+      {
+        id: '21061',
+        slug: 'notre-dame-de-paris-21061',
+        name: 'Notre-Dame de Paris',
+        theme: 'Architecture',
+        releaseYear: 2024,
+        pieces: 4382,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
+        priceRange: '$199 tot $249',
+      },
+      {
+        id: '31208',
+        slug: 'hokusai-the-great-wave-31208',
+        name: 'Hokusai - The Great Wave',
+        theme: 'Art',
+        releaseYear: 2023,
+        pieces: 1810,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/31208-1/131769.jpg',
+        priceRange: '$79 tot $109',
+      },
+      {
+        id: '76419',
+        slug: 'hogwarts-castle-and-grounds-76419',
+        name: 'Hogwarts Castle and Grounds',
+        theme: 'Harry Potter',
+        releaseYear: 2023,
+        pieces: 2660,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76419-1/123597.jpg',
+        priceRange: '$149 tot $189',
+      },
+      {
+        id: '43222',
+        slug: 'disney-castle-43222',
+        name: 'Disney Castle',
+        theme: 'Disney',
+        releaseYear: 2023,
+        pieces: 4837,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/43222-1/130721.jpg',
+        priceRange: '$349 tot $429',
+      },
+      {
+        id: '75313',
+        slug: 'at-at-75313',
+        name: 'AT-AT',
+        theme: 'Star Wars',
+        releaseYear: 2021,
+        pieces: 6785,
+        minifigureCount: 9,
+        minifigureHighlights: [
+          'Luke Skywalker',
+          'General Veers',
+          'Snowtrooper Commander',
+        ],
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
+        priceRange: '$649 tot $799',
+      },
+      {
+        id: '21345',
+        slug: 'polaroid-onestep-sx-70-camera-21345',
+        name: 'Polaroid OneStep SX-70 Camera',
+        theme: 'Ideas',
+        releaseYear: 2024,
+        pieces: 516,
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/21345-1/134647.jpg',
+        priceRange: '$69 tot $99',
+      },
+    ];
 
-    expect(getCatalogSetBySlug('a-frame-cabin-21338')).toEqual({
-      id: '21338',
-      slug: 'a-frame-cabin-21338',
-      name: 'A-Frame Cabin',
-      theme: 'Ideas',
-      releaseYear: 2023,
-      pieces: 2083,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21338-1/116515.jpg',
-      priceRange: '$179 tot $239',
-      collectorAngle: 'Cabin-core blikvanger',
-      tagline:
-        'Een warm gedetailleerde displayset met brede schapaantrekkingskracht buiten traditionele franchisecollectors.',
-      availability: 'Constante aantrekkingskracht bij liefhebbers',
-      collectorHighlights: [
-        'Displayvriendelijk formaat met sterke cadeauwaarde en crossover-aantrekkingskracht',
-        'Een uitgesproken silhouet helpt een premium assortiment beter te spreiden',
-        'Nuttige testcase voor redactionele storytelling buiten licentiefandoms',
-      ],
-    });
+    for (const expectedCatalogSetDetail of expectedCatalogSetDetails) {
+      const catalogSetDetail = getCatalogSetBySlug(
+        expectedCatalogSetDetail.slug,
+      );
 
-    expect(getCatalogSetBySlug('eldorado-fortress-10320')).toEqual({
-      id: '10320',
-      slug: 'eldorado-fortress-10320',
-      name: 'Eldorado Fortress',
-      theme: 'Icons',
-      releaseYear: 2023,
-      pieces: 2509,
-      minifigureCount: 8,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10320-1/127861.jpg',
-      priceRange: '$189 tot $259',
-      collectorAngle: 'Piratennostalgie-middelpunt',
-      tagline:
-        'Een herconfigureerbaar fort dat tegelijk werkt als nostalgische knipoog en als avontuurlijk displaystuk.',
-      availability: 'Afgewogen liefhebbersvraag',
-      collectorHighlights: [
-        'Sterke volwassen nostalgie zonder te leunen op een licentiefranchise',
-        'De modulaire eilandopbouw maakt fotograferen, restylen en merchandisen makkelijker',
-        'Sterke brugset tussen displayverzamelaars en fans van klassieke speelthema’s',
-      ],
-    });
+      expect(catalogSetDetail).toMatchObject({
+        ...expectedCatalogSetDetail,
+        collectorAngle: nonEmptyText,
+        tagline: nonEmptyText,
+        availability: nonEmptyText,
+      });
+      expect(catalogSetDetail?.collectorHighlights).toEqual([
+        nonEmptyText,
+        nonEmptyText,
+        nonEmptyText,
+      ]);
+    }
+  });
 
-    expect(getCatalogSetBySlug('motorized-lighthouse-21335')).toEqual({
-      id: '21335',
-      slug: 'motorized-lighthouse-21335',
-      name: 'Motorized Lighthouse',
-      theme: 'Ideas',
-      releaseYear: 2022,
-      pieces: 2065,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21335-1/107884.jpg',
-      priceRange: '$259 tot $319',
-      collectorAngle: 'Kinetische displayuitblinker',
-      tagline:
-        'Een mechanisch geanimeerde kustbuild die zich net zo thuis voelt op premium displays als in cadeaugerichte curatie.',
-      availability: 'Selectieve premiumbeschikbaarheid',
-      collectorHighlights: [
-        'Gemotoriseerd licht en een draaiend baken zorgen voor meer live-displayimpact dan de meeste statische stukken',
-        'Het uitgesproken silhouet verbreedt het gecureerde aanbod voorbij kastelen, cabins en torens',
-        'Sterke kandidaat voor storytelling rond functiegedreven verzamelontwerp',
-      ],
-    });
+  test('keeps curated set copy free from internal editorial or merchandising language', () => {
+    for (const slug of expectedProductSlugs) {
+      const catalogSetDetail = getCatalogSetBySlug(slug);
 
-    expect(
-      getCatalogSetBySlug('the-lord-of-the-rings-barad-dur-10333'),
-    ).toEqual({
-      id: '10333',
-      slug: 'the-lord-of-the-rings-barad-dur-10333',
-      name: 'The Lord of the Rings: Barad-dûr',
-      theme: 'Icons',
-      releaseYear: 2024,
-      pieces: 5478,
-      minifigureCount: 10,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-      priceRange: '$459 tot $529',
-      collectorAngle: 'Middle-earth displaymonoliet',
-      tagline:
-        'Een torenhoog fantasy-middelpunt met uitzonderlijk veel schapdrama en brede herkenbaarheid over fandoms heen.',
-      availability: 'Zeer zichtbare premiumvraag',
-      collectorHighlights: [
-        'Het verticale silhouet geeft het assortiment een dramatischer schapprofiel dan de meeste brede displaysets',
-        'Een grote minifiguurcast en franchiseherkenning versterken zowel verzamelaarswaarde als redactioneel potentieel',
-        'Een natuurlijke aanvulling op Rivendell voor een sterkere premium Middle-earth-lijn',
-      ],
-    });
+      const copy = [
+        catalogSetDetail?.collectorAngle,
+        catalogSetDetail?.tagline,
+        ...(catalogSetDetail?.collectorHighlights ?? []),
+      ]
+        .join(' ')
+        .toLowerCase();
 
-    expect(getCatalogSetBySlug('medieval-town-square-10332')).toEqual({
-      id: '10332',
-      slug: 'medieval-town-square-10332',
-      name: 'Medieval Town Square',
-      theme: 'Icons',
-      releaseYear: 2024,
-      pieces: 3308,
-      minifigureCount: 8,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10332-1/137285.jpg',
-      priceRange: '$189 tot $249',
-      collectorAngle: 'Castle-world dorpsuitbreiding',
-      tagline:
-        'Een levendige middeleeuwse straat die kasteelverzamelen verbreedt voorbij alleen forten als displaystuk.',
-      availability: 'Breed beschikbaar, maar vooral gedragen door liefhebbers',
-      collectorHighlights: [
-        "Combineert vanzelf met Lion Knights' Castle zonder aan te voelen als een overbodig tweede fort",
-        'Dichte burgerlijke scènes laten de publieke catalogus ronder en verzamelwaardiger aanvoelen',
-        'Veel minifiguren en winkelvariatie maken deze set extra bruikbaar voor fotografie en redactionele merchandising',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('tranquil-garden-10315')).toEqual({
-      id: '10315',
-      slug: 'tranquil-garden-10315',
-      name: 'Tranquil Garden',
-      theme: 'Icons',
-      releaseYear: 2023,
-      pieces: 1363,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10315-1/132380.jpg',
-      priceRange: '$95 tot $129',
-      collectorAngle: 'Rustgevend displaytussendoortje',
-      tagline:
-        'Een rustiger sculpturale tuinbuild die de line-up een lichter en meer designgericht tegengewicht geeft.',
-      availability: 'Toegankelijke premiumbeschikbaarheid',
-      collectorHighlights: [
-        'Het lagere prijsniveau maakt dit een helderder instappunt in het premium verzamelassortiment',
-        'De lifestylegerichte displayhouding verbreedt de catalogus voorbij nostalgie en licentiefandom',
-        'Het sterke visuele contrast met torens, kastelen en cabins maakt de homepage minder eenvormig',
-      ],
-    });
-
-    expect(
-      getCatalogSetBySlug('vincent-van-gogh-the-starry-night-21333'),
-    ).toEqual({
-      id: '21333',
-      slug: 'vincent-van-gogh-the-starry-night-21333',
-      name: 'Vincent van Gogh - The Starry Night',
-      theme: 'Ideas',
-      releaseYear: 2022,
-      pieces: 2316,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
-      priceRange: '$149 tot $189',
-      collectorAngle: 'Kunstcrossover voor aan de muur',
-      tagline:
-        'Een museumgekoppelde displayset die moeiteloos tussen kunstobject, cadeau en gesprekstarter in zit.',
-      availability: 'Stabiele crossover-vraag',
-      collectorHighlights: [
-        'Directe onderwerpherkenning reikt ver voorbij het gebruikelijke AFOL- en franchisepubliek',
-        'De flexibiliteit van wand- en schappresentatie maakt hem veelzijdiger dan de meeste gecureerde blikvangers',
-        'Een sterk bewijs dat de publieke catalogus verzamelwaardig kan voelen zonder alleen op nostalgie te leunen',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('the-insect-collection-21342')).toEqual({
-      id: '21342',
-      slug: 'the-insect-collection-21342',
-      name: 'The Insect Collection',
-      theme: 'Ideas',
-      releaseYear: 2023,
-      pieces: 1111,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21342-1/126471.jpg',
-      priceRange: '$69 tot $99',
-      collectorAngle: 'Natuurdisplay-instapper',
-      tagline:
-        'Een Ideas-release op kleinere schaal die toegankelijke, cadeauwaardige variatie toevoegt zonder de premium toon te breken.',
-      availability: 'Goede specialistische beschikbaarheid',
-      collectorHighlights: [
-        'Een laagdrempeliger prijsniveau maakt de gecureerde publieke catalogus makkelijker om in te stappen',
-        'De driedelige opbouw voegt visuele variatie toe zonder een nieuw productdomein of routetype te introduceren',
-        'Verbreedt de Ideas-selectie met een onderwerp dat bedachtzaam en schapvriendelijk voelt in plaats van franchisegedreven',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('concorde-10318')).toEqual({
-      id: '10318',
-      slug: 'concorde-10318',
-      name: 'Concorde',
-      theme: 'Icons',
-      releaseYear: 2023,
-      pieces: 2083,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10318-1/132335.jpg',
-      priceRange: '$169 tot $229',
-      collectorAngle: 'Engineering-icoon als blikvanger',
-      tagline:
-        'Een langgerekte luchtvaartbuild die slanke technische prestige toevoegt aan de gecureerde line-up.',
-      availability: 'Betrouwbare premiumbeschikbaarheid',
-      collectorHighlights: [
-        'Directe silhouetherkenning verbreedt de publieke catalogus zonder de verzameltoon te verliezen',
-        'Het grote displayformaat brengt een heel ander soort schappresentatie dan torens, kastelen en architectuursets',
-        'Past sterk bij storytelling rond designiconen, transportgeschiedenis en volwassen displaycultuur',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('kingfisher-bird-10331')).toEqual({
-      id: '10331',
-      slug: 'kingfisher-bird-10331',
-      name: 'Kingfisher Bird',
-      theme: 'Icons',
-      releaseYear: 2024,
-      pieces: 834,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10331-1/135670.jpg',
-      priceRange: '$49 tot $69',
-      collectorAngle: 'Kleuraccent voor op display',
-      tagline:
-        'Een compacte natuurstudie die de catalogus een speelser, scherper instappunt geeft zonder speelgoedachtig te voelen.',
-      availability: 'Breed toegankelijk beschikbaar',
-      collectorHighlights: [
-        'De kleinere schaal verlaagt de instapdrempel voor nieuwe verzamelaars in de publieke catalogus',
-        'Het levendige onderwerp voegt visueel contrast toe aan de huidige mix van torens, gebouwen en grote displays',
-        'Een nuttige brug tussen cadeauwaardige designsets en duurdere vlaggenschipstukken',
-      ],
-    });
-
-    expect(
-      getCatalogSetBySlug('nasa-artemis-space-launch-system-10341'),
-    ).toEqual({
-      id: '10341',
-      slug: 'nasa-artemis-space-launch-system-10341',
-      name: 'NASA Artemis Space Launch System',
-      theme: 'Icons',
-      releaseYear: 2024,
-      pieces: 3601,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10341-1/139647.jpg',
-      priceRange: '$239 tot $299',
-      collectorAngle: 'Ruimtevaartmonument voor op display',
-      tagline:
-        'Een torenhoge ruimtevaartbuild die de catalogus uitbreidt richting engineering-first verzamelen met echte visuele zwaarte.',
-      availability: 'Specialistische maar stabiele premiumvraag',
-      collectorHighlights: [
-        'Het verticale raket-en-toren-silhouet geeft de publieke catalogus een duidelijk eigen displayhouding, los van forten of fantasiespiralen',
-        'Het NASA-onderwerp verbreedt de verzamelrelevantie zonder te leunen op een entertainmentlicentie',
-        'Een sterke match voor productstorytelling rond schaal, techniek en volwassen bouwambitie',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('tuxedo-cat-21349')).toEqual({
-      id: '21349',
-      slug: 'tuxedo-cat-21349',
-      name: 'Tuxedo Cat',
-      theme: 'Ideas',
-      releaseYear: 2024,
-      pieces: 1710,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21349-1/140411.jpg',
-      priceRange: '$99 tot $139',
-      collectorAngle: 'Karaktervolle favoriet voor thuisdisplay',
-      tagline:
-        'Een poseerbaar huiselijk displaystuk dat de verzameltoon warm, herkenbaar en breed cadeauwaardig houdt.',
-      availability: 'Sterke brede beschikbaarheid bij liefhebbers',
-      collectorHighlights: [
-        'Het zeer herkenbare onderwerp geeft de gecureerde catalogus nog een makkelijk instappunt voor casual volwassen bezoekers',
-        'De displaygerichte persoonlijkheid maakt de publieke setmix minder architectuurzwaar en emotioneel gevarieerder',
-        'Past goed bij social proof, cadeauverhalen en thuisdisplay-storytelling zonder de productscope uit te breiden',
-      ],
-    });
-
-    expect(
-      getCatalogSetBySlug('back-to-the-future-time-machine-10300'),
-    ).toEqual({
-      id: '10300',
-      slug: 'back-to-the-future-time-machine-10300',
-      name: 'Back to the Future Time Machine',
-      theme: 'Icons',
-      releaseYear: 2022,
-      pieces: 1872,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10300-1/99954.jpg',
-      priceRange: '$179 tot $229',
-      collectorAngle: 'Popcultuur-voertuigicoon',
-      tagline:
-        'Een filmauto-displayset die ook buiten de kern van LEGO-verzamelaars meteen herkenbaar is.',
-      availability: 'Brede beschikbaarheid voor liefhebbers',
-      collectorHighlights: [
-        'Drie filmvarianten maken hem speelser en herhaalbaarder dan de meeste enkele voertuigdisplays',
-        'Een sterk zoekdoel dankzij een van de bekendste filmauto’s uit de popcultuur',
-        'Houdt de premium verzameltoon vast met een toegankelijker formaat en prijs dan de grootste vlaggenschepen',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('titanic-10294')).toEqual({
-      id: '10294',
-      slug: 'titanic-10294',
-      name: 'Titanic',
-      theme: 'Icons',
-      releaseYear: 2021,
-      pieces: 9092,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10294-1/93446.jpg',
-      priceRange: '$629 tot $749',
-      collectorAngle: 'Monumentaal displaystatement',
-      tagline:
-        'Een enorme oceaanlijner die tegelijk voelt als technisch hoogstandje en blikvanger in de woonkamer.',
-      availability: 'Selectieve vlaggenschipbeschikbaarheid',
-      collectorHighlights: [
-        'Een van de meest herkenbare displaysets op groot formaat in de bredere volwassen markt',
-        'De extreme schaal geeft de publieke catalogus een echt topsegment-middelpunt naast kastelen en torens',
-        'Een uitstekend zoekdoel voor verzamelaars die browsen op iconische echte onderwerpen',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('notre-dame-de-paris-21061')).toEqual({
-      id: '21061',
-      slug: 'notre-dame-de-paris-21061',
-      name: 'Notre-Dame de Paris',
-      theme: 'Architecture',
-      releaseYear: 2024,
-      pieces: 4382,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
-      priceRange: '$199 tot $249',
-      collectorAngle: 'Architectonisch prestigelandmerk',
-      tagline:
-        'Een wereldwijd herkenbaar landmark dat architectonische zwaarte toevoegt zonder kil of corporate te voelen.',
-      availability: 'Gezonde premiumbeschikbaarheid',
-      collectorHighlights: [
-        'Het zeer herkenbare onderwerp verbreedt de zoekrelevantie ver voorbij fandomgedreven sets',
-        'Het dichte silhouet en historische onderwerp versterken redactionele en cadeaugerichte merchandising',
-        'Biedt een helderder architectuur-instappunt dan de huidige fantasy- en franchisezware mix',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('hokusai-the-great-wave-31208')).toEqual({
-      id: '31208',
-      slug: 'hokusai-the-great-wave-31208',
-      name: 'Hokusai - The Great Wave',
-      theme: 'Art',
-      releaseYear: 2023,
-      pieces: 1810,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/31208-1/131769.jpg',
-      priceRange: '$79 tot $109',
-      collectorAngle: 'Kunstcrossover voor aan de muur',
-      tagline:
-        'Een ingelijste golfcompositie die de publieke catalogus in één oogopslag meer designgericht en cadeauwaardig maakt.',
-      availability: 'Constante beschikbaarheid binnen Art',
-      collectorHighlights: [
-        'Directe visuele herkenning maakt dit een sterk zoekdoel, zelfs voor casual bezoekers',
-        'Het muurvriendelijke formaat voegt een nieuwe displayhouding toe zonder productcomplexiteit toe te voegen',
-        'Helpt de catalogus gevarieerder te voelen dan een rij van alleen gebouwen, torens en voertuigen',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('hogwarts-castle-and-grounds-76419')).toEqual({
-      id: '76419',
-      slug: 'hogwarts-castle-and-grounds-76419',
-      name: 'Hogwarts Castle and Grounds',
-      theme: 'Harry Potter',
-      releaseYear: 2023,
-      pieces: 2660,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/76419-1/123597.jpg',
-      priceRange: '$149 tot $189',
-      collectorAngle: 'Wizarding World-displayoverzicht',
-      tagline:
-        'Een compact Hogwarts-panorama dat een van LEGO’s meest gezochte fantasy-onderwerpen in een schoner displayformaat brengt.',
-      availability: 'Sterke brede beschikbaarheid',
-      collectorHighlights: [
-        'Brede franchiseherkenning maakt dit een van de makkelijkste zoekinstappers buiten Marvel en Middle-earth',
-        'Beter hanteerbaar op de plank dan de grootste Hogwarts-releases en toch duidelijk verzamelwaardig',
-        'Voegt een grote fantasylicentie toe zonder de premium line-up te vullen met nog een oversized vlaggenschip',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('disney-castle-43222')).toEqual({
-      id: '43222',
-      slug: 'disney-castle-43222',
-      name: 'Disney Castle',
-      theme: 'Disney',
-      releaseYear: 2023,
-      pieces: 4837,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/43222-1/130721.jpg',
-      priceRange: '$349 tot $429',
-      collectorAngle: 'Sprookjesachtig vlaggenschip',
-      tagline:
-        'Een kasteelicoon voor op display met uitzonderlijk brede herkenning en sterke cadeau-aantrekkingskracht.',
-      availability: 'Gezonde vlaggenschipbeschikbaarheid',
-      collectorHighlights: [
-        'Een van de meest herkenbare displaysilhouetten in de bredere LEGO-catalogus',
-        'Voegt een warmer, meer familiegericht vlaggenschip toe zonder volwassen verzamelgeloofwaardigheid te verliezen',
-        'Een krachtig zoekdoel voor zowel Disney- als kasteelverzamelaars',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('at-at-75313')).toEqual({
-      id: '75313',
-      slug: 'at-at-75313',
-      name: 'AT-AT',
-      theme: 'Star Wars',
-      releaseYear: 2021,
-      pieces: 6785,
-      minifigureCount: 9,
-      minifigureHighlights: [
-        'Luke Skywalker',
-        'General Veers',
-        'Snowtrooper Commander',
-      ],
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
-      priceRange: '$649 tot $799',
-      collectorAngle: 'Star Wars-verzamelmonument',
-      tagline:
-        'Een torenhoge Ultimate Collector Series-build die meteen serieuze verzamelaarsdiepte uitstraalt zodra hij in zoekresultaten verschijnt.',
-      availability: 'Selectieve UCS-beschikbaarheid',
-      collectorHighlights: [
-        'Een van de meest herkenbare high-end Star Wars-sets in de moderne catalogus',
-        'De enorme schaal en franchisekracht maken dit een sterk anker voor premium zoekvraag',
-        'Verbreedt de gecureerde mix richting Star Wars zonder scope of productgedrag te verbreden',
-      ],
-    });
-
-    expect(getCatalogSetBySlug('polaroid-onestep-sx-70-camera-21345')).toEqual({
-      id: '21345',
-      slug: 'polaroid-onestep-sx-70-camera-21345',
-      name: 'Polaroid OneStep SX-70 Camera',
-      theme: 'Ideas',
-      releaseYear: 2024,
-      pieces: 516,
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21345-1/134647.jpg',
-      priceRange: '$69 tot $99',
-      collectorAngle: 'Retro designobject dat meteen aanspreekt',
-      tagline:
-        'Een speelse camerabuild die meteen vertrouwd, cadeauwaardig en displayklaar voelt zonder puur een gimmick te worden.',
-      availability: 'Toegankelijke beschikbaarheid voor liefhebbers',
-      collectorHighlights: [
-        'Het herkenbare echte object maakt dit een makkelijke instapper voor zoeken en cadeaus',
-        'De compacte footprint voegt een verzameloptie met minder drempel toe aan de publieke mix',
-        'Houdt de Ideas-selectie warm en designgericht in plaats van alleen scenisch of fandomzwaar',
-      ],
-    });
+      for (const bannedTerm of bannedCollectorCopyTerms) {
+        expect(copy).not.toContain(bannedTerm);
+      }
+    }
   });
 
   test('preserves the full summary read-model and theme snapshots', () => {

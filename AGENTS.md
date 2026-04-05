@@ -46,7 +46,7 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 
 - The design system must support both light and dark mode, even if only light mode is currently surfaced in the product.
 - The product should feel premium, playful, clean, and retail-grade.
-- Take inspiration from the quality bar of `lego.com`, but do not clone it.
+- Take inspiration from lego.com, but do not clone it.
 - Accessibility, consistency, and performance are mandatory.
 
 ## Product Tone And Voice
@@ -61,12 +61,194 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 
 Short examples:
 
-- Avoid: `Optimize your collection management workflow`
-- Prefer: `Keep track of what you own and what you still want`
-- Avoid: `Pricing intelligence is unavailable at this time`
-- Prefer: `Reviewed pricing is not published for this set yet`
-- Avoid: `Unlock premium personalization`
-- Prefer: `Sign in to save your private collector state`
+- Avoid: Optimize your collection management workflow
+- Prefer: Keep track of what you own and what you still want
+
+- Avoid: Pricing intelligence is unavailable at this time
+- Prefer: Reviewed pricing is not published for this set yet
+
+- Avoid: Unlock premium personalization
+- Prefer: Sign in to save your private collector state
+
+---
+
+## Brickhunt Copy Principles (Critical)
+
+This section is stricter than the general Product Tone And Voice.
+If they conflict, this section wins.
+
+Brickhunt is not a catalog. It helps collectors choose.
+
+All product-facing copy (set overlays, homepage, feature surfaces, emails) must:
+
+- help users decide between sets
+- explain why a set is worth getting
+- sound like advice from a LEGO fan, not a product description
+
+### Core Writing Rule
+
+Every piece of copy must answer at least one of:
+
+- Why would I choose this set?
+- What makes this better than alternatives?
+- What do I get when I own this?
+
+If it does not help the user decide, it should be rewritten.
+
+---
+
+## Decision-Oriented Copy
+
+Prefer:
+
+- “If you pick one set, this is the one”
+- “Choose this if you want…”
+- “This works best if…”
+
+Avoid:
+
+- neutral descriptions without guidance
+- explaining what something is without helping the user choose
+
+---
+
+## Concrete Over Abstract
+
+Always anchor copy in something tangible:
+
+Prefer:
+
+- scenes (e.g. Council of Elrond)
+- places (Hogwarts, Rivendell, Avengers Tower)
+- characters (minifigures, cast)
+- objects (ships, buildings, vehicles)
+
+Avoid:
+
+- nice display
+- recognizable set
+- strong choice
+- good value
+- feels like
+
+---
+
+## LEGO-Specific Value
+
+Explain why the set is attractive as a LEGO product:
+
+- minifigure appeal
+- build experience
+- display silhouette
+- scale and presence
+- scene density
+- how it looks on a shelf
+
+---
+
+## Positioning And Contrast
+
+Whenever possible, include:
+
+- why this set stands out within its theme
+- how it compares to similar sets
+
+Examples:
+
+- light vs dark (Rivendell vs Barad-dûr)
+- compact vs large (Hogwarts variants)
+- display vs play vs cast-focused
+
+---
+
+## Ownership Feeling
+
+Help the user imagine owning it:
+
+- what stands out first on a shelf
+- what keeps it interesting over time
+- how it changes the look of a collection
+
+---
+
+## Tone
+
+- Dutch, natural, slightly conversational
+- confident, not hesitant
+- specific, not vague
+- fan-aware, not niche or cringe
+- avoid corporate or SaaS language entirely
+
+---
+
+## Hard Avoids
+
+Do NOT use:
+
+- SaaS language (platform, solution, insights)
+- internal terms (editorial, merchandising, curation)
+- vague fillers (voelt, vaak, meestal, vrij)
+- generic praise without explanation
+
+---
+
+## Copy Quality Bar (Definition of Done)
+
+Copy is only acceptable if it passes all of the following:
+
+### 1. Decision Test
+
+A user should be able to answer:
+
+- Should I buy this set or not?
+- Why would I pick this over another one?
+
+---
+
+### 2. Specificity Test
+
+Must include at least one:
+
+- scene
+- character
+- place
+- visual element
+
+---
+
+### 3. Replacement Test
+
+If the text works for another set, it is too generic.
+
+---
+
+### 4. Shelf Test
+
+Must describe:
+
+- what stands out first
+  OR
+- what keeps it interesting
+
+---
+
+### 5. No-Fluff Test
+
+Remove anything that:
+
+- adds no decision value
+- sounds like marketing
+
+---
+
+## Enforcement Rule
+
+If copy does not pass these checks:
+
+- rewrite instead of tweaking
+- do not ship “almost good” copy
+
+---
 
 ## Content And Data Guidance
 
@@ -78,103 +260,57 @@ Short examples:
 ## Accessibility And UX Quality
 
 - The product must meet WCAG 2.1 AA accessibility standards as a baseline.
-- Use semantic HTML wherever possible (headings, lists, buttons, landmarks).
+- Use semantic HTML wherever possible.
 - All interactive elements must be keyboard accessible and have visible focus states.
-- Images must include meaningful alt text where they convey content.
-- Color contrast must meet accessibility guidelines, especially for buttons, badges, and pricing signals.
-- Avoid using color alone to communicate meaning (e.g. deal states).
-- Ensure clear and consistent heading hierarchy for SEO and screen readers.
-- Prefer simple, readable layouts over visually complex patterns.
+- Images must include meaningful alt text.
+- Color contrast must meet accessibility guidelines.
+- Avoid using color alone to communicate meaning.
+- Ensure clear heading hierarchy.
+- Prefer simple, readable layouts.
 
 ## Icons
 
-- Use a single, consistent icon system across the product.
-- Prefer `lucide-react` for all icons.
-- Do not introduce multiple icon libraries.
-- Do not inline custom SVGs unless there is a strong reason.
-- Icons should be used to support clarity and affordance, not decoration.
-- Common actions (search, close, navigation, profile, wishlist) should use consistent icon semantics.
-
-Implementation guidance:
-
-- Prefer using a shared `<Icon />` component from the design system layer instead of importing icons directly in feature or UI libraries.
-- Keep icons lightweight and consistent in size and stroke.
+- Use lucide-react
+- Keep icons consistent
+- No multiple icon libraries
+- No decorative misuse
 
 ## UI Component API Guidance
 
-- Keep UI-library components dumb and presentational.
-- Do not encode page or route context in UI component APIs.
-- Variant names should describe presentation, density, emphasis, or layout, not where the component is used.
-- Prefer names like `compact`, `portrait`, `featured`, `muted`, or `dense`.
-- Avoid names like `homepage`, `discover`, `detailPage`, or other page-specific semantics in reusable UI libraries.
-- Page and feature layers may decide which visual variant to use, but reusable UI components should remain context-agnostic.
+- Keep UI components dumb and presentational
+- No page-specific naming
+- Use generic variants (compact, featured, etc.)
 
 ## Storybook Guidance
 
-- Reusable UI primitives and patterns should generally have Storybook coverage.
-- Prioritize stories that help visual refinement, state review, and layout tuning.
-- Favor practical stories over exhaustive documentation.
+- Cover reusable UI components
+- Focus on visual refinement
 
 ## Change Rules
 
-- Preserve the Nx tag model and boundary enforcement.
-- Keep import aliases in the `@lego-platform/...` form.
-- If you add a new project, give it exactly one scope tag, one type tag, and one platform tag.
-- If guidance and lint enforcement ever diverge, follow the enforced rule set first and update the docs in the same change.
-- If you change a boundary rule, update both the lint enforcement and the docs in the same change.
-- If current reality differs from the intended target architecture, document the current state and the intended evolution explicitly instead of hiding the mismatch.
+- Preserve Nx boundaries
+- Use @lego-platform imports
+- Respect lint rules
+- Update docs when changing architecture
 
-## Pre-Launch Indexing And Environment Exposure
+## Pre-Launch Indexing
 
-- During pre-launch, any publicly reachable environment must remain non-indexable by search engines.
-- Keep `noindex, nofollow` enabled site-wide until the team explicitly decides the public site is ready for indexing.
-- Keep `robots.txt` configured to disallow all crawling during pre-launch.
-- Do not remove or relax search-engine blocking unless explicitly requested.
-- If domains are connected in Vercel or any other public host, verify that indexing protection is still active.
-
-## Next.js Implementation Guidance For Pre-Launch
-
-- Prefer a global robots policy through the Next.js app metadata configuration or root layout.
-- Ensure a `robots.txt` route or static file exists and returns a full-site disallow during pre-launch.
-- Keep the implementation minimal, obvious, and easy to remove at launch.
-- Favor a single source of truth for indexing behavior rather than page-by-page exceptions unless explicitly required.
-
-## Launch Transition Rule
-
-- Only remove `noindex` and crawl blocking when the team explicitly says the site may be indexed.
-- When enabling indexing, also ensure the sitemap, canonical setup, and Google Search Console handoff are ready.
+- Keep noindex active
+- Block crawlers via robots.txt
+- Only enable indexing when explicitly approved
 
 ## Completion And Validation Rules
 
-- Before declaring work complete, run the relevant format, lint, test, build, and check commands for the area you changed.
-- If the change touches catalog, pricing, affiliate, commerce sync, or generated data read facades, run the relevant drift checks before claiming completion.
-- Catalog-related changes require `pnpm sync:catalog:check` when the source-backed path is available.
-- Pricing, affiliate, or commerce-related changes require `pnpm sync:commerce:check`.
-- If a formatter, sync writer, or generated-artifact check reveals expected file updates, do not claim the task is complete until those updates are either committed intentionally or explicitly called out as still outstanding.
-- Do not report “done” while the working tree still contains expected generated-artifact or formatter changes from the task.
+- Run format, lint, test, build
+- Run sync checks when needed
+- Do not claim done with dirty working tree
 
 ## Reference Docs
 
-- `docs/architecture/product-vision.md`
-- `docs/architecture/nx-workspace-blueprint.md`
-- `docs/architecture/contentful-editorial-model.md`
-- `docs/architecture/contentful-space-setup.md`
-- `docs/architecture/contentful-preview-usage.md`
-- `docs/architecture/contentful-validation-rollout-checklist.md`
-- `docs/architecture/dependency-rules.md`
-- `docs/architecture/mvp-search-spike.md`
-- `docs/architecture/next-phase-roadmap.md`
-- `docs/operations/catalog-sync.md`
-- `docs/operations/catalog-sync-validation.md`
-- `docs/operations/commerce-sync.md`
-- `docs/operations/commerce-sync-validation.md`
-- `docs/operations/pricing-history.md`
-- `docs/operations/developer-workflow-guardrails.md`
-- `docs/operations/mvp-alerting-observability.md`
-- `docs/operations/mvp-deployment-runbook.md`
-- `docs/operations/mvp-production-rollout-checklist.md`
-- `docs/operations/mvp-operator-troubleshooting.md`
-- `docs/operations/production-auth-hardening.md`
-- `docs/operations/mvp-release-checklist.md`
-- `docs/operations/supabase-auth-foundation.md`
-- `docs/standards/coding-constitution.md`
+- docs/architecture/product-vision.md
+- docs/architecture/nx-workspace-blueprint.md
+- docs/operations/catalog-sync.md
+- docs/operations/commerce-sync.md
+- docs/operations/mvp-deployment-runbook.md
+- docs/operations/mvp-release-checklist.md
+- docs/standards/coding-constitution.md
