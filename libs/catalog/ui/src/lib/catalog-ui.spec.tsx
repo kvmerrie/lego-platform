@@ -243,8 +243,16 @@ describe('CatalogSetCard', () => {
           pieces: 6181,
           imageUrl: 'https://images.example/rivendell-1.jpg',
           images: [
-            'https://images.example/rivendell-1.jpg',
-            'https://images.example/rivendell-2.jpg',
+            {
+              order: 0,
+              type: 'hero',
+              url: 'https://images.example/rivendell-1.jpg',
+            },
+            {
+              order: 1,
+              type: 'detail',
+              url: 'https://images.example/rivendell-2.jpg',
+            },
           ],
           primaryImage: 'https://images.example/rivendell-1.jpg',
           priceRange: '$499 to $569',

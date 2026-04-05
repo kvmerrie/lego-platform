@@ -8,6 +8,39 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     canonicalId: '10316',
     productSlug: 'rivendell-10316',
     displayName: 'Rivendell',
+    images: [
+      {
+        order: 0,
+        type: 'hero',
+        url: 'https://media.s-bol.com/k3pv34E3Ggp5/KZO6Aol/1199x1200.jpg',
+      },
+      {
+        order: 1,
+        type: 'detail',
+        url: 'https://media.s-bol.com/1nqADzR6AD3V/Bw6wXx/1200x1184.jpg',
+      },
+      {
+        order: 2,
+        type: 'detail',
+        url: 'https://media.s-bol.com/4qw0JDX60Dk6/Bw6wXx/1200x1200.jpg',
+      },
+      {
+        order: 3,
+        type: 'detail',
+        url: 'https://media.s-bol.com/v0Wyx33XyDwr/mw9ZqlA/1200x675.jpg',
+      },
+      {
+        order: 4,
+        type: 'detail',
+        url: 'https://media.s-bol.com/q5RXOnZBx4Nk/4n6WP7/1200x796.jpg',
+      },
+      {
+        order: 5,
+        type: 'detail',
+        url: 'https://media.s-bol.com/8J2j151ADpL5/Q1469Bl/1200x800.jpg',
+      },
+    ],
+    primaryImage: 'https://media.s-bol.com/k3pv34E3Ggp5/KZO6Aol/1199x1200.jpg',
     minifigureCount: 15,
     priceRange: '$499 tot $569',
     collectorAngle:

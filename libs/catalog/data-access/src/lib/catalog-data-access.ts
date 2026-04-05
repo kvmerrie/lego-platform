@@ -8,6 +8,7 @@ import {
   CatalogThemeSnapshot,
   buildCatalogThemeSlug,
   getCatalogProductSlug,
+  normalizeCatalogSetImages,
   normalizeCatalogAsciiText,
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
@@ -313,25 +314,33 @@ function buildCatalogSetImages({
   catalogSetRecord: CatalogSetRecord;
 }): {
   imageUrl?: string;
-  images?: readonly string[];
+  images?: CatalogSetRecord['images'];
   primaryImage?: string;
 } {
   // TODO(brickhunt): merge curated official LEGO and trusted retailer gallery
   // sources here once image ingestion is wired into the sync pipeline.
-  const images = [
-    catalogSetOverlay.primaryImage,
-    ...(catalogSetOverlay.images ?? []),
-    catalogSetRecord.primaryImage,
-    ...(catalogSetRecord.images ?? []),
-    catalogSetRecord.imageUrl,
-  ].filter((imageUrl): imageUrl is string => Boolean(imageUrl));
-  const uniqueImages = [...new Set(images)];
-  const [primaryImage] = uniqueImages;
+  const catalogSetImages = normalizeCatalogSetImages({
+    imageUrl: catalogSetRecord.imageUrl,
+    images: [
+      ...(catalogSetOverlay.images ?? []),
+      ...(catalogSetRecord.images ?? []),
+    ],
+    primaryImage:
+      catalogSetOverlay.primaryImage ?? catalogSetRecord.primaryImage,
+  });
 
   return {
-    imageUrl: primaryImage,
-    images: uniqueImages.length > 0 ? uniqueImages : undefined,
-    primaryImage,
+    imageUrl: catalogSetRecord.imageUrl ?? catalogSetImages.imageUrl,
+    ...(catalogSetImages.images
+      ? {
+          images: catalogSetImages.images,
+        }
+      : {}),
+    ...(catalogSetImages.primaryImage
+      ? {
+          primaryImage: catalogSetImages.primaryImage,
+        }
+      : {}),
   };
 }
 

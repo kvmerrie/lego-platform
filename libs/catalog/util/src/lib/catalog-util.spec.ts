@@ -7,6 +7,7 @@ import {
   getCanonicalCatalogSetId,
   listCatalogQuickFilterOptions,
   matchesCatalogQuickFilter,
+  normalizeCatalogSetImages,
   normalizeCatalogQuickFilterKey,
 } from './catalog-util';
 
@@ -97,6 +98,89 @@ describe('catalog snapshot helpers', () => {
       releaseYear: 2024,
       pieces: 5478,
       imageUrl: undefined,
+    });
+  });
+
+  test('normalizes mixed single and multi-image seeds into ordered gallery images', () => {
+    expect(
+      createCatalogSetRecord({
+        sourceSetNumber: '10316-1',
+        name: 'Lord of the Rings: Rivendell',
+        theme: 'Icons',
+        releaseYear: 2023,
+        pieces: 6181,
+        imageUrl: ' https://images.example/rivendell-main.jpg ',
+        images: [
+          'https://images.example/rivendell-side.jpg',
+          {
+            type: 'detail',
+            url: 'https://images.example/rivendell-council.jpg',
+          },
+        ],
+        primaryImage: 'https://images.example/rivendell-main.jpg',
+      }),
+    ).toEqual({
+      canonicalId: '10316',
+      sourceSetNumber: '10316-1',
+      slug: 'lord-of-the-rings-rivendell-10316',
+      name: 'Lord of the Rings: Rivendell',
+      theme: 'Icons',
+      releaseYear: 2023,
+      pieces: 6181,
+      imageUrl: 'https://images.example/rivendell-main.jpg',
+      images: [
+        {
+          order: 0,
+          type: 'hero',
+          url: 'https://images.example/rivendell-main.jpg',
+        },
+        {
+          order: 1,
+          url: 'https://images.example/rivendell-side.jpg',
+        },
+        {
+          order: 2,
+          type: 'detail',
+          url: 'https://images.example/rivendell-council.jpg',
+        },
+      ],
+      primaryImage: 'https://images.example/rivendell-main.jpg',
+    });
+  });
+
+  test('dedupes image URLs and prefers the explicit primary image first', () => {
+    expect(
+      normalizeCatalogSetImages({
+        imageUrl: 'https://images.example/rivendell-hero.jpg',
+        images: [
+          {
+            type: 'detail',
+            url: 'https://images.example/rivendell-detail.jpg',
+          },
+          'https://images.example/rivendell-hero.jpg',
+          {
+            order: 9,
+            type: 'hero',
+            url: 'https://images.example/rivendell-hero.jpg',
+          },
+        ],
+        primaryImage: 'https://images.example/rivendell-hero.jpg',
+      }),
+    ).toEqual({
+      imageUrl: 'https://images.example/rivendell-hero.jpg',
+      images: [
+        {
+          order: 0,
+          type: 'hero',
+          url: 'https://images.example/rivendell-hero.jpg',
+        },
+        {
+          order: 1,
+          type: 'detail',
+          url: 'https://images.example/rivendell-detail.jpg',
+        },
+      ],
+      primaryImage: 'https://images.example/rivendell-hero.jpg',
     });
   });
 

@@ -11,9 +11,19 @@ export interface CatalogSetSummary {
   priceRange: string;
   collectorAngle: string;
   imageUrl?: string;
-  images?: readonly string[];
+  images?: readonly CatalogSetImage[];
   primaryImage?: string;
 }
+
+export type CatalogSetImageType = 'hero' | 'detail' | 'minifig';
+
+export interface CatalogSetImage {
+  order?: number;
+  type?: CatalogSetImageType;
+  url: string;
+}
+
+export type CatalogSetImageSeed = CatalogSetImage | string;
 
 export interface CatalogHomepageSetCard extends CatalogSetSummary {
   tagline: string;
@@ -169,7 +179,7 @@ export interface CatalogSetRecord {
   releaseYear: number;
   pieces: number;
   imageUrl?: string;
-  images?: readonly string[];
+  images?: readonly CatalogSetImage[];
   primaryImage?: string;
 }
 
@@ -193,7 +203,7 @@ export interface CatalogSetOverlay {
   minifigureHighlights?: readonly string[];
   setStatus?: CatalogSetStatus;
   subtheme?: string;
-  images?: readonly string[];
+  images?: readonly CatalogSetImageSeed[];
   primaryImage?: string;
 }
 
@@ -219,12 +229,181 @@ export interface CatalogSetSeed {
   releaseYear: number;
   pieces: number;
   imageUrl?: string;
-  images?: readonly string[];
+  images?: readonly CatalogSetImageSeed[];
   primaryImage?: string;
 }
 
 function normalizeCatalogText(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
+}
+
+function normalizeCatalogImageUrl(value?: string): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalizedValue = value.trim().replace(/\\+$/g, '');
+
+  return normalizedValue ? normalizedValue : undefined;
+}
+
+function toCatalogSetImageSeed(
+  image: CatalogSetImageSeed,
+): CatalogSetImage | undefined {
+  if (typeof image === 'string') {
+    const normalizedUrl = normalizeCatalogImageUrl(image);
+
+    return normalizedUrl
+      ? {
+          url: normalizedUrl,
+        }
+      : undefined;
+  }
+
+  const normalizedUrl = normalizeCatalogImageUrl(image.url);
+
+  if (!normalizedUrl) {
+    return undefined;
+  }
+
+  return {
+    ...(typeof image.order === 'number' ? { order: image.order } : {}),
+    ...(image.type
+      ? {
+          type: image.type,
+        }
+      : {}),
+    url: normalizedUrl,
+  };
+}
+
+export function normalizeCatalogSetImages({
+  imageUrl,
+  images,
+  primaryImage,
+}: {
+  imageUrl?: string;
+  images?: readonly CatalogSetImageSeed[];
+  primaryImage?: string;
+}): {
+  imageUrl?: string;
+  images?: readonly CatalogSetImage[];
+  primaryImage?: string;
+} {
+  const normalizedPrimaryImage = normalizeCatalogImageUrl(primaryImage);
+  const normalizedImageUrl = normalizeCatalogImageUrl(imageUrl);
+  const seededImages = [
+    ...(normalizedPrimaryImage
+      ? [
+          {
+            order: 0,
+            type: 'hero' as const,
+            url: normalizedPrimaryImage,
+          },
+        ]
+      : []),
+    ...(images ?? []),
+    ...(normalizedImageUrl ? [normalizedImageUrl] : []),
+  ];
+
+  if (seededImages.length === 0) {
+    return {
+      ...(normalizedImageUrl
+        ? {
+            imageUrl: normalizedImageUrl,
+          }
+        : {}),
+      ...(normalizedPrimaryImage
+        ? {
+            primaryImage: normalizedPrimaryImage,
+          }
+        : {}),
+    };
+  }
+
+  const normalizedImagesByUrl = new Map<
+    string,
+    CatalogSetImage & { insertionIndex: number; isPrimary: boolean }
+  >();
+
+  seededImages.forEach((catalogSetImageSeed, index) => {
+    const normalizedCatalogSetImage =
+      toCatalogSetImageSeed(catalogSetImageSeed);
+
+    if (!normalizedCatalogSetImage) {
+      return;
+    }
+
+    const existingCatalogSetImage = normalizedImagesByUrl.get(
+      normalizedCatalogSetImage.url,
+    );
+
+    if (!existingCatalogSetImage) {
+      normalizedImagesByUrl.set(normalizedCatalogSetImage.url, {
+        ...normalizedCatalogSetImage,
+        insertionIndex: index,
+        isPrimary: normalizedCatalogSetImage.url === normalizedPrimaryImage,
+      });
+
+      return;
+    }
+
+    normalizedImagesByUrl.set(normalizedCatalogSetImage.url, {
+      insertionIndex: Math.min(existingCatalogSetImage.insertionIndex, index),
+      isPrimary:
+        existingCatalogSetImage.isPrimary ||
+        normalizedCatalogSetImage.url === normalizedPrimaryImage,
+      order:
+        typeof existingCatalogSetImage.order === 'number'
+          ? existingCatalogSetImage.order
+          : normalizedCatalogSetImage.order,
+      type: existingCatalogSetImage.type ?? normalizedCatalogSetImage.type,
+      url: normalizedCatalogSetImage.url,
+    });
+  });
+
+  const normalizedImages = [...normalizedImagesByUrl.values()]
+    .sort(
+      (left, right) =>
+        Number(right.isPrimary) - Number(left.isPrimary) ||
+        Number(right.type === 'hero') - Number(left.type === 'hero') ||
+        (left.order ?? Number.MAX_SAFE_INTEGER) -
+          (right.order ?? Number.MAX_SAFE_INTEGER) ||
+        left.insertionIndex - right.insertionIndex,
+    )
+    .map((catalogSetImage, index) => ({
+      order:
+        typeof catalogSetImage.order === 'number'
+          ? catalogSetImage.order
+          : index,
+      ...(catalogSetImage.type
+        ? {
+            type: catalogSetImage.type,
+          }
+        : index === 0
+          ? {
+              type: 'hero' as const,
+            }
+          : {}),
+      url: catalogSetImage.url,
+    }));
+
+  const resolvedPrimaryImage =
+    normalizedPrimaryImage ?? normalizedImages[0]?.url;
+
+  return {
+    ...(resolvedPrimaryImage
+      ? {
+          imageUrl: resolvedPrimaryImage,
+          primaryImage: resolvedPrimaryImage,
+        }
+      : {}),
+    ...(normalizedImages.length
+      ? {
+          images: normalizedImages,
+        }
+      : {}),
+  };
 }
 
 function stripCatalogDiacritics(value: string): string {
@@ -299,6 +478,14 @@ export function createCatalogSetRecord(
     catalogSetSeed.sourceSetNumber,
   );
   const canonicalId = getCanonicalCatalogSetId(normalizedSourceSetNumber);
+  const catalogSetImages = normalizeCatalogSetImages({
+    imageUrl: catalogSetSeed.imageUrl,
+    images: catalogSetSeed.images,
+    primaryImage: catalogSetSeed.primaryImage,
+  });
+  const hasExplicitGalleryImages = Boolean(
+    catalogSetSeed.primaryImage || catalogSetSeed.images?.length,
+  );
 
   return {
     canonicalId,
@@ -308,7 +495,17 @@ export function createCatalogSetRecord(
     theme: normalizeCatalogText(catalogSetSeed.theme),
     releaseYear: catalogSetSeed.releaseYear,
     pieces: catalogSetSeed.pieces,
-    imageUrl: catalogSetSeed.imageUrl,
+    imageUrl: catalogSetImages.imageUrl,
+    ...(hasExplicitGalleryImages && catalogSetImages.images
+      ? {
+          images: catalogSetImages.images,
+        }
+      : {}),
+    ...(hasExplicitGalleryImages && catalogSetImages.primaryImage
+      ? {
+          primaryImage: catalogSetImages.primaryImage,
+        }
+      : {}),
   };
 }
 

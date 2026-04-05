@@ -5,6 +5,7 @@ import type {
   CatalogSetSummary,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
+import { normalizeCatalogSetImages } from '@lego-platform/catalog/util';
 import {
   ActionLink,
   Badge,
@@ -605,13 +606,13 @@ function getCatalogGalleryImages(
     'imageUrl' | 'images' | 'primaryImage'
   >,
 ): string[] {
-  return [
-    catalogSetDetail.primaryImage,
-    ...(catalogSetDetail.images ?? []),
-    catalogSetDetail.imageUrl,
-  ].filter((imageUrl, index, imageUrls): imageUrl is string => {
-    return Boolean(imageUrl) && imageUrls.indexOf(imageUrl) === index;
-  });
+  return (
+    normalizeCatalogSetImages({
+      imageUrl: catalogSetDetail.imageUrl,
+      images: catalogSetDetail.images,
+      primaryImage: catalogSetDetail.primaryImage,
+    }).images?.map((catalogSetImage) => catalogSetImage.url) ?? []
+  );
 }
 
 function CatalogSetImageGallery({

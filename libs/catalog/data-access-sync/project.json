@@ -10,7 +10,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "libs/catalog/data-access-sync",
-        "command": "vitest run src/lib/catalog-data-access-sync.spec.ts --config ../vitest.config.mts"
+        "command": "vitest run src/lib/catalog-data-access-sync.spec.ts src/lib/catalog-image-ingestion.spec.ts --config ../vitest.config.mts"
       }
     }
   }
