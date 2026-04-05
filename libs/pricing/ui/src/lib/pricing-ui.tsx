@@ -5,6 +5,7 @@ import {
   type PriceHistoryPoint,
   type PriceHistorySummary,
   type PricePanelSnapshot,
+  type SetPriceInsight,
   type TrackedPriceSummary,
 } from '@lego-platform/pricing/util';
 import {
@@ -361,6 +362,33 @@ export function PriceSummaryCard({
           ? 'Geschiedenis en aanbiedingen hieronder gebruiken dezelfde reviewed marktweergave.'
           : 'Geschiedenis en aanbiedingen kunnen verschijnen voordat er een referentieprijs is ingesteld.'}
       </p>
+    </Surface>
+  );
+}
+
+export function PriceDecisionSummaryCard({
+  id,
+  insights,
+}: {
+  id?: string;
+  insights: readonly SetPriceInsight[];
+}) {
+  return (
+    <Surface
+      as="section"
+      className={styles.panel}
+      elevation="rested"
+      id={id}
+      tone="muted"
+    >
+      <SectionHeading eyebrow="Prijscontext" title="Prijs in het kort" />
+      <ul className={styles.decisionSummaryList}>
+        {insights.map((insight) => (
+          <li className={styles.decisionSummaryItem} key={insight.id}>
+            {insight.text}
+          </li>
+        ))}
+      </ul>
     </Surface>
   );
 }

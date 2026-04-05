@@ -29,10 +29,10 @@ export function CatalogFeatureThemeList({
         <SectionHeading
           className={styles.header}
           eyebrow="LEGO-werelden"
-          title="Elfendorp, superheldentoren of supercar?"
+          title="Rivendell, toren of supercar?"
         />
         <p className={styles.signalRow}>
-          {themeItems.length} werelden, 6 totaal andere dozen
+          {themeItems.length} werelden, {themeItems.length} totaal andere dozen
         </p>
       </div>
       <div className={styles.rail}>

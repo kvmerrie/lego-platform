@@ -22,10 +22,10 @@ export function CatalogFeatureThemeSpotlight({
         <SectionHeading
           className={styles.header}
           eyebrow="Andere hoek van de kast"
-          title="Draak, toren of walker?"
+          title="Draak of walker?"
         />
         <p className={styles.signalRow}>
-          {themeItems.length} thema&apos;s voor een heel andere kast
+          {themeItems.length} thema&apos;s, heel andere sfeer
         </p>
       </div>
       <div className={styles.grid}>

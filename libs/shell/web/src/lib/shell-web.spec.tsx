@@ -31,9 +31,8 @@ describe('ShellWeb', () => {
     expect(markup).toContain('href="/account"');
     expect(markup).toContain('href="/account/wishlist"');
     expect(markup).toContain(
-      'Brickhunt laat snel zien welke walker, toren of bloemenboeket je',
+      'Brickhunt laat snel zien welke doos je wilt hebben',
     );
-    expect(markup).toContain('wilt hebben');
     expect(markup).toContain('waar de prijs nu goed zit');
     expect(markup).not.toContain('Home');
     expect(markup).not.toContain('Featured shortlist');

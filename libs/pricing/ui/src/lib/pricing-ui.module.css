@@ -78,6 +78,29 @@
   border-top: 1px solid color-mix(in srgb, var(--lego-border) 72%, transparent);
 }
 
+.decisionSummaryList {
+  display: grid;
+  gap: var(--lego-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.decisionSummaryItem {
+  border-top: 1px solid color-mix(in srgb, var(--lego-border) 68%, transparent);
+  color: var(--lego-text);
+  font-size: 0.98rem;
+  font-weight: var(--lego-font-weight-medium);
+  line-height: 1.45;
+  margin: 0;
+  padding-top: var(--lego-space-2);
+}
+
+.decisionSummaryItem:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
 .summarySection {
   display: grid;
   gap: var(--lego-space-2);

@@ -173,23 +173,23 @@ export default async function HomePage() {
         </div>
         <div className={styles.sectionGroup}>
           <CatalogFeatureSetList
-            description="Wil je een grote doos? Kijk hier eerst."
+            description="Wil je groot? Kijk hier."
             eyebrow="Pronkstukken"
             setCards={homepageSetCards}
-            title="Torens, walkers en supercars"
+            title="Torens, walkers, supercars"
             tone="default"
           />
         </div>
         {homepageDealSetCards.length ? (
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
-              description="Deze dozen stonden al langer op lijstjes. Nu zakt de prijs."
-              eyebrow="Lang op je lijst?"
+              description="Stond hij al op je lijst? Kijk nu."
+              eyebrow="Prijs zakt"
               sectionId="best-current-deals"
               setCards={homepageDealSetCards}
-              signalText={`${homepageDealSetCards.length} dozen die nu lager staan dan normaal`}
+              signalText={`${homepageDealSetCards.length} dozen nu lager`}
               tone="muted"
-              title="Die grote doos komt dichterbij"
+              title="Die doos komt dichterbij"
             />
           </div>
         ) : null}

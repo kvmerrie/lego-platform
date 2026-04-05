@@ -222,6 +222,16 @@ function toCatalogSetSummary(
     priceRange: catalogSetDetail.priceRange,
     collectorAngle: catalogSetDetail.collectorAngle,
     imageUrl: catalogSetDetail.imageUrl,
+    ...(catalogSetDetail.images?.length
+      ? {
+          images: [...catalogSetDetail.images],
+        }
+      : {}),
+    ...(catalogSetDetail.primaryImage
+      ? {
+          primaryImage: catalogSetDetail.primaryImage,
+        }
+      : {}),
   };
 }
 
@@ -293,6 +303,36 @@ function getCatalogDisplayTheme(
   catalogSetOverlay: CatalogSetOverlay,
 ): string {
   return catalogSetOverlay.displayTheme ?? catalogSetRecord.theme;
+}
+
+function buildCatalogSetImages({
+  catalogSetOverlay,
+  catalogSetRecord,
+}: {
+  catalogSetOverlay: CatalogSetOverlay;
+  catalogSetRecord: CatalogSetRecord;
+}): {
+  imageUrl?: string;
+  images?: readonly string[];
+  primaryImage?: string;
+} {
+  // TODO(brickhunt): merge curated official LEGO and trusted retailer gallery
+  // sources here once image ingestion is wired into the sync pipeline.
+  const images = [
+    catalogSetOverlay.primaryImage,
+    ...(catalogSetOverlay.images ?? []),
+    catalogSetRecord.primaryImage,
+    ...(catalogSetRecord.images ?? []),
+    catalogSetRecord.imageUrl,
+  ].filter((imageUrl): imageUrl is string => Boolean(imageUrl));
+  const uniqueImages = [...new Set(images)];
+  const [primaryImage] = uniqueImages;
+
+  return {
+    imageUrl: primaryImage,
+    images: uniqueImages.length > 0 ? uniqueImages : undefined,
+    primaryImage,
+  };
 }
 
 function registerCatalogSetRecordForSlug({
@@ -373,6 +413,10 @@ function toCatalogSetDetail(
   catalogSetRecord: CatalogSetRecord,
 ): CatalogSetDetail {
   const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
+  const catalogSetImages = buildCatalogSetImages({
+    catalogSetOverlay,
+    catalogSetRecord,
+  });
 
   return {
     id: catalogSetRecord.canonicalId,
@@ -384,7 +428,17 @@ function toCatalogSetDetail(
     theme: getCatalogDisplayTheme(catalogSetRecord, catalogSetOverlay),
     releaseYear: catalogSetRecord.releaseYear,
     pieces: catalogSetRecord.pieces,
-    imageUrl: catalogSetRecord.imageUrl,
+    imageUrl: catalogSetImages.imageUrl,
+    ...(catalogSetImages.images
+      ? {
+          images: [...catalogSetImages.images],
+        }
+      : {}),
+    ...(catalogSetImages.primaryImage
+      ? {
+          primaryImage: catalogSetImages.primaryImage,
+        }
+      : {}),
     priceRange: catalogSetOverlay.priceRange,
     collectorAngle: catalogSetOverlay.collectorAngle,
     tagline: catalogSetOverlay.tagline,

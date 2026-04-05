@@ -11,6 +11,8 @@ export interface CatalogSetSummary {
   priceRange: string;
   collectorAngle: string;
   imageUrl?: string;
+  images?: readonly string[];
+  primaryImage?: string;
 }
 
 export interface CatalogHomepageSetCard extends CatalogSetSummary {
@@ -167,6 +169,8 @@ export interface CatalogSetRecord {
   releaseYear: number;
   pieces: number;
   imageUrl?: string;
+  images?: readonly string[];
+  primaryImage?: string;
 }
 
 export interface CatalogSnapshot {
@@ -189,6 +193,8 @@ export interface CatalogSetOverlay {
   minifigureHighlights?: readonly string[];
   setStatus?: CatalogSetStatus;
   subtheme?: string;
+  images?: readonly string[];
+  primaryImage?: string;
 }
 
 export interface CatalogThemeOverlay {
@@ -213,6 +219,8 @@ export interface CatalogSetSeed {
   releaseYear: number;
   pieces: number;
   imageUrl?: string;
+  images?: readonly string[];
+  primaryImage?: string;
 }
 
 function normalizeCatalogText(value: string): string {

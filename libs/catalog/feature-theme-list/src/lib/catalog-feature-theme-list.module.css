@@ -36,7 +36,7 @@
 
 .rail {
   display: flex;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-2);
   margin: 0;
   overflow-x: auto;
   padding: 0 var(--lego-space-6) var(--lego-space-1);

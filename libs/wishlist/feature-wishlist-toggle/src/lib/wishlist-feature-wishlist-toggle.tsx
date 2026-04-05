@@ -14,9 +14,11 @@ import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
 import { WantedSetState } from '@lego-platform/wishlist/util';
 
 export function WishlistFeatureWishlistToggle({
+  productIntent = 'wishlist',
   setId,
   variant = 'default',
 }: {
+  productIntent?: 'price-alert' | 'wishlist';
   setId: string;
   variant?: 'default' | 'product';
 }) {
@@ -120,6 +122,7 @@ export function WishlistFeatureWishlistToggle({
       isWanted={wantedSetState?.isWanted ?? false}
       setId={setId}
       successMessage={successMessage}
+      productIntent={productIntent}
       variant={variant}
       onToggle={handleToggleWantedState}
     />

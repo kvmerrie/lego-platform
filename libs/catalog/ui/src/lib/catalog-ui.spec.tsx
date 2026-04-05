@@ -222,9 +222,107 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('Reviewed prijs nog niet gepubliceerd.');
   });
 
+  it('renders a conversion-first set detail flow with gallery, best deal, alerts, and trust signals', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        bestDeal={{
+          checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+          ctaHref: 'https://example.com/rivendell',
+          ctaLabel: 'Koop voor € 469,99 bij bol',
+          merchantLabel: 'Nu het scherpst bij bol',
+          price: '€ 469,99',
+          stockLabel: 'Op voorraad',
+        }}
+        catalogSetDetail={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          subtheme: 'The Lord of the Rings',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell-1.jpg',
+          images: [
+            'https://images.example/rivendell-1.jpg',
+            'https://images.example/rivendell-2.jpg',
+          ],
+          primaryImage: 'https://images.example/rivendell-1.jpg',
+          priceRange: '$499 to $569',
+          collectorAngle: 'De complete vallei blijft er als scene uitspringen.',
+          tagline: 'Als je een grote Middle-earth-set wilt, pak je deze.',
+          availability: 'Stevige vraag naar een premium set',
+          collectorHighlights: [
+            'De Council of Elrond-scene trekt meteen de aandacht.',
+            'De mix van torens, bogen en herfstkleuren blijft op je plank werken.',
+            'De cast maakt hem rijker dan een pure displaygevel.',
+          ],
+          minifigureCount: 15,
+          minifigureHighlights: ['Frodo', 'Elrond'],
+          setStatus: 'available',
+        }}
+        dealVerdict={{
+          explanation: 'Deze prijs ligt onder wat we meestal zien.',
+          label: 'Goede deal',
+          tone: 'positive',
+        }}
+        offerList={[
+          {
+            checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+            ctaHref: 'https://example.com/rivendell',
+            ctaLabel: 'Bekijk deal',
+            isBest: true,
+            merchantLabel: 'bol',
+            price: '€ 469,99',
+            stockLabel: 'Op voorraad',
+          },
+          {
+            checkedLabel: 'Nagekeken op 31 mrt 2026, 09:15',
+            ctaHref: 'https://example.com/rivendell-lego',
+            ctaLabel: 'Bekijk deal',
+            merchantLabel: 'LEGO',
+            price: '€ 499,99',
+            stockLabel: 'Op voorraad',
+          },
+        ]}
+        ownershipActions={<button type="button">Mark as owned</button>}
+        priceAlertAction={<button type="button">Zet prijsalert aan</button>}
+        priceHistoryPanel={
+          <div>
+            <p>Prijs in het kort</p>
+            <p>30-daagse prijsgeschiedenis</p>
+          </div>
+        }
+        themeDirectoryHref="/themes"
+        themeHref="/themes/icons"
+        trustSignals={[
+          { label: 'Laatst nagekeken', value: '31 mrt 2026, 09:00' },
+          { label: 'Winkels gevolgd', value: '2 nagekeken' },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('Goede deal');
+    expect(markup).toContain('Deze prijs ligt onder wat we meestal zien.');
+    expect(markup).toContain('The Lord of the Rings');
+    expect(markup).toContain('Koop voor € 469,99 bij bol');
+    expect(markup).toContain('Nog niet kopen?');
+    expect(markup).toContain('Zet prijsalert aan');
+    expect(markup).toContain('Nog meer nagekeken prijzen');
+    expect(markup).toContain('Waar dit op steunt');
+    expect(markup).toContain('Ga naar afbeelding 2');
+    expect(markup).toContain('Swipe voor meer beelden');
+    expect(markup).toContain('Mark as owned');
+  });
+
   it('renders a calm image fallback on set detail pages when no catalog image is available', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
+        dealVerdict={{
+          explanation:
+            'We hebben nog te weinig nagekeken prijzen voor een hard oordeel.',
+          label: 'Nog te weinig data',
+          tone: 'neutral',
+        }}
         catalogSetDetail={{
           id: '21335',
           slug: 'motorized-lighthouse-21335',
@@ -242,8 +340,8 @@ describe('CatalogSetCard', () => {
             'Motorized light and rotating beacon create stronger live display presence than most static shelf pieces',
           ],
         }}
-        productSummary={<div>Lowest reviewed price</div>}
-        supportingPanel={<div>30-day price history</div>}
+        priceAlertAction={<button type="button">Zet prijsalert aan</button>}
+        priceHistoryPanel={<div>30-day price history</div>}
         themeDirectoryHref="/themes"
         themeHref="/themes/ideas"
       />,
@@ -254,17 +352,15 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Setcontext');
     expect(markup).toContain('Officiele afbeelding nog niet gepubliceerd');
     expect(markup).toContain('Set 21335');
-    expect(markup).toContain('Lowest reviewed price');
+    expect(markup).toContain('Nog niet kopen?');
     expect(markup).toContain('30-day price history');
-    expect(markup).toContain('Wat LEGO-fans meestal eerst checken');
-    expect(markup).toContain('Setnummer');
-    expect(markup).toContain('Thema');
-    expect(markup).toContain('Releasejaar');
+    expect(markup).toContain('Snel gecheckt');
     expect(markup).toContain('Steentjes');
     expect(markup).toContain('Minifiguren');
     expect(markup).toContain('Nog niet lokaal bijgehouden');
-    expect(markup).toContain('Verzamelaarsblik');
-    expect(markup).toContain('Beschikbaarheid');
+    expect(markup).toContain(
+      'Leeftijd en afmetingen volgen zodra ze lokaal zijn toegevoegd.',
+    );
     expect(markup).toContain('<h1');
     expect(markup).not.toContain('Back to shortlist');
   });
@@ -272,6 +368,11 @@ describe('CatalogSetCard', () => {
   it('renders minifigure count in the detail specs grid when local data exists', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
+        dealVerdict={{
+          explanation: 'Dit is een normale marktprijs.',
+          label: 'Normale prijs',
+          tone: 'info',
+        }}
         catalogSetDetail={{
           id: '10305',
           slug: 'lion-knights-castle-10305',
@@ -301,6 +402,11 @@ describe('CatalogSetCard', () => {
   it('renders curated subtheme and set status when local fan metadata is available', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
+        dealVerdict={{
+          explanation: 'Deze prijs ligt onder wat we meestal zien.',
+          label: 'Goede deal',
+          tone: 'positive',
+        }}
         catalogSetDetail={{
           id: '76417',
           slug: 'gringotts-wizarding-bank-collectors-edition-76417',
@@ -324,7 +430,6 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Subthema');
     expect(markup).toContain('Diagon Alley');
     expect(markup).toContain('Status');
     expect(markup).toContain('Nabestelling');
@@ -335,6 +440,11 @@ describe('CatalogSetCard', () => {
   it('renders curated minifigure highlights as a lightweight includes line', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
+        dealVerdict={{
+          explanation: 'Deze prijs ligt onder wat we meestal zien.',
+          label: 'Goede deal',
+          tone: 'positive',
+        }}
         catalogSetDetail={{
           id: '75397',
           slug: 'jabbas-sail-barge-75397',
@@ -362,7 +472,7 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Bevat');
+    expect(markup).toContain('Minifigs');
     expect(markup).toContain(
       'Jabba the Hutt, Princess Leia, Bib Fortuna, Max Rebo',
     );
@@ -389,8 +499,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
     expect(markup).toContain('directory-tile');
-    expect(markup).toContain('Bekijk alle sets');
-    expect(markup).toContain('Kijk eerst naar');
+    expect(markup).toContain('Bekijk sets');
+    expect(markup).toContain('Pak eerst');
     expect(markup).toContain('Rivendell');
   });
 
@@ -422,7 +532,7 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).toContain('--theme-surface:#cf554c');
     expect(markup).toContain('--theme-text:#ffffff');
-    expect(markup).toContain('Bekijk alle sets');
+    expect(markup).toContain('Bekijk sets');
   });
 
   it('renders a leaner portrait theme tile variant for fast browsing', () => {
@@ -455,8 +565,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('14 sets');
     expect(markup).toContain('--theme-surface:#f0c63b');
     expect(markup).toContain('--theme-text:#171a22');
-    expect(markup).not.toContain('Bekijk alle sets');
-    expect(markup).not.toContain('Kijk eerst naar Rivendell');
+    expect(markup).not.toContain('Bekijk sets');
+    expect(markup).not.toContain('Pak eerst Rivendell');
     expect(markup).not.toContain(
       'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
     );

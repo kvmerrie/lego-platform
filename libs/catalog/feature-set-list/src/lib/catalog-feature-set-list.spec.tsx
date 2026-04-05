@@ -43,12 +43,12 @@ describe('CatalogFeatureSetList', () => {
       />,
     );
 
-    expect(markup).toContain('Torens, walkers en supercars');
-    expect(markup).toContain('Wil je een grote doos? Kijk hier eerst.');
+    expect(markup).toContain('Torens, walkers, supercars');
+    expect(markup).toContain('Wil je groot? Kijk hier.');
     expect(markup).toContain('2 dozen die je kast overnemen');
     expect(markup).toContain('1 met nagekeken prijzen');
-    expect(markup).toContain('Scroll Torens, walkers en supercars naar links');
-    expect(markup).toContain('Scroll Torens, walkers en supercars naar rechts');
+    expect(markup).toContain('Scroll Torens, walkers, supercars naar links');
+    expect(markup).toContain('Scroll Torens, walkers, supercars naar rechts');
     expect(markup).toContain('Vorige');
     expect(markup).toContain('Volgende');
     expect(markup).not.toContain('Public catalog');
@@ -57,8 +57,8 @@ describe('CatalogFeatureSetList', () => {
   it('supports custom curation framing for alternate homepage rows', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSetList
-        description="Deze dozen stonden al langer op lijstjes. Nu zakt de prijs."
-        eyebrow="Lang op je lijst?"
+        description="Stond hij al op je lijst? Kijk nu."
+        eyebrow="Prijs zakt"
         sectionId="best-current-deals"
         setCards={[
           {
@@ -82,17 +82,15 @@ describe('CatalogFeatureSetList', () => {
             },
           },
         ]}
-        signalText="3 dozen die nu lager staan dan normaal"
-        title="Die grote doos komt dichterbij"
+        signalText="3 dozen nu lager"
+        title="Die doos komt dichterbij"
       />,
     );
 
     expect(markup).toContain('id="best-current-deals"');
-    expect(markup).toContain('Die grote doos komt dichterbij');
-    expect(markup).toContain(
-      'Deze dozen stonden al langer op lijstjes. Nu zakt de prijs.',
-    );
-    expect(markup).toContain('3 dozen die nu lager staan dan normaal');
+    expect(markup).toContain('Die doos komt dichterbij');
+    expect(markup).toContain('Stond hij al op je lijst? Kijk nu.');
+    expect(markup).toContain('3 dozen nu lager');
     expect(markup).not.toContain('1 dozen die je kast overnemen');
   });
 });

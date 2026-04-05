@@ -42,6 +42,22 @@ describe('WantedSetToggleCard', () => {
     expect(markup).toContain('Aan verlanglijst toevoegen');
     expect(markup).not.toContain('Private collector state');
   });
+
+  it('supports a price-alert CTA label on set detail pages', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        hasResolvedState
+        isWanted={false}
+        productIntent="price-alert"
+        setId="21348"
+        variant="product"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Zet prijsalert aan');
+    expect(markup).not.toContain('Aan verlanglijst toevoegen');
+  });
 });
 
 describe('CollectorWishlistPanel', () => {

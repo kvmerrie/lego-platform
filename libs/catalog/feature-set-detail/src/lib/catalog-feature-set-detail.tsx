@@ -1,27 +1,48 @@
 import type { ReactNode } from 'react';
-import { CatalogSetDetailPanel } from '@lego-platform/catalog/ui';
+import {
+  CatalogSetDetailPanel,
+  type CatalogSetDetailBestDeal,
+  type CatalogSetDetailOfferItem,
+  type CatalogSetDetailTrustSignal,
+  type CatalogSetDetailVerdict,
+} from '@lego-platform/catalog/ui';
 import { CatalogSetDetail } from '@lego-platform/catalog/util';
 
 export function CatalogFeatureSetDetail({
+  bestDeal,
   catalogSetDetail,
-  productSummary,
-  supportingPanel,
+  dealVerdict,
+  offerList = [],
+  ownershipActions,
+  priceAlertAction,
+  priceHistoryPanel,
   themeDirectoryHref,
   themeHref,
+  trustSignals = [],
 }: {
+  bestDeal?: CatalogSetDetailBestDeal;
   catalogSetDetail: CatalogSetDetail;
-  productSummary?: ReactNode;
-  supportingPanel?: ReactNode;
+  dealVerdict: CatalogSetDetailVerdict;
+  offerList?: readonly CatalogSetDetailOfferItem[];
+  ownershipActions?: ReactNode;
+  priceAlertAction?: ReactNode;
+  priceHistoryPanel?: ReactNode;
   themeDirectoryHref?: string;
   themeHref?: string;
+  trustSignals?: readonly CatalogSetDetailTrustSignal[];
 }) {
   return (
     <CatalogSetDetailPanel
+      bestDeal={bestDeal}
       catalogSetDetail={catalogSetDetail}
-      productSummary={productSummary}
-      supportingPanel={supportingPanel}
+      dealVerdict={dealVerdict}
+      offerList={[...offerList]}
+      ownershipActions={ownershipActions}
+      priceAlertAction={priceAlertAction}
+      priceHistoryPanel={priceHistoryPanel}
       themeDirectoryHref={themeDirectoryHref}
       themeHref={themeHref}
+      trustSignals={[...trustSignals]}
     />
   );
 }

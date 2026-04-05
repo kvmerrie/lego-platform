@@ -8,6 +8,8 @@ import {
   type PricePanelSnapshot,
   type PricingObservation,
   type FeaturedSetPriceContext,
+  type SetDealVerdict,
+  type SetPriceInsight,
   type TrackedPriceSummary,
   formatPriceMinor,
   getPriceDealSummary,
@@ -192,10 +194,52 @@ export interface PriceHistorySummaryState {
   trackedPriceSummary?: TrackedPriceSummary;
 }
 
+export function buildSetDealVerdict(
+  pricePanelSnapshot?: Pick<PricePanelSnapshot, 'deltaMinor'>,
+): SetDealVerdict {
+  if (
+    !pricePanelSnapshot ||
+    typeof pricePanelSnapshot.deltaMinor !== 'number'
+  ) {
+    return {
+      explanation:
+        'We hebben nog te weinig nagekeken prijzen voor een hard oordeel.',
+      label: 'Nog te weinig data',
+      tone: 'neutral',
+    };
+  }
+
+  if (pricePanelSnapshot.deltaMinor < 0) {
+    return {
+      explanation: 'Deze prijs ligt onder wat we meestal zien.',
+      label: 'Goede deal',
+      tone: 'positive',
+    };
+  }
+
+  if (pricePanelSnapshot.deltaMinor > 0) {
+    return {
+      explanation: 'Deze set is nu relatief duur.',
+      label: 'Relatief duur',
+      tone: 'warning',
+    };
+  }
+
+  return {
+    explanation: 'Dit is een normale marktprijs.',
+    label: 'Normale prijs',
+    tone: 'info',
+  };
+}
+
 export function getPricePanelSnapshot(
   setId: string,
 ): PricePanelSnapshot | undefined {
   return pricePanelSnapshotBySetId.get(setId);
+}
+
+export function getSetDealVerdict(setId: string): SetDealVerdict {
+  return buildSetDealVerdict(getPricePanelSnapshot(setId));
 }
 
 export function getFeaturedSetPriceContext(
@@ -246,6 +290,77 @@ export function getReviewedPriceSummary(
     }),
     reviewedLabel: `Gecheckt ${formatReviewedOn(pricePanelSnapshot.observedAt)}`,
   };
+}
+
+export function buildSetPriceInsights({
+  priceHistorySummaryState,
+  pricePanelSnapshot,
+}: {
+  priceHistorySummaryState?: PriceHistorySummaryState;
+  pricePanelSnapshot?: PricePanelSnapshot;
+}): SetPriceInsight[] {
+  if (!pricePanelSnapshot) {
+    return [
+      {
+        id: 'coverage',
+        text: 'Nog te weinig nagekeken prijzen voor slim koopadvies.',
+      },
+    ];
+  }
+
+  const insights: SetPriceInsight[] = [];
+  const { priceHistorySummary, trackedPriceSummary } =
+    priceHistorySummaryState ?? {};
+
+  if (priceHistorySummary) {
+    insights.push({
+      id: 'recent-low',
+      text: `Laagste prijs in 30 dagen: ${formatPriceMinor({
+        currencyCode: priceHistorySummary.currencyCode,
+        minorUnits: priceHistorySummary.lowPriceMinor,
+      })}`,
+    });
+    insights.push({
+      id: 'current-vs-normal',
+      text:
+        priceHistorySummary.deltaVsAverageMinor < 0
+          ? 'Huidige prijs ligt onder normaal.'
+          : priceHistorySummary.deltaVsAverageMinor > 0
+            ? 'Huidige prijs ligt boven normaal.'
+            : 'Huidige prijs zit rond normaal.',
+    });
+  }
+
+  if (trackedPriceSummary) {
+    const nearTrackedLow =
+      trackedPriceSummary.pointCount >= 14 &&
+      trackedPriceSummary.deltaVsTrackedLowMinor <=
+        Math.round(trackedPriceSummary.currentHeadlinePriceMinor * 0.05);
+
+    insights.push({
+      id: 'tracked-low',
+      text:
+        trackedPriceSummary.deltaVsTrackedLowMinor <= 0
+          ? 'Dit is de laagste bijgehouden prijs.'
+          : nearTrackedLow
+            ? 'Zakt zelden veel lager dan dit.'
+            : `Laagste bijgehouden prijs: ${formatPriceMinor({
+                currencyCode: trackedPriceSummary.currencyCode,
+                minorUnits: trackedPriceSummary.trackedLowPriceMinor,
+              })}`,
+    });
+  }
+
+  if (insights.length < 2) {
+    insights.push({
+      id: 'coverage',
+      text: `${pricePanelSnapshot.merchantCount} nagekeken winkel${
+        pricePanelSnapshot.merchantCount === 1 ? '' : 's'
+      }.`,
+    });
+  }
+
+  return insights.slice(0, 3);
 }
 
 export function listReviewedPriceSetIds(): string[] {

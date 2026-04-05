@@ -34,6 +34,7 @@ export function WantedSetToggleCard({
   isPending,
   isWanted,
   onToggle,
+  productIntent = 'wishlist',
   setId,
   successMessage,
   variant = 'default',
@@ -44,6 +45,7 @@ export function WantedSetToggleCard({
   isPending?: boolean;
   isWanted: boolean;
   onToggle: () => void;
+  productIntent?: 'price-alert' | 'wishlist';
   setId: string;
   successMessage?: string;
   variant?: 'default' | 'product';
@@ -84,6 +86,22 @@ export function WantedSetToggleCard({
         : 'Nog niet opgeslagen';
 
   if (variant === 'product') {
+    const productActionLabel = isLoading
+      ? 'Synchroniseren...'
+      : isPending
+        ? 'Opslaan...'
+        : isUnavailable
+          ? productIntent === 'price-alert'
+            ? 'Prijsalert niet beschikbaar'
+            : 'Verlanglijst niet beschikbaar'
+          : isWanted
+            ? productIntent === 'price-alert'
+              ? 'Zet prijsalert uit'
+              : 'Van verlanglijst verwijderen'
+            : productIntent === 'price-alert'
+              ? 'Zet prijsalert aan'
+              : 'Aan verlanglijst toevoegen';
+
     return (
       <article className={styles.productToggle}>
         {errorMessage ? (
@@ -103,15 +121,7 @@ export function WantedSetToggleCard({
           type="button"
           onClick={onToggle}
         >
-          {isLoading
-            ? 'Synchroniseren...'
-            : isPending
-              ? 'Opslaan...'
-              : isUnavailable
-                ? 'Verlanglijst niet beschikbaar'
-                : isWanted
-                  ? 'Van verlanglijst verwijderen'
-                  : 'Aan verlanglijst toevoegen'}
+          {productActionLabel}
         </Button>
       </article>
     );

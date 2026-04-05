@@ -415,37 +415,247 @@
   color: var(--lego-border);
 }
 
-.productHero {
+.detailHero {
   display: grid;
   gap: var(--lego-space-4);
 }
 
-.productMedia {
+.detailHeroGallery,
+.detailHeroContent,
+.detailHeroHeader,
+.detailPricingStack,
+.detailInfoGrid {
   display: grid;
-  align-items: start;
+  gap: var(--lego-space-4);
 }
 
-.productInfo {
-  display: grid;
+.detailHeroContent {
   align-content: start;
-  gap: var(--lego-space-4);
 }
 
-.productSummarySlot {
+.galleryShell {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.galleryTrack {
+  display: flex;
+  gap: var(--lego-space-3);
+  margin: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.galleryTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.gallerySlide {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.galleryDots {
+  display: flex;
+  gap: var(--lego-space-2);
+  justify-content: center;
+}
+
+.galleryDot {
+  background: color-mix(in srgb, var(--lego-text) 18%, transparent);
+  border-radius: var(--lego-radius-pill);
+  display: block;
+  height: 0.48rem;
+  min-height: auto;
+  min-width: auto;
+  padding: 0;
+  width: 0.48rem;
+}
+
+.galleryMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+  text-align: center;
+}
+
+.detailTitle {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: var(--lego-text-role-hero-weight);
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  margin: 0;
+}
+
+.detailPitch,
+.detailVerdict,
+.specNote {
+  margin: 0;
+}
+
+.detailPitch {
+  color: var(--lego-text);
+  font-size: 1rem;
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.45;
+  max-width: 34ch;
+}
+
+.detailVerdict,
+.specNote {
+  color: var(--lego-text-muted);
+  line-height: 1.5;
+}
+
+.bestDealCard,
+.alertCard,
+.offerListCard,
+.trustCard {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.bestDealEyebrow,
+.alertEyebrow {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.12em;
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.bestDealPrice,
+.bestDealFallbackValue {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: var(--lego-text-role-hero-weight);
+  letter-spacing: -0.05em;
+  line-height: 0.92;
+  margin: 0;
+}
+
+.bestDealMeta,
+.bestDealChecked,
+.alertCopy,
+.offerMeta,
+.trustValue {
+  margin: 0;
+}
+
+.bestDealMeta {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.4;
+}
+
+.bestDealSignals {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.bestDealChecked,
+.offerMeta,
+.alertCopy,
+.trustValue {
+  color: var(--lego-text-muted);
+  line-height: 1.45;
+}
+
+.bestDealAction {
+  width: 100%;
+}
+
+.alertTitle {
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.alertAction,
+.detailActionRow {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.offerList {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.offerRow {
+  align-items: start;
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 70%, transparent);
   display: grid;
   gap: var(--lego-space-3);
   padding-top: var(--lego-space-3);
-  border-top: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 72%, transparent);
 }
 
-.supportingRow {
+.offerRow:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.offerCopy,
+.offerSide {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-1);
 }
 
-.supportingRowSingle {
-  grid-template-columns: minmax(0, 1fr);
+.offerTitleRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.offerMerchant {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.offerPrice {
+  color: var(--lego-text);
+  font-family: var(--lego-font-family-heading);
+  font-size: 1.32rem;
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0;
+}
+
+.offerAction {
+  justify-self: start;
+}
+
+.trustGrid {
+  display: grid;
+  gap: var(--lego-space-3);
+  margin: 0;
+}
+
+.trustItem {
+  border-top: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 70%, transparent);
+  display: grid;
+  gap: var(--lego-space-1);
+  padding-top: var(--lego-space-3);
+}
+
+.trustItem:first-child {
+  border-top: 0;
+  padding-top: 0;
 }
 
 .notesPanel {
@@ -591,7 +801,7 @@
   --theme-muted: color-mix(in srgb, var(--theme-text) 72%, transparent);
   --theme-shadow: color-mix(in srgb, var(--theme-text) 12%, transparent);
   background: var(--theme-surface);
-  aspect-ratio: 2 / 3;
+  aspect-ratio: 3 / 4;
   gap: 0;
   overflow: hidden;
   padding: 0;
@@ -635,7 +845,7 @@
 }
 
 .themePortraitVisual {
-  align-items: flex-end;
+  align-items: center;
   background: transparent;
   display: flex;
   justify-content: center;
@@ -671,7 +881,6 @@
   letter-spacing: -0.03em;
   line-height: 1.02;
   margin: 0;
-  min-block-size: 2.05em;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -964,7 +1173,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .productHero {
+  .detailHero {
     grid-template-columns: minmax(0, 1.08fr) minmax(20rem, 0.92fr);
     align-items: start;
   }
@@ -973,12 +1182,21 @@
     min-height: 21.5rem;
   }
 
-  .supportingRow {
+  .detailActionRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .offerRow {
+    align-items: center;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .supportingRowSingle {
-    grid-template-columns: minmax(0, 1fr);
+  .offerSide {
+    justify-items: end;
+  }
+
+  .detailInfoGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .metaGrid {
@@ -987,5 +1205,9 @@
 
   .detailSpecsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trustGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

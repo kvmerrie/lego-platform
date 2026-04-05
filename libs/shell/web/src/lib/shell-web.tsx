@@ -135,8 +135,8 @@ export function ShellWeb({
       <footer className={styles.footer}>
         <Container className={styles.footerInner}>
           <p className={styles.footerCopy}>
-            Brickhunt laat snel zien welke walker, toren of bloemenboeket je
-            wilt hebben, en waar de prijs nu goed zit.
+            Brickhunt laat snel zien welke doos je wilt hebben en waar de prijs
+            nu goed zit.
           </p>
         </Container>
       </footer>

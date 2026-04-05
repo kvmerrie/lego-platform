@@ -15,12 +15,15 @@ import {
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 import {
+  buildSetDealVerdict,
+  buildSetPriceInsights,
   buildWishlistAlertNotificationCandidate,
   buildWishlistPriceAlert,
   buildPriceHistorySummary,
   buildTrackedPriceSummary,
   DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
   getFeaturedSetPriceContext,
+  getSetDealVerdict,
   getReviewedPriceSummary,
   listDealSpotlightPriceContexts,
   listWishlistAlertNotificationCandidates,
@@ -136,6 +139,77 @@ describe('pricing data access', () => {
       pricePositionLabel: '€ 23,56 onder referentie',
       reviewedLabel: 'Gecheckt 3 apr',
     });
+  });
+
+  test('builds a decisive deal verdict from the current snapshot', () => {
+    expect(getSetDealVerdict('10354')).toEqual({
+      explanation: 'Deze prijs ligt onder wat we meestal zien.',
+      label: 'Goede deal',
+      tone: 'positive',
+    });
+
+    expect(
+      buildSetDealVerdict({
+        deltaMinor: 0,
+      }),
+    ).toEqual({
+      explanation: 'Dit is een normale marktprijs.',
+      label: 'Normale prijs',
+      tone: 'info',
+    });
+
+    expect(
+      buildSetDealVerdict({
+        deltaMinor: 1299,
+      }),
+    ).toEqual({
+      explanation: 'Deze set is nu relatief duur.',
+      label: 'Relatief duur',
+      tone: 'warning',
+    });
+  });
+
+  test('builds short set-detail price insights before the chart', () => {
+    expect(
+      buildSetPriceInsights({
+        priceHistorySummaryState: {
+          pointCount: 30,
+          priceHistorySummary: {
+            averagePriceMinor: 49249,
+            currencyCode: 'EUR',
+            currentHeadlinePriceMinor: 46999,
+            deltaVsAverageMinor: -2250,
+            highPriceMinor: 51999,
+            lowPriceMinor: 45999,
+            pointCount: 30,
+          },
+          trackedPriceSummary: {
+            currencyCode: 'EUR',
+            currentHeadlinePriceMinor: 46999,
+            deltaVsTrackedHighMinor: -6000,
+            deltaVsTrackedLowMinor: 1000,
+            pointCount: 40,
+            trackedHighPriceMinor: 52999,
+            trackedLowPriceMinor: 45999,
+            trackedSinceRecordedOn: '2026-02-20',
+          },
+        },
+        pricePanelSnapshot: getPricePanelSnapshot('10316'),
+      }),
+    ).toEqual([
+      {
+        id: 'recent-low',
+        text: 'Laagste prijs in 30 dagen: € 459,99',
+      },
+      {
+        id: 'current-vs-normal',
+        text: 'Huidige prijs ligt onder normaal.',
+      },
+      {
+        id: 'tracked-low',
+        text: 'Zakt zelden veel lager dan dit.',
+      },
+    ]);
   });
 
   test('prefers a new tracked low when building a wishlist alert', () => {

@@ -54,6 +54,36 @@ export interface CatalogSetCardContextBadge {
   tone?: CatalogSetCardBadgeTone;
 }
 
+export interface CatalogSetDetailVerdict {
+  explanation: string;
+  label: string;
+  tone?: ComponentProps<typeof Badge>['tone'];
+}
+
+export interface CatalogSetDetailBestDeal {
+  checkedLabel: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  merchantLabel: string;
+  price: string;
+  stockLabel: string;
+}
+
+export interface CatalogSetDetailOfferItem {
+  checkedLabel: string;
+  ctaHref: string;
+  ctaLabel: string;
+  isBest?: boolean;
+  merchantLabel: string;
+  price: string;
+  stockLabel: string;
+}
+
+export interface CatalogSetDetailTrustSignal {
+  label: string;
+  value: string;
+}
+
 type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
 type CatalogSetSavedState = 'owned' | 'wishlist';
 type CatalogSetCardPriceDisplay = 'default' | 'subtle';
@@ -77,13 +107,17 @@ function CatalogCanonicalText({ children }: { children: ReactNode }) {
 }
 
 function CatalogSetVisual({
+  altLabel,
   imageUrl,
+  imageLoading,
   name,
   setId,
   theme,
   variant,
 }: {
+  altLabel?: string;
   imageUrl?: string;
+  imageLoading?: 'eager' | 'lazy';
   name: string;
   setId: string;
   theme: string;
@@ -99,10 +133,10 @@ function CatalogSetVisual({
       <div className={visualClassName}>
         <div className={styles.visualMedia}>
           <img
-            alt={`${name} LEGO-set`}
+            alt={altLabel ?? `${name} LEGO-set`}
             className={styles.setImage}
             decoding="async"
-            loading={variant === 'hero' ? 'eager' : 'lazy'}
+            loading={imageLoading ?? (variant === 'hero' ? 'eager' : 'lazy')}
             src={imageUrl}
           />
         </div>
@@ -565,23 +599,272 @@ export function CatalogSplitIntroPanel({
   );
 }
 
-export function CatalogSetDetailPanel({
+function getCatalogGalleryImages(
+  catalogSetDetail: Pick<
+    CatalogSetDetail,
+    'imageUrl' | 'images' | 'primaryImage'
+  >,
+): string[] {
+  return [
+    catalogSetDetail.primaryImage,
+    ...(catalogSetDetail.images ?? []),
+    catalogSetDetail.imageUrl,
+  ].filter((imageUrl, index, imageUrls): imageUrl is string => {
+    return Boolean(imageUrl) && imageUrls.indexOf(imageUrl) === index;
+  });
+}
+
+function CatalogSetImageGallery({
   catalogSetDetail,
-  productSummary,
-  supportingPanel,
-  themeDirectoryHref,
-  themeHref,
 }: {
   catalogSetDetail: CatalogSetDetail;
-  productSummary?: ReactNode;
-  supportingPanel?: ReactNode;
+}) {
+  const galleryImages = getCatalogGalleryImages(catalogSetDetail);
+  const galleryId = `set-gallery-${catalogSetDetail.id}`;
+
+  if (galleryImages.length <= 1) {
+    return (
+      <CatalogSetVisual
+        imageUrl={galleryImages[0]}
+        name={catalogSetDetail.name}
+        setId={catalogSetDetail.id}
+        theme={catalogSetDetail.theme}
+        variant="hero"
+      />
+    );
+  }
+
+  return (
+    <div className={styles.galleryShell}>
+      <div
+        aria-label={`${catalogSetDetail.name} fotogalerij`}
+        className={styles.galleryTrack}
+        role="group"
+      >
+        {galleryImages.map((galleryImageUrl, index) => (
+          <div
+            className={styles.gallerySlide}
+            id={`${galleryId}-${index + 1}`}
+            key={galleryImageUrl}
+          >
+            <CatalogSetVisual
+              altLabel={
+                index === 0
+                  ? `${catalogSetDetail.name} LEGO-set`
+                  : `${catalogSetDetail.name} LEGO-set afbeelding ${index + 1}`
+              }
+              imageLoading={index === 0 ? 'eager' : 'lazy'}
+              imageUrl={galleryImageUrl}
+              name={catalogSetDetail.name}
+              setId={catalogSetDetail.id}
+              theme={catalogSetDetail.theme}
+              variant="hero"
+            />
+          </div>
+        ))}
+      </div>
+      <div
+        aria-label="Galerijnavigatie"
+        className={styles.galleryDots}
+        role="navigation"
+      >
+        {galleryImages.map((_, index) => (
+          <a
+            aria-label={`Ga naar afbeelding ${index + 1}`}
+            className={styles.galleryDot}
+            href={`#${galleryId}-${index + 1}`}
+            key={`${galleryId}-dot-${index + 1}`}
+          />
+        ))}
+      </div>
+      <p className={styles.galleryMeta}>Swipe voor meer beelden</p>
+    </div>
+  );
+}
+
+function CatalogSetBestDealCard({
+  bestDeal,
+}: {
+  bestDeal?: CatalogSetDetailBestDeal;
+}) {
+  if (!bestDeal) {
+    return (
+      <Surface
+        as="section"
+        className={styles.bestDealCard}
+        elevation="floating"
+        tone="accent"
+      >
+        <p className={styles.bestDealEyebrow}>Beste deal nu</p>
+        <p className={styles.bestDealFallbackValue}>Nog niet nagekeken</p>
+        <p className={styles.bestDealMeta}>
+          We hebben voor deze set nog geen betrouwbare winkelprijs klaarstaan.
+        </p>
+      </Surface>
+    );
+  }
+
+  return (
+    <Surface
+      as="section"
+      className={styles.bestDealCard}
+      elevation="floating"
+      tone="accent"
+    >
+      <p className={styles.bestDealEyebrow}>Beste deal nu</p>
+      <p className={styles.bestDealPrice}>{bestDeal.price}</p>
+      <p className={styles.bestDealMeta}>{bestDeal.merchantLabel}</p>
+      <div className={styles.bestDealSignals}>
+        <Badge tone="neutral">{bestDeal.stockLabel}</Badge>
+        <p className={styles.bestDealChecked}>{bestDeal.checkedLabel}</p>
+      </div>
+      {bestDeal.ctaHref && bestDeal.ctaLabel ? (
+        <ActionLink
+          className={styles.bestDealAction}
+          href={bestDeal.ctaHref}
+          rel="noreferrer sponsored"
+          target="_blank"
+          tone="accent"
+        >
+          {bestDeal.ctaLabel}
+        </ActionLink>
+      ) : null}
+    </Surface>
+  );
+}
+
+function CatalogSetPriceAlertCard({ action }: { action?: ReactNode }) {
+  return (
+    <Surface
+      as="section"
+      className={styles.alertCard}
+      elevation="rested"
+      tone="muted"
+    >
+      <p className={styles.alertEyebrow}>Prijsalert</p>
+      <h2 className={styles.alertTitle}>Nog niet kopen?</h2>
+      <p className={styles.alertCopy}>
+        Krijg een seintje zodra de prijs daalt of een betere deal verschijnt.
+      </p>
+      {action ? <div className={styles.alertAction}>{action}</div> : null}
+    </Surface>
+  );
+}
+
+function CatalogSetOfferList({
+  offers,
+}: {
+  offers: readonly CatalogSetDetailOfferItem[];
+}) {
+  if (offers.length === 0) {
+    return null;
+  }
+
+  return (
+    <Surface
+      as="section"
+      className={styles.offerListCard}
+      elevation="rested"
+      tone="muted"
+    >
+      <SectionHeading
+        eyebrow="Meer winkels"
+        title="Nog meer nagekeken prijzen"
+      />
+      <div className={styles.offerList}>
+        {offers.map((offer) => (
+          <article
+            className={styles.offerRow}
+            key={`${offer.merchantLabel}-${offer.price}`}
+          >
+            <div className={styles.offerCopy}>
+              <div className={styles.offerTitleRow}>
+                <p className={styles.offerMerchant}>{offer.merchantLabel}</p>
+                {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
+              </div>
+              <p className={styles.offerMeta}>
+                {offer.stockLabel} · {offer.checkedLabel}
+              </p>
+            </div>
+            <div className={styles.offerSide}>
+              <p className={styles.offerPrice}>{offer.price}</p>
+              <ActionLink
+                className={styles.offerAction}
+                href={offer.ctaHref}
+                rel="noreferrer sponsored"
+                target="_blank"
+                tone="secondary"
+              >
+                {offer.ctaLabel}
+              </ActionLink>
+            </div>
+          </article>
+        ))}
+      </div>
+    </Surface>
+  );
+}
+
+function CatalogSetTrustSignals({
+  trustSignals,
+}: {
+  trustSignals: readonly CatalogSetDetailTrustSignal[];
+}) {
+  if (trustSignals.length === 0) {
+    return null;
+  }
+
+  return (
+    <Surface
+      as="section"
+      className={styles.trustCard}
+      elevation="rested"
+      tone="muted"
+    >
+      <SectionHeading eyebrow="Vertrouwen" title="Waar dit op steunt" />
+      <dl className={styles.trustGrid}>
+        {trustSignals.map((trustSignal) => (
+          <div className={styles.trustItem} key={trustSignal.label}>
+            <dt className={styles.supportingLabel}>{trustSignal.label}</dt>
+            <dd className={styles.trustValue}>{trustSignal.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </Surface>
+  );
+}
+
+export function CatalogSetDetailPanel({
+  bestDeal,
+  catalogSetDetail,
+  dealVerdict,
+  offerList = [],
+  ownershipActions,
+  priceAlertAction,
+  priceHistoryPanel,
+  themeDirectoryHref,
+  themeHref,
+  trustSignals = [],
+}: {
+  bestDeal?: CatalogSetDetailBestDeal;
+  catalogSetDetail: CatalogSetDetail;
+  dealVerdict: CatalogSetDetailVerdict;
+  offerList?: readonly CatalogSetDetailOfferItem[];
+  ownershipActions?: ReactNode;
+  priceAlertAction?: ReactNode;
+  priceHistoryPanel?: ReactNode;
   themeDirectoryHref?: string;
   themeHref?: string;
+  trustSignals?: readonly CatalogSetDetailTrustSignal[];
 }) {
   const setStatusLabel = formatCatalogSetStatus(catalogSetDetail.setStatus);
   const minifigureHighlightsLabel = formatMinifigureHighlights(
     catalogSetDetail.minifigureHighlights,
   );
+  const setHighlights =
+    catalogSetDetail.collectorHighlights.length > 0
+      ? catalogSetDetail.collectorHighlights.slice(0, 3)
+      : [catalogSetDetail.collectorAngle];
 
   return (
     <section className={styles.detailPage}>
@@ -626,32 +909,15 @@ export function CatalogSetDetailPanel({
       </nav>
       <Surface
         as="section"
-        className={styles.productHero}
+        className={styles.detailHero}
         elevation="floating"
         tone="default"
       >
-        <div className={styles.productMedia}>
-          <CatalogSetVisual
-            imageUrl={catalogSetDetail.imageUrl}
-            name={catalogSetDetail.name}
-            setId={catalogSetDetail.id}
-            theme={catalogSetDetail.theme}
-            variant="hero"
-          />
+        <div className={styles.detailHeroGallery}>
+          <CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />
         </div>
-        <div className={styles.productInfo}>
-          <div className={styles.heroCopy}>
-            <SectionHeading
-              description={catalogSetDetail.tagline}
-              eyebrow="Setdetail"
-              title={
-                <CatalogCanonicalText>
-                  {catalogSetDetail.name}
-                </CatalogCanonicalText>
-              }
-              titleAs="h1"
-              tone="display"
-            />
+        <div className={styles.detailHeroContent}>
+          <div className={styles.detailHeroHeader}>
             <div className={styles.badgeRow}>
               {themeHref ? (
                 <ActionLink
@@ -672,22 +938,45 @@ export function CatalogSetDetailPanel({
                   </CatalogCanonicalText>
                 </Badge>
               )}
+              {catalogSetDetail.subtheme ? (
+                <Badge tone="neutral">
+                  <CatalogCanonicalText>
+                    {catalogSetDetail.subtheme}
+                  </CatalogCanonicalText>
+                </Badge>
+              ) : null}
+              <Badge tone={dealVerdict.tone ?? 'neutral'}>
+                {dealVerdict.label}
+              </Badge>
             </div>
+            <h1 className={styles.detailTitle}>
+              <CatalogCanonicalText>
+                {catalogSetDetail.name}
+              </CatalogCanonicalText>
+            </h1>
+            <p className={styles.detailPitch}>{catalogSetDetail.tagline}</p>
+            <p className={styles.detailVerdict}>{dealVerdict.explanation}</p>
             <p className={styles.heroMeta}>
               {catalogSetDetail.releaseYear} · {catalogSetDetail.priceRange}
             </p>
           </div>
-          {productSummary ? (
-            <div className={styles.productSummarySlot}>{productSummary}</div>
+          <CatalogSetBestDealCard bestDeal={bestDeal} />
+          <CatalogSetPriceAlertCard action={priceAlertAction} />
+          {ownershipActions ? (
+            <div className={styles.detailActionRow}>{ownershipActions}</div>
           ) : null}
         </div>
       </Surface>
 
-      <section
-        className={`${styles.supportingRow} ${
-          supportingPanel ? '' : styles.supportingRowSingle
-        }`}
-      >
+      <CatalogSetOfferList offers={offerList} />
+
+      {priceHistoryPanel ? (
+        <section className={styles.detailPricingStack}>
+          {priceHistoryPanel}
+        </section>
+      ) : null}
+
+      <section className={styles.detailInfoGrid}>
         <Surface
           as="aside"
           className={styles.notesPanel}
@@ -696,45 +985,45 @@ export function CatalogSetDetailPanel({
         >
           <div className={styles.notesHeader}>
             <SectionHeading
-              description="De belangrijkste productfeiten en verzamelcontext die tellen voordat je prijzen vergelijkt."
-              eyebrow="Setdetails"
-              title="Wat LEGO-fans meestal eerst checken"
-              titleAs="h3"
+              description={catalogSetDetail.collectorAngle}
+              eyebrow="Waarom deze set"
+              title="Wat hier blijft hangen"
+              titleAs="h2"
+            />
+          </div>
+          {minifigureHighlightsLabel ? (
+            <CatalogSupportingDetail
+              label="Minifigs"
+              value={
+                <CatalogCanonicalText>
+                  {minifigureHighlightsLabel}
+                </CatalogCanonicalText>
+              }
+            />
+          ) : null}
+          <ul className={styles.highlightsList}>
+            {setHighlights.map((collectorHighlight) => (
+              <li key={collectorHighlight}>{collectorHighlight}</li>
+            ))}
+          </ul>
+        </Surface>
+        <Surface
+          as="aside"
+          className={styles.notesPanel}
+          elevation="rested"
+          tone="muted"
+        >
+          <div className={styles.notesHeader}>
+            <SectionHeading
+              description="Kort en alleen wat helpt bij kiezen."
+              eyebrow="Specs"
+              title="Snel gecheckt"
+              titleAs="h2"
             />
           </div>
           <CatalogSetMetadata
             className={styles.detailSpecsGrid}
             items={[
-              { label: 'Setnummer', value: catalogSetDetail.id },
-              {
-                label: 'Thema',
-                value: (
-                  <CatalogCanonicalText>
-                    {catalogSetDetail.theme}
-                  </CatalogCanonicalText>
-                ),
-              },
-              ...(catalogSetDetail.subtheme
-                ? [
-                    {
-                      label: 'Subthema',
-                      value: (
-                        <CatalogCanonicalText>
-                          {catalogSetDetail.subtheme}
-                        </CatalogCanonicalText>
-                      ),
-                    },
-                  ]
-                : []),
-              { label: 'Releasejaar', value: catalogSetDetail.releaseYear },
-              ...(setStatusLabel
-                ? [
-                    {
-                      label: 'Status',
-                      value: setStatusLabel,
-                    },
-                  ]
-                : []),
               {
                 label: 'Steentjes',
                 value: catalogSetDetail.pieces.toLocaleString(),
@@ -743,40 +1032,23 @@ export function CatalogSetDetailPanel({
                 label: 'Minifiguren',
                 value: formatMinifigureCount(catalogSetDetail.minifigureCount),
               },
+              { label: 'Jaar', value: catalogSetDetail.releaseYear },
+              ...(setStatusLabel
+                ? [
+                    {
+                      label: 'Status',
+                      value: setStatusLabel,
+                    },
+                  ]
+                : []),
             ]}
           />
-          <div className={styles.detailCollectorContext}>
-            {minifigureHighlightsLabel ? (
-              <CatalogSupportingDetail
-                label="Bevat"
-                value={
-                  <CatalogCanonicalText>
-                    {minifigureHighlightsLabel}
-                  </CatalogCanonicalText>
-                }
-              />
-            ) : null}
-            <CatalogSupportingDetail
-              label="Verzamelaarsblik"
-              value={catalogSetDetail.collectorAngle}
-            />
-            <CatalogSupportingDetail
-              label="Beschikbaarheid"
-              value={catalogSetDetail.availability}
-            />
-          </div>
-          {catalogSetDetail.collectorHighlights.length > 0 ? (
-            <ul className={styles.highlightsList}>
-              {catalogSetDetail.collectorHighlights.map(
-                (collectorHighlight) => (
-                  <li key={collectorHighlight}>{collectorHighlight}</li>
-                ),
-              )}
-            </ul>
-          ) : null}
+          <p className={styles.specNote}>
+            Leeftijd en afmetingen volgen zodra ze lokaal zijn toegevoegd.
+          </p>
         </Surface>
-        {supportingPanel}
       </section>
+      <CatalogSetTrustSignals trustSignals={trustSignals} />
     </section>
   );
 }
@@ -898,14 +1170,14 @@ export function CatalogThemeHighlight({
             <p className={styles.themeFeatureCount}>
               {themeSnapshot.setCount} gevolgde sets
             </p>
-            <span className={styles.themeFeatureAction}>Bekijk alle sets</span>
+            <span className={styles.themeFeatureAction}>Bekijk sets</span>
           </div>
           <h3 className={styles.themeFeatureTitle}>
             <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
           </h3>
           <p className={styles.themeFeatureCopy}>{themeSnapshot.momentum}</p>
           <p className={styles.themeFeatureSignature}>
-            Kijk eerst naar{' '}
+            Pak eerst{' '}
             <CatalogCanonicalText>
               {themeSnapshot.signatureSet}
             </CatalogCanonicalText>

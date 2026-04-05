@@ -21,7 +21,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 const defaultMetadataTitle =
   'Brickhunt – LEGO sets kiezen, vergelijken en bewaren';
 const defaultMetadataDescription =
-  'Van Rivendell tot AT-AT: vind sneller LEGO-sets die je wilt bouwen, neerzetten of bewaren.';
+  'Van Rivendell tot AT-AT: vind sneller de LEGO-doos die je wilt hebben.';
 
 export const metadata: Metadata = {
   title: defaultMetadataTitle,

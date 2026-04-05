@@ -14,14 +14,14 @@ export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
 }
 
 export function CatalogFeatureSetList({
-  description = 'Wil je een grote doos? Kijk hier eerst.',
+  description = 'Wil je groot? Kijk hier.',
   eyebrow = 'Pronkstukken',
   layout = 'rail',
   sectionId = 'featured-sets',
   setCards,
   signalText,
   tone = 'muted',
-  title = 'Torens, walkers en supercars',
+  title = 'Torens, walkers, supercars',
 }: {
   description?: string;
   eyebrow?: string;

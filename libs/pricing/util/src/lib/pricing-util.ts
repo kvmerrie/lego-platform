@@ -104,6 +104,21 @@ export interface PriceDealSummary {
   label: string;
 }
 
+export interface SetDealVerdict {
+  explanation: string;
+  label:
+    | 'Goede deal'
+    | 'Nog te weinig data'
+    | 'Normale prijs'
+    | 'Relatief duur';
+  tone: 'info' | 'neutral' | 'positive' | 'warning';
+}
+
+export interface SetPriceInsight {
+  id: 'coverage' | 'current-vs-normal' | 'recent-low' | 'tracked-low';
+  text: string;
+}
+
 export function getPriceDirection(deltaMinor?: number): 'up' | 'down' | 'flat' {
   if (typeof deltaMinor !== 'number' || deltaMinor === 0) {
     return 'flat';

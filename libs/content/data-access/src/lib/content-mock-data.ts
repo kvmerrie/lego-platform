@@ -7,31 +7,31 @@ export const homepageEditorialPage: EditorialPage = {
   seo: {
     title: 'Brickhunt – LEGO sets kiezen, vergelijken en bewaren',
     description:
-      'Van Rivendell tot AT-AT: vind sneller LEGO-sets die je wilt bouwen, neerzetten of bewaren.',
+      'Van Rivendell tot AT-AT: vind sneller de LEGO-doos die je wilt hebben.',
   },
   sections: [
     {
       id: 'home-hero',
       type: 'hero',
       eyebrow: 'Van Rivendell tot McLaren P1',
-      title: 'Vind de LEGO-doos waar je plek voor maakt.',
-      body: 'Van elfendorp tot supercar: zie snel welke doos je wilt bouwen, neerzetten of eindelijk hebben.',
-      ctaLabel: 'Bekijk alle LEGO-werelden',
+      title: 'Welke doos wil je?',
+      body: 'Kies sneller welke doos je wilt bouwen, neerzetten of nu wilt kopen.',
+      ctaLabel: 'Bekijk LEGO-werelden',
       ctaHref: '#explore-themes',
     },
     {
       id: 'home-foundation',
       type: 'richText',
       eyebrow: 'Minifigs, schaal, details',
-      title: 'Zie meteen wat blijft hangen.',
-      body: 'De Council of Elrond. Een rij Marvel-minifigs. Dat AT-AT-silhouet. Dan weet je genoeg.',
+      title: 'Zie wat blijft.',
+      body: 'Council of Elrond. Marvel-minifigs. Een AT-AT-silhouet. Meer heb je niet nodig.',
     },
     {
       id: 'home-callout',
       type: 'callout',
       eyebrow: 'Als de prijs meehelpt',
-      title: 'Soms zakt precies die UCS-doos.',
-      body: 'Handig als een modular, walker of bloemenboeket al weken in je hoofd zit.',
+      title: 'Nu zakt die doos.',
+      body: 'Voor die modular, walker of botanical die al weken blijft hangen.',
     },
   ],
 };
