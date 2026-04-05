@@ -115,7 +115,14 @@ export interface SetDealVerdict {
 }
 
 export interface SetPriceInsight {
-  id: 'coverage' | 'current-vs-normal' | 'recent-low' | 'tracked-low';
+  id:
+    | 'coverage'
+    | 'current-vs-normal'
+    | 'limited-data'
+    | 'limited-history'
+    | 'more-data'
+    | 'recent-low'
+    | 'tracked-low';
   text: string;
 }
 

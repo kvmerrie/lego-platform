@@ -143,7 +143,8 @@ describe('pricing data access', () => {
 
   test('builds a decisive deal verdict from the current snapshot', () => {
     expect(getSetDealVerdict('10354')).toEqual({
-      explanation: 'Deze prijs ligt onder wat we meestal zien.',
+      explanation:
+        'Deze prijs ligt onder wat we meestal zien. Nu kopen is slim als je deze set op het oog hebt.',
       label: 'Goede deal',
       tone: 'positive',
     });
@@ -153,7 +154,8 @@ describe('pricing data access', () => {
         deltaMinor: 0,
       }),
     ).toEqual({
-      explanation: 'Dit is een normale marktprijs.',
+      explanation:
+        'Dit is een normale prijs. Wachten kan als je niet haast hebt.',
       label: 'Normale prijs',
       tone: 'info',
     });
@@ -163,7 +165,7 @@ describe('pricing data access', () => {
         deltaMinor: 1299,
       }),
     ).toEqual({
-      explanation: 'Deze set is nu relatief duur.',
+      explanation: 'Deze set zit nu aan de hoge kant. Wachten is slimmer.',
       label: 'Relatief duur',
       tone: 'warning',
     });
@@ -198,16 +200,16 @@ describe('pricing data access', () => {
       }),
     ).toEqual([
       {
+        id: 'current-vs-normal',
+        text: 'De huidige prijs ligt laag vergeleken met wat we meestal zien.',
+      },
+      {
         id: 'recent-low',
         text: 'Laagste prijs in 30 dagen: € 459,99',
       },
       {
-        id: 'current-vs-normal',
-        text: 'Huidige prijs ligt onder normaal.',
-      },
-      {
         id: 'tracked-low',
-        text: 'Zakt zelden veel lager dan dit.',
+        text: 'Deze set zakt meestal niet veel lager dan dit.',
       },
     ]);
   });

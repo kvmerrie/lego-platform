@@ -677,7 +677,7 @@ function CatalogSetImageGallery({
           />
         ))}
       </div>
-      <p className={styles.galleryMeta}>Swipe voor meer beelden</p>
+      <p className={styles.galleryMeta}>Swipe voor meer foto's</p>
     </div>
   );
 }
@@ -698,7 +698,7 @@ function CatalogSetBestDealCard({
         <p className={styles.bestDealEyebrow}>Beste deal nu</p>
         <p className={styles.bestDealFallbackValue}>Nog niet nagekeken</p>
         <p className={styles.bestDealMeta}>
-          We hebben voor deze set nog geen betrouwbare winkelprijs klaarstaan.
+          We hebben nog geen scherpe winkelvergelijking voor deze set.
         </p>
       </Surface>
     );
@@ -742,11 +742,31 @@ function CatalogSetPriceAlertCard({ action }: { action?: ReactNode }) {
       tone="muted"
     >
       <p className={styles.alertEyebrow}>Prijsalert</p>
-      <h2 className={styles.alertTitle}>Nog niet kopen?</h2>
+      <h2 className={styles.alertTitle}>Nog even wachten?</h2>
       <p className={styles.alertCopy}>
-        Krijg een seintje zodra de prijs daalt of een betere deal verschijnt.
+        Krijg een seintje zodra de prijs zakt of er een betere deal staat.
       </p>
       {action ? <div className={styles.alertAction}>{action}</div> : null}
+    </Surface>
+  );
+}
+
+function CatalogSetOfferCoverageCard() {
+  return (
+    <Surface
+      as="section"
+      className={styles.offerCoverageCard}
+      elevation="rested"
+      tone="muted"
+    >
+      <SectionHeading
+        eyebrow="Meer prijzen"
+        title="Nog geen echte vergelijking"
+      />
+      <p className={styles.offerCoverageCopy}>
+        We volgen nu 1 winkel voor deze set. Meer prijsvergelijking verschijnt
+        zodra er extra nagekeken prijzen zijn.
+      </p>
     </Surface>
   );
 }
@@ -760,6 +780,10 @@ function CatalogSetOfferList({
     return null;
   }
 
+  if (offers.length === 1) {
+    return <CatalogSetOfferCoverageCard />;
+  }
+
   return (
     <Surface
       as="section"
@@ -767,10 +791,7 @@ function CatalogSetOfferList({
       elevation="rested"
       tone="muted"
     >
-      <SectionHeading
-        eyebrow="Meer winkels"
-        title="Nog meer nagekeken prijzen"
-      />
+      <SectionHeading eyebrow="Meer winkels" title="Meer nagekeken prijzen" />
       <div className={styles.offerList}>
         {offers.map((offer) => (
           <article
@@ -801,6 +822,28 @@ function CatalogSetOfferList({
           </article>
         ))}
       </div>
+    </Surface>
+  );
+}
+
+function CatalogSetOwnershipCard({ action }: { action?: ReactNode }) {
+  if (!action) {
+    return null;
+  }
+
+  return (
+    <Surface
+      as="section"
+      className={styles.ownershipCard}
+      elevation="rested"
+      tone="muted"
+    >
+      <SectionHeading
+        description="Handig als je deze set naast je verlanglijst ook in je collectie wilt bijhouden."
+        eyebrow="Je collectie"
+        title="Al in huis?"
+      />
+      <div className={styles.ownershipAction}>{action}</div>
     </Surface>
   );
 }
@@ -955,16 +998,19 @@ export function CatalogSetDetailPanel({
               </CatalogCanonicalText>
             </h1>
             <p className={styles.detailPitch}>{catalogSetDetail.tagline}</p>
-            <p className={styles.detailVerdict}>{dealVerdict.explanation}</p>
+            <div
+              className={styles.detailVerdictBlock}
+              data-tone={dealVerdict.tone ?? 'neutral'}
+            >
+              <p className={styles.detailVerdictKicker}>Koopadvies</p>
+              <p className={styles.detailVerdict}>{dealVerdict.explanation}</p>
+            </div>
             <p className={styles.heroMeta}>
-              {catalogSetDetail.releaseYear} · {catalogSetDetail.priceRange}
+              Set {catalogSetDetail.id} · {catalogSetDetail.releaseYear}
             </p>
           </div>
           <CatalogSetBestDealCard bestDeal={bestDeal} />
           <CatalogSetPriceAlertCard action={priceAlertAction} />
-          {ownershipActions ? (
-            <div className={styles.detailActionRow}>{ownershipActions}</div>
-          ) : null}
         </div>
       </Surface>
 
@@ -1049,6 +1095,7 @@ export function CatalogSetDetailPanel({
         </Surface>
       </section>
       <CatalogSetTrustSignals trustSignals={trustSignals} />
+      <CatalogSetOwnershipCard action={ownershipActions} />
     </section>
   );
 }

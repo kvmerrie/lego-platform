@@ -261,7 +261,8 @@ describe('CatalogSetCard', () => {
           setStatus: 'available',
         }}
         dealVerdict={{
-          explanation: 'Deze prijs ligt onder wat we meestal zien.',
+          explanation:
+            'Deze prijs ligt onder wat we meestal zien. Nu kopen is slim als je deze set op het oog hebt.',
           label: 'Goede deal',
           tone: 'positive',
         }}
@@ -284,12 +285,12 @@ describe('CatalogSetCard', () => {
             stockLabel: 'Op voorraad',
           },
         ]}
-        ownershipActions={<button type="button">Mark as owned</button>}
+        ownershipActions={<button type="button">In collectie zetten</button>}
         priceAlertAction={<button type="button">Zet prijsalert aan</button>}
         priceHistoryPanel={
           <div>
             <p>Prijs in het kort</p>
-            <p>30-daagse prijsgeschiedenis</p>
+            <p>Recent prijsverloop</p>
           </div>
         }
         themeDirectoryHref="/themes"
@@ -302,16 +303,73 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('Goede deal');
-    expect(markup).toContain('Deze prijs ligt onder wat we meestal zien.');
+    expect(markup).toContain(
+      'Deze prijs ligt onder wat we meestal zien. Nu kopen is slim als je deze set op het oog hebt.',
+    );
     expect(markup).toContain('The Lord of the Rings');
     expect(markup).toContain('Koop voor € 469,99 bij bol');
-    expect(markup).toContain('Nog niet kopen?');
+    expect(markup).toContain('Nog even wachten?');
     expect(markup).toContain('Zet prijsalert aan');
-    expect(markup).toContain('Nog meer nagekeken prijzen');
+    expect(markup).toContain('Meer nagekeken prijzen');
     expect(markup).toContain('Waar dit op steunt');
     expect(markup).toContain('Ga naar afbeelding 2');
-    expect(markup).toContain('Swipe voor meer beelden');
-    expect(markup).toContain('Mark as owned');
+    expect(markup).toContain('Swipe voor meer foto&#x27;s');
+    expect(markup).toContain('In collectie zetten');
+    expect(markup).toContain('Set 10316 · 2023');
+    expect(markup).not.toContain('$499 to $569');
+  });
+
+  it('avoids a thin comparison block when only one offer is available', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        bestDeal={{
+          checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+          ctaHref: 'https://example.com/c3po',
+          ctaLabel: 'Koop voor € 139,99 bij LEGO',
+          merchantLabel: 'Nu het scherpst bij LEGO',
+          price: '€ 139,99',
+          stockLabel: 'Op voorraad',
+        }}
+        catalogSetDetail={{
+          id: '75398',
+          slug: 'c-3po-75398',
+          name: 'C-3PO',
+          theme: 'Star Wars',
+          releaseYear: 2024,
+          pieces: 1138,
+          imageUrl: 'https://images.example/c3po.jpg',
+          priceRange: '$139 to $149',
+          collectorAngle: 'De gouden droid trekt meteen de aandacht.',
+          tagline:
+            'Als je 1 droid-displayset kiest, is dit de duidelijke favoriet.',
+          availability: 'Steady',
+          collectorHighlights: ['De goudkleurige afwerking valt direct op.'],
+        }}
+        dealVerdict={{
+          explanation:
+            'Dit is een normale prijs. Wachten kan als je niet haast hebt.',
+          label: 'Normale prijs',
+          tone: 'info',
+        }}
+        offerList={[
+          {
+            checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+            ctaHref: 'https://example.com/c3po',
+            ctaLabel: 'Bekijk deal',
+            isBest: true,
+            merchantLabel: 'LEGO',
+            price: '€ 139,99',
+            stockLabel: 'Op voorraad',
+          },
+        ]}
+        priceAlertAction={<button type="button">Zet prijsalert aan</button>}
+        priceHistoryPanel={<div>Recent prijsverloop</div>}
+      />,
+    );
+
+    expect(markup).toContain('Nog geen echte vergelijking');
+    expect(markup).toContain('We volgen nu 1 winkel voor deze set.');
+    expect(markup).not.toContain('Meer nagekeken prijzen');
   });
 
   it('renders a calm image fallback on set detail pages when no catalog image is available', () => {
@@ -319,7 +377,7 @@ describe('CatalogSetCard', () => {
       <CatalogSetDetailPanel
         dealVerdict={{
           explanation:
-            'We hebben nog te weinig nagekeken prijzen voor een hard oordeel.',
+            'We volgen nog te weinig prijzen voor een echt koopadvies.',
           label: 'Nog te weinig data',
           tone: 'neutral',
         }}
@@ -341,7 +399,7 @@ describe('CatalogSetCard', () => {
           ],
         }}
         priceAlertAction={<button type="button">Zet prijsalert aan</button>}
-        priceHistoryPanel={<div>30-day price history</div>}
+        priceHistoryPanel={<div>Recent prijsverloop</div>}
         themeDirectoryHref="/themes"
         themeHref="/themes/ideas"
       />,
@@ -352,8 +410,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Setcontext');
     expect(markup).toContain('Officiele afbeelding nog niet gepubliceerd');
     expect(markup).toContain('Set 21335');
-    expect(markup).toContain('Nog niet kopen?');
-    expect(markup).toContain('30-day price history');
+    expect(markup).toContain('Nog even wachten?');
+    expect(markup).toContain('Recent prijsverloop');
     expect(markup).toContain('Snel gecheckt');
     expect(markup).toContain('Steentjes');
     expect(markup).toContain('Minifiguren');
@@ -362,6 +420,7 @@ describe('CatalogSetCard', () => {
       'Leeftijd en afmetingen volgen zodra ze lokaal zijn toegevoegd.',
     );
     expect(markup).toContain('<h1');
+    expect(markup).not.toContain('$259 to $319');
     expect(markup).not.toContain('Back to shortlist');
   });
 
@@ -369,7 +428,8 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation: 'Dit is een normale marktprijs.',
+          explanation:
+            'Dit is een normale prijs. Wachten kan als je niet haast hebt.',
           label: 'Normale prijs',
           tone: 'info',
         }}

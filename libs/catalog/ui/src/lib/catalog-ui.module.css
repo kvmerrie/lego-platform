@@ -44,8 +44,13 @@
 }
 
 .heroVisual {
-  aspect-ratio: 1 / 1.02;
-  min-height: 18.5rem;
+  aspect-ratio: 4 / 3;
+  background: radial-gradient(
+    circle at top,
+    color-mix(in srgb, var(--lego-accent) 8%, white) 0%,
+    var(--lego-surface-muted) 62%
+  );
+  min-height: 16rem;
 }
 
 .visualMedia {
@@ -60,7 +65,7 @@
 }
 
 .heroVisual .visualMedia {
-  padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+  padding: clamp(0.75rem, 0.45rem + 1vw, 1.25rem);
 }
 
 .setImage {
@@ -439,8 +444,9 @@
 }
 
 .galleryTrack {
+  border-radius: var(--lego-radius-md);
   display: flex;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
   margin: 0;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -505,16 +511,57 @@
   max-width: 34ch;
 }
 
+.detailVerdictBlock {
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border) 76%, transparent);
+  border-radius: var(--lego-radius-md);
+  display: grid;
+  gap: var(--lego-space-1);
+  padding: var(--lego-space-3);
+}
+
+.detailVerdictBlock[data-tone='positive'] {
+  background: color-mix(in srgb, var(--lego-positive) 10%, white);
+  border-color: color-mix(in srgb, var(--lego-positive) 24%, transparent);
+}
+
+.detailVerdictBlock[data-tone='warning'] {
+  background: color-mix(in srgb, var(--lego-warning) 10%, white);
+  border-color: color-mix(in srgb, var(--lego-warning) 24%, transparent);
+}
+
+.detailVerdictBlock[data-tone='info'] {
+  background: color-mix(in srgb, var(--lego-info) 10%, white);
+  border-color: color-mix(in srgb, var(--lego-info) 24%, transparent);
+}
+
+.detailVerdictKicker {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0.08em;
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
 .detailVerdict,
 .specNote {
   color: var(--lego-text-muted);
   line-height: 1.5;
 }
 
+.detailVerdict {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+}
+
 .bestDealCard,
 .alertCard,
 .offerListCard,
-.trustCard {
+.trustCard,
+.offerCoverageCard,
+.ownershipCard {
   display: grid;
   gap: var(--lego-space-3);
 }
@@ -581,9 +628,15 @@
 }
 
 .alertAction,
-.detailActionRow {
+.ownershipAction {
   display: grid;
   gap: var(--lego-space-2);
+}
+
+.offerCoverageCopy {
+  color: var(--lego-text-muted);
+  line-height: 1.5;
+  margin: 0;
 }
 
 .offerList {

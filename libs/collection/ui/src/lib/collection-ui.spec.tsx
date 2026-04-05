@@ -41,6 +41,23 @@ describe('OwnedSetToggleCard', () => {
     expect(markup).toContain('Markeer als in collectie');
     expect(markup).not.toContain('Private collector state');
   });
+
+  it('renders a quieter compact variant for lower-priority detail actions', () => {
+    const markup = renderToStaticMarkup(
+      <OwnedSetToggleCard
+        hasResolvedState
+        isOwned={false}
+        setId="10316"
+        variant="compact"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Nog niet opgeslagen');
+    expect(markup).toContain('Sla deze set ook in je collectie op.');
+    expect(markup).toContain('In collectie zetten');
+    expect(markup).not.toContain('Markeer als in collectie');
+  });
 });
 
 describe('CollectorCollectionPanel', () => {

@@ -69,6 +69,42 @@
   gap: var(--lego-space-1);
 }
 
+.compactToggle {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+  justify-content: space-between;
+}
+
+.compactToggleCopy {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.compactToggleLabel,
+.compactToggleHint {
+  margin: 0;
+}
+
+.compactToggleLabel {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
+}
+
+.compactToggleHint {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.45;
+}
+
+.compactToggleButton {
+  min-height: 2.4rem;
+  padding-inline: 0.85rem;
+  white-space: nowrap;
+}
+
 .toggleMeta {
   display: flex;
   flex-wrap: wrap;

@@ -202,8 +202,7 @@ export function buildSetDealVerdict(
     typeof pricePanelSnapshot.deltaMinor !== 'number'
   ) {
     return {
-      explanation:
-        'We hebben nog te weinig nagekeken prijzen voor een hard oordeel.',
+      explanation: 'We volgen nog te weinig prijzen voor een echt koopadvies.',
       label: 'Nog te weinig data',
       tone: 'neutral',
     };
@@ -211,7 +210,8 @@ export function buildSetDealVerdict(
 
   if (pricePanelSnapshot.deltaMinor < 0) {
     return {
-      explanation: 'Deze prijs ligt onder wat we meestal zien.',
+      explanation:
+        'Deze prijs ligt onder wat we meestal zien. Nu kopen is slim als je deze set op het oog hebt.',
       label: 'Goede deal',
       tone: 'positive',
     };
@@ -219,14 +219,15 @@ export function buildSetDealVerdict(
 
   if (pricePanelSnapshot.deltaMinor > 0) {
     return {
-      explanation: 'Deze set is nu relatief duur.',
+      explanation: 'Deze set zit nu aan de hoge kant. Wachten is slimmer.',
       label: 'Relatief duur',
       tone: 'warning',
     };
   }
 
   return {
-    explanation: 'Dit is een normale marktprijs.',
+    explanation:
+      'Dit is een normale prijs. Wachten kan als je niet haast hebt.',
     label: 'Normale prijs',
     tone: 'info',
   };
@@ -302,8 +303,12 @@ export function buildSetPriceInsights({
   if (!pricePanelSnapshot) {
     return [
       {
-        id: 'coverage',
-        text: 'Nog te weinig nagekeken prijzen voor slim koopadvies.',
+        id: 'limited-data',
+        text: 'We volgen deze set nog te kort voor scherp prijsadvies.',
+      },
+      {
+        id: 'more-data',
+        text: 'Met meer data wordt dit advies scherper.',
       },
     ];
   }
@@ -314,20 +319,25 @@ export function buildSetPriceInsights({
 
   if (priceHistorySummary) {
     insights.push({
+      id: 'current-vs-normal',
+      text:
+        priceHistorySummary.deltaVsAverageMinor < 0
+          ? 'De huidige prijs ligt laag vergeleken met wat we meestal zien.'
+          : priceHistorySummary.deltaVsAverageMinor > 0
+            ? 'De huidige prijs ligt hoog vergeleken met wat we meestal zien.'
+            : 'De huidige prijs zit rond wat we meestal zien.',
+    });
+    insights.push({
       id: 'recent-low',
       text: `Laagste prijs in 30 dagen: ${formatPriceMinor({
         currencyCode: priceHistorySummary.currencyCode,
         minorUnits: priceHistorySummary.lowPriceMinor,
       })}`,
     });
+  } else {
     insights.push({
-      id: 'current-vs-normal',
-      text:
-        priceHistorySummary.deltaVsAverageMinor < 0
-          ? 'Huidige prijs ligt onder normaal.'
-          : priceHistorySummary.deltaVsAverageMinor > 0
-            ? 'Huidige prijs ligt boven normaal.'
-            : 'Huidige prijs zit rond normaal.',
+      id: 'limited-history',
+      text: 'We hebben nog beperkt prijsverloop voor deze set.',
     });
   }
 
@@ -341,22 +351,29 @@ export function buildSetPriceInsights({
       id: 'tracked-low',
       text:
         trackedPriceSummary.deltaVsTrackedLowMinor <= 0
-          ? 'Dit is de laagste bijgehouden prijs.'
+          ? 'Dit is momenteel de laagste prijs die we volgen.'
           : nearTrackedLow
-            ? 'Zakt zelden veel lager dan dit.'
-            : `Laagste bijgehouden prijs: ${formatPriceMinor({
+            ? 'Deze set zakt meestal niet veel lager dan dit.'
+            : `We zagen deze set eerder al voor ${formatPriceMinor({
                 currencyCode: trackedPriceSummary.currencyCode,
                 minorUnits: trackedPriceSummary.trackedLowPriceMinor,
               })}`,
     });
   }
 
-  if (insights.length < 2) {
+  if (!trackedPriceSummary && insights.length < 3) {
+    insights.push({
+      id: 'more-data',
+      text: 'Met meer data wordt dit advies scherper.',
+    });
+  }
+
+  if (insights.length < 3) {
     insights.push({
       id: 'coverage',
-      text: `${pricePanelSnapshot.merchantCount} nagekeken winkel${
+      text: `We volgen nu ${pricePanelSnapshot.merchantCount} winkel${
         pricePanelSnapshot.merchantCount === 1 ? '' : 's'
-      }.`,
+      } voor deze set.`,
     });
   }
 

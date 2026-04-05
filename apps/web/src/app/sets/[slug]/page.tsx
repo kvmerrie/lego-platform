@@ -35,6 +35,10 @@ import { notFound } from 'next/navigation';
 
 export const dynamicParams = false;
 
+function isEuroCatalogOffer(catalogOffer: CatalogOffer): boolean {
+  return catalogOffer.currency === 'EUR';
+}
+
 function formatOfferPrice(catalogOffer: CatalogOffer): string {
   return new Intl.NumberFormat(getDefaultFormattingLocale(), {
     style: 'currency',
@@ -154,7 +158,8 @@ export default async function SetDetailPage({
     reviewedAffiliateOffers.length > 0
       ? toCatalogOffers(reviewedAffiliateOffers)
       : getCatalogOffersBySetId(catalogSetDetail.id);
-  const bestOffer = getBestOffer(setDetailOffers);
+  const localizedSetDetailOffers = setDetailOffers.filter(isEuroCatalogOffer);
+  const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
 
   return (
@@ -163,12 +168,12 @@ export default async function SetDetailPage({
         bestDeal={buildBestDeal(bestOffer)}
         catalogSetDetail={catalogSetDetail}
         dealVerdict={getSetDealVerdict(catalogSetDetail.id)}
-        offerList={buildOfferList(setDetailOffers, bestOffer)}
+        offerList={buildOfferList(localizedSetDetailOffers, bestOffer)}
         ownershipActions={
           <>
             <CollectionFeatureOwnedToggle
               setId={catalogSetDetail.id}
-              variant="product"
+              variant="compact"
             />
           </>
         }

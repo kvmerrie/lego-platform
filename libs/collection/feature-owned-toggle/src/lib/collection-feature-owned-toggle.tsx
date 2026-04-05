@@ -18,7 +18,7 @@ export function CollectionFeatureOwnedToggle({
   variant = 'default',
 }: {
   setId: string;
-  variant?: 'default' | 'product';
+  variant?: 'compact' | 'default' | 'product';
 }) {
   const [ownedSetState, setOwnedSetState] = useState<OwnedSetState>();
   const [isLoading, setIsLoading] = useState(true);

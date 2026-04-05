@@ -80,7 +80,7 @@ export function OwnedSetToggleCard({
   onToggle: () => void;
   setId: string;
   successMessage?: string;
-  variant?: 'default' | 'product';
+  variant?: 'compact' | 'default' | 'product';
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
@@ -116,6 +116,49 @@ export function OwnedSetToggleCard({
       : isOwned
         ? 'In collectie'
         : 'Nog niet opgeslagen';
+
+  if (variant === 'compact') {
+    return (
+      <article className={styles.compactToggle}>
+        <div className={styles.compactToggleCopy}>
+          <p className={styles.compactToggleLabel}>{statusLabel}</p>
+          {errorMessage ? (
+            <p aria-live="polite" className={styles.errorText}>
+              {errorMessage}
+            </p>
+          ) : successMessage ? (
+            <p aria-live="polite" className={styles.successText}>
+              {successMessage}
+            </p>
+          ) : (
+            <p className={styles.compactToggleHint}>
+              {isOwned
+                ? 'Handig als je je collectie hier ook wilt bijhouden.'
+                : 'Sla deze set ook in je collectie op.'}
+            </p>
+          )}
+        </div>
+        <Button
+          className={styles.compactToggleButton}
+          disabled={isUnavailable}
+          isLoading={Boolean(isLoading || isPending)}
+          tone={isOwned ? 'secondary' : 'ghost'}
+          type="button"
+          onClick={onToggle}
+        >
+          {isLoading
+            ? 'Synchroniseren...'
+            : isPending
+              ? 'Opslaan...'
+              : isUnavailable
+                ? 'Collectie niet beschikbaar'
+                : isOwned
+                  ? 'Uit collectie halen'
+                  : 'In collectie zetten'}
+        </Button>
+      </article>
+    );
+  }
 
   if (variant === 'product') {
     return (

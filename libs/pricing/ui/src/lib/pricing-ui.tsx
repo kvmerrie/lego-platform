@@ -381,7 +381,11 @@ export function PriceDecisionSummaryCard({
       id={id}
       tone="muted"
     >
-      <SectionHeading eyebrow="Prijscontext" title="Prijs in het kort" />
+      <SectionHeading
+        description="Kort advies op basis van de prijzen die we volgen."
+        eyebrow="Koopadvies"
+        title="Prijs in het kort"
+      />
       <ul className={styles.decisionSummaryList}>
         {insights.map((insight) => (
           <li className={styles.decisionSummaryItem} key={insight.id}>
@@ -405,14 +409,14 @@ export function PriceHistorySummaryCallout({
   if (!priceHistorySummary && !trackedPriceSummary) {
     return (
       <section
-        aria-label="30-daagse prijssamenvatting"
+        aria-label="Samenvatting van recent prijsverloop"
         className={styles.summaryBlock}
       >
-        <p className={styles.summaryLabel}>Recente prijsgeschiedenis</p>
+        <p className={styles.summaryLabel}>Recent prijsverloop</p>
         <p className={styles.summaryNote}>
           {historyPointCount === 1
-            ? 'De geschiedenis bouwt op vanaf de eerste dagprijs.'
-            : 'De geschiedenis bouwt op. Recente vergelijkingen verschijnen na een paar extra dagprijzen.'}
+            ? 'We hebben nu 1 dagprijs voor deze set.'
+            : 'We bouwen het prijsverloop nog op. Met extra dagprijzen wordt dit scherper.'}
         </p>
       </section>
     );
@@ -420,14 +424,14 @@ export function PriceHistorySummaryCallout({
 
   return (
     <section
-      aria-label="30-daagse prijssamenvatting"
+      aria-label="Samenvatting van recent prijsverloop"
       className={styles.summaryBlock}
     >
       <section
-        aria-label="30-daagse prijssamenvatting"
+        aria-label="Samenvatting van recent prijsverloop"
         className={styles.summarySection}
       >
-        <p className={styles.summaryLabel}>Recente prijsgeschiedenis</p>
+        <p className={styles.summaryLabel}>Recent prijsverloop</p>
         {priceHistorySummary ? (
           <>
             <dl className={styles.summaryGrid}>
@@ -465,8 +469,8 @@ export function PriceHistorySummaryCallout({
         ) : (
           <p className={styles.summaryNote}>
             {historyPointCount === 1
-              ? 'De geschiedenis bouwt op vanaf de eerste dagprijs.'
-              : 'De geschiedenis bouwt op. Recente vergelijkingen verschijnen na een paar extra dagprijzen.'}
+              ? 'We hebben nu 1 dagprijs voor deze set.'
+              : 'We bouwen het prijsverloop nog op. Met extra dagprijzen wordt dit scherper.'}
           </p>
         )}
       </section>
@@ -600,13 +604,13 @@ export function PriceHistoryCard({
         tone="muted"
       >
         <SectionHeading
-          description="Tot nu toe is er een dagelijkse reviewed prijs opgeslagen."
-          eyebrow="Prijsgeschiedenis"
-          title="30-daagse prijsgeschiedenis"
+          description="We hebben nu 1 reviewed dagprijs voor deze set."
+          eyebrow="Prijsverloop"
+          title="Recent prijsverloop"
         />
         <PricingScopeLine>
           {getPricingScopeLabel(
-            `Geschiedenis bouwt op · ${getDailyPointLabel(1)}`,
+            `Prijsverloop bouwt op · ${getDailyPointLabel(1)}`,
           )}
         </PricingScopeLine>
         <div className={styles.metricBlock}>
@@ -627,7 +631,7 @@ export function PriceHistoryCard({
             label="Opgenomen op"
             value={formatRecordedOn(firstPriceHistoryPoint.recordedOn)}
           />
-          <PricingMetaItem label="Status" value="30-daags bereik bouwt op" />
+          <PricingMetaItem label="Status" value="Prijsverloop bouwt op" />
         </dl>
         <p className={styles.referenceNote}>
           Het bijgehouden prijsbereik start vanaf deze eerste reviewed dag.
@@ -647,9 +651,9 @@ export function PriceHistoryCard({
       tone="muted"
     >
       <SectionHeading
-        description="Per dag wordt een reviewed hoofdprijs opgeslagen. Hier zie je de laatste 30 dagen."
-        eyebrow="Prijsgeschiedenis"
-        title="30-daagse prijsgeschiedenis"
+        description="Zo liep de prijs de afgelopen 30 dagen."
+        eyebrow="Prijsverloop"
+        title="Recent prijsverloop"
       />
       <PricingScopeLine>
         {getPricingScopeLabel(getDailyPointLabel(priceHistoryPoints.length))}
@@ -670,7 +674,7 @@ export function PriceHistoryCard({
           </span>
         </div>
         <svg
-          aria-label={`30-daagse ${getDefaultMarketAdjective()} prijsgeschiedenis`}
+          aria-label={`Recent ${getDefaultMarketAdjective()} prijsverloop`}
           className={styles.historyChart}
           role="img"
           viewBox="0 0 100 48"
@@ -766,17 +770,17 @@ export function PriceHistoryEmptyCard({
       tone="muted"
     >
       <SectionHeading
-        description="Bijgehouden geschiedenis gebruikt opgeslagen dagprijzen."
-        eyebrow="Prijsgeschiedenis"
-        title="30-daagse prijsgeschiedenis"
+        description="We bouwen dit op met opgeslagen dagprijzen."
+        eyebrow="Prijsverloop"
+        title="Recent prijsverloop"
       />
       <PricingScopeLine>
-        {getPricingScopeLabel('Geschiedenis bouwt op')}
+        {getPricingScopeLabel('Prijsverloop bouwt op')}
       </PricingScopeLine>
       <p className={styles.unavailableCopy}>
         {isLoading
           ? 'De nieuwste bijgehouden dagprijzen worden geladen.'
-          : `Voor deze set is nog geen daggeschiedenis opgeslagen. Verschijnt hierboven wel een reviewed prijs, dan bouwt de geschiedenis nog op. Zo niet, dan valt deze set buiten de huidige ${getDefaultMarketAdjective()} prijsselectie.`}
+          : `Voor deze set hebben we nog geen dagprijzen klaarstaan. Zie je hierboven wel een reviewed prijs, dan bouwt het prijsverloop nu op.`}
       </p>
     </Surface>
   );
