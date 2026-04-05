@@ -20,9 +20,9 @@ export function CatalogFeatureThemeIndex({
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Gebruik het themaoverzicht als je al weet in welke wereld je wilt bladeren, van displaygerichte Icons-planken tot franchise-zware themalijnen."
+          description="Weet je al waar je naar zoekt? Begin hier en duik direct een thema in"
           eyebrow="Thema's"
-          title="Blader door alle thema's"
+          title="Alle thema's"
           titleAs="h1"
         />
         <p className={styles.introMeta}>

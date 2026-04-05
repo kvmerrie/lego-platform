@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Brickhunt – LEGO thema’s ontdekken',
   description:
-    'Blader door alle publieke LEGO thema’s op Brickhunt en open rustige themapagina’s om sets gerichter te ontdekken.',
+    'Kies een LEGO-thema en zie snel welke sets je daar niet wilt missen.',
 };
 
 export default function ThemesPage() {

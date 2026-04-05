@@ -86,13 +86,13 @@ function toFeatureSetListItems(
       priceContext: featuredSetPriceContext
         ? {
             coverageLabel: featuredSetPriceContext.availabilityLabel
-              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} reviewed offers`
-              : `${featuredSetPriceContext.merchantCount} reviewed offers`,
+              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} nagekeken aanbiedingen`
+              : `${featuredSetPriceContext.merchantCount} nagekeken aanbiedingen`,
             currentPrice: formatPriceMinor({
               currencyCode: featuredSetPriceContext.currencyCode,
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
             }),
-            merchantLabel: `Lowest reviewed price at ${featuredSetPriceContext.merchantName}`,
+            merchantLabel: `Laagste nagekeken prijs bij ${featuredSetPriceContext.merchantName}`,
             pricePositionLabel: getPricePositionLabel({
               currencyCode: featuredSetPriceContext.currencyCode,
               deltaMinor: featuredSetPriceContext.deltaMinor,
@@ -100,7 +100,7 @@ function toFeatureSetListItems(
             pricePositionTone: getPricePositionTone(
               featuredSetPriceContext.deltaMinor,
             ),
-            reviewedLabel: `Checked ${formatReviewedOn(
+            reviewedLabel: `Nagekeken op ${formatReviewedOn(
               featuredSetPriceContext.observedAt,
             )}`,
           }
@@ -173,23 +173,23 @@ export default async function HomePage() {
         </div>
         <div className={styles.sectionGroup}>
           <CatalogFeatureSetList
-            description="Begin met de sets die je het snelst dieper de catalogus in trekken: premium ankers, breed herkenbare favorieten en een toegankelijker displaygericht instappunt."
-            eyebrow="Uitgelichte sets"
+            description="Wil je een grote doos? Kijk hier eerst."
+            eyebrow="Pronkstukken"
             setCards={homepageSetCards}
-            title="Uitgelichte sets om als eerste te openen"
+            title="Torens, walkers en supercars"
             tone="default"
           />
         </div>
         {homepageDealSetCards.length ? (
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
-              description="Reviewed Nederlandse prijzen die nu de duidelijkste verschillen onder de referentie laten zien bij sets die extra aandacht verdienen."
-              eyebrow="Beste deals van nu"
+              description="Deze dozen stonden al langer op lijstjes. Nu zakt de prijs."
+              eyebrow="Lang op je lijst?"
               sectionId="best-current-deals"
               setCards={homepageDealSetCards}
-              signalText={`${homepageDealSetCards.length} sets die extra aandacht waard zijn`}
+              signalText={`${homepageDealSetCards.length} dozen die nu lager staan dan normaal`}
               tone="muted"
-              title="Beste deals van nu"
+              title="Die grote doos komt dichterbij"
             />
           </div>
         ) : null}

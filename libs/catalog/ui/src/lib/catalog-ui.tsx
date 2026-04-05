@@ -898,14 +898,14 @@ export function CatalogThemeHighlight({
             <p className={styles.themeFeatureCount}>
               {themeSnapshot.setCount} gevolgde sets
             </p>
-            <span className={styles.themeFeatureAction}>Open themapagina</span>
+            <span className={styles.themeFeatureAction}>Bekijk alle sets</span>
           </div>
           <h3 className={styles.themeFeatureTitle}>
             <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
           </h3>
           <p className={styles.themeFeatureCopy}>{themeSnapshot.momentum}</p>
           <p className={styles.themeFeatureSignature}>
-            Begin met{' '}
+            Kijk eerst naar{' '}
             <CatalogCanonicalText>
               {themeSnapshot.signatureSet}
             </CatalogCanonicalText>

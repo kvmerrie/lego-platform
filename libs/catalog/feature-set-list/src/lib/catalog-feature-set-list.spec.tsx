@@ -43,24 +43,22 @@ describe('CatalogFeatureSetList', () => {
       />,
     );
 
-    expect(markup).toContain('Start with sets worth opening.');
-    expect(markup).toContain(
-      'A compact mix of flagship buys, crowd-pulling click magnets, and easier collector entry points.',
-    );
-    expect(markup).toContain('2 featured sets');
-    expect(markup).toContain('1 with reviewed prices');
-    expect(markup).toContain('Scroll Start with sets worth opening. backward');
-    expect(markup).toContain('Scroll Start with sets worth opening. forward');
-    expect(markup).toContain('Previous');
-    expect(markup).toContain('Next');
+    expect(markup).toContain('Torens, walkers en supercars');
+    expect(markup).toContain('Wil je een grote doos? Kijk hier eerst.');
+    expect(markup).toContain('2 dozen die je kast overnemen');
+    expect(markup).toContain('1 met nagekeken prijzen');
+    expect(markup).toContain('Scroll Torens, walkers en supercars naar links');
+    expect(markup).toContain('Scroll Torens, walkers en supercars naar rechts');
+    expect(markup).toContain('Vorige');
+    expect(markup).toContain('Volgende');
     expect(markup).not.toContain('Public catalog');
   });
 
   it('supports custom curation framing for alternate homepage rows', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSetList
-        description="Reviewed Dutch prices currently showing the clearest gaps below reference."
-        eyebrow="Deals"
+        description="Deze dozen stonden al langer op lijstjes. Nu zakt de prijs."
+        eyebrow="Lang op je lijst?"
         sectionId="best-current-deals"
         setCards={[
           {
@@ -84,17 +82,17 @@ describe('CatalogFeatureSetList', () => {
             },
           },
         ]}
-        signalText="3 sets worth a closer look"
-        title="Best current deals"
+        signalText="3 dozen die nu lager staan dan normaal"
+        title="Die grote doos komt dichterbij"
       />,
     );
 
     expect(markup).toContain('id="best-current-deals"');
-    expect(markup).toContain('Best current deals');
+    expect(markup).toContain('Die grote doos komt dichterbij');
     expect(markup).toContain(
-      'Reviewed Dutch prices currently showing the clearest gaps below reference.',
+      'Deze dozen stonden al langer op lijstjes. Nu zakt de prijs.',
     );
-    expect(markup).toContain('3 sets worth a closer look');
-    expect(markup).not.toContain('1 featured sets');
+    expect(markup).toContain('3 dozen die nu lager staan dan normaal');
+    expect(markup).not.toContain('1 dozen die je kast overnemen');
   });
 });

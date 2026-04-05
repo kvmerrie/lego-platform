@@ -7,8 +7,8 @@ describe('CatalogFeatureThemeList', () => {
   it('renders storefront-style theme browsing tiles with theme imagery', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureThemeList />);
 
-    expect(markup).toContain('Browse themes');
-    expect(markup).toContain('6 theme pages');
+    expect(markup).toContain('Elfendorp, superheldentoren of supercar?');
+    expect(markup).toContain('6 werelden, 6 totaal andere dozen');
     expect(markup).toContain('Icons');
     expect(markup).toContain('Marvel');
     expect(markup).toContain('href="/themes/icons"');
@@ -22,9 +22,9 @@ describe('CatalogFeatureThemeList', () => {
   it('renders a non-rail theme spotlight block for deeper homepage browsing', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureThemeSpotlight />);
 
-    expect(markup).toContain('More themes');
-    expect(markup).toContain('Keep browsing by theme');
-    expect(markup).toContain('4 standout lanes');
+    expect(markup).toContain('Andere hoek van de kast');
+    expect(markup).toContain('Draak, toren of walker?');
+    expect(markup).toContain('4 thema&#x27;s voor een heel andere kast');
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('href="/themes/star-wars"');
   });

@@ -14,14 +14,14 @@ export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
 }
 
 export function CatalogFeatureSetList({
-  description = 'Een compacte mix van vlaggenschepen, publieksfavorieten en toegankelijkere instappunten voor verzamelaars.',
-  eyebrow = 'Uitgelichte sets',
+  description = 'Wil je een grote doos? Kijk hier eerst.',
+  eyebrow = 'Pronkstukken',
   layout = 'rail',
   sectionId = 'featured-sets',
   setCards,
   signalText,
   tone = 'muted',
-  title = 'Begin met sets die de moeite waard zijn.',
+  title = 'Torens, walkers en supercars',
 }: {
   description?: string;
   eyebrow?: string;
@@ -59,9 +59,9 @@ export function CatalogFeatureSetList({
         <div className={styles.headerAside}>
           <p className={styles.signalRow}>
             {signalText ??
-              `${homepageSets.length} uitgelichte sets${
+              `${homepageSets.length} dozen die je kast overnemen${
                 reviewedSetCount
-                  ? ` · ${reviewedSetCount} met reviewed prijzen`
+                  ? ` · ${reviewedSetCount} met nagekeken prijzen`
                   : ''
               }`}
           </p>

@@ -14,8 +14,8 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Menu');
     expect(markup).toContain('Ontdekken');
     expect(markup).toContain('Thema&#x27;s');
-    expect(markup).toContain('Open account');
-    expect(markup).toContain('Open saved lists');
+    expect(markup).toContain('Ga naar account');
+    expect(markup).toContain('Ga naar lijsten');
     expect(markup).toContain('Account');
     expect(markup).toContain('Lijsten');
     expect(markup).toContain('Ga direct naar de hoofdinhoud');
@@ -31,8 +31,10 @@ describe('ShellWeb', () => {
     expect(markup).toContain('href="/account"');
     expect(markup).toContain('href="/account/wishlist"');
     expect(markup).toContain(
-      'Brickhunt helpt je opvallende sets te ontdekken, reviewed Nederlandse aanbiedingen',
+      'Brickhunt laat snel zien welke walker, toren of bloemenboeket je',
     );
+    expect(markup).toContain('wilt hebben');
+    expect(markup).toContain('waar de prijs nu goed zit');
     expect(markup).not.toContain('Home');
     expect(markup).not.toContain('Featured shortlist');
     expect(markup).not.toContain('Checking');

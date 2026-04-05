@@ -389,8 +389,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('src="https://images.example/rivendell.jpg"');
     expect(markup).toContain('directory-tile');
-    expect(markup).toContain('Open themapagina');
-    expect(markup).toContain('Begin met');
+    expect(markup).toContain('Bekijk alle sets');
+    expect(markup).toContain('Kijk eerst naar');
     expect(markup).toContain('Rivendell');
   });
 
@@ -422,7 +422,7 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).toContain('--theme-surface:#cf554c');
     expect(markup).toContain('--theme-text:#ffffff');
-    expect(markup).toContain('Open themapagina');
+    expect(markup).toContain('Bekijk alle sets');
   });
 
   it('renders a leaner portrait theme tile variant for fast browsing', () => {
@@ -455,8 +455,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('14 sets');
     expect(markup).toContain('--theme-surface:#f0c63b');
     expect(markup).toContain('--theme-text:#171a22');
-    expect(markup).not.toContain('Open themapagina');
-    expect(markup).not.toContain('Begin met Rivendell');
+    expect(markup).not.toContain('Bekijk alle sets');
+    expect(markup).not.toContain('Kijk eerst naar Rivendell');
     expect(markup).not.toContain(
       'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
     );

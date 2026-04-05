@@ -18,9 +18,10 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   weight: ['400', '500', '600', '700', '800'],
 });
 
-const defaultMetadataTitle = 'Brickhunt – LEGO sets vergelijken & ontdekken';
+const defaultMetadataTitle =
+  'Brickhunt – LEGO sets kiezen, vergelijken en bewaren';
 const defaultMetadataDescription =
-  'Vergelijk reviewed LEGO prijzen, ontdek sets per thema en vind sneller de beste plek om te kopen.';
+  'Van Rivendell tot AT-AT: vind sneller LEGO-sets die je wilt bouwen, neerzetten of bewaren.';
 
 export const metadata: Metadata = {
   title: defaultMetadataTitle,

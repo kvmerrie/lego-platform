@@ -416,7 +416,7 @@ const expectedCatalogThemes = [
     slug: 'icons',
     setCount: 17,
     momentum:
-      'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
+      'Rivendell, Titanic, Concorde. Hier schuif je je plank voor vrij.',
     signatureSet: 'Rivendell',
   },
   {
@@ -424,7 +424,7 @@ const expectedCatalogThemes = [
     slug: 'ideas',
     setCount: 10,
     momentum:
-      'Displaybuilds die door de community zijn gekozen blijven fandom, nostalgie en aantrekkingskracht als designobject in balans brengen.',
+      'Een rode draak, een taverne, een complete scene. Ideas zet meteen iets neer.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
@@ -432,7 +432,7 @@ const expectedCatalogThemes = [
     slug: 'marvel',
     setCount: 5,
     momentum:
-      'Marvel voelt nu als een echte verzamelaarslijn met zowel een vlaggenschiptoren als een markante begeleidende build.',
+      "Grote gebouwen, veel minifigs, meteen herkenbaar. Hier zit Marvel op z'n sterkst.",
     signatureSet: 'Avengers Tower',
   },
   {
@@ -440,23 +440,21 @@ const expectedCatalogThemes = [
     slug: 'modular-buildings',
     setCount: 1,
     momentum:
-      'Interesse van verzamelaars in premium gebouwen op straatniveau blijft sterk omdat ze zo goed fotograferen en tentoonstellen.',
+      "Met een modulaire straat haal je meteen zo'n LEGO-hoek in huis waar je naar blijft kijken.",
     signatureSet: 'Natural History Museum',
   },
   {
     name: 'Botanicals',
     slug: 'botanicals',
     setCount: 4,
-    momentum:
-      'Cadeauwaardige adult builds blijven meer casual bezoekers de catalogus in trekken via herkenbare botanische onderwerpen.',
+    momentum: 'Bloemen voor op tafel. LEGO voor op de kast.',
     signatureSet: 'Flower Bouquet',
   },
   {
     name: 'Technic',
     slug: 'technic',
     setCount: 5,
-    momentum:
-      'Supercars op grote schaal blijven de duidelijkste route naar Technic voor verzamelaars die op herkenbare iconen browsen.',
+    momentum: 'Supercars met techniek waar je doorheen wilt blijven kijken.',
     signatureSet: 'Ferrari Daytona SP3',
   },
   {
@@ -464,7 +462,7 @@ const expectedCatalogThemes = [
     slug: 'super-mario',
     setCount: 1,
     momentum:
-      'Charactergedreven displaystukken geven de publieke catalogus een bredere gaming-ingang zonder in een speelgerichte selectie te veranderen.',
+      'The Mighty Bowser laat zien hoe goed een game-icoon als grote displayset werkt.',
     signatureSet: 'The Mighty Bowser',
   },
   {
@@ -472,7 +470,7 @@ const expectedCatalogThemes = [
     slug: 'ninjago',
     setCount: 1,
     momentum:
-      'De belangstelling van verzamelaars voor dichte NINJAGO-stadsbuilds blijft sterk, ook buiten het kernpubliek van de franchise.',
+      "NINJAGO City Gardens is zo'n set waar je steeds weer nieuwe hoekjes en details in ziet.",
     signatureSet: 'NINJAGO City Gardens',
   },
   {
@@ -480,7 +478,7 @@ const expectedCatalogThemes = [
     slug: 'jurassic-world',
     setCount: 1,
     momentum:
-      'Filmscenenostalgie houdt Jurassic-builds makkelijk te begrijpen en makkelijk te vinden in een gecureerde publieke catalogus.',
+      'T. rex Breakout zet meteen een filmscene neer die ook buiten Jurassic-fans blijft werken.',
     signatureSet: 'T. rex Breakout',
   },
   {
@@ -488,7 +486,7 @@ const expectedCatalogThemes = [
     slug: 'star-wars',
     setCount: 6,
     momentum:
-      'High-end Star Wars-verzamelen werkt het best wanneer de publieke mix meer dan één duidelijk vlaggenschipsilhouet laat zien.',
+      'Walkers, schepen, pure displaykracht. Hier zit het Star Wars-spul dat blijft hangen.',
     signatureSet: 'AT-AT',
   },
   {
@@ -496,7 +494,7 @@ const expectedCatalogThemes = [
     slug: 'harry-potter',
     setCount: 6,
     momentum:
-      'Wizarding World blijft een van de breedste franchise-drivers in zoekopdrachten zodra de catalogus zowel instap- als vlaggenschipopties voor display laat zien.',
+      'Van The Burrow tot Gringotts. Hier kies je tussen warmte en pure tovenaarsdrukte.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
   },
   {
@@ -504,7 +502,7 @@ const expectedCatalogThemes = [
     slug: 'architecture',
     setCount: 1,
     momentum:
-      'Wereldwijd herkenbare landmarks houden Architecture-sets waardevol als brede ankers voor zoekinstroom.',
+      'Architecture is er voor herkenbare gebouwen die rustig ogen op een plank en toch meteen worden herkend.',
     signatureSet: 'Notre-Dame de Paris',
   },
   {
@@ -512,7 +510,7 @@ const expectedCatalogThemes = [
     slug: 'art',
     setCount: 1,
     momentum:
-      'Muurvriendelijke art-builds zorgen ervoor dat de catalogus niet beperkt aanvoelt tot gebouwen, voertuigen en franchiselandmarks.',
+      'Art is voor wie wel een LEGO-set wil neerzetten, maar geen gebouw of voertuig zoekt.',
     signatureSet: 'Hokusai - The Great Wave',
   },
   {
@@ -520,7 +518,7 @@ const expectedCatalogThemes = [
     slug: 'disney',
     setCount: 1,
     momentum:
-      'Disney-displayiconen brengen familieherkenning en cadeauwaarde in een publieke mix die vooral op volwassen verzamelaars is gericht.',
+      'Disney Castle is de set voor wie sprookjessfeer en een echt pronkstuk in een doos wil.',
     signatureSet: 'Disney Castle',
   },
 ];
@@ -1288,7 +1286,7 @@ describe('catalog data-access contracts', () => {
         slug: 'marvel',
         setCount: 5,
         momentum:
-          'Marvel voelt nu als een echte verzamelaarslijn met zowel een vlaggenschiptoren als een markante begeleidende build.',
+          "Grote gebouwen, veel minifigs, meteen herkenbaar. Hier zit Marvel op z'n sterkst.",
         signatureSet: 'Avengers Tower',
       },
       setCards: expect.arrayContaining([
@@ -1306,7 +1304,7 @@ describe('catalog data-access contracts', () => {
         slug: 'super-mario',
         setCount: 1,
         momentum:
-          'Charactergedreven displaystukken geven de publieke catalogus een bredere gaming-ingang zonder in een speelgerichte selectie te veranderen.',
+          'The Mighty Bowser laat zien hoe goed een game-icoon als grote displayset werkt.',
         signatureSet: 'The Mighty Bowser',
       },
       setCards: expect.arrayContaining([

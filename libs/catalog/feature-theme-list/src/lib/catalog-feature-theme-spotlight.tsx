@@ -21,11 +21,11 @@ export function CatalogFeatureThemeSpotlight({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          eyebrow="Meer thema's"
-          title="Blijf verder bladeren per thema"
+          eyebrow="Andere hoek van de kast"
+          title="Draak, toren of walker?"
         />
         <p className={styles.signalRow}>
-          {themeItems.length} opvallende themalijnen
+          {themeItems.length} thema&apos;s voor een heel andere kast
         </p>
       </div>
       <div className={styles.grid}>

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import {
   buildWebPath,
-  getDefaultMarketAdjective,
   platformConfig,
   webNavigation,
   webPathnames,
@@ -24,13 +23,13 @@ function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
 
 const shellActionLinks = [
   {
-    ariaLabel: 'Open account',
+    ariaLabel: 'Ga naar account',
     href: buildWebPath(webPathnames.account),
     iconName: 'user' as const,
     label: 'Account',
   },
   {
-    ariaLabel: 'Open saved lists',
+    ariaLabel: 'Ga naar lijsten',
     href: buildWebPath(webPathnames.wishlist),
     iconName: 'heart' as const,
     label: 'Lijsten',
@@ -136,9 +135,8 @@ export function ShellWeb({
       <footer className={styles.footer}>
         <Container className={styles.footerInner}>
           <p className={styles.footerCopy}>
-            Brickhunt helpt je opvallende sets te ontdekken, reviewed{' '}
-            {getDefaultMarketAdjective()} aanbiedingen te vergelijken en je
-            eigen opgeslagen sets privé te houden.
+            Brickhunt laat snel zien welke walker, toren of bloemenboeket je
+            wilt hebben, en waar de prijs nu goed zit.
           </p>
         </Container>
       </footer>
