@@ -764,8 +764,8 @@ function CatalogSetOfferCoverageCard() {
         title="Nog geen echte vergelijking"
       />
       <p className={styles.offerCoverageCopy}>
-        We volgen nu 1 winkel voor deze set. Meer prijsvergelijking verschijnt
-        zodra er extra nagekeken prijzen zijn.
+        We volgen nu 1 winkel voor deze set. Zodra er meer prijzen zijn, zie je
+        hier de vergelijking.
       </p>
     </Surface>
   );
@@ -802,10 +802,9 @@ function CatalogSetOfferList({
               <div className={styles.offerTitleRow}>
                 <p className={styles.offerMerchant}>{offer.merchantLabel}</p>
                 {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
+                <Badge tone="neutral">{offer.stockLabel}</Badge>
               </div>
-              <p className={styles.offerMeta}>
-                {offer.stockLabel} · {offer.checkedLabel}
-              </p>
+              <p className={styles.offerMeta}>{offer.checkedLabel}</p>
             </div>
             <div className={styles.offerSide}>
               <p className={styles.offerPrice}>{offer.price}</p>
@@ -839,7 +838,7 @@ function CatalogSetOwnershipCard({ action }: { action?: ReactNode }) {
       tone="muted"
     >
       <SectionHeading
-        description="Handig als je deze set naast je verlanglijst ook in je collectie wilt bijhouden."
+        description="Vink deze set af als hij al op je plank staat."
         eyebrow="Je collectie"
         title="Al in huis?"
       />
@@ -1002,7 +1001,7 @@ export function CatalogSetDetailPanel({
               className={styles.detailVerdictBlock}
               data-tone={dealVerdict.tone ?? 'neutral'}
             >
-              <p className={styles.detailVerdictKicker}>Koopadvies</p>
+              <p className={styles.detailVerdictKicker}>{dealVerdict.label}</p>
               <p className={styles.detailVerdict}>{dealVerdict.explanation}</p>
             </div>
             <p className={styles.heroMeta}>
@@ -1033,7 +1032,7 @@ export function CatalogSetDetailPanel({
             <SectionHeading
               description={catalogSetDetail.collectorAngle}
               eyebrow="Waarom deze set"
-              title="Wat hier blijft hangen"
+              title="Wat opvalt"
               titleAs="h2"
             />
           </div>

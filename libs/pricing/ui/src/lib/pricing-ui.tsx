@@ -161,9 +161,9 @@ function getPricingScopeLabel(suffix?: string): string {
   });
 }
 
-function buildHistoryChartPoints(
+function getHistoryChartCoordinates(
   priceHistoryPoints: readonly PriceHistoryPoint[],
-): string {
+): Array<{ x: number; y: number }> {
   const chartWidth = 100;
   const chartHeight = 48;
   const padding = 6;
@@ -174,24 +174,48 @@ function buildHistoryChartPoints(
   const maxValue = Math.max(...values);
   const valueRange = Math.max(maxValue - minValue, 1);
 
-  return priceHistoryPoints
-    .map((priceHistoryPoint, index) => {
-      const x =
-        priceHistoryPoints.length === 1
-          ? chartWidth / 2
-          : padding +
-            ((chartWidth - padding * 2) * index) /
-              (priceHistoryPoints.length - 1);
-      const y =
-        chartHeight -
-        padding -
-        ((chartHeight - padding * 2) *
-          (priceHistoryPoint.headlinePriceMinor - minValue)) /
-          valueRange;
+  return priceHistoryPoints.map((priceHistoryPoint, index) => {
+    const x =
+      priceHistoryPoints.length === 1
+        ? chartWidth / 2
+        : padding +
+          ((chartWidth - padding * 2) * index) /
+            (priceHistoryPoints.length - 1);
+    const y =
+      chartHeight -
+      padding -
+      ((chartHeight - padding * 2) *
+        (priceHistoryPoint.headlinePriceMinor - minValue)) /
+        valueRange;
 
-      return `${x},${y}`;
-    })
+    return { x, y };
+  });
+}
+
+function buildHistoryChartPoints(
+  priceHistoryPoints: readonly PriceHistoryPoint[],
+): string {
+  return getHistoryChartCoordinates(priceHistoryPoints)
+    .map(({ x, y }) => `${x},${y}`)
     .join(' ');
+}
+
+function buildHistoryAreaPoints(
+  priceHistoryPoints: readonly PriceHistoryPoint[],
+): string {
+  const coordinates = getHistoryChartCoordinates(priceHistoryPoints);
+  const firstPoint = coordinates[0];
+  const lastPoint = coordinates.at(-1);
+
+  if (!firstPoint || !lastPoint) {
+    return '';
+  }
+
+  return [
+    `${firstPoint.x},42`,
+    ...coordinates.map(({ x, y }) => `${x},${y}`),
+    `${lastPoint.x},42`,
+  ].join(' ');
 }
 
 function getHistoryRangeSummary(
@@ -641,6 +665,8 @@ export function PriceHistoryCard({
   }
 
   const { high, latest, low } = getHistoryRangeSummary(priceHistoryPoints);
+  const historyCoordinates = getHistoryChartCoordinates(priceHistoryPoints);
+  const latestPoint = historyCoordinates.at(-1);
 
   return (
     <Surface
@@ -679,6 +705,26 @@ export function PriceHistoryCard({
           role="img"
           viewBox="0 0 100 48"
         >
+          <defs>
+            <linearGradient
+              id={`history-fill-${id ?? 'default'}`}
+              x1="0"
+              x2="0"
+              y1="0"
+              y2="1"
+            >
+              <stop
+                offset="0%"
+                stopColor="var(--lego-accent)"
+                stopOpacity="0.22"
+              />
+              <stop
+                offset="100%"
+                stopColor="var(--lego-accent)"
+                stopOpacity="0"
+              />
+            </linearGradient>
+          </defs>
           <line
             className={styles.historyGridLine}
             x1="6"
@@ -700,11 +746,24 @@ export function PriceHistoryCard({
             y1="40"
             y2="40"
           />
+          <polygon
+            className={styles.historyArea}
+            fill={`url(#history-fill-${id ?? 'default'})`}
+            points={buildHistoryAreaPoints(priceHistoryPoints)}
+          />
           <polyline
             className={styles.historyLine}
             fill="none"
             points={buildHistoryChartPoints(priceHistoryPoints)}
           />
+          {latestPoint ? (
+            <circle
+              className={styles.historyPoint}
+              cx={latestPoint.x}
+              cy={latestPoint.y}
+              r="2.3"
+            />
+          ) : null}
         </svg>
       </div>
       <div className={styles.historyLabels}>

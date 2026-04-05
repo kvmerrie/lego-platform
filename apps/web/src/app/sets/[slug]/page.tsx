@@ -83,7 +83,7 @@ function buildBestDeal(
     ctaLabel: inStock
       ? `Koop voor ${offerPrice} bij ${catalogOffer.merchantName}`
       : 'Bekijk beste deal',
-    merchantLabel: `Nu het scherpst bij ${catalogOffer.merchantName}`,
+    merchantLabel: `Beste prijs nu bij ${catalogOffer.merchantName}`,
     price: offerPrice,
     stockLabel: getOfferStockLabel(catalogOffer.availability),
   };

@@ -261,8 +261,7 @@ describe('CatalogSetCard', () => {
           setStatus: 'available',
         }}
         dealVerdict={{
-          explanation:
-            'Deze prijs ligt onder wat we meestal zien. Nu kopen is slim als je deze set op het oog hebt.',
+          explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
           label: 'Goede deal',
           tone: 'positive',
         }}
@@ -304,7 +303,7 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Goede deal');
     expect(markup).toContain(
-      'Deze prijs ligt onder wat we meestal zien. Nu kopen is slim als je deze set op het oog hebt.',
+      'Deze prijs ligt onder normaal. Nu kopen is slim.',
     );
     expect(markup).toContain('The Lord of the Rings');
     expect(markup).toContain('Koop voor € 469,99 bij bol');
@@ -316,6 +315,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Swipe voor meer foto&#x27;s');
     expect(markup).toContain('In collectie zetten');
     expect(markup).toContain('Set 10316 · 2023');
+    expect(markup).toContain('Wat opvalt');
     expect(markup).not.toContain('$499 to $569');
   });
 
@@ -346,8 +346,7 @@ describe('CatalogSetCard', () => {
           collectorHighlights: ['De goudkleurige afwerking valt direct op.'],
         }}
         dealVerdict={{
-          explanation:
-            'Dit is een normale prijs. Wachten kan als je niet haast hebt.',
+          explanation: 'Dit is een normale prijs. Wachten kan.',
           label: 'Normale prijs',
           tone: 'info',
         }}
@@ -376,8 +375,7 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation:
-            'We volgen nog te weinig prijzen voor een echt koopadvies.',
+          explanation: 'We volgen nog te weinig prijzen.',
           label: 'Nog te weinig data',
           tone: 'neutral',
         }}
@@ -428,8 +426,7 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation:
-            'Dit is een normale prijs. Wachten kan als je niet haast hebt.',
+          explanation: 'Dit is een normale prijs. Wachten kan.',
           label: 'Normale prijs',
           tone: 'info',
         }}
@@ -463,7 +460,7 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation: 'Deze prijs ligt onder wat we meestal zien.',
+          explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
           label: 'Goede deal',
           tone: 'positive',
         }}
@@ -501,7 +498,7 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation: 'Deze prijs ligt onder wat we meestal zien.',
+          explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
           label: 'Goede deal',
           tone: 'positive',
         }}

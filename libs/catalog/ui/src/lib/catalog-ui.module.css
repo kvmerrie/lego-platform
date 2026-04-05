@@ -50,7 +50,7 @@
     color-mix(in srgb, var(--lego-accent) 8%, white) 0%,
     var(--lego-surface-muted) 62%
   );
-  min-height: 16rem;
+  min-height: 14.75rem;
 }
 
 .visualMedia {
@@ -135,9 +135,10 @@
 .cardMetaText,
 .heroMeta {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
+  font-size: 0.78rem;
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
+  opacity: 0.82;
 }
 
 .cardTitle {
@@ -422,16 +423,20 @@
 
 .detailHero {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
 }
 
 .detailHeroGallery,
-.detailHeroContent,
-.detailHeroHeader,
 .detailPricingStack,
 .detailInfoGrid {
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
+}
+
+.detailHeroContent,
+.detailHeroHeader {
+  display: grid;
+  gap: var(--lego-space-2);
 }
 
 .detailHeroContent {
@@ -440,7 +445,7 @@
 
 .galleryShell {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
 }
 
 .galleryTrack {
@@ -466,7 +471,7 @@
 
 .galleryDots {
   display: flex;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
   justify-content: center;
 }
 
@@ -486,6 +491,7 @@
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
+  opacity: 0.8;
   text-align: center;
 }
 
@@ -505,41 +511,41 @@
 
 .detailPitch {
   color: var(--lego-text);
-  font-size: 1rem;
+  font-size: 0.96rem;
   font-weight: var(--lego-font-weight-semibold);
-  line-height: 1.45;
-  max-width: 34ch;
+  line-height: 1.35;
+  max-width: 32ch;
 }
 
 .detailVerdictBlock {
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 76%, transparent);
-  border-radius: var(--lego-radius-md);
+  border-left: 0.24rem solid
+    color-mix(in srgb, var(--lego-border) 82%, transparent);
+  border-radius: var(--lego-radius-sm);
   display: grid;
-  gap: var(--lego-space-1);
-  padding: var(--lego-space-3);
+  gap: 0.2rem;
+  padding: 0.7rem 0.8rem;
 }
 
 .detailVerdictBlock[data-tone='positive'] {
   background: color-mix(in srgb, var(--lego-positive) 10%, white);
-  border-color: color-mix(in srgb, var(--lego-positive) 24%, transparent);
+  border-left-color: color-mix(in srgb, var(--lego-positive) 52%, transparent);
 }
 
 .detailVerdictBlock[data-tone='warning'] {
   background: color-mix(in srgb, var(--lego-warning) 10%, white);
-  border-color: color-mix(in srgb, var(--lego-warning) 24%, transparent);
+  border-left-color: color-mix(in srgb, var(--lego-warning) 52%, transparent);
 }
 
 .detailVerdictBlock[data-tone='info'] {
   background: color-mix(in srgb, var(--lego-info) 10%, white);
-  border-color: color-mix(in srgb, var(--lego-info) 24%, transparent);
+  border-left-color: color-mix(in srgb, var(--lego-info) 52%, transparent);
 }
 
 .detailVerdictKicker {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
+  font-size: 0.7rem;
   font-weight: var(--lego-font-weight-bold);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
   text-transform: uppercase;
@@ -554,6 +560,7 @@
 .detailVerdict {
   color: var(--lego-text);
   font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
 }
 
 .bestDealCard,
@@ -569,9 +576,9 @@
 .bestDealEyebrow,
 .alertEyebrow {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
+  font-size: 0.7rem;
   font-weight: var(--lego-font-weight-bold);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
   text-transform: uppercase;
@@ -598,7 +605,7 @@
 .bestDealMeta {
   color: var(--lego-text);
   font-weight: var(--lego-font-weight-semibold);
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .bestDealSignals {
@@ -613,7 +620,7 @@
 .alertCopy,
 .trustValue {
   color: var(--lego-text-muted);
-  line-height: 1.45;
+  line-height: 1.35;
 }
 
 .bestDealAction {
@@ -621,7 +628,7 @@
 }
 
 .alertTitle {
-  font-size: 1.35rem;
+  font-size: 1.18rem;
   letter-spacing: -0.03em;
   line-height: 1.05;
   margin: 0;
@@ -641,16 +648,17 @@
 
 .offerList {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .offerRow {
-  align-items: start;
+  align-items: center;
   border-top: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 70%, transparent);
   display: grid;
-  gap: var(--lego-space-3);
-  padding-top: var(--lego-space-3);
+  gap: var(--lego-space-2);
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding-top: var(--lego-space-2);
 }
 
 .offerRow:first-child {
@@ -668,7 +676,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
 }
 
 .offerMerchant {
@@ -681,15 +689,18 @@
 .offerPrice {
   color: var(--lego-text);
   font-family: var(--lego-font-family-heading);
-  font-size: 1.32rem;
+  font-size: 1.22rem;
   font-weight: var(--lego-font-weight-bold);
   letter-spacing: -0.03em;
   line-height: 1;
   margin: 0;
+  text-align: right;
 }
 
 .offerAction {
-  justify-self: start;
+  justify-self: end;
+  min-height: 2.2rem;
+  padding-inline: 0.7rem;
 }
 
 .trustGrid {
@@ -702,8 +713,8 @@
   border-top: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border) 70%, transparent);
   display: grid;
-  gap: var(--lego-space-1);
-  padding-top: var(--lego-space-3);
+  gap: 0.15rem;
+  padding-top: var(--lego-space-2);
 }
 
 .trustItem:first-child {
@@ -713,12 +724,12 @@
 
 .notesPanel {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .notesHeader {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
 }
 
 .notesPanel .metaGrid {
@@ -739,7 +750,7 @@
 .badgeRow {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
 }
 
 .themeBadgeLink {
@@ -754,14 +765,25 @@
 
 .highlightsList {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
+  list-style: none;
   margin: 0;
-  padding-left: var(--lego-space-3);
-  color: var(--lego-text-muted);
+  padding: 0;
+  color: var(--lego-text);
 }
 
 .highlightsList li {
-  line-height: var(--lego-line-height-relaxed);
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+  line-height: 1.4;
+}
+
+.highlightsList li::before {
+  color: var(--lego-accent);
+  content: '•';
+  font-size: 1rem;
+  line-height: 1.2;
 }
 
 .themeCard {
@@ -901,6 +923,7 @@
   align-items: center;
   background: transparent;
   display: flex;
+  height: 100%;
   justify-content: center;
   min-height: 11.25rem;
   overflow: hidden;
@@ -1232,16 +1255,12 @@
   }
 
   .heroVisual {
-    min-height: 21.5rem;
-  }
-
-  .detailActionRow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 19.5rem;
   }
 
   .offerRow {
     align-items: center;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .offerSide {
