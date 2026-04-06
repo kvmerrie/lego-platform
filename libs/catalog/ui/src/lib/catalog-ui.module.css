@@ -245,7 +245,7 @@
 
 .priceCompactBlock {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-1);
 }
 
 .cardCompactSupporting {
@@ -256,6 +256,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.priceQuietState {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
+  margin: 0;
 }
 
 .cardCompactSignal {
@@ -289,6 +297,18 @@
   overflow: hidden;
 }
 
+.featuredCardBody {
+  gap: var(--lego-space-1);
+}
+
+.cardFeaturedSupporting {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cardCompactFooter {
   align-items: start;
   border-top: var(--lego-border-width-1) solid
@@ -296,8 +316,8 @@
   display: flex;
   gap: var(--lego-space-2);
   justify-content: space-between;
-  margin-top: var(--lego-space-2);
-  padding-top: var(--lego-space-3);
+  margin-top: var(--lego-space-1);
+  padding-top: var(--lego-space-2);
 }
 
 .cardCompactFooterMeta {
@@ -315,6 +335,9 @@
 
 .cardCompactMeta {
   color: var(--lego-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardCompactAction {
@@ -327,7 +350,7 @@
     color-mix(in srgb, var(--lego-border) 76%, transparent);
   display: flex;
   justify-content: flex-start;
-  padding: 0 var(--lego-space-4) var(--lego-space-4);
+  padding: 0 var(--lego-space-4) var(--lego-space-3);
 }
 
 .supportingGrid,

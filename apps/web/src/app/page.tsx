@@ -47,17 +47,17 @@ function getPricePositionLabel({
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: Math.abs(deltaMinor),
-    })} onder wat we meestal zien`;
+    })} onder normaal`;
   }
 
   if (deltaMinor > 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: deltaMinor,
-    })} boven wat we meestal zien`;
+    })} boven normaal`;
   }
 
-  return 'Rond wat we meestal zien';
+  return 'Rond normaal';
 }
 
 function getPricePositionTone(
@@ -90,8 +90,8 @@ function toFeatureSetListItems(
       priceContext: featuredSetPriceContext
         ? {
             coverageLabel: featuredSetPriceContext.availabilityLabel
-              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} winkels nagekeken`
-              : `${featuredSetPriceContext.merchantCount} winkels nagekeken`,
+              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} winkels`
+              : `${featuredSetPriceContext.merchantCount} winkels`,
             currentPrice: formatPriceMinor({
               currencyCode: featuredSetPriceContext.currencyCode,
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
@@ -104,7 +104,7 @@ function toFeatureSetListItems(
             pricePositionTone: getPricePositionTone(
               featuredSetPriceContext.deltaMinor,
             ),
-            reviewedLabel: `Nagekeken op ${formatReviewedOn(
+            reviewedLabel: `Nagekeken ${formatReviewedOn(
               featuredSetPriceContext.observedAt,
             )}`,
           }

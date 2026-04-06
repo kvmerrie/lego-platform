@@ -120,17 +120,16 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('href="/sets/rivendell-10316"');
-    expect(markup).toContain('A flagship fantasy build');
-    expect(markup).toContain('Nagekeken prijs');
+    expect(markup).toContain('Prestige display anchor');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest reviewed price at bol');
     expect(markup).toContain('EUR 10.00 below ref');
-    expect(markup).toContain('In stock · 3 reviewed offers');
-    expect(markup).toContain('Checked 29 mrt');
+    expect(markup).toContain('In stock · 3 reviewed offers · Checked 29 mrt');
     expect(markup).toContain('Bekijk set');
     expect(markup).not.toContain('Dekking');
     expect(markup).not.toContain('Actualiteit');
     expect(markup).not.toContain('Waarom verzamelaars dit kiezen');
+    expect(markup).not.toContain('Nagekeken prijs');
   });
 
   it('keeps the homepage follow-later action lighter than the primary set click', () => {
@@ -165,6 +164,33 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Volg prijs');
     expect(markup).toContain('Bekijk set');
+  });
+
+  it('keeps no-price featured cards calm when pricing is missing', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('Prijs volgt');
+    expect(markup).toContain('2023 · 6.181 stenen');
+    expect(markup).not.toContain('Later bekijken');
+    expect(markup).not.toContain('Setpagina staat live.');
   });
 
   it('renders set imagery alongside featured-set discovery context when available', () => {

@@ -103,9 +103,10 @@
 .inlineToggleButton {
   border-radius: var(--lego-radius-pill);
   font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-medium);
   justify-content: flex-start;
-  min-height: 2rem;
-  padding: 0.32rem 0.56rem;
+  min-height: 1.9rem;
+  padding: 0.26rem 0.5rem;
 }
 
 .inlineToggleButtonIdle {

@@ -215,6 +215,18 @@ function getPricePositionClassName(
   return styles.cardCompactSignalInfo;
 }
 
+function getFeaturedCardReason({
+  collectorAngle,
+  supportingNote,
+  tagline,
+}: {
+  collectorAngle?: string;
+  supportingNote?: ReactNode;
+  tagline?: string;
+}): ReactNode {
+  return supportingNote ?? collectorAngle ?? tagline;
+}
+
 function formatMinifigureCount(minifigureCount?: number): string {
   if (typeof minifigureCount !== 'number') {
     return 'Nog niet lokaal bijgehouden';
@@ -336,8 +348,16 @@ export function CatalogSetCard({
   }
 
   if (variant === 'featured') {
-    const featuredIntroCopy =
-      supportingNote ?? setSummary.tagline ?? setSummary.collectorAngle;
+    const featuredIntroCopy = getFeaturedCardReason({
+      collectorAngle: setSummary.collectorAngle,
+      supportingNote,
+      tagline: setSummary.tagline,
+    });
+    const featuredFooterMeta = priceContext
+      ? `${priceContext.coverageLabel} · ${priceContext.reviewedLabel}`
+      : `${setSummary.releaseYear} · ${setSummary.pieces.toLocaleString(
+          'nl-NL',
+        )} stenen`;
 
     const featuredCardContent = (
       <>
@@ -348,7 +368,7 @@ export function CatalogSetCard({
           theme={setSummary.theme}
           variant="card"
         />
-        <div className={styles.cardCompactBody}>
+        <div className={`${styles.cardCompactBody} ${styles.featuredCardBody}`}>
           <div className={styles.cardCompactBadgeRow}>
             <Badge tone="accent">
               <CatalogCanonicalText>{setSummary.theme}</CatalogCanonicalText>
@@ -368,7 +388,11 @@ export function CatalogSetCard({
             <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
           </h3>
           {featuredIntroCopy ? (
-            <p className={styles.cardBrowseSupporting}>{featuredIntroCopy}</p>
+            <p
+              className={`${styles.cardBrowseSupporting} ${styles.cardFeaturedSupporting}`}
+            >
+              {featuredIntroCopy}
+            </p>
           ) : null}
           <div className={styles.priceCompactBlock}>
             {priceContext ? (
@@ -382,38 +406,18 @@ export function CatalogSetCard({
                     {priceContext.pricePositionLabel}
                   </p>
                 ) : null}
-                <p className={styles.priceLabel}>Nagekeken prijs</p>
                 <p className={styles.priceValue}>{priceContext.currentPrice}</p>
                 <p className={styles.cardCompactSupporting}>
                   {priceContext.merchantLabel}
                 </p>
               </>
             ) : (
-              <>
-                <p className={styles.priceLabel}>Later bekijken</p>
-                <p className={styles.priceUnavailableValue}>
-                  Nagekeken prijs volgt later
-                </p>
-                <p className={styles.cardCompactSupporting}>
-                  Setpagina staat live.
-                </p>
-              </>
+              <p className={styles.priceQuietState}>Prijs volgt</p>
             )}
           </div>
           <div className={styles.cardCompactFooter}>
             <div className={styles.cardCompactFooterMeta}>
-              <p className={styles.cardCompactMeta}>
-                {priceContext
-                  ? priceContext.coverageLabel
-                  : `${setSummary.releaseYear} · ${setSummary.pieces.toLocaleString(
-                      'nl-NL',
-                    )} stenen`}
-              </p>
-              {priceContext ? (
-                <p className={styles.cardCompactMeta}>
-                  {priceContext.reviewedLabel}
-                </p>
-              ) : null}
+              <p className={styles.cardCompactMeta}>{featuredFooterMeta}</p>
             </div>
             {href ? (
               <span className={styles.cardCompactAction}>Bekijk set</span>
