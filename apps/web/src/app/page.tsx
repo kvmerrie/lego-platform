@@ -24,6 +24,7 @@ import {
 } from '@lego-platform/pricing/data-access';
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
+import { ActionLink } from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
@@ -210,6 +211,16 @@ export default async function HomePage() {
               tone="default"
               title="Hier wil je nu als eerste kijken"
             />
+            <p className={styles.supportingLinkRow}>
+              <span>Wat bedoelen we met &quot;nagekeken prijs&quot;?</span>{' '}
+              <ActionLink
+                className={styles.supportingLink}
+                href="/hoe-werkt-het"
+                tone="inline"
+              >
+                Hoe Brickhunt werkt
+              </ActionLink>
+            </p>
           </div>
         ) : null}
         <div className={styles.themeSection}>

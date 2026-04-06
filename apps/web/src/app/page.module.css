@@ -2,3 +2,24 @@
   display: grid;
   gap: var(--lego-space-6);
 }
+
+.sectionGroup {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.supportingLinkRow {
+  align-items: baseline;
+  color: var(--lego-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--lego-text-role-meta-size);
+  gap: var(--lego-space-1);
+  line-height: 1.45;
+  margin: 0;
+  padding-inline: var(--lego-space-6);
+}
+
+.supportingLink {
+  flex: 0 0 auto;
+}
