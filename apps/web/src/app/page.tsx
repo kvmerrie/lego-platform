@@ -168,31 +168,31 @@ export default async function HomePage() {
         <div className={styles.heroSection}>
           <ContentFeaturePageRenderer editorialPage={homepagePage} />
         </div>
+        {homepageDealSetCards.length ? (
+          <div className={styles.sectionGroup}>
+            <CatalogFeatureSetList
+              description="We lichten hier sets uit die lager staan dan wat we meestal zien."
+              eyebrow="Nu slimmer geprijsd"
+              sectionId="best-current-deals"
+              setCards={homepageDealSetCards}
+              signalText={`${homepageDealSetCards.length} sets die nu interessanter zijn om te kopen`}
+              tone="default"
+              title="Hier wil je nu als eerste kijken"
+            />
+          </div>
+        ) : null}
         <div className={styles.themeSection}>
           <CatalogFeatureThemeList tone="inverse" />
         </div>
         <div className={styles.sectionGroup}>
           <CatalogFeatureSetList
-            description="Wil je groot? Kijk hier."
+            description="Zoek je een groot displaystuk? Begin hier."
             eyebrow="Pronkstukken"
             setCards={homepageSetCards}
             title="Torens, walkers, supercars"
-            tone="default"
+            tone="muted"
           />
         </div>
-        {homepageDealSetCards.length ? (
-          <div className={styles.sectionGroup}>
-            <CatalogFeatureSetList
-              description="Sets die nu lager staan dan wat we meestal zien."
-              eyebrow="Nu slimmer geprijsd"
-              sectionId="best-current-deals"
-              setCards={homepageDealSetCards}
-              signalText={`${homepageDealSetCards.length} sets nu interessanter geprijsd`}
-              tone="muted"
-              title="Nu het bekijken waard"
-            />
-          </div>
-        ) : null}
         <div className={styles.spotlightSection}>
           <CatalogFeatureThemeSpotlight />
         </div>

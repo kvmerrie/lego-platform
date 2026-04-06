@@ -1,4 +1,5 @@
 import type { EditorialPage, PreviewPanel } from '@lego-platform/content/util';
+import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 
 export const homepageEditorialPage: EditorialPage = {
   id: 'home',
@@ -22,16 +23,18 @@ export const homepageEditorialPage: EditorialPage = {
     {
       id: 'home-foundation',
       type: 'richText',
-      eyebrow: 'Sets die blijven hangen',
-      title: 'Begin bij de sets die je wilt blijven bekijken.',
-      body: 'Van open displaystukken tot torens, walkers en iconische voertuigen: hier zie je sneller wat echt de moeite waard voelt.',
+      eyebrow: 'Eerst kiezen',
+      title: 'Begin bij de set die je blijft aankijken.',
+      body: 'Van Rivendell tot een AT-AT of McLaren P1: hier zie je sneller wat je collectie echt verandert.',
     },
     {
       id: 'home-callout',
       type: 'callout',
-      eyebrow: 'Als de prijs interessanter wordt',
-      title: 'Nu slimmer geprijsd.',
-      body: 'Voor sets die je al op het oog had en nu nét interessanter worden om te bekijken.',
+      eyebrow: 'Nog niet kopen?',
+      title: "Volg 'm en kijk later opnieuw.",
+      body: 'Bewaar een set op je verlanglijst. Dan zie je later sneller wanneer de prijs slimmer wordt.',
+      ctaLabel: 'Open verlanglijst',
+      ctaHref: buildWebPath(webPathnames.wishlist),
     },
   ],
 };

@@ -28,11 +28,11 @@ export function CatalogFeatureThemeList({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          eyebrow="Verken thema’s"
+          eyebrow="Kies je hoek"
           title="Fantasy, Star Wars of strak design?"
         />
         <p className={styles.signalRow}>
-          {themeItems.length} thema’s met totaal ander displaygevoel
+          {themeItems.length} thema’s met een totaal ander displaygevoel
         </p>
       </div>
       <div className={styles.rail}>

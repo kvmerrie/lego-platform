@@ -4,11 +4,12 @@ import { CatalogFeatureThemeList } from './catalog-feature-theme-list';
 import { CatalogFeatureThemeSpotlight } from './catalog-feature-theme-spotlight';
 
 describe('CatalogFeatureThemeList', () => {
-  it('renders storefront-style theme browsing tiles with theme imagery', () => {
+  it('renders storefront-style theme choice tiles with theme imagery', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureThemeList />);
 
-    expect(markup).toContain('Rivendell, toren of supercar?');
-    expect(markup).toContain('6 werelden, 6 totaal andere dozen');
+    expect(markup).toContain('Kies je hoek');
+    expect(markup).toContain('Fantasy, Star Wars of strak design?');
+    expect(markup).toContain('6 thema’s met een totaal ander displaygevoel');
     expect(markup).toContain('Icons');
     expect(markup).toContain('Marvel');
     expect(markup).toContain('href="/themes/icons"');
