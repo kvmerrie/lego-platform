@@ -8,6 +8,7 @@ describe('CatalogFeatureSetList', () => {
       <CatalogFeatureSetList
         setCards={[
           {
+            actions: <button type="button">Volg prijs</button>,
             id: '21348',
             slug: 'dungeons-and-dragons-red-dragons-tale-21348',
             name: "Dungeons & Dragons: Red Dragon's Tale",
@@ -42,8 +43,9 @@ describe('CatalogFeatureSetList', () => {
     );
 
     expect(markup).toContain('Torens, walkers, supercars');
-    expect(markup).toContain('Wil je groot? Kijk hier.');
-    expect(markup).toContain('2 dozen die je kast overnemen');
+    expect(markup).toContain('Grote sets die je plank én budget bepalen.');
+    expect(markup).toContain('Volg prijs');
+    expect(markup).toContain('2 sets die meteen de kamer pakken');
     expect(markup).toContain('1 met nagekeken prijzen');
     expect(markup).toContain('Scroll Torens, walkers, supercars naar links');
     expect(markup).toContain('Scroll Torens, walkers, supercars naar rechts');

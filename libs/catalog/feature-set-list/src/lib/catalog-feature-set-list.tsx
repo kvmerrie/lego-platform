@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { listHomepageSetCards } from '@lego-platform/catalog/data-access';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
@@ -10,6 +11,7 @@ import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-set-list.module.css';
 
 export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
+  actions?: ReactNode;
   priceContext?: CatalogSetCardPriceContext;
 }
 
@@ -72,6 +74,7 @@ export function CatalogFeatureSetList({
         <div className={styles.grid}>
           {homepageSets.map((catalogSetSummary) => (
             <CatalogSetCard
+              actions={catalogSetSummary.actions}
               key={catalogSetSummary.id}
               href={buildSetDetailPath(catalogSetSummary.slug)}
               priceContext={catalogSetSummary.priceContext}
@@ -84,6 +87,7 @@ export function CatalogFeatureSetList({
         <CatalogSetCardRail
           ariaLabel={title}
           items={homepageSets.map((catalogSetSummary) => ({
+            actions: catalogSetSummary.actions,
             href: buildSetDetailPath(catalogSetSummary.slug),
             id: catalogSetSummary.id,
             priceContext: catalogSetSummary.priceContext,

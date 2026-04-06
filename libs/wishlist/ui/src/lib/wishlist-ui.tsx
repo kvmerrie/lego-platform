@@ -6,6 +6,7 @@ import {
   Button,
   SectionHeading,
   Surface,
+  VisuallyHidden,
 } from '@lego-platform/shared/ui';
 import { WishlistItem } from '@lego-platform/wishlist/util';
 import styles from './wishlist-ui.module.css';
@@ -48,7 +49,7 @@ export function WantedSetToggleCard({
   productIntent?: 'price-alert' | 'wishlist';
   setId: string;
   successMessage?: string;
-  variant?: 'default' | 'product';
+  variant?: 'default' | 'inline' | 'product';
 }) {
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
@@ -84,6 +85,55 @@ export function WantedSetToggleCard({
       : isWanted
         ? 'Op verlanglijst'
         : 'Nog niet opgeslagen';
+
+  if (variant === 'inline') {
+    const inlineActionLabel = isLoading
+      ? 'Controleren...'
+      : isPending
+        ? productIntent === 'price-alert'
+          ? 'Volgen...'
+          : 'Bewaren...'
+        : isUnavailable
+          ? productIntent === 'price-alert'
+            ? 'Volgen niet beschikbaar'
+            : 'Bewaren niet beschikbaar'
+          : isWanted
+            ? productIntent === 'price-alert'
+              ? 'Volgt prijs'
+              : 'Bewaard'
+            : productIntent === 'price-alert'
+              ? 'Volg prijs'
+              : 'Bewaar';
+
+    return (
+      <article className={styles.inlineToggle}>
+        {successMessage ? (
+          <VisuallyHidden>
+            <span aria-live="polite">{successMessage}</span>
+          </VisuallyHidden>
+        ) : null}
+        {errorMessage ? (
+          <p aria-live="polite" className={styles.errorText}>
+            {errorMessage}
+          </p>
+        ) : null}
+        <Button
+          className={`${styles.inlineToggleButton} ${
+            isWanted
+              ? styles.inlineToggleButtonActive
+              : styles.inlineToggleButtonIdle
+          }`}
+          disabled={isUnavailable}
+          isLoading={Boolean(isLoading || isPending)}
+          tone="ghost"
+          type="button"
+          onClick={onToggle}
+        >
+          {inlineActionLabel}
+        </Button>
+      </article>
+    );
+  }
 
   if (variant === 'product') {
     const productActionLabel = isLoading

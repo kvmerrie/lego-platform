@@ -55,6 +55,11 @@
   gap: var(--lego-space-1);
 }
 
+.inlineToggle {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
 .toggleMeta {
   display: flex;
   flex-wrap: wrap;
@@ -93,6 +98,32 @@
 .productToggleButtonActive:hover {
   background: color-mix(in srgb, var(--lego-info) 88%, black 12%);
   border-color: color-mix(in srgb, var(--lego-info) 88%, black 12%);
+}
+
+.inlineToggleButton {
+  border-radius: var(--lego-radius-pill);
+  font-size: var(--lego-text-role-meta-size);
+  justify-content: flex-start;
+  min-height: 2rem;
+  padding: 0.32rem 0.56rem;
+}
+
+.inlineToggleButtonIdle {
+  color: var(--lego-text-muted);
+}
+
+.inlineToggleButtonIdle:hover {
+  color: var(--lego-text);
+}
+
+.inlineToggleButtonActive {
+  background: var(--lego-info-subtle);
+  color: var(--lego-info);
+}
+
+.inlineToggleButtonActive:hover {
+  background: color-mix(in srgb, var(--lego-info) 12%, white);
+  color: var(--lego-info);
 }
 
 .wishlistPagePanel {

@@ -120,15 +120,51 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('href="/sets/rivendell-10316"');
-    expect(markup).toContain('Reviewed prijs');
+    expect(markup).toContain('A flagship fantasy build');
+    expect(markup).toContain('Nagekeken prijs');
     expect(markup).toContain('EUR 489.99');
     expect(markup).toContain('Lowest reviewed price at bol');
     expect(markup).toContain('EUR 10.00 below ref');
+    expect(markup).toContain('In stock · 3 reviewed offers');
     expect(markup).toContain('Checked 29 mrt');
     expect(markup).toContain('Bekijk set');
     expect(markup).not.toContain('Dekking');
     expect(markup).not.toContain('Actualiteit');
     expect(markup).not.toContain('Waarom verzamelaars dit kiezen');
+  });
+
+  it('keeps the homepage follow-later action lighter than the primary set click', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        actions={<button type="button">Volg prijs</button>}
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'In stock · 3 reviewed offers',
+          currentPrice: 'EUR 489.99',
+          merchantLabel: 'Lowest reviewed price at bol',
+          pricePositionLabel: 'EUR 10.00 below ref',
+          pricePositionTone: 'positive',
+          reviewedLabel: 'Checked 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('Volg prijs');
+    expect(markup).toContain('Bekijk set');
   });
 
   it('renders set imagery alongside featured-set discovery context when available', () => {

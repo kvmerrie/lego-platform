@@ -58,6 +58,23 @@ describe('WantedSetToggleCard', () => {
     expect(markup).toContain('Zet prijsalert aan');
     expect(markup).not.toContain('Aan verlanglijst toevoegen');
   });
+
+  it('renders a lighter inline variant for homepage follow-later actions', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        hasResolvedState
+        isWanted={false}
+        productIntent="price-alert"
+        setId="21348"
+        variant="inline"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Volg prijs');
+    expect(markup).not.toContain('Zet prijsalert aan');
+    expect(markup).not.toContain('Aan verlanglijst toevoegen');
+  });
 });
 
 describe('CollectorWishlistPanel', () => {

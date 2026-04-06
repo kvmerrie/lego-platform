@@ -24,6 +24,7 @@ import {
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
+import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
 
 export const revalidate = 300;
@@ -43,17 +44,17 @@ function getPricePositionLabel({
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: Math.abs(deltaMinor),
-    })} below reference`;
+    })} onder wat we meestal zien`;
   }
 
   if (deltaMinor > 0) {
     return `${formatPriceMinor({
       currencyCode,
       minorUnits: deltaMinor,
-    })} above reference`;
+    })} boven wat we meestal zien`;
   }
 
-  return 'At reference';
+  return 'Rond wat we meestal zien';
 }
 
 function getPricePositionTone(
@@ -86,13 +87,13 @@ function toFeatureSetListItems(
       priceContext: featuredSetPriceContext
         ? {
             coverageLabel: featuredSetPriceContext.availabilityLabel
-              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} nagekeken aanbiedingen`
-              : `${featuredSetPriceContext.merchantCount} nagekeken aanbiedingen`,
+              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} winkels nagekeken`
+              : `${featuredSetPriceContext.merchantCount} winkels nagekeken`,
             currentPrice: formatPriceMinor({
               currencyCode: featuredSetPriceContext.currencyCode,
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
             }),
-            merchantLabel: `Laagste nagekeken prijs bij ${featuredSetPriceContext.merchantName}`,
+            merchantLabel: `Nu het laagst bij ${featuredSetPriceContext.merchantName}`,
             pricePositionLabel: getPricePositionLabel({
               currencyCode: featuredSetPriceContext.currencyCode,
               deltaMinor: featuredSetPriceContext.deltaMinor,
@@ -105,6 +106,13 @@ function toFeatureSetListItems(
             )}`,
           }
         : undefined,
+      actions: (
+        <WishlistFeatureWishlistToggle
+          productIntent={featuredSetPriceContext ? 'price-alert' : 'wishlist'}
+          setId={homepageSetCard.id}
+          variant="inline"
+        />
+      ),
     };
   });
 }

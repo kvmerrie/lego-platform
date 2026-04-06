@@ -20,7 +20,7 @@ export function WishlistFeatureWishlistToggle({
 }: {
   productIntent?: 'price-alert' | 'wishlist';
   setId: string;
-  variant?: 'default' | 'product';
+  variant?: 'default' | 'inline' | 'product';
 }) {
   const [wantedSetState, setWantedSetState] = useState<WantedSetState>();
   const [isLoading, setIsLoading] = useState(true);

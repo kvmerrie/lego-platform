@@ -201,6 +201,20 @@ function CatalogSetMetadata({
   );
 }
 
+function getPricePositionClassName(
+  pricePositionTone?: CatalogSetCardPriceContextTone,
+): string {
+  if (pricePositionTone === 'positive') {
+    return styles.cardCompactSignalPositive;
+  }
+
+  if (pricePositionTone === 'warning') {
+    return styles.cardCompactSignalWarning;
+  }
+
+  return styles.cardCompactSignalInfo;
+}
+
 function formatMinifigureCount(minifigureCount?: number): string {
   if (typeof minifigureCount !== 'number') {
     return 'Nog niet lokaal bijgehouden';
@@ -322,6 +336,9 @@ export function CatalogSetCard({
   }
 
   if (variant === 'featured') {
+    const featuredIntroCopy =
+      supportingNote ?? setSummary.tagline ?? setSummary.collectorAngle;
+
     const featuredCardContent = (
       <>
         <CatalogSetVisual
@@ -350,40 +367,54 @@ export function CatalogSetCard({
           <h3 className={styles.cardTitle}>
             <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
           </h3>
+          {featuredIntroCopy ? (
+            <p className={styles.cardBrowseSupporting}>{featuredIntroCopy}</p>
+          ) : null}
           <div className={styles.priceCompactBlock}>
-            <p className={styles.priceLabel}>Reviewed prijs</p>
             {priceContext ? (
               <>
+                {priceContext.pricePositionLabel ? (
+                  <p
+                    className={`${styles.cardCompactSignal} ${getPricePositionClassName(
+                      priceContext.pricePositionTone,
+                    )}`}
+                  >
+                    {priceContext.pricePositionLabel}
+                  </p>
+                ) : null}
+                <p className={styles.priceLabel}>Nagekeken prijs</p>
                 <p className={styles.priceValue}>{priceContext.currentPrice}</p>
                 <p className={styles.cardCompactSupporting}>
                   {priceContext.merchantLabel}
                 </p>
-                {priceContext.pricePositionLabel ? (
-                  <p className={styles.cardCompactSignal}>
-                    {priceContext.pricePositionLabel}
-                  </p>
-                ) : null}
-                {supportingNote ? (
-                  <p className={styles.cardCompactSupporting}>
-                    {supportingNote}
-                  </p>
-                ) : null}
               </>
             ) : (
               <>
+                <p className={styles.priceLabel}>Later bekijken</p>
                 <p className={styles.priceUnavailableValue}>
-                  Reviewed prijs nog niet gepubliceerd
+                  Nagekeken prijs volgt later
                 </p>
                 <p className={styles.cardCompactSupporting}>
-                  {supportingNote ?? 'Setpagina staat live.'}
+                  Setpagina staat live.
                 </p>
               </>
             )}
           </div>
           <div className={styles.cardCompactFooter}>
-            <p className={styles.cardCompactMeta}>
-              {priceContext ? priceContext.reviewedLabel : 'Setpagina live'}
-            </p>
+            <div className={styles.cardCompactFooterMeta}>
+              <p className={styles.cardCompactMeta}>
+                {priceContext
+                  ? priceContext.coverageLabel
+                  : `${setSummary.releaseYear} · ${setSummary.pieces.toLocaleString(
+                      'nl-NL',
+                    )} stenen`}
+              </p>
+              {priceContext ? (
+                <p className={styles.cardCompactMeta}>
+                  {priceContext.reviewedLabel}
+                </p>
+              ) : null}
+            </div>
             {href ? (
               <span className={styles.cardCompactAction}>Bekijk set</span>
             ) : null}
@@ -404,6 +435,9 @@ export function CatalogSetCard({
         ) : (
           featuredCardContent
         )}
+        {actions ? (
+          <div className={styles.cardCompactSecondaryRow}>{actions}</div>
+        ) : null}
       </Surface>
     );
   }

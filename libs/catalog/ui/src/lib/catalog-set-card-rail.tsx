@@ -14,6 +14,7 @@ type CatalogSetCardRailSummary = CatalogSetSummary &
   Partial<Pick<CatalogHomepageSetCard, 'availability' | 'tagline'>>;
 
 export interface CatalogSetCardRailItem {
+  actions?: ReactNode;
   href?: string;
   id: string;
   priceContext?: CatalogSetCardPriceContext;
@@ -158,6 +159,7 @@ export function CatalogSetCardRail({
         {items.map((item) => (
           <div className={styles.setCardRailItem} key={item.id}>
             <CatalogSetCard
+              actions={item.actions}
               href={item.href}
               priceContext={item.priceContext}
               setSummary={item.setSummary}
