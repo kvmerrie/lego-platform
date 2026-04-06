@@ -8,8 +8,9 @@ import {
 } from '@lego-platform/catalog/data-access';
 import {
   CatalogQuickFilterBar,
-  CatalogSetCardRail,
   CatalogSetCard,
+  CatalogSectionHeader,
+  CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import {
@@ -234,17 +235,14 @@ export function CatalogFeatureDiscover({
 
       {hasFilteredContent && filteredDealSetCards.length ? (
         <Surface as="section" className={styles.dealSection} tone="default">
-          <div className={styles.sectionHeader}>
-            <SectionHeading
-              description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
-              eyebrow="Deals"
-              title="Beste deals om eerst te bekijken"
-              titleAs="h2"
-            />
-            <p className={styles.sectionMeta}>
-              {formatSetCount(filteredDealSetCards.length)}
-            </p>
-          </div>
+          <CatalogSectionHeader
+            className={styles.sectionHeader}
+            description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
+            eyebrow="Deals"
+            signal={formatSetCount(filteredDealSetCards.length)}
+            title="Beste deals om eerst te bekijken"
+            titleAs="h2"
+          />
           <CatalogSetCardRail
             ariaLabel="Beste deals om eerst te bekijken"
             items={filteredDealSetCards.map((dealSetCard) => ({
@@ -261,17 +259,14 @@ export function CatalogFeatureDiscover({
 
       {hasFilteredContent && filteredCharacterSetCards.length ? (
         <Surface as="section" className={styles.featuredSection} tone="muted">
-          <div className={styles.sectionHeader}>
-            <SectionHeading
-              description="Sets waarbij de cast deel van de aantrekkingskracht is, van grote franchise-ankers tot verhaalgedreven favorieten voor verzamelaars."
-              eyebrow="Personages"
-              title="Iconische personages en castfavorieten"
-              titleAs="h2"
-            />
-            <p className={styles.sectionMeta}>
-              {formatSetCount(filteredCharacterSetCards.length)}
-            </p>
-          </div>
+          <CatalogSectionHeader
+            className={styles.sectionHeader}
+            description="Sets waarbij de cast deel van de aantrekkingskracht is, van grote franchise-ankers tot verhaalgedreven favorieten voor verzamelaars."
+            eyebrow="Personages"
+            signal={formatSetCount(filteredCharacterSetCards.length)}
+            title="Iconische personages en castfavorieten"
+            titleAs="h2"
+          />
           <CatalogSetCardRail
             ariaLabel="Iconische personages en castfavorieten"
             items={filteredCharacterSetCards.map((characterSetCard) => ({
@@ -287,17 +282,14 @@ export function CatalogFeatureDiscover({
 
       {hasFilteredContent && filteredHighlightSetCards.length ? (
         <Surface as="section" className={styles.featuredSection} tone="muted">
-          <div className={styles.sectionHeader}>
-            <SectionHeading
-              description="Een strakkere mix van premium vlaggenschepen, iconische franchises en toegankelijkere sets die het waard zijn om eerst te openen."
-              eyebrow="Highlights"
-              title="Eerst het openen waard"
-              titleAs="h2"
-            />
-            <p className={styles.sectionMeta}>
-              {formatSetCount(filteredHighlightSetCards.length)}
-            </p>
-          </div>
+          <CatalogSectionHeader
+            className={styles.sectionHeader}
+            description="Een strakkere mix van premium vlaggenschepen, iconische franchises en toegankelijkere sets die het waard zijn om eerst te openen."
+            eyebrow="Highlights"
+            signal={formatSetCount(filteredHighlightSetCards.length)}
+            title="Eerst het openen waard"
+            titleAs="h2"
+          />
           <CatalogSetCardRail
             ariaLabel="Eerst het openen waard"
             items={filteredHighlightSetCards.map((highlightSetCard) => ({
@@ -320,15 +312,24 @@ export function CatalogFeatureDiscover({
               key={themeGroup.theme}
               tone={index % 2 === 0 ? 'default' : 'muted'}
             >
-              <div className={styles.themeHeader}>
-                <div className={styles.themeHeadingBlock}>
-                  <p className={styles.themeEyebrow}>Theme</p>
-                  <h2
+              <CatalogSectionHeader
+                className={styles.themeHeader}
+                eyebrow="Thema"
+                signal={formatThemeLaneCount({
+                  shownCount: themeGroup.setCards.length,
+                  totalCount:
+                    themeGroup.totalSetCount ?? themeGroup.setCards.length,
+                })}
+                title={
+                  <span
                     className={`${styles.themeTitle} notranslate`}
                     translate="no"
                   >
                     {themeGroup.theme}
-                  </h2>
+                  </span>
+                }
+                titleAs="h2"
+                utility={
                   <ActionLink
                     className={styles.themeAction}
                     href={buildThemePath(themeGroup.slug)}
@@ -336,15 +337,9 @@ export function CatalogFeatureDiscover({
                   >
                     Open volledig thema
                   </ActionLink>
-                </div>
-                <p className={styles.sectionMeta}>
-                  {formatThemeLaneCount({
-                    shownCount: themeGroup.setCards.length,
-                    totalCount:
-                      themeGroup.totalSetCount ?? themeGroup.setCards.length,
-                  })}
-                </p>
-              </div>
+                }
+                utilityPlacement="below-heading"
+              />
               <div className={styles.themeGrid}>
                 {themeGroup.setCards.map((setCard) => (
                   <CatalogSetCard

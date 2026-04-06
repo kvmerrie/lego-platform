@@ -2,9 +2,11 @@ import {
   listHomepageThemeSpotlightItems,
   type CatalogThemeDirectoryItem,
 } from '@lego-platform/catalog/data-access';
-import { CatalogThemeHighlight } from '@lego-platform/catalog/ui';
+import {
+  CatalogSectionHeader,
+  CatalogThemeHighlight,
+} from '@lego-platform/catalog/ui';
 import { buildThemePath } from '@lego-platform/shared/config';
-import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-spotlight.module.css';
 
 export function CatalogFeatureThemeSpotlight({
@@ -18,16 +20,13 @@ export function CatalogFeatureThemeSpotlight({
 
   return (
     <section className={styles.section} id="theme-spotlight">
-      <div className={styles.headerBlock}>
-        <SectionHeading
-          className={styles.header}
-          eyebrow="Meer om te ontdekken"
-          title="Botanicals, kunst of modulaire straten?"
-        />
-        <p className={styles.signalRow}>
-          {themeItems.length} thema&apos;s als je iets anders zoekt
-        </p>
-      </div>
+      <CatalogSectionHeader
+        className={styles.headerBlock}
+        eyebrow="Meer om te ontdekken"
+        headingClassName={styles.header}
+        signal={`${themeItems.length} thema's als je iets anders zoekt`}
+        title="Botanicals, kunst of modulaire straten?"
+      />
       <div className={styles.grid}>
         {themeItems.map((themeItem) => (
           <div

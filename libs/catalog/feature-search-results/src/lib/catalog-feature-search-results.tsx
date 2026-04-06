@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { listCatalogSearchMatches } from '@lego-platform/catalog/data-access';
 import {
   CatalogQuickFilterBar,
+  CatalogSectionHeader,
   CatalogSetCard,
 } from '@lego-platform/catalog/ui';
 import {
@@ -268,23 +269,22 @@ export function CatalogFeatureSearchResults({
 
   return (
     <section className={styles.resultsSection}>
-      <div className={styles.resultsHeader}>
-        <SectionHeading
-          description={`Beste teksttreffers voor "${searchQuery}", waarbij reviewed prijscontext en verzamelcontext worden gebruikt om kleine verschillen tussen resultaten te beslissen.`}
-          eyebrow="Zoeken"
-          title={`Resultaten voor "${searchQuery}"`}
-          titleAs="h1"
-        />
-        <p className={styles.resultsMeta}>
-          {filteredSearchResults.length} passende set
-          {filteredSearchResults.length === 1 ? '' : 's'}
-          {normalizedFilter !== 'all'
+      <CatalogSectionHeader
+        className={styles.resultsHeader}
+        description={`Beste teksttreffers voor "${searchQuery}", waarbij reviewed prijscontext en verzamelcontext worden gebruikt om kleine verschillen tussen resultaten te beslissen.`}
+        eyebrow="Zoeken"
+        signal={`${filteredSearchResults.length} passende set${
+          filteredSearchResults.length === 1 ? '' : 's'
+        }${
+          normalizedFilter !== 'all'
             ? ` · ${activeQuickFilterOption?.label ?? 'Gefilterd'}`
             : reviewedResultCount
               ? ` · ${reviewedResultCount} met reviewed prijzen`
-              : ''}
-        </p>
-      </div>
+              : ''
+        }`}
+        title={`Resultaten voor "${searchQuery}"`}
+        titleAs="h1"
+      />
       <CatalogQuickFilterBar
         ariaLabel="Verfijn zoekresultaten"
         items={quickFilterItems}

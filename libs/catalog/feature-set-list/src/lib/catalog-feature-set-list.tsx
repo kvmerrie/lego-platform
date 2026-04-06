@@ -2,12 +2,12 @@ import type { ReactNode } from 'react';
 import { listHomepageSetCards } from '@lego-platform/catalog/data-access';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
+  CatalogSectionHeader,
   CatalogSetCard,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
-import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-set-list.module.css';
 
 export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
@@ -52,24 +52,21 @@ export function CatalogFeatureSetList({
       }`}
       id={sectionId}
     >
-      <div className={styles.headerBlock}>
-        <SectionHeading
-          className={styles.header}
-          description={description}
-          eyebrow={eyebrow}
-          title={title}
-        />
-        <div className={styles.headerAside}>
-          <p className={styles.signalRow}>
-            {signalText ??
-              `${homepageSets.length} sets die meteen de kamer pakken${
-                reviewedSetCount
-                  ? ` · ${reviewedSetCount} met nagekeken prijzen`
-                  : ''
-              }`}
-          </p>
-        </div>
-      </div>
+      <CatalogSectionHeader
+        className={styles.headerBlock}
+        description={description}
+        eyebrow={eyebrow}
+        headingClassName={styles.header}
+        signal={
+          signalText ??
+          `${homepageSets.length} sets die meteen de kamer pakken${
+            reviewedSetCount
+              ? ` · ${reviewedSetCount} met nagekeken prijzen`
+              : ''
+          }`
+        }
+        title={title}
+      />
       {layout === 'grid' ? (
         <div className={styles.grid}>
           {homepageSets.map((catalogSetSummary) => (

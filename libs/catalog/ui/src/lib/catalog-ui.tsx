@@ -20,13 +20,26 @@ import {
   type CatalogSetDetailTrustSignal,
   type CatalogSetDetailVerdict,
 } from './catalog-commerce-ui';
+import { CatalogSetDetailHero } from './catalog-composite-ui';
 import {
   ActionLink,
   Badge,
+  LabelValue,
+  LabelValueList,
+  MarkerList,
+  Panel,
   SectionHeading,
   Surface,
 } from '@lego-platform/shared/ui';
 import styles from './catalog-ui.module.css';
+
+export {
+  CatalogQuickFilterBar,
+  CatalogSectionHeader,
+  CatalogSetDetailHero,
+  CatalogSplitIntroPanel,
+  type CatalogIntroPanelSection,
+} from './catalog-composite-ui';
 
 type CatalogSetCardSummary = CatalogSetSummary &
   Partial<Pick<CatalogHomepageSetCard, 'availability' | 'tagline'>>;
@@ -44,15 +57,6 @@ export interface CatalogThemeVisual {
   backgroundColor?: string;
   imageUrl?: string;
   textColor?: string;
-}
-
-export interface CatalogIntroPanelSection {
-  description?: string;
-  eyebrow?: string;
-  meta?: string;
-  title: string;
-  titleAs?: 'h1' | 'h2' | 'h3';
-  tone?: 'default' | 'display';
 }
 
 export interface CatalogSetCardPriceContext {
@@ -143,17 +147,24 @@ function CatalogSetVisual({
 }
 
 function CatalogSupportingDetail({
+  emphasis = 'regular',
   label,
+  tone = 'default',
   value,
 }: {
+  emphasis?: 'regular' | 'strong';
   label: string;
+  tone?: 'default' | 'muted';
   value: ReactNode;
 }) {
   return (
-    <div className={styles.supportingDetail}>
-      <p className={styles.supportingLabel}>{label}</p>
-      <p className={styles.supportingValue}>{value}</p>
-    </div>
+    <LabelValue
+      className={styles.supportingDetail}
+      emphasis={emphasis}
+      label={label}
+      tone={tone}
+      value={value}
+    />
   );
 }
 
@@ -165,18 +176,18 @@ function CatalogSetMetadata({
   items: Array<{ label: string; value: ReactNode }>;
 }) {
   return (
-    <dl
+    <LabelValueList
       className={
         className ? `${styles.metaGrid} ${className}` : styles.metaGrid
       }
-    >
-      {items.map((item) => (
-        <div className={styles.metaItem} key={item.label}>
-          <dt className={styles.metaLabel}>{item.label}</dt>
-          <dd className={styles.metaValue}>{item.value}</dd>
-        </div>
-      ))}
-    </dl>
+      items={items.map((item) => ({
+        emphasis: 'regular' as const,
+        id: item.label,
+        label: item.label,
+        value: item.value,
+      }))}
+      spacing="compact"
+    />
   );
 }
 
@@ -474,10 +485,12 @@ export function CatalogSetCard({
           <div className={styles.supportingGrid}>
             <CatalogSupportingDetail
               label="Dekking"
+              tone="muted"
               value={priceContext.coverageLabel}
             />
             <CatalogSupportingDetail
               label="Actualiteit"
+              tone="muted"
               value={priceContext.reviewedLabel}
             />
           </div>
@@ -494,6 +507,7 @@ export function CatalogSetCard({
         {priceContext && priceDisplay === 'subtle' ? (
           <CatalogSupportingDetail
             label="Huidige reviewed prijs"
+            tone="muted"
             value={`${priceContext.currentPrice} · ${priceContext.merchantLabel}`}
           />
         ) : null}
@@ -530,95 +544,6 @@ export function CatalogSetCard({
           Bekijk set
         </ActionLink>
       ) : null}
-    </Surface>
-  );
-}
-
-export function CatalogQuickFilterBar({
-  ariaLabel,
-  items,
-}: {
-  ariaLabel: string;
-  items: readonly {
-    href: string;
-    isActive?: boolean;
-    label: string;
-  }[];
-}) {
-  return (
-    <nav aria-label={ariaLabel} className={styles.quickFilterNav}>
-      <ul className={styles.quickFilterList}>
-        {items.map((item) => (
-          <li className={styles.quickFilterItem} key={item.label}>
-            <ActionLink
-              aria-current={item.isActive ? 'page' : undefined}
-              className={styles.quickFilterChip}
-              href={item.href}
-              tone={item.isActive ? 'accent' : 'secondary'}
-            >
-              {item.label}
-            </ActionLink>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
-
-export function CatalogSplitIntroPanel({
-  actionHref,
-  actionLabel,
-  actionTone = 'accent',
-  className,
-  primary,
-  secondary,
-}: {
-  actionHref?: string;
-  actionLabel?: string;
-  actionTone?: ComponentProps<typeof ActionLink>['tone'];
-  className?: string;
-  primary: CatalogIntroPanelSection;
-  secondary: CatalogIntroPanelSection;
-}) {
-  return (
-    <Surface
-      as="section"
-      className={
-        className ? `${styles.heroPanel} ${className}` : styles.heroPanel
-      }
-      elevation="floating"
-      tone="default"
-    >
-      <div className={styles.heroPrimary}>
-        <SectionHeading
-          description={primary.description}
-          eyebrow={primary.eyebrow}
-          title={primary.title}
-          titleAs={primary.titleAs}
-          tone={primary.tone}
-        />
-        {primary.meta ? (
-          <p className={styles.heroMeta}>{primary.meta}</p>
-        ) : null}
-      </div>
-      <div className={styles.heroSecondary}>
-        <SectionHeading
-          description={secondary.description}
-          eyebrow={secondary.eyebrow}
-          title={secondary.title}
-          titleAs={secondary.titleAs}
-          tone={secondary.tone}
-        />
-        {actionHref && actionLabel ? (
-          <ActionLink
-            className={styles.actionLink}
-            href={actionHref}
-            tone={actionTone}
-          >
-            {actionLabel}
-          </ActionLink>
-        ) : null}
-      </div>
     </Surface>
   );
 }
@@ -712,19 +637,17 @@ function CatalogSetOwnershipCard({ action }: { action?: ReactNode }) {
   }
 
   return (
-    <Surface
+    <Panel
       as="section"
       className={styles.ownershipCard}
+      description="Vink deze set af als hij al op je plank staat."
+      eyebrow="Je collectie"
       elevation="rested"
+      title="Al in huis?"
       tone="muted"
     >
-      <SectionHeading
-        description="Vink deze set af als hij al op je plank staat."
-        eyebrow="Je collectie"
-        title="Al in huis?"
-      />
       <div className={styles.ownershipAction}>{action}</div>
-    </Surface>
+    </Panel>
   );
 }
 
@@ -742,24 +665,22 @@ function CatalogSetSupportCard({
   }
 
   return (
-    <Surface
+    <Panel
       as="section"
       className={styles.supportCard}
+      eyebrow={eyebrow}
       elevation="rested"
+      title={title}
       tone="muted"
     >
-      <div className={styles.supportHeader}>
-        <p className={styles.supportEyebrow}>{eyebrow}</p>
-        <h2 className={styles.supportTitle}>{title}</h2>
-      </div>
-      <ul className={styles.supportList}>
-        {items.map((item) => (
-          <li className={styles.supportItem} key={item.id}>
-            {item.text}
-          </li>
-        ))}
-      </ul>
-    </Surface>
+      <MarkerList
+        className={styles.supportList}
+        items={items.map((item) => ({
+          content: item.text,
+          id: item.id,
+        }))}
+      />
+    </Panel>
   );
 }
 
@@ -878,63 +799,41 @@ export function CatalogSetDetailPanel({
           Setdetail
         </span>
       </nav>
-      <Surface
-        as="section"
-        className={styles.detailHero}
-        elevation="rested"
-        tone="default"
-      >
-        <div className={styles.detailHeroGallery}>
-          <CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />
-        </div>
-        <div className={styles.detailHeroContent}>
-          <div className={styles.detailHeroHeader}>
-            <div className={styles.badgeRow}>
-              {themeHref ? (
-                <ActionLink
-                  className={styles.themeBadgeLink}
-                  href={themeHref}
-                  tone="inline"
-                >
-                  <Badge tone="accent">
-                    <CatalogCanonicalText>
-                      {catalogSetDetail.theme}
-                    </CatalogCanonicalText>
-                  </Badge>
-                </ActionLink>
-              ) : (
+      <CatalogSetDetailHero
+        badges={
+          <>
+            {themeHref ? (
+              <ActionLink
+                className={styles.themeBadgeLink}
+                href={themeHref}
+                tone="inline"
+              >
                 <Badge tone="accent">
                   <CatalogCanonicalText>
                     {catalogSetDetail.theme}
                   </CatalogCanonicalText>
                 </Badge>
-              )}
-              {catalogSetDetail.subtheme ? (
-                <Badge tone="neutral">
-                  <CatalogCanonicalText>
-                    {catalogSetDetail.subtheme}
-                  </CatalogCanonicalText>
-                </Badge>
-              ) : null}
-              <Badge tone={dealVerdict.tone ?? 'neutral'}>
-                {dealVerdict.label}
+              </ActionLink>
+            ) : (
+              <Badge tone="accent">
+                <CatalogCanonicalText>
+                  {catalogSetDetail.theme}
+                </CatalogCanonicalText>
               </Badge>
-            </div>
-            <h1 className={styles.detailTitle}>
-              <CatalogCanonicalText>
-                {catalogSetDetail.name}
-              </CatalogCanonicalText>
-            </h1>
-            <p className={styles.detailPitch}>{catalogSetDetail.tagline}</p>
-            <div
-              className={styles.detailVerdictBlock}
-              data-tone={dealVerdict.tone ?? 'neutral'}
-            >
-              <p className={styles.detailVerdictKicker}>{dealVerdict.label}</p>
-              <p className={styles.detailVerdict}>{dealVerdict.explanation}</p>
-            </div>
-          </div>
-          <CatalogKeyFacts items={heroSpecs} />
+            )}
+            {catalogSetDetail.subtheme ? (
+              <Badge tone="neutral">
+                <CatalogCanonicalText>
+                  {catalogSetDetail.subtheme}
+                </CatalogCanonicalText>
+              </Badge>
+            ) : null}
+            <Badge tone={dealVerdict.tone ?? 'neutral'}>
+              {dealVerdict.label}
+            </Badge>
+          </>
+        }
+        decisionPanel={
           <CatalogPriceDecisionPanel
             followAction={priceAlertAction}
             leadWithFollow={dealVerdict.tone === 'warning'}
@@ -943,8 +842,15 @@ export function CatalogSetDetailPanel({
             supportTitle={getCatalogDecisionSupportTitle(dealVerdict)}
             verdictTone={dealVerdict.tone}
           />
-        </div>
-      </Surface>
+        }
+        gallery={<CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />}
+        keyFacts={<CatalogKeyFacts items={heroSpecs} />}
+        pitch={catalogSetDetail.tagline}
+        title={
+          <CatalogCanonicalText>{catalogSetDetail.name}</CatalogCanonicalText>
+        }
+        verdict={dealVerdict}
+      />
 
       <CatalogOfferComparison
         offers={offerList}
@@ -958,20 +864,16 @@ export function CatalogSetDetailPanel({
       ) : null}
 
       <section className={styles.detailInfoGrid}>
-        <Surface
+        <Panel
           as="aside"
           className={styles.notesPanel}
+          description={catalogSetDetail.collectorAngle}
+          eyebrow="Waarom deze set"
           elevation="rested"
+          title="Wat opvalt"
+          titleAs="h2"
           tone="muted"
         >
-          <div className={styles.notesHeader}>
-            <SectionHeading
-              description={catalogSetDetail.collectorAngle}
-              eyebrow="Waarom deze set"
-              title="Wat opvalt"
-              titleAs="h2"
-            />
-          </div>
           {minifigureHighlightsLabel ? (
             <CatalogSupportingDetail
               label="Minifigs"
@@ -982,12 +884,14 @@ export function CatalogSetDetailPanel({
               }
             />
           ) : null}
-          <ul className={styles.highlightsList}>
-            {setHighlights.map((collectorHighlight) => (
-              <li key={collectorHighlight}>{collectorHighlight}</li>
-            ))}
-          </ul>
-        </Surface>
+          <MarkerList
+            className={styles.highlightsList}
+            items={setHighlights.map((collectorHighlight) => ({
+              content: collectorHighlight,
+              id: collectorHighlight,
+            }))}
+          />
+        </Panel>
         <CatalogSetOwnershipCard action={ownershipActions} />
       </section>
       <CatalogSetSupportCard

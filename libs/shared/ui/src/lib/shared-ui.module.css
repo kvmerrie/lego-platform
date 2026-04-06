@@ -317,6 +317,189 @@
   max-width: 54ch;
 }
 
+.panel {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.panelCompact {
+  gap: var(--lego-space-2);
+}
+
+.metaSignal {
+  align-items: center;
+  background: var(--lego-surface-subtle);
+  border-radius: var(--lego-radius-xs);
+  color: var(--lego-text);
+  display: inline-flex;
+  flex-wrap: wrap;
+  font-size: var(--lego-text-role-meta-size);
+  gap: 0.45rem;
+  line-height: var(--lego-text-role-meta-line-height);
+  padding: 0.16rem 0.46rem;
+}
+
+.metaSignalAccent {
+  background: var(--lego-accent-subtle);
+}
+
+.metaSignalInfo {
+  background: var(--lego-info-subtle);
+}
+
+.metaSignalPositive {
+  background: var(--lego-positive-subtle);
+}
+
+.metaSignalWarning {
+  background: var(--lego-commerce-subtle);
+}
+
+.metaSignalIcon {
+  color: var(--lego-text-muted);
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.markerList {
+  display: grid;
+  gap: var(--lego-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.markerListCompact {
+  gap: var(--lego-space-1);
+}
+
+.markerListItem {
+  color: var(--lego-text);
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.markerListItem::before {
+  background: var(--lego-accent);
+  border-radius: var(--lego-list-marker-radius);
+  content: '';
+  display: block;
+  height: var(--lego-list-marker-size);
+  margin-top: 0.38rem;
+  width: var(--lego-list-marker-size);
+}
+
+.markerListAccent .markerListItem::before {
+  background: var(--lego-accent);
+}
+
+.markerListDefault .markerListItem::before {
+  background: var(--lego-text-muted);
+}
+
+.markerListInfo .markerListItem::before {
+  background: var(--lego-info);
+}
+
+.markerListPositive .markerListItem::before {
+  background: var(--lego-positive);
+}
+
+.markerListWarning .markerListItem::before {
+  background: var(--lego-commerce);
+}
+
+.labelValue,
+.labelValueList {
+  margin: 0;
+}
+
+.labelValue {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.labelValueCompact {
+  gap: 0.2rem;
+}
+
+.labelValueTile {
+  background: var(--lego-surface-default);
+  border-radius: var(--lego-radius-sm);
+  padding: var(--lego-space-3);
+}
+
+.labelValueWithIcon {
+  align-items: start;
+  column-gap: var(--lego-space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.labelValueCopy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.labelValueIcon {
+  align-items: center;
+  color: var(--lego-text-muted);
+  display: inline-flex;
+  justify-content: center;
+}
+
+.labelValueLabel {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-label-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: var(--lego-text-role-label-tracking);
+  line-height: var(--lego-text-role-label-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.labelValueValue {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.labelValueValueMuted {
+  color: var(--lego-text-muted);
+}
+
+.labelValueValueRegular {
+  font-weight: var(--lego-font-weight-regular);
+}
+
+.labelValueDescription {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  margin: 0;
+}
+
+.labelValueList {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.labelValueListItem {
+  margin: 0;
+}
+
+.labelValueListItem > .labelValueCopy > dt {
+  margin: 0;
+}
+
+.labelValueListItem > .labelValueCopy > dd {
+  margin: 0;
+}
+
 .visuallyHidden {
   border: 0;
   clip: rect(0 0 0 0);

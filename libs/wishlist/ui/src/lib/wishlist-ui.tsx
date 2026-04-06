@@ -4,8 +4,7 @@ import {
   ActionLink,
   Badge,
   Button,
-  SectionHeading,
-  Surface,
+  Panel,
   VisuallyHidden,
 } from '@lego-platform/shared/ui';
 import { WishlistItem } from '@lego-platform/wishlist/util';
@@ -17,14 +16,19 @@ export function WishlistItemCard({
   wishlistItem: WishlistItem;
 }) {
   return (
-    <Surface as="article" className={styles.itemCard} tone="muted">
+    <Panel
+      as="article"
+      className={styles.itemCard}
+      spacing="compact"
+      tone="muted"
+    >
       <div className={styles.itemHeader}>
         <h3 className={styles.title}>{wishlistItem.name}</h3>
         <Badge tone="accent">{wishlistItem.urgency}</Badge>
       </div>
       <p>{wishlistItem.reason}</p>
       <p className={styles.metaText}>Doelprijs: {wishlistItem.targetPrice}</p>
-    </Surface>
+    </Panel>
   );
 }
 
@@ -180,10 +184,13 @@ export function WantedSetToggleCard({
   }
 
   return (
-    <Surface
+    <Panel
       as="article"
       className={styles.toggleCard}
+      description={description}
       elevation="rested"
+      title={title}
+      titleAs="h2"
       tone={
         isLoading || isUnavailable ? 'muted' : isWanted ? 'accent' : 'default'
       }
@@ -191,7 +198,6 @@ export function WantedSetToggleCard({
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>
       </div>
-      <SectionHeading description={description} title={title} titleAs="h2" />
       <p className={styles.metaText}>
         Prive opgeslagen. Setinformatie blijft openbaar.
       </p>
@@ -219,7 +225,7 @@ export function WantedSetToggleCard({
             ? 'Opslaan...'
             : actionLabel}
       </Button>
-    </Surface>
+    </Panel>
   );
 }
 
@@ -263,19 +269,17 @@ export function CollectorWishlistPanel({
             : `${wantedCount} opgeslagen.`;
 
   return (
-    <Surface
+    <Panel
       as="section"
       className={styles.wishlistPagePanel}
+      description={description}
+      eyebrow="Verzamelaarsverlanglijst"
       elevation="rested"
+      title={title}
+      titleAs="h1"
       tone={state === 'populated' ? 'default' : 'muted'}
     >
       <div className={styles.wishlistHeader}>
-        <SectionHeading
-          description={description}
-          eyebrow="Verzamelaarsverlanglijst"
-          title={title}
-          titleAs="h1"
-        />
         <p className={styles.wishlistMeta}>
           {state === 'loading'
             ? 'Opslagen laden'
@@ -291,7 +295,13 @@ export function CollectorWishlistPanel({
         Je opgeslagen sets blijven prive. Setpagina's en prijschecks blijven
         openbaar.
       </p>
-      <div className={styles.destinationPanel}>
+      <Panel
+        as="div"
+        className={styles.destinationPanel}
+        padding="md"
+        spacing="compact"
+        tone="muted"
+      >
         <div className={styles.destinationLinks}>
           <ActionLink
             href={buildWebPath(webPathnames.account)}
@@ -315,7 +325,7 @@ export function CollectorWishlistPanel({
             Bekijk thema's
           </ActionLink>
         </div>
-      </div>
+      </Panel>
       {controls ? (
         <div className={styles.wishlistToolbar}>{controls}</div>
       ) : null}
@@ -350,19 +360,20 @@ export function CollectorWishlistPanel({
           </ActionLink>
         </div>
       )}
-    </Surface>
+    </Panel>
   );
 }
 
 export function WishlistUi() {
   return (
-    <Surface as="section" className={styles.demo} tone="muted">
-      <SectionHeading
-        description="Focuskaarten en verlanglijststatussen voor toekomstige prijstriggers."
-        eyebrow="Verlanglijst-UI"
-        title="Verlanglijstoppervlakken die helder, rustig en verzamelaarsgericht blijven."
-      />
-    </Surface>
+    <Panel
+      as="section"
+      className={styles.demo}
+      description="Focuskaarten en verlanglijststatussen voor toekomstige prijstriggers."
+      eyebrow="Verlanglijst-UI"
+      title="Verlanglijstoppervlakken die helder, rustig en verzamelaarsgericht blijven."
+      tone="muted"
+    />
   );
 }
 

@@ -1,5 +1,6 @@
 import type { CatalogThemeLandingPage } from '@lego-platform/catalog/data-access';
 import {
+  CatalogSectionHeader,
   CatalogSetCard,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
@@ -47,30 +48,30 @@ export function CatalogFeatureThemePage({
 
       {dealSetCards.length ? (
         <Surface as="section" className={styles.dealSection} tone="muted">
-          <div className={styles.sectionHeader}>
-            <SectionHeading
-              description={
-                <>
-                  Reviewed prijsverschillen die nu het meest opvallen binnen de{' '}
-                  <span className="notranslate" translate="no">
-                    {themeSnapshot.name}
-                  </span>
-                  -lijn.
-                </>
-              }
-              eyebrow="Deals"
-              title={
-                <>
-                  Goed moment om te kopen in{' '}
-                  <span className="notranslate" translate="no">
-                    {themeSnapshot.name}
-                  </span>
-                </>
-              }
-              titleAs="h2"
-            />
-            <p className={styles.sectionMeta}>{dealSetCards.length} sets</p>
-          </div>
+          <CatalogSectionHeader
+            className={styles.sectionHeader}
+            description={
+              <>
+                Reviewed prijsverschillen die nu het meest opvallen binnen de{' '}
+                <span className="notranslate" translate="no">
+                  {themeSnapshot.name}
+                </span>
+                -lijn.
+              </>
+            }
+            eyebrow="Deals"
+            signal={`${dealSetCards.length} sets`}
+            title={
+              <>
+                Goed moment om te kopen in{' '}
+                <span className="notranslate" translate="no">
+                  {themeSnapshot.name}
+                </span>
+              </>
+            }
+            titleAs="h2"
+            tone="inverse"
+          />
           <CatalogSetCardRail
             ariaLabel={`Goed moment om te kopen in ${themeSnapshot.name}`}
             items={dealSetCards.map((dealSetCard) => ({
@@ -85,31 +86,30 @@ export function CatalogFeatureThemePage({
       ) : null}
 
       <Surface as="section" className={styles.browseSection} tone="default">
-        <div className={styles.sectionHeader}>
-          <SectionHeading
-            description={
-              <>
-                Blader door elke publieke{' '}
-                <span className="notranslate" translate="no">
-                  {themeSnapshot.name}
-                </span>
-                -set die nu in de catalogus staat.
-              </>
-            }
-            eyebrow="Catalogus"
-            title={
-              <>
-                Alle{' '}
-                <span className="notranslate" translate="no">
-                  {themeSnapshot.name}
-                </span>
-                -sets
-              </>
-            }
-            titleAs="h2"
-          />
-          <p className={styles.sectionMeta}>{setCards.length} sets</p>
-        </div>
+        <CatalogSectionHeader
+          className={styles.sectionHeader}
+          description={
+            <>
+              Blader door elke publieke{' '}
+              <span className="notranslate" translate="no">
+                {themeSnapshot.name}
+              </span>
+              -set die nu in de catalogus staat.
+            </>
+          }
+          eyebrow="Catalogus"
+          signal={`${setCards.length} sets`}
+          title={
+            <>
+              Alle{' '}
+              <span className="notranslate" translate="no">
+                {themeSnapshot.name}
+              </span>
+              -sets
+            </>
+          }
+          titleAs="h2"
+        />
         <div className={styles.browseGrid}>
           {setCards.map((setCard) => (
             <CatalogSetCard

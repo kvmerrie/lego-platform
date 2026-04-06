@@ -1,6 +1,6 @@
 import { getMetadataFromSeoFields } from '../lib/editorial-metadata';
 import styles from './page.module.css';
-import { SectionHeading, Surface } from '@lego-platform/shared/ui';
+import { MarkerList, Panel, SectionHeading } from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 
 export const revalidate = 300;
@@ -73,7 +73,7 @@ export default function HowItWorksPage() {
   return (
     <ShellWeb>
       <div className={styles.page}>
-        <Surface
+        <Panel
           as="section"
           className={styles.heroCard}
           elevation="floating"
@@ -83,6 +83,7 @@ export default function HowItWorksPage() {
           <div className={styles.heroLayout}>
             <div className={styles.heroCopy}>
               <SectionHeading
+                className={styles.sectionHeader}
                 description="Kies eerst welke set je wilt. Zie daarna wanneer de prijs interessant is. Brickhunt helpt je beide sneller te zien."
                 eyebrow="Hoe Brickhunt werkt"
                 title="Sneller kiezen. Slimmer kopen."
@@ -107,28 +108,27 @@ export default function HowItWorksPage() {
               />
             </div>
           </div>
-        </Surface>
+        </Panel>
 
-        <Surface
+        <Panel
           as="section"
           className={styles.stepSection}
+          description="Eerst kiezen. Dan prijs begrijpen. Dan kopen of volgen."
+          eyebrow="In drie stappen"
           elevation="floating"
+          headingClassName={styles.sectionHeader}
           padding="lg"
+          title="Zo werkt Brickhunt"
           tone="default"
         >
-          <SectionHeading
-            className={styles.sectionHeader}
-            description="Eerst kiezen. Dan prijs begrijpen. Dan kopen of volgen."
-            eyebrow="In drie stappen"
-            title="Zo werkt Brickhunt"
-          />
           <ol className={styles.stepGrid}>
             {coreSteps.map((step, index) => (
               <li className={styles.stepItem} key={step.id}>
-                <Surface
+                <Panel
                   as="article"
                   className={styles.stepCard}
                   elevation="rested"
+                  spacing="compact"
                   tone="default"
                 >
                   <div className={styles.stepCardTop}>
@@ -141,80 +141,72 @@ export default function HowItWorksPage() {
                     </div>
                   </div>
                   <p className={styles.cardBody}>{step.body}</p>
-                </Surface>
+                </Panel>
               </li>
             ))}
           </ol>
-        </Surface>
+        </Panel>
 
-        <Surface
+        <Panel
           as="section"
           className={styles.priceSection}
+          description="Alleen prijscontext die we echt kunnen onderbouwen."
+          eyebrow="Prijsuitleg"
           elevation="rested"
+          headingClassName={styles.sectionHeader}
           padding="lg"
+          title='Wat betekent "nagekeken prijs"?'
           tone="default"
         >
-          <SectionHeading
-            className={styles.sectionHeader}
-            description="Alleen prijscontext die we echt kunnen onderbouwen."
-            eyebrow="Prijsuitleg"
-            title='Wat betekent "nagekeken prijs"?'
-          />
           <ul className={styles.checkGrid}>
             {pricingChecks.map((pricingCheck) => (
               <li className={styles.checkItem} key={pricingCheck.id}>
-                <Surface
+                <Panel
                   as="article"
                   className={styles.checkCard}
                   elevation="rested"
+                  spacing="compact"
                   tone="default"
                 >
                   <p className={styles.cardEyebrow}>Nagekeken prijs</p>
                   <h3 className={styles.cardTitle}>{pricingCheck.title}</h3>
                   <p className={styles.cardBody}>{pricingCheck.body}</p>
-                </Surface>
+                </Panel>
               </li>
             ))}
           </ul>
-        </Surface>
+        </Panel>
 
         <div className={styles.closingGrid}>
-          <Surface
+          <Panel
             as="section"
             className={styles.whyCard}
+            description="Kort, bruikbaar en zonder nep-kortingen."
+            eyebrow="Waarom Brickhunt"
             elevation="rested"
+            headingClassName={styles.sectionHeader}
+            title="Waarom eerst hier kijken"
             tone="accent"
           >
-            <SectionHeading
-              className={styles.sectionHeader}
-              description="Kort, bruikbaar en zonder nep-kortingen."
-              eyebrow="Waarom Brickhunt"
-              title="Waarom eerst hier kijken"
+            <MarkerList
+              className={styles.whyList}
+              items={whyBrickhuntItems.map((whyBrickhuntItem) => ({
+                content: whyBrickhuntItem,
+                id: whyBrickhuntItem,
+              }))}
             />
-            <ul className={styles.whyList}>
-              {whyBrickhuntItems.map((whyBrickhuntItem) => (
-                <li className={styles.whyItem} key={whyBrickhuntItem}>
-                  <span aria-hidden="true" className={styles.whyMarker}>
-                    +
-                  </span>
-                  <span className={styles.whyCopy}>{whyBrickhuntItem}</span>
-                </li>
-              ))}
-            </ul>
-          </Surface>
+          </Panel>
 
-          <Surface
+          <Panel
             as="section"
             className={styles.transparencyCard}
+            description="Rustig en duidelijk. Zonder kleine lettertjes."
+            eyebrow="Transparantie"
             elevation="rested"
+            headingClassName={styles.sectionHeader}
+            title="Als je doorklikt naar een winkel"
             tone="default"
           >
-            <SectionHeading
-              className={styles.sectionHeader}
-              description="Rustig en duidelijk. Zonder kleine lettertjes."
-              eyebrow="Transparantie"
-              title="Als je doorklikt naar een winkel"
-            />
             <div className={styles.transparencyBody}>
               <p className={styles.transparencyCopy}>
                 Als je via Brickhunt doorklikt naar bol of een andere winkel,
@@ -227,7 +219,7 @@ export default function HowItWorksPage() {
                 verzinnen we niets.
               </p>
             </div>
-          </Surface>
+          </Panel>
         </div>
       </div>
     </ShellWeb>

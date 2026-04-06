@@ -9,12 +9,12 @@ describe('CatalogFeatureSearchResults', () => {
   it('renders an empty-query state', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureSearchResults />);
 
-    expect(markup).toContain('Search sets');
+    expect(markup).toContain('Zoek sets');
     expect(markup).toContain(
-      'Search by set name or set number to jump straight into reviewed prices, fan context, and set details.',
+      'Zoek op setnaam, personage of setnummer om direct naar reviewed prijzen, fancontext en setdetails te springen.',
     );
     expect(markup).toContain('<h1');
-    expect(markup).toContain('Browse the catalog');
+    expect(markup).toContain('Bekijk de catalogus');
     expect(markup).toContain('href="/discover"');
   });
 
@@ -34,14 +34,14 @@ describe('CatalogFeatureSearchResults', () => {
       />,
     );
 
-    expect(markup).toContain('Results for &quot;avengers&quot;');
+    expect(markup).toContain('Resultaten voor &quot;avengers&quot;');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('1 matching set');
-    expect(markup).toContain('1 with reviewed pricing');
+    expect(markup).toContain('1 passende set');
+    expect(markup).toContain('1 met reviewed prijzen');
     expect(markup).toContain('Avengers Tower');
-    expect(markup).toContain('Reviewed');
-    expect(markup).toContain('at bol');
-    expect(markup).toContain('below reference');
+    expect(markup).toContain('Reviewed prijs');
+    expect(markup).toContain('bij bol');
+    expect(markup).toContain('onder de referentie');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
     expect(markup).not.toContain('Reviewed price');
   });
@@ -52,9 +52,10 @@ describe('CatalogFeatureSearchResults', () => {
     );
 
     expect(markup).toContain('AT-AT');
-    expect(markup).toContain(
-      'Includes Luke Skywalker, General Veers, and Snowtrooper Commander',
-    );
+    expect(markup).toContain('Luke Skywalker');
+    expect(markup).toContain('General Veers');
+    expect(markup).toContain('Snowtrooper Commander');
+    expect(markup).toContain('Met');
   });
 
   it('renders character-name matches when a query hits curated minifigure highlights', () => {
@@ -62,9 +63,12 @@ describe('CatalogFeatureSearchResults', () => {
       <CatalogFeatureSearchResults query="grogu" />,
     );
 
-    expect(markup).toContain('Results for &quot;grogu&quot;');
+    expect(markup).toContain('Resultaten voor &quot;grogu&quot;');
     expect(markup).toContain('The Razor Crest');
-    expect(markup).toContain('Includes The Mandalorian, Grogu, and Kuiil');
+    expect(markup).toContain('The Mandalorian');
+    expect(markup).toContain('Grogu');
+    expect(markup).toContain('Kuiil');
+    expect(markup).toContain('Met');
     expect(markup).toContain('href="/sets/the-razor-crest-75331"');
   });
 
@@ -85,9 +89,9 @@ describe('CatalogFeatureSearchResults', () => {
       />,
     );
 
-    expect(markup).toContain('aria-label="Refine search results"');
+    expect(markup).toContain('aria-label="Verfijn zoekresultaten"');
     expect(markup).toContain('href="/search?q=avengers&amp;filter=best-deals"');
-    expect(markup).toContain('1 matching set · Best deals');
+    expect(markup).toContain('1 passende set · Beste deals');
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain('Avengers Tower');
   });
@@ -109,13 +113,13 @@ describe('CatalogFeatureSearchResults', () => {
       />,
     );
 
-    expect(markup).toContain('aria-label="Refine search results"');
-    expect(markup).toContain('No star wars matches');
+    expect(markup).toContain('aria-label="Verfijn zoekresultaten"');
+    expect(markup).toContain('Geen star wars treffers');
     expect(markup).toContain(
-      '&quot;avengers&quot; has matches, but none in star wars.',
+      '&quot;avengers&quot; heeft wel treffers, maar niets in star wars.',
     );
     expect(markup).toContain('href="/search?q=avengers"');
-    expect(markup).toContain('Show all matches');
+    expect(markup).toContain('Toon alle treffers');
   });
 
   it('renders a no-results state when nothing matches', () => {
@@ -123,12 +127,14 @@ describe('CatalogFeatureSearchResults', () => {
       <CatalogFeatureSearchResults query="pirates hideout" />,
     );
 
-    expect(markup).toContain('No results for &quot;pirates hideout&quot;');
+    expect(markup).toContain(
+      'Geen resultaten voor &quot;pirates hideout&quot;',
+    );
     expect(markup).toContain('<h1');
     expect(markup).toContain(
-      'Try a set number like 75355 or a stronger set name.',
+      'Probeer een setnummer zoals 75355 of een sterkere setnaam.',
     );
-    expect(markup).toContain('Browse the catalog');
+    expect(markup).toContain('Bekijk de catalogus');
   });
 });
 
@@ -136,8 +142,8 @@ describe('CatalogFeatureSearchResultsLoading', () => {
   it('renders a lightweight loading state', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureSearchResultsLoading />);
 
-    expect(markup).toContain('Searching sets');
+    expect(markup).toContain('Sets worden gezocht');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('Looking through the current set catalog.');
+    expect(markup).toContain('De huidige setcatalogus wordt doorzocht.');
   });
 });

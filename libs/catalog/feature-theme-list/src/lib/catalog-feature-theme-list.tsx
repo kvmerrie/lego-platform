@@ -2,9 +2,11 @@ import {
   listHomepageThemeDirectoryItems,
   type CatalogThemeDirectoryItem,
 } from '@lego-platform/catalog/data-access';
-import { CatalogThemeHighlight } from '@lego-platform/catalog/ui';
+import {
+  CatalogSectionHeader,
+  CatalogThemeHighlight,
+} from '@lego-platform/catalog/ui';
 import { buildThemePath } from '@lego-platform/shared/config';
-import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-list.module.css';
 
 export function CatalogFeatureThemeList({
@@ -25,16 +27,14 @@ export function CatalogFeatureThemeList({
       }`}
       id="explore-themes"
     >
-      <div className={styles.headerBlock}>
-        <SectionHeading
-          className={styles.header}
-          eyebrow="Kies je hoek"
-          title="Fantasy, Star Wars of strak design?"
-        />
-        <p className={styles.signalRow}>
-          {themeItems.length} thema’s met een totaal ander displaygevoel
-        </p>
-      </div>
+      <CatalogSectionHeader
+        className={styles.headerBlock}
+        eyebrow="Kies je hoek"
+        headingClassName={styles.header}
+        signal={`${themeItems.length} thema’s met een totaal ander displaygevoel`}
+        title="Fantasy, Star Wars of strak design?"
+        tone={tone === 'inverse' ? 'inverse' : 'default'}
+      />
       <div className={styles.rail}>
         {themeItems.map((themeItem) => (
           <CatalogThemeHighlight

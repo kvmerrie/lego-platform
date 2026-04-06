@@ -4,6 +4,11 @@ import {
   Badge,
   Button,
   Container,
+  LabelValue,
+  LabelValueList,
+  MarkerList,
+  MetaSignal,
+  Panel,
   SectionHeading,
   Surface,
 } from './shared-ui';
@@ -112,6 +117,122 @@ export const SurfaceElevations: Story = {
         <Surface elevation="floating" tone="accent">
           Accent surface zonder glans
         </Surface>
+      </div>
+    </div>
+  ),
+};
+
+export const PanelStates: Story = {
+  render: () => (
+    <div style={{ margin: '0 auto', maxWidth: '52rem', padding: '2rem' }}>
+      <div
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(18rem, 1fr))',
+        }}
+      >
+        <Panel
+          description="Gebruik dit voor rustige hulp- en trustblokken."
+          eyebrow="Panel"
+          title="Standaard informatieblok"
+          tone="muted"
+        >
+          <p style={{ margin: 0 }}>
+            Alles in hetzelfde ritme: heading, body en acties.
+          </p>
+        </Panel>
+        <Panel
+          description="Compacte variant voor kleinere zijblokken en nested info."
+          eyebrow="Compact"
+          spacing="compact"
+          title="Krapper ritme"
+          tone="default"
+        >
+          <Button tone="secondary">Volg prijs</Button>
+        </Panel>
+      </div>
+    </div>
+  ),
+};
+
+export const MetaAndListStates: Story = {
+  render: () => (
+    <div style={{ margin: '0 auto', maxWidth: '56rem', padding: '2rem' }}>
+      <div
+        style={{
+          display: 'grid',
+          gap: '1rem',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(18rem, 1fr))',
+        }}
+      >
+        <Panel eyebrow="Meta" title="Meta-signals" tone="default">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <MetaSignal>3 winkels nagekeken</MetaSignal>
+            <MetaSignal tone="warning">Nog niet bijzonder</MetaSignal>
+            <MetaSignal tone="positive">Nu interessant geprijsd</MetaSignal>
+          </div>
+        </Panel>
+        <Panel eyebrow="Lijst" title="Marker-lijsten" tone="muted">
+          <MarkerList
+            items={[
+              { content: 'Onder wat we meestal zien voor deze set.', id: 'a' },
+              { content: 'Geen nep-kortingen of verzonnen ranges.', id: 'b' },
+              {
+                content: 'Volgen blijft een volwaardige tweede stap.',
+                id: 'c',
+              },
+            ]}
+          />
+        </Panel>
+      </div>
+    </div>
+  ),
+};
+
+export const LabelValueStates: Story = {
+  render: () => (
+    <div style={{ margin: '0 auto', maxWidth: '60rem', padding: '2rem' }}>
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        <Panel eyebrow="Rollen" title="Enkele label/value" tone="muted">
+          <div
+            style={{
+              display: 'grid',
+              gap: '0.75rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(14rem, 1fr))',
+            }}
+          >
+            <LabelValue label="Winkels" value="3 nagekeken" />
+            <LabelValue
+              appearance="tile"
+              description="Laatst bevestigd in de huidige prijscheck."
+              label="Nagekeken"
+              value="2 apr 2026, 09:00"
+            />
+          </div>
+        </Panel>
+        <Panel eyebrow="Grid" title="Label/value-lijst" tone="default">
+          <LabelValueList
+            appearance="tile"
+            items={[
+              {
+                id: 'set',
+                label: 'Setnummer',
+                value: '10316',
+              },
+              {
+                id: 'price',
+                label: 'Normaal',
+                value: 'Rond normaal',
+              },
+              {
+                id: 'merchant',
+                label: 'Laagst bij',
+                value: 'bol',
+              },
+            ]}
+          />
+        </Panel>
       </div>
     </div>
   ),

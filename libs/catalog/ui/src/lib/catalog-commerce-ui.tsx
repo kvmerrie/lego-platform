@@ -3,8 +3,10 @@ import { BellRing, Clock3, Package2, Store } from 'lucide-react';
 import {
   ActionLink,
   Badge,
-  SectionHeading,
-  Surface,
+  LabelValueList,
+  MarkerList,
+  MetaSignal,
+  Panel,
 } from '@lego-platform/shared/ui';
 import styles from './catalog-ui.module.css';
 
@@ -65,21 +67,6 @@ export interface CatalogKeyFact {
   value: ReactNode;
 }
 
-function CatalogMetaSignal({
-  children,
-  icon,
-}: {
-  children: ReactNode;
-  icon: ReactNode;
-}) {
-  return (
-    <span className={styles.metaSignal}>
-      <span className={styles.metaSignalIcon}>{icon}</span>
-      <span>{children}</span>
-    </span>
-  );
-}
-
 function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
   if (!offer) {
     return (
@@ -112,23 +99,23 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
         <p className={styles.bestDealDecision}>{offer.decisionHelper}</p>
       ) : null}
       <div className={styles.bestDealSignals}>
-        <CatalogMetaSignal
+        <MetaSignal
           icon={<Package2 aria-hidden="true" size={16} strokeWidth={2.2} />}
         >
           {offer.stockLabel}
-        </CatalogMetaSignal>
+        </MetaSignal>
         {offer.coverageLabel ? (
-          <CatalogMetaSignal
+          <MetaSignal
             icon={<Store aria-hidden="true" size={16} strokeWidth={2.2} />}
           >
             {offer.coverageLabel}
-          </CatalogMetaSignal>
+          </MetaSignal>
         ) : null}
-        <CatalogMetaSignal
+        <MetaSignal
           icon={<Clock3 aria-hidden="true" size={16} strokeWidth={2.2} />}
         >
           {offer.checkedLabel}
-        </CatalogMetaSignal>
+        </MetaSignal>
       </div>
       {offer.ctaHref && offer.ctaLabel ? (
         <ActionLink
@@ -208,22 +195,20 @@ function CatalogOfferCoverageState({
   summaryLabel?: string;
 }) {
   return (
-    <Surface
+    <Panel
       as="section"
       className={styles.offerCoverageCard}
+      description={summaryLabel}
+      eyebrow="Meer prijzen"
       elevation="rested"
+      title="Nog geen echte vergelijking"
       tone="muted"
     >
-      <SectionHeading
-        description={summaryLabel}
-        eyebrow="Meer prijzen"
-        title="Nog geen echte vergelijking"
-      />
       <p className={styles.offerCoverageCopy}>
         We volgen nu 1 winkel voor deze set. Zodra er meer prijzen zijn, zie je
         hier de vergelijking.
       </p>
-    </Surface>
+    </Panel>
   );
 }
 
@@ -250,24 +235,13 @@ export function CatalogKeyFacts({
 }: {
   items: readonly CatalogKeyFact[];
 }) {
-  if (items.length === 0) {
-    return null;
-  }
-
   return (
-    <dl className={styles.heroSpecsGrid}>
-      {items.map((item) => (
-        <div className={styles.heroSpecItem} key={item.id}>
-          {item.icon ? (
-            <div className={styles.heroSpecIcon}>{item.icon}</div>
-          ) : null}
-          <div className={styles.heroSpecCopy}>
-            <dt className={styles.heroSpecLabel}>{item.label}</dt>
-            <dd className={styles.heroSpecValue}>{item.value}</dd>
-          </div>
-        </div>
-      ))}
-    </dl>
+    <LabelValueList
+      appearance="tile"
+      className={styles.heroSpecsGrid}
+      items={items}
+      spacing="compact"
+    />
   );
 }
 
@@ -321,13 +295,13 @@ export function CatalogPriceDecisionPanel({
       {supportItems.length > 0 && supportTitle ? (
         <div className={styles.detailDecisionSupport}>
           <p className={styles.detailDecisionSupportTitle}>{supportTitle}</p>
-          <ul className={styles.detailDecisionSupportList}>
-            {supportItems.map((item) => (
-              <li className={styles.detailDecisionSupportItem} key={item.id}>
-                {item.text}
-              </li>
-            ))}
-          </ul>
+          <MarkerList
+            className={styles.detailDecisionSupportList}
+            items={supportItems.map((item) => ({
+              content: item.text,
+              id: item.id,
+            }))}
+          />
         </div>
       ) : null}
     </div>
@@ -377,17 +351,15 @@ export function CatalogOfferComparison({
   }
 
   return (
-    <Surface
+    <Panel
       as="section"
       className={styles.offerListCard}
+      description={summaryLabel}
+      eyebrow="Meer winkels"
       elevation="rested"
+      title="Meer nagekeken prijzen"
       tone="muted"
     >
-      <SectionHeading
-        description={summaryLabel}
-        eyebrow="Meer winkels"
-        title="Meer nagekeken prijzen"
-      />
       <div className={styles.offerList}>
         {offers.map((offer) => (
           <CatalogOfferRow
@@ -396,7 +368,7 @@ export function CatalogOfferComparison({
           />
         ))}
       </div>
-    </Surface>
+    </Panel>
   );
 }
 
@@ -414,21 +386,26 @@ export function CatalogTrustPanel({
   }
 
   return (
-    <Surface
+    <Panel
       as="section"
       className={styles.trustCard}
+      eyebrow={eyebrow}
       elevation="rested"
+      title={title}
       tone="muted"
     >
-      <SectionHeading eyebrow={eyebrow} title={title} />
-      <dl className={styles.trustGrid}>
-        {trustSignals.map((trustSignal) => (
-          <div className={styles.trustItem} key={trustSignal.label}>
-            <dt className={styles.supportingLabel}>{trustSignal.label}</dt>
-            <dd className={styles.trustValue}>{trustSignal.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </Surface>
+      <LabelValueList
+        appearance="tile"
+        className={styles.trustGrid}
+        items={trustSignals.map((trustSignal) => ({
+          emphasis: 'regular' as const,
+          id: trustSignal.label,
+          label: trustSignal.label,
+          tone: 'muted' as const,
+          value: trustSignal.value,
+        }))}
+        spacing="compact"
+      />
+    </Panel>
   );
 }
