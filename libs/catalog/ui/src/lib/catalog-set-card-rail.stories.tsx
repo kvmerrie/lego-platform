@@ -16,16 +16,16 @@ export const FeaturedRail: Story = {
   render: () => (
     <div style={{ margin: '0 auto', maxWidth: '72rem', padding: '1.5rem' }}>
       <CatalogSetCardRail
-        ariaLabel="Featured rail"
+        ariaLabel="Uitgelichte setrail"
         items={[
           {
             id: '10316',
             priceContext: {
-              coverageLabel: 'In stock · 2 reviewed offers',
-              currentPrice: 'EUR 469.99',
-              merchantLabel: 'Lowest reviewed price at LEGO',
-              pricePositionLabel: 'EUR 20.00 below reference',
-              reviewedLabel: 'Checked 2 apr',
+              coverageLabel: 'Op voorraad · 2 winkels nagekeken',
+              currentPrice: '€ 469,99',
+              merchantLabel: 'Nu het laagst bij LEGO',
+              pricePositionLabel: '€ 20,00 onder normaal',
+              reviewedLabel: 'Nagekeken 2 apr',
             },
             setSummary: {
               id: '10316',
@@ -36,21 +36,20 @@ export const FeaturedRail: Story = {
               pieces: 6167,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-              collectorAngle: 'Prestige fantasy display anchor',
-              tagline:
-                'A flagship fantasy build that rewards both display space and patience.',
-              availability: 'Healthy premium availability',
+              collectorAngle: 'De vallei blijft meteen hangen op je plank.',
+              tagline: 'Als je een grote Middle-earth-set wilt, pak je deze.',
+              availability: 'Gezonde beschikbaarheid voor een premium set',
             },
-            supportingNote: 'Includes Elrond, Frodo Baggins, and Arwen',
+            supportingNote: 'Met Elrond, Frodo en Arwen.',
           },
           {
             id: '76269',
             priceContext: {
-              coverageLabel: 'In stock · 3 reviewed offers',
-              currentPrice: 'EUR 479.99',
-              merchantLabel: 'Lowest reviewed price at bol',
-              pricePositionLabel: 'EUR 30.00 below reference',
-              reviewedLabel: 'Checked 2 apr',
+              coverageLabel: 'Op voorraad · 3 winkels nagekeken',
+              currentPrice: '€ 479,99',
+              merchantLabel: 'Nu het laagst bij bol',
+              pricePositionLabel: '€ 30,00 onder normaal',
+              reviewedLabel: 'Nagekeken 2 apr',
             },
             setSummary: {
               id: '76269',
@@ -61,12 +60,11 @@ export const FeaturedRail: Story = {
               pieces: 5202,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76269-1/124122.jpg',
-              collectorAngle: 'Marvel flagship showcase',
-              tagline:
-                'A marquee licensed set with broad household recognizability.',
-              availability: 'Stable with strong seasonal demand',
+              collectorAngle: 'Een skyline-set die meteen herkenbaar is.',
+              tagline: 'Als je Marvel groot wilt neerzetten, pak je deze.',
+              availability: 'Stabiel met sterke seizoensvraag',
             },
-            supportingNote: 'Includes Iron Man, Captain America, and Thor',
+            supportingNote: 'Met Iron Man, Captain America en Thor.',
           },
           {
             id: '21348',
@@ -79,12 +77,11 @@ export const FeaturedRail: Story = {
               pieces: 3747,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/21348-1/166370.jpg',
-              collectorAngle: 'Crossover audience magnet',
-              tagline:
-                'A community-driven release with rich minifigure storytelling hooks.',
-              availability: 'Strong launch momentum',
+              collectorAngle: 'De draak en herberg trekken meteen aandacht.',
+              tagline: 'Kies deze als je fantasy en minifiguren samen wilt.',
+              availability: 'Sterke start voor een Ideas-set',
             },
-            supportingNote: 'Set page is live.',
+            supportingNote: 'Met een volle party en veel speelhoeken.',
           },
           {
             id: '75331',
@@ -97,12 +94,12 @@ export const FeaturedRail: Story = {
               pieces: 6187,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/75331-1/116601.jpg',
-              collectorAngle: 'Original trilogy-adjacent prestige build',
+              collectorAngle: 'Een groot schip dat je plank meteen vult.',
               tagline:
-                'A large ship build with stronger emotional pull than a generic fleet piece.',
-              availability: 'Reviewed pricing not published yet',
+                'Als je een premium Star Wars-schip zoekt, kijk hier eerst.',
+              availability: 'Prijscontext volgt later',
             },
-            supportingNote: 'Includes Grogu and The Mandalorian',
+            supportingNote: 'Met Grogu en The Mandalorian.',
           },
           {
             id: '76417',
@@ -115,13 +112,12 @@ export const FeaturedRail: Story = {
               pieces: 4803,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76417-1/126166.jpg',
-              collectorAngle: 'Wizarding World premium landmark',
+              collectorAngle: 'De bank en draak trekken je plank meteen open.',
               tagline:
-                'A major Gringotts display build with strong franchise recognition.',
-              availability: 'High-visibility franchise demand',
+                'Kies deze als je een grote Wizarding World-set wilt neerzetten.',
+              availability: 'Sterke franchisevraag',
             },
-            supportingNote:
-              'Includes Harry Potter, Hermione Granger, and Ron Weasley',
+            supportingNote: 'Met Harry, Hermione en Ron.',
           },
         ]}
         variant="featured"
@@ -134,7 +130,7 @@ export const CompactRail: Story = {
   render: () => (
     <div style={{ margin: '0 auto', maxWidth: '72rem', padding: '1.5rem' }}>
       <CatalogSetCardRail
-        ariaLabel="Compact rail"
+        ariaLabel="Compacte setrail"
         items={[
           {
             id: '75331',
@@ -147,12 +143,12 @@ export const CompactRail: Story = {
               pieces: 6187,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/75331-1/116601.jpg',
-              collectorAngle: 'Original trilogy-adjacent prestige build',
+              collectorAngle: 'Een groot schip dat je plank meteen vult.',
               tagline:
-                'A large ship build with stronger emotional pull than a generic fleet piece.',
-              availability: 'Reviewed pricing not published yet',
+                'Als je een premium Star Wars-schip zoekt, kijk hier eerst.',
+              availability: 'Prijscontext volgt later',
             },
-            supportingNote: 'Includes Grogu and The Mandalorian',
+            supportingNote: 'Met Grogu en The Mandalorian.',
           },
           {
             id: '76417',
@@ -165,13 +161,12 @@ export const CompactRail: Story = {
               pieces: 4803,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76417-1/126166.jpg',
-              collectorAngle: 'Wizarding World premium landmark',
+              collectorAngle: 'De bank en draak trekken je plank meteen open.',
               tagline:
-                'A major Gringotts display build with strong franchise recognition.',
-              availability: 'High-visibility franchise demand',
+                'Kies deze als je een grote Wizarding World-set wilt neerzetten.',
+              availability: 'Sterke franchisevraag',
             },
-            supportingNote:
-              'Includes Harry Potter, Hermione Granger, and Ron Weasley',
+            supportingNote: 'Met Harry, Hermione en Ron.',
           },
           {
             id: '76294',
@@ -184,12 +179,12 @@ export const CompactRail: Story = {
               pieces: 3093,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76294-1/172998.jpg',
-              collectorAngle: 'Mutant-team display anchor',
+              collectorAngle: 'De school en cast maken dit meteen herkenbaar.',
               tagline:
-                'A franchise landmark with strong cast recognition and shelf presence.',
-              availability: 'Fresh flagship demand',
+                'Pak deze als je Marvel liever als gebouw dan als schip zet.',
+              availability: 'Frisse flagship-aandacht',
             },
-            supportingNote: 'Includes Wolverine, Professor X, and Rogue',
+            supportingNote: 'Met Wolverine, Professor X en Rogue.',
           },
         ]}
         variant="compact"

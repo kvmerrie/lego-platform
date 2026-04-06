@@ -36,12 +36,19 @@ h2,
 h3,
 p,
 ul,
+ol,
 dl {
   margin: 0;
 }
 
-ul {
-  padding-left: 1.2rem;
+ul,
+ol {
+  padding-left: 1.15rem;
+}
+
+ul li::marker {
+  color: var(--lego-text-muted);
+  font-size: 0.82em;
 }
 
 /* Legacy shared utilities remain here until non-slice overview, demo, and placeholder surfaces migrate. */
@@ -90,8 +97,8 @@ ul {
 
 .section-copy {
   color: var(--lego-text-muted);
-  font-size: 0.92rem;
-  line-height: 1.6;
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
   max-width: 62ch;
 }
 
@@ -99,7 +106,7 @@ ul {
   color: var(--lego-accent);
   font-size: var(--lego-text-role-eyebrow-size);
   font-weight: var(--lego-font-weight-bold);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--lego-text-role-label-tracking);
   text-transform: uppercase;
 }
 
@@ -150,7 +157,8 @@ ul {
 
 .detail-list dt {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-eyebrow-size);
+  font-size: var(--lego-text-role-label-size);
+  letter-spacing: var(--lego-text-role-label-tracking);
   text-transform: uppercase;
 }
 
@@ -175,10 +183,10 @@ ul {
   border-radius: var(--lego-radius-pill);
   color: var(--lego-text-muted);
   display: inline-flex;
-  font-size: var(--lego-font-size-caption);
+  font-size: var(--lego-text-role-label-size);
   font-weight: var(--lego-font-weight-semibold);
   gap: 0.35rem;
-  line-height: 1;
+  line-height: var(--lego-text-role-label-line-height);
   padding: 0.3rem 0.6rem;
 }
 

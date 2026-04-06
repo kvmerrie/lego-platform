@@ -216,7 +216,8 @@ export function buildSetDealVerdict(
     typeof pricePanelSnapshot.deltaMinor !== 'number'
   ) {
     return {
-      explanation: 'We volgen nog te weinig prijzen.',
+      explanation:
+        'We volgen nog te weinig prijzen om te zeggen of dit een slim koopmoment is.',
       label: 'Nog te weinig data',
       tone: 'neutral',
     };
@@ -224,23 +225,26 @@ export function buildSetDealVerdict(
 
   if (pricePanelSnapshot.deltaMinor < 0) {
     return {
-      explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
-      label: 'Goede deal',
+      explanation:
+        'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
+      label: 'Nu interessant geprijsd',
       tone: 'positive',
     };
   }
 
   if (pricePanelSnapshot.deltaMinor > 0) {
     return {
-      explanation: 'Deze prijs ligt hoog. Wachten is slimmer.',
-      label: 'Relatief duur',
+      explanation:
+        'Deze prijs ligt boven wat we meestal zien. Volgen en wachten is slimmer.',
+      label: 'Nog niet bijzonder',
       tone: 'warning',
     };
   }
 
   return {
-    explanation: 'Dit is een normale prijs. Wachten kan.',
-    label: 'Normale prijs',
+    explanation:
+      'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
+    label: 'Rond normaal',
     tone: 'info',
   };
 }

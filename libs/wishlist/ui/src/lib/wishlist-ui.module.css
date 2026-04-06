@@ -1,13 +1,14 @@
 .itemCard {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-2);
 }
 
 .itemHeader {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  gap: 0.45rem 0.65rem;
+  justify-content: space-between;
 }
 
 .title {
@@ -23,7 +24,7 @@
 .metaText {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
-  line-height: 1.5;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -46,74 +47,77 @@
 
 .toggleCard {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-3);
 }
 
 .productToggle {
-  border-radius: var(--lego-radius-md);
   display: grid;
-  gap: var(--lego-space-1);
+  gap: 0.45rem;
 }
 
 .inlineToggle {
   display: grid;
-  gap: var(--lego-space-1);
+  gap: 0.35rem;
 }
 
 .toggleMeta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  gap: 0.45rem;
 }
 
 .toggleButton {
   justify-self: flex-start;
+  min-height: 2.3rem;
 }
 
 .productToggleButton {
   border: var(--lego-border-width-2) solid var(--lego-info);
-  border-radius: var(--lego-radius-pill);
+  border-radius: var(--lego-radius-sm);
   inline-size: 100%;
   justify-content: center;
-  min-height: 2.6rem;
+  min-height: 2.7rem;
   padding-inline: 0.8rem;
 }
 
 .productToggleButtonIdle {
-  background: #ffffff;
+  background: var(--lego-surface-default);
   color: var(--lego-info);
 }
 
 .productToggleButtonIdle:hover {
-  background: color-mix(in srgb, var(--lego-info) 6%, white);
-  border-color: var(--lego-info);
+  background: var(--lego-surface-subtle);
+  color: var(--lego-info);
 }
 
 .productToggleButtonActive {
-  background: var(--lego-info);
-  border-color: var(--lego-info);
-  color: #ffffff;
+  background: var(--lego-info-subtle);
+  color: var(--lego-info);
 }
 
 .productToggleButtonActive:hover {
-  background: color-mix(in srgb, var(--lego-info) 88%, black 12%);
-  border-color: color-mix(in srgb, var(--lego-info) 88%, black 12%);
+  background: var(--lego-info-subtle);
+  border-color: var(--lego-info);
+  color: var(--lego-info);
 }
 
 .inlineToggleButton {
-  border-radius: var(--lego-radius-pill);
+  border: 0;
+  border-radius: var(--lego-radius-sm);
   font-size: var(--lego-text-role-meta-size);
-  font-weight: var(--lego-font-weight-medium);
+  font-weight: var(--lego-font-weight-semibold);
   justify-content: flex-start;
-  min-height: 1.9rem;
-  padding: 0.26rem 0.5rem;
+  min-height: 1.85rem;
+  padding: 0.22rem 0.46rem;
 }
 
 .inlineToggleButtonIdle {
-  color: var(--lego-text-muted);
+  background: var(--lego-surface-muted);
+  color: var(--lego-text);
 }
 
 .inlineToggleButtonIdle:hover {
+  background: var(--lego-surface-subtle);
   color: var(--lego-text);
 }
 
@@ -123,18 +127,18 @@
 }
 
 .inlineToggleButtonActive:hover {
-  background: color-mix(in srgb, var(--lego-info) 12%, white);
+  background: var(--lego-info-subtle);
   color: var(--lego-info);
 }
 
 .wishlistPagePanel {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-space-4);
 }
 
 .wishlistHeader {
   display: grid;
-  gap: var(--lego-space-2);
+  gap: 0.35rem;
 }
 
 .wishlistMeta {
@@ -145,23 +149,21 @@
 }
 
 .destinationPanel {
-  border-top: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 76%, transparent);
+  background: var(--lego-surface-subtle);
+  border-radius: var(--lego-radius-md);
   display: grid;
   gap: var(--lego-space-2);
-  padding-top: var(--lego-space-2);
+  padding: var(--lego-space-3);
 }
 
 .destinationLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  gap: 0.65rem;
 }
 
 .wishlistToolbar {
-  border-top: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 76%, transparent);
-  padding-top: var(--lego-space-2);
+  padding-top: 0;
 }
 
 .wishlistGrid {
@@ -172,7 +174,7 @@
 .wishlistEmptyActions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lego-space-2);
+  gap: 0.65rem;
 }
 
 .demo {

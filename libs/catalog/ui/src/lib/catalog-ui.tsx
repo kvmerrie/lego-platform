@@ -6,6 +6,20 @@ import type {
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import { normalizeCatalogSetImages } from '@lego-platform/catalog/util';
+import { Blocks, CalendarDays, Hash, Package2, UsersRound } from 'lucide-react';
+import {
+  CatalogKeyFacts,
+  CatalogOfferComparison,
+  CatalogPriceDecisionPanel,
+  CatalogTrustPanel,
+  getCatalogDecisionSupportTitle,
+  type CatalogKeyFact,
+  type CatalogSetDetailBestDeal,
+  type CatalogSetDetailOfferItem,
+  type CatalogSetDetailSupportItem,
+  type CatalogSetDetailTrustSignal,
+  type CatalogSetDetailVerdict,
+} from './catalog-commerce-ui';
 import {
   ActionLink,
   Badge,
@@ -53,41 +67,6 @@ export interface CatalogSetCardPriceContext {
 export interface CatalogSetCardContextBadge {
   label: string;
   tone?: CatalogSetCardBadgeTone;
-}
-
-export interface CatalogSetDetailVerdict {
-  explanation: string;
-  label: string;
-  tone?: ComponentProps<typeof Badge>['tone'];
-}
-
-export interface CatalogSetDetailBestDeal {
-  checkedLabel: string;
-  ctaHref?: string;
-  ctaLabel?: string;
-  merchantLabel: string;
-  price: string;
-  stockLabel: string;
-}
-
-export interface CatalogSetDetailOfferItem {
-  checkedLabel: string;
-  ctaHref: string;
-  ctaLabel: string;
-  isBest?: boolean;
-  merchantLabel: string;
-  price: string;
-  stockLabel: string;
-}
-
-export interface CatalogSetDetailTrustSignal {
-  label: string;
-  value: string;
-}
-
-export interface CatalogSetDetailSupportItem {
-  id: string;
-  text: string;
 }
 
 type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
@@ -229,7 +208,7 @@ function getFeaturedCardReason({
 
 function formatMinifigureCount(minifigureCount?: number): string {
   if (typeof minifigureCount !== 'number') {
-    return 'Nog niet lokaal bijgehouden';
+    return 'Nog niet bekend';
   }
 
   return minifigureCount.toLocaleString();
@@ -727,149 +706,6 @@ function CatalogSetImageGallery({
   );
 }
 
-function CatalogSetBestDealCard({
-  bestDeal,
-}: {
-  bestDeal?: CatalogSetDetailBestDeal;
-}) {
-  if (!bestDeal) {
-    return (
-      <Surface
-        as="section"
-        className={styles.bestDealCard}
-        elevation="floating"
-        tone="accent"
-      >
-        <p className={styles.bestDealEyebrow}>Beste deal nu</p>
-        <p className={styles.bestDealFallbackValue}>Nog niet nagekeken</p>
-        <p className={styles.bestDealMeta}>
-          We hebben nog geen scherpe winkelvergelijking voor deze set.
-        </p>
-      </Surface>
-    );
-  }
-
-  return (
-    <Surface
-      as="section"
-      className={styles.bestDealCard}
-      elevation="floating"
-      tone="accent"
-    >
-      <p className={styles.bestDealEyebrow}>Beste deal nu</p>
-      <p className={styles.bestDealPrice}>{bestDeal.price}</p>
-      <p className={styles.bestDealMeta}>{bestDeal.merchantLabel}</p>
-      <div className={styles.bestDealSignals}>
-        <Badge tone="neutral">{bestDeal.stockLabel}</Badge>
-        <p className={styles.bestDealChecked}>{bestDeal.checkedLabel}</p>
-      </div>
-      {bestDeal.ctaHref && bestDeal.ctaLabel ? (
-        <ActionLink
-          className={styles.bestDealAction}
-          href={bestDeal.ctaHref}
-          rel="noreferrer sponsored"
-          target="_blank"
-          tone="accent"
-        >
-          {bestDeal.ctaLabel}
-        </ActionLink>
-      ) : null}
-    </Surface>
-  );
-}
-
-function CatalogSetPriceAlertCard({ action }: { action?: ReactNode }) {
-  return (
-    <Surface
-      as="section"
-      className={styles.alertCard}
-      elevation="rested"
-      tone="muted"
-    >
-      <p className={styles.alertEyebrow}>Prijsalert</p>
-      <h2 className={styles.alertTitle}>Nog even wachten?</h2>
-      <p className={styles.alertCopy}>
-        Krijg een seintje zodra de prijs zakt of er een betere deal staat.
-      </p>
-      {action ? <div className={styles.alertAction}>{action}</div> : null}
-    </Surface>
-  );
-}
-
-function CatalogSetOfferCoverageCard() {
-  return (
-    <Surface
-      as="section"
-      className={styles.offerCoverageCard}
-      elevation="rested"
-      tone="muted"
-    >
-      <SectionHeading
-        eyebrow="Meer prijzen"
-        title="Nog geen echte vergelijking"
-      />
-      <p className={styles.offerCoverageCopy}>
-        We volgen nu 1 winkel voor deze set. Zodra er meer prijzen zijn, zie je
-        hier de vergelijking.
-      </p>
-    </Surface>
-  );
-}
-
-function CatalogSetOfferList({
-  offers,
-}: {
-  offers: readonly CatalogSetDetailOfferItem[];
-}) {
-  if (offers.length === 0) {
-    return null;
-  }
-
-  if (offers.length === 1) {
-    return <CatalogSetOfferCoverageCard />;
-  }
-
-  return (
-    <Surface
-      as="section"
-      className={styles.offerListCard}
-      elevation="rested"
-      tone="muted"
-    >
-      <SectionHeading eyebrow="Meer winkels" title="Meer nagekeken prijzen" />
-      <div className={styles.offerList}>
-        {offers.map((offer) => (
-          <article
-            className={styles.offerRow}
-            key={`${offer.merchantLabel}-${offer.price}`}
-          >
-            <div className={styles.offerCopy}>
-              <div className={styles.offerTitleRow}>
-                <p className={styles.offerMerchant}>{offer.merchantLabel}</p>
-                {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
-                <Badge tone="neutral">{offer.stockLabel}</Badge>
-              </div>
-              <p className={styles.offerMeta}>{offer.checkedLabel}</p>
-            </div>
-            <div className={styles.offerSide}>
-              <p className={styles.offerPrice}>{offer.price}</p>
-              <ActionLink
-                className={styles.offerAction}
-                href={offer.ctaHref}
-                rel="noreferrer sponsored"
-                target="_blank"
-                tone="secondary"
-              >
-                {offer.ctaLabel}
-              </ActionLink>
-            </div>
-          </article>
-        ))}
-      </div>
-    </Surface>
-  );
-}
-
 function CatalogSetOwnershipCard({ action }: { action?: ReactNode }) {
   if (!action) {
     return null;
@@ -888,35 +724,6 @@ function CatalogSetOwnershipCard({ action }: { action?: ReactNode }) {
         title="Al in huis?"
       />
       <div className={styles.ownershipAction}>{action}</div>
-    </Surface>
-  );
-}
-
-function CatalogSetTrustSignals({
-  trustSignals,
-}: {
-  trustSignals: readonly CatalogSetDetailTrustSignal[];
-}) {
-  if (trustSignals.length === 0) {
-    return null;
-  }
-
-  return (
-    <Surface
-      as="section"
-      className={styles.trustCard}
-      elevation="rested"
-      tone="muted"
-    >
-      <SectionHeading eyebrow="Vertrouwen" title="Waar dit op steunt" />
-      <dl className={styles.trustGrid}>
-        {trustSignals.map((trustSignal) => (
-          <div className={styles.trustItem} key={trustSignal.label}>
-            <dt className={styles.supportingLabel}>{trustSignal.label}</dt>
-            <dd className={styles.trustValue}>{trustSignal.value}</dd>
-          </div>
-        ))}
-      </dl>
     </Surface>
   );
 }
@@ -963,6 +770,7 @@ export function CatalogSetDetailPanel({
   dealSupportItems = [],
   dealVerdict,
   offerList = [],
+  offerSummaryLabel,
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
@@ -976,6 +784,7 @@ export function CatalogSetDetailPanel({
   dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
   offerList?: readonly CatalogSetDetailOfferItem[];
+  offerSummaryLabel?: string;
   ownershipActions?: ReactNode;
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
@@ -991,6 +800,42 @@ export function CatalogSetDetailPanel({
     catalogSetDetail.collectorHighlights.length > 0
       ? catalogSetDetail.collectorHighlights.slice(0, 3)
       : [catalogSetDetail.collectorAngle];
+  const heroSpecs: CatalogKeyFact[] = [
+    {
+      id: 'set-number',
+      icon: <Hash aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Setnummer',
+      value: <CatalogCanonicalText>{catalogSetDetail.id}</CatalogCanonicalText>,
+    },
+    {
+      id: 'release-year',
+      icon: <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Jaar',
+      value: catalogSetDetail.releaseYear,
+    },
+    {
+      id: 'piece-count',
+      icon: <Blocks aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Stenen',
+      value: catalogSetDetail.pieces.toLocaleString('nl-NL'),
+    },
+    {
+      id: 'minifigures',
+      icon: <UsersRound aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Minifiguren',
+      value: formatMinifigureCount(catalogSetDetail.minifigureCount),
+    },
+    ...(setStatusLabel
+      ? [
+          {
+            id: 'status',
+            icon: <Package2 aria-hidden="true" size={17} strokeWidth={2.2} />,
+            label: 'Status',
+            value: setStatusLabel,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <section className={styles.detailPage}>
@@ -1036,7 +881,7 @@ export function CatalogSetDetailPanel({
       <Surface
         as="section"
         className={styles.detailHero}
-        elevation="floating"
+        elevation="rested"
         tone="default"
       >
         <div className={styles.detailHeroGallery}>
@@ -1088,22 +933,23 @@ export function CatalogSetDetailPanel({
               <p className={styles.detailVerdictKicker}>{dealVerdict.label}</p>
               <p className={styles.detailVerdict}>{dealVerdict.explanation}</p>
             </div>
-            <p className={styles.heroMeta}>
-              Set {catalogSetDetail.id} · {catalogSetDetail.releaseYear}
-            </p>
           </div>
-          <CatalogSetBestDealCard bestDeal={bestDeal} />
-          <CatalogSetPriceAlertCard action={priceAlertAction} />
+          <CatalogKeyFacts items={heroSpecs} />
+          <CatalogPriceDecisionPanel
+            followAction={priceAlertAction}
+            leadWithFollow={dealVerdict.tone === 'warning'}
+            primaryOffer={bestDeal}
+            supportItems={dealSupportItems}
+            supportTitle={getCatalogDecisionSupportTitle(dealVerdict)}
+            verdictTone={dealVerdict.tone}
+          />
         </div>
       </Surface>
 
-      <CatalogSetSupportCard
-        eyebrow="Koophulp"
-        items={dealSupportItems}
-        title="Waarom dit een goede deal is"
+      <CatalogOfferComparison
+        offers={offerList}
+        summaryLabel={offerSummaryLabel}
       />
-
-      <CatalogSetOfferList offers={offerList} />
 
       {priceHistoryPanel ? (
         <section className={styles.detailPricingStack}>
@@ -1142,54 +988,14 @@ export function CatalogSetDetailPanel({
             ))}
           </ul>
         </Surface>
-        <Surface
-          as="aside"
-          className={styles.notesPanel}
-          elevation="rested"
-          tone="muted"
-        >
-          <div className={styles.notesHeader}>
-            <SectionHeading
-              description="Kort en alleen wat helpt bij kiezen."
-              eyebrow="Specs"
-              title="Snel gecheckt"
-              titleAs="h2"
-            />
-          </div>
-          <CatalogSetMetadata
-            className={styles.detailSpecsGrid}
-            items={[
-              {
-                label: 'Steentjes',
-                value: catalogSetDetail.pieces.toLocaleString(),
-              },
-              {
-                label: 'Minifiguren',
-                value: formatMinifigureCount(catalogSetDetail.minifigureCount),
-              },
-              { label: 'Jaar', value: catalogSetDetail.releaseYear },
-              ...(setStatusLabel
-                ? [
-                    {
-                      label: 'Status',
-                      value: setStatusLabel,
-                    },
-                  ]
-                : []),
-            ]}
-          />
-          <p className={styles.specNote}>
-            Leeftijd en afmetingen volgen zodra ze lokaal zijn toegevoegd.
-          </p>
-        </Surface>
+        <CatalogSetOwnershipCard action={ownershipActions} />
       </section>
       <CatalogSetSupportCard
         eyebrow="Waarom Brickhunt"
         items={brickhuntValueItems}
         title="Waarom via Brickhunt"
       />
-      <CatalogSetTrustSignals trustSignals={trustSignals} />
-      <CatalogSetOwnershipCard action={ownershipActions} />
+      <CatalogTrustPanel trustSignals={trustSignals} />
     </section>
   );
 }
@@ -1209,6 +1015,22 @@ export function CatalogThemeHighlight({
   variant?: 'default' | 'feature' | 'portrait';
   visual?: CatalogThemeVisual;
 }) {
+  function getThemeMutedColor(textColor: string): string {
+    const normalizedTextColor = textColor.trim().toLowerCase();
+
+    if (
+      normalizedTextColor === '#fff' ||
+      normalizedTextColor === '#ffffff' ||
+      normalizedTextColor === 'white' ||
+      normalizedTextColor === 'rgb(255, 255, 255)' ||
+      normalizedTextColor === 'rgb(255,255,255)'
+    ) {
+      return '#f4f7fb';
+    }
+
+    return '#425066';
+  }
+
   if (variant === 'portrait') {
     const portraitVisualStyle = {
       ...(visual?.backgroundColor
@@ -1219,8 +1041,7 @@ export function CatalogThemeHighlight({
       ...(visual?.textColor
         ? ({
             '--theme-text': visual.textColor,
-            '--theme-muted': `color-mix(in srgb, ${visual.textColor} 72%, transparent)`,
-            '--theme-shadow': `color-mix(in srgb, ${visual.textColor} 12%, transparent)`,
+            '--theme-muted': getThemeMutedColor(visual.textColor),
           } as CSSProperties)
         : {}),
     };
@@ -1288,7 +1109,7 @@ export function CatalogThemeHighlight({
       ...(visual?.textColor
         ? ({
             '--theme-text': visual.textColor,
-            '--theme-muted': `color-mix(in srgb, ${visual.textColor} 78%, transparent)`,
+            '--theme-muted': getThemeMutedColor(visual.textColor),
           } as CSSProperties)
         : {}),
     };

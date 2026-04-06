@@ -139,17 +139,19 @@ export function WantedSetToggleCard({
     const productActionLabel = isLoading
       ? 'Synchroniseren...'
       : isPending
-        ? 'Opslaan...'
+        ? productIntent === 'price-alert'
+          ? 'Volgen...'
+          : 'Opslaan...'
         : isUnavailable
           ? productIntent === 'price-alert'
-            ? 'Prijsalert niet beschikbaar'
+            ? 'Prijs volgen niet beschikbaar'
             : 'Verlanglijst niet beschikbaar'
           : isWanted
             ? productIntent === 'price-alert'
-              ? 'Zet prijsalert uit'
+              ? 'Volgt prijs'
               : 'Van verlanglijst verwijderen'
             : productIntent === 'price-alert'
-              ? 'Zet prijsalert aan'
+              ? 'Volg prijs'
               : 'Aan verlanglijst toevoegen';
 
     return (

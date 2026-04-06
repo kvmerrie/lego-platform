@@ -27,8 +27,10 @@
     "graph": "pnpm nx graph",
     "storybook:shared-ui": "pnpm nx run shared-ui:storybook",
     "storybook:catalog-ui": "pnpm nx run catalog-ui:storybook",
+    "storybook:wishlist-ui": "pnpm nx run wishlist-ui:storybook",
     "build-storybook:shared-ui": "pnpm nx run shared-ui:build-storybook",
-    "build-storybook:catalog-ui": "pnpm nx run catalog-ui:build-storybook"
+    "build-storybook:catalog-ui": "pnpm nx run catalog-ui:build-storybook",
+    "build-storybook:wishlist-ui": "pnpm nx run wishlist-ui:build-storybook"
   },
   "private": true,
   "devDependencies": {

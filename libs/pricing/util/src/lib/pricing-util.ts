@@ -107,10 +107,10 @@ export interface PriceDealSummary {
 export interface SetDealVerdict {
   explanation: string;
   label:
-    | 'Goede deal'
+    | 'Nog niet bijzonder'
     | 'Nog te weinig data'
-    | 'Normale prijs'
-    | 'Relatief duur';
+    | 'Nu interessant geprijsd'
+    | 'Rond normaal';
   tone: 'info' | 'neutral' | 'positive' | 'warning';
 }
 

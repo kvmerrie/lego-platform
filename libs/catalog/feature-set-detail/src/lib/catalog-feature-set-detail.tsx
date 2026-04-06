@@ -16,6 +16,7 @@ export function CatalogFeatureSetDetail({
   dealSupportItems = [],
   dealVerdict,
   offerList = [],
+  offerSummaryLabel,
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
@@ -29,6 +30,7 @@ export function CatalogFeatureSetDetail({
   dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
   offerList?: readonly CatalogSetDetailOfferItem[];
+  offerSummaryLabel?: string;
   ownershipActions?: ReactNode;
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
@@ -44,6 +46,7 @@ export function CatalogFeatureSetDetail({
       dealSupportItems={dealSupportItems}
       dealVerdict={dealVerdict}
       offerList={[...offerList]}
+      offerSummaryLabel={offerSummaryLabel}
       ownershipActions={ownershipActions}
       priceAlertAction={priceAlertAction}
       priceHistoryPanel={priceHistoryPanel}

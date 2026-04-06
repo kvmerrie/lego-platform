@@ -55,7 +55,7 @@ describe('WantedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Zet prijsalert aan');
+    expect(markup).toContain('Volg prijs');
     expect(markup).not.toContain('Aan verlanglijst toevoegen');
   });
 

@@ -22,66 +22,17 @@
 }
 
 .heroCard {
-  background:
-    radial-gradient(
-      circle at top right,
-      color-mix(in srgb, var(--lego-accent) 10%, white) 0,
-      color-mix(in srgb, var(--lego-accent) 10%, white) 18%,
-      transparent 19%
-    ),
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--lego-accent-subtle) 72%, white) 0%,
-      color-mix(in srgb, var(--lego-surface-default) 88%, white) 52%,
-      color-mix(in srgb, var(--lego-commerce-subtle) 34%, white) 100%
-    );
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-accent) 14%, var(--lego-border));
+  background: var(--lego-surface-subtle);
 }
 
 .heroCard::before,
+.heroCard::after,
 .stepSection::before,
 .priceSection::before,
 .whyCard::before,
-.transparencyCard::before {
-  content: '';
-  pointer-events: none;
-  position: absolute;
-  z-index: 0;
-}
-
-.heroCard::before {
-  background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--lego-accent) 12%, white) 0,
-      color-mix(in srgb, var(--lego-accent) 12%, white) 32%,
-      transparent 34%
-    )
-    0 0 / 1.4rem 1.4rem;
-  height: 8rem;
-  opacity: 0.8;
-  right: -1.5rem;
-  top: -1rem;
-  width: 8rem;
-}
-
-.heroCard::after {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lego-accent) 18%, transparent),
-    color-mix(in srgb, var(--lego-commerce) 16%, transparent),
-    color-mix(in srgb, var(--lego-positive) 14%, transparent)
-  );
-  border-radius: var(--lego-radius-pill);
-  bottom: 1rem;
-  content: '';
-  height: 0.35rem;
-  inset: auto auto 1rem var(--lego-space-6);
-  left: var(--lego-space-6);
-  pointer-events: none;
-  position: absolute;
-  width: min(10rem, 32%);
-  z-index: 0;
+.transparencyCard::before,
+.transparencyCard::after {
+  content: none;
 }
 
 .heroLayout {
@@ -101,17 +52,18 @@
 
 .heroPill {
   align-items: center;
-  background: color-mix(in srgb, white 74%, var(--lego-accent-subtle) 26%);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-accent) 18%, var(--lego-border));
+  background: var(--lego-surface-default);
+  border: 0;
   border-radius: var(--lego-radius-pill);
-  color: var(--lego-text);
+  color: var(--lego-text-muted);
   display: inline-flex;
-  font-size: var(--lego-text-role-meta-size);
+  font-size: var(--lego-text-role-label-size);
   font-weight: var(--lego-font-weight-semibold);
-  line-height: 1;
+  letter-spacing: var(--lego-text-role-label-tracking);
+  line-height: var(--lego-text-role-label-line-height);
   min-height: 2rem;
   padding: 0.42rem 0.72rem;
+  text-transform: uppercase;
 }
 
 .heroBuildVisual {
@@ -122,33 +74,26 @@
 }
 
 .heroBrick {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-accent) 88%, white 12%),
-    color-mix(in srgb, var(--lego-accent) 68%, white 32%)
-  );
+  background: var(--lego-accent);
   border-radius: 1rem 1rem 0.7rem 0.7rem;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 46%, transparent),
-    0 12px 26px color-mix(in srgb, var(--lego-accent) 16%, transparent);
   flex: 0 0 auto;
   position: relative;
   width: clamp(3rem, 14vw, 4.2rem);
 }
 
 .heroBrick::before {
-  background: color-mix(in srgb, white 68%, var(--lego-accent) 32%);
+  background: var(--lego-surface-default);
   border-radius: var(--lego-radius-pill);
   box-shadow:
-    -0.95rem 0 0 color-mix(in srgb, white 68%, var(--lego-accent) 32%),
-    0.95rem 0 0 color-mix(in srgb, white 68%, var(--lego-accent) 32%);
+    -0.95rem 0 0 var(--lego-surface-default),
+    0.95rem 0 0 var(--lego-surface-default);
   content: '';
-  height: 0.68rem;
+  height: 0.62rem;
   left: 50%;
   position: absolute;
   top: 0.48rem;
   transform: translateX(-50%);
-  width: 0.68rem;
+  width: 0.62rem;
 }
 
 .heroBrickShort {
@@ -156,41 +101,27 @@
 }
 
 .heroBrickTall {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-commerce) 88%, white 12%),
-    color-mix(in srgb, var(--lego-commerce) 64%, white 36%)
-  );
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 46%, transparent),
-    0 12px 26px color-mix(in srgb, var(--lego-commerce) 16%, transparent);
+  background: var(--lego-commerce);
   height: 4.8rem;
 }
 
 .heroBrickTall::before {
-  background: color-mix(in srgb, white 66%, var(--lego-commerce) 34%);
+  background: var(--lego-surface-default);
   box-shadow:
-    -0.95rem 0 0 color-mix(in srgb, white 66%, var(--lego-commerce) 34%),
-    0.95rem 0 0 color-mix(in srgb, white 66%, var(--lego-commerce) 34%);
+    -0.95rem 0 0 var(--lego-surface-default),
+    0.95rem 0 0 var(--lego-surface-default);
 }
 
 .heroBrickMedium {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-positive) 76%, white 24%),
-    color-mix(in srgb, var(--lego-positive) 58%, white 42%)
-  );
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 46%, transparent),
-    0 12px 26px color-mix(in srgb, var(--lego-positive) 16%, transparent);
+  background: var(--lego-positive);
   height: 3.8rem;
 }
 
 .heroBrickMedium::before {
-  background: color-mix(in srgb, white 66%, var(--lego-positive) 34%);
+  background: var(--lego-surface-default);
   box-shadow:
-    -0.95rem 0 0 color-mix(in srgb, white 66%, var(--lego-positive) 34%),
-    0.95rem 0 0 color-mix(in srgb, white 66%, var(--lego-positive) 34%);
+    -0.95rem 0 0 var(--lego-surface-default),
+    0.95rem 0 0 var(--lego-surface-default);
 }
 
 .stepGrid,
@@ -214,53 +145,11 @@
 }
 
 .stepSection {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-surface-default) 97%, white) 0%,
-    color-mix(in srgb, var(--lego-accent-subtle) 22%, white) 100%
-  );
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-accent) 14%, var(--lego-border));
-}
-
-.stepSection::before {
-  background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--lego-accent) 10%, white) 0,
-      color-mix(in srgb, var(--lego-accent) 10%, white) 30%,
-      transparent 32%
-    )
-    0 0 / 1rem 1rem;
-  bottom: -0.75rem;
-  height: 6rem;
-  left: -0.4rem;
-  opacity: 0.75;
-  width: 8rem;
+  background: var(--lego-surface-default);
 }
 
 .priceSection {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-commerce-subtle) 42%, white) 0%,
-    color-mix(in srgb, var(--lego-surface-subtle) 90%, white) 100%
-  );
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-commerce) 14%, var(--lego-border));
-}
-
-.priceSection::before {
-  background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--lego-commerce) 11%, white) 0,
-      color-mix(in srgb, var(--lego-commerce) 11%, white) 26%,
-      transparent 28%
-    )
-    0 0 / 1.1rem 1.1rem;
-  height: 5.5rem;
-  opacity: 0.78;
-  right: -0.5rem;
-  top: -0.6rem;
-  width: 7rem;
+  background: var(--lego-surface-subtle);
 }
 
 .stepCard,
@@ -272,20 +161,13 @@
 }
 
 .stepCard {
-  background: color-mix(in srgb, white 88%, var(--lego-accent-subtle) 12%);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-accent) 16%, var(--lego-border));
+  background: var(--lego-surface-default);
 }
 
 .stepCard::after {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lego-accent) 48%, white 52%),
-    color-mix(in srgb, var(--lego-accent) 22%, transparent)
-  );
-  border-radius: var(--lego-radius-pill);
+  background: var(--lego-accent);
   content: '';
-  height: 0.32rem;
+  height: 0.24rem;
   inset: auto var(--lego-space-5) 0 var(--lego-space-5);
   position: absolute;
   z-index: 0;
@@ -305,15 +187,8 @@
 
 .stepNumber {
   align-items: center;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-accent) 88%, white 12%),
-    color-mix(in srgb, var(--lego-accent) 64%, white 36%)
-  );
+  background: var(--lego-accent);
   border-radius: 1rem;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
-    0 10px 22px color-mix(in srgb, var(--lego-accent) 15%, transparent);
   color: var(--lego-accent-contrast);
   display: inline-flex;
   font-family: var(--lego-font-family-heading);
@@ -325,97 +200,59 @@
 }
 
 .stepItem:nth-child(2) .stepNumber {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-commerce) 86%, white 14%),
-    color-mix(in srgb, var(--lego-commerce) 60%, white 40%)
-  );
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
-    0 10px 22px color-mix(in srgb, var(--lego-commerce) 15%, transparent);
+  background: var(--lego-commerce);
   color: var(--lego-text);
 }
 
 .stepItem:nth-child(3) .stepNumber {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-positive) 76%, white 24%),
-    color-mix(in srgb, var(--lego-positive) 56%, white 44%)
-  );
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, white 42%, transparent),
-    0 10px 22px color-mix(in srgb, var(--lego-positive) 15%, transparent);
+  background: var(--lego-positive);
   color: var(--lego-text);
 }
 
 .stepItem:nth-child(2) .stepCard {
-  background: color-mix(in srgb, white 88%, var(--lego-commerce-subtle) 12%);
-  border-color: color-mix(
-    in srgb,
-    var(--lego-commerce) 16%,
-    var(--lego-border)
-  );
+  background: var(--lego-surface-default);
 }
 
 .stepItem:nth-child(2) .stepCard::after {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lego-commerce) 46%, white 54%),
-    color-mix(in srgb, var(--lego-commerce) 20%, transparent)
-  );
+  background: var(--lego-commerce);
 }
 
 .stepItem:nth-child(3) .stepCard {
-  background: color-mix(in srgb, white 88%, var(--lego-positive-subtle) 12%);
-  border-color: color-mix(
-    in srgb,
-    var(--lego-positive) 16%,
-    var(--lego-border)
-  );
+  background: var(--lego-surface-default);
 }
 
 .stepItem:nth-child(3) .stepCard::after {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lego-positive) 44%, white 56%),
-    color-mix(in srgb, var(--lego-positive) 18%, transparent)
-  );
+  background: var(--lego-positive);
 }
 
 .checkCard {
-  background: color-mix(in srgb, white 92%, var(--lego-commerce-subtle) 8%);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-commerce) 12%, var(--lego-border));
+  background: var(--lego-surface-default);
 }
 
 .checkCard::before {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lego-commerce) 56%, white 44%),
-    color-mix(in srgb, var(--lego-accent) 30%, white 70%)
-  );
+  background: var(--lego-commerce);
   border-radius: var(--lego-radius-pill);
   content: '';
-  height: 0.42rem;
+  height: 0.24rem;
   position: absolute;
   right: var(--lego-space-5);
   top: var(--lego-space-5);
-  width: 1.7rem;
+  width: 2rem;
 }
 
 .stepLabel,
 .cardEyebrow {
   color: var(--lego-text-muted);
-  font-size: var(--lego-font-size-caption);
+  font-size: var(--lego-text-role-label-size);
   font-weight: var(--lego-font-weight-semibold);
-  letter-spacing: 0.04em;
-  line-height: 1.2;
+  letter-spacing: var(--lego-text-role-label-tracking);
+  line-height: var(--lego-text-role-label-line-height);
   margin: 0;
   text-transform: uppercase;
 }
 
 .priceSection .cardEyebrow {
-  color: color-mix(in srgb, var(--lego-commerce) 76%, black 24%);
+  color: var(--lego-commerce);
 }
 
 .cardTitle {
@@ -430,7 +267,8 @@
 .cardBody,
 .transparencyCopy {
   color: var(--lego-text-muted);
-  line-height: var(--lego-line-height-relaxed);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
   margin: 0;
 }
 
@@ -440,102 +278,34 @@
 }
 
 .whyCard {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--lego-accent-subtle) 60%, white) 0%,
-    color-mix(in srgb, var(--lego-positive-subtle) 28%, white) 100%
-  );
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-accent) 14%, var(--lego-border));
-}
-
-.whyCard::before {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lego-accent) 28%, transparent) 0 18%,
-    transparent 18% 22%,
-    color-mix(in srgb, var(--lego-commerce) 22%, transparent) 22% 40%,
-    transparent 40% 44%,
-    color-mix(in srgb, var(--lego-positive) 18%, transparent) 44% 62%,
-    transparent 62%
-  );
-  height: 0.5rem;
-  inset: 0 0 auto 0;
+  background: var(--lego-accent-subtle);
 }
 
 .whyItem {
   align-items: start;
-  border-top: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 72%, transparent);
   column-gap: var(--lego-space-3);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  padding-top: var(--lego-space-3);
-}
-
-.whyItem:first-child {
-  padding-top: 0;
-  border-top: 0;
 }
 
 .whyMarker {
-  align-items: center;
-  background: color-mix(in srgb, white 68%, var(--lego-accent-subtle) 32%);
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-accent) 18%, var(--lego-border));
-  border-radius: 0.55rem;
-  color: var(--lego-accent);
+  background: var(--lego-accent);
+  border-radius: var(--lego-list-marker-radius);
   display: inline-flex;
-  font-size: 1rem;
-  font-weight: var(--lego-font-weight-bold);
-  height: 1.45rem;
-  justify-content: center;
-  line-height: 1.2;
-  width: 1.45rem;
+  font-size: 0;
+  height: var(--lego-list-marker-size);
+  margin-top: 0.38rem;
+  width: var(--lego-list-marker-size);
 }
 
 .whyCopy {
   color: var(--lego-text);
-  line-height: 1.5;
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
 }
 
 .transparencyCard {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--lego-surface-default) 98%, white) 0%,
-    color-mix(in srgb, var(--lego-surface-muted) 82%, white) 100%
-  );
-  border: var(--lego-border-width-1) solid
-    color-mix(in srgb, var(--lego-border) 78%, transparent);
-}
-
-.transparencyCard::before {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--lego-accent) 34%, white 66%),
-    color-mix(in srgb, var(--lego-commerce) 28%, white 72%),
-    color-mix(in srgb, var(--lego-positive) 24%, white 76%)
-  );
-  height: 0.45rem;
-  inset: 0 0 auto 0;
-}
-
-.transparencyCard::after {
-  background: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--lego-border) 58%, transparent) 0,
-      color-mix(in srgb, var(--lego-border) 58%, transparent) 24%,
-      transparent 26%
-    )
-    0 0 / 0.9rem 0.9rem;
-  content: '';
-  height: 4rem;
-  inset: auto -0.2rem -0.2rem auto;
-  opacity: 0.55;
-  pointer-events: none;
-  position: absolute;
-  width: 4.5rem;
-  z-index: 0;
+  background: var(--lego-surface-default);
 }
 
 .transparencyBody {
@@ -566,12 +336,7 @@
   }
 
   .stepGrid::before {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--lego-accent) 24%, transparent),
-      color-mix(in srgb, var(--lego-commerce) 24%, transparent),
-      color-mix(in srgb, var(--lego-positive) 24%, transparent)
-    );
+    background: var(--lego-border-subtle);
     content: '';
     height: 0.16rem;
     left: calc((100% / 6) + 1rem);

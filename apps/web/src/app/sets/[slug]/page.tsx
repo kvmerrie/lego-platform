@@ -24,6 +24,10 @@ import {
   getPricePanelSnapshot,
   getSetDealVerdict,
 } from '@lego-platform/pricing/data-access';
+import {
+  formatPriceMinor,
+  type PricePanelSnapshot,
+} from '@lego-platform/pricing/util';
 import { PricingFeaturePriceHistory } from '@lego-platform/pricing/feature-price-history';
 import { ShellWeb } from '@lego-platform/shell/web';
 import {
@@ -55,6 +59,15 @@ function formatOfferCheckedAt(checkedAt: string): string {
   }).format(new Date(checkedAt));
 }
 
+function formatOfferCheckedAtCompact(checkedAt: string): string {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    month: 'short',
+  }).format(new Date(checkedAt));
+}
+
 function getOfferStockLabel(
   availability: CatalogOffer['availability'],
 ): string {
@@ -69,24 +82,90 @@ function getOfferStockLabel(
   return 'Voorraad onbekend';
 }
 
-function buildBestDeal(
-  catalogOffer?: CatalogOffer | null,
-): CatalogSetDetailBestDeal | undefined {
+function buildMerchantCoverageLabel(
+  merchantCount?: number,
+): string | undefined {
+  if (typeof merchantCount !== 'number' || merchantCount <= 0) {
+    return undefined;
+  }
+
+  return `${merchantCount} winkel${merchantCount === 1 ? '' : 's'} nagekeken`;
+}
+
+function buildOfferSummaryLabel({
+  merchantCount,
+  observedAt,
+}: {
+  merchantCount?: number;
+  observedAt?: string;
+}): string | undefined {
+  const parts = [
+    buildMerchantCoverageLabel(merchantCount),
+    observedAt
+      ? `Nagekeken ${formatOfferCheckedAtCompact(observedAt)}`
+      : undefined,
+  ].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(' · ') : undefined;
+}
+
+function buildDecisionHelper(pricePanelSnapshot?: PricePanelSnapshot): string {
+  if (
+    !pricePanelSnapshot ||
+    typeof pricePanelSnapshot.deltaMinor !== 'number'
+  ) {
+    return 'We volgen nog te weinig prijzen om dit moment scherp te duiden.';
+  }
+
+  if (pricePanelSnapshot.deltaMinor < 0) {
+    return `${formatPriceMinor({
+      currencyCode: pricePanelSnapshot.currencyCode,
+      minorUnits: Math.abs(pricePanelSnapshot.deltaMinor),
+    })} onder wat we meestal zien voor deze set.`;
+  }
+
+  if (pricePanelSnapshot.deltaMinor > 0) {
+    return `${formatPriceMinor({
+      currencyCode: pricePanelSnapshot.currencyCode,
+      minorUnits: pricePanelSnapshot.deltaMinor,
+    })} boven wat we meestal zien voor deze set.`;
+  }
+
+  return 'Rond het normale prijsniveau voor deze set.';
+}
+
+function buildBestDeal({
+  catalogOffer,
+  dealVerdict,
+  merchantCount,
+  pricePanelSnapshot,
+}: {
+  catalogOffer?: CatalogOffer | null;
+  dealVerdict: {
+    label: string;
+    tone?: 'info' | 'neutral' | 'positive' | 'warning';
+  };
+  merchantCount?: number;
+  pricePanelSnapshot?: PricePanelSnapshot;
+}): CatalogSetDetailBestDeal | undefined {
   if (!catalogOffer) {
     return undefined;
   }
 
-  const offerPrice = formatOfferPrice(catalogOffer);
-  const inStock = catalogOffer.availability === 'in_stock';
-
   return {
-    checkedLabel: `Nagekeken op ${formatOfferCheckedAt(catalogOffer.checkedAt)}`,
+    checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(catalogOffer.checkedAt)}`,
     ctaHref: catalogOffer.url,
-    ctaLabel: inStock
-      ? `Koop voor ${offerPrice} bij ${catalogOffer.merchantName}`
-      : 'Bekijk beste deal',
-    merchantLabel: `Beste prijs nu bij ${catalogOffer.merchantName}`,
-    price: offerPrice,
+    ctaLabel:
+      dealVerdict.tone === 'warning'
+        ? `Bekijk prijs bij ${catalogOffer.merchantName}`
+        : `Bekijk bij ${catalogOffer.merchantName}`,
+    ctaTone: dealVerdict.tone === 'positive' ? 'accent' : 'secondary',
+    coverageLabel: buildMerchantCoverageLabel(merchantCount),
+    decisionHelper: buildDecisionHelper(pricePanelSnapshot),
+    decisionLabel: dealVerdict.label,
+    decisionTone: dealVerdict.tone,
+    merchantLabel: `Nu het laagst bij ${catalogOffer.merchantName}`,
+    price: formatOfferPrice(catalogOffer),
     stockLabel: getOfferStockLabel(catalogOffer.availability),
   };
 }
@@ -98,9 +177,9 @@ function buildOfferList(
   return sortCatalogOffers(catalogOffers)
     .slice(0, 3)
     .map((catalogOffer) => ({
-      checkedLabel: `Nagekeken op ${formatOfferCheckedAt(catalogOffer.checkedAt)}`,
+      checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(catalogOffer.checkedAt)}`,
       ctaHref: catalogOffer.url,
-      ctaLabel: 'Bekijk deal',
+      ctaLabel: `Bekijk bij ${catalogOffer.merchantName}`,
       isBest: bestOffer?.url === catalogOffer.url,
       merchantLabel: catalogOffer.merchantName,
       price: formatOfferPrice(catalogOffer),
@@ -131,8 +210,8 @@ function buildTrustSignals({
     ...(typeof merchantCount === 'number'
       ? [
           {
-            label: 'Winkels gevolgd',
-            value: `${merchantCount} nagekeken`,
+            label: 'Winkels nagekeken',
+            value: `${merchantCount} winkel${merchantCount === 1 ? '' : 's'} nagekeken`,
           },
         ]
       : []),
@@ -163,13 +242,20 @@ export default async function SetDetailPage({
   const localizedSetDetailOffers = setDetailOffers.filter(isEuroCatalogOffer);
   const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
+  const dealVerdict = getSetDealVerdict(catalogSetDetail.id);
   const trackedMerchantCount =
     pricePanelSnapshot?.merchantCount ?? localizedSetDetailOffers.length;
 
   return (
     <ShellWeb>
       <CatalogFeatureSetDetail
-        bestDeal={buildBestDeal(bestOffer)}
+        bestDeal={buildBestDeal({
+          catalogOffer: bestOffer,
+          dealVerdict,
+          merchantCount:
+            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+          pricePanelSnapshot,
+        })}
         brickhuntValueItems={buildBrickhuntValueItems({
           merchantCount:
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
@@ -181,8 +267,13 @@ export default async function SetDetailPage({
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
           pricePanelSnapshot,
         })}
-        dealVerdict={getSetDealVerdict(catalogSetDetail.id)}
+        dealVerdict={dealVerdict}
         offerList={buildOfferList(localizedSetDetailOffers, bestOffer)}
+        offerSummaryLabel={buildOfferSummaryLabel({
+          merchantCount:
+            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+          observedAt: pricePanelSnapshot?.observedAt ?? bestOffer?.checkedAt,
+        })}
         ownershipActions={
           <>
             <CollectionFeatureOwnedToggle

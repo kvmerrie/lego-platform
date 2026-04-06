@@ -145,8 +145,9 @@ describe('pricing data access', () => {
 
   test('builds a decisive deal verdict from the current snapshot', () => {
     expect(getSetDealVerdict('10354')).toEqual({
-      explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
-      label: 'Goede deal',
+      explanation:
+        'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
+      label: 'Nu interessant geprijsd',
       tone: 'positive',
     });
 
@@ -155,8 +156,9 @@ describe('pricing data access', () => {
         deltaMinor: 0,
       }),
     ).toEqual({
-      explanation: 'Dit is een normale prijs. Wachten kan.',
-      label: 'Normale prijs',
+      explanation:
+        'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
+      label: 'Rond normaal',
       tone: 'info',
     });
 
@@ -165,8 +167,9 @@ describe('pricing data access', () => {
         deltaMinor: 1299,
       }),
     ).toEqual({
-      explanation: 'Deze prijs ligt hoog. Wachten is slimmer.',
-      label: 'Relatief duur',
+      explanation:
+        'Deze prijs ligt boven wat we meestal zien. Volgen en wachten is slimmer.',
+      label: 'Nog niet bijzonder',
       tone: 'warning',
     });
   });

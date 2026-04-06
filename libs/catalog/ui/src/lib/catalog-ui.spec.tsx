@@ -282,9 +282,14 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         bestDeal={{
-          checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+          checkedLabel: 'Nagekeken 31 mrt, 09:00',
+          coverageLabel: '2 winkels nagekeken',
           ctaHref: 'https://example.com/rivendell',
-          ctaLabel: 'Koop voor € 469,99 bij bol',
+          ctaLabel: 'Bekijk bij bol',
+          ctaTone: 'accent',
+          decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
+          decisionLabel: 'Nu interessant geprijsd',
+          decisionTone: 'positive',
           merchantLabel: 'Nu het scherpst bij bol',
           price: '€ 469,99',
           stockLabel: 'Op voorraad',
@@ -352,31 +357,33 @@ describe('CatalogSetCard', () => {
           },
         ]}
         dealVerdict={{
-          explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
-          label: 'Goede deal',
+          explanation:
+            'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
+          label: 'Nu interessant geprijsd',
           tone: 'positive',
         }}
         offerList={[
           {
-            checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+            checkedLabel: 'Nagekeken 31 mrt, 09:00',
             ctaHref: 'https://example.com/rivendell',
-            ctaLabel: 'Bekijk deal',
+            ctaLabel: 'Bekijk bij bol',
             isBest: true,
             merchantLabel: 'bol',
             price: '€ 469,99',
             stockLabel: 'Op voorraad',
           },
           {
-            checkedLabel: 'Nagekeken op 31 mrt 2026, 09:15',
+            checkedLabel: 'Nagekeken 31 mrt, 09:15',
             ctaHref: 'https://example.com/rivendell-lego',
-            ctaLabel: 'Bekijk deal',
+            ctaLabel: 'Bekijk bij LEGO',
             merchantLabel: 'LEGO',
             price: '€ 499,99',
             stockLabel: 'Op voorraad',
           },
         ]}
+        offerSummaryLabel="2 winkels nagekeken · Nagekeken 31 mrt, 09:00"
         ownershipActions={<button type="button">In collectie zetten</button>}
-        priceAlertAction={<button type="button">Zet prijsalert aan</button>}
+        priceAlertAction={<button type="button">Volg prijs</button>}
         priceHistoryPanel={
           <div>
             <p>Prijs in het kort</p>
@@ -387,31 +394,37 @@ describe('CatalogSetCard', () => {
         themeHref="/themes/icons"
         trustSignals={[
           { label: 'Laatst nagekeken', value: '31 mrt 2026, 09:00' },
-          { label: 'Winkels gevolgd', value: '2 nagekeken' },
+          { label: 'Winkels nagekeken', value: '2 winkels nagekeken' },
         ]}
       />,
     );
 
-    expect(markup).toContain('Goede deal');
+    expect(markup).toContain('Nu interessant geprijsd');
     expect(markup).toContain(
-      'Deze prijs ligt onder normaal. Nu kopen is slim.',
+      'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
     );
     expect(markup).toContain('The Lord of the Rings');
-    expect(markup).toContain('Koop voor € 469,99 bij bol');
-    expect(markup).toContain('Waarom dit een goede deal is');
+    expect(markup).toContain('Bekijk bij bol');
+    expect(markup).toContain(
+      '€ 30,00 onder wat we meestal zien voor deze set.',
+    );
+    expect(markup).toContain('Waarom dit nu interessant is');
     expect(markup).toContain(
       'Dit is momenteel de scherpste prijs die we volgen.',
     );
-    expect(markup).toContain('Nog even wachten?');
-    expect(markup).toContain('Zet prijsalert aan');
+    expect(markup).toContain('Nog niet klaar om te kopen?');
+    expect(markup).toContain('Volg prijs');
     expect(markup).toContain('Meer nagekeken prijzen');
+    expect(markup).toContain('2 winkels nagekeken · Nagekeken 31 mrt, 09:00');
     expect(markup).toContain('Waarom via Brickhunt');
     expect(markup).toContain('Je ziet meteen of nu kopen slim is.');
     expect(markup).toContain('Waar dit op steunt');
     expect(markup).toContain('Ga naar afbeelding 2');
     expect(markup).toContain('Swipe voor meer foto&#x27;s');
     expect(markup).toContain('In collectie zetten');
-    expect(markup).toContain('Set 10316 · 2023');
+    expect(markup).toContain('Setnummer');
+    expect(markup).toContain('10316');
+    expect(markup).toContain('Stenen');
     expect(markup).toContain('Wat opvalt');
     expect(markup).not.toContain('$499 to $569');
   });
@@ -420,9 +433,13 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         bestDeal={{
-          checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+          checkedLabel: 'Nagekeken 31 mrt, 09:00',
           ctaHref: 'https://example.com/c3po',
-          ctaLabel: 'Koop voor € 139,99 bij LEGO',
+          ctaLabel: 'Bekijk bij LEGO',
+          ctaTone: 'secondary',
+          decisionHelper: 'Rond het normale prijsniveau voor deze set.',
+          decisionLabel: 'Rond normaal',
+          decisionTone: 'info',
           merchantLabel: 'Nu het scherpst bij LEGO',
           price: '€ 139,99',
           stockLabel: 'Op voorraad',
@@ -442,22 +459,24 @@ describe('CatalogSetCard', () => {
           collectorHighlights: ['De goudkleurige afwerking valt direct op.'],
         }}
         dealVerdict={{
-          explanation: 'Dit is een normale prijs. Wachten kan.',
-          label: 'Normale prijs',
+          explanation:
+            'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
+          label: 'Rond normaal',
           tone: 'info',
         }}
         offerList={[
           {
-            checkedLabel: 'Nagekeken op 31 mrt 2026, 09:00',
+            checkedLabel: 'Nagekeken 31 mrt, 09:00',
             ctaHref: 'https://example.com/c3po',
-            ctaLabel: 'Bekijk deal',
+            ctaLabel: 'Bekijk bij LEGO',
             isBest: true,
             merchantLabel: 'LEGO',
             price: '€ 139,99',
             stockLabel: 'Op voorraad',
           },
         ]}
-        priceAlertAction={<button type="button">Zet prijsalert aan</button>}
+        offerSummaryLabel="1 winkel nagekeken · Nagekeken 31 mrt, 09:00"
+        priceAlertAction={<button type="button">Volg prijs</button>}
         priceHistoryPanel={<div>Recent prijsverloop</div>}
       />,
     );
@@ -491,7 +510,7 @@ describe('CatalogSetCard', () => {
             'Motorized light and rotating beacon create stronger live display presence than most static shelf pieces',
           ],
         }}
-        priceAlertAction={<button type="button">Zet prijsalert aan</button>}
+        priceAlertAction={<button type="button">Volg prijs</button>}
         priceHistoryPanel={<div>Recent prijsverloop</div>}
         themeDirectoryHref="/themes"
         themeHref="/themes/ideas"
@@ -503,26 +522,79 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Setcontext');
     expect(markup).toContain('Officiele afbeelding nog niet gepubliceerd');
     expect(markup).toContain('Set 21335');
-    expect(markup).toContain('Nog even wachten?');
+    expect(markup).toContain('Twijfel je nog?');
     expect(markup).toContain('Recent prijsverloop');
-    expect(markup).toContain('Snel gecheckt');
-    expect(markup).toContain('Steentjes');
+    expect(markup).toContain('Setnummer');
+    expect(markup).toContain('Stenen');
     expect(markup).toContain('Minifiguren');
-    expect(markup).toContain('Nog niet lokaal bijgehouden');
-    expect(markup).toContain(
-      'Leeftijd en afmetingen volgen zodra ze lokaal zijn toegevoegd.',
-    );
+    expect(markup).toContain('Nog niet bekend');
     expect(markup).toContain('<h1');
     expect(markup).not.toContain('$259 to $319');
     expect(markup).not.toContain('Back to shortlist');
+  });
+
+  it('pushes price-following harder when waiting is the smarter call', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        bestDeal={{
+          checkedLabel: 'Nagekeken 31 mrt, 09:00',
+          coverageLabel: '2 winkels nagekeken',
+          ctaHref: 'https://example.com/gringotts',
+          ctaLabel: 'Bekijk prijs bij bol',
+          ctaTone: 'secondary',
+          decisionHelper: '€ 20,00 boven wat we meestal zien voor deze set.',
+          decisionLabel: 'Nog niet bijzonder',
+          decisionTone: 'warning',
+          merchantLabel: 'Nu het laagst bij bol',
+          price: '€ 449,99',
+          stockLabel: 'Op voorraad',
+        }}
+        catalogSetDetail={{
+          id: '76417',
+          slug: 'gringotts-wizarding-bank-collectors-edition-76417',
+          name: "Gringotts Wizarding Bank - Collectors' Edition",
+          theme: 'Harry Potter',
+          releaseYear: 2023,
+          pieces: 4803,
+          imageUrl: 'https://images.example/gringotts.jpg',
+          collectorAngle: 'Wizarding World premium landmark',
+          tagline:
+            'A major Gringotts display build that gives Harry Potter a stronger premium anchor beyond the smaller Hogwarts panorama.',
+          availability: 'High-visibility franchise demand',
+          collectorHighlights: [
+            'Broad franchise recognition makes it a strong search target for casual and deep collectors alike',
+          ],
+        }}
+        dealSupportItems={[
+          {
+            id: 'price-above-normal',
+            text: 'Deze prijs ligt boven wat we meestal zien.',
+          },
+        ]}
+        dealVerdict={{
+          explanation:
+            'Deze prijs ligt boven wat we meestal zien. Volgen en wachten is slimmer.',
+          label: 'Nog niet bijzonder',
+          tone: 'warning',
+        }}
+        priceAlertAction={<button type="button">Volg prijs</button>}
+      />,
+    );
+
+    expect(markup).toContain('Slimmer om te wachten');
+    expect(markup).toContain('Wacht op een beter moment');
+    expect(markup).toContain('Waarom wachten slimmer is');
+    expect(markup).toContain('Bekijk prijs bij bol');
+    expect(markup).toContain('Volg prijs');
   });
 
   it('renders minifigure count in the detail specs grid when local data exists', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation: 'Dit is een normale prijs. Wachten kan.',
-          label: 'Normale prijs',
+          explanation:
+            'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
+          label: 'Rond normaal',
           tone: 'info',
         }}
         catalogSetDetail={{
@@ -554,8 +626,9 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
-          label: 'Goede deal',
+          explanation:
+            'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
+          label: 'Nu interessant geprijsd',
           tone: 'positive',
         }}
         catalogSetDetail={{
@@ -591,8 +664,9 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
-          explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
-          label: 'Goede deal',
+          explanation:
+            'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
+          label: 'Nu interessant geprijsd',
           tone: 'positive',
         }}
         catalogSetDetail={{

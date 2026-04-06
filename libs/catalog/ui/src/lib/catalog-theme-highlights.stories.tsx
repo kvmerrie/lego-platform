@@ -26,7 +26,7 @@ export const PortraitTile: Story = {
           slug: 'icons',
           setCount: 14,
           momentum:
-            'Display-led builds, nostalgia anchors, and big collector landmarks.',
+            'Grote displaysets, nostalgie en plankstukken die blijven hangen.',
           signatureSet: 'Rivendell',
         }}
         variant="portrait"
@@ -49,7 +49,7 @@ export const FeatureTile: Story = {
           slug: 'marvel',
           setCount: 3,
           momentum:
-            'Superhero flagships and skyline-style display builds with broad recognition.',
+            'Grote skyline- en HQ-sets met brede herkenning en veel plankpresence.',
           signatureSet: 'Avengers Tower',
         }}
         variant="feature"
@@ -66,9 +66,28 @@ export const PlainTile: Story = {
           name: 'Botanicals',
           slug: 'botanicals',
           setCount: 6,
-          momentum: 'Display-led floral builds with gift-friendly pull.',
+          momentum:
+            'Bloemen en planten die direct werken als displayset of cadeau.',
           signatureSet: 'Bouquet of Roses',
         }}
+      />
+    </div>
+  ),
+};
+
+export const FeatureTileWithoutImage: Story = {
+  render: () => (
+    <div style={{ maxWidth: '16rem', width: '100%' }}>
+      <CatalogThemeHighlight
+        themeSnapshot={{
+          name: 'Modular Buildings',
+          slug: 'modular-buildings',
+          setCount: 8,
+          momentum:
+            'Straten, hoeken en gevels die sterker worden zodra je meer dan één pand naast elkaar zet.',
+          signatureSet: 'Natural History Museum',
+        }}
+        variant="feature"
       />
     </div>
   ),

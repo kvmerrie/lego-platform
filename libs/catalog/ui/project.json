@@ -10,7 +10,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "libs/catalog/ui",
-        "command": "vitest run src/lib/catalog-ui.spec.tsx --config ../vitest.config.mts"
+        "command": "vitest run src/lib/catalog-ui.spec.tsx src/lib/catalog-commerce-ui.spec.tsx --config ../vitest.config.mts"
       }
     }
   }
