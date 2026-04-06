@@ -18,9 +18,19 @@ describe('Catalog commerce UI', () => {
             value: '10316',
           },
           {
+            id: 'recommended-age',
+            label: 'Leeftijd',
+            value: '18+',
+          },
+          {
             id: 'pieces',
             label: 'Stenen',
             value: '6.167',
+          },
+          {
+            id: 'display-size',
+            label: 'Formaat',
+            value: '72 × 50 × 39 cm',
           },
         ]}
       />,
@@ -28,8 +38,12 @@ describe('Catalog commerce UI', () => {
 
     expect(markup).toContain('Setnummer');
     expect(markup).toContain('10316');
+    expect(markup).toContain('Leeftijd');
+    expect(markup).toContain('18+');
     expect(markup).toContain('Stenen');
     expect(markup).toContain('6.167');
+    expect(markup).toContain('Formaat');
+    expect(markup).toContain('72 × 50 × 39 cm');
   });
 
   it('renders a decision panel with buy-now and follow-later states', () => {

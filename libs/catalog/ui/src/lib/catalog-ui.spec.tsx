@@ -340,6 +340,10 @@ describe('CatalogSetCard', () => {
           ],
           minifigureCount: 15,
           minifigureHighlights: ['Frodo', 'Elrond'],
+          recommendedAge: 18,
+          displaySize: {
+            value: '72 × 50 × 39 cm',
+          },
           setStatus: 'available',
         }}
         dealSupportItems={[
@@ -424,6 +428,10 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('In collectie zetten');
     expect(markup).toContain('Setnummer');
     expect(markup).toContain('10316');
+    expect(markup).toContain('Leeftijd');
+    expect(markup).toContain('18+');
+    expect(markup).toContain('Formaat');
+    expect(markup).toContain('72 × 50 × 39 cm');
     expect(markup).toContain('Stenen');
     expect(markup).toContain('Wat opvalt');
     expect(markup).not.toContain('$499 to $569');
@@ -526,8 +534,10 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Recent prijsverloop');
     expect(markup).toContain('Setnummer');
     expect(markup).toContain('Stenen');
-    expect(markup).toContain('Minifiguren');
-    expect(markup).toContain('Nog niet bekend');
+    expect(markup).toContain('Jaar');
+    expect(markup).toContain('2022');
+    expect(markup).not.toContain('Minifiguren');
+    expect(markup).not.toContain('Nog niet bekend');
     expect(markup).toContain('<h1');
     expect(markup).not.toContain('$259 to $319');
     expect(markup).not.toContain('Back to shortlist');

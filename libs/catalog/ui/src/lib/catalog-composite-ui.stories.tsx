@@ -31,6 +31,16 @@ const detailFacts = [
     value: '10316',
   },
   {
+    id: 'recommended-age',
+    label: 'Leeftijd',
+    value: '18+',
+  },
+  {
+    id: 'display-size',
+    label: 'Formaat',
+    value: '72 × 50 × 39 cm',
+  },
+  {
     id: 'pieces',
     label: 'Stenen',
     value: '6.167',
@@ -39,11 +49,6 @@ const detailFacts = [
     id: 'minifigures',
     label: 'Minifiguren',
     value: '15',
-  },
-  {
-    id: 'status',
-    label: 'Status',
-    value: 'Nu beschikbaar',
   },
 ] as const;
 
@@ -56,6 +61,10 @@ const detailBase = {
     subtheme: 'The Lord of the Rings',
     releaseYear: 2023,
     pieces: 6167,
+    recommendedAge: 18,
+    displaySize: {
+      value: '72 × 50 × 39 cm',
+    },
     minifigureCount: 15,
     minifigureHighlights: ['Elrond', 'Frodo', 'Arwen'],
     availability: 'Goed verkrijgbaar voor een premium set',

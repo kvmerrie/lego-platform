@@ -42,6 +42,10 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     ],
     primaryImage: 'https://media.s-bol.com/k3pv34E3Ggp5/KZO6Aol/1199x1200.jpg',
     minifigureCount: 15,
+    recommendedAge: 18,
+    displaySize: {
+      value: '72 × 50 × 39 cm',
+    },
     collectorAngle:
       'Als je één Middle-earth-set kiest, is Rivendell de hoofdkeuze',
     tagline:
@@ -56,6 +60,8 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '21348',
     displayTheme: 'Ideas',
+    minifigureCount: 6,
+    recommendedAge: 18,
     collectorAngle:
       'De Ideas-set voor kopers die één echt fantasy-avontuur willen',
     tagline:
@@ -71,6 +77,11 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     canonicalId: '76269',
     displayTheme: 'Marvel',
     minifigureCount: 31,
+    recommendedAge: 18,
+    displaySize: {
+      label: 'Hoogte',
+      value: '90 cm',
+    },
     setStatus: 'backorder',
     subtheme: 'Avengers',
     collectorAngle:
@@ -87,6 +98,11 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '10305',
     minifigureCount: 22,
+    recommendedAge: 18,
+    displaySize: {
+      label: 'Hoogte',
+      value: '38 cm',
+    },
     collectorAngle: 'Castle-set die voelt als een droomversie van vroeger',
     tagline:
       "Lion Knights' Castle voelt als de droomversie van klassieke Castle. Groot, levendig en vol minifigs die het fort meteen laten leven.",
@@ -139,6 +155,11 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '10333',
     minifigureCount: 10,
+    recommendedAge: 18,
+    displaySize: {
+      label: 'Hoogte',
+      value: '83 cm',
+    },
     collectorAngle:
       'Als je Middle-earth donker, groot en dreigend wilt, pak je Barad-dur',
     tagline:
@@ -153,6 +174,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '10332',
     minifigureCount: 8,
+    recommendedAge: 18,
     collectorAngle: 'Levendige aanvulling voor kasteelfans',
     tagline:
       'Deze set maakt een Castle-plank pas echt levend. Winkels, bewoners en kleur geven meer sfeer dan nog een extra toren.',
@@ -181,6 +203,8 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     productSlug: 'vincent-van-gogh-the-starry-night-21333',
     displayName: 'Vincent van Gogh - The Starry Night',
     displayTheme: 'Ideas',
+    minifigureCount: 1,
+    recommendedAge: 18,
     collectorAngle: 'The Starry Night als echt LEGO-kunststuk',
     tagline:
       'The Starry Night voelt minder als een LEGO-set en meer als een kunstwerk met reliëf. De diepte in lucht en heuvels maakt hem sterk aan de muur én op de plank.',
@@ -206,6 +230,10 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '10318',
+    recommendedAge: 18,
+    displaySize: {
+      value: '105 cm lang · 15 cm hoog',
+    },
     collectorAngle:
       'De voertuigkeuze voor kopers die elegantie boven agressie zetten',
     tagline:
@@ -232,6 +260,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '10341',
+    recommendedAge: 18,
     collectorAngle: 'Ruimtevaartblikvanger met serieuze hoogte',
     tagline:
       'Een hoge raketset die meteen als echte missie voelt. Dit is ruimtevaartdisplay voor wie schaal en techniek wil.',
@@ -245,6 +274,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '21349',
     displayTheme: 'Ideas',
+    recommendedAge: 18,
     collectorAngle: 'Speelse blikvanger voor kattenliefhebbers',
     tagline:
       'Een grote LEGO-kat die meer karakter heeft dan je verwacht. De houding en kop maken hem meteen leuk om neer te zetten.',
@@ -269,6 +299,10 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   },
   {
     canonicalId: '10294',
+    recommendedAge: 18,
+    displaySize: {
+      value: '135 cm lang',
+    },
     collectorAngle:
       'De keuze voor verzamelaars die één echt megaproject willen afstrepen',
     tagline:
@@ -571,6 +605,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     canonicalId: '76417',
     displayTheme: 'Harry Potter',
     minifigureCount: 13,
+    recommendedAge: 18,
     minifigureHighlights: [
       'Harry Potter',
       'Hermione Granger',
@@ -595,6 +630,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     canonicalId: '76178',
     displayTheme: 'Marvel',
     minifigureCount: 25,
+    recommendedAge: 18,
     minifigureHighlights: [
       'Spider-Man',
       'Green Goblin',

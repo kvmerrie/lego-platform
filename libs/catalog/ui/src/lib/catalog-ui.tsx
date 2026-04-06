@@ -6,7 +6,15 @@ import type {
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import { normalizeCatalogSetImages } from '@lego-platform/catalog/util';
-import { Blocks, CalendarDays, Hash, Package2, UsersRound } from 'lucide-react';
+import {
+  Blocks,
+  Cake,
+  CalendarDays,
+  Hash,
+  Package2,
+  Ruler,
+  UsersRound,
+} from 'lucide-react';
 import {
   CatalogKeyFacts,
   CatalogOfferComparison,
@@ -254,6 +262,94 @@ function formatMinifigureHighlights(
   return minifigureHighlights?.length
     ? minifigureHighlights.join(', ')
     : undefined;
+}
+
+function formatCatalogRecommendedAge(
+  recommendedAge?: number,
+): string | undefined {
+  if (
+    typeof recommendedAge !== 'number' ||
+    !Number.isInteger(recommendedAge) ||
+    recommendedAge <= 0
+  ) {
+    return undefined;
+  }
+
+  return `${recommendedAge}+`;
+}
+
+function buildCatalogSetDetailHeroFacts({
+  catalogSetDetail,
+  setStatusLabel,
+}: {
+  catalogSetDetail: CatalogSetDetail;
+  setStatusLabel?: string;
+}): CatalogKeyFact[] {
+  const heroFacts: CatalogKeyFact[] = [
+    {
+      id: 'set-number',
+      icon: <Hash aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Setnummer',
+      value: <CatalogCanonicalText>{catalogSetDetail.id}</CatalogCanonicalText>,
+    },
+  ];
+  const recommendedAgeLabel = formatCatalogRecommendedAge(
+    catalogSetDetail.recommendedAge,
+  );
+
+  if (recommendedAgeLabel) {
+    heroFacts.push({
+      id: 'recommended-age',
+      icon: <Cake aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Leeftijd',
+      value: recommendedAgeLabel,
+    });
+  }
+
+  if (catalogSetDetail.displaySize?.value) {
+    heroFacts.push({
+      id: 'display-size',
+      icon: <Ruler aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: catalogSetDetail.displaySize.label ?? 'Formaat',
+      value: catalogSetDetail.displaySize.value,
+    });
+  }
+
+  heroFacts.push({
+    id: 'piece-count',
+    icon: <Blocks aria-hidden="true" size={17} strokeWidth={2.2} />,
+    label: 'Stenen',
+    value: catalogSetDetail.pieces.toLocaleString('nl-NL'),
+  });
+
+  if (typeof catalogSetDetail.minifigureCount === 'number') {
+    heroFacts.push({
+      id: 'minifigures',
+      icon: <UsersRound aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Minifiguren',
+      value: formatMinifigureCount(catalogSetDetail.minifigureCount),
+    });
+  }
+
+  if (heroFacts.length < 5) {
+    heroFacts.push({
+      id: 'release-year',
+      icon: <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Jaar',
+      value: catalogSetDetail.releaseYear,
+    });
+  }
+
+  if (heroFacts.length < 5 && setStatusLabel) {
+    heroFacts.push({
+      id: 'status',
+      icon: <Package2 aria-hidden="true" size={17} strokeWidth={2.2} />,
+      label: 'Status',
+      value: setStatusLabel,
+    });
+  }
+
+  return heroFacts;
 }
 
 export function CatalogSetCard({
@@ -722,42 +818,10 @@ export function CatalogSetDetailPanel({
     catalogSetDetail.collectorHighlights.length > 0
       ? catalogSetDetail.collectorHighlights.slice(0, 3)
       : [catalogSetDetail.collectorAngle];
-  const heroSpecs: CatalogKeyFact[] = [
-    {
-      id: 'set-number',
-      icon: <Hash aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: 'Setnummer',
-      value: <CatalogCanonicalText>{catalogSetDetail.id}</CatalogCanonicalText>,
-    },
-    {
-      id: 'release-year',
-      icon: <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: 'Jaar',
-      value: catalogSetDetail.releaseYear,
-    },
-    {
-      id: 'piece-count',
-      icon: <Blocks aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: 'Stenen',
-      value: catalogSetDetail.pieces.toLocaleString('nl-NL'),
-    },
-    {
-      id: 'minifigures',
-      icon: <UsersRound aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: 'Minifiguren',
-      value: formatMinifigureCount(catalogSetDetail.minifigureCount),
-    },
-    ...(setStatusLabel
-      ? [
-          {
-            id: 'status',
-            icon: <Package2 aria-hidden="true" size={17} strokeWidth={2.2} />,
-            label: 'Status',
-            value: setStatusLabel,
-          },
-        ]
-      : []),
-  ];
+  const heroSpecs = buildCatalogSetDetailHeroFacts({
+    catalogSetDetail,
+    setStatusLabel,
+  });
 
   return (
     <section className={styles.detailPage}>

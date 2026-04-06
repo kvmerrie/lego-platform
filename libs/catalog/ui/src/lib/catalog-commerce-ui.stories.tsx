@@ -1,5 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Blocks, CalendarDays, Hash, Package2, UsersRound } from 'lucide-react';
+import {
+  Blocks,
+  Cake,
+  CalendarDays,
+  Hash,
+  Package2,
+  Ruler,
+  UsersRound,
+} from 'lucide-react';
 import { Button } from '@lego-platform/shared/ui';
 import {
   CatalogKeyFacts,
@@ -39,12 +47,16 @@ export const KeyFactsStates: Story = {
             value: '10316',
           },
           {
-            id: 'release-year',
-            icon: (
-              <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />
-            ),
-            label: 'Jaar',
-            value: 2023,
+            id: 'recommended-age',
+            icon: <Cake aria-hidden="true" size={17} strokeWidth={2.2} />,
+            label: 'Leeftijd',
+            value: '18+',
+          },
+          {
+            id: 'display-size',
+            icon: <Ruler aria-hidden="true" size={17} strokeWidth={2.2} />,
+            label: 'Formaat',
+            value: '72 × 50 × 39 cm',
           },
           {
             id: 'pieces',
@@ -59,10 +71,12 @@ export const KeyFactsStates: Story = {
             value: '15',
           },
           {
-            id: 'status',
-            icon: <Package2 aria-hidden="true" size={17} strokeWidth={2.2} />,
-            label: 'Status',
-            value: 'Nu beschikbaar',
+            id: 'year',
+            icon: (
+              <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />
+            ),
+            label: 'Jaar',
+            value: '2023',
           },
         ]}
       />
@@ -81,10 +95,18 @@ export const KeyFactsStates: Story = {
             value: '1.138',
           },
           {
-            id: 'minifigures-minimal',
-            icon: <UsersRound aria-hidden="true" size={17} strokeWidth={2.2} />,
-            label: 'Minifiguren',
-            value: 'Nog niet bekend',
+            id: 'year-minimal',
+            icon: (
+              <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />
+            ),
+            label: 'Jaar',
+            value: '2024',
+          },
+          {
+            id: 'status-minimal',
+            icon: <Package2 aria-hidden="true" size={17} strokeWidth={2.2} />,
+            label: 'Status',
+            value: 'Nu beschikbaar',
           },
         ]}
       />

@@ -580,6 +580,10 @@ describe('catalog data-access contracts', () => {
       releaseYear: 2023,
       pieces: 6181,
       minifigureCount: 15,
+      recommendedAge: 18,
+      displaySize: {
+        value: '72 × 50 × 39 cm',
+      },
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
       primaryImage:
         'https://media.s-bol.com/k3pv34E3Ggp5/KZO6Aol/1199x1200.jpg',
@@ -1203,12 +1207,12 @@ describe('catalog data-access contracts', () => {
     ]);
   });
 
-  test('keeps theme spotlight browsing focused on four stronger homepage lanes', () => {
+  test('keeps theme spotlight browsing focused on four secondary discovery lanes', () => {
     expect(
       listHomepageThemeSpotlightItems().map(
         (themeDirectoryItem) => themeDirectoryItem.themeSnapshot.name,
       ),
-    ).toEqual(['Icons', 'Marvel', 'Ideas', 'Star Wars']);
+    ).toEqual(['Modular Buildings', 'Botanicals', 'Architecture', 'Art']);
   });
 
   test('builds a full theme directory from the existing theme snapshots and browse order', () => {
@@ -1604,11 +1608,13 @@ describe('catalog data-access contracts', () => {
     expect(
       [
         ['rivendell-10316', 15],
+        ['dungeons-and-dragons-red-dragons-tale-21348', 6],
         ['avengers-tower-76269', 31],
         ['lion-knights-castle-10305', 22],
         ['eldorado-fortress-10320', 8],
         ['the-lord-of-the-rings-barad-dur-10333', 10],
         ['medieval-town-square-10332', 8],
+        ['vincent-van-gogh-the-starry-night-21333', 1],
         ['at-at-75313', 9],
         ['natural-history-museum-10326', 7],
         ['sanctum-sanctorum-76218', 9],
@@ -1635,11 +1641,13 @@ describe('catalog data-access contracts', () => {
     ).toEqual(
       [
         ['rivendell-10316', 15],
+        ['dungeons-and-dragons-red-dragons-tale-21348', 6],
         ['avengers-tower-76269', 31],
         ['lion-knights-castle-10305', 22],
         ['eldorado-fortress-10320', 8],
         ['the-lord-of-the-rings-barad-dur-10333', 10],
         ['medieval-town-square-10332', 8],
+        ['vincent-van-gogh-the-starry-night-21333', 1],
         ['at-at-75313', 9],
         ['natural-history-museum-10326', 7],
         ['sanctum-sanctorum-76218', 9],
@@ -1669,7 +1677,7 @@ describe('catalog data-access contracts', () => {
           ? [catalogSetDetail.id]
           : [];
       }),
-    ).toHaveLength(21);
+    ).toHaveLength(23);
   });
 
   test('adds curated minifigure highlights for selected franchise collector sets', () => {

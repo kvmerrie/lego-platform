@@ -31,12 +31,19 @@ export interface CatalogHomepageSetCard extends CatalogSetSummary {
   minifigureHighlights?: readonly string[];
 }
 
+export interface CatalogSetDisplaySize {
+  label?: string;
+  value: string;
+}
+
 export interface CatalogSetDetail extends CatalogSetSummary {
   tagline: string;
   availability: string;
   collectorHighlights: readonly string[];
   minifigureCount?: number;
   minifigureHighlights?: readonly string[];
+  recommendedAge?: number;
+  displaySize?: CatalogSetDisplaySize;
   setStatus?: CatalogSetStatus;
   subtheme?: string;
 }
@@ -199,6 +206,8 @@ export interface CatalogSetOverlay {
   collectorHighlights: readonly string[];
   minifigureCount?: number;
   minifigureHighlights?: readonly string[];
+  recommendedAge?: number;
+  displaySize?: CatalogSetDisplaySize;
   setStatus?: CatalogSetStatus;
   subtheme?: string;
   images?: readonly CatalogSetImageSeed[];

@@ -461,6 +461,16 @@ function toCatalogSetDetail(
           minifigureHighlights: [...catalogSetOverlay.minifigureHighlights],
         }
       : {}),
+    ...(typeof catalogSetOverlay.recommendedAge === 'number'
+      ? {
+          recommendedAge: catalogSetOverlay.recommendedAge,
+        }
+      : {}),
+    ...(catalogSetOverlay.displaySize
+      ? {
+          displaySize: { ...catalogSetOverlay.displaySize },
+        }
+      : {}),
     ...(catalogSetOverlay.subtheme
       ? {
           subtheme: catalogSetOverlay.subtheme,
