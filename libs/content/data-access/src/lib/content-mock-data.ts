@@ -1,5 +1,4 @@
 import type { EditorialPage, PreviewPanel } from '@lego-platform/content/util';
-import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 
 export const homepageEditorialPage: EditorialPage = {
   id: 'home',
@@ -19,22 +18,6 @@ export const homepageEditorialPage: EditorialPage = {
       body: 'Ontdek welke sets het waard zijn — en of dit een slim moment is om te kopen.',
       ctaLabel: 'Ontdek sets',
       ctaHref: '#best-current-deals',
-    },
-    {
-      id: 'home-foundation',
-      type: 'richText',
-      eyebrow: 'Eerst kiezen',
-      title: 'Begin bij de set die je blijft aankijken.',
-      body: 'Van Rivendell tot een AT-AT of McLaren P1: hier zie je sneller wat je collectie echt verandert.',
-    },
-    {
-      id: 'home-callout',
-      type: 'callout',
-      eyebrow: 'Nog niet kopen?',
-      title: "Volg 'm en kijk later opnieuw.",
-      body: 'Bewaar een set op je verlanglijst. Dan zie je later sneller wanneer de prijs slimmer wordt.',
-      ctaLabel: 'Open verlanglijst',
-      ctaHref: buildWebPath(webPathnames.wishlist),
     },
   ],
 };

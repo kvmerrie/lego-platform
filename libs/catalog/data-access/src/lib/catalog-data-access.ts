@@ -960,7 +960,21 @@ export function listHomepageThemeDirectoryItems(
 export function listHomepageThemeSpotlightItems(
   limit = HOMEPAGE_THEME_SPOTLIGHT_LIMIT,
 ): CatalogThemeDirectoryItem[] {
-  return listHomepageThemeDirectoryItems().slice(0, limit);
+  const primaryHomepageThemeNames = new Set(
+    listHomepageThemeDirectoryItems().map(
+      (catalogThemeDirectoryItem) =>
+        catalogThemeDirectoryItem.themeSnapshot.name,
+    ),
+  );
+
+  return listCatalogThemeDirectoryItems()
+    .filter(
+      (catalogThemeDirectoryItem) =>
+        !primaryHomepageThemeNames.has(
+          catalogThemeDirectoryItem.themeSnapshot.name,
+        ),
+    )
+    .slice(0, limit);
 }
 
 export function listCatalogThemeDirectoryItems(): CatalogThemeDirectoryItem[] {

@@ -21,11 +21,11 @@ export function CatalogFeatureThemeSpotlight({
       <div className={styles.headerBlock}>
         <SectionHeading
           className={styles.header}
-          eyebrow="Andere hoek van de kast"
-          title="Draak of walker?"
+          eyebrow="Meer om te ontdekken"
+          title="Botanicals, kunst of modulaire straten?"
         />
         <p className={styles.signalRow}>
-          {themeItems.length} thema&apos;s, heel andere sfeer
+          {themeItems.length} thema&apos;s als je iets anders zoekt
         </p>
       </div>
       <div className={styles.grid}>

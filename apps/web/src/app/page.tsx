@@ -17,6 +17,7 @@ import {
 } from '@lego-platform/catalog/data-access';
 import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
+import { getHeroSection } from '@lego-platform/content/util';
 import {
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
@@ -158,6 +159,7 @@ export default async function HomePage() {
   const homepagePage = await getHomepagePage({
     mode: queryMode,
   });
+  const homepageHeroSection = getHeroSection(homepagePage.sections);
   const homepageSetCards = createHomepageFeaturedRailItems();
   const homepageDealSetCards = toFeatureSetListItems(
     listCatalogSetCardsByIds(
@@ -169,17 +171,23 @@ export default async function HomePage() {
       }).map((priceContext) => priceContext.setId),
     ),
   );
+  const homepageHeroPage = homepageHeroSection
+    ? {
+        ...homepagePage,
+        sections: [homepageHeroSection],
+      }
+    : homepagePage;
 
   return (
     <ShellWeb>
       <div className={styles.page}>
         <div className={styles.heroSection}>
-          <ContentFeaturePageRenderer editorialPage={homepagePage} />
+          <ContentFeaturePageRenderer editorialPage={homepageHeroPage} />
         </div>
         {homepageDealSetCards.length ? (
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
-              description="We lichten hier sets uit die lager staan dan wat we meestal zien."
+              description="Hier zie je wat nu slimmer geprijsd is. Nog niet klaar? Volg de prijs op de set."
               eyebrow="Nu slimmer geprijsd"
               sectionId="best-current-deals"
               setCards={homepageDealSetCards}

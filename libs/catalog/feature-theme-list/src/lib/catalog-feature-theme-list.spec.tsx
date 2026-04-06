@@ -23,10 +23,11 @@ describe('CatalogFeatureThemeList', () => {
   it('renders a non-rail theme spotlight block for deeper homepage browsing', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureThemeSpotlight />);
 
-    expect(markup).toContain('Andere hoek van de kast');
-    expect(markup).toContain('Draak of walker?');
-    expect(markup).toContain('4 thema&#x27;s, heel andere sfeer');
-    expect(markup).toContain('href="/themes/icons"');
-    expect(markup).toContain('href="/themes/star-wars"');
+    expect(markup).toContain('Meer om te ontdekken');
+    expect(markup).toContain('Botanicals, kunst of modulaire straten?');
+    expect(markup).toContain('4 thema&#x27;s als je iets anders zoekt');
+    expect(markup).toContain('href="/themes/modular-buildings"');
+    expect(markup).toContain('href="/themes/botanicals"');
+    expect(markup).not.toContain('href="/themes/icons"');
   });
 });
