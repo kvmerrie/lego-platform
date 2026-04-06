@@ -233,6 +233,20 @@ describe('CatalogSetCard', () => {
           price: '€ 469,99',
           stockLabel: 'Op voorraad',
         }}
+        brickhuntValueItems={[
+          {
+            id: 'brickhunt-monitoring',
+            text: 'We volgen prijzen bij 2 Nederlandse winkels.',
+          },
+          {
+            id: 'brickhunt-guidance',
+            text: 'Je ziet meteen of nu kopen slim is.',
+          },
+          {
+            id: 'brickhunt-alerts',
+            text: 'Zet een prijsalert aan als je liever wacht.',
+          },
+        ]}
         catalogSetDetail={{
           id: '10316',
           slug: 'rivendell-10316',
@@ -268,6 +282,20 @@ describe('CatalogSetCard', () => {
           minifigureHighlights: ['Frodo', 'Elrond'],
           setStatus: 'available',
         }}
+        dealSupportItems={[
+          {
+            id: 'price-below-normal',
+            text: 'Deze prijs ligt onder wat we meestal zien.',
+          },
+          {
+            id: 'best-price-now',
+            text: 'Dit is momenteel de scherpste prijs die we volgen.',
+          },
+          {
+            id: 'merchant-coverage',
+            text: 'We volgen 2 Nederlandse winkels voor deze set.',
+          },
+        ]}
         dealVerdict={{
           explanation: 'Deze prijs ligt onder normaal. Nu kopen is slim.',
           label: 'Goede deal',
@@ -315,9 +343,15 @@ describe('CatalogSetCard', () => {
     );
     expect(markup).toContain('The Lord of the Rings');
     expect(markup).toContain('Koop voor € 469,99 bij bol');
+    expect(markup).toContain('Waarom dit een goede deal is');
+    expect(markup).toContain(
+      'Dit is momenteel de scherpste prijs die we volgen.',
+    );
     expect(markup).toContain('Nog even wachten?');
     expect(markup).toContain('Zet prijsalert aan');
     expect(markup).toContain('Meer nagekeken prijzen');
+    expect(markup).toContain('Waarom via Brickhunt');
+    expect(markup).toContain('Je ziet meteen of nu kopen slim is.');
     expect(markup).toContain('Waar dit op steunt');
     expect(markup).toContain('Ga naar afbeelding 2');
     expect(markup).toContain('Swipe voor meer foto&#x27;s');

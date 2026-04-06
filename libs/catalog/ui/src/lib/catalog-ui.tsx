@@ -85,6 +85,11 @@ export interface CatalogSetDetailTrustSignal {
   value: string;
 }
 
+export interface CatalogSetDetailSupportItem {
+  id: string;
+  text: string;
+}
+
 type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
 type CatalogSetSavedState = 'owned' | 'wishlist';
 type CatalogSetCardPriceDisplay = 'default' | 'subtle';
@@ -877,9 +882,46 @@ function CatalogSetTrustSignals({
   );
 }
 
+function CatalogSetSupportCard({
+  eyebrow,
+  items,
+  title,
+}: {
+  eyebrow: string;
+  items: readonly CatalogSetDetailSupportItem[];
+  title: string;
+}) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <Surface
+      as="section"
+      className={styles.supportCard}
+      elevation="rested"
+      tone="muted"
+    >
+      <div className={styles.supportHeader}>
+        <p className={styles.supportEyebrow}>{eyebrow}</p>
+        <h2 className={styles.supportTitle}>{title}</h2>
+      </div>
+      <ul className={styles.supportList}>
+        {items.map((item) => (
+          <li className={styles.supportItem} key={item.id}>
+            {item.text}
+          </li>
+        ))}
+      </ul>
+    </Surface>
+  );
+}
+
 export function CatalogSetDetailPanel({
   bestDeal,
+  brickhuntValueItems = [],
   catalogSetDetail,
+  dealSupportItems = [],
   dealVerdict,
   offerList = [],
   ownershipActions,
@@ -890,7 +932,9 @@ export function CatalogSetDetailPanel({
   trustSignals = [],
 }: {
   bestDeal?: CatalogSetDetailBestDeal;
+  brickhuntValueItems?: readonly CatalogSetDetailSupportItem[];
   catalogSetDetail: CatalogSetDetail;
+  dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
   offerList?: readonly CatalogSetDetailOfferItem[];
   ownershipActions?: ReactNode;
@@ -1014,6 +1058,12 @@ export function CatalogSetDetailPanel({
         </div>
       </Surface>
 
+      <CatalogSetSupportCard
+        eyebrow="Koophulp"
+        items={dealSupportItems}
+        title="Waarom dit een goede deal is"
+      />
+
       <CatalogSetOfferList offers={offerList} />
 
       {priceHistoryPanel ? (
@@ -1094,6 +1144,11 @@ export function CatalogSetDetailPanel({
           </p>
         </Surface>
       </section>
+      <CatalogSetSupportCard
+        eyebrow="Waarom Brickhunt"
+        items={brickhuntValueItems}
+        title="Waarom via Brickhunt"
+      />
       <CatalogSetTrustSignals trustSignals={trustSignals} />
       <CatalogSetOwnershipCard action={ownershipActions} />
     </section>

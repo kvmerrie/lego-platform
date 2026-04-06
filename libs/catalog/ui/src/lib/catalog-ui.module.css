@@ -566,6 +566,7 @@
 .bestDealCard,
 .alertCard,
 .offerListCard,
+.supportCard,
 .trustCard,
 .offerCoverageCard,
 .ownershipCard {
@@ -574,7 +575,8 @@
 }
 
 .bestDealEyebrow,
-.alertEyebrow {
+.alertEyebrow,
+.supportEyebrow {
   color: var(--lego-text-muted);
   font-size: 0.7rem;
   font-weight: var(--lego-font-weight-bold);
@@ -707,6 +709,47 @@
   display: grid;
   gap: var(--lego-space-3);
   margin: 0;
+}
+
+.supportHeader {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.supportTitle {
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.supportList {
+  display: grid;
+  gap: var(--lego-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.supportItem {
+  color: var(--lego-text);
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.supportItem::before {
+  background: color-mix(in srgb, var(--lego-accent) 22%, white);
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-accent) 22%, transparent);
+  border-radius: 999px;
+  content: '';
+  display: block;
+  height: 0.5rem;
+  margin-top: 0.38rem;
+  width: 0.5rem;
 }
 
 .trustItem {

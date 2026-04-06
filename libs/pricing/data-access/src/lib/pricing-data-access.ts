@@ -85,6 +85,20 @@ export interface WishlistNewAlertSummary {
   strongDealCount: number;
 }
 
+export interface SetDecisionSupportItem {
+  id:
+    | 'best-price-now'
+    | 'brickhunt-alerts'
+    | 'brickhunt-guidance'
+    | 'brickhunt-monitoring'
+    | 'limited-data'
+    | 'merchant-coverage'
+    | 'price-above-normal'
+    | 'price-below-normal'
+    | 'price-normal';
+  text: string;
+}
+
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
@@ -229,6 +243,121 @@ export function buildSetDealVerdict(
     label: 'Normale prijs',
     tone: 'info',
   };
+}
+
+export function buildSetDecisionSupportItems({
+  hasCurrentOffer = false,
+  merchantCount,
+  pricePanelSnapshot,
+}: {
+  hasCurrentOffer?: boolean;
+  merchantCount?: number;
+  pricePanelSnapshot?: Pick<PricePanelSnapshot, 'deltaMinor' | 'merchantCount'>;
+}): SetDecisionSupportItem[] {
+  const trackedMerchantCount =
+    merchantCount ?? pricePanelSnapshot?.merchantCount;
+  const items: SetDecisionSupportItem[] = [];
+
+  if (!pricePanelSnapshot) {
+    items.push({
+      id: 'limited-data',
+      text: hasCurrentOffer
+        ? 'We hebben nog beperkte data, maar dit is nu de beste deal die we zien.'
+        : 'We hebben nog weinig prijsdata voor deze set.',
+    });
+
+    if (typeof trackedMerchantCount === 'number' && trackedMerchantCount > 0) {
+      items.push({
+        id: 'merchant-coverage',
+        text: `We volgen ${trackedMerchantCount} Nederlandse winkel${
+          trackedMerchantCount === 1 ? '' : 's'
+        } voor deze set.`,
+      });
+    }
+
+    items.push({
+      id: 'brickhunt-guidance',
+      text: 'Met meer data wordt dit advies scherper.',
+    });
+
+    return items.slice(0, 3);
+  }
+
+  if (typeof pricePanelSnapshot.deltaMinor === 'number') {
+    if (pricePanelSnapshot.deltaMinor < 0) {
+      items.push({
+        id: 'price-below-normal',
+        text: 'Deze prijs ligt onder wat we meestal zien.',
+      });
+    } else if (pricePanelSnapshot.deltaMinor > 0) {
+      items.push({
+        id: 'price-above-normal',
+        text: 'Deze prijs ligt boven wat we meestal zien.',
+      });
+    } else {
+      items.push({
+        id: 'price-normal',
+        text: 'Deze prijs zit rond wat we meestal zien.',
+      });
+    }
+  } else {
+    items.push({
+      id: 'limited-data',
+      text: 'We hebben nog beperkte data, maar dit is nu de beste deal die we zien.',
+    });
+  }
+
+  if (hasCurrentOffer) {
+    items.push({
+      id: 'best-price-now',
+      text:
+        typeof trackedMerchantCount === 'number' && trackedMerchantCount > 1
+          ? 'Dit is momenteel de scherpste prijs die we volgen.'
+          : 'Dit is nu de beste prijs die we zien.',
+    });
+  }
+
+  if (typeof trackedMerchantCount === 'number' && trackedMerchantCount > 0) {
+    items.push({
+      id: 'merchant-coverage',
+      text: `We volgen ${trackedMerchantCount} Nederlandse winkel${
+        trackedMerchantCount === 1 ? '' : 's'
+      } voor deze set.`,
+    });
+  } else if (items.length < 3) {
+    items.push({
+      id: 'brickhunt-guidance',
+      text: 'Met meer data wordt dit advies scherper.',
+    });
+  }
+
+  return items.slice(0, 3);
+}
+
+export function buildBrickhuntValueItems({
+  merchantCount,
+}: {
+  merchantCount?: number;
+} = {}): SetDecisionSupportItem[] {
+  return [
+    {
+      id: 'brickhunt-monitoring',
+      text:
+        typeof merchantCount === 'number' && merchantCount > 0
+          ? `We volgen prijzen bij ${merchantCount} Nederlandse winkel${
+              merchantCount === 1 ? '' : 's'
+            }.`
+          : 'We volgen prijzen bij Nederlandse winkels.',
+    },
+    {
+      id: 'brickhunt-guidance',
+      text: 'Je ziet meteen of nu kopen slim is.',
+    },
+    {
+      id: 'brickhunt-alerts',
+      text: 'Zet een prijsalert aan als je liever wacht.',
+    },
+  ];
 }
 
 export function getPricePanelSnapshot(

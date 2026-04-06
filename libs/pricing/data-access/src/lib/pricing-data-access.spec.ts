@@ -15,6 +15,8 @@ import {
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 import {
+  buildBrickhuntValueItems,
+  buildSetDecisionSupportItems,
   buildSetDealVerdict,
   buildSetPriceInsights,
   buildWishlistAlertNotificationCandidate,
@@ -167,6 +169,74 @@ describe('pricing data access', () => {
       label: 'Relatief duur',
       tone: 'warning',
     });
+  });
+
+  test('builds compact deal-support copy from current price signals', () => {
+    expect(
+      buildSetDecisionSupportItems({
+        hasCurrentOffer: true,
+        pricePanelSnapshot: {
+          deltaMinor: -3000,
+          merchantCount: 2,
+        },
+      }),
+    ).toEqual([
+      {
+        id: 'price-below-normal',
+        text: 'Deze prijs ligt onder wat we meestal zien.',
+      },
+      {
+        id: 'best-price-now',
+        text: 'Dit is momenteel de scherpste prijs die we volgen.',
+      },
+      {
+        id: 'merchant-coverage',
+        text: 'We volgen 2 Nederlandse winkels voor deze set.',
+      },
+    ]);
+  });
+
+  test('keeps deal-support truthful when data is still limited', () => {
+    expect(
+      buildSetDecisionSupportItems({
+        hasCurrentOffer: true,
+        merchantCount: 1,
+      }),
+    ).toEqual([
+      {
+        id: 'limited-data',
+        text: 'We hebben nog beperkte data, maar dit is nu de beste deal die we zien.',
+      },
+      {
+        id: 'merchant-coverage',
+        text: 'We volgen 1 Nederlandse winkel voor deze set.',
+      },
+      {
+        id: 'brickhunt-guidance',
+        text: 'Met meer data wordt dit advies scherper.',
+      },
+    ]);
+  });
+
+  test('builds a compact Brickhunt value block for the set detail page', () => {
+    expect(
+      buildBrickhuntValueItems({
+        merchantCount: 3,
+      }),
+    ).toEqual([
+      {
+        id: 'brickhunt-monitoring',
+        text: 'We volgen prijzen bij 3 Nederlandse winkels.',
+      },
+      {
+        id: 'brickhunt-guidance',
+        text: 'Je ziet meteen of nu kopen slim is.',
+      },
+      {
+        id: 'brickhunt-alerts',
+        text: 'Zet een prijsalert aan als je liever wacht.',
+      },
+    ]);
   });
 
   test('builds short set-detail price insights before the chart', () => {

@@ -19,6 +19,8 @@ import type {
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import {
+  buildBrickhuntValueItems,
+  buildSetDecisionSupportItems,
   getPricePanelSnapshot,
   getSetDealVerdict,
 } from '@lego-platform/pricing/data-access';
@@ -161,12 +163,24 @@ export default async function SetDetailPage({
   const localizedSetDetailOffers = setDetailOffers.filter(isEuroCatalogOffer);
   const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
+  const trackedMerchantCount =
+    pricePanelSnapshot?.merchantCount ?? localizedSetDetailOffers.length;
 
   return (
     <ShellWeb>
       <CatalogFeatureSetDetail
         bestDeal={buildBestDeal(bestOffer)}
+        brickhuntValueItems={buildBrickhuntValueItems({
+          merchantCount:
+            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+        })}
         catalogSetDetail={catalogSetDetail}
+        dealSupportItems={buildSetDecisionSupportItems({
+          hasCurrentOffer: Boolean(bestOffer),
+          merchantCount:
+            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+          pricePanelSnapshot,
+        })}
         dealVerdict={getSetDealVerdict(catalogSetDetail.id)}
         offerList={buildOfferList(localizedSetDetailOffers, bestOffer)}
         ownershipActions={
