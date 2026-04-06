@@ -9,11 +9,13 @@ describe('CatalogFeatureThemeList', () => {
 
     expect(markup).toContain('Kies je hoek');
     expect(markup).toContain('Fantasy, Star Wars of strak design?');
-    expect(markup).toContain('6 thema’s met een totaal ander displaygevoel');
+    expect(markup).toContain('6 thema’s om mee te starten + alle thema’s');
     expect(markup).toContain('Icons');
     expect(markup).toContain('Marvel');
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('href="/themes/marvel"');
+    expect(markup).toContain('Alle thema&#x27;s');
+    expect(markup).toContain('href="/themes"');
     expect(markup).toContain(
       'src="https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg"',
     );

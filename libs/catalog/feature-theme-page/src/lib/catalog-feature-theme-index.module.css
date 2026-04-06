@@ -21,11 +21,7 @@
 .grid {
   display: grid;
   gap: var(--lego-space-4);
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(min(100%, 14.75rem), 15.75rem)
-  );
-  justify-content: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
 
 .directoryTile {

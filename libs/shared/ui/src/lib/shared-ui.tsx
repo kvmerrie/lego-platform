@@ -242,7 +242,7 @@ export function Button({
       type={type}
       {...rest}
     >
-      {children}
+      <span className={styles.interactiveContent}>{children}</span>
     </button>
   );
 }

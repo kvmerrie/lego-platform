@@ -31,6 +31,7 @@
 .themeGrid {
   display: grid;
   gap: var(--lego-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
 }
 
 .themeSections {
@@ -58,16 +59,4 @@
 
 .themeAction {
   justify-self: start;
-}
-
-@media (min-width: 48rem) {
-  .themeGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 75rem) {
-  .themeGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }

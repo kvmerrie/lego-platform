@@ -23,12 +23,50 @@
   scroll-snap-align: start;
 }
 
+.allThemesTile {
+  aspect-ratio: 3 / 4;
+  background: var(--lego-surface-default);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  min-width: 0;
+}
+
+.allThemesLink {
+  align-content: end;
+  display: grid;
+  gap: var(--lego-space-2);
+  min-height: 100%;
+  padding: var(--lego-space-4) var(--lego-space-3);
+}
+
+.allThemesEyebrow,
+.allThemesCopy {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.allThemesEyebrow {
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: var(--lego-text-role-label-tracking);
+  text-transform: uppercase;
+}
+
+.allThemesTitle {
+  color: var(--lego-text);
+  font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  margin: 0;
+}
+
 @media (min-width: 75rem) {
   .rail {
     overflow: visible;
   }
 
   .rail > * {
-    flex: 0 0 clamp(11.5rem, 12vw, 13rem);
+    flex: 1 1 0;
   }
 }

@@ -1,4 +1,7 @@
 .setCard {
+  background: var(--lego-surface-default);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: 0;
   display: grid;
   gap: var(--lego-space-2);
 }
@@ -27,10 +30,14 @@
   background: transparent;
 }
 
+.setCard:hover,
+.setCard:focus-within {
+  border-color: var(--lego-border);
+}
+
 .setVisual {
   align-items: stretch;
-  border-radius: var(--lego-radius-md);
-  background: var(--lego-surface-subtle);
+  background: var(--lego-surface-default);
   display: grid;
   overflow: hidden;
   min-height: 12rem;
@@ -38,11 +45,13 @@
 
 .cardVisual {
   aspect-ratio: 1 / 1.08;
+  border-radius: 0;
 }
 
 .heroVisual {
   aspect-ratio: 4 / 3;
   background: var(--lego-surface-subtle);
+  border-radius: var(--lego-radius-md);
   min-height: 14.75rem;
 }
 
@@ -527,6 +536,7 @@
 .detailPage {
   display: grid;
   gap: var(--lego-space-3);
+  padding-inline: var(--lego-space-4);
 }
 
 .contextRow {
@@ -1134,6 +1144,8 @@
 .themeCard {
   display: grid;
   gap: var(--lego-space-3);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .quickFilterNav {
@@ -1199,21 +1211,27 @@
 
 .setCardRailScrollbar {
   background: var(--lego-surface-subtle);
-  border-radius: var(--lego-radius-xs);
-  height: 0.24rem;
+  cursor: pointer;
+  height: 0.25rem;
   overflow: hidden;
   position: relative;
+  touch-action: none;
+  width: 100%;
 }
 
 .setCardRailScrollbarThumb {
   background: var(--lego-text-muted);
-  border-radius: inherit;
+  cursor: grab;
   height: 100%;
   position: absolute;
   top: 0;
   transition:
     left var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
     width var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
+}
+
+.setCardRailScrollbarThumb:active {
+  cursor: grabbing;
 }
 
 .themePortraitCard {
@@ -1278,6 +1296,7 @@
   flex: 1 1 auto;
   gap: var(--lego-space-1);
   grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   padding: var(--lego-space-3) var(--lego-space-3) var(--lego-space-4);
 }
 
@@ -1290,6 +1309,7 @@
   line-height: 1.02;
   margin: 0;
   overflow: hidden;
+  overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -1369,6 +1389,8 @@
   flex: 1 1 auto;
   gap: 0.75rem;
   min-height: 100%;
+  min-width: 0;
+  overflow: hidden;
   padding: var(--lego-space-4);
 }
 
@@ -1377,6 +1399,7 @@
   column-gap: var(--lego-space-2);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
 }
 
 .themeFeatureCount,
@@ -1388,6 +1411,17 @@
   margin: 0;
 }
 
+.themeFeatureCount,
+.themeFeatureSignature {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.themeFeatureCount {
+  white-space: nowrap;
+}
+
 .themeFeatureAction {
   color: var(--theme-text);
   font-weight: var(--lego-font-weight-semibold);
@@ -1395,12 +1429,17 @@
 }
 
 .themeFeatureTitle {
+  display: -webkit-box;
   font-size: clamp(1.55rem, 2vw, 1.95rem);
   font-weight: var(--lego-text-role-hero-weight);
   letter-spacing: -0.04em;
   line-height: 1;
   margin: 0;
-  max-width: 11ch;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .themeFeatureCopy {
@@ -1417,6 +1456,7 @@
 .themeFeatureSignature {
   align-self: end;
   margin-top: auto;
+  white-space: nowrap;
 }
 
 .themePortraitCard[data-theme='icons'],
@@ -1508,14 +1548,27 @@
 }
 
 @media (min-width: 48rem) {
+  .detailPage {
+    padding-inline: var(--lego-space-5);
+  }
+
   .setCardRailItem {
     flex-basis: calc((100% - (var(--lego-space-3) * 2)) / 3);
   }
 }
 
 @media (min-width: 72rem) {
+  .detailPage {
+    padding-inline: var(--lego-space-6);
+  }
+
   .setCardRailItem {
     flex-basis: calc((100% - (var(--lego-space-3) * 4)) / 5);
+  }
+
+  .setCardRailScrollbar {
+    margin-inline: auto;
+    width: 50%;
   }
 }
 

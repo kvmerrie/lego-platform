@@ -1,44 +1,84 @@
 .page {
-  --theme-page-accent: #5d6573;
   --theme-page-surface: #d5dde8;
-  --theme-page-surface-strong: #ffffff;
   --theme-page-text: #171a22;
+  --theme-page-muted: #425066;
   display: grid;
   gap: var(--lego-space-6);
+  padding-inline: var(--lego-space-4);
 }
 
 .page[data-theme='icons'] {
-  --theme-page-accent: #f0c63b;
   --theme-page-surface: #f0c63b;
 }
 
 .page[data-theme='marvel'] {
-  --theme-page-accent: #cf554c;
   --theme-page-surface: #cf554c;
   --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
 }
 
 .page[data-theme='ideas'] {
-  --theme-page-accent: #68b8a0;
   --theme-page-surface: #68b8a0;
   --theme-page-text: #10241f;
+  --theme-page-muted: #23443d;
 }
 
 .page[data-theme='star-wars'] {
-  --theme-page-accent: #5573b5;
   --theme-page-surface: #5573b5;
   --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
 }
 
 .page[data-theme='harry-potter'] {
-  --theme-page-accent: #7f67bf;
   --theme-page-surface: #7f67bf;
   --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
 }
 
 .page[data-theme='technic'] {
-  --theme-page-accent: #a8b4c2;
   --theme-page-surface: #a8b4c2;
+}
+
+.page[data-theme='modular-buildings'] {
+  --theme-page-surface: #c9b396;
+}
+
+.page[data-theme='botanicals'] {
+  --theme-page-surface: #7faa83;
+  --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
+}
+
+.page[data-theme='architecture'] {
+  --theme-page-surface: #aeb7c8;
+}
+
+.page[data-theme='art'] {
+  --theme-page-surface: #8f79b7;
+  --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
+}
+
+.page[data-theme='disney'] {
+  --theme-page-surface: #b67aa7;
+  --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
+}
+
+.page[data-theme='ninjago'] {
+  --theme-page-surface: #c37d5c;
+  --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
+}
+
+.page[data-theme='super-mario'] {
+  --theme-page-surface: #90b35d;
+}
+
+.page[data-theme='jurassic-world'] {
+  --theme-page-surface: #819567;
+  --theme-page-text: #ffffff;
+  --theme-page-muted: #f4f7fb;
 }
 
 .intro {
@@ -60,7 +100,7 @@
 
 .introMeta,
 .sectionMeta {
-  color: color-mix(in srgb, var(--theme-page-text) 72%, transparent);
+  color: var(--theme-page-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
@@ -75,20 +115,15 @@
 .browseGrid {
   display: grid;
   gap: var(--lego-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
 
 @media (min-width: 48rem) {
+  .page {
+    padding-inline: var(--lego-space-6);
+  }
+
   .intro {
     padding: var(--lego-space-7);
-  }
-
-  .browseGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 75rem) {
-  .browseGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

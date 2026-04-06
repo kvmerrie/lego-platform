@@ -65,6 +65,7 @@
   font-weight: var(--lego-font-weight-semibold);
   gap: var(--lego-space-2);
   justify-content: center;
+  isolation: isolate;
   min-height: 2.4rem;
   overflow: hidden;
   padding: 0.52rem 0.82rem;
@@ -93,6 +94,14 @@
 .interactiveBase > * {
   position: relative;
   z-index: 1;
+}
+
+.interactiveContent {
+  align-items: center;
+  display: inline-flex;
+  gap: inherit;
+  justify-content: center;
+  min-width: 0;
 }
 
 .icon {
