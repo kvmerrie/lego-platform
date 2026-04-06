@@ -965,96 +965,97 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
     name: 'Icons',
     setCount: 17,
     momentum:
-      'Rivendell, Titanic, Concorde. Hier schuif je je plank voor vrij.',
+      'Rivendell, Titanic, Concorde. Dit zijn de dozen waar je ruimte voor maakt.',
     signatureSet: 'Rivendell',
   },
   {
     name: 'Ideas',
     setCount: 10,
     momentum:
-      'Een rode draak, een taverne, een complete scene. Ideas zet meteen iets neer.',
+      'Rode draak, boshut, sterrennacht. Ideas zet meteen een hele scene neer.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
     name: 'Marvel',
     setCount: 5,
     momentum:
-      "Grote gebouwen, veel minifigs, meteen herkenbaar. Hier zit Marvel op z'n sterkst.",
+      'Torens, chaos en bekende gezichten. Marvel staat hier vol in beeld.',
     signatureSet: 'Avengers Tower',
   },
   {
     name: 'Modular Buildings',
     setCount: 1,
     momentum:
-      "Met een modulaire straat haal je meteen zo'n LEGO-hoek in huis waar je naar blijft kijken.",
+      'Gevels, etalages en verdiepingen vol leven. Hier begint een straat waar je naar blijft kijken.',
     signatureSet: 'Natural History Museum',
   },
   {
     name: 'Botanicals',
     setCount: 4,
-    momentum: 'Bloemen voor op tafel. LEGO voor op de kast.',
+    momentum:
+      'Boeketten en planten die tafel, kast en cadeau meteen meer kleur geven.',
     signatureSet: 'Flower Bouquet',
   },
   {
     name: 'Technic',
     setCount: 5,
-    momentum: 'Supercars met techniek waar je doorheen wilt blijven kijken.',
+    momentum:
+      'Supercars en machines met techniek waar je ook na het bouwen in blijft kijken.',
     signatureSet: 'Ferrari Daytona SP3',
   },
   {
     name: 'Super Mario',
     setCount: 1,
     momentum:
-      'The Mighty Bowser laat zien hoe goed een game-icoon als grote displayset werkt.',
+      'Nintendo-herkenning op displayformaat, met Bowser als pure blikvanger.',
     signatureSet: 'The Mighty Bowser',
   },
   {
     name: 'NINJAGO',
     setCount: 1,
     momentum:
-      "NINJAGO City Gardens is zo'n set waar je steeds weer nieuwe hoekjes en details in ziet.",
+      'Een stadsdisplay vol kleur, hoogte en hoekjes die je steeds opnieuw ziet.',
     signatureSet: 'NINJAGO City Gardens',
   },
   {
     name: 'Jurassic World',
     setCount: 1,
     momentum:
-      'T. rex Breakout zet meteen een filmscene neer die ook buiten Jurassic-fans blijft werken.',
+      'Dino, hekwerk en chaos in een scene die meteen spanning op je plank zet.',
     signatureSet: 'T. rex Breakout',
   },
   {
     name: 'Star Wars',
     setCount: 6,
     momentum:
-      'Walkers, schepen, pure displaykracht. Hier zit het Star Wars-spul dat blijft hangen.',
+      'Walkers, kruisers en schepen met silhouetten die je van ver al herkent.',
     signatureSet: 'AT-AT',
   },
   {
     name: 'Harry Potter',
     setCount: 6,
     momentum:
-      'Van The Burrow tot Gringotts. Hier kies je tussen warmte en pure tovenaarsdrukte.',
+      'Van Burrow-warmte tot Gringotts-drama. Hier kies je je favoriete tovenaarsgevoel.',
     signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
   },
   {
     name: 'Architecture',
     setCount: 1,
     momentum:
-      'Architecture is er voor herkenbare gebouwen die rustig ogen op een plank en toch meteen worden herkend.',
+      'Wereldiconen in strakke lijnen, gemaakt voor een rustige plank met klasse.',
     signatureSet: 'Notre-Dame de Paris',
   },
   {
     name: 'Art',
     setCount: 1,
-    momentum:
-      'Art is voor wie wel een LEGO-set wil neerzetten, maar geen gebouw of voertuig zoekt.',
+    momentum: 'LEGO met reliëf en kleur. Meer kunstwerk dan bouwset.',
     signatureSet: 'Hokusai - The Great Wave',
   },
   {
     name: 'Disney',
     setCount: 1,
     momentum:
-      'Disney Castle is de set voor wie sprookjessfeer en een echt pronkstuk in een doos wil.',
+      'Torens, goud en sprookjessfeer met genoeg statuur voor een echte blikvanger.',
     signatureSet: 'Disney Castle',
   },
 ];
