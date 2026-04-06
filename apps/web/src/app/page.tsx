@@ -29,6 +29,8 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import type { Metadata } from 'next';
 
 export const revalidate = 300;
+const HOMEPAGE_FEATURED_RAIL_LIMIT = 6;
+const HOMEPAGE_FEATURED_RAIL_FILL_LIMIT = HOMEPAGE_FEATURED_RAIL_LIMIT * 3;
 
 function getPricePositionLabel({
   currencyCode,
@@ -118,15 +120,23 @@ function toFeatureSetListItems(
   });
 }
 
-function createHomepageFeaturedRailItems(): CatalogFeatureSetListItem[] {
-  const featuredSetCards = listHomepageSetCards();
+function createHomepageFeaturedRailItems({
+  excludedSetIds = [],
+}: {
+  excludedSetIds?: readonly string[];
+} = {}): CatalogFeatureSetListItem[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+  const featuredSetCards = listHomepageSetCards().filter(
+    (featuredSetCard) => !excludedSetIdSet.has(featuredSetCard.id),
+  );
   const additionalHighlightSetCards = listDiscoverHighlightSetCards({
-    limit: 6,
+    limit: HOMEPAGE_FEATURED_RAIL_FILL_LIMIT,
   });
   const mergedSetCards = [...featuredSetCards];
 
   for (const additionalHighlightSetCard of additionalHighlightSetCards) {
     if (
+      excludedSetIdSet.has(additionalHighlightSetCard.id) ||
       mergedSetCards.some(
         (featuredSetCard) =>
           featuredSetCard.id === additionalHighlightSetCard.id,
@@ -137,7 +147,7 @@ function createHomepageFeaturedRailItems(): CatalogFeatureSetListItem[] {
 
     mergedSetCards.push(additionalHighlightSetCard);
 
-    if (mergedSetCards.length === 6) {
+    if (mergedSetCards.length === HOMEPAGE_FEATURED_RAIL_LIMIT) {
       break;
     }
   }
@@ -160,7 +170,6 @@ export default async function HomePage() {
     mode: queryMode,
   });
   const homepageHeroSection = getHeroSection(homepagePage.sections);
-  const homepageSetCards = createHomepageFeaturedRailItems();
   const homepageDealSetCards = toFeatureSetListItems(
     listCatalogSetCardsByIds(
       listDealSpotlightPriceContexts({
@@ -171,6 +180,12 @@ export default async function HomePage() {
       }).map((priceContext) => priceContext.setId),
     ),
   );
+  const homepageDealSetIds = homepageDealSetCards.map(
+    (homepageDealSetCard) => homepageDealSetCard.id,
+  );
+  const homepageSetCards = createHomepageFeaturedRailItems({
+    excludedSetIds: homepageDealSetIds,
+  });
   const homepageHeroPage = homepageHeroSection
     ? {
         ...homepagePage,
