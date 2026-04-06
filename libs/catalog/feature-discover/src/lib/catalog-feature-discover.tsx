@@ -8,8 +8,8 @@ import {
 } from '@lego-platform/catalog/data-access';
 import {
   CatalogQuickFilterBar,
+  CatalogSectionShell,
   CatalogSetCard,
-  CatalogSectionHeader,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
@@ -26,7 +26,7 @@ import {
   buildThemePath,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import { ActionLink, SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-discover.module.css';
 
 function formatThemeCount(count: number): string {
@@ -179,13 +179,15 @@ export function CatalogFeatureDiscover({
 
   if (!themeGroups.length) {
     return (
-      <Surface as="section" className={styles.emptyState} tone="muted">
-        <SectionHeading
-          description="We breiden de bladercatalogus nog verder uit."
-          eyebrow="Ontdekken"
-          title="Ontdekken wordt nog aangevuld"
-        />
-      </Surface>
+      <CatalogSectionShell
+        as="section"
+        className={styles.emptyState}
+        description="We breiden de bladercatalogus nog verder uit."
+        eyebrow="Ontdekken"
+        padding="default"
+        title="Ontdekken wordt nog aangevuld"
+        tone="muted"
+      />
     );
   }
 
@@ -215,13 +217,16 @@ export function CatalogFeatureDiscover({
       />
 
       {!hasFilteredContent ? (
-        <Surface as="section" className={styles.emptyState} tone="muted">
-          <SectionHeading
-            description="Probeer een andere snelle filter of open een volledige themalijn om verder door de huidige publieke catalogus te bladeren."
-            eyebrow="Ontdekken"
-            title={`Geen treffers in ${activeQuickFilterOption?.label ?? 'deze filter'}`}
-            titleAs="h2"
-          />
+        <CatalogSectionShell
+          as="section"
+          className={styles.emptyState}
+          description="Probeer een andere snelle filter of open een volledige themalijn om verder door de huidige publieke catalogus te bladeren."
+          eyebrow="Ontdekken"
+          padding="default"
+          title={`Geen treffers in ${activeQuickFilterOption?.label ?? 'deze filter'}`}
+          titleAs="h2"
+          tone="muted"
+        >
           <div className={styles.introActions}>
             <ActionLink
               href={buildWebPath(webPathnames.discover)}
@@ -230,19 +235,22 @@ export function CatalogFeatureDiscover({
               Toon alle sets
             </ActionLink>
           </div>
-        </Surface>
+        </CatalogSectionShell>
       ) : null}
 
       {hasFilteredContent && filteredDealSetCards.length ? (
-        <Surface as="section" className={styles.dealSection} tone="default">
-          <CatalogSectionHeader
-            className={styles.sectionHeader}
-            description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
-            eyebrow="Deals"
-            signal={formatSetCount(filteredDealSetCards.length)}
-            title="Beste deals om eerst te bekijken"
-            titleAs="h2"
-          />
+        <CatalogSectionShell
+          as="section"
+          bodySpacing="relaxed"
+          className={styles.dealSection}
+          description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
+          eyebrow="Deals"
+          padding="default"
+          signal={formatSetCount(filteredDealSetCards.length)}
+          title="Beste deals om eerst te bekijken"
+          titleAs="h2"
+          tone="default"
+        >
           <CatalogSetCardRail
             ariaLabel="Beste deals om eerst te bekijken"
             items={filteredDealSetCards.map((dealSetCard) => ({
@@ -254,19 +262,22 @@ export function CatalogFeatureDiscover({
             }))}
             variant="featured"
           />
-        </Surface>
+        </CatalogSectionShell>
       ) : null}
 
       {hasFilteredContent && filteredCharacterSetCards.length ? (
-        <Surface as="section" className={styles.featuredSection} tone="muted">
-          <CatalogSectionHeader
-            className={styles.sectionHeader}
-            description="Sets waarbij de cast deel van de aantrekkingskracht is, van grote franchise-ankers tot verhaalgedreven favorieten voor verzamelaars."
-            eyebrow="Personages"
-            signal={formatSetCount(filteredCharacterSetCards.length)}
-            title="Iconische personages en castfavorieten"
-            titleAs="h2"
-          />
+        <CatalogSectionShell
+          as="section"
+          bodySpacing="relaxed"
+          className={styles.featuredSection}
+          description="Sets waarbij de cast deel van de aantrekkingskracht is, van grote franchise-ankers tot verhaalgedreven favorieten voor verzamelaars."
+          eyebrow="Personages"
+          padding="default"
+          signal={formatSetCount(filteredCharacterSetCards.length)}
+          title="Iconische personages en castfavorieten"
+          titleAs="h2"
+          tone="muted"
+        >
           <CatalogSetCardRail
             ariaLabel="Iconische personages en castfavorieten"
             items={filteredCharacterSetCards.map((characterSetCard) => ({
@@ -277,19 +288,22 @@ export function CatalogFeatureDiscover({
             }))}
             variant="compact"
           />
-        </Surface>
+        </CatalogSectionShell>
       ) : null}
 
       {hasFilteredContent && filteredHighlightSetCards.length ? (
-        <Surface as="section" className={styles.featuredSection} tone="muted">
-          <CatalogSectionHeader
-            className={styles.sectionHeader}
-            description="Een strakkere mix van premium vlaggenschepen, iconische franchises en toegankelijkere sets die het waard zijn om eerst te openen."
-            eyebrow="Highlights"
-            signal={formatSetCount(filteredHighlightSetCards.length)}
-            title="Eerst het openen waard"
-            titleAs="h2"
-          />
+        <CatalogSectionShell
+          as="section"
+          bodySpacing="relaxed"
+          className={styles.featuredSection}
+          description="Een strakkere mix van premium vlaggenschepen, iconische franchises en toegankelijkere sets die het waard zijn om eerst te openen."
+          eyebrow="Highlights"
+          padding="default"
+          signal={formatSetCount(filteredHighlightSetCards.length)}
+          title="Eerst het openen waard"
+          titleAs="h2"
+          tone="muted"
+        >
           <CatalogSetCardRail
             ariaLabel="Eerst het openen waard"
             items={filteredHighlightSetCards.map((highlightSetCard) => ({
@@ -300,46 +314,45 @@ export function CatalogFeatureDiscover({
             }))}
             variant="compact"
           />
-        </Surface>
+        </CatalogSectionShell>
       ) : null}
 
       {hasFilteredContent ? (
         <div className={styles.themeSections}>
           {filteredThemeGroups.map((themeGroup, index) => (
-            <Surface
+            <CatalogSectionShell
               as="section"
+              bodySpacing="default"
               className={styles.themeSection}
+              eyebrow="Thema"
               key={themeGroup.theme}
+              padding="default"
+              signal={formatThemeLaneCount({
+                shownCount: themeGroup.setCards.length,
+                totalCount:
+                  themeGroup.totalSetCount ?? themeGroup.setCards.length,
+              })}
+              title={
+                <span
+                  className={`${styles.themeTitle} notranslate`}
+                  translate="no"
+                >
+                  {themeGroup.theme}
+                </span>
+              }
+              titleAs="h2"
               tone={index % 2 === 0 ? 'default' : 'muted'}
+              utility={
+                <ActionLink
+                  className={styles.themeAction}
+                  href={buildThemePath(themeGroup.slug)}
+                  tone="secondary"
+                >
+                  Open volledig thema
+                </ActionLink>
+              }
+              utilityPlacement="below-heading"
             >
-              <CatalogSectionHeader
-                className={styles.themeHeader}
-                eyebrow="Thema"
-                signal={formatThemeLaneCount({
-                  shownCount: themeGroup.setCards.length,
-                  totalCount:
-                    themeGroup.totalSetCount ?? themeGroup.setCards.length,
-                })}
-                title={
-                  <span
-                    className={`${styles.themeTitle} notranslate`}
-                    translate="no"
-                  >
-                    {themeGroup.theme}
-                  </span>
-                }
-                titleAs="h2"
-                utility={
-                  <ActionLink
-                    className={styles.themeAction}
-                    href={buildThemePath(themeGroup.slug)}
-                    tone="secondary"
-                  >
-                    Open volledig thema
-                  </ActionLink>
-                }
-                utilityPlacement="below-heading"
-              />
               <div className={styles.themeGrid}>
                 {themeGroup.setCards.map((setCard) => (
                   <CatalogSetCard
@@ -350,7 +363,7 @@ export function CatalogFeatureDiscover({
                   />
                 ))}
               </div>
-            </Surface>
+            </CatalogSectionShell>
           ))}
         </div>
       ) : null}

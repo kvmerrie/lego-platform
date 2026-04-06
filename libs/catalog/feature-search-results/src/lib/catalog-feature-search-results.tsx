@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { listCatalogSearchMatches } from '@lego-platform/catalog/data-access';
 import {
   CatalogQuickFilterBar,
-  CatalogSectionHeader,
+  CatalogSectionShell,
   CatalogSetCard,
 } from '@lego-platform/catalog/ui';
 import {
@@ -17,7 +17,7 @@ import {
   getDefaultFormattingLocale,
   webPathnames,
 } from '@lego-platform/shared/config';
-import { ActionLink, SectionHeading, Surface } from '@lego-platform/shared/ui';
+import { ActionLink } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-search-results.module.css';
 
 function readSearchQuery(query?: string): string {
@@ -166,17 +166,16 @@ export function CatalogFeatureSearchResults({
 
   if (!searchQuery) {
     return (
-      <Surface
+      <CatalogSectionShell
         as="section"
-        className={`${styles.resultsSection} ${styles.statePanel}`}
+        className={styles.statePanel}
+        description="Zoek op setnaam, personage of setnummer om direct naar reviewed prijzen, fancontext en setdetails te springen."
+        eyebrow="Zoeken"
+        padding="default"
+        title="Zoek sets"
+        titleAs="h1"
         tone="muted"
       >
-        <SectionHeading
-          description="Zoek op setnaam, personage of setnummer om direct naar reviewed prijzen, fancontext en setdetails te springen."
-          eyebrow="Zoeken"
-          title="Zoek sets"
-          titleAs="h1"
-        />
         <div className={styles.stateActions}>
           <ActionLink
             href={buildWebPath(webPathnames.discover)}
@@ -185,7 +184,7 @@ export function CatalogFeatureSearchResults({
             Bekijk de catalogus
           </ActionLink>
         </div>
-      </Surface>
+      </CatalogSectionShell>
     );
   }
 
@@ -244,17 +243,16 @@ export function CatalogFeatureSearchResults({
 
   if (!searchResults.length) {
     return (
-      <Surface
+      <CatalogSectionShell
         as="section"
-        className={`${styles.resultsSection} ${styles.statePanel}`}
+        className={styles.statePanel}
+        description={`Nog niets gevonden voor "${searchQuery}". Probeer een setnummer zoals 75355 of een sterkere setnaam.`}
+        eyebrow="Zoeken"
+        padding="default"
+        title={`Geen resultaten voor "${searchQuery}"`}
+        titleAs="h1"
         tone="muted"
       >
-        <SectionHeading
-          description={`Nog niets gevonden voor "${searchQuery}". Probeer een setnummer zoals 75355 of een sterkere setnaam.`}
-          eyebrow="Zoeken"
-          title={`Geen resultaten voor "${searchQuery}"`}
-          titleAs="h1"
-        />
         <div className={styles.stateActions}>
           <ActionLink
             href={buildWebPath(webPathnames.discover)}
@@ -263,28 +261,32 @@ export function CatalogFeatureSearchResults({
             Bekijk de catalogus
           </ActionLink>
         </div>
-      </Surface>
+      </CatalogSectionShell>
     );
   }
 
   return (
-    <section className={styles.resultsSection}>
-      <CatalogSectionHeader
-        className={styles.resultsHeader}
-        description={`Beste teksttreffers voor "${searchQuery}", waarbij reviewed prijscontext en verzamelcontext worden gebruikt om kleine verschillen tussen resultaten te beslissen.`}
-        eyebrow="Zoeken"
-        signal={`${filteredSearchResults.length} passende set${
-          filteredSearchResults.length === 1 ? '' : 's'
-        }${
-          normalizedFilter !== 'all'
-            ? ` · ${activeQuickFilterOption?.label ?? 'Gefilterd'}`
-            : reviewedResultCount
-              ? ` · ${reviewedResultCount} met reviewed prijzen`
-              : ''
-        }`}
-        title={`Resultaten voor "${searchQuery}"`}
-        titleAs="h1"
-      />
+    <CatalogSectionShell
+      as="section"
+      bodyClassName={styles.resultsBody}
+      className={styles.resultsSection}
+      description={`Beste teksttreffers voor "${searchQuery}", waarbij reviewed prijscontext en verzamelcontext worden gebruikt om kleine verschillen tussen resultaten te beslissen.`}
+      eyebrow="Zoeken"
+      padding="none"
+      signal={`${filteredSearchResults.length} passende set${
+        filteredSearchResults.length === 1 ? '' : 's'
+      }${
+        normalizedFilter !== 'all'
+          ? ` · ${activeQuickFilterOption?.label ?? 'Gefilterd'}`
+          : reviewedResultCount
+            ? ` · ${reviewedResultCount} met reviewed prijzen`
+            : ''
+      }`}
+      spacing="default"
+      title={`Resultaten voor "${searchQuery}"`}
+      titleAs="h1"
+      tone="plain"
+    >
       <CatalogQuickFilterBar
         ariaLabel="Verfijn zoekresultaten"
         items={quickFilterItems}
@@ -302,17 +304,20 @@ export function CatalogFeatureSearchResults({
           ))}
         </div>
       ) : (
-        <Surface as="section" className={styles.statePanel} tone="muted">
-          <SectionHeading
-            description={`"${searchQuery}" heeft wel treffers, maar niets in ${(
-              activeQuickFilterOption?.label ?? 'deze filter'
-            ).toLowerCase()}. Probeer een andere filter of maak je zoekopdracht breder.`}
-            eyebrow="Zoeken"
-            title={`Geen ${(
-              activeQuickFilterOption?.label ?? 'gefilterde'
-            ).toLowerCase()} treffers`}
-            titleAs="h2"
-          />
+        <CatalogSectionShell
+          as="section"
+          className={styles.statePanel}
+          description={`"${searchQuery}" heeft wel treffers, maar niets in ${(
+            activeQuickFilterOption?.label ?? 'deze filter'
+          ).toLowerCase()}. Probeer een andere filter of maak je zoekopdracht breder.`}
+          eyebrow="Zoeken"
+          padding="default"
+          title={`Geen ${(
+            activeQuickFilterOption?.label ?? 'gefilterde'
+          ).toLowerCase()} treffers`}
+          titleAs="h2"
+          tone="muted"
+        >
           <div className={styles.stateActions}>
             <ActionLink
               href={buildSearchFilterHref({
@@ -324,26 +329,24 @@ export function CatalogFeatureSearchResults({
               Toon alle treffers
             </ActionLink>
           </div>
-        </Surface>
+        </CatalogSectionShell>
       )}
-    </section>
+    </CatalogSectionShell>
   );
 }
 
 export function CatalogFeatureSearchResultsLoading() {
   return (
-    <Surface
+    <CatalogSectionShell
       as="section"
-      className={`${styles.resultsSection} ${styles.statePanel}`}
+      className={styles.statePanel}
+      description="De huidige setcatalogus wordt doorzocht."
+      eyebrow="Zoeken"
+      padding="default"
+      title="Sets worden gezocht"
+      titleAs="h1"
       tone="muted"
-    >
-      <SectionHeading
-        description="De huidige setcatalogus wordt doorzocht."
-        eyebrow="Zoeken"
-        title="Sets worden gezocht"
-        titleAs="h1"
-      />
-    </Surface>
+    />
   );
 }
 

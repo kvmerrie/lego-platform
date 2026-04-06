@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   CatalogQuickFilterBar,
   CatalogSectionHeader,
+  CatalogSectionShell,
   CatalogSetDetailHero,
   CatalogSetDetailPanel,
   CatalogSplitIntroPanel,
@@ -195,6 +196,115 @@ export const SectionHeaderStates: Story = {
           utilityPlacement="below-heading"
         />
       </Surface>
+    </div>
+  ),
+};
+
+export const SectionShellStates: Story = {
+  render: () => (
+    <div
+      style={{
+        display: 'grid',
+        gap: '1.5rem',
+        margin: '0 auto',
+        maxWidth: '72rem',
+        padding: '1.5rem',
+      }}
+    >
+      <CatalogSectionShell
+        description="Sets die nu sneller beslissen en direct een beter koopmoment laten zien."
+        eyebrow="Nu slimmer geprijsd"
+        padding="relaxed"
+        signal="3 sets met nagekeken prijscontext"
+        spacing="relaxed"
+        title="Hier wil je nu als eerste kijken"
+        tone="muted"
+      >
+        <div style={{ display: 'grid', gap: '0.75rem' }}>
+          <Surface tone="default">
+            <p style={{ margin: 0 }}>Rail of grid komt hier als body-slot.</p>
+          </Surface>
+          <Surface tone="default">
+            <p style={{ margin: 0 }}>
+              De shell bewaakt vooral het sectieritme.
+            </p>
+          </Surface>
+        </div>
+      </CatalogSectionShell>
+      <CatalogSectionShell
+        description="Open een volledig thema als je verder wilt vergelijken."
+        eyebrow="Thema"
+        padding="default"
+        signal="8 getoond · 23 totaal"
+        title={
+          <span className="notranslate" translate="no">
+            Marvel
+          </span>
+        }
+        tone="default"
+        utility={
+          <ActionLink href="/themes/marvel" tone="secondary">
+            Open volledig thema
+          </ActionLink>
+        }
+        utilityPlacement="below-heading"
+      >
+        <div style={{ display: 'grid', gap: '0.75rem' }}>
+          <Surface tone="muted">
+            <p style={{ margin: 0 }}>
+              Kaarten of facts kunnen hier direct onder.
+            </p>
+          </Surface>
+        </div>
+      </CatalogSectionShell>
+      <CatalogSectionShell
+        description="Donkere secties houden dezelfde header- en bodycadence."
+        eyebrow="Kies je hoek"
+        padding="none"
+        signal="6 thema's om mee te starten"
+        title="Fantasy, Star Wars of strak design?"
+        tone="inverse"
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: '0.75rem',
+            overflowX: 'auto',
+            padding: '0 1.5rem 1.5rem',
+          }}
+        >
+          <Surface tone="default">
+            <p style={{ margin: 0 }}>Thema 1</p>
+          </Surface>
+          <Surface tone="default">
+            <p style={{ margin: 0 }}>Thema 2</p>
+          </Surface>
+        </div>
+      </CatalogSectionShell>
+      <CatalogSectionShell
+        description="Ook platte secties kunnen dezelfde header/body-structuur gebruiken."
+        eyebrow="Zoeken"
+        padding="none"
+        signal="12 passende sets"
+        title='Resultaten voor "rivendell"'
+        tone="plain"
+      >
+        <div style={{ display: 'grid', gap: '1rem' }}>
+          <CatalogQuickFilterBar
+            ariaLabel="Verfijn zoeken"
+            items={[
+              { href: '/search?q=rivendell', isActive: true, label: 'Alles' },
+              {
+                href: '/search?q=rivendell&filter=best-deals',
+                label: 'Beste deals',
+              },
+            ]}
+          />
+          <Surface tone="default">
+            <p style={{ margin: 0 }}>Resultaten-grid of state-panel.</p>
+          </Surface>
+        </div>
+      </CatalogSectionShell>
     </div>
   ),
 };

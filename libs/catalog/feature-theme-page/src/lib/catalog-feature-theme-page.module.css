@@ -66,39 +66,10 @@
   margin: 0;
 }
 
-.dealSection,
-.browseSection {
-  display: grid;
-  gap: var(--lego-space-4);
-}
-
 .dealSection {
-  background: #242424;
-  border-color: transparent;
-}
-
-.dealSection .sectionHeader :is(h1, h2, h3) {
-  color: #ffffff;
-}
-
-.dealSection .sectionHeader p,
-.dealSection .sectionMeta {
-  color: rgba(255, 255, 255, 0.78);
 }
 
 .browseSection {
-  background: var(--theme-page-surface-strong);
-  border-color: color-mix(
-    in srgb,
-    var(--theme-page-accent) 12%,
-    var(--lego-border) 88%
-  );
-}
-
-.sectionHeader {
-  align-items: end;
-  display: grid;
-  gap: var(--lego-space-3);
 }
 
 .browseGrid {
@@ -113,12 +84,6 @@
 
   .browseGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 64rem) {
-  .sectionHeader {
-    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 

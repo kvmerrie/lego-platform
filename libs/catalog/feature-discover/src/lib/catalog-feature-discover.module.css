@@ -26,15 +26,6 @@
 .dealSection,
 .themeSection,
 .emptyState {
-  display: grid;
-  gap: var(--lego-space-4);
-}
-
-.sectionHeader,
-.themeHeader {
-  align-items: end;
-  display: grid;
-  gap: var(--lego-space-3);
 }
 
 .themeGrid {
@@ -72,13 +63,6 @@
 @media (min-width: 48rem) {
   .themeGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 64rem) {
-  .sectionHeader,
-  .themeHeader {
-    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 

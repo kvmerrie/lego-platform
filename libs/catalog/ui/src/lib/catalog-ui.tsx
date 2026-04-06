@@ -36,6 +36,7 @@ import styles from './catalog-ui.module.css';
 export {
   CatalogQuickFilterBar,
   CatalogSectionHeader,
+  CatalogSectionShell,
   CatalogSetDetailHero,
   CatalogSplitIntroPanel,
   type CatalogIntroPanelSection,

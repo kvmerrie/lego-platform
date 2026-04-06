@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { listHomepageSetCards } from '@lego-platform/catalog/data-access';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
-  CatalogSectionHeader,
+  CatalogSectionShell,
   CatalogSetCard,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
@@ -46,27 +46,25 @@ export function CatalogFeatureSetList({
   ).length;
 
   return (
-    <section
-      className={`${styles.section} ${
-        tone === 'default' ? styles.sectionDefault : styles.sectionMuted
-      }`}
+    <CatalogSectionShell
+      as="section"
+      bodySpacing="relaxed"
+      className={styles.section}
+      description={description}
+      eyebrow={eyebrow}
+      headingClassName={styles.header}
       id={sectionId}
+      padding="relaxed"
+      signal={
+        signalText ??
+        `${homepageSets.length} sets die meteen de kamer pakken${
+          reviewedSetCount ? ` · ${reviewedSetCount} met nagekeken prijzen` : ''
+        }`
+      }
+      spacing="relaxed"
+      title={title}
+      tone={tone}
     >
-      <CatalogSectionHeader
-        className={styles.headerBlock}
-        description={description}
-        eyebrow={eyebrow}
-        headingClassName={styles.header}
-        signal={
-          signalText ??
-          `${homepageSets.length} sets die meteen de kamer pakken${
-            reviewedSetCount
-              ? ` · ${reviewedSetCount} met nagekeken prijzen`
-              : ''
-          }`
-        }
-        title={title}
-      />
       {layout === 'grid' ? (
         <div className={styles.grid}>
           {homepageSets.map((catalogSetSummary) => (
@@ -93,7 +91,7 @@ export function CatalogFeatureSetList({
           variant="featured"
         />
       )}
-    </section>
+    </CatalogSectionShell>
   );
 }
 

@@ -1,13 +1,13 @@
 import type { CatalogThemeLandingPage } from '@lego-platform/catalog/data-access';
 import {
-  CatalogSectionHeader,
+  CatalogSectionShell,
   CatalogSetCard,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
-import { SectionHeading, Surface } from '@lego-platform/shared/ui';
+import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-page.module.css';
 
 export interface CatalogFeatureThemePageDealItem
@@ -47,31 +47,34 @@ export function CatalogFeatureThemePage({
       </section>
 
       {dealSetCards.length ? (
-        <Surface as="section" className={styles.dealSection} tone="muted">
-          <CatalogSectionHeader
-            className={styles.sectionHeader}
-            description={
-              <>
-                Reviewed prijsverschillen die nu het meest opvallen binnen de{' '}
-                <span className="notranslate" translate="no">
-                  {themeSnapshot.name}
-                </span>
-                -lijn.
-              </>
-            }
-            eyebrow="Deals"
-            signal={`${dealSetCards.length} sets`}
-            title={
-              <>
-                Goed moment om te kopen in{' '}
-                <span className="notranslate" translate="no">
-                  {themeSnapshot.name}
-                </span>
-              </>
-            }
-            titleAs="h2"
-            tone="inverse"
-          />
+        <CatalogSectionShell
+          as="section"
+          bodySpacing="relaxed"
+          className={styles.dealSection}
+          description={
+            <>
+              Reviewed prijsverschillen die nu het meest opvallen binnen de{' '}
+              <span className="notranslate" translate="no">
+                {themeSnapshot.name}
+              </span>
+              -lijn.
+            </>
+          }
+          eyebrow="Deals"
+          padding="default"
+          signal={`${dealSetCards.length} sets`}
+          spacing="relaxed"
+          title={
+            <>
+              Goed moment om te kopen in{' '}
+              <span className="notranslate" translate="no">
+                {themeSnapshot.name}
+              </span>
+            </>
+          }
+          titleAs="h2"
+          tone="inverse"
+        >
           <CatalogSetCardRail
             ariaLabel={`Goed moment om te kopen in ${themeSnapshot.name}`}
             items={dealSetCards.map((dealSetCard) => ({
@@ -82,34 +85,38 @@ export function CatalogFeatureThemePage({
             }))}
             variant="featured"
           />
-        </Surface>
+        </CatalogSectionShell>
       ) : null}
 
-      <Surface as="section" className={styles.browseSection} tone="default">
-        <CatalogSectionHeader
-          className={styles.sectionHeader}
-          description={
-            <>
-              Blader door elke publieke{' '}
-              <span className="notranslate" translate="no">
-                {themeSnapshot.name}
-              </span>
-              -set die nu in de catalogus staat.
-            </>
-          }
-          eyebrow="Catalogus"
-          signal={`${setCards.length} sets`}
-          title={
-            <>
-              Alle{' '}
-              <span className="notranslate" translate="no">
-                {themeSnapshot.name}
-              </span>
-              -sets
-            </>
-          }
-          titleAs="h2"
-        />
+      <CatalogSectionShell
+        as="section"
+        bodySpacing="relaxed"
+        className={styles.browseSection}
+        description={
+          <>
+            Blader door elke publieke{' '}
+            <span className="notranslate" translate="no">
+              {themeSnapshot.name}
+            </span>
+            -set die nu in de catalogus staat.
+          </>
+        }
+        eyebrow="Catalogus"
+        padding="default"
+        signal={`${setCards.length} sets`}
+        spacing="relaxed"
+        title={
+          <>
+            Alle{' '}
+            <span className="notranslate" translate="no">
+              {themeSnapshot.name}
+            </span>
+            -sets
+          </>
+        }
+        titleAs="h2"
+        tone="default"
+      >
         <div className={styles.browseGrid}>
           {setCards.map((setCard) => (
             <CatalogSetCard
@@ -120,7 +127,7 @@ export function CatalogFeatureThemePage({
             />
           ))}
         </div>
-      </Surface>
+      </CatalogSectionShell>
     </div>
   );
 }

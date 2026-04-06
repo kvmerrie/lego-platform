@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CatalogQuickFilterBar,
   CatalogSectionHeader,
+  CatalogSectionShell,
   CatalogSetDetailHero,
   CatalogSplitIntroPanel,
 } from './catalog-ui';
@@ -31,6 +32,33 @@ describe('CatalogSectionHeader', () => {
     expect(markup).toContain('Hier wil je nu kijken');
     expect(markup).toContain('3 sets met nagekeken prijzen');
     expect(markup).toContain('Open volledig thema');
+  });
+});
+
+describe('CatalogSectionShell', () => {
+  it('renders a reusable section shell with header, signal, utility, and body content', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSectionShell
+        description="Sets die nu sneller beslissen."
+        eyebrow="Deals"
+        signal="3 sets met nagekeken prijzen"
+        title="Hier wil je nu kijken"
+        tone="muted"
+        utility={
+          <a href="/themes/icons" rel="noreferrer">
+            Open volledig thema
+          </a>
+        }
+        utilityPlacement="below-heading"
+      >
+        <div>Body-content</div>
+      </CatalogSectionShell>,
+    );
+
+    expect(markup).toContain('Hier wil je nu kijken');
+    expect(markup).toContain('3 sets met nagekeken prijzen');
+    expect(markup).toContain('Open volledig thema');
+    expect(markup).toContain('Body-content');
   });
 });
 

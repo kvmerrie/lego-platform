@@ -3,7 +3,7 @@ import {
   type CatalogThemeDirectoryItem,
 } from '@lego-platform/catalog/data-access';
 import {
-  CatalogSectionHeader,
+  CatalogSectionShell,
   CatalogThemeHighlight,
 } from '@lego-platform/catalog/ui';
 import { buildThemePath } from '@lego-platform/shared/config';
@@ -19,32 +19,34 @@ export function CatalogFeatureThemeSpotlight({
   }
 
   return (
-    <section className={styles.section} id="theme-spotlight">
-      <CatalogSectionHeader
-        className={styles.headerBlock}
-        eyebrow="Meer om te ontdekken"
-        headingClassName={styles.header}
-        signal={`${themeItems.length} thema's als je iets anders zoekt`}
-        title="Botanicals, kunst of modulaire straten?"
-      />
-      <div className={styles.grid}>
-        {themeItems.map((themeItem) => (
-          <div
-            className={styles.spotlightItem}
-            key={themeItem.themeSnapshot.name}
-          >
-            <CatalogThemeHighlight
-              className={styles.spotlightTile}
-              href={buildThemePath(themeItem.themeSnapshot.slug)}
-              visual={themeItem.visual}
-              imageUrl={themeItem.imageUrl}
-              themeSnapshot={themeItem.themeSnapshot}
-              variant="feature"
-            />
-          </div>
-        ))}
-      </div>
-    </section>
+    <CatalogSectionShell
+      as="section"
+      bodyClassName={styles.grid}
+      className={styles.section}
+      eyebrow="Meer om te ontdekken"
+      headingClassName={styles.header}
+      id="theme-spotlight"
+      padding="relaxed"
+      signal={`${themeItems.length} thema's als je iets anders zoekt`}
+      title="Botanicals, kunst of modulaire straten?"
+      tone="plain"
+    >
+      {themeItems.map((themeItem) => (
+        <div
+          className={styles.spotlightItem}
+          key={themeItem.themeSnapshot.name}
+        >
+          <CatalogThemeHighlight
+            className={styles.spotlightTile}
+            href={buildThemePath(themeItem.themeSnapshot.slug)}
+            visual={themeItem.visual}
+            imageUrl={themeItem.imageUrl}
+            themeSnapshot={themeItem.themeSnapshot}
+            variant="feature"
+          />
+        </div>
+      ))}
+    </CatalogSectionShell>
   );
 }
 

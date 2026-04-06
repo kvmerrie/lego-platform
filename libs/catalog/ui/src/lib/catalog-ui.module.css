@@ -401,6 +401,59 @@
   justify-self: flex-start;
 }
 
+.sectionShell {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sectionShellDefault {
+  background: var(--lego-surface-default);
+  border-radius: var(--lego-radius-md);
+}
+
+.sectionShellMuted {
+  background: var(--lego-surface-subtle);
+  border-radius: var(--lego-radius-md);
+}
+
+.sectionShellInverse {
+  background: #242424;
+  border-radius: var(--lego-radius-lg);
+}
+
+.sectionShellCompact {
+  gap: var(--lego-space-3);
+}
+
+.sectionShellRelaxed {
+  gap: var(--lego-space-5);
+}
+
+.sectionShellPaddingDefault {
+  padding: var(--lego-space-4);
+}
+
+.sectionShellPaddingNone {
+  padding: 0;
+}
+
+.sectionShellPaddingRelaxed {
+  padding: var(--lego-space-6);
+}
+
+.sectionShellBody {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sectionShellBodyCompact {
+  gap: var(--lego-space-3);
+}
+
+.sectionShellBodyRelaxed {
+  gap: var(--lego-space-5);
+}
+
 .sectionHeader {
   display: grid;
   gap: var(--lego-space-3);

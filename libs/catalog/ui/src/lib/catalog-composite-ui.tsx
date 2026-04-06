@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
 import {
   ActionLink,
   Badge,
@@ -16,6 +16,11 @@ function joinClasses(
 type CatalogSectionHeaderTone = 'default' | 'inverse';
 type CatalogSectionHeaderUtilityPlacement = 'aside' | 'below-heading';
 type CatalogSetDetailHeroTone = 'info' | 'neutral' | 'positive' | 'warning';
+type CatalogSectionShellElement = 'article' | 'aside' | 'div' | 'section';
+type CatalogSectionShellBodySpacing = 'compact' | 'default' | 'relaxed';
+type CatalogSectionShellPadding = 'default' | 'none' | 'relaxed';
+type CatalogSectionShellTone = 'default' | 'inverse' | 'muted' | 'plain';
+type CatalogSectionShellSpacing = 'compact' | 'default' | 'relaxed';
 
 export interface CatalogIntroPanelSection {
   description?: string;
@@ -35,6 +40,43 @@ function getCatalogSetDetailHeroTone(
 
   return 'neutral';
 }
+
+const catalogSectionShellToneClasses: Record<
+  CatalogSectionShellTone,
+  string | undefined
+> = {
+  default: styles.sectionShellDefault,
+  inverse: styles.sectionShellInverse,
+  muted: styles.sectionShellMuted,
+  plain: undefined,
+};
+
+const catalogSectionShellSpacingClasses: Record<
+  CatalogSectionShellSpacing,
+  string | undefined
+> = {
+  compact: styles.sectionShellCompact,
+  default: undefined,
+  relaxed: styles.sectionShellRelaxed,
+};
+
+const catalogSectionShellPaddingClasses: Record<
+  CatalogSectionShellPadding,
+  string | undefined
+> = {
+  default: styles.sectionShellPaddingDefault,
+  none: styles.sectionShellPaddingNone,
+  relaxed: styles.sectionShellPaddingRelaxed,
+};
+
+const catalogSectionShellBodySpacingClasses: Record<
+  CatalogSectionShellBodySpacing,
+  string | undefined
+> = {
+  compact: styles.sectionShellBodyCompact,
+  default: undefined,
+  relaxed: styles.sectionShellBodyRelaxed,
+};
 
 export function CatalogSectionHeader({
   className,
@@ -122,6 +164,100 @@ export function CatalogSectionHeader({
         </div>
       ) : null}
     </div>
+  );
+}
+
+export function CatalogSectionShell({
+  as = 'section',
+  bodyClassName,
+  bodySpacing = 'default',
+  children,
+  className,
+  description,
+  eyebrow,
+  headerClassName,
+  headerTone,
+  headingClassName,
+  headingTone = 'default',
+  padding = 'default',
+  signal,
+  signalClassName,
+  spacing = 'default',
+  title,
+  titleAs = 'h2',
+  tone = 'plain',
+  utility,
+  utilityClassName,
+  utilityPlacement = 'aside',
+  ...rest
+}: Omit<HTMLAttributes<HTMLElement>, 'title'> & {
+  as?: CatalogSectionShellElement;
+  bodyClassName?: string;
+  bodySpacing?: CatalogSectionShellBodySpacing;
+  children?: ReactNode;
+  className?: string;
+  description?: ReactNode;
+  eyebrow?: string;
+  headerClassName?: string;
+  headerTone?: CatalogSectionHeaderTone;
+  headingClassName?: string;
+  headingTone?: 'default' | 'display';
+  padding?: CatalogSectionShellPadding;
+  signal?: ReactNode;
+  signalClassName?: string;
+  spacing?: CatalogSectionShellSpacing;
+  title: ReactNode;
+  titleAs?: 'h1' | 'h2' | 'h3';
+  tone?: CatalogSectionShellTone;
+  utility?: ReactNode;
+  utilityClassName?: string;
+  utilityPlacement?: CatalogSectionHeaderUtilityPlacement;
+}) {
+  const Component = as;
+  const content = (
+    <>
+      <CatalogSectionHeader
+        className={headerClassName}
+        description={description}
+        eyebrow={eyebrow}
+        headingClassName={headingClassName}
+        headingTone={headingTone}
+        signal={signal}
+        signalClassName={signalClassName}
+        title={title}
+        titleAs={titleAs}
+        tone={headerTone ?? (tone === 'inverse' ? 'inverse' : 'default')}
+        utility={utility}
+        utilityClassName={utilityClassName}
+        utilityPlacement={utilityPlacement}
+      />
+      {children ? (
+        <div
+          className={joinClasses(
+            styles.sectionShellBody,
+            catalogSectionShellBodySpacingClasses[bodySpacing],
+            bodyClassName,
+          )}
+        >
+          {children}
+        </div>
+      ) : null}
+    </>
+  );
+
+  return (
+    <Component
+      className={joinClasses(
+        styles.sectionShell,
+        tone !== 'plain' && catalogSectionShellToneClasses[tone],
+        catalogSectionShellSpacingClasses[spacing],
+        catalogSectionShellPaddingClasses[padding],
+        className,
+      )}
+      {...rest}
+    >
+      {content}
+    </Component>
   );
 }
 

@@ -1,19 +1,10 @@
 .resultsSection {
+  padding: 0;
+}
+
+.resultsBody {
   display: grid;
   gap: var(--lego-space-4);
-}
-
-.resultsHeader {
-  align-items: end;
-  display: grid;
-  gap: var(--lego-space-3);
-}
-
-.resultsMeta {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-text-role-meta-line-height);
-  margin: 0;
 }
 
 .resultsGrid {
@@ -35,12 +26,6 @@
 @media (min-width: 48rem) {
   .resultsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 64rem) {
-  .resultsHeader {
-    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
