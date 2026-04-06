@@ -103,8 +103,9 @@ describe('CatalogSetDetailHero', () => {
               decisionHelper: '€ 20 onder wat we meestal zien voor deze set.',
               decisionLabel: 'Nu interessant geprijsd',
               decisionTone: 'positive',
-              merchantLabel: 'Nu het laagst bij bol',
+              merchantLabel: 'bol',
               price: '€ 469,99',
+              rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
               stockLabel: 'Op voorraad',
             }}
             supportItems={[
@@ -147,6 +148,7 @@ describe('CatalogSetDetailHero', () => {
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('Hero-afbeelding');
     expect(markup).toContain('Setnummer');
+    expect(markup).toContain('Beste winkel nu');
     expect(markup).toContain('Waarom dit nu interessant is');
     expect(markup).toContain('Volg prijs');
   });

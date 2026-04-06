@@ -116,6 +116,7 @@ const detailBase = {
       isBest: true,
       merchantLabel: 'bol',
       price: '€ 469,99',
+      rankingLabel: 'Laagste prijs op voorraad',
       stockLabel: 'Op voorraad',
     },
     {
@@ -124,6 +125,7 @@ const detailBase = {
       ctaLabel: 'Bekijk bij LEGO',
       merchantLabel: 'LEGO',
       price: '€ 499,99',
+      rankingLabel: '€ 30,00 hoger dan de beste optie',
       stockLabel: 'Op voorraad',
     },
   ],
@@ -412,8 +414,9 @@ export const SetDetailHeroStates: Story = {
               decisionHelper: '€ 20 onder wat we meestal zien voor deze set.',
               decisionLabel: 'Nu interessant geprijsd',
               decisionTone: 'positive',
-              merchantLabel: 'Nu het laagst bij bol',
+              merchantLabel: 'bol',
               price: '€ 469,99',
+              rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
               stockLabel: 'Op voorraad',
             }}
             supportItems={[
@@ -468,8 +471,9 @@ export const SetDetailHeroStates: Story = {
                 'Niet het sterkste moment. Deze set zakt vaker verder weg.',
               decisionLabel: 'Nog niet bijzonder',
               decisionTone: 'warning',
-              merchantLabel: 'Nu het laagst bij bol',
+              merchantLabel: 'bol',
               price: '€ 589,99',
+              rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
               stockLabel: 'Op voorraad',
             }}
             supportItems={[
@@ -530,8 +534,9 @@ export const SetDetailPanelStates: Story = {
           decisionHelper: '€ 20 onder wat we meestal zien voor deze set.',
           decisionLabel: 'Nu interessant geprijsd',
           decisionTone: 'positive',
-          merchantLabel: 'Nu het laagst bij bol',
+          merchantLabel: 'bol',
           price: '€ 469,99',
+          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         dealVerdict={{
@@ -553,8 +558,9 @@ export const SetDetailPanelStates: Story = {
             'Nog niet het beste moment. Deze set staat vaker lager.',
           decisionLabel: 'Nog niet bijzonder',
           decisionTone: 'warning',
-          merchantLabel: 'Nu het laagst bij bol',
+          merchantLabel: 'bol',
           price: '€ 519,99',
+          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         dealSupportItems={[

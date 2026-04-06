@@ -134,6 +134,76 @@ function buildDecisionHelper(pricePanelSnapshot?: PricePanelSnapshot): string {
   return 'Rond het normale prijsniveau voor deze set.';
 }
 
+function buildBestOfferRankingLabel({
+  availability,
+  merchantCount,
+}: {
+  availability: CatalogOffer['availability'];
+  merchantCount?: number;
+}): string {
+  if (typeof merchantCount === 'number' && merchantCount <= 1) {
+    return availability === 'in_stock'
+      ? 'Enige nagekeken prijs die nu op voorraad is.'
+      : 'Enige nagekeken prijs op dit moment.';
+  }
+
+  if (availability === 'in_stock') {
+    return 'Laagste nagekeken prijs die nu op voorraad is.';
+  }
+
+  if (availability === 'unknown') {
+    return 'Laagste nagekeken prijs, maar voorraad is niet zeker.';
+  }
+
+  return 'Laagste nagekeken prijs, maar nu uitverkocht.';
+}
+
+function buildOfferRankingLabel({
+  bestOffer,
+  catalogOffer,
+}: {
+  bestOffer?: CatalogOffer | null;
+  catalogOffer: CatalogOffer;
+}): string | undefined {
+  if (!bestOffer) {
+    return undefined;
+  }
+
+  if (bestOffer.url === catalogOffer.url) {
+    return bestOffer.availability === 'in_stock'
+      ? 'Laagste prijs op voorraad'
+      : 'Laagste nagekeken prijs';
+  }
+
+  const priceDeltaMinor = catalogOffer.priceCents - bestOffer.priceCents;
+
+  if (priceDeltaMinor < 0) {
+    const lowerPriceLabel = formatPriceMinor({
+      currencyCode: catalogOffer.currency,
+      minorUnits: Math.abs(priceDeltaMinor),
+    });
+
+    if (catalogOffer.availability === 'out_of_stock') {
+      return `${lowerPriceLabel} lager, maar uitverkocht`;
+    }
+
+    if (catalogOffer.availability === 'unknown') {
+      return `${lowerPriceLabel} lager, maar voorraad onbekend`;
+    }
+
+    return `${lowerPriceLabel} lager, maar niet de beste keuze nu`;
+  }
+
+  if (priceDeltaMinor === 0) {
+    return 'Zelfde prijs als de beste optie';
+  }
+
+  return `${formatPriceMinor({
+    currencyCode: catalogOffer.currency,
+    minorUnits: priceDeltaMinor,
+  })} hoger dan de beste optie`;
+}
+
 function buildBestDeal({
   catalogOffer,
   dealVerdict,
@@ -164,8 +234,12 @@ function buildBestDeal({
     decisionHelper: buildDecisionHelper(pricePanelSnapshot),
     decisionLabel: dealVerdict.label,
     decisionTone: dealVerdict.tone,
-    merchantLabel: `Nu het laagst bij ${catalogOffer.merchantName}`,
+    merchantLabel: catalogOffer.merchantName,
     price: formatOfferPrice(catalogOffer),
+    rankingLabel: buildBestOfferRankingLabel({
+      availability: catalogOffer.availability,
+      merchantCount,
+    }),
     stockLabel: getOfferStockLabel(catalogOffer.availability),
   };
 }
@@ -183,6 +257,10 @@ function buildOfferList(
       isBest: bestOffer?.url === catalogOffer.url,
       merchantLabel: catalogOffer.merchantName,
       price: formatOfferPrice(catalogOffer),
+      rankingLabel: buildOfferRankingLabel({
+        bestOffer,
+        catalogOffer,
+      }),
       stockLabel: getOfferStockLabel(catalogOffer.availability),
     }));
 }

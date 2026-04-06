@@ -59,8 +59,9 @@ describe('Catalog commerce UI', () => {
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
           decisionLabel: 'Nu interessant geprijsd',
           decisionTone: 'positive',
-          merchantLabel: 'Nu het laagst bij bol',
+          merchantLabel: 'bol',
           price: '€ 469,99',
+          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         supportItems={[
@@ -75,6 +76,9 @@ describe('Catalog commerce UI', () => {
     );
 
     expect(markup).toContain('Nu interessant geprijsd');
+    expect(markup).toContain('Beste winkel nu');
+    expect(markup).toContain('bol');
+    expect(markup).toContain('Laagste nagekeken prijs die nu op voorraad is.');
     expect(markup).toContain('Bekijk bij bol');
     expect(markup).toContain('Volg prijs');
     expect(markup).toContain('Waarom dit nu interessant is');

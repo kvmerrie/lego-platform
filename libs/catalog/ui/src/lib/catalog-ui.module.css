@@ -839,6 +839,7 @@
 }
 
 .bestDealMeta,
+.bestDealRanking,
 .bestDealDecision,
 .bestDealChecked,
 .alertCopy,
@@ -851,6 +852,12 @@
   color: var(--lego-text);
   font-weight: var(--lego-font-weight-semibold);
   line-height: 1.3;
+}
+
+.bestDealRanking {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: 1.4;
 }
 
 .bestDealDecision {
@@ -985,19 +992,30 @@
 }
 
 .offerRow {
-  align-items: center;
+  align-items: start;
   background: var(--lego-surface-default);
   border-radius: var(--lego-radius-sm);
   display: grid;
   gap: var(--lego-space-2);
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   padding: var(--lego-space-3);
 }
 
-.offerCopy,
-.offerSide {
+.offerRow[data-best='true'] {
+  border: var(--lego-border-width-2) solid var(--lego-accent);
+}
+
+.offerCopy {
   display: grid;
   gap: var(--lego-space-1);
+}
+
+.offerSide {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+  justify-content: space-between;
 }
 
 .offerTitleRow {
@@ -1014,6 +1032,21 @@
   margin: 0;
 }
 
+.offerRanking {
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-support-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.offerSignals {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .offerPrice {
   color: var(--lego-text);
   font-family: var(--lego-font-family-heading);
@@ -1022,11 +1055,11 @@
   letter-spacing: -0.03em;
   line-height: 1;
   margin: 0;
-  text-align: right;
+  text-align: left;
 }
 
 .offerAction {
-  justify-self: end;
+  margin-left: auto;
   min-height: var(--lego-control-height-compact);
   padding-inline: 0.65rem;
 }
@@ -1633,7 +1666,17 @@
   }
 
   .offerSide {
+    display: grid;
+    gap: var(--lego-space-1);
     justify-items: end;
+  }
+
+  .offerPrice {
+    text-align: right;
+  }
+
+  .offerAction {
+    margin-left: 0;
   }
 
   .detailInfoGrid {

@@ -290,8 +290,9 @@ describe('CatalogSetCard', () => {
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
           decisionLabel: 'Nu interessant geprijsd',
           decisionTone: 'positive',
-          merchantLabel: 'Nu het scherpst bij bol',
+          merchantLabel: 'bol',
           price: '€ 469,99',
+          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         brickhuntValueItems={[
@@ -374,6 +375,7 @@ describe('CatalogSetCard', () => {
             isBest: true,
             merchantLabel: 'bol',
             price: '€ 469,99',
+            rankingLabel: 'Laagste prijs op voorraad',
             stockLabel: 'Op voorraad',
           },
           {
@@ -382,6 +384,7 @@ describe('CatalogSetCard', () => {
             ctaLabel: 'Bekijk bij LEGO',
             merchantLabel: 'LEGO',
             price: '€ 499,99',
+            rankingLabel: '€ 30,00 hoger dan de beste optie',
             stockLabel: 'Op voorraad',
           },
         ]}
@@ -412,14 +415,19 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain(
       '€ 30,00 onder wat we meestal zien voor deze set.',
     );
+    expect(markup).toContain('Beste winkel nu');
+    expect(markup).toContain('bol');
+    expect(markup).toContain('Laagste nagekeken prijs die nu op voorraad is.');
     expect(markup).toContain('Waarom dit nu interessant is');
     expect(markup).toContain(
       'Dit is momenteel de scherpste prijs die we volgen.',
     );
     expect(markup).toContain('Nog niet klaar om te kopen?');
     expect(markup).toContain('Volg prijs');
-    expect(markup).toContain('Meer nagekeken prijzen');
+    expect(markup).toContain('Vergelijk winkels');
     expect(markup).toContain('2 winkels nagekeken · Nagekeken 31 mrt, 09:00');
+    expect(markup).toContain('Laagste prijs op voorraad');
+    expect(markup).toContain('€ 30,00 hoger dan de beste optie');
     expect(markup).toContain('Waarom via Brickhunt');
     expect(markup).toContain('Je ziet meteen of nu kopen slim is.');
     expect(markup).toContain('Waar dit op steunt');
@@ -448,8 +456,9 @@ describe('CatalogSetCard', () => {
           decisionHelper: 'Rond het normale prijsniveau voor deze set.',
           decisionLabel: 'Rond normaal',
           decisionTone: 'info',
-          merchantLabel: 'Nu het scherpst bij LEGO',
+          merchantLabel: 'LEGO',
           price: '€ 139,99',
+          rankingLabel: 'Enige nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         catalogSetDetail={{
@@ -555,8 +564,9 @@ describe('CatalogSetCard', () => {
           decisionHelper: '€ 20,00 boven wat we meestal zien voor deze set.',
           decisionLabel: 'Nog niet bijzonder',
           decisionTone: 'warning',
-          merchantLabel: 'Nu het laagst bij bol',
+          merchantLabel: 'bol',
           price: '€ 449,99',
+          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         catalogSetDetail={{

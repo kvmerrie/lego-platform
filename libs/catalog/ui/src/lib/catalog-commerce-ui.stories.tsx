@@ -135,8 +135,9 @@ export const DecisionPanelStates: Story = {
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
           decisionLabel: 'Nu interessant geprijsd',
           decisionTone: 'positive',
-          merchantLabel: 'Nu het laagst bij bol',
+          merchantLabel: 'bol',
           price: '€ 469,99',
+          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         supportItems={[
@@ -164,8 +165,9 @@ export const DecisionPanelStates: Story = {
           decisionHelper: '€ 20,00 boven wat we meestal zien voor deze set.',
           decisionLabel: 'Nog niet bijzonder',
           decisionTone: 'warning',
-          merchantLabel: 'Nu het laagst bij bol',
+          merchantLabel: 'bol',
           price: '€ 449,99',
+          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         supportItems={[
@@ -199,8 +201,9 @@ export const DecisionPanelStates: Story = {
           decisionHelper: 'Rond wat we meestal zien voor deze set.',
           decisionLabel: 'Rond normaal',
           decisionTone: 'info',
-          merchantLabel: 'Nu het laagst bij LEGO',
+          merchantLabel: 'LEGO',
           price: '€ 149,99',
+          rankingLabel: 'Enige nagekeken prijs die nu op voorraad is.',
           stockLabel: 'Op voorraad',
         }}
         supportItems={[
@@ -234,6 +237,7 @@ export const OfferStates: Story = {
           isBest: true,
           merchantLabel: 'bol',
           price: '€ 469,99',
+          rankingLabel: 'Laagste prijs op voorraad',
           stockLabel: 'Op voorraad',
         }}
       />
@@ -246,6 +250,7 @@ export const OfferStates: Story = {
             isBest: true,
             merchantLabel: 'bol',
             price: '€ 469,99',
+            rankingLabel: 'Laagste prijs op voorraad',
             stockLabel: 'Op voorraad',
           },
           {
@@ -254,6 +259,7 @@ export const OfferStates: Story = {
             ctaLabel: 'Bekijk bij LEGO',
             merchantLabel: 'LEGO',
             price: '€ 499,99',
+            rankingLabel: '€ 30,00 hoger dan de beste optie',
             stockLabel: 'Op voorraad',
           },
         ]}

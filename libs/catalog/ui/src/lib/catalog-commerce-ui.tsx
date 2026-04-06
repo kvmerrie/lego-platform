@@ -29,6 +29,7 @@ export interface CatalogDecisionOffer {
   decisionTone?: ComponentProps<typeof Badge>['tone'];
   merchantLabel: string;
   price: string;
+  rankingLabel?: string;
   stockLabel: string;
 }
 
@@ -41,6 +42,7 @@ export interface CatalogOfferItem {
   isBest?: boolean;
   merchantLabel: string;
   price: string;
+  rankingLabel?: string;
   stockLabel: string;
 }
 
@@ -71,7 +73,7 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
   if (!offer) {
     return (
       <section className={styles.bestDealCard}>
-        <p className={styles.bestDealEyebrow}>Prijscheck</p>
+        <p className={styles.bestDealEyebrow}>Beste winkel nu</p>
         <p className={styles.bestDealFallbackValue}>Nog geen nagekeken prijs</p>
         <p className={styles.bestDealMeta}>
           We hebben nog geen bruikbare prijsvergelijking voor deze set.
@@ -86,15 +88,18 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
       data-tone={offer.decisionTone ?? 'neutral'}
     >
       <div className={styles.bestDealHeader}>
-        <p className={styles.bestDealEyebrow}>Prijscheck</p>
+        <p className={styles.bestDealEyebrow}>Beste winkel nu</p>
         {offer.decisionLabel ? (
           <Badge tone={offer.decisionTone ?? 'neutral'}>
             {offer.decisionLabel}
           </Badge>
         ) : null}
       </div>
-      <p className={styles.bestDealPrice}>{offer.price}</p>
       <p className={styles.bestDealMeta}>{offer.merchantLabel}</p>
+      {offer.rankingLabel ? (
+        <p className={styles.bestDealRanking}>{offer.rankingLabel}</p>
+      ) : null}
+      <p className={styles.bestDealPrice}>{offer.price}</p>
       {offer.decisionHelper ? (
         <p className={styles.bestDealDecision}>{offer.decisionHelper}</p>
       ) : null}
@@ -146,14 +151,14 @@ function getFollowTitle(tone?: CatalogDecisionVerdict['tone']): string {
 
 function getFollowCopy(tone?: CatalogDecisionVerdict['tone']): string {
   if (tone === 'warning') {
-    return 'Deze prijs springt nu niet eruit. Volg hem en kijk later opnieuw.';
+    return 'Dit is nu wel de beste winkel, maar nog niet het beste moment. Volg de prijs.';
   }
 
   if (tone === 'positive') {
-    return 'Nog niet klaar? Volg de prijs en kijk later opnieuw.';
+    return 'Dit is nu de scherpste plek om te klikken. Nog niet klaar? Volg de prijs.';
   }
 
-  return 'Volg de prijs en check later opnieuw.';
+  return 'Prima winkel om te checken. Twijfel je nog? Volg de prijs.';
 }
 
 function getFollowEyebrow(tone?: CatalogDecisionVerdict['tone']): string {
@@ -310,14 +315,26 @@ export function CatalogPriceDecisionPanel({
 
 export function CatalogOfferRow({ offer }: { offer: CatalogOfferItem }) {
   return (
-    <article className={styles.offerRow}>
+    <article
+      className={styles.offerRow}
+      data-best={offer.isBest ? 'true' : 'false'}
+    >
       <div className={styles.offerCopy}>
         <div className={styles.offerTitleRow}>
           <p className={styles.offerMerchant}>{offer.merchantLabel}</p>
-          {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
-          <Badge tone="neutral">{offer.stockLabel}</Badge>
+          {offer.isBest ? <Badge tone="accent">Beste nu</Badge> : null}
         </div>
-        <p className={styles.offerMeta}>{offer.checkedLabel}</p>
+        {offer.rankingLabel ? (
+          <p className={styles.offerRanking}>{offer.rankingLabel}</p>
+        ) : null}
+        <div className={styles.offerSignals}>
+          <Badge tone="neutral">{offer.stockLabel}</Badge>
+          <MetaSignal
+            icon={<Clock3 aria-hidden="true" size={16} strokeWidth={2.2} />}
+          >
+            {offer.checkedLabel}
+          </MetaSignal>
+        </div>
       </div>
       <div className={styles.offerSide}>
         <p className={styles.offerPrice}>{offer.price}</p>
@@ -355,9 +372,9 @@ export function CatalogOfferComparison({
       as="section"
       className={styles.offerListCard}
       description={summaryLabel}
-      eyebrow="Meer winkels"
+      eyebrow="Beste eerst"
       elevation="rested"
-      title="Meer nagekeken prijzen"
+      title="Vergelijk winkels"
       tone="muted"
     >
       <div className={styles.offerList}>
