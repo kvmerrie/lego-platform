@@ -14,7 +14,6 @@ describe('CatalogFeatureSetList', () => {
             theme: 'Ideas',
             releaseYear: 2024,
             pieces: 3747,
-            priceRange: '$359 to $409',
             collectorAngle: 'Crossover audience magnet',
             tagline:
               'A community-driven release with rich minifigure storytelling hooks.',
@@ -33,7 +32,6 @@ describe('CatalogFeatureSetList', () => {
             theme: 'Marvel',
             releaseYear: 2023,
             pieces: 5202,
-            priceRange: '$449 to $519',
             collectorAngle: 'Marvel flagship showcase',
             tagline:
               'A marquee licensed set with broad household recognizability.',
@@ -68,7 +66,6 @@ describe('CatalogFeatureSetList', () => {
             theme: 'Marvel',
             releaseYear: 2023,
             pieces: 5202,
-            priceRange: '$449 to $519',
             collectorAngle: 'Marvel flagship showcase',
             tagline:
               'A marquee licensed set with broad household recognizability.',

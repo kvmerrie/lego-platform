@@ -582,7 +582,6 @@ describe('catalog data-access contracts', () => {
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
       primaryImage:
         'https://media.s-bol.com/k3pv34E3Ggp5/KZO6Aol/1199x1200.jpg',
-      priceRange: '$499 tot $569',
       collectorAngle: nonEmptyText,
       tagline: nonEmptyText,
       availability: nonEmptyText,
@@ -628,6 +627,7 @@ describe('catalog data-access contracts', () => {
       nonEmptyText,
       nonEmptyText,
     ]);
+    expect(catalogSetDetail).not.toHaveProperty('priceRange');
   });
 
   test('keeps homepage summaries stable while allowing source facts to refresh', () => {
@@ -642,7 +642,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 6181,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-        priceRange: '$499 tot $569',
         collectorAngle: nonEmptyText,
       },
       {
@@ -653,7 +652,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 5478,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-        priceRange: '$459 tot $529',
         collectorAngle: nonEmptyText,
       },
       {
@@ -664,11 +662,11 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2022,
         pieces: 2316,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
-        priceRange: '$149 tot $189',
         collectorAngle: nonEmptyText,
       },
     ]);
     expect(homepageSets).toHaveLength(3);
+    expect(homepageSets[0]).not.toHaveProperty('priceRange');
   });
 
   test('searches curated sets by product name and canonical id', () => {
@@ -835,7 +833,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 6181,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-        priceRange: '$499 tot $569',
         collectorAngle: nonEmptyText,
         tagline: nonEmptyText,
         availability: nonEmptyText,
@@ -849,7 +846,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 5478,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-        priceRange: '$459 tot $529',
         collectorAngle: nonEmptyText,
         tagline: nonEmptyText,
         availability: nonEmptyText,
@@ -863,7 +859,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2022,
         pieces: 2316,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
-        priceRange: '$149 tot $189',
         collectorAngle: nonEmptyText,
         tagline: nonEmptyText,
         availability: nonEmptyText,
@@ -920,7 +915,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 5202,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
-        priceRange: '$449 tot $519',
         collectorAngle: nonEmptyText,
         tagline: nonEmptyText,
         availability: nonEmptyText,
@@ -934,7 +928,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 6181,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-        priceRange: '$499 tot $569',
         collectorAngle: nonEmptyText,
         tagline: nonEmptyText,
         availability: nonEmptyText,
@@ -1372,7 +1365,6 @@ describe('catalog data-access contracts', () => {
         pieces: 4515,
         minifigureCount: 22,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10305-1/152495.jpg',
-        priceRange: '$359 tot $429',
       },
       {
         id: '21338',
@@ -1382,7 +1374,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 2083,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21338-1/116515.jpg',
-        priceRange: '$179 tot $239',
       },
       {
         id: '10320',
@@ -1393,7 +1384,6 @@ describe('catalog data-access contracts', () => {
         pieces: 2509,
         minifigureCount: 8,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10320-1/127861.jpg',
-        priceRange: '$189 tot $259',
       },
       {
         id: '21335',
@@ -1403,7 +1393,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2022,
         pieces: 2065,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21335-1/107884.jpg',
-        priceRange: '$259 tot $319',
       },
       {
         id: '10333',
@@ -1414,7 +1403,6 @@ describe('catalog data-access contracts', () => {
         pieces: 5478,
         minifigureCount: 10,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-        priceRange: '$459 tot $529',
       },
       {
         id: '10332',
@@ -1425,7 +1413,6 @@ describe('catalog data-access contracts', () => {
         pieces: 3308,
         minifigureCount: 8,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10332-1/137285.jpg',
-        priceRange: '$189 tot $249',
       },
       {
         id: '10315',
@@ -1435,7 +1422,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 1363,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10315-1/132380.jpg',
-        priceRange: '$95 tot $129',
       },
       {
         id: '21333',
@@ -1445,7 +1431,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2022,
         pieces: 2316,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21333-1/102873.jpg',
-        priceRange: '$149 tot $189',
       },
       {
         id: '21342',
@@ -1455,7 +1440,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 1111,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21342-1/126471.jpg',
-        priceRange: '$69 tot $99',
       },
       {
         id: '10318',
@@ -1465,7 +1449,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 2083,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10318-1/132335.jpg',
-        priceRange: '$169 tot $229',
       },
       {
         id: '10331',
@@ -1475,7 +1458,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 834,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10331-1/135670.jpg',
-        priceRange: '$49 tot $69',
       },
       {
         id: '10341',
@@ -1485,7 +1467,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 3601,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10341-1/139647.jpg',
-        priceRange: '$239 tot $299',
       },
       {
         id: '21349',
@@ -1495,7 +1476,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 1710,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21349-1/140411.jpg',
-        priceRange: '$99 tot $139',
       },
       {
         id: '10300',
@@ -1505,7 +1485,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2022,
         pieces: 1872,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10300-1/99954.jpg',
-        priceRange: '$179 tot $229',
       },
       {
         id: '10294',
@@ -1515,7 +1494,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2021,
         pieces: 9092,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10294-1/93446.jpg',
-        priceRange: '$629 tot $749',
       },
       {
         id: '21061',
@@ -1525,7 +1503,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 4382,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
-        priceRange: '$199 tot $249',
       },
       {
         id: '31208',
@@ -1535,7 +1512,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 1810,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/31208-1/131769.jpg',
-        priceRange: '$79 tot $109',
       },
       {
         id: '76419',
@@ -1545,7 +1521,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 2660,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/76419-1/123597.jpg',
-        priceRange: '$149 tot $189',
       },
       {
         id: '43222',
@@ -1555,7 +1530,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2023,
         pieces: 4837,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/43222-1/130721.jpg',
-        priceRange: '$349 tot $429',
       },
       {
         id: '75313',
@@ -1571,7 +1545,6 @@ describe('catalog data-access contracts', () => {
           'Snowtrooper Commander',
         ],
         imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/94568.jpg',
-        priceRange: '$649 tot $799',
       },
       {
         id: '21345',
@@ -1581,7 +1554,6 @@ describe('catalog data-access contracts', () => {
         releaseYear: 2024,
         pieces: 516,
         imageUrl: 'https://cdn.rebrickable.com/media/sets/21345-1/134647.jpg',
-        priceRange: '$69 tot $99',
       },
     ];
 

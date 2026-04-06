@@ -42,31 +42,29 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     ],
     primaryImage: 'https://media.s-bol.com/k3pv34E3Ggp5/KZO6Aol/1199x1200.jpg',
     minifigureCount: 15,
-    priceRange: '$499 tot $569',
     collectorAngle:
       'Als je één Middle-earth-set kiest, is Rivendell de hoofdkeuze',
     tagline:
-      'Rivendell wint niet op dreiging maar op schoonheid: de Raad van Elrond, de elfenbrug en de herfstkleuren maken dit de set die op een plank het eerst opvalt en het langst blijft boeien.',
+      'Licht, open en vol herkenbare scènes — Rivendell voelt meer als een plek dan als een set. Voor veel LOTR-fans is dit de keuze als schoonheid wint van dreiging.',
     availability: 'Goed verkrijgbaar, maar duidelijk een premium aankoop',
     collectorHighlights: [
-      'Waar Barad-dur vooral op dreiging speelt, verkoopt Rivendell zichzelf met licht, kleur en rust',
-      'Met Elrond, Arwen, Frodo en het gezelschap is dit de meest complete Fellowship-keuze',
-      'Op een plank blijft hij werken omdat je steeds van kamer, boog of brug naar een nieuw detail wordt getrokken',
+      'Open display met brug, raadzaal en herfstbomen',
+      'Fellowship-cast geeft meteen filmgewicht',
+      'Kamers, bogen en kleuren blijven lonken',
     ],
   },
   {
     canonicalId: '21348',
     displayTheme: 'Ideas',
-    priceRange: '$359 tot $409',
     collectorAngle:
       'De Ideas-set voor kopers die één echt fantasy-avontuur willen',
     tagline:
-      'De herberg, de toren, de rode draak en de party maken dit geen losse fantasybuild, maar een set die direct een heel avontuur op je plank zet.',
+      'Deze set zet in één keer een compleet fantasy-avontuur neer. De rode draak, herberg en toren maken hem rijker dan een losse monster- of kasteelset.',
     availability: 'Nieuwe favoriet met veel aandacht van LEGO- en fantasyfans',
     collectorHighlights: [
-      'De draak verkoopt de set in één oogopslag, maar de herberg en toren zorgen dat hij daarna pas echt interessant wordt',
-      'D&D-fans krijgen verwijzingen genoeg, terwijl andere kopers vooral een complete fantasywereld zien',
-      'Als je twijfelt tussen losse monster- of kasteelscènes, is dit de rijkere en verhalendere keuze',
+      'De rode draak pakt meteen alle aandacht',
+      'Herberg en toren maken er een echte scène van',
+      'Sterk voor D&D-fans en fantasybouwers',
     ],
   },
   {
@@ -75,115 +73,107 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     minifigureCount: 31,
     setStatus: 'backorder',
     subtheme: 'Avengers',
-    priceRange: '$449 tot $519',
     collectorAngle:
       'Als je één grote Marvel-set koopt, is Avengers Tower de duidelijkste keuze',
     tagline:
-      'Avengers Tower is het overtuigendste Marvel-totaalpakket: skyline, team, actiemomenten en een hoofdkwartier dat meteen als MCU leest.',
+      "Hoog, druk en vol bekende MCU-gezichten — Avengers Tower is pure Marvel op z'n grootst. Zoek je één blikvanger, dan voelt deze het meest compleet.",
     availability: 'Populair en snel weg bij nieuwe voorraad',
     collectorHighlights: [
-      'Tegenover Sanctum of X-Mansion is dit onmiskenbaar hét centerpiece van een Marvel-plank',
-      'Met 31 minifiguren koop je niet één scène, maar bijna een hele MCU-line-up rond één locatie',
-      'Op een plank doet de hoogte het werk meteen: je ziet eerst de toren en pas daarna alle details die erin verstopt zitten',
+      '31 minifigs rond één echte MCU-locatie',
+      'Torenhoog New York-silhouet',
+      'Meer spektakel en teamgevoel dan de rest',
     ],
   },
   {
     canonicalId: '10305',
     minifigureCount: 22,
-    priceRange: '$359 tot $429',
     collectorAngle: 'Castle-set die voelt als een droomversie van vroeger',
     tagline:
-      'Een groot klassiek kasteel met moderne bouwtechnieken, veel minifiguren en genoeg hoekjes om lang naar te blijven kijken.',
+      "Lion Knights' Castle voelt als de droomversie van klassieke Castle. Groot, levendig en vol minifigs die het fort meteen laten leven.",
     availability: 'Blijft gewild als grote kasteelset',
     collectorHighlights: [
-      'De set grijpt duidelijk terug op klassieke Castle, maar bouwt rijker en slimmer dan vroeger',
-      'Met 22 minifiguren voelt het fort meteen bewoond in plaats van leeg',
-      'Geheime doorgangen, kamers en details maken het een set waar je steeds weer iets in ontdekt',
+      'Klassiek fort, rijker gebouwd dan vroeger',
+      '22 minifigs geven overal leven',
+      'Poorten, kamers en doorgangen blijven trekken',
     ],
   },
   {
     canonicalId: '21338',
     displayTheme: 'Ideas',
-    priceRange: '$179 tot $239',
     collectorAngle: 'Gezellige cabin voor thuisdisplay',
     tagline:
-      'Een sfeervolle hut in het bos die warm, gedetailleerd en verrassend rijk aan kleine bouwmomenten voelt.',
+      'Een rustige displayset die meteen warmte op je plank zet. De hut, bomen en bosdetails maken hem sterker dan een gewoon huisje.',
     availability: 'Blijft geliefd bij fans van rustige displaysets',
     collectorHighlights: [
-      'Het driehoekige dak en de bosbasis geven de set meteen karakter',
-      'Binnen en buiten zitten genoeg kleine details om lang interessant te blijven',
-      'Een fijne keuze als je liever sfeer bouwt dan pure schaal',
+      'Driehoekig dak dat direct opvalt',
+      'Binnen en buiten vol kleine details',
+      'Sterk voor wie sfeer boven schaal kiest',
     ],
   },
   {
     canonicalId: '10320',
     minifigureCount: 8,
-    priceRange: '$189 tot $259',
     collectorAngle: 'Piratennostalgie met frisse bouw',
     tagline:
-      'Een klassieke piratensetting die nostalgisch oogt, maar verrassend modern bouwt en op display heerlijk avontuurlijk overkomt.',
+      'Een van de leukste nostalgiesets van de laatste jaren. Je krijgt meteen piratenkleur, avontuur en een fort dat echt leeft.',
     availability: 'Geliefd bij fans van klassieke LEGO-thema’s',
     collectorHighlights: [
-      'De modulaire indeling laat je het fort op meerdere manieren neerzetten',
-      'Kleuren, vlaggen en boten geven meteen die vertrouwde Pirates-sfeer',
-      'Een leuke keuze als je iets avontuurlijks wilt buiten de grote film- en fantasysets',
+      'Fort en boot geven direct Pirates-gevoel',
+      'Modulaire bouw werkt ook op display',
+      'Sterke keuze buiten filmthema’s',
     ],
   },
   {
     canonicalId: '21335',
     displayTheme: 'Ideas',
-    priceRange: '$259 tot $319',
     collectorAngle: 'Sfeerset met echte beweging',
     tagline:
-      'Een vuurtoren die echt draait en licht geeft, en daardoor meer leven op display brengt dan een gewone huisjesbuild.',
+      'De vuurtoren verkoopt zichzelf zodra het licht draait. Daardoor voelt deze set levendiger dan een gewone kustbuild.',
     availability: 'Wat selectiever, maar erg geliefd onder Ideas-fans',
     collectorHighlights: [
-      'De draaiende lamp maakt de set ook na het bouwen leuk om aan te zetten',
-      'De rotsbasis en kustdetails geven hem veel sfeer zonder enorm formaat',
-      'Een sterke combinatie van techniek, rust en woonvriendelijk display',
+      'Werkend licht maakt hem direct bijzonder',
+      'Rotsbasis en huisje geven veel sfeer',
+      'Mooi display zonder enorme voetafdruk',
     ],
   },
   {
     canonicalId: '10333',
     minifigureCount: 10,
-    priceRange: '$459 tot $529',
     collectorAngle:
       'Als je Middle-earth donker, groot en dreigend wilt, pak je Barad-dur',
     tagline:
-      'Deze set kiest vol voor dreiging: het Oog van Sauron bovenin, zwarte massa in het midden en genoeg Mordor-energie om elke kast meteen een donker zwaartepunt te geven.',
+      'Barad-dur trekt de kamer donker naar zich toe. Waar Rivendell open en licht blijft, wint dit gevaarte op hoogte, schaduw en pure dreiging.',
     availability: 'Veel vraag onder fans van The Lord of the Rings',
     collectorHighlights: [
-      'Het Oog van Sauron verkoopt de set direct; je hoeft er niet vlakbij te staan om te zien wat het is',
-      'Waar Rivendell breed en sierlijk werkt, wint Barad-dur juist op hoogte, dreiging en pure aanwezigheid',
-      'Als je één fantasyset wilt die meteen de kamer domineert, is dit de stoerdere keuze',
+      'Het Oog van Sauron pakt direct de blik',
+      'Hoge toren met zwaar Mordor-silhouet',
+      'De donkere tegenpool van Rivendell',
     ],
   },
   {
     canonicalId: '10332',
     minifigureCount: 8,
-    priceRange: '$189 tot $249',
     collectorAngle: 'Levendige aanvulling voor kasteelfans',
     tagline:
-      'Een middeleeuws dorp vol winkels, bewoners en kleur dat een kasteelcollectie meteen meer sfeer geeft.',
+      'Deze set maakt een Castle-plank pas echt levend. Winkels, bewoners en kleur geven meer sfeer dan nog een extra toren.',
     availability: 'Goed verkrijgbaar en populair bij Castle-fans',
     collectorHighlights: [
-      "Werkt perfect naast Lion Knights' Castle maar staat ook sterk op zichzelf",
-      'Huizen, kraampjes en bewoners geven je display meer leven dan alleen muren en torens',
-      'Veel minifiguren en kleine scènes maken hem dankbaar om opnieuw te rangschikken',
+      "Werkt sterk naast Lion Knights' Castle",
+      'Huizen en kraampjes brengen direct leven',
+      'Veel kleine scènes om te herschikken',
     ],
   },
   {
     canonicalId: '10315',
-    priceRange: '$95 tot $129',
     collectorAngle: 'Rustige set voor thuisdisplay',
     tagline:
-      'Een kalme tuinbuild die meteen een rustige, verzorgde uitstraling geeft aan een kast, tafel of dressoir.',
+      'Een rustige set die je na het bouwen echt laat staan. Brug, paviljoen en vijver geven meteen orde en rust.',
     availability:
       'Makkelijk te vinden en vriendelijker geprijsd dan de grote blikvangers',
     collectorHighlights: [
-      'De set voelt decoratief zonder afstandelijk te worden',
-      'Je bouwt veel sfeer uit relatief weinig onderdelen',
-      'Een fijne keuze als je iets zoekt dat rust brengt tussen grotere en drukkere sets',
+      'Brug en paviljoen geven balans',
+      'Rustige kleuren passen makkelijk in huis',
+      'Sterk als kalme tegenhanger van grote sets',
     ],
   },
   {
@@ -191,168 +181,156 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     productSlug: 'vincent-van-gogh-the-starry-night-21333',
     displayName: 'Vincent van Gogh - The Starry Night',
     displayTheme: 'Ideas',
-    priceRange: '$149 tot $189',
     collectorAngle: 'The Starry Night als echt LEGO-kunststuk',
     tagline:
-      'Een LEGO-versie van The Starry Night die tegelijk als kunstcadeau en als opvallende displayset overtuigt.',
+      'The Starry Night voelt minder als een LEGO-set en meer als een kunstwerk met reliëf. De diepte in lucht en heuvels maakt hem sterk aan de muur én op de plank.',
     availability: 'Blijft populair als kunst- en cadeaukeuze',
     collectorHighlights: [
-      'Het reliëf laat de wolken en sterren veel levendiger aanvoelen dan een vlak kunstwerk',
-      'De kleine Van Gogh-minifiguur is een leuke extra zonder de set speels te maken',
-      'Werkt net zo goed aan de muur als op een dressoir of boekenplank',
+      'Sterren en wolken komen echt naar voren',
+      'Meer kunstgevoel dan vlak displaybeeld',
+      'Sterk als cadeau of blijvend muurstuk',
     ],
   },
   {
     canonicalId: '21342',
     displayTheme: 'Ideas',
-    priceRange: '$69 tot $99',
     collectorAngle: 'Rustige natuurset met veel kleur',
     tagline:
-      'Drie insecten op display die verfijnd, leerzaam en opvallend genoeg zijn om meteen op te vallen in huis.',
+      'Drie insecten, drie kleuren en meteen iets anders dan gebouwen of auto’s. Deze set voelt slim gekozen zonder saai te worden.',
     availability: 'Goed verkrijgbaar en aantrekkelijk als cadeau',
     collectorHighlights: [
-      'Elke insectenscène heeft zijn eigen kleuren en bouwritme',
-      'De set voelt volwassen en decoratief zonder afstandelijk te worden',
-      'Een fijne keuze voor wie iets origineels zoekt buiten gebouwen en voertuigen',
+      'Elk insect heeft een eigen kleine scène',
+      'Veel kleur zonder druk te ogen',
+      'Sterk cadeau voor natuur- en designfans',
     ],
   },
   {
     canonicalId: '10318',
-    priceRange: '$169 tot $229',
     collectorAngle:
       'De voertuigkeuze voor kopers die elegantie boven agressie zetten',
     tagline:
-      'De lange neus, slanke vleugelvorm en witte romp geven de Concorde een soort rust en klasse die je bij veel andere voertuigen niet krijgt.',
+      'Lang, wit en direct herkenbaar — de Concorde staat op een plank als een designobject met motoren. Rustiger dan de meeste voertuigen, maar minstens zo indrukwekkend.',
     availability:
       'Blijft aantrekkelijk voor liefhebbers van luchtvaart en design',
     collectorHighlights: [
-      'Het silhouet werkt bijna als designobject, nog voordat je naar functies of onderdelen kijkt',
-      'Voor luchtvaartliefhebbers is hij bekender en stijlvoller dan een willekeurig vliegtuigmodel',
-      'Als je één groot voertuig op een plank wilt dat niet schreeuwerig wordt, is dit de set die je pakt',
+      'Messcherp silhouet van neus tot staart',
+      'Meteen herkenbaar als luchtvaarticoon',
+      'Eleganter dan bijna elk ander voertuigmodel',
     ],
   },
   {
     canonicalId: '10331',
-    priceRange: '$49 tot $69',
     collectorAngle: 'Kleine natuurset met veel uitstraling',
     tagline:
-      'Een kleurrijke ijsvogel die weinig plek vraagt, maar toch meteen aandacht trekt.',
+      'Klein van formaat, groot in kleur. Deze ijsvogel trekt meteen aandacht zonder veel ruimte te vragen.',
     availability: 'Breed verkrijgbaar en makkelijk cadeau te doen',
     collectorHighlights: [
-      'De kleuren spatten eruit zonder druk te worden',
-      'De set bouwt vlot maar voelt niet simpel',
-      'Een fijne keuze voor wie natuur en kleur op display wil',
+      'Blauw en oranje springen direct eruit',
+      'Sterke houding op de tak',
+      'Vlot te bouwen en fijn om te laten staan',
     ],
   },
   {
     canonicalId: '10341',
-    priceRange: '$239 tot $299',
     collectorAngle: 'Ruimtevaartblikvanger met serieuze hoogte',
     tagline:
-      'Een indrukwekkende raketset die vooral scoort op schaal, techniek en echte ruimtevaart-herkenning.',
+      'Een hoge raketset die meteen als echte missie voelt. Dit is ruimtevaartdisplay voor wie schaal en techniek wil.',
     availability: 'Sterk voor liefhebbers van ruimtevaart en grote builds',
     collectorHighlights: [
-      'De hoogte geeft hem meteen aanwezigheid in een kamer',
-      'Voor NASA-fans voelt dit als een set met echte missie-sfeer',
-      'De bouw is lang genoeg om als een echt project te voelen',
+      'Torenhoog profiel op de plank',
+      'Sterke NASA-herkenning',
+      'Voelt als een echt bouwproject',
     ],
   },
   {
     canonicalId: '21349',
     displayTheme: 'Ideas',
-    priceRange: '$99 tot $139',
     collectorAngle: 'Speelse blikvanger voor kattenliefhebbers',
     tagline:
-      'Een grote bouwbare kat met veel persoonlijkheid die humor en huiselijkheid naar je display brengt.',
+      'Een grote LEGO-kat die meer karakter heeft dan je verwacht. De houding en kop maken hem meteen leuk om neer te zetten.',
     availability: 'Breed geliefd als cadeau en displayset',
     collectorHighlights: [
-      'De houding en gezichtsuitdrukking geven hem echt karakter',
-      'Ook voor niet-LEGO-fans is meteen duidelijk waarom deze set leuk is',
-      'Past goed in woonkamers, werkkamers en als cadeau voor kattenfans',
+      'Gezicht en pose geven veel persoonlijkheid',
+      'Ook leuk voor niet-LEGO-fans',
+      'Sterk cadeau voor kattenmensen',
     ],
   },
   {
     canonicalId: '10300',
-    priceRange: '$179 tot $229',
     collectorAngle: 'DeLorean voor fans van echte filmklassiekers',
     tagline:
-      'Een DeLorean die direct herkenbaar is en extra leuk wordt door de verschillende filmversies die je kunt bouwen.',
+      'De DeLorean is pure filmherkenning op een plank. Door de drie versies voelt hij rijker dan een gewone filmauto.',
     availability: 'Blijft populair door filmnostalgie',
     collectorHighlights: [
-      'Bijna iedereen herkent de auto meteen',
-      'De keuze tussen de drie versies maakt hem leuker dan een standaard voertuigdisplay',
-      'Een fijne mix van bouwplezier en popcultuur op display',
+      'Direct herkenbaar uit Back to the Future',
+      'Drie filmvarianten in één set',
+      'Leuk voor filmfans én autofans',
     ],
   },
   {
     canonicalId: '10294',
-    priceRange: '$629 tot $749',
     collectorAngle:
       'De keuze voor verzamelaars die één echt megaproject willen afstrepen',
     tagline:
-      'Met meer dan negen duizend onderdelen is de Titanic geen gewone grote set, maar het project dat je kiest als je één keer echt groots wilt bouwen.',
+      'De Titanic is een mijlpaalset voor wie één keer echt groots wil bouwen. Op een lange plank oogt hij statig, precies en museumwaardig.',
     availability:
       'Selectiever verkrijgbaar, maar nog altijd een droomset voor veel fans',
     collectorHighlights: [
-      'Het enorme formaat maakt meteen duidelijk waarom dit voor veel verzamelaars een mijlpaalset is',
-      'De doorsneden en dekdetails zorgen dat hij niet alleen lengte heeft, maar ook blijvende kijkwaarde',
-      'Als je binnen LEGO één monumentaal project wilt kiezen, zit je hier goed',
+      'Monumentale lengte van boeg tot achtersteven',
+      'Dekken en doorsneden houden hem spannend',
+      'Meer prestigeproject dan gewone grote set',
     ],
   },
   {
     canonicalId: '21061',
-    priceRange: '$199 tot $249',
     collectorAngle:
       'De architecture-keuze voor kopers die echt een monument willen neerzetten',
     tagline:
-      'Notre-Dame is groter en gewichtiger dan een gewone landmarkset, en juist daardoor koop je hier geen souvenir maar een serieus bouwwerk voor je plank.',
+      'Dit is de Architecture-set voor wie echt een monument wil neerzetten. De gevel en torens maken hem meteen zwaar en statig.',
     availability:
       'Sterk voor liefhebbers van reizen, architectuur en geschiedenis',
     collectorHighlights: [
-      'De voorgevel en torens zijn zo herkenbaar dat de set zonder uitleg meteen als Parijs leest',
-      'De bouw is rijker dan een snelle skylinebuild, omdat je steeds tussen structuur, symmetrie en ornament schakelt',
-      'Als je binnen Architecture één set wilt die echt gewicht en historie uitstraalt, is dit de juiste keuze',
+      'Direct herkenbaar als Notre-Dame',
+      'Rijker dan een snelle skylinebuild',
+      'Sterk voor reis- en architectuurliefhebbers',
     ],
   },
   {
     canonicalId: '31208',
     displayTheme: 'Art',
-    priceRange: '$79 tot $109',
     collectorAngle: 'Kunstwerk voor muur of plank',
     tagline:
-      'Een LEGO-versie van The Great Wave die kleur, rust en Japanse kunstinvloed op een mooie manier samenbrengt.',
+      'Een kunstset die meteen rust en beweging samenbrengt. Op de muur of plank oogt hij sterker dan een vlak beeld.',
     availability: 'Stabiel verkrijgbaar en erg geschikt als cadeau',
     collectorHighlights: [
-      'Het golvende reliëf geeft meer diepte dan een platte print ooit zou doen',
-      'Werkt goed aan de muur, maar ook op een smalle plank',
-      'Een fijne set voor liefhebbers van kunst, kleur en rustige displaystukken',
+      'Golven krijgen echt diepte',
+      'Werkt aan de muur én op een plank',
+      'Sterk voor kunst- en Japan-fans',
     ],
   },
   {
     canonicalId: '76419',
-    priceRange: '$149 tot $189',
     collectorAngle: 'De slimste Hogwarts-keuze als je geen megakasteel wilt',
     tagline:
-      'Deze set geeft je het hele Hogwarts-gevoel in één rustige displaybuild, en precies daarom is hij slimmer dan nog groter of nog kleiner gaan.',
+      'De slimste Hogwarts-keuze als je geen megakasteel wilt. Je krijgt het hele silhouet van Hogwarts in één nette displayset.',
     availability: 'Goed verkrijgbaar en geliefd bij Harry Potter-fans',
     collectorHighlights: [
-      'Je krijgt torens, bruggen en hoogteverschillen die meteen als Hogwarts lezen zonder dat het een kamerbrede set wordt',
-      'Naast de Great Hall krijg je hier het hele kasteel; naast de allergrootste versies blijft hij echt neerzetbaar',
-      'Op een plank werkt hij als miniwereld waar je steeds omheen wilt lopen',
+      'Torens en bruggen lezen direct als Hogwarts',
+      'Meer totaalgevoel dan losse schoolgebouwen',
+      'Past makkelijker op een plank dan de grootste versies',
     ],
   },
   {
     canonicalId: '43222',
-    priceRange: '$349 tot $429',
     collectorAngle: 'Sprookjeskasteel met echte wow-factor',
     tagline:
-      'Een groot Disney Castle dat meteen sprookjessfeer brengt en ook buiten de LEGO-wereld direct herkenbaar is.',
+      'Een groot Disney Castle dat meteen sprookjeswaarde op je plank zet. Dit is de set voor wie één echt kasteelstuk wil.',
     availability:
       'Sterke keuze voor Disney-fans en liefhebbers van grote kastelen',
     collectorHighlights: [
-      'Het silhouet is meteen herkenbaar en werkt van ver al als blikvanger',
-      'Binnen en buiten zitten genoeg details om hem interessant te houden na het bouwen',
-      'Een sterke set voor wie magie, nostalgie en een groot displaystuk wil combineren',
+      'Het silhouet werkt al van ver',
+      'Binnen en buiten genoeg om te bekijken',
+      'Sterk voor Disney-fans en kasteelliefhebbers',
     ],
   },
   {
@@ -364,17 +342,16 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'General Veers',
       'Snowtrooper Commander',
     ],
-    priceRange: '$649 tot $799',
     collectorAngle:
       'Als je één Original Trilogy-centerpiece wilt, is deze AT-AT moeilijk te verslaan',
     tagline:
-      'De hoge poten, de brede romp en de Hoth-cast geven precies dat The Empire Strikes Back-gevoel waar UCS-kopers voor vallen, en maken hem veel meer dan zomaar een groot grijs voertuig.',
+      'De AT-AT is pure Hoth op premium formaat. Dat hoge silhouet en die brede romp maken hem tot een van de sterkste Original Trilogy-sets op display.',
     availability:
       'Duidelijk een premium set en niet altijd makkelijk mee te pakken',
     collectorHighlights: [
-      'Zelfs half in beeld lees je hem direct als AT-AT, en dat maakt hem uitzonderlijk sterk op display',
-      'Luke, Veers en Snowtroopers maken hem overtuigender als Hoth-set dan veel neutrale UCS-voertuigen ooit worden',
-      'Als je twijfelt tussen iconische Star Wars-silhouetten, is dit een van de sets die het meest “nu staat er echt iets” voelt',
+      'Poten en romp lees je direct als Hoth',
+      'Luke, Veers en Snowtroopers maken hem af',
+      'UCS-blikvanger met echte OT-kracht',
     ],
   },
   {
@@ -382,15 +359,14 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     productSlug: 'polaroid-onestep-sx-70-camera-21345',
     displayName: 'Polaroid OneStep SX-70 Camera',
     displayTheme: 'Ideas',
-    priceRange: '$69 tot $99',
     collectorAngle: 'Retro camera die meteen een glimlach oproept',
     tagline:
-      'Een compacte Polaroid-camera vol herkenning voor liefhebbers van fotografie, design en leuke displayobjecten.',
+      'Een compacte Ideas-set die meteen herkenning oproept. De camera oogt slim en precies groot genoeg voor een bureau.',
     availability: 'Toegankelijk geprijsd en makkelijk cadeau te doen',
     collectorHighlights: [
-      'Het model voelt herkenbaar vanaf de eerste blik',
-      'Door het formaat past hij bijna overal zonder weg te vallen',
-      'Een leuke keuze als je iets nostalgisch zoekt dat niet veel ruimte vraagt',
+      'Iconische Polaroid-vorm',
+      'Klein genoeg voor bijna elke plank',
+      'Leuk cadeau voor foto- en designfans',
     ],
   },
   {
@@ -399,157 +375,146 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     minifigureCount: 7,
     setStatus: 'available',
     subtheme: 'Modular Buildings',
-    priceRange: '$269 tot $329',
     collectorAngle: 'Modulair museum vol kijkplezier',
     tagline:
-      'Een groot museum met klassieke modular-uitstraling, veel interieurdetails en genoeg minifiguren om levendig te blijven.',
+      'Het Natural History Museum geeft een stadsrij meteen meer gewicht. De gevel trekt je naar binnen, het interieur houdt je daar.',
     availability: 'Blijft zeer geliefd bij modular-fans',
     collectorHighlights: [
-      'De gevel is statig, maar binnen gebeurt er ook echt veel',
-      'Als modular voelt hij rijk en compleet, niet alleen mooi van buiten',
-      'Een sterke keuze voor stadsbouwers die één echte blikvanger zoeken',
+      'Statige modular-gevel met echte aanwezigheid',
+      'Binnen rijk gevuld met zalen en vitrines',
+      'Blikvanger die een hele straat optilt',
     ],
   },
   {
     canonicalId: '10323',
     displayName: 'PAC-MAN Arcade',
-    priceRange: '$229 tot $289',
     collectorAngle: 'Arcadekast vol nostalgie',
     tagline:
-      'Een vrolijke PAC-MAN Arcade die meteen kleur, beweging en jaren 80-sfeer naar je display brengt.',
+      'Deze arcadekast is pure jaren 80-herkenning in LEGO. Kleur, vorm en spelgevoel maken hem meteen leuk op display.',
     availability: 'Populair bij liefhebbers van games en retrodesign',
     collectorHighlights: [
-      'De kastvorm maakt hem anders dan bijna elke andere LEGO-set',
-      'PAC-MAN is zo herkenbaar dat de set ook voor gasten meteen werkt',
-      'Een leuke keuze als je display wat kleur en speelsheid kan gebruiken',
+      'De kastvorm springt direct eruit',
+      'PAC-MAN leest iedereen meteen',
+      'Sterke keuze voor gaming- en retrofans',
     ],
   },
   {
     canonicalId: '10306',
-    priceRange: '$179 tot $239',
     collectorAngle: 'Retro console voor game- en designfans',
     tagline:
-      'Een Atari-set die tegelijk een leuke knipoog is naar gaminggeschiedenis en een stijlvol bureauobject.',
+      'Een warme retroset voor wie liever een console dan een supercar neerzet. De Atari voelt meteen bekend en slim bedacht.',
     availability: 'Toegankelijk voor liefhebbers van retro-games',
     collectorHighlights: [
-      'De console en cartridges maken hem meteen herkenbaar',
-      'Hij voelt nostalgisch zonder alleen maar een grap te zijn',
-      'Past goed naast andere tech- en designsets',
+      'Console en cartridges zijn direct herkenbaar',
+      'Sterk bureauobject met gamegeschiedenis',
+      'Leuker dan een gewoon techmodel',
     ],
   },
   {
     canonicalId: '10280',
     displayTheme: 'Botanicals',
-    priceRange: '$49 tot $69',
     collectorAngle:
       'De veiligste adult LEGO-keuze als je iets moois én makkelijks wilt',
     tagline:
-      'Het Flower Bouquet blijft zo overtuigend omdat het direct mooi staat, weinig uitleg nodig heeft en voor veel kopers nog steeds de eenvoudigste weg is naar LEGO voor volwassenen.',
+      'Nog steeds een van de slimste adult LEGO-aankopen. Het boeket staat direct mooi en voelt nergens als speelgoed.',
     availability: 'Zeer breed verkrijgbaar en nog altijd populair',
     collectorHighlights: [
-      'Het leest minder als speelgoed en meer als iets dat je na het bouwen echt wilt laten staan',
-      'De mix van bloemsoorten geeft het boeket meer rijkte dan één strak thema of kleur',
-      'Voor cadeaus, eerste adult builds en woonkamerdisplay blijft dit de betrouwbaarste keuze',
+      'Meteen geschikt voor tafel of dressoir',
+      'Mix van bloemen houdt het levendig',
+      'Sterk als cadeau of eerste adult set',
     ],
   },
   {
     canonicalId: '10311',
     displayTheme: 'Botanicals',
-    priceRange: '$39 tot $59',
     collectorAngle: 'De botanische keuze voor wie liever rust dan kleur koopt',
     tagline:
-      'De boog van de steel, de witte bloemen en de nette pot maken dit de set die het snelst chic en rustig oogt zonder aandacht op te eisen.',
+      'De Orchid is de rustigste en chicste Botanical-set. Hij past bijna overal en oogt meteen verzorgd.',
     availability: 'Breed verkrijgbaar en populair als woonset',
     collectorHighlights: [
-      'De vorm leest overtuigend als orchidee, ook voor mensen die niets met LEGO of botanicals hebben',
-      'Door de compacte bouw is dit een makkelijke aankoop, maar geen kleine',
-      'Voor een bureau, vensterbank of rustige plank is dit de meest vanzelfsprekende botanical',
+      'Witte bloemen en pot ogen strak',
+      'Compact, maar niet klein',
+      'Sterk voor bureau, vensterbank of kast',
     ],
   },
   {
     canonicalId: '21327',
     displayTheme: 'Ideas',
-    priceRange: '$199 tot $259',
     collectorAngle: 'Bouwset voor liefhebbers van klassiek design',
     tagline:
-      'Een typemachine die mechanisch interessant is en tegelijk warm, herkenbaar en stijlvol op een bureau staat.',
+      'Een set voor wie bouwplezier en bureau-display wil combineren. De typemachine oogt klassiek en blijft leuk om van dichtbij te bekijken.',
     availability: 'Wat selectiever, maar nog steeds erg geliefd',
     collectorHighlights: [
-      'De toetsen en bewegende delen maken de bouw extra bevredigend',
-      'Als object voelt hij meteen volwassen en tijdloos',
-      'Een sterke set voor fans van design, schrijven en analoge charme',
+      'Toetsen en mechaniek geven bouwplezier',
+      'Tijdloos object op een bureau',
+      'Sterk voor design- en schrijfliefhebbers',
     ],
   },
   {
     canonicalId: '21343',
     displayTheme: 'Ideas',
-    priceRange: '$119 tot $159',
     collectorAngle: 'Compact fantasy-dorp met veel sfeer',
     tagline:
-      'Een Vikingnederzetting die genoeg details en karakter heeft om als kleine wereld op zichzelf te werken.',
+      'Een compacte fantasyset met meer sfeer dan formaat. De houten huizen en rotsbasis maken hem meteen overtuigend.',
     availability: 'Goed verkrijgbaar voor fans van historische fantasy',
     collectorHighlights: [
-      'De houten gebouwen en kleuren geven meteen een stoere noordelijke sfeer',
-      'Hij past mooi bij andere middeleeuwse sets zonder ze te kopiëren',
-      'Een fijne keuze voor wie fantasy wil zonder megabudget',
+      'Noordelijke sfeer vanaf de eerste blik',
+      'Mooi naast Castle en fantasysets',
+      'Sterk als kleinere wereldbuild',
     ],
   },
   {
     canonicalId: '42115',
     displayTheme: 'Technic',
-    priceRange: '$369 tot $449',
     collectorAngle:
       'De Technic-keuze voor kopers die maximale supercar-flair willen',
     tagline:
-      'De felgroene carrosserie, scissor doors en grote schaal maken van de Sián de set die het luidst zegt dat je een exotische droomauto op je plank hebt staan.',
+      'De Sián is de luidste Technic-supercar van het stel. Felgroen, laag en gemaakt om direct op te vallen.',
     availability: 'Duidelijk een premium Technic-set',
     collectorHighlights: [
-      'De Sián voelt exotischer en opvallender dan een meer klassieke supercar zoals de Ferrari',
-      'De 1:8-schaal geeft hem genoeg bouwdiepte om als echt Technic-project te tellen',
-      'Op een plank lees je eerst droomauto en pas daarna techniek, en precies dat is voor veel kopers de aantrekkingskracht',
+      'Kleur en scissor doors trekken meteen',
+      '1:8-schaal voelt als een echt project',
+      'Meer spektakel dan de Ferrari',
     ],
   },
   {
     canonicalId: '42143',
     displayTheme: 'Technic',
-    priceRange: '$329 tot $429',
     collectorAngle:
       'De Technic-keuze voor kopers die meer klasse dan spektakel willen',
     tagline:
-      'De Daytona SP3 verkoopt zich niet met schreeuwerige kleur of rare vleugels, maar met die lange, lage Ferrari-vorm die meteen duur en beheerst oogt.',
+      'De Daytona SP3 is de elegante keuze onder de grote Technic-auto’s. Lang, rood en strak zonder showgedrag.',
     availability: 'Blijft populair bij Technic- en autofans',
     collectorHighlights: [
-      'De rode carrosserie en scherpe lijnen maken hem zelfs op afstand onmiskenbaar Ferrari',
-      'De bouw voelt serieus, maar het eindresultaat blijft eleganter dan veel agressievere hypercars',
-      'Als je tussen de grote Technic-supercars zoekt naar de meest stijlvolle keuze, land je vaak hier',
+      'Direct herkenbaar als Ferrari',
+      'Stijlvoller dan de luidere hypercars',
+      'Sterk als je één chique supercar wilt',
     ],
   },
   {
     canonicalId: '71411',
     displayTheme: 'Super Mario',
-    priceRange: '$199 tot $259',
     collectorAngle: 'Bowser als grote displayset',
     tagline:
-      'Een grote Bowser-build die meteen Nintendo-sfeer oproept en op display verrassend stoer oogt.',
+      'Een grote Bowser die direct Nintendo-energie op je plank zet. Hij oogt stoer genoeg om ook buiten gamekamers te werken.',
     availability: 'Goed verkrijgbaar en populair bij gamefans',
     collectorHighlights: [
-      'Bowser is ook buiten de LEGO-wereld direct herkenbaar',
-      'De houding en schaal geven hem echt présence op een plank',
-      'Een sterke keuze als je gamingdisplay zoekt zonder dat het speelgoedachtig wordt',
+      'Bowser is meteen herkenbaar',
+      'Grote pose geeft veel presence',
+      'Sterke keuze voor Nintendo-fans',
     ],
   },
   {
     canonicalId: '71741',
     displayTheme: 'NINJAGO',
-    priceRange: '$299 tot $379',
     collectorAngle: 'NINJAGO-stad vol details',
     tagline:
-      'Een volle, gelaagde stadsbuild die NINJAGO-fans veel herkenning geeft en op display enorm rijk oogt.',
+      'Voor NINJAGO-fans is dit een hele stad in één set. Verdiepingen, kleuren en details houden je lang bezig.',
     availability: 'Vooral geliefd bij fans die veel detail en bouwtijd zoeken',
     collectorHighlights: [
-      'Er zit bijna op elke verdieping iets nieuws om naar te kijken',
-      'De verticale opbouw geeft hem veel aanwezigheid zonder extreme breedte',
-      'Een droomset voor wie NINJAGO het liefst als grote wereldbouw ervaart',
+      'Op elke verdieping iets nieuws',
+      'Veel hoogte zonder extreme breedte',
+      'Sterk als grote wereldbuild',
     ],
   },
   {
@@ -558,31 +523,29 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     minifigureCount: 9,
     setStatus: 'retired',
     subtheme: 'Doctor Strange',
-    priceRange: '$219 tot $279',
     collectorAngle:
       'De beste Marvel-keuze als je liever een plek dan een toren koopt',
     tagline:
-      'Het Sanctum verkoopt zichzelf niet met hoogte, maar met sfeer: gevel, ramen en magische kamers maken dit de Marvel-set die het sterkst als een echte plek overkomt.',
+      'De beste Marvel-set als je sfeer boven hoogte kiest. Het Sanctum voelt als een echte plek, niet alleen als decor.',
     availability:
       'Nog steeds gewild bij Marvel-fans, zeker nu hij lastiger te vinden is',
     collectorHighlights: [
-      'Voor Doctor Strange-fans is dit meteen een herkenbare hoek van New York in plaats van een abstract superheldendecor',
-      'Tegenover Avengers Tower wint hij niet op schaal, maar wel op sfeer en kamerdetail',
-      'Op een plank blijf je vooral de gevel en de magische binnenkant afwisselend waarderen',
+      'Gevel en kamers dragen de set',
+      'Meer magie en sfeer dan een toren',
+      'Sterk voor Doctor Strange- en stadsfans',
     ],
   },
   {
     canonicalId: '76956',
     displayTheme: 'Jurassic World',
-    priceRange: '$79 tot $119',
     collectorAngle: 'Jurassic Park-moment voor op display',
     tagline:
-      'Een compacte set die meteen de beroemde T. rex-scène oproept en daardoor veel nostalgie meebrengt.',
+      'Een compacte Jurassic Park-set die meteen die ene filmscène terugbrengt. Auto, poort en T. rex doen al het werk.',
     availability: 'Goed verkrijgbaar en aantrekkelijk voor filmfans',
     collectorHighlights: [
-      'De auto, poort en T. rex maken meteen duidelijk om welk moment het gaat',
-      'Een fijne set voor wie filmnostalgie wil zonder enorm budget',
-      'Op display voelt hij speels, maar nog steeds volwassen genoeg voor fans',
+      'Direct herkenbare poortscène',
+      'Veel nostalgie in beperkt formaat',
+      'Sterk als filmset zonder groot budget',
     ],
   },
   {
@@ -592,17 +555,16 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     minifigureHighlights: ['The Mandalorian', 'Grogu', 'Kuiil', 'The Mythrol'],
     setStatus: 'retiring_soon',
     subtheme: 'Ultimate Collector Series',
-    priceRange: '$499 tot $649',
     collectorAngle:
       'De Razor Crest voor kopers die Star Wars vooral via The Mandalorian beleven',
     tagline:
-      'Breed, bepakt en een beetje lomp op precies de goede manier: deze UCS Razor Crest is het schip uit seizoen één en twee waar je als fan direct op aanslaat.',
+      'De Razor Crest oogt als een schip waar echt in geleefd wordt. Dat ruwe Mandalorian-karakter maakt hem aantrekkelijker dan de strakkere vlootschepen.',
     availability:
       'Minder makkelijk te vinden nu hij op weg naar het einde van de run is',
     collectorHighlights: [
-      'Din Djarin, Grogu en de bemanning geven hem meer emotionele waarde dan een willekeurig oorlogsschip',
-      'De romp oogt niet alleen groot, maar ook bruikbaar en bewoond, alsof er echt geleefd wordt',
-      'Als je moet kiezen tussen een iconisch schip en een echte thuisbasis, trekt de Razor Crest aan het langste eind',
+      'Din, Grogu en crew geven meteen emotie',
+      'Bepakte romp oogt gebruikt en geloofwaardig',
+      'Warmer en persoonlijker dan vlootschepen',
     ],
   },
   {
@@ -618,16 +580,15 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     ],
     setStatus: 'backorder',
     subtheme: 'Diagon Alley',
-    priceRange: '$369 tot $449',
     collectorAngle:
       'De Harry Potter-keuze als je één grote locatie met drama wilt',
     tagline:
-      'Gringotts is rijker dan een losse gevel, omdat je hier de bankhal, de kluizen en de draak samen koopt als één groot verticaal avontuur.',
+      'Gringotts zet Harry Potter neer als groot spektakel. Bankhal, kluizen en draak geven meer drama dan een mooie gevel ooit kan.',
     availability: 'Veel vraag en regelmatig lastiger om direct te bestellen',
     collectorHighlights: [
-      'Je krijgt niet alleen Diagon Alley-herkenning, maar ook de ondergrondse spanning die de set echt bijzonder maakt',
-      'Harry, Hermione, Ron, Griphook en Hagrid geven meteen filmherkenning in plaats van vage wizarding decoratie',
-      'Als je tussen grote Harry Potter-sets twijfelt, is dit rijker en dramatischer dan nog een kasteelgevel',
+      'Draak boven de bank verkoopt de set direct',
+      'Kluizen en hoogte geven echte spanning',
+      'Voelt veel levendiger dan een statisch straatpand',
     ],
   },
   {
@@ -643,17 +604,16 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     ],
     setStatus: 'retired',
     subtheme: 'Spider-Man',
-    priceRange: '$299 tot $379',
     collectorAngle:
       'De Spider-Man-set als je meteen alles wilt: stad, cast en chaos',
     tagline:
-      'Deze Daily Bugle is een drukke Spider-Man-comic die rechtop op je plank staat, en precies daarom blijft hij de leukste Marvel-set om naar te kijken.',
+      'De Daily Bugle is Spider-Man-chaos in torenvorm. Hoog, druk en vol bekende gezichten — perfect als je Marvel liever als stripstad dan als skyline ziet.',
     availability:
       'Blijft erg gewild nu hij alleen nog via de markt te vinden is',
     collectorHighlights: [
-      'Met Spider-Man, Green Goblin, Daredevil, J. Jonah Jameson en Aunt May is dit meteen een echte Spider-Man-verzamelaarsset',
-      'De extreme hoogte geeft je die New York-striplook die andere Marvel-sets simpelweg niet hebben',
-      'Als je tussen Marvel-sets zoekt naar het meeste verhaal per plankmeter, komt deze bijna altijd bovendrijven',
+      'Dichte Spider-Man-cast van top tot teen',
+      'Verticale stadsenergie met stripgevoel',
+      'Meer verhaal en chaos dan andere Marvel-sets',
     ],
   },
   {
@@ -661,43 +621,40 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     displayTheme: 'Star Wars',
     minifigureCount: 2,
     subtheme: 'Ultimate Collector Series',
-    priceRange: '$579 tot $699',
     collectorAngle:
       'De UCS-keuze voor fans van Clone Wars in plaats van de klassieke trilogie',
     tagline:
-      'De lange romp, rode strepen en brugsectie geven deze Venator precies het Republic-karakter dat hem voor Clone Wars-fans overtuigender maakt dan weer een OT-icoon.',
+      'De Venator kiest niet voor klassieke trilogie-nostalgie, maar voor pure Republic-aanwezigheid. Lang, statig en met rode strepen die hem meteen Clone Wars maken.',
     availability: 'Premium UCS-set met stevige vraag onder Star Wars-fans',
     collectorHighlights: [
-      'Hij oogt vlootachtiger en statiger dan een X-wing, maar minder koud dan een Imperial Star Destroyer',
-      'Voor Clone Wars-fans is juist dat Republic-gevoel de reden om deze boven andere UCS-schepen te kiezen',
-      'Op een lange plank werkt hij bijna als een designobject met rode accenten en een messcherp profiel',
+      'Rode belijning geeft direct Republic-karakter',
+      'Lang oorlogsschip met elegant profiel',
+      'De UCS-keuze voor Clone Wars-fans',
     ],
   },
   {
     canonicalId: '21350',
     displayTheme: 'Ideas',
-    priceRange: '$129 tot $179',
     collectorAngle: 'Filmscène die iedereen meteen herkent',
     tagline:
-      'De boot, de haai en de spanning van Jaws in één displayset die even leuk is voor filmliefhebbers als voor LEGO-fans.',
+      'Een filmset die meteen de juiste scène te pakken heeft. Boot, haai en spanning maken hem direct raak.',
     availability: 'Sterk gewild door film- en designfans',
     collectorHighlights: [
-      'De compositie maakt meteen duidelijk om welke scène het gaat',
-      'De set is speels zonder kinderachtig te worden',
-      'Een sterke blikvanger voor wie popcultuur op display wil',
+      'Compositie leest meteen als Jaws',
+      'Speels zonder kinderachtig te worden',
+      'Sterk voor filmfans en display',
     ],
   },
   {
     canonicalId: '10317',
-    priceRange: '$219 tot $289',
     collectorAngle: 'Avontuurlijke auto met karakter',
     tagline:
-      'Een hoekige Defender die stoer, herkenbaar en leuk gedetailleerd is voor fans van echte terreinwagens.',
+      'De Defender is de stoere Icons-auto tussen al het lage geweld. Hoekig, herkenbaar en vol uitrusting.',
     availability: 'Goed verkrijgbaar en aantrekkelijk voor autofans',
     collectorHighlights: [
-      'De vorm van de Defender maakt hem meteen anders dan de meeste sportwagens',
-      'Accessoires en details geven de set extra persoonlijkheid',
-      'Een fijne set voor wie klassieke auto’s leuker vindt dan supercars',
+      'Vorm springt direct eruit tussen sportwagens',
+      'Accessoires geven extra karakter',
+      'Sterk als je meer terreinwagen dan supercar wilt',
     ],
   },
   {
@@ -713,16 +670,15 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     ],
     setStatus: 'available',
     subtheme: 'Wizarding homes',
-    priceRange: '$229 tot $299',
     collectorAngle:
       'De Harry Potter-set voor kopers die warmte belangrijker vinden dan schaal',
     tagline:
-      'The Burrow wint niet door enorm te zijn, maar doordat hij meteen gezellig, scheef en vol familie is; dit is de set die sneller als thuis binnenkomt dan als prestigeproject.',
+      'The Burrow wint niet op schaal, maar op gevoel. Het scheve huis en de Weasley-drukte maken dit de warmste Harry Potter-set op de plank.',
     availability: 'Sterke vraag bij fans van de films en boeken',
     collectorHighlights: [
-      'Arthur, Molly, Ron, Ginny en Harry geven de set direct het vertrouwde Weasley-hart dat veel fans zoeken',
-      'De scheve kamers maken hem op display levendiger dan een net, symmetrisch gebouw',
-      'Als je één Harry Potter-set wilt waar karakter boven prestige gaat, pak je deze',
+      'Scheve bouw vol direct karakter',
+      'Weasley-familie geeft huiselijkheid en hart',
+      'Meer warmte dan prestigeproject',
     ],
   },
   {
@@ -732,17 +688,16 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     minifigureHighlights: ['Luke Skywalker', 'R2-D2'],
     setStatus: 'retiring_soon',
     subtheme: 'Ultimate Collector Series',
-    priceRange: '$199 tot $259',
     collectorAngle:
       'De veiligste UCS-keuze als je een klassiek Star Wars-schip wilt',
     tagline:
-      'Voor veel kopers is de X-wing de meest logische eerste UCS: iconisch, duidelijk Luke Skywalker, en groot genoeg om speciaal te voelen zonder meteen een halve plank op te eten.',
+      'De veiligste eerste UCS-set blijft de X-wing. Luke, R2-D2 en die open S-foils verkopen hem direct.',
     availability:
       'Blijft populair en wordt interessanter nu hij moeilijker te vinden raakt',
     collectorHighlights: [
-      'Met Luke en R2-D2 koop je meteen een van de duidelijkste Star Wars-combinaties die er zijn',
-      'De open S-foils doen al het werk zodra je hem neerzet: je ziet direct actie en richting',
-      'Wie wel UCS-impact wil maar niet meteen AT-AT- of Venator-grootte zoekt, zit hier precies goed',
+      'Iconisch schip uit één oogopslag',
+      'Luke en R2-D2 maken hem compleet',
+      'Veel UCS-impact zonder extreme grootte',
     ],
   },
   {
@@ -758,46 +713,43 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     ],
     setStatus: 'available',
     subtheme: 'Return of the Jedi',
-    priceRange: '$429 tot $529',
     collectorAngle:
       'De Star Wars-keuze voor kopers die liever een scène dan een schip met cockpit willen',
     tagline:
-      'Het lange dek, het grote zeil en de cast rond Jabba maken dit veel filmischer dan nog een starfighter; je koopt hier echt een stuk Return of the Jedi.',
+      'Een Star Wars-set voor wie liever een scène dan een cockpit koopt. Het dek, het zeil en Jabba maken hem meteen filmisch.',
     availability: 'Nieuwe premium set met veel aandacht van Star Wars-fans',
     collectorHighlights: [
-      'Jabba, Leia, Bib Fortuna, Max Rebo en C-3PO maken de set direct rijk aan personages en momenten',
-      'Het brede profiel en de zandkleur geven hem veel meer Tatooine-karakter dan een rij grijze UCS-schepen',
-      'Als je op Star Wars-display iets anders wilt dan cockpit, vleugels of walkers, is dit de overtuigende keuze',
+      'Tatooine-sfeer vanaf de eerste blik',
+      'Sterke cast rond Jabba',
+      'Heerlijke afwisseling tussen alle schepen',
     ],
   },
   {
     canonicalId: '76429',
     displayTheme: 'Harry Potter',
-    priceRange: '$79 tot $109',
     collectorAngle:
       'De beste compacte Harry Potter-keuze als je direct herkenning wilt',
     tagline:
-      'De Sorting Hat werkt juist zo goed omdat je hem in één seconde herkent; voor een kleinere aankoop komt hij verrassend zeker en compleet over.',
+      'Een kleinere Harry Potter-set die je meteen herkent. De Sorting Hat voelt daardoor groter en slimmer dan zijn formaat.',
     availability: 'Breed verkrijgbaar en makkelijk mee te nemen voor fans',
     collectorHighlights: [
-      'Je koopt hier een van de eerste echte Hogwarts-symbolen, niet zomaar een los object',
-      'De spraakfunctie maakt hem levendiger dan veel andere compacte franchise-sets',
-      'Voor wie snel goed wil zitten zonder groot budget of grote plank, is dit de veilige keuze',
+      'Een van de duidelijkste Hogwarts-symbolen',
+      'Spraakfunctie geeft extra leven',
+      'Sterk als compacte fan-aankoop',
     ],
   },
   {
     canonicalId: '76435',
     displayTheme: 'Harry Potter',
-    priceRange: '$179 tot $239',
     collectorAngle: 'De beste Hogwarts-keuze als je één herkenbaar gebouw wilt',
     tagline:
-      'Kaarsen, lange tafels en de hoge zaal maken dit voor veel kopers de duidelijkste Hogwarts-set: niet het hele kasteel, maar wel de ruimte die iedereen meteen herkent.',
+      'Als je één herkenbaar Hogwarts-gebouw wilt, zit je hier goed. De Grote Zaal bundelt bijna alles wat fans willen zien.',
     availability:
       'Sterke vraag bij fans die een herkenbare Hogwarts-set zoeken',
     collectorHighlights: [
-      'De Grote Zaal bundelt aankomst, sortering en schoolleven in één ruimte die elke fan meteen kan plaatsen',
-      'Hij oogt op een plank rijker dan een instapper, maar vraagt minder toewijding dan de grootste Hogwarts-modellen',
-      'Als je twijfelt tussen compact en enorm, zit deze precies in de overtuigende middenzone',
+      'Kaarsen en lange tafels werken direct',
+      'Meteen als Hogwarts te herkennen',
+      'Slimme middenweg tussen klein en enorm',
     ],
   },
   {
@@ -812,86 +764,80 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Magneto',
     ],
     subtheme: 'X-Men',
-    priceRange: '$279 tot $349',
     collectorAngle:
       'De Marvel-keuze voor kopers die teamgevoel boven skyline zetten',
     tagline:
-      'X-Mansion verkoopt zich niet met hoogte maar met identiteit: school, hoofdkwartier en jaren 90 X-Men-gevoel in één set die direct anders oogt dan de rest van Marvel.',
+      'De Marvel-set voor kopers die teamgevoel willen. De school en de X-Men-cast maken hem rustiger en persoonlijker dan nog een toren.',
     availability: 'Veel belangstelling van X-Men- en Marvel-fans',
     collectorHighlights: [
-      'Wolverine, Professor X, Cyclops, Storm en Magneto geven de set meteen meer teamgewicht dan veel andere Marvel-builds',
-      'De schoolsetting maakt hem visueel veel rustiger en karaktervoller dan weer een toren of straatgevecht',
-      'Voor X-Men-fans is dit de Marvel-set die het dichtst bij hun eigen hoek van het universum blijft',
+      'Sterke X-Men-line-up',
+      'Schoolsetting geeft meteen identiteit',
+      'Beste Marvel-keuze voor X-Men-fans',
     ],
   },
   {
     canonicalId: '10335',
-    priceRange: '$239 tot $299',
     collectorAngle: 'Expeditieschip vol avontuur',
     tagline:
-      'Een groot schip dat ontdekkingsreizen en klassieke zeeverhalen oproept zonder zo zwaar te voelen als de Titanic.',
+      'Een avontuurlijk schip dat groot oogt zonder Titanic-formaat. Masten, dek en expeditiegeest maken hem direct aantrekkelijk.',
     availability: 'Sterke keuze voor liefhebbers van schepen en geschiedenis',
     collectorHighlights: [
-      'De masten en romp maken hem indrukwekkend zonder onmogelijk groot te worden',
-      'Het onderwerp voelt avontuurlijk en origineler dan weer een auto of gebouw',
-      'Mooi voor fans van poolreizen, geschiedenis en klassieke schepen',
+      'Masten en romp geven sterke aanwezigheid',
+      'Meer avontuur dan luxe',
+      'Sterk voor scheeps- en ontdekkingsfans',
     ],
   },
   {
     canonicalId: '10327',
-    priceRange: '$139 tot $179',
     collectorAngle: 'Ornithopter die de wereld van Dune voelbaar maakt',
     tagline:
-      'Met uitgeslagen vleugels en dat insectachtige profiel ziet deze Ornithopter er niet alleen futuristisch uit, maar ook meteen alsof hij uit Arrakis is weggevlogen.',
+      'Een van de opvallendste sci-fi-sets van nu. De vleugels en dat insectachtige profiel maken hem meteen Dune.',
     availability:
       'Erg aantrekkelijk voor Dune-fans en liefhebbers van sciencefiction',
     collectorHighlights: [
-      'De vorm is zo ongewoon dat hij zelfs naast Star Wars-schepen direct opvalt',
-      'Dune-fans herkennen er meteen het politieke en militaire hart van de filmwereld in',
-      'Voor kopers die sci-fi willen zonder weer een klassieke starfighter te kiezen, is dit een verrassend sterke keuze',
+      'Vorm valt direct op tussen andere schepen',
+      'Veel Arrakis-herkenning voor fans',
+      'Sterk alternatief voor weer een starfighter',
     ],
   },
   {
     canonicalId: '42171',
     displayTheme: 'Technic',
-    priceRange: '$179 tot $239',
     collectorAngle: 'De Technic-keuze als je liever grid dan garage wilt',
     tagline:
-      'Deze Mercedes is meteen Formule 1 en geen gewone sportauto, en juist daardoor is hij de leukste afwisseling tussen alle grote Technic-auto’s.',
+      'Deze Mercedes is pure grid-energie in Technic-vorm. Open wielen en lang chassis maken meteen duidelijk dat dit Formule 1 is.',
     availability: 'Sterk voor liefhebbers van motorsport en Technic',
     collectorHighlights: [
-      'Hij spreekt vooral tot kopers die pitlane, downforce en startgrid-herkenning zoeken in plaats van luxe',
-      'Open wielophanging en lang chassis maken hem op display direct sportiever dan een gesloten supercar',
-      'Als je Technic eens harder naar race dan naar prestige wilt laten leunen, pak je deze',
+      'Direct F1 in houding en vorm',
+      'Sportiever dan een gesloten supercar',
+      'Sterk voor motorsportfans',
     ],
   },
   {
     canonicalId: '42172',
     displayTheme: 'Technic',
-    priceRange: '$399 tot $499',
     collectorAngle:
       'De hypercar-keuze voor kopers die het grootste droomproject zoeken',
     tagline:
-      'De lage neus, brede heupen en halo-status van de P1 maken dit het soort Technic-set dat je niet impulsief koopt, maar bewust kiest als groot project voor jezelf.',
+      'De McLaren P1 is het grote Technic-project voor wie één moderne hypercar wil afvinken. Laag, breed en gemaakt om serieus te ogen.',
     availability: 'Premium Technic-set met stevige belangstelling',
     collectorHighlights: [
-      'De P1 is voor veel autoliefhebbers een van de moderne hypercars die je maar één keer echt goed in LEGO wilt doen',
-      'De bouwtijd en schaal geven hem precies het projectgevoel dat premium Technic moet hebben',
-      'Op een plank blijft vooral die lage, gespannen houding hangen waardoor hij duur en snel oogt',
+      'P1 is een echte droomauto in LEGO',
+      'Bouwtijd voelt als een vol project',
+      'Blijft boeien door zijn lage stance',
     ],
   },
   {
     canonicalId: '10328',
     displayTheme: 'Botanicals',
-    priceRange: '$49 tot $69',
     collectorAngle: 'Rozenboeket met een luxere uitstraling',
     tagline:
-      'Een rozenboeket dat romantisch, netjes en direct cadeauwaardig aanvoelt zonder overdreven te worden.',
+      'Een netter en chiquer boeket dan de speelsere Botanicals. Daardoor werkt deze set heel makkelijk als cadeau of display.',
     availability: 'Breed verkrijgbaar en erg geschikt als cadeau',
     collectorHighlights: [
-      'De rozen zijn direct herkenbaar en daardoor makkelijk om cadeau te geven',
-      'De set oogt net iets chiquer dan de meer speelse boeketten',
-      'Leuk voor wie bloemen op display wil met een wat klassiekere uitstraling',
+      'Rozen zijn direct herkenbaar',
+      'Oogt klassieker dan Flower Bouquet',
+      'Sterk voor cadeau of rustige plank',
     ],
   },
   {
@@ -900,17 +846,16 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     minifigureCount: 1,
     minifigureHighlights: ['C-3PO'],
     subtheme: 'Droid display',
-    priceRange: '$89 tot $149',
     collectorAngle:
       'De kleinste Star Wars-displaykeuze die toch meteen voelt als een echte aankoop',
     tagline:
-      'Deze bouwbare C-3PO werkt zo goed omdat hij geen compromis is: kleiner dan een UCS-schip, maar meteen herkenbaar, warm en zichtbaar op een plank.',
+      'Een kleine Star Wars-displayset die toch als echte aankoop voelt. C-3PO brengt herkenning zonder dat je een groot schip hoeft neer te zetten.',
     availability:
       'Goed verkrijgbaar en aantrekkelijk als cadeau voor Star Wars-fans',
     collectorHighlights: [
-      'Tussen al het scheepsgeweld brengt hij juist het komische, menselijke gezicht van Star Wars binnen',
-      'De goudkleur trekt licht en aandacht zonder dat je er een halve kast voor hoeft vrij te maken',
-      'Als cadeau of instapper overtuigt hij sneller dan veel kleinere schepen, omdat bijna iedereen C-3PO direct kent',
+      'Direct herkenbaar karakter',
+      'Goudkleur pakt meteen het licht',
+      'Sterk cadeau of instapper',
     ],
   },
   {
@@ -925,16 +870,15 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Dobby',
     ],
     subtheme: 'Deathly Hallows',
-    priceRange: '$119 tot $169',
     collectorAngle:
       'De Harry Potter-keuze als je juist de donkere kant van het verhaal wilt',
     tagline:
-      'Malfoy Manor is meteen scherper en spannender dan Hogwarts of The Burrow, en is daardoor precies de set voor kopers die niet nog een warme Wizarding-locatie zoeken.',
+      'Deze set laat de donkere kant van Harry Potter zien. Het landhuis oogt chic, maar de scène eromheen houdt het spannend.',
     availability: 'Nieuwe set met veel aandacht van Harry Potter-fans',
     collectorHighlights: [
-      'Lucius, Narcissa, Bellatrix, Hermione en Dobby plaatsen de set meteen in de spannendste fase van het verhaal',
-      'Het landhuis oogt tegelijk chic en onheilspellend, waardoor het op een plank direct een ander soort Harry Potter-signaal geeft',
-      'Als je naast Hogwarts één tweede locatie wilt die echt contrasteert, is dit de overtuigende keuze',
+      'Duidelijke Deathly Hallows-sfeer',
+      'Sterke cast met Bellatrix en Dobby',
+      'Goed contrast naast Hogwarts of The Burrow',
     ],
   },
   {
@@ -949,16 +893,15 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Black Widow',
     ],
     subtheme: 'Marvel display',
-    priceRange: '$85 tot $109',
     collectorAngle:
       'De compacte Marvel-keuze die sneller overtuigt dan je denkt',
     tagline:
-      'Het bekende rode logo werkt meteen als popcultuur-object, en juist de verborgen Avengers maken deze set veel leuker dan een simpel displaybord.',
+      'Een compacte Marvel-set die sneller overtuigt dan je denkt. Het logo werkt meteen, de verborgen Avengers maken hem leuker.',
     availability: 'Goed verkrijgbaar en sterk als cadeau voor Marvel-fans',
     collectorHighlights: [
-      'Van afstand leest hij direct als Marvel, ook voor mensen die nooit een setnummer onthouden',
-      'Iron Man, Captain America, Thor, Hulk en Black Widow geven het compacte formaat onverwacht veel waarde',
-      'Als je wel Marvel op de plank wilt maar geen ruimte of budget hebt voor een grote locatie, oogt dit slim gekozen in plaats van klein gekozen',
+      'Van ver direct als Marvel te lezen',
+      'Bekende Avengers in klein formaat',
+      'Sterk als cadeau of compacte displayset',
     ],
   },
   {
@@ -973,49 +916,46 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
       'Rosie Cotton',
     ],
     subtheme: 'The Lord of the Rings',
-    priceRange: '$249 tot $299',
     collectorAngle:
       'De Middle-earth-keuze voor kopers die warmte boven grandeur verkiezen',
     tagline:
-      'The Shire wint niet op schaal, maar op gevoel: Bag End, de feesttent en de groene heuvel maken dit de set die het snelst gezellig en geliefd wordt in huis.',
+      'The Shire brengt Midden-aarde in zijn warmste vorm. Bag End, groen en feestsfeer maken hem meteen charmanter dan de donkere kant van de trilogie.',
     availability: 'Sterke vraag bij verzamelaars én cadeaukopers',
     collectorHighlights: [
-      'De ronde deur van Bag End verkoopt de set meteen, zelfs tussen veel grotere modellen',
-      'Met Bilbo, Frodo, Sam, Gandalf en Rosie krijgt hij direct meer hart dan de meeste fantasysets',
-      'Waar Rivendell groots en Barad-dur dreigend is, is dit juist de set waar je spontaan naar blijft glimlachen',
+      'Ronde deur van Bag End grijpt direct',
+      'Veel hart met Bilbo, Frodo, Sam en Gandalf',
+      'De lichte tegenhanger van Barad-dur',
     ],
   },
   {
     canonicalId: '42177',
     displayTheme: 'Technic',
     subtheme: 'Licensed vehicles',
-    priceRange: '$199 tot $269',
     collectorAngle:
       'De Technic-keuze voor kopers die klaar zijn met lage supercars',
     tagline:
-      'De rechte panelen, hoge stance en expedition-look geven deze G-Class precies het ruige karakter dat veel Technic-kopers missen in de gebruikelijke hypercars.',
+      'De G-Class is de Technic-set voor wie genoeg heeft van lage supercars. Hoog, hoekig en gebouwd als terreinwagen.',
     availability:
       'Goed verkrijgbaar en aantrekkelijk voor liefhebbers van terreinwagens',
     collectorHighlights: [
-      'De G-Class wint juist omdat hij hoekig, zwaar en bijna onverwoestbaar oogt',
-      'Voor kopers die wel mechaniek willen, maar geen zoveelste circuitauto, is dit veel persoonlijker',
-      'Op een plank staat hij alsof hij morgen de bergen in kan, en dat maakt hem direct anders dan de rest van Technic',
+      'Boxy vorm geeft direct karakter',
+      'Meer avontuur dan circuitgevoel',
+      'Sterk voor liefhebbers van 4x4’s',
     ],
   },
   {
     canonicalId: '10342',
     displayTheme: 'Botanicals',
     subtheme: 'Flower Collection',
-    priceRange: '$45 tot $69',
     collectorAngle:
       'Roze boeket met meer kleurlaag dan het kleine formaat doet vermoeden',
     tagline:
-      'De mix van zachte roze tinten en verschillende bloemvormen maakt dit boeket luchtig, vrolijk en opvallend bruikbaar in huis.',
+      'Een luchtig boeket met zachte roze tinten dat meteen fris oogt in huis. Deze set voelt vrolijk zonder zoet te worden.',
     availability: 'Breed verkrijgbaar en erg cadeauvriendelijk',
     collectorHighlights: [
-      'De kleurverlopen laten het boeket rijker ogen dan één vlak roze accent',
-      'Voor cadeaukopers voelt hij vriendelijk en feestelijk zonder suikerzoet te worden',
-      'Wie al botanicals heeft, krijgt hier juist een lichtere, frissere toon erbij',
+      'Roze kleuren lopen mooi in elkaar over',
+      'Lichter van toon dan andere boeketten',
+      'Sterk als cadeau of voorjaarset',
     ],
   },
 ];

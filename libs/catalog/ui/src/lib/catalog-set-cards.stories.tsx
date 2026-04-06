@@ -24,7 +24,6 @@ export const CompactCard: Story = {
           releaseYear: 2023,
           pieces: 6167,
           imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-          priceRange: '$449 to $519',
           collectorAngle: 'Prestige fantasy display anchor',
           tagline:
             'A large-scale crossover set that reads clearly even in a fast browse context.',
@@ -56,7 +55,6 @@ export const DefaultCard: Story = {
           releaseYear: 2023,
           pieces: 6167,
           imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-          priceRange: '$449 to $519',
           collectorAngle: 'Prestige fantasy display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -86,7 +84,6 @@ export const FeaturedCard: Story = {
           releaseYear: 2023,
           pieces: 5202,
           imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/124122.jpg',
-          priceRange: '$449 to $519',
           collectorAngle: 'Marvel flagship showcase',
           tagline:
             'A marquee licensed set with broad household recognizability.',

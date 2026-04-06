@@ -1,5 +1,4 @@
 import type { CatalogSetRecord } from '@lego-platform/catalog/util';
-import { catalogSetOverlays } from './catalog-overlays';
 import { catalogSnapshot } from './catalog-snapshot.generated';
 
 type CatalogOfferMerchant = 'bol' | 'amazon' | 'lego' | 'other';
@@ -33,13 +32,6 @@ interface CatalogOfferSeed {
 }
 
 const DEFAULT_CHECKED_AT = '2026-03-31T10:45:00.000Z';
-
-const catalogSetOverlayById = new Map(
-  catalogSetOverlays.map((catalogSetOverlay) => [
-    catalogSetOverlay.canonicalId,
-    catalogSetOverlay,
-  ]),
-);
 
 const curatedOfferSeeds: readonly CatalogOfferSeed[] = [
   {
@@ -244,27 +236,6 @@ function createMerchantUrl({
   return url;
 }
 
-function getOverlayDrivenBasePriceCents(setId: string): number | undefined {
-  const priceRange = catalogSetOverlayById.get(setId)?.priceRange;
-
-  if (!priceRange) {
-    return undefined;
-  }
-
-  const priceBounds = [...priceRange.matchAll(/\d+/g)]
-    .map((match) => Number(match[0]))
-    .filter((value) => Number.isFinite(value));
-
-  if (priceBounds.length < 2) {
-    return undefined;
-  }
-
-  const [lowPrice, highPrice] = priceBounds;
-  const midpointPrice = (lowPrice + highPrice) / 2;
-
-  return Math.max(2999, Math.round(midpointPrice * 0.93 * 100));
-}
-
 function createDefaultOfferSeed({
   catalogSetRecord,
   index,
@@ -272,16 +243,14 @@ function createDefaultOfferSeed({
   catalogSetRecord: CatalogSetRecord;
   index: number;
 }): CatalogOfferSeed {
-  const basePriceCents =
-    getOverlayDrivenBasePriceCents(catalogSetRecord.canonicalId) ??
-    Math.max(
-      3499,
-      Math.round(
-        (catalogSetRecord.pieces * 0.084 +
-          Math.max(catalogSetRecord.releaseYear - 2020, 0) * 1.25) *
-          100,
-      ),
-    );
+  const basePriceCents = Math.max(
+    3499,
+    Math.round(
+      (catalogSetRecord.pieces * 0.084 +
+        Math.max(catalogSetRecord.releaseYear - 2020, 0) * 1.25) *
+        100,
+    ),
+  );
 
   return {
     setId: catalogSetRecord.canonicalId,

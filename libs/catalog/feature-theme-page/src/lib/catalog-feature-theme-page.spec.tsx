@@ -15,7 +15,6 @@ describe('CatalogFeatureThemePage', () => {
             theme: 'Marvel',
             releaseYear: 2023,
             pieces: 5202,
-            priceRange: '$449 to $519',
             collectorAngle: 'Marvel flagship showcase',
             tagline:
               'A marquee licensed set with broad household recognizability.',
@@ -35,7 +34,6 @@ describe('CatalogFeatureThemePage', () => {
             theme: 'Marvel',
             releaseYear: 2024,
             pieces: 3093,
-            priceRange: '$309 to $349',
             collectorAngle: 'Mutant mansion display anchor',
             tagline: 'A character-led Marvel set with strong crossover appeal.',
             availability: 'Fresh release momentum',
@@ -65,7 +63,6 @@ describe('CatalogFeatureThemePage', () => {
               theme: 'Marvel',
               releaseYear: 2023,
               pieces: 5202,
-              priceRange: '$449 to $519',
               collectorAngle: 'Marvel flagship showcase',
               tagline:
                 'A marquee licensed set with broad household recognizability.',
@@ -78,7 +75,6 @@ describe('CatalogFeatureThemePage', () => {
               theme: 'Marvel',
               releaseYear: 2024,
               pieces: 3093,
-              priceRange: '$309 to $349',
               collectorAngle: 'Mutant mansion display anchor',
               tagline:
                 'A character-led Marvel set with strong crossover appeal.',
@@ -91,9 +87,11 @@ describe('CatalogFeatureThemePage', () => {
 
     expect(markup).toContain('Marvel');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('Good time to buy in Marvel');
-    expect(markup).toContain('Scroll Good time to buy in Marvel forward');
-    expect(markup).toContain('All Marvel sets');
+    expect(markup).toContain('Goed moment om te kopen in');
+    expect(markup).toContain(
+      'Scroll Goed moment om te kopen in Marvel naar rechts',
+    );
+    expect(markup).toContain('Alle');
     expect(markup).not.toContain('Scroll All Marvel sets forward');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
@@ -130,9 +128,9 @@ describe('CatalogFeatureThemeIndex', () => {
       />,
     );
 
-    expect(markup).toContain('Browse every theme');
-    expect(markup).toContain('2 theme pages');
-    expect(markup).toContain('Discover stays better for mixed browsing');
+    expect(markup).toContain('Alle thema');
+    expect(markup).toContain('2 themapagina');
+    expect(markup).toContain('Ontdekken blijft beter voor gemengd bladeren');
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('href="/themes/marvel"');
     expect(markup).toContain('src="https://images.example/icons.jpg"');

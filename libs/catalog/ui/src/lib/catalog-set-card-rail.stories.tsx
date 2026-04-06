@@ -36,7 +36,6 @@ export const FeaturedRail: Story = {
               pieces: 6167,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-              priceRange: '$449 to $519',
               collectorAngle: 'Prestige fantasy display anchor',
               tagline:
                 'A flagship fantasy build that rewards both display space and patience.',
@@ -62,7 +61,6 @@ export const FeaturedRail: Story = {
               pieces: 5202,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76269-1/124122.jpg',
-              priceRange: '$449 to $519',
               collectorAngle: 'Marvel flagship showcase',
               tagline:
                 'A marquee licensed set with broad household recognizability.',
@@ -81,7 +79,6 @@ export const FeaturedRail: Story = {
               pieces: 3747,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/21348-1/166370.jpg',
-              priceRange: '$359 to $409',
               collectorAngle: 'Crossover audience magnet',
               tagline:
                 'A community-driven release with rich minifigure storytelling hooks.',
@@ -100,7 +97,6 @@ export const FeaturedRail: Story = {
               pieces: 6187,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/75331-1/116601.jpg',
-              priceRange: '$479 to $599',
               collectorAngle: 'Original trilogy-adjacent prestige build',
               tagline:
                 'A large ship build with stronger emotional pull than a generic fleet piece.',
@@ -119,7 +115,6 @@ export const FeaturedRail: Story = {
               pieces: 4803,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76417-1/126166.jpg',
-              priceRange: '$369 to $449',
               collectorAngle: 'Wizarding World premium landmark',
               tagline:
                 'A major Gringotts display build with strong franchise recognition.',
@@ -152,7 +147,6 @@ export const CompactRail: Story = {
               pieces: 6187,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/75331-1/116601.jpg',
-              priceRange: '$479 to $599',
               collectorAngle: 'Original trilogy-adjacent prestige build',
               tagline:
                 'A large ship build with stronger emotional pull than a generic fleet piece.',
@@ -171,7 +165,6 @@ export const CompactRail: Story = {
               pieces: 4803,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76417-1/126166.jpg',
-              priceRange: '$369 to $449',
               collectorAngle: 'Wizarding World premium landmark',
               tagline:
                 'A major Gringotts display build with strong franchise recognition.',
@@ -191,7 +184,6 @@ export const CompactRail: Story = {
               pieces: 3093,
               imageUrl:
                 'https://cdn.rebrickable.com/media/sets/76294-1/172998.jpg',
-              priceRange: '$279 to $339',
               collectorAngle: 'Mutant-team display anchor',
               tagline:
                 'A franchise landmark with strong cast recognition and shelf presence.',

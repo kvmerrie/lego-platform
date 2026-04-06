@@ -8,7 +8,6 @@ export interface CatalogSetSummary {
   theme: string;
   releaseYear: number;
   pieces: number;
-  priceRange: string;
   collectorAngle: string;
   imageUrl?: string;
   images?: readonly CatalogSetImage[];
@@ -195,7 +194,6 @@ export interface CatalogSetOverlay {
   displayName?: string;
   displayTheme?: string;
   collectorAngle: string;
-  priceRange: string;
   tagline: string;
   availability: string;
   collectorHighlights: readonly string[];

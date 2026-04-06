@@ -220,7 +220,6 @@ function toCatalogSetSummary(
     theme: catalogSetDetail.theme,
     releaseYear: catalogSetDetail.releaseYear,
     pieces: catalogSetDetail.pieces,
-    priceRange: catalogSetDetail.priceRange,
     collectorAngle: catalogSetDetail.collectorAngle,
     imageUrl: catalogSetDetail.imageUrl,
     ...(catalogSetDetail.images?.length
@@ -448,7 +447,6 @@ function toCatalogSetDetail(
           primaryImage: catalogSetImages.primaryImage,
         }
       : {}),
-    priceRange: catalogSetOverlay.priceRange,
     collectorAngle: catalogSetOverlay.collectorAngle,
     tagline: catalogSetOverlay.tagline,
     availability: catalogSetOverlay.availability,

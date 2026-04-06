@@ -20,7 +20,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2023,
           pieces: 6181,
           imageUrl: 'https://images.example/rivendell.jpg',
-          priceRange: '$499 to $569',
           collectorAngle: 'Prestige display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -33,7 +32,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('href="/sets/rivendell-10316"');
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('A flagship fantasy build');
-    expect(markup).toContain('2023 · $499 to $569');
+    expect(markup).toContain('2023');
     expect(markup).toContain('Bekijk set');
     expect(markup).not.toContain('Reviewed prijs');
     expect(markup).not.toContain('Dekking');
@@ -52,7 +51,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2023,
           pieces: 6181,
           imageUrl: 'https://images.example/rivendell.jpg',
-          priceRange: '$499 to $569',
           collectorAngle: 'Prestige display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -80,7 +78,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2023,
           pieces: 6181,
           imageUrl: 'https://images.example/rivendell.jpg',
-          priceRange: '$499 to $569',
           collectorAngle: 'Prestige display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -113,7 +110,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2023,
           pieces: 6181,
           imageUrl: 'https://images.example/rivendell.jpg',
-          priceRange: '$499 to $569',
           collectorAngle: 'Prestige display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -159,7 +155,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2023,
           pieces: 6181,
           imageUrl: 'https://images.example/rivendell.jpg',
-          priceRange: '$499 to $569',
           collectorAngle: 'Prestige display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -203,7 +198,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2023,
           pieces: 6181,
           imageUrl: 'https://images.example/rivendell.jpg',
-          priceRange: '$499 to $569',
           collectorAngle: 'Prestige display anchor',
           tagline:
             'A flagship fantasy build that rewards both display space and patience.',
@@ -269,7 +263,6 @@ describe('CatalogSetCard', () => {
             },
           ],
           primaryImage: 'https://images.example/rivendell-1.jpg',
-          priceRange: '$499 to $569',
           collectorAngle: 'De complete vallei blijft er als scene uitspringen.',
           tagline: 'Als je een grote Middle-earth-set wilt, pak je deze.',
           availability: 'Stevige vraag naar een premium set',
@@ -380,7 +373,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2024,
           pieces: 1138,
           imageUrl: 'https://images.example/c3po.jpg',
-          priceRange: '$139 to $149',
           collectorAngle: 'De gouden droid trekt meteen de aandacht.',
           tagline:
             'Als je 1 droid-displayset kiest, is dit de duidelijke favoriet.',
@@ -429,7 +421,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2022,
           pieces: 2065,
           imageUrl: undefined,
-          priceRange: '$259 to $319',
           collectorAngle: 'Kinetic display standout',
           tagline:
             'A mechanically animated coastal build that feels equally at home in premium display shelves and gift-led collector curation.',
@@ -480,7 +471,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2022,
           pieces: 4514,
           imageUrl: 'https://images.example/lion-knights-castle.jpg',
-          priceRange: '$359 to $429',
           collectorAngle: 'Castle nostalgia tentpole',
           tagline:
             'A modern fortress build that lands squarely at the intersection of nostalgia and display value.',
@@ -516,7 +506,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2023,
           pieces: 4803,
           imageUrl: 'https://images.example/gringotts.jpg',
-          priceRange: '$369 to $449',
           collectorAngle: 'Wizarding World premium landmark',
           tagline:
             'A major Gringotts display build that gives Harry Potter a stronger premium anchor beyond the smaller Hogwarts panorama.',
@@ -552,7 +541,6 @@ describe('CatalogSetCard', () => {
           releaseYear: 2024,
           pieces: 3942,
           imageUrl: 'https://images.example/jabbas-sail-barge.jpg',
-          priceRange: '$429 to $529',
           collectorAngle: 'Original Trilogy prestige centerpiece',
           tagline:
             'A large desert-scene flagship that gives Star Wars collectors a more cinematic shelf landmark than another fighter or walker.',

@@ -14,7 +14,6 @@ describe('CatalogFeatureDiscover', () => {
             theme: 'Marvel',
             releaseYear: 2023,
             pieces: 5202,
-            priceRange: '$449 to $519',
             collectorAngle: 'Marvel flagship showcase',
             tagline:
               'A marquee licensed set with broad household recognizability.',
@@ -35,7 +34,6 @@ describe('CatalogFeatureDiscover', () => {
             theme: 'Icons',
             releaseYear: 2023,
             pieces: 6167,
-            priceRange: '$449 to $519',
             collectorAngle: 'Epic fantasy display centerpiece',
             tagline: 'A premium fantasy build with broad collector reach.',
             availability: 'Steady flagship demand',
@@ -53,27 +51,27 @@ describe('CatalogFeatureDiscover', () => {
       />,
     );
 
-    expect(markup).toContain('Open the strongest sets first');
+    expect(markup).toContain('Open eerst de sterkste sets');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('Best deals to check first');
-    expect(markup).toContain('Iconic characters and cast favorites');
-    expect(markup).toContain('Worth opening first');
-    expect(markup).toContain('Scroll Best deals to check first forward');
+    expect(markup).toContain('Beste deals om eerst te bekijken');
+    expect(markup).toContain('Iconische personages en castfavorieten');
+    expect(markup).toContain('Eerst het openen waard');
     expect(markup).toContain(
-      'Scroll Iconic characters and cast favorites forward',
+      'Scroll Beste deals om eerst te bekijken naar rechts',
     );
-    expect(markup).toContain('Scroll Worth opening first forward');
-    expect(markup.indexOf('Best deals to check first')).toBeLessThan(
-      markup.indexOf('Iconic characters and cast favorites'),
-    );
-    expect(markup.indexOf('Iconic characters and cast favorites')).toBeLessThan(
-      markup.indexOf('Worth opening first'),
-    );
-    expect(markup).toContain('Includes Iron Man, Captain America, and Thor');
     expect(markup).toContain(
-      'Includes Spider-Man, Green Goblin, and Daredevil',
+      'Scroll Iconische personages en castfavorieten naar rechts',
     );
-    expect(markup).toContain('Browse all themes');
+    expect(markup).toContain('Scroll Eerst het openen waard naar rechts');
+    expect(markup.indexOf('Beste deals om eerst te bekijken')).toBeLessThan(
+      markup.indexOf('Iconische personages en castfavorieten'),
+    );
+    expect(
+      markup.indexOf('Iconische personages en castfavorieten'),
+    ).toBeLessThan(markup.indexOf('Eerst het openen waard'));
+    expect(markup).toContain('Iron Man');
+    expect(markup).toContain('Spider-Man');
+    expect(markup).toContain('Bekijk alle thema');
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('Icons');
     expect(markup).toContain('Ideas');
@@ -102,7 +100,6 @@ describe('CatalogFeatureDiscover', () => {
             theme: 'Marvel',
             releaseYear: 2023,
             pieces: 5202,
-            priceRange: '$449 to $519',
             collectorAngle: 'Marvel flagship showcase',
             tagline:
               'A marquee licensed set with broad household recognizability.',
@@ -123,7 +120,6 @@ describe('CatalogFeatureDiscover', () => {
             theme: 'Icons',
             releaseYear: 2023,
             pieces: 6167,
-            priceRange: '$449 to $519',
             collectorAngle: 'Epic fantasy display centerpiece',
             tagline: 'A premium fantasy build with broad collector reach.',
             availability: 'Steady flagship demand',
@@ -140,13 +136,15 @@ describe('CatalogFeatureDiscover', () => {
       />,
     );
 
-    expect(markup).toContain('Best deals to check first');
+    expect(markup).toContain('Beste deals om eerst te bekijken');
     expect(markup).toContain(
-      'The clearest reviewed price gaps among the strongest flagship and click-magnet sets already in the catalog.',
+      'De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan.',
     );
-    expect(markup).toContain('Scroll Best deals to check first backward');
+    expect(markup).toContain(
+      'Scroll Beste deals om eerst te bekijken naar links',
+    );
     expect(markup).toContain('EUR 30.00 below reference');
-    expect(markup).toContain('Includes Iron Man, Captain America, and Thor');
+    expect(markup).toContain('Iron Man');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 
@@ -155,11 +153,11 @@ describe('CatalogFeatureDiscover', () => {
       <CatalogFeatureDiscover activeFilter="best-deals" />,
     );
 
-    expect(markup).toContain('aria-label="Refine discover"');
+    expect(markup).toContain('aria-label="Verfijn ontdekken"');
     expect(markup).toContain('href="/discover"');
     expect(markup).toContain('href="/discover?filter=best-deals"');
-    expect(markup).toContain('No matches in Best deals');
-    expect(markup).toContain('Show all sets');
+    expect(markup).toContain('Geen treffers in Beste deals');
+    expect(markup).toContain('Toon alle sets');
   });
 
   it('filters theme lanes down to the selected theme chip', () => {

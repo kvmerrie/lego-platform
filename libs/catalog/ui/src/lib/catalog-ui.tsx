@@ -294,7 +294,8 @@ export function CatalogSetCard({
           </p>
           <div className={styles.cardCompactFooter}>
             <p className={styles.cardCompactMeta}>
-              {setSummary.releaseYear} · {setSummary.priceRange}
+              {setSummary.releaseYear} ·{' '}
+              {setSummary.pieces.toLocaleString('nl-NL')} stenen
             </p>
             {href ? (
               <span className={styles.cardCompactAction}>Bekijk set</span>
@@ -432,7 +433,8 @@ export function CatalogSetCard({
             </Badge>
           ) : null}
           <p className={styles.cardMetaText}>
-            {setSummary.releaseYear} · {setSummary.priceRange}
+            {setSummary.releaseYear} ·{' '}
+            {setSummary.pieces.toLocaleString('nl-NL')} stenen
           </p>
         </div>
         <h3 className={styles.cardTitle}>
@@ -503,7 +505,6 @@ export function CatalogSetCard({
         items={[
           { label: 'Steentjes', value: setSummary.pieces.toLocaleString() },
           { label: 'Jaar', value: setSummary.releaseYear },
-          { label: 'Prijsklasse', value: setSummary.priceRange },
         ]}
       />
       {actions ? <div className={styles.cardActions}>{actions}</div> : null}
