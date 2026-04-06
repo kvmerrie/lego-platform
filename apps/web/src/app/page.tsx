@@ -183,13 +183,13 @@ export default async function HomePage() {
         {homepageDealSetCards.length ? (
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
-              description="Stond hij al op je lijst? Kijk nu."
-              eyebrow="Prijs zakt"
+              description="Sets die nu lager staan dan wat we meestal zien."
+              eyebrow="Nu slimmer geprijsd"
               sectionId="best-current-deals"
               setCards={homepageDealSetCards}
-              signalText={`${homepageDealSetCards.length} dozen nu lager`}
+              signalText={`${homepageDealSetCards.length} sets nu interessanter geprijsd`}
               tone="muted"
-              title="Die doos komt dichterbij"
+              title="Nu het bekijken waard"
             />
           </div>
         ) : null}

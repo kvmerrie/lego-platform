@@ -14,7 +14,8 @@ export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
 }
 
 export function CatalogFeatureSetList({
-  description = 'Wil je groot? Kijk hier.',
+  description = 'Grote sets die je plank én budget bepalen.',
+
   eyebrow = 'Pronkstukken',
   layout = 'rail',
   sectionId = 'featured-sets',
@@ -59,7 +60,7 @@ export function CatalogFeatureSetList({
         <div className={styles.headerAside}>
           <p className={styles.signalRow}>
             {signalText ??
-              `${homepageSets.length} dozen die je kast overnemen${
+              `${homepageSets.length} sets die meteen de kamer pakken${
                 reviewedSetCount
                   ? ` · ${reviewedSetCount} met nagekeken prijzen`
                   : ''

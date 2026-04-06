@@ -972,14 +972,14 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
     name: 'Ideas',
     setCount: 10,
     momentum:
-      'Rode draak, boshut, sterrennacht. Ideas zet meteen een hele scene neer.',
+      'Rode draak, boshut, sterrennacht. Ideas zet meteen een hele wereld neer.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
     name: 'Marvel',
     setCount: 5,
     momentum:
-      'Torens, chaos en bekende gezichten. Marvel staat hier vol in beeld.',
+      'Torens, chaos en bekende gezichten. Marvel komt hier meteen vol binnen.',
     signatureSet: 'Avengers Tower',
   },
   {

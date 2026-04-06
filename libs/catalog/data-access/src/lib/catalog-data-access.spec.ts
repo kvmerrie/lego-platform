@@ -424,7 +424,7 @@ const expectedCatalogThemes = [
     slug: 'ideas',
     setCount: 10,
     momentum:
-      'Rode draak, boshut, sterrennacht. Ideas zet meteen een hele scene neer.',
+      'Rode draak, boshut, sterrennacht. Ideas zet meteen een hele wereld neer.',
     signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
   },
   {
@@ -432,7 +432,7 @@ const expectedCatalogThemes = [
     slug: 'marvel',
     setCount: 5,
     momentum:
-      'Torens, chaos en bekende gezichten. Marvel staat hier vol in beeld.',
+      'Torens, chaos en bekende gezichten. Marvel komt hier meteen vol binnen.',
     signatureSet: 'Avengers Tower',
   },
   {
@@ -1318,7 +1318,7 @@ describe('catalog data-access contracts', () => {
         slug: 'marvel',
         setCount: 5,
         momentum:
-          'Torens, chaos en bekende gezichten. Marvel staat hier vol in beeld.',
+          'Torens, chaos en bekende gezichten. Marvel komt hier meteen vol binnen.',
         signatureSet: 'Avengers Tower',
       },
       setCards: expect.arrayContaining([
