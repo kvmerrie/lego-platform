@@ -45,6 +45,13 @@
   margin: 0;
 }
 
+.toggleHelperText {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
 .toggleCard {
   display: grid;
   gap: var(--lego-space-3);
@@ -53,6 +60,13 @@
 .productToggle {
   display: grid;
   gap: 0.45rem;
+}
+
+.toggleLinkRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
 }
 
 .inlineToggle {

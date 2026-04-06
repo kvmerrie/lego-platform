@@ -33,8 +33,11 @@ export function WishlistItemCard({
 }
 
 export function WantedSetToggleCard({
+  alertsEnabled,
   errorMessage,
+  followedSetCount,
   hasResolvedState,
+  isAuthenticated = true,
   isLoading,
   isPending,
   isWanted,
@@ -44,8 +47,11 @@ export function WantedSetToggleCard({
   successMessage,
   variant = 'default',
 }: {
+  alertsEnabled?: boolean;
   errorMessage?: string;
+  followedSetCount?: number;
   hasResolvedState: boolean;
+  isAuthenticated?: boolean;
   isLoading?: boolean;
   isPending?: boolean;
   isWanted: boolean;
@@ -55,26 +61,57 @@ export function WantedSetToggleCard({
   successMessage?: string;
   variant?: 'default' | 'inline' | 'product';
 }) {
+  const isPriceAlert = productIntent === 'price-alert';
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
-    ? 'Verlanglijststatus wordt gecontroleerd'
+    ? isPriceAlert
+      ? 'Prijs volgen wordt gecontroleerd'
+      : 'Verlanglijststatus wordt gecontroleerd'
     : isUnavailable
-      ? 'Verlanglijststatus niet beschikbaar'
+      ? isPriceAlert
+        ? 'Prijs volgen niet beschikbaar'
+        : 'Verlanglijststatus niet beschikbaar'
       : isWanted
-        ? 'Op verlanglijst'
-        : 'Aan verlanglijst toevoegen';
+        ? isPriceAlert
+          ? 'Brickhunt volgt deze prijs'
+          : 'Op verlanglijst'
+        : isPriceAlert
+          ? 'Volg deze prijs'
+          : 'Aan verlanglijst toevoegen';
   const description = isLoading
-    ? 'Controleren of deze set al op je verlanglijst staat.'
-    : isUnavailable
-      ? 'Je verlanglijststatus kon nu niet worden geladen.'
-      : isWanted
-        ? 'Deze set staat op je prive verlanglijst.'
-        : 'Bewaar deze set op je prive verlanglijst.';
+    ? isPriceAlert
+      ? 'We kijken of Brickhunt deze prijs al voor je volgt.'
+      : 'Controleren of deze set al op je verlanglijst staat.'
+    : !isAuthenticated
+      ? isPriceAlert
+        ? 'Log in om deze prijs te volgen en later terug te vinden op je verlanglijst.'
+        : 'Log in om deze set op je prive verlanglijst te bewaren.'
+      : isUnavailable
+        ? isPriceAlert
+          ? 'We konden je volgstatus nu niet laden.'
+          : 'Je verlanglijststatus kon nu niet worden geladen.'
+        : isWanted
+          ? isPriceAlert
+            ? 'Je volgt nu de prijs van deze set.'
+            : 'Deze set staat op je prive verlanglijst.'
+          : isPriceAlert
+            ? 'Nog niet kopen? Laat Brickhunt meekijken.'
+            : 'Bewaar deze set op je prive verlanglijst.';
   const actionLabel = isUnavailable
-    ? 'Verlanglijststatus niet beschikbaar'
-    : isWanted
-      ? 'Van verlanglijst verwijderen'
-      : 'Aan verlanglijst toevoegen';
+    ? isPriceAlert
+      ? 'Prijs volgen niet beschikbaar'
+      : 'Verlanglijststatus niet beschikbaar'
+    : !isAuthenticated
+      ? isPriceAlert
+        ? 'Log in om te volgen'
+        : 'Log in om op te slaan'
+      : isWanted
+        ? isPriceAlert
+          ? 'Niet meer volgen'
+          : 'Van verlanglijst verwijderen'
+        : isPriceAlert
+          ? 'Volg prijs'
+          : 'Aan verlanglijst toevoegen';
   const statusTone = isLoading
     ? 'info'
     : isUnavailable
@@ -87,8 +124,60 @@ export function WantedSetToggleCard({
     : isUnavailable
       ? 'Status niet beschikbaar'
       : isWanted
-        ? 'Op verlanglijst'
-        : 'Nog niet opgeslagen';
+        ? isPriceAlert
+          ? 'Prijs wordt gevolgd'
+          : 'Op verlanglijst'
+        : !isAuthenticated
+          ? 'Log in nodig'
+          : isPriceAlert
+            ? 'Nog niet gevolgd'
+            : 'Nog niet opgeslagen';
+  const metaCopy = isPriceAlert
+    ? !isAuthenticated
+      ? 'Log in om deze prijs te volgen. Daarna vind je de set terug op je verlanglijst.'
+      : isWanted
+        ? alertsEnabled
+          ? 'Brickhunt houdt deze prijs voor je in de gaten. Als het moment interessanter wordt, krijg je daar een seintje over.'
+          : 'Brickhunt houdt deze prijs voor je in de gaten. Zet dealupdates aan in je account als je ook een seintje wilt.'
+        : 'Volg de prijs als je later sneller wilt zien wanneer dit moment beter wordt.'
+    : !isAuthenticated
+      ? 'Log in om sets prive op te slaan en later sneller terug te vinden.'
+      : 'Prive opgeslagen. Setinformatie blijft openbaar.';
+  const wishlistLinkLabel =
+    typeof followedSetCount === 'number'
+      ? `Open verlanglijst (${followedSetCount})`
+      : 'Open verlanglijst';
+  const productHelperCopy = isLoading
+    ? isPriceAlert
+      ? 'We kijken of Brickhunt deze prijs al voor je volgt.'
+      : 'We kijken of deze set al op je prive verlanglijst staat.'
+    : !isAuthenticated
+      ? isPriceAlert
+        ? 'Log in om deze set te volgen. Daarna vind je hem terug op je verlanglijst.'
+        : 'Log in om deze set op je prive verlanglijst te bewaren.'
+      : isUnavailable
+        ? isPriceAlert
+          ? 'Je kunt deze prijs nu niet laten volgen.'
+          : 'Je kunt deze set nu niet op je verlanglijst zetten.'
+        : isWanted
+          ? isPriceAlert
+            ? alertsEnabled
+              ? 'Deze set staat nu op je verlanglijst. Als de prijs interessanter wordt, krijg je daar een seintje over.'
+              : 'Deze set staat nu op je verlanglijst. Zet dealupdates aan in je account als je ook een seintje wilt.'
+            : 'Deze set staat op je prive verlanglijst.'
+          : isPriceAlert
+            ? 'Volg deze prijs. Dan zie je sneller wanneer dit een beter moment wordt.'
+            : 'Bewaar deze set om hem later sneller terug te vinden.';
+  const showProductWishlistLink =
+    isPriceAlert &&
+    isAuthenticated &&
+    !isUnavailable &&
+    hasResolvedState &&
+    (isWanted ||
+      (typeof followedSetCount === 'number' && followedSetCount > 0));
+  const showProductAccountLink =
+    isPriceAlert &&
+    ((!isAuthenticated && !isLoading) || (isWanted && !alertsEnabled));
 
   if (variant === 'inline') {
     const inlineActionLabel = isLoading
@@ -97,17 +186,19 @@ export function WantedSetToggleCard({
         ? productIntent === 'price-alert'
           ? 'Volgen...'
           : 'Bewaren...'
-        : isUnavailable
-          ? productIntent === 'price-alert'
-            ? 'Volgen niet beschikbaar'
-            : 'Bewaren niet beschikbaar'
-          : isWanted
+        : !isAuthenticated
+          ? 'Log in'
+          : isUnavailable
             ? productIntent === 'price-alert'
-              ? 'Volgt prijs'
-              : 'Bewaard'
-            : productIntent === 'price-alert'
-              ? 'Volg prijs'
-              : 'Bewaar';
+              ? 'Volgen niet beschikbaar'
+              : 'Bewaren niet beschikbaar'
+            : isWanted
+              ? productIntent === 'price-alert'
+                ? 'Volgt prijs'
+                : 'Bewaard'
+              : productIntent === 'price-alert'
+                ? 'Volg prijs'
+                : 'Bewaar';
 
     return (
       <article className={styles.inlineToggle}>
@@ -146,17 +237,21 @@ export function WantedSetToggleCard({
         ? productIntent === 'price-alert'
           ? 'Volgen...'
           : 'Opslaan...'
-        : isUnavailable
+        : !isAuthenticated
           ? productIntent === 'price-alert'
-            ? 'Prijs volgen niet beschikbaar'
-            : 'Verlanglijst niet beschikbaar'
-          : isWanted
+            ? 'Log in om te volgen'
+            : 'Log in om op te slaan'
+          : isUnavailable
             ? productIntent === 'price-alert'
-              ? 'Volgt prijs'
-              : 'Van verlanglijst verwijderen'
-            : productIntent === 'price-alert'
-              ? 'Volg prijs'
-              : 'Aan verlanglijst toevoegen';
+              ? 'Prijs volgen niet beschikbaar'
+              : 'Verlanglijst niet beschikbaar'
+            : isWanted
+              ? productIntent === 'price-alert'
+                ? 'Volgt prijs'
+                : 'Van verlanglijst verwijderen'
+              : productIntent === 'price-alert'
+                ? 'Volg prijs'
+                : 'Aan verlanglijst toevoegen';
 
     return (
       <article className={styles.productToggle}>
@@ -179,6 +274,32 @@ export function WantedSetToggleCard({
         >
           {productActionLabel}
         </Button>
+        {successMessage ? (
+          <p aria-live="polite" className={styles.successText}>
+            {successMessage}
+          </p>
+        ) : null}
+        <p className={styles.toggleHelperText}>{productHelperCopy}</p>
+        {showProductWishlistLink || showProductAccountLink ? (
+          <div className={styles.toggleLinkRow}>
+            {showProductWishlistLink ? (
+              <ActionLink
+                href={buildWebPath(webPathnames.wishlist)}
+                tone="inline"
+              >
+                {wishlistLinkLabel}
+              </ActionLink>
+            ) : null}
+            {showProductAccountLink ? (
+              <ActionLink
+                href={buildWebPath(webPathnames.account)}
+                tone="inline"
+              >
+                {!isAuthenticated ? 'Log in' : 'Zet dealupdates aan'}
+              </ActionLink>
+            ) : null}
+          </div>
+        ) : null}
       </article>
     );
   }
@@ -198,9 +319,7 @@ export function WantedSetToggleCard({
       <div className={styles.toggleMeta}>
         <Badge tone={statusTone}>{statusLabel}</Badge>
       </div>
-      <p className={styles.metaText}>
-        Prive opgeslagen. Setinformatie blijft openbaar.
-      </p>
+      <p className={styles.metaText}>{metaCopy}</p>
       {errorMessage ? (
         <p aria-live="polite" className={styles.errorText}>
           {errorMessage}
@@ -263,7 +382,7 @@ export function CollectorWishlistPanel({
         : state === 'empty'
           ? hiddenWantedCount > 0
             ? `Je hebt ${hiddenWantedCount} sets opgeslagen buiten de sets die nu op Brickhunt zichtbaar zijn. Sla een zichtbare set op en die verschijnt ook hier.`
-            : 'Sla een set op die je wilt hebben en kom hier terug om te vergelijken welke de moeite waard zijn om in de gaten te houden.'
+            : 'Sla een set op die je wilt hebben. Hier zie je later sneller welke opnieuw de moeite waard zijn om te checken.'
           : hiddenWantedCount > 0
             ? `Je ziet hier vandaag ${wantedCount}. ${hiddenWantedCount} blijven opgeslagen buiten de huidige catalogus.`
             : `${wantedCount} opgeslagen.`;
@@ -292,8 +411,8 @@ export function CollectorWishlistPanel({
         </p>
       </div>
       <p className={styles.metaText}>
-        Je opgeslagen sets blijven prive. Setpagina's en prijschecks blijven
-        openbaar.
+        Je opgeslagen sets blijven prive. Hier zie je sneller welke opnieuw de
+        moeite waard zijn om te checken.
       </p>
       <Panel
         as="div"

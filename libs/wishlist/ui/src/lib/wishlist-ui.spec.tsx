@@ -9,7 +9,7 @@ describe('WantedSetToggleCard', () => {
         hasResolvedState
         isWanted
         setId="21348"
-        successMessage="Toegevoegd aan je verlanglijst. Je verzamelaarsaccount is bijgewerkt."
+        successMessage="Deze set staat nu op je verlanglijst."
         onToggle={() => undefined}
       />,
     );
@@ -17,7 +17,7 @@ describe('WantedSetToggleCard', () => {
     expect(markup).toContain('Op verlanglijst');
     expect(markup).toContain('Op verlanglijst');
     expect(markup).not.toContain('Private collector state');
-    expect(markup).toContain('Je verzamelaarsaccount is bijgewerkt.');
+    expect(markup).toContain('Deze set staat nu op je verlanglijst.');
     expect(markup).toContain(
       'Prive opgeslagen. Setinformatie blijft openbaar.',
     );
@@ -46,6 +46,7 @@ describe('WantedSetToggleCard', () => {
   it('supports a price-alert CTA label on set detail pages', () => {
     const markup = renderToStaticMarkup(
       <WantedSetToggleCard
+        alertsEnabled={false}
         hasResolvedState
         isWanted={false}
         productIntent="price-alert"
@@ -57,6 +58,52 @@ describe('WantedSetToggleCard', () => {
 
     expect(markup).toContain('Volg prijs');
     expect(markup).not.toContain('Aan verlanglijst toevoegen');
+    expect(markup).toContain(
+      'Volg deze prijs. Dan zie je sneller wanneer dit een beter moment wordt.',
+    );
+  });
+
+  it('shows a clearer service state after following a price on set detail', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        alertsEnabled
+        followedSetCount={4}
+        hasResolvedState
+        isWanted
+        productIntent="price-alert"
+        setId="21348"
+        successMessage="Je volgt nu de prijs van deze set."
+        variant="product"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Je volgt nu de prijs van deze set.');
+    expect(markup).toContain(
+      'Deze set staat nu op je verlanglijst. Als de prijs interessanter wordt, krijg je daar een seintje over.',
+    );
+    expect(markup).toContain('Volgt prijs');
+    expect(markup).toContain('Open verlanglijst (4)');
+  });
+
+  it('guides logged-out users softly toward login instead of a hard follow error', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        hasResolvedState
+        isAuthenticated={false}
+        isWanted={false}
+        productIntent="price-alert"
+        setId="21348"
+        variant="product"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Log in om te volgen');
+    expect(markup).toContain(
+      'Log in om deze set te volgen. Daarna vind je hem terug op je verlanglijst.',
+    );
+    expect(markup).toContain('Log in');
   });
 
   it('renders a lighter inline variant for homepage follow-later actions', () => {
@@ -86,6 +133,9 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('Log in om je verlanglijst te bekijken');
     expect(markup).toContain('<h1');
     expect(markup).toContain('Log in om prive op te slaan');
+    expect(markup).toContain(
+      'Hier zie je sneller welke opnieuw de moeite waard zijn om te checken.',
+    );
     expect(markup).toContain('Bekijk catalogus');
     expect(markup).toContain('Bekijk thema&#x27;s');
     expect(markup).toContain('Open account');
@@ -110,6 +160,9 @@ describe('CollectorWishlistPanel', () => {
     expect(markup).toContain('<h1');
     expect(markup).toContain('2 op verlanglijst');
     expect(markup).toContain('1 buiten de catalogus van vandaag');
+    expect(markup).toContain(
+      'Hier zie je sneller welke opnieuw de moeite waard zijn om te checken.',
+    );
     expect(markup).toContain('Wanted set card');
     expect(markup).toContain('Recent');
     expect(markup).toContain('Rivendell is naar je collectie verplaatst.');

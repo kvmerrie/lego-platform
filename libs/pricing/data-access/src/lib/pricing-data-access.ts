@@ -359,7 +359,7 @@ export function buildBrickhuntValueItems({
     },
     {
       id: 'brickhunt-alerts',
-      text: 'Zet een prijsalert aan als je liever wacht.',
+      text: 'Volg de prijs als je liever nog even wacht.',
     },
   ];
 }

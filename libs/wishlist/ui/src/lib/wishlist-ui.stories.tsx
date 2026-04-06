@@ -24,6 +24,7 @@ export const ProductToggleStates: Story = {
       }}
     >
       <WantedSetToggleCard
+        alertsEnabled={false}
         hasResolvedState
         isWanted={false}
         productIntent="price-alert"
@@ -32,8 +33,20 @@ export const ProductToggleStates: Story = {
         onToggle={() => undefined}
       />
       <WantedSetToggleCard
+        alertsEnabled
+        followedSetCount={4}
         hasResolvedState
         isWanted
+        productIntent="price-alert"
+        successMessage="Je volgt nu de prijs van deze set."
+        setId="10316"
+        variant="product"
+        onToggle={() => undefined}
+      />
+      <WantedSetToggleCard
+        hasResolvedState
+        isAuthenticated={false}
+        isWanted={false}
         productIntent="price-alert"
         setId="10316"
         variant="product"
@@ -104,7 +117,7 @@ export const DefaultToggleCardStates: Story = {
         hasResolvedState
         isWanted={false}
         setId="10316"
-        successMessage="Set opgeslagen op je verlanglijst."
+        successMessage="Deze set staat nu op je verlanglijst."
         onToggle={() => undefined}
       />
       <WantedSetToggleCard

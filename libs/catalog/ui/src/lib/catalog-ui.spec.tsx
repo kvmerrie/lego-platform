@@ -306,7 +306,7 @@ describe('CatalogSetCard', () => {
           },
           {
             id: 'brickhunt-alerts',
-            text: 'Zet een prijsalert aan als je liever wacht.',
+            text: 'Volg de prijs als je liever nog even wacht.',
           },
         ]}
         catalogSetDetail={{
@@ -539,7 +539,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Setcontext');
     expect(markup).toContain('Officiele afbeelding nog niet gepubliceerd');
     expect(markup).toContain('Set 21335');
-    expect(markup).toContain('Twijfel je nog?');
+    expect(markup).toContain('Volg deze prijs');
     expect(markup).toContain('Recent prijsverloop');
     expect(markup).toContain('Setnummer');
     expect(markup).toContain('Stenen');
@@ -602,7 +602,7 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('Slimmer om te wachten');
-    expect(markup).toContain('Wacht op een beter moment');
+    expect(markup).toContain('Volg deze set');
     expect(markup).toContain('Waarom wachten slimmer is');
     expect(markup).toContain('Bekijk prijs bij bol');
     expect(markup).toContain('Volg prijs');

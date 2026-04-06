@@ -139,26 +139,26 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
 
 function getFollowTitle(tone?: CatalogDecisionVerdict['tone']): string {
   if (tone === 'warning') {
-    return 'Wacht op een beter moment';
+    return 'Volg deze set';
   }
 
   if (tone === 'positive') {
     return 'Nog niet klaar om te kopen?';
   }
 
-  return 'Twijfel je nog?';
+  return 'Volg deze prijs';
 }
 
 function getFollowCopy(tone?: CatalogDecisionVerdict['tone']): string {
   if (tone === 'warning') {
-    return 'Dit is nu wel de beste winkel, maar nog niet het beste moment. Volg de prijs.';
+    return 'Volg deze prijs. Dan zie je sneller wanneer dit een beter moment wordt.';
   }
 
   if (tone === 'positive') {
-    return 'Dit is nu de scherpste plek om te klikken. Nog niet klaar? Volg de prijs.';
+    return 'Volg deze prijs. Brickhunt houdt het moment voor je in de gaten.';
   }
 
-  return 'Prima winkel om te checken. Twijfel je nog? Volg de prijs.';
+  return 'Volg deze prijs als je later nog eens rustig wilt vergelijken.';
 }
 
 function getFollowEyebrow(tone?: CatalogDecisionVerdict['tone']): string {

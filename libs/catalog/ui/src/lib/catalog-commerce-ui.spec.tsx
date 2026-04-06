@@ -81,6 +81,9 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('Laagste nagekeken prijs die nu op voorraad is.');
     expect(markup).toContain('Bekijk bij bol');
     expect(markup).toContain('Volg prijs');
+    expect(markup).toContain(
+      'Volg deze prijs. Brickhunt houdt het moment voor je in de gaten.',
+    );
     expect(markup).toContain('Waarom dit nu interessant is');
   });
 

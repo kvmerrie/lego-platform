@@ -48,9 +48,16 @@ export function listWishlistItems(): WishlistItem[] {
   return [...wishlistItems];
 }
 
-export async function getWantedSetState(
+export interface WantedSetContext {
+  alertsEnabled: boolean;
+  isAuthenticated: boolean;
+  wantedCount: number;
+  wantedSetState: WantedSetState;
+}
+
+export async function getWantedSetContext(
   setId: string,
-): Promise<WantedSetState> {
+): Promise<WantedSetContext> {
   const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(apiPaths.session, {
     cache: 'no-store',
@@ -63,15 +70,39 @@ export async function getWantedSetState(
     );
   }
 
-  const wantedSetIds = readStringArrayProperty(
-    await response.json(),
-    'wantedSetIds',
-  );
+  const sessionPayload = await response.json();
+  const wantedSetIds = readStringArrayProperty(sessionPayload, 'wantedSetIds');
+  const isAuthenticated =
+    Boolean(sessionPayload) &&
+    typeof sessionPayload === 'object' &&
+    (sessionPayload as Record<string, unknown>).state === 'authenticated';
+  const notificationPreferences =
+    sessionPayload && typeof sessionPayload === 'object'
+      ? (sessionPayload as Record<string, unknown>).notificationPreferences
+      : undefined;
+  const alertsEnabled =
+    Boolean(notificationPreferences) &&
+    typeof notificationPreferences === 'object' &&
+    (notificationPreferences as Record<string, unknown>).wishlistDealAlerts ===
+      true;
 
   return {
-    setId,
-    isWanted: wantedSetIds.includes(setId),
+    alertsEnabled,
+    isAuthenticated,
+    wantedCount: wantedSetIds.length,
+    wantedSetState: {
+      setId,
+      isWanted: wantedSetIds.includes(setId),
+    },
   };
+}
+
+export async function getWantedSetState(
+  setId: string,
+): Promise<WantedSetState> {
+  const wantedSetContext = await getWantedSetContext(setId);
+
+  return wantedSetContext.wantedSetState;
 }
 
 export async function addWantedSet(setId: string): Promise<WantedSetState> {
