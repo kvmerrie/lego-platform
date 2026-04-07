@@ -72,18 +72,21 @@ describe('WantedSetToggleCard', () => {
         isWanted
         productIntent="price-alert"
         setId="21348"
-        successMessage="Je volgt nu de prijs van deze set."
+        successMessage="Brickhunt houdt deze set nu voor je in de gaten."
         variant="product"
         onToggle={() => undefined}
       />,
     );
 
-    expect(markup).toContain('Je volgt nu de prijs van deze set.');
     expect(markup).toContain(
-      'Deze set staat nu op je verlanglijst. Als de prijs interessanter wordt, krijg je daar een seintje over.',
+      'Brickhunt houdt deze set nu voor je in de gaten.',
+    );
+    expect(markup).toContain(
+      'Brickhunt houdt deze set nu voor je in de gaten. We laten het weten als dit een beter moment wordt.',
     );
     expect(markup).toContain('Volgt prijs');
-    expect(markup).toContain('Open verlanglijst (4)');
+    expect(markup).toContain('Je volgt nu 4 sets · Bekijk');
+    expect(markup).toContain('href="/volgt"');
   });
 
   it('guides logged-out users softly toward login instead of a hard follow error', () => {
@@ -99,11 +102,37 @@ describe('WantedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Log in om te volgen');
+    expect(markup).toContain('Volg prijs');
     expect(markup).toContain(
-      'Log in om deze set te volgen. Daarna vind je hem terug op je verlanglijst.',
+      'Volg deze prijs. Dan zie je sneller wanneer dit een beter moment wordt.',
     );
-    expect(markup).toContain('Log in');
+    expect(markup).not.toContain('Log in om te volgen');
+  });
+
+  it('shows an immediate local follow state for logged-out price follows', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        hasResolvedState
+        isAuthenticated={false}
+        isWanted
+        productIntent="price-alert"
+        setId="21348"
+        successMessage="Brickhunt houdt deze set nu voor je in de gaten."
+        variant="product"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain(
+      'Brickhunt houdt deze set nu voor je in de gaten.',
+    );
+    expect(markup).toContain('Volgt prijs');
+    expect(markup).toContain(
+      'Brickhunt houdt deze set nu op dit apparaat voor je in de gaten. Log in om deze set op al je apparaten te volgen.',
+    );
+    expect(markup).toContain('Bekijk gevolgde sets');
+    expect(markup).toContain('href="/volgt"');
+    expect(markup).toContain('Log in voor al je apparaten');
   });
 
   it('renders a lighter inline variant for homepage follow-later actions', () => {

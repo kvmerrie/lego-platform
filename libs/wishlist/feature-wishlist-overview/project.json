@@ -3,7 +3,7 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/wishlist/feature-wishlist-overview/src",
   "projectType": "library",
-  "tags": ["scope:wishlist", "type:feature", "platform:web"],
+  "tags": ["scope:shell", "type:feature", "platform:web"],
   "// targets": "to see all targets run: nx show project wishlist-feature-wishlist-overview --web",
   "targets": {}
 }

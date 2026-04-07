@@ -38,7 +38,7 @@ export const ProductToggleStates: Story = {
         hasResolvedState
         isWanted
         productIntent="price-alert"
-        successMessage="Je volgt nu de prijs van deze set."
+        successMessage="Brickhunt houdt deze set nu voor je in de gaten."
         setId="10316"
         variant="product"
         onToggle={() => undefined}
@@ -48,6 +48,16 @@ export const ProductToggleStates: Story = {
         isAuthenticated={false}
         isWanted={false}
         productIntent="price-alert"
+        setId="10316"
+        variant="product"
+        onToggle={() => undefined}
+      />
+      <WantedSetToggleCard
+        hasResolvedState
+        isAuthenticated={false}
+        isWanted
+        productIntent="price-alert"
+        successMessage="Brickhunt houdt deze set nu voor je in de gaten."
         setId="10316"
         variant="product"
         onToggle={() => undefined}

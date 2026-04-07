@@ -1,0 +1,65 @@
+.page {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.statusPanel,
+.emptyPanel {
+  max-width: 42rem;
+}
+
+.stack {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.group {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.groupHeader {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.groupTitle {
+  font-size: var(--lego-text-role-section-size);
+  font-weight: var(--lego-text-role-section-weight);
+  margin: 0;
+}
+
+.groupDescription {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  margin: 0;
+  max-width: 42rem;
+}
+
+.grid {
+  display: grid;
+  gap: var(--lego-space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.linkRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+}
+
+.noteText,
+.errorText {
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.noteText {
+  color: var(--lego-text-muted);
+}
+
+.errorText {
+  color: var(--lego-status-error-strong);
+}

@@ -10,6 +10,9 @@ import {
 } from '@lego-platform/shared/data-access-auth';
 import { readStringArrayProperty } from '@lego-platform/shared/util';
 
+const LOCAL_FOLLOWED_PRICE_SET_IDS_STORAGE_KEY =
+  'brickhunt.followed-price-set-ids';
+
 const wishlistOverview: WishlistOverview = {
   trackedSets: 19,
   highPriority: 6,
@@ -55,22 +58,101 @@ export interface WantedSetContext {
   wantedSetState: WantedSetState;
 }
 
-export async function getWantedSetContext(
-  setId: string,
-): Promise<WantedSetContext> {
-  const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(apiPaths.session, {
-    cache: 'no-store',
-    headers,
-  });
+export interface FollowedPriceSetCollection {
+  alertsEnabled: boolean;
+  followedSetIds: string[];
+  isAuthenticated: boolean;
+}
 
-  if (!response.ok) {
-    throw new Error(
-      'De verlanglijststatus voor deze set kon niet worden geladen.',
-    );
+function getBrowserStorage():
+  | Pick<Storage, 'getItem' | 'removeItem' | 'setItem'>
+  | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
   }
 
-  const sessionPayload = await response.json();
+  return window.localStorage;
+}
+
+function readLocalFollowedPriceSetIds(): string[] {
+  const browserStorage = getBrowserStorage();
+
+  if (!browserStorage) {
+    return [];
+  }
+
+  try {
+    const rawValue = browserStorage.getItem(
+      LOCAL_FOLLOWED_PRICE_SET_IDS_STORAGE_KEY,
+    );
+
+    if (!rawValue) {
+      return [];
+    }
+
+    const parsedValue = JSON.parse(rawValue) as unknown;
+
+    if (!Array.isArray(parsedValue)) {
+      return [];
+    }
+
+    return parsedValue.filter(
+      (value): value is string => typeof value === 'string',
+    );
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalFollowedPriceSetIds(setIds: readonly string[]): void {
+  const browserStorage = getBrowserStorage();
+
+  if (!browserStorage) {
+    return;
+  }
+
+  const nextSetIds = [...new Set(setIds)];
+
+  if (nextSetIds.length === 0) {
+    browserStorage.removeItem(LOCAL_FOLLOWED_PRICE_SET_IDS_STORAGE_KEY);
+    return;
+  }
+
+  browserStorage.setItem(
+    LOCAL_FOLLOWED_PRICE_SET_IDS_STORAGE_KEY,
+    JSON.stringify(nextSetIds),
+  );
+}
+
+export function addLocalFollowedPriceSet(setId: string): WantedSetState {
+  const localFollowedPriceSetIds = readLocalFollowedPriceSetIds();
+
+  writeLocalFollowedPriceSetIds([setId, ...localFollowedPriceSetIds]);
+
+  return {
+    isWanted: true,
+    setId,
+  };
+}
+
+export function removeLocalFollowedPriceSet(setId: string): WantedSetState {
+  const localFollowedPriceSetIds = readLocalFollowedPriceSetIds();
+
+  writeLocalFollowedPriceSetIds(
+    localFollowedPriceSetIds.filter(
+      (localFollowedPriceSetId) => localFollowedPriceSetId !== setId,
+    ),
+  );
+
+  return {
+    isWanted: false,
+    setId,
+  };
+}
+
+function readFollowedPriceSetCollection(
+  sessionPayload: unknown,
+): FollowedPriceSetCollection {
   const wantedSetIds = readStringArrayProperty(sessionPayload, 'wantedSetIds');
   const isAuthenticated =
     Boolean(sessionPayload) &&
@@ -85,14 +167,41 @@ export async function getWantedSetContext(
     typeof notificationPreferences === 'object' &&
     (notificationPreferences as Record<string, unknown>).wishlistDealAlerts ===
       true;
+  const localFollowedPriceSetIds = readLocalFollowedPriceSetIds();
 
   return {
-    alertsEnabled,
+    alertsEnabled: isAuthenticated ? alertsEnabled : false,
+    followedSetIds: isAuthenticated ? wantedSetIds : localFollowedPriceSetIds,
     isAuthenticated,
-    wantedCount: wantedSetIds.length,
+  };
+}
+
+export async function getFollowedPriceSetCollection(): Promise<FollowedPriceSetCollection> {
+  const headers = await buildSupabaseAuthorizationHeaders();
+  const response = await fetch(apiPaths.session, {
+    cache: 'no-store',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error('De gevolgde sets konden nu niet worden geladen.');
+  }
+
+  return readFollowedPriceSetCollection(await response.json());
+}
+
+export async function getWantedSetContext(
+  setId: string,
+): Promise<WantedSetContext> {
+  const followedPriceSetCollection = await getFollowedPriceSetCollection();
+
+  return {
+    alertsEnabled: followedPriceSetCollection.alertsEnabled,
+    isAuthenticated: followedPriceSetCollection.isAuthenticated,
+    wantedCount: followedPriceSetCollection.followedSetIds.length,
     wantedSetState: {
       setId,
-      isWanted: wantedSetIds.includes(setId),
+      isWanted: followedPriceSetCollection.followedSetIds.includes(setId),
     },
   };
 }

@@ -12,7 +12,9 @@ import {
 } from '@lego-platform/shared/util';
 import {
   addWantedSet,
+  addLocalFollowedPriceSet,
   getWantedSetContext,
+  removeLocalFollowedPriceSet,
   removeWantedSet,
 } from '@lego-platform/wishlist/data-access';
 import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
@@ -41,8 +43,8 @@ export function WishlistFeatureWishlistToggle({
   function getSuccessStateMessage(nextIsWanted: boolean) {
     if (productIntent === 'price-alert') {
       return nextIsWanted
-        ? 'Je volgt nu de prijs van deze set.'
-        : 'Brickhunt volgt deze prijs niet meer.';
+        ? 'Brickhunt houdt deze set nu voor je in de gaten.'
+        : 'Brickhunt houdt deze set niet meer voor je in de gaten.';
     }
 
     return nextIsWanted
@@ -132,8 +134,26 @@ export function WishlistFeatureWishlistToggle({
       return;
     }
 
+    const nextAction = wantedSetState.isWanted ? 'remove' : 'add';
+
     if (!isAuthenticated) {
-      if (productIntent === 'price-alert') {
+      if (productIntent !== 'price-alert') {
+        window.location.assign(buildWebPath(webPathnames.account));
+        return;
+      }
+
+      setIsPending(true);
+      setErrorMessage(undefined);
+      setSuccessMessage(undefined);
+
+      if (nextAction === 'add') {
+        trackBrickhuntAnalyticsEvent({
+          event: 'follow_price_click',
+          properties: {
+            ...analyticsContext,
+            signedIn: false,
+          },
+        });
         trackBrickhuntAnalyticsEvent({
           event: 'follow_price_logged_out',
           properties: {
@@ -141,25 +161,52 @@ export function WishlistFeatureWishlistToggle({
             signedIn: false,
           },
         });
-        trackBrickhuntAnalyticsEvent({
-          event: 'follow_price_auth_handoff',
-          properties: {
-            ...analyticsContext,
-            handoffSource: 'follow_toggle',
-            handoffTarget: 'account',
-            signedIn: false,
-          },
-        });
       }
 
-      window.location.assign(buildWebPath(webPathnames.account));
+      try {
+        const nextWantedSetState =
+          nextAction === 'add'
+            ? addLocalFollowedPriceSet(setId)
+            : removeLocalFollowedPriceSet(setId);
+        const countDelta =
+          nextWantedSetState.isWanted === wantedSetState.isWanted
+            ? 0
+            : nextWantedSetState.isWanted
+              ? 1
+              : -1;
+        const nextFollowedSetCount =
+          typeof followedSetCount === 'number'
+            ? Math.max(0, followedSetCount + countDelta)
+            : nextWantedSetState.isWanted
+              ? 1
+              : 0;
+
+        setWantedSetState(nextWantedSetState);
+        setFollowedSetCount(nextFollowedSetCount);
+        setSuccessMessage(getSuccessStateMessage(nextWantedSetState.isWanted));
+
+        if (nextAction === 'add' && nextWantedSetState.isWanted) {
+          trackBrickhuntAnalyticsEvent({
+            event: 'follow_price_success',
+            properties: {
+              ...analyticsContext,
+              followedSetCount: nextFollowedSetCount,
+              signedIn: false,
+            },
+          });
+        }
+      } catch (error) {
+        setErrorMessage(getToggleErrorMessage(error, nextAction));
+      } finally {
+        setIsPending(false);
+      }
+
       return;
     }
 
     setIsPending(true);
     setErrorMessage(undefined);
     setSuccessMessage(undefined);
-    const nextAction = wantedSetState.isWanted ? 'remove' : 'add';
 
     if (productIntent === 'price-alert' && nextAction === 'add') {
       trackBrickhuntAnalyticsEvent({
@@ -172,9 +219,10 @@ export function WishlistFeatureWishlistToggle({
     }
 
     try {
-      const nextWantedSetState = wantedSetState.isWanted
-        ? await removeWantedSet(setId)
-        : await addWantedSet(setId);
+      const nextWantedSetState =
+        nextAction === 'remove'
+          ? await removeWantedSet(setId)
+          : await addWantedSet(setId);
       const countDelta =
         nextWantedSetState.isWanted === wantedSetState.isWanted
           ? 0

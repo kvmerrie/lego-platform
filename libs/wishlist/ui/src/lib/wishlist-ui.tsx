@@ -68,6 +68,7 @@ export function WantedSetToggleCard({
   variant?: 'default' | 'inline' | 'product';
 }) {
   const isPriceAlert = productIntent === 'price-alert';
+  const showsDeviceFollowState = isPriceAlert && !isAuthenticated && isWanted;
   const isUnavailable = !isLoading && !hasResolvedState;
   const title = isLoading
     ? isPriceAlert
@@ -81,25 +82,29 @@ export function WantedSetToggleCard({
         ? isPriceAlert
           ? 'Brickhunt volgt deze prijs'
           : 'Op verlanglijst'
-        : isPriceAlert
-          ? 'Volg deze prijs'
-          : 'Aan verlanglijst toevoegen';
+        : !isAuthenticated && !isPriceAlert
+          ? 'Log in om op te slaan'
+          : isPriceAlert
+            ? 'Volg deze prijs'
+            : 'Aan verlanglijst toevoegen';
   const description = isLoading
     ? isPriceAlert
       ? 'We kijken of Brickhunt deze prijs al voor je volgt.'
       : 'Controleren of deze set al op je verlanglijst staat.'
-    : !isAuthenticated
+    : isUnavailable
       ? isPriceAlert
-        ? 'Log in om deze prijs te volgen en later terug te vinden op je verlanglijst.'
-        : 'Log in om deze set op je prive verlanglijst te bewaren.'
-      : isUnavailable
+        ? 'We konden je volgstatus nu niet laden.'
+        : 'Je verlanglijststatus kon nu niet worden geladen.'
+      : isWanted
         ? isPriceAlert
-          ? 'We konden je volgstatus nu niet laden.'
-          : 'Je verlanglijststatus kon nu niet worden geladen.'
-        : isWanted
+          ? showsDeviceFollowState
+            ? 'Brickhunt houdt deze set nu op dit apparaat voor je in de gaten.'
+            : 'Brickhunt houdt deze set nu voor je in de gaten.'
+          : 'Deze set staat op je prive verlanglijst.'
+        : !isAuthenticated
           ? isPriceAlert
-            ? 'Je volgt nu de prijs van deze set.'
-            : 'Deze set staat op je prive verlanglijst.'
+            ? 'Nog niet kopen? Laat Brickhunt meekijken.'
+            : 'Log in om deze set op je prive verlanglijst te bewaren.'
           : isPriceAlert
             ? 'Nog niet kopen? Laat Brickhunt meekijken.'
             : 'Bewaar deze set op je prive verlanglijst.';
@@ -107,14 +112,14 @@ export function WantedSetToggleCard({
     ? isPriceAlert
       ? 'Prijs volgen niet beschikbaar'
       : 'Verlanglijststatus niet beschikbaar'
-    : !isAuthenticated
+    : isWanted
       ? isPriceAlert
-        ? 'Log in om te volgen'
-        : 'Log in om op te slaan'
-      : isWanted
+        ? 'Volgt prijs'
+        : 'Van verlanglijst verwijderen'
+      : !isAuthenticated
         ? isPriceAlert
-          ? 'Niet meer volgen'
-          : 'Van verlanglijst verwijderen'
+          ? 'Volg prijs'
+          : 'Log in om op te slaan'
         : isPriceAlert
           ? 'Volg prijs'
           : 'Aan verlanglijst toevoegen';
@@ -131,59 +136,69 @@ export function WantedSetToggleCard({
       ? 'Status niet beschikbaar'
       : isWanted
         ? isPriceAlert
-          ? 'Prijs wordt gevolgd'
+          ? showsDeviceFollowState
+            ? 'Volgt op dit apparaat'
+            : 'Prijs wordt gevolgd'
           : 'Op verlanglijst'
-        : !isAuthenticated
+        : !isAuthenticated && !isPriceAlert
           ? 'Log in nodig'
           : isPriceAlert
             ? 'Nog niet gevolgd'
             : 'Nog niet opgeslagen';
   const metaCopy = isPriceAlert
-    ? !isAuthenticated
-      ? 'Log in om deze prijs te volgen. Daarna vind je de set terug op je verlanglijst.'
-      : isWanted
-        ? alertsEnabled
-          ? 'Brickhunt houdt deze prijs voor je in de gaten. Als het moment interessanter wordt, krijg je daar een seintje over.'
+    ? isWanted
+      ? alertsEnabled
+        ? showsDeviceFollowState
+          ? 'Brickhunt houdt deze prijs nu op dit apparaat voor je in de gaten. Log in om deze set op al je apparaten te volgen.'
+          : 'Brickhunt houdt deze set voor je in de gaten. Als dit een beter moment wordt, krijg je daar een seintje over.'
+        : showsDeviceFollowState
+          ? 'Brickhunt houdt deze prijs nu op dit apparaat voor je in de gaten. Log in als je deze set op al je apparaten wilt volgen.'
           : 'Brickhunt houdt deze prijs voor je in de gaten. Zet dealupdates aan in je account als je ook een seintje wilt.'
-        : 'Volg de prijs als je later sneller wilt zien wanneer dit moment beter wordt.'
+      : 'Volg de prijs als je later sneller wilt zien wanneer dit moment beter wordt.'
     : !isAuthenticated
       ? 'Log in om sets prive op te slaan en later sneller terug te vinden.'
       : 'Prive opgeslagen. Setinformatie blijft openbaar.';
-  const wishlistLinkLabel =
-    typeof followedSetCount === 'number'
+  const wishlistLinkLabel = isPriceAlert
+    ? typeof followedSetCount === 'number'
+      ? `Je volgt nu ${followedSetCount} set${
+          followedSetCount === 1 ? '' : 's'
+        } · Bekijk`
+      : 'Bekijk gevolgde sets'
+    : typeof followedSetCount === 'number'
       ? `Open verlanglijst (${followedSetCount})`
       : 'Open verlanglijst';
   const productHelperCopy = isLoading
     ? isPriceAlert
       ? 'We kijken of Brickhunt deze prijs al voor je volgt.'
       : 'We kijken of deze set al op je prive verlanglijst staat.'
-    : !isAuthenticated
+    : isUnavailable
       ? isPriceAlert
-        ? 'Log in om deze set te volgen. Daarna vind je hem terug op je verlanglijst.'
-        : 'Log in om deze set op je prive verlanglijst te bewaren.'
-      : isUnavailable
+        ? 'Je kunt deze prijs nu niet laten volgen.'
+        : 'Je kunt deze set nu niet op je verlanglijst zetten.'
+      : isWanted
         ? isPriceAlert
-          ? 'Je kunt deze prijs nu niet laten volgen.'
-          : 'Je kunt deze set nu niet op je verlanglijst zetten.'
-        : isWanted
-          ? isPriceAlert
-            ? alertsEnabled
-              ? 'Deze set staat nu op je verlanglijst. Als de prijs interessanter wordt, krijg je daar een seintje over.'
+          ? showsDeviceFollowState
+            ? 'Brickhunt houdt deze set nu op dit apparaat voor je in de gaten. Log in om deze set op al je apparaten te volgen.'
+            : alertsEnabled
+              ? 'Brickhunt houdt deze set nu voor je in de gaten. We laten het weten als dit een beter moment wordt.'
               : 'Deze set staat nu op je verlanglijst. Zet dealupdates aan in je account als je ook een seintje wilt.'
-            : 'Deze set staat op je prive verlanglijst.'
+          : 'Deze set staat op je prive verlanglijst.'
+        : !isAuthenticated
+          ? isPriceAlert
+            ? 'Volg deze prijs. Dan zie je sneller wanneer dit een beter moment wordt.'
+            : 'Log in om deze set op je prive verlanglijst te bewaren.'
           : isPriceAlert
             ? 'Volg deze prijs. Dan zie je sneller wanneer dit een beter moment wordt.'
             : 'Bewaar deze set om hem later sneller terug te vinden.';
   const showProductWishlistLink =
     isPriceAlert &&
-    isAuthenticated &&
     !isUnavailable &&
     hasResolvedState &&
     (isWanted ||
       (typeof followedSetCount === 'number' && followedSetCount > 0));
   const showProductAccountLink =
     isPriceAlert &&
-    ((!isAuthenticated && !isLoading) || (isWanted && !alertsEnabled));
+    ((showsDeviceFollowState && !isLoading) || (isWanted && !alertsEnabled));
 
   if (variant === 'inline') {
     const inlineActionLabel = isLoading
@@ -192,16 +207,18 @@ export function WantedSetToggleCard({
         ? productIntent === 'price-alert'
           ? 'Volgen...'
           : 'Bewaren...'
-        : !isAuthenticated
-          ? 'Log in'
-          : isUnavailable
+        : isUnavailable
+          ? productIntent === 'price-alert'
+            ? 'Volgen niet beschikbaar'
+            : 'Bewaren niet beschikbaar'
+          : isWanted
             ? productIntent === 'price-alert'
-              ? 'Volgen niet beschikbaar'
-              : 'Bewaren niet beschikbaar'
-            : isWanted
+              ? 'Volgt prijs'
+              : 'Bewaard'
+            : !isAuthenticated
               ? productIntent === 'price-alert'
-                ? 'Volgt prijs'
-                : 'Bewaard'
+                ? 'Volg prijs'
+                : 'Log in'
               : productIntent === 'price-alert'
                 ? 'Volg prijs'
                 : 'Bewaar';
@@ -243,18 +260,18 @@ export function WantedSetToggleCard({
         ? productIntent === 'price-alert'
           ? 'Volgen...'
           : 'Opslaan...'
-        : !isAuthenticated
+        : isUnavailable
           ? productIntent === 'price-alert'
-            ? 'Log in om te volgen'
-            : 'Log in om op te slaan'
-          : isUnavailable
+            ? 'Prijs volgen niet beschikbaar'
+            : 'Verlanglijst niet beschikbaar'
+          : isWanted
             ? productIntent === 'price-alert'
-              ? 'Prijs volgen niet beschikbaar'
-              : 'Verlanglijst niet beschikbaar'
-            : isWanted
+              ? 'Volgt prijs'
+              : 'Van verlanglijst verwijderen'
+            : !isAuthenticated
               ? productIntent === 'price-alert'
-                ? 'Volgt prijs'
-                : 'Van verlanglijst verwijderen'
+                ? 'Volg prijs'
+                : 'Log in om op te slaan'
               : productIntent === 'price-alert'
                 ? 'Volg prijs'
                 : 'Aan verlanglijst toevoegen';
@@ -290,7 +307,11 @@ export function WantedSetToggleCard({
           <div className={styles.toggleLinkRow}>
             {showProductWishlistLink ? (
               <ActionLink
-                href={buildWebPath(webPathnames.wishlist)}
+                href={
+                  isPriceAlert
+                    ? buildWebPath(webPathnames.following)
+                    : buildWebPath(webPathnames.wishlist)
+                }
                 tone="inline"
                 {...buildBrickhuntAnalyticsAttributes({
                   event: 'open_wishlist_click',
@@ -319,7 +340,9 @@ export function WantedSetToggleCard({
                     })
                   : {})}
               >
-                {!isAuthenticated ? 'Log in' : 'Zet dealupdates aan'}
+                {!isAuthenticated
+                  ? 'Log in voor al je apparaten'
+                  : 'Zet dealupdates aan'}
               </ActionLink>
             ) : null}
           </div>
