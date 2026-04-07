@@ -56,7 +56,7 @@ export default function RootLayout({
       data-theme="light"
       suppressHydrationWarning
     >
-     <Script
+      <Script
         id="gtm-script"
         strategy="beforeInteractive"
         dangerouslySetInnerHTML={{
@@ -72,9 +72,9 @@ export default function RootLayout({
       <body className={plusJakartaSans.className}>
         <style dangerouslySetInnerHTML={{ __html: getThemeStyles() }} />
         <Script id="theme-bootstrap" strategy="beforeInteractive">
-  {getThemeBootstrapScript()}
-</Script>
-         <noscript>
+          {getThemeBootstrapScript()}
+        </Script>
+        <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-KLWBFMT2"
             height="0"
