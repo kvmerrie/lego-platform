@@ -128,6 +128,7 @@ export function addLocalFollowedPriceSet(setId: string): WantedSetState {
   const localFollowedPriceSetIds = readLocalFollowedPriceSetIds();
 
   writeLocalFollowedPriceSetIds([setId, ...localFollowedPriceSetIds]);
+  notifyBrowserAccountDataChanged();
 
   return {
     isWanted: true,
@@ -143,6 +144,7 @@ export function removeLocalFollowedPriceSet(setId: string): WantedSetState {
       (localFollowedPriceSetId) => localFollowedPriceSetId !== setId,
     ),
   );
+  notifyBrowserAccountDataChanged();
 
   return {
     isWanted: false,

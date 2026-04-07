@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
 import {
   CatalogSectionShell,
@@ -23,6 +23,10 @@ import {
   subscribeToBrowserAccountDataChanges,
   subscribeToSupabaseAuthChanges,
 } from '@lego-platform/shared/data-access-auth';
+import {
+  getBrickhuntAnalyticsPriceVerdictFromDelta,
+  trackBrickhuntAnalyticsEvent,
+} from '@lego-platform/shared/util';
 import { ActionLink, Panel } from '@lego-platform/shared/ui';
 import { getFollowedPriceSetCollection } from '@lego-platform/wishlist/data-access';
 import styles from './wishlist-feature-wishlist-overview.module.css';
@@ -108,6 +112,7 @@ export function WishlistFeatureWishlistOverview() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>();
+  const hasTrackedPageViewRef = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -200,6 +205,30 @@ export function WishlistFeatureWishlistOverview() {
     0,
     followedSetIds.length - followedSetCards.length,
   );
+
+  useEffect(() => {
+    if (isLoading || hasTrackedPageViewRef.current) {
+      return;
+    }
+
+    trackBrickhuntAnalyticsEvent({
+      event: 'following_page_view',
+      properties: {
+        followedSetCount: followedSetIds.length,
+        interestingSetCount: interestingNowItems.length,
+        pageSurface: 'following',
+        signedIn: isAuthenticated,
+        watchingSetCount: watchingItems.length,
+      },
+    });
+    hasTrackedPageViewRef.current = true;
+  }, [
+    followedSetIds.length,
+    interestingNowItems.length,
+    isAuthenticated,
+    isLoading,
+    watchingItems.length,
+  ]);
 
   if (isLoading) {
     return (
@@ -316,7 +345,7 @@ export function WishlistFeatureWishlistOverview() {
           </div>
           <div className={styles.grid}>
             {interestingNowItems.map(
-              ({ catalogSetCard, reviewedPriceSummary }) => (
+              ({ catalogSetCard, deltaMinor, reviewedPriceSummary }, index) => (
                 <CatalogSetCard
                   contextBadge={
                     catalogSetCard.id === topPickSetId
@@ -330,6 +359,20 @@ export function WishlistFeatureWishlistOverview() {
                   supportingNote={getInterestingNowBuyingNote(
                     reviewedPriceSummary,
                   )}
+                  trackingEvent={{
+                    event: 'catalog_set_click',
+                    properties: {
+                      cardSurface: 'followed_set',
+                      pageSurface: 'following',
+                      priceVerdict:
+                        getBrickhuntAnalyticsPriceVerdictFromDelta(deltaMinor),
+                      rankPosition: index + 1,
+                      sectionId: 'interesting_now',
+                      setId: catalogSetCard.id,
+                      theme: catalogSetCard.theme,
+                      topPick: catalogSetCard.id === topPickSetId,
+                    },
+                  }}
                   variant="featured"
                 />
               ),
@@ -352,17 +395,35 @@ export function WishlistFeatureWishlistOverview() {
             </p>
           </div>
           <div className={styles.grid}>
-            {watchingItems.map(({ catalogSetCard, reviewedPriceSummary }) => (
-              <CatalogSetCard
-                contextBadge={followedContextBadge}
-                href={buildSetDetailPath(catalogSetCard.slug)}
-                key={catalogSetCard.id}
-                priceContext={toPriceContext(reviewedPriceSummary)}
-                setSummary={catalogSetCard}
-                supportingNote={getFollowedSetBuyingNote(reviewedPriceSummary)}
-                variant="featured"
-              />
-            ))}
+            {watchingItems.map(
+              ({ catalogSetCard, deltaMinor, reviewedPriceSummary }, index) => (
+                <CatalogSetCard
+                  contextBadge={followedContextBadge}
+                  href={buildSetDetailPath(catalogSetCard.slug)}
+                  key={catalogSetCard.id}
+                  priceContext={toPriceContext(reviewedPriceSummary)}
+                  setSummary={catalogSetCard}
+                  supportingNote={getFollowedSetBuyingNote(
+                    reviewedPriceSummary,
+                  )}
+                  trackingEvent={{
+                    event: 'catalog_set_click',
+                    properties: {
+                      cardSurface: 'followed_set',
+                      pageSurface: 'following',
+                      priceVerdict:
+                        getBrickhuntAnalyticsPriceVerdictFromDelta(deltaMinor),
+                      rankPosition: index + 1,
+                      sectionId: 'watching',
+                      setId: catalogSetCard.id,
+                      theme: catalogSetCard.theme,
+                      topPick: false,
+                    },
+                  }}
+                  variant="featured"
+                />
+              ),
+            )}
           </div>
         </section>
       ) : null}

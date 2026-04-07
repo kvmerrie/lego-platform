@@ -8,18 +8,24 @@ import {
 import { Container, Icon } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import { ShellWebAnalyticsListener } from './shell-web-analytics-listener';
+import { ShellWebFollowLink } from './shell-web-follow-link';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
 function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
-  return webNavigation.map((navigationItem) => (
-    <a
-      className={variant === 'desktop' ? styles.navLink : styles.mobileNavLink}
-      href={navigationItem.href}
-      key={navigationItem.href}
-    >
-      {navigationItem.label}
-    </a>
-  ));
+  return [
+    ...webNavigation.map((navigationItem) => (
+      <a
+        className={
+          variant === 'desktop' ? styles.navLink : styles.mobileNavLink
+        }
+        href={navigationItem.href}
+        key={navigationItem.href}
+      >
+        {navigationItem.label}
+      </a>
+    )),
+    <ShellWebFollowLink key={`following-${variant}`} variant={variant} />,
+  ];
 }
 
 const shellActionLinks = [

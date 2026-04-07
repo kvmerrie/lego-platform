@@ -225,6 +225,6 @@ describe('wishlist data access', () => {
       setId: '21348',
     });
     expect(localStorage.getItem('brickhunt.followed-price-set-ids')).toBeNull();
-    expect(notifyBrowserAccountDataChanged).not.toHaveBeenCalled();
+    expect(notifyBrowserAccountDataChanged).toHaveBeenCalledTimes(2);
   });
 });
