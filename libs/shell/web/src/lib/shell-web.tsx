@@ -7,6 +7,7 @@ import {
 } from '@lego-platform/shared/config';
 import { Container, Icon } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
+import { ShellWebAnalyticsListener } from './shell-web-analytics-listener';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
 function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
@@ -69,6 +70,7 @@ export function ShellWeb({
 }) {
   return (
     <div className={styles.shell}>
+      <ShellWebAnalyticsListener />
       <a className={styles.skipLink} href="#main-content">
         Ga direct naar de hoofdinhoud
       </a>

@@ -36,6 +36,7 @@ import {
   getDefaultFormattingLocale,
   webPathnames,
 } from '@lego-platform/shared/config';
+import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { notFound } from 'next/navigation';
 
@@ -208,7 +209,9 @@ function buildBestDeal({
   catalogOffer,
   dealVerdict,
   merchantCount,
+  setId,
   pricePanelSnapshot,
+  theme,
 }: {
   catalogOffer?: CatalogOffer | null;
   dealVerdict: {
@@ -216,7 +219,9 @@ function buildBestDeal({
     tone?: 'info' | 'neutral' | 'positive' | 'warning';
   };
   merchantCount?: number;
+  setId: string;
   pricePanelSnapshot?: PricePanelSnapshot;
+  theme: string;
 }): CatalogSetDetailBestDeal | undefined {
   if (!catalogOffer) {
     return undefined;
@@ -241,16 +246,43 @@ function buildBestDeal({
       merchantCount,
     }),
     stockLabel: getOfferStockLabel(catalogOffer.availability),
+    trackingEvent: {
+      event: 'offer_click',
+      properties: {
+        merchantCount,
+        merchantName: catalogOffer.merchantName,
+        offerPlacement: 'best_offer',
+        offerRole: 'best',
+        pageSurface: 'set_detail',
+        priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
+        rankPosition: 1,
+        setId,
+        theme,
+      },
+    },
   };
 }
 
 function buildOfferList(
   catalogOffers: readonly CatalogOffer[],
+  {
+    dealVerdict,
+    merchantCount,
+    setId,
+    theme,
+  }: {
+    dealVerdict: {
+      tone?: 'info' | 'neutral' | 'positive' | 'warning';
+    };
+    merchantCount?: number;
+    setId: string;
+    theme: string;
+  },
   bestOffer?: CatalogOffer | null,
 ): CatalogSetDetailOfferItem[] {
   return sortCatalogOffers(catalogOffers)
     .slice(0, 3)
-    .map((catalogOffer) => ({
+    .map((catalogOffer, index) => ({
       checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(catalogOffer.checkedAt)}`,
       ctaHref: catalogOffer.url,
       ctaLabel: `Bekijk bij ${catalogOffer.merchantName}`,
@@ -262,6 +294,21 @@ function buildOfferList(
         catalogOffer,
       }),
       stockLabel: getOfferStockLabel(catalogOffer.availability),
+      trackingEvent: {
+        event: 'offer_click',
+        properties: {
+          merchantCount,
+          merchantName: catalogOffer.merchantName,
+          offerPlacement: 'comparison_row',
+          offerRole:
+            bestOffer?.url === catalogOffer.url ? 'best' : 'alternative',
+          pageSurface: 'set_detail',
+          priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
+          rankPosition: index + 1,
+          setId,
+          theme,
+        },
+      },
     }));
 }
 
@@ -332,7 +379,9 @@ export default async function SetDetailPage({
           dealVerdict,
           merchantCount:
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+          setId: catalogSetDetail.id,
           pricePanelSnapshot,
+          theme: catalogSetDetail.theme,
         })}
         brickhuntValueItems={buildBrickhuntValueItems({
           merchantCount:
@@ -346,7 +395,17 @@ export default async function SetDetailPage({
           pricePanelSnapshot,
         })}
         dealVerdict={dealVerdict}
-        offerList={buildOfferList(localizedSetDetailOffers, bestOffer)}
+        offerList={buildOfferList(
+          localizedSetDetailOffers,
+          {
+            dealVerdict,
+            merchantCount:
+              trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+            setId: catalogSetDetail.id,
+            theme: catalogSetDetail.theme,
+          },
+          bestOffer,
+        )}
         offerSummaryLabel={buildOfferSummaryLabel({
           merchantCount:
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
@@ -362,6 +421,14 @@ export default async function SetDetailPage({
         }
         priceAlertAction={
           <WishlistFeatureWishlistToggle
+            analyticsContext={{
+              merchantCount:
+                trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+              pageSurface: 'set_detail',
+              priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
+              setId: catalogSetDetail.id,
+              theme: catalogSetDetail.theme,
+            }}
             productIntent="price-alert"
             setId={catalogSetDetail.id}
             variant="product"

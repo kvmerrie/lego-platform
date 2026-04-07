@@ -39,6 +39,10 @@ import {
   SectionHeading,
   Surface,
 } from '@lego-platform/shared/ui';
+import {
+  buildBrickhuntAnalyticsAttributes,
+  type BrickhuntAnalyticsEventDescriptor,
+} from '@lego-platform/shared/util';
 import styles from './catalog-ui.module.css';
 
 export {
@@ -361,6 +365,7 @@ export function CatalogSetCard({
   savedState,
   setSummary,
   supportingNote,
+  trackingEvent,
   variant = 'default',
 }: {
   actions?: ReactNode;
@@ -371,6 +376,7 @@ export function CatalogSetCard({
   savedState?: CatalogSetSavedState;
   setSummary: CatalogSetCardSummary;
   supportingNote?: ReactNode;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant?: CatalogSetCardVariant;
 }) {
   if (variant === 'compact') {
@@ -424,7 +430,12 @@ export function CatalogSetCard({
         className={`${styles.setCard} ${styles.setCardCompact}`}
       >
         {href ? (
-          <ActionLink className={styles.setCardLink} href={href} tone="card">
+          <ActionLink
+            className={styles.setCardLink}
+            href={href}
+            tone="card"
+            {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+          >
             {browseCardContent}
           </ActionLink>
         ) : (
@@ -520,7 +531,12 @@ export function CatalogSetCard({
         className={`${styles.setCard} ${styles.setCardCompact}`}
       >
         {href ? (
-          <ActionLink className={styles.setCardLink} href={href} tone="card">
+          <ActionLink
+            className={styles.setCardLink}
+            href={href}
+            tone="card"
+            {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+          >
             {featuredCardContent}
           </ActionLink>
         ) : (
@@ -637,7 +653,12 @@ export function CatalogSetCard({
       />
       {actions ? <div className={styles.cardActions}>{actions}</div> : null}
       {href ? (
-        <ActionLink className={styles.actionLink} href={href} tone="secondary">
+        <ActionLink
+          className={styles.actionLink}
+          href={href}
+          tone="secondary"
+          {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+        >
           Bekijk set
         </ActionLink>
       ) : null}
@@ -974,6 +995,7 @@ export function CatalogThemeHighlight({
   href,
   imageUrl,
   themeSnapshot,
+  trackingEvent,
   variant = 'default',
   visual,
 }: {
@@ -981,6 +1003,7 @@ export function CatalogThemeHighlight({
   href?: string;
   imageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant?: 'default' | 'feature' | 'portrait';
   visual?: CatalogThemeVisual;
 }) {
@@ -1058,6 +1081,7 @@ export function CatalogThemeHighlight({
             className={styles.themePortraitLink}
             href={href}
             tone="card"
+            {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
           >
             {portraitContent}
           </ActionLink>
@@ -1136,6 +1160,7 @@ export function CatalogThemeHighlight({
             className={styles.themeFeatureLink}
             href={href}
             tone="card"
+            {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
           >
             {featureContent}
           </ActionLink>

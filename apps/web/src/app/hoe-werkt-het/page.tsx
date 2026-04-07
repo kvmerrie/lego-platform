@@ -1,5 +1,6 @@
 import { getMetadataFromSeoFields } from '../lib/editorial-metadata';
 import styles from './page.module.css';
+import { HowItWorksPageView } from './how-it-works-page-view';
 import { MarkerList, Panel, SectionHeading } from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 
@@ -72,6 +73,7 @@ export const metadata = getMetadataFromSeoFields({
 export default function HowItWorksPage() {
   return (
     <ShellWeb>
+      <HowItWorksPageView />
       <div className={styles.page}>
         <Panel
           as="section"

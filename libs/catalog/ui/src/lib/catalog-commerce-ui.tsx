@@ -8,6 +8,10 @@ import {
   MetaSignal,
   Panel,
 } from '@lego-platform/shared/ui';
+import {
+  buildBrickhuntAnalyticsAttributes,
+  type BrickhuntAnalyticsEventDescriptor,
+} from '@lego-platform/shared/util';
 import styles from './catalog-ui.module.css';
 
 export interface CatalogDecisionVerdict {
@@ -31,6 +35,7 @@ export interface CatalogDecisionOffer {
   price: string;
   rankingLabel?: string;
   stockLabel: string;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 }
 
 export type CatalogSetDetailBestDeal = CatalogDecisionOffer;
@@ -44,6 +49,7 @@ export interface CatalogOfferItem {
   price: string;
   rankingLabel?: string;
   stockLabel: string;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 }
 
 export type CatalogSetDetailOfferItem = CatalogOfferItem;
@@ -129,6 +135,7 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
           rel="noreferrer sponsored"
           target="_blank"
           tone={offer.ctaTone ?? 'accent'}
+          {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
         >
           {offer.ctaLabel}
         </ActionLink>
@@ -344,6 +351,7 @@ export function CatalogOfferRow({ offer }: { offer: CatalogOfferItem }) {
           rel="noreferrer sponsored"
           target="_blank"
           tone="secondary"
+          {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
         >
           {offer.ctaLabel}
         </ActionLink>

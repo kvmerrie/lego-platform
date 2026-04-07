@@ -12,6 +12,7 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import { ActionLink } from '@lego-platform/shared/ui';
+import { buildBrickhuntAnalyticsAttributes } from '@lego-platform/shared/util';
 import styles from './catalog-feature-theme-list.module.css';
 
 export function CatalogFeatureThemeList({
@@ -38,13 +39,23 @@ export function CatalogFeatureThemeList({
       title="Fantasy, Star Wars of strak design?"
       tone={tone === 'inverse' ? 'inverse' : 'plain'}
     >
-      {themeItems.map((themeItem) => (
+      {themeItems.map((themeItem, index) => (
         <CatalogThemeHighlight
           href={buildThemePath(themeItem.themeSnapshot.slug)}
           visual={themeItem.visual}
           imageUrl={themeItem.imageUrl}
           key={themeItem.themeSnapshot.name}
           themeSnapshot={themeItem.themeSnapshot}
+          trackingEvent={{
+            event: 'theme_tile_click',
+            properties: {
+              pageSurface: 'homepage',
+              rankPosition: index + 1,
+              sectionId: 'explore-themes',
+              tileType: 'theme',
+              theme: themeItem.themeSnapshot.name,
+            },
+          }}
           variant="portrait"
         />
       ))}
@@ -53,6 +64,16 @@ export function CatalogFeatureThemeList({
           className={styles.allThemesLink}
           href={buildWebPath(webPathnames.themes)}
           tone="card"
+          {...buildBrickhuntAnalyticsAttributes({
+            event: 'theme_tile_click',
+            properties: {
+              pageSurface: 'homepage',
+              rankPosition: themeItems.length + 1,
+              sectionId: 'explore-themes',
+              tileType: 'all_themes',
+              theme: null,
+            },
+          })}
         >
           <p className={styles.allThemesEyebrow}>Verder</p>
           <h3 className={styles.allThemesTitle}>Alle thema&apos;s</h3>

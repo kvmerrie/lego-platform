@@ -31,7 +31,7 @@ export function CatalogFeatureThemeSpotlight({
       title="Botanicals, kunst of modulaire straten?"
       tone="plain"
     >
-      {themeItems.map((themeItem) => (
+      {themeItems.map((themeItem, index) => (
         <div
           className={styles.spotlightItem}
           key={themeItem.themeSnapshot.name}
@@ -42,6 +42,16 @@ export function CatalogFeatureThemeSpotlight({
             visual={themeItem.visual}
             imageUrl={themeItem.imageUrl}
             themeSnapshot={themeItem.themeSnapshot}
+            trackingEvent={{
+              event: 'theme_tile_click',
+              properties: {
+                pageSurface: 'homepage',
+                rankPosition: index + 1,
+                sectionId: 'theme-spotlight',
+                tileType: 'theme',
+                theme: themeItem.themeSnapshot.name,
+              },
+            }}
             variant="feature"
           />
         </div>

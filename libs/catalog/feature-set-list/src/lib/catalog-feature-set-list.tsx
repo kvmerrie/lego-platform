@@ -8,11 +8,13 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
+import type { BrickhuntAnalyticsEventDescriptor } from '@lego-platform/shared/util';
 import styles from './catalog-feature-set-list.module.css';
 
 export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
   actions?: ReactNode;
   priceContext?: CatalogSetCardPriceContext;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 }
 
 export function CatalogFeatureSetList({
@@ -74,6 +76,7 @@ export function CatalogFeatureSetList({
               href={buildSetDetailPath(catalogSetSummary.slug)}
               priceContext={catalogSetSummary.priceContext}
               setSummary={catalogSetSummary}
+              trackingEvent={catalogSetSummary.trackingEvent}
               variant="featured"
             />
           ))}
@@ -87,6 +90,7 @@ export function CatalogFeatureSetList({
             id: catalogSetSummary.id,
             priceContext: catalogSetSummary.priceContext,
             setSummary: catalogSetSummary,
+            trackingEvent: catalogSetSummary.trackingEvent,
           }))}
           variant="featured"
         />

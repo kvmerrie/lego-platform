@@ -7,6 +7,10 @@ import {
   subscribeToSupabaseAuthChanges,
 } from '@lego-platform/shared/data-access-auth';
 import {
+  trackBrickhuntAnalyticsEvent,
+  type BrickhuntAnalyticsProperties,
+} from '@lego-platform/shared/util';
+import {
   addWantedSet,
   getWantedSetContext,
   removeWantedSet,
@@ -15,10 +19,12 @@ import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
 import { WantedSetState } from '@lego-platform/wishlist/util';
 
 export function WishlistFeatureWishlistToggle({
+  analyticsContext,
   productIntent = 'wishlist',
   setId,
   variant = 'default',
 }: {
+  analyticsContext?: BrickhuntAnalyticsProperties;
   productIntent?: 'price-alert' | 'wishlist';
   setId: string;
   variant?: 'default' | 'inline' | 'product';
@@ -127,6 +133,25 @@ export function WishlistFeatureWishlistToggle({
     }
 
     if (!isAuthenticated) {
+      if (productIntent === 'price-alert') {
+        trackBrickhuntAnalyticsEvent({
+          event: 'follow_price_logged_out',
+          properties: {
+            ...analyticsContext,
+            signedIn: false,
+          },
+        });
+        trackBrickhuntAnalyticsEvent({
+          event: 'follow_price_auth_handoff',
+          properties: {
+            ...analyticsContext,
+            handoffSource: 'follow_toggle',
+            handoffTarget: 'account',
+            signedIn: false,
+          },
+        });
+      }
+
       window.location.assign(buildWebPath(webPathnames.account));
       return;
     }
@@ -135,6 +160,16 @@ export function WishlistFeatureWishlistToggle({
     setErrorMessage(undefined);
     setSuccessMessage(undefined);
     const nextAction = wantedSetState.isWanted ? 'remove' : 'add';
+
+    if (productIntent === 'price-alert' && nextAction === 'add') {
+      trackBrickhuntAnalyticsEvent({
+        event: 'follow_price_click',
+        properties: {
+          ...analyticsContext,
+          signedIn: true,
+        },
+      });
+    }
 
     try {
       const nextWantedSetState = wantedSetState.isWanted
@@ -154,6 +189,24 @@ export function WishlistFeatureWishlistToggle({
           : currentFollowedSetCount,
       );
       setSuccessMessage(getSuccessStateMessage(nextWantedSetState.isWanted));
+
+      if (
+        productIntent === 'price-alert' &&
+        nextAction === 'add' &&
+        nextWantedSetState.isWanted
+      ) {
+        trackBrickhuntAnalyticsEvent({
+          event: 'follow_price_success',
+          properties: {
+            ...analyticsContext,
+            followedSetCount:
+              typeof followedSetCount === 'number'
+                ? Math.max(0, followedSetCount + countDelta)
+                : undefined,
+            signedIn: true,
+          },
+        });
+      }
     } catch (error) {
       setErrorMessage(getToggleErrorMessage(error, nextAction));
     } finally {
@@ -165,6 +218,7 @@ export function WishlistFeatureWishlistToggle({
     <WantedSetToggleCard
       errorMessage={errorMessage}
       alertsEnabled={alertsEnabled}
+      analyticsContext={analyticsContext}
       followedSetCount={followedSetCount}
       hasResolvedState={Boolean(wantedSetState)}
       isAuthenticated={isAuthenticated}

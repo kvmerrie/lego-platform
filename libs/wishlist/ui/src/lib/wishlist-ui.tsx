@@ -7,6 +7,10 @@ import {
   Panel,
   VisuallyHidden,
 } from '@lego-platform/shared/ui';
+import {
+  buildBrickhuntAnalyticsAttributes,
+  type BrickhuntAnalyticsProperties,
+} from '@lego-platform/shared/util';
 import { WishlistItem } from '@lego-platform/wishlist/util';
 import styles from './wishlist-ui.module.css';
 
@@ -34,6 +38,7 @@ export function WishlistItemCard({
 
 export function WantedSetToggleCard({
   alertsEnabled,
+  analyticsContext,
   errorMessage,
   followedSetCount,
   hasResolvedState,
@@ -48,6 +53,7 @@ export function WantedSetToggleCard({
   variant = 'default',
 }: {
   alertsEnabled?: boolean;
+  analyticsContext?: BrickhuntAnalyticsProperties;
   errorMessage?: string;
   followedSetCount?: number;
   hasResolvedState: boolean;
@@ -286,6 +292,13 @@ export function WantedSetToggleCard({
               <ActionLink
                 href={buildWebPath(webPathnames.wishlist)}
                 tone="inline"
+                {...buildBrickhuntAnalyticsAttributes({
+                  event: 'open_wishlist_click',
+                  properties: {
+                    ...analyticsContext,
+                    followedSetCount,
+                  },
+                })}
               >
                 {wishlistLinkLabel}
               </ActionLink>
@@ -294,6 +307,17 @@ export function WantedSetToggleCard({
               <ActionLink
                 href={buildWebPath(webPathnames.account)}
                 tone="inline"
+                {...(!isAuthenticated && isPriceAlert
+                  ? buildBrickhuntAnalyticsAttributes({
+                      event: 'follow_price_auth_handoff',
+                      properties: {
+                        ...analyticsContext,
+                        handoffSource: 'follow_helper_link',
+                        handoffTarget: 'account',
+                        signedIn: false,
+                      },
+                    })
+                  : {})}
               >
                 {!isAuthenticated ? 'Log in' : 'Zet dealupdates aan'}
               </ActionLink>

@@ -7,6 +7,7 @@ import type {
   CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import { Button } from '@lego-platform/shared/ui';
+import type { BrickhuntAnalyticsEventDescriptor } from '@lego-platform/shared/util';
 import { CatalogSetCard, type CatalogSetCardPriceContext } from './catalog-ui';
 import styles from './catalog-ui.module.css';
 
@@ -20,6 +21,7 @@ export interface CatalogSetCardRailItem {
   priceContext?: CatalogSetCardPriceContext;
   setSummary: CatalogSetCardRailSummary;
   supportingNote?: ReactNode;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 }
 
 interface CatalogSetCardRailMetrics {
@@ -293,6 +295,7 @@ export function CatalogSetCardRail({
               priceContext={item.priceContext}
               setSummary={item.setSummary}
               supportingNote={item.supportingNote}
+              trackingEvent={item.trackingEvent}
               variant={variant}
             />
           </div>

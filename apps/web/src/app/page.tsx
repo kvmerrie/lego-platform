@@ -25,6 +25,10 @@ import {
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ActionLink } from '@lego-platform/shared/ui';
+import {
+  buildBrickhuntAnalyticsAttributes,
+  getBrickhuntAnalyticsPriceVerdictFromDelta,
+} from '@lego-platform/shared/util';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
@@ -80,10 +84,20 @@ function formatReviewedOn(observedAt: string): string {
 
 function toFeatureSetListItems(
   setCards: ReturnType<typeof listCatalogSetCardsByIds>,
+  {
+    cardSurface,
+    sectionId,
+  }: {
+    cardSurface: 'deal' | 'featured';
+    sectionId: string;
+  },
 ): CatalogFeatureSetListItem[] {
-  return setCards.map((homepageSetCard) => {
+  return setCards.map((homepageSetCard, index) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(
       homepageSetCard.id,
+    );
+    const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
+      featuredSetPriceContext?.deltaMinor,
     );
 
     return {
@@ -110,8 +124,30 @@ function toFeatureSetListItems(
             )}`,
           }
         : undefined,
+      trackingEvent: {
+        event: 'catalog_set_click',
+        properties: {
+          cardSurface,
+          merchantCount: featuredSetPriceContext?.merchantCount,
+          pageSurface: 'homepage',
+          priceVerdict,
+          rankPosition: index + 1,
+          sectionId,
+          setId: homepageSetCard.id,
+          theme: homepageSetCard.theme,
+        },
+      },
       actions: (
         <WishlistFeatureWishlistToggle
+          analyticsContext={{
+            cardSurface,
+            merchantCount: featuredSetPriceContext?.merchantCount,
+            pageSurface: 'homepage',
+            priceVerdict,
+            sectionId,
+            setId: homepageSetCard.id,
+            theme: homepageSetCard.theme,
+          }}
           productIntent={featuredSetPriceContext ? 'price-alert' : 'wishlist'}
           setId={homepageSetCard.id}
           variant="inline"
@@ -153,7 +189,10 @@ function createHomepageFeaturedRailItems({
     }
   }
 
-  return toFeatureSetListItems(mergedSetCards);
+  return toFeatureSetListItems(mergedSetCards, {
+    cardSurface: 'featured',
+    sectionId: 'featured-sets',
+  });
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -180,6 +219,10 @@ export default async function HomePage() {
         limit: 3,
       }).map((priceContext) => priceContext.setId),
     ),
+    {
+      cardSurface: 'deal',
+      sectionId: 'best-current-deals',
+    },
   );
   const homepageDealSetIds = homepageDealSetCards.map(
     (homepageDealSetCard) => homepageDealSetCard.id,
@@ -217,6 +260,14 @@ export default async function HomePage() {
                 className={styles.supportingLink}
                 href="/hoe-werkt-het"
                 tone="inline"
+                {...buildBrickhuntAnalyticsAttributes({
+                  event: 'support_link_click',
+                  properties: {
+                    linkTarget: 'how_it_works',
+                    pageSurface: 'homepage',
+                    sectionId: 'best-current-deals',
+                  },
+                })}
               >
                 Hoe Brickhunt werkt
               </ActionLink>
