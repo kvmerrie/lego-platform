@@ -42,6 +42,10 @@ export const metadata: Metadata = {
     title: defaultMetadataTitle,
     description: defaultMetadataDescription,
   },
+  other: {
+    'tradetracker-site-verification':
+      '8858de23ea80b4b082e07071ae75490ea2ef4c72',
+  },
 };
 
 export default function RootLayout({
