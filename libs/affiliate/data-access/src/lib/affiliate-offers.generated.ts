@@ -164,6 +164,22 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10333",
+    "merchantId": "amazon-nl",
+    "merchantName": "Amazon",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 42829,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.amazon.nl/LEGO-Icons-Lord-Rings-Volwassenen/dp/B0D5W8J5YV?crid=1QE7VASRCMMR9&dib=eyJ2IjoiMSJ9.eV5BU8F5Ha1yyEu_F_vgmEKim5bT_3YvCs2RerWlwJyWuIR9CHE9Z1hlZtZXid3H67EJUcgC2FBFejFah9GZBvHM3e-FY5Skj2G4BeG6EiNfmz_uw5MBLdskSzhbaBp1xL5AlIObvlQ1VWGXkp6wDCOUDihWjMu5rigLD4RZ48L5ZvW9EDEm6_8oc3zdOBNnpzK62sNU5exLTk_Htx2KQMPRsia_KBNTyBOu5axXB8hBuHkLbdq7u9LJpG9QuqrxQrW3gZE7pLNIeT8yVzIr1PWxhZVjX4p64JyYwJAWnXI.EqW7AfVVNsD_wUsKUmLmC1-aSmZh5idcYTmfiq9FBiM&dib_tag=se&keywords=lego+barad+dur&qid=1775676559&sprefix=lego+barad+%2Caps%2C97&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=227c8553e0817d5fd416b416863617b2&ref_=as_li_ss_tl",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-03-31T09:56:00.000Z",
+    "displayRank": 3,
+    "ctaLabel": "Shop at Amazon",
+    "perks": "Broad marketplace availability"
+  },
+  {
+    "setId": "10333",
     "merchantId": "bol",
     "merchantName": "bol",
     "regionCode": "NL",

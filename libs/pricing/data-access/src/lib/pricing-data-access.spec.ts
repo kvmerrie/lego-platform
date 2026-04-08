@@ -71,14 +71,14 @@ describe('pricing data access', () => {
       regionCode: 'NL',
       currencyCode: 'EUR',
       condition: 'new',
-      headlinePriceMinor: 43999,
+      headlinePriceMinor: 42999,
       lowestAvailabilityLabel: 'In stock',
-      lowestMerchantId: 'bol',
-      lowestMerchantName: 'bol',
-      merchantCount: 2,
+      lowestMerchantId: 'amazon-nl',
+      lowestMerchantName: 'Amazon',
+      merchantCount: 3,
       observedAt: '2026-03-31T09:56:00.000Z',
       referencePriceMinor: 45999,
-      deltaMinor: -2000,
+      deltaMinor: -3000,
     });
   });
 
@@ -229,15 +229,15 @@ describe('pricing data access', () => {
     ).toEqual([
       {
         id: 'brickhunt-monitoring',
-        text: 'We vergelijken 3 Nederlandse winkels zolang die vergelijking iets zegt.',
+        text: 'We vergelijken echte prijzen bij 3 Nederlandse winkels zolang die vergelijking iets zegt.',
       },
       {
         id: 'brickhunt-guidance',
-        text: 'Je ziet eerst of deze set nu echt opvalt.',
+        text: 'Je ziet of deze prijs echt opvalt of gewoon normaal is.',
       },
       {
         id: 'brickhunt-alerts',
-        text: 'Nog niet klaar? Volg de prijs en laat Brickhunt meekijken.',
+        text: 'Nog niet kopen? Volg de prijs en laat Brickhunt meekijken.',
       },
     ]);
   });
@@ -380,7 +380,7 @@ describe('pricing data access', () => {
         candidateSetIds: ['21348', '10316', '76269', '10333'],
         limit: 3,
       }).map((priceContext) => priceContext.setId),
-    ).toEqual(['76269', '10316', '21348']);
+    ).toEqual(['76269', '10333', '10316']);
   });
 
   test('uses candidate ordering to break ties between similar deal signals', () => {

@@ -77,14 +77,14 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 43999,
+    "headlinePriceMinor": 42999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 2,
+    "lowestMerchantId": "amazon-nl",
+    "lowestMerchantName": "Amazon",
+    "merchantCount": 3,
     "observedAt": "2026-03-31T09:56:00.000Z",
     "referencePriceMinor": 45999,
-    "deltaMinor": -2000
+    "deltaMinor": -3000
   },
   {
     "setId": "10294",

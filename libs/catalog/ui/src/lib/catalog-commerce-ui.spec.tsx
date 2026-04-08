@@ -52,7 +52,7 @@ describe('Catalog commerce UI', () => {
         followAction={<button type="button">Volg prijs</button>}
         primaryOffer={{
           affiliateNote:
-            'Als je doorklikt naar bol, kunnen wij een kleine commissie krijgen. Dat verandert jouw prijs niet.',
+            'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
           checkedLabel: 'Nagekeken 2 apr, 09:00',
           coverageLabel: '3 winkels nagekeken',
           ctaHref: 'https://example.com/rivendell',
@@ -83,7 +83,7 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('Laagste nagekeken prijs die nu op voorraad is.');
     expect(markup).toContain('Bekijk bij bol');
     expect(markup).toContain(
-      'Als je doorklikt naar bol, kunnen wij een kleine commissie krijgen. Dat verandert jouw prijs niet.',
+      'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
     );
     expect(markup).toContain('Volg prijs');
     expect(markup).toContain(

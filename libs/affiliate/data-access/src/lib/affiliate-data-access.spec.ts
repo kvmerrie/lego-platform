@@ -33,7 +33,7 @@ describe('affiliate data access', () => {
       listAffiliateOffers('10333').map(
         (affiliateOffer) => affiliateOffer.merchantId,
       ),
-    ).toEqual(['bol', 'lego-nl']);
+    ).toEqual(['amazon-nl', 'bol', 'lego-nl']);
   });
 
   test('expands direct reviewed merchant coverage for additional high-intent sets', () => {

@@ -283,7 +283,7 @@ describe('CatalogSetCard', () => {
       <CatalogSetDetailPanel
         bestDeal={{
           affiliateNote:
-            'Als je doorklikt naar bol, kunnen wij een kleine commissie krijgen. Dat verandert jouw prijs niet.',
+            'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
           checkedLabel: 'Nagekeken 31 mrt, 09:00',
           coverageLabel: '2 winkels nagekeken',
           ctaHref: 'https://example.com/rivendell',
@@ -421,7 +421,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('bol');
     expect(markup).toContain('Laagste nagekeken prijs die nu op voorraad is.');
     expect(markup).toContain(
-      'Als je doorklikt naar bol, kunnen wij een kleine commissie krijgen. Dat verandert jouw prijs niet.',
+      'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
     );
     expect(markup).toContain('Waarom dit nu interessant is');
     expect(markup).toContain(
@@ -433,7 +433,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('2 winkels nagekeken · Nagekeken 31 mrt, 09:00');
     expect(markup).toContain('Laagste prijs op voorraad');
     expect(markup).toContain('€ 30,00 hoger dan de beste optie');
-    expect(markup).toContain('Wat Brickhunt toevoegt');
+    expect(markup).toContain('Waarom dit hier meer is dan een prijslink');
     expect(markup).toContain('Je ziet eerst of deze set nu echt opvalt.');
     expect(markup).toContain('Waar prijs en winkels op steunen');
     expect(markup).toContain('Ga naar afbeelding 2');

@@ -228,7 +228,8 @@ function buildBestDeal({
   }
 
   return {
-    affiliateNote: `Als je doorklikt naar ${catalogOffer.merchantName}, kunnen wij een kleine commissie krijgen. Dit verandert niets aan de prijs die jij betaalt.`,
+    affiliateNote:
+      'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
     checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(catalogOffer.checkedAt)}`,
     ctaHref: catalogOffer.url,
     ctaLabel:

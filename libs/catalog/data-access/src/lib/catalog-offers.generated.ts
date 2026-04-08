@@ -75,6 +75,9 @@ const curatedOfferSeeds: readonly CatalogOfferSeed[] = [
   },
   {
     setId: '10333',
+    amazonUrl:
+      'https://www.amazon.nl/LEGO-Icons-Lord-Rings-Volwassenen/dp/B0D5W8J5YV?crid=1QE7VASRCMMR9&dib=eyJ2IjoiMSJ9.eV5BU8F5Ha1yyEu_F_vgmEKim5bT_3YvCs2RerWlwJyWuIR9CHE9Z1hlZtZXid3H67EJUcgC2FBFejFah9GZBvHM3e-FY5Skj2G4BeG6EiNfmz_uw5MBLdskSzhbaBp1xL5AlIObvlQ1VWGXkp6wDCOUDihWjMu5rigLD4RZ48L5ZvW9EDEm6_8oc3zdOBNnpzK62sNU5exLTk_Htx2KQMPRsia_KBNTyBOu5axXB8hBuHkLbdq7u9LJpG9QuqrxQrW3gZE7pLNIeT8yVzIr1PWxhZVjX4p64JyYwJAWnXI.EqW7AfVVNsD_wUsKUmLmC1-aSmZh5idcYTmfiq9FBiM&dib_tag=se&keywords=lego+barad+dur&qid=1775676559&sprefix=lego+barad+%2Caps%2C97&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=227c8553e0817d5fd416b416863617b2&ref_=as_li_ss_tl',
+    amazonPriceCents: 42829,
     bolPriceCents: 43999,
     bolUrl:
       'https://www.bol.com/nl/nl/p/lego-de-lord-of-the-rings-barad-majoor-10333/9300000180281419/',

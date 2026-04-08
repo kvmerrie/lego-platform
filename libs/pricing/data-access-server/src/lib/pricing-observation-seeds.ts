@@ -110,6 +110,18 @@ export const curatedDutchPricingObservationSeeds: readonly PricingObservationSee
     },
     {
       setId: '10333',
+      merchantId: 'amazon-nl',
+      merchantProductUrl:
+        'https://www.amazon.com/LEGO-Icons-Lord-Rings-Memorabilia/dp/B0D72T1NTC?crid=N5799A29802E&dib=eyJ2IjoiMSJ9.QOZUuLSu39FgmrLjkKSkJvLVx7CLrRfYbRxcnFWF067JHw9uNVawu3s15lcLDzXwc9inzcahMme44UDJizpcqcrlI0niMdJV0e0ULc-DOWO-2lCuJHRjWK90xQ5JFYrjVvNYR4H-ZKs-TBpw1gTl6o_um45zfFUZ8ftC-DM89ALOeaZ5yWMqmQiawHvE7fUCTgaPXyKk-qoJwjQgOU_mfDcHdEOCOeow22yrmOl42fvGYFDAxvHLGB7b_J-qHCVMZS02-p1y4X0s0xRrzzze2I9B-SntuTmfDTqf-wtnPSk.9BTD3SU-6bF1E9FZOUGughUyhfe-rif4P5PSIbFphjw&dib_tag=se&keywords=lego+barad+dur&qid=1775672707&sprefix=lego+barad%2Caps%2C251&sr=8-1&linkCode=ll2&tag=brickhunt-20&linkId=e2b959c2dd98eb1f812205243b15e2ef&language=en_US&ref_=as_li_ss_tl',
+      totalPriceMinor: 42999,
+      availability: 'in_stock',
+      observedAt: '2026-03-31T09:56:00.000Z',
+      regionCode: DUTCH_REGION_CODE,
+      currencyCode: EURO_CURRENCY_CODE,
+      condition: NEW_OFFER_CONDITION,
+    },
+    {
+      setId: '10333',
       merchantId: 'bol',
       merchantProductUrl:
         'https://www.bol.com/nl/nl/p/lego-de-lord-of-the-rings-barad-majoor-10333/9300000180281419/',

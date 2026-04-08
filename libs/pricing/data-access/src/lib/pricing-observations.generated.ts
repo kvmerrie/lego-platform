@@ -104,6 +104,16 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10333",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 42999,
+    "availability": "in_stock",
+    "observedAt": "2026-03-31T09:56:00.000Z"
+  },
+  {
+    "setId": "10333",
     "merchantId": "bol",
     "regionCode": "NL",
     "currencyCode": "EUR",
