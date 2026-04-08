@@ -1,0 +1,53 @@
+.page {
+  display: grid;
+  gap: var(--lego-space-6);
+  padding-bottom: var(--lego-space-6);
+}
+
+.heroCard,
+.infoCard,
+.transparencyCard {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.panelGrid {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.list {
+  display: grid;
+  gap: var(--lego-space-3);
+  margin: 0;
+  padding: 0;
+}
+
+.copyStack,
+.transparencyBody {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.copy,
+.linkRow,
+.contactLine {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  margin: 0;
+}
+
+.linkRow,
+.contactLine {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-1);
+}
+
+@media (min-width: 48rem) {
+  .panelGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -87,10 +87,14 @@ describe('CatalogFeatureThemePage', () => {
 
     expect(markup).toContain('Marvel');
     expect(markup).toContain('<h1');
-    expect(markup).toContain('Goed moment om te kopen in');
+    expect(markup).toContain('Hier wil je nu als eerste kijken in');
     expect(markup).toContain(
-      'Scroll Goed moment om te kopen in Marvel naar rechts',
+      'Scroll Hier wil je nu als eerste kijken in Marvel naar rechts',
     );
+    expect(markup).toContain(
+      'Hier vergelijk je sets binnen een lijn in plaats van losse winkelhits.',
+    );
+    expect(markup).toContain('Kies je set');
     expect(markup).toContain('Alle');
     expect(markup).not.toContain('Scroll All Marvel sets forward');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');

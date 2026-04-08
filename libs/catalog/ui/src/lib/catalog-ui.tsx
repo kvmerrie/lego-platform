@@ -931,7 +931,7 @@ export function CatalogSetDetailPanel({
         }
         gallery={<CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />}
         keyFacts={<CatalogKeyFacts items={heroSpecs} />}
-        pitch={catalogSetDetail.tagline}
+        pitch={`Waarom veel verzamelaars deze willen: ${catalogSetDetail.tagline}`}
         title={
           <CatalogCanonicalText>{catalogSetDetail.name}</CatalogCanonicalText>
         }
@@ -956,7 +956,7 @@ export function CatalogSetDetailPanel({
           description={catalogSetDetail.collectorAngle}
           eyebrow="Waarom deze set"
           elevation="rested"
-          title="Wat opvalt"
+          title="Wat hier blijft hangen"
           titleAs="h2"
           tone="muted"
         >
@@ -981,9 +981,9 @@ export function CatalogSetDetailPanel({
         <CatalogSetOwnershipCard action={ownershipActions} />
       </section>
       <CatalogSetSupportCard
-        eyebrow="Waarom Brickhunt"
+        eyebrow="Brickhunt kijkt mee"
         items={brickhuntValueItems}
-        title="Waarom via Brickhunt"
+        title="Waarom dit hier meer is dan een prijslink"
       />
       <CatalogTrustPanel trustSignals={trustSignals} />
     </section>

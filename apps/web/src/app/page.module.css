@@ -3,6 +3,38 @@
   gap: var(--lego-space-6);
 }
 
+.valueSection {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.valueGrid {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.valueCard {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.valueTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: var(--lego-text-role-card-title-size);
+  font-weight: var(--lego-text-role-card-title-weight);
+  letter-spacing: -0.02em;
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.valueBody {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  margin: 0;
+  max-width: 36ch;
+}
+
 .sectionGroup {
   display: grid;
   gap: var(--lego-space-3);
@@ -17,9 +49,14 @@
   gap: var(--lego-space-1);
   line-height: 1.45;
   margin: 0;
-  padding-inline: var(--lego-space-6);
 }
 
 .supportingLink {
   flex: 0 0 auto;
+}
+
+@media (min-width: 48rem) {
+  .valueGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }

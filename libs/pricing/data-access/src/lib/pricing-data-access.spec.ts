@@ -229,15 +229,15 @@ describe('pricing data access', () => {
     ).toEqual([
       {
         id: 'brickhunt-monitoring',
-        text: 'We volgen prijzen bij 3 Nederlandse winkels.',
+        text: 'We vergelijken 3 Nederlandse winkels zolang die vergelijking iets zegt.',
       },
       {
         id: 'brickhunt-guidance',
-        text: 'Je ziet meteen of nu kopen slim is.',
+        text: 'Je ziet eerst of deze set nu echt opvalt.',
       },
       {
         id: 'brickhunt-alerts',
-        text: 'Volg de prijs als je liever nog even wacht.',
+        text: 'Nog niet klaar? Volg de prijs en laat Brickhunt meekijken.',
       },
     ]);
   });

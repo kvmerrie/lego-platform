@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { getSetDealVerdict } from '@lego-platform/pricing/data-access';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
@@ -14,6 +14,8 @@ import {
 } from '@lego-platform/shared/util';
 import { getFollowedPriceSetCollection } from '@lego-platform/wishlist/data-access';
 import styles from './shell-web.module.css';
+
+let lastFollowingNavExposurePathname: string | undefined;
 
 export function getFollowingNavPageSurface(pathname?: string): string {
   if (!pathname || pathname === '/') {
@@ -88,7 +90,6 @@ export function ShellWebFollowLink({
   const [followedSetCount, setFollowedSetCount] = useState<number>();
   const [interestingSetCount, setInterestingSetCount] = useState<number>();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>();
-  const exposurePathnameRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     let isMounted = true;
@@ -149,7 +150,7 @@ export function ShellWebFollowLink({
       !interestingSetCount ||
       interestingSetCount < 1 ||
       !isVisibleFollowingNavVariant(variant) ||
-      exposurePathnameRef.current === pathname
+      lastFollowingNavExposurePathname === pathname
     ) {
       return;
     }
@@ -163,7 +164,7 @@ export function ShellWebFollowLink({
         signedIn: isAuthenticated,
       },
     });
-    exposurePathnameRef.current = pathname;
+    lastFollowingNavExposurePathname = pathname;
   }, [
     followedSetCount,
     interestingSetCount,

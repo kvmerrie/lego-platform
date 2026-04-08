@@ -265,11 +265,19 @@
 }
 
 .cardBody,
-.transparencyCopy {
+.transparencyCopy,
+.transparencyLinkRow {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-support-size);
   line-height: var(--lego-text-role-support-line-height);
   margin: 0;
+}
+
+.transparencyLinkRow {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-1);
 }
 
 .closingGrid {

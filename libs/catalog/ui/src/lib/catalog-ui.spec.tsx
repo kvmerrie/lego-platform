@@ -282,6 +282,8 @@ describe('CatalogSetCard', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         bestDeal={{
+          affiliateNote:
+            'Als je doorklikt naar bol, kunnen wij een kleine commissie krijgen. Dat verandert jouw prijs niet.',
           checkedLabel: 'Nagekeken 31 mrt, 09:00',
           coverageLabel: '2 winkels nagekeken',
           ctaHref: 'https://example.com/rivendell',
@@ -298,15 +300,15 @@ describe('CatalogSetCard', () => {
         brickhuntValueItems={[
           {
             id: 'brickhunt-monitoring',
-            text: 'We volgen prijzen bij 2 Nederlandse winkels.',
+            text: 'We vergelijken 2 Nederlandse winkels zolang die vergelijking iets zegt.',
           },
           {
             id: 'brickhunt-guidance',
-            text: 'Je ziet meteen of nu kopen slim is.',
+            text: 'Je ziet eerst of deze set nu echt opvalt.',
           },
           {
             id: 'brickhunt-alerts',
-            text: 'Volg de prijs als je liever nog even wacht.',
+            text: 'Nog niet klaar? Volg de prijs en laat Brickhunt meekijken.',
           },
         ]}
         catalogSetDetail={{
@@ -418,6 +420,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Beste winkel nu');
     expect(markup).toContain('bol');
     expect(markup).toContain('Laagste nagekeken prijs die nu op voorraad is.');
+    expect(markup).toContain(
+      'Als je doorklikt naar bol, kunnen wij een kleine commissie krijgen. Dat verandert jouw prijs niet.',
+    );
     expect(markup).toContain('Waarom dit nu interessant is');
     expect(markup).toContain(
       'Dit is momenteel de scherpste prijs die we volgen.',
@@ -428,9 +433,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('2 winkels nagekeken · Nagekeken 31 mrt, 09:00');
     expect(markup).toContain('Laagste prijs op voorraad');
     expect(markup).toContain('€ 30,00 hoger dan de beste optie');
-    expect(markup).toContain('Waarom via Brickhunt');
-    expect(markup).toContain('Je ziet meteen of nu kopen slim is.');
-    expect(markup).toContain('Waar dit op steunt');
+    expect(markup).toContain('Wat Brickhunt toevoegt');
+    expect(markup).toContain('Je ziet eerst of deze set nu echt opvalt.');
+    expect(markup).toContain('Waar prijs en winkels op steunen');
     expect(markup).toContain('Ga naar afbeelding 2');
     expect(markup).toContain('Swipe voor meer foto&#x27;s');
     expect(markup).toContain('In collectie zetten');
@@ -441,7 +446,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Formaat');
     expect(markup).toContain('72 × 50 × 39 cm');
     expect(markup).toContain('Stenen');
-    expect(markup).toContain('Wat opvalt');
+    expect(markup).toContain('Wat hier blijft hangen');
     expect(markup).not.toContain('$499 to $569');
   });
 

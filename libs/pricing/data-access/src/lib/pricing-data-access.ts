@@ -348,18 +348,18 @@ export function buildBrickhuntValueItems({
       id: 'brickhunt-monitoring',
       text:
         typeof merchantCount === 'number' && merchantCount > 0
-          ? `We volgen prijzen bij ${merchantCount} Nederlandse winkel${
+          ? `We vergelijken echte prijzen bij ${merchantCount} Nederlandse winkel${
               merchantCount === 1 ? '' : 's'
-            }.`
-          : 'We volgen prijzen bij Nederlandse winkels.',
+            } zolang die vergelijking iets zegt.`
+          : 'We vergelijken echte winkelprijzen zolang die vergelijking iets zegt.',
     },
     {
       id: 'brickhunt-guidance',
-      text: 'Je ziet meteen of nu kopen slim is.',
+      text: 'Je ziet of deze prijs echt opvalt of gewoon normaal is.',
     },
     {
       id: 'brickhunt-alerts',
-      text: 'Volg de prijs als je liever nog even wacht.',
+      text: 'Nog niet kopen? Volg de prijs en laat Brickhunt meekijken.',
     },
   ];
 }

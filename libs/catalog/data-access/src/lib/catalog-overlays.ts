@@ -49,7 +49,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     collectorAngle:
       'Als je één Middle-earth-set kiest, is Rivendell de hoofdkeuze',
     tagline:
-      'Licht, open en vol herkenbare scènes — Rivendell voelt meer als een plek dan als een set. Voor veel LOTR-fans is dit de keuze als schoonheid wint van dreiging.',
+      'Licht, open en vol herkenbare scènes, Rivendell voelt meer als een plek dan als een set. Voor veel LOTR-fans is dit de keuze als schoonheid wint van dreiging.',
     availability: 'Goed verkrijgbaar, maar duidelijk een premium aankoop',
     collectorHighlights: [
       'Open display met brug, raadzaal en herfstbomen',
@@ -87,7 +87,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     collectorAngle:
       'Als je één grote Marvel-set koopt, is Avengers Tower de duidelijkste keuze',
     tagline:
-      "Hoog, druk en vol bekende MCU-gezichten — Avengers Tower is pure Marvel op z'n grootst. Zoek je één blikvanger, dan voelt deze het meest compleet.",
+      "Hoog, druk en vol bekende MCU-gezichten. Avengers Tower is pure Marvel op z'n grootst. Zoek je één blikvanger, dan voelt deze het meest compleet.",
     availability: 'Populair en snel weg bij nieuwe voorraad',
     collectorHighlights: [
       '31 minifigs rond één echte MCU-locatie',
@@ -237,7 +237,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     collectorAngle:
       'De voertuigkeuze voor kopers die elegantie boven agressie zetten',
     tagline:
-      'Lang, wit en direct herkenbaar — de Concorde staat op een plank als een designobject met motoren. Rustiger dan de meeste voertuigen, maar minstens zo indrukwekkend.',
+      'Lang, wit en direct herkenbaar. De Concorde staat op een plank als een designobject met motoren. Rustiger dan de meeste voertuigen, maar minstens zo indrukwekkend.',
     availability:
       'Blijft aantrekkelijk voor liefhebbers van luchtvaart en design',
     collectorHighlights: [
@@ -643,7 +643,7 @@ export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
     collectorAngle:
       'De Spider-Man-set als je meteen alles wilt: stad, cast en chaos',
     tagline:
-      'De Daily Bugle is Spider-Man-chaos in torenvorm. Hoog, druk en vol bekende gezichten — perfect als je Marvel liever als stripstad dan als skyline ziet.',
+      'De Daily Bugle is Spider-Man-chaos in torenvorm. Hoog, druk en vol bekende gezichten. Perfect als je Marvel liever als stripstad dan als skyline ziet.',
     availability:
       'Blijft erg gewild nu hij alleen nog via de markt te vinden is',
     collectorHighlights: [

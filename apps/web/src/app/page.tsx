@@ -24,7 +24,7 @@ import {
 } from '@lego-platform/pricing/data-access';
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
-import { ActionLink } from '@lego-platform/shared/ui';
+import { ActionLink, Panel } from '@lego-platform/shared/ui';
 import {
   buildBrickhuntAnalyticsAttributes,
   getBrickhuntAnalyticsPriceVerdictFromDelta,
@@ -36,6 +36,23 @@ import type { Metadata } from 'next';
 export const revalidate = 300;
 const HOMEPAGE_FEATURED_RAIL_LIMIT = 6;
 const HOMEPAGE_FEATURED_RAIL_FILL_LIMIT = HOMEPAGE_FEATURED_RAIL_LIMIT * 3;
+const homepageValueSignals = [
+  {
+    id: 'price-context',
+    title: 'Prijscontext, geen losse korting',
+    body: 'We leggen nagekeken winkelprijzen naast wat we voor die set meestal zien.',
+  },
+  {
+    id: 'when-to-buy',
+    title: 'Niet alleen waar, maar wanneer',
+    body: 'Brickhunt helpt je zien of nu instappen slim is of dat wachten beter voelt.',
+  },
+  {
+    id: 'verified-offers',
+    title: 'Nagekeken winkels, geen prijsruis',
+    body: 'Nog niet bijzonder? Volg de set. Is de vergelijking te dun, dan blijven we stil.',
+  },
+] as const;
 
 function getPricePositionLabel({
   currencyCode,
@@ -254,26 +271,57 @@ export default async function HomePage() {
               tone="default"
               title="Hier wil je nu als eerste kijken"
             />
-            <p className={styles.supportingLinkRow}>
-              <span>Wat bedoelen we met &quot;nagekeken prijs&quot;?</span>{' '}
-              <ActionLink
-                className={styles.supportingLink}
-                href="/hoe-werkt-het"
-                tone="inline"
-                {...buildBrickhuntAnalyticsAttributes({
-                  event: 'support_link_click',
-                  properties: {
-                    linkTarget: 'how_it_works',
-                    pageSurface: 'homepage',
-                    sectionId: 'best-current-deals',
-                  },
-                })}
-              >
-                Hoe Brickhunt werkt
-              </ActionLink>
-            </p>
           </div>
         ) : null}
+        <Panel
+          as="section"
+          className={styles.valueSection}
+          description="Geen couponsite. Eerst begrijpen of een set nu echt opvalt, dan pas kiezen waar je heen gaat."
+          eyebrow="Waarom Brickhunt"
+          padding="lg"
+          title="Niet alleen waar, maar wanneer"
+          tone="muted"
+        >
+          <div className={styles.valueGrid}>
+            {homepageValueSignals.map((homepageValueSignal) => (
+              <article
+                className={styles.valueCard}
+                key={homepageValueSignal.id}
+              >
+                <h2 className={styles.valueTitle}>
+                  {homepageValueSignal.title}
+                </h2>
+                <p className={styles.valueBody}>{homepageValueSignal.body}</p>
+              </article>
+            ))}
+          </div>
+          <p className={styles.supportingLinkRow}>
+            <span>Meer over Brickhunt:</span>{' '}
+            <ActionLink
+              className={styles.supportingLink}
+              href="/hoe-werkt-het"
+              tone="inline"
+              {...buildBrickhuntAnalyticsAttributes({
+                event: 'support_link_click',
+                properties: {
+                  linkTarget: 'how_it_works',
+                  pageSurface: 'homepage',
+                  sectionId: 'best-current-deals',
+                },
+              })}
+            >
+              Hoe Brickhunt werkt
+            </ActionLink>
+            <span aria-hidden="true">·</span>
+            <ActionLink
+              className={styles.supportingLink}
+              href="/over-brickhunt"
+              tone="inline"
+            >
+              Over Brickhunt
+            </ActionLink>
+          </p>
+        </Panel>
         <div className={styles.themeSection}>
           <CatalogFeatureThemeList tone="inverse" />
         </div>

@@ -15,7 +15,7 @@ export const homepageEditorialPage: EditorialPage = {
       type: 'hero',
       eyebrow: 'Van Rivendell tot McLaren P1',
       title: 'Welke set wil je?',
-      body: 'Ontdek welke sets het waard zijn — en of dit een slim moment is om te kopen.',
+      body: 'Ontdek welke sets het waard zijn en of dit een slim moment is om te kopen.',
       ctaLabel: 'Ontdek sets',
       ctaHref: '#best-current-deals',
     },

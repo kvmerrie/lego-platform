@@ -23,6 +23,7 @@ export interface CatalogDecisionVerdict {
 export type CatalogSetDetailVerdict = CatalogDecisionVerdict;
 
 export interface CatalogDecisionOffer {
+  affiliateNote?: string;
   checkedLabel: string;
   coverageLabel?: string;
   ctaHref?: string;
@@ -139,6 +140,9 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
         >
           {offer.ctaLabel}
         </ActionLink>
+      ) : null}
+      {offer.affiliateNote ? (
+        <p className={styles.bestDealAffiliateNote}>{offer.affiliateNote}</p>
       ) : null}
     </section>
   );
@@ -399,7 +403,7 @@ export function CatalogOfferComparison({
 
 export function CatalogTrustPanel({
   eyebrow = 'Vertrouwen',
-  title = 'Waar dit op steunt',
+  title = 'Waar prijs en winkels op steunen',
   trustSignals,
 }: {
   eyebrow?: string;

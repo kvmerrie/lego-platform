@@ -98,12 +98,19 @@
   max-width: 14ch;
 }
 
+.introSupport,
 .introMeta,
 .sectionMeta {
   color: var(--theme-page-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
+}
+
+.introSupport {
+  font-size: var(--lego-text-role-support-size);
+  line-height: var(--lego-text-role-support-line-height);
+  max-width: 42rem;
 }
 
 .dealSection {

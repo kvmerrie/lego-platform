@@ -15,6 +15,35 @@ export interface CatalogFeatureThemePageDealItem
   priceContext?: CatalogSetCardPriceContext;
 }
 
+const themeEditorialIntroByName: Record<string, string> = {
+  Icons: 'Voor grote displaysets die je collectie meteen meer statuur geven.',
+  Ideas:
+    'Voor sets die voelen als een hele scene of wereld, niet als een standaard lijn.',
+  Marvel:
+    'Voor torens, hoofdkwartieren en minifig-casts die meteen herkenning op je plank zetten.',
+  'Star Wars':
+    'Voor ships, walkers en grote silhouetten waar schaal en displaywaarde het verschil maken.',
+  'Harry Potter':
+    'Voor Hogwarts-hoeken, Gringotts en sets waar sfeer net zo belangrijk is als stenen.',
+  Technic:
+    'Voor supercars en machines waar de bouw net zo boeiend is als het eindresultaat.',
+  Botanicals:
+    'Voor boeketten en planten die kleur geven zonder dat het als speelgoed voelt.',
+  'Modular Buildings':
+    'Voor straatbouwers die gevels, etalages en interieurs naast elkaar willen laten werken.',
+  'Super Mario':
+    'Voor Nintendo-herkenning die als displaystuk werkt en niet alleen als gimmick.',
+  NINJAGO:
+    'Voor stadssets vol kleur, hoogte en details waar je steeds iets nieuws in ziet.',
+  'Jurassic World':
+    'Voor dinoscenes waar chaos, voertuigen en displaywaarde samenkomen.',
+  Architecture:
+    'Voor strakke landmarks die rust, schaal en herkenning op één plank brengen.',
+  Art: 'Voor reliëf, kleur en sets die meer kunstwerk dan klassieke bouwset voelen.',
+  Disney:
+    'Voor kastelen en blikvangers die meteen sprookjessfeer in je collectie zetten.',
+};
+
 export function CatalogFeatureThemePage({
   dealSetCards = [],
   themePage,
@@ -23,6 +52,8 @@ export function CatalogFeatureThemePage({
   themePage: CatalogThemeLandingPage;
 }) {
   const { setCards, themeSnapshot } = themePage;
+  const themeName = themeSnapshot.name;
+  const themeSignatureSet = themeSnapshot.signatureSet;
 
   return (
     <div className={styles.page} data-theme={themeSnapshot.slug}>
@@ -32,16 +63,30 @@ export function CatalogFeatureThemePage({
           eyebrow="Thema"
           title={
             <span className="notranslate" translate="no">
-              {themeSnapshot.name}
+              {themeName}
             </span>
           }
           titleAs="h1"
           tone="display"
         />
-        <p className={styles.introMeta}>
-          {themeSnapshot.setCount} sets · Begin met{' '}
+        <p className={styles.introSupport}>
+          {themeEditorialIntroByName[themeName] ??
+            'Voor sets die je binnen één lijn rustig naast elkaar wilt vergelijken.'}{' '}
+          Begin met{' '}
           <span className="notranslate" translate="no">
-            {themeSnapshot.signatureSet}
+            {themeSignatureSet}
+          </span>{' '}
+          als je meteen wilt zien waar{' '}
+          <span className="notranslate" translate="no">
+            {themeName}
+          </span>{' '}
+          goed in is. Hier vergelijk je sets binnen een lijn in plaats van losse
+          winkelhits.
+        </p>
+        <p className={styles.introMeta}>
+          {themeSnapshot.setCount} sets · Kies, vergelijk en volg binnen{' '}
+          <span className="notranslate" translate="no">
+            {themeName}
           </span>
         </p>
       </section>
@@ -53,22 +98,23 @@ export function CatalogFeatureThemePage({
           className={styles.dealSection}
           description={
             <>
-              Reviewed prijsverschillen die nu het meest opvallen binnen de{' '}
+              Deze{' '}
               <span className="notranslate" translate="no">
-                {themeSnapshot.name}
+                {themeName}
               </span>
-              -lijn.
+              -sets zitten nu onder wat we meestal zien. Begin hier als je niet
+              alles wilt openen.
             </>
           }
-          eyebrow="Deals"
+          eyebrow="Nu interessant"
           padding="default"
           signal={`${dealSetCards.length} sets`}
           spacing="relaxed"
           title={
             <>
-              Goed moment om te kopen in{' '}
+              Hier wil je nu als eerste kijken in{' '}
               <span className="notranslate" translate="no">
-                {themeSnapshot.name}
+                {themeName}
               </span>
             </>
           }
@@ -76,7 +122,7 @@ export function CatalogFeatureThemePage({
           tone="inverse"
         >
           <CatalogSetCardRail
-            ariaLabel={`Goed moment om te kopen in ${themeSnapshot.name}`}
+            ariaLabel={`Hier wil je nu als eerste kijken in ${themeName}`}
             items={dealSetCards.map((dealSetCard) => ({
               href: buildSetDetailPath(dealSetCard.slug),
               id: dealSetCard.id,
@@ -94,14 +140,18 @@ export function CatalogFeatureThemePage({
         className={styles.browseSection}
         description={
           <>
-            Blader door elke publieke{' '}
+            Van{' '}
             <span className="notranslate" translate="no">
-              {themeSnapshot.name}
+              {themeSignatureSet}
+            </span>{' '}
+            tot de rest van{' '}
+            <span className="notranslate" translate="no">
+              {themeName}
             </span>
-            -set die nu in de catalogus staat.
+            . Vergelijk hier welke set het best op je plank past.
           </>
         }
-        eyebrow="Catalogus"
+        eyebrow="Kies je set"
         padding="default"
         signal={`${setCards.length} sets`}
         spacing="relaxed"

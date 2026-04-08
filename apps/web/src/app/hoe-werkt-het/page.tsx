@@ -1,7 +1,12 @@
 import { getMetadataFromSeoFields } from '../lib/editorial-metadata';
 import styles from './page.module.css';
 import { HowItWorksPageView } from './how-it-works-page-view';
-import { MarkerList, Panel, SectionHeading } from '@lego-platform/shared/ui';
+import {
+  ActionLink,
+  MarkerList,
+  Panel,
+  SectionHeading,
+} from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 
 export const revalidate = 300;
@@ -56,10 +61,10 @@ const pricingChecks = [
 ] as const;
 
 const whyBrickhuntItems = [
-  'Geen ruis. Eerst de sets die er echt toe doen.',
-  'Sneller zien of een prijs nu opvalt.',
+  'Geen kale productstroom. Eerst de sets die blijven hangen.',
+  'Nagekeken winkelprijzen, niet verzonnen van-prijzen.',
+  'Als de prijscontext dun is, blijven we stil.',
   'Kopen als het klopt, volgen als wachten slimmer is.',
-  'Geen nep-kortingen om je over de streep te trekken.',
 ] as const;
 
 const heroPills = ['Kies je set', 'Begrijp de prijs', 'Koop of volg'] as const;
@@ -219,6 +224,12 @@ export default function HowItWorksPage() {
                 Wat je op Brickhunt ziet, blijft draaien om de set en de
                 prijscontext die we hebben nagekeken. Als die context ontbreekt,
                 verzinnen we niets.
+              </p>
+              <p className={styles.transparencyLinkRow}>
+                <span>Meer over Brickhunt zelf?</span>{' '}
+                <ActionLink href="/over-brickhunt" tone="inline">
+                  Over Brickhunt
+                </ActionLink>
               </p>
             </div>
           </Panel>

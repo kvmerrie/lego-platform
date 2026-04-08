@@ -907,6 +907,13 @@
   width: 100%;
 }
 
+.bestDealAffiliateNote {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
 .alertCard[data-emphasis='primary'] {
   background: var(--lego-commerce-subtle);
 }
