@@ -4,9 +4,9 @@ import type { AffiliateSyncManifest } from '@lego-platform/affiliate/util';
 const affiliateSyncManifestPayload = String.raw`{
   "source": "curated-dutch-commerce-foundation",
   "generatedAt": "2026-04-03T09:44:00.000Z",
-  "offerCount": 48,
+  "offerCount": 49,
   "setCount": 30,
-  "merchantCount": 3,
+  "merchantCount": 4,
   "notes": "Generated from a small Dutch-market merchant allowlist. Outbound URLs remain direct in this first foundation phase."
 }`;
 
