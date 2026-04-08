@@ -25,6 +25,7 @@ const defaultMetadataDescription =
   'Van Rivendell tot AT-AT: vind sneller de LEGO-doos die je wilt hebben.';
 
 const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+const isProduction = process.env.VERCEL_ENV === 'production';
 
 export const metadata: Metadata = {
   title: defaultMetadataTitle,
@@ -42,10 +43,12 @@ export const metadata: Metadata = {
     title: defaultMetadataTitle,
     description: defaultMetadataDescription,
   },
-  other: {
-    'tradetracker-site-verification':
-      '8858de23ea80b4b082e07071ae75490ea2ef4c72',
-  },
+  other: isProduction
+    ? {
+        'tradetracker-site-verification':
+          '8858de23ea80b4b082e07071ae75490ea2ef4c72',
+      }
+    : undefined,
 };
 
 export default function RootLayout({
