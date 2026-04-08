@@ -44,4 +44,17 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
       ctaLabel: 'Shop at Intertoys',
       perks: 'Strong toy-specialist relevance',
     },
+    {
+      merchantId: 'amazon-nl',
+      displayName: 'Amazon',
+      regionCode: DUTCH_AFFILIATE_REGION_CODE,
+      currencyCode: EURO_AFFILIATE_CURRENCY_CODE,
+      enabled: true,
+      displayRank: 4,
+      urlHost: 'www.amazon.nl',
+      disclosureCopy:
+        'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
+      ctaLabel: 'Bekijk bij Amazon',
+      perks: 'Grote beschikbaarheid en snelle levering',
+    },
   ];
