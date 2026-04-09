@@ -147,9 +147,44 @@ describe('WantedSetToggleCard', () => {
       />,
     );
 
-    expect(markup).toContain('Volg prijs');
+    expect(markup).toContain('Volg');
     expect(markup).not.toContain('Zet prijsalert aan');
     expect(markup).not.toContain('Aan verlanglijst toevoegen');
+  });
+
+  it('uses a filled icon for followed inline price states so cards read faster at a glance', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        hasResolvedState
+        isWanted
+        productIntent="price-alert"
+        setId="21348"
+        variant="inline"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Volgt');
+    expect(markup).toContain('fill="currentColor"');
+  });
+
+  it('keeps the inline loading state compact instead of expanding to a long status label', () => {
+    const markup = renderToStaticMarkup(
+      <WantedSetToggleCard
+        hasResolvedState
+        isLoading
+        isWanted={false}
+        productIntent="price-alert"
+        setId="21348"
+        variant="inline"
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(markup).toContain('Volg');
+    expect(markup).toContain('data-loading="true"');
+    expect(markup).not.toContain('Controleren...');
+    expect(markup).not.toContain('Volgen...');
   });
 });
 

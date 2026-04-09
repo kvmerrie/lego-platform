@@ -71,7 +71,9 @@
 
 .inlineToggle {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.25rem;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .toggleMeta {
@@ -116,33 +118,61 @@
 }
 
 .inlineToggleButton {
-  border: 0;
-  border-radius: var(--lego-radius-sm);
+  border: var(--lego-border-width-2) solid var(--lego-border-subtle);
+  border-radius: 999px;
+  box-sizing: border-box;
   font-size: var(--lego-text-role-meta-size);
   font-weight: var(--lego-font-weight-semibold);
-  justify-content: flex-start;
-  min-height: 1.85rem;
-  padding: 0.22rem 0.46rem;
+  gap: 0.3rem;
+  justify-content: center;
+  min-inline-size: 5.5rem;
+  line-height: var(--lego-text-role-meta-line-height);
+  min-height: 1.95rem;
+  padding: 0.34rem 0.62rem;
+  white-space: nowrap;
 }
 
 .inlineToggleButtonIdle {
-  background: var(--lego-surface-muted);
+  background: var(--lego-surface-default);
   color: var(--lego-text);
 }
 
 .inlineToggleButtonIdle:hover {
   background: var(--lego-surface-subtle);
+  border-color: var(--lego-border);
   color: var(--lego-text);
 }
 
 .inlineToggleButtonActive {
   background: var(--lego-info-subtle);
+  border-color: transparent;
   color: var(--lego-info);
 }
 
 .inlineToggleButtonActive:hover {
   background: var(--lego-info-subtle);
+  border-color: transparent;
   color: var(--lego-info);
+}
+
+.inlineToggleIcon {
+  flex: 0 0 auto;
+  height: 0.82rem;
+  width: 0.82rem;
+}
+
+.inlineToggleButton[data-loading='true'] .inlineToggleIcon {
+  animation: inlineToggleSpin 0.9s linear infinite;
+}
+
+@keyframes inlineToggleSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .wishlistPagePanel {

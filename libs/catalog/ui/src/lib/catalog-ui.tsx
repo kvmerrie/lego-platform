@@ -1,16 +1,29 @@
-import type { CSSProperties, ComponentProps, ReactNode } from 'react';
+import {
+  forwardRef,
+  type CSSProperties,
+  type ComponentProps,
+  type HTMLAttributes,
+  type ReactNode,
+} from 'react';
 import type {
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetSummary,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
-import { normalizeCatalogSetImages } from '@lego-platform/catalog/util';
 import {
+  buildCatalogThemeSlug,
+  normalizeCatalogSetImages,
+} from '@lego-platform/catalog/util';
+import {
+  ArrowDown,
+  ArrowRight,
   Blocks,
   Cake,
   CalendarDays,
+  Clock3,
   Hash,
+  Minus,
   Package2,
   Ruler,
   UsersRound,
@@ -89,6 +102,37 @@ export interface CatalogSetCardContextBadge {
 type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
 type CatalogSetSavedState = 'owned' | 'wishlist';
 type CatalogSetCardPriceDisplay = 'default' | 'subtle';
+type CatalogSetCardCollectionLayout = 'grid' | 'rail';
+
+export const CatalogSetCardCollection = forwardRef<
+  HTMLDivElement,
+  HTMLAttributes<HTMLDivElement> & {
+    layout?: CatalogSetCardCollectionLayout;
+    variant?: Extract<CatalogSetCardVariant, 'compact' | 'featured'>;
+  }
+>(function CatalogSetCardCollection(
+  { children, className, layout = 'grid', variant = 'featured', ...rest },
+  ref,
+) {
+  return (
+    <div
+      className={[
+        styles.setCardCollection,
+        layout === 'rail' ? styles.setCardCollectionRail : null,
+        variant === 'compact'
+          ? styles.setCardCollectionCompact
+          : styles.setCardCollectionFeatured,
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      ref={ref}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+});
 
 function getSavedStateBadgeTone(
   savedState: CatalogSetSavedState,
@@ -113,6 +157,7 @@ function CatalogSetVisual({
   imageUrl,
   imageLoading,
   name,
+  overlayBadges,
   setId,
   theme,
   variant,
@@ -121,6 +166,7 @@ function CatalogSetVisual({
   imageUrl?: string;
   imageLoading?: 'eager' | 'lazy';
   name: string;
+  overlayBadges?: ReactNode;
   setId: string;
   theme: string;
   variant: 'card' | 'hero';
@@ -133,6 +179,9 @@ function CatalogSetVisual({
   if (imageUrl) {
     return (
       <div className={visualClassName}>
+        {overlayBadges ? (
+          <div className={styles.visualOverlay}>{overlayBadges}</div>
+        ) : null}
         <div className={styles.visualMedia}>
           <img
             alt={altLabel ?? `${name} LEGO-set`}
@@ -148,9 +197,14 @@ function CatalogSetVisual({
 
   return (
     <div className={`${visualClassName} ${styles.visualFallback}`}>
-      <Badge tone="accent">
-        <CatalogCanonicalText>{theme}</CatalogCanonicalText>
-      </Badge>
+      {overlayBadges ? (
+        <div className={styles.visualOverlay}>{overlayBadges}</div>
+      ) : null}
+      {!overlayBadges ? (
+        <Badge tone="accent">
+          <CatalogCanonicalText>{theme}</CatalogCanonicalText>
+        </Badge>
+      ) : null}
       <p className={styles.visualFallbackTitle}>
         Officiele afbeelding nog niet gepubliceerd
       </p>
@@ -218,16 +272,153 @@ function getPricePositionClassName(
   return styles.cardCompactSignalInfo;
 }
 
-function getFeaturedCardReason({
-  collectorAngle,
-  supportingNote,
-  tagline,
+function getCardPriceSignalIcon(
+  pricePositionTone?: CatalogSetCardPriceContextTone,
+): typeof ArrowDown {
+  if (pricePositionTone === 'warning') {
+    return Clock3;
+  }
+
+  if (pricePositionTone === 'positive') {
+    return ArrowDown;
+  }
+
+  return Minus;
+}
+
+function getCardMerchantLabel(merchantLabel: string): string {
+  const trimmedMerchantLabel = merchantLabel.trim();
+  const dutchPrefix = 'Nu het laagst bij ';
+  const englishPrefix = 'Lowest reviewed price at ';
+
+  if (trimmedMerchantLabel.startsWith(dutchPrefix)) {
+    return `Laagst bij ${trimmedMerchantLabel.slice(dutchPrefix.length)}`;
+  }
+
+  if (trimmedMerchantLabel.startsWith(englishPrefix)) {
+    return `Laagst bij ${trimmedMerchantLabel.slice(englishPrefix.length)}`;
+  }
+
+  if (trimmedMerchantLabel.includes(' bij ')) {
+    return trimmedMerchantLabel;
+  }
+
+  return `Laagst bij ${trimmedMerchantLabel}`;
+}
+
+function getCardPrimaryActionLabel({
+  priceContext,
+  variant,
 }: {
-  collectorAngle?: string;
-  supportingNote?: ReactNode;
-  tagline?: string;
-}): ReactNode {
-  return supportingNote ?? collectorAngle ?? tagline;
+  priceContext?: CatalogSetCardPriceContext;
+  variant: CatalogSetCardVariant;
+}): string {
+  if (variant === 'featured' && priceContext) {
+    return 'Bekijk prijs';
+  }
+
+  return 'Bekijk set';
+}
+
+function formatCardSetFacts(setSummary: CatalogSetCardSummary): Array<{
+  icon: typeof CalendarDays;
+  id: string;
+  value: string;
+}> {
+  return [
+    {
+      icon: CalendarDays,
+      id: 'release-year',
+      value: setSummary.releaseYear.toString(),
+    },
+    {
+      icon: Blocks,
+      id: 'piece-count',
+      value: `${setSummary.pieces.toLocaleString('nl-NL')} stenen`,
+    },
+  ];
+}
+
+function CatalogSetFactRow({
+  className,
+  setSummary,
+}: {
+  className?: string;
+  setSummary: CatalogSetCardSummary;
+}) {
+  const factItems = formatCardSetFacts(setSummary);
+
+  return (
+    <div
+      className={
+        className ? `${styles.cardFactRow} ${className}` : styles.cardFactRow
+      }
+    >
+      {factItems.map((factItem) => {
+        const FactIcon = factItem.icon;
+
+        return (
+          <span className={styles.cardFactItem} key={factItem.id}>
+            <FactIcon
+              aria-hidden="true"
+              className={styles.cardFactIcon}
+              strokeWidth={2.1}
+            />
+            <span>{factItem.value}</span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+function CatalogSetCardVisualBadges({
+  contextBadge,
+  savedState,
+  showThemeBadge = true,
+  theme,
+}: {
+  contextBadge?: CatalogSetCardContextBadge;
+  savedState?: CatalogSetSavedState;
+  showThemeBadge?: boolean;
+  theme: string;
+}) {
+  if (!showThemeBadge && !contextBadge && !savedState) {
+    return null;
+  }
+
+  return (
+    <div className={styles.cardVisualBadgeCluster}>
+      {showThemeBadge ? (
+        <Badge className={styles.cardThemeBadge} tone="neutral">
+          <CatalogCanonicalText>{theme}</CatalogCanonicalText>
+        </Badge>
+      ) : null}
+      {contextBadge ? (
+        <Badge tone={contextBadge.tone ?? 'neutral'}>
+          {contextBadge.label}
+        </Badge>
+      ) : null}
+      {savedState ? (
+        <Badge tone={getSavedStateBadgeTone(savedState)}>
+          {getSavedStateLabel(savedState)}
+        </Badge>
+      ) : null}
+    </div>
+  );
+}
+
+function CatalogSetNumberMeta({ setId }: { setId: string }) {
+  return (
+    <p className={styles.cardCompactMeta}>
+      <Hash
+        aria-hidden="true"
+        className={styles.cardCompactMetaIcon}
+        strokeWidth={2.1}
+      />
+      <CatalogCanonicalText>{setId}</CatalogCanonicalText>
+    </p>
+  );
 }
 
 function formatMinifigureCount(minifigureCount?: number): string {
@@ -364,6 +555,7 @@ export function CatalogSetCard({
   priceDisplay = 'default',
   savedState,
   setSummary,
+  showThemeBadge = true,
   supportingNote,
   trackingEvent,
   variant = 'default',
@@ -375,49 +567,55 @@ export function CatalogSetCard({
   priceDisplay?: CatalogSetCardPriceDisplay;
   savedState?: CatalogSetSavedState;
   setSummary: CatalogSetCardSummary;
+  showThemeBadge?: boolean;
   supportingNote?: ReactNode;
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant?: CatalogSetCardVariant;
 }) {
+  const primaryActionLabel = getCardPrimaryActionLabel({
+    priceContext,
+    variant,
+  });
+  const setThemeSlug = buildCatalogThemeSlug(setSummary.theme);
+
   if (variant === 'compact') {
+    const overlayBadges = (
+      <CatalogSetCardVisualBadges
+        contextBadge={contextBadge}
+        savedState={savedState}
+        showThemeBadge={showThemeBadge}
+        theme={setSummary.theme}
+      />
+    );
+
     const browseCardContent = (
       <>
         <CatalogSetVisual
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
+          overlayBadges={overlayBadges}
           setId={setSummary.id}
           theme={setSummary.theme}
           variant="card"
         />
         <div className={styles.cardCompactBody}>
-          <div className={styles.cardCompactBadgeRow}>
-            <Badge tone="accent">
-              <CatalogCanonicalText>{setSummary.theme}</CatalogCanonicalText>
-            </Badge>
-            {contextBadge ? (
-              <Badge tone={contextBadge.tone ?? 'neutral'}>
-                {contextBadge.label}
-              </Badge>
-            ) : null}
-            {savedState ? (
-              <Badge tone={getSavedStateBadgeTone(savedState)}>
-                {getSavedStateLabel(savedState)}
-              </Badge>
-            ) : null}
-          </div>
-          <h3 className={styles.cardTitle}>
+          <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
             <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
           </h3>
-          <p className={styles.cardBrowseSupporting}>
-            {supportingNote ?? setSummary.tagline ?? setSummary.collectorAngle}
-          </p>
+          <CatalogSetFactRow
+            className={styles.cardCompactSupportingSlot}
+            setSummary={setSummary}
+          />
           <div className={styles.cardCompactFooter}>
-            <p className={styles.cardCompactMeta}>
-              {setSummary.releaseYear} ·{' '}
-              {setSummary.pieces.toLocaleString('nl-NL')} stenen
-            </p>
+            <CatalogSetNumberMeta setId={setSummary.id} />
             {href ? (
-              <span className={styles.cardCompactAction}>Bekijk set</span>
+              <span className={styles.cardCompactAction}>
+                <span>{primaryActionLabel}</span>
+                <ArrowRight
+                  aria-hidden="true"
+                  className={styles.cardCompactActionIcon}
+                />
+              </span>
             ) : null}
           </div>
         </div>
@@ -428,6 +626,7 @@ export function CatalogSetCard({
       <Surface
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
+        data-theme={setThemeSlug}
       >
         {href ? (
           <ActionLink
@@ -446,52 +645,40 @@ export function CatalogSetCard({
   }
 
   if (variant === 'featured') {
-    const featuredIntroCopy = getFeaturedCardReason({
-      collectorAngle: setSummary.collectorAngle,
-      supportingNote,
-      tagline: setSummary.tagline,
-    });
-    const featuredFooterMeta = priceContext
-      ? `${priceContext.coverageLabel} · ${priceContext.reviewedLabel}`
-      : `${setSummary.releaseYear} · ${setSummary.pieces.toLocaleString(
-          'nl-NL',
-        )} stenen`;
+    const featuredMerchantLabel = priceContext
+      ? getCardMerchantLabel(priceContext.merchantLabel)
+      : null;
+    const featuredFooterMeta = priceContext ? null : setSummary.id;
+    const FeaturedPriceSignalIcon =
+      priceContext?.pricePositionLabel &&
+      getCardPriceSignalIcon(priceContext.pricePositionTone);
+    const overlayBadges = (
+      <CatalogSetCardVisualBadges
+        contextBadge={contextBadge}
+        savedState={savedState}
+        showThemeBadge={showThemeBadge}
+        theme={setSummary.theme}
+      />
+    );
 
     const featuredCardContent = (
       <>
         <CatalogSetVisual
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
+          overlayBadges={overlayBadges}
           setId={setSummary.id}
           theme={setSummary.theme}
           variant="card"
         />
         <div className={`${styles.cardCompactBody} ${styles.featuredCardBody}`}>
-          <div className={styles.cardCompactBadgeRow}>
-            <Badge tone="accent">
-              <CatalogCanonicalText>{setSummary.theme}</CatalogCanonicalText>
-            </Badge>
-            {contextBadge ? (
-              <Badge tone={contextBadge.tone ?? 'neutral'}>
-                {contextBadge.label}
-              </Badge>
-            ) : null}
-            {savedState ? (
-              <Badge tone={getSavedStateBadgeTone(savedState)}>
-                {getSavedStateLabel(savedState)}
-              </Badge>
-            ) : null}
-          </div>
-          <h3 className={styles.cardTitle}>
+          <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
             <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
           </h3>
-          {featuredIntroCopy ? (
-            <p
-              className={`${styles.cardBrowseSupporting} ${styles.cardFeaturedSupporting}`}
-            >
-              {featuredIntroCopy}
-            </p>
-          ) : null}
+          <CatalogSetFactRow
+            className={styles.cardFeaturedSupportingSlot}
+            setSummary={setSummary}
+          />
           <div className={styles.priceCompactBlock}>
             {priceContext ? (
               <>
@@ -501,25 +688,23 @@ export function CatalogSetCard({
                       priceContext.pricePositionTone,
                     )}`}
                   >
+                    {FeaturedPriceSignalIcon ? (
+                      <FeaturedPriceSignalIcon
+                        aria-hidden="true"
+                        className={styles.cardCompactSignalIcon}
+                      />
+                    ) : null}
                     {priceContext.pricePositionLabel}
                   </p>
                 ) : null}
                 <p className={styles.priceValue}>{priceContext.currentPrice}</p>
                 <p className={styles.cardCompactSupporting}>
-                  {priceContext.merchantLabel}
+                  {featuredMerchantLabel}
                 </p>
               </>
             ) : (
               <p className={styles.priceQuietState}>Prijs volgt</p>
             )}
-          </div>
-          <div className={styles.cardCompactFooter}>
-            <div className={styles.cardCompactFooterMeta}>
-              <p className={styles.cardCompactMeta}>{featuredFooterMeta}</p>
-            </div>
-            {href ? (
-              <span className={styles.cardCompactAction}>Bekijk set</span>
-            ) : null}
           </div>
         </div>
       </>
@@ -529,6 +714,7 @@ export function CatalogSetCard({
       <Surface
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
+        data-theme={setThemeSlug}
       >
         {href ? (
           <ActionLink
@@ -540,17 +726,44 @@ export function CatalogSetCard({
             {featuredCardContent}
           </ActionLink>
         ) : (
-          featuredCardContent
+          <div className={styles.setCardLink}>{featuredCardContent}</div>
         )}
-        {actions ? (
-          <div className={styles.cardCompactSecondaryRow}>{actions}</div>
+        {featuredFooterMeta || href || actions ? (
+          <div className={styles.cardCompactDecisionZone}>
+            {featuredFooterMeta ? (
+              <CatalogSetNumberMeta setId={featuredFooterMeta} />
+            ) : (
+              <span className={styles.cardCompactDecisionSpacer} />
+            )}
+            <div className={styles.cardCompactFooterActions}>
+              {actions ? (
+                <div className={styles.cardCompactSecondaryAction}>
+                  {actions}
+                </div>
+              ) : null}
+              {href ? (
+                <ActionLink
+                  className={styles.cardCompactAction}
+                  href={href}
+                  tone="inline"
+                  {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+                >
+                  <span>{primaryActionLabel}</span>
+                  <ArrowRight
+                    aria-hidden="true"
+                    className={styles.cardCompactActionIcon}
+                  />
+                </ActionLink>
+              ) : null}
+            </div>
+          </div>
         ) : null}
       </Surface>
     );
   }
 
   return (
-    <Surface as="article" className={styles.setCard}>
+    <Surface as="article" className={styles.setCard} data-theme={setThemeSlug}>
       <CatalogSetVisual
         imageUrl={setSummary.imageUrl}
         name={setSummary.name}
@@ -560,7 +773,7 @@ export function CatalogSetCard({
       />
       <div className={styles.cardHeader}>
         <div className={styles.cardMetaRow}>
-          <Badge tone="accent">
+          <Badge className={styles.cardThemeBadge} tone="neutral">
             <CatalogCanonicalText>{setSummary.theme}</CatalogCanonicalText>
           </Badge>
           {contextBadge ? (
@@ -578,10 +791,10 @@ export function CatalogSetCard({
             {setSummary.pieces.toLocaleString('nl-NL')} stenen
           </p>
         </div>
-        <h3 className={styles.cardTitle}>
+        <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
           <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
         </h3>
-        <p className={styles.cardTagline}>
+        <p className={`${styles.cardTagline} ${styles.cardTaglineClamp}`}>
           {setSummary.tagline ?? setSummary.collectorAngle}
         </p>
       </div>

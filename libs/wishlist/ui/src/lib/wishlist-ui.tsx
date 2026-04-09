@@ -12,6 +12,7 @@ import {
   type BrickhuntAnalyticsProperties,
 } from '@lego-platform/shared/util';
 import { WishlistItem } from '@lego-platform/wishlist/util';
+import { Bookmark, Heart, LoaderCircle } from 'lucide-react';
 import styles from './wishlist-ui.module.css';
 
 export function WishlistItemCard({
@@ -201,27 +202,27 @@ export function WantedSetToggleCard({
     ((showsDeviceFollowState && !isLoading) || (isWanted && !alertsEnabled));
 
   if (variant === 'inline') {
-    const inlineActionLabel = isLoading
-      ? 'Controleren...'
-      : isPending
+    const isInlineLoading = Boolean(isLoading || isPending);
+    const InlineActionIcon = isInlineLoading
+      ? LoaderCircle
+      : productIntent === 'price-alert'
+        ? Heart
+        : Bookmark;
+    const inlineActionLabel = isUnavailable
+      ? productIntent === 'price-alert'
+        ? 'Volg'
+        : 'Bewaar'
+      : isWanted
         ? productIntent === 'price-alert'
-          ? 'Volgen...'
-          : 'Bewaren...'
-        : isUnavailable
+          ? 'Volgt'
+          : 'Bewaard'
+        : !isAuthenticated
           ? productIntent === 'price-alert'
-            ? 'Volgen niet beschikbaar'
-            : 'Bewaren niet beschikbaar'
-          : isWanted
-            ? productIntent === 'price-alert'
-              ? 'Volgt prijs'
-              : 'Bewaard'
-            : !isAuthenticated
-              ? productIntent === 'price-alert'
-                ? 'Volg prijs'
-                : 'Log in'
-              : productIntent === 'price-alert'
-                ? 'Volg prijs'
-                : 'Bewaar';
+            ? 'Volg'
+            : 'Log in'
+          : productIntent === 'price-alert'
+            ? 'Volg'
+            : 'Bewaar';
 
     return (
       <article className={styles.inlineToggle}>
@@ -247,7 +248,17 @@ export function WantedSetToggleCard({
           type="button"
           onClick={onToggle}
         >
-          {inlineActionLabel}
+          <InlineActionIcon
+            aria-hidden="true"
+            className={styles.inlineToggleIcon}
+            fill={
+              !isInlineLoading && productIntent === 'price-alert' && isWanted
+                ? 'currentColor'
+                : 'none'
+            }
+            strokeWidth={2.1}
+          />
+          <span>{inlineActionLabel}</span>
         </Button>
       </article>
     );

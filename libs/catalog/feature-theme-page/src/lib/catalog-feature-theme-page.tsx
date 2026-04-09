@@ -2,6 +2,7 @@ import type { CatalogThemeLandingPage } from '@lego-platform/catalog/data-access
 import {
   CatalogSectionShell,
   CatalogSetCard,
+  CatalogSetCardCollection,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
@@ -128,6 +129,7 @@ export function CatalogFeatureThemePage({
               id: dealSetCard.id,
               priceContext: dealSetCard.priceContext,
               setSummary: dealSetCard,
+              showThemeBadge: false,
             }))}
             variant="featured"
           />
@@ -167,16 +169,20 @@ export function CatalogFeatureThemePage({
         titleAs="h2"
         tone="default"
       >
-        <div className={styles.browseGrid}>
+        <CatalogSetCardCollection
+          className={styles.browseGrid}
+          variant="compact"
+        >
           {setCards.map((setCard) => (
             <CatalogSetCard
               href={buildSetDetailPath(setCard.slug)}
               key={setCard.id}
               setSummary={setCard}
+              showThemeBadge={false}
               variant="compact"
             />
           ))}
-        </div>
+        </CatalogSetCardCollection>
       </CatalogSectionShell>
     </div>
   );

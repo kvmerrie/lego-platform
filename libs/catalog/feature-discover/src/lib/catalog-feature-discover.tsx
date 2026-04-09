@@ -10,6 +10,7 @@ import {
   CatalogQuickFilterBar,
   CatalogSectionShell,
   CatalogSetCard,
+  CatalogSetCardCollection,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
@@ -353,16 +354,20 @@ export function CatalogFeatureDiscover({
               }
               utilityPlacement="below-heading"
             >
-              <div className={styles.themeGrid}>
+              <CatalogSetCardCollection
+                className={styles.themeGrid}
+                variant="compact"
+              >
                 {themeGroup.setCards.map((setCard) => (
                   <CatalogSetCard
                     href={buildSetDetailPath(setCard.slug)}
                     key={setCard.id}
                     setSummary={setCard}
+                    showThemeBadge={false}
                     variant="compact"
                   />
                 ))}
-              </div>
+              </CatalogSetCardCollection>
             </CatalogSectionShell>
           ))}
         </div>

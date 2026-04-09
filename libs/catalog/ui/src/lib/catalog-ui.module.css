@@ -1,12 +1,30 @@
-.setCard {
-  background: var(--lego-surface-default);
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
-  border-radius: 0;
+.setCardCollection {
+  align-items: stretch;
   display: grid;
+  grid-auto-rows: auto;
+}
+
+.setCardCollectionRail {
   gap: var(--lego-space-2);
 }
 
+.setCard {
+  --card-theme-badge-bg: var(--lego-surface-muted);
+  --card-theme-badge-text: var(--lego-text);
+  background: var(--lego-surface-default);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: border-color var(--lego-motion-duration-fast)
+    var(--lego-motion-ease-standard);
+}
+
 .setCardCompact {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
   overflow: hidden;
   padding: 0;
 }
@@ -19,9 +37,12 @@
   box-shadow: none;
   color: inherit;
   display: grid;
-  gap: var(--lego-space-2);
-  min-height: auto;
-  padding: var(--lego-space-3);
+  gap: 0.55rem;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  padding: 0.82rem;
   text-align: left;
   width: 100%;
 }
@@ -32,7 +53,11 @@
 
 .setCard:hover,
 .setCard:focus-within {
-  border-color: var(--lego-border);
+  border-color: color-mix(
+    in srgb,
+    var(--lego-border-subtle) 78%,
+    var(--lego-border) 22%
+  );
 }
 
 .setVisual {
@@ -40,11 +65,12 @@
   background: var(--lego-surface-default);
   display: grid;
   overflow: hidden;
-  min-height: 12rem;
+  min-height: 10.9rem;
+  position: relative;
 }
 
 .cardVisual {
-  aspect-ratio: 1 / 1.08;
+  aspect-ratio: 1 / 1.02;
   border-radius: 0;
 }
 
@@ -62,7 +88,7 @@
   justify-content: center;
   min-height: 0;
   min-width: 0;
-  padding: var(--lego-space-3);
+  padding: 0.65rem;
   width: 100%;
 }
 
@@ -89,6 +115,25 @@
   padding: var(--lego-space-4);
 }
 
+.visualOverlay {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+  justify-content: flex-end;
+  max-width: calc(100% - 1.1rem);
+  pointer-events: none;
+  position: absolute;
+  right: 0.55rem;
+  top: 0.55rem;
+  z-index: 1;
+}
+
+.cardVisualBadgeCluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+}
+
 .visualFallbackTitle,
 .visualFallbackMeta {
   margin: 0;
@@ -108,19 +153,22 @@
 }
 
 .cardHeader {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: var(--lego-space-2);
+  min-width: 0;
 }
 
 .cardCompactBody {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.58rem;
+  min-height: 0;
+  min-width: 0;
 }
 
-.cardCompactBadgeRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+.cardThemeBadge {
+  background: var(--card-theme-badge-bg, var(--lego-surface-muted));
+  color: var(--card-theme-badge-text, var(--lego-text));
 }
 
 .cardBadgeRow,
@@ -150,13 +198,31 @@
   margin: 0;
 }
 
+.cardTitleClamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .cardTagline {
   color: var(--lego-text-muted);
+  display: -webkit-box;
   font-size: var(--lego-text-role-support-size);
   font-weight: var(--lego-font-weight-medium);
   line-height: var(--lego-text-role-support-line-height);
   margin: 0;
   max-width: 34ch;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.cardTaglineClamp {
+  min-height: calc(
+    var(--lego-text-role-support-line-height) *
+      var(--lego-text-role-support-size) * 2
+  );
 }
 
 .setCardCompact .cardTitle {
@@ -243,14 +309,18 @@
 }
 
 .priceCompactBlock {
+  align-content: start;
   display: grid;
-  gap: 0.2rem;
+  gap: 0.18rem;
+  min-block-size: 4rem;
+  min-width: 0;
 }
 
 .cardCompactSupporting {
-  color: var(--lego-text-muted);
+  color: var(--lego-text);
   font-size: var(--lego-text-role-meta-size);
-  line-height: 1.35;
+  font-weight: var(--lego-font-weight-medium);
+  line-height: 1.28;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -266,18 +336,30 @@
 }
 
 .cardCompactSignal {
+  align-items: center;
+  background: var(--lego-surface-subtle);
   color: var(--lego-text-default);
+  display: inline-flex;
+  gap: 0.22rem;
+  justify-self: flex-start;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0.13rem 0.4rem;
   font-size: var(--lego-text-role-meta-size);
   font-weight: var(--lego-font-weight-semibold);
-  line-height: 1.35;
+  line-height: 1.25;
   margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardCompactSignalPositive {
+  background: var(--lego-positive-subtle);
   color: var(--lego-positive);
 }
 
 .cardCompactSignalWarning {
+  background: var(--lego-commerce-subtle);
   color: var(--lego-commerce);
 }
 
@@ -285,42 +367,56 @@
   color: var(--lego-text);
 }
 
-.cardBrowseSupporting {
+.cardCompactSignalIcon {
+  flex: 0 0 auto;
+  height: 0.78rem;
+  width: 0.78rem;
+}
+
+.cardCompactSupportingSlot,
+.cardFeaturedSupportingSlot {
+  min-width: 0;
+}
+
+.cardFactRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.22rem 0.65rem;
+  min-height: 0.95rem;
+  min-width: 0;
+}
+
+.cardFactItem {
+  align-items: center;
   color: var(--lego-text-muted);
-  display: -webkit-box;
-  font-size: var(--lego-text-role-support-size);
-  line-height: var(--lego-text-role-support-line-height);
+  display: inline-flex;
+  gap: 0.22rem;
+  font-size: var(--lego-text-role-meta-size);
+  line-height: 1.2;
   margin: 0;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.cardFactIcon {
+  flex: 0 0 auto;
+  height: 0.72rem;
+  width: 0.72rem;
 }
 
 .featuredCardBody {
-  gap: 0.75rem;
-}
-
-.cardFeaturedSupporting {
-  display: block;
-  font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-text-role-meta-line-height);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  align-content: start;
+  gap: 0.58rem;
 }
 
 .cardCompactFooter {
   align-items: center;
   display: flex;
-  gap: var(--lego-space-2);
+  gap: 0.55rem;
   justify-content: space-between;
-  margin-top: 0;
-  padding-top: 0.35rem;
-}
-
-.cardCompactFooterMeta {
-  display: grid;
-  gap: var(--lego-space-1);
   min-width: 0;
+  padding-top: 0.15rem;
 }
 
 .cardCompactMeta,
@@ -331,22 +427,88 @@
 }
 
 .cardCompactMeta {
+  align-items: center;
   color: var(--lego-text-muted);
+  display: inline-flex;
+  gap: 0.18rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.cardCompactAction {
-  color: var(--lego-accent);
-  font-weight: var(--lego-font-weight-semibold);
+.cardCompactMetaIcon {
+  flex: 0 0 auto;
+  height: 0.72rem;
+  width: 0.72rem;
 }
 
-.cardCompactSecondaryRow {
-  background: var(--lego-surface-muted);
+.cardCompactAction {
+  align-items: center;
+  background: var(--lego-accent);
+  border: var(--lego-border-width-2) solid var(--lego-accent);
+  border-radius: 999px;
+  color: var(--lego-accent-contrast);
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.28rem;
+  font-weight: var(--lego-font-weight-semibold);
+  justify-content: center;
+  min-height: 1.95rem;
+  padding: 0.34rem 0.72rem;
+  text-align: right;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.cardCompactActionIcon {
+  flex: 0 0 auto;
+  height: 0.82rem;
+  width: 0.82rem;
+}
+
+.setCardLink:hover .cardCompactAction,
+.cardCompactAction:hover {
+  background: var(--lego-accent-hover);
+  border-color: var(--lego-accent-hover);
+  color: var(--lego-accent-contrast);
+  text-decoration: none;
+}
+
+.cardCompactAction.cardCompactAction:focus-visible {
+  color: var(--lego-accent-contrast);
+  text-decoration: none;
+}
+
+.cardCompactDecisionZone {
+  align-items: center;
   display: flex;
-  justify-content: flex-start;
-  padding: 0.55rem var(--lego-space-3) var(--lego-space-3);
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.18rem 0.82rem 0.78rem;
+}
+
+.cardCompactDecisionSpacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cardCompactFooterActions {
+  align-items: center;
+  display: flex;
+  gap: 0.42rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.cardCompactSecondaryAction {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.cardCompactFooterActions > * {
+  max-width: 100%;
+  min-width: 0;
 }
 
 .supportingGrid,
@@ -408,6 +570,7 @@
 
 .actionLink {
   justify-self: flex-start;
+  margin-top: auto;
 }
 
 .sectionShell {
@@ -1228,8 +1391,10 @@
 }
 
 .setCardRailTrack {
-  display: flex;
+  display: grid;
   gap: var(--lego-space-2);
+  grid-auto-columns: calc((100% - (var(--lego-space-3) * 0.35)) / 1.35);
+  grid-auto-flow: column;
   margin: 0;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -1239,14 +1404,115 @@
   scrollbar-width: none;
 }
 
-.setCardRailItem {
-  flex: 0 0 calc((100% - (var(--lego-space-3) * 0.35)) / 1.35);
+.setCardRailTrack > .setCard {
   min-width: 0;
   scroll-snap-align: start;
 }
 
 .setCardRailTrack::-webkit-scrollbar {
   display: none;
+}
+
+@supports (grid-template-rows: subgrid) {
+  .setCardCollectionCompact > .setCardCompact {
+    display: grid;
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+  }
+
+  .setCardCollectionFeatured > .setCardCompact {
+    display: grid;
+    grid-row: span 5;
+    grid-template-rows: subgrid;
+  }
+
+  .setCardCollectionCompact > .setCardCompact > .setCardLink {
+    display: grid;
+    gap: 0.55rem;
+    grid-row: 1 / span 4;
+    grid-template-rows: subgrid;
+  }
+
+  .setCardCollectionFeatured > .setCardCompact > .setCardLink {
+    display: grid;
+    gap: 0.55rem;
+    grid-row: 1 / span 4;
+    grid-template-rows: subgrid;
+  }
+
+  .setCardCollectionCompact > .setCardCompact > .setCardLink > .setVisual,
+  .setCardCollectionFeatured > .setCardCompact > .setCardLink > .setVisual {
+    grid-row: 1;
+  }
+
+  .setCardCollectionCompact
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody {
+    display: grid;
+    gap: 0.58rem;
+    grid-row: 2 / span 3;
+    grid-template-rows: subgrid;
+  }
+
+  .setCardCollectionFeatured
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody {
+    display: grid;
+    gap: 0.58rem;
+    grid-row: 2 / span 3;
+    grid-template-rows: subgrid;
+  }
+
+  .setCardCollectionCompact
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody
+    > .cardTitle,
+  .setCardCollectionFeatured
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody
+    > .cardTitle {
+    grid-row: 1;
+  }
+
+  .setCardCollectionCompact
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody
+    > .cardCompactSupportingSlot {
+    grid-row: 2;
+  }
+
+  .setCardCollectionCompact
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody
+    > .cardCompactFooter {
+    grid-row: 3;
+  }
+
+  .setCardCollectionFeatured
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody
+    > .cardFeaturedSupportingSlot {
+    grid-row: 2;
+  }
+
+  .setCardCollectionFeatured
+    > .setCardCompact
+    > .setCardLink
+    > .cardCompactBody
+    > .priceCompactBlock {
+    grid-row: 3;
+  }
+
+  .setCardCollectionFeatured > .setCardCompact > .cardCompactDecisionZone {
+    grid-row: 5;
+  }
 }
 
 .setCardRailScrollbar {
@@ -1500,88 +1766,130 @@
 }
 
 .themePortraitCard[data-theme='icons'],
-.themeFeatureCard[data-theme='icons'] {
+.themeFeatureCard[data-theme='icons'],
+.setCard[data-theme='icons'] {
+  --card-theme-badge-bg: #f0c63b;
+  --card-theme-badge-text: #171a22;
   --theme-surface: #f0c63b;
 }
 
 .themePortraitCard[data-theme='marvel'],
-.themeFeatureCard[data-theme='marvel'] {
+.themeFeatureCard[data-theme='marvel'],
+.setCard[data-theme='marvel'] {
+  --card-theme-badge-bg: #cf554c;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #cf554c;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
 }
 
 .themePortraitCard[data-theme='ideas'],
-.themeFeatureCard[data-theme='ideas'] {
+.themeFeatureCard[data-theme='ideas'],
+.setCard[data-theme='ideas'] {
+  --card-theme-badge-bg: #68b8a0;
+  --card-theme-badge-text: #10241f;
   --theme-surface: #68b8a0;
   --theme-text: #10241f;
   --theme-muted: #23443d;
 }
 
 .themePortraitCard[data-theme='star-wars'],
-.themeFeatureCard[data-theme='star-wars'] {
+.themeFeatureCard[data-theme='star-wars'],
+.setCard[data-theme='star-wars'] {
+  --card-theme-badge-bg: #5573b5;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #5573b5;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
 }
 
 .themePortraitCard[data-theme='harry-potter'],
-.themeFeatureCard[data-theme='harry-potter'] {
+.themeFeatureCard[data-theme='harry-potter'],
+.setCard[data-theme='harry-potter'] {
+  --card-theme-badge-bg: #7f67bf;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #7f67bf;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
 }
 
 .themePortraitCard[data-theme='technic'],
-.themeFeatureCard[data-theme='technic'] {
+.themeFeatureCard[data-theme='technic'],
+.setCard[data-theme='technic'] {
+  --card-theme-badge-bg: #a8b4c2;
+  --card-theme-badge-text: #171a22;
   --theme-surface: #a8b4c2;
 }
 
 .themePortraitCard[data-theme='modular-buildings'],
-.themeFeatureCard[data-theme='modular-buildings'] {
+.themeFeatureCard[data-theme='modular-buildings'],
+.setCard[data-theme='modular-buildings'] {
+  --card-theme-badge-bg: #c9b396;
+  --card-theme-badge-text: #171a22;
   --theme-surface: #c9b396;
 }
 
 .themePortraitCard[data-theme='botanicals'],
-.themeFeatureCard[data-theme='botanicals'] {
+.themeFeatureCard[data-theme='botanicals'],
+.setCard[data-theme='botanicals'] {
+  --card-theme-badge-bg: #7faa83;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #7faa83;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
 }
 
 .themePortraitCard[data-theme='architecture'],
-.themeFeatureCard[data-theme='architecture'] {
+.themeFeatureCard[data-theme='architecture'],
+.setCard[data-theme='architecture'] {
+  --card-theme-badge-bg: #aeb7c8;
+  --card-theme-badge-text: #171a22;
   --theme-surface: #aeb7c8;
 }
 
 .themePortraitCard[data-theme='art'],
-.themeFeatureCard[data-theme='art'] {
+.themeFeatureCard[data-theme='art'],
+.setCard[data-theme='art'] {
+  --card-theme-badge-bg: #8f79b7;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #8f79b7;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
 }
 
 .themePortraitCard[data-theme='disney'],
-.themeFeatureCard[data-theme='disney'] {
+.themeFeatureCard[data-theme='disney'],
+.setCard[data-theme='disney'] {
+  --card-theme-badge-bg: #b67aa7;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #b67aa7;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
 }
 
 .themePortraitCard[data-theme='ninjago'],
-.themeFeatureCard[data-theme='ninjago'] {
+.themeFeatureCard[data-theme='ninjago'],
+.setCard[data-theme='ninjago'] {
+  --card-theme-badge-bg: #c37d5c;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #c37d5c;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
 }
 
 .themePortraitCard[data-theme='super-mario'],
-.themeFeatureCard[data-theme='super-mario'] {
+.themeFeatureCard[data-theme='super-mario'],
+.setCard[data-theme='super-mario'] {
+  --card-theme-badge-bg: #90b35d;
+  --card-theme-badge-text: #171a22;
   --theme-surface: #90b35d;
 }
 
 .themePortraitCard[data-theme='jurassic-world'],
-.themeFeatureCard[data-theme='jurassic-world'] {
+.themeFeatureCard[data-theme='jurassic-world'],
+.setCard[data-theme='jurassic-world'] {
+  --card-theme-badge-bg: #819567;
+  --card-theme-badge-text: #ffffff;
   --theme-surface: #819567;
   --theme-text: #ffffff;
   --theme-muted: #f4f7fb;
@@ -1592,8 +1900,8 @@
     padding-inline: var(--lego-space-5);
   }
 
-  .setCardRailItem {
-    flex-basis: calc((100% - (var(--lego-space-3) * 2)) / 3);
+  .setCardRailTrack {
+    grid-auto-columns: calc((100% - (var(--lego-space-3) * 2)) / 3);
   }
 }
 
@@ -1602,8 +1910,8 @@
     padding-inline: var(--lego-space-6);
   }
 
-  .setCardRailItem {
-    flex-basis: calc((100% - (var(--lego-space-3) * 4)) / 5);
+  .setCardRailTrack {
+    grid-auto-columns: calc((100% - (var(--lego-space-3) * 4)) / 5);
   }
 
   .setCardRailScrollbar {

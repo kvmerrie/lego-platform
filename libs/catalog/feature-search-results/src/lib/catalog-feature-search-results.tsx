@@ -4,6 +4,7 @@ import {
   CatalogQuickFilterBar,
   CatalogSectionShell,
   CatalogSetCard,
+  CatalogSetCardCollection,
 } from '@lego-platform/catalog/ui';
 import {
   type CatalogQuickFilterKey,
@@ -292,7 +293,10 @@ export function CatalogFeatureSearchResults({
         items={quickFilterItems}
       />
       {filteredSearchResults.length ? (
-        <div className={styles.resultsGrid}>
+        <CatalogSetCardCollection
+          className={styles.resultsGrid}
+          variant="compact"
+        >
           {filteredSearchResults.map((searchResult) => (
             <CatalogSetCard
               href={buildSetDetailPath(searchResult.slug)}
@@ -302,7 +306,7 @@ export function CatalogFeatureSearchResults({
               variant="compact"
             />
           ))}
-        </div>
+        </CatalogSetCardCollection>
       ) : (
         <CatalogSectionShell
           as="section"

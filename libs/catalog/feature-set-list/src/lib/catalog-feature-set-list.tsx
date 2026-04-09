@@ -4,6 +4,7 @@ import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
   CatalogSetCard,
+  CatalogSetCardCollection,
   CatalogSetCardRail,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
@@ -68,7 +69,7 @@ export function CatalogFeatureSetList({
       tone={tone}
     >
       {layout === 'grid' ? (
-        <div className={styles.grid}>
+        <CatalogSetCardCollection className={styles.grid} variant="featured">
           {homepageSets.map((catalogSetSummary) => (
             <CatalogSetCard
               actions={catalogSetSummary.actions}
@@ -80,7 +81,7 @@ export function CatalogFeatureSetList({
               variant="featured"
             />
           ))}
-        </div>
+        </CatalogSetCardCollection>
       ) : (
         <CatalogSetCardRail
           ariaLabel={title}

@@ -31,9 +31,11 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('href="/sets/rivendell-10316"');
     expect(markup).toContain('Rivendell');
-    expect(markup).toContain('A flagship fantasy build');
     expect(markup).toContain('2023');
+    expect(markup).toContain('6.181 stenen');
+    expect(markup).not.toContain('Set 10316');
     expect(markup).toContain('Bekijk set');
+    expect(markup).not.toContain('A flagship fantasy build');
     expect(markup).not.toContain('Reviewed prijs');
     expect(markup).not.toContain('Dekking');
   });
@@ -120,12 +122,14 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('href="/sets/rivendell-10316"');
-    expect(markup).toContain('Prestige display anchor');
     expect(markup).toContain('EUR 489.99');
-    expect(markup).toContain('Lowest reviewed price at bol');
+    expect(markup).toContain('Laagst bij bol');
     expect(markup).toContain('EUR 10.00 below ref');
-    expect(markup).toContain('In stock · 3 reviewed offers · Checked 29 mrt');
-    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('2023');
+    expect(markup).toContain('6.181 stenen');
+    expect(markup).toContain('Bekijk prijs');
+    expect(markup).not.toContain('Prestige display anchor');
+    expect(markup).not.toContain('Op voorraad · 3 winkels · 29 mrt');
     expect(markup).not.toContain('Dekking');
     expect(markup).not.toContain('Actualiteit');
     expect(markup).not.toContain('Waarom verzamelaars dit kiezen');
@@ -163,7 +167,33 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('Volg prijs');
-    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('Bekijk prijs');
+  });
+
+  it('can hide a redundant theme badge when the surrounding collection already provides the theme context', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        showThemeBadge={false}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('Rivendell');
+    expect(markup).not.toContain('>Icons<');
   });
 
   it('keeps no-price featured cards calm when pricing is missing', () => {
@@ -188,7 +218,9 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('Prijs volgt');
-    expect(markup).toContain('2023 · 6.181 stenen');
+    expect(markup).toContain('2023');
+    expect(markup).toContain('6.181 stenen');
+    expect(markup).not.toContain('Set 10316');
     expect(markup).not.toContain('Later bekijken');
     expect(markup).not.toContain('Setpagina staat live.');
   });

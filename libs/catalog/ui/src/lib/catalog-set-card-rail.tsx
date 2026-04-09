@@ -8,7 +8,11 @@ import type {
 } from '@lego-platform/catalog/util';
 import { Button } from '@lego-platform/shared/ui';
 import type { BrickhuntAnalyticsEventDescriptor } from '@lego-platform/shared/util';
-import { CatalogSetCard, type CatalogSetCardPriceContext } from './catalog-ui';
+import {
+  CatalogSetCard,
+  CatalogSetCardCollection,
+  type CatalogSetCardPriceContext,
+} from './catalog-ui';
 import styles from './catalog-ui.module.css';
 
 type CatalogSetCardRailSummary = CatalogSetSummary &
@@ -20,6 +24,7 @@ export interface CatalogSetCardRailItem {
   id: string;
   priceContext?: CatalogSetCardPriceContext;
   setSummary: CatalogSetCardRailSummary;
+  showThemeBadge?: boolean;
   supportingNote?: ReactNode;
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 }
@@ -286,21 +291,27 @@ export function CatalogSetCardRail({
           </Button>
         </div>
       ) : null}
-      <div className={styles.setCardRailTrack} id={railId} ref={railRef}>
+      <CatalogSetCardCollection
+        className={styles.setCardRailTrack}
+        id={railId}
+        layout="rail"
+        ref={railRef}
+        variant={variant}
+      >
         {items.map((item) => (
-          <div className={styles.setCardRailItem} key={item.id}>
-            <CatalogSetCard
-              actions={item.actions}
-              href={item.href}
-              priceContext={item.priceContext}
-              setSummary={item.setSummary}
-              supportingNote={item.supportingNote}
-              trackingEvent={item.trackingEvent}
-              variant={variant}
-            />
-          </div>
+          <CatalogSetCard
+            actions={item.actions}
+            href={item.href}
+            key={item.id}
+            priceContext={item.priceContext}
+            setSummary={item.setSummary}
+            showThemeBadge={item.showThemeBadge}
+            supportingNote={item.supportingNote}
+            trackingEvent={item.trackingEvent}
+            variant={variant}
+          />
         ))}
-      </div>
+      </CatalogSetCardCollection>
       {railMetrics.hasOverflow ? (
         <div
           aria-hidden="true"

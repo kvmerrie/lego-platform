@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Button } from '@lego-platform/shared/ui';
 import { CatalogSetCardRail } from './catalog-set-card-rail';
 
 const meta = {
@@ -19,6 +20,7 @@ export const FeaturedRail: Story = {
         ariaLabel="Uitgelichte setrail"
         items={[
           {
+            actions: <Button tone="ghost">Volg prijs</Button>,
             id: '10316',
             priceContext: {
               coverageLabel: 'Op voorraad · 2 winkels nagekeken',
@@ -188,6 +190,88 @@ export const CompactRail: Story = {
           },
         ]}
         variant="compact"
+      />
+    </div>
+  ),
+};
+
+export const AlignmentStress: Story = {
+  render: () => (
+    <div style={{ margin: '0 auto', maxWidth: '72rem', padding: '1.5rem' }}>
+      <CatalogSetCardRail
+        ariaLabel="Uitgelijnde setrail"
+        items={[
+          {
+            id: '10316',
+            priceContext: {
+              coverageLabel: 'Op voorraad · 2 winkels nagekeken',
+              currentPrice: '€ 469,99',
+              merchantLabel: 'Nu het laagst bij LEGO',
+              pricePositionLabel: '€ 20,00 onder normaal',
+              reviewedLabel: 'Nagekeken 2 apr',
+            },
+            setSummary: {
+              id: '10316',
+              slug: 'rivendell-10316',
+              name: 'Rivendell',
+              theme: 'Icons',
+              releaseYear: 2023,
+              pieces: 6167,
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+              collectorAngle: 'De vallei blijft meteen hangen op je plank.',
+              tagline: 'Als je een grote Middle-earth-set wilt, pak je deze.',
+              availability: 'Gezonde beschikbaarheid voor een premium set',
+            },
+            supportingNote: 'Met Elrond, Frodo en Arwen.',
+          },
+          {
+            actions: <Button tone="ghost">Volg prijs</Button>,
+            id: '76417',
+            priceContext: {
+              coverageLabel: 'Op voorraad · 3 winkels nagekeken',
+              currentPrice: '€ 349,99',
+              merchantLabel: 'Nu het laagst bij bol',
+              pricePositionLabel: 'Rond normaal',
+              reviewedLabel: 'Nagekeken 2 apr',
+            },
+            setSummary: {
+              id: '76417',
+              slug: 'gringotts-wizarding-bank-collectors-edition-76417',
+              name: "Gringotts Wizarding Bank - Collectors' Edition",
+              theme: 'Harry Potter',
+              releaseYear: 2023,
+              pieces: 4803,
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/76417-1/126166.jpg',
+              collectorAngle: 'De bank en draak trekken je plank meteen open.',
+              tagline:
+                'Kies deze als je een grote Wizarding World-set wilt neerzetten.',
+              availability: 'Rustige prijs, wel goed om te volgen',
+            },
+            supportingNote:
+              'Met Harry, Hermione, Ron, Bill, een draak en een ondergrondse rit.',
+          },
+          {
+            id: '75331',
+            setSummary: {
+              id: '75331',
+              slug: 'the-razor-crest-75331',
+              name: 'The Razor Crest',
+              theme: 'Star Wars',
+              releaseYear: 2022,
+              pieces: 6187,
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/75331-1/116601.jpg',
+              collectorAngle: 'Een groot schip dat je plank meteen vult.',
+              tagline:
+                'Als je een premium Star Wars-schip zoekt, kijk hier eerst.',
+              availability: 'Prijscontext volgt later',
+            },
+            supportingNote: 'Met Grogu en The Mandalorian.',
+          },
+        ]}
+        variant="featured"
       />
     </div>
   ),
