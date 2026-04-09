@@ -23,7 +23,7 @@ export const dutchAffiliateMerchantConfigs: readonly AffiliateMerchantConfig[] =
       displayName: 'bol',
       regionCode: DUTCH_AFFILIATE_REGION_CODE,
       currencyCode: EURO_AFFILIATE_CURRENCY_CODE,
-      enabled: true,
+      enabled: false,
       displayRank: 2,
       urlHost: 'www.bol.com',
       disclosureCopy:

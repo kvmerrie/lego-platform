@@ -54,14 +54,14 @@ describe('pricing data access', () => {
       regionCode: 'NL',
       currencyCode: 'EUR',
       condition: 'new',
-      headlinePriceMinor: 46999,
+      headlinePriceMinor: 48246,
       lowestAvailabilityLabel: 'In stock',
-      lowestMerchantId: 'bol',
-      lowestMerchantName: 'bol',
+      lowestMerchantId: 'amazon-nl',
+      lowestMerchantName: 'Amazon',
       merchantCount: 2,
       observedAt: '2026-03-31T09:00:00.000Z',
       referencePriceMinor: 49999,
-      deltaMinor: -3000,
+      deltaMinor: -1753,
     });
   });
 
@@ -71,14 +71,14 @@ describe('pricing data access', () => {
       regionCode: 'NL',
       currencyCode: 'EUR',
       condition: 'new',
-      headlinePriceMinor: 42999,
+      headlinePriceMinor: 43558,
       lowestAvailabilityLabel: 'In stock',
       lowestMerchantId: 'amazon-nl',
       lowestMerchantName: 'Amazon',
-      merchantCount: 3,
+      merchantCount: 2,
       observedAt: '2026-03-31T09:56:00.000Z',
       referencePriceMinor: 45999,
-      deltaMinor: -3000,
+      deltaMinor: -2441,
     });
   });
 
@@ -105,14 +105,14 @@ describe('pricing data access', () => {
       regionCode: 'NL',
       currencyCode: 'EUR',
       condition: 'new',
-      headlinePriceMinor: 24643,
+      headlinePriceMinor: 26999,
       lowestAvailabilityLabel: 'In stock',
-      lowestMerchantId: 'bol',
-      lowestMerchantName: 'bol',
+      lowestMerchantId: 'lego-nl',
+      lowestMerchantName: 'LEGO',
       merchantCount: 2,
-      observedAt: '2026-04-03T09:24:00.000Z',
+      observedAt: '2026-04-03T09:28:00.000Z',
       referencePriceMinor: 26999,
-      deltaMinor: -2356,
+      deltaMinor: 0,
     });
   });
 
@@ -120,13 +120,13 @@ describe('pricing data access', () => {
     expect(getFeaturedSetPriceContext('10316')).toEqual({
       setId: '10316',
       currencyCode: 'EUR',
-      headlinePriceMinor: 46999,
+      headlinePriceMinor: 48246,
       availabilityLabel: 'In stock',
-      merchantName: 'bol',
+      merchantName: 'Amazon',
       merchantCount: 2,
       observedAt: '2026-03-31T09:00:00.000Z',
       referencePriceMinor: 49999,
-      deltaMinor: -3000,
+      deltaMinor: -1753,
     });
   });
 
@@ -135,10 +135,10 @@ describe('pricing data access', () => {
       availabilityLabel: 'In stock',
       coverageLabel: 'In stock · 2 reviewed aanbiedingen',
       coverageNote: 'Tot nu toe pas 2 reviewed aanbiedingen',
-      currentPrice: '€ 246,43',
-      dealLabel: 'Beste deal nu',
-      merchantLabel: 'Laagste reviewed prijs bij bol',
-      pricePositionLabel: '€ 23,56 onder referentie',
+      currentPrice: '€ 269,99',
+      dealLabel: 'Precies op referentie',
+      merchantLabel: 'Laagste reviewed prijs bij LEGO',
+      pricePositionLabel: 'Op referentie',
       reviewedLabel: 'Gecheckt 3 apr',
     });
   });
@@ -146,9 +146,9 @@ describe('pricing data access', () => {
   test('builds a decisive deal verdict from the current snapshot', () => {
     expect(getSetDealVerdict('10354')).toEqual({
       explanation:
-        'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
-      label: 'Nu interessant geprijsd',
-      tone: 'positive',
+        'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
+      label: 'Rond normaal',
+      tone: 'info',
     });
 
     expect(
@@ -290,33 +290,33 @@ describe('pricing data access', () => {
       buildWishlistPriceAlert({
         priceHistoryPoints: [
           {
-            setId: '10354',
+            setId: '76453',
             regionCode: 'NL',
             currencyCode: 'EUR',
             condition: 'new',
-            headlinePriceMinor: 25999,
-            referencePriceMinor: 26999,
+            headlinePriceMinor: 12999,
+            referencePriceMinor: 14999,
             lowestMerchantId: 'lego-nl',
             observedAt: '2026-04-01T09:00:00.000Z',
             recordedOn: '2026-04-01',
           },
           {
-            setId: '10354',
+            setId: '76453',
             regionCode: 'NL',
             currencyCode: 'EUR',
             condition: 'new',
-            headlinePriceMinor: 25499,
-            referencePriceMinor: 26999,
-            lowestMerchantId: 'bol',
+            headlinePriceMinor: 12499,
+            referencePriceMinor: 14999,
+            lowestMerchantId: 'lego-nl',
             observedAt: '2026-04-02T09:00:00.000Z',
             recordedOn: '2026-04-02',
           },
         ],
         savedAt: '2026-04-01T12:00:00.000Z',
-        setId: '10354',
+        setId: '76453',
       }),
     ).toEqual({
-      detail: '€ 246,43 is € 8,56 onder de vorige beste tracked prijs.',
+      detail: '€ 119,99 is € 5,00 onder de vorige beste tracked prijs.',
       kind: 'new-best-price',
       label: 'Nieuwe beste reviewed prijs',
       tone: 'positive',
@@ -326,10 +326,10 @@ describe('pricing data access', () => {
   test('falls back to a strong-deal alert when no saved baseline is available', () => {
     expect(
       buildWishlistPriceAlert({
-        setId: '10354',
+        setId: '76453',
       }),
     ).toEqual({
-      detail: '€ 23,56 onder referentie · In stock',
+      detail: '€ 30,00 onder referentie · In stock',
       kind: 'strong-deal-now',
       label: 'Sterke deal nu',
       tone: 'accent',
@@ -367,7 +367,7 @@ describe('pricing data access', () => {
         setId: '10316',
       }),
     ).toEqual({
-      detail: '€ 469,99 is € 20,00 lager dan toen je deze set opsloeg.',
+      detail: '€ 482,46 is € 7,53 lager dan toen je deze set opsloeg.',
       kind: 'price-improved-since-save',
       label: 'Lager dan toen je hem opsloeg',
       tone: 'positive',
@@ -380,7 +380,7 @@ describe('pricing data access', () => {
         candidateSetIds: ['21348', '10316', '76269', '10333'],
         limit: 3,
       }).map((priceContext) => priceContext.setId),
-    ).toEqual(['76269', '10333', '10316']);
+    ).toEqual(['10333', '76269', '10316']);
   });
 
   test('uses candidate ordering to break ties between similar deal signals', () => {
@@ -389,7 +389,7 @@ describe('pricing data access', () => {
         candidateSetIds: ['10333', '21333'],
         limit: 2,
       }).map((priceContext) => priceContext.setId),
-    ).toEqual(['10333', '21333']);
+    ).toEqual(['10333']);
   });
 
   test('lists the reviewed set ids that can drive curated browse prioritization', () => {
@@ -402,7 +402,7 @@ describe('pricing data access', () => {
   });
 
   test('lists pricing observations for a single set only', () => {
-    expect(listPricingObservations('21348')).toHaveLength(2);
+    expect(listPricingObservations('21348')).toHaveLength(1);
     expect(
       listPricingObservations('21348').every(
         (pricingObservation) => pricingObservation.setId === '21348',
@@ -484,24 +484,24 @@ describe('pricing data access', () => {
       limit: vi.fn().mockResolvedValue({
         data: [
           {
-            set_id: '10354',
+            set_id: '76453',
             region_code: 'NL',
             currency_code: 'EUR',
             condition: 'new',
-            headline_price_minor: 25999,
-            reference_price_minor: 26999,
+            headline_price_minor: 12999,
+            reference_price_minor: 14999,
             lowest_merchant_id: 'lego-nl',
             observed_at: '2026-04-01T09:00:00.000Z',
             recorded_on: '2026-04-01',
           },
           {
-            set_id: '10354',
+            set_id: '76453',
             region_code: 'NL',
             currency_code: 'EUR',
             condition: 'new',
-            headline_price_minor: 25499,
-            reference_price_minor: 26999,
-            lowest_merchant_id: 'bol',
+            headline_price_minor: 12499,
+            reference_price_minor: 14999,
+            lowest_merchant_id: 'lego-nl',
             observed_at: '2026-04-02T09:00:00.000Z',
             recorded_on: '2026-04-02',
           },
@@ -518,13 +518,13 @@ describe('pricing data access', () => {
     await expect(
       listWishlistPriceAlerts({
         savedAtBySetId: {
-          '10354': '2026-04-01T12:00:00.000Z',
+          '76453': '2026-04-01T12:00:00.000Z',
         },
-        setIds: ['10354'],
+        setIds: ['76453'],
       }),
     ).resolves.toEqual({
-      '10354': {
-        detail: '€ 246,43 is € 8,56 onder de vorige beste tracked prijs.',
+      '76453': {
+        detail: '€ 119,99 is € 5,00 onder de vorige beste tracked prijs.',
         kind: 'new-best-price',
         label: 'Nieuwe beste reviewed prijs',
         tone: 'positive',
@@ -568,26 +568,28 @@ describe('pricing data access', () => {
     expect(
       buildWishlistAlertNotificationCandidate({
         alert: {
-          detail: '€ 23,56 below reference · In stock',
+          detail: '€ 30,00 below reference · In stock',
           kind: 'strong-deal-now',
           label: 'Strong deal right now',
           tone: 'accent',
         },
         now: '2026-04-03T10:00:00.000Z',
-        setId: '10354',
+        setId: '76453',
       }),
     ).toEqual({
       cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
-      dedupeKey: '10354:strong-deal-now',
-      detail: '€ 23,56 below reference · In stock',
+      cooldownEndsAt: undefined,
+      dedupeKey: '76453:strong-deal-now',
+      detail: '€ 30,00 below reference · In stock',
       evaluatedAt: '2026-04-03T10:00:00.000Z',
       isNewlyNotifiable: true,
       kind: 'strong-deal-now',
       label: 'Strong deal right now',
       notificationReason: 'first-signal',
       priority: 1,
-      signalObservedAt: '2026-04-03T09:24:00.000Z',
-      setId: '10354',
+      signalObservedAt: '2026-04-03T09:08:00.000Z',
+      setId: '76453',
+      supersedesPreviousKind: undefined,
       tone: 'accent',
     });
   });
@@ -596,7 +598,7 @@ describe('pricing data access', () => {
     expect(
       buildWishlistAlertNotificationCandidate({
         alert: {
-          detail: '€ 23,56 below reference · In stock',
+          detail: '€ 30,00 below reference · In stock',
           kind: 'strong-deal-now',
           label: 'Strong deal right now',
           tone: 'accent',
@@ -606,20 +608,20 @@ describe('pricing data access', () => {
           lastNotifiedAt: '2026-04-03T10:00:00.000Z',
           lastNotifiedKind: 'strong-deal-now',
         },
-        setId: '10354',
+        setId: '76453',
       }),
     ).toEqual({
       cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
       cooldownEndsAt: '2026-04-17T10:00:00.000Z',
-      dedupeKey: '10354:strong-deal-now',
-      detail: '€ 23,56 below reference · In stock',
+      dedupeKey: '76453:strong-deal-now',
+      detail: '€ 30,00 below reference · In stock',
       evaluatedAt: '2026-04-10T10:00:00.000Z',
       isNewlyNotifiable: false,
       kind: 'strong-deal-now',
       label: 'Strong deal right now',
       priority: 1,
-      signalObservedAt: '2026-04-03T09:24:00.000Z',
-      setId: '10354',
+      signalObservedAt: '2026-04-03T09:08:00.000Z',
+      setId: '76453',
       suppressionReason: 'cooldown-active',
       tone: 'accent',
     });
@@ -629,7 +631,7 @@ describe('pricing data access', () => {
     expect(
       buildWishlistAlertNotificationCandidate({
         alert: {
-          detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+          detail: '€ 119,99 is € 5,00 below the previous tracked low.',
           kind: 'new-best-price',
           label: 'New best reviewed price',
           tone: 'positive',
@@ -639,21 +641,21 @@ describe('pricing data access', () => {
           lastNotifiedAt: '2026-04-03T10:00:00.000Z',
           lastNotifiedKind: 'strong-deal-now',
         },
-        setId: '10354',
+        setId: '76453',
       }),
     ).toEqual({
       cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
       cooldownEndsAt: '2026-04-17T10:00:00.000Z',
-      dedupeKey: '10354:new-best-price',
-      detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+      dedupeKey: '76453:new-best-price',
+      detail: '€ 119,99 is € 5,00 below the previous tracked low.',
       evaluatedAt: '2026-04-10T10:00:00.000Z',
       isNewlyNotifiable: true,
       kind: 'new-best-price',
       label: 'New best reviewed price',
       notificationReason: 'higher-priority-signal',
       priority: 3,
-      signalObservedAt: '2026-04-03T09:24:00.000Z',
-      setId: '10354',
+      signalObservedAt: '2026-04-03T09:08:00.000Z',
+      setId: '76453',
       supersedesPreviousKind: 'strong-deal-now',
       tone: 'positive',
     });
@@ -671,13 +673,13 @@ describe('pricing data access', () => {
         },
         wishlistPriceAlerts: {
           '10316': {
-            detail: '€ 469,99 is € 20,00 lower than when you saved it.',
+            detail: '€ 482,46 is € 7,53 lower than when you saved it.',
             kind: 'price-improved-since-save',
             label: 'Lower than when you saved it',
             tone: 'positive',
           },
-          '10354': {
-            detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+          '76453': {
+            detail: '€ 119,99 is € 5,00 below the previous tracked low.',
             kind: 'new-best-price',
             label: 'New best reviewed price',
             tone: 'positive',
@@ -690,7 +692,7 @@ describe('pricing data access', () => {
         cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
         cooldownEndsAt: '2026-04-17T10:00:00.000Z',
         dedupeKey: '10316:price-improved-since-save',
-        detail: '€ 469,99 is € 20,00 lower than when you saved it.',
+        detail: '€ 482,46 is € 7,53 lower than when you saved it.',
         evaluatedAt: '2026-04-20T10:00:00.000Z',
         isNewlyNotifiable: true,
         kind: 'price-improved-since-save',
@@ -699,20 +701,23 @@ describe('pricing data access', () => {
         priority: 2,
         signalObservedAt: '2026-03-31T09:00:00.000Z',
         setId: '10316',
+        supersedesPreviousKind: undefined,
         tone: 'positive',
       },
-      '10354': {
+      '76453': {
         cooldownDays: DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS,
-        dedupeKey: '10354:new-best-price',
-        detail: '€ 246,43 is € 8,56 below the previous tracked low.',
+        cooldownEndsAt: undefined,
+        dedupeKey: '76453:new-best-price',
+        detail: '€ 119,99 is € 5,00 below the previous tracked low.',
         evaluatedAt: '2026-04-20T10:00:00.000Z',
         isNewlyNotifiable: true,
         kind: 'new-best-price',
         label: 'New best reviewed price',
         notificationReason: 'first-signal',
         priority: 3,
-        signalObservedAt: '2026-04-03T09:24:00.000Z',
-        setId: '10354',
+        signalObservedAt: '2026-04-03T09:08:00.000Z',
+        setId: '76453',
+        supersedesPreviousKind: undefined,
         tone: 'positive',
       },
       '21348': undefined,
@@ -965,9 +970,9 @@ describe('pricing data access', () => {
 
     await expect(getPriceHistorySummary('10316')).resolves.toEqual({
       currencyCode: 'EUR',
-      currentHeadlinePriceMinor: 46999,
+      currentHeadlinePriceMinor: 48246,
       averagePriceMinor: 49832,
-      deltaVsAverageMinor: -2833,
+      deltaVsAverageMinor: -1586,
       lowPriceMinor: 48999,
       highPriceMinor: 50999,
       pointCount: 3,
@@ -1028,18 +1033,18 @@ describe('pricing data access', () => {
       pointCount: 3,
       priceHistorySummary: {
         currencyCode: 'EUR',
-        currentHeadlinePriceMinor: 46999,
+        currentHeadlinePriceMinor: 48246,
         averagePriceMinor: 49832,
-        deltaVsAverageMinor: -2833,
+        deltaVsAverageMinor: -1586,
         lowPriceMinor: 48999,
         highPriceMinor: 50999,
         pointCount: 3,
       },
       trackedPriceSummary: {
         currencyCode: 'EUR',
-        currentHeadlinePriceMinor: 46999,
-        deltaVsTrackedHighMinor: -4000,
-        deltaVsTrackedLowMinor: -2000,
+        currentHeadlinePriceMinor: 48246,
+        deltaVsTrackedHighMinor: -2753,
+        deltaVsTrackedLowMinor: -753,
         pointCount: 3,
         trackedHighPriceMinor: 50999,
         trackedLowPriceMinor: 48999,
@@ -1081,9 +1086,9 @@ describe('pricing data access', () => {
       priceHistorySummary: undefined,
       trackedPriceSummary: {
         currencyCode: 'EUR',
-        currentHeadlinePriceMinor: 46999,
-        deltaVsTrackedHighMinor: -2000,
-        deltaVsTrackedLowMinor: -2000,
+        currentHeadlinePriceMinor: 48246,
+        deltaVsTrackedHighMinor: -753,
+        deltaVsTrackedLowMinor: -753,
         pointCount: 1,
         trackedHighPriceMinor: 48999,
         trackedLowPriceMinor: 48999,
