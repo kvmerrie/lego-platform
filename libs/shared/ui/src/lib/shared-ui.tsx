@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 import type {
   ButtonHTMLAttributes,
   ComponentProps,
@@ -63,6 +64,12 @@ export interface LabelValueItem {
   label: ReactNode;
   tone?: LabelValueTone;
   value: ReactNode;
+}
+
+export interface BreadcrumbItem {
+  href?: string;
+  id: string;
+  label: ReactNode;
 }
 
 const buttonToneClasses: Record<
@@ -273,6 +280,59 @@ export function ActionLink({
     >
       {children}
     </Link>
+  );
+}
+
+export function Breadcrumbs({
+  ariaLabel = 'Breadcrumb',
+  className,
+  items,
+}: {
+  ariaLabel?: string;
+  className?: string;
+  items: readonly BreadcrumbItem[];
+}) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <nav
+      aria-label={ariaLabel}
+      className={joinClasses(styles.breadcrumbNav, className)}
+    >
+      <ol className={styles.breadcrumbList}>
+        {items.map((item, index) => {
+          const isCurrent = index === items.length - 1;
+
+          return (
+            <li className={styles.breadcrumbItem} key={item.id}>
+              {index > 0 ? (
+                <span aria-hidden="true" className={styles.breadcrumbSeparator}>
+                  <ChevronRight size={14} strokeWidth={2.2} />
+                </span>
+              ) : null}
+              {isCurrent || !item.href ? (
+                <span
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={styles.breadcrumbCurrent}
+                >
+                  {item.label}
+                </span>
+              ) : (
+                <ActionLink
+                  className={styles.breadcrumbLink}
+                  href={item.href}
+                  tone="inline"
+                >
+                  {item.label}
+                </ActionLink>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
   );
 }
 

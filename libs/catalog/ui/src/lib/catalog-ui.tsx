@@ -45,6 +45,7 @@ import { CatalogSetDetailHero } from './catalog-composite-ui';
 import {
   ActionLink,
   Badge,
+  Breadcrumbs,
   LabelValue,
   LabelValueList,
   MarkerList,
@@ -1059,45 +1060,26 @@ export function CatalogSetDetailPanel({
 
   return (
     <section className={styles.detailPage}>
-      <nav aria-label="Setcontext" className={styles.contextRow}>
-        {themeDirectoryHref ? (
-          <ActionLink
-            className={styles.contextLink}
-            href={themeDirectoryHref}
-            tone="inline"
-          >
-            Thema's
-          </ActionLink>
-        ) : (
-          <span className={styles.contextCurrent}>Thema's</span>
-        )}
-        <span aria-hidden="true" className={styles.contextDivider}>
-          /
-        </span>
-        {themeHref ? (
-          <ActionLink
-            className={styles.contextLink}
-            href={themeHref}
-            tone="inline"
-          >
-            <CatalogCanonicalText>
-              {catalogSetDetail.theme}
-            </CatalogCanonicalText>
-          </ActionLink>
-        ) : (
-          <span className={styles.contextCurrent}>
-            <CatalogCanonicalText>
-              {catalogSetDetail.theme}
-            </CatalogCanonicalText>
-          </span>
-        )}
-        <span aria-hidden="true" className={styles.contextDivider}>
-          /
-        </span>
-        <span aria-current="page" className={styles.contextCurrent}>
-          Setdetail
-        </span>
-      </nav>
+      <Breadcrumbs
+        ariaLabel="Setcontext"
+        items={[
+          {
+            href: themeDirectoryHref,
+            id: 'theme-directory',
+            label: "Thema's",
+          },
+          {
+            href: themeHref,
+            id: 'theme',
+            label: (
+              <CatalogCanonicalText>
+                {catalogSetDetail.theme}
+              </CatalogCanonicalText>
+            ),
+          },
+          { id: 'set-detail', label: 'Setdetail' },
+        ]}
+      />
       <CatalogSetDetailHero
         badges={
           <>

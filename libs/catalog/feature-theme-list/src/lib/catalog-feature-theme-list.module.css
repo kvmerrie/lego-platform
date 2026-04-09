@@ -1,23 +1,36 @@
 .section {
-  padding-bottom: var(--lego-space-6);
-  padding-top: var(--lego-space-6);
+  padding-block: var(--lego-space-6);
 }
 
 .header {
   max-width: min(28rem, 100%);
 }
 
-.rail {
+.body {
+  gap: 0;
+}
+
+.railViewport {
+  margin-inline: calc(
+    -1 * var(--catalog-section-inline-padding, var(--lego-space-4))
+  );
+  overflow-x: auto;
+  padding: 0 var(--catalog-section-inline-padding, var(--lego-space-4))
+    var(--lego-space-1);
+  scroll-padding-inline: var(
+    --catalog-section-inline-padding,
+    var(--lego-space-4)
+  );
+}
+
+.railTrack {
   display: flex;
   gap: var(--lego-space-2);
   margin: 0;
-  overflow-x: auto;
-  padding: 0 var(--lego-space-6) var(--lego-space-1);
-  scroll-padding: var(--lego-space-6);
   scroll-snap-type: x proximity;
 }
 
-.rail > * {
+.railTrack > * {
   flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
   min-width: 0;
   scroll-snap-align: start;
@@ -62,11 +75,14 @@
 }
 
 @media (min-width: 75rem) {
-  .rail {
+  .railViewport {
+    margin-inline: 0;
     overflow: visible;
+    padding: 0;
+    scroll-padding-inline: 0;
   }
 
-  .rail > * {
+  .railTrack > * {
     flex: 1 1 0;
   }
 }

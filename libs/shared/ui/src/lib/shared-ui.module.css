@@ -228,6 +228,57 @@
   background: transparent;
 }
 
+.breadcrumbNav {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+}
+
+.breadcrumbList {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.36rem 0.54rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumbItem {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.54rem;
+  max-inline-size: 100%;
+  min-width: 0;
+}
+
+.breadcrumbLink {
+  color: var(--lego-accent);
+  font-size: inherit;
+  line-height: inherit;
+  min-width: 0;
+  white-space: normal;
+}
+
+.breadcrumbLink:hover {
+  color: var(--lego-accent-hover);
+}
+
+.breadcrumbCurrent {
+  color: var(--lego-text);
+  font-size: inherit;
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: inherit;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.breadcrumbSeparator {
+  color: var(--lego-border-strong, var(--lego-border));
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
 .badge {
   align-self: flex-start;
   align-items: center;

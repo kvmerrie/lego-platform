@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import {
   ActionLink,
   Badge,
+  Breadcrumbs,
   Button,
   Container,
   LabelValue,
@@ -76,6 +77,42 @@ export const ActionLinkTones: Story = {
             </span>
           </ActionLink>
         </Surface>
+      </div>
+    </div>
+  ),
+};
+
+export const BreadcrumbStates: Story = {
+  render: () => (
+    <div style={{ margin: '0 auto', maxWidth: '56rem', padding: '2rem' }}>
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        <Surface elevation="rested" tone="muted">
+          <Breadcrumbs
+            ariaLabel="Breadcrumb"
+            items={[
+              { href: '/', id: 'home', label: 'Home' },
+              { href: '/themes', id: 'themes', label: "Thema's" },
+              { href: '/themes/icons', id: 'icons', label: 'Icons' },
+              { id: 'detail', label: 'Setdetail' },
+            ]}
+          />
+        </Surface>
+        <div style={{ maxWidth: '24rem' }}>
+          <Surface elevation="rested" tone="default">
+            <Breadcrumbs
+              ariaLabel="Breadcrumb"
+              items={[
+                { href: '/', id: 'home-long', label: 'Home' },
+                { href: '/pages', id: 'pages', label: "Redactionele pagina's" },
+                {
+                  id: 'current-long',
+                  label:
+                    'Waarom deze set op je plank meer doet dan alleen een lage prijs',
+                },
+              ]}
+            />
+          </Surface>
+        </div>
       </div>
     </div>
   ),

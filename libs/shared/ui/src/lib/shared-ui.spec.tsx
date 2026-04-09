@@ -1,6 +1,12 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { Container, LabelValueList, MarkerList, Panel } from './shared-ui';
+import {
+  Breadcrumbs,
+  Container,
+  LabelValueList,
+  MarkerList,
+  Panel,
+} from './shared-ui';
 
 describe('Container', () => {
   it('renders shared alignment markup around its children', () => {
@@ -69,5 +75,28 @@ describe('LabelValueList', () => {
     expect(markup).toContain('<dd');
     expect(markup).toContain('Nagekeken');
     expect(markup).toContain('3 nagekeken');
+  });
+});
+
+describe('Breadcrumbs', () => {
+  it('renders semantic breadcrumb markup with linked ancestors and a current page label', () => {
+    const markup = renderToStaticMarkup(
+      <Breadcrumbs
+        ariaLabel="Setcontext"
+        items={[
+          { href: '/themes', id: 'themes', label: "Thema's" },
+          { href: '/themes/icons', id: 'icons', label: 'Icons' },
+          { id: 'detail', label: 'Setdetail' },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('<nav');
+    expect(markup).toContain('aria-label="Setcontext"');
+    expect(markup).toContain('<ol');
+    expect(markup).toContain('href="/themes"');
+    expect(markup).toContain('href="/themes/icons"');
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('Setdetail');
   });
 });

@@ -602,14 +602,17 @@
 }
 
 .sectionShellPaddingDefault {
-  padding: var(--lego-space-4);
+  --catalog-section-inline-padding: var(--lego-space-6);
+  padding: var(--lego-space-6);
 }
 
 .sectionShellPaddingNone {
+  --catalog-section-inline-padding: 0px;
   padding: 0;
 }
 
 .sectionShellPaddingRelaxed {
+  --catalog-section-inline-padding: var(--lego-space-6);
   padding: var(--lego-space-6);
 }
 
@@ -699,35 +702,7 @@
 .detailPage {
   display: grid;
   gap: var(--lego-space-3);
-  padding-inline: var(--lego-space-4);
-}
-
-.contextRow {
-  align-items: center;
-  color: var(--lego-text-muted);
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lego-space-2);
-}
-
-.contextLink,
-.contextCurrent,
-.contextDivider {
-  font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-text-role-meta-line-height);
-}
-
-.contextLink {
-  color: var(--lego-text-muted);
-}
-
-.contextCurrent {
-  color: var(--lego-text-muted);
-  margin: 0;
-}
-
-.contextDivider {
-  color: var(--lego-border);
+  padding-inline: var(--lego-space-5);
 }
 
 .detailHero {
