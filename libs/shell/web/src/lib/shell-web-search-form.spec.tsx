@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ShellWebSearchForm } from './shell-web-search-form';
 import { writeSearchOverlayReturnState } from './shell-web-search-overlay-return-state';
+import { openMobileSearchOverlayEventName } from './shell-web-search-overlay-events';
 import {
   createRecentSearchSetEntry,
   writeRecentSearch,
@@ -12,6 +13,12 @@ import {
 
 const routerBack = vi.fn();
 const routerReplace = vi.fn();
+const requestAnimationFrameMock = vi
+  .spyOn(window, 'requestAnimationFrame')
+  .mockImplementation((callback: FrameRequestCallback) => {
+    callback(0);
+    return 1;
+  });
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -45,6 +52,10 @@ describe('ShellWebSearchForm', () => {
     document.body.style.overflow = '';
     window.localStorage.clear();
     window.sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    requestAnimationFrameMock.mockClear();
   });
 
   it('opens a full-screen mobile overlay with recent searches and live suggestions', () => {
@@ -184,5 +195,81 @@ describe('ShellWebSearchForm', () => {
     expect(routerReplace).toHaveBeenCalledWith('/themes/icons', {
       scroll: false,
     });
+  });
+
+  it('executes the search route when the mobile overlay form submits', () => {
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          hideTrigger
+          inputId="site-search-overlay-submit"
+          openOnMount
+          variant="mobile-overlay"
+        />,
+      );
+    });
+
+    const searchInput = container.querySelector(
+      '#site-search-overlay-submit',
+    ) as HTMLInputElement | null;
+    const searchForm = container.querySelector('form[role="search"]');
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(searchInput, 'Riven');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    act(() => {
+      searchForm?.dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      );
+    });
+
+    expect(routerReplace).toHaveBeenCalledWith('/search?q=Riven', {
+      scroll: false,
+    });
+  });
+
+  it('re-focuses the overlay search input when the mobile search route is reopened', () => {
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          hideTrigger
+          inputId="site-search-overlay-reopen"
+          openOnMount
+          query="Rivendell"
+          variant="mobile-overlay"
+        />,
+      );
+    });
+
+    const searchInput = container.querySelector(
+      '#site-search-overlay-reopen',
+    ) as HTMLInputElement | null;
+    const closeButton = container.querySelector(
+      'button[aria-label="Zoeken sluiten"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      closeButton?.focus();
+    });
+
+    expect(document.activeElement).toBe(closeButton);
+
+    act(() => {
+      window.dispatchEvent(new Event(openMobileSearchOverlayEventName));
+    });
+
+    expect(document.activeElement).toBe(searchInput);
+    expect(searchInput?.selectionStart).toBe(0);
+    expect(searchInput?.selectionEnd).toBe('Rivendell'.length);
   });
 });

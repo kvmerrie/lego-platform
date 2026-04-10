@@ -33,6 +33,7 @@ import {
   readSearchOverlayReturnState,
 } from './shell-web-search-overlay-return-state';
 import { getNextSearchActiveIndex } from './shell-web-search-navigation';
+import { openMobileSearchOverlayEventName } from './shell-web-search-overlay-events';
 
 function buildSearchHref(query: string): string {
   const searchParams = new URLSearchParams({
@@ -94,6 +95,32 @@ export function ShellWebSearchForm({
 
     setIsOpen(true);
   }, [isMobileOverlay, openOnMount]);
+
+  useEffect(() => {
+    if (!isMobileOverlay || !hideTrigger || !openOnMount) {
+      return;
+    }
+
+    function handleOpenMobileSearchOverlay() {
+      setIsOpen(true);
+      window.requestAnimationFrame(() => {
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      });
+    }
+
+    window.addEventListener(
+      openMobileSearchOverlayEventName,
+      handleOpenMobileSearchOverlay,
+    );
+
+    return () => {
+      window.removeEventListener(
+        openMobileSearchOverlayEventName,
+        handleOpenMobileSearchOverlay,
+      );
+    };
+  }, [hideTrigger, isMobileOverlay, openOnMount]);
 
   useEffect(() => {
     try {
@@ -214,13 +241,26 @@ export function ShellWebSearchForm({
     }
   }
 
-  function handleSubmit(_event: FormEvent<HTMLFormElement>) {
-    persistRecentSearch(createRecentSearchQueryEntry(searchValue));
-
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (isMobileOverlay) {
+      event.preventDefault();
+
+      if (!normalizedSearchValue) {
+        setIsOpen(true);
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      persistRecentSearch(createRecentSearchQueryEntry(normalizedSearchValue));
       clearOverlayReturnState();
       setIsOpen(false);
+      router.replace(buildSearchHref(normalizedSearchValue), {
+        scroll: false,
+      });
+      return;
     }
+
+    persistRecentSearch(createRecentSearchQueryEntry(searchValue));
   }
 
   function handleBlur(event: FocusEvent<HTMLDivElement>) {
@@ -317,7 +357,9 @@ export function ShellWebSearchForm({
   const searchForm = (
     <form
       action={buildWebPath(webPathnames.search)}
-      className={styles.searchForm}
+      className={`${styles.searchForm}${
+        isMobileOverlay ? ` ${styles.mobileSearchOverlayForm}` : ''
+      }`}
       onSubmit={handleSubmit}
       role="search"
     >
@@ -521,7 +563,7 @@ export function ShellWebSearchForm({
         ) : null}
         {isOpen ? (
           <div
-            aria-labelledby={`${inputId}-overlay-title`}
+            aria-label="Zoeken"
             aria-modal="true"
             className={styles.mobileSearchOverlay}
             onKeyDown={(event) => {
@@ -533,12 +575,9 @@ export function ShellWebSearchForm({
             role="dialog"
           >
             <div className={styles.mobileSearchOverlayBar}>
-              <p
-                className={styles.mobileSearchOverlayTitle}
-                id={`${inputId}-overlay-title`}
-              >
-                Zoeken
-              </p>
+              <div className={styles.mobileSearchOverlaySearch}>
+                {searchForm}
+              </div>
               <button
                 aria-label="Zoeken sluiten"
                 className={styles.mobileSearchClose}
@@ -548,8 +587,7 @@ export function ShellWebSearchForm({
                 <Icon name="close" size={18} />
               </button>
             </div>
-            <div className={styles.mobileSearchOverlayBody}>
-              {searchForm}
+            <div className={styles.mobileSearchOverlayResults}>
               {searchPanel}
             </div>
           </div>

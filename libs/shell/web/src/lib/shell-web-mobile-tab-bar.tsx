@@ -15,6 +15,7 @@ import {
   createCurrentLocationHref,
   writeSearchOverlayReturnState,
 } from './shell-web-search-overlay-return-state';
+import { dispatchOpenMobileSearchOverlayEvent } from './shell-web-search-overlay-events';
 
 export type ShellWebMobileTabId = 'deals' | 'following' | 'search' | 'themes';
 
@@ -107,7 +108,7 @@ function renderMobileTabBar(activeTabId?: ShellWebMobileTabId) {
                   isActive ? ` ${styles.mobileTabLinkActive}` : ''
                 }`}
                 href={mobileTabItem.href}
-                onClick={() => {
+                onClick={(event) => {
                   if (
                     mobileTabItem.id !== 'search' ||
                     typeof window === 'undefined'
@@ -115,8 +116,18 @@ function renderMobileTabBar(activeTabId?: ShellWebMobileTabId) {
                     return;
                   }
 
+                  const currentLocationHref = createCurrentLocationHref(
+                    window.location,
+                  );
+
+                  if (currentLocationHref === searchOverlayPath) {
+                    event.preventDefault();
+                    dispatchOpenMobileSearchOverlayEvent(window);
+                    return;
+                  }
+
                   writeSearchOverlayReturnState(window.sessionStorage, {
-                    href: createCurrentLocationHref(window.location),
+                    href: currentLocationHref,
                     scrollX: window.scrollX,
                     scrollY: window.scrollY,
                   });

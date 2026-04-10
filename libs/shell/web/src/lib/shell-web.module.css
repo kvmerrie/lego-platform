@@ -442,8 +442,10 @@
   background: var(--lego-surface);
   align-content: baseline;
   display: grid;
-  gap: var(--lego-space-4);
+  gap: var(--lego-space-3);
+  grid-template-rows: auto minmax(0, 1fr);
   inset: 0;
+  overflow: hidden;
   padding: max(var(--lego-space-4), env(safe-area-inset-top))
     var(--lego-space-4) max(var(--lego-space-5), env(safe-area-inset-bottom));
   position: fixed;
@@ -453,23 +455,21 @@
 .mobileSearchOverlayBar {
   align-items: center;
   display: flex;
-  gap: var(--lego-space-3);
-  justify-content: space-between;
+  gap: var(--lego-space-2);
 }
 
-.mobileSearchOverlayTitle {
-  color: var(--lego-text);
-  font-size: var(--lego-font-size-lg);
-  font-weight: var(--lego-font-weight-bold);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin: 0;
+.mobileSearchOverlaySearch {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-.mobileSearchOverlayBody {
-  display: grid;
-  gap: var(--lego-space-4);
-  align-content: start;
+.mobileSearchOverlayForm {
+  min-height: 0;
+}
+
+.mobileSearchOverlayResults {
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .iconActionLink {
