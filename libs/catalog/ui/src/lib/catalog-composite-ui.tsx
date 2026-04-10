@@ -384,22 +384,28 @@ export function CatalogSetDetailHero({
       elevation="rested"
       tone="default"
     >
-      <div className={styles.detailHeroGallery}>{gallery}</div>
-      <div className={styles.detailHeroContent}>
-        <div className={styles.detailHeroHeader}>
-          {badges ? <div className={styles.badgeRow}>{badges}</div> : null}
-          <TitleTag className={styles.detailTitle}>{title}</TitleTag>
-          {pitch ? <p className={styles.detailPitch}>{pitch}</p> : null}
-          <div
-            className={styles.detailVerdictBlock}
-            data-tone={getCatalogSetDetailHeroTone(verdict.tone)}
-          >
-            <p className={styles.detailVerdictKicker}>{verdict.label}</p>
-            <p className={styles.detailVerdict}>{verdict.explanation}</p>
-          </div>
+      <div className={styles.detailHeroMain}>
+        <div className={styles.detailHeroGalleryRegion}>
+          <div className={styles.detailHeroGallery}>{gallery}</div>
+          {keyFacts ? (
+            <div className={styles.detailHeroSpecs}>{keyFacts}</div>
+          ) : null}
         </div>
-        {keyFacts}
-        {decisionPanel}
+        <div className={styles.detailHeroContent}>
+          <div className={styles.detailHeroHeader}>
+            {badges ? <div className={styles.badgeRow}>{badges}</div> : null}
+            <TitleTag className={styles.detailTitle}>{title}</TitleTag>
+            {pitch ? <p className={styles.detailPitch}>{pitch}</p> : null}
+            <div
+              className={styles.detailVerdictBlock}
+              data-tone={getCatalogSetDetailHeroTone(verdict.tone)}
+            >
+              <p className={styles.detailVerdictKicker}>{verdict.label}</p>
+              <p className={styles.detailVerdict}>{verdict.explanation}</p>
+            </div>
+          </div>
+          {decisionPanel}
+        </div>
       </div>
     </Surface>
   );

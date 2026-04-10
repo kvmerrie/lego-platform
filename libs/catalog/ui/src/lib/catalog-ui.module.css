@@ -76,7 +76,7 @@
 
 .heroVisual {
   aspect-ratio: 4 / 3;
-  background: var(--lego-surface-subtle);
+  background: #ffffff;
   border-radius: var(--lego-radius-md);
   min-height: 14.75rem;
 }
@@ -710,6 +710,15 @@
   gap: var(--lego-space-3);
 }
 
+.detailHeroMain {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.detailHeroGalleryRegion {
+  display: contents;
+}
+
 .detailHeroGallery,
 .detailPricingStack,
 .detailInfoGrid {
@@ -726,6 +735,17 @@
 .detailHeroContent {
   align-content: start;
   gap: var(--lego-space-3);
+  order: 2;
+}
+
+.detailHeroSpecs {
+  display: grid;
+  gap: var(--lego-space-3);
+  order: 3;
+}
+
+.detailHeroGallery {
+  order: 1;
 }
 
 .detailDecisionStack {
@@ -739,53 +759,170 @@
 
 .galleryShell {
   display: grid;
-  gap: var(--lego-space-1);
+  gap: var(--lego-space-2);
 }
 
-.galleryTrack {
+.galleryShellSingle {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.galleryMain {
+  min-width: 0;
+}
+
+.galleryMainFrame {
+  max-width: 100%;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+.galleryMainButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
   border-radius: var(--lego-radius-md);
+  cursor: zoom-in;
+  display: block;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.galleryMainButton:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+}
+
+.galleryMainVisual {
+  aspect-ratio: 1 / 1;
+  border: var(--lego-border-width-1) solid
+    color-mix(in srgb, var(--lego-border-subtle) 88%, white 12%);
+  min-height: 0;
+  width: 100%;
+}
+
+.galleryMainVisual .visualMedia[data-hidden='true'] .galleryMainImageLayer {
+  opacity: 0;
+}
+
+.galleryMainImageLayer {
+  height: 100%;
+  transition: opacity 0.01ms linear;
+  width: 100%;
+}
+
+.galleryMainChrome {
+  align-items: end;
   display: flex;
   gap: var(--lego-space-2);
+  inset-inline: var(--lego-space-2);
+  justify-content: space-between;
+  pointer-events: none;
+  position: absolute;
+  bottom: var(--lego-space-2);
+  transition: opacity var(--lego-motion-duration-fast)
+    var(--lego-motion-ease-standard);
+}
+
+.galleryMainChrome[data-hidden='true'] {
+  opacity: 0;
+}
+
+.galleryCounter,
+.galleryNavButton {
+  background: color-mix(in srgb, var(--lego-surface) 94%, white 6%);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text);
+  display: inline-flex;
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1;
+  padding: 0.52rem 0.82rem;
+}
+
+.galleryCounter {
+  color: var(--lego-text-muted);
+  white-space: nowrap;
+}
+
+.galleryNavGroup {
+  display: inline-flex;
+  gap: var(--lego-space-2);
+  pointer-events: auto;
+}
+
+.galleryNavButton {
+  align-items: center;
+  cursor: pointer;
+  justify-content: center;
+  min-height: 2.125rem;
+  min-width: 2.125rem;
+  padding: 0;
+}
+
+.galleryNavButton:disabled {
+  color: var(--lego-disabled);
+  cursor: default;
+}
+
+.galleryNavButton:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+}
+
+.galleryNavIcon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.galleryThumbRail {
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-auto-columns: minmax(4.25rem, 4.75rem);
+  grid-auto-flow: column;
   margin: 0;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
+  padding-bottom: 0.1rem;
   scrollbar-width: none;
 }
 
-.galleryTrack::-webkit-scrollbar {
+.galleryThumbRail::-webkit-scrollbar {
   display: none;
 }
 
-.gallerySlide {
-  flex: 0 0 100%;
+.galleryThumbButton {
+  appearance: none;
+  background: #ffffff;
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-sm);
+  cursor: pointer;
+  display: grid;
   min-width: 0;
-  scroll-snap-align: start;
+  overflow: hidden;
+  padding: 0.35rem;
 }
 
-.galleryDots {
-  display: flex;
-  gap: var(--lego-space-1);
-  justify-content: center;
+.galleryThumbButton[data-active='true'] {
+  background: #ffffff;
+  border-color: color-mix(in srgb, var(--lego-text) 54%, white 46%);
 }
 
-.galleryDot {
-  background: var(--lego-text-muted);
-  border-radius: var(--lego-radius-xs);
+.galleryThumbButton:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+}
+
+.galleryThumbImage {
+  aspect-ratio: 1 / 1;
   display: block;
-  height: 0.5rem;
-  min-height: auto;
-  min-width: auto;
-  padding: 0;
-  width: 0.5rem;
-}
-
-.galleryMeta {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-text-role-meta-line-height);
-  margin: 0;
-  text-align: center;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  width: 100%;
 }
 
 .detailTitle {
@@ -804,14 +941,10 @@
 
 .detailPitch {
   color: var(--lego-text);
-  display: -webkit-box;
   font-size: var(--lego-text-role-support-size);
-  font-weight: var(--lego-font-weight-semibold);
-  line-height: 1.4;
-  max-width: 36ch;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  font-weight: var(--lego-font-weight-regular);
+  line-height: 1.6;
+  max-width: 42ch;
 }
 
 .detailVerdictBlock {
@@ -858,52 +991,8 @@
 }
 
 .heroSpecsGrid {
-  display: grid;
-  gap: var(--lego-space-2);
+  gap: var(--lego-space-3) var(--lego-space-4);
   margin: 0;
-}
-
-.heroSpecItem {
-  align-items: start;
-  background: var(--lego-surface-default);
-  border-radius: var(--lego-radius-sm);
-  column-gap: var(--lego-space-2);
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  padding: var(--lego-space-2) var(--lego-space-3);
-}
-
-.heroSpecIcon {
-  align-items: center;
-  color: var(--lego-text-muted);
-  display: inline-flex;
-  justify-content: center;
-}
-
-.heroSpecCopy {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
-.heroSpecLabel,
-.heroSpecValue {
-  margin: 0;
-}
-
-.heroSpecLabel {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-label-size);
-  font-weight: var(--lego-font-weight-bold);
-  letter-spacing: var(--lego-text-role-label-tracking);
-  line-height: var(--lego-text-role-label-line-height);
-  text-transform: uppercase;
-}
-
-.heroSpecValue {
-  color: var(--lego-text);
-  font-weight: var(--lego-font-weight-semibold);
-  line-height: 1.2;
 }
 
 .detailDecisionPanel {
@@ -1938,8 +2027,60 @@
   }
 
   .detailHero {
-    grid-template-columns: minmax(0, 1.08fr) minmax(20rem, 0.92fr);
     align-items: start;
+  }
+
+  .detailHeroMain {
+    align-items: start;
+    display: grid;
+    gap: var(--lego-space-8);
+    grid-template-columns: minmax(0, 1fr) clamp(20rem, 30vw, 24rem);
+  }
+
+  .detailHeroGalleryRegion {
+    align-content: start;
+    display: grid;
+    gap: var(--lego-space-4);
+    min-width: 0;
+  }
+
+  .detailHeroContent {
+    justify-self: end;
+    max-width: 24rem;
+    width: 100%;
+  }
+
+  .galleryShell {
+    align-items: start;
+    grid-template-columns: minmax(4.75rem, 5.5rem) minmax(0, 1fr);
+  }
+
+  .galleryShellSingle {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .galleryMain {
+    order: 2;
+  }
+
+  .galleryShellSingle .galleryMain {
+    order: initial;
+  }
+
+  .galleryMainVisual {
+    aspect-ratio: auto;
+    height: 32rem;
+    min-height: 32rem;
+  }
+
+  .galleryThumbRail {
+    grid-auto-columns: auto;
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+    max-height: 33rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-bottom: 0;
   }
 
   .heroVisual {
@@ -1947,7 +2088,7 @@
   }
 
   .heroSpecsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--lego-space-4) var(--lego-space-6);
   }
 
   .offerRow {
@@ -1983,7 +2124,12 @@
 }
 
 @media (min-width: 72rem) {
+  .detailHeroMain {
+    gap: var(--lego-space-16);
+    grid-template-columns: minmax(0, 1fr) clamp(22rem, 26vw, 25rem);
+  }
+
   .heroSpecsGrid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--lego-space-5) var(--lego-space-8);
   }
 }

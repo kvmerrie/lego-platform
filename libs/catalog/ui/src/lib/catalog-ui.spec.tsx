@@ -468,8 +468,10 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Waarom dit hier meer is dan een prijslink');
     expect(markup).toContain('Je ziet eerst of deze set nu echt opvalt.');
     expect(markup).toContain('Waar prijs en winkels op steunen');
-    expect(markup).toContain('Ga naar afbeelding 2');
-    expect(markup).toContain('Swipe voor meer foto&#x27;s');
+    expect(markup).toContain('Kies foto 2 van 2');
+    expect(markup).toContain('Vorige foto');
+    expect(markup).toContain('Volgende foto');
+    expect(markup).not.toContain('Bekijk alle foto&#x27;s');
     expect(markup).toContain('In collectie zetten');
     expect(markup).toContain('Setnummer');
     expect(markup).toContain('10316');

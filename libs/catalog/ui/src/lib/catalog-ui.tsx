@@ -13,6 +13,7 @@ import type {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
+  type CatalogSetImage,
   normalizeCatalogSetImages,
 } from '@lego-platform/catalog/util';
 import {
@@ -57,6 +58,10 @@ import {
   buildBrickhuntAnalyticsAttributes,
   type BrickhuntAnalyticsEventDescriptor,
 } from '@lego-platform/shared/util';
+import {
+  CatalogSetImageGalleryClient,
+  type CatalogSetGalleryImageItem,
+} from './catalog-set-image-gallery';
 import styles from './catalog-ui.module.css';
 
 export {
@@ -885,13 +890,30 @@ function getCatalogGalleryImages(
     CatalogSetDetail,
     'imageUrl' | 'images' | 'primaryImage'
   >,
-): string[] {
+): readonly CatalogSetImage[] {
   return (
     normalizeCatalogSetImages({
       imageUrl: catalogSetDetail.imageUrl,
       images: catalogSetDetail.images,
       primaryImage: catalogSetDetail.primaryImage,
-    }).images?.map((catalogSetImage) => catalogSetImage.url) ?? []
+    }).images ?? []
+  );
+}
+
+function createCatalogGalleryImageItems(
+  catalogSetDetail: Pick<
+    CatalogSetDetail,
+    'id' | 'imageUrl' | 'images' | 'name' | 'primaryImage'
+  >,
+): readonly CatalogSetGalleryImageItem[] {
+  return getCatalogGalleryImages(catalogSetDetail).map(
+    (catalogSetImage, index) => ({
+      altLabel:
+        index === 0
+          ? `${catalogSetDetail.name} LEGO-set`
+          : `${catalogSetDetail.name} LEGO-set afbeelding ${index + 1}`,
+      url: catalogSetImage.url,
+    }),
   );
 }
 
@@ -900,13 +922,12 @@ function CatalogSetImageGallery({
 }: {
   catalogSetDetail: CatalogSetDetail;
 }) {
-  const galleryImages = getCatalogGalleryImages(catalogSetDetail);
-  const galleryId = `set-gallery-${catalogSetDetail.id}`;
+  const galleryImages = createCatalogGalleryImageItems(catalogSetDetail);
 
-  if (galleryImages.length <= 1) {
+  if (!galleryImages.length) {
     return (
       <CatalogSetVisual
-        imageUrl={galleryImages[0]}
+        imageUrl={catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl}
         name={catalogSetDetail.name}
         setId={catalogSetDetail.id}
         theme={catalogSetDetail.theme}
@@ -916,50 +937,10 @@ function CatalogSetImageGallery({
   }
 
   return (
-    <div className={styles.galleryShell}>
-      <div
-        aria-label={`${catalogSetDetail.name} fotogalerij`}
-        className={styles.galleryTrack}
-        role="group"
-      >
-        {galleryImages.map((galleryImageUrl, index) => (
-          <div
-            className={styles.gallerySlide}
-            id={`${galleryId}-${index + 1}`}
-            key={galleryImageUrl}
-          >
-            <CatalogSetVisual
-              altLabel={
-                index === 0
-                  ? `${catalogSetDetail.name} LEGO-set`
-                  : `${catalogSetDetail.name} LEGO-set afbeelding ${index + 1}`
-              }
-              imageLoading={index === 0 ? 'eager' : 'lazy'}
-              imageUrl={galleryImageUrl}
-              name={catalogSetDetail.name}
-              setId={catalogSetDetail.id}
-              theme={catalogSetDetail.theme}
-              variant="hero"
-            />
-          </div>
-        ))}
-      </div>
-      <div
-        aria-label="Galerijnavigatie"
-        className={styles.galleryDots}
-        role="navigation"
-      >
-        {galleryImages.map((_, index) => (
-          <a
-            aria-label={`Ga naar afbeelding ${index + 1}`}
-            className={styles.galleryDot}
-            href={`#${galleryId}-${index + 1}`}
-            key={`${galleryId}-dot-${index + 1}`}
-          />
-        ))}
-      </div>
-      <p className={styles.galleryMeta}>Swipe voor meer foto's</p>
-    </div>
+    <CatalogSetImageGalleryClient
+      galleryImages={galleryImages}
+      name={catalogSetDetail.name}
+    />
   );
 }
 

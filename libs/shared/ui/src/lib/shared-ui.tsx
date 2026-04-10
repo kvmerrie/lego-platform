@@ -46,7 +46,7 @@ type PanelSpacing = 'compact' | 'default';
 type MetaSignalTone = 'accent' | 'default' | 'info' | 'positive' | 'warning';
 type MarkerListTone = 'accent' | 'default' | 'info' | 'positive' | 'warning';
 type MarkerListSpacing = 'compact' | 'default';
-type LabelValueAppearance = 'plain' | 'tile';
+type LabelValueAppearance = 'hero' | 'plain' | 'tile';
 type LabelValueSpacing = 'compact' | 'default';
 type LabelValueTone = 'default' | 'muted';
 type LabelValueEmphasis = 'regular' | 'strong';
@@ -149,8 +149,18 @@ const labelValueAppearanceClasses: Record<
   LabelValueAppearance,
   string | undefined
 > = {
+  hero: styles.labelValueHero,
   plain: undefined,
   tile: styles.labelValueTile,
+};
+
+const labelValueListAppearanceClasses: Record<
+  LabelValueAppearance,
+  string | undefined
+> = {
+  hero: styles.labelValueListHero,
+  plain: undefined,
+  tile: undefined,
 };
 
 const labelValueSpacingClasses: Record<LabelValueSpacing, string | undefined> =
@@ -570,7 +580,13 @@ export function LabelValueList({
   }
 
   return (
-    <dl className={joinClasses(styles.labelValueList, className)}>
+    <dl
+      className={joinClasses(
+        styles.labelValueList,
+        labelValueListAppearanceClasses[appearance],
+        className,
+      )}
+    >
       {items.map((item) => (
         <div
           className={joinClasses(

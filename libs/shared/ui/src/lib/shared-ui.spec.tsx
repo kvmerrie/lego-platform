@@ -76,6 +76,24 @@ describe('LabelValueList', () => {
     expect(markup).toContain('Nagekeken');
     expect(markup).toContain('3 nagekeken');
   });
+
+  it('supports the shared hero appearance for value-first spec strips', () => {
+    const markup = renderToStaticMarkup(
+      <LabelValueList
+        appearance="hero"
+        items={[
+          { id: 'pieces', label: 'Stenen', value: '2.399' },
+          { id: 'year', label: 'Jaar', value: '2024' },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('<dl');
+    expect(markup).toContain('Stenen');
+    expect(markup).toContain('2.399');
+    expect(markup).toContain('Jaar');
+    expect(markup).toContain('2024');
+  });
 });
 
 describe('Breadcrumbs', () => {

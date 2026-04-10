@@ -253,7 +253,7 @@ export function CatalogKeyFacts({
 }) {
   return (
     <LabelValueList
-      appearance="tile"
+      appearance="hero"
       className={styles.heroSpecsGrid}
       items={items}
       spacing="compact"

@@ -1,3 +1,15 @@
+@import 'photoswipe/style.css';
+
+.pswp {
+  --pswp-bg: #ffffff;
+  --pswp-placeholder-bg: #ffffff;
+  --pswp-icon-color: var(--lego-text);
+  --pswp-icon-color-secondary: rgba(15, 23, 42, 0);
+  --pswp-icon-stroke-color: rgba(15, 23, 42, 0);
+  --pswp-preloader-color: rgba(15, 23, 42, 0.16);
+  --pswp-preloader-color-secondary: rgba(15, 23, 42, 0.76);
+}
+
 *,
 *::before,
 *::after {

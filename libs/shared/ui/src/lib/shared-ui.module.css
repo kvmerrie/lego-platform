@@ -492,6 +492,12 @@
   padding: var(--lego-space-3);
 }
 
+.labelValueHero {
+  background: none;
+  gap: 0;
+  padding: 0;
+}
+
 .labelValueWithIcon {
   align-items: start;
   column-gap: var(--lego-space-2);
@@ -511,6 +517,22 @@
   justify-content: center;
 }
 
+.labelValueHero.labelValueWithIcon {
+  column-gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.labelValueHero .labelValueIcon {
+  display: none;
+}
+
+.labelValueHero .labelValueCopy {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
 .labelValueLabel {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-label-size);
@@ -521,11 +543,28 @@
   text-transform: uppercase;
 }
 
+.labelValueHero .labelValueLabel {
+  font-size: 0.78rem;
+  font-weight: var(--lego-font-weight-medium);
+  letter-spacing: 0;
+  line-height: 1.2;
+  order: 2;
+  text-transform: none;
+}
+
 .labelValueValue {
   color: var(--lego-text);
   font-weight: var(--lego-font-weight-semibold);
   line-height: 1.35;
   margin: 0;
+}
+
+.labelValueHero .labelValueValue {
+  font-size: clamp(1.2rem, 1.05rem + 0.9vw, 1.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  order: 1;
 }
 
 .labelValueValueMuted {
@@ -546,6 +585,18 @@
 .labelValueList {
   display: grid;
   gap: var(--lego-space-2);
+}
+
+.labelValueListHero {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3) var(--lego-space-4);
+}
+
+.labelValueListHero > .labelValueListItem {
+  flex: 0 1 auto;
+  min-inline-size: min(7rem, 100%);
 }
 
 .labelValueListItem {
