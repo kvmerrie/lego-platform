@@ -1,7 +1,11 @@
 .shell {
+  --shell-header-height: calc(2.9rem + (2 * var(--lego-space-2)));
   --shell-mobile-tabbar-height: 4.5rem;
   --shell-mobile-tabbar-offset: calc(
     var(--shell-mobile-tabbar-height) + env(safe-area-inset-bottom)
+  );
+  --shell-sticky-top-offset: calc(
+    var(--shell-header-height) + var(--lego-space-4)
   );
   display: grid;
   grid-template-rows: auto 1fr auto;

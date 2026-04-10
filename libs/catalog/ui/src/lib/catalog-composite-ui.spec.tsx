@@ -92,6 +92,7 @@ describe('CatalogSetDetailHero', () => {
   it('renders the normalized detail-top composition with facts and a decision panel', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailHero
+        children={<section>Vergelijk winkels</section>}
         decisionPanel={
           <CatalogPriceDecisionPanel
             followAction={<button type="button">Volg prijs</button>}
@@ -151,6 +152,7 @@ describe('CatalogSetDetailHero', () => {
     expect(markup).toContain('Beste winkel nu');
     expect(markup).toContain('Waarom dit nu interessant is');
     expect(markup).toContain('Volg prijs');
+    expect(markup).toContain('Vergelijk winkels');
   });
 });
 

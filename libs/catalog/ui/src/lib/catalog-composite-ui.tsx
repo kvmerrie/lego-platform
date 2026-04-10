@@ -355,6 +355,7 @@ export function CatalogSplitIntroPanel({
 export function CatalogSetDetailHero({
   badges,
   className,
+  children,
   decisionPanel,
   gallery,
   keyFacts,
@@ -365,6 +366,7 @@ export function CatalogSetDetailHero({
 }: {
   badges?: ReactNode;
   className?: string;
+  children?: ReactNode;
   decisionPanel: ReactNode;
   gallery: ReactNode;
   keyFacts?: ReactNode;
@@ -385,11 +387,13 @@ export function CatalogSetDetailHero({
       tone="default"
     >
       <div className={styles.detailHeroMain}>
-        <div className={styles.detailHeroGalleryRegion}>
-          <div className={styles.detailHeroGallery}>{gallery}</div>
-          {keyFacts ? (
-            <div className={styles.detailHeroSpecs}>{keyFacts}</div>
-          ) : null}
+        <div className={styles.detailHeroRail}>
+          <div className={styles.detailHeroRailInner}>
+            {gallery}
+            {keyFacts ? (
+              <div className={styles.detailHeroSpecs}>{keyFacts}</div>
+            ) : null}
+          </div>
         </div>
         <div className={styles.detailHeroContent}>
           <div className={styles.detailHeroHeader}>
@@ -406,6 +410,9 @@ export function CatalogSetDetailHero({
           </div>
           {decisionPanel}
         </div>
+        {children ? (
+          <div className={styles.detailHeroSupplementary}>{children}</div>
+        ) : null}
       </div>
     </Surface>
   );

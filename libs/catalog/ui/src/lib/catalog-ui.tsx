@@ -1112,12 +1112,12 @@ export function CatalogSetDetailPanel({
           <CatalogCanonicalText>{catalogSetDetail.name}</CatalogCanonicalText>
         }
         verdict={dealVerdict}
-      />
-
-      <CatalogOfferComparison
-        offers={offerList}
-        summaryLabel={offerSummaryLabel}
-      />
+      >
+        <CatalogOfferComparison
+          offers={offerList}
+          summaryLabel={offerSummaryLabel}
+        />
+      </CatalogSetDetailHero>
 
       {priceHistoryPanel ? (
         <section className={styles.detailPricingStack}>

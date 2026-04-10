@@ -715,13 +715,14 @@
   gap: var(--lego-space-3);
 }
 
-.detailHeroGalleryRegion {
-  display: contents;
-}
-
-.detailHeroGallery,
+.detailHeroRail,
 .detailPricingStack,
 .detailInfoGrid {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.detailHeroRailInner {
   display: grid;
   gap: var(--lego-space-3);
 }
@@ -738,13 +739,19 @@
   order: 2;
 }
 
+.detailHeroSupplementary {
+  display: grid;
+  gap: var(--lego-space-3);
+  order: 4;
+}
+
 .detailHeroSpecs {
   display: grid;
   gap: var(--lego-space-3);
   order: 3;
 }
 
-.detailHeroGallery {
+.detailHeroRail {
   order: 1;
 }
 
@@ -1997,37 +2004,10 @@
   gap: var(--lego-space-4);
 }
 
-@media (min-width: 56rem) {
-  .sectionHeader {
-    align-items: end;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .sectionHeaderAside {
-    justify-items: end;
-  }
-
-  .sectionHeaderSignal {
-    text-align: right;
-  }
-
-  .sectionHeaderUtilityAside {
-    justify-content: flex-end;
-  }
-
-  .heroPanel {
-    align-items: start;
-    grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.85fr);
-  }
-
-  .supportingGrid,
-  .collectorContext,
-  .detailCollectorContext {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
+@media (min-width: 48rem) {
   .detailHero {
     align-items: start;
+    overflow: visible;
   }
 
   .detailHeroMain {
@@ -2035,19 +2015,42 @@
     display: grid;
     gap: var(--lego-space-8);
     grid-template-columns: minmax(0, 1fr) clamp(20rem, 30vw, 24rem);
+    grid-template-rows: auto auto;
   }
 
-  .detailHeroGalleryRegion {
-    align-content: start;
+  .detailHeroRail {
+    align-self: stretch;
     display: grid;
-    gap: var(--lego-space-4);
+    grid-column: 1;
+    grid-row: 1 / span 2;
     min-width: 0;
   }
 
+  .detailHeroRailInner {
+    align-content: start;
+    align-self: start;
+    display: grid;
+    gap: var(--lego-space-4);
+    position: sticky;
+    top: var(--shell-sticky-top-offset, calc(3.9rem + var(--lego-space-4)));
+  }
+
   .detailHeroContent {
+    align-self: start;
+    grid-column: 2;
+    grid-row: 1;
     justify-self: end;
     max-width: 24rem;
     width: 100%;
+  }
+
+  .detailHeroSupplementary {
+    align-content: start;
+    align-self: start;
+    gap: var(--lego-space-4);
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 0;
   }
 
   .galleryShell {
@@ -2109,6 +2112,36 @@
   .offerAction {
     margin-left: 0;
   }
+}
+
+@media (min-width: 56rem) {
+  .sectionHeader {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .sectionHeaderAside {
+    justify-items: end;
+  }
+
+  .sectionHeaderSignal {
+    text-align: right;
+  }
+
+  .sectionHeaderUtilityAside {
+    justify-content: flex-end;
+  }
+
+  .heroPanel {
+    align-items: start;
+    grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.85fr);
+  }
+
+  .supportingGrid,
+  .collectorContext,
+  .detailCollectorContext {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   .detailInfoGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2125,7 +2158,7 @@
 
 @media (min-width: 72rem) {
   .detailHeroMain {
-    gap: var(--lego-space-16);
+    gap: var(--lego-space-14);
     grid-template-columns: minmax(0, 1fr) clamp(22rem, 26vw, 25rem);
   }
 
