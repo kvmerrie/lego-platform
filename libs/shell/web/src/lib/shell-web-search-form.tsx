@@ -14,6 +14,7 @@ import {
   buildWebPath,
   webPathnames,
 } from '@lego-platform/shared/config';
+import { useRouter } from 'next/navigation';
 import { Icon, VisuallyHidden } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import {
@@ -27,6 +28,10 @@ import {
   removeRecentSearchEntry,
   writeRecentSearch,
 } from './shell-web-search-storage';
+import {
+  clearSearchOverlayReturnState,
+  readSearchOverlayReturnState,
+} from './shell-web-search-overlay-return-state';
 import { getNextSearchActiveIndex } from './shell-web-search-navigation';
 
 function buildSearchHref(query: string): string {
@@ -38,16 +43,25 @@ function buildSearchHref(query: string): string {
 }
 
 export function ShellWebSearchForm({
+  autoFocus = false,
   className,
+  closeFallbackHref,
+  hideTrigger = false,
   inputId,
+  openOnMount = false,
   query,
   variant = 'inline',
 }: {
+  autoFocus?: boolean;
   className?: string;
+  closeFallbackHref?: string;
+  hideTrigger?: boolean;
   inputId: string;
+  openOnMount?: boolean;
   query?: string;
   variant?: 'inline' | 'mobile-overlay';
 }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [activeItemIndex, setActiveItemIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<
@@ -63,6 +77,23 @@ export function ShellWebSearchForm({
   useEffect(() => {
     setSearchValue(query ?? '');
   }, [query]);
+
+  useEffect(() => {
+    if (!autoFocus || isMobileOverlay) {
+      return;
+    }
+
+    searchInputRef.current?.focus();
+    setIsOpen(true);
+  }, [autoFocus, isMobileOverlay]);
+
+  useEffect(() => {
+    if (!isMobileOverlay || !openOnMount) {
+      return;
+    }
+
+    setIsOpen(true);
+  }, [isMobileOverlay, openOnMount]);
 
   useEffect(() => {
     try {
@@ -161,6 +192,14 @@ export function ShellWebSearchForm({
     }
   }
 
+  function clearOverlayReturnState() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    clearSearchOverlayReturnState(window.sessionStorage);
+  }
+
   function handleRemoveRecentSearch(
     recentSearchEntry: ShellWebRecentSearchEntry,
   ) {
@@ -179,6 +218,7 @@ export function ShellWebSearchForm({
     persistRecentSearch(createRecentSearchQueryEntry(searchValue));
 
     if (isMobileOverlay) {
+      clearOverlayReturnState();
       setIsOpen(false);
     }
   }
@@ -226,6 +266,7 @@ export function ShellWebSearchForm({
 
       event.preventDefault();
       persistRecentSearch(activePanelItem.recentSearchEntry);
+      clearOverlayReturnState();
       setIsOpen(false);
       window.location.assign(activePanelItem.href);
       return;
@@ -239,6 +280,37 @@ export function ShellWebSearchForm({
 
   function closeMobileOverlay() {
     setActiveItemIndex(-1);
+
+    if (hideTrigger && openOnMount) {
+      const returnState =
+        typeof window === 'undefined'
+          ? undefined
+          : readSearchOverlayReturnState(window.sessionStorage);
+
+      setIsOpen(false);
+
+      if (returnState && window.history.length > 1) {
+        router.back();
+        return;
+      }
+
+      if (returnState?.href) {
+        router.replace(returnState.href, {
+          scroll: false,
+        });
+        return;
+      }
+
+      clearOverlayReturnState();
+
+      if (closeFallbackHref) {
+        router.replace(closeFallbackHref, {
+          scroll: false,
+        });
+        return;
+      }
+    }
+
     setIsOpen(false);
   }
 
@@ -257,6 +329,7 @@ export function ShellWebSearchForm({
       </span>
       <input
         autoComplete="off"
+        autoFocus={autoFocus && !isMobileOverlay}
         className={styles.searchInput}
         enterKeyHint="search"
         id={inputId}
@@ -301,7 +374,10 @@ export function ShellWebSearchForm({
                         ? recentSearch.href
                         : buildSearchHref(recentSearch.query)
                     }
-                    onClick={() => persistRecentSearch(recentSearch)}
+                    onClick={() => {
+                      persistRecentSearch(recentSearch);
+                      clearOverlayReturnState();
+                    }}
                     onMouseEnter={() => setActiveItemIndex(index)}
                   >
                     <span
@@ -364,11 +440,12 @@ export function ShellWebSearchForm({
                             : undefined
                         }
                         href={buildSetDetailPath(searchSuggestion.slug)}
-                        onClick={() =>
+                        onClick={() => {
                           persistRecentSearch(
                             suggestionPanelItem?.recentSearchEntry,
-                          )
-                        }
+                          );
+                          clearOverlayReturnState();
+                        }}
                         onMouseEnter={() => setActiveItemIndex(panelItemIndex)}
                       >
                         {searchSuggestion.imageUrl ? (
@@ -412,7 +489,10 @@ export function ShellWebSearchForm({
                 panelItems.length - 1 === activeItemIndex ? 'true' : undefined
               }
               href={searchResultsHref}
-              onClick={() => persistRecentSearch(searchResultEntry)}
+              onClick={() => {
+                persistRecentSearch(searchResultEntry);
+                clearOverlayReturnState();
+              }}
               onMouseEnter={() => setActiveItemIndex(panelItems.length - 1)}
             >
               Bekijk alle resultaten voor "{normalizedSearchValue}"
@@ -426,17 +506,19 @@ export function ShellWebSearchForm({
   if (isMobileOverlay) {
     return (
       <div className={className}>
-        <button
-          aria-expanded={isOpen}
-          aria-haspopup="dialog"
-          aria-label="Open zoeken"
-          className={styles.mobileSearchButton}
-          onClick={() => setIsOpen(true)}
-          ref={mobileTriggerRef}
-          type="button"
-        >
-          <Icon name="search" size={18} />
-        </button>
+        {!hideTrigger ? (
+          <button
+            aria-expanded={isOpen}
+            aria-haspopup="dialog"
+            aria-label="Open zoeken"
+            className={styles.mobileSearchButton}
+            onClick={() => setIsOpen(true)}
+            ref={mobileTriggerRef}
+            type="button"
+          >
+            <Icon name="search" size={18} />
+          </button>
+        ) : null}
         {isOpen ? (
           <div
             aria-labelledby={`${inputId}-overlay-title`}
@@ -478,7 +560,9 @@ export function ShellWebSearchForm({
 
   return (
     <div
-      className={className}
+      className={
+        className ? `${styles.searchShell} ${className}` : styles.searchShell
+      }
       onBlur={handleBlur}
       onFocus={() => setIsOpen(true)}
     >

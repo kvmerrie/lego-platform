@@ -9,22 +9,22 @@ import { Container, Icon } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import { ShellWebAnalyticsListener } from './shell-web-analytics-listener';
 import { ShellWebFollowLink } from './shell-web-follow-link';
+import { ShellWebMobileTabBar } from './shell-web-mobile-tab-bar';
+import { ShellWebSearchOverlayScrollRestore } from './shell-web-search-overlay-scroll-restore';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
-function renderNavigationLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
+function renderDesktopNavigationLinks() {
   return [
     ...webNavigation.map((navigationItem) => (
       <a
-        className={
-          variant === 'desktop' ? styles.navLink : styles.mobileNavLink
-        }
+        className={styles.navLink}
         href={navigationItem.href}
         key={navigationItem.href}
       >
         {navigationItem.label}
       </a>
     )),
-    <ShellWebFollowLink key={`following-${variant}`} variant={variant} />,
+    <ShellWebFollowLink key="following-desktop" variant="desktop" />,
   ];
 }
 
@@ -43,28 +43,17 @@ const shellActionLinks = [
   },
 ] as const;
 
-function renderActionLinks({ variant }: { variant: 'desktop' | 'mobile' }) {
-  return shellActionLinks.map((actionLink) =>
-    variant === 'desktop' ? (
-      <a
-        aria-label={actionLink.ariaLabel}
-        className={styles.iconActionLink}
-        href={actionLink.href}
-        key={actionLink.href}
-      >
-        <Icon name={actionLink.iconName} size={17} />
-      </a>
-    ) : (
-      <a
-        className={styles.mobileUtilityLink}
-        href={actionLink.href}
-        key={actionLink.href}
-      >
-        <Icon name={actionLink.iconName} size={18} />
-        <span className={styles.mobileUtilityText}>{actionLink.label}</span>
-      </a>
-    ),
-  );
+function renderDesktopActionLinks() {
+  return shellActionLinks.map((actionLink) => (
+    <a
+      aria-label={actionLink.ariaLabel}
+      className={styles.iconActionLink}
+      href={actionLink.href}
+      key={actionLink.href}
+    >
+      <Icon name={actionLink.iconName} size={17} />
+    </a>
+  ));
 }
 
 export function ShellWeb({
@@ -77,6 +66,7 @@ export function ShellWeb({
   return (
     <div className={styles.shell}>
       <ShellWebAnalyticsListener />
+      <ShellWebSearchOverlayScrollRestore />
       <a className={styles.skipLink} href="#main-content">
         Ga direct naar de hoofdinhoud
       </a>
@@ -96,7 +86,7 @@ export function ShellWeb({
                 </span>
               </a>
               <nav aria-label="Hoofdnavigatie" className={styles.desktopNav}>
-                {renderNavigationLinks({ variant: 'desktop' })}
+                {renderDesktopNavigationLinks()}
               </nav>
             </div>
             <div className={styles.headerSecondary}>
@@ -105,34 +95,16 @@ export function ShellWeb({
                 inputId="site-search-desktop"
                 query={searchQuery}
               />
-              <ShellWebSearchForm
-                className={styles.mobileSearchTrigger}
-                inputId="site-search-mobile"
-                query={searchQuery}
-                variant="mobile-overlay"
-              />
               <nav aria-label="Snelle acties" className={styles.desktopActions}>
-                {renderActionLinks({ variant: 'desktop' })}
+                {renderDesktopActionLinks()}
               </nav>
-              <details className={styles.mobileMenu}>
-                <summary className={styles.mobileMenuSummary}>
-                  <span className={styles.mobileMenuLabel}>Menu</span>
-                </summary>
-                <div className={styles.mobileMenuPanel}>
-                  <nav
-                    aria-label="Mobiele hoofdnavigatie"
-                    className={styles.mobileNav}
-                  >
-                    {renderNavigationLinks({ variant: 'mobile' })}
-                  </nav>
-                  <nav
-                    aria-label="Collectoracties"
-                    className={styles.mobileUtilityLinks}
-                  >
-                    {renderActionLinks({ variant: 'mobile' })}
-                  </nav>
-                </div>
-              </details>
+              <a
+                aria-label="Ga naar account"
+                className={`${styles.iconActionLink} ${styles.mobileAccountLink}`}
+                href={buildWebPath(webPathnames.account)}
+              >
+                <Icon name="user" size={17} />
+              </a>
             </div>
           </div>
         </Container>
@@ -148,6 +120,7 @@ export function ShellWeb({
           </p>
         </Container>
       </footer>
+      <ShellWebMobileTabBar />
     </div>
   );
 }

@@ -18,6 +18,10 @@
   gap: var(--lego-space-3);
 }
 
+.searchEntry {
+  inline-size: min(100%, 34rem);
+}
+
 .stateActions {
   display: flex;
   flex-wrap: wrap;

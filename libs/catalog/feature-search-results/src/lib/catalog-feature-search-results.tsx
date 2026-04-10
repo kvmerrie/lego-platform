@@ -144,10 +144,12 @@ export function CatalogFeatureSearchResults({
   activeFilter,
   query,
   reviewedPriceContexts = [],
+  searchEntry,
 }: {
   activeFilter?: string;
   query?: string;
   reviewedPriceContexts?: readonly CatalogFeatureSearchReviewedPriceContext[];
+  searchEntry?: ReactNode;
 }) {
   const searchQuery = readSearchQuery(query);
   const normalizedFilter = normalizeCatalogQuickFilterKey(activeFilter);
@@ -177,6 +179,9 @@ export function CatalogFeatureSearchResults({
         titleAs="h1"
         tone="muted"
       >
+        {searchEntry ? (
+          <div className={styles.searchEntry}>{searchEntry}</div>
+        ) : null}
         <div className={styles.stateActions}>
           <ActionLink
             href={buildWebPath(webPathnames.discover)}

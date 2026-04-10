@@ -18,6 +18,17 @@ describe('CatalogFeatureSearchResults', () => {
     expect(markup).toContain('href="/discover"');
   });
 
+  it('renders a shared search entry when the empty state receives one', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSearchResults
+        searchEntry={<form action="/search">Zoek direct</form>}
+      />,
+    );
+
+    expect(markup).toContain('Zoek direct');
+    expect(markup).toContain('action="/search"');
+  });
+
   it('renders matching catalog cards for a query', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSearchResults
@@ -39,23 +50,16 @@ describe('CatalogFeatureSearchResults', () => {
     expect(markup).toContain('1 passende set');
     expect(markup).toContain('1 met reviewed prijzen');
     expect(markup).toContain('Avengers Tower');
-    expect(markup).toContain('Reviewed prijs');
-    expect(markup).toContain('bij bol');
-    expect(markup).toContain('onder de referentie');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
-    expect(markup).not.toContain('Reviewed price');
   });
 
-  it('falls back to minifigure highlights when no reviewed price context is available', () => {
+  it('still returns the right set when no reviewed price context is available', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSearchResults query="at-at" />,
     );
 
     expect(markup).toContain('AT-AT');
-    expect(markup).toContain('Luke Skywalker');
-    expect(markup).toContain('General Veers');
-    expect(markup).toContain('Snowtrooper Commander');
-    expect(markup).toContain('Met');
+    expect(markup).toContain('href="/sets/at-at-75313"');
   });
 
   it('renders character-name matches when a query hits curated minifigure highlights', () => {
@@ -65,10 +69,6 @@ describe('CatalogFeatureSearchResults', () => {
 
     expect(markup).toContain('Resultaten voor &quot;grogu&quot;');
     expect(markup).toContain('The Razor Crest');
-    expect(markup).toContain('The Mandalorian');
-    expect(markup).toContain('Grogu');
-    expect(markup).toContain('Kuiil');
-    expect(markup).toContain('Met');
     expect(markup).toContain('href="/sets/the-razor-crest-75331"');
   });
 

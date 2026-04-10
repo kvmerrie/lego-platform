@@ -10,7 +10,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "libs/shell/web",
-        "command": "vitest run src/lib/shell-web.spec.tsx src/lib/shell-web-search-form.spec.tsx src/lib/shell-web-search-storage.spec.ts src/lib/shell-web-search-navigation.spec.ts --config ../../vitest.config.mts"
+        "command": "vitest run src/lib/shell-web.spec.tsx src/lib/shell-web-search-form.spec.tsx src/lib/shell-web-search-overlay-scroll-restore.spec.tsx src/lib/shell-web-search-storage.spec.ts src/lib/shell-web-search-navigation.spec.ts --config ../../vitest.config.mts"
       }
     }
   }

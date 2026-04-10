@@ -1,4 +1,8 @@
 .shell {
+  --shell-mobile-tabbar-height: 4.5rem;
+  --shell-mobile-tabbar-offset: calc(
+    var(--shell-mobile-tabbar-height) + env(safe-area-inset-bottom)
+  );
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-height: 100dvh;
@@ -110,6 +114,11 @@
   display: none;
   inline-size: clamp(15.5rem, 26vw, 21rem);
   position: relative;
+}
+
+.searchShell {
+  position: relative;
+  width: 100%;
 }
 
 .mobileSearchTrigger {
@@ -400,6 +409,10 @@
   gap: 0.2rem;
 }
 
+.mobileAccountLink {
+  display: inline-flex;
+}
+
 .mobileSearchButton,
 .mobileSearchClose {
   align-items: center;
@@ -575,6 +588,7 @@
 .mainInner {
   display: grid;
   gap: var(--lego-space-6);
+  padding-bottom: calc(var(--lego-space-4) + var(--shell-mobile-tabbar-offset));
 }
 
 .footer {
@@ -584,7 +598,7 @@
 }
 
 .footerInner {
-  padding-bottom: var(--lego-space-8);
+  padding-bottom: calc(var(--lego-space-8) + var(--shell-mobile-tabbar-offset));
   padding-top: var(--lego-space-5);
 }
 
@@ -594,6 +608,72 @@
   line-height: var(--lego-line-height-relaxed);
   margin: 0;
   max-width: 56ch;
+}
+
+.mobileTabBar {
+  background: color-mix(in srgb, var(--lego-surface) 94%, white 6%);
+  border-top: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  bottom: 0;
+  left: 0;
+  padding: 0.55rem max(var(--lego-space-3), env(safe-area-inset-right))
+    max(0.55rem, env(safe-area-inset-bottom))
+    max(var(--lego-space-3), env(safe-area-inset-left));
+  position: fixed;
+  right: 0;
+  z-index: 25;
+}
+
+.mobileTabList {
+  display: grid;
+  gap: var(--lego-space-1);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobileTabItem {
+  min-width: 0;
+}
+
+.mobileTabLink {
+  align-items: center;
+  border-radius: var(--lego-radius-md);
+  color: var(--lego-text-muted);
+  display: grid;
+  gap: 0.18rem;
+  justify-items: center;
+  min-height: 3.4rem;
+  padding: 0.42rem 0.3rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.mobileTabLink:hover,
+.mobileTabLink:focus-visible {
+  background: var(--lego-surface-subtle);
+  color: var(--lego-text);
+  outline: none;
+}
+
+.mobileTabLink:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+}
+
+.mobileTabLinkActive {
+  background: var(--lego-surface-subtle);
+  color: var(--lego-text);
+}
+
+.mobileTabIcon {
+  flex: 0 0 auto;
+}
+
+.mobileTabLabel {
+  font-size: 0.7rem;
+  font-weight: var(--lego-font-weight-semibold);
+  letter-spacing: 0.01em;
+  line-height: 1.1;
 }
 
 @media (min-width: 64rem) {
@@ -620,11 +700,27 @@
     display: flex;
   }
 
+  .mobileAccountLink {
+    display: none;
+  }
+
   .mobileSearchTrigger {
     display: none;
   }
 
   .mobileMenu {
+    display: none;
+  }
+
+  .mainInner {
+    padding-bottom: 0;
+  }
+
+  .footerInner {
+    padding-bottom: var(--lego-space-8);
+  }
+
+  .mobileTabBar {
     display: none;
   }
 }

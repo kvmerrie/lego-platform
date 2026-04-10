@@ -2,12 +2,23 @@
 
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ShellWebSearchForm } from './shell-web-search-form';
+import { writeSearchOverlayReturnState } from './shell-web-search-overlay-return-state';
 import {
   createRecentSearchSetEntry,
   writeRecentSearch,
 } from './shell-web-search-storage';
+
+const routerBack = vi.fn();
+const routerReplace = vi.fn();
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    back: routerBack,
+    replace: routerReplace,
+  }),
+}));
 
 describe('ShellWebSearchForm', () => {
   let container: HTMLDivElement;
@@ -18,7 +29,10 @@ describe('ShellWebSearchForm', () => {
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
+    routerBack.mockReset();
+    routerReplace.mockReset();
     window.localStorage.clear();
+    window.sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -30,6 +44,7 @@ describe('ShellWebSearchForm', () => {
     document.body.innerHTML = '';
     document.body.style.overflow = '';
     window.localStorage.clear();
+    window.sessionStorage.clear();
   });
 
   it('opens a full-screen mobile overlay with recent searches and live suggestions', () => {
@@ -99,5 +114,75 @@ describe('ShellWebSearchForm', () => {
     expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(document.body.style.overflow).toBe('');
     expect(document.activeElement).toBe(openButton);
+  });
+
+  it('can autofocus the inline search field for a direct search page entry', () => {
+    act(() => {
+      root.render(
+        <ShellWebSearchForm autoFocus inputId="site-search-inline-entry" />,
+      );
+    });
+
+    const searchInput = container.querySelector(
+      '#site-search-inline-entry',
+    ) as HTMLInputElement | null;
+
+    expect(document.activeElement).toBe(searchInput);
+  });
+
+  it('can open the fullscreen overlay immediately without rendering a trigger', () => {
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          hideTrigger
+          inputId="site-search-overlay-entry"
+          openOnMount
+          variant="mobile-overlay"
+        />,
+      );
+    });
+
+    const searchInput = container.querySelector(
+      '#site-search-overlay-entry',
+    ) as HTMLInputElement | null;
+
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(
+      container.querySelector('button[aria-label="Open zoeken"]'),
+    ).toBeNull();
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.activeElement).toBe(searchInput);
+  });
+
+  it('returns to the stored fallback route when the overlay closes without history', () => {
+    writeSearchOverlayReturnState(window.sessionStorage, {
+      href: '/themes/icons',
+      scrollX: 0,
+      scrollY: 640,
+    });
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          closeFallbackHref="/discover"
+          hideTrigger
+          inputId="site-search-overlay-close"
+          openOnMount
+          variant="mobile-overlay"
+        />,
+      );
+    });
+
+    const closeButton = container.querySelector(
+      'button[aria-label="Zoeken sluiten"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      closeButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    expect(routerReplace).toHaveBeenCalledWith('/themes/icons', {
+      scroll: false,
+    });
   });
 });
