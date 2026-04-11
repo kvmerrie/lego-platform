@@ -6,6 +6,7 @@ type ThemeTokenMap = Record<string, string>;
 export const designBreakpoints = {
   md: '48rem',
   lg: '56rem',
+  xl: '100rem',
 } as const;
 
 const baseTokens: ThemeTokenMap = {
@@ -13,6 +14,7 @@ const baseTokens: ThemeTokenMap = {
   'lego-border-width-2': '2px',
   'lego-breakpoint-md': designBreakpoints.md,
   'lego-breakpoint-lg': designBreakpoints.lg,
+  'lego-breakpoint-xl': designBreakpoints.xl,
   'lego-font-family-body':
     "var(--font-plus-jakarta-sans), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
   'lego-font-family-heading':
@@ -66,34 +68,36 @@ const baseTokens: ThemeTokenMap = {
   'lego-motion-duration-slow': '320ms',
   'lego-motion-ease-standard': 'cubic-bezier(0.2, 0, 0, 1)',
   'lego-motion-ease-emphasized': 'cubic-bezier(0.16, 1, 0.3, 1)',
-  'lego-text-role-display-size': 'var(--lego-font-size-5xl)',
+  'lego-text-role-display-size': 'clamp(2.35rem, 9vw, 3.4rem)',
   'lego-text-role-display-line-height': '0.96',
   'lego-text-role-display-weight': 'var(--lego-font-weight-bold)',
-  'lego-text-role-hero-size': 'var(--lego-font-size-4xl)',
+  'lego-text-role-hero-size': 'clamp(2rem, 6vw, 2.75rem)',
   'lego-text-role-hero-line-height': '1.02',
   'lego-text-role-hero-weight': 'var(--lego-font-weight-bold)',
-  'lego-text-role-section-size': 'var(--lego-font-size-2xl)',
+  'lego-text-role-section-size': '1.6rem',
   'lego-text-role-section-line-height': 'var(--lego-line-height-heading)',
   'lego-text-role-section-weight': 'var(--lego-font-weight-bold)',
-  'lego-text-role-card-title-size': 'var(--lego-font-size-xl)',
+  'lego-text-role-card-title-size': '1.2rem',
   'lego-text-role-card-title-line-height': '1.2',
   'lego-text-role-card-title-weight': 'var(--lego-font-weight-semibold)',
   'lego-text-role-body-size': 'var(--lego-font-size-body)',
   'lego-text-role-body-line-height': 'var(--lego-line-height-body)',
   'lego-text-role-body-weight': 'var(--lego-font-weight-regular)',
-  'lego-text-role-support-size': '0.9375rem',
+  'lego-text-role-support-size': '0.9rem',
   'lego-text-role-support-line-height': '1.5',
-  'lego-text-role-meta-size': 'var(--lego-font-size-sm)',
+  'lego-text-role-meta-size': '0.8125rem',
   'lego-text-role-meta-line-height': '1.45',
-  'lego-text-role-eyebrow-size': 'var(--lego-font-size-caption)',
+  'lego-text-role-eyebrow-size': '0.6875rem',
   'lego-text-role-eyebrow-line-height': '1.2',
-  'lego-text-role-label-size': 'var(--lego-font-size-caption)',
+  'lego-text-role-label-size': '0.6875rem',
   'lego-text-role-label-line-height': '1.2',
   'lego-text-role-label-tracking': '0.08em',
   'lego-text-role-mono-size': 'var(--lego-font-size-sm)',
   'lego-text-role-mono-line-height': '1.45',
   'lego-list-marker-size': '0.5rem',
   'lego-list-marker-radius': '3px',
+  'lego-surface-default': 'var(--lego-surface)',
+  'lego-text-default': 'var(--lego-text)',
 };
 
 const lightThemeTokens: ThemeTokenMap = {
@@ -221,6 +225,28 @@ body {
   font-size: var(--lego-text-role-body-size);
   font-weight: var(--lego-text-role-body-weight);
   line-height: var(--lego-text-role-body-line-height);
+}
+
+@media (min-width: ${designBreakpoints.md}) {
+  :root {
+    --lego-text-role-display-size: clamp(2.8rem, 6vw, 4.5rem);
+    --lego-text-role-hero-size: clamp(2.25rem, 4vw, 3.15rem);
+    --lego-text-role-section-size: 1.72rem;
+    --lego-text-role-card-title-size: 1.28rem;
+    --lego-text-role-support-size: 0.9375rem;
+    --lego-text-role-meta-size: var(--lego-font-size-sm);
+    --lego-text-role-eyebrow-size: var(--lego-font-size-caption);
+    --lego-text-role-label-size: var(--lego-font-size-caption);
+  }
+}
+
+@media (min-width: ${designBreakpoints.xl}) {
+  :root {
+    --lego-text-role-display-size: var(--lego-font-size-5xl);
+    --lego-text-role-hero-size: var(--lego-font-size-4xl);
+    --lego-text-role-section-size: var(--lego-font-size-2xl);
+    --lego-text-role-card-title-size: var(--lego-font-size-xl);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

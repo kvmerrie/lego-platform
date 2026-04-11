@@ -1,14 +1,16 @@
 .page {
   display: grid;
-  gap: var(--lego-space-6);
+  gap: var(--lego-page-section-gap, var(--lego-space-6));
+  padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
 }
 
 .intro {
   background: var(--lego-surface-subtle);
-  border-radius: var(--lego-radius-lg);
+  border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
   display: grid;
   gap: var(--lego-space-3);
-  padding: var(--lego-space-6);
+  padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
+  padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-6));
 }
 
 .introMeta {
@@ -29,14 +31,9 @@
 }
 
 @media (min-width: 64rem) {
-  .page {
-    gap: var(--lego-space-7);
-  }
-
   .intro {
     align-items: end;
     grid-template-columns: minmax(0, 1fr) auto;
-    padding: var(--lego-space-7);
   }
 
   .introMeta {

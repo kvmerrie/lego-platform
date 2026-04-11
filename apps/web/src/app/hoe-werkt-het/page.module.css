@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  gap: var(--lego-space-6);
+  gap: var(--lego-page-section-gap, var(--lego-space-6));
   padding-bottom: var(--lego-space-6);
 }
 

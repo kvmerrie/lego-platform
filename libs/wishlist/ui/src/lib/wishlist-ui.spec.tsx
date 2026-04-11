@@ -148,6 +148,7 @@ describe('WantedSetToggleCard', () => {
     );
 
     expect(markup).toContain('Volg');
+    expect(markup).toContain('aria-label="Volg"');
     expect(markup).not.toContain('Zet prijsalert aan');
     expect(markup).not.toContain('Aan verlanglijst toevoegen');
   });

@@ -1,13 +1,19 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import type {
+  ComponentProps,
+  PointerEvent as ReactPointerEvent,
+  ReactNode,
+} from 'react';
 import type {
   CatalogHomepageSetCard,
   CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import { Button } from '@lego-platform/shared/ui';
 import type { BrickhuntAnalyticsEventDescriptor } from '@lego-platform/shared/util';
+import { CatalogSectionShell } from './catalog-composite-ui';
 import {
   CatalogSetCard,
   CatalogSetCardCollection,
@@ -35,6 +41,20 @@ interface CatalogSetCardRailMetrics {
   thumbWidthPercent: number;
 }
 
+interface CatalogSetCardRailScrollbarDragState {
+  maxScrollLeft: number;
+  maxThumbOffset: number;
+  pointerId: number;
+  startClientX: number;
+  startScrollLeft: number;
+}
+
+interface CatalogSetCardRailProps {
+  ariaLabel: string;
+  items: readonly CatalogSetCardRailItem[];
+  variant?: 'compact' | 'featured';
+}
+
 function getRailMetrics(
   railElement: HTMLDivElement,
 ): CatalogSetCardRailMetrics {
@@ -57,26 +77,92 @@ function getRailMetrics(
   };
 }
 
-export function CatalogSetCardRail({
+function clampRailValue(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function CatalogSetCardRailIcon({
+  icon: Icon,
+}: {
+  icon: typeof ChevronLeft | typeof ChevronRight;
+}) {
+  return (
+    <Icon
+      className={styles.setCardRailHeadingIcon}
+      size={16}
+      strokeWidth={2.35}
+    />
+  );
+}
+
+function CatalogSetCardRailHeadingControls({
   ariaLabel,
-  items,
-  variant = 'featured',
+  canScrollNext,
+  canScrollPrevious,
+  hasOverflow,
+  onNext,
+  onPrevious,
+  railId,
 }: {
   ariaLabel: string;
-  items: readonly CatalogSetCardRailItem[];
-  variant?: 'compact' | 'featured';
+  canScrollNext: boolean;
+  canScrollPrevious: boolean;
+  hasOverflow: boolean;
+  onNext: () => void;
+  onPrevious: () => void;
+  railId: string;
+}) {
+  if (!hasOverflow) {
+    return null;
+  }
+
+  return (
+    <div className={styles.setCardRailHeadingControls}>
+      <Button
+        aria-controls={railId}
+        aria-label={`Scroll ${ariaLabel} naar links`}
+        className={styles.setCardRailHeadingButton}
+        disabled={!canScrollPrevious}
+        onClick={onPrevious}
+        tone="secondary"
+        type="button"
+      >
+        <CatalogSetCardRailIcon icon={ChevronLeft} />
+      </Button>
+      <Button
+        aria-controls={railId}
+        aria-label={`Scroll ${ariaLabel} naar rechts`}
+        className={styles.setCardRailHeadingButton}
+        disabled={!canScrollNext}
+        onClick={onNext}
+        tone="secondary"
+        type="button"
+      >
+        <CatalogSetCardRailIcon icon={ChevronRight} />
+      </Button>
+    </div>
+  );
+}
+
+function CatalogSetCardRailViewport({
+  ariaLabel,
+  items,
+  render,
+  variant = 'featured',
+}: CatalogSetCardRailProps & {
+  render: (content: { controls: ReactNode; rail: ReactNode }) => ReactNode;
 }) {
   const railId = useId();
   const railRef = useRef<HTMLDivElement>(null);
   const scrollbarRef = useRef<HTMLDivElement>(null);
-  const dragAbortControllerRef = useRef<AbortController | null>(null);
-  const dragPointerIdRef = useRef<number | null>(null);
-  const dragThumbOffsetRef = useRef(0);
+  const scrollbarDragStateRef =
+    useRef<CatalogSetCardRailScrollbarDragState | null>(null);
   const [railMetrics, setRailMetrics] = useState<CatalogSetCardRailMetrics>({
     hasOverflow: false,
     progress: 0,
     thumbWidthPercent: 100,
   });
+  const [isScrollbarDragging, setIsScrollbarDragging] = useState(false);
 
   useEffect(() => {
     const railElement = railRef.current;
@@ -86,7 +172,20 @@ export function CatalogSetCardRail({
     }
 
     let animationFrameId = 0;
+    let followUpAnimationFrameId = 0;
     let isFrameQueued = false;
+    let syncTimeoutId = 0;
+    const cleanupImageListeners: Array<() => void> = [];
+
+    function flushRailMetrics() {
+      const nextRailElement = railRef.current;
+
+      if (!nextRailElement) {
+        return;
+      }
+
+      setRailMetrics(getRailMetrics(nextRailElement));
+    }
 
     function syncRailMetrics() {
       if (isFrameQueued) {
@@ -96,39 +195,82 @@ export function CatalogSetCardRail({
       isFrameQueued = true;
       animationFrameId = requestAnimationFrame(() => {
         isFrameQueued = false;
-        const nextRailElement = railRef.current;
+        flushRailMetrics();
+      });
+    }
 
-        if (!nextRailElement) {
-          return;
-        }
+    function syncRailMetricsSoon() {
+      syncRailMetrics();
+      clearTimeout(syncTimeoutId);
+      syncTimeoutId = window.setTimeout(flushRailMetrics, 120);
+    }
 
-        setRailMetrics(getRailMetrics(nextRailElement));
+    function bindRailImageListeners() {
+      const nextRailElement = railRef.current;
+
+      cleanupImageListeners.splice(0).forEach((cleanup) => cleanup());
+
+      if (!nextRailElement) {
+        return;
+      }
+
+      const railImages = nextRailElement.querySelectorAll('img');
+
+      railImages.forEach((image) => {
+        image.addEventListener('load', syncRailMetricsSoon, { passive: true });
+        image.addEventListener('error', syncRailMetricsSoon, {
+          passive: true,
+        });
+
+        cleanupImageListeners.push(() => {
+          image.removeEventListener('load', syncRailMetricsSoon);
+          image.removeEventListener('error', syncRailMetricsSoon);
+        });
       });
     }
 
     syncRailMetrics();
+    followUpAnimationFrameId = requestAnimationFrame(() => {
+      syncRailMetricsSoon();
+    });
     railElement.addEventListener('scroll', syncRailMetrics, { passive: true });
+    window.addEventListener('resize', syncRailMetricsSoon, { passive: true });
+    window.addEventListener('load', syncRailMetricsSoon, { passive: true });
 
     const resizeObserver =
       typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(syncRailMetrics)
+        ? new ResizeObserver(syncRailMetricsSoon)
+        : null;
+    const mutationObserver =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(() => {
+            bindRailImageListeners();
+            syncRailMetricsSoon();
+          })
         : null;
 
     resizeObserver?.observe(railElement);
+    Array.from(railElement.children).forEach((child) => {
+      resizeObserver?.observe(child);
+    });
+    mutationObserver?.observe(railElement, {
+      childList: true,
+      subtree: true,
+    });
+    bindRailImageListeners();
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(followUpAnimationFrameId);
+      clearTimeout(syncTimeoutId);
       railElement.removeEventListener('scroll', syncRailMetrics);
+      window.removeEventListener('resize', syncRailMetricsSoon);
+      window.removeEventListener('load', syncRailMetricsSoon);
+      cleanupImageListeners.splice(0).forEach((cleanup) => cleanup());
       resizeObserver?.disconnect();
+      mutationObserver?.disconnect();
     };
   }, [items.length]);
-
-  useEffect(
-    () => () => {
-      dragAbortControllerRef.current?.abort();
-    },
-    [],
-  );
 
   if (!items.length) {
     return null;
@@ -149,148 +291,156 @@ export function CatalogSetCardRail({
     });
   }
 
-  function scrollRailFromThumbPosition(clientX: number) {
+  function getScrollbarLayout() {
     const railElement = railRef.current;
     const scrollbarElement = scrollbarRef.current;
 
     if (!railElement || !scrollbarElement) {
-      return;
+      return null;
     }
 
-    const scrollbarRect = scrollbarElement.getBoundingClientRect();
     const maxScrollLeft = Math.max(
       railElement.scrollWidth - railElement.clientWidth,
       0,
     );
+    const trackWidth = scrollbarElement.clientWidth;
+    const thumbWidth = (trackWidth * railMetrics.thumbWidthPercent) / 100;
+    const maxThumbOffset = Math.max(trackWidth - thumbWidth, 0);
 
-    if (maxScrollLeft <= 0 || scrollbarRect.width <= 0) {
+    return {
+      maxScrollLeft,
+      maxThumbOffset,
+      railElement,
+      scrollbarElement,
+      thumbWidth,
+      trackWidth,
+    };
+  }
+
+  function setRailScrollPosition(nextScrollLeft: number) {
+    const railElement = railRef.current;
+
+    if (!railElement) {
       return;
     }
 
-    const thumbWidth =
-      (railMetrics.thumbWidthPercent / 100) * scrollbarRect.width;
-    const maxThumbOffset = Math.max(scrollbarRect.width - thumbWidth, 0);
-    const nextThumbOffset = Math.min(
-      Math.max(clientX - scrollbarRect.left - dragThumbOffsetRef.current, 0),
-      maxThumbOffset,
+    const maxScrollLeft = Math.max(
+      railElement.scrollWidth - railElement.clientWidth,
+      0,
     );
-    const nextProgress = maxThumbOffset ? nextThumbOffset / maxThumbOffset : 0;
-
-    railElement.scrollLeft = nextProgress * maxScrollLeft;
+    railElement.scrollLeft = clampRailValue(nextScrollLeft, 0, maxScrollLeft);
+    setRailMetrics(getRailMetrics(railElement));
   }
 
-  function beginScrollbarDrag({
-    clientX,
-    pointerId,
-    thumbOffset,
-  }: {
-    clientX: number;
-    pointerId: number;
-    thumbOffset: number;
-  }) {
-    dragAbortControllerRef.current?.abort();
-    dragPointerIdRef.current = pointerId;
-    dragThumbOffsetRef.current = thumbOffset;
-    scrollRailFromThumbPosition(clientX);
-    const dragAbortController = new AbortController();
-    dragAbortControllerRef.current = dragAbortController;
-
-    function handlePointerMove(event: PointerEvent) {
-      if (dragPointerIdRef.current !== event.pointerId) {
-        return;
-      }
-
-      scrollRailFromThumbPosition(event.clientX);
-    }
-
-    function handlePointerEnd(event: PointerEvent) {
-      if (dragPointerIdRef.current !== event.pointerId) {
-        return;
-      }
-
-      dragPointerIdRef.current = null;
-      dragAbortController.abort();
-      dragAbortControllerRef.current = null;
-    }
-
-    window.addEventListener('pointermove', handlePointerMove, {
-      signal: dragAbortController.signal,
-    });
-    window.addEventListener('pointerup', handlePointerEnd, {
-      signal: dragAbortController.signal,
-    });
-    window.addEventListener('pointercancel', handlePointerEnd, {
-      signal: dragAbortController.signal,
-    });
-  }
-
-  function handleScrollbarPointerDown(
+  function handleScrollbarTrackPointerDown(
     event: ReactPointerEvent<HTMLDivElement>,
   ) {
-    const scrollbarElement = scrollbarRef.current;
+    if (event.button !== 0 || !railMetrics.hasOverflow) {
+      return;
+    }
 
-    if (!scrollbarElement) {
+    const layout = getScrollbarLayout();
+
+    if (!layout || layout.maxScrollLeft <= 0) {
       return;
     }
 
     event.preventDefault();
 
-    const scrollbarRect = scrollbarElement.getBoundingClientRect();
-    const thumbWidth =
-      (railMetrics.thumbWidthPercent / 100) * scrollbarRect.width;
+    const pointerOffset =
+      event.clientX - layout.scrollbarElement.getBoundingClientRect().left;
+    const nextThumbOffset = clampRailValue(
+      pointerOffset - layout.thumbWidth / 2,
+      0,
+      layout.maxThumbOffset,
+    );
+    const nextProgress = layout.maxThumbOffset
+      ? nextThumbOffset / layout.maxThumbOffset
+      : 0;
 
-    beginScrollbarDrag({
-      clientX: event.clientX,
-      pointerId: event.pointerId,
-      thumbOffset: thumbWidth / 2,
-    });
+    setRailScrollPosition(nextProgress * layout.maxScrollLeft);
   }
 
   function handleScrollbarThumbPointerDown(
     event: ReactPointerEvent<HTMLDivElement>,
   ) {
-    const thumbRect = event.currentTarget.getBoundingClientRect();
+    if (event.button !== 0 || !railMetrics.hasOverflow) {
+      return;
+    }
+
+    const layout = getScrollbarLayout();
+
+    if (!layout || layout.maxScrollLeft <= 0 || layout.maxThumbOffset <= 0) {
+      return;
+    }
 
     event.preventDefault();
     event.stopPropagation();
 
-    beginScrollbarDrag({
-      clientX: event.clientX,
+    scrollbarDragStateRef.current = {
+      maxScrollLeft: layout.maxScrollLeft,
+      maxThumbOffset: layout.maxThumbOffset,
       pointerId: event.pointerId,
-      thumbOffset: event.clientX - thumbRect.left,
-    });
+      startClientX: event.clientX,
+      startScrollLeft: layout.railElement.scrollLeft,
+    };
+    setIsScrollbarDragging(true);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleScrollbarThumbPointerMove(
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) {
+    const dragState = scrollbarDragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const scrollDelta =
+      ((event.clientX - dragState.startClientX) / dragState.maxThumbOffset) *
+      dragState.maxScrollLeft;
+
+    setRailScrollPosition(dragState.startScrollLeft + scrollDelta);
+  }
+
+  function handleScrollbarThumbPointerEnd(
+    event: ReactPointerEvent<HTMLDivElement>,
+  ) {
+    const dragState = scrollbarDragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    scrollbarDragStateRef.current = null;
+    setIsScrollbarDragging(false);
   }
 
   const thumbOffsetPercent = railMetrics.hasOverflow
     ? railMetrics.progress * (100 - railMetrics.thumbWidthPercent)
     : 0;
-
-  return (
+  const hasDesktopControls = items.length > 1 && railMetrics.hasOverflow;
+  const shouldRenderScrollbar = items.length > 1;
+  const controls = hasDesktopControls ? (
+    <CatalogSetCardRailHeadingControls
+      ariaLabel={ariaLabel}
+      canScrollNext={railMetrics.progress < 0.99}
+      canScrollPrevious={railMetrics.progress > 0.01}
+      hasOverflow={hasDesktopControls}
+      onNext={() => scrollRail('next')}
+      onPrevious={() => scrollRail('previous')}
+      railId={railId}
+    />
+  ) : null;
+  const rail = (
     <div className={styles.setCardRail}>
-      {items.length > 1 ? (
-        <div className={styles.setCardRailControls}>
-          <Button
-            aria-controls={railId}
-            aria-label={`Scroll ${ariaLabel} naar links`}
-            className={styles.setCardRailButton}
-            onClick={() => scrollRail('previous')}
-            tone="secondary"
-            type="button"
-          >
-            Vorige
-          </Button>
-          <Button
-            aria-controls={railId}
-            aria-label={`Scroll ${ariaLabel} naar rechts`}
-            className={styles.setCardRailButton}
-            onClick={() => scrollRail('next')}
-            tone="secondary"
-            type="button"
-          >
-            Volgende
-          </Button>
-        </div>
-      ) : null}
       <CatalogSetCardCollection
         className={styles.setCardRailTrack}
         id={railId}
@@ -312,17 +462,23 @@ export function CatalogSetCardRail({
           />
         ))}
       </CatalogSetCardCollection>
-      {railMetrics.hasOverflow ? (
+      {shouldRenderScrollbar ? (
         <div
           aria-hidden="true"
           className={styles.setCardRailScrollbar}
-          onPointerDown={handleScrollbarPointerDown}
+          data-dragging={isScrollbarDragging ? 'true' : undefined}
+          data-visible={railMetrics.hasOverflow ? 'true' : 'false'}
+          onPointerDown={handleScrollbarTrackPointerDown}
           ref={scrollbarRef}
           role="presentation"
         >
           <div
             className={styles.setCardRailScrollbarThumb}
+            data-dragging={isScrollbarDragging ? 'true' : undefined}
+            onPointerCancel={handleScrollbarThumbPointerEnd}
             onPointerDown={handleScrollbarThumbPointerDown}
+            onPointerMove={handleScrollbarThumbPointerMove}
+            onPointerUp={handleScrollbarThumbPointerEnd}
             style={{
               left: `${thumbOffsetPercent}%`,
               width: `${railMetrics.thumbWidthPercent}%`,
@@ -331,5 +487,53 @@ export function CatalogSetCardRail({
         </div>
       ) : null}
     </div>
+  );
+
+  return render({
+    controls,
+    rail,
+  });
+}
+
+export function CatalogSetCardRail({
+  ariaLabel,
+  items,
+  variant = 'featured',
+}: CatalogSetCardRailProps) {
+  return (
+    <CatalogSetCardRailViewport
+      ariaLabel={ariaLabel}
+      items={items}
+      render={({ rail }) => rail}
+      variant={variant}
+    />
+  );
+}
+
+export function CatalogSetCardRailSection({
+  ariaLabel,
+  items,
+  variant = 'featured',
+  ...sectionProps
+}: Omit<
+  ComponentProps<typeof CatalogSectionShell>,
+  'children' | 'utility' | 'utilityPlacement'
+> &
+  CatalogSetCardRailProps) {
+  return (
+    <CatalogSetCardRailViewport
+      ariaLabel={ariaLabel}
+      items={items}
+      render={({ controls, rail }) => (
+        <CatalogSectionShell
+          utility={controls}
+          utilityPlacement="aside"
+          {...sectionProps}
+        >
+          {rail}
+        </CatalogSectionShell>
+      )}
+      variant={variant}
+    />
   );
 }

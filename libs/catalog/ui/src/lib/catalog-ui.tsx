@@ -18,11 +18,11 @@ import {
 } from '@lego-platform/catalog/util';
 import {
   ArrowDown,
-  ArrowRight,
   Blocks,
   Cake,
   CalendarDays,
   Clock3,
+  Eye,
   Hash,
   Minus,
   Package2,
@@ -615,12 +615,16 @@ export function CatalogSetCard({
           <div className={styles.cardCompactFooter}>
             <CatalogSetNumberMeta setId={setSummary.id} />
             {href ? (
-              <span className={styles.cardCompactAction}>
-                <span>{primaryActionLabel}</span>
-                <ArrowRight
+              <span
+                className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction}`}
+              >
+                <Eye
                   aria-hidden="true"
                   className={styles.cardCompactActionIcon}
                 />
+                <span className={styles.cardCompactActionLabel}>
+                  {primaryActionLabel}
+                </span>
               </span>
             ) : null}
           </div>
@@ -749,16 +753,19 @@ export function CatalogSetCard({
               ) : null}
               {href ? (
                 <ActionLink
-                  className={styles.cardCompactAction}
+                  aria-label={primaryActionLabel}
+                  className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction}`}
                   href={href}
                   tone="inline"
                   {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
                 >
-                  <span>{primaryActionLabel}</span>
-                  <ArrowRight
+                  <Eye
                     aria-hidden="true"
                     className={styles.cardCompactActionIcon}
                   />
+                  <span className={styles.cardCompactActionLabel}>
+                    {primaryActionLabel}
+                  </span>
                 </ActionLink>
               ) : null}
             </div>

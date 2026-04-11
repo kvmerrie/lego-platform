@@ -67,9 +67,17 @@ ul li::marker {
 .metric-card {
   background: var(--lego-surface-subtle);
   border: var(--lego-border-width-1) solid transparent;
-  border-radius: var(--lego-radius-md);
+  border-radius: var(--lego-surface-radius, var(--lego-radius-md));
   box-shadow: none;
-  padding: var(--lego-space-5);
+  padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-5));
+  padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-5));
+}
+
+section.surface {
+  border-radius: var(
+    --lego-section-surface-radius-md,
+    var(--lego-surface-radius, var(--lego-radius-md))
+  );
 }
 
 .section-heading h2,

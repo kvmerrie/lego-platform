@@ -26,7 +26,7 @@ export function CatalogFeatureThemeSpotlight({
       eyebrow="Meer om te ontdekken"
       headingClassName={styles.header}
       id="theme-spotlight"
-      padding="relaxed"
+      padding="default"
       signal={`${themeItems.length} thema's als je iets anders zoekt`}
       title="Botanicals, kunst of modulaire straten?"
       tone="plain"

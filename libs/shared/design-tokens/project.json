@@ -5,5 +5,13 @@
   "projectType": "library",
   "tags": ["scope:shared", "type:design-system", "platform:shared"],
   "// targets": "to see all targets run: nx show project shared-design-tokens --web",
-  "targets": {}
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/shared/design-tokens",
+        "command": "vitest run src/lib/shared-design-tokens.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
 }

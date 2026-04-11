@@ -590,8 +590,17 @@
 }
 
 .mainInner {
+  --lego-page-section-gap: var(--lego-space-1);
+  --lego-section-inline-padding: var(--lego-space-3);
+  --lego-surface-radius: var(--lego-radius-md);
+  --lego-section-surface-radius-md: 0px;
+  --lego-section-surface-radius-lg: 0px;
+  --lego-surface-padding-md-block: var(--lego-space-3);
+  --lego-surface-padding-md-inline: var(--lego-space-3);
+  --lego-surface-padding-lg-block: var(--lego-space-4);
+  --lego-surface-padding-lg-inline: var(--lego-space-3);
   display: grid;
-  gap: var(--lego-space-6);
+  gap: var(--lego-page-section-gap);
   padding-bottom: calc(var(--lego-space-4) + var(--shell-mobile-tabbar-offset));
 }
 
@@ -680,6 +689,16 @@
   line-height: 1.1;
 }
 
+@media (min-width: 48rem) {
+  .mainInner {
+    --lego-section-inline-padding: var(--lego-space-4);
+    --lego-surface-padding-md-block: var(--lego-space-4);
+    --lego-surface-padding-md-inline: var(--lego-space-4);
+    --lego-surface-padding-lg-block: var(--lego-space-5);
+    --lego-surface-padding-lg-inline: var(--lego-space-4);
+  }
+}
+
 @media (min-width: 64rem) {
   .headerBar {
     gap: var(--lego-space-4);
@@ -726,5 +745,24 @@
 
   .mobileTabBar {
     display: none;
+  }
+}
+
+@media (min-width: 72rem) {
+  .mainInner {
+    --lego-surface-padding-md-block: var(--lego-space-5);
+    --lego-surface-padding-lg-block: var(--lego-space-6);
+  }
+}
+
+@media (min-width: 100rem) {
+  .mainInner {
+    --lego-page-section-gap: var(--lego-space-6);
+    --lego-section-inline-padding: var(--lego-space-6);
+    --lego-surface-radius: var(--lego-radius-md);
+    --lego-section-surface-radius-md: var(--lego-radius-md);
+    --lego-section-surface-radius-lg: var(--lego-radius-lg);
+    --lego-surface-padding-md-inline: var(--lego-space-5);
+    --lego-surface-padding-lg-inline: var(--lego-space-6);
   }
 }

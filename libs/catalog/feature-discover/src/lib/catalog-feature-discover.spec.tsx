@@ -56,21 +56,19 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('Beste deals om eerst te bekijken');
     expect(markup).toContain('Iconische personages en castfavorieten');
     expect(markup).toContain('Eerst het openen waard');
-    expect(markup).toContain(
+    expect(markup).not.toContain(
       'Scroll Beste deals om eerst te bekijken naar rechts',
     );
-    expect(markup).toContain(
+    expect(markup).not.toContain(
       'Scroll Iconische personages en castfavorieten naar rechts',
     );
-    expect(markup).toContain('Scroll Eerst het openen waard naar rechts');
+    expect(markup).not.toContain('Scroll Eerst het openen waard naar rechts');
     expect(markup.indexOf('Beste deals om eerst te bekijken')).toBeLessThan(
       markup.indexOf('Iconische personages en castfavorieten'),
     );
     expect(
       markup.indexOf('Iconische personages en castfavorieten'),
     ).toBeLessThan(markup.indexOf('Eerst het openen waard'));
-    expect(markup).toContain('Iron Man');
-    expect(markup).toContain('Spider-Man');
     expect(markup).toContain('Bekijk alle thema');
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('Icons');
@@ -140,11 +138,10 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain(
       'De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan.',
     );
-    expect(markup).toContain(
+    expect(markup).not.toContain(
       'Scroll Beste deals om eerst te bekijken naar links',
     );
     expect(markup).toContain('EUR 30.00 below reference');
-    expect(markup).toContain('Iron Man');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 

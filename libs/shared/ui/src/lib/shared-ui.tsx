@@ -208,6 +208,7 @@ export function Surface({
         padding === 'lg' ? styles.surfacePaddingLg : styles.surfacePaddingMd,
         className,
       )}
+      data-surface-element={as}
       {...rest}
     >
       {children}

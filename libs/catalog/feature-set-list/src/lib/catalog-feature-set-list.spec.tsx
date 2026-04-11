@@ -48,10 +48,12 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('2 sets die meteen de kamer pakken');
     expect(markup).toContain('1 met nagekeken prijzen');
     expect(markup).toContain('Prijs volgt');
-    expect(markup).toContain('Scroll Torens, walkers, supercars naar links');
-    expect(markup).toContain('Scroll Torens, walkers, supercars naar rechts');
-    expect(markup).toContain('Vorige');
-    expect(markup).toContain('Volgende');
+    expect(markup).not.toContain('Scroll Torens, walkers, supercars naar links');
+    expect(markup).not.toContain(
+      'Scroll Torens, walkers, supercars naar rechts',
+    );
+    expect(markup).not.toContain('Vorige');
+    expect(markup).not.toContain('Volgende');
     expect(markup).not.toContain('Public catalog');
   });
 

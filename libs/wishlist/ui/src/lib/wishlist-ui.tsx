@@ -12,7 +12,7 @@ import {
   type BrickhuntAnalyticsProperties,
 } from '@lego-platform/shared/util';
 import { WishlistItem } from '@lego-platform/wishlist/util';
-import { Bookmark, Heart, LoaderCircle } from 'lucide-react';
+import { Heart, LoaderCircle } from 'lucide-react';
 import styles from './wishlist-ui.module.css';
 
 export function WishlistItemCard({
@@ -203,11 +203,7 @@ export function WantedSetToggleCard({
 
   if (variant === 'inline') {
     const isInlineLoading = Boolean(isLoading || isPending);
-    const InlineActionIcon = isInlineLoading
-      ? LoaderCircle
-      : productIntent === 'price-alert'
-        ? Heart
-        : Bookmark;
+    const InlineActionIcon = isInlineLoading ? LoaderCircle : Heart;
     const inlineActionLabel = isUnavailable
       ? productIntent === 'price-alert'
         ? 'Volg'
@@ -237,6 +233,7 @@ export function WantedSetToggleCard({
           </p>
         ) : null}
         <Button
+          aria-label={inlineActionLabel}
           className={`${styles.inlineToggleButton} ${
             isWanted
               ? styles.inlineToggleButtonActive
@@ -251,14 +248,9 @@ export function WantedSetToggleCard({
           <InlineActionIcon
             aria-hidden="true"
             className={styles.inlineToggleIcon}
-            fill={
-              !isInlineLoading && productIntent === 'price-alert' && isWanted
-                ? 'currentColor'
-                : 'none'
-            }
+            fill={!isInlineLoading && isWanted ? 'currentColor' : 'none'}
             strokeWidth={2.1}
           />
-          <span>{inlineActionLabel}</span>
         </Button>
       </article>
     );

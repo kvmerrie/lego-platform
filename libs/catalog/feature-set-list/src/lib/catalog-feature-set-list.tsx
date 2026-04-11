@@ -5,7 +5,7 @@ import {
   CatalogSectionShell,
   CatalogSetCard,
   CatalogSetCardCollection,
-  CatalogSetCardRail,
+  CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
@@ -47,56 +47,55 @@ export function CatalogFeatureSetList({
   const reviewedSetCount = homepageSets.filter(
     (catalogHomepageSetCard) => catalogHomepageSetCard.priceContext,
   ).length;
+  const sectionShellProps = {
+    as: 'section' as const,
+    bodySpacing: 'relaxed' as const,
+    className: styles.section,
+    description,
+    eyebrow,
+    headingClassName: styles.header,
+    id: sectionId,
+    padding: 'default' as const,
+    signal:
+      signalText ??
+      `${homepageSets.length} sets die meteen de kamer pakken${
+        reviewedSetCount ? ` · ${reviewedSetCount} met nagekeken prijzen` : ''
+      }`,
+    spacing: 'relaxed' as const,
+    title,
+    tone,
+  };
 
-  return (
-    <CatalogSectionShell
-      as="section"
-      bodySpacing="relaxed"
-      className={styles.section}
-      description={description}
-      eyebrow={eyebrow}
-      headingClassName={styles.header}
-      id={sectionId}
-      padding="relaxed"
-      signal={
-        signalText ??
-        `${homepageSets.length} sets die meteen de kamer pakken${
-          reviewedSetCount ? ` · ${reviewedSetCount} met nagekeken prijzen` : ''
-        }`
-      }
-      spacing="relaxed"
-      title={title}
-      tone={tone}
-    >
-      {layout === 'grid' ? (
-        <CatalogSetCardCollection className={styles.grid} variant="featured">
-          {homepageSets.map((catalogSetSummary) => (
-            <CatalogSetCard
-              actions={catalogSetSummary.actions}
-              key={catalogSetSummary.id}
-              href={buildSetDetailPath(catalogSetSummary.slug)}
-              priceContext={catalogSetSummary.priceContext}
-              setSummary={catalogSetSummary}
-              trackingEvent={catalogSetSummary.trackingEvent}
-              variant="featured"
-            />
-          ))}
-        </CatalogSetCardCollection>
-      ) : (
-        <CatalogSetCardRail
-          ariaLabel={title}
-          items={homepageSets.map((catalogSetSummary) => ({
-            actions: catalogSetSummary.actions,
-            href: buildSetDetailPath(catalogSetSummary.slug),
-            id: catalogSetSummary.id,
-            priceContext: catalogSetSummary.priceContext,
-            setSummary: catalogSetSummary,
-            trackingEvent: catalogSetSummary.trackingEvent,
-          }))}
-          variant="featured"
-        />
-      )}
+  return layout === 'grid' ? (
+    <CatalogSectionShell {...sectionShellProps}>
+      <CatalogSetCardCollection className={styles.grid} variant="featured">
+        {homepageSets.map((catalogSetSummary) => (
+          <CatalogSetCard
+            actions={catalogSetSummary.actions}
+            key={catalogSetSummary.id}
+            href={buildSetDetailPath(catalogSetSummary.slug)}
+            priceContext={catalogSetSummary.priceContext}
+            setSummary={catalogSetSummary}
+            trackingEvent={catalogSetSummary.trackingEvent}
+            variant="featured"
+          />
+        ))}
+      </CatalogSetCardCollection>
     </CatalogSectionShell>
+  ) : (
+    <CatalogSetCardRailSection
+      {...sectionShellProps}
+      ariaLabel={title}
+      items={homepageSets.map((catalogSetSummary) => ({
+        actions: catalogSetSummary.actions,
+        href: buildSetDetailPath(catalogSetSummary.slug),
+        id: catalogSetSummary.id,
+        priceContext: catalogSetSummary.priceContext,
+        setSummary: catalogSetSummary,
+        trackingEvent: catalogSetSummary.trackingEvent,
+      }))}
+      variant="featured"
+    />
   );
 }
 

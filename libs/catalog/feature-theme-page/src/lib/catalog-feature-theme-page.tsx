@@ -3,7 +3,7 @@ import {
   CatalogSectionShell,
   CatalogSetCard,
   CatalogSetCardCollection,
-  CatalogSetCardRail,
+  CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
@@ -93,8 +93,9 @@ export function CatalogFeatureThemePage({
       </section>
 
       {dealSetCards.length ? (
-        <CatalogSectionShell
+        <CatalogSetCardRailSection
           as="section"
+          ariaLabel={`Hier wil je nu als eerste kijken in ${themeName}`}
           bodySpacing="relaxed"
           className={styles.dealSection}
           description={
@@ -108,6 +109,13 @@ export function CatalogFeatureThemePage({
             </>
           }
           eyebrow="Nu interessant"
+          items={dealSetCards.map((dealSetCard) => ({
+            href: buildSetDetailPath(dealSetCard.slug),
+            id: dealSetCard.id,
+            priceContext: dealSetCard.priceContext,
+            setSummary: dealSetCard,
+            showThemeBadge: false,
+          }))}
           padding="default"
           signal={`${dealSetCards.length} sets`}
           spacing="relaxed"
@@ -121,19 +129,8 @@ export function CatalogFeatureThemePage({
           }
           titleAs="h2"
           tone="inverse"
-        >
-          <CatalogSetCardRail
-            ariaLabel={`Hier wil je nu als eerste kijken in ${themeName}`}
-            items={dealSetCards.map((dealSetCard) => ({
-              href: buildSetDetailPath(dealSetCard.slug),
-              id: dealSetCard.id,
-              priceContext: dealSetCard.priceContext,
-              setSummary: dealSetCard,
-              showThemeBadge: false,
-            }))}
-            variant="featured"
-          />
-        </CatalogSectionShell>
+          variant="featured"
+        />
       ) : null}
 
       <CatalogSectionShell

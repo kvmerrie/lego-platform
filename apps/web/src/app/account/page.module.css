@@ -1,10 +1,4 @@
 .accountPage {
   display: grid;
-  gap: var(--lego-space-4);
-}
-
-@media (min-width: 64rem) {
-  .accountPage {
-    gap: var(--lego-space-5);
-  }
+  gap: var(--lego-page-section-gap, var(--lego-space-4));
 }

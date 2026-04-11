@@ -128,6 +128,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('2023');
     expect(markup).toContain('6.181 stenen');
     expect(markup).toContain('Bekijk prijs');
+    expect(markup).toContain('aria-label="Bekijk prijs"');
     expect(markup).not.toContain('Prestige display anchor');
     expect(markup).not.toContain('Op voorraad · 3 winkels · 29 mrt');
     expect(markup).not.toContain('Dekking');

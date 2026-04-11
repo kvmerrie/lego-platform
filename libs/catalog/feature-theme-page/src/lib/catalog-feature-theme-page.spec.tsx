@@ -88,7 +88,7 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('Marvel');
     expect(markup).toContain('<h1');
     expect(markup).toContain('Hier wil je nu als eerste kijken in');
-    expect(markup).toContain(
+    expect(markup).not.toContain(
       'Scroll Hier wil je nu als eerste kijken in Marvel naar rechts',
     );
     expect(markup).toContain(

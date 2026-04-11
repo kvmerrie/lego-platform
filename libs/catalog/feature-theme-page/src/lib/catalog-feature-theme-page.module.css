@@ -3,8 +3,8 @@
   --theme-page-text: #171a22;
   --theme-page-muted: #425066;
   display: grid;
-  gap: var(--lego-space-6);
-  padding-inline: var(--lego-space-4);
+  gap: var(--lego-page-section-gap, var(--lego-space-6));
+  padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
 }
 
 .page[data-theme='icons'] {
@@ -83,11 +83,12 @@
 
 .intro {
   background: var(--theme-page-surface);
-  border-radius: var(--lego-radius-lg);
+  border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
   display: grid;
   gap: var(--lego-space-3);
   max-width: min(62rem, 100%);
-  padding: var(--lego-space-6);
+  padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
+  padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-6));
 }
 
 .intro :is(h1, h2, h3, p) {
@@ -126,11 +127,7 @@
 }
 
 @media (min-width: 48rem) {
-  .page {
-    padding-inline: var(--lego-space-6);
-  }
-
   .intro {
-    padding: var(--lego-space-7);
+    max-width: min(64rem, 100%);
   }
 }

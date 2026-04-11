@@ -11,7 +11,7 @@ import {
   CatalogSectionShell,
   CatalogSetCard,
   CatalogSetCardCollection,
-  CatalogSetCardRail,
+  CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import {
@@ -240,82 +240,73 @@ export function CatalogFeatureDiscover({
       ) : null}
 
       {hasFilteredContent && filteredDealSetCards.length ? (
-        <CatalogSectionShell
+        <CatalogSetCardRailSection
           as="section"
+          ariaLabel="Beste deals om eerst te bekijken"
           bodySpacing="relaxed"
           className={styles.dealSection}
           description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
           eyebrow="Deals"
+          items={filteredDealSetCards.map((dealSetCard) => ({
+            href: buildSetDetailPath(dealSetCard.slug),
+            id: dealSetCard.id,
+            priceContext: dealSetCard.priceContext,
+            setSummary: dealSetCard,
+            supportingNote: formatDiscoverFanContext(dealSetCard),
+          }))}
           padding="default"
           signal={formatSetCount(filteredDealSetCards.length)}
           title="Beste deals om eerst te bekijken"
           titleAs="h2"
           tone="default"
-        >
-          <CatalogSetCardRail
-            ariaLabel="Beste deals om eerst te bekijken"
-            items={filteredDealSetCards.map((dealSetCard) => ({
-              href: buildSetDetailPath(dealSetCard.slug),
-              id: dealSetCard.id,
-              priceContext: dealSetCard.priceContext,
-              setSummary: dealSetCard,
-              supportingNote: formatDiscoverFanContext(dealSetCard),
-            }))}
-            variant="featured"
-          />
-        </CatalogSectionShell>
+          variant="featured"
+        />
       ) : null}
 
       {hasFilteredContent && filteredCharacterSetCards.length ? (
-        <CatalogSectionShell
+        <CatalogSetCardRailSection
           as="section"
+          ariaLabel="Iconische personages en castfavorieten"
           bodySpacing="relaxed"
           className={styles.featuredSection}
           description="Sets waarbij de cast deel van de aantrekkingskracht is, van grote franchise-ankers tot verhaalgedreven favorieten voor verzamelaars."
           eyebrow="Personages"
+          items={filteredCharacterSetCards.map((characterSetCard) => ({
+            href: buildSetDetailPath(characterSetCard.slug),
+            id: characterSetCard.id,
+            setSummary: characterSetCard,
+            supportingNote: formatDiscoverFanContext(characterSetCard),
+          }))}
           padding="default"
           signal={formatSetCount(filteredCharacterSetCards.length)}
           title="Iconische personages en castfavorieten"
           titleAs="h2"
           tone="muted"
-        >
-          <CatalogSetCardRail
-            ariaLabel="Iconische personages en castfavorieten"
-            items={filteredCharacterSetCards.map((characterSetCard) => ({
-              href: buildSetDetailPath(characterSetCard.slug),
-              id: characterSetCard.id,
-              setSummary: characterSetCard,
-              supportingNote: formatDiscoverFanContext(characterSetCard),
-            }))}
-            variant="compact"
-          />
-        </CatalogSectionShell>
+          variant="compact"
+        />
       ) : null}
 
       {hasFilteredContent && filteredHighlightSetCards.length ? (
-        <CatalogSectionShell
+        <CatalogSetCardRailSection
           as="section"
+          ariaLabel="Eerst het openen waard"
           bodySpacing="relaxed"
           className={styles.featuredSection}
           description="Een strakkere mix van premium vlaggenschepen, iconische franchises en toegankelijkere sets die het waard zijn om eerst te openen."
           eyebrow="Highlights"
+          items={filteredHighlightSetCards.map((highlightSetCard) => ({
+            href: buildSetDetailPath(highlightSetCard.slug),
+            id: highlightSetCard.id,
+            setSummary: highlightSetCard,
+            supportingNote: formatDiscoverFanContext(highlightSetCard),
+          }))}
           padding="default"
           signal={formatSetCount(filteredHighlightSetCards.length)}
           title="Eerst het openen waard"
           titleAs="h2"
           tone="muted"
-        >
-          <CatalogSetCardRail
-            ariaLabel="Eerst het openen waard"
-            items={filteredHighlightSetCards.map((highlightSetCard) => ({
-              href: buildSetDetailPath(highlightSetCard.slug),
-              id: highlightSetCard.id,
-              setSummary: highlightSetCard,
-              supportingNote: formatDiscoverFanContext(highlightSetCard),
-            }))}
-            variant="compact"
-          />
-        </CatalogSectionShell>
+          variant="compact"
+        />
       ) : null}
 
       {hasFilteredContent ? (
