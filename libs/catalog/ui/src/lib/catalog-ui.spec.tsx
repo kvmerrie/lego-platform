@@ -465,6 +465,9 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('2 winkels nagekeken · Nagekeken 31 mrt, 09:00');
     expect(markup).toContain('Laagste prijs op voorraad');
     expect(markup).toContain('€ 30,00 hoger dan de beste optie');
+    expect(markup.indexOf('Vergelijk winkels')).toBeLessThan(
+      markup.indexOf('Prijs in het kort'),
+    );
     expect(markup).toContain('Waarom dit hier meer is dan een prijslink');
     expect(markup).toContain('Je ziet eerst of deze set nu echt opvalt.');
     expect(markup).toContain('Waar prijs en winkels op steunen');

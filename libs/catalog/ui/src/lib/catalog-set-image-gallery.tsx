@@ -254,10 +254,7 @@ export function CatalogSetImageGalleryClient({
             <div
               className={`${styles.setVisual} ${styles.heroVisual} ${styles.galleryMainVisual}`}
             >
-              <div
-                className={styles.visualMedia}
-                data-hidden={isLightboxTransitioning ? 'true' : undefined}
-              >
+              <div className={styles.visualMedia}>
                 <div className={styles.galleryMainImageLayer}>
                   <img
                     alt={activeImage.altLabel}

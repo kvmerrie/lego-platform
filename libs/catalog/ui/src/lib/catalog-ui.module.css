@@ -810,13 +810,8 @@
   width: 100%;
 }
 
-.galleryMainVisual .visualMedia[data-hidden='true'] .galleryMainImageLayer {
-  opacity: 0;
-}
-
 .galleryMainImageLayer {
   height: 100%;
-  transition: opacity 0.01ms linear;
   width: 100%;
 }
 
