@@ -1050,6 +1050,7 @@ export function CatalogSetDetailPanel({
     <section className={styles.detailPage}>
       <Breadcrumbs
         ariaLabel="Setcontext"
+        className={styles.detailBreadcrumbs}
         items={[
           {
             href: themeDirectoryHref,

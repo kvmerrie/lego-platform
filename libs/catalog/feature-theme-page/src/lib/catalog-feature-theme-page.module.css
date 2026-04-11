@@ -4,7 +4,6 @@
   --theme-page-muted: #425066;
   display: grid;
   gap: var(--lego-page-section-gap, var(--lego-space-6));
-  padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
 }
 
 .page[data-theme='icons'] {

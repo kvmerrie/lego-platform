@@ -48,7 +48,9 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('2 sets die meteen de kamer pakken');
     expect(markup).toContain('1 met nagekeken prijzen');
     expect(markup).toContain('Prijs volgt');
-    expect(markup).not.toContain('Scroll Torens, walkers, supercars naar links');
+    expect(markup).not.toContain(
+      'Scroll Torens, walkers, supercars naar links',
+    );
     expect(markup).not.toContain(
       'Scroll Torens, walkers, supercars naar rechts',
     );

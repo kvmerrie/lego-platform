@@ -760,7 +760,13 @@
 .detailPage {
   display: grid;
   gap: var(--lego-space-3);
-  padding-inline: var(--lego-space-5);
+}
+
+.detailBreadcrumbs {
+  padding-inline: var(
+    --lego-surface-padding-md-inline,
+    var(--lego-section-inline-padding, var(--lego-space-3))
+  );
 }
 
 .detailHero {
@@ -2091,10 +2097,6 @@
 }
 
 @media (min-width: 48rem) {
-  .detailPage {
-    padding-inline: var(--lego-space-5);
-  }
-
   .setCardRail {
     --catalog-rail-card-gap: var(--lego-space-3);
   }
@@ -2107,10 +2109,6 @@
 }
 
 @media (min-width: 72rem) {
-  .detailPage {
-    padding-inline: var(--lego-space-6);
-  }
-
   .setCardRailTrack {
     grid-auto-columns: calc(
       (100% - (var(--catalog-rail-card-gap) * 3.75)) / 4.75
