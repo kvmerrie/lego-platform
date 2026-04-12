@@ -45,7 +45,10 @@ export default async function SearchPage({
     });
 
   return (
-    <ShellWeb searchQuery={query}>
+    <ShellWeb
+      searchQuery={query}
+      showMobileSearchOverlay={!shouldOpenMobileOverlay}
+    >
       <CatalogFeatureSearchResults
         activeFilter={activeFilter}
         query={query}

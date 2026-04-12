@@ -1,6 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import {
+  advanceShellHeaderRevealState,
+  getShellHeaderRevealConfig,
+} from './shell-web-header-reveal';
 import { getActiveMobileTabId } from './shell-web-mobile-tab-bar';
+import { getShellMobileViewportBottomOffset } from './shell-web-mobile-viewport-offset';
 import {
   getFollowLinkLabel,
   getFollowingNavPageSurface,
@@ -120,6 +125,146 @@ describe('getFollowLinkLabel', () => {
         interestingSetCount: 1,
       }),
     ).toBe('Volgt (3) · 1 nu interessant');
+  });
+});
+
+describe('getShellMobileViewportBottomOffset', () => {
+  it('returns no extra offset when the visual viewport already reaches the bottom', () => {
+    expect(
+      getShellMobileViewportBottomOffset({
+        innerHeight: 844,
+        visualViewportHeight: 844,
+        visualViewportOffsetTop: 0,
+      }),
+    ).toBe(0);
+  });
+
+  it('returns the bottom chrome inset when the visual viewport is shorter', () => {
+    expect(
+      getShellMobileViewportBottomOffset({
+        innerHeight: 844,
+        visualViewportHeight: 780,
+        visualViewportOffsetTop: 0,
+      }),
+    ).toBe(64);
+  });
+
+  it('keeps the bottom anchor stable when the visual viewport is also shifted down', () => {
+    expect(
+      getShellMobileViewportBottomOffset({
+        innerHeight: 844,
+        visualViewportHeight: 760,
+        visualViewportOffsetTop: 24,
+      }),
+    ).toBe(60);
+  });
+});
+
+describe('getShellHeaderRevealConfig', () => {
+  it('uses more aggressive thresholds on mobile than on desktop', () => {
+    expect(getShellHeaderRevealConfig(390)).toEqual({
+      hideDistance: 24,
+      minDelta: 4,
+      showDistance: 14,
+      topVisibleOffset: 56,
+    });
+
+    expect(getShellHeaderRevealConfig(1280)).toEqual({
+      hideDistance: 56,
+      minDelta: 6,
+      showDistance: 26,
+      topVisibleOffset: 96,
+    });
+  });
+});
+
+describe('advanceShellHeaderRevealState', () => {
+  it('keeps the header visible near the top of the page', () => {
+    expect(
+      advanceShellHeaderRevealState({
+        currentScrollY: 32,
+        state: {
+          accumulatedDown: 18,
+          accumulatedUp: 0,
+          hidden: true,
+          lastScrollY: 18,
+        },
+        viewportWidth: 390,
+      }),
+    ).toEqual({
+      accumulatedDown: 0,
+      accumulatedUp: 0,
+      hidden: false,
+      lastScrollY: 32,
+    });
+  });
+
+  it('hides faster on mobile and requires a calmer, longer scroll on desktop', () => {
+    const mobileHidden = advanceShellHeaderRevealState({
+      currentScrollY: 120,
+      state: {
+        accumulatedDown: 0,
+        accumulatedUp: 0,
+        hidden: false,
+        lastScrollY: 92,
+      },
+      viewportWidth: 390,
+    });
+
+    const desktopStillVisible = advanceShellHeaderRevealState({
+      currentScrollY: 152,
+      state: {
+        accumulatedDown: 0,
+        accumulatedUp: 0,
+        hidden: false,
+        lastScrollY: 120,
+      },
+      viewportWidth: 1280,
+    });
+
+    expect(mobileHidden.hidden).toBe(true);
+    expect(desktopStillVisible.hidden).toBe(false);
+  });
+
+  it('reveals the header again after a meaningful upward scroll', () => {
+    expect(
+      advanceShellHeaderRevealState({
+        currentScrollY: 212,
+        state: {
+          accumulatedDown: 0,
+          accumulatedUp: 0,
+          hidden: true,
+          lastScrollY: 242,
+        },
+        viewportWidth: 1280,
+      }),
+    ).toEqual({
+      accumulatedDown: 0,
+      accumulatedUp: 0,
+      hidden: false,
+      lastScrollY: 212,
+    });
+  });
+
+  it('forces the header visible while the fullscreen search overlay is open', () => {
+    expect(
+      advanceShellHeaderRevealState({
+        currentScrollY: 420,
+        overlayOpen: true,
+        state: {
+          accumulatedDown: 22,
+          accumulatedUp: 0,
+          hidden: true,
+          lastScrollY: 408,
+        },
+        viewportWidth: 390,
+      }),
+    ).toEqual({
+      accumulatedDown: 0,
+      accumulatedUp: 0,
+      hidden: false,
+      lastScrollY: 420,
+    });
   });
 });
 

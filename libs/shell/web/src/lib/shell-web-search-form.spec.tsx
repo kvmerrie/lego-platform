@@ -165,6 +165,30 @@ describe('ShellWebSearchForm', () => {
     expect(document.activeElement).toBe(searchInput);
   });
 
+  it('can open the hidden mobile overlay from the shared tab-bar event and focus immediately', () => {
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          hideTrigger
+          inputId="site-search-shell-overlay"
+          variant="mobile-overlay"
+        />,
+      );
+    });
+
+    act(() => {
+      window.dispatchEvent(new Event(openMobileSearchOverlayEventName));
+    });
+
+    const searchInput = container.querySelector(
+      '#site-search-shell-overlay',
+    ) as HTMLInputElement | null;
+
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.activeElement).toBe(searchInput);
+  });
+
   it('returns to the stored fallback route when the overlay closes without history', () => {
     writeSearchOverlayReturnState(window.sessionStorage, {
       href: '/themes/icons',

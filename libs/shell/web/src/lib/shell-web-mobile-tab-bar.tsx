@@ -11,10 +11,6 @@ import {
 import { usePathname } from 'next/navigation';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import styles from './shell-web.module.css';
-import {
-  createCurrentLocationHref,
-  writeSearchOverlayReturnState,
-} from './shell-web-search-overlay-return-state';
 import { dispatchOpenMobileSearchOverlayEvent } from './shell-web-search-overlay-events';
 
 export type ShellWebMobileTabId = 'deals' | 'following' | 'search' | 'themes';
@@ -116,29 +112,27 @@ function renderMobileTabBar(activeTabId?: ShellWebMobileTabId) {
                     return;
                   }
 
-                  const currentLocationHref = createCurrentLocationHref(
-                    window.location,
-                  );
-
-                  if (currentLocationHref === searchOverlayPath) {
-                    event.preventDefault();
-                    dispatchOpenMobileSearchOverlayEvent(window);
+                  if (
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey ||
+                    event.button !== 0
+                  ) {
                     return;
                   }
 
-                  writeSearchOverlayReturnState(window.sessionStorage, {
-                    href: currentLocationHref,
-                    scrollX: window.scrollX,
-                    scrollY: window.scrollY,
-                  });
+                  event.preventDefault();
+                  dispatchOpenMobileSearchOverlayEvent(window);
                 }}
                 scroll={mobileTabItem.id === 'search' ? false : undefined}
               >
                 <TabIcon
                   aria-hidden="true"
                   className={styles.mobileTabIcon}
-                  size={18}
-                  strokeWidth={2.2}
+                  fill="none"
+                  size={19}
+                  strokeWidth={isActive ? 2.2 : 2.05}
                 />
                 <span className={styles.mobileTabLabel}>
                   {mobileTabItem.label}

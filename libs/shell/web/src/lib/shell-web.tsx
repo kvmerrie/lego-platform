@@ -9,7 +9,9 @@ import { Container, Icon } from '@lego-platform/shared/ui';
 import styles from './shell-web.module.css';
 import { ShellWebAnalyticsListener } from './shell-web-analytics-listener';
 import { ShellWebFollowLink } from './shell-web-follow-link';
+import { ShellWebHeaderReveal } from './shell-web-header-reveal';
 import { ShellWebMobileTabBar } from './shell-web-mobile-tab-bar';
+import { ShellWebMobileViewportOffset } from './shell-web-mobile-viewport-offset';
 import { ShellWebSearchOverlayScrollRestore } from './shell-web-search-overlay-scroll-restore';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
@@ -59,13 +61,17 @@ function renderDesktopActionLinks() {
 export function ShellWeb({
   children,
   searchQuery,
+  showMobileSearchOverlay = true,
 }: {
   children: ReactNode;
   searchQuery?: string;
+  showMobileSearchOverlay?: boolean;
 }) {
   return (
     <div className={styles.shell}>
       <ShellWebAnalyticsListener />
+      <ShellWebHeaderReveal />
+      <ShellWebMobileViewportOffset />
       <ShellWebSearchOverlayScrollRestore />
       <a className={styles.skipLink} href="#main-content">
         Ga direct naar de hoofdinhoud
@@ -120,6 +126,14 @@ export function ShellWeb({
           </p>
         </Container>
       </footer>
+      {showMobileSearchOverlay ? (
+        <ShellWebSearchForm
+          hideTrigger
+          inputId="site-search-mobile-shell"
+          query={searchQuery}
+          variant="mobile-overlay"
+        />
+      ) : null}
       <ShellWebMobileTabBar />
     </div>
   );

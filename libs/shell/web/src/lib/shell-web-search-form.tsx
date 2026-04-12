@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { flushSync } from 'react-dom';
 import { listCatalogSearchSuggestions } from '@lego-platform/catalog/data-access';
 import {
   buildSetDetailPath,
@@ -33,7 +34,10 @@ import {
   readSearchOverlayReturnState,
 } from './shell-web-search-overlay-return-state';
 import { getNextSearchActiveIndex } from './shell-web-search-navigation';
-import { openMobileSearchOverlayEventName } from './shell-web-search-overlay-events';
+import {
+  dispatchMobileSearchOverlayVisibilityEvent,
+  openMobileSearchOverlayEventName,
+} from './shell-web-search-overlay-events';
 
 function buildSearchHref(query: string): string {
   const searchParams = new URLSearchParams({
@@ -97,16 +101,16 @@ export function ShellWebSearchForm({
   }, [isMobileOverlay, openOnMount]);
 
   useEffect(() => {
-    if (!isMobileOverlay || !hideTrigger || !openOnMount) {
+    if (!isMobileOverlay || !hideTrigger) {
       return;
     }
 
     function handleOpenMobileSearchOverlay() {
-      setIsOpen(true);
-      window.requestAnimationFrame(() => {
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
+      flushSync(() => {
+        setIsOpen(true);
       });
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
     }
 
     window.addEventListener(
@@ -120,7 +124,7 @@ export function ShellWebSearchForm({
         handleOpenMobileSearchOverlay,
       );
     };
-  }, [hideTrigger, isMobileOverlay, openOnMount]);
+  }, [hideTrigger, isMobileOverlay]);
 
   useEffect(() => {
     try {
@@ -191,9 +195,11 @@ export function ShellWebSearchForm({
       searchInputRef.current?.focus();
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+      dispatchMobileSearchOverlayVisibilityEvent(window, true);
 
       return () => {
         document.body.style.overflow = originalOverflow;
+        dispatchMobileSearchOverlayVisibilityEvent(window, false);
       };
     }
 
@@ -352,6 +358,14 @@ export function ShellWebSearchForm({
     }
 
     setIsOpen(false);
+  }
+
+  function openMobileOverlay() {
+    flushSync(() => {
+      setIsOpen(true);
+    });
+    searchInputRef.current?.focus();
+    searchInputRef.current?.select();
   }
 
   const searchForm = (
@@ -554,7 +568,7 @@ export function ShellWebSearchForm({
             aria-haspopup="dialog"
             aria-label="Open zoeken"
             className={styles.mobileSearchButton}
-            onClick={() => setIsOpen(true)}
+            onClick={openMobileOverlay}
             ref={mobileTriggerRef}
             type="button"
           >
