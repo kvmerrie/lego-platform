@@ -135,6 +135,10 @@ describe('CatalogFeatureThemeIndex', () => {
     expect(markup).toContain('Alle thema');
     expect(markup).toContain('2 themapagina');
     expect(markup).toContain('Ontdekken blijft beter voor gemengd bladeren');
+    expect(markup).toContain('Kies je thema');
+    expect(markup).toContain(
+      'Icons, Star Wars, Botanicals en meer. Kies hier de lijn waar je als eerste in wilt duiken.',
+    );
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('href="/themes/marvel"');
     expect(markup).toContain('src="https://images.example/icons.jpg"');

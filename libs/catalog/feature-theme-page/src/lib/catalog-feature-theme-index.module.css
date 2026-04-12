@@ -19,14 +19,25 @@
   margin: 0;
 }
 
+.directorySectionBody {
+  gap: 0;
+}
+
 .grid {
   display: grid;
-  gap: var(--lego-space-4);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--lego-space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .directoryTile {
   aspect-ratio: 2 / 3;
+}
+
+@media (min-width: 48rem) {
+  .grid {
+    gap: var(--lego-space-4);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 64rem) {
@@ -37,5 +48,15 @@
 
   .introMeta {
     text-align: right;
+  }
+
+  .grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 100rem) {
+  .grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
