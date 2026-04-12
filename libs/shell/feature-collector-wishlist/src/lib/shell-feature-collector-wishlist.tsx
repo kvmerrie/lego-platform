@@ -9,6 +9,8 @@ import {
 } from '@lego-platform/catalog/ui';
 import { addOwnedSet } from '@lego-platform/collection/data-access';
 import {
+  buildSetDecisionPresentation,
+  getPricePanelSnapshot,
   getReviewedPriceSummary,
   isWishlistAlertNotificationCandidateNew,
   listWishlistAlertNotificationCandidates,
@@ -91,18 +93,33 @@ function readActionErrorMessage(
   return fallbackMessage;
 }
 
-function toWishlistPriceContext(
-  priceSummary: ReturnType<typeof getReviewedPriceSummary>,
-): CatalogSetCardPriceContext | undefined {
+function toWishlistPriceContext({
+  pricePanelSnapshot,
+  priceSummary,
+  theme,
+}: {
+  pricePanelSnapshot: ReturnType<typeof getPricePanelSnapshot>;
+  priceSummary: ReturnType<typeof getReviewedPriceSummary>;
+  theme: string;
+}): CatalogSetCardPriceContext | undefined {
   if (!priceSummary) {
     return undefined;
   }
 
+  const decisionPresentation = buildSetDecisionPresentation({
+    hasCurrentOffer: false,
+    pricePanelSnapshot,
+    theme,
+  });
+
   return {
     coverageLabel: priceSummary.coverageLabel,
     currentPrice: priceSummary.currentPrice,
+    decisionLabel: decisionPresentation.cardLabel,
+    decisionNote: decisionPresentation.cardSupportingCopy,
     merchantLabel: priceSummary.merchantLabel,
     pricePositionLabel: priceSummary.pricePositionLabel,
+    pricePositionTone: decisionPresentation.verdict.tone,
     reviewedLabel: priceSummary.reviewedLabel,
   };
 }
@@ -458,6 +475,7 @@ export function ShellFeatureCollectorWishlist() {
       wantedCount={wantedSetCards.length}
     >
       {sortedWantedSetCards.map((catalogSetCard) => {
+        const pricePanelSnapshot = getPricePanelSnapshot(catalogSetCard.id);
         const reviewedPriceSummary = getReviewedPriceSummary(catalogSetCard.id);
         const wishlistAlert = wishlistAlerts[catalogSetCard.id];
         const isNewWishlistAlert = isWishlistAlertNotificationCandidateNew({
@@ -507,7 +525,11 @@ export function ShellFeatureCollectorWishlist() {
             })}
             href={buildSetDetailPath(catalogSetCard.slug)}
             key={catalogSetCard.id}
-            priceContext={toWishlistPriceContext(reviewedPriceSummary)}
+            priceContext={toWishlistPriceContext({
+              pricePanelSnapshot,
+              priceSummary: reviewedPriceSummary,
+              theme: catalogSetCard.theme,
+            })}
             savedState="wishlist"
             setSummary={catalogSetCard}
             supportingNote={getWishlistBuyingNote({

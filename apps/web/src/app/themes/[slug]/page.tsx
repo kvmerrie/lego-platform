@@ -2,17 +2,24 @@ import {
   getCatalogThemePageBySlug,
   listCatalogThemePageSlugs,
 } from '@lego-platform/catalog/data-access';
+import { getBestAffiliateOffer } from '@lego-platform/affiliate/data-access';
 import {
   CatalogFeatureThemePage,
   type CatalogFeatureThemePageDealItem,
 } from '@lego-platform/catalog/feature-theme-page';
 import {
+  buildSetDecisionPresentation,
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
 } from '@lego-platform/pricing/data-access';
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
+import {
+  type BrickhuntAnalyticsEventDescriptor,
+  getBrickhuntAnalyticsPriceVerdictFromDelta,
+} from '@lego-platform/shared/util';
 import { ShellWeb } from '@lego-platform/shell/web';
+import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -27,6 +34,10 @@ function getPricePositionLabel({
 }): string | undefined {
   if (typeof deltaMinor !== 'number') {
     return undefined;
+  }
+
+  if (deltaMinor === 0) {
+    return 'Rond normaal';
   }
 
   if (deltaMinor < 0) {
@@ -44,16 +55,6 @@ function getPricePositionLabel({
   }
 
   return 'At reference';
-}
-
-function getPricePositionTone(
-  deltaMinor?: number,
-): 'info' | 'positive' | 'warning' {
-  if (typeof deltaMinor !== 'number' || deltaMinor === 0) {
-    return 'info';
-  }
-
-  return deltaMinor < 0 ? 'positive' : 'warning';
 }
 
 function formatReviewedOn(observedAt: string): string {
@@ -78,6 +79,12 @@ function toThemeDealSetCards({
     }
 
     const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
+    const bestAffiliateOffer = getBestAffiliateOffer(setCard.id);
+    const decisionPresentation = buildSetDecisionPresentation({
+      hasCurrentOffer: Boolean(bestAffiliateOffer?.url),
+      pricePanelSnapshot: featuredSetPriceContext,
+      theme: setCard.theme,
+    });
 
     return [
       {
@@ -92,13 +99,14 @@ function toThemeDealSetCards({
                 minorUnits: featuredSetPriceContext.headlinePriceMinor,
               }),
               merchantLabel: `Lowest reviewed price at ${featuredSetPriceContext.merchantName}`,
+              decisionLabel: decisionPresentation.cardLabel,
+              decisionNote: decisionPresentation.cardSupportingCopy,
+              primaryActionHref: bestAffiliateOffer?.url,
               pricePositionLabel: getPricePositionLabel({
                 currencyCode: featuredSetPriceContext.currencyCode,
                 deltaMinor: featuredSetPriceContext.deltaMinor,
               }),
-              pricePositionTone: getPricePositionTone(
-                featuredSetPriceContext.deltaMinor,
-              ),
+              pricePositionTone: decisionPresentation.verdict.tone,
               reviewedLabel: `Checked ${formatReviewedOn(
                 featuredSetPriceContext.observedAt,
               )}`,
@@ -153,11 +161,63 @@ export default async function ThemePage({
       limit: 4,
     }).map((priceContext) => priceContext.setId),
   });
+  const featuredDealSetCards = dealSetCards.map((dealSetCard, index) => {
+    const featuredSetPriceContext = getFeaturedSetPriceContext(dealSetCard.id);
+    const bestAffiliateOffer = getBestAffiliateOffer(dealSetCard.id);
+    const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
+      featuredSetPriceContext?.deltaMinor,
+    );
+    const primaryActionTrackingEvent:
+      | BrickhuntAnalyticsEventDescriptor
+      | undefined = bestAffiliateOffer
+      ? {
+          event: 'offer_click',
+          properties: {
+            merchantCount: featuredSetPriceContext?.merchantCount,
+            merchantName: bestAffiliateOffer.merchantName,
+            offerPlacement: 'card_primary_cta',
+            offerRole: 'best',
+            pageSurface: 'theme_page',
+            priceVerdict,
+            rankPosition: index + 1,
+            sectionId: 'theme-best-deals',
+            setId: dealSetCard.id,
+            theme: dealSetCard.theme,
+          },
+        }
+      : undefined;
+
+    return {
+      ...dealSetCard,
+      actions: (
+        <WishlistFeatureWishlistToggle
+          analyticsContext={{
+            merchantCount: featuredSetPriceContext?.merchantCount,
+            pageSurface: 'theme_page',
+            priceVerdict,
+            sectionId: 'theme-best-deals',
+            setId: dealSetCard.id,
+            theme: dealSetCard.theme,
+          }}
+          productIntent={featuredSetPriceContext ? 'price-alert' : 'wishlist'}
+          setId={dealSetCard.id}
+          variant="inline"
+        />
+      ),
+      ctaMode: 'default' as const,
+      priceContext: dealSetCard.priceContext
+        ? {
+            ...dealSetCard.priceContext,
+            primaryActionTrackingEvent,
+          }
+        : undefined,
+    };
+  });
 
   return (
     <ShellWeb>
       <CatalogFeatureThemePage
-        dealSetCards={dealSetCards}
+        dealSetCards={featuredDealSetCards}
         themePage={themePage}
       />
     </ShellWeb>

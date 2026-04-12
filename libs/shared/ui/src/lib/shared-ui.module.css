@@ -64,9 +64,12 @@
 }
 
 .interactiveBase {
+  --lego-action-min-height: 2.4rem;
+  --lego-action-padding-block: 0.52rem;
+  --lego-action-padding-inline: 0.82rem;
   align-items: center;
   border: 0;
-  border-radius: var(--lego-radius-sm);
+  border-radius: var(--lego-radius-pill);
   cursor: pointer;
   display: inline-flex;
   font: inherit;
@@ -75,9 +78,10 @@
   gap: var(--lego-space-2);
   justify-content: center;
   isolation: isolate;
-  min-height: 2.4rem;
+  min-height: var(--lego-action-min-height);
   overflow: hidden;
-  padding: 0.52rem 0.82rem;
+  padding-block: var(--lego-action-padding-block);
+  padding-inline: var(--lego-action-padding-inline);
   position: relative;
   text-decoration: none;
   transition:
@@ -149,15 +153,15 @@
 
 .buttonSecondary,
 .linkSecondary {
-  background: var(--lego-surface-default);
-  border: var(--lego-border-width-2) solid var(--lego-text);
+  background: var(--lego-surface-muted);
+  border: var(--lego-border-width-2) solid transparent;
   color: var(--lego-text);
 }
 
 .buttonSecondary:hover,
 .linkSecondary:hover {
   background: var(--lego-surface-subtle);
-  border-color: var(--lego-text);
+  border-color: transparent;
   color: var(--lego-text);
 }
 
@@ -177,14 +181,14 @@
 .buttonAccent,
 .linkAccent {
   background: var(--lego-accent);
-  border: var(--lego-border-width-2) solid var(--lego-accent);
+  border: var(--lego-border-width-2) solid transparent;
   color: var(--lego-accent-contrast);
 }
 
 .buttonAccent:hover,
 .linkAccent:hover {
   background: var(--lego-accent-hover);
-  border-color: var(--lego-accent-hover);
+  border-color: transparent;
 }
 
 .buttonAccent:active::after,

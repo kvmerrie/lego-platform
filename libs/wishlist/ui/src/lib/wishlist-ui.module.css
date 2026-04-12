@@ -88,8 +88,9 @@
 }
 
 .productToggleButton {
-  border: var(--lego-border-width-2) solid var(--lego-info);
-  border-radius: var(--lego-radius-sm);
+  border: var(--lego-border-width-2) solid transparent;
+  border-radius: var(--lego-radius-pill);
+  box-shadow: none;
   inline-size: 100%;
   justify-content: center;
   min-height: 2.7rem;
@@ -97,30 +98,37 @@
 }
 
 .productToggleButtonIdle {
-  background: var(--lego-surface-default);
-  color: var(--lego-info);
+  background: var(--lego-surface-muted);
+  color: var(--lego-text);
 }
 
 .productToggleButtonIdle:hover {
-  background: var(--lego-surface-subtle);
-  color: var(--lego-info);
+  background: color-mix(
+    in srgb,
+    var(--lego-surface-muted) 76%,
+    var(--lego-border-subtle) 24%
+  );
+  border-color: transparent;
+  color: var(--lego-text);
 }
 
 .productToggleButtonActive {
   background: var(--lego-info-subtle);
+  border-color: transparent;
   color: var(--lego-info);
 }
 
 .productToggleButtonActive:hover {
   background: var(--lego-info-subtle);
-  border-color: var(--lego-info);
+  border-color: transparent;
   color: var(--lego-info);
 }
 
 .inlineToggleButton {
-  border: var(--lego-border-width-2) solid var(--lego-border-subtle);
-  border-radius: 999px;
+  border: var(--lego-border-width-2) solid transparent;
+  border-radius: var(--lego-radius-pill);
   box-sizing: border-box;
+  box-shadow: none;
   font-size: var(--lego-text-role-support-size);
   font-weight: var(--lego-font-weight-semibold);
   gap: 0;
@@ -135,13 +143,17 @@
 }
 
 .inlineToggleButtonIdle {
-  background: var(--lego-surface-default);
+  background: var(--lego-surface-muted);
   color: var(--lego-text);
 }
 
 .inlineToggleButtonIdle:hover {
-  background: var(--lego-surface-subtle);
-  border-color: var(--lego-border);
+  background: color-mix(
+    in srgb,
+    var(--lego-surface-muted) 76%,
+    var(--lego-border-subtle) 24%
+  );
+  border-color: transparent;
   color: var(--lego-text);
 }
 

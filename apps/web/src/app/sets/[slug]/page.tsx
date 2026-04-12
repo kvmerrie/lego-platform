@@ -19,10 +19,11 @@ import type {
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import {
+  buildSetDecisionPresentation,
   buildBrickhuntValueItems,
   buildSetDecisionSupportItems,
+  buildSetDealVerdict,
   getPricePanelSnapshot,
-  getSetDealVerdict,
 } from '@lego-platform/pricing/data-access';
 import {
   formatPriceMinor,
@@ -110,31 +111,6 @@ function buildOfferSummaryLabel({
   return parts.length > 0 ? parts.join(' · ') : undefined;
 }
 
-function buildDecisionHelper(pricePanelSnapshot?: PricePanelSnapshot): string {
-  if (
-    !pricePanelSnapshot ||
-    typeof pricePanelSnapshot.deltaMinor !== 'number'
-  ) {
-    return 'We volgen nog te weinig prijzen om dit moment scherp te duiden.';
-  }
-
-  if (pricePanelSnapshot.deltaMinor < 0) {
-    return `${formatPriceMinor({
-      currencyCode: pricePanelSnapshot.currencyCode,
-      minorUnits: Math.abs(pricePanelSnapshot.deltaMinor),
-    })} onder wat we meestal zien voor deze set.`;
-  }
-
-  if (pricePanelSnapshot.deltaMinor > 0) {
-    return `${formatPriceMinor({
-      currencyCode: pricePanelSnapshot.currencyCode,
-      minorUnits: pricePanelSnapshot.deltaMinor,
-    })} boven wat we meestal zien voor deze set.`;
-  }
-
-  return 'Rond het normale prijsniveau voor deze set.';
-}
-
 function buildBestOfferRankingLabel({
   availability,
   merchantCount,
@@ -207,6 +183,7 @@ function buildOfferRankingLabel({
 
 function buildBestDeal({
   catalogOffer,
+  decisionPresentation,
   dealVerdict,
   merchantCount,
   setId,
@@ -214,15 +191,43 @@ function buildBestDeal({
   theme,
 }: {
   catalogOffer?: CatalogOffer | null;
-  dealVerdict: {
-    label: string;
-    tone?: 'info' | 'neutral' | 'positive' | 'warning';
-  };
+  decisionPresentation: ReturnType<typeof buildSetDecisionPresentation>;
+  dealVerdict: ReturnType<typeof buildSetDealVerdict>;
   merchantCount?: number;
   setId: string;
   pricePanelSnapshot?: PricePanelSnapshot;
   theme: string;
 }): CatalogSetDetailBestDeal | undefined {
+  if (!catalogOffer && !pricePanelSnapshot) {
+    return undefined;
+  }
+
+  if (!catalogOffer && pricePanelSnapshot) {
+    const coverageLabel = buildMerchantCoverageLabel(merchantCount);
+
+    return {
+      checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(
+        pricePanelSnapshot.observedAt,
+      )}`,
+      coverageLabel,
+      decisionHelper: decisionPresentation.noOfferCopy,
+      decisionLabel: dealVerdict.label,
+      decisionTone: dealVerdict.tone,
+      eyebrow: 'Koopsignaal nu',
+      merchantLabel: decisionPresentation.noOfferTitle,
+      price: formatPriceMinor({
+        currencyCode: pricePanelSnapshot.currencyCode,
+        minorUnits: pricePanelSnapshot.headlinePriceMinor,
+      }),
+      rankingLabel:
+        [pricePanelSnapshot.lowestAvailabilityLabel, coverageLabel]
+          .filter(Boolean)
+          .join(' · ') || undefined,
+      stockLabel:
+        pricePanelSnapshot.lowestAvailabilityLabel ?? 'Prijs wordt gevolgd',
+    };
+  }
+
   if (!catalogOffer) {
     return undefined;
   }
@@ -238,9 +243,10 @@ function buildBestDeal({
         : `Bekijk bij ${catalogOffer.merchantName}`,
     ctaTone: dealVerdict.tone === 'positive' ? 'accent' : 'secondary',
     coverageLabel: buildMerchantCoverageLabel(merchantCount),
-    decisionHelper: buildDecisionHelper(pricePanelSnapshot),
+    decisionHelper: dealVerdict.explanation,
     decisionLabel: dealVerdict.label,
     decisionTone: dealVerdict.tone,
+    eyebrow: 'Beste winkel nu',
     merchantLabel: catalogOffer.merchantName,
     price: formatOfferPrice(catalogOffer),
     rankingLabel: buildBestOfferRankingLabel({
@@ -369,7 +375,14 @@ export default async function SetDetailPage({
   const localizedSetDetailOffers = setDetailOffers.filter(isEuroCatalogOffer);
   const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
-  const dealVerdict = getSetDealVerdict(catalogSetDetail.id);
+  const decisionPresentation = buildSetDecisionPresentation({
+    hasCurrentOffer: Boolean(bestOffer),
+    pricePanelSnapshot,
+    theme: catalogSetDetail.theme,
+  });
+  const dealVerdict = buildSetDealVerdict(pricePanelSnapshot, {
+    theme: catalogSetDetail.theme,
+  });
   const trackedMerchantCount =
     pricePanelSnapshot?.merchantCount ?? localizedSetDetailOffers.length;
 
@@ -378,6 +391,7 @@ export default async function SetDetailPage({
       <CatalogFeatureSetDetail
         bestDeal={buildBestDeal({
           catalogOffer: bestOffer,
+          decisionPresentation,
           dealVerdict,
           merchantCount:
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
@@ -451,6 +465,9 @@ export default async function SetDetailPage({
           merchantCount: pricePanelSnapshot?.merchantCount,
           observedAt: pricePanelSnapshot?.observedAt,
         })}
+        followCopy={decisionPresentation.followCopy}
+        followEyebrow={decisionPresentation.followEyebrow}
+        followTitle={decisionPresentation.followTitle}
       />
     </ShellWeb>
   );

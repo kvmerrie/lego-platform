@@ -32,6 +32,7 @@ export interface CatalogDecisionOffer {
   decisionHelper?: string;
   decisionLabel?: string;
   decisionTone?: ComponentProps<typeof Badge>['tone'];
+  eyebrow?: string;
   merchantLabel: string;
   price: string;
   rankingLabel?: string;
@@ -95,7 +96,9 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
       data-tone={offer.decisionTone ?? 'neutral'}
     >
       <div className={styles.bestDealHeader}>
-        <p className={styles.bestDealEyebrow}>Beste winkel nu</p>
+        <p className={styles.bestDealEyebrow}>
+          {offer.eyebrow ?? 'Beste winkel nu'}
+        </p>
         {offer.decisionLabel ? (
           <Badge tone={offer.decisionTone ?? 'neutral'}>
             {offer.decisionLabel}
@@ -217,12 +220,13 @@ function CatalogOfferCoverageState({
       description={summaryLabel}
       eyebrow="Meer prijzen"
       elevation="rested"
-      title="Nog geen echte vergelijking"
+      title="Nog geen sterke vergelijking"
       tone="muted"
     >
       <p className={styles.offerCoverageCopy}>
-        We volgen nu 1 winkel voor deze set. Zodra er meer prijzen zijn, zie je
-        hier de vergelijking.
+        We volgen deze set al, maar met 1 winkel is dit nog geen vergelijking
+        waar je op wilt leunen. Volg hem gerust; Brickhunt vult dit aan zodra er
+        meer betrouwbare prijzen zijn.
       </p>
     </Panel>
   );

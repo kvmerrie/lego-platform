@@ -118,7 +118,7 @@ const lightThemeTokens: ThemeTokenMap = {
   'lego-accent-contrast': '#ffffff',
   'lego-brand': '#d6452e',
   'lego-brand-hover': '#b93722',
-  'lego-commerce': '#ff8a1c',
+  'lego-commerce': '#f47d20',
   'lego-commerce-hover': '#d66e00',
   'lego-commerce-subtle': '#fff1e0',
   'lego-positive': '#12944d',

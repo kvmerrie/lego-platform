@@ -1,6 +1,7 @@
 import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
 import styles from './page.module.css';
+import { getBestAffiliateOffer } from '@lego-platform/affiliate/data-access';
 import {
   CatalogFeatureSetList,
   type CatalogFeatureSetListItem,
@@ -19,6 +20,7 @@ import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
 import { getHeroSection } from '@lego-platform/content/util';
 import {
+  buildSetDecisionPresentation,
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
 } from '@lego-platform/pricing/data-access';
@@ -27,6 +29,7 @@ import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ActionLink, Panel } from '@lego-platform/shared/ui';
 import {
   buildBrickhuntAnalyticsAttributes,
+  type BrickhuntAnalyticsEventDescriptor,
   getBrickhuntAnalyticsPriceVerdictFromDelta,
 } from '@lego-platform/shared/util';
 import { ShellWeb } from '@lego-platform/shell/web';
@@ -50,47 +53,9 @@ const homepageValueSignals = [
   {
     id: 'verified-offers',
     title: 'Nagekeken winkels, geen prijsruis',
-    body: 'Nog niet bijzonder? Volg de set. Is de vergelijking te dun, dan blijven we stil.',
+    body: 'Nog geen goede deal? Volg de set. Is de vergelijking te dun, dan blijven we stil.',
   },
 ] as const;
-
-function getPricePositionLabel({
-  currencyCode,
-  deltaMinor,
-}: {
-  currencyCode: string;
-  deltaMinor?: number;
-}): string | undefined {
-  if (typeof deltaMinor !== 'number') {
-    return undefined;
-  }
-
-  if (deltaMinor < 0) {
-    return `${formatPriceMinor({
-      currencyCode,
-      minorUnits: Math.abs(deltaMinor),
-    })} onder normaal`;
-  }
-
-  if (deltaMinor > 0) {
-    return `${formatPriceMinor({
-      currencyCode,
-      minorUnits: deltaMinor,
-    })} boven normaal`;
-  }
-
-  return 'Rond normaal';
-}
-
-function getPricePositionTone(
-  deltaMinor?: number,
-): 'info' | 'positive' | 'warning' {
-  if (typeof deltaMinor !== 'number' || deltaMinor === 0) {
-    return 'info';
-  }
-
-  return deltaMinor < 0 ? 'positive' : 'warning';
-}
 
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
@@ -113,12 +78,39 @@ function toFeatureSetListItems(
     const featuredSetPriceContext = getFeaturedSetPriceContext(
       homepageSetCard.id,
     );
+    const bestAffiliateOffer = getBestAffiliateOffer(homepageSetCard.id);
+    const decisionPresentation = buildSetDecisionPresentation({
+      hasCurrentOffer: Boolean(bestAffiliateOffer?.url),
+      pricePanelSnapshot: featuredSetPriceContext,
+      theme: homepageSetCard.theme,
+    });
     const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
       featuredSetPriceContext?.deltaMinor,
     );
+    const primaryActionTrackingEvent:
+      | BrickhuntAnalyticsEventDescriptor
+      | undefined =
+      bestAffiliateOffer && featuredSetPriceContext
+        ? {
+            event: 'offer_click',
+            properties: {
+              merchantCount: featuredSetPriceContext.merchantCount,
+              merchantName: bestAffiliateOffer.merchantName,
+              offerPlacement: 'card_primary_cta',
+              offerRole: 'best',
+              pageSurface: 'homepage',
+              priceVerdict,
+              rankPosition: index + 1,
+              sectionId,
+              setId: homepageSetCard.id,
+              theme: homepageSetCard.theme,
+            },
+          }
+        : undefined;
 
     return {
       ...homepageSetCard,
+      ctaMode: 'default' as const,
       priceContext: featuredSetPriceContext
         ? {
             coverageLabel: featuredSetPriceContext.availabilityLabel
@@ -129,13 +121,24 @@ function toFeatureSetListItems(
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
             }),
             merchantLabel: `Nu het laagst bij ${featuredSetPriceContext.merchantName}`,
-            pricePositionLabel: getPricePositionLabel({
-              currencyCode: featuredSetPriceContext.currencyCode,
-              deltaMinor: featuredSetPriceContext.deltaMinor,
-            }),
-            pricePositionTone: getPricePositionTone(
-              featuredSetPriceContext.deltaMinor,
-            ),
+            decisionLabel: decisionPresentation.cardLabel,
+            decisionNote: decisionPresentation.cardSupportingCopy,
+            primaryActionHref: bestAffiliateOffer?.url,
+            primaryActionTrackingEvent,
+            pricePositionLabel:
+              typeof featuredSetPriceContext.deltaMinor === 'number'
+                ? featuredSetPriceContext.deltaMinor === 0
+                  ? 'Rond normaal'
+                  : `${formatPriceMinor({
+                      currencyCode: featuredSetPriceContext.currencyCode,
+                      minorUnits: Math.abs(featuredSetPriceContext.deltaMinor),
+                    })} ${
+                      featuredSetPriceContext.deltaMinor < 0
+                        ? 'onder normaal'
+                        : 'boven normaal'
+                    }`
+                : undefined,
+            pricePositionTone: decisionPresentation.verdict.tone,
             reviewedLabel: `Nagekeken ${formatReviewedOn(
               featuredSetPriceContext.observedAt,
             )}`,

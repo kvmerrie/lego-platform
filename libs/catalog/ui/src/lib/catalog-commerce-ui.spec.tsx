@@ -59,7 +59,7 @@ describe('Catalog commerce UI', () => {
           ctaLabel: 'Bekijk bij bol',
           ctaTone: 'accent',
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
-          decisionLabel: 'Nu interessant geprijsd',
+          decisionLabel: 'Goede deal',
           decisionTone: 'positive',
           merchantLabel: 'bol',
           price: '€ 469,99',
@@ -77,7 +77,7 @@ describe('Catalog commerce UI', () => {
       />,
     );
 
-    expect(markup).toContain('Nu interessant geprijsd');
+    expect(markup).toContain('Goede deal');
     expect(markup).toContain('Beste winkel nu');
     expect(markup).toContain('bol');
     expect(markup).toContain('Laagste nagekeken prijs die nu op voorraad is.');
@@ -109,8 +109,10 @@ describe('Catalog commerce UI', () => {
       />,
     );
 
-    expect(markup).toContain('Nog geen echte vergelijking');
-    expect(markup).toContain('We volgen nu 1 winkel voor deze set.');
+    expect(markup).toContain('Nog geen sterke vergelijking');
+    expect(markup).toContain(
+      'We volgen deze set al, maar met 1 winkel is dit nog geen vergelijking',
+    );
     expect(markup).toContain('1 winkel nagekeken · Nagekeken 2 apr, 09:00');
   });
 

@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import type { CatalogThemeLandingPage } from '@lego-platform/catalog/data-access';
 import {
   CatalogSectionShell,
   CatalogSetCard,
+  type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
@@ -13,6 +15,8 @@ import styles from './catalog-feature-theme-page.module.css';
 
 export interface CatalogFeatureThemePageDealItem
   extends CatalogHomepageSetCard {
+  actions?: ReactNode;
+  ctaMode?: CatalogSetCardCtaMode;
   priceContext?: CatalogSetCardPriceContext;
 }
 
@@ -110,6 +114,8 @@ export function CatalogFeatureThemePage({
           }
           eyebrow="Nu interessant"
           items={dealSetCards.map((dealSetCard) => ({
+            actions: dealSetCard.actions,
+            ctaMode: dealSetCard.ctaMode,
             href: buildSetDetailPath(dealSetCard.slug),
             id: dealSetCard.id,
             priceContext: dealSetCard.priceContext,

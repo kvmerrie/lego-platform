@@ -16,6 +16,7 @@ import type { BrickhuntAnalyticsEventDescriptor } from '@lego-platform/shared/ut
 import { CatalogSectionShell } from './catalog-composite-ui';
 import {
   CatalogSetCard,
+  type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
   type CatalogSetCardPriceContext,
 } from './catalog-ui';
@@ -26,6 +27,7 @@ type CatalogSetCardRailSummary = CatalogSetSummary &
 
 export interface CatalogSetCardRailItem {
   actions?: ReactNode;
+  ctaMode?: CatalogSetCardCtaMode;
   href?: string;
   id: string;
   priceContext?: CatalogSetCardPriceContext;
@@ -451,6 +453,7 @@ function CatalogSetCardRailViewport({
         {items.map((item) => (
           <CatalogSetCard
             actions={item.actions}
+            ctaMode={item.ctaMode}
             href={item.href}
             key={item.id}
             priceContext={item.priceContext}

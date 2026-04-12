@@ -116,7 +116,6 @@
 
 .desktopSearch {
   display: none;
-  inline-size: clamp(15.5rem, 26vw, 21rem);
   position: relative;
 }
 
@@ -708,6 +707,15 @@
     gap: var(--lego-space-10);
   }
 
+  .headerSecondary {
+    flex: 0 1 auto;
+  }
+
+  .headerInner {
+    padding-bottom: var(--lego-space-3);
+    padding-top: var(--lego-space-3);
+  }
+
   .desktopNav {
     align-items: center;
     display: flex;
@@ -717,6 +725,9 @@
 
   .desktopSearch {
     display: block;
+    flex: 0 1 25rem;
+    inline-size: min(100%, 25rem);
+    max-inline-size: 25rem;
   }
 
   .desktopActions {

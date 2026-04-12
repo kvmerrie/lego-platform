@@ -10,6 +10,7 @@ import {
   CatalogQuickFilterBar,
   CatalogSectionShell,
   CatalogSetCard,
+  type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
@@ -64,6 +65,8 @@ function renderCanonicalNames(names: readonly string[]): ReactNode {
 }
 
 export interface CatalogFeatureDiscoverDealItem extends CatalogHomepageSetCard {
+  actions?: ReactNode;
+  ctaMode?: CatalogSetCardCtaMode;
   priceContext?: CatalogSetCardPriceContext;
 }
 
@@ -248,6 +251,8 @@ export function CatalogFeatureDiscover({
           description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
           eyebrow="Deals"
           items={filteredDealSetCards.map((dealSetCard) => ({
+            actions: dealSetCard.actions,
+            ctaMode: dealSetCard.ctaMode,
             href: buildSetDetailPath(dealSetCard.slug),
             id: dealSetCard.id,
             priceContext: dealSetCard.priceContext,

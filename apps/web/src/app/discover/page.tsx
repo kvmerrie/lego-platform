@@ -2,18 +2,25 @@ import {
   CatalogFeatureDiscover,
   type CatalogFeatureDiscoverDealItem,
 } from '@lego-platform/catalog/feature-discover';
+import { getBestAffiliateOffer } from '@lego-platform/affiliate/data-access';
 import {
   listCatalogSetCardsByIds,
   listDiscoverDealCandidateSetCards,
 } from '@lego-platform/catalog/data-access';
 import {
+  buildSetDecisionPresentation,
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
   listReviewedPriceSetIds,
 } from '@lego-platform/pricing/data-access';
 import { formatPriceMinor } from '@lego-platform/pricing/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
+import {
+  type BrickhuntAnalyticsEventDescriptor,
+  getBrickhuntAnalyticsPriceVerdictFromDelta,
+} from '@lego-platform/shared/util';
 import { ShellWeb } from '@lego-platform/shell/web';
+import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 
 function readQueryParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
@@ -45,6 +52,10 @@ function getPricePositionLabel({
     return undefined;
   }
 
+  if (deltaMinor === 0) {
+    return 'Rond normaal';
+  }
+
   if (deltaMinor < 0) {
     return `${formatPriceMinor({
       currencyCode,
@@ -62,16 +73,6 @@ function getPricePositionLabel({
   return 'At reference';
 }
 
-function getPricePositionTone(
-  deltaMinor?: number,
-): 'info' | 'positive' | 'warning' {
-  if (typeof deltaMinor !== 'number' || deltaMinor === 0) {
-    return 'info';
-  }
-
-  return deltaMinor < 0 ? 'positive' : 'warning';
-}
-
 function formatReviewedOn(observedAt: string): string {
   return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
     day: 'numeric',
@@ -84,6 +85,12 @@ function toDealSetCards(
 ): CatalogFeatureDiscoverDealItem[] {
   return setCards.map((setCard) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
+    const bestAffiliateOffer = getBestAffiliateOffer(setCard.id);
+    const decisionPresentation = buildSetDecisionPresentation({
+      hasCurrentOffer: Boolean(bestAffiliateOffer?.url),
+      pricePanelSnapshot: featuredSetPriceContext,
+      theme: setCard.theme,
+    });
 
     return {
       ...setCard,
@@ -97,13 +104,14 @@ function toDealSetCards(
               minorUnits: featuredSetPriceContext.headlinePriceMinor,
             }),
             merchantLabel: `Lowest reviewed price at ${featuredSetPriceContext.merchantName}`,
+            decisionLabel: decisionPresentation.cardLabel,
+            decisionNote: decisionPresentation.cardSupportingCopy,
+            primaryActionHref: bestAffiliateOffer?.url,
             pricePositionLabel: getPricePositionLabel({
               currencyCode: featuredSetPriceContext.currencyCode,
               deltaMinor: featuredSetPriceContext.deltaMinor,
             }),
-            pricePositionTone: getPricePositionTone(
-              featuredSetPriceContext.deltaMinor,
-            ),
+            pricePositionTone: decisionPresentation.verdict.tone,
             reviewedLabel: `Checked ${formatReviewedOn(
               featuredSetPriceContext.observedAt,
             )}`,
@@ -161,13 +169,65 @@ export default async function DiscoverPage({
         left.name.localeCompare(right.name),
     )
     .slice(0, 6);
+  const featuredDealSetCards = dealSetCards.map((dealSetCard, index) => {
+    const featuredSetPriceContext = getFeaturedSetPriceContext(dealSetCard.id);
+    const bestAffiliateOffer = getBestAffiliateOffer(dealSetCard.id);
+    const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
+      featuredSetPriceContext?.deltaMinor,
+    );
+    const primaryActionTrackingEvent:
+      | BrickhuntAnalyticsEventDescriptor
+      | undefined = bestAffiliateOffer
+      ? {
+          event: 'offer_click',
+          properties: {
+            merchantCount: featuredSetPriceContext?.merchantCount,
+            merchantName: bestAffiliateOffer.merchantName,
+            offerPlacement: 'card_primary_cta',
+            offerRole: 'best',
+            pageSurface: 'discover',
+            priceVerdict,
+            rankPosition: index + 1,
+            sectionId: 'discover-best-deals',
+            setId: dealSetCard.id,
+            theme: dealSetCard.theme,
+          },
+        }
+      : undefined;
+
+    return {
+      ...dealSetCard,
+      actions: (
+        <WishlistFeatureWishlistToggle
+          analyticsContext={{
+            merchantCount: featuredSetPriceContext?.merchantCount,
+            pageSurface: 'discover',
+            priceVerdict,
+            sectionId: 'discover-best-deals',
+            setId: dealSetCard.id,
+            theme: dealSetCard.theme,
+          }}
+          productIntent={featuredSetPriceContext ? 'price-alert' : 'wishlist'}
+          setId={dealSetCard.id}
+          variant="inline"
+        />
+      ),
+      ctaMode: 'commerce' as const,
+      priceContext: dealSetCard.priceContext
+        ? {
+            ...dealSetCard.priceContext,
+            primaryActionTrackingEvent,
+          }
+        : undefined,
+    };
+  });
 
   return (
     <ShellWeb>
       <CatalogFeatureDiscover
         activeFilter={activeFilter}
         bestDealSetIds={strongDealSetIds}
-        dealSetCards={dealSetCards}
+        dealSetCards={featuredDealSetCards}
         reviewedSetIds={reviewedSetIds}
       />
     </ShellWeb>

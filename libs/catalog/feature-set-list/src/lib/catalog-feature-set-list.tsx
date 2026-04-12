@@ -4,6 +4,7 @@ import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
   CatalogSetCard,
+  type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
@@ -14,6 +15,7 @@ import styles from './catalog-feature-set-list.module.css';
 
 export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
   actions?: ReactNode;
+  ctaMode?: CatalogSetCardCtaMode;
   priceContext?: CatalogSetCardPriceContext;
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 }
@@ -72,6 +74,7 @@ export function CatalogFeatureSetList({
         {homepageSets.map((catalogSetSummary) => (
           <CatalogSetCard
             actions={catalogSetSummary.actions}
+            ctaMode={catalogSetSummary.ctaMode}
             key={catalogSetSummary.id}
             href={buildSetDetailPath(catalogSetSummary.slug)}
             priceContext={catalogSetSummary.priceContext}
@@ -88,6 +91,7 @@ export function CatalogFeatureSetList({
       ariaLabel={title}
       items={homepageSets.map((catalogSetSummary) => ({
         actions: catalogSetSummary.actions,
+        ctaMode: catalogSetSummary.ctaMode,
         href: buildSetDetailPath(catalogSetSummary.slug),
         id: catalogSetSummary.id,
         priceContext: catalogSetSummary.priceContext,

@@ -16,6 +16,7 @@ import {
 } from '@lego-platform/shared/config';
 import {
   buildBrickhuntValueItems,
+  buildSetDecisionPresentation,
   buildSetDecisionSupportItems,
   buildSetDealVerdict,
   buildSetPriceInsights,
@@ -146,8 +147,8 @@ describe('pricing data access', () => {
   test('builds a decisive deal verdict from the current snapshot', () => {
     expect(getSetDealVerdict('10354')).toEqual({
       explanation:
-        'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
-      label: 'Rond normaal',
+        'Prima prijs, maar niet uitzonderlijk laag. Alleen kopen als je hem nu graag wilt hebben.',
+      label: 'Prima prijs',
       tone: 'info',
     });
 
@@ -157,8 +158,8 @@ describe('pricing data access', () => {
       }),
     ).toEqual({
       explanation:
-        'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
-      label: 'Rond normaal',
+        'Prima prijs, maar niet uitzonderlijk laag. Alleen kopen als je hem nu graag wilt hebben.',
+      label: 'Prima prijs',
       tone: 'info',
     });
 
@@ -168,9 +169,38 @@ describe('pricing data access', () => {
       }),
     ).toEqual({
       explanation:
-        'Deze prijs ligt boven wat we meestal zien. Volgen en wachten is slimmer.',
-      label: 'Nog niet bijzonder',
+        'Deze prijs ligt boven wat we meestal zien. Wachten is slimmer dan nu kopen.',
+      label: 'Wachten loont',
       tone: 'warning',
+    });
+  });
+
+  test('builds reusable no-offer decision guidance when the price is good but no route is reliable yet', () => {
+    expect(
+      buildSetDecisionPresentation({
+        hasCurrentOffer: false,
+        pricePanelSnapshot: {
+          deltaMinor: -3000,
+        },
+        theme: 'Icons',
+      }),
+    ).toEqual({
+      cardLabel: 'Goede prijs',
+      cardSupportingCopy: 'Nog geen betrouwbare deal-link',
+      followCopy:
+        'Sterke prijs gezien, maar nog geen goede deal-link. Volg deze set; Brickhunt seint je zodra er wel een betrouwbare route is.',
+      followEyebrow: 'Laat Brickhunt meekijken',
+      followTitle: 'Volg deze set',
+      noOfferCopy:
+        'We zien wel een sterke prijs, maar nog geen betrouwbare aanbieding om je nu naartoe te sturen.',
+      noOfferTitle: 'Nog geen betrouwbare deal-link',
+      state: 'buy',
+      verdict: {
+        explanation:
+          'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
+        label: 'Goede deal',
+        tone: 'positive',
+      },
     });
   });
 
@@ -199,6 +229,31 @@ describe('pricing data access', () => {
     ]);
   });
 
+  test('adds no-offer guidance when Brickhunt sees a price but no reliable route yet', () => {
+    expect(
+      buildSetDecisionSupportItems({
+        hasCurrentOffer: false,
+        pricePanelSnapshot: {
+          deltaMinor: -3000,
+          merchantCount: 2,
+        },
+      }),
+    ).toEqual([
+      {
+        id: 'price-below-normal',
+        text: 'Deze prijs ligt onder wat we meestal zien.',
+      },
+      {
+        id: 'merchant-coverage',
+        text: 'We volgen 2 Nederlandse winkels voor deze set.',
+      },
+      {
+        id: 'no-reliable-offer',
+        text: 'We zien wel een sterke prijs, maar nog geen betrouwbare aanbieding om je nu naartoe te sturen.',
+      },
+    ]);
+  });
+
   test('keeps deal-support truthful when data is still limited', () => {
     expect(
       buildSetDecisionSupportItems({
@@ -208,7 +263,7 @@ describe('pricing data access', () => {
     ).toEqual([
       {
         id: 'limited-data',
-        text: 'We hebben nog beperkte data, maar dit is nu de beste deal die we zien.',
+        text: 'We hebben nog beperkte data, maar dit is nu de beste prijs die we zien.',
       },
       {
         id: 'merchant-coverage',

@@ -9,6 +9,7 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import {
+  buildSetDecisionPresentation,
   getPricePanelSnapshot,
   getReviewedPriceSummary,
   getSetDealVerdict,
@@ -46,18 +47,33 @@ const topPickContextBadge: CatalogSetCardContextBadge = {
   tone: 'positive',
 };
 
-function toPriceContext(
-  priceSummary?: ReviewedPriceSummary,
-): CatalogSetCardPriceContext | undefined {
+function toPriceContext({
+  pricePanelSnapshot,
+  priceSummary,
+  theme,
+}: {
+  pricePanelSnapshot: ReturnType<typeof getPricePanelSnapshot>;
+  priceSummary: ReviewedPriceSummary | undefined;
+  theme: string;
+}): CatalogSetCardPriceContext | undefined {
   if (!priceSummary) {
     return undefined;
   }
 
+  const decisionPresentation = buildSetDecisionPresentation({
+    hasCurrentOffer: false,
+    pricePanelSnapshot,
+    theme,
+  });
+
   return {
     coverageLabel: priceSummary.coverageLabel,
     currentPrice: priceSummary.currentPrice,
+    decisionLabel: decisionPresentation.cardLabel,
+    decisionNote: decisionPresentation.cardSupportingCopy,
     merchantLabel: priceSummary.merchantLabel,
     pricePositionLabel: priceSummary.pricePositionLabel,
+    pricePositionTone: decisionPresentation.verdict.tone,
     reviewedLabel: priceSummary.reviewedLabel,
   };
 }
@@ -354,7 +370,13 @@ export function WishlistFeatureWishlistOverview() {
                   }
                   href={buildSetDetailPath(catalogSetCard.slug)}
                   key={catalogSetCard.id}
-                  priceContext={toPriceContext(reviewedPriceSummary)}
+                  priceContext={toPriceContext({
+                    pricePanelSnapshot: getPricePanelSnapshot(
+                      catalogSetCard.id,
+                    ),
+                    priceSummary: reviewedPriceSummary,
+                    theme: catalogSetCard.theme,
+                  })}
                   setSummary={catalogSetCard}
                   supportingNote={getInterestingNowBuyingNote(
                     reviewedPriceSummary,
@@ -390,8 +412,8 @@ export function WishlistFeatureWishlistOverview() {
           <div className={styles.groupHeader}>
             <h2 className={styles.groupTitle}>In de gaten houden</h2>
             <p className={styles.groupDescription}>
-              Nog niet bijzonder. Hier zie je welke sets Brickhunt rustig voor
-              je blijft volgen.
+              Nog geen goed koopmoment. Hier zie je welke sets Brickhunt rustig
+              voor je blijft volgen.
             </p>
           </div>
           <div className={styles.grid}>
@@ -401,7 +423,13 @@ export function WishlistFeatureWishlistOverview() {
                   contextBadge={followedContextBadge}
                   href={buildSetDetailPath(catalogSetCard.slug)}
                   key={catalogSetCard.id}
-                  priceContext={toPriceContext(reviewedPriceSummary)}
+                  priceContext={toPriceContext({
+                    pricePanelSnapshot: getPricePanelSnapshot(
+                      catalogSetCard.id,
+                    ),
+                    priceSummary: reviewedPriceSummary,
+                    theme: catalogSetCard.theme,
+                  })}
                   setSummary={catalogSetCard}
                   supportingNote={getFollowedSetBuyingNote(
                     reviewedPriceSummary,

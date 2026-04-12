@@ -93,10 +93,25 @@ export interface SetDecisionSupportItem {
     | 'brickhunt-monitoring'
     | 'limited-data'
     | 'merchant-coverage'
+    | 'no-reliable-offer'
     | 'price-above-normal'
     | 'price-below-normal'
     | 'price-normal';
   text: string;
+}
+
+export type SetDecisionState = 'buy' | 'consider' | 'limited' | 'wait';
+
+export interface SetDecisionPresentation {
+  cardLabel: string;
+  cardSupportingCopy?: string;
+  followCopy: string;
+  followEyebrow: string;
+  followTitle: string;
+  noOfferCopy: string;
+  noOfferTitle: string;
+  state: SetDecisionState;
+  verdict: SetDealVerdict;
 }
 
 function formatReviewedOn(observedAt: string): string {
@@ -104,6 +119,75 @@ function formatReviewedOn(observedAt: string): string {
     day: 'numeric',
     month: 'short',
   }).format(new Date(observedAt));
+}
+
+function getDecisionVoice(theme?: string): 'calm' | 'neutral' | 'punchy' {
+  if (!theme) {
+    return 'neutral';
+  }
+
+  if (['Art', 'Architecture', 'Botanicals'].includes(theme)) {
+    return 'calm';
+  }
+
+  if (
+    [
+      'Harry Potter',
+      'Jurassic World',
+      'Marvel',
+      'NINJAGO',
+      'Star Wars',
+    ].includes(theme)
+  ) {
+    return 'punchy';
+  }
+
+  return 'neutral';
+}
+
+function hasMeaningfulPriceGap({
+  deltaMinor,
+  referencePriceMinor,
+}: {
+  deltaMinor: number;
+  referencePriceMinor?: number;
+}): boolean {
+  const absoluteDeltaMinor = Math.abs(deltaMinor);
+  const ratioThresholdMinor =
+    typeof referencePriceMinor === 'number'
+      ? Math.round(referencePriceMinor * 0.03)
+      : undefined;
+
+  return (
+    absoluteDeltaMinor >= 1000 ||
+    (typeof ratioThresholdMinor === 'number' &&
+      absoluteDeltaMinor >= ratioThresholdMinor)
+  );
+}
+
+export function getSetDecisionState(
+  pricePanelSnapshot?: Pick<
+    PricePanelSnapshot,
+    'deltaMinor' | 'referencePriceMinor'
+  >,
+): SetDecisionState {
+  if (
+    !pricePanelSnapshot ||
+    typeof pricePanelSnapshot.deltaMinor !== 'number'
+  ) {
+    return 'limited';
+  }
+
+  if (
+    !hasMeaningfulPriceGap({
+      deltaMinor: pricePanelSnapshot.deltaMinor,
+      referencePriceMinor: pricePanelSnapshot.referencePriceMinor,
+    })
+  ) {
+    return 'consider';
+  }
+
+  return pricePanelSnapshot.deltaMinor < 0 ? 'buy' : 'wait';
 }
 
 function getReviewedOfferLabel(merchantCount: number): string {
@@ -209,43 +293,152 @@ export interface PriceHistorySummaryState {
 }
 
 export function buildSetDealVerdict(
-  pricePanelSnapshot?: Pick<PricePanelSnapshot, 'deltaMinor'>,
+  pricePanelSnapshot?: Pick<
+    PricePanelSnapshot,
+    'deltaMinor' | 'referencePriceMinor'
+  >,
+  options?: {
+    theme?: string;
+  },
 ): SetDealVerdict {
-  if (
-    !pricePanelSnapshot ||
-    typeof pricePanelSnapshot.deltaMinor !== 'number'
-  ) {
+  const decisionState = getSetDecisionState(pricePanelSnapshot);
+  const decisionVoice = getDecisionVoice(options?.theme);
+
+  if (decisionState === 'limited') {
     return {
       explanation:
-        'We volgen nog te weinig prijzen om te zeggen of dit een slim koopmoment is.',
+        'We volgen deze set nog te kort om nu al scherp koopadvies te geven.',
       label: 'Nog te weinig data',
       tone: 'neutral',
     };
   }
 
-  if (pricePanelSnapshot.deltaMinor < 0) {
+  if (decisionState === 'buy') {
     return {
       explanation:
-        'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
-      label: 'Nu interessant geprijsd',
+        decisionVoice === 'calm'
+          ? 'Sterke prijs voor deze set. Als hij al op je lijst stond, is dit een rustig instapmoment.'
+          : decisionVoice === 'punchy'
+            ? 'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om toe te slaan.'
+            : 'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
+      label: 'Goede deal',
       tone: 'positive',
     };
   }
 
-  if (pricePanelSnapshot.deltaMinor > 0) {
+  if (decisionState === 'wait') {
     return {
       explanation:
-        'Deze prijs ligt boven wat we meestal zien. Volgen en wachten is slimmer.',
-      label: 'Nog niet bijzonder',
+        decisionVoice === 'calm'
+          ? 'Deze prijs ligt nu te hoog. Rustig volgen is slimmer dan meteen kopen.'
+          : decisionVoice === 'punchy'
+            ? 'Deze prijs ligt te hoog. Even wachten geeft je een betere kans.'
+            : 'Deze prijs ligt boven wat we meestal zien. Wachten is slimmer dan nu kopen.',
+      label: 'Wachten loont',
       tone: 'warning',
     };
   }
 
   return {
     explanation:
-      'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
-    label: 'Rond normaal',
+      decisionVoice === 'calm'
+        ? 'Prima prijs, maar niet uitzonderlijk. Kopen kan, wachten kan ook.'
+        : decisionVoice === 'punchy'
+          ? 'Prima prijs, maar niet de deal waar je meteen op hoeft te springen.'
+          : 'Prima prijs, maar niet uitzonderlijk laag. Alleen kopen als je hem nu graag wilt hebben.',
+    label: 'Prima prijs',
     tone: 'info',
+  };
+}
+
+export function buildSetDecisionPresentation({
+  hasCurrentOffer = false,
+  pricePanelSnapshot,
+  theme,
+}: {
+  hasCurrentOffer?: boolean;
+  pricePanelSnapshot?: Pick<
+    PricePanelSnapshot,
+    'deltaMinor' | 'referencePriceMinor'
+  >;
+  theme?: string;
+}): SetDecisionPresentation {
+  const state = getSetDecisionState(pricePanelSnapshot);
+  const verdict = buildSetDealVerdict(pricePanelSnapshot, {
+    theme,
+  });
+
+  if (state === 'limited') {
+    return {
+      cardLabel: 'Prijs wordt opgebouwd',
+      cardSupportingCopy: hasCurrentOffer
+        ? undefined
+        : 'We bouwen dit prijsbeeld nog op',
+      followCopy:
+        'Brickhunt houdt deze set in de gaten terwijl de prijsdata zich opbouwt.',
+      followEyebrow: 'Prijs volgen',
+      followTitle: 'Volg deze set',
+      noOfferCopy:
+        'Brickhunt volgt deze set al, maar nog niet scherp genoeg voor een koopmoment of betrouwbare deal-link.',
+      noOfferTitle: 'We bouwen dit prijsbeeld nog op',
+      state,
+      verdict,
+    };
+  }
+
+  if (state === 'buy') {
+    return {
+      cardLabel: hasCurrentOffer ? 'Goede deal' : 'Goede prijs',
+      cardSupportingCopy: hasCurrentOffer
+        ? undefined
+        : 'Nog geen betrouwbare deal-link',
+      followCopy: hasCurrentOffer
+        ? 'Sterke prijs gezien? Volg deze set als je nog even wilt wachten zonder het moment kwijt te raken.'
+        : 'Sterke prijs gezien, maar nog geen goede deal-link. Volg deze set; Brickhunt seint je zodra er wel een betrouwbare route is.',
+      followEyebrow: hasCurrentOffer
+        ? 'Nog niet klaar?'
+        : 'Laat Brickhunt meekijken',
+      followTitle: hasCurrentOffer ? 'Volg deze prijs' : 'Volg deze set',
+      noOfferCopy:
+        'We zien wel een sterke prijs, maar nog geen betrouwbare aanbieding om je nu naartoe te sturen.',
+      noOfferTitle: 'Nog geen betrouwbare deal-link',
+      state,
+      verdict,
+    };
+  }
+
+  if (state === 'wait') {
+    return {
+      cardLabel: 'Wachten loont',
+      cardSupportingCopy: hasCurrentOffer
+        ? undefined
+        : 'Nog geen goede deal gevonden',
+      followCopy:
+        'Laat Brickhunt meekijken. Dan zie je sneller wanneer wachten niet meer nodig is.',
+      followEyebrow: 'Slimmer om te wachten',
+      followTitle: 'Volg deze set',
+      noOfferCopy:
+        'De prijs is nog niet sterk en we zien nu ook geen betrouwbare aanbieding om door te sturen.',
+      noOfferTitle: 'Nog geen goede deal gevonden',
+      state,
+      verdict,
+    };
+  }
+
+  return {
+    cardLabel: 'Prima prijs',
+    cardSupportingCopy: hasCurrentOffer
+      ? undefined
+      : 'We volgen deze set voor prijsdrops',
+    followCopy:
+      'Prima prijs, maar dit hoeft geen nu-of-nooit moment te zijn. Volg hem als je op een duidelijkere deal wilt wachten.',
+    followEyebrow: 'In de gaten houden',
+    followTitle: 'Volg deze set',
+    noOfferCopy:
+      'We zien prijscontext, maar nog geen sterke of betrouwbare aanbieding om nu door te sturen.',
+    noOfferTitle: 'We volgen deze set',
+    state,
+    verdict,
   };
 }
 
@@ -261,12 +454,16 @@ export function buildSetDecisionSupportItems({
   const trackedMerchantCount =
     merchantCount ?? pricePanelSnapshot?.merchantCount;
   const items: SetDecisionSupportItem[] = [];
+  const decisionPresentation = buildSetDecisionPresentation({
+    hasCurrentOffer,
+    pricePanelSnapshot,
+  });
 
   if (!pricePanelSnapshot) {
     items.push({
       id: 'limited-data',
       text: hasCurrentOffer
-        ? 'We hebben nog beperkte data, maar dit is nu de beste deal die we zien.'
+        ? 'We hebben nog beperkte data, maar dit is nu de beste prijs die we zien.'
         : 'We hebben nog weinig prijsdata voor deze set.',
     });
 
@@ -332,6 +529,13 @@ export function buildSetDecisionSupportItems({
     items.push({
       id: 'brickhunt-guidance',
       text: 'Met meer data wordt dit advies scherper.',
+    });
+  }
+
+  if (!hasCurrentOffer && items.length < 3) {
+    items.push({
+      id: 'no-reliable-offer',
+      text: decisionPresentation.noOfferCopy,
     });
   }
 

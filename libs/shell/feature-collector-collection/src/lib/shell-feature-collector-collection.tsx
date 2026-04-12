@@ -2,10 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
-import { CatalogSetCard } from '@lego-platform/catalog/ui';
+import {
+  CatalogSetCard,
+  type CatalogSetCardPriceContext,
+} from '@lego-platform/catalog/ui';
 import { removeOwnedSet } from '@lego-platform/collection/data-access';
 import { CollectorCollectionPanel } from '@lego-platform/collection/ui';
-import { getReviewedPriceSummary } from '@lego-platform/pricing/data-access';
+import {
+  buildSetDecisionPresentation,
+  getPricePanelSnapshot,
+  getReviewedPriceSummary,
+} from '@lego-platform/pricing/data-access';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { Button } from '@lego-platform/shared/ui';
 import {
@@ -90,6 +97,37 @@ function getCollectionMarketNote(
     priceSummary.dealLabel,
     priceSummary.availabilityLabel ?? priceSummary.reviewedLabel,
   ].join(' · ');
+}
+
+function toCollectionPriceContext({
+  pricePanelSnapshot,
+  priceSummary,
+  theme,
+}: {
+  pricePanelSnapshot: ReturnType<typeof getPricePanelSnapshot>;
+  priceSummary: ReturnType<typeof getReviewedPriceSummary>;
+  theme: string;
+}): CatalogSetCardPriceContext | undefined {
+  if (!priceSummary) {
+    return undefined;
+  }
+
+  const decisionPresentation = buildSetDecisionPresentation({
+    hasCurrentOffer: false,
+    pricePanelSnapshot,
+    theme,
+  });
+
+  return {
+    coverageLabel: priceSummary.coverageLabel,
+    currentPrice: priceSummary.currentPrice,
+    decisionLabel: decisionPresentation.cardLabel,
+    decisionNote: decisionPresentation.cardSupportingCopy,
+    merchantLabel: priceSummary.merchantLabel,
+    pricePositionLabel: priceSummary.pricePositionLabel,
+    pricePositionTone: decisionPresentation.verdict.tone,
+    reviewedLabel: priceSummary.reviewedLabel,
+  };
 }
 
 export function ShellFeatureCollectorCollection() {
@@ -269,6 +307,7 @@ export function ShellFeatureCollectorCollection() {
       state="populated"
     >
       {sortedOwnedSetCards.map((catalogSetCard) => {
+        const pricePanelSnapshot = getPricePanelSnapshot(catalogSetCard.id);
         const reviewedPriceSummary = getReviewedPriceSummary(catalogSetCard.id);
 
         return (
@@ -293,17 +332,11 @@ export function ShellFeatureCollectorCollection() {
             }
             href={buildSetDetailPath(catalogSetCard.slug)}
             key={catalogSetCard.id}
-            priceContext={
-              reviewedPriceSummary
-                ? {
-                    coverageLabel: reviewedPriceSummary.coverageLabel,
-                    currentPrice: reviewedPriceSummary.currentPrice,
-                    merchantLabel: reviewedPriceSummary.merchantLabel,
-                    pricePositionLabel: reviewedPriceSummary.pricePositionLabel,
-                    reviewedLabel: reviewedPriceSummary.reviewedLabel,
-                  }
-                : undefined
-            }
+            priceContext={toCollectionPriceContext({
+              pricePanelSnapshot,
+              priceSummary: reviewedPriceSummary,
+              theme: catalogSetCard.theme,
+            })}
             priceDisplay="subtle"
             savedState="owned"
             setSummary={catalogSetCard}

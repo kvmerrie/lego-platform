@@ -116,8 +116,9 @@
 }
 
 .productToggleButton {
-  border: var(--lego-border-width-2) solid var(--lego-info);
+  border: var(--lego-border-width-2) solid transparent;
   border-radius: var(--lego-radius-pill);
+  box-shadow: none;
   inline-size: 100%;
   justify-content: center;
   min-height: 2.6rem;
@@ -125,24 +126,29 @@
 }
 
 .productToggleButtonIdle {
-  background: #ffffff;
-  color: var(--lego-info);
+  background: var(--lego-surface-muted);
+  color: var(--lego-text);
 }
 
 .productToggleButtonIdle:hover {
-  background: color-mix(in srgb, var(--lego-info) 6%, white);
-  border-color: var(--lego-info);
+  background: color-mix(
+    in srgb,
+    var(--lego-surface-muted) 76%,
+    var(--lego-border-subtle) 24%
+  );
+  border-color: transparent;
+  color: var(--lego-text);
 }
 
 .productToggleButtonActive {
   background: var(--lego-info);
-  border-color: var(--lego-info);
+  border-color: transparent;
   color: #ffffff;
 }
 
 .productToggleButtonActive:hover {
   background: color-mix(in srgb, var(--lego-info) 88%, black 12%);
-  border-color: color-mix(in srgb, var(--lego-info) 88%, black 12%);
+  border-color: transparent;
 }
 
 .collectionPagePanel {

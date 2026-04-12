@@ -27,6 +27,7 @@ import {
   Minus,
   Package2,
   Ruler,
+  ShoppingBag,
   UsersRound,
 } from 'lucide-react';
 import {
@@ -94,7 +95,11 @@ export interface CatalogThemeVisual {
 export interface CatalogSetCardPriceContext {
   coverageLabel: string;
   currentPrice: string;
+  decisionLabel?: string;
+  decisionNote?: string;
   merchantLabel: string;
+  primaryActionHref?: string;
+  primaryActionTrackingEvent?: BrickhuntAnalyticsEventDescriptor;
   pricePositionLabel?: string;
   pricePositionTone?: CatalogSetCardPriceContextTone;
   reviewedLabel: string;
@@ -109,6 +114,7 @@ type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
 type CatalogSetSavedState = 'owned' | 'wishlist';
 type CatalogSetCardPriceDisplay = 'default' | 'subtle';
 type CatalogSetCardCollectionLayout = 'grid' | 'rail';
+export type CatalogSetCardCtaMode = 'default' | 'commerce';
 
 export const CatalogSetCardCollection = forwardRef<
   HTMLDivElement,
@@ -312,18 +318,48 @@ function getCardMerchantLabel(merchantLabel: string): string {
   return `Laagst bij ${trimmedMerchantLabel}`;
 }
 
-function getCardPrimaryActionLabel({
+function getCardPrimaryActionConfig({
+  ctaMode,
+  href,
   priceContext,
+  trackingEvent,
   variant,
 }: {
+  ctaMode: CatalogSetCardCtaMode;
+  href?: string;
   priceContext?: CatalogSetCardPriceContext;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant: CatalogSetCardVariant;
-}): string {
-  if (variant === 'featured' && priceContext) {
-    return 'Bekijk prijs';
+}): {
+  className: string;
+  href?: string;
+  icon: typeof Eye | typeof ShoppingBag;
+  label: string;
+  rel?: string;
+  target?: '_blank';
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
+} {
+  const primaryActionHref = priceContext?.primaryActionHref?.trim();
+
+  if (ctaMode === 'commerce' && variant === 'featured' && primaryActionHref) {
+    return {
+      className: styles.cardCompactActionCommerce,
+      href: primaryActionHref,
+      icon: ShoppingBag,
+      label: 'Koop nu',
+      rel: 'noopener noreferrer',
+      target: '_blank',
+      trackingEvent: priceContext?.primaryActionTrackingEvent,
+    };
   }
 
-  return 'Bekijk set';
+  return {
+    className: styles.cardCompactActionBrowse,
+    href,
+    icon: Eye,
+    label: 'Bekijk set',
+    trackingEvent,
+  };
 }
 
 function formatCardSetFacts(setSummary: CatalogSetCardSummary): Array<{
@@ -555,6 +591,7 @@ function buildCatalogSetDetailHeroFacts({
 
 export function CatalogSetCard({
   actions,
+  ctaMode = 'default',
   contextBadge,
   href,
   priceContext,
@@ -567,6 +604,7 @@ export function CatalogSetCard({
   variant = 'default',
 }: {
   actions?: ReactNode;
+  ctaMode?: CatalogSetCardCtaMode;
   contextBadge?: CatalogSetCardContextBadge;
   href?: string;
   priceContext?: CatalogSetCardPriceContext;
@@ -578,10 +616,14 @@ export function CatalogSetCard({
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant?: CatalogSetCardVariant;
 }) {
-  const primaryActionLabel = getCardPrimaryActionLabel({
+  const primaryAction = getCardPrimaryActionConfig({
+    ctaMode,
+    href,
     priceContext,
+    trackingEvent,
     variant,
   });
+  const PrimaryActionIcon = primaryAction.icon;
   const setThemeSlug = buildCatalogThemeSlug(setSummary.theme);
 
   if (variant === 'compact') {
@@ -616,14 +658,14 @@ export function CatalogSetCard({
             <CatalogSetNumberMeta setId={setSummary.id} />
             {href ? (
               <span
-                className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction}`}
+                className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
               >
-                <Eye
+                <PrimaryActionIcon
                   aria-hidden="true"
                   className={styles.cardCompactActionIcon}
                 />
                 <span className={styles.cardCompactActionLabel}>
-                  {primaryActionLabel}
+                  {primaryAction.label}
                 </span>
               </span>
             ) : null}
@@ -656,12 +698,15 @@ export function CatalogSetCard({
 
   if (variant === 'featured') {
     const featuredMerchantLabel = priceContext
-      ? getCardMerchantLabel(priceContext.merchantLabel)
+      ? (priceContext.decisionNote ??
+        getCardMerchantLabel(priceContext.merchantLabel))
       : null;
+    const featuredDecisionLabel =
+      priceContext?.decisionLabel ?? priceContext?.pricePositionLabel;
     const featuredFooterMeta = priceContext ? null : setSummary.id;
     const FeaturedPriceSignalIcon =
-      priceContext?.pricePositionLabel &&
-      getCardPriceSignalIcon(priceContext.pricePositionTone);
+      featuredDecisionLabel &&
+      getCardPriceSignalIcon(priceContext?.pricePositionTone);
     const overlayBadges = (
       <CatalogSetCardVisualBadges
         contextBadge={contextBadge}
@@ -692,7 +737,7 @@ export function CatalogSetCard({
           <div className={styles.priceCompactBlock}>
             {priceContext ? (
               <>
-                {priceContext.pricePositionLabel ? (
+                {featuredDecisionLabel ? (
                   <p
                     className={`${styles.cardCompactSignal} ${getPricePositionClassName(
                       priceContext.pricePositionTone,
@@ -704,7 +749,7 @@ export function CatalogSetCard({
                         className={styles.cardCompactSignalIcon}
                       />
                     ) : null}
-                    {priceContext.pricePositionLabel}
+                    {featuredDecisionLabel}
                   </p>
                 ) : null}
                 <p className={styles.priceValue}>{priceContext.currentPrice}</p>
@@ -738,7 +783,7 @@ export function CatalogSetCard({
         ) : (
           <div className={styles.setCardLink}>{featuredCardContent}</div>
         )}
-        {featuredFooterMeta || href || actions ? (
+        {featuredFooterMeta || primaryAction.href || actions ? (
           <div className={styles.cardCompactDecisionZone}>
             {featuredFooterMeta ? (
               <CatalogSetNumberMeta setId={featuredFooterMeta} />
@@ -751,20 +796,24 @@ export function CatalogSetCard({
                   {actions}
                 </div>
               ) : null}
-              {href ? (
+              {primaryAction.href ? (
                 <ActionLink
-                  aria-label={primaryActionLabel}
-                  className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction}`}
-                  href={href}
+                  aria-label={primaryAction.label}
+                  className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
+                  href={primaryAction.href}
+                  rel={primaryAction.rel}
+                  target={primaryAction.target}
                   tone="inline"
-                  {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+                  {...buildBrickhuntAnalyticsAttributes(
+                    primaryAction.trackingEvent,
+                  )}
                 >
-                  <Eye
+                  <PrimaryActionIcon
                     aria-hidden="true"
                     className={styles.cardCompactActionIcon}
                   />
                   <span className={styles.cardCompactActionLabel}>
-                    {primaryActionLabel}
+                    {primaryAction.label}
                   </span>
                 </ActionLink>
               ) : null}
@@ -815,10 +864,12 @@ export function CatalogSetCard({
         <div className={styles.priceBlock}>
           <p className={styles.priceLabel}>Reviewed prijs</p>
           <p className={styles.priceValue}>{priceContext.currentPrice}</p>
-          <p className={styles.priceMeta}>{priceContext.merchantLabel}</p>
-          {priceContext.pricePositionLabel ? (
+          <p className={styles.priceMeta}>
+            {priceContext.decisionNote ?? priceContext.merchantLabel}
+          </p>
+          {(priceContext.decisionLabel ?? priceContext.pricePositionLabel) ? (
             <p className={styles.pricePosition}>
-              {priceContext.pricePositionLabel}
+              {priceContext.decisionLabel ?? priceContext.pricePositionLabel}
             </p>
           ) : null}
           <div className={styles.supportingGrid}>
@@ -847,7 +898,9 @@ export function CatalogSetCard({
           <CatalogSupportingDetail
             label="Huidige reviewed prijs"
             tone="muted"
-            value={`${priceContext.currentPrice} · ${priceContext.merchantLabel}`}
+            value={`${priceContext.currentPrice} · ${
+              priceContext.decisionNote ?? priceContext.merchantLabel
+            }`}
           />
         ) : null}
         {supportingNote ? (
@@ -1010,6 +1063,9 @@ export function CatalogSetDetailPanel({
   catalogSetDetail,
   dealSupportItems = [],
   dealVerdict,
+  followCopy,
+  followEyebrow,
+  followTitle,
   offerList = [],
   offerSummaryLabel,
   ownershipActions,
@@ -1024,6 +1080,9 @@ export function CatalogSetDetailPanel({
   catalogSetDetail: CatalogSetDetail;
   dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
+  followCopy?: string;
+  followEyebrow?: string;
+  followTitle?: string;
   offerList?: readonly CatalogSetDetailOfferItem[];
   offerSummaryLabel?: string;
   ownershipActions?: ReactNode;
@@ -1106,6 +1165,9 @@ export function CatalogSetDetailPanel({
         decisionPanel={
           <CatalogPriceDecisionPanel
             followAction={priceAlertAction}
+            followCopy={followCopy}
+            followEyebrow={followEyebrow}
+            followTitle={followTitle}
             leadWithFollow={dealVerdict.tone === 'warning'}
             primaryOffer={bestDeal}
             supportItems={dealSupportItems}

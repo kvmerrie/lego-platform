@@ -451,9 +451,10 @@
 .cardCompactAction {
   align-items: center;
   background: var(--lego-accent);
-  border: var(--lego-border-width-2) solid var(--lego-accent);
-  border-radius: 999px;
+  border: var(--lego-border-width-2) solid transparent;
+  border-radius: var(--lego-radius-pill);
   box-sizing: border-box;
+  box-shadow: none;
   color: var(--lego-accent-contrast);
   display: inline-flex;
   flex: 0 0 auto;
@@ -485,15 +486,43 @@
   width: var(--catalog-card-action-icon-size);
 }
 
-.setCardLink:hover .cardCompactAction,
-.cardCompactAction:hover {
+.cardCompactActionBrowse {
+  background: var(--lego-accent);
+  border-color: transparent;
+  color: var(--lego-accent-contrast);
+}
+
+.setCardLink:hover .cardCompactActionBrowse,
+.cardCompactActionBrowse:hover {
   background: var(--lego-accent-hover);
-  border-color: var(--lego-accent-hover);
+  border-color: transparent;
+  color: var(--lego-accent-contrast);
+  text-decoration: none;
+}
+
+.cardCompactActionCommerce {
+  background: var(--lego-accent);
+  border-color: transparent;
+  color: var(--lego-accent-contrast);
+}
+
+.cardCompactActionCommerce:hover {
+  background: var(--lego-accent-hover);
+  border-color: transparent;
   color: var(--lego-accent-contrast);
   text-decoration: none;
 }
 
 .cardCompactAction.cardCompactAction:focus-visible {
+  color: var(--lego-accent-contrast);
+  text-decoration: none;
+}
+
+.cardCompactActionBrowse.cardCompactActionBrowse:focus-visible {
+  color: var(--lego-accent-contrast);
+}
+
+.cardCompactActionCommerce.cardCompactActionCommerce:focus-visible {
   color: var(--lego-accent-contrast);
   text-decoration: none;
 }
@@ -739,6 +768,13 @@
 .heroPanel {
   display: grid;
   gap: var(--lego-space-3);
+}
+
+.heroPanel .actionLink {
+  --lego-action-min-height: 2.9rem;
+  --lego-action-padding-block: 0.68rem;
+  --lego-action-padding-inline: 1.15rem;
+  font-size: var(--lego-font-size-base);
 }
 
 .heroPrimary,
@@ -1537,7 +1573,7 @@
 }
 
 .setCardRailHeadingButton {
-  border-radius: 999px;
+  border-radius: var(--lego-radius-pill);
   min-height: 2.4rem;
   min-width: 2.4rem;
   padding: 0;

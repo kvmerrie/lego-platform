@@ -100,8 +100,16 @@ describe('CatalogSetCard', () => {
           coverageLabel: 'In stock · 3 reviewed offers',
           currentPrice: 'EUR 489.99',
           merchantLabel: 'Lowest reviewed price at bol',
+          primaryActionHref: 'https://merchant.example/rivendell',
           pricePositionLabel: 'EUR 10.00 below ref',
           pricePositionTone: 'positive',
+          primaryActionTrackingEvent: {
+            event: 'offer_click',
+            properties: {
+              merchantName: 'bol',
+              setId: '10316',
+            },
+          },
           reviewedLabel: 'Checked 29 mrt',
         }}
         setSummary={{
@@ -127,8 +135,11 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('EUR 10.00 below ref');
     expect(markup).toContain('2023');
     expect(markup).toContain('6.181 stenen');
-    expect(markup).toContain('Bekijk prijs');
-    expect(markup).toContain('aria-label="Bekijk prijs"');
+    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('aria-label="Bekijk set"');
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).not.toContain('target="_blank"');
+    expect(markup).not.toContain('data-brickhunt-event="offer_click"');
     expect(markup).not.toContain('Prestige display anchor');
     expect(markup).not.toContain('Op voorraad · 3 winkels · 29 mrt');
     expect(markup).not.toContain('Dekking');
@@ -168,7 +179,94 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('Volg prijs');
-    expect(markup).toContain('Bekijk prijs');
+    expect(markup).toContain('Bekijk set');
+  });
+
+  it('falls back to the detail page when pricing exists without a valid affiliate link', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        ctaMode="commerce"
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'In stock · 3 reviewed offers',
+          currentPrice: 'EUR 489.99',
+          merchantLabel: 'Lowest reviewed price at bol',
+          pricePositionLabel: 'EUR 10.00 below ref',
+          pricePositionTone: 'positive',
+          reviewedLabel: 'Checked 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        trackingEvent={{
+          event: 'catalog_set_click',
+          properties: {
+            setId: '10316',
+          },
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).toContain('data-brickhunt-event="catalog_set_click"');
+  });
+
+  it('only uses the affiliate CTA when commerce mode is explicitly enabled', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        ctaMode="commerce"
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'In stock · 3 reviewed offers',
+          currentPrice: 'EUR 489.99',
+          merchantLabel: 'Lowest reviewed price at bol',
+          primaryActionHref: 'https://merchant.example/rivendell',
+          pricePositionLabel: 'EUR 10.00 below ref',
+          pricePositionTone: 'positive',
+          primaryActionTrackingEvent: {
+            event: 'offer_click',
+            properties: {
+              merchantName: 'bol',
+              setId: '10316',
+            },
+          },
+          reviewedLabel: 'Checked 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).toContain('Koop nu');
+    expect(markup).toContain('aria-label="Koop nu"');
+    expect(markup).toContain('href="https://merchant.example/rivendell"');
+    expect(markup).toContain('target="_blank"');
+    expect(markup).toContain('rel="noopener noreferrer"');
+    expect(markup).toContain('data-brickhunt-event="offer_click"');
   });
 
   it('can hide a redundant theme badge when the surrounding collection already provides the theme context', () => {
@@ -323,7 +421,7 @@ describe('CatalogSetCard', () => {
           ctaLabel: 'Bekijk bij bol',
           ctaTone: 'accent',
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
-          decisionLabel: 'Nu interessant geprijsd',
+          decisionLabel: 'Goede deal',
           decisionTone: 'positive',
           merchantLabel: 'bol',
           price: '€ 469,99',
@@ -398,8 +496,8 @@ describe('CatalogSetCard', () => {
         ]}
         dealVerdict={{
           explanation:
-            'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
-          label: 'Nu interessant geprijsd',
+            'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
+          label: 'Goede deal',
           tone: 'positive',
         }}
         offerList={[
@@ -441,9 +539,9 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Nu interessant geprijsd');
+    expect(markup).toContain('Goede deal');
     expect(markup).toContain(
-      'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
+      'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
     );
     expect(markup).toContain('The Lord of the Rings');
     expect(markup).toContain('Bekijk bij bol');
@@ -497,7 +595,7 @@ describe('CatalogSetCard', () => {
           ctaLabel: 'Bekijk bij LEGO',
           ctaTone: 'secondary',
           decisionHelper: 'Rond het normale prijsniveau voor deze set.',
-          decisionLabel: 'Rond normaal',
+          decisionLabel: 'Prima prijs',
           decisionTone: 'info',
           merchantLabel: 'LEGO',
           price: '€ 139,99',
@@ -520,8 +618,8 @@ describe('CatalogSetCard', () => {
         }}
         dealVerdict={{
           explanation:
-            'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
-          label: 'Rond normaal',
+            'Prima prijs, maar niet uitzonderlijk laag. Alleen kopen als je hem nu graag wilt hebben.',
+          label: 'Prima prijs',
           tone: 'info',
         }}
         offerList={[
@@ -541,8 +639,10 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Nog geen echte vergelijking');
-    expect(markup).toContain('We volgen nu 1 winkel voor deze set.');
+    expect(markup).toContain('Nog geen sterke vergelijking');
+    expect(markup).toContain(
+      'We volgen deze set al, maar met 1 winkel is dit nog geen vergelijking',
+    );
     expect(markup).not.toContain('Meer nagekeken prijzen');
   });
 
@@ -605,7 +705,7 @@ describe('CatalogSetCard', () => {
           ctaLabel: 'Bekijk prijs bij bol',
           ctaTone: 'secondary',
           decisionHelper: '€ 20,00 boven wat we meestal zien voor deze set.',
-          decisionLabel: 'Nog niet bijzonder',
+          decisionLabel: 'Wachten loont',
           decisionTone: 'warning',
           merchantLabel: 'bol',
           price: '€ 449,99',
@@ -636,8 +736,8 @@ describe('CatalogSetCard', () => {
         ]}
         dealVerdict={{
           explanation:
-            'Deze prijs ligt boven wat we meestal zien. Volgen en wachten is slimmer.',
-          label: 'Nog niet bijzonder',
+            'Deze prijs ligt boven wat we meestal zien. Wachten is slimmer dan nu kopen.',
+          label: 'Wachten loont',
           tone: 'warning',
         }}
         priceAlertAction={<button type="button">Volg prijs</button>}
@@ -656,8 +756,8 @@ describe('CatalogSetCard', () => {
       <CatalogSetDetailPanel
         dealVerdict={{
           explanation:
-            'Prima prijs, maar niet opvallend laag. Alleen kopen als je nu wilt instappen.',
-          label: 'Rond normaal',
+            'Prima prijs, maar niet uitzonderlijk laag. Alleen kopen als je hem nu graag wilt hebben.',
+          label: 'Prima prijs',
           tone: 'info',
         }}
         catalogSetDetail={{
@@ -690,8 +790,8 @@ describe('CatalogSetCard', () => {
       <CatalogSetDetailPanel
         dealVerdict={{
           explanation:
-            'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
-          label: 'Nu interessant geprijsd',
+            'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
+          label: 'Goede deal',
           tone: 'positive',
         }}
         catalogSetDetail={{
@@ -728,8 +828,8 @@ describe('CatalogSetCard', () => {
       <CatalogSetDetailPanel
         dealVerdict={{
           explanation:
-            'Deze set zit onder wat we meestal zien. Kopen is nu logisch als je hem wilt hebben.',
-          label: 'Nu interessant geprijsd',
+            'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
+          label: 'Goede deal',
           tone: 'positive',
         }}
         catalogSetDetail={{

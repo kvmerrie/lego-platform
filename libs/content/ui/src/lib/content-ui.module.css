@@ -10,6 +10,10 @@
 }
 
 .heroLink {
+  --lego-action-min-height: 2.9rem;
+  --lego-action-padding-block: 0.68rem;
+  --lego-action-padding-inline: 1.15rem;
+  font-size: var(--lego-font-size-base);
   justify-self: flex-start;
 }
 

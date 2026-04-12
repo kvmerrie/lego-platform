@@ -15,6 +15,9 @@ export function CatalogFeatureSetDetail({
   catalogSetDetail,
   dealSupportItems = [],
   dealVerdict,
+  followCopy,
+  followEyebrow,
+  followTitle,
   offerList = [],
   offerSummaryLabel,
   ownershipActions,
@@ -29,6 +32,9 @@ export function CatalogFeatureSetDetail({
   catalogSetDetail: CatalogSetDetail;
   dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
+  followCopy?: string;
+  followEyebrow?: string;
+  followTitle?: string;
   offerList?: readonly CatalogSetDetailOfferItem[];
   offerSummaryLabel?: string;
   ownershipActions?: ReactNode;
@@ -45,6 +51,9 @@ export function CatalogFeatureSetDetail({
       catalogSetDetail={catalogSetDetail}
       dealSupportItems={dealSupportItems}
       dealVerdict={dealVerdict}
+      followCopy={followCopy}
+      followEyebrow={followEyebrow}
+      followTitle={followTitle}
       offerList={[...offerList]}
       offerSummaryLabel={offerSummaryLabel}
       ownershipActions={ownershipActions}
