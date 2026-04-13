@@ -12,6 +12,7 @@ import { ShellWebFollowLink } from './shell-web-follow-link';
 import { ShellWebHeaderReveal } from './shell-web-header-reveal';
 import { ShellWebMobileTabBar } from './shell-web-mobile-tab-bar';
 import { ShellWebMobileViewportOffset } from './shell-web-mobile-viewport-offset';
+import { ShellWebSamePageFragmentLinks } from './shell-web-same-page-fragment-links';
 import { ShellWebSearchOverlayScrollRestore } from './shell-web-search-overlay-scroll-restore';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
@@ -72,6 +73,7 @@ export function ShellWeb({
       <ShellWebAnalyticsListener />
       <ShellWebHeaderReveal />
       <ShellWebMobileViewportOffset />
+      <ShellWebSamePageFragmentLinks />
       <ShellWebSearchOverlayScrollRestore />
       <a className={styles.skipLink} href="#main-content">
         Ga direct naar de hoofdinhoud

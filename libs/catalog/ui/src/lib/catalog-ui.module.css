@@ -1536,7 +1536,7 @@
 }
 
 .quickFilterNav {
-  overflow-x: auto;
+  min-width: 0;
 }
 
 .quickFilterList {
@@ -1553,7 +1553,62 @@
 }
 
 .quickFilterChip {
+  align-items: center;
+  background: color-mix(
+    in srgb,
+    var(--lego-surface-subtle) 82%,
+    var(--lego-surface-default) 18%
+  );
+  border-radius: var(--lego-radius-pill);
+  box-shadow: inset 0 0 0 1px transparent;
+  color: var(--lego-text);
+  display: inline-flex;
+  font-size: var(--lego-font-size-sm);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1;
+  min-height: 2.4rem;
+  padding: 0.72rem 0.92rem;
+  text-decoration: none;
+  transition:
+    background-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard),
+    box-shadow var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
+    color var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
   white-space: nowrap;
+}
+
+.quickFilterChip:hover,
+.quickFilterChip:focus-visible {
+  background: color-mix(
+    in srgb,
+    var(--lego-surface-muted) 86%,
+    var(--lego-surface-default) 14%
+  );
+  outline: none;
+}
+
+.quickFilterChip:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+}
+
+.quickFilterChipActive {
+  background: color-mix(
+    in srgb,
+    var(--lego-accent) 14%,
+    var(--lego-surface-subtle) 86%
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--lego-accent) 22%, transparent);
+  color: var(--lego-accent);
+}
+
+.quickFilterChipActive:hover,
+.quickFilterChipActive:focus-visible {
+  background: color-mix(
+    in srgb,
+    var(--lego-accent) 18%,
+    var(--lego-surface-subtle) 82%
+  );
 }
 
 .setCardRail {

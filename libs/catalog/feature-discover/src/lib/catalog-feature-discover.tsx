@@ -84,6 +84,12 @@ function buildDiscoverFilterHref(filter: CatalogQuickFilterKey): string {
   return `${discoverPath}?${searchParams.toString()}`;
 }
 
+const primaryDiscoverQuickFilters = new Set<CatalogQuickFilterKey>([
+  'all',
+  'best-deals',
+  'with-minifigures',
+]);
+
 function filterDiscoverSetCards<T extends CatalogHomepageSetCard>({
   filter,
   setCards,
@@ -147,9 +153,22 @@ export function CatalogFeatureDiscover({
     (catalogQuickFilterOption) => ({
       href: buildDiscoverFilterHref(catalogQuickFilterOption.key),
       isActive: normalizedFilter === catalogQuickFilterOption.key,
+      key: catalogQuickFilterOption.key,
       label: catalogQuickFilterOption.label,
     }),
   );
+  const primaryQuickFilterItems = quickFilterItems.filter((quickFilterItem) =>
+    primaryDiscoverQuickFilters.has(quickFilterItem.key),
+  );
+  const moreQuickFilterItems = quickFilterItems.filter(
+    (quickFilterItem) => !primaryDiscoverQuickFilters.has(quickFilterItem.key),
+  );
+  const hasActiveMoreFilter = moreQuickFilterItems.some(
+    (quickFilterItem) => quickFilterItem.isActive,
+  );
+  const activeMoreFilterLabel = moreQuickFilterItems.find(
+    (quickFilterItem) => quickFilterItem.isActive,
+  )?.label;
   const filteredDealSetCards = filterDiscoverSetCards({
     filter: normalizedFilter,
     setCards: dealSetCards,
@@ -215,10 +234,48 @@ export function CatalogFeatureDiscover({
         </div>
       </section>
 
-      <CatalogQuickFilterBar
-        ariaLabel="Verfijn ontdekken"
-        items={quickFilterItems}
-      />
+      <CatalogSectionShell
+        as="section"
+        bodyClassName={styles.filterSectionBody}
+        bodySpacing="compact"
+        className={styles.filterSection}
+        description="Deze filters werken op de sets hieronder. Pak snelle filters voor deals of minifigs en open meer filters als je meteen een thema wilt uitlichten."
+        eyebrow="Filters"
+        padding="default"
+        spacing="compact"
+        title="Kijk eerst hoe je wilt bladeren"
+        titleAs="h2"
+        tone="muted"
+      >
+        <div className={styles.filterControls}>
+          <CatalogQuickFilterBar
+            ariaLabel="Snelle filters voor ontdekken"
+            className={styles.primaryFilterBar}
+            items={primaryQuickFilterItems}
+          />
+          <details
+            className={styles.moreFilters}
+            open={hasActiveMoreFilter ? true : undefined}
+          >
+            <summary className={styles.moreFiltersSummary}>
+              Meer filters
+              {activeMoreFilterLabel ? (
+                <span className={styles.moreFiltersActiveLabel}>
+                  {activeMoreFilterLabel}
+                </span>
+              ) : null}
+            </summary>
+            <div className={styles.moreFiltersPanel}>
+              <p className={styles.moreFiltersHeading}>Themafilters</p>
+              <CatalogQuickFilterBar
+                ariaLabel="Meer filters voor ontdekken"
+                className={styles.moreFiltersBar}
+                items={moreQuickFilterItems}
+              />
+            </div>
+          </details>
+        </div>
+      </CatalogSectionShell>
 
       {!hasFilteredContent ? (
         <CatalogSectionShell

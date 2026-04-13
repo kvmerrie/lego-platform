@@ -9,5 +9,18 @@ describe('shared design tokens', () => {
       '--lego-surface-default: var(--lego-surface);',
     );
     expect(themeStyles).toContain('--lego-text-default: var(--lego-text);');
+    expect(themeStyles).toContain(
+      '--lego-button-surface-default-primary-background: var(--lego-accent);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-button-surface-light-primary-background: var(--lego-contrast-ink);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-button-surface-dark-primary-background: var(--lego-contrast-white);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-button-surface-image-primary-background: var(--lego-contrast-ink);',
+    );
+    expect(themeStyles).toContain('scroll-behavior: smooth;');
   });
 });

@@ -263,9 +263,11 @@ export function CatalogSectionShell({
 
 export function CatalogQuickFilterBar({
   ariaLabel,
+  className,
   items,
 }: {
   ariaLabel: string;
+  className?: string;
   items: readonly {
     href: string;
     isActive?: boolean;
@@ -273,18 +275,23 @@ export function CatalogQuickFilterBar({
   }[];
 }) {
   return (
-    <nav aria-label={ariaLabel} className={styles.quickFilterNav}>
+    <nav
+      aria-label={ariaLabel}
+      className={joinClasses(styles.quickFilterNav, className)}
+    >
       <ul className={styles.quickFilterList}>
         {items.map((item) => (
           <li className={styles.quickFilterItem} key={item.label}>
-            <ActionLink
+            <a
               aria-current={item.isActive ? 'page' : undefined}
-              className={styles.quickFilterChip}
+              className={joinClasses(
+                styles.quickFilterChip,
+                item.isActive && styles.quickFilterChipActive,
+              )}
               href={item.href}
-              tone={item.isActive ? 'accent' : 'secondary'}
             >
               {item.label}
-            </ActionLink>
+            </a>
           </li>
         ))}
       </ul>

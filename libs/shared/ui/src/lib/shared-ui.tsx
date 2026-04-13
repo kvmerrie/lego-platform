@@ -26,6 +26,8 @@ type SurfaceElevation = 'default' | 'floating' | 'rested';
 type SurfaceTone = 'default' | 'muted' | 'accent';
 type SurfacePadding = 'md' | 'lg';
 type ActionTone = 'accent' | 'card' | 'ghost' | 'inline' | 'secondary';
+type ActionSize = 'compact' | 'default' | 'hero';
+type ActionSurface = 'default' | 'light' | 'dark' | 'image';
 type ContainerElement =
   | 'div'
   | 'footer'
@@ -87,6 +89,19 @@ const linkToneClasses: Record<ActionTone, string> = {
   ghost: styles.linkGhost,
   inline: styles.linkInline,
   secondary: styles.linkSecondary,
+};
+
+const actionSizeClasses: Record<ActionSize, string | undefined> = {
+  compact: styles.interactiveSizeCompact,
+  default: styles.interactiveSizeDefault,
+  hero: styles.interactiveSizeHero,
+};
+
+const actionSurfaceClasses: Record<ActionSurface, string | undefined> = {
+  default: styles.interactiveSurfaceDefault,
+  light: styles.interactiveSurfaceLight,
+  dark: styles.interactiveSurfaceDark,
+  image: styles.interactiveSurfaceImage,
 };
 
 const badgeToneClasses: Record<BadgeTone, string | undefined> = {
@@ -239,12 +254,16 @@ export function Button({
   className,
   disabled,
   isLoading,
+  size = 'default',
+  surface = 'default',
   tone = 'secondary',
   type = 'button',
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   isLoading?: boolean;
+  size?: ActionSize;
+  surface?: ActionSurface;
   tone?: Exclude<ActionTone, 'card' | 'inline'>;
 }) {
   return (
@@ -252,6 +271,8 @@ export function Button({
       aria-busy={isLoading || undefined}
       className={joinClasses(
         styles.interactiveBase,
+        actionSizeClasses[size],
+        actionSurfaceClasses[surface],
         buttonToneClasses[tone],
         className,
       )}
@@ -270,18 +291,44 @@ export function ActionLink({
   className,
   href,
   prefetch,
+  size = 'default',
+  surface = 'default',
   tone = 'secondary',
   ...rest
 }: Omit<ComponentProps<typeof Link>, 'className' | 'children' | 'href'> & {
   children: ReactNode;
   className?: string;
   href: string;
+  size?: ActionSize;
+  surface?: ActionSurface;
   tone?: ActionTone;
 }) {
+  const usesCardLayout = tone === 'card';
+  const usesInlineLayout = tone === 'inline';
+
+  if (usesCardLayout) {
+    return (
+      <Link
+        className={joinClasses(
+          styles.cardLinkBase,
+          linkToneClasses[tone],
+          className,
+        )}
+        href={href}
+        prefetch={prefetch}
+        {...rest}
+      >
+        {children}
+      </Link>
+    );
+  }
+
   return (
     <Link
       className={joinClasses(
         styles.interactiveBase,
+        usesInlineLayout ? undefined : actionSizeClasses[size],
+        actionSurfaceClasses[surface],
         linkToneClasses[tone],
         className,
       )}
@@ -289,7 +336,7 @@ export function ActionLink({
       prefetch={prefetch}
       {...rest}
     >
-      {children}
+      <span className={styles.interactiveContent}>{children}</span>
     </Link>
   );
 }

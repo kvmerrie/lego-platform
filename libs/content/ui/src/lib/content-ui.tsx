@@ -62,6 +62,8 @@ function EditorialSectionCta({
     <ActionLink
       className={variant === 'hero' ? styles.heroLink : styles.panelLink}
       href={ctaHref}
+      size={variant === 'hero' ? 'hero' : 'default'}
+      surface="default"
       tone={getEditorialCtaTone(editorialSectionType, variant)}
     >
       {ctaLabel}

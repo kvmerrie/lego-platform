@@ -2,6 +2,7 @@
   --shell-header-height: calc(2.9rem + (2 * var(--lego-space-2)));
   --shell-mobile-tabbar-height: 3.95rem;
   --shell-mobile-viewport-bottom-offset: 0px;
+  --shell-fragment-scroll-margin: var(--lego-space-1);
   --shell-mobile-tabbar-offset: calc(
     var(--shell-mobile-tabbar-height) + env(safe-area-inset-bottom) +
       var(--shell-mobile-viewport-bottom-offset)
@@ -603,7 +604,7 @@
 }
 
 .main {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: var(--shell-fragment-scroll-margin);
   width: 100%;
 }
 
@@ -732,6 +733,10 @@
 }
 
 @media (min-width: 48rem) {
+  .shell {
+    --shell-fragment-scroll-margin: var(--lego-space-3);
+  }
+
   .mainInner {
     --lego-section-inline-padding: var(--lego-space-4);
     --lego-surface-padding-md-block: var(--lego-space-4);
@@ -743,6 +748,7 @@
 
 @media (min-width: 64rem) {
   .shell {
+    --shell-fragment-scroll-margin: var(--lego-space-4);
     min-height: 100dvh;
   }
 

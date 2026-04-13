@@ -63,25 +63,33 @@
   width: 100%;
 }
 
+.cardLinkBase {
+  color: inherit;
+  display: block;
+  min-width: 0;
+  position: relative;
+  text-decoration: none;
+}
+
 .interactiveBase {
-  --lego-action-min-height: 2.4rem;
-  --lego-action-padding-block: 0.52rem;
-  --lego-action-padding-inline: 0.82rem;
   align-items: center;
-  border: 0;
+  border: var(--lego-action-border-width, 0) solid
+    var(--lego-action-border-color, transparent);
   border-radius: var(--lego-radius-pill);
+  box-sizing: border-box;
   cursor: pointer;
   display: inline-flex;
   font: inherit;
-  font-size: var(--lego-text-role-body-size);
+  font-size: var(--lego-action-font-size, var(--lego-text-role-body-size));
   font-weight: var(--lego-font-weight-semibold);
   gap: var(--lego-space-2);
   justify-content: center;
   isolation: isolate;
-  min-height: var(--lego-action-min-height);
+  line-height: var(--lego-action-line-height, 1.1);
+  min-height: var(--lego-action-min-height, 2.4rem);
   overflow: hidden;
-  padding-block: var(--lego-action-padding-block);
-  padding-inline: var(--lego-action-padding-inline);
+  padding-block: var(--lego-action-padding-block, 0.52rem);
+  padding-inline: var(--lego-action-padding-inline, 0.82rem);
   position: relative;
   text-decoration: none;
   transition:
@@ -89,9 +97,154 @@
       var(--lego-motion-ease-standard),
     border-color var(--lego-motion-duration-fast)
       var(--lego-motion-ease-standard),
+    box-shadow var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
     color var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
     outline-color var(--lego-motion-duration-fast)
       var(--lego-motion-ease-standard);
+}
+
+.interactiveSurfaceDefault {
+  --lego-button-surface-accent-background: var(
+    --lego-button-surface-default-primary-background
+  );
+  --lego-button-surface-accent-hover-background: var(
+    --lego-button-surface-default-primary-hover-background
+  );
+  --lego-button-surface-accent-active-background: var(
+    --lego-button-surface-default-primary-active-background
+  );
+  --lego-button-surface-accent-color: var(
+    --lego-button-surface-default-primary-color
+  );
+  --lego-button-surface-secondary-background: var(
+    --lego-button-surface-default-secondary-background
+  );
+  --lego-button-surface-secondary-border-color: var(
+    --lego-button-surface-default-secondary-border
+  );
+  --lego-button-surface-secondary-color: var(
+    --lego-button-surface-default-secondary-color
+  );
+  --lego-button-surface-secondary-hover-background: var(
+    --lego-button-surface-default-secondary-hover-background
+  );
+  --lego-button-surface-secondary-hover-color: var(
+    --lego-button-surface-default-secondary-hover-color
+  );
+  --lego-button-surface-secondary-active-background: var(
+    --lego-button-surface-default-secondary-active-background
+  );
+  --lego-button-surface-secondary-active-color: var(
+    --lego-button-surface-default-secondary-active-color
+  );
+}
+
+.interactiveSurfaceLight {
+  --lego-button-surface-accent-background: var(
+    --lego-button-surface-light-primary-background
+  );
+  --lego-button-surface-accent-hover-background: var(
+    --lego-button-surface-light-primary-hover-background
+  );
+  --lego-button-surface-accent-active-background: var(
+    --lego-button-surface-light-primary-active-background
+  );
+  --lego-button-surface-accent-color: var(
+    --lego-button-surface-light-primary-color
+  );
+  --lego-button-surface-secondary-background: var(
+    --lego-button-surface-light-secondary-background
+  );
+  --lego-button-surface-secondary-border-color: var(
+    --lego-button-surface-light-secondary-border
+  );
+  --lego-button-surface-secondary-color: var(
+    --lego-button-surface-light-secondary-color
+  );
+  --lego-button-surface-secondary-hover-background: var(
+    --lego-button-surface-light-secondary-hover-background
+  );
+  --lego-button-surface-secondary-hover-color: var(
+    --lego-button-surface-light-secondary-hover-color
+  );
+  --lego-button-surface-secondary-active-background: var(
+    --lego-button-surface-light-secondary-active-background
+  );
+  --lego-button-surface-secondary-active-color: var(
+    --lego-button-surface-light-secondary-active-color
+  );
+}
+
+.interactiveSurfaceDark {
+  --lego-button-surface-accent-background: var(
+    --lego-button-surface-dark-primary-background
+  );
+  --lego-button-surface-accent-hover-background: var(
+    --lego-button-surface-dark-primary-hover-background
+  );
+  --lego-button-surface-accent-active-background: var(
+    --lego-button-surface-dark-primary-active-background
+  );
+  --lego-button-surface-accent-color: var(
+    --lego-button-surface-dark-primary-color
+  );
+  --lego-button-surface-secondary-background: var(
+    --lego-button-surface-dark-secondary-background
+  );
+  --lego-button-surface-secondary-border-color: var(
+    --lego-button-surface-dark-secondary-border
+  );
+  --lego-button-surface-secondary-color: var(
+    --lego-button-surface-dark-secondary-color
+  );
+  --lego-button-surface-secondary-hover-background: var(
+    --lego-button-surface-dark-secondary-hover-background
+  );
+  --lego-button-surface-secondary-hover-color: var(
+    --lego-button-surface-dark-secondary-hover-color
+  );
+  --lego-button-surface-secondary-active-background: var(
+    --lego-button-surface-dark-secondary-active-background
+  );
+  --lego-button-surface-secondary-active-color: var(
+    --lego-button-surface-dark-secondary-active-color
+  );
+}
+
+.interactiveSurfaceImage {
+  --lego-button-surface-accent-background: var(
+    --lego-button-surface-image-primary-background
+  );
+  --lego-button-surface-accent-hover-background: var(
+    --lego-button-surface-image-primary-hover-background
+  );
+  --lego-button-surface-accent-active-background: var(
+    --lego-button-surface-image-primary-active-background
+  );
+  --lego-button-surface-accent-color: var(
+    --lego-button-surface-image-primary-color
+  );
+  --lego-button-surface-secondary-background: var(
+    --lego-button-surface-image-secondary-background
+  );
+  --lego-button-surface-secondary-border-color: var(
+    --lego-button-surface-image-secondary-border
+  );
+  --lego-button-surface-secondary-color: var(
+    --lego-button-surface-image-secondary-color
+  );
+  --lego-button-surface-secondary-hover-background: var(
+    --lego-button-surface-image-secondary-hover-background
+  );
+  --lego-button-surface-secondary-hover-color: var(
+    --lego-button-surface-image-secondary-hover-color
+  );
+  --lego-button-surface-secondary-active-background: var(
+    --lego-button-surface-image-secondary-active-background
+  );
+  --lego-button-surface-secondary-active-color: var(
+    --lego-button-surface-image-secondary-active-color
+  );
 }
 
 .interactiveBase::after {
@@ -121,9 +274,28 @@
   flex: 0 0 auto;
 }
 
-.interactiveBase:active::after,
-.interactiveBase[aria-pressed='true']::after {
-  background: var(--lego-interactive-pressed);
+.interactiveSizeCompact {
+  --lego-action-min-height: var(--lego-control-height-compact);
+  --lego-action-padding-block: 0.46rem;
+  --lego-action-padding-inline: 0.72rem;
+  --lego-action-font-size: var(--lego-font-size-sm);
+  --lego-action-line-height: 1.05;
+}
+
+.interactiveSizeDefault {
+  --lego-action-min-height: 2.4rem;
+  --lego-action-padding-block: 0.52rem;
+  --lego-action-padding-inline: 0.82rem;
+  --lego-action-font-size: var(--lego-text-role-body-size);
+  --lego-action-line-height: 1.1;
+}
+
+.interactiveSizeHero {
+  --lego-action-min-height: 2.9rem;
+  --lego-action-padding-block: 0.68rem;
+  --lego-action-padding-inline: 1.15rem;
+  --lego-action-font-size: var(--lego-font-size-base);
+  --lego-action-line-height: 1.05;
 }
 
 .interactiveBase:focus-visible {
@@ -145,6 +317,8 @@
 .interactiveBase:disabled,
 .interactiveBase[aria-disabled='true'] {
   background: var(--lego-surface-muted);
+  border-color: transparent;
+  box-shadow: none;
   color: var(--lego-text-muted);
   cursor: not-allowed;
   opacity: 1;
@@ -153,16 +327,83 @@
 
 .buttonSecondary,
 .linkSecondary {
-  background: var(--lego-surface-muted);
-  border: var(--lego-border-width-2) solid transparent;
-  color: var(--lego-text);
+  --lego-action-border-width: var(--lego-border-width-2);
+  --lego-action-border-color: var(
+    --lego-button-secondary-border-color,
+    var(--lego-button-surface-secondary-border-color, var(--lego-text))
+  );
+  background: var(
+    --lego-button-secondary-background,
+    var(--lego-button-surface-secondary-background, transparent)
+  );
+  box-shadow: none;
+  color: var(
+    --lego-button-secondary-color,
+    var(--lego-button-surface-secondary-color, var(--lego-text))
+  );
 }
 
 .buttonSecondary:hover,
 .linkSecondary:hover {
-  background: var(--lego-surface-subtle);
-  border-color: transparent;
-  color: var(--lego-text);
+  background: var(
+    --lego-button-secondary-hover-background,
+    var(
+      --lego-button-surface-secondary-hover-background,
+      var(
+        --lego-button-accent-background,
+        var(--lego-button-surface-accent-background, var(--lego-accent))
+      )
+    )
+  );
+  border-color: var(--lego-button-secondary-hover-border-color, transparent);
+  box-shadow: none;
+  color: var(
+    --lego-button-secondary-hover-color,
+    var(
+      --lego-button-surface-secondary-hover-color,
+      var(
+        --lego-button-accent-color,
+        var(--lego-button-surface-accent-color, var(--lego-accent-contrast))
+      )
+    )
+  );
+}
+
+.buttonSecondary:active,
+.linkSecondary:active,
+.buttonSecondary[aria-pressed='true'],
+.linkSecondary[aria-pressed='true'] {
+  background: var(
+    --lego-button-secondary-active-background,
+    var(
+      --lego-button-surface-secondary-active-background,
+      var(
+        --lego-button-accent-active-background,
+        var(
+          --lego-button-surface-accent-active-background,
+          color-mix(in srgb, var(--lego-accent-hover) 88%, black 12%)
+        )
+      )
+    )
+  );
+  border-color: var(--lego-button-secondary-active-border-color, transparent);
+  box-shadow: none;
+  color: var(
+    --lego-button-secondary-active-color,
+    var(
+      --lego-button-surface-secondary-active-color,
+      var(
+        --lego-button-secondary-hover-color,
+        var(
+          --lego-button-surface-secondary-hover-color,
+          var(
+            --lego-button-accent-color,
+            var(--lego-button-surface-accent-color, var(--lego-accent-contrast))
+          )
+        )
+      )
+    )
+  );
 }
 
 .buttonGhost,
@@ -180,31 +421,72 @@
 
 .buttonAccent,
 .linkAccent {
-  background: var(--lego-accent);
-  border: var(--lego-border-width-2) solid transparent;
-  color: var(--lego-accent-contrast);
+  --lego-action-border-width: var(--lego-border-width-2);
+  --lego-action-border-color: transparent;
+  background: var(
+    --lego-button-accent-background,
+    var(--lego-button-surface-accent-background, var(--lego-accent))
+  );
+  box-shadow: none;
+  color: var(
+    --lego-button-accent-color,
+    var(--lego-button-surface-accent-color, var(--lego-accent-contrast))
+  );
 }
 
 .buttonAccent:hover,
 .linkAccent:hover {
-  background: var(--lego-accent-hover);
-  border-color: transparent;
+  background: var(
+    --lego-button-accent-hover-background,
+    var(--lego-button-surface-accent-hover-background, var(--lego-accent-hover))
+  );
+  color: var(
+    --lego-button-accent-hover-color,
+    var(
+      --lego-button-accent-color,
+      var(--lego-button-surface-accent-color, var(--lego-accent-contrast))
+    )
+  );
 }
 
-.buttonAccent:active::after,
-.linkAccent:active::after,
-.buttonAccent[aria-pressed='true']::after {
-  background: var(--lego-interactive-pressed-strong);
+.buttonAccent:active,
+.linkAccent:active,
+.buttonAccent[aria-pressed='true'],
+.linkAccent[aria-pressed='true'] {
+  background: var(
+    --lego-button-accent-active-background,
+    var(
+      --lego-button-surface-accent-active-background,
+      color-mix(
+        in srgb,
+        var(
+            --lego-button-accent-hover-background,
+            var(
+              --lego-button-surface-accent-hover-background,
+              var(--lego-accent-hover)
+            )
+          )
+          88%,
+        black 12%
+      )
+    )
+  );
+  color: var(
+    --lego-button-accent-active-color,
+    var(
+      --lego-button-accent-hover-color,
+      var(
+        --lego-button-accent-color,
+        var(--lego-button-surface-accent-color, var(--lego-accent-contrast))
+      )
+    )
+  );
 }
 
 .linkCard {
-  align-items: flex-start;
   background: transparent;
   border: 0;
-  color: var(--lego-text);
-  display: grid;
-  gap: var(--lego-space-1);
-  justify-content: start;
+  color: inherit;
   text-align: left;
   width: 100%;
 }
@@ -227,6 +509,7 @@
   font-weight: var(--lego-font-weight-semibold);
   gap: 0;
   justify-content: flex-start;
+  line-height: inherit;
   min-height: auto;
   padding: 0;
   text-decoration: underline;

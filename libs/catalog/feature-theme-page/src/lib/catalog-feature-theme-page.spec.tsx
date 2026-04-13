@@ -87,11 +87,18 @@ describe('CatalogFeatureThemePage', () => {
 
     expect(markup).toContain('Marvel');
     expect(markup).toContain('<h1');
+    expect(markup).toContain('Bekijk alle');
+    expect(markup).toContain('Bekijk beste deals');
+    expect(markup).toContain('href="#theme-browse"');
+    expect(markup).toContain('href="#theme-deals"');
+    expect(markup).toContain('interactiveSurfaceDark');
+    expect(markup).not.toContain('_introVisualStage_');
+    expect(markup).not.toContain('Klaar voor themabeeld');
     expect(markup).toContain('Hier wil je nu als eerste kijken in');
     expect(markup).not.toContain(
       'Scroll Hier wil je nu als eerste kijken in Marvel naar rechts',
     );
-    expect(markup).toContain(
+    expect(markup).not.toContain(
       'Hier vergelijk je sets binnen een lijn in plaats van losse winkelhits.',
     );
     expect(markup).toContain('Kies je set');

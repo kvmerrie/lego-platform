@@ -98,6 +98,71 @@ const baseTokens: ThemeTokenMap = {
   'lego-list-marker-radius': '3px',
   'lego-surface-default': 'var(--lego-surface)',
   'lego-text-default': 'var(--lego-text)',
+  'lego-contrast-ink': '#171a22',
+  'lego-contrast-ink-strong': '#0f141d',
+  'lego-contrast-white': '#ffffff',
+  'lego-contrast-white-muted': '#f4f7fb',
+  'lego-button-surface-default-primary-background': 'var(--lego-accent)',
+  'lego-button-surface-default-primary-hover-background':
+    'var(--lego-accent-hover)',
+  'lego-button-surface-default-primary-active-background':
+    'color-mix(in srgb, var(--lego-accent-hover) 88%, black 12%)',
+  'lego-button-surface-default-primary-color': 'var(--lego-accent-contrast)',
+  'lego-button-surface-default-secondary-background': 'transparent',
+  'lego-button-surface-default-secondary-border': 'var(--lego-text)',
+  'lego-button-surface-default-secondary-color': 'var(--lego-text)',
+  'lego-button-surface-default-secondary-hover-background':
+    'var(--lego-accent)',
+  'lego-button-surface-default-secondary-hover-color':
+    'var(--lego-accent-contrast)',
+  'lego-button-surface-default-secondary-active-background':
+    'color-mix(in srgb, var(--lego-accent-hover) 88%, black 12%)',
+  'lego-button-surface-default-secondary-active-color':
+    'var(--lego-accent-contrast)',
+  'lego-button-surface-light-primary-background': 'var(--lego-contrast-ink)',
+  'lego-button-surface-light-primary-hover-background':
+    'var(--lego-contrast-ink-strong)',
+  'lego-button-surface-light-primary-active-background': '#090c12',
+  'lego-button-surface-light-primary-color': 'var(--lego-contrast-white)',
+  'lego-button-surface-light-secondary-background': 'transparent',
+  'lego-button-surface-light-secondary-border': 'var(--lego-contrast-ink)',
+  'lego-button-surface-light-secondary-color': 'var(--lego-contrast-ink)',
+  'lego-button-surface-light-secondary-hover-background':
+    'var(--lego-contrast-ink)',
+  'lego-button-surface-light-secondary-hover-color':
+    'var(--lego-contrast-white)',
+  'lego-button-surface-light-secondary-active-background': '#090c12',
+  'lego-button-surface-light-secondary-active-color':
+    'var(--lego-contrast-white)',
+  'lego-button-surface-dark-primary-background': 'var(--lego-contrast-white)',
+  'lego-button-surface-dark-primary-hover-background':
+    'var(--lego-contrast-white-muted)',
+  'lego-button-surface-dark-primary-active-background': '#dfe6ef',
+  'lego-button-surface-dark-primary-color': 'var(--lego-contrast-ink)',
+  'lego-button-surface-dark-secondary-background': 'transparent',
+  'lego-button-surface-dark-secondary-border': 'var(--lego-contrast-white)',
+  'lego-button-surface-dark-secondary-color': 'var(--lego-contrast-white)',
+  'lego-button-surface-dark-secondary-hover-background':
+    'var(--lego-contrast-white)',
+  'lego-button-surface-dark-secondary-hover-color': 'var(--lego-contrast-ink)',
+  'lego-button-surface-dark-secondary-active-background': '#dfe6ef',
+  'lego-button-surface-dark-secondary-active-color': 'var(--lego-contrast-ink)',
+  'lego-button-surface-image-primary-background': 'var(--lego-contrast-ink)',
+  'lego-button-surface-image-primary-hover-background':
+    'var(--lego-contrast-ink-strong)',
+  'lego-button-surface-image-primary-active-background': '#090c12',
+  'lego-button-surface-image-primary-color': 'var(--lego-contrast-white)',
+  'lego-button-surface-image-secondary-background': 'transparent',
+  'lego-button-surface-image-secondary-border': 'var(--lego-contrast-white)',
+  'lego-button-surface-image-secondary-color': 'var(--lego-contrast-white)',
+  'lego-button-surface-image-secondary-hover-background':
+    'var(--lego-contrast-ink)',
+  'lego-button-surface-image-secondary-hover-color':
+    'var(--lego-contrast-white)',
+  'lego-button-surface-image-secondary-active-background':
+    'var(--lego-contrast-ink-strong)',
+  'lego-button-surface-image-secondary-active-color':
+    'var(--lego-contrast-white)',
 };
 
 const lightThemeTokens: ThemeTokenMap = {
@@ -247,6 +312,10 @@ body {
     --lego-text-role-section-size: var(--lego-font-size-2xl);
     --lego-text-role-card-title-size: var(--lego-font-size-xl);
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @media (prefers-reduced-motion: reduce) {

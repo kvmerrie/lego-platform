@@ -81,25 +81,102 @@
 }
 
 .intro {
-  background: var(--theme-page-surface);
+  --theme-page-button-foreground-dark-surface: color-mix(
+    in srgb,
+    var(--theme-page-surface) 78%,
+    var(--lego-contrast-ink) 22%
+  );
+  --theme-page-button-foreground-light-surface: color-mix(
+    in srgb,
+    var(--theme-page-surface) 72%,
+    var(--lego-contrast-white) 28%
+  );
+  --theme-page-button-fill-default-light-surface: color-mix(
+    in srgb,
+    var(--lego-contrast-ink) 90%,
+    var(--theme-page-surface) 10%
+  );
+  --theme-page-button-fill-hover-light-surface: color-mix(
+    in srgb,
+    var(--lego-contrast-ink) 95%,
+    var(--theme-page-surface) 5%
+  );
+  --theme-page-button-fill-active-light-surface: var(--lego-contrast-ink);
+  --theme-page-button-fill-default-dark-surface: color-mix(
+    in srgb,
+    var(--lego-contrast-white) 90%,
+    var(--theme-page-surface) 10%
+  );
+  --theme-page-button-fill-hover-dark-surface: color-mix(
+    in srgb,
+    var(--lego-contrast-white) 95%,
+    var(--theme-page-surface) 5%
+  );
+  --theme-page-button-fill-active-dark-surface: var(--lego-contrast-white);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 8%, transparent),
+      transparent 42%
+    ),
+    var(--theme-page-surface);
   border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
   display: grid;
-  gap: var(--lego-space-3);
-  max-width: min(62rem, 100%);
+  gap: var(--lego-space-4);
   padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
   padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-6));
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--theme-page-text) 10%, transparent);
 }
 
-.intro :is(h1, h2, h3, p) {
+.introContent {
+  display: grid;
+  gap: var(--lego-space-4);
+  max-width: min(44rem, 100%);
+}
+
+.introEyebrow {
   color: var(--theme-page-text);
+  display: block;
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: var(--lego-text-role-label-tracking);
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  margin: 0;
+  opacity: 0.76;
+  text-transform: uppercase;
 }
 
-.intro :is(h1, h2, h3) {
-  max-width: 14ch;
+.introHeading {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.introTitle,
+.introLead,
+.introSupport {
+  margin: 0;
+}
+
+.introTitle {
+  color: var(--theme-page-text);
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(2.15rem, 1.7rem + 2vw, 3.7rem);
+  font-weight: var(--lego-text-role-display-weight);
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  max-width: 10ch;
+}
+
+.introLead {
+  color: var(--theme-page-text);
+  font-size: clamp(1.02rem, 0.95rem + 0.42vw, 1.2rem);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.45;
+  max-width: 34rem;
 }
 
 .introSupport,
-.introMeta,
 .sectionMeta {
   color: var(--theme-page-muted);
   font-size: var(--lego-text-role-meta-size);
@@ -110,13 +187,105 @@
 .introSupport {
   font-size: var(--lego-text-role-support-size);
   line-height: var(--lego-text-role-support-line-height);
-  max-width: 42rem;
+  max-width: 36rem;
+}
+
+.introActions {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.introPrimaryAction,
+.introSecondaryAction {
+  flex: 0 0 auto;
+  --lego-action-min-height: 2.9rem;
+  --lego-action-padding-block: 0.68rem;
+  --lego-action-padding-inline: 1.15rem;
+  --lego-action-font-size: var(--lego-font-size-base);
+  --lego-action-line-height: 1.05;
+}
+
+.introPrimaryAction {
+  --lego-button-accent-background: var(--theme-page-button-filled-background);
+  --lego-button-accent-hover-background: var(
+    --theme-page-button-filled-hover-background
+  );
+  --lego-button-accent-active-background: var(
+    --theme-page-button-filled-active-background
+  );
+  --lego-button-accent-color: var(--theme-page-button-filled-foreground);
+  --lego-button-accent-hover-color: var(--theme-page-button-filled-foreground);
+  --lego-button-accent-active-color: var(--theme-page-button-filled-foreground);
+}
+
+.introPrimaryLabel {
+  display: inline-block;
+  line-height: inherit;
+}
+
+.introSecondaryAction {
+  --lego-button-secondary-hover-background: var(
+    --theme-page-button-filled-hover-background
+  );
+  --lego-button-secondary-active-background: var(
+    --theme-page-button-filled-active-background
+  );
+  --lego-button-secondary-hover-color: var(
+    --theme-page-button-filled-foreground
+  );
+  --lego-button-secondary-active-color: var(
+    --theme-page-button-filled-foreground
+  );
+}
+
+.intro[data-button-surface='light'] .introPrimaryAction,
+.intro[data-button-surface='light'] .introSecondaryAction {
+  --theme-page-button-filled-background: var(
+    --theme-page-button-fill-default-light-surface
+  );
+  --theme-page-button-filled-hover-background: var(
+    --theme-page-button-fill-hover-light-surface
+  );
+  --theme-page-button-filled-active-background: var(
+    --theme-page-button-fill-active-light-surface
+  );
+  --theme-page-button-filled-foreground: var(
+    --theme-page-button-foreground-light-surface
+  );
+}
+
+.intro[data-button-surface='dark'] .introPrimaryAction,
+.intro[data-button-surface='dark'] .introSecondaryAction {
+  --theme-page-button-filled-background: var(
+    --theme-page-button-fill-default-dark-surface
+  );
+  --theme-page-button-filled-hover-background: var(
+    --theme-page-button-fill-hover-dark-surface
+  );
+  --theme-page-button-filled-active-background: var(
+    --theme-page-button-fill-active-dark-surface
+  );
+  --theme-page-button-filled-foreground: var(
+    --theme-page-button-foreground-dark-surface
+  );
+}
+
+@media (min-width: 48rem) {
+  .introPrimaryAction,
+  .introSecondaryAction,
+  .introPrimaryLabel {
+    white-space: nowrap;
+  }
 }
 
 .dealSection {
+  scroll-margin-top: var(--shell-fragment-scroll-margin, var(--lego-space-1));
 }
 
 .browseSection {
+  scroll-margin-top: var(--shell-fragment-scroll-margin, var(--lego-space-1));
 }
 
 .browseGrid {
@@ -127,6 +296,29 @@
 
 @media (min-width: 48rem) {
   .intro {
-    max-width: min(64rem, 100%);
+    padding-block: max(
+      var(--lego-surface-padding-lg-block, var(--lego-space-6)),
+      var(--lego-space-6)
+    );
+  }
+}
+
+@media (min-width: 64rem) {
+  .intro {
+    min-height: 22rem;
+  }
+
+  .introContent {
+    padding-right: var(--lego-space-4);
+  }
+}
+
+@media (min-width: 100rem) {
+  .intro {
+    min-height: 28rem;
+  }
+
+  .introContent {
+    max-width: min(46rem, 100%);
   }
 }

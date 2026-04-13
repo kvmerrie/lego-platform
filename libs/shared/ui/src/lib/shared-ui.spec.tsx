@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  ActionLink,
   Breadcrumbs,
   Container,
   LabelValueList,
@@ -116,5 +117,71 @@ describe('Breadcrumbs', () => {
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain('Setdetail');
+  });
+});
+
+describe('ActionLink', () => {
+  it('wraps standard action content above the pressed overlay layer', () => {
+    const markup = renderToStaticMarkup(
+      <ActionLink
+        href="/themes/marvel"
+        size="hero"
+        surface="dark"
+        tone="secondary"
+      >
+        Bekijk thema
+      </ActionLink>,
+    );
+
+    expect(markup).toContain('href="/themes/marvel"');
+    expect(markup).toContain('Bekijk thema');
+    expect(markup).toContain('interactiveContent');
+    expect(markup).toContain('interactiveSizeHero');
+    expect(markup).toContain('interactiveSurfaceDark');
+  });
+
+  it('uses the explicit default size model for regular action links', () => {
+    const markup = renderToStaticMarkup(
+      <ActionLink href="/discover" tone="accent">
+        Ontdek sets
+      </ActionLink>,
+    );
+
+    expect(markup).toContain('interactiveSizeDefault');
+    expect(markup).toContain('interactiveContent');
+    expect(markup).toContain('interactiveSurfaceDefault');
+  });
+
+  it('supports a dedicated light-surface treatment without changing shared sizing', () => {
+    const markup = renderToStaticMarkup(
+      <ActionLink
+        href="/themes/icons"
+        size="hero"
+        surface="light"
+        tone="accent"
+      >
+        Bekijk alle Icons sets
+      </ActionLink>,
+    );
+
+    expect(markup).toContain('interactiveSizeHero');
+    expect(markup).toContain('interactiveSurfaceLight');
+    expect(markup).toContain('interactiveContent');
+  });
+
+  it('keeps card links as block content instead of collapsing them into inline content', () => {
+    const markup = renderToStaticMarkup(
+      <ActionLink href="/discover" surface="image" tone="card">
+        <p>Verder</p>
+        <h3>Alle thema&apos;s</h3>
+      </ActionLink>,
+    );
+
+    expect(markup).toContain('href="/discover"');
+    expect(markup).toContain('cardLinkBase');
+    expect(markup).toContain('<p>Verder</p>');
+    expect(markup).toContain('<h3>Alle thema');
+    expect(markup).not.toContain('interactiveSizeDefault');
+    expect(markup).not.toContain('interactiveSurfaceImage');
   });
 });

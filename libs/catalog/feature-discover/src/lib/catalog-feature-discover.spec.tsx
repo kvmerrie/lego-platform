@@ -150,9 +150,11 @@ describe('CatalogFeatureDiscover', () => {
       <CatalogFeatureDiscover activeFilter="best-deals" />,
     );
 
-    expect(markup).toContain('aria-label="Verfijn ontdekken"');
+    expect(markup).toContain('Kijk eerst hoe je wilt bladeren');
+    expect(markup).toContain('aria-label="Snelle filters voor ontdekken"');
     expect(markup).toContain('href="/discover"');
     expect(markup).toContain('href="/discover?filter=best-deals"');
+    expect(markup).toContain('Meer filters');
     expect(markup).toContain('Geen treffers in Beste deals');
     expect(markup).toContain('Toon alle sets');
   });
@@ -164,6 +166,8 @@ describe('CatalogFeatureDiscover', () => {
 
     expect(markup).toContain('href="/discover?filter=marvel"');
     expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('<details class="');
+    expect(markup).toContain('open=""');
     expect(markup).toContain('href="/themes/marvel"');
     expect(markup).not.toContain('href="/themes/icons"');
   });

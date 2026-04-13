@@ -10,7 +10,7 @@ import {
 } from '@lego-platform/catalog/ui';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
-import { SectionHeading } from '@lego-platform/shared/ui';
+import { ActionLink } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-page.module.css';
 
 export interface CatalogFeatureThemePageDealItem
@@ -19,6 +19,17 @@ export interface CatalogFeatureThemePageDealItem
   ctaMode?: CatalogSetCardCtaMode;
   priceContext?: CatalogSetCardPriceContext;
 }
+
+const themeHeroSurfaceBySlug: Record<string, 'dark' | 'light'> = {
+  art: 'dark',
+  botanicals: 'dark',
+  disney: 'dark',
+  'harry-potter': 'dark',
+  'jurassic-world': 'dark',
+  marvel: 'dark',
+  ninjago: 'dark',
+  'star-wars': 'dark',
+};
 
 const themeEditorialIntroByName: Record<string, string> = {
   Icons: 'Voor grote displaysets die je collectie meteen meer statuur geven.',
@@ -59,41 +70,70 @@ export function CatalogFeatureThemePage({
   const { setCards, themeSnapshot } = themePage;
   const themeName = themeSnapshot.name;
   const themeSignatureSet = themeSnapshot.signatureSet;
+  const dealSectionId = 'theme-deals';
+  const browseSectionId = 'theme-browse';
+  const themeHeroButtonSurface =
+    themeHeroSurfaceBySlug[themeSnapshot.slug] ?? 'light';
 
   return (
     <div className={styles.page} data-theme={themeSnapshot.slug}>
-      <section className={styles.intro}>
-        <SectionHeading
-          description={themeSnapshot.momentum}
-          eyebrow="Thema"
-          title={
+      <section
+        className={styles.intro}
+        data-button-surface={themeHeroButtonSurface}
+      >
+        <div className={styles.introContent}>
+          <p className={styles.introEyebrow}>Thema</p>
+          <div className={styles.introHeading}>
+            <h1 className={styles.introTitle}>
+              <span className="notranslate" translate="no">
+                {themeName}
+              </span>
+            </h1>
+            <p className={styles.introLead}>
+              {themeEditorialIntroByName[themeName] ??
+                'Voor sets die je binnen één lijn rustig naast elkaar wilt vergelijken.'}
+            </p>
+          </div>
+          <p className={styles.introSupport}>
+            Begin met{' '}
+            <span className="notranslate" translate="no">
+              {themeSignatureSet}
+            </span>{' '}
+            als je meteen wilt zien waar{' '}
             <span className="notranslate" translate="no">
               {themeName}
-            </span>
-          }
-          titleAs="h1"
-          tone="display"
-        />
-        <p className={styles.introSupport}>
-          {themeEditorialIntroByName[themeName] ??
-            'Voor sets die je binnen één lijn rustig naast elkaar wilt vergelijken.'}{' '}
-          Begin met{' '}
-          <span className="notranslate" translate="no">
-            {themeSignatureSet}
-          </span>{' '}
-          als je meteen wilt zien waar{' '}
-          <span className="notranslate" translate="no">
-            {themeName}
-          </span>{' '}
-          goed in is. Hier vergelijk je sets binnen een lijn in plaats van losse
-          winkelhits.
-        </p>
-        <p className={styles.introMeta}>
-          {themeSnapshot.setCount} sets · Kies, vergelijk en volg binnen{' '}
-          <span className="notranslate" translate="no">
-            {themeName}
-          </span>
-        </p>
+            </span>{' '}
+            goed in is.
+          </p>
+          <div className={styles.introActions}>
+            <ActionLink
+              className={styles.introPrimaryAction}
+              href={`#${browseSectionId}`}
+              size="hero"
+              surface={themeHeroButtonSurface}
+              tone="accent"
+            >
+              <span className={styles.introPrimaryLabel}>
+                Bekijk alle{' '}
+                <span className="notranslate" translate="no">
+                  {themeName}
+                </span>{' '}
+                sets
+              </span>
+            </ActionLink>
+            {dealSetCards.length ? (
+              <ActionLink
+                className={styles.introSecondaryAction}
+                href={`#${dealSectionId}`}
+                size="hero"
+                surface={themeHeroButtonSurface}
+                tone="secondary"
+              >
+                Bekijk beste deals
+              </ActionLink>
+            ) : null}
+          </div>
+        </div>
       </section>
 
       {dealSetCards.length ? (
@@ -102,6 +142,7 @@ export function CatalogFeatureThemePage({
           ariaLabel={`Hier wil je nu als eerste kijken in ${themeName}`}
           bodySpacing="relaxed"
           className={styles.dealSection}
+          id={dealSectionId}
           description={
             <>
               Deze{' '}
@@ -143,6 +184,7 @@ export function CatalogFeatureThemePage({
         as="section"
         bodySpacing="relaxed"
         className={styles.browseSection}
+        id={browseSectionId}
         description={
           <>
             Van{' '}
