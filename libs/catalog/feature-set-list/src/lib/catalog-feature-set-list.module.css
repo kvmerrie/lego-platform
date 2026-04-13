@@ -6,12 +6,16 @@
 }
 
 .grid {
+  --catalog-browse-grid-inline-border-size: 0px;
   display: grid;
-  gap: var(--lego-space-4);
 }
 
 @media (min-width: 48rem) {
   .grid {
+    --catalog-browse-grid-inline-border-size: var(
+      --catalog-browse-grid-divider-size,
+      1px
+    );
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -437,7 +437,11 @@ export function SectionHeading({
         className,
       )}
     >
-      {eyebrow ? <p className={styles.eyebrow}>{eyebrow}</p> : null}
+      {eyebrow ? (
+        <p className={styles.eyebrow} data-page-intro-eyebrow="true">
+          {eyebrow}
+        </p>
+      ) : null}
       <TitleTag className={styles.sectionTitle}>{title}</TitleTag>
       {description ? (
         <p className={styles.sectionDescription}>{description}</p>

@@ -3,10 +3,15 @@ import {
   type CatalogThemeDirectoryItem,
 } from '@lego-platform/catalog/data-access';
 import {
+  CatalogPageIntro,
   CatalogSectionShell,
   CatalogThemeHighlight,
 } from '@lego-platform/catalog/ui';
-import { buildThemePath } from '@lego-platform/shared/config';
+import {
+  buildThemePath,
+  buildWebPath,
+  webPathnames,
+} from '@lego-platform/shared/config';
 import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-index.module.css';
 
@@ -21,7 +26,21 @@ export function CatalogFeatureThemeIndex({
 
   return (
     <div className={styles.page}>
-      <section className={styles.intro}>
+      <CatalogPageIntro
+        breadcrumbs={{
+          ariaLabel: 'Paginapad',
+          items: [
+            {
+              href: buildWebPath(webPathnames.home),
+              id: 'home',
+              label: 'Start',
+            },
+            { id: 'theme-directory', label: "Thema's" },
+          ],
+        }}
+        className={styles.intro}
+        contentClassName={styles.introContent}
+      >
         <SectionHeading
           description="Weet je al waar je naar zoekt? Begin hier en duik direct een thema in"
           eyebrow="Thema's"
@@ -32,7 +51,7 @@ export function CatalogFeatureThemeIndex({
           {themeDirectoryItems.length} themapagina's · Ontdekken blijft beter
           voor gemengd bladeren
         </p>
-      </section>
+      </CatalogPageIntro>
       <CatalogSectionShell
         as="section"
         bodyClassName={styles.directorySectionBody}

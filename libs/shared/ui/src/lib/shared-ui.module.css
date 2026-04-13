@@ -530,7 +530,7 @@
 }
 
 .breadcrumbNav {
-  color: var(--lego-text-muted);
+  color: var(--lego-breadcrumb-muted, var(--lego-text-muted));
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
 }
@@ -554,7 +554,7 @@
 }
 
 .breadcrumbLink {
-  color: var(--lego-accent);
+  color: var(--lego-breadcrumb-link, var(--lego-accent));
   font-size: inherit;
   line-height: inherit;
   min-width: 0;
@@ -562,11 +562,11 @@
 }
 
 .breadcrumbLink:hover {
-  color: var(--lego-accent-hover);
+  color: var(--lego-breadcrumb-link-hover, var(--lego-accent-hover));
 }
 
 .breadcrumbCurrent {
-  color: var(--lego-text);
+  color: var(--lego-breadcrumb-current, var(--lego-text));
   font-size: inherit;
   font-weight: var(--lego-font-weight-semibold);
   line-height: inherit;
@@ -575,7 +575,10 @@
 }
 
 .breadcrumbSeparator {
-  color: var(--lego-border-strong, var(--lego-border));
+  color: var(
+    --lego-breadcrumb-separator,
+    var(--lego-border-strong, var(--lego-border))
+  );
   display: inline-flex;
   flex: 0 0 auto;
 }

@@ -4,8 +4,47 @@
   grid-auto-rows: auto;
 }
 
+.setCardCollectionBrowse {
+  --catalog-browse-grid-divider-color: color-mix(
+    in srgb,
+    var(--lego-border-subtle) 86%,
+    var(--lego-border) 14%
+  );
+  --catalog-browse-grid-divider-size: 1px;
+  --catalog-browse-grid-inline-border-size: 0px;
+  --catalog-browse-grid-hover-ring-color: color-mix(
+    in srgb,
+    var(--lego-border) 42%,
+    transparent
+  );
+  border-top: var(--catalog-browse-grid-divider-size) solid
+    var(--catalog-browse-grid-divider-color);
+  column-gap: 0;
+  margin-inline: calc(-1 * var(--catalog-section-inline-padding, 0px));
+  overflow: hidden;
+  padding: 0;
+  row-gap: 0;
+}
+
 .setCardCollectionRail {
   gap: var(--lego-space-2);
+}
+
+.setCardCollectionBrowse > .setCard {
+  border: 0;
+  border-bottom: var(--catalog-browse-grid-divider-size) solid
+    var(--catalog-browse-grid-divider-color);
+  border-right: var(--catalog-browse-grid-inline-border-size) solid
+    var(--catalog-browse-grid-divider-color);
+  border-radius: 0;
+  position: relative;
+  z-index: 0;
+}
+
+.setCardCollectionBrowse > .setCard:hover,
+.setCardCollectionBrowse > .setCard:focus-within {
+  box-shadow: inset 0 0 0 1px var(--catalog-browse-grid-hover-ring-color);
+  z-index: 2;
 }
 
 .setCard {
@@ -629,6 +668,36 @@
   margin-top: auto;
 }
 
+.pageIntro {
+  --catalog-page-intro-inline-padding: 0px;
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.pageIntroBreadcrumbs {
+  align-self: start;
+  font-size: var(--lego-text-role-eyebrow-size);
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  padding-inline: var(--catalog-page-intro-inline-padding);
+}
+
+.pageIntro[data-has-breadcrumbs='true'] [data-page-intro-eyebrow='true'] {
+  display: none;
+}
+
+.pageIntroContent {
+  display: grid;
+  gap: var(--lego-space-3);
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
+  .pageIntro,
+  .pageIntroContent {
+    gap: var(--lego-space-4);
+  }
+}
+
 .sectionShell {
   display: grid;
   gap: var(--lego-space-4);
@@ -795,14 +864,22 @@
 
 .detailPage {
   display: grid;
-  gap: var(--lego-space-3);
+  gap: var(--lego-page-section-gap, 0px);
 }
 
-.detailBreadcrumbs {
-  padding-inline: var(
+.detailPageIntro {
+  --catalog-page-intro-inline-padding: var(
     --lego-surface-padding-md-inline,
     var(--lego-section-inline-padding, var(--lego-space-3))
   );
+}
+
+.detailBreadcrumbs {
+  min-width: 0;
+}
+
+.detailPageIntroContent {
+  min-width: 0;
 }
 
 .detailHero {
@@ -2188,6 +2265,12 @@
 }
 
 @media (min-width: 48rem) {
+  .setCardCollectionBrowse {
+    border-left: var(--catalog-browse-grid-inline-border-size) solid
+      var(--catalog-browse-grid-divider-color);
+    margin-inline: 0;
+  }
+
   .setCardRail {
     --catalog-rail-card-gap: var(--lego-space-3);
   }

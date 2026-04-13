@@ -70,7 +70,11 @@ export function CatalogFeatureSetList({
 
   return layout === 'grid' ? (
     <CatalogSectionShell {...sectionShellProps}>
-      <CatalogSetCardCollection className={styles.grid} variant="featured">
+      <CatalogSetCardCollection
+        className={styles.grid}
+        gridMode="browse"
+        variant="featured"
+      >
         {homepageSets.map((catalogSetSummary) => (
           <CatalogSetCard
             actions={catalogSetSummary.actions}

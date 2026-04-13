@@ -137,9 +137,18 @@
 }
 
 .themeGrid {
+  --catalog-browse-grid-inline-border-size: 0px;
   display: grid;
-  gap: var(--lego-space-3);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+@media (min-width: 30rem) {
+  .themeGrid {
+    --catalog-browse-grid-inline-border-size: var(
+      --catalog-browse-grid-divider-size,
+      1px
+    );
+  }
 }
 
 .themeSections {

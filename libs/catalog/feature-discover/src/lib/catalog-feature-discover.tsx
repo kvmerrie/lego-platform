@@ -409,6 +409,7 @@ export function CatalogFeatureDiscover({
             >
               <CatalogSetCardCollection
                 className={styles.themeGrid}
+                gridMode="browse"
                 variant="compact"
               >
                 {themeGroup.setCards.map((setCard) => (

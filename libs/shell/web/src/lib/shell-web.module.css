@@ -609,7 +609,8 @@
 }
 
 .mainInner {
-  --lego-page-section-gap: var(--lego-space-1);
+  --lego-page-section-gap: 0px;
+  --lego-page-top-spacing: 0px;
   --lego-section-inline-padding: var(--lego-space-3);
   --lego-surface-radius: var(--lego-radius-md);
   --lego-section-surface-radius-md: 0px;
@@ -620,6 +621,7 @@
   --lego-surface-padding-lg-inline: var(--lego-space-3);
   display: grid;
   gap: var(--lego-page-section-gap);
+  padding-top: var(--lego-page-top-spacing);
   padding-bottom: calc(var(--lego-space-4) + var(--shell-mobile-tabbar-offset));
 }
 
@@ -814,6 +816,7 @@
 
 @media (min-width: 72rem) {
   .mainInner {
+    --lego-page-top-spacing: var(--lego-space-3);
     --lego-surface-padding-md-block: var(--lego-space-5);
     --lego-surface-padding-lg-block: var(--lego-space-6);
   }
@@ -822,6 +825,7 @@
 @media (min-width: 100rem) {
   .mainInner {
     --lego-page-section-gap: var(--lego-space-6);
+    --lego-page-top-spacing: var(--lego-space-5);
     --lego-section-inline-padding: var(--lego-space-6);
     --lego-surface-radius: var(--lego-radius-md);
     --lego-section-surface-radius-md: var(--lego-radius-md);

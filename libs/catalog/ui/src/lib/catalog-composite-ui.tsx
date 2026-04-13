@@ -2,6 +2,8 @@ import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
 import {
   ActionLink,
   Badge,
+  Breadcrumbs,
+  type BreadcrumbItem,
   SectionHeading,
   Surface,
 } from '@lego-platform/shared/ui';
@@ -16,6 +18,7 @@ function joinClasses(
 type CatalogSectionHeaderTone = 'default' | 'inverse';
 type CatalogSectionHeaderUtilityPlacement = 'aside' | 'below-heading';
 type CatalogSetDetailHeroTone = 'info' | 'neutral' | 'positive' | 'warning';
+type CatalogPageIntroElement = 'div' | 'header' | 'section';
 type CatalogSectionShellElement = 'article' | 'aside' | 'div' | 'section';
 type CatalogSectionShellBodySpacing = 'compact' | 'default' | 'relaxed';
 type CatalogSectionShellPadding = 'default' | 'none' | 'relaxed';
@@ -164,6 +167,51 @@ export function CatalogSectionHeader({
         </div>
       ) : null}
     </div>
+  );
+}
+
+export function CatalogPageIntro({
+  as = 'section',
+  breadcrumbs,
+  children,
+  className,
+  contentClassName,
+  ...rest
+}: HTMLAttributes<HTMLElement> & {
+  as?: CatalogPageIntroElement;
+  breadcrumbs?: {
+    ariaLabel?: string;
+    className?: string;
+    items: readonly BreadcrumbItem[];
+  };
+  children?: ReactNode;
+  className?: string;
+  contentClassName?: string;
+}) {
+  const Component = as;
+
+  return (
+    <Component
+      className={joinClasses(styles.pageIntro, className)}
+      data-has-breadcrumbs={breadcrumbs?.items.length ? 'true' : 'false'}
+      {...rest}
+    >
+      {breadcrumbs?.items.length ? (
+        <Breadcrumbs
+          ariaLabel={breadcrumbs.ariaLabel}
+          className={joinClasses(
+            styles.pageIntroBreadcrumbs,
+            breadcrumbs.className,
+          )}
+          items={breadcrumbs.items}
+        />
+      ) : null}
+      {children ? (
+        <div className={joinClasses(styles.pageIntroContent, contentClassName)}>
+          {children}
+        </div>
+      ) : null}
+    </Component>
   );
 }
 

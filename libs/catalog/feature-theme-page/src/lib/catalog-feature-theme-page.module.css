@@ -121,12 +121,30 @@
     ),
     var(--theme-page-surface);
   border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
-  display: grid;
-  gap: var(--lego-space-4);
   padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
   padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-6));
   box-shadow: inset 0 0 0 1px
     color-mix(in srgb, var(--theme-page-text) 10%, transparent);
+}
+
+.introBreadcrumbs {
+  --lego-breadcrumb-current: var(--theme-page-text);
+  --lego-breadcrumb-link: color-mix(
+    in srgb,
+    var(--theme-page-text) 82%,
+    transparent
+  );
+  --lego-breadcrumb-link-hover: var(--theme-page-text);
+  --lego-breadcrumb-muted: color-mix(
+    in srgb,
+    var(--theme-page-text) 76%,
+    transparent
+  );
+  --lego-breadcrumb-separator: color-mix(
+    in srgb,
+    var(--theme-page-text) 22%,
+    transparent
+  );
 }
 
 .introContent {
@@ -289,9 +307,18 @@
 }
 
 .browseGrid {
+  --catalog-browse-grid-inline-border-size: 0px;
   display: grid;
-  gap: var(--lego-space-4);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+@media (min-width: 28rem) {
+  .browseGrid {
+    --catalog-browse-grid-inline-border-size: var(
+      --catalog-browse-grid-divider-size,
+      1px
+    );
+  }
 }
 
 @media (min-width: 48rem) {

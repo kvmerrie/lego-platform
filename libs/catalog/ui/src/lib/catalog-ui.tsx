@@ -43,11 +43,10 @@ import {
   type CatalogSetDetailTrustSignal,
   type CatalogSetDetailVerdict,
 } from './catalog-commerce-ui';
-import { CatalogSetDetailHero } from './catalog-composite-ui';
+import { CatalogPageIntro, CatalogSetDetailHero } from './catalog-composite-ui';
 import {
   ActionLink,
   Badge,
-  Breadcrumbs,
   LabelValue,
   LabelValueList,
   MarkerList,
@@ -66,6 +65,7 @@ import {
 import styles from './catalog-ui.module.css';
 
 export {
+  CatalogPageIntro,
   CatalogQuickFilterBar,
   CatalogSectionHeader,
   CatalogSectionShell,
@@ -114,22 +114,34 @@ type CatalogSetCardVariant = 'compact' | 'default' | 'featured';
 type CatalogSetSavedState = 'owned' | 'wishlist';
 type CatalogSetCardPriceDisplay = 'default' | 'subtle';
 type CatalogSetCardCollectionLayout = 'grid' | 'rail';
+type CatalogSetCardCollectionGridMode = 'browse' | 'tiles';
 export type CatalogSetCardCtaMode = 'default' | 'commerce';
 
 export const CatalogSetCardCollection = forwardRef<
   HTMLDivElement,
   HTMLAttributes<HTMLDivElement> & {
+    gridMode?: CatalogSetCardCollectionGridMode;
     layout?: CatalogSetCardCollectionLayout;
     variant?: Extract<CatalogSetCardVariant, 'compact' | 'featured'>;
   }
 >(function CatalogSetCardCollection(
-  { children, className, layout = 'grid', variant = 'featured', ...rest },
+  {
+    children,
+    className,
+    gridMode = 'tiles',
+    layout = 'grid',
+    variant = 'featured',
+    ...rest
+  },
   ref,
 ) {
   return (
     <div
       className={[
         styles.setCardCollection,
+        layout === 'grid' && gridMode === 'browse'
+          ? styles.setCardCollectionBrowse
+          : null,
         layout === 'rail' ? styles.setCardCollectionRail : null,
         variant === 'compact'
           ? styles.setCardCollectionCompact
@@ -1107,82 +1119,89 @@ export function CatalogSetDetailPanel({
 
   return (
     <section className={styles.detailPage}>
-      <Breadcrumbs
-        ariaLabel="Setcontext"
-        className={styles.detailBreadcrumbs}
-        items={[
-          {
-            href: themeDirectoryHref,
-            id: 'theme-directory',
-            label: "Thema's",
-          },
-          {
-            href: themeHref,
-            id: 'theme',
-            label: (
-              <CatalogCanonicalText>
-                {catalogSetDetail.theme}
-              </CatalogCanonicalText>
-            ),
-          },
-          { id: 'set-detail', label: 'Setdetail' },
-        ]}
-      />
-      <CatalogSetDetailHero
-        badges={
-          <>
-            {themeHref ? (
-              <ActionLink
-                className={styles.themeBadgeLink}
-                href={themeHref}
-                tone="inline"
-              >
+      <CatalogPageIntro
+        breadcrumbs={{
+          ariaLabel: 'Setcontext',
+          className: styles.detailBreadcrumbs,
+          items: [
+            {
+              href: themeDirectoryHref,
+              id: 'theme-directory',
+              label: "Thema's",
+            },
+            {
+              href: themeHref,
+              id: 'theme',
+              label: (
+                <CatalogCanonicalText>
+                  {catalogSetDetail.theme}
+                </CatalogCanonicalText>
+              ),
+            },
+            { id: 'set-detail', label: 'Setdetail' },
+          ],
+        }}
+        className={styles.detailPageIntro}
+        contentClassName={styles.detailPageIntroContent}
+      >
+        <CatalogSetDetailHero
+          badges={
+            <>
+              {themeHref ? (
+                <ActionLink
+                  className={styles.themeBadgeLink}
+                  href={themeHref}
+                  tone="inline"
+                >
+                  <Badge tone="accent">
+                    <CatalogCanonicalText>
+                      {catalogSetDetail.theme}
+                    </CatalogCanonicalText>
+                  </Badge>
+                </ActionLink>
+              ) : (
                 <Badge tone="accent">
                   <CatalogCanonicalText>
                     {catalogSetDetail.theme}
                   </CatalogCanonicalText>
                 </Badge>
-              </ActionLink>
-            ) : (
-              <Badge tone="accent">
-                <CatalogCanonicalText>
-                  {catalogSetDetail.theme}
-                </CatalogCanonicalText>
+              )}
+              {catalogSetDetail.subtheme ? (
+                <Badge tone="neutral">
+                  <CatalogCanonicalText>
+                    {catalogSetDetail.subtheme}
+                  </CatalogCanonicalText>
+                </Badge>
+              ) : null}
+              <Badge tone={dealVerdict.tone ?? 'neutral'}>
+                {dealVerdict.label}
               </Badge>
-            )}
-            {catalogSetDetail.subtheme ? (
-              <Badge tone="neutral">
-                <CatalogCanonicalText>
-                  {catalogSetDetail.subtheme}
-                </CatalogCanonicalText>
-              </Badge>
-            ) : null}
-            <Badge tone={dealVerdict.tone ?? 'neutral'}>
-              {dealVerdict.label}
-            </Badge>
-          </>
-        }
-        decisionPanel={
-          <CatalogPriceDecisionPanel
-            followAction={priceAlertAction}
-            followCopy={followCopy}
-            followEyebrow={followEyebrow}
-            followTitle={followTitle}
-            leadWithFollow={dealVerdict.tone === 'warning'}
-            primaryOffer={bestDeal}
-            supportItems={dealSupportItems}
-            supportTitle={getCatalogDecisionSupportTitle(dealVerdict)}
-            verdictTone={dealVerdict.tone}
-          />
-        }
-        gallery={<CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />}
-        keyFacts={<CatalogKeyFacts items={heroSpecs} />}
-        pitch={`Waarom veel verzamelaars deze willen: ${catalogSetDetail.tagline}`}
-        title={
-          <CatalogCanonicalText>{catalogSetDetail.name}</CatalogCanonicalText>
-        }
-        verdict={dealVerdict}
-      />
+            </>
+          }
+          decisionPanel={
+            <CatalogPriceDecisionPanel
+              followAction={priceAlertAction}
+              followCopy={followCopy}
+              followEyebrow={followEyebrow}
+              followTitle={followTitle}
+              leadWithFollow={dealVerdict.tone === 'warning'}
+              primaryOffer={bestDeal}
+              supportItems={dealSupportItems}
+              supportTitle={getCatalogDecisionSupportTitle(dealVerdict)}
+              verdictTone={dealVerdict.tone}
+            />
+          }
+          gallery={
+            <CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />
+          }
+          keyFacts={<CatalogKeyFacts items={heroSpecs} />}
+          pitch={`Waarom veel verzamelaars deze willen: ${catalogSetDetail.tagline}`}
+          title={
+            <CatalogCanonicalText>{catalogSetDetail.name}</CatalogCanonicalText>
+          }
+          verdict={dealVerdict}
+        />
+      </CatalogPageIntro>
 
       <CatalogOfferComparison
         offers={offerList}

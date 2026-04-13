@@ -89,6 +89,8 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('<h1');
     expect(markup).toContain('Bekijk alle');
     expect(markup).toContain('Bekijk beste deals');
+    expect(markup).toContain('Themacontext');
+    expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="#theme-browse"');
     expect(markup).toContain('href="#theme-deals"');
     expect(markup).toContain('interactiveSurfaceDark');
@@ -140,6 +142,8 @@ describe('CatalogFeatureThemeIndex', () => {
     );
 
     expect(markup).toContain('Alle thema');
+    expect(markup).toContain('Paginapad');
+    expect(markup).toContain('href="/"');
     expect(markup).toContain('2 themapagina');
     expect(markup).toContain('Ontdekken blijft beter voor gemengd bladeren');
     expect(markup).toContain('Kies je thema');

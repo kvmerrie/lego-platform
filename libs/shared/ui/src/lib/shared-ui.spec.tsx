@@ -7,6 +7,7 @@ import {
   LabelValueList,
   MarkerList,
   Panel,
+  SectionHeading,
 } from './shared-ui';
 
 describe('Container', () => {
@@ -117,6 +118,22 @@ describe('Breadcrumbs', () => {
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain('Setdetail');
+  });
+});
+
+describe('SectionHeading', () => {
+  it('marks the eyebrow as a shared pre-title element', () => {
+    const markup = renderToStaticMarkup(
+      <SectionHeading
+        description="Begin hier."
+        eyebrow="Thema's"
+        title="Alle thema's"
+        titleAs="h1"
+      />,
+    );
+
+    expect(markup).toContain('data-page-intro-eyebrow="true"');
+    expect(markup).toContain('Thema&#x27;s');
   });
 });
 

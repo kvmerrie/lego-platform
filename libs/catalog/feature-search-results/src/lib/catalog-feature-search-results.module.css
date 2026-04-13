@@ -8,9 +8,18 @@
 }
 
 .resultsGrid {
+  --catalog-browse-grid-inline-border-size: 0px;
   display: grid;
-  gap: var(--lego-space-4);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+@media (min-width: 32rem) {
+  .resultsGrid {
+    --catalog-browse-grid-inline-border-size: var(
+      --catalog-browse-grid-divider-size,
+      1px
+    );
+  }
 }
 
 .statePanel {

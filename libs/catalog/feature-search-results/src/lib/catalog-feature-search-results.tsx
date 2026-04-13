@@ -300,6 +300,7 @@ export function CatalogFeatureSearchResults({
       {filteredSearchResults.length ? (
         <CatalogSetCardCollection
           className={styles.resultsGrid}
+          gridMode="browse"
           variant="compact"
         >
           {filteredSearchResults.map((searchResult) => (

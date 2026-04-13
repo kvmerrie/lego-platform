@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CatalogQuickFilterBar,
   CatalogSetCard,
+  CatalogSetCardCollection,
   CatalogSetDetailPanel,
   CatalogThemeHighlight,
 } from './catalog-ui';
@@ -981,5 +982,18 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain('Beste deals');
     expect(markup).toContain('href="/discover?filter=best-deals"');
+  });
+});
+
+describe('CatalogSetCardCollection', () => {
+  it('distinguishes continuous browse grids from standalone tile collections', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCardCollection gridMode="browse" variant="compact">
+        <article>Cel</article>
+      </CatalogSetCardCollection>,
+    );
+
+    expect(markup).toContain('setCardCollectionBrowse');
+    expect(markup).toContain('setCardCollectionCompact');
   });
 });

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
+  CatalogPageIntro,
   CatalogQuickFilterBar,
   CatalogSectionHeader,
   CatalogSectionShell,
@@ -59,6 +60,33 @@ describe('CatalogSectionShell', () => {
     expect(markup).toContain('3 sets met nagekeken prijzen');
     expect(markup).toContain('Open volledig thema');
     expect(markup).toContain('Body-content');
+  });
+});
+
+describe('CatalogPageIntro', () => {
+  it('renders breadcrumbs in a stable shared slot before intro content', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPageIntro
+        breadcrumbs={{
+          ariaLabel: 'Paginapad',
+          items: [
+            { href: '/', id: 'home', label: 'Start' },
+            { id: 'themes', label: "Thema's" },
+          ],
+        }}
+      >
+        <h1>Alle thema&apos;s</h1>
+        <p>Begin hier.</p>
+      </CatalogPageIntro>,
+    );
+
+    expect(markup).toContain('aria-label="Paginapad"');
+    expect(markup).toContain('data-has-breadcrumbs="true"');
+    expect(markup).toContain('href="/"');
+    expect(markup).toContain('Alle thema&#x27;s');
+    expect(markup.indexOf('Paginapad')).toBeLessThan(
+      markup.indexOf('Alle thema&#x27;s'),
+    );
   });
 });
 
