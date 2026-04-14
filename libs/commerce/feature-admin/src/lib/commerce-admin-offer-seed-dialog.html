@@ -1,0 +1,149 @@
+<div class="admin-modal-layer">
+  <button
+    aria-label="Sluit offer seed dialoog"
+    class="admin-modal-backdrop"
+    tabindex="-1"
+    type="button"
+    (click)="cancel()"
+  ></button>
+
+  <section
+    aria-labelledby="offer-seed-dialog-title"
+    aria-modal="true"
+    class="admin-modal admin-modal--wide"
+    role="dialog"
+  >
+    <header class="admin-modal__header">
+      <div class="admin-stack">
+        <p class="admin-eyebrow">Offer seed</p>
+        <h3 id="offer-seed-dialog-title">
+          {{ isEditing ? 'Seed bewerken' : 'Nieuwe seed' }}
+        </h3>
+      </div>
+
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        (click)="cancel()"
+      >
+        Sluiten
+      </button>
+    </header>
+
+    @if (errorMessage) {
+    <div class="admin-panel admin-panel--danger">
+      <strong>Opslaan lukt niet</strong>
+      <p class="admin-muted">{{ errorMessage }}</p>
+    </div>
+    } @if (!canSave) {
+    <div class="admin-panel">
+      <strong>Voeg eerst een merchant toe</strong>
+      <p class="admin-muted">
+        Een seed heeft altijd een merchant nodig. Maak dus eerst een merchant
+        aan en kom daarna terug.
+      </p>
+    </div>
+    } @else {
+    <div class="admin-form-grid">
+      <label class="admin-field">
+        <span>Set</span>
+        <select
+          [(ngModel)]="formModel.setId"
+          class="admin-input"
+          name="offer-seed-set-id"
+        >
+          @for (catalogSet of commerceAdminStore.catalogSetOptions; track
+          catalogSet.id) {
+          <option [value]="catalogSet.id">
+            {{ catalogSet.theme }} · {{ catalogSet.name }} ({{ catalogSet.id }})
+          </option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-field">
+        <span>Merchant</span>
+        <select
+          [(ngModel)]="formModel.merchantId"
+          class="admin-input"
+          name="offer-seed-merchant-id"
+        >
+          @for (merchant of commerceAdminStore.merchants(); track merchant.id) {
+          <option [value]="merchant.id">{{ merchant.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-field admin-field--full">
+        <span>Product-URL</span>
+        <input
+          [(ngModel)]="formModel.productUrl"
+          class="admin-input"
+          name="offer-seed-product-url"
+          type="url"
+        />
+      </label>
+
+      <label class="admin-field">
+        <span>Validatiestatus</span>
+        <select
+          [(ngModel)]="formModel.validationStatus"
+          class="admin-input"
+          name="offer-seed-validation-status"
+        >
+          @for (validationStatus of validationStatuses; track validationStatus)
+          {
+          <option [value]="validationStatus">{{ validationStatus }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-field">
+        <span>Laatst geverifieerd</span>
+        <input
+          [(ngModel)]="formModel.lastVerifiedAt"
+          class="admin-input"
+          name="offer-seed-last-verified-at"
+          type="datetime-local"
+        />
+      </label>
+
+      <label class="admin-field admin-field--full">
+        <span>Notities</span>
+        <textarea
+          [(ngModel)]="formModel.notes"
+          class="admin-input admin-textarea"
+          name="offer-seed-notes"
+        ></textarea>
+      </label>
+
+      <label class="admin-checkbox admin-field--full">
+        <input
+          [(ngModel)]="formModel.isActive"
+          name="offer-seed-is-active"
+          type="checkbox"
+        />
+        <span>Seed actief houden</span>
+      </label>
+    </div>
+    }
+
+    <footer class="admin-modal__actions">
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        (click)="cancel()"
+      >
+        Annuleren
+      </button>
+      <button
+        class="admin-button admin-button--primary"
+        [disabled]="!canSave"
+        type="button"
+        (click)="save()"
+      >
+        {{ isEditing ? 'Seed opslaan' : 'Seed toevoegen' }}
+      </button>
+    </footer>
+  </section>
+</div>

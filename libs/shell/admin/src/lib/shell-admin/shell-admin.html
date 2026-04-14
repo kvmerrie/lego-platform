@@ -1,66 +1,34 @@
-<style [textContent]="themeStyles"></style>
-
 <section class="admin-shell">
   <header class="admin-shell__header">
-    <div class="stack">
-      <p class="eyebrow">Admin portal</p>
-      <h1>{{ productName }} control center</h1>
-      <p class="muted">
-        Managing the foundation for {{ collectorName }} across catalog,
-        collection, wishlist, pricing, affiliate, and content domains.
-      </p>
+    <div class="admin-shell__masthead">
+      <div class="stack">
+        <p class="eyebrow">Commerce backoffice</p>
+        <h1>{{ productName }} operations</h1>
+        <p class="muted">
+          Beheer merchants en offer seeds bovenop de bestaande catalogussync.
+          Klein, duidelijk en bruikbaar voor dagelijkse commerce-operaties.
+        </p>
+      </div>
+
+      <button class="theme-toggle" type="button" (click)="toggleTheme()">
+        {{ themeToggleLabel }}
+      </button>
     </div>
-    <button class="theme-toggle" type="button" (click)="toggleTheme()">
-      {{ themeToggleLabel }}
-    </button>
+
+    <nav aria-label="Admin navigatie" class="admin-shell__nav">
+      @for (navigationItem of navigationItems; track navigationItem.path) {
+      <a
+        [routerLink]="navigationItem.path"
+        class="admin-shell__nav-link"
+        routerLinkActive="is-active"
+      >
+        {{ navigationItem.label }}
+      </a>
+      }
+    </nav>
   </header>
 
-  <section class="admin-grid">
-    @for (overviewCard of overviewCards(); track overviewCard.label) {
-    <article class="admin-card">
-      <p class="eyebrow">{{ overviewCard.label }}</p>
-      <h2>{{ overviewCard.value }}</h2>
-      <p class="muted">{{ overviewCard.detail }}</p>
-    </article>
-    }
-  </section>
-
-  <section class="admin-split">
-    <article class="admin-card stack">
-      <p class="eyebrow">Delivery queue</p>
-      <ul class="admin-list">
-        @for (queueItem of deliveryQueue; track queueItem.domain) {
-        <li>
-          <strong>{{ queueItem.domain }}</strong>
-          <span>{{ queueItem.summary }}</span>
-          <small>{{ queueItem.nextStep }}</small>
-        </li>
-        }
-      </ul>
-    </article>
-
-    <article class="admin-card stack">
-      <p class="eyebrow">Architecture posture</p>
-      <ul class="admin-list">
-        <li>
-          <strong>Apps stay thin</strong>
-          <span>Routes hand off quickly to shell and feature libraries.</span>
-        </li>
-        <li>
-          <strong>Shared remains shared</strong>
-          <span
-            >Config, types, utilities, tokens, and testing stay
-            domain-neutral.</span
-          >
-        </li>
-        <li>
-          <strong>Domain rules are enforceable</strong>
-          <span
-            >Tags and lint boundaries are ready to block cross-domain
-            shortcuts.</span
-          >
-        </li>
-      </ul>
-    </article>
-  </section>
+  <main class="admin-shell__body">
+    <ng-content></ng-content>
+  </main>
 </section>

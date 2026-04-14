@@ -1,0 +1,39 @@
+<section class="commerce-admin">
+  <header class="commerce-admin__intro admin-panel">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Commerce backoffice</p>
+      <h2>Merchants, seeds en coverage zonder catalog-CMS omweg.</h2>
+      <p class="admin-muted">
+        De hoofd­catalogus blijft uit de bestaande sync komen. Hier beheren we
+        alleen de commerce-laag erboven, zodat operators sneller merchants,
+        seed-urls en coverage kunnen bijhouden.
+      </p>
+    </div>
+
+    <div class="admin-actions">
+      @if (commerceAdminStore.isLoading()) {
+      <span class="admin-count-pill">Status verversen…</span>
+      }
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        (click)="reload()"
+      >
+        Ververs status
+      </button>
+    </div>
+  </header>
+
+  @if (commerceAdminStore.errorMessage()) {
+  <section class="admin-panel admin-panel--danger">
+    <strong>Admin API fout</strong>
+    <p class="admin-muted">{{ commerceAdminStore.errorMessage() }}</p>
+  </section>
+  } @if (!commerceAdminStore.hasLoaded() && commerceAdminStore.isLoading()) {
+  <section class="admin-panel">
+    <p class="admin-muted">Commerce-data laden…</p>
+  </section>
+  } @else {
+  <router-outlet></router-outlet>
+  }
+</section>

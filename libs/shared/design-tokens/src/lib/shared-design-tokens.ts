@@ -16,9 +16,9 @@ const baseTokens: ThemeTokenMap = {
   'lego-breakpoint-lg': designBreakpoints.lg,
   'lego-breakpoint-xl': designBreakpoints.xl,
   'lego-font-family-body':
-    "var(--font-plus-jakarta-sans), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
+    "var(--font-plus-jakarta-sans, 'Plus Jakarta Sans'), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
   'lego-font-family-heading':
-    "var(--font-plus-jakarta-sans), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
+    "var(--font-plus-jakarta-sans, 'Plus Jakarta Sans'), 'Avenir Next', Avenir, 'Segoe UI', 'Helvetica Neue', sans-serif",
   'lego-font-family-mono': "'SFMono-Regular', 'Cascadia Code', monospace",
   'lego-font-size-caption': '0.75rem',
   'lego-font-size-sm': '0.875rem',
@@ -259,6 +259,7 @@ const themeTokens: Record<ThemeMode, ThemeTokenMap> = {
 };
 
 export const themeStorageKey = 'lego-platform-theme';
+const themeStyleElementAttribute = 'data-lego-theme-styles';
 
 function toCssVariables(tokens: ThemeTokenMap): string {
   return Object.entries(tokens)
@@ -329,6 +330,31 @@ html {
   }
 }
 `.trim();
+}
+
+export function ensureThemeStyles(doc = globalThis.document): void {
+  if (!doc?.head) {
+    return;
+  }
+
+  const themeStyles = getThemeStyles();
+  const existingStyleElement = doc.head.querySelector<HTMLStyleElement>(
+    `style[${themeStyleElementAttribute}='true']`,
+  );
+
+  if (existingStyleElement) {
+    if (existingStyleElement.textContent !== themeStyles) {
+      existingStyleElement.textContent = themeStyles;
+    }
+
+    return;
+  }
+
+  const styleElement = doc.createElement('style');
+
+  styleElement.setAttribute(themeStyleElementAttribute, 'true');
+  styleElement.textContent = themeStyles;
+  doc.head.append(styleElement);
 }
 
 export function getThemeBootstrapScript(): string {

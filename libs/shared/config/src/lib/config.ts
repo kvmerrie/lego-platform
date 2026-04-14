@@ -125,6 +125,8 @@ export const apiPaths = {
   wishlistAlertsViewed: '/api/v1/me/profile/wishlist-alerts/viewed',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
+  adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
+  adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
 } as const;
 
 export const supabaseEnvKeys = {
@@ -273,11 +275,11 @@ export const webNavigation = webNavigationItems.map((navigationItem) => ({
 })) as ReadonlyArray<{ href: string; label: string }>;
 
 function getDefaultBrowserSupabaseUrl(): string | undefined {
-  return process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return process.env['NEXT_PUBLIC_SUPABASE_URL'];
 }
 
 function getDefaultBrowserSupabaseAnonKey(): string | undefined {
-  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
 }
 
 function getBrowserSupabaseUrl(

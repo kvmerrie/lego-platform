@@ -1,0 +1,107 @@
+<section class="admin-section">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Dashboard</p>
+      <h2>Snelle blik op merchant-dekking en seeds die aandacht vragen.</h2>
+      <p class="admin-muted">
+        Dit scherm blijft bewust licht. Voor beheer en correcties ga je vanuit
+        hier door naar merchants, seeds of coverage.
+      </p>
+    </div>
+  </header>
+
+  <div class="admin-stats-grid">
+    <article class="admin-stat-card">
+      <span class="admin-stat-card__value">
+        {{ commerceAdminStore.coverage().activeMerchantCount }}
+      </span>
+      <span class="admin-stat-card__label">actieve merchants</span>
+    </article>
+    <article class="admin-stat-card">
+      <span class="admin-stat-card__value">
+        {{ commerceAdminStore.coverage().activeSeedCount }}
+      </span>
+      <span class="admin-stat-card__label">actieve offer seeds</span>
+    </article>
+    <article class="admin-stat-card">
+      <span class="admin-stat-card__value">
+        {{ commerceAdminStore.coverage().uncoveredSets.length }}
+      </span>
+      <span class="admin-stat-card__label">sets zonder actieve seed</span>
+    </article>
+    <article class="admin-stat-card">
+      <span class="admin-stat-card__value">
+        {{ commerceAdminStore.coverage().brokenSeeds.length +
+        commerceAdminStore.coverage().staleSeeds.length }}
+      </span>
+      <span class="admin-stat-card__label">stale of kapotte seeds</span>
+    </article>
+  </div>
+
+  <div class="admin-grid admin-grid--2">
+    <article class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>Nu oppakken</h3>
+          <p class="admin-muted">
+            Eerst de exceptions die het snelst tegen pricing-refresh aanlopen.
+          </p>
+        </div>
+        <a class="admin-button admin-button--subtle" routerLink="/coverage">
+          Open coverage
+        </a>
+      </div>
+
+      <ul class="admin-list">
+        @for (issue of needsAttention(); track issue.id) {
+        <li>
+          <strong>{{ issue.label }}</strong>
+          <span>{{ issue.meta }}</span>
+        </li>
+        } @if (needsAttention().length === 0) {
+        <li class="admin-list__empty">
+          Geen directe issues in beeld. Dan is dit een goed moment om coverage
+          uit te breiden.
+        </li>
+        }
+      </ul>
+    </article>
+
+    <article class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>Waar nog dekking mist</h3>
+          <p class="admin-muted">
+            Gebruik deze drie ingangen om de commerce-laag verder dicht te
+            trekken.
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-quick-links">
+        <a class="admin-link-card" routerLink="/merchants">
+          <strong>Merchants beheren</strong>
+          <span>
+            {{ commerceAdminStore.merchants().length }} merchants, {{
+            commerceAdminStore.coverage().merchantsWithoutActiveSeeds.length }}
+            zonder actieve seed.
+          </span>
+        </a>
+        <a class="admin-link-card" routerLink="/offer-seeds">
+          <strong>Offer seeds bijwerken</strong>
+          <span>
+            {{ commerceAdminStore.offerSeeds().length }} seeds in beheer, klaar
+            voor create en edit.
+          </span>
+        </a>
+        <a class="admin-link-card" routerLink="/coverage">
+          <strong>Coverage nalopen</strong>
+          <span>
+            {{ commerceAdminStore.coverage().uncoveredSets.length }} sets zonder
+            actieve seed.
+          </span>
+        </a>
+      </div>
+    </article>
+  </div>
+</section>

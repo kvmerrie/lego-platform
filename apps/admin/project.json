@@ -4,7 +4,7 @@
   "projectType": "application",
   "prefix": "lego",
   "sourceRoot": "apps/admin/src",
-  "tags": ["scope:shell", "type:app", "platform:admin"],
+  "tags": ["scope:commerce", "type:app", "platform:admin"],
   "targets": {
     "build": {
       "executor": "@nx/angular:webpack-browser",
@@ -48,8 +48,11 @@
       "defaultConfiguration": "production"
     },
     "serve": {
-      "continuous": true,
-      "executor": "@angular/build:dev-server",
+      "executor": "@nx/angular:dev-server",
+      "options": {
+        "buildTarget": "admin:build",
+        "proxyConfig": "apps/admin/proxy.conf.json"
+      },
       "configurations": {
         "production": {
           "buildTarget": "admin:build:production"
@@ -58,10 +61,7 @@
           "buildTarget": "admin:build:development"
         }
       },
-      "defaultConfiguration": "development",
-      "options": {
-        "proxyConfig": "apps/admin/proxy.conf.json"
-      }
+      "defaultConfiguration": "development"
     },
     "lint": {
       "executor": "@nx/eslint:lint"

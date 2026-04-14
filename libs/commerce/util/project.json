@@ -1,0 +1,16 @@
+{
+  "name": "commerce-util",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/commerce/util/src",
+  "projectType": "library",
+  "tags": ["scope:commerce", "type:util", "platform:shared"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/commerce/util",
+        "command": "vitest run src/lib/commerce-util.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

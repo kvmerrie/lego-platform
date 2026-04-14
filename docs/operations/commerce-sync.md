@@ -36,6 +36,29 @@ Curated local inputs currently live in:
 Reviewed merchant destination URLs are curated per set inside the pricing observation seed file.
 Do not synthesize product paths from merchant host patterns or set ids.
 
+## Commerce Backoffice Foundation
+
+Brickhunt now also has a first commerce backoffice in the Angular admin app.
+
+What moved into Supabase:
+
+- `commerce_merchants`
+- `commerce_offer_seeds`
+- `commerce_offer_latest`
+
+What that backoffice owns:
+
+- merchant CRUD
+- set-to-merchant seed URLs
+- basic coverage and stale or broken seed visibility
+
+What still remains transitional:
+
+- the generated public pricing and affiliate artifacts still come from the current sync path
+- Render cron consumers should move to the Supabase commerce tables and shared commerce server data-access helpers instead of the local seed files
+
+Treat the admin + Supabase tables as the operational source of truth for the commerce layer from this point forward. The legacy local seed files remain only as transitional sync inputs until the refresh job is fully switched over.
+
 This phase intentionally uses a very small, operator-reviewed allowlist:
 
 - a small reviewed set allowlist drawn from the current public curated catalog

@@ -1,0 +1,98 @@
+<section class="admin-section">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Merchants</p>
+      <h2>Beheer welke winkels en partners actief meedraaien.</h2>
+      <p class="admin-muted">
+        Dit scherm is alleen voor merchant-beheer: status, bron en seeddekking.
+      </p>
+    </div>
+
+    <button
+      class="admin-button admin-button--primary"
+      type="button"
+      (click)="openCreateDialog()"
+    >
+      Merchant toevoegen
+    </button>
+  </header>
+
+  <div class="admin-toolbar">
+    <input
+      [ngModel]="merchantSearch()"
+      (ngModelChange)="updateSearch($event)"
+      class="admin-input admin-search"
+      placeholder="Zoek op naam, slug of netwerk"
+      type="search"
+    />
+  </div>
+
+  <div class="admin-table-shell">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Merchant</th>
+          <th>Status</th>
+          <th>Bron</th>
+          <th>Actieve seeds</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (merchant of filteredMerchants(); track merchant.id) {
+        <tr>
+          <td>
+            <strong>{{ merchant.name }}</strong>
+            <span>{{ merchant.slug }}</span>
+            @if (merchant.affiliateNetwork) {
+            <span>{{ merchant.affiliateNetwork }}</span>
+            }
+          </td>
+          <td>
+            <span
+              class="admin-status-pill"
+              [class.admin-status-pill--neutral]="!merchant.isActive"
+              [class.admin-status-pill--positive]="merchant.isActive"
+            >
+              {{ merchant.isActive ? 'Actief' : 'Inactief' }}
+            </span>
+          </td>
+          <td>{{ merchant.sourceType }}</td>
+          <td>
+            {{ commerceAdminStore.getMerchantActiveSeedCount(merchant.id) }}
+          </td>
+          <td class="admin-actions-inline">
+            <button
+              class="admin-button admin-button--subtle"
+              type="button"
+              (click)="openEditDialog(merchant)"
+            >
+              Bewerken
+            </button>
+            <button
+              class="admin-button admin-button--subtle"
+              type="button"
+              (click)="toggleMerchantActive(merchant)"
+            >
+              {{ merchant.isActive ? 'Pauzeren' : 'Activeren' }}
+            </button>
+          </td>
+        </tr>
+        } @if (filteredMerchants().length === 0) {
+        <tr>
+          <td class="admin-table__empty" colspan="5">
+            Geen merchants gevonden voor deze zoekterm.
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (isDialogOpen()) {
+<lego-commerce-admin-merchant-dialog
+  [merchant]="selectedMerchant()"
+  (closed)="closeDialog()"
+></lego-commerce-admin-merchant-dialog>
+}

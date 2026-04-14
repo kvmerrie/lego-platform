@@ -1,0 +1,16 @@
+.commerce-admin {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.commerce-admin__intro {
+  align-items: start;
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 880px) {
+  .commerce-admin__intro {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}

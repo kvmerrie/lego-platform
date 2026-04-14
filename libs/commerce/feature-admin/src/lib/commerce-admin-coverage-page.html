@@ -1,0 +1,150 @@
+<section class="admin-section">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Coverage</p>
+      <h2>
+        Werk uitzonderingen weg en trek dekking dicht waar die nog ontbreekt.
+      </h2>
+      <p class="admin-muted">
+        Dit scherm is bedoeld voor review en opvolging. Nieuwe merchants en
+        seeds maak je aan in hun eigen beheerflows.
+      </p>
+    </div>
+  </header>
+
+  <div class="admin-grid admin-grid--2">
+    <article class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>Sets zonder actieve seed</h3>
+          <p class="admin-muted">
+            Hier missen we nog een commerciële ingang in de live setcatalogus.
+          </p>
+        </div>
+        <span class="admin-count-pill">
+          {{ commerceAdminStore.coverage().uncoveredSets.length }}
+        </span>
+      </div>
+
+      <ul class="admin-list">
+        @for (catalogSet of commerceAdminStore.coverage().uncoveredSets; track
+        catalogSet.id) {
+        <li>
+          <strong>{{ catalogSet.name }}</strong>
+          <span>{{ catalogSet.theme }} · {{ catalogSet.id }}</span>
+        </li>
+        } @if (commerceAdminStore.coverage().uncoveredSets.length === 0) {
+        <li class="admin-list__empty">
+          Alles wat nu in catalog staat heeft minstens één actieve seed.
+        </li>
+        }
+      </ul>
+    </article>
+
+    <article class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>Merchants zonder actieve seeds</h3>
+          <p class="admin-muted">
+            Actieve merchants zonder seeds horen hier op te vallen.
+          </p>
+        </div>
+        <span class="admin-count-pill">
+          {{ commerceAdminStore.coverage().merchantsWithoutActiveSeeds.length }}
+        </span>
+      </div>
+
+      <ul class="admin-list">
+        @for (merchant of
+        commerceAdminStore.coverage().merchantsWithoutActiveSeeds; track
+        merchant.id) {
+        <li>
+          <strong>{{ merchant.name }}</strong>
+          <span>{{ merchant.slug }}</span>
+        </li>
+        } @if (commerceAdminStore.coverage().merchantsWithoutActiveSeeds.length
+        === 0) {
+        <li class="admin-list__empty">
+          Elke actieve merchant heeft nu minstens één actieve seed.
+        </li>
+        }
+      </ul>
+    </article>
+  </div>
+
+  <div class="admin-grid admin-grid--2">
+    <article class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>Kapotte of ongeldige seeds</h3>
+          <p class="admin-muted">
+            Seeds die je eerst wilt herstellen voordat refresh weer betrouwbaar
+            wordt.
+          </p>
+        </div>
+        <span class="admin-count-pill">
+          {{ commerceAdminStore.coverage().brokenSeeds.length }}
+        </span>
+      </div>
+
+      <ul class="admin-list">
+        @for (offerSeed of commerceAdminStore.coverage().brokenSeeds; track
+        offerSeed.id) {
+        <li>
+          <strong
+            >{{ commerceAdminStore.getCatalogSetLabel(offerSeed.setId)
+            }}</strong
+          >
+          <span>
+            {{ commerceAdminStore.getMerchantName(offerSeed.merchantId) }} · {{
+            commerceAdminStore.getOfferSeedHealthLabel(offerSeed) }}
+          </span>
+        </li>
+        } @if (commerceAdminStore.coverage().brokenSeeds.length === 0) {
+        <li class="admin-list__empty">Geen kapotte seeds in beeld.</li>
+        }
+      </ul>
+    </article>
+
+    <article class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>Stale seeds</h3>
+          <p class="admin-muted">
+            Seeds die te lang geen verse check of verificatie meer hebben gehad.
+          </p>
+        </div>
+        <span class="admin-count-pill">
+          {{ commerceAdminStore.coverage().staleSeeds.length }}
+        </span>
+      </div>
+
+      <ul class="admin-list">
+        @for (offerSeed of commerceAdminStore.coverage().staleSeeds; track
+        offerSeed.id) {
+        <li>
+          <strong
+            >{{ commerceAdminStore.getCatalogSetLabel(offerSeed.setId)
+            }}</strong
+          >
+          <span>
+            {{ commerceAdminStore.getMerchantName(offerSeed.merchantId) }} · {{
+            commerceAdminStore.getOfferSeedHealthLabel(offerSeed) }}
+          </span>
+        </li>
+        } @if (commerceAdminStore.coverage().staleSeeds.length === 0) {
+        <li class="admin-list__empty">Geen stale seeds in beeld.</li>
+        }
+      </ul>
+    </article>
+  </div>
+
+  <div class="admin-actions">
+    <a class="admin-button admin-button--subtle" routerLink="/merchants">
+      Naar merchants
+    </a>
+    <a class="admin-button admin-button--primary" routerLink="/offer-seeds">
+      Naar offer seeds
+    </a>
+  </div>
+</section>

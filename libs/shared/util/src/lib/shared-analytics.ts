@@ -119,13 +119,13 @@ export function readBrickhuntAnalyticsDescriptorFromTarget(
     return undefined;
   }
 
-  const eventName = analyticsElement.dataset.brickhuntEvent;
+  const eventName = analyticsElement.dataset['brickhuntEvent'];
 
   if (!eventName) {
     return undefined;
   }
 
-  const properties = analyticsElement.dataset.brickhuntProperties;
+  const properties = analyticsElement.dataset['brickhuntProperties'];
 
   if (!properties) {
     return {

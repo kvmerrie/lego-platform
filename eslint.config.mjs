@@ -44,6 +44,15 @@ export default [
               ],
             },
             {
+              sourceTag: 'scope:commerce',
+              onlyDependOnLibsWithTags: [
+                'scope:commerce',
+                'scope:catalog',
+                'scope:shared',
+                'scope:shell',
+              ],
+            },
+            {
               sourceTag: 'scope:catalog',
               onlyDependOnLibsWithTags: [
                 'scope:catalog',
@@ -111,6 +120,7 @@ export default [
                 'scope:affiliate',
                 'scope:content',
                 'scope:user',
+                'scope:commerce',
               ],
             },
             {

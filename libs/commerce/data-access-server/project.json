@@ -1,0 +1,16 @@
+{
+  "name": "commerce-data-access-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/commerce/data-access-server/src",
+  "projectType": "library",
+  "tags": ["scope:commerce", "type:data-access", "platform:server"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/commerce/data-access-server",
+        "command": "vitest run src/lib/commerce-data-access-server.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

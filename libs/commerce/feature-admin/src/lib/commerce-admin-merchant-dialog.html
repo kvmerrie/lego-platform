@@ -1,0 +1,120 @@
+<div class="admin-modal-layer">
+  <button
+    aria-label="Sluit merchant dialoog"
+    class="admin-modal-backdrop"
+    tabindex="-1"
+    type="button"
+    (click)="cancel()"
+  ></button>
+
+  <section
+    aria-labelledby="merchant-dialog-title"
+    aria-modal="true"
+    class="admin-modal"
+    role="dialog"
+  >
+    <header class="admin-modal__header">
+      <div class="admin-stack">
+        <p class="admin-eyebrow">Merchant</p>
+        <h3 id="merchant-dialog-title">
+          {{ isEditing ? 'Merchant bewerken' : 'Nieuwe merchant' }}
+        </h3>
+      </div>
+
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        (click)="cancel()"
+      >
+        Sluiten
+      </button>
+    </header>
+
+    @if (errorMessage) {
+    <div class="admin-panel admin-panel--danger">
+      <strong>Opslaan lukt niet</strong>
+      <p class="admin-muted">{{ errorMessage }}</p>
+    </div>
+    }
+
+    <div class="admin-form-grid">
+      <label class="admin-field">
+        <span>Naam</span>
+        <input
+          [(ngModel)]="formModel.name"
+          class="admin-input"
+          name="merchant-name"
+          type="text"
+        />
+      </label>
+
+      <label class="admin-field">
+        <span>Slug</span>
+        <input
+          [(ngModel)]="formModel.slug"
+          class="admin-input"
+          name="merchant-slug"
+          type="text"
+        />
+      </label>
+
+      <label class="admin-field">
+        <span>Source type</span>
+        <select
+          [(ngModel)]="formModel.sourceType"
+          class="admin-input"
+          name="merchant-source-type"
+        >
+          @for (sourceType of merchantSourceTypes; track sourceType) {
+          <option [value]="sourceType">{{ sourceType }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-field">
+        <span>Affiliate network</span>
+        <input
+          [(ngModel)]="formModel.affiliateNetwork"
+          class="admin-input"
+          name="merchant-affiliate-network"
+          type="text"
+        />
+      </label>
+
+      <label class="admin-field admin-field--full">
+        <span>Notities</span>
+        <textarea
+          [(ngModel)]="formModel.notes"
+          class="admin-input admin-textarea"
+          name="merchant-notes"
+        ></textarea>
+      </label>
+
+      <label class="admin-checkbox admin-field--full">
+        <input
+          [(ngModel)]="formModel.isActive"
+          name="merchant-is-active"
+          type="checkbox"
+        />
+        <span>Merchant actief houden</span>
+      </label>
+    </div>
+
+    <footer class="admin-modal__actions">
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        (click)="cancel()"
+      >
+        Annuleren
+      </button>
+      <button
+        class="admin-button admin-button--primary"
+        type="button"
+        (click)="save()"
+      >
+        {{ isEditing ? 'Merchant opslaan' : 'Merchant toevoegen' }}
+      </button>
+    </footer>
+  </section>
+</div>

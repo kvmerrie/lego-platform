@@ -69,6 +69,13 @@
       "@lego-platform/affiliate/data-access-server": [
         "libs/affiliate/data-access-server/src/index.ts"
       ],
+      "@lego-platform/commerce/util": ["libs/commerce/util/src/index.ts"],
+      "@lego-platform/commerce/data-access-server": [
+        "libs/commerce/data-access-server/src/index.ts"
+      ],
+      "@lego-platform/commerce/feature-admin": [
+        "libs/commerce/feature-admin/src/index.ts"
+      ],
       "@lego-platform/content/util": ["libs/content/util/src/index.ts"],
       "@lego-platform/content/data-access": [
         "libs/content/data-access/src/index.ts"

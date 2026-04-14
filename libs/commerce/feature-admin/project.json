@@ -1,0 +1,13 @@
+{
+  "name": "commerce-feature-admin",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/commerce/feature-admin/src",
+  "prefix": "lego",
+  "projectType": "library",
+  "tags": ["scope:commerce", "type:feature", "platform:admin"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
