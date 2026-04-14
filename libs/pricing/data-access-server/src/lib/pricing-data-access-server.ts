@@ -377,12 +377,16 @@ export function validatePricingSyncArtifacts({
 
 export function buildPricingSyncArtifacts({
   enabledSetIds,
+  manifestNotes = 'Generated from a small Dutch-market commerce foundation. No runtime merchant calls or history are included.',
+  manifestSource = 'curated-dutch-commerce-foundation',
   merchantSummaries = [],
   now,
   pricingObservationSeeds = curatedDutchPricingObservationSeeds,
   pricingReferenceValues = dutchPricingReferenceValues,
 }: {
   enabledSetIds: readonly string[];
+  manifestNotes?: string;
+  manifestSource?: string;
   merchantSummaries?: readonly PricingMerchantSummary[];
   now?: Date;
   pricingObservationSeeds?: readonly PricingObservationSeed[];
@@ -437,15 +441,14 @@ export function buildPricingSyncArtifacts({
         pricePanelSnapshot !== undefined,
     );
   const pricingSyncManifest: PricingSyncManifest = {
-    source: 'curated-dutch-commerce-foundation',
+    source: manifestSource,
     generatedAt: getGeneratedAt({
       now,
       validatedOfferInputs,
     }),
     observationCount: pricingObservations.length,
     setCount: pricePanelSnapshots.length,
-    notes:
-      'Generated from a small Dutch-market commerce foundation. No runtime merchant calls or history are included.',
+    notes: manifestNotes,
   };
 
   validatePricingSyncArtifacts({

@@ -3,6 +3,7 @@ import {
   createCommerceMerchant,
   listActiveCommerceRefreshSeeds,
   listCommerceOfferSeeds,
+  updateCommerceOfferSeedValidationState,
   upsertCommerceOfferLatestRecord,
 } from './commerce-data-access-server';
 
@@ -244,5 +245,27 @@ describe('commerce data access server', () => {
         onConflict: 'offer_seed_id',
       },
     );
+  });
+
+  test('updates validation status and verification timestamp for refreshed seeds', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ update }));
+
+    await updateCommerceOfferSeedValidationState({
+      offerSeedId: 'seed-1',
+      input: {
+        validationStatus: 'valid',
+        lastVerifiedAt: '2026-04-14T08:05:00.000Z',
+      },
+      supabaseClient: { from } as never,
+    });
+
+    expect(from).toHaveBeenCalledWith('commerce_offer_seeds');
+    expect(update).toHaveBeenCalledWith({
+      validation_status: 'valid',
+      last_verified_at: '2026-04-14T08:05:00.000Z',
+    });
+    expect(eq).toHaveBeenCalledWith('id', 'seed-1');
   });
 });

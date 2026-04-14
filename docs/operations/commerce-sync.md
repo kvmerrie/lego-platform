@@ -26,15 +26,19 @@ See also:
 
 ## Current Inputs
 
-Curated local inputs currently live in:
+The operational commerce source of truth now lives in Supabase:
 
-- `apps/commerce-sync/src/lib/commerce-sync-curation.ts`
+- `commerce_merchants`
+- `commerce_offer_seeds`
+- `commerce_offer_latest`
+
+What remains local on purpose:
+
 - `libs/pricing/data-access-server/src/lib/pricing-reference-values.ts`
-- `libs/pricing/data-access-server/src/lib/pricing-observation-seeds.ts`
 - `libs/affiliate/data-access-server/src/lib/merchant-config.ts`
 
-Reviewed merchant destination URLs are curated per set inside the pricing observation seed file.
-Do not synthesize product paths from merchant host patterns or set ids.
+Those local files now act as reference pricing and merchant presentation or host metadata.
+They are no longer the source of active seed URLs.
 
 ## Commerce Backoffice Foundation
 
@@ -52,12 +56,12 @@ What that backoffice owns:
 - set-to-merchant seed URLs
 - basic coverage and stale or broken seed visibility
 
-What still remains transitional:
+What still remains intentionally snapshot-backed:
 
-- the generated public pricing and affiliate artifacts still come from the current sync path
-- Render cron consumers should move to the Supabase commerce tables and shared commerce server data-access helpers instead of the local seed files
+- the public web app still reads generated pricing and affiliate artifacts
+- the sync job now rebuilds those artifacts from Supabase-managed seeds and latest fetched offer state
 
-Treat the admin + Supabase tables as the operational source of truth for the commerce layer from this point forward. The legacy local seed files remain only as transitional sync inputs until the refresh job is fully switched over.
+Treat the admin + Supabase tables as the operational source of truth for the commerce layer.
 
 This phase intentionally uses a very small, operator-reviewed allowlist:
 
@@ -70,10 +74,12 @@ Example boilerplate:
 
 - `.env.sync.example`
 
-The current commerce sync slice does not require external feed secrets, but `write` mode now also persists daily price-history rows and therefore needs the normal server-side Supabase credentials:
+The current commerce sync slice needs the normal server-side Supabase credentials for both read and write flows:
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
+
+`write` mode also needs outbound network access to merchant product pages.
 
 ## Run The Sync
 
@@ -91,7 +97,7 @@ pnpm nx run commerce-sync:run
 
 ## Check Mode
 
-Check mode rebuilds the Dutch commerce artifacts in memory and fails if committed generated files would change.
+Check mode rebuilds the Dutch commerce artifacts from the current Supabase commerce state in memory and fails if committed generated files would change.
 
 ```bash
 pnpm sync:commerce:check
@@ -105,18 +111,20 @@ For local-hook clarity, the same deterministic artifact-only path is also availa
 pnpm sync:commerce:local:check
 ```
 
-This check does not call merchants and does not write Supabase history rows.
+This check does not call merchants and does not write Supabase latest or history rows.
 
 ## Operator Notes
 
 - The current slice is set-detail only.
 - No runtime merchant calls and no click tracking are included.
-- The current snapshot-backed price panel remains unchanged.
+- The current snapshot-backed price panel remains unchanged for the public app.
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
 - Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
-- `pnpm sync:commerce:check` and `pnpm sync:commerce:local:check` remain generated-artifact drift checks only and do not write history rows.
-- Merchant allowlist, disclosure copy, reference pricing, enabled set scope, and reviewed direct product URLs remain curated locally.
-- If a stable merchant product page cannot be verified for an enabled set, remove that offer instead of guessing a slug.
+- `pnpm sync:commerce` refreshes every active Supabase seed, updates `commerce_offer_latest`, and updates `validation_status` plus `last_verified_at` on the seed itself.
+- `pnpm sync:commerce:check` and `pnpm sync:commerce:local:check` remain generated-artifact drift checks only and do not write latest or history rows.
+- Merchant presentation metadata and reference pricing remain curated locally.
+- Active merchant and seed scope now come from Supabase, not from local seed files.
+- If a stable merchant product page cannot be verified for a seed, keep the seed reviewable in admin instead of guessing a replacement URL.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.
 
 ## Production Scheduling
@@ -144,8 +152,8 @@ Render scheduled job notes:
 - run this as a scheduled background job, not as an always-on service
 - keep `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job only
 - use `pnpm sync:commerce:local:check` in local hooks or fast local review
-- use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without writing history rows
-- a healthy scheduled job should log one `start` line and one `end` line with enabled set, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
+- use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without refreshing merchants
+- a healthy scheduled job should log one `start` line, one line per refreshed seed with merchant, seed id, set id, and status, and one `end` line with refresh, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
 
 ## Troubleshooting Notes
 

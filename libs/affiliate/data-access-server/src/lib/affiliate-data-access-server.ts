@@ -168,11 +168,15 @@ export function validateAffiliateSyncArtifacts({
 export function buildAffiliateSyncArtifacts({
   affiliateMerchantConfigs = dutchAffiliateMerchantConfigs,
   enabledSetIds,
+  manifestNotes = 'Generated from a small Dutch-market merchant allowlist. Outbound URLs remain direct in this first foundation phase.',
+  manifestSource = 'curated-dutch-commerce-foundation',
   now,
   offerCandidateInputs,
 }: {
   affiliateMerchantConfigs?: readonly AffiliateMerchantConfig[];
   enabledSetIds: readonly string[];
+  manifestNotes?: string;
+  manifestSource?: string;
   now?: Date;
   offerCandidateInputs: readonly AffiliateOfferCandidateInput[];
 }): AffiliateGeneratedArtifacts {
@@ -253,7 +257,7 @@ export function buildAffiliateSyncArtifacts({
         left.displayRank - right.displayRank,
     );
   const affiliateSyncManifest: AffiliateSyncManifest = {
-    source: 'curated-dutch-commerce-foundation',
+    source: manifestSource,
     generatedAt: getGeneratedAt({
       affiliateOfferSnapshots,
       now,
@@ -265,8 +269,7 @@ export function buildAffiliateSyncArtifacts({
       ),
     ).size,
     merchantCount: merchantConfigById.size,
-    notes:
-      'Generated from a small Dutch-market merchant allowlist. Outbound URLs remain direct in this first foundation phase.',
+    notes: manifestNotes,
   };
 
   validateAffiliateSyncArtifacts({

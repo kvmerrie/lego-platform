@@ -16,7 +16,7 @@ async function main() {
   const startedAt = Date.now();
 
   console.log(
-    `[commerce-sync] start mode=${mode} scope=dutch-curated-set-detail`,
+    `[commerce-sync] start mode=${mode} scope=supabase-commerce-refresh`,
   );
   const result = await runCommerceSync({
     mode,
@@ -38,13 +38,13 @@ async function main() {
 
     console.log('[commerce-sync] check passed for the Dutch set-detail slice.');
     console.log(
-      `[commerce-sync] end mode=check status=clean enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+      `[commerce-sync] end mode=check status=clean enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
     );
     return;
   }
 
   console.log(
-    `[commerce-sync] end mode=write status=${stalePaths.length === 0 ? 'verified' : 'updated'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+    `[commerce-sync] end mode=write status=${stalePaths.length === 0 ? 'verified' : 'updated'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
@@ -52,7 +52,7 @@ main().catch((error) => {
   const mode = getSyncMode(process.argv.slice(2));
 
   console.error(
-    `[commerce-sync] failed mode=${mode} scope=dutch-curated-set-detail`,
+    `[commerce-sync] failed mode=${mode} scope=supabase-commerce-refresh`,
   );
   if (error instanceof Error) {
     console.error(`[commerce-sync] error=${error.message}`);

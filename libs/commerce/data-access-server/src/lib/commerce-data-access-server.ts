@@ -8,6 +8,7 @@ import {
   type CommerceOfferLatestRecordInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  type CommerceOfferSeedValidationStatus,
 } from '@lego-platform/commerce/util';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -17,6 +18,11 @@ export const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 export const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 
 type CommerceSupabaseClient = Pick<SupabaseClient, 'from'>;
+
+export interface CommerceOfferSeedValidationUpdateInput {
+  lastVerifiedAt?: string | null;
+  validationStatus: CommerceOfferSeedValidationStatus;
+}
 
 interface CommerceMerchantRow {
   affiliate_network: string | null;
@@ -430,5 +436,29 @@ export async function upsertCommerceOfferLatestRecord({
 
   if (error) {
     throw new Error('Unable to persist the commerce latest offer record.');
+  }
+}
+
+export async function updateCommerceOfferSeedValidationState({
+  input,
+  offerSeedId,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  input: CommerceOfferSeedValidationUpdateInput;
+  offerSeedId: string;
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<void> {
+  const { error } = await supabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .update({
+      validation_status: input.validationStatus,
+      last_verified_at: input.lastVerifiedAt ?? null,
+    })
+    .eq('id', offerSeedId);
+
+  if (error) {
+    throw new Error(
+      'Unable to update the commerce offer seed validation state.',
+    );
   }
 }

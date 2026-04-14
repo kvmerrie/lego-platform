@@ -1,17 +1,19 @@
 import {
   buildAffiliateSyncArtifacts,
   checkAffiliateGeneratedArtifacts,
-  dutchAffiliateMerchantConfigs,
   writeAffiliateGeneratedArtifacts,
 } from '@lego-platform/affiliate/data-access-server';
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
+import {
+  loadCommerceSyncInputs,
+  refreshCommerceOfferSeeds,
+} from './commerce-refresh';
 import {
   buildPricingSyncArtifacts,
   checkPricingGeneratedArtifacts,
   upsertDailyPriceHistoryPoints,
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
-import { curatedCommerceEnabledSetIds } from './commerce-sync-curation';
 
 export interface CommerceGeneratedArtifactCheckResult {
   isClean: boolean;
@@ -28,6 +30,10 @@ export interface CommerceSyncRunResult {
   pricePanelSnapshotCount: number;
   pricingObservationCount: number;
   pricingArtifactCheck: CommerceGeneratedArtifactCheckResult;
+  refreshInvalidCount: number;
+  refreshStaleCount: number;
+  refreshSuccessCount: number;
+  refreshUnavailableCount: number;
 }
 
 function validateEnabledSetIds(enabledSetIds: readonly string[]) {
@@ -53,20 +59,43 @@ export async function runCommerceSync({
   now?: Date;
   workspaceRoot: string;
 }): Promise<CommerceSyncRunResult> {
-  validateEnabledSetIds(curatedCommerceEnabledSetIds);
+  const initialCommerceSyncInputs = await loadCommerceSyncInputs();
 
-  const pricingArtifacts = buildPricingSyncArtifacts({
-    enabledSetIds: curatedCommerceEnabledSetIds,
-    merchantSummaries: dutchAffiliateMerchantConfigs.map(
-      (affiliateMerchantConfig) => ({
-        merchantId: affiliateMerchantConfig.merchantId,
-        displayName: affiliateMerchantConfig.displayName,
-      }),
+  validateEnabledSetIds(
+    initialCommerceSyncInputs.refreshSeeds.map(
+      (refreshSeed) => refreshSeed.offerSeed.setId,
     ),
+  );
+
+  const refreshSummary =
+    mode === 'write'
+      ? await refreshCommerceOfferSeeds({
+          now,
+          refreshSeeds: initialCommerceSyncInputs.refreshSeeds,
+        })
+      : {
+          totalCount: initialCommerceSyncInputs.refreshSeeds.length,
+          successCount: 0,
+          unavailableCount: 0,
+          invalidCount: 0,
+          staleCount: 0,
+        };
+  const { syncInputs } = await loadCommerceSyncInputs();
+  const pricingArtifacts = buildPricingSyncArtifacts({
+    enabledSetIds: syncInputs.enabledSetIds,
+    manifestNotes:
+      'Generated from Supabase-managed commerce seeds and the latest verified merchant refresh state.',
+    manifestSource: 'supabase-commerce-refresh',
+    merchantSummaries: syncInputs.merchantSummaries,
     now,
+    pricingObservationSeeds: syncInputs.pricingObservationSeeds,
   });
   const affiliateArtifacts = buildAffiliateSyncArtifacts({
-    enabledSetIds: curatedCommerceEnabledSetIds,
+    affiliateMerchantConfigs: syncInputs.affiliateMerchantConfigs,
+    enabledSetIds: syncInputs.enabledSetIds,
+    manifestNotes:
+      'Generated from Supabase-managed commerce seeds and the latest verified merchant refresh state.',
+    manifestSource: 'supabase-commerce-refresh',
     now,
     offerCandidateInputs: pricingArtifacts.validatedOfferInputs.map(
       (validatedOfferInput) => ({
@@ -122,14 +151,18 @@ export async function runCommerceSync({
     mode,
     pricingArtifactCheck,
     affiliateArtifactCheck,
-    enabledSetCount: curatedCommerceEnabledSetIds.length,
+    enabledSetCount: syncInputs.enabledSetIds.length,
     pricingObservationCount: pricingArtifacts.pricingObservations.length,
     pricePanelSnapshotCount: pricingArtifacts.pricePanelSnapshots.length,
     affiliateOfferCount: affiliateArtifacts.affiliateOfferSnapshots.length,
-    merchantCount: dutchAffiliateMerchantConfigs.length,
+    merchantCount: syncInputs.activeMerchantCount,
     dailyHistoryPointCount:
       mode === 'write'
         ? dailyPriceHistoryPoints.length
         : pricingArtifacts.pricePanelSnapshots.length,
+    refreshSuccessCount: refreshSummary.successCount,
+    refreshUnavailableCount: refreshSummary.unavailableCount,
+    refreshInvalidCount: refreshSummary.invalidCount,
+    refreshStaleCount: refreshSummary.staleCount,
   };
 }
