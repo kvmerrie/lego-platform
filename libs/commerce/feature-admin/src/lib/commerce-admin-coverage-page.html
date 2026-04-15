@@ -3,7 +3,8 @@
     <div class="admin-stack">
       <p class="admin-eyebrow">Coverage</p>
       <h2>
-        Werk uitzonderingen weg en trek dekking dicht waar die nog ontbreekt.
+        Werk uitzonderingen weg en gebruik benchmarksets als vaste referentie
+        voor merchantkwaliteit.
       </h2>
       <p class="admin-muted">
         Dit scherm is bedoeld voor review en opvolging. Nieuwe merchants en
@@ -11,6 +12,163 @@
       </p>
     </div>
   </header>
+
+  <article class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack">
+        <h3>Benchmark batch</h3>
+        <p class="admin-muted">
+          Markeer hier de sets waarmee we merchantparsers en coverage bewust
+          scherp houden.
+        </p>
+      </div>
+      <span class="admin-count-pill">
+        {{ commerceAdminStore.benchmarkCoverageRows().length }}
+      </span>
+    </div>
+
+    <div class="admin-toolbar admin-toolbar--filters">
+      <select
+        [disabled]="availableBenchmarkSetOptions().length === 0"
+        [ngModel]="benchmarkSetSelection"
+        (ngModelChange)="updateSelectedBenchmarkSet($event)"
+        class="admin-input"
+        name="benchmark-set"
+      >
+        @for (catalogSet of availableBenchmarkSetOptions(); track catalogSet.id)
+        {
+        <option [value]="catalogSet.id">
+          {{ catalogSet.name }} · {{ catalogSet.theme }} · {{ catalogSet.id }}
+        </option>
+        } @if (availableBenchmarkSetOptions().length === 0) {
+        <option value="">Alle catalogsets staan al in de benchmarkbatch</option>
+        }
+      </select>
+
+      <button
+        class="admin-button admin-button--primary"
+        [disabled]="availableBenchmarkSetOptions().length === 0"
+        type="button"
+        (click)="addBenchmarkSet()"
+      >
+        Benchmarkset toevoegen
+      </button>
+    </div>
+
+    <div class="admin-table-shell">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Benchmarkset</th>
+            <th>Actieve dekking</th>
+            <th>Geldige merchants</th>
+            <th>Mist nog</th>
+            <th>Review nodig</th>
+            <th>Merchantstatus</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (benchmarkCoverageRow of
+          commerceAdminStore.benchmarkCoverageRows(); track
+          benchmarkCoverageRow.setId) {
+          <tr>
+            <td>
+              <strong>
+                {{
+                commerceAdminStore.getCatalogSetLabel(benchmarkCoverageRow.setId)
+                }}
+              </strong>
+              <span>{{ benchmarkCoverageRow.theme }}</span>
+              @if (benchmarkCoverageRow.notes) {
+              <span>{{ benchmarkCoverageRow.notes }}</span>
+              }
+            </td>
+            <td>
+              {{ benchmarkCoverageRow.activeSeedCount }}/{{
+              benchmarkCoverageRow.activeMerchantTargetCount }} actieve
+              merchants
+            </td>
+            <td>{{ benchmarkCoverageRow.latestValidMerchantCount }}</td>
+            <td>
+              @if (benchmarkCoverageRow.missingMerchantNames.length > 0) { {{
+              benchmarkCoverageRow.missingMerchantNames.join(', ') }} } @else {
+              <span class="admin-muted">Geen gaten</span>
+              }
+            </td>
+            <td>
+              @if (benchmarkCoverageRow.reviewMerchantNames.length > 0) {
+              <span>
+                Review: {{ benchmarkCoverageRow.reviewMerchantNames.join(', ')
+                }}
+              </span>
+              } @if (benchmarkCoverageRow.pendingMerchantNames.length > 0) {
+              <span>
+                Pending: {{ benchmarkCoverageRow.pendingMerchantNames.join(', ')
+                }}
+              </span>
+              } @if ( benchmarkCoverageRow.reviewMerchantNames.length === 0 &&
+              benchmarkCoverageRow.pendingMerchantNames.length === 0 ) {
+              <span class="admin-muted">Geen review open</span>
+              }
+            </td>
+            <td>
+              <div class="admin-pill-cluster">
+                @for (merchantCoverage of benchmarkCoverageRow.merchantCoverage;
+                track merchantCoverage.merchantId) {
+                <span
+                  class="admin-status-pill"
+                  [class.admin-status-pill--danger]="
+                    commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                      merchantCoverage.status
+                    ) === 'danger'
+                  "
+                  [class.admin-status-pill--warning]="
+                    commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                      merchantCoverage.status
+                    ) === 'warning'
+                  "
+                  [class.admin-status-pill--positive]="
+                    commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                      merchantCoverage.status
+                    ) === 'positive'
+                  "
+                  [class.admin-status-pill--neutral]="
+                    commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                      merchantCoverage.status
+                    ) === 'neutral'
+                  "
+                >
+                  {{ merchantCoverage.merchantName }} · {{
+                  merchantCoverage.status === 'covered' ? 'valid' :
+                  merchantCoverage.status === 'review' ? 'review' :
+                  merchantCoverage.status === 'pending' ? 'pending' : 'mist' }}
+                </span>
+                }
+              </div>
+            </td>
+            <td class="admin-actions-inline">
+              <button
+                class="admin-button admin-button--subtle"
+                type="button"
+                (click)="removeBenchmarkSet(benchmarkCoverageRow.setId)"
+              >
+                Uit benchmark
+              </button>
+            </td>
+          </tr>
+          } @if (commerceAdminStore.benchmarkCoverageRows().length === 0) {
+          <tr>
+            <td class="admin-table__empty" colspan="7">
+              Nog geen benchmarksets gemarkeerd. Voeg hier een kleine batch van
+              belangrijke referentiesets toe.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </article>
 
   <div class="admin-grid admin-grid--2">
     <article class="admin-panel admin-stack">

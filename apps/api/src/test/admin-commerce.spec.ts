@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
 import {
+  type CommerceBenchmarkSet,
   type CommerceMerchant,
   type CommerceOfferSeed,
 } from '@lego-platform/commerce/util';
@@ -15,6 +16,17 @@ async function createAdminCommerceServer({
   commerceService?: AdminCommerceService;
 } = {}) {
   const nextCommerceService: AdminCommerceService = commerceService ?? {
+    listBenchmarkSets: vi.fn(async () => []),
+    createBenchmarkSet: vi.fn(
+      async () =>
+        ({
+          setId: '10316',
+          notes: '',
+          createdAt: '2026-04-14T08:00:00.000Z',
+          updatedAt: '2026-04-14T08:00:00.000Z',
+        }) satisfies CommerceBenchmarkSet,
+    ),
+    deleteBenchmarkSet: vi.fn(async () => undefined),
     listMerchants: vi.fn(async () => []),
     createMerchant: vi.fn(
       async () =>
@@ -102,6 +114,9 @@ describe('admin commerce routes', () => {
     ];
     const { commerceService, server } = await createAdminCommerceServer({
       commerceService: {
+        listBenchmarkSets: vi.fn(async () => []),
+        createBenchmarkSet: vi.fn(),
+        deleteBenchmarkSet: vi.fn(),
         listMerchants: vi.fn(async () => merchants),
         createMerchant: vi.fn(),
         updateMerchant: vi.fn(),
@@ -119,6 +134,46 @@ describe('admin commerce routes', () => {
     expect(response.statusCode).toBe(200);
     expect(commerceService.listMerchants).toHaveBeenCalled();
     expect(response.json()).toEqual(merchants);
+
+    await server.close();
+  });
+
+  test('creates a benchmark set when the set exists in the synced catalog', async () => {
+    const { commerceService, server } = await createAdminCommerceServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/benchmark-sets',
+      payload: {
+        setId: '10316',
+      },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(commerceService.createBenchmarkSet).toHaveBeenCalledWith({
+      setId: '10316',
+      notes: '',
+    });
+
+    await server.close();
+  });
+
+  test('rejects benchmark sets for sets outside the synced catalog', async () => {
+    const { server } = await createAdminCommerceServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/benchmark-sets',
+      payload: {
+        setId: '99999',
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      message:
+        'Set 99999 is not part of the synced Brickhunt catalog, so it cannot receive commerce seeds yet.',
+    });
 
     await server.close();
   });

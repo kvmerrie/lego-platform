@@ -31,6 +31,7 @@ The operational commerce source of truth now lives in Supabase:
 - `commerce_merchants`
 - `commerce_offer_seeds`
 - `commerce_offer_latest`
+- `commerce_benchmark_sets`
 
 What remains local on purpose:
 
@@ -54,7 +55,24 @@ What that backoffice owns:
 
 - merchant CRUD
 - set-to-merchant seed URLs
+- benchmark-set reference batch for merchant-quality work
 - basic coverage and stale or broken seed visibility
+
+## Benchmark Batch Workflow
+
+The benchmark batch is intentionally small.
+
+Use it to:
+
+- track 5–10 high-signal sets with broad merchant relevance
+- see which major merchants are still missing per benchmark set
+- harden parser quality against a stable reference group before scaling wider
+
+What stays manual on purpose:
+
+- choosing which sets belong in the benchmark batch
+- filling in missing merchant URLs for those sets
+- deciding when a merchant is reliable enough to scale beyond the benchmark batch
 
 What still remains intentionally snapshot-backed:
 

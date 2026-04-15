@@ -127,6 +127,7 @@ export const apiPaths = {
   wantedSets: '/api/v1/me/wanted-sets',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
+  adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
 } as const;
 
 export const supabaseEnvKeys = {

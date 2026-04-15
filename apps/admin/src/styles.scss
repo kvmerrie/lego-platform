@@ -265,6 +265,12 @@ a {
   color: var(--lego-text);
 }
 
+.admin-pill-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .admin-status-pill--danger {
   background: #fef3f2;
   color: #b42318;

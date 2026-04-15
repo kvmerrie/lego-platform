@@ -31,6 +31,9 @@ type OfferSeedFilter =
 })
 export class CommerceAdminOfferSeedsPageComponent {
   readonly commerceAdminStore = inject(CommerceAdminStore);
+  readonly benchmarkFilter = signal<'all' | 'benchmark' | 'non-benchmark'>(
+    'all',
+  );
   readonly merchantFilter = signal('all');
   readonly offerSeedFilter = signal<OfferSeedFilter>('all');
   readonly offerSeedSearch = signal('');
@@ -38,15 +41,22 @@ export class CommerceAdminOfferSeedsPageComponent {
   readonly selectedOfferSeed = signal<CommerceOfferSeed | null>(null);
   readonly filteredOfferSeeds = computed(() => {
     const searchValue = this.offerSeedSearch().trim().toLowerCase();
+    const benchmarkFilter = this.benchmarkFilter();
     const merchantId = this.merchantFilter();
     const offerSeedFilter = this.offerSeedFilter();
 
     return this.commerceAdminStore.offerSeeds().filter((offerSeed) => {
+      const benchmarkMatches =
+        benchmarkFilter === 'all' ||
+        (benchmarkFilter === 'benchmark' &&
+          this.commerceAdminStore.isBenchmarkSet(offerSeed.setId)) ||
+        (benchmarkFilter === 'non-benchmark' &&
+          !this.commerceAdminStore.isBenchmarkSet(offerSeed.setId));
       const merchantMatches =
         merchantId === 'all' || offerSeed.merchantId === merchantId;
       const statusMatches = this.matchesFilter(offerSeed, offerSeedFilter);
 
-      if (!merchantMatches || !statusMatches) {
+      if (!benchmarkMatches || !merchantMatches || !statusMatches) {
         return false;
       }
 
@@ -87,6 +97,10 @@ export class CommerceAdminOfferSeedsPageComponent {
 
   updateMerchantFilter(value: string): void {
     this.merchantFilter.set(value);
+  }
+
+  updateBenchmarkFilter(value: 'all' | 'benchmark' | 'non-benchmark'): void {
+    this.benchmarkFilter.set(value);
   }
 
   updateOfferSeedFilter(value: OfferSeedFilter): void {

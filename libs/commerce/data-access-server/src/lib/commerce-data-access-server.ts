@@ -2,6 +2,8 @@ import {
   commerceMerchantSourceTypes,
   commerceOfferLatestFetchStatuses,
   commerceOfferSeedValidationStatuses,
+  type CommerceBenchmarkSet,
+  type CommerceBenchmarkSetInput,
   type CommerceMerchant,
   type CommerceMerchantInput,
   type CommerceOfferLatestRecord,
@@ -16,6 +18,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 export const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 export const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
+export const COMMERCE_BENCHMARK_SETS_TABLE = 'commerce_benchmark_sets';
 
 type CommerceSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -60,6 +63,13 @@ interface CommerceOfferLatestRow {
   observed_at: string | null;
   offer_seed_id: string;
   price_minor: number | null;
+  updated_at: string;
+}
+
+interface CommerceBenchmarkSetRow {
+  created_at: string;
+  notes: string | null;
+  set_id: string;
   updated_at: string;
 }
 
@@ -163,6 +173,17 @@ function toCommerceOfferSeed({
   };
 }
 
+function toCommerceBenchmarkSet(
+  row: CommerceBenchmarkSetRow,
+): CommerceBenchmarkSet {
+  return {
+    setId: row.set_id,
+    notes: row.notes ?? '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 async function listCommerceOfferLatestRows({
   supabaseClient,
 }: {
@@ -200,6 +221,25 @@ export async function listCommerceMerchants({
   return ((data as CommerceMerchantRow[] | null) ?? []).map(toCommerceMerchant);
 }
 
+export async function listCommerceBenchmarkSets({
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  supabaseClient?: CommerceSupabaseClient;
+} = {}): Promise<CommerceBenchmarkSet[]> {
+  const { data, error } = await supabaseClient
+    .from(COMMERCE_BENCHMARK_SETS_TABLE)
+    .select('set_id, notes, created_at, updated_at')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    throw new Error('Unable to load commerce benchmark sets.');
+  }
+
+  return ((data as CommerceBenchmarkSetRow[] | null) ?? []).map(
+    toCommerceBenchmarkSet,
+  );
+}
+
 export async function createCommerceMerchant({
   input,
   supabaseClient = getServerSupabaseAdminClient(),
@@ -227,6 +267,29 @@ export async function createCommerceMerchant({
   }
 
   return toCommerceMerchant(data as CommerceMerchantRow);
+}
+
+export async function createCommerceBenchmarkSet({
+  input,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  input: CommerceBenchmarkSetInput;
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<CommerceBenchmarkSet> {
+  const { data, error } = await supabaseClient
+    .from(COMMERCE_BENCHMARK_SETS_TABLE)
+    .insert({
+      set_id: input.setId,
+      notes: input.notes ?? '',
+    })
+    .select('set_id, notes, created_at, updated_at')
+    .single();
+
+  if (error || !data) {
+    throw new Error('Unable to create the commerce benchmark set.');
+  }
+
+  return toCommerceBenchmarkSet(data as CommerceBenchmarkSetRow);
 }
 
 export async function updateCommerceMerchant({
@@ -407,6 +470,23 @@ export async function listActiveCommerceRefreshSeeds({
       merchant: offerSeed.merchant as CommerceMerchant,
       offerSeed,
     }));
+}
+
+export async function deleteCommerceBenchmarkSet({
+  setId,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  setId: string;
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<void> {
+  const { error } = await supabaseClient
+    .from(COMMERCE_BENCHMARK_SETS_TABLE)
+    .delete()
+    .eq('set_id', setId);
+
+  if (error) {
+    throw new Error('Unable to delete the commerce benchmark set.');
+  }
 }
 
 export async function upsertCommerceOfferLatestRecord({

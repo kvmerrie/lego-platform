@@ -1,12 +1,17 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import {
+  buildCommerceBenchmarkCoverageRows,
   buildCommerceCoverageSnapshot,
+  type CommerceBenchmarkCoverageRow,
+  type CommerceBenchmarkMerchantCoverageStatus,
+  type CommerceBenchmarkSet,
   type CommerceCoverageSetOption,
   type CommerceMerchant,
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
 } from '@lego-platform/commerce/util';
@@ -150,17 +155,35 @@ export class CommerceAdminStore {
   private readonly commerceAdminApi = inject(CommerceAdminApiService);
 
   readonly catalogSetOptions = catalogSetOptions;
+  readonly benchmarkSets = signal<CommerceBenchmarkSet[]>([]);
   readonly merchants = signal<CommerceMerchant[]>([]);
   readonly offerSeeds = signal<CommerceOfferSeed[]>([]);
   readonly isLoading = signal(false);
   readonly hasLoaded = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly benchmarkSetIds = computed(
+    () =>
+      new Set(this.benchmarkSets().map((benchmarkSet) => benchmarkSet.setId)),
+  );
   readonly coverage = computed(() =>
     buildCommerceCoverageSnapshot({
       catalogSets: this.catalogSetOptions,
       merchants: this.merchants(),
       offerSeeds: this.offerSeeds(),
     }),
+  );
+  readonly benchmarkCoverageRows = computed(() =>
+    buildCommerceBenchmarkCoverageRows({
+      benchmarkSets: this.benchmarkSets(),
+      catalogSets: this.catalogSetOptions,
+      merchants: this.merchants(),
+      offerSeeds: this.offerSeeds(),
+    }),
+  );
+  readonly benchmarkCatalogSetOptions = computed(() =>
+    this.catalogSetOptions.filter(
+      (catalogSetOption) => !this.benchmarkSetIds().has(catalogSetOption.id),
+    ),
   );
   readonly coverageIssues = computed(() => [
     ...this.coverage().brokenSeeds,
@@ -196,11 +219,13 @@ export class CommerceAdminStore {
     this.errorMessage.set(null);
 
     try {
-      const [merchants, offerSeeds] = await Promise.all([
+      const [benchmarkSets, merchants, offerSeeds] = await Promise.all([
+        this.commerceAdminApi.listBenchmarkSets(),
         this.commerceAdminApi.listMerchants(),
         this.commerceAdminApi.listOfferSeeds(),
       ]);
 
+      this.benchmarkSets.set(benchmarkSets);
       this.merchants.set(merchants);
       this.offerSeeds.set(offerSeeds);
       this.hasLoaded.set(true);
@@ -281,6 +306,35 @@ export class CommerceAdminStore {
     });
   }
 
+  async addBenchmarkSet(input: {
+    notes?: string;
+    setId: string;
+  }): Promise<void> {
+    const validatedInput = validateCommerceBenchmarkSetInput(input);
+
+    try {
+      await this.commerceAdminApi.createBenchmarkSet(validatedInput);
+      await this.reload();
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
+  async removeBenchmarkSet(setId: string): Promise<void> {
+    try {
+      await this.commerceAdminApi.deleteBenchmarkSet(setId);
+      await this.reload();
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
   getCatalogSetById(setId: string): CommerceCatalogSetOption | undefined {
     return this.catalogSetOptions.find(
       (catalogSetOption) => catalogSetOption.id === setId,
@@ -304,6 +358,10 @@ export class CommerceAdminStore {
     return this.merchantActiveSeedCounts().get(merchantId) ?? 0;
   }
 
+  isBenchmarkSet(setId: string): boolean {
+    return this.benchmarkSetIds().has(setId);
+  }
+
   getOfferSeedHealthLabel(offerSeed: CommerceOfferSeed): string {
     return buildOfferSeedHealthLabel(offerSeed);
   }
@@ -312,6 +370,28 @@ export class CommerceAdminStore {
     offerSeed: CommerceOfferSeed,
   ): 'danger' | 'neutral' | 'positive' | 'warning' {
     return buildOfferSeedHealthTone(offerSeed);
+  }
+
+  getBenchmarkMerchantCoverageTone(
+    status: CommerceBenchmarkMerchantCoverageStatus,
+  ): 'danger' | 'neutral' | 'positive' | 'warning' {
+    switch (status) {
+      case 'covered':
+        return 'positive';
+      case 'review':
+        return 'warning';
+      case 'missing':
+        return 'danger';
+      case 'pending':
+      default:
+        return 'neutral';
+    }
+  }
+
+  getBenchmarkCoverageSummary(
+    benchmarkCoverageRow: CommerceBenchmarkCoverageRow,
+  ): string {
+    return `${benchmarkCoverageRow.latestValidMerchantCount}/${benchmarkCoverageRow.activeMerchantTargetCount} merchants valide`;
   }
 
   formatPriceMinor(value?: number, currencyCode = 'EUR'): string {

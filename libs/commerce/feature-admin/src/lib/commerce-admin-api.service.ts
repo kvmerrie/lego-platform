@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
+  type CommerceBenchmarkSet,
   type CommerceMerchant,
   type CommerceMerchantInput,
   type CommerceOfferSeed,
@@ -12,6 +13,32 @@ import { firstValueFrom } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class CommerceAdminApiService {
   private readonly http = inject(HttpClient);
+
+  async listBenchmarkSets(): Promise<CommerceBenchmarkSet[]> {
+    return firstValueFrom(
+      this.http.get<CommerceBenchmarkSet[]>(
+        apiPaths.adminCommerceBenchmarkSets,
+      ),
+    );
+  }
+
+  async createBenchmarkSet(input: {
+    notes?: string;
+    setId: string;
+  }): Promise<CommerceBenchmarkSet> {
+    return firstValueFrom(
+      this.http.post<CommerceBenchmarkSet>(
+        apiPaths.adminCommerceBenchmarkSets,
+        input,
+      ),
+    );
+  }
+
+  async deleteBenchmarkSet(setId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete<void>(`${apiPaths.adminCommerceBenchmarkSets}/${setId}`),
+    );
+  }
 
   async listMerchants(): Promise<CommerceMerchant[]> {
     return firstValueFrom(

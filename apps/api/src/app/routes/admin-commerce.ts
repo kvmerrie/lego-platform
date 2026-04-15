@@ -1,17 +1,23 @@
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import {
+  createCommerceBenchmarkSet,
   createCommerceMerchant,
   createCommerceOfferSeed,
+  deleteCommerceBenchmarkSet,
+  listCommerceBenchmarkSets,
   listCommerceMerchants,
   listCommerceOfferSeeds,
   updateCommerceMerchant,
   updateCommerceOfferSeed,
 } from '@lego-platform/commerce/data-access-server';
 import {
+  type CommerceBenchmarkSet,
+  type CommerceBenchmarkSetInput,
   type CommerceMerchant,
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
 } from '@lego-platform/commerce/util';
@@ -19,8 +25,13 @@ import { apiPaths } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminCommerceService {
+  createBenchmarkSet(
+    input: CommerceBenchmarkSetInput,
+  ): Promise<CommerceBenchmarkSet>;
   createMerchant(input: CommerceMerchantInput): Promise<CommerceMerchant>;
   createOfferSeed(input: CommerceOfferSeedInput): Promise<CommerceOfferSeed>;
+  deleteBenchmarkSet(setId: string): Promise<void>;
+  listBenchmarkSets(): Promise<CommerceBenchmarkSet[]>;
   listMerchants(): Promise<CommerceMerchant[]>;
   listOfferSeeds(): Promise<CommerceOfferSeed[]>;
   updateMerchant(input: {
@@ -35,6 +46,9 @@ export interface AdminCommerceService {
 
 function createAdminCommerceService(): AdminCommerceService {
   return {
+    listBenchmarkSets: () => listCommerceBenchmarkSets(),
+    createBenchmarkSet: (input) => createCommerceBenchmarkSet({ input }),
+    deleteBenchmarkSet: (setId) => deleteCommerceBenchmarkSet({ setId }),
     listMerchants: () => listCommerceMerchants(),
     createMerchant: (input) => createCommerceMerchant({ input }),
     updateMerchant: ({ input, merchantId }) =>
@@ -68,6 +82,48 @@ export function createAdminCommerceRoutes({
   commerceService?: AdminCommerceService;
 } = {}) {
   return async function (fastify: FastifyInstance) {
+    fastify.get(apiPaths.adminCommerceBenchmarkSets, async function () {
+      return commerceService.listBenchmarkSets();
+    });
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminCommerceBenchmarkSets,
+      async function (request, reply) {
+        try {
+          const input = validateCommerceBenchmarkSetInput(request.body);
+          ensureCatalogSetExists(input.setId);
+          const benchmarkSet = await commerceService.createBenchmarkSet(input);
+
+          return reply.status(201).send(benchmarkSet);
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Commerce benchmark set input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.delete<{ Params: { setId: string } }>(
+      `${apiPaths.adminCommerceBenchmarkSets}/:setId`,
+      async function (request, reply) {
+        try {
+          await commerceService.deleteBenchmarkSet(request.params.setId);
+
+          return reply.status(204).send();
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Commerce benchmark set could not be removed.',
+            ),
+          });
+        }
+      },
+    );
+
     fastify.get(apiPaths.adminCommerceMerchants, async function () {
       return commerceService.listMerchants();
     });

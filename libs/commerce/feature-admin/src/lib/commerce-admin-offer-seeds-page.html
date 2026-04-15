@@ -31,6 +31,17 @@
     />
 
     <select
+      [ngModel]="benchmarkFilter()"
+      (ngModelChange)="updateBenchmarkFilter($event)"
+      class="admin-input"
+      name="benchmark-filter"
+    >
+      <option value="all">Alle sets</option>
+      <option value="benchmark">Alleen benchmarksets</option>
+      <option value="non-benchmark">Zonder benchmarksets</option>
+    </select>
+
+    <select
       [ngModel]="merchantFilter()"
       (ngModelChange)="updateMerchantFilter($event)"
       class="admin-input"
@@ -83,6 +94,9 @@
               }}</strong
             >
             <span>{{ offerSeed.setId }}</span>
+            @if (commerceAdminStore.isBenchmarkSet(offerSeed.setId)) {
+            <span class="admin-count-pill">Benchmark</span>
+            }
           </td>
           <td>
             {{ commerceAdminStore.getMerchantName(offerSeed.merchantId) }}

@@ -1,7 +1,10 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
+  createCommerceBenchmarkSet,
   createCommerceMerchant,
+  deleteCommerceBenchmarkSet,
   listActiveCommerceRefreshSeeds,
+  listCommerceBenchmarkSets,
   listCommerceOfferSeeds,
   updateCommerceOfferSeedValidationState,
   upsertCommerceOfferLatestRecord,
@@ -138,6 +141,65 @@ describe('commerce data access server', () => {
     expect(merchant.slug).toBe('lego-nl');
   });
 
+  test('lists benchmark sets from Supabase for the benchmark workflow', async () => {
+    const order = vi.fn().mockResolvedValue({
+      data: [
+        {
+          set_id: '10316',
+          notes: 'Starter batch',
+          created_at: '2026-04-15T08:00:00.000Z',
+          updated_at: '2026-04-15T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const select = vi.fn(() => ({ order }));
+    const from = vi.fn(() => ({ select }));
+
+    const benchmarkSets = await listCommerceBenchmarkSets({
+      supabaseClient: { from } as never,
+    });
+
+    expect(from).toHaveBeenCalledWith('commerce_benchmark_sets');
+    expect(benchmarkSets).toEqual([
+      {
+        setId: '10316',
+        notes: 'Starter batch',
+        createdAt: '2026-04-15T08:00:00.000Z',
+        updatedAt: '2026-04-15T08:00:00.000Z',
+      },
+    ]);
+  });
+
+  test('creates a benchmark set through the Supabase table', async () => {
+    const single = vi.fn().mockResolvedValue({
+      data: {
+        set_id: '10316',
+        notes: '',
+        created_at: '2026-04-15T08:00:00.000Z',
+        updated_at: '2026-04-15T08:00:00.000Z',
+      },
+      error: null,
+    });
+    const select = vi.fn(() => ({ single }));
+    const insert = vi.fn(() => ({ select }));
+    const from = vi.fn(() => ({ insert }));
+
+    const benchmarkSet = await createCommerceBenchmarkSet({
+      input: {
+        setId: '10316',
+      },
+      supabaseClient: { from } as never,
+    });
+
+    expect(from).toHaveBeenCalledWith('commerce_benchmark_sets');
+    expect(insert).toHaveBeenCalledWith({
+      set_id: '10316',
+      notes: '',
+    });
+    expect(benchmarkSet.setId).toBe('10316');
+  });
+
   test('lists active refresh seeds for cron consumers without exposing inactive rows', async () => {
     const merchantOrder = vi.fn().mockResolvedValue({
       data: [
@@ -267,5 +329,19 @@ describe('commerce data access server', () => {
       last_verified_at: '2026-04-14T08:05:00.000Z',
     });
     expect(eq).toHaveBeenCalledWith('id', 'seed-1');
+  });
+
+  test('deletes benchmark sets by set id so the benchmark batch stays editable', async () => {
+    const eq = vi.fn().mockResolvedValue({ error: null });
+    const remove = vi.fn(() => ({ eq }));
+    const from = vi.fn(() => ({ delete: remove }));
+
+    await deleteCommerceBenchmarkSet({
+      setId: '10316',
+      supabaseClient: { from } as never,
+    });
+
+    expect(from).toHaveBeenCalledWith('commerce_benchmark_sets');
+    expect(eq).toHaveBeenCalledWith('set_id', '10316');
   });
 });

@@ -103,9 +103,48 @@ export interface CommerceOfferSeedInput {
   validationStatus: CommerceOfferSeedValidationStatus;
 }
 
+export interface CommerceBenchmarkSet {
+  createdAt: string;
+  notes: string;
+  setId: string;
+  updatedAt: string;
+}
+
+export interface CommerceBenchmarkSetInput {
+  notes?: string;
+  setId: string;
+}
+
 export interface CommerceCoverageSetOption {
   id: string;
   name: string;
+  theme: string;
+}
+
+export type CommerceBenchmarkMerchantCoverageStatus =
+  | 'covered'
+  | 'missing'
+  | 'pending'
+  | 'review';
+
+export interface CommerceBenchmarkMerchantCoverage {
+  merchantId: string;
+  merchantName: string;
+  offerSeed?: CommerceOfferSeed;
+  status: CommerceBenchmarkMerchantCoverageStatus;
+}
+
+export interface CommerceBenchmarkCoverageRow {
+  activeMerchantTargetCount: number;
+  activeSeedCount: number;
+  latestValidMerchantCount: number;
+  merchantCoverage: CommerceBenchmarkMerchantCoverage[];
+  missingMerchantNames: string[];
+  notes: string;
+  pendingMerchantNames: string[];
+  reviewMerchantNames: string[];
+  setId: string;
+  setName: string;
   theme: string;
 }
 
@@ -302,6 +341,17 @@ export function validateCommerceOfferSeedInput(
   };
 }
 
+export function validateCommerceBenchmarkSetInput(
+  value: unknown,
+): CommerceBenchmarkSetInput {
+  const record = assertObjectRecord(value, 'Commerce benchmark set input');
+
+  return {
+    setId: readRequiredString(record, 'setId', 'Commerce benchmark set input'),
+    notes: readOptionalString(record, 'notes') ?? '',
+  };
+}
+
 function isOlderThanDays({
   now,
   staleAfterDays,
@@ -397,4 +447,116 @@ export function buildCommerceCoverageSnapshot({
     brokenSeeds,
     staleSeeds,
   };
+}
+
+function isOfferSeedReviewState(offerSeed: CommerceOfferSeed): boolean {
+  return (
+    offerSeed.validationStatus === 'invalid' ||
+    offerSeed.validationStatus === 'stale' ||
+    offerSeed.latestOffer?.fetchStatus === 'error' ||
+    offerSeed.latestOffer?.fetchStatus === 'unavailable'
+  );
+}
+
+function isOfferSeedCoveredState(offerSeed: CommerceOfferSeed): boolean {
+  return (
+    offerSeed.validationStatus === 'valid' &&
+    offerSeed.latestOffer?.fetchStatus === 'success'
+  );
+}
+
+export function buildCommerceBenchmarkCoverageRows({
+  benchmarkSets,
+  catalogSets,
+  merchants,
+  offerSeeds,
+}: {
+  benchmarkSets: readonly CommerceBenchmarkSet[];
+  catalogSets: readonly CommerceCoverageSetOption[];
+  merchants: readonly CommerceMerchant[];
+  offerSeeds: readonly CommerceOfferSeed[];
+}): CommerceBenchmarkCoverageRow[] {
+  const activeMerchants = merchants
+    .filter((merchant) => merchant.isActive)
+    .sort((left, right) => left.name.localeCompare(right.name));
+  const activeOfferSeeds = offerSeeds.filter(
+    (offerSeed) => offerSeed.isActive && offerSeed.merchant?.isActive === true,
+  );
+  const catalogSetById = new Map(
+    catalogSets.map((catalogSet) => [catalogSet.id, catalogSet] as const),
+  );
+
+  return [...benchmarkSets]
+    .map((benchmarkSet) => {
+      const catalogSet = catalogSetById.get(benchmarkSet.setId);
+      const merchantCoverage = activeMerchants.map((merchant) => {
+        const matchingSeed = activeOfferSeeds.find(
+          (offerSeed) =>
+            offerSeed.setId === benchmarkSet.setId &&
+            offerSeed.merchantId === merchant.id,
+        );
+
+        if (!matchingSeed) {
+          return {
+            merchantId: merchant.id,
+            merchantName: merchant.name,
+            status: 'missing',
+          } satisfies CommerceBenchmarkMerchantCoverage;
+        }
+
+        if (isOfferSeedReviewState(matchingSeed)) {
+          return {
+            merchantId: merchant.id,
+            merchantName: merchant.name,
+            offerSeed: matchingSeed,
+            status: 'review',
+          } satisfies CommerceBenchmarkMerchantCoverage;
+        }
+
+        if (isOfferSeedCoveredState(matchingSeed)) {
+          return {
+            merchantId: merchant.id,
+            merchantName: merchant.name,
+            offerSeed: matchingSeed,
+            status: 'covered',
+          } satisfies CommerceBenchmarkMerchantCoverage;
+        }
+
+        return {
+          merchantId: merchant.id,
+          merchantName: merchant.name,
+          offerSeed: matchingSeed,
+          status: 'pending',
+        } satisfies CommerceBenchmarkMerchantCoverage;
+      });
+
+      return {
+        setId: benchmarkSet.setId,
+        setName: catalogSet?.name ?? benchmarkSet.setId,
+        theme: catalogSet?.theme ?? 'Unknown',
+        notes: benchmarkSet.notes,
+        activeMerchantTargetCount: activeMerchants.length,
+        activeSeedCount: merchantCoverage.filter(
+          (merchantStatus) => merchantStatus.status !== 'missing',
+        ).length,
+        latestValidMerchantCount: merchantCoverage.filter(
+          (merchantStatus) => merchantStatus.status === 'covered',
+        ).length,
+        missingMerchantNames: merchantCoverage
+          .filter((merchantStatus) => merchantStatus.status === 'missing')
+          .map((merchantStatus) => merchantStatus.merchantName),
+        pendingMerchantNames: merchantCoverage
+          .filter((merchantStatus) => merchantStatus.status === 'pending')
+          .map((merchantStatus) => merchantStatus.merchantName),
+        reviewMerchantNames: merchantCoverage
+          .filter((merchantStatus) => merchantStatus.status === 'review')
+          .map((merchantStatus) => merchantStatus.merchantName),
+        merchantCoverage,
+      } satisfies CommerceBenchmarkCoverageRow;
+    })
+    .sort(
+      (left, right) =>
+        left.theme.localeCompare(right.theme) ||
+        left.setName.localeCompare(right.setName),
+    );
 }

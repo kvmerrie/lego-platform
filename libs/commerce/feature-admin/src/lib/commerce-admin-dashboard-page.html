@@ -31,6 +31,12 @@
     </article>
     <article class="admin-stat-card">
       <span class="admin-stat-card__value">
+        {{ commerceAdminStore.benchmarkCoverageRows().length }}
+      </span>
+      <span class="admin-stat-card__label">benchmarksets</span>
+    </article>
+    <article class="admin-stat-card">
+      <span class="admin-stat-card__value">
         {{ commerceAdminStore.coverage().brokenSeeds.length +
         commerceAdminStore.coverage().staleSeeds.length }}
       </span>
