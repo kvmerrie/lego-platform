@@ -3,6 +3,7 @@ import {
   CommerceAdminCoveragePageComponent,
   CommerceAdminDashboardPageComponent,
   CommerceAdminMerchantsPageComponent,
+  CommerceAdminOperationsPageComponent,
   CommerceAdminOfferSeedsPageComponent,
   CommerceFeatureAdminComponent,
 } from '@lego-platform/commerce/feature-admin';
@@ -24,6 +25,10 @@ export const appRoutes: Route[] = [
       {
         path: 'merchants',
         component: CommerceAdminMerchantsPageComponent,
+      },
+      {
+        path: 'operations',
+        component: CommerceAdminOperationsPageComponent,
       },
       {
         path: 'offer-seeds',

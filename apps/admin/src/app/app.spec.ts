@@ -13,6 +13,9 @@ describe('App', () => {
         {
           provide: CommerceAdminApiService,
           useValue: {
+            listBenchmarkSets: async () => [],
+            createBenchmarkSet: async () => undefined,
+            deleteBenchmarkSet: async () => undefined,
             listMerchants: async () => [],
             createMerchant: async () => undefined,
             updateMerchant: async () => undefined,

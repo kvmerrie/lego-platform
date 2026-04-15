@@ -26,6 +26,10 @@ export class ShellAdminComponent {
       path: '/dashboard',
     },
     {
+      label: 'Operations',
+      path: '/operations',
+    },
+    {
       label: 'Merchants',
       path: '/merchants',
     },

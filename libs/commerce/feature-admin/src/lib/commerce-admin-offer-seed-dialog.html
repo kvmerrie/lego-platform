@@ -76,12 +76,37 @@
 
       <label class="admin-field admin-field--full">
         <span>Product-URL</span>
-        <input
-          [(ngModel)]="formModel.productUrl"
-          class="admin-input"
-          name="offer-seed-product-url"
-          type="url"
-        />
+        <div class="admin-input-with-action">
+          <input
+            [(ngModel)]="formModel.productUrl"
+            class="admin-input"
+            name="offer-seed-product-url"
+            type="url"
+          />
+          <div class="admin-input-actions">
+            @if (merchantSearchUrl) {
+            <a
+              [href]="merchantSearchUrl"
+              aria-label="Zoek deze set op de geselecteerde merchantsite"
+              class="admin-input-action"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Zoek
+            </a>
+            } @if (productUrlHref) {
+            <a
+              [href]="productUrlHref"
+              aria-label="Open product-URL in nieuw tabblad"
+              class="admin-input-action"
+              rel="noreferrer"
+              target="_blank"
+            >
+              ↗
+            </a>
+            }
+          </div>
+        </div>
       </label>
 
       <label class="admin-field">

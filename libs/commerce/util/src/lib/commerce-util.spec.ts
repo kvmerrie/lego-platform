@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import {
+  buildCommerceMerchantSearchQuery,
+  buildCommerceMerchantSearchUrl,
   buildCommerceBenchmarkCoverageRows,
   buildCommerceCoverageSnapshot,
   normalizeCommerceSlug,
@@ -52,6 +54,31 @@ describe('commerce util', () => {
       setId: '10316',
       notes: '',
     });
+  });
+
+  test('builds a merchant-friendly search query from only the set id', () => {
+    expect(
+      buildCommerceMerchantSearchQuery({
+        setId: '21061',
+      }),
+    ).toBe('21061');
+  });
+
+  test('builds merchant-specific search urls with encoded query values', () => {
+    expect(
+      buildCommerceMerchantSearchUrl({
+        merchantSlug: 'intertoys',
+        query: '21061 notre dame lego',
+      }),
+    ).toBe(
+      'https://www.intertoys.nl/search?searchTerm=21061%20notre%20dame%20lego',
+    );
+    expect(
+      buildCommerceMerchantSearchUrl({
+        merchantSlug: 'unknown-merchant',
+        query: '21061 notre dame lego',
+      }),
+    ).toBeUndefined();
   });
 
   test('builds coverage for uncovered, broken, and stale commerce work', () => {

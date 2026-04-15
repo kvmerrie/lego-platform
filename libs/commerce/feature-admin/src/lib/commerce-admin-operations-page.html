@@ -1,0 +1,174 @@
+<section class="admin-section">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Operations</p>
+      <h2>
+        Scan alle commerce-relevante sets op coverage, reviewwerk en directe
+        links naar de publieke setpagina.
+      </h2>
+      <p class="admin-muted">
+        Dit is de bredere operations-view: benchmarksets plus sets met actieve
+        seeds of recente offerstatus.
+      </p>
+    </div>
+    <span class="admin-count-pill">
+      {{ commerceAdminStore.commerceRelevantCoverageRows().length }} sets
+    </span>
+  </header>
+
+  <div class="admin-toolbar admin-toolbar--filters">
+    <input
+      [ngModel]="search()"
+      (ngModelChange)="updateSearch($event)"
+      class="admin-input admin-search"
+      placeholder="Zoek op setnaam, id of thema"
+      type="search"
+    />
+
+    <select
+      [ngModel]="filter()"
+      (ngModelChange)="updateFilter($event)"
+      class="admin-input"
+      name="operations-filter"
+    >
+      <option value="all">Alle commerce-sets</option>
+      <option value="missing">Alleen met missende merchants</option>
+      <option value="review">Alleen review nodig</option>
+      <option value="benchmark">Alleen benchmarksets</option>
+    </select>
+  </div>
+
+  <div class="admin-table-shell">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Set</th>
+          <th>Actieve dekking</th>
+          <th>Geldige merchants</th>
+          <th>Mist nog</th>
+          <th>Review nodig</th>
+          <th>Merchantstatus</th>
+          <th>Publieke pagina</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (coverageRow of filteredCoverageRows(); track coverageRow.setId) {
+        <tr>
+          <td>
+            <strong
+              >{{ commerceAdminStore.getCatalogSetLabel(coverageRow.setId)
+              }}</strong
+            >
+            <span>{{ coverageRow.theme }}</span>
+            @if (commerceAdminStore.isBenchmarkSet(coverageRow.setId)) {
+            <span class="admin-count-pill">Benchmark</span>
+            }
+          </td>
+          <td>
+            {{ coverageRow.activeSeedCount }}/{{
+            coverageRow.activeMerchantTargetCount }} actieve merchants
+          </td>
+          <td>{{ coverageRow.latestValidMerchantCount }}</td>
+          <td>
+            @if (coverageRow.missingMerchantNames.length > 0) { {{
+            coverageRow.missingMerchantNames.join(', ') }} } @else {
+            <span class="admin-muted">Geen gaten</span>
+            }
+          </td>
+          <td>
+            @if (coverageRow.reviewMerchantNames.length > 0) {
+            <span
+              >Review: {{ coverageRow.reviewMerchantNames.join(', ') }}</span
+            >
+            } @if (coverageRow.pendingMerchantNames.length > 0) {
+            <span>
+              Pending: {{ coverageRow.pendingMerchantNames.join(', ') }}
+            </span>
+            } @if ( coverageRow.reviewMerchantNames.length === 0 &&
+            coverageRow.pendingMerchantNames.length === 0 ) {
+            <span class="admin-muted">Geen review open</span>
+            }
+          </td>
+          <td>
+            <div class="admin-pill-cluster">
+              @for (merchantCoverage of coverageRow.merchantCoverage; track
+              merchantCoverage.merchantId) {
+              <button
+                class="admin-status-pill admin-pill-button"
+                [attr.title]="
+                  commerceAdminStore.getMerchantCoverageTitle({
+                    offerSeed: merchantCoverage.offerSeed,
+                    status: merchantCoverage.status,
+                  })
+                "
+                [class.admin-status-pill--danger]="
+                  commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                    merchantCoverage.status
+                  ) === 'danger'
+                "
+                [class.admin-status-pill--warning]="
+                  commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                    merchantCoverage.status
+                  ) === 'warning'
+                "
+                [class.admin-status-pill--positive]="
+                  commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                    merchantCoverage.status
+                  ) === 'positive'
+                "
+                [class.admin-status-pill--neutral]="
+                  commerceAdminStore.getBenchmarkMerchantCoverageTone(
+                    merchantCoverage.status
+                  ) === 'neutral'
+                "
+                type="button"
+                (click)="
+                  openOfferSeedDialog({
+                    setId: coverageRow.setId,
+                    merchantCoverage,
+                  })
+                "
+              >
+                {{ merchantCoverage.merchantName }} · {{ merchantCoverage.status
+                === 'covered' ? 'valid' : merchantCoverage.status === 'review' ?
+                'review' : merchantCoverage.status === 'pending' ? 'pending' :
+                'mist' }}
+              </button>
+              }
+            </div>
+          </td>
+          <td class="admin-actions-inline">
+            @if (commerceAdminStore.getPublicSetUrl(coverageRow.setId); as
+            publicSetUrl) {
+            <a
+              [href]="publicSetUrl"
+              class="admin-button admin-button--subtle"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open setpagina
+            </a>
+            } @else {
+            <span class="admin-muted">Geen publieke link</span>
+            }
+          </td>
+        </tr>
+        } @if (filteredCoverageRows().length === 0) {
+        <tr>
+          <td class="admin-table__empty" colspan="7">
+            Geen commerce-relevante sets gevonden voor deze filters.
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (isDialogOpen()) {
+<lego-commerce-admin-offer-seed-dialog
+  [offerSeed]="selectedOfferSeed()"
+  [prefill]="offerSeedPrefill()"
+  (closed)="closeDialog()"
+></lego-commerce-admin-offer-seed-dialog>
+}

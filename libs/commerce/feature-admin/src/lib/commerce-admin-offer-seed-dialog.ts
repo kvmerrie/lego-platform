@@ -25,6 +25,11 @@ interface OfferSeedFormModel {
   validationStatus: CommerceOfferSeedInput['validationStatus'];
 }
 
+export interface CommerceOfferSeedDialogPrefill {
+  merchantId: string;
+  setId: string;
+}
+
 function createDefaultOfferSeedForm(
   merchantId = '',
   setId = '',
@@ -52,32 +57,27 @@ export class CommerceAdminOfferSeedDialogComponent {
   @Input()
   set offerSeed(value: CommerceOfferSeed | null) {
     this._offerSeed = value;
-    this.errorMessage = null;
-    this.formModel = value
-      ? {
-          setId: value.setId,
-          merchantId: value.merchantId,
-          productUrl: value.productUrl,
-          isActive: value.isActive,
-          validationStatus: value.validationStatus,
-          lastVerifiedAt: this.commerceAdminStore.formatTimestampForInput(
-            value.lastVerifiedAt,
-          ),
-          notes: value.notes,
-        }
-      : createDefaultOfferSeedForm(
-          this.commerceAdminStore.merchants()[0]?.id ?? '',
-          this.commerceAdminStore.catalogSetOptions[0]?.id ?? '',
-        );
+    this.syncFormModel();
   }
 
   get offerSeed(): CommerceOfferSeed | null {
     return this._offerSeed;
   }
 
+  @Input()
+  set prefill(value: CommerceOfferSeedDialogPrefill | null) {
+    this._prefill = value;
+    this.syncFormModel();
+  }
+
+  get prefill(): CommerceOfferSeedDialogPrefill | null {
+    return this._prefill;
+  }
+
   @Output() readonly closed = new EventEmitter<void>();
 
   private _offerSeed: CommerceOfferSeed | null = null;
+  private _prefill: CommerceOfferSeedDialogPrefill | null = null;
   readonly validationStatuses = commerceOfferSeedValidationStatuses;
 
   errorMessage: string | null = null;
@@ -90,6 +90,29 @@ export class CommerceAdminOfferSeedDialogComponent {
 
   get isEditing(): boolean {
     return !!this.offerSeed;
+  }
+
+  get productUrlHref(): string | null {
+    const productUrl = this.formModel.productUrl.trim();
+
+    if (!productUrl) {
+      return null;
+    }
+
+    try {
+      return new URL(productUrl).toString();
+    } catch {
+      return null;
+    }
+  }
+
+  get merchantSearchUrl(): string | null {
+    return (
+      this.commerceAdminStore.getMerchantSearchUrl({
+        setId: this.formModel.setId,
+        merchantId: this.formModel.merchantId,
+      }) ?? null
+    );
   }
 
   cancel(): void {
@@ -122,5 +145,29 @@ export class CommerceAdminOfferSeedDialogComponent {
     } finally {
       this.isSaving = false;
     }
+  }
+
+  private syncFormModel(): void {
+    this.errorMessage = null;
+    this.formModel = this.offerSeed
+      ? {
+          setId: this.offerSeed.setId,
+          merchantId: this.offerSeed.merchantId,
+          productUrl: this.offerSeed.productUrl,
+          isActive: this.offerSeed.isActive,
+          validationStatus: this.offerSeed.validationStatus,
+          lastVerifiedAt: this.commerceAdminStore.formatTimestampForInput(
+            this.offerSeed.lastVerifiedAt,
+          ),
+          notes: this.offerSeed.notes,
+        }
+      : createDefaultOfferSeedForm(
+          this.prefill?.merchantId ??
+            this.commerceAdminStore.merchants()[0]?.id ??
+            '',
+          this.prefill?.setId ??
+            this.commerceAdminStore.catalogSetOptions[0]?.id ??
+            '',
+        );
   }
 }

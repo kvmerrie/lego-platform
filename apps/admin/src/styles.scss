@@ -137,6 +137,30 @@ a {
   resize: vertical;
 }
 
+.admin-input-with-action {
+  align-items: center;
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.admin-input-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.admin-input-action {
+  align-items: center;
+  border: 1px solid var(--lego-border);
+  border-radius: var(--lego-radius-sm);
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  text-decoration: none;
+}
+
 .admin-field {
   display: grid;
   gap: 0.45rem;
@@ -271,6 +295,14 @@ a {
   gap: 0.45rem;
 }
 
+.admin-pill-button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
 .admin-status-pill--danger {
   background: #fef3f2;
   color: #b42318;
@@ -349,7 +381,9 @@ a {
 
 .admin-button:focus-visible,
 .admin-input:focus-visible,
+.admin-input-action:focus-visible,
 .admin-link-card:focus-visible,
+.admin-pill-button:focus-visible,
 .admin-table a:focus-visible {
   outline: 2px solid var(--lego-accent);
   outline-offset: 2px;

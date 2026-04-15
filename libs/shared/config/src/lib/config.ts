@@ -270,6 +270,53 @@ export function buildThemePath(slug: string): string {
   return buildWebPath(`${webPathnames.themes}/${slug}`);
 }
 
+export const publicWebBaseUrls = {
+  local: getRuntimeBaseUrl('web'),
+  staging: 'https://staging.brickhunt.nl',
+  production: 'https://brickhunt.nl',
+} as const;
+
+export function getPublicWebBaseUrl({
+  currentOrigin,
+}: {
+  currentOrigin?: string;
+} = {}): string {
+  if (!currentOrigin) {
+    return publicWebBaseUrls.local;
+  }
+
+  try {
+    const currentUrl = new URL(currentOrigin);
+    const hostname = currentUrl.hostname.toLowerCase();
+
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return publicWebBaseUrls.local;
+    }
+
+    if (
+      hostname === 'staging.brickhunt.nl' ||
+      hostname.startsWith('staging.') ||
+      hostname.startsWith('staging-')
+    ) {
+      return publicWebBaseUrls.staging;
+    }
+
+    return publicWebBaseUrls.production;
+  } catch {
+    return publicWebBaseUrls.local;
+  }
+}
+
+export function buildPublicSetDetailUrl({
+  currentOrigin,
+  slug,
+}: {
+  currentOrigin?: string;
+  slug: string;
+}): string {
+  return `${getPublicWebBaseUrl({ currentOrigin })}${buildSetDetailPath(slug)}`;
+}
+
 export const webNavigation = webNavigationItems.map((navigationItem) => ({
   label: navigationItem.label,
   href: buildWebPath(navigationItem.pathname),

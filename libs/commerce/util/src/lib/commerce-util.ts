@@ -160,6 +160,17 @@ export interface CommerceCoverageSnapshot {
   uncoveredSets: CommerceCoverageSetOption[];
 }
 
+export const commerceMerchantSearchableSlugs = [
+  'amazon-nl',
+  'bol',
+  'intertoys',
+  'lego-nl',
+  'top1toys',
+] as const;
+
+export type CommerceMerchantSearchableSlug =
+  (typeof commerceMerchantSearchableSlugs)[number];
+
 function assertObjectRecord(
   value: unknown,
   label: string,
@@ -254,6 +265,66 @@ export function normalizeCommerceSlug(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function normalizeCommerceSearchQueryPart(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function isCommerceMerchantSearchableSlug(
+  value: string,
+): value is CommerceMerchantSearchableSlug {
+  return commerceMerchantSearchableSlugs.includes(
+    value as CommerceMerchantSearchableSlug,
+  );
+}
+
+export function buildCommerceMerchantSearchQuery({
+  setId,
+}: {
+  setId: string;
+}): string {
+  return normalizeCommerceSearchQueryPart(setId);
+}
+
+export function buildCommerceMerchantSearchUrl({
+  merchantSlug,
+  query,
+}: {
+  merchantSlug: string;
+  query: string;
+}): string | undefined {
+  const normalizedQuery = query.trim();
+
+  if (!normalizedQuery) {
+    return undefined;
+  }
+
+  if (!isCommerceMerchantSearchableSlug(merchantSlug)) {
+    return undefined;
+  }
+
+  const encodedQuery = encodeURIComponent(normalizedQuery);
+
+  switch (merchantSlug) {
+    case 'top1toys':
+      return `https://www.top1toys.nl/catalogsearch/result/?q=${encodedQuery}`;
+    case 'intertoys':
+      return `https://www.intertoys.nl/search?searchTerm=${encodedQuery}`;
+    case 'bol':
+      return `https://www.bol.com/nl/nl/s/?searchtext=${encodedQuery}`;
+    case 'amazon-nl':
+      return `https://www.amazon.nl/s?k=${encodedQuery}`;
+    case 'lego-nl':
+      return `https://www.lego.com/nl-nl/search?q=${encodedQuery}`;
+    default:
+      return undefined;
+  }
 }
 
 export function validateCommerceMerchantInput(

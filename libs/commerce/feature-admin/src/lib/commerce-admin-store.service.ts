@@ -1,6 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
+import { buildPublicSetDetailUrl } from '@lego-platform/shared/config';
 import {
+  buildCommerceMerchantSearchQuery,
+  buildCommerceMerchantSearchUrl,
   buildCommerceBenchmarkCoverageRows,
   buildCommerceCoverageSnapshot,
   type CommerceBenchmarkCoverageRow,
@@ -180,6 +183,38 @@ export class CommerceAdminStore {
       offerSeeds: this.offerSeeds(),
     }),
   );
+  readonly commerceRelevantCoverageRows = computed(() => {
+    const benchmarkSetById = new Map(
+      this.benchmarkSets().map(
+        (benchmarkSet) => [benchmarkSet.setId, benchmarkSet] as const,
+      ),
+    );
+    const relevantSetIds = new Set(
+      this.benchmarkSets().map((benchmarkSet) => benchmarkSet.setId),
+    );
+
+    for (const offerSeed of this.offerSeeds()) {
+      if (offerSeed.isActive || offerSeed.latestOffer) {
+        relevantSetIds.add(offerSeed.setId);
+      }
+    }
+
+    return buildCommerceBenchmarkCoverageRows({
+      benchmarkSets: [...relevantSetIds].map((setId) => {
+        const benchmarkSet = benchmarkSetById.get(setId);
+
+        return {
+          setId,
+          notes: benchmarkSet?.notes ?? '',
+          createdAt: benchmarkSet?.createdAt ?? '',
+          updatedAt: benchmarkSet?.updatedAt ?? '',
+        };
+      }),
+      catalogSets: this.catalogSetOptions,
+      merchants: this.merchants(),
+      offerSeeds: this.offerSeeds(),
+    });
+  });
   readonly benchmarkCatalogSetOptions = computed(() =>
     this.catalogSetOptions.filter(
       (catalogSetOption) => !this.benchmarkSetIds().has(catalogSetOption.id),
@@ -362,6 +397,43 @@ export class CommerceAdminStore {
     return this.benchmarkSetIds().has(setId);
   }
 
+  getPublicSetUrl(setId: string): string | undefined {
+    const catalogSet = this.getCatalogSetById(setId);
+
+    if (!catalogSet?.slug) {
+      return undefined;
+    }
+
+    return buildPublicSetDetailUrl({
+      slug: catalogSet.slug,
+      currentOrigin:
+        typeof window === 'undefined' ? undefined : window.location.origin,
+    });
+  }
+
+  getMerchantSearchUrl(input: {
+    merchantId: string;
+    setId: string;
+  }): string | undefined {
+    const merchant = this.merchants().find(
+      (candidateMerchant) => candidateMerchant.id === input.merchantId,
+    );
+    const catalogSet = this.getCatalogSetById(input.setId);
+
+    if (!merchant || !catalogSet) {
+      return undefined;
+    }
+
+    const query = buildCommerceMerchantSearchQuery({
+      setId: catalogSet.id,
+    });
+
+    return buildCommerceMerchantSearchUrl({
+      merchantSlug: merchant.slug,
+      query,
+    });
+  }
+
   getOfferSeedHealthLabel(offerSeed: CommerceOfferSeed): string {
     return buildOfferSeedHealthLabel(offerSeed);
   }
@@ -392,6 +464,25 @@ export class CommerceAdminStore {
     benchmarkCoverageRow: CommerceBenchmarkCoverageRow,
   ): string {
     return `${benchmarkCoverageRow.latestValidMerchantCount}/${benchmarkCoverageRow.activeMerchantTargetCount} merchants valide`;
+  }
+
+  getMerchantCoverageTitle(input: {
+    offerSeed?: CommerceOfferSeed;
+    status: CommerceBenchmarkMerchantCoverageStatus;
+  }): string | null {
+    if (input.offerSeed?.productUrl) {
+      return input.offerSeed.productUrl;
+    }
+
+    if (input.status === 'missing') {
+      return 'Nog geen seed';
+    }
+
+    if (input.offerSeed) {
+      return 'Nog geen product-URL';
+    }
+
+    return null;
   }
 
   formatPriceMinor(value?: number, currencyCode = 'EUR'): string {

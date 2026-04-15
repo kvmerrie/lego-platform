@@ -116,8 +116,14 @@
               <div class="admin-pill-cluster">
                 @for (merchantCoverage of benchmarkCoverageRow.merchantCoverage;
                 track merchantCoverage.merchantId) {
-                <span
-                  class="admin-status-pill"
+                <button
+                  class="admin-status-pill admin-pill-button"
+                  [attr.title]="
+                    commerceAdminStore.getMerchantCoverageTitle({
+                      offerSeed: merchantCoverage.offerSeed,
+                      status: merchantCoverage.status,
+                    })
+                  "
                   [class.admin-status-pill--danger]="
                     commerceAdminStore.getBenchmarkMerchantCoverageTone(
                       merchantCoverage.status
@@ -138,12 +144,19 @@
                       merchantCoverage.status
                     ) === 'neutral'
                   "
+                  type="button"
+                  (click)="
+                    openOfferSeedDialog({
+                      setId: benchmarkCoverageRow.setId,
+                      merchantCoverage,
+                    })
+                  "
                 >
                   {{ merchantCoverage.merchantName }} · {{
                   merchantCoverage.status === 'covered' ? 'valid' :
                   merchantCoverage.status === 'review' ? 'review' :
                   merchantCoverage.status === 'pending' ? 'pending' : 'mist' }}
-                </span>
+                </button>
                 }
               </div>
             </td>
@@ -306,3 +319,11 @@
     </a>
   </div>
 </section>
+
+@if (isDialogOpen()) {
+<lego-commerce-admin-offer-seed-dialog
+  [offerSeed]="selectedOfferSeed()"
+  [prefill]="offerSeedPrefill()"
+  (closed)="closeDialog()"
+></lego-commerce-admin-offer-seed-dialog>
+}

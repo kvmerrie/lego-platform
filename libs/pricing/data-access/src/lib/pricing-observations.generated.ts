@@ -10,7 +10,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 67999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:38.948Z"
+    "observedAt": "2026-04-15T15:12:53.645Z"
+  },
+  {
+    "setId": "10305",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 39999,
+    "availability": "out_of_stock",
+    "observedAt": "2026-04-15T15:12:56.594Z"
+  },
+  {
+    "setId": "10305",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 60900,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:13:22.182Z"
   },
   {
     "setId": "10316",
@@ -20,7 +40,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 48246,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:06.627Z"
+    "observedAt": "2026-04-15T15:13:24.097Z"
   },
   {
     "setId": "10316",
@@ -30,7 +50,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:32.508Z"
+    "observedAt": "2026-04-15T15:12:58.270Z"
   },
   {
     "setId": "10317",
@@ -40,7 +60,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-14T19:59:47.974Z"
+    "observedAt": "2026-04-15T15:12:46.653Z"
   },
   {
     "setId": "10317",
@@ -50,7 +70,37 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 29126,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:14.440Z"
+    "observedAt": "2026-04-15T15:13:16.769Z"
+  },
+  {
+    "setId": "10327",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:00.133Z"
+  },
+  {
+    "setId": "10327",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:56.853Z"
+  },
+  {
+    "setId": "10327",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:56.468Z"
   },
   {
     "setId": "10327",
@@ -60,7 +110,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16499,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:58.910Z"
+    "observedAt": "2026-04-15T15:12:36.635Z"
   },
   {
     "setId": "10328",
@@ -70,7 +120,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:22.726Z"
+    "observedAt": "2026-04-15T15:13:07.795Z"
+  },
+  {
+    "setId": "10328",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:07.015Z"
+  },
+  {
+    "setId": "10328",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5199,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:07.308Z"
   },
   {
     "setId": "10328",
@@ -80,7 +150,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T20:00:02.905Z"
+    "observedAt": "2026-04-15T15:12:32.978Z"
   },
   {
     "setId": "10332",
@@ -90,7 +160,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-14T19:59:35.783Z"
+    "observedAt": "2026-04-15T15:12:55.537Z"
   },
   {
     "setId": "10332",
@@ -110,7 +180,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 41958,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:04.396Z"
+    "observedAt": "2026-04-15T15:13:26.503Z"
   },
   {
     "setId": "10333",
@@ -120,7 +190,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 45999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:36.943Z"
+    "observedAt": "2026-04-15T15:12:54.599Z"
   },
   {
     "setId": "10335",
@@ -130,7 +200,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 26999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:57.899Z"
+    "observedAt": "2026-04-15T15:12:37.400Z"
+  },
+  {
+    "setId": "10335",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29700,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:49.373Z"
   },
   {
     "setId": "10342",
@@ -140,7 +220,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4399,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:29.812Z"
+    "observedAt": "2026-04-15T15:13:00.811Z"
+  },
+  {
+    "setId": "10342",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4399,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:16.385Z"
+  },
+  {
+    "setId": "10342",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5199,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:06.165Z"
   },
   {
     "setId": "10342",
@@ -150,7 +250,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:12.590Z"
+    "observedAt": "2026-04-15T15:13:19.021Z"
+  },
+  {
+    "setId": "10342",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:05.880Z"
+  },
+  {
+    "setId": "10354",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 25999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:47.800Z"
   },
   {
     "setId": "10354",
@@ -160,7 +280,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 26999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:00.655Z"
+    "observedAt": "2026-04-15T15:13:29.759Z"
   },
   {
     "setId": "10354",
@@ -170,7 +290,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 38499,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:27.893Z"
+    "observedAt": "2026-04-15T15:13:03.507Z"
   },
   {
     "setId": "21061",
@@ -179,8 +299,18 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 17240,
-    "availability": "unknown",
-    "observedAt": "2026-04-14T20:00:11.960Z"
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:24.954Z"
+  },
+  {
+    "setId": "21061",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:59.166Z"
   },
   {
     "setId": "21061",
@@ -190,7 +320,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T20:00:10.242Z"
+    "observedAt": "2026-04-15T15:12:26.726Z"
   },
   {
     "setId": "21061",
@@ -200,7 +330,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T20:00:14.547Z"
+    "observedAt": "2026-04-15T15:12:24.491Z"
   },
   {
     "setId": "21333",
@@ -210,7 +340,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:39.846Z"
+    "observedAt": "2026-04-15T15:12:52.410Z"
+  },
+  {
+    "setId": "21348",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 30299,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:42.028Z"
   },
   {
     "setId": "21348",
@@ -220,7 +360,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 35999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:33.735Z"
+    "observedAt": "2026-04-15T15:12:57.457Z"
+  },
+  {
+    "setId": "21348",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 35999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:41.616Z"
   },
   {
     "setId": "21349",
@@ -230,7 +380,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:41.710Z"
+    "observedAt": "2026-04-15T15:12:51.393Z"
+  },
+  {
+    "setId": "21350",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:37.425Z"
   },
   {
     "setId": "21350",
@@ -240,7 +400,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:46.662Z"
+    "observedAt": "2026-04-15T15:12:48.085Z"
+  },
+  {
+    "setId": "42171",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15171,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:44.009Z"
+  },
+  {
+    "setId": "42171",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:42.723Z"
+  },
+  {
+    "setId": "42171",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:41.532Z"
+  },
+  {
+    "setId": "42171",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:41.144Z"
   },
   {
     "setId": "42171",
@@ -250,7 +450,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 21999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:59.877Z"
+    "observedAt": "2026-04-15T15:12:35.605Z"
   },
   {
     "setId": "42172",
@@ -260,7 +460,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 31999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:20.685Z"
+    "observedAt": "2026-04-15T15:13:10.192Z"
+  },
+  {
+    "setId": "42172",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:46.453Z"
+  },
+  {
+    "setId": "42172",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 37999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:46.074Z"
   },
   {
     "setId": "42172",
@@ -270,7 +490,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 44999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T20:00:01.093Z"
+    "observedAt": "2026-04-15T15:12:34.084Z"
+  },
+  {
+    "setId": "42177",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 18499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:35.557Z"
+  },
+  {
+    "setId": "42177",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:35.052Z"
   },
   {
     "setId": "42177",
@@ -280,7 +520,67 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 24999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:03.311Z"
+    "observedAt": "2026-04-15T15:13:28.700Z"
+  },
+  {
+    "setId": "75313",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 84999,
+    "availability": "out_of_stock",
+    "observedAt": "2026-04-15T15:11:17.318Z"
+  },
+  {
+    "setId": "75313",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 132900,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:20.463Z"
+  },
+  {
+    "setId": "75355",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23999,
+    "availability": "out_of_stock",
+    "observedAt": "2026-04-15T15:12:44.030Z"
+  },
+  {
+    "setId": "75355",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 23999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:49.807Z"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4725,
+    "availability": "unknown",
+    "observedAt": "2026-04-14T19:22:32.339Z"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 48999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:54.667Z"
   },
   {
     "setId": "75367",
@@ -290,7 +590,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 64999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:43.503Z"
+    "observedAt": "2026-04-15T15:12:48.901Z"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 64999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:54.094Z"
+  },
+  {
+    "setId": "75397",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 37499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:10:59.492Z"
   },
   {
     "setId": "75397",
@@ -300,7 +620,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:52.185Z"
+    "observedAt": "2026-04-15T15:12:41.730Z"
+  },
+  {
+    "setId": "75398",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:12.317Z"
   },
   {
     "setId": "75398",
@@ -310,7 +640,37 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T20:00:05.763Z"
+    "observedAt": "2026-04-15T15:12:30.788Z"
+  },
+  {
+    "setId": "75398",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17998,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:15.078Z"
+  },
+  {
+    "setId": "76178",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 34999,
+    "availability": "out_of_stock",
+    "observedAt": "2026-04-15T15:12:50.338Z"
+  },
+  {
+    "setId": "76178",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 43000,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:09.538Z"
   },
   {
     "setId": "76269",
@@ -318,9 +678,19 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 47999,
-    "availability": "limited",
-    "observedAt": "2026-03-31T09:30:00.000Z"
+    "totalPriceMinor": 42999,
+    "availability": "out_of_stock",
+    "observedAt": "2026-04-15T15:12:59.849Z"
+  },
+  {
+    "setId": "76269",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49900,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:27.805Z"
   },
   {
     "setId": "76269",
@@ -330,7 +700,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:49.506Z"
+    "observedAt": "2026-04-15T15:12:45.654Z"
+  },
+  {
+    "setId": "76294",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 27999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:03.794Z"
   },
   {
     "setId": "76294",
@@ -340,7 +720,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 32999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:56.764Z"
+    "observedAt": "2026-04-15T15:12:38.320Z"
+  },
+  {
+    "setId": "76313",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8153,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:25.183Z"
+  },
+  {
+    "setId": "76313",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:22.838Z"
+  },
+  {
+    "setId": "76313",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:22.461Z"
+  },
+  {
+    "setId": "76313",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8599,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:11:23.878Z"
   },
   {
     "setId": "76313",
@@ -350,7 +770,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T20:00:08.668Z"
+    "observedAt": "2026-04-15T15:12:27.831Z"
+  },
+  {
+    "setId": "76419",
+    "merchantId": "amazon-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13129,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:21.690Z"
+  },
+  {
+    "setId": "76419",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:08.769Z"
+  },
+  {
+    "setId": "76419",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:20.757Z"
+  },
+  {
+    "setId": "76419",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:08.504Z"
   },
   {
     "setId": "76429",
@@ -360,7 +820,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7490,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:16.406Z"
+    "observedAt": "2026-04-15T15:13:14.485Z"
+  },
+  {
+    "setId": "76429",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8299,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:02.318Z"
+  },
+  {
+    "setId": "76429",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:03.006Z"
   },
   {
     "setId": "76429",
@@ -370,7 +850,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:54.721Z"
+    "observedAt": "2026-04-15T15:12:40.828Z"
   },
   {
     "setId": "76435",
@@ -380,7 +860,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14932,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:18.507Z"
+    "observedAt": "2026-04-15T15:13:12.383Z"
+  },
+  {
+    "setId": "76435",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:09.899Z"
   },
   {
     "setId": "76435",
@@ -390,7 +880,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:55.919Z"
+    "observedAt": "2026-04-15T15:12:39.187Z"
+  },
+  {
+    "setId": "76435",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:09.629Z"
   },
   {
     "setId": "76453",
@@ -400,7 +900,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T19:59:25.617Z"
+    "observedAt": "2026-04-15T15:13:05.647Z"
+  },
+  {
+    "setId": "76453",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:12.133Z"
+  },
+  {
+    "setId": "76453",
+    "merchantId": "top1toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-15T15:12:13.640Z"
   },
   {
     "setId": "76453",
@@ -410,7 +930,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-14T20:00:07.229Z"
+    "observedAt": "2026-04-15T15:12:29.759Z"
   }
 ]`;
 

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import {
+  buildPublicSetDetailUrl,
   buildThemePath,
   buildWebPath,
   createLocaleCode,
@@ -9,6 +10,7 @@ import {
   getDefaultMarketScopeLabel,
   getMissingBrowserSupabaseEnvKeys,
   getMissingProductEmailEnvKeys,
+  getPublicWebBaseUrl,
   getProductEmailConfig,
   getServerWebBaseUrl,
   hasBrowserSupabaseConfig,
@@ -70,6 +72,9 @@ describe('shared config locale and market foundations', () => {
   test('builds unprefixed routes now while keeping locale-prefixed paths possible later', () => {
     expect(buildWebPath('/discover')).toBe('/discover');
     expect(buildWebPath('account')).toBe('/account');
+    expect(buildPublicSetDetailUrl({ slug: 'rivendell-10316' })).toBe(
+      'http://localhost:3000/sets/rivendell-10316',
+    );
     expect(buildThemePath('icons')).toBe('/themes/icons');
     expect(buildWebPath('/', { forceLocalePrefix: true })).toBe('/nl-nl');
     expect(
@@ -81,6 +86,24 @@ describe('shared config locale and market foundations', () => {
         }),
       }),
     ).toBe('/nl-nl/discover');
+  });
+
+  test('resolves public web base urls from the current admin origin', () => {
+    expect(
+      getPublicWebBaseUrl({
+        currentOrigin: 'http://localhost:4200',
+      }),
+    ).toBe('http://localhost:3000');
+    expect(
+      getPublicWebBaseUrl({
+        currentOrigin: 'https://staging-admin.brickhunt.nl',
+      }),
+    ).toBe('https://staging.brickhunt.nl');
+    expect(
+      getPublicWebBaseUrl({
+        currentOrigin: 'https://ops.brickhunt.nl',
+      }),
+    ).toBe('https://brickhunt.nl');
   });
 
   test('renders reusable market scope labels from the default market config', () => {

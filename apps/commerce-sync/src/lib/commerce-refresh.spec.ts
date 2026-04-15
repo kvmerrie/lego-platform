@@ -103,6 +103,30 @@ describe('commerce refresh', () => {
     });
   });
 
+  test('uses the Amazon main buy-box action to infer in-stock availability', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'amazon-nl',
+      html: `
+        <html>
+          <body>
+            <div id="corePrice_feature_div">
+              <span class="a-offscreen">€ 649,99</span>
+            </div>
+            <div id="desktop_qualifiedBuyBox">
+              <input id="add-to-cart-button" type="submit" value="In winkelwagen" />
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      availability: 'in_stock',
+      currencyCode: 'EUR',
+      priceMinor: 64999,
+    });
+  });
+
   test('marks a successful verification as valid and upserts the latest offer state', async () => {
     const upsertLatestRecord = vi.fn().mockResolvedValue(undefined);
     const updateSeedValidationState = vi.fn().mockResolvedValue(undefined);
@@ -279,6 +303,214 @@ describe('commerce refresh', () => {
       input: {
         validationStatus: 'stale',
         lastVerifiedAt: '2026-04-10T08:00:00.000Z',
+      },
+    });
+  });
+
+  test('retries Intertoys with a merchant referer and keeps the failure state honest on 403', async () => {
+    const upsertLatestRecord = vi.fn().mockResolvedValue(undefined);
+    const updateSeedValidationState = vi.fn().mockResolvedValue(undefined);
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response('', {
+          status: 403,
+          statusText: 'Forbidden',
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response('', {
+          status: 403,
+          statusText: 'Forbidden',
+        }),
+      );
+
+    const summary = await refreshCommerceOfferSeeds({
+      refreshSeeds: [
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            slug: 'intertoys',
+            name: 'Intertoys',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-intertoys',
+            productUrl:
+              'https://www.intertoys.nl/lego-star-wars-venator-class-republic-attack-cruiser-75367',
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-12T08:00:00.000Z',
+            latestOffer: {
+              id: 'latest-intertoys',
+              offerSeedId: 'seed-intertoys',
+              setId: '10316',
+              merchantId: 'merchant-1',
+              productUrl:
+                'https://www.intertoys.nl/lego-star-wars-venator-class-republic-attack-cruiser-75367',
+              fetchStatus: 'success',
+              priceMinor: 49999,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              observedAt: '2026-04-12T08:00:00.000Z',
+              fetchedAt: '2026-04-12T08:00:00.000Z',
+              createdAt: '2026-04-12T08:00:00.000Z',
+              updatedAt: '2026-04-12T08:00:00.000Z',
+            },
+          },
+        }),
+      ],
+      now: new Date('2026-04-14T12:00:00.000Z'),
+      fetchImpl,
+      logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+      },
+      upsertLatestRecord,
+      updateSeedValidationState,
+    });
+
+    expect(summary).toEqual({
+      totalCount: 1,
+      successCount: 0,
+      unavailableCount: 0,
+      invalidCount: 0,
+      staleCount: 1,
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls[0]?.[1]).toEqual(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'user-agent': expect.stringContaining('Mozilla/5.0'),
+          accept: expect.stringContaining('text/html'),
+        }),
+      }),
+    );
+    expect(fetchImpl.mock.calls[1]?.[1]).toEqual(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          referer: 'https://www.intertoys.nl/',
+        }),
+      }),
+    );
+    expect(upsertLatestRecord).toHaveBeenCalledWith({
+      input: {
+        offerSeedId: 'seed-intertoys',
+        priceMinor: 49999,
+        currencyCode: 'EUR',
+        availability: 'in_stock',
+        observedAt: '2026-04-12T08:00:00.000Z',
+        fetchStatus: 'error',
+        fetchedAt: '2026-04-14T12:00:00.000Z',
+        errorMessage:
+          'Intertoys returned 403 Forbidden even after retrying with a merchant referer. The product page blocked the refresh request.',
+      },
+    });
+    expect(updateSeedValidationState).toHaveBeenCalledWith({
+      offerSeedId: 'seed-intertoys',
+      input: {
+        validationStatus: 'stale',
+        lastVerifiedAt: '2026-04-12T08:00:00.000Z',
+      },
+    });
+  });
+
+  test('uses a clearer Amazon reason when no main offer block is present', async () => {
+    const upsertLatestRecord = vi.fn().mockResolvedValue(undefined);
+    const updateSeedValidationState = vi.fn().mockResolvedValue(undefined);
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(
+        `
+          <html>
+            <body>
+              <div id="desktop-mlbt-inline-content">
+                <span>€ 149,99</span>
+              </div>
+              <script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@type": "Product",
+                  "offers": {
+                    "@type": "Offer",
+                    "priceCurrency": "EUR",
+                    "price": "149.99",
+                    "availability": "https://schema.org/InStock"
+                  }
+                }
+              </script>
+            </body>
+          </html>
+        `,
+        {
+          status: 200,
+          headers: {
+            'content-type': 'text/html',
+          },
+        },
+      ),
+    );
+
+    await refreshCommerceOfferSeeds({
+      refreshSeeds: [
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            slug: 'amazon-nl',
+            name: 'Amazon',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-amazon-no-main-offer',
+            productUrl:
+              'https://www.amazon.nl/LEGO-75367-Venator-klasse-Republiek-aanvalskruiser/dp/B0CGY4T856',
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-12T08:00:00.000Z',
+            latestOffer: {
+              id: 'latest-amazon-no-main-offer',
+              offerSeedId: 'seed-amazon-no-main-offer',
+              setId: '10316',
+              merchantId: 'merchant-1',
+              productUrl:
+                'https://www.amazon.nl/LEGO-75367-Venator-klasse-Republiek-aanvalskruiser/dp/B0CGY4T856',
+              fetchStatus: 'success',
+              priceMinor: 49999,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              observedAt: '2026-04-12T08:00:00.000Z',
+              fetchedAt: '2026-04-12T08:00:00.000Z',
+              createdAt: '2026-04-12T08:00:00.000Z',
+              updatedAt: '2026-04-12T08:00:00.000Z',
+            },
+          },
+        }),
+      ],
+      now: new Date('2026-04-14T12:00:00.000Z'),
+      fetchImpl,
+      logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+      },
+      upsertLatestRecord,
+      updateSeedValidationState,
+    });
+
+    expect(upsertLatestRecord).toHaveBeenCalledWith({
+      input: {
+        offerSeedId: 'seed-amazon-no-main-offer',
+        priceMinor: 49999,
+        currencyCode: 'EUR',
+        availability: 'in_stock',
+        observedAt: '2026-04-12T08:00:00.000Z',
+        fetchStatus: 'error',
+        fetchedAt: '2026-04-14T12:00:00.000Z',
+        errorMessage:
+          'Amazon page resolved, but no main offer block was found.',
+      },
+    });
+    expect(updateSeedValidationState).toHaveBeenCalledWith({
+      offerSeedId: 'seed-amazon-no-main-offer',
+      input: {
+        validationStatus: 'stale',
+        lastVerifiedAt: '2026-04-12T08:00:00.000Z',
       },
     });
   });
