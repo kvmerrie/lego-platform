@@ -32,6 +32,8 @@ const browserLikeMerchantAcceptHeader =
 const structuredDataScriptPattern =
   /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
 const htmlTagPattern = /<[^>]+>/g;
+const euroPriceTextPattern =
+  /(?:€|eur)\s*((?:[0-9]{1,3}(?:[.\s][0-9]{3})+)(?:,\d{2}|,-)?|[0-9]+\.\d{1,2}|[0-9]+(?:,\d{2}|,-)?)/i;
 const amazonPrimaryAvailabilityMarkers = [
   'availabilityInsideBuyBox_feature_div',
   'availability_feature_div',
@@ -39,6 +41,11 @@ const amazonPrimaryAvailabilityMarkers = [
   "id='availability'",
   'id="outOfStock"',
   "id='outOfStock'",
+] as const;
+const amazonPrimaryContainerMarkers = [
+  'desktop_qualifiedBuyBox',
+  'buyBoxAccordion',
+  'newAccordionRow_0',
 ] as const;
 const amazonPrimaryPriceMarkers = [
   'corePriceDisplay_desktop_feature_div',
@@ -54,10 +61,26 @@ const amazonPrimaryPriceMarkers = [
   'tp_price_block_total_price_ww',
 ] as const;
 const amazonPrimaryActionMarkers = [
-  'add-to-cart-button',
-  'buy-now-button',
-  'submit.add-to-cart',
-  'submit.buy-now',
+  'id="add-to-cart-button"',
+  "id='add-to-cart-button'",
+  'id="add-to-cart-button-ubb"',
+  "id='add-to-cart-button-ubb'",
+  'id="submit.add-to-cart"',
+  "id='submit.add-to-cart'",
+  'id="submit.add-to-cart-ubb"',
+  "id='submit.add-to-cart-ubb'",
+  'id="buy-now-button"',
+  "id='buy-now-button'",
+  'id="submit.buy-now"',
+  "id='submit.buy-now'",
+] as const;
+const bolMainOfferMarkers = [
+  'Prijsinformatie en bestellen',
+  'price information and ordering',
+  'In winkelwagen',
+  'Niet leverbaar',
+  'Stuur mij een bericht',
+  'Verkoop door bol',
 ] as const;
 const referencePriceMinorBySetId = new Map(
   dutchPricingReferenceValues.map((pricingReferenceValue) => [
@@ -147,8 +170,19 @@ function parsePriceMinor(
   }
 
   const compactValue = trimmedValue
+    .replace(/\u00a0/g, ' ')
+    .replace(/,\s*-\s*$/u, ',00')
     .replace(/[^\d,.-]/g, '')
     .replace(/\.(?=.*\.)/g, '.');
+
+  if (
+    !compactValue ||
+    compactValue === '-' ||
+    compactValue === ',' ||
+    compactValue === '.'
+  ) {
+    return undefined;
+  }
 
   let normalizedValue = compactValue;
   const lastCommaIndex = compactValue.lastIndexOf(',');
@@ -162,12 +196,14 @@ function parsePriceMinor(
     }
   } else if (lastCommaIndex >= 0) {
     normalizedValue =
-      compactValue.length - lastCommaIndex - 1 === 2
+      compactValue.length - lastCommaIndex - 1 >= 1 &&
+      compactValue.length - lastCommaIndex - 1 <= 2
         ? compactValue.replace(/\./g, '').replace(',', '.')
         : compactValue.replace(/,/g, '');
   } else if (lastDotIndex >= 0) {
     normalizedValue =
-      compactValue.length - lastDotIndex - 1 === 2
+      compactValue.length - lastDotIndex - 1 >= 1 &&
+      compactValue.length - lastDotIndex - 1 <= 2
         ? compactValue.replace(/,/g, '')
         : compactValue.replace(/\./g, '');
   }
@@ -276,6 +312,7 @@ function extractAvailabilityFromText(
   if (
     /only\s+\d+\s+left in stock/.test(textContent) ||
     /nog maar\s+\d+\s+op voorraad/.test(textContent) ||
+    /nog slechts\s+\d+\s+op voorraad/.test(textContent) ||
     textContent.includes('limited stock') ||
     textContent.includes('beperkte voorraad')
   ) {
@@ -294,11 +331,31 @@ function extractAvailabilityFromText(
 }
 
 function extractPriceFromText(html: string): number | undefined {
-  const euroMatch = html.match(
-    /(?:€|eur)\s*([0-9]{1,3}(?:[.\s][0-9]{3})*(?:,[0-9]{2})|[0-9]+(?:[.,][0-9]{2})?)/i,
-  );
+  const euroMatch = html.match(euroPriceTextPattern);
 
   return parsePriceMinor(euroMatch?.[1]);
+}
+
+function parseNumericPriceAmountMinor(
+  value: string | undefined,
+): number | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmedValue = value.trim();
+
+  if (!/^\d+(?:\.\d+)?$/.test(trimmedValue)) {
+    return undefined;
+  }
+
+  const parsedValue = Number(trimmedValue);
+
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    return undefined;
+  }
+
+  return Math.round(parsedValue * 100);
 }
 
 function getHtmlSlicesAroundMarkers({
@@ -315,18 +372,23 @@ function getHtmlSlicesAroundMarkers({
   const htmlSlices: string[] = [];
 
   for (const marker of markers) {
-    const markerIndex = html.indexOf(marker);
+    let searchStartIndex = 0;
 
-    if (markerIndex < 0) {
-      continue;
+    while (searchStartIndex < html.length) {
+      const markerIndex = html.indexOf(marker, searchStartIndex);
+
+      if (markerIndex < 0) {
+        break;
+      }
+
+      htmlSlices.push(
+        html.slice(
+          Math.max(0, markerIndex - charsBefore),
+          Math.min(html.length, markerIndex + charsAfter),
+        ),
+      );
+      searchStartIndex = markerIndex + marker.length;
     }
-
-    htmlSlices.push(
-      html.slice(
-        Math.max(0, markerIndex - charsBefore),
-        Math.min(html.length, markerIndex + charsAfter),
-      ),
-    );
   }
 
   return htmlSlices;
@@ -350,6 +412,29 @@ interface StructuredDataOfferCandidate {
   availability?: PricingAvailability;
   currencyCode?: string;
   priceMinor?: number;
+}
+
+function getBestStructuredDataOfferCandidate(html: string) {
+  const structuredDataCandidates: StructuredDataOfferCandidate[] = [];
+
+  for (const match of html.matchAll(structuredDataScriptPattern)) {
+    const structuredDataPayload = safelyParseJson(match[1] ?? '');
+
+    if (structuredDataPayload) {
+      collectStructuredDataOfferCandidates(
+        structuredDataPayload,
+        structuredDataCandidates,
+      );
+    }
+  }
+
+  return [...structuredDataCandidates].sort(
+    (left, right) =>
+      getStructuredDataOfferCandidateScore(right) -
+        getStructuredDataOfferCandidateScore(left) ||
+      (right.priceMinor ?? Number.MAX_SAFE_INTEGER) -
+        (left.priceMinor ?? Number.MAX_SAFE_INTEGER),
+  )[0];
 }
 
 function collectStructuredDataOfferCandidates(
@@ -436,26 +521,7 @@ function getStructuredDataOfferCandidateScore(
 function extractGenericCommerceOfferSnapshotFromHtml(
   html: string,
 ): CommerceOfferSnapshotExtractionResult {
-  const structuredDataCandidates: StructuredDataOfferCandidate[] = [];
-
-  for (const match of html.matchAll(structuredDataScriptPattern)) {
-    const structuredDataPayload = safelyParseJson(match[1] ?? '');
-
-    if (structuredDataPayload) {
-      collectStructuredDataOfferCandidates(
-        structuredDataPayload,
-        structuredDataCandidates,
-      );
-    }
-  }
-
-  const bestStructuredCandidate = [...structuredDataCandidates].sort(
-    (left, right) =>
-      getStructuredDataOfferCandidateScore(right) -
-        getStructuredDataOfferCandidateScore(left) ||
-      (right.priceMinor ?? Number.MAX_SAFE_INTEGER) -
-        (left.priceMinor ?? Number.MAX_SAFE_INTEGER),
-  )[0];
+  const bestStructuredCandidate = getBestStructuredDataOfferCandidate(html);
 
   if (bestStructuredCandidate) {
     return {
@@ -511,8 +577,50 @@ function extractGenericCommerceOfferSnapshotFromHtml(
 function extractAmazonPriceFromHtmlSlice(
   htmlSlice: string,
 ): number | undefined {
+  const customerVisibleAmountMatch = htmlSlice.match(
+    /customerVisiblePrice\]\[amount\][^>]*value=["']([0-9]+(?:\.[0-9]+)?)["']/i,
+  );
+
+  if (customerVisibleAmountMatch?.[1]) {
+    const customerVisibleAmountMinor = parseNumericPriceAmountMinor(
+      customerVisibleAmountMatch[1],
+    );
+
+    if (typeof customerVisibleAmountMinor === 'number') {
+      return customerVisibleAmountMinor;
+    }
+  }
+
+  const customerVisibleDisplayStringMatch = htmlSlice.match(
+    /customerVisiblePrice\]\[displayString\][^>]*value=["']([^"']+)["']/i,
+  );
+
+  if (customerVisibleDisplayStringMatch?.[1]) {
+    const customerVisibleDisplayMinor = parsePriceMinor(
+      customerVisibleDisplayStringMatch[1],
+    );
+
+    if (typeof customerVisibleDisplayMinor === 'number') {
+      return customerVisibleDisplayMinor;
+    }
+  }
+
+  const twisterPriceMatch = htmlSlice.match(
+    /id=["']twister-plus-price-data-price["'][^>]*value=["']([0-9]+(?:\.[0-9]+)?)["']/i,
+  );
+
+  if (twisterPriceMatch?.[1]) {
+    const twisterPriceMinor =
+      parseNumericPriceAmountMinor(twisterPriceMatch[1]) ??
+      parsePriceMinor(twisterPriceMatch[1]);
+
+    if (typeof twisterPriceMinor === 'number') {
+      return twisterPriceMinor;
+    }
+  }
+
   const offscreenPriceMatch = htmlSlice.match(
-    /a-offscreen[^>]*>\s*(?:€|eur)\s*([0-9]{1,3}(?:[.\s][0-9]{3})*(?:,[0-9]{2})|[0-9]+(?:[.,][0-9]{2})?)/i,
+    /a-offscreen[^>]*>\s*((?:€|eur)\s*(?:[0-9]{1,3}(?:[.\s][0-9]{3})+)(?:,\d{2}|,-)?|(?:€|eur)\s*[0-9]+\.\d{1,2}|(?:€|eur)\s*[0-9]+(?:,\d{2}|,-)?)/i,
   );
 
   if (offscreenPriceMatch?.[1]) {
@@ -530,6 +638,88 @@ function extractAmazonPriceFromHtmlSlice(
   return extractPriceFromText(htmlSlice);
 }
 
+function extractBolPriceFromHtmlSlice(htmlSlice: string): number | undefined {
+  const collapsedEuroPriceMatch = htmlSlice.match(
+    /(?:€|eur)\s*([0-9]{1,3}(?:[.\s][0-9]{3})+)(\d{2})(?!\d)/i,
+  );
+
+  if (collapsedEuroPriceMatch?.[1] && collapsedEuroPriceMatch?.[2]) {
+    const collapsedEuroPriceMinor = parsePriceMinor(
+      `${collapsedEuroPriceMatch[1]},${collapsedEuroPriceMatch[2]}`,
+    );
+
+    if (typeof collapsedEuroPriceMinor === 'number') {
+      return collapsedEuroPriceMinor;
+    }
+  }
+
+  const narratedEuroCentMatch = htmlSlice.match(
+    /de prijs van dit product is[\s\S]{0,240}?([0-9]{1,3}(?:[.\s][0-9]{3})+|[0-9]+)\s*euro\s*en\s*([0-9]{2})\s*cent/i,
+  );
+
+  if (narratedEuroCentMatch?.[1] && narratedEuroCentMatch?.[2]) {
+    const narratedPriceMinor = parsePriceMinor(
+      `${narratedEuroCentMatch[1]},${narratedEuroCentMatch[2]}`,
+    );
+
+    if (typeof narratedPriceMinor === 'number') {
+      return narratedPriceMinor;
+    }
+  }
+
+  const bolNarratedPriceBlock = htmlSlice.match(
+    /de prijs van dit product is[\s\S]{0,200}/i,
+  )?.[0];
+
+  if (bolNarratedPriceBlock) {
+    const priceCandidates = [
+      ...bolNarratedPriceBlock.matchAll(
+        /(?:€|eur)\s*((?:[0-9]{1,3}(?:[.\s][0-9]{3})+|[0-9]+)(?:,\d{2}|,-))/gi,
+      ),
+    ]
+      .map((match) => parsePriceMinor(match[1]))
+      .filter(
+        (priceMinor): priceMinor is number => typeof priceMinor === 'number',
+      );
+
+    if (priceCandidates.length > 0) {
+      return Math.max(...priceCandidates);
+    }
+
+    const collapsedNarratedPriceCandidates = [
+      ...bolNarratedPriceBlock.matchAll(
+        /([0-9]{1,3}(?:[.\s][0-9]{3})+)(\d{2})(?!\d)/g,
+      ),
+    ]
+      .map((match) => parsePriceMinor(`${match[1]},${match[2]}`))
+      .filter(
+        (priceMinor): priceMinor is number => typeof priceMinor === 'number',
+      );
+
+    if (collapsedNarratedPriceCandidates.length > 0) {
+      return Math.max(...collapsedNarratedPriceCandidates);
+    }
+  }
+
+  return extractPriceFromText(htmlSlice);
+}
+
+function extractBolStructuredDataPriceFromHtml(
+  html: string,
+): number | undefined {
+  const bestStructuredCandidate = getBestStructuredDataOfferCandidate(html);
+
+  if (
+    typeof bestStructuredCandidate?.priceMinor === 'number' &&
+    normalizeCurrencyCode(bestStructuredCandidate.currencyCode) ===
+      EURO_CURRENCY_CODE
+  ) {
+    return bestStructuredCandidate.priceMinor;
+  }
+
+  return undefined;
+}
+
 function extractAmazonAvailabilityFromHtmlSlice(
   htmlSlice: string,
 ): PricingAvailability | undefined {
@@ -542,10 +732,28 @@ function extractAmazonAvailabilityFromHtmlSlice(
   const normalizedHtmlSlice = htmlSlice.toLowerCase();
 
   if (
-    normalizedHtmlSlice.includes('add-to-cart-button') ||
-    normalizedHtmlSlice.includes('submit.add-to-cart') ||
-    normalizedHtmlSlice.includes('buy-now-button') ||
-    normalizedHtmlSlice.includes('submit.buy-now')
+    normalizedHtmlSlice.includes('wordt gewoonlijk verzonden binnen') ||
+    normalizedHtmlSlice.includes('meestal verzonden binnen') ||
+    normalizedHtmlSlice.includes('usually dispatched within') ||
+    normalizedHtmlSlice.includes('ontvang het') ||
+    normalizedHtmlSlice.includes('je hebt het al in huis op')
+  ) {
+    return 'in_stock';
+  }
+
+  if (
+    normalizedHtmlSlice.includes('id="add-to-cart-button"') ||
+    normalizedHtmlSlice.includes("id='add-to-cart-button'") ||
+    normalizedHtmlSlice.includes('id="add-to-cart-button-ubb"') ||
+    normalizedHtmlSlice.includes("id='add-to-cart-button-ubb'") ||
+    normalizedHtmlSlice.includes('id="submit.add-to-cart"') ||
+    normalizedHtmlSlice.includes("id='submit.add-to-cart'") ||
+    normalizedHtmlSlice.includes('id="submit.add-to-cart-ubb"') ||
+    normalizedHtmlSlice.includes("id='submit.add-to-cart-ubb'") ||
+    normalizedHtmlSlice.includes('id="buy-now-button"') ||
+    normalizedHtmlSlice.includes("id='buy-now-button'") ||
+    normalizedHtmlSlice.includes('id="submit.buy-now"') ||
+    normalizedHtmlSlice.includes("id='submit.buy-now'")
   ) {
     return 'in_stock';
   }
@@ -556,50 +764,45 @@ function extractAmazonAvailabilityFromHtmlSlice(
 function extractAmazonCommerceOfferSnapshotFromHtmlDetailed(
   html: string,
 ): CommerceOfferSnapshotExtractionResult {
-  const primaryAvailability = getHtmlSlicesAroundMarkers({
+  const mainOfferContainerSlices = getHtmlSlicesAroundMarkers({
+    html,
+    markers: amazonPrimaryContainerMarkers,
+    charsAfter: 2600,
+    charsBefore: 500,
+  });
+  const mainOfferAvailabilitySlices = getHtmlSlicesAroundMarkers({
     html,
     markers: amazonPrimaryAvailabilityMarkers,
-    charsAfter: 1200,
-  })
-    .map((htmlSlice) => extractAmazonAvailabilityFromHtmlSlice(htmlSlice))
-    .find((availability) => availability !== undefined);
-  const primaryActionAvailability = getHtmlSlicesAroundMarkers({
-    html,
-    markers: amazonPrimaryActionMarkers,
-    charsAfter: 900,
-    charsBefore: 400,
-  })
-    .map((htmlSlice) => extractAmazonAvailabilityFromHtmlSlice(htmlSlice))
-    .find((availability) => availability !== undefined);
-  const primaryPriceMinor = getHtmlSlicesAroundMarkers({
-    html,
-    markers: amazonPrimaryPriceMarkers,
-    charsAfter: 1800,
+    charsAfter: 1400,
     charsBefore: 300,
-  })
+  });
+  const primaryAvailability = [
+    ...mainOfferAvailabilitySlices,
+    ...getHtmlSlicesAroundMarkers({
+      html,
+      markers: amazonPrimaryActionMarkers,
+      charsAfter: 1200,
+      charsBefore: 500,
+    }),
+    ...mainOfferContainerSlices,
+  ]
+    .map((htmlSlice) => extractAmazonAvailabilityFromHtmlSlice(htmlSlice))
+    .find((availability) => availability !== undefined);
+  const primaryPriceMinor = [
+    ...getHtmlSlicesAroundMarkers({
+      html,
+      markers: amazonPrimaryPriceMarkers,
+      charsAfter: 2200,
+      charsBefore: 500,
+    }),
+    ...mainOfferContainerSlices,
+  ]
     .map((htmlSlice) => extractAmazonPriceFromHtmlSlice(htmlSlice))
     .find((priceMinor) => typeof priceMinor === 'number');
   const sawMainOfferBlock =
-    getHtmlSlicesAroundMarkers({
-      html,
-      markers: amazonPrimaryAvailabilityMarkers,
-      charsAfter: 10,
-      charsBefore: 10,
-    }).length > 0 ||
-    getHtmlSlicesAroundMarkers({
-      html,
-      markers: amazonPrimaryPriceMarkers,
-      charsAfter: 10,
-      charsBefore: 10,
-    }).length > 0 ||
-    getHtmlSlicesAroundMarkers({
-      html,
-      markers: amazonPrimaryActionMarkers,
-      charsAfter: 10,
-      charsBefore: 10,
-    }).length > 0;
-  const normalizedAvailability =
-    primaryAvailability ?? primaryActionAvailability;
+    mainOfferContainerSlices.length > 0 ||
+    mainOfferAvailabilitySlices.length > 0;
+  const normalizedAvailability = primaryAvailability;
 
   if (!sawMainOfferBlock) {
     return {
@@ -619,6 +822,17 @@ function extractAmazonCommerceOfferSnapshotFromHtmlDetailed(
     };
   }
 
+  if (typeof primaryPriceMinor !== 'number') {
+    return {
+      snapshot: {
+        availability: normalizedAvailability ?? 'unknown',
+        currencyCode: EURO_CURRENCY_CODE,
+      },
+      reason:
+        'Amazon page resolved, but the main offer block was found without a usable main-offer price.',
+    };
+  }
+
   return {
     snapshot: {
       priceMinor: primaryPriceMinor,
@@ -626,11 +840,122 @@ function extractAmazonCommerceOfferSnapshotFromHtmlDetailed(
       availability: normalizedAvailability ?? 'unknown',
     },
     reason:
-      typeof primaryPriceMinor === 'number' ||
       normalizedAvailability === 'out_of_stock' ||
       normalizedAvailability === 'preorder'
         ? undefined
-        : 'Amazon page resolved, but no usable main-offer price was found.',
+        : normalizedAvailability === 'unknown'
+          ? 'Amazon page resolved, but main offer availability remained ambiguous.'
+          : undefined,
+  };
+}
+
+function extractBolMainOfferSlice(html: string) {
+  const primarySlice = getHtmlSlicesAroundMarkers({
+    html,
+    markers: ['Prijsinformatie en bestellen'],
+    charsBefore: 200,
+    charsAfter: 1800,
+  })[0];
+
+  if (primarySlice) {
+    return primarySlice;
+  }
+
+  return getHtmlSlicesAroundMarkers({
+    html,
+    markers: bolMainOfferMarkers,
+    charsBefore: 300,
+    charsAfter: 1600,
+  }).find((htmlSlice) => {
+    const normalizedSlice = extractTextContent(htmlSlice);
+
+    return (
+      normalizedSlice.includes('in winkelwagen') ||
+      normalizedSlice.includes('niet leverbaar') ||
+      normalizedSlice.includes('verkoop door bol') ||
+      normalizedSlice.includes('stuur mij een bericht')
+    );
+  });
+}
+
+function extractBolCommerceOfferSnapshotFromHtmlDetailed(
+  html: string,
+): CommerceOfferSnapshotExtractionResult {
+  const mainOfferSlice = extractBolMainOfferSlice(html);
+
+  if (!mainOfferSlice) {
+    return {
+      snapshot: null,
+      reason:
+        'bol page resolved, but no trustworthy bol main-offer block was found.',
+    };
+  }
+
+  const normalizedMainOfferText = extractTextContent(mainOfferSlice);
+  const structuredDataPriceMinor = extractBolStructuredDataPriceFromHtml(html);
+  const slicePriceMinor = extractBolPriceFromHtmlSlice(mainOfferSlice);
+  const priceMinor =
+    typeof structuredDataPriceMinor === 'number'
+      ? structuredDataPriceMinor
+      : slicePriceMinor;
+  const textualAvailability = extractAvailabilityFromText(mainOfferSlice);
+  const hasBuyBoxSignal =
+    normalizedMainOfferText.includes('in winkelwagen') ||
+    normalizedMainOfferText.includes('verkoop door bol') ||
+    normalizedMainOfferText.includes('verstuurd door bol');
+  const hasDeliverySignal =
+    normalizedMainOfferText.includes('morgen in huis') ||
+    normalizedMainOfferText.includes('voor 23:00 uur besteld') ||
+    normalizedMainOfferText.includes('voor 23.00 uur besteld');
+  const hasExplicitUnavailableSignal =
+    normalizedMainOfferText.includes('niet leverbaar') &&
+    normalizedMainOfferText.includes('stuur mij een bericht');
+  const hasExplicitStockSignal =
+    textualAvailability === 'in_stock' ||
+    textualAvailability === 'limited' ||
+    hasBuyBoxSignal ||
+    hasDeliverySignal;
+
+  if (hasExplicitUnavailableSignal && !hasExplicitStockSignal) {
+    return {
+      snapshot: {
+        availability: 'out_of_stock',
+        currencyCode: EURO_CURRENCY_CODE,
+      },
+    };
+  }
+
+  if (hasExplicitStockSignal) {
+    if (typeof priceMinor === 'number') {
+      return {
+        snapshot: {
+          availability:
+            textualAvailability === 'limited' ? 'limited' : 'in_stock',
+          currencyCode: EURO_CURRENCY_CODE,
+          priceMinor,
+        },
+      };
+    }
+
+    return {
+      snapshot: {
+        availability:
+          textualAvailability === 'limited' ? 'limited' : 'in_stock',
+        currencyCode: EURO_CURRENCY_CODE,
+      },
+      reason:
+        typeof slicePriceMinor === 'number'
+          ? 'bol page resolved, but the bol main-offer price fragment was incomplete.'
+          : 'bol page resolved, but no trustworthy bol main-offer price was found.',
+    };
+  }
+
+  return {
+    snapshot: null,
+    reason:
+      typeof priceMinor === 'number'
+        ? 'bol page resolved, but main offer state was ambiguous.'
+        : 'bol page resolved, but no trustworthy bol main-offer availability signal was found.',
   };
 }
 
@@ -643,6 +968,10 @@ function extractCommerceOfferSnapshotFromHtmlDetailed({
 }): CommerceOfferSnapshotExtractionResult {
   if (merchantSlug === 'amazon-nl') {
     return extractAmazonCommerceOfferSnapshotFromHtmlDetailed(html);
+  }
+
+  if (merchantSlug === 'bol') {
+    return extractBolCommerceOfferSnapshotFromHtmlDetailed(html);
   }
 
   return extractGenericCommerceOfferSnapshotFromHtml(html);
@@ -844,21 +1173,63 @@ function getSuspiciousPriceReason({
   offerSeed: CommerceRefreshSeed['offerSeed'];
   priceMinor?: number;
 }): string | undefined {
-  if (merchantSlug !== 'amazon-nl' || typeof priceMinor !== 'number') {
+  if (typeof priceMinor !== 'number') {
     return undefined;
   }
 
   const referencePriceMinor = referencePriceMinorBySetId.get(offerSeed.setId);
   const previousPriceMinor = offerSeed.latestOffer?.priceMinor;
+  const merchantLabel = merchantSlug === 'bol' ? 'bol' : 'Amazon';
+
+  if (
+    merchantSlug === 'bol' &&
+    typeof referencePriceMinor === 'number' &&
+    priceMinor < Math.round(referencePriceMinor * 0.2)
+  ) {
+    return `${merchantLabel} price ${priceMinor} looks like a malformed or partial price parse versus the reference price ${referencePriceMinor}.`;
+  }
+
+  if (
+    merchantSlug === 'bol' &&
+    typeof previousPriceMinor === 'number' &&
+    priceMinor < Math.round(previousPriceMinor * 0.2)
+  ) {
+    return `${merchantLabel} price ${priceMinor} looks like a malformed or partial price parse versus the previous verified price ${previousPriceMinor}.`;
+  }
+
+  if (merchantSlug !== 'amazon-nl' && merchantSlug !== 'bol') {
+    return undefined;
+  }
 
   if (
     typeof referencePriceMinor === 'number' &&
-    priceMinor < Math.round(referencePriceMinor * 0.35)
+    priceMinor < Math.round(referencePriceMinor * 0.1)
   ) {
-    return `Amazon price ${priceMinor} is implausibly low versus the reference price ${referencePriceMinor}.`;
+    return `${merchantLabel} price ${priceMinor} looks like a malformed or partial price parse versus the reference price ${referencePriceMinor}.`;
   }
 
-  if (availability !== 'unknown') {
+  if (
+    typeof previousPriceMinor === 'number' &&
+    priceMinor < Math.round(previousPriceMinor * 0.1)
+  ) {
+    return `${merchantLabel} price ${priceMinor} looks like a malformed or partial price parse versus the previous verified price ${previousPriceMinor}.`;
+  }
+
+  if (
+    typeof referencePriceMinor === 'number' &&
+    priceMinor < Math.round(referencePriceMinor * 0.5)
+  ) {
+    return `${merchantLabel} price ${priceMinor} is implausibly low versus the reference price ${referencePriceMinor}.`;
+  }
+
+  if (
+    typeof previousPriceMinor === 'number' &&
+    priceMinor < Math.round(previousPriceMinor * 0.5)
+  ) {
+    return `${merchantLabel} price ${priceMinor} is implausibly low versus the previous verified price ${previousPriceMinor}.`;
+  }
+
+  if (merchantSlug === 'bol' || availability !== 'unknown') {
     return undefined;
   }
 
@@ -866,14 +1237,14 @@ function getSuspiciousPriceReason({
     typeof referencePriceMinor === 'number' &&
     priceMinor < Math.round(referencePriceMinor * 0.7)
   ) {
-    return `Amazon price ${priceMinor} is too low to trust while the main offer availability is unknown.`;
+    return `${merchantLabel} price ${priceMinor} is too low to trust while the main offer availability is unknown.`;
   }
 
   if (
     typeof previousPriceMinor === 'number' &&
     priceMinor < Math.round(previousPriceMinor * 0.7)
   ) {
-    return `Amazon price ${priceMinor} is too low to trust versus the previous verified price ${previousPriceMinor}.`;
+    return `${merchantLabel} price ${priceMinor} is too low to trust versus the previous verified price ${previousPriceMinor}.`;
   }
 
   return undefined;
