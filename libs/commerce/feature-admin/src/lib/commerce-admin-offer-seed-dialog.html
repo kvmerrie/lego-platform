@@ -48,11 +48,12 @@
       <label class="admin-field">
         <span>Set</span>
         <select
-          [(ngModel)]="formModel.setId"
+          [ngModel]="formModel.setId"
+          (ngModelChange)="updateSet($event)"
           class="admin-input"
           name="offer-seed-set-id"
         >
-          @for (catalogSet of commerceAdminStore.catalogSetOptions; track
+          @for (catalogSet of commerceAdminStore.catalogSetOptions(); track
           catalogSet.id) {
           <option [value]="catalogSet.id">
             {{ catalogSet.theme }} · {{ catalogSet.name }} ({{ catalogSet.id }})
@@ -64,7 +65,8 @@
       <label class="admin-field">
         <span>Merchant</span>
         <select
-          [(ngModel)]="formModel.merchantId"
+          [ngModel]="formModel.merchantId"
+          (ngModelChange)="updateMerchant($event)"
           class="admin-input"
           name="offer-seed-merchant-id"
         >
@@ -74,17 +76,275 @@
         </select>
       </label>
 
-      <label class="admin-field admin-field--full">
-        <span>Product-URL</span>
+      <section class="admin-field admin-field--full">
+        <span>URL kiezen</span>
+
+        <div
+          aria-label="Kies hoe je een merchant-URL toevoegt"
+          class="admin-segmented-control"
+          role="tablist"
+        >
+          <button
+            aria-controls="offer-seed-manual-panel"
+            [attr.aria-selected]="mode() === 'manual'"
+            class="admin-segmented-control__button"
+            [class.is-active]="mode() === 'manual'"
+            id="offer-seed-manual-tab"
+            role="tab"
+            type="button"
+            (click)="setMode('manual')"
+          >
+            Handmatige URL
+          </button>
+          <button
+            aria-controls="offer-seed-discovery-panel"
+            [attr.aria-selected]="mode() === 'discover'"
+            class="admin-segmented-control__button"
+            [class.is-active]="mode() === 'discover'"
+            [disabled]="!supportsDiscovery"
+            id="offer-seed-discovery-tab"
+            role="tab"
+            type="button"
+            (click)="setMode('discover')"
+          >
+            Discover
+          </button>
+        </div>
+
+        @if (mode() === 'manual') {
+        <div
+          aria-labelledby="offer-seed-manual-tab"
+          class="admin-discovery-shell"
+          id="offer-seed-manual-panel"
+          role="tabpanel"
+        >
+          <p class="admin-muted">
+            Plak zelf een merchant-URL, of gebruik de zoekactie als snelle
+            fallback.
+          </p>
+        </div>
+        } @else {
+        <div
+          aria-labelledby="offer-seed-discovery-tab"
+          class="admin-discovery-shell"
+          id="offer-seed-discovery-panel"
+          role="tabpanel"
+        >
+          <div class="admin-section__header">
+            <div class="admin-stack admin-stack--tight">
+              <strong>Recente kandidaten</strong>
+              <p class="admin-muted">
+                Zelfde set, zelfde merchant. Kies er een en bevestig daarna nog
+                steeds expliciet de seed.
+              </p>
+            </div>
+
+            <button
+              class="admin-button admin-button--subtle"
+              [disabled]="isDiscoveryRunning"
+              type="button"
+              (click)="runDiscovery()"
+            >
+              {{ isDiscoveryRunning ? 'Discovery draait…' : 'Discovery opnieuw
+              draaien' }}
+            </button>
+          </div>
+
+          @if (latestDiscoveryRun) {
+          <div class="admin-discovery-summary">
+            <div class="admin-pill-cluster">
+              <span
+                class="admin-status-pill"
+                [class.admin-status-pill--danger]="
+                  commerceAdminStore.getDiscoveryRunTone(
+                    latestDiscoveryRun.status
+                  ) === 'danger'
+                "
+                [class.admin-status-pill--neutral]="
+                  commerceAdminStore.getDiscoveryRunTone(
+                    latestDiscoveryRun.status
+                  ) === 'neutral'
+                "
+                [class.admin-status-pill--positive]="
+                  commerceAdminStore.getDiscoveryRunTone(
+                    latestDiscoveryRun.status
+                  ) === 'positive'
+                "
+              >
+                {{ latestDiscoveryRun.status }}
+              </span>
+              <span class="admin-count-pill">
+                {{ latestDiscoveryRun.candidateCount }} kandidaat{{
+                latestDiscoveryRun.candidateCount === 1 ? '' : 'en' }}
+              </span>
+            </div>
+            <span class="admin-muted">
+              Laatste run: {{ commerceAdminStore.formatTimestamp(
+              latestDiscoveryRun.finishedAt ?? latestDiscoveryRun.createdAt ) }}
+            </span>
+          </div>
+          } @if (discoveryMessage) {
+          <div
+            class="admin-panel"
+            [class.admin-panel--danger]="discoveryMessageTone === 'danger'"
+          >
+            <strong>
+              {{ discoveryMessageTone === 'positive' ? 'Discovery klaar' :
+              discoveryMessageTone === 'neutral' ? 'Discovery-info' : 'Discovery
+              gestopt' }}
+            </strong>
+            <p class="admin-muted">{{ discoveryMessage }}</p>
+          </div>
+          } @if (hasDiscoveryCandidates) {
+          <div class="admin-discovery-candidates">
+            @for (candidate of discoveryCandidates; track candidate.id) {
+            <button
+              class="admin-discovery-candidate"
+              [class.is-selected]="isDiscoveryCandidateSelected(candidate.id)"
+              [disabled]="candidate.reviewStatus === 'rejected'"
+              type="button"
+              (click)="selectDiscoveryCandidate(candidate)"
+            >
+              <div class="admin-section__header">
+                <div class="admin-stack admin-stack--tight">
+                  <strong>{{ candidate.candidateTitle }}</strong>
+                  <span class="admin-muted">{{ candidate.candidateUrl }}</span>
+                </div>
+
+                <div class="admin-pill-cluster">
+                  <span
+                    class="admin-status-pill"
+                    [class.admin-status-pill--danger]="
+                      commerceAdminStore.getDiscoveryCandidateStatusTone(
+                        candidate.status
+                      ) === 'danger'
+                    "
+                    [class.admin-status-pill--warning]="
+                      commerceAdminStore.getDiscoveryCandidateStatusTone(
+                        candidate.status
+                      ) === 'warning'
+                    "
+                    [class.admin-status-pill--positive]="
+                      commerceAdminStore.getDiscoveryCandidateStatusTone(
+                        candidate.status
+                      ) === 'positive'
+                    "
+                  >
+                    Score {{ candidate.confidenceScore }}
+                  </span>
+                  <span
+                    class="admin-status-pill"
+                    [class.admin-status-pill--danger]="
+                      commerceAdminStore.getDiscoveryCandidateStatusTone(
+                        candidate.status
+                      ) === 'danger'
+                    "
+                    [class.admin-status-pill--warning]="
+                      commerceAdminStore.getDiscoveryCandidateStatusTone(
+                        candidate.status
+                      ) === 'warning'
+                    "
+                    [class.admin-status-pill--positive]="
+                      commerceAdminStore.getDiscoveryCandidateStatusTone(
+                        candidate.status
+                      ) === 'positive'
+                    "
+                  >
+                    {{ commerceAdminStore.getDiscoveryCandidateStatusLabel(
+                    candidate.status ) }}
+                  </span>
+                  <span
+                    class="admin-status-pill"
+                    [class.admin-status-pill--danger]="
+                      commerceAdminStore.getDiscoveryReviewStatusTone(
+                        candidate.reviewStatus
+                      ) === 'danger'
+                    "
+                    [class.admin-status-pill--neutral]="
+                      commerceAdminStore.getDiscoveryReviewStatusTone(
+                        candidate.reviewStatus
+                      ) === 'neutral'
+                    "
+                    [class.admin-status-pill--positive]="
+                      commerceAdminStore.getDiscoveryReviewStatusTone(
+                        candidate.reviewStatus
+                      ) === 'positive'
+                    "
+                  >
+                    {{ commerceAdminStore.getDiscoveryReviewStatusLabel(
+                    candidate.reviewStatus ) }}
+                  </span>
+                  <span
+                    class="admin-status-pill"
+                    [class.admin-status-pill--neutral]="
+                      commerceAdminStore.getDiscoveryCandidateLinkTone(
+                        candidate
+                      ) === 'neutral'
+                    "
+                    [class.admin-status-pill--positive]="
+                      commerceAdminStore.getDiscoveryCandidateLinkTone(
+                        candidate
+                      ) === 'positive'
+                    "
+                  >
+                    {{ commerceAdminStore.getDiscoveryCandidateLinkLabel(
+                    candidate ) }}
+                  </span>
+                  @if (isDiscoveryCandidateSelected(candidate.id)) {
+                  <span class="admin-status-pill admin-status-pill--neutral">
+                    Geselecteerd
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="admin-discovery-candidate__meta">
+                <span>
+                  {{ commerceAdminStore.formatPriceMinor( candidate.priceMinor,
+                  candidate.currencyCode ?? 'EUR' ) }}
+                </span>
+                <span
+                  >{{ commerceAdminStore.getDiscoveryAvailabilityLabel(
+                  candidate.availability ) }}</span
+                >
+                <span>Set: {{ candidate.detectedSetId ?? 'unknown' }}</span>
+              </div>
+
+              <div class="admin-pill-cluster">
+                @for (reason of candidate.matchReasons; track reason) {
+                <span class="admin-count-pill">{{ reason }}</span>
+                }
+              </div>
+            </button>
+            }
+          </div>
+          } @else if (latestDiscoveryRun?.errorMessage) {
+          <div class="admin-panel admin-panel--danger">
+            <strong>Discovery leverde geen bruikbare kandidaat op</strong>
+            <p class="admin-muted">{{ latestDiscoveryRun?.errorMessage }}</p>
+          </div>
+          } @else {
+          <div class="admin-panel">
+            <strong>Nog geen kandidaten</strong>
+            <p class="admin-muted">
+              Draai discovery voor deze set en merchant, of val terug op een
+              handmatige URL.
+            </p>
+          </div>
+          }
+        </div>
+        }
+
         <div class="admin-input-with-action">
           <input
-            [(ngModel)]="formModel.productUrl"
+            [ngModel]="formModel.productUrl"
+            (ngModelChange)="updateProductUrl($event)"
             class="admin-input"
             name="offer-seed-product-url"
             type="url"
           />
           <div class="admin-input-actions">
-            @if (merchantSearchUrl) {
+            @if (mode() === 'manual' && merchantSearchUrl) {
             <a
               [href]="merchantSearchUrl"
               aria-label="Zoek deze set op de geselecteerde merchantsite"
@@ -107,7 +367,7 @@
             }
           </div>
         </div>
-      </label>
+      </section>
 
       <label class="admin-field">
         <span>Validatiestatus</span>

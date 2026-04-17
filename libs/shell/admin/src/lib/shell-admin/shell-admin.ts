@@ -26,8 +26,20 @@ export class ShellAdminComponent {
       path: '/dashboard',
     },
     {
+      label: 'Add set',
+      path: '/add-set',
+    },
+    {
       label: 'Operations',
       path: '/operations',
+    },
+    {
+      label: 'Coverage Queue',
+      path: '/coverage-queue',
+    },
+    {
+      label: 'Discovery',
+      path: '/discovery',
     },
     {
       label: 'Merchants',

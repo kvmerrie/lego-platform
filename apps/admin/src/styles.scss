@@ -161,6 +161,39 @@ a {
   text-decoration: none;
 }
 
+.admin-segmented-control {
+  background: color-mix(in srgb, var(--lego-surface-muted) 82%, transparent);
+  border: 1px solid var(--lego-border);
+  border-radius: var(--lego-radius-pill);
+  display: inline-flex;
+  gap: 0.3rem;
+  padding: 0.25rem;
+  width: fit-content;
+}
+
+.admin-segmented-control__button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.95rem;
+}
+
+.admin-segmented-control__button.is-active {
+  background: var(--lego-surface);
+  color: var(--lego-text);
+}
+
+.admin-segmented-control__button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .admin-field {
   display: grid;
   gap: 0.45rem;
@@ -179,6 +212,54 @@ a {
   align-items: center;
   display: flex;
   gap: 0.65rem;
+}
+
+.admin-discovery-shell {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.admin-discovery-summary {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: space-between;
+}
+
+.admin-discovery-candidates {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-discovery-candidate {
+  background: color-mix(in srgb, var(--lego-surface) 97%, transparent);
+  border: 1px solid var(--lego-border);
+  border-radius: var(--lego-radius-md);
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.95rem;
+  text-align: left;
+}
+
+.admin-discovery-candidate.is-selected {
+  border-color: var(--lego-accent);
+  background: color-mix(in srgb, var(--lego-accent) 8%, var(--lego-surface));
+}
+
+.admin-discovery-candidate[disabled] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.admin-discovery-candidate__meta {
+  color: var(--lego-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.92rem;
 }
 
 .admin-toolbar {
@@ -243,11 +324,14 @@ a {
 }
 
 .admin-actions-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   white-space: nowrap;
 }
 
 .admin-actions-inline .admin-button {
-  margin-right: 0.5rem;
+  margin-right: 0;
 }
 
 .admin-list {
@@ -272,6 +356,58 @@ a {
 
 .admin-list__empty {
   color: var(--lego-text-muted);
+}
+
+.admin-search-results {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-search-result {
+  background: color-mix(in srgb, var(--lego-surface) 97%, transparent);
+  border: 1px solid var(--lego-border);
+  border-radius: var(--lego-radius-md);
+  cursor: pointer;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  text-align: left;
+}
+
+.admin-search-result.is-selected {
+  background: color-mix(in srgb, var(--lego-accent) 8%, var(--lego-surface));
+  border-color: var(--lego-accent);
+}
+
+.admin-search-result__title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.admin-set-preview {
+  align-items: center;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.admin-set-preview__image {
+  aspect-ratio: 1;
+  background: color-mix(in srgb, var(--lego-surface-muted) 78%, transparent);
+  border-radius: var(--lego-radius-md);
+  height: 7rem;
+  object-fit: contain;
+  padding: 0.65rem;
+  width: 7rem;
+}
+
+.admin-discovery-candidate-card {
+  background: color-mix(in srgb, var(--lego-surface) 97%, transparent);
+  border: 1px solid var(--lego-border);
+  border-radius: var(--lego-radius-md);
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
 }
 
 .admin-count-pill,
@@ -382,6 +518,8 @@ a {
 .admin-button:focus-visible,
 .admin-input:focus-visible,
 .admin-input-action:focus-visible,
+.admin-segmented-control__button:focus-visible,
+.admin-discovery-candidate:focus-visible,
 .admin-link-card:focus-visible,
 .admin-pill-button:focus-visible,
 .admin-table a:focus-visible {
@@ -398,13 +536,18 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .admin-button--subtle:hover,
-  .admin-link-card:hover {
+  .admin-link-card:hover,
+  .admin-input-action:hover {
     border-color: var(--lego-text);
   }
 
   .admin-button--primary:hover {
     background: color-mix(in srgb, var(--lego-text) 92%, black 8%);
     border-color: color-mix(in srgb, var(--lego-text) 92%, black 8%);
+  }
+
+  .admin-discovery-candidate:hover {
+    border-color: color-mix(in srgb, var(--lego-text) 30%, var(--lego-border));
   }
 }
 

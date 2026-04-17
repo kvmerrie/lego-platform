@@ -307,8 +307,8 @@ export function buildSetDealVerdict(
   if (decisionState === 'limited') {
     return {
       explanation:
-        'We volgen deze set nog te kort om nu al scherp koopadvies te geven.',
-      label: 'Nog te weinig data',
+        'Prijsdata nog beperkt. Even volgen geeft straks een beter signaal.',
+      label: 'Prijsdata nog beperkt',
       tone: 'neutral',
     };
   }
@@ -317,7 +317,7 @@ export function buildSetDealVerdict(
     return {
       explanation:
         decisionVoice === 'calm'
-          ? 'Sterke prijs voor deze set. Als hij al op je lijst stond, is dit een rustig instapmoment.'
+          ? 'Sterke prijs voor deze set. Als hij al op je lijst stond, is dit een goed instapmoment.'
           : decisionVoice === 'punchy'
             ? 'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om toe te slaan.'
             : 'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
@@ -330,7 +330,7 @@ export function buildSetDealVerdict(
     return {
       explanation:
         decisionVoice === 'calm'
-          ? 'Deze prijs ligt nu te hoog. Rustig volgen is slimmer dan meteen kopen.'
+          ? 'Deze prijs ligt nu te hoog. Volgen is slimmer dan meteen kopen.'
           : decisionVoice === 'punchy'
             ? 'Deze prijs ligt te hoog. Even wachten geeft je een betere kans.'
             : 'Deze prijs ligt boven wat we meestal zien. Wachten is slimmer dan nu kopen.',
@@ -370,17 +370,17 @@ export function buildSetDecisionPresentation({
 
   if (state === 'limited') {
     return {
-      cardLabel: 'Prijs wordt opgebouwd',
+      cardLabel: 'Prijsdata nog beperkt',
       cardSupportingCopy: hasCurrentOffer
         ? undefined
-        : 'We bouwen dit prijsbeeld nog op',
+        : 'Prijsbeeld bouwt nog op',
       followCopy:
-        'Brickhunt houdt deze set in de gaten terwijl de prijsdata zich opbouwt.',
+        'Brickhunt bouwt het prijsbeeld nog op. Volgen helpt hier het meest.',
       followEyebrow: 'Prijs volgen',
       followTitle: 'Volg deze set',
       noOfferCopy:
-        'Brickhunt volgt deze set al, maar nog niet scherp genoeg voor een koopmoment of betrouwbare deal-link.',
-      noOfferTitle: 'We bouwen dit prijsbeeld nog op',
+        'Nog te weinig prijschecks voor een hard koopmoment of klikroute.',
+      noOfferTitle: 'Prijsbeeld bouwt nog op',
       state,
       verdict,
     };
@@ -389,19 +389,17 @@ export function buildSetDecisionPresentation({
   if (state === 'buy') {
     return {
       cardLabel: hasCurrentOffer ? 'Goede deal' : 'Goede prijs',
-      cardSupportingCopy: hasCurrentOffer
-        ? undefined
-        : 'Nog geen betrouwbare deal-link',
+      cardSupportingCopy: hasCurrentOffer ? undefined : 'Nog geen klikroute',
       followCopy: hasCurrentOffer
-        ? 'Sterke prijs gezien? Volg deze set als je nog even wilt wachten zonder het moment kwijt te raken.'
-        : 'Sterke prijs gezien, maar nog geen goede deal-link. Volg deze set; Brickhunt seint je zodra er wel een betrouwbare route is.',
+        ? 'Volg deze set als je nog even wilt wachten zonder dit moment kwijt te raken.'
+        : 'Sterke prijs gezien, nog zonder betrouwbare klikroute. Volg deze set voor het moment dat die er wel is.',
       followEyebrow: hasCurrentOffer
         ? 'Nog niet klaar?'
         : 'Laat Brickhunt meekijken',
       followTitle: hasCurrentOffer ? 'Volg deze prijs' : 'Volg deze set',
       noOfferCopy:
-        'We zien wel een sterke prijs, maar nog geen betrouwbare aanbieding om je nu naartoe te sturen.',
-      noOfferTitle: 'Nog geen betrouwbare deal-link',
+        'Sterke prijs gezien, maar nog geen betrouwbare route om nu op te klikken.',
+      noOfferTitle: 'Nog geen klikroute',
       state,
       verdict,
     };
@@ -410,16 +408,14 @@ export function buildSetDecisionPresentation({
   if (state === 'wait') {
     return {
       cardLabel: 'Wachten loont',
-      cardSupportingCopy: hasCurrentOffer
-        ? undefined
-        : 'Nog geen goede deal gevonden',
+      cardSupportingCopy: hasCurrentOffer ? undefined : 'Nog geen deal',
       followCopy:
-        'Laat Brickhunt meekijken. Dan zie je sneller wanneer wachten niet meer nodig is.',
+        'Volg deze set. Dan zie je sneller wanneer wachten niet meer nodig is.',
       followEyebrow: 'Slimmer om te wachten',
       followTitle: 'Volg deze set',
       noOfferCopy:
-        'De prijs is nog niet sterk en we zien nu ook geen betrouwbare aanbieding om door te sturen.',
-      noOfferTitle: 'Nog geen goede deal gevonden',
+        'De prijs is nog niet sterk en er ligt nu ook geen goede klikroute klaar.',
+      noOfferTitle: 'Nog geen deal',
       state,
       verdict,
     };
@@ -427,16 +423,13 @@ export function buildSetDecisionPresentation({
 
   return {
     cardLabel: 'Prima prijs',
-    cardSupportingCopy: hasCurrentOffer
-      ? undefined
-      : 'We volgen deze set voor prijsdrops',
+    cardSupportingCopy: hasCurrentOffer ? undefined : 'Koopsignaal nog vlak',
     followCopy:
-      'Prima prijs, maar dit hoeft geen nu-of-nooit moment te zijn. Volg hem als je op een duidelijkere deal wilt wachten.',
+      'Prima prijs, maar geen nu-of-nooit moment. Volg hem als je op een scherpere deal wilt wachten.',
     followEyebrow: 'In de gaten houden',
     followTitle: 'Volg deze set',
-    noOfferCopy:
-      'We zien prijscontext, maar nog geen sterke of betrouwbare aanbieding om nu door te sturen.',
-    noOfferTitle: 'We volgen deze set',
+    noOfferCopy: 'Prijsbeeld is er, maar nog zonder sterke klikroute.',
+    noOfferTitle: 'Prijs wordt gevolgd',
     state,
     verdict,
   };
@@ -463,22 +456,22 @@ export function buildSetDecisionSupportItems({
     items.push({
       id: 'limited-data',
       text: hasCurrentOffer
-        ? 'We hebben nog beperkte data, maar dit is nu de beste prijs die we zien.'
-        : 'We hebben nog weinig prijsdata voor deze set.',
+        ? 'Prijsdata nog beperkt, maar dit is nu de beste prijs die we zien.'
+        : 'Prijsdata nog beperkt.',
     });
 
     if (typeof trackedMerchantCount === 'number' && trackedMerchantCount > 0) {
       items.push({
         id: 'merchant-coverage',
-        text: `We volgen ${trackedMerchantCount} Nederlandse winkel${
+        text: `${trackedMerchantCount} winkel${
           trackedMerchantCount === 1 ? '' : 's'
-        } voor deze set.`,
+        } nagekeken.`,
       });
     }
 
     items.push({
       id: 'brickhunt-guidance',
-      text: 'Met meer data wordt dit advies scherper.',
+      text: 'Met meer checks wordt dit signaal scherper.',
     });
 
     return items.slice(0, 3);
@@ -488,23 +481,23 @@ export function buildSetDecisionSupportItems({
     if (pricePanelSnapshot.deltaMinor < 0) {
       items.push({
         id: 'price-below-normal',
-        text: 'Deze prijs ligt onder wat we meestal zien.',
+        text: 'Onder het normale prijsniveau.',
       });
     } else if (pricePanelSnapshot.deltaMinor > 0) {
       items.push({
         id: 'price-above-normal',
-        text: 'Deze prijs ligt boven wat we meestal zien.',
+        text: 'Boven het normale prijsniveau.',
       });
     } else {
       items.push({
         id: 'price-normal',
-        text: 'Deze prijs zit rond wat we meestal zien.',
+        text: 'Rond het normale prijsniveau.',
       });
     }
   } else {
     items.push({
       id: 'limited-data',
-      text: 'We hebben nog beperkte data, maar dit is nu de beste deal die we zien.',
+      text: 'Prijsdata nog beperkt, maar dit is nu de beste deal die we zien.',
     });
   }
 
@@ -513,22 +506,22 @@ export function buildSetDecisionSupportItems({
       id: 'best-price-now',
       text:
         typeof trackedMerchantCount === 'number' && trackedMerchantCount > 1
-          ? 'Dit is momenteel de scherpste prijs die we volgen.'
-          : 'Dit is nu de beste prijs die we zien.',
+          ? 'Beste prijs die we nu volgen.'
+          : 'Beste prijs die we nu zien.',
     });
   }
 
   if (typeof trackedMerchantCount === 'number' && trackedMerchantCount > 0) {
     items.push({
       id: 'merchant-coverage',
-      text: `We volgen ${trackedMerchantCount} Nederlandse winkel${
+      text: `${trackedMerchantCount} winkel${
         trackedMerchantCount === 1 ? '' : 's'
-      } voor deze set.`,
+      } nagekeken.`,
     });
   } else if (items.length < 3) {
     items.push({
       id: 'brickhunt-guidance',
-      text: 'Met meer data wordt dit advies scherper.',
+      text: 'Met meer checks wordt dit signaal scherper.',
     });
   }
 
@@ -552,18 +545,18 @@ export function buildBrickhuntValueItems({
       id: 'brickhunt-monitoring',
       text:
         typeof merchantCount === 'number' && merchantCount > 0
-          ? `We vergelijken echte prijzen bij ${merchantCount} Nederlandse winkel${
+          ? `${merchantCount} winkel${
               merchantCount === 1 ? '' : 's'
-            } zolang die vergelijking iets zegt.`
-          : 'We vergelijken echte winkelprijzen zolang die vergelijking iets zegt.',
+            } worden actief nagekeken.`
+          : 'Winkelprijzen worden actief nagekeken.',
     },
     {
       id: 'brickhunt-guidance',
-      text: 'Je ziet of deze prijs echt opvalt of gewoon normaal is.',
+      text: 'Je ziet meteen of deze prijs echt opvalt.',
     },
     {
       id: 'brickhunt-alerts',
-      text: 'Nog niet kopen? Volg de prijs en laat Brickhunt meekijken.',
+      text: 'Nog niet klaar? Volg de prijs.',
     },
   ];
 }
@@ -639,11 +632,11 @@ export function buildSetPriceInsights({
     return [
       {
         id: 'limited-data',
-        text: 'We volgen deze set nog te kort voor scherp prijsadvies.',
+        text: 'Prijsdata nog beperkt.',
       },
       {
         id: 'more-data',
-        text: 'Met meer data wordt dit advies scherper.',
+        text: 'Met meer checks wordt dit signaal scherper.',
       },
     ];
   }
@@ -672,7 +665,7 @@ export function buildSetPriceInsights({
   } else {
     insights.push({
       id: 'limited-history',
-      text: 'We hebben nog beperkt prijsverloop voor deze set.',
+      text: 'Prijsverloop nog beperkt.',
     });
   }
 
@@ -699,16 +692,16 @@ export function buildSetPriceInsights({
   if (!trackedPriceSummary && insights.length < 3) {
     insights.push({
       id: 'more-data',
-      text: 'Met meer data wordt dit advies scherper.',
+      text: 'Met meer checks wordt dit signaal scherper.',
     });
   }
 
   if (insights.length < 3) {
     insights.push({
       id: 'coverage',
-      text: `We volgen nu ${pricePanelSnapshot.merchantCount} winkel${
+      text: `${pricePanelSnapshot.merchantCount} winkel${
         pricePanelSnapshot.merchantCount === 1 ? '' : 's'
-      } voor deze set.`,
+      } nagekeken.`,
     });
   }
 

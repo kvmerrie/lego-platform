@@ -1,6 +1,9 @@
 import { Route } from '@angular/router';
 import {
+  CommerceAdminAddSetPageComponent,
   CommerceAdminCoveragePageComponent,
+  CommerceAdminCoverageQueuePageComponent,
+  CommerceAdminDiscoveryPageComponent,
   CommerceAdminDashboardPageComponent,
   CommerceAdminMerchantsPageComponent,
   CommerceAdminOperationsPageComponent,
@@ -23,6 +26,10 @@ export const appRoutes: Route[] = [
         component: CommerceAdminDashboardPageComponent,
       },
       {
+        path: 'add-set',
+        component: CommerceAdminAddSetPageComponent,
+      },
+      {
         path: 'merchants',
         component: CommerceAdminMerchantsPageComponent,
       },
@@ -31,8 +38,16 @@ export const appRoutes: Route[] = [
         component: CommerceAdminOperationsPageComponent,
       },
       {
+        path: 'discovery',
+        component: CommerceAdminDiscoveryPageComponent,
+      },
+      {
         path: 'offer-seeds',
         component: CommerceAdminOfferSeedsPageComponent,
+      },
+      {
+        path: 'coverage-queue',
+        component: CommerceAdminCoverageQueuePageComponent,
       },
       {
         path: 'coverage',

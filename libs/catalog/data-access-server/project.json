@@ -1,0 +1,16 @@
+{
+  "name": "catalog-data-access-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/data-access-server/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:data-access", "platform:server"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/catalog/data-access-server",
+        "command": "vitest run src/lib/*.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

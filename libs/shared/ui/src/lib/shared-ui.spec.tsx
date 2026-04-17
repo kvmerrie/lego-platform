@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ActionLink,
   Breadcrumbs,
+  Button,
   Container,
   LabelValueList,
   MarkerList,
@@ -200,5 +201,19 @@ describe('ActionLink', () => {
     expect(markup).toContain('<h3>Alle thema');
     expect(markup).not.toContain('interactiveSizeDefault');
     expect(markup).not.toContain('interactiveSurfaceImage');
+  });
+});
+
+describe('Button', () => {
+  it('supports inline text-action treatment without the default button sizing shell', () => {
+    const markup = renderToStaticMarkup(
+      <Button tone="inline" type="button">
+        Bekijk meer
+      </Button>,
+    );
+
+    expect(markup).toContain('Bekijk meer');
+    expect(markup).toContain('buttonInline');
+    expect(markup).not.toContain('interactiveSizeDefault');
   });
 });

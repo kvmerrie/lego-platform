@@ -13,6 +13,7 @@ import {
   type BrickhuntAnalyticsEventDescriptor,
 } from '@lego-platform/shared/util';
 import styles from './catalog-ui.module.css';
+import { CatalogOfferComparisonRail } from './catalog-offer-comparison-rail';
 
 export interface CatalogDecisionVerdict {
   explanation: string;
@@ -77,15 +78,26 @@ export interface CatalogKeyFact {
   value: ReactNode;
 }
 
+interface CatalogPriceDecisionPanelProps {
+  followAction?: ReactNode;
+  followCopy?: string;
+  followEyebrow?: string;
+  followTitle?: string;
+  compact?: boolean;
+  leadWithFollow?: boolean;
+  primaryOffer?: CatalogDecisionOffer;
+  supportItems?: readonly CatalogSupportItem[];
+  supportTitle?: string;
+  verdictTone?: CatalogDecisionVerdict['tone'];
+}
+
 function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
   if (!offer) {
     return (
       <section className={styles.bestDealCard}>
-        <p className={styles.bestDealEyebrow}>Beste winkel nu</p>
-        <p className={styles.bestDealFallbackValue}>Nog geen nagekeken prijs</p>
-        <p className={styles.bestDealMeta}>
-          We hebben nog geen bruikbare prijsvergelijking voor deze set.
-        </p>
+        <p className={styles.bestDealEyebrow}>Beste deal nu</p>
+        <p className={styles.bestDealFallbackValue}>Nog geen deal</p>
+        <p className={styles.bestDealMeta}>Prijsbeeld bouwt nog op.</p>
       </section>
     );
   }
@@ -97,7 +109,7 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
     >
       <div className={styles.bestDealHeader}>
         <p className={styles.bestDealEyebrow}>
-          {offer.eyebrow ?? 'Beste winkel nu'}
+          {offer.eyebrow ?? 'Beste deal nu'}
         </p>
         {offer.decisionLabel ? (
           <Badge tone={offer.decisionTone ?? 'neutral'}>
@@ -151,6 +163,12 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
   );
 }
 
+export function CatalogPriceDecisionPrimary({
+  primaryOffer,
+}: Pick<CatalogPriceDecisionPanelProps, 'primaryOffer'>) {
+  return <CatalogDecisionOfferCard offer={primaryOffer} />;
+}
+
 function getFollowTitle(tone?: CatalogDecisionVerdict['tone']): string {
   if (tone === 'warning') {
     return 'Volg deze set';
@@ -165,14 +183,14 @@ function getFollowTitle(tone?: CatalogDecisionVerdict['tone']): string {
 
 function getFollowCopy(tone?: CatalogDecisionVerdict['tone']): string {
   if (tone === 'warning') {
-    return 'Volg deze prijs. Dan zie je sneller wanneer dit een beter moment wordt.';
+    return 'Brickhunt seint je zodra dit wél een koopmoment wordt.';
   }
 
   if (tone === 'positive') {
-    return 'Volg deze prijs. Brickhunt houdt het moment voor je in de gaten.';
+    return 'Nog niet klaar? Dan houdt Brickhunt dit moment vast.';
   }
 
-  return 'Volg deze prijs als je later nog eens rustig wilt vergelijken.';
+  return 'Volg deze set als je straks opnieuw wilt kijken.';
 }
 
 function getFollowEyebrow(tone?: CatalogDecisionVerdict['tone']): string {
@@ -182,12 +200,14 @@ function getFollowEyebrow(tone?: CatalogDecisionVerdict['tone']): string {
 function CatalogFollowActionCard({
   action,
   copy,
+  compact = false,
   eyebrow,
   title,
   tone,
 }: {
   action?: ReactNode;
   copy?: string;
+  compact?: boolean;
   eyebrow?: string;
   title?: string;
   tone?: CatalogDecisionVerdict['tone'];
@@ -196,37 +216,84 @@ function CatalogFollowActionCard({
     <section
       className={styles.alertCard}
       data-emphasis={tone === 'warning' ? 'primary' : 'secondary'}
+      data-layout={compact ? 'compact' : 'default'}
     >
       <p className={styles.alertEyebrow}>{eyebrow ?? getFollowEyebrow(tone)}</p>
-      <h2 className={styles.alertTitle}>
+      <p className={styles.alertTitle}>
         <BellRing aria-hidden="true" size={17} strokeWidth={2.2} />
         <span>{title ?? getFollowTitle(tone)}</span>
-      </h2>
+      </p>
       <p className={styles.alertCopy}>{copy ?? getFollowCopy(tone)}</p>
       {action ? <div className={styles.alertAction}>{action}</div> : null}
     </section>
   );
 }
 
+export function CatalogPriceDecisionSecondary({
+  compact = false,
+  followAction,
+  followCopy,
+  followEyebrow,
+  followTitle,
+  supportItems = [],
+  supportTitle,
+  verdictTone,
+}: Omit<CatalogPriceDecisionPanelProps, 'leadWithFollow' | 'primaryOffer'>) {
+  const followCard = (
+    <CatalogFollowActionCard
+      action={followAction}
+      copy={followCopy}
+      compact={compact}
+      eyebrow={followEyebrow}
+      title={followTitle}
+      tone={verdictTone}
+    />
+  );
+
+  return (
+    <div className={styles.detailDecisionSecondary}>
+      <div className={styles.detailDecisionStack}>{followCard}</div>
+      {supportItems.length > 0 && supportTitle ? (
+        <div className={styles.detailDecisionSupport}>
+          <p className={styles.detailDecisionSupportTitle}>{supportTitle}</p>
+          <MarkerList
+            className={styles.detailDecisionSupportList}
+            items={supportItems.map((item) => ({
+              content: item.text,
+              id: item.id,
+            }))}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function CatalogOfferCoverageState({
+  className,
+  id,
   summaryLabel,
 }: {
+  className?: string;
+  id?: string;
   summaryLabel?: string;
 }) {
   return (
     <Panel
       as="section"
-      className={styles.offerCoverageCard}
+      className={[styles.offerCoverageCard, className]
+        .filter(Boolean)
+        .join(' ')}
       description={summaryLabel}
-      eyebrow="Meer prijzen"
+      eyebrow="Vergelijking"
       elevation="rested"
-      title="Nog geen sterke vergelijking"
+      id={id}
+      title="Nog geen vergelijking"
       tone="muted"
     >
       <p className={styles.offerCoverageCopy}>
-        We volgen deze set al, maar met 1 winkel is dit nog geen vergelijking
-        waar je op wilt leunen. Volg hem gerust; Brickhunt vult dit aan zodra er
-        meer betrouwbare prijzen zijn.
+        Met 1 winkel is dit nog te dun voor een koopadvies. Volg deze set;
+        Brickhunt vult dit aan zodra er meer betrouwbare prijzen zijn.
       </p>
     </Panel>
   );
@@ -236,18 +303,18 @@ export function getCatalogDecisionSupportTitle(
   verdict: CatalogDecisionVerdict,
 ): string {
   if (verdict.tone === 'positive') {
-    return 'Waarom dit nu interessant is';
+    return 'Waarom nu';
   }
 
   if (verdict.tone === 'warning') {
-    return 'Waarom wachten slimmer is';
+    return 'Waarom wachten';
   }
 
   if (verdict.tone === 'info') {
-    return 'Wat dit prijsniveau zegt';
+    return 'Prijsbeeld nu';
   }
 
-  return 'Wat we nu al kunnen zeggen';
+  return 'Wat we nu zien';
 }
 
 export function CatalogKeyFacts({
@@ -266,6 +333,7 @@ export function CatalogKeyFacts({
 }
 
 export function CatalogPriceDecisionPanel({
+  compact = false,
   followAction,
   followCopy,
   followEyebrow,
@@ -275,55 +343,36 @@ export function CatalogPriceDecisionPanel({
   supportItems = [],
   supportTitle,
   verdictTone,
-}: {
-  followAction?: ReactNode;
-  followCopy?: string;
-  followEyebrow?: string;
-  followTitle?: string;
-  leadWithFollow?: boolean;
-  primaryOffer?: CatalogDecisionOffer;
-  supportItems?: readonly CatalogSupportItem[];
-  supportTitle?: string;
-  verdictTone?: CatalogDecisionVerdict['tone'];
-}) {
-  const offerCard = <CatalogDecisionOfferCard offer={primaryOffer} />;
-  const followCard = (
-    <CatalogFollowActionCard
-      action={followAction}
-      copy={followCopy}
-      eyebrow={followEyebrow}
-      title={followTitle}
-      tone={verdictTone}
+}: CatalogPriceDecisionPanelProps) {
+  const primaryDecision = (
+    <CatalogPriceDecisionPrimary primaryOffer={primaryOffer} />
+  );
+  const secondaryDecision = (
+    <CatalogPriceDecisionSecondary
+      compact={compact}
+      followAction={followAction}
+      followCopy={followCopy}
+      followEyebrow={followEyebrow}
+      followTitle={followTitle}
+      supportItems={supportItems}
+      supportTitle={supportTitle}
+      verdictTone={verdictTone}
     />
   );
 
   return (
     <div className={styles.detailDecisionPanel}>
-      <div className={styles.detailDecisionStack}>
-        {leadWithFollow ? (
-          <>
-            {followCard}
-            {offerCard}
-          </>
-        ) : (
-          <>
-            {offerCard}
-            {followCard}
-          </>
-        )}
-      </div>
-      {supportItems.length > 0 && supportTitle ? (
-        <div className={styles.detailDecisionSupport}>
-          <p className={styles.detailDecisionSupportTitle}>{supportTitle}</p>
-          <MarkerList
-            className={styles.detailDecisionSupportList}
-            items={supportItems.map((item) => ({
-              content: item.text,
-              id: item.id,
-            }))}
-          />
-        </div>
-      ) : null}
+      {leadWithFollow ? (
+        <>
+          {secondaryDecision}
+          {primaryDecision}
+        </>
+      ) : (
+        <>
+          {primaryDecision}
+          {secondaryDecision}
+        </>
+      )}
     </div>
   );
 }
@@ -369,9 +418,13 @@ export function CatalogOfferRow({ offer }: { offer: CatalogOfferItem }) {
 }
 
 export function CatalogOfferComparison({
+  className,
+  id,
   offers,
   summaryLabel,
 }: {
+  className?: string;
+  id?: string;
   offers: readonly CatalogOfferItem[];
   summaryLabel?: string;
 }) {
@@ -380,34 +433,28 @@ export function CatalogOfferComparison({
   }
 
   if (offers.length === 1) {
-    return <CatalogOfferCoverageState summaryLabel={summaryLabel} />;
+    return (
+      <CatalogOfferCoverageState
+        className={className}
+        id={id}
+        summaryLabel={summaryLabel}
+      />
+    );
   }
 
   return (
-    <Panel
-      as="section"
-      className={styles.offerListCard}
-      description={summaryLabel}
-      eyebrow="Beste eerst"
-      elevation="rested"
-      title="Vergelijk winkels"
-      tone="muted"
-    >
-      <div className={styles.offerList}>
-        {offers.map((offer) => (
-          <CatalogOfferRow
-            key={`${offer.merchantLabel}-${offer.price}`}
-            offer={offer}
-          />
-        ))}
-      </div>
-    </Panel>
+    <CatalogOfferComparisonRail
+      className={className}
+      id={id}
+      offers={offers}
+      summaryLabel={summaryLabel}
+    />
   );
 }
 
 export function CatalogTrustPanel({
-  eyebrow = 'Vertrouwen',
-  title = 'Waar prijs en winkels op steunen',
+  eyebrow = 'Laatste check',
+  title = 'Wat Brickhunt nu ziet',
   trustSignals,
 }: {
   eyebrow?: string;

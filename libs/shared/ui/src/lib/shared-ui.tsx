@@ -74,12 +74,10 @@ export interface BreadcrumbItem {
   label: ReactNode;
 }
 
-const buttonToneClasses: Record<
-  Exclude<ActionTone, 'card' | 'inline'>,
-  string
-> = {
+const buttonToneClasses: Record<Exclude<ActionTone, 'card'>, string> = {
   accent: styles.buttonAccent,
   ghost: styles.buttonGhost,
+  inline: styles.buttonInline,
   secondary: styles.buttonSecondary,
 };
 
@@ -264,14 +262,16 @@ export function Button({
   isLoading?: boolean;
   size?: ActionSize;
   surface?: ActionSurface;
-  tone?: Exclude<ActionTone, 'card' | 'inline'>;
+  tone?: Exclude<ActionTone, 'card'>;
 }) {
+  const usesInlineLayout = tone === 'inline';
+
   return (
     <button
       aria-busy={isLoading || undefined}
       className={joinClasses(
         styles.interactiveBase,
-        actionSizeClasses[size],
+        usesInlineLayout ? undefined : actionSizeClasses[size],
         actionSurfaceClasses[surface],
         buttonToneClasses[tone],
         className,

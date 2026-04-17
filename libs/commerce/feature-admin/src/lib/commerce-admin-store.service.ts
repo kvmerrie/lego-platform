@@ -1,10 +1,24 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import {
+  type CatalogExternalSetSearchResult,
+  type CatalogOverlaySet,
+  type CatalogSetSummary,
+} from '@lego-platform/catalog/util';
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import { buildPublicSetDetailUrl } from '@lego-platform/shared/config';
 import {
+  type CommerceDiscoveryApprovalResult,
+  type CommerceDiscoveryCandidate,
+  type CommerceDiscoveryCandidateReviewStatus,
+  type CommerceDiscoveryCandidateStatus,
+  type CommerceDiscoveryRun,
+  type CommerceDiscoveryRunInput,
   buildCommerceMerchantSearchQuery,
   buildCommerceMerchantSearchUrl,
   buildCommerceBenchmarkCoverageRows,
+  type CommerceCoverageQueueMerchantState,
+  type CommerceCoverageQueueNextAction,
+  type CommerceCoverageQueueRow,
   buildCommerceCoverageSnapshot,
   type CommerceBenchmarkCoverageRow,
   type CommerceBenchmarkMerchantCoverageStatus,
@@ -14,6 +28,8 @@ import {
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  supportsCommerceMerchantSearch,
+  validateCommerceDiscoveryRunInput,
   validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
@@ -25,7 +41,7 @@ export interface CommerceCatalogSetOption extends CommerceCoverageSetOption {
   slug: string;
 }
 
-const catalogSetOptions = [...listCatalogSetSummaries()]
+const initialCatalogSetOptions = [...listCatalogSetSummaries()]
   .sort(
     (left, right) =>
       left.theme.localeCompare(right.theme) ||
@@ -157,8 +173,13 @@ function toOfferSeedInput(
 export class CommerceAdminStore {
   private readonly commerceAdminApi = inject(CommerceAdminApiService);
 
-  readonly catalogSetOptions = catalogSetOptions;
+  readonly catalogSetOptions = signal<CommerceCatalogSetOption[]>(
+    initialCatalogSetOptions,
+  );
   readonly benchmarkSets = signal<CommerceBenchmarkSet[]>([]);
+  readonly coverageQueueRows = signal<CommerceCoverageQueueRow[]>([]);
+  readonly discoveryRuns = signal<CommerceDiscoveryRun[]>([]);
+  readonly discoveryCandidates = signal<CommerceDiscoveryCandidate[]>([]);
   readonly merchants = signal<CommerceMerchant[]>([]);
   readonly offerSeeds = signal<CommerceOfferSeed[]>([]);
   readonly isLoading = signal(false);
@@ -170,7 +191,7 @@ export class CommerceAdminStore {
   );
   readonly coverage = computed(() =>
     buildCommerceCoverageSnapshot({
-      catalogSets: this.catalogSetOptions,
+      catalogSets: this.catalogSetOptions(),
       merchants: this.merchants(),
       offerSeeds: this.offerSeeds(),
     }),
@@ -178,7 +199,7 @@ export class CommerceAdminStore {
   readonly benchmarkCoverageRows = computed(() =>
     buildCommerceBenchmarkCoverageRows({
       benchmarkSets: this.benchmarkSets(),
-      catalogSets: this.catalogSetOptions,
+      catalogSets: this.catalogSetOptions(),
       merchants: this.merchants(),
       offerSeeds: this.offerSeeds(),
     }),
@@ -210,13 +231,13 @@ export class CommerceAdminStore {
           updatedAt: benchmarkSet?.updatedAt ?? '',
         };
       }),
-      catalogSets: this.catalogSetOptions,
+      catalogSets: this.catalogSetOptions(),
       merchants: this.merchants(),
       offerSeeds: this.offerSeeds(),
     });
   });
   readonly benchmarkCatalogSetOptions = computed(() =>
-    this.catalogSetOptions.filter(
+    this.catalogSetOptions().filter(
       (catalogSetOption) => !this.benchmarkSetIds().has(catalogSetOption.id),
     ),
   );
@@ -240,6 +261,11 @@ export class CommerceAdminStore {
 
     return counts;
   });
+  readonly discoveryMerchants = computed(() =>
+    this.merchants().filter((merchant) =>
+      supportsCommerceMerchantSearch(merchant.slug),
+    ),
+  );
 
   async ensureLoaded(): Promise<void> {
     if (this.hasLoaded() || this.isLoading()) {
@@ -254,13 +280,29 @@ export class CommerceAdminStore {
     this.errorMessage.set(null);
 
     try {
-      const [benchmarkSets, merchants, offerSeeds] = await Promise.all([
+      const [
+        catalogSets,
+        benchmarkSets,
+        coverageQueueRows,
+        discoveryCandidates,
+        discoveryRuns,
+        merchants,
+        offerSeeds,
+      ] = await Promise.all([
+        this.commerceAdminApi.listCatalogSets(),
         this.commerceAdminApi.listBenchmarkSets(),
+        this.commerceAdminApi.listCoverageQueue(),
+        this.commerceAdminApi.listDiscoveryCandidates(),
+        this.commerceAdminApi.listDiscoveryRuns(),
         this.commerceAdminApi.listMerchants(),
         this.commerceAdminApi.listOfferSeeds(),
       ]);
 
+      this.catalogSetOptions.set(this.toCatalogSetOptions(catalogSets));
       this.benchmarkSets.set(benchmarkSets);
+      this.coverageQueueRows.set(coverageQueueRows);
+      this.discoveryCandidates.set(discoveryCandidates);
+      this.discoveryRuns.set(discoveryRuns);
       this.merchants.set(merchants);
       this.offerSeeds.set(offerSeeds);
       this.hasLoaded.set(true);
@@ -307,6 +349,7 @@ export class CommerceAdminStore {
   }
 
   async saveOfferSeed(input: {
+    discoveryCandidateId?: string;
     input: CommerceOfferSeedInput;
     offerSeedId?: string;
   }): Promise<void> {
@@ -319,7 +362,10 @@ export class CommerceAdminStore {
           input: validatedInput,
         });
       } else {
-        await this.commerceAdminApi.createOfferSeed(validatedInput);
+        await this.commerceAdminApi.createOfferSeed({
+          input: validatedInput,
+          discoveryCandidateId: input.discoveryCandidateId,
+        });
       }
 
       await this.reload();
@@ -339,6 +385,52 @@ export class CommerceAdminStore {
         isActive: !offerSeed.isActive,
       },
     });
+  }
+
+  async runDiscovery(input: CommerceDiscoveryRunInput): Promise<{
+    candidates: CommerceDiscoveryCandidate[];
+    run: CommerceDiscoveryRun;
+  }> {
+    const validatedInput = validateCommerceDiscoveryRunInput(input);
+
+    try {
+      const result = await this.commerceAdminApi.runDiscovery(validatedInput);
+      await this.reload();
+      return result;
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
+  async approveDiscoveryCandidate(
+    candidateId: string,
+  ): Promise<CommerceDiscoveryApprovalResult> {
+    try {
+      const result =
+        await this.commerceAdminApi.approveDiscoveryCandidate(candidateId);
+      await this.reload();
+      return result;
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
+  async rejectDiscoveryCandidate(candidateId: string): Promise<void> {
+    try {
+      await this.commerceAdminApi.rejectDiscoveryCandidate(candidateId);
+      await this.reload();
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
   }
 
   async addBenchmarkSet(input: {
@@ -370,8 +462,36 @@ export class CommerceAdminStore {
     }
   }
 
+  async searchCatalogMissingSets(
+    query: string,
+  ): Promise<CatalogExternalSetSearchResult[]> {
+    try {
+      return await this.commerceAdminApi.searchCatalogMissingSets(query);
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
+  async createCatalogOverlaySet(
+    input: CatalogExternalSetSearchResult,
+  ): Promise<CatalogOverlaySet> {
+    try {
+      const result = await this.commerceAdminApi.createCatalogOverlaySet(input);
+      await this.reload();
+      return result;
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
   getCatalogSetById(setId: string): CommerceCatalogSetOption | undefined {
-    return this.catalogSetOptions.find(
+    return this.catalogSetOptions().find(
       (catalogSetOption) => catalogSetOption.id === setId,
     );
   }
@@ -387,6 +507,16 @@ export class CommerceAdminStore {
       this.merchants().find((merchant) => merchant.id === merchantId)?.name ??
       merchantId
     );
+  }
+
+  getMerchantById(merchantId: string): CommerceMerchant | undefined {
+    return this.merchants().find((merchant) => merchant.id === merchantId);
+  }
+
+  supportsMerchantDiscovery(merchantId: string): boolean {
+    const merchant = this.getMerchantById(merchantId);
+
+    return merchant ? supportsCommerceMerchantSearch(merchant.slug) : false;
   }
 
   getMerchantActiveSeedCount(merchantId: string): number {
@@ -415,9 +545,7 @@ export class CommerceAdminStore {
     merchantId: string;
     setId: string;
   }): string | undefined {
-    const merchant = this.merchants().find(
-      (candidateMerchant) => candidateMerchant.id === input.merchantId,
-    );
+    const merchant = this.getMerchantById(input.merchantId);
     const catalogSet = this.getCatalogSetById(input.setId);
 
     if (!merchant || !catalogSet) {
@@ -432,6 +560,43 @@ export class CommerceAdminStore {
       merchantSlug: merchant.slug,
       query,
     });
+  }
+
+  getLatestDiscoveryRun(input: {
+    merchantId: string;
+    setId: string;
+  }): CommerceDiscoveryRun | undefined {
+    return this.discoveryRuns().find(
+      (run) => run.merchantId === input.merchantId && run.setId === input.setId,
+    );
+  }
+
+  getDiscoveryCandidatesForSetMerchant(input: {
+    merchantId: string;
+    setId: string;
+  }): CommerceDiscoveryCandidate[] {
+    const runById = new Map(
+      this.discoveryRuns().map((run) => [run.id, run] as const),
+    );
+
+    return this.discoveryCandidates()
+      .filter(
+        (candidate) =>
+          candidate.merchantId === input.merchantId &&
+          candidate.setId === input.setId,
+      )
+      .sort((left, right) => {
+        const leftRunCreatedAt =
+          runById.get(left.discoveryRunId)?.createdAt ?? left.createdAt;
+        const rightRunCreatedAt =
+          runById.get(right.discoveryRunId)?.createdAt ?? right.createdAt;
+
+        return (
+          rightRunCreatedAt.localeCompare(leftRunCreatedAt) ||
+          right.confidenceScore - left.confidenceScore ||
+          left.sourceRank - right.sourceRank
+        );
+      });
   }
 
   getOfferSeedHealthLabel(offerSeed: CommerceOfferSeed): string {
@@ -485,6 +650,157 @@ export class CommerceAdminStore {
     return null;
   }
 
+  getDiscoveryRunTone(
+    status: CommerceDiscoveryRun['status'],
+  ): 'danger' | 'neutral' | 'positive' {
+    switch (status) {
+      case 'success':
+        return 'positive';
+      case 'failed':
+        return 'danger';
+      case 'running':
+      default:
+        return 'neutral';
+    }
+  }
+
+  getDiscoveryCandidateStatusLabel(
+    status: CommerceDiscoveryCandidateStatus,
+  ): string {
+    switch (status) {
+      case 'auto_approved':
+        return 'Auto-goedgekeurd';
+      case 'needs_review':
+        return 'Review nodig';
+      case 'rejected':
+      default:
+        return 'Afgewezen';
+    }
+  }
+
+  getDiscoveryCandidateStatusTone(
+    status: CommerceDiscoveryCandidateStatus,
+  ): 'danger' | 'positive' | 'warning' {
+    switch (status) {
+      case 'auto_approved':
+        return 'positive';
+      case 'needs_review':
+        return 'warning';
+      case 'rejected':
+      default:
+        return 'danger';
+    }
+  }
+
+  getDiscoveryReviewStatusLabel(
+    reviewStatus: CommerceDiscoveryCandidateReviewStatus,
+  ): string {
+    switch (reviewStatus) {
+      case 'approved':
+        return 'Goedgekeurd';
+      case 'rejected':
+        return 'Afgewezen';
+      case 'pending':
+      default:
+        return 'Wacht op review';
+    }
+  }
+
+  getDiscoveryReviewStatusTone(
+    reviewStatus: CommerceDiscoveryCandidateReviewStatus,
+  ): 'danger' | 'neutral' | 'positive' {
+    switch (reviewStatus) {
+      case 'approved':
+        return 'positive';
+      case 'rejected':
+        return 'danger';
+      case 'pending':
+      default:
+        return 'neutral';
+    }
+  }
+
+  getDiscoveryCandidateLinkLabel(
+    candidate: CommerceDiscoveryCandidate,
+  ): string {
+    return candidate.offerSeedId ? 'Seed gekoppeld' : 'Nog geen seed';
+  }
+
+  getDiscoveryCandidateLinkTone(
+    candidate: CommerceDiscoveryCandidate,
+  ): 'neutral' | 'positive' {
+    return candidate.offerSeedId ? 'positive' : 'neutral';
+  }
+
+  getDiscoveryAvailabilityLabel(availability?: string): string {
+    switch (availability) {
+      case 'in_stock':
+        return 'Op voorraad';
+      case 'limited':
+        return 'Beperkt';
+      case 'out_of_stock':
+        return 'Uitverkocht';
+      case 'preorder':
+        return 'Pre-order';
+      default:
+        return 'Onbekend';
+    }
+  }
+
+  getCoverageQueueActionLabel(action: CommerceCoverageQueueNextAction): string {
+    switch (action) {
+      case 'run_discovery':
+        return 'Run discovery';
+      case 'review_candidates':
+        return 'Review candidates';
+      case 'edit_seed':
+        return 'Seed bijwerken';
+      case 'add_seed_manually':
+        return 'Seed toevoegen';
+      case 'no_action_needed':
+      default:
+        return 'Geen actie nodig';
+    }
+  }
+
+  getCoverageQueueMerchantStateTone(
+    state: CommerceCoverageQueueMerchantState,
+  ): 'danger' | 'neutral' | 'positive' | 'warning' {
+    switch (state) {
+      case 'valid':
+        return 'positive';
+      case 'review':
+      case 'stale':
+        return 'warning';
+      case 'missing':
+      case 'unavailable':
+        return 'danger';
+      case 'pending':
+      default:
+        return 'neutral';
+    }
+  }
+
+  getCoverageQueueMerchantStateLabel(
+    state: CommerceCoverageQueueMerchantState,
+  ): string {
+    switch (state) {
+      case 'valid':
+        return 'valid';
+      case 'stale':
+        return 'stale';
+      case 'unavailable':
+        return 'unavailable';
+      case 'review':
+        return 'review';
+      case 'pending':
+        return 'pending';
+      case 'missing':
+      default:
+        return 'mist';
+    }
+  }
+
   formatPriceMinor(value?: number, currencyCode = 'EUR'): string {
     if (value === undefined) {
       return 'Nog geen prijs';
@@ -500,6 +816,76 @@ export class CommerceAdminStore {
 
   formatTimestampForInput(value?: string): string {
     return formatTimestampForDateTimeLocal(value);
+  }
+
+  formatRelativeTimestamp(value?: string): string {
+    if (!value) {
+      return 'Nog niet gecheckt';
+    }
+
+    const parsedValue = new Date(value);
+
+    if (Number.isNaN(parsedValue.getTime())) {
+      return value;
+    }
+
+    const timeLabel = new Intl.DateTimeFormat('nl-NL', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(parsedValue);
+    const now = new Date();
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const startOfValueDay = new Date(
+      parsedValue.getFullYear(),
+      parsedValue.getMonth(),
+      parsedValue.getDate(),
+    );
+    const dayDiff = Math.round(
+      (startOfToday.getTime() - startOfValueDay.getTime()) / 86_400_000,
+    );
+
+    if (dayDiff === 0) {
+      return `Vandaag om ${timeLabel}`;
+    }
+
+    if (dayDiff === 1) {
+      return `Gisteren om ${timeLabel}`;
+    }
+
+    if (dayDiff === 2) {
+      return `Eergisteren om ${timeLabel}`;
+    }
+
+    const dateLabel = new Intl.DateTimeFormat('nl-NL', {
+      day: 'numeric',
+      month: 'short',
+    }).format(parsedValue);
+
+    return `${dateLabel} om ${timeLabel}`;
+  }
+
+  private toCatalogSetOptions(
+    catalogSetSummaries: readonly CatalogSetSummary[],
+  ): CommerceCatalogSetOption[] {
+    return [...catalogSetSummaries]
+      .sort(
+        (left, right) =>
+          left.theme.localeCompare(right.theme) ||
+          left.name.localeCompare(right.name),
+      )
+      .map(
+        (catalogSetSummary): CommerceCatalogSetOption => ({
+          id: catalogSetSummary.id,
+          name: catalogSetSummary.name,
+          theme: catalogSetSummary.theme,
+          slug: catalogSetSummary.slug,
+          collectorAngle: catalogSetSummary.collectorAngle,
+        }),
+      );
   }
 
   formatTimestamp(value?: string): string {

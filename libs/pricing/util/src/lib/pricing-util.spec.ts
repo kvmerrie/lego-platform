@@ -12,8 +12,8 @@ describe('pricing util deal summaries', () => {
         merchantCount: 2,
       }),
     ).toEqual({
-      label: 'Best current deal',
-      coverageNote: 'Only 2 reviewed offers so far',
+      label: 'Beste deal nu',
+      coverageNote: 'Tot nu toe pas 2 reviewed aanbiedingen',
     });
   });
 
@@ -24,7 +24,7 @@ describe('pricing util deal summaries', () => {
         merchantCount: 3,
       }),
     ).toEqual({
-      label: 'Above reference',
+      label: 'Boven referentie',
       coverageNote: undefined,
     });
   });
@@ -36,8 +36,8 @@ describe('pricing util deal summaries', () => {
         merchantCount: 1,
       }),
     ).toEqual({
-      label: 'Lowest reviewed offer',
-      coverageNote: 'Only 1 reviewed offer so far',
+      label: 'Laagste reviewed aanbieding',
+      coverageNote: 'Tot nu toe pas 1 reviewed aanbieding',
     });
   });
 

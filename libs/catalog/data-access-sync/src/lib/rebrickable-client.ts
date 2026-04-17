@@ -1,5 +1,6 @@
 export interface RebrickableClient {
   getSet(setNumber: string): Promise<unknown>;
+  searchSets(query: string, options?: { pageSize?: number }): Promise<unknown>;
   getTheme(themeId: number): Promise<unknown>;
 }
 
@@ -146,6 +147,17 @@ export function createRebrickableClient({
   return {
     getSet(setNumber: string) {
       return requestJson(`/lego/sets/${encodeURIComponent(setNumber)}/`);
+    },
+    searchSets(query: string, options?: { pageSize?: number }) {
+      const normalizedQuery = query.trim();
+      const pageSize = Math.max(
+        1,
+        Math.min(100, Math.floor(options?.pageSize ?? 12)),
+      );
+
+      return requestJson(
+        `/lego/sets/?search=${encodeURIComponent(normalizedQuery)}&page_size=${pageSize}`,
+      );
     },
     getTheme(themeId: number) {
       return requestJson(`/lego/themes/${themeId}/`);

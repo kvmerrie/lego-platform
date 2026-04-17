@@ -186,14 +186,14 @@ describe('pricing data access', () => {
       }),
     ).toEqual({
       cardLabel: 'Goede prijs',
-      cardSupportingCopy: 'Nog geen betrouwbare deal-link',
+      cardSupportingCopy: 'Nog geen klikroute',
       followCopy:
-        'Sterke prijs gezien, maar nog geen goede deal-link. Volg deze set; Brickhunt seint je zodra er wel een betrouwbare route is.',
+        'Sterke prijs gezien, nog zonder betrouwbare klikroute. Volg deze set voor het moment dat die er wel is.',
       followEyebrow: 'Laat Brickhunt meekijken',
       followTitle: 'Volg deze set',
       noOfferCopy:
-        'We zien wel een sterke prijs, maar nog geen betrouwbare aanbieding om je nu naartoe te sturen.',
-      noOfferTitle: 'Nog geen betrouwbare deal-link',
+        'Sterke prijs gezien, maar nog geen betrouwbare route om nu op te klikken.',
+      noOfferTitle: 'Nog geen klikroute',
       state: 'buy',
       verdict: {
         explanation:
@@ -216,15 +216,15 @@ describe('pricing data access', () => {
     ).toEqual([
       {
         id: 'price-below-normal',
-        text: 'Deze prijs ligt onder wat we meestal zien.',
+        text: 'Onder het normale prijsniveau.',
       },
       {
         id: 'best-price-now',
-        text: 'Dit is momenteel de scherpste prijs die we volgen.',
+        text: 'Beste prijs die we nu volgen.',
       },
       {
         id: 'merchant-coverage',
-        text: 'We volgen 2 Nederlandse winkels voor deze set.',
+        text: '2 winkels nagekeken.',
       },
     ]);
   });
@@ -241,15 +241,15 @@ describe('pricing data access', () => {
     ).toEqual([
       {
         id: 'price-below-normal',
-        text: 'Deze prijs ligt onder wat we meestal zien.',
+        text: 'Onder het normale prijsniveau.',
       },
       {
         id: 'merchant-coverage',
-        text: 'We volgen 2 Nederlandse winkels voor deze set.',
+        text: '2 winkels nagekeken.',
       },
       {
         id: 'no-reliable-offer',
-        text: 'We zien wel een sterke prijs, maar nog geen betrouwbare aanbieding om je nu naartoe te sturen.',
+        text: 'Sterke prijs gezien, maar nog geen betrouwbare route om nu op te klikken.',
       },
     ]);
   });
@@ -263,15 +263,15 @@ describe('pricing data access', () => {
     ).toEqual([
       {
         id: 'limited-data',
-        text: 'We hebben nog beperkte data, maar dit is nu de beste prijs die we zien.',
+        text: 'Prijsdata nog beperkt, maar dit is nu de beste prijs die we zien.',
       },
       {
         id: 'merchant-coverage',
-        text: 'We volgen 1 Nederlandse winkel voor deze set.',
+        text: '1 winkel nagekeken.',
       },
       {
         id: 'brickhunt-guidance',
-        text: 'Met meer data wordt dit advies scherper.',
+        text: 'Met meer checks wordt dit signaal scherper.',
       },
     ]);
   });
@@ -284,15 +284,15 @@ describe('pricing data access', () => {
     ).toEqual([
       {
         id: 'brickhunt-monitoring',
-        text: 'We vergelijken echte prijzen bij 3 Nederlandse winkels zolang die vergelijking iets zegt.',
+        text: '3 winkels worden actief nagekeken.',
       },
       {
         id: 'brickhunt-guidance',
-        text: 'Je ziet of deze prijs echt opvalt of gewoon normaal is.',
+        text: 'Je ziet meteen of deze prijs echt opvalt.',
       },
       {
         id: 'brickhunt-alerts',
-        text: 'Nog niet kopen? Volg de prijs en laat Brickhunt meekijken.',
+        text: 'Nog niet klaar? Volg de prijs.',
       },
     ]);
   });

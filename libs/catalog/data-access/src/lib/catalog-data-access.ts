@@ -7,6 +7,7 @@ import {
   CatalogThemeVisual,
   CatalogThemeSnapshot,
   buildCatalogThemeSlug,
+  getCatalogThemeVisual,
   getCatalogProductSlug,
   normalizeCatalogSetImages,
   normalizeCatalogAsciiText,
@@ -119,57 +120,6 @@ export interface CatalogThemeDirectoryItem {
   visual?: CatalogThemeVisual;
 }
 
-const curatedThemeVisualsByName = new Map<string, CatalogThemeVisual>([
-  [
-    'Icons',
-    {
-      backgroundColor: '#f0c63b',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
-      textColor: '#171a22',
-    },
-  ],
-  [
-    'Marvel',
-    {
-      backgroundColor: '#cf554c',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
-      textColor: '#ffffff',
-    },
-  ],
-  [
-    'Ideas',
-    {
-      backgroundColor: '#68b8a0',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
-      textColor: '#10241f',
-    },
-  ],
-  [
-    'Star Wars',
-    {
-      backgroundColor: '#5573b5',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
-      textColor: '#ffffff',
-    },
-  ],
-  [
-    'Harry Potter',
-    {
-      backgroundColor: '#7f67bf',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
-      textColor: '#ffffff',
-    },
-  ],
-  [
-    'Technic',
-    {
-      backgroundColor: '#a8b4c2',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/42177-1/142596.jpg',
-      textColor: '#171a22',
-    },
-  ],
-]);
-
 const catalogSetOverlayById = new Map(
   catalogSetOverlays.map((catalogSetOverlay) => [
     catalogSetOverlay.canonicalId,
@@ -262,7 +212,7 @@ function getThemeVisual({
   fallbackImageUrl?: string;
   themeSnapshot: CatalogThemeSnapshot;
 }): CatalogThemeVisual | undefined {
-  const curatedThemeVisual = curatedThemeVisualsByName.get(themeSnapshot.name);
+  const curatedThemeVisual = getCatalogThemeVisual(themeSnapshot.name);
 
   if (!curatedThemeVisual && !fallbackImageUrl) {
     return undefined;

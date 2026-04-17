@@ -3,6 +3,7 @@ import {
   buildCatalogThemeSlug,
   buildCatalogSetSlug,
   createCatalogSetRecord,
+  getCatalogThemeVisual,
   getCatalogProductSlug,
   getCanonicalCatalogSetId,
   listCatalogQuickFilterOptions,
@@ -38,6 +39,19 @@ describe('catalog snapshot helpers', () => {
   test('builds stable theme slugs for dedicated theme pages', () => {
     expect(buildCatalogThemeSlug('Star Wars')).toBe('star-wars');
     expect(buildCatalogThemeSlug('Harry Potter')).toBe('harry-potter');
+  });
+
+  test('returns curated theme visuals for recognizable theme surfaces', () => {
+    expect(getCatalogThemeVisual('Star Wars')).toEqual({
+      backgroundColor: '#5573b5',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
+      textColor: '#ffffff',
+    });
+    expect(getCatalogThemeVisual('Architecture')).toEqual({
+      backgroundColor: '#6f8594',
+      textColor: '#ffffff',
+    });
+    expect(getCatalogThemeVisual('Unknown Theme')).toBeUndefined();
   });
 
   test('prefers product slug overrides when present', () => {

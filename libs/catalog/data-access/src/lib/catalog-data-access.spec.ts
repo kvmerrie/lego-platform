@@ -1207,6 +1207,38 @@ describe('catalog data-access contracts', () => {
     ]);
   });
 
+  test('keeps secondary supported themes like Architecture visually themed in the full directory', () => {
+    expect(
+      listCatalogThemeDirectoryItems()
+        .filter((themeDirectoryItem) =>
+          ['Botanicals', 'Architecture', 'Art'].includes(
+            themeDirectoryItem.themeSnapshot.name,
+          ),
+        )
+        .map((themeDirectoryItem) => ({
+          backgroundColor: themeDirectoryItem.visual?.backgroundColor,
+          name: themeDirectoryItem.themeSnapshot.name,
+          textColor: themeDirectoryItem.visual?.textColor,
+        })),
+    ).toEqual([
+      {
+        backgroundColor: '#7caf76',
+        name: 'Botanicals',
+        textColor: '#10241f',
+      },
+      {
+        backgroundColor: '#6f8594',
+        name: 'Architecture',
+        textColor: '#ffffff',
+      },
+      {
+        backgroundColor: '#d26d53',
+        name: 'Art',
+        textColor: '#ffffff',
+      },
+    ]);
+  });
+
   test('keeps theme spotlight browsing focused on four secondary discovery lanes', () => {
     expect(
       listHomepageThemeSpotlightItems().map(

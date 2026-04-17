@@ -53,8 +53,11 @@
             Eerst de exceptions die het snelst tegen pricing-refresh aanlopen.
           </p>
         </div>
-        <a class="admin-button admin-button--subtle" routerLink="/coverage">
-          Open coverage
+        <a
+          class="admin-button admin-button--subtle"
+          routerLink="/coverage-queue"
+        >
+          Open coverage queue
         </a>
       </div>
 
@@ -100,11 +103,33 @@
             in operations-view, inclusief benchmarkbatch en live coverage.
           </span>
         </a>
+        <a class="admin-link-card" routerLink="/discovery">
+          <strong>Discovery draaien</strong>
+          <span>
+            {{ commerceAdminStore.discoveryRuns().length }} runs en {{
+            commerceAdminStore.discoveryCandidates().length }} kandidaten klaar
+            voor review.
+          </span>
+        </a>
+        <a class="admin-link-card" routerLink="/add-set">
+          <strong>Missende set toevoegen</strong>
+          <span>
+            Voeg een set toe via Rebrickable en start meteen MisterBricks
+            discovery.
+          </span>
+        </a>
         <a class="admin-link-card" routerLink="/offer-seeds">
           <strong>Offer seeds bijwerken</strong>
           <span>
             {{ commerceAdminStore.offerSeeds().length }} seeds in beheer, klaar
             voor create en edit.
+          </span>
+        </a>
+        <a class="admin-link-card" routerLink="/coverage-queue">
+          <strong>Coverage queue</strong>
+          <span>
+            {{ commerceAdminStore.coverageQueueRows().length }} setrijen klaar
+            voor een volgende commerce-stap.
           </span>
         </a>
         <a class="admin-link-card" routerLink="/coverage">

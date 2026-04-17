@@ -1,0 +1,266 @@
+<section class="admin-section">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Add set</p>
+      <h2>Van missende LEGO-set naar eerste offer seed in een paar klikken.</h2>
+      <p class="admin-muted">
+        Zoek in Rebrickable, voeg alleen de set-overlay toe, en start meteen de
+        eerste discovery-run voor MisterBricks.
+      </p>
+    </div>
+  </header>
+
+  <section class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack">
+        <h3>1. Zoek een missende set</h3>
+        <p class="admin-muted">
+          Resultaten die al in Brickhunt staan, vallen hier automatisch weg.
+        </p>
+      </div>
+    </div>
+
+    <div class="admin-toolbar">
+      <input
+        [ngModel]="searchQuery()"
+        (ngModelChange)="updateSearchQuery($event)"
+        class="admin-input admin-search"
+        placeholder="Zoek op setnummer of naam"
+        type="search"
+      />
+
+      <button
+        class="admin-button admin-button--primary"
+        [disabled]="isSearching()"
+        type="button"
+        (click)="search()"
+      >
+        {{ isSearching() ? 'Zoeken…' : 'Zoek in Rebrickable' }}
+      </button>
+    </div>
+
+    @if (feedback()) {
+    <div
+      class="admin-panel"
+      [class.admin-panel--danger]="feedbackTone() === 'danger'"
+    >
+      <p class="admin-muted">{{ feedback() }}</p>
+    </div>
+    } @if (searchResults().length > 0) {
+    <div class="admin-search-results">
+      @for (result of searchResults(); track result.setId) {
+      <button
+        class="admin-search-result"
+        [class.is-selected]="selectedResult()?.setId === result.setId"
+        type="button"
+        (click)="selectSearchResult(result)"
+      >
+        <span class="admin-search-result__title">
+          {{ result.name }} ({{ result.setId }})
+        </span>
+        <span class="admin-muted">
+          {{ result.theme }} · {{ result.releaseYear }} · {{ result.pieces }}
+          stenen
+        </span>
+      </button>
+      }
+    </div>
+    }
+  </section>
+
+  @if (selectedResult()) {
+  <section class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack">
+        <h3>2. Preview en toevoegen</h3>
+        <p class="admin-muted">
+          Geen extra velden. We nemen de basisdata direct over uit Rebrickable.
+        </p>
+      </div>
+
+      <button
+        class="admin-button admin-button--primary"
+        [disabled]="isAdding()"
+        type="button"
+        (click)="addSelectedSet()"
+      >
+        {{ isAdding() ? 'Toevoegen…' : 'Voeg toe aan catalogus' }}
+      </button>
+    </div>
+
+    <article class="admin-set-preview">
+      @if (selectedResult()?.imageUrl) {
+      <img
+        [alt]="selectedResult()?.name ?? 'Set preview'"
+        [src]="selectedResult()?.imageUrl"
+        class="admin-set-preview__image"
+      />
+      }
+
+      <div class="admin-stack admin-stack--tight">
+        <strong>{{ selectedResult()?.name }}</strong>
+        <span>{{ selectedResult()?.setId }}</span>
+        <span>{{ selectedResult()?.theme }}</span>
+        <span>
+          {{ selectedResult()?.releaseYear }} · {{ selectedResult()?.pieces }}
+          stenen
+        </span>
+      </div>
+    </article>
+  </section>
+  } @if (addedSet()) {
+  <section class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack">
+        <h3>3. Start discovery</h3>
+        <p class="admin-muted">
+          Eerste route: MisterBricks. Daarmee gaan we zo snel mogelijk naar de
+          eerste seed voor deze set.
+        </p>
+      </div>
+
+      <button
+        class="admin-button admin-button--primary"
+        [disabled]="isRunningDiscovery() || !discoveryMerchant()"
+        type="button"
+        (click)="runDiscovery()"
+      >
+        {{ isRunningDiscovery() ? 'Discovery draait…' : 'Run discovery
+        (MisterBricks)' }}
+      </button>
+    </div>
+
+    @if (discoveryMessage()) {
+    <div
+      class="admin-panel"
+      [class.admin-panel--danger]="discoveryMessageTone() === 'danger'"
+    >
+      <p class="admin-muted">{{ discoveryMessage() }}</p>
+    </div>
+    } @if (activeOfferCount() > 0) {
+    <div class="admin-panel">
+      <strong>
+        Set staat nu live met {{ activeOfferCount() }} offer{{
+        activeOfferCount() === 1 ? '' : 's' }}.
+      </strong>
+      @if (publicSetUrl()) {
+      <p class="admin-muted">
+        <a [href]="publicSetUrl()" rel="noreferrer" target="_blank">
+          Open set page
+        </a>
+      </p>
+      }
+    </div>
+    } @if (latestDiscoveryRun()) {
+    <div class="admin-stack admin-stack--tight">
+      <strong>Laatste run</strong>
+      <span class="admin-muted">
+        {{ latestDiscoveryRun()?.candidateCount }} kandidaat{{
+        latestDiscoveryRun()?.candidateCount === 1 ? '' : 'en' }} · {{
+        commerceAdminStore.formatTimestamp( latestDiscoveryRun()?.finishedAt ??
+        latestDiscoveryRun()?.createdAt ) }}
+      </span>
+      @if (latestDiscoveryRun()?.errorMessage) {
+      <span class="admin-muted">{{ latestDiscoveryRun()?.errorMessage }}</span>
+      }
+    </div>
+    } @if (discoveryCandidates().length > 0) {
+    <div class="admin-discovery-candidates">
+      @for (candidate of discoveryCandidates(); track candidate.id) {
+      <article class="admin-discovery-candidate-card">
+        <div class="admin-stack admin-stack--tight">
+          <strong>{{ candidate.candidateTitle }}</strong>
+          <a [href]="candidate.candidateUrl" rel="noreferrer" target="_blank">
+            {{ candidate.candidateUrl }}
+          </a>
+        </div>
+
+        <div class="admin-discovery-candidate__meta">
+          <span>
+            {{ commerceAdminStore.formatPriceMinor( candidate.priceMinor,
+            candidate.currencyCode ?? 'EUR' ) }}
+          </span>
+          <span>
+            {{ commerceAdminStore.getDiscoveryAvailabilityLabel(
+            candidate.availability ) }}
+          </span>
+          <span>Score {{ candidate.confidenceScore }}</span>
+          @if (candidate.detectedSetId) {
+          <span>Detected {{ candidate.detectedSetId }}</span>
+          }
+        </div>
+
+        <div class="admin-stack admin-stack--tight">
+          @for (reason of candidate.matchReasons; track reason) {
+          <span class="admin-muted">{{ reason }}</span>
+          }
+        </div>
+
+        <div class="admin-actions-inline">
+          <button
+            class="admin-button admin-button--subtle"
+            [disabled]="candidate.offerSeedId !== undefined"
+            type="button"
+            (click)="useCandidate(candidate)"
+          >
+            Gebruik URL
+          </button>
+          <button
+            class="admin-button admin-button--primary"
+            [disabled]="isUpdatingCandidateId() === candidate.id"
+            type="button"
+            (click)="approveCandidate(candidate)"
+          >
+            {{ candidate.reviewStatus === 'approved' ? 'Al goedgekeurd' :
+            'Approve' }}
+          </button>
+          <button
+            class="admin-button admin-button--subtle"
+            [disabled]="isUpdatingCandidateId() === candidate.id"
+            type="button"
+            (click)="rejectCandidate(candidate)"
+          >
+            Reject
+          </button>
+        </div>
+      </article>
+      }
+    </div>
+
+    <div class="admin-form-grid">
+      <label class="admin-field admin-field--full">
+        <span>Offer seed URL</span>
+        <input
+          [ngModel]="seedDraftUrl()"
+          (ngModelChange)="seedDraftUrl.set($event)"
+          class="admin-input"
+          placeholder="Kies een kandidaat of plak hier handmatig een URL"
+          type="url"
+        />
+      </label>
+
+      <div class="admin-actions">
+        <button
+          class="admin-button admin-button--primary"
+          [disabled]="isSavingSeed() || !seedDraftUrl().trim()"
+          type="button"
+          (click)="saveSeedFromDraft()"
+        >
+          {{ isSavingSeed() ? 'Opslaan…' : 'Sla offer seed op' }}
+        </button>
+      </div>
+    </div>
+    } @else if (latestDiscoveryRun()?.status === 'failed') {
+    <p class="admin-muted">
+      Deze run liep vast voordat er kandidaten terugkwamen. Corrigeer de fout of
+      probeer de run opnieuw.
+    </p>
+    } @else {
+    <p class="admin-muted">
+      Nog geen discovery-kandidaten voor deze set. Start hierboven de eerste
+      MisterBricks-run.
+    </p>
+    }
+  </section>
+  }
+</section>

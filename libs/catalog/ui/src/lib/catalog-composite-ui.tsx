@@ -1,7 +1,6 @@
 import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
 import {
   ActionLink,
-  Badge,
   Breadcrumbs,
   type BreadcrumbItem,
   SectionHeading,
@@ -17,7 +16,6 @@ function joinClasses(
 
 type CatalogSectionHeaderTone = 'default' | 'inverse';
 type CatalogSectionHeaderUtilityPlacement = 'aside' | 'below-heading';
-type CatalogSetDetailHeroTone = 'info' | 'neutral' | 'positive' | 'warning';
 type CatalogPageIntroElement = 'div' | 'header' | 'section';
 type CatalogSectionShellElement = 'article' | 'aside' | 'div' | 'section';
 type CatalogSectionShellBodySpacing = 'compact' | 'default' | 'relaxed';
@@ -32,16 +30,6 @@ export interface CatalogIntroPanelSection {
   title: ReactNode;
   titleAs?: 'h1' | 'h2' | 'h3';
   tone?: 'default' | 'display';
-}
-
-function getCatalogSetDetailHeroTone(
-  tone?: ComponentProps<typeof Badge>['tone'],
-): CatalogSetDetailHeroTone {
-  if (tone === 'positive' || tone === 'warning' || tone === 'info') {
-    return tone;
-  }
-
-  return 'neutral';
 }
 
 const catalogSectionShellToneClasses: Record<
@@ -411,29 +399,39 @@ export function CatalogSetDetailHero({
   badges,
   className,
   children,
+  decisionPrimary,
+  decisionSecondary,
   decisionPanel,
+  eyebrow,
   gallery,
   keyFacts,
-  pitch,
   title,
   titleAs: TitleTag = 'h1',
-  verdict,
 }: {
   badges?: ReactNode;
   className?: string;
   children?: ReactNode;
-  decisionPanel: ReactNode;
+  decisionPanel?: ReactNode;
+  decisionPrimary?: ReactNode;
+  decisionSecondary?: ReactNode;
+  eyebrow?: ReactNode;
   gallery: ReactNode;
   keyFacts?: ReactNode;
-  pitch?: ReactNode;
   title: ReactNode;
   titleAs?: 'h1' | 'h2' | 'h3';
-  verdict: {
-    explanation: ReactNode;
-    label: ReactNode;
-    tone?: ComponentProps<typeof Badge>['tone'];
-  };
 }) {
+  const heroHeader = (
+    <div className={styles.detailHeroHeader}>
+      {badges ? <div className={styles.badgeRow}>{badges}</div> : null}
+      {eyebrow ? (
+        <div className={styles.detailHeroEyebrow}>{eyebrow}</div>
+      ) : null}
+      <TitleTag className={styles.detailTitle}>{title}</TitleTag>
+    </div>
+  );
+
+  const hasSplitDecision = Boolean(decisionPrimary || decisionSecondary);
+
   return (
     <Surface
       as="section"
@@ -451,19 +449,24 @@ export function CatalogSetDetailHero({
           </div>
         </div>
         <div className={styles.detailHeroContent}>
-          <div className={styles.detailHeroHeader}>
-            {badges ? <div className={styles.badgeRow}>{badges}</div> : null}
-            <TitleTag className={styles.detailTitle}>{title}</TitleTag>
-            {pitch ? <p className={styles.detailPitch}>{pitch}</p> : null}
-            <div
-              className={styles.detailVerdictBlock}
-              data-tone={getCatalogSetDetailHeroTone(verdict.tone)}
-            >
-              <p className={styles.detailVerdictKicker}>{verdict.label}</p>
-              <p className={styles.detailVerdict}>{verdict.explanation}</p>
-            </div>
-          </div>
-          {decisionPanel}
+          {hasSplitDecision ? (
+            <>
+              <div className={styles.detailHeroPrimary}>
+                {heroHeader}
+                {decisionPrimary}
+              </div>
+              {decisionSecondary ? (
+                <div className={styles.detailHeroSecondary}>
+                  {decisionSecondary}
+                </div>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {heroHeader}
+              {decisionPanel}
+            </>
+          )}
         </div>
         {children ? (
           <div className={styles.detailHeroSupplementary}>{children}</div>

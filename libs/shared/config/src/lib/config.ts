@@ -125,9 +125,16 @@ export const apiPaths = {
   wishlistAlertsViewed: '/api/v1/me/profile/wishlist-alerts/viewed',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
+  adminCatalogSets: '/api/v1/admin/catalog/sets',
+  adminCatalogOverlaySets: '/api/v1/admin/catalog/overlay-sets',
+  adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
+  adminCommerceCoverageQueue: '/api/v1/admin/commerce/coverage-queue',
+  adminCommerceDiscoveryRuns: '/api/v1/admin/commerce/discovery-runs',
+  adminCommerceDiscoveryCandidates:
+    '/api/v1/admin/commerce/discovery-candidates',
 } as const;
 
 export const supabaseEnvKeys = {
@@ -142,6 +149,11 @@ export const productEmailEnvKeys = {
   resendFromEmail: 'RESEND_FROM_EMAIL',
   resendFromName: 'RESEND_FROM_NAME',
   webBaseUrl: 'WEB_BASE_URL',
+} as const;
+
+export const rebrickableEnvKeys = {
+  apiKey: 'REBRICKABLE_API_KEY',
+  baseUrl: 'REBRICKABLE_BASE_URL',
 } as const;
 
 export interface BrowserSupabaseConfig {
@@ -159,6 +171,11 @@ export interface ProductEmailConfig {
   fromEmail: string;
   fromName: string;
   webBaseUrl: string;
+}
+
+export interface RebrickableApiConfig {
+  apiKey: string;
+  baseUrl?: string;
 }
 
 function normalizePathname(pathname: string): string {
@@ -514,6 +531,32 @@ export function getMissingProductEmailEnvKeys(
   }
 
   return missingKeys;
+}
+
+export function getRebrickableApiConfig(
+  environment: Record<string, string | undefined> = process.env,
+): RebrickableApiConfig {
+  return {
+    apiKey: requireEnvValue({
+      environment,
+      key: rebrickableEnvKeys.apiKey,
+    }),
+    baseUrl: environment[rebrickableEnvKeys.baseUrl],
+  };
+}
+
+export function hasRebrickableApiConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[rebrickableEnvKeys.apiKey]);
+}
+
+export function getMissingRebrickableEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[rebrickableEnvKeys.apiKey]
+    ? []
+    : [rebrickableEnvKeys.apiKey];
 }
 
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {

@@ -137,20 +137,20 @@ export const DecisionPanelStates: Story = {
           decisionTone: 'positive',
           merchantLabel: 'bol',
           price: '€ 469,99',
-          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
+          rankingLabel: 'Laagste nagekeken prijs op voorraad.',
           stockLabel: 'Op voorraad',
         }}
         supportItems={[
           {
             id: 'below-normal',
-            text: 'Deze prijs ligt onder wat we meestal zien.',
+            text: 'Onder het normale prijsniveau.',
           },
           {
             id: 'best-now',
-            text: 'Dit is momenteel de scherpste prijs die we volgen.',
+            text: 'Beste prijs die we nu volgen.',
           },
         ]}
-        supportTitle="Waarom dit nu interessant is"
+        supportTitle="Waarom nu"
         verdictTone="positive"
       />
       <CatalogPriceDecisionPanel
@@ -167,16 +167,16 @@ export const DecisionPanelStates: Story = {
           decisionTone: 'warning',
           merchantLabel: 'bol',
           price: '€ 449,99',
-          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
+          rankingLabel: 'Laagste nagekeken prijs op voorraad.',
           stockLabel: 'Op voorraad',
         }}
         supportItems={[
           {
             id: 'above-normal',
-            text: 'Deze prijs ligt boven wat we meestal zien.',
+            text: 'Boven het normale prijsniveau.',
           },
         ]}
-        supportTitle="Waarom wachten slimmer is"
+        supportTitle="Waarom wachten"
         verdictTone="warning"
       />
       <CatalogPriceDecisionPanel

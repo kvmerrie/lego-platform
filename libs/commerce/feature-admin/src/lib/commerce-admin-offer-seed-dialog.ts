@@ -5,11 +5,13 @@ import {
   EventEmitter,
   Input,
   Output,
+  signal,
   inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   commerceOfferSeedValidationStatuses,
+  type CommerceDiscoveryCandidate,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
 } from '@lego-platform/commerce/util';
@@ -29,6 +31,8 @@ export interface CommerceOfferSeedDialogPrefill {
   merchantId: string;
   setId: string;
 }
+
+type OfferSeedDialogMode = 'discover' | 'manual';
 
 function createDefaultOfferSeedForm(
   merchantId = '',
@@ -53,6 +57,9 @@ function createDefaultOfferSeedForm(
 })
 export class CommerceAdminOfferSeedDialogComponent {
   readonly commerceAdminStore = inject(CommerceAdminStore);
+  readonly mode = signal<OfferSeedDialogMode>('manual');
+  readonly selectedDiscoveryCandidateId = signal<string | null>(null);
+  readonly selectedDiscoveryCandidateUrl = signal<string | null>(null);
 
   @Input()
   set offerSeed(value: CommerceOfferSeed | null) {
@@ -80,8 +87,11 @@ export class CommerceAdminOfferSeedDialogComponent {
   private _prefill: CommerceOfferSeedDialogPrefill | null = null;
   readonly validationStatuses = commerceOfferSeedValidationStatuses;
 
+  discoveryMessage: string | null = null;
+  discoveryMessageTone: 'danger' | 'neutral' | 'positive' | null = null;
   errorMessage: string | null = null;
   formModel = createDefaultOfferSeedForm();
+  isDiscoveryRunning = false;
   isSaving = false;
 
   get canSave(): boolean {
@@ -115,6 +125,30 @@ export class CommerceAdminOfferSeedDialogComponent {
     );
   }
 
+  get supportsDiscovery(): boolean {
+    return this.commerceAdminStore.supportsMerchantDiscovery(
+      this.formModel.merchantId,
+    );
+  }
+
+  get discoveryCandidates(): CommerceDiscoveryCandidate[] {
+    return this.commerceAdminStore.getDiscoveryCandidatesForSetMerchant({
+      setId: this.formModel.setId,
+      merchantId: this.formModel.merchantId,
+    });
+  }
+
+  get latestDiscoveryRun() {
+    return this.commerceAdminStore.getLatestDiscoveryRun({
+      setId: this.formModel.setId,
+      merchantId: this.formModel.merchantId,
+    });
+  }
+
+  get hasDiscoveryCandidates(): boolean {
+    return this.discoveryCandidates.length > 0;
+  }
+
   cancel(): void {
     if (this.isSaving) {
       return;
@@ -126,10 +160,16 @@ export class CommerceAdminOfferSeedDialogComponent {
   async save(): Promise<void> {
     this.errorMessage = null;
     this.isSaving = true;
+    const selectedDiscoveryCandidateId: string | undefined =
+      this.selectedDiscoveryCandidateId() || undefined;
 
     try {
       await this.commerceAdminStore.saveOfferSeed({
         offerSeedId: this.offerSeed?.id,
+        discoveryCandidateId:
+          !this.offerSeed && selectedDiscoveryCandidateId
+            ? selectedDiscoveryCandidateId
+            : undefined,
         input: {
           ...this.formModel,
           lastVerifiedAt: this.formModel.lastVerifiedAt || undefined,
@@ -147,8 +187,110 @@ export class CommerceAdminOfferSeedDialogComponent {
     }
   }
 
+  setMode(mode: OfferSeedDialogMode): void {
+    if (mode === 'discover' && !this.supportsDiscovery) {
+      return;
+    }
+
+    this.mode.set(mode);
+  }
+
+  async runDiscovery(): Promise<void> {
+    this.discoveryMessage = null;
+    this.discoveryMessageTone = null;
+
+    if (!this.supportsDiscovery) {
+      this.discoveryMessage =
+        'Deze merchant heeft nog geen ingebouwde discovery-ondersteuning.';
+      this.discoveryMessageTone = 'neutral';
+      return;
+    }
+
+    this.isDiscoveryRunning = true;
+
+    try {
+      const result = await this.commerceAdminStore.runDiscovery({
+        setId: this.formModel.setId,
+        merchantId: this.formModel.merchantId,
+      });
+
+      if (result.run.status === 'success') {
+        this.discoveryMessage =
+          result.run.candidateCount > 0
+            ? `${result.run.candidateCount} kandidaat${
+                result.run.candidateCount === 1 ? '' : 'en'
+              } klaar om te beoordelen.`
+            : 'Discovery draaide, maar leverde nog geen bruikbare kandidaat op.';
+        this.discoveryMessageTone = 'positive';
+      } else {
+        this.discoveryMessage =
+          result.run.errorMessage ??
+          'Discovery stopte zonder bruikbare kandidaat.';
+        this.discoveryMessageTone = 'danger';
+      }
+    } catch (error) {
+      this.discoveryMessage =
+        error instanceof Error
+          ? error.message
+          : 'Discovery kon niet worden gestart.';
+      this.discoveryMessageTone = 'danger';
+    } finally {
+      this.isDiscoveryRunning = false;
+    }
+  }
+
+  selectDiscoveryCandidate(candidate: CommerceDiscoveryCandidate): void {
+    if (candidate.reviewStatus === 'rejected') {
+      return;
+    }
+
+    this.formModel.productUrl =
+      candidate.canonicalUrl || candidate.candidateUrl;
+    this.selectedDiscoveryCandidateId.set(candidate.id);
+    this.selectedDiscoveryCandidateUrl.set(this.formModel.productUrl);
+    this.discoveryMessage = 'URL ingevuld. Sla de seed nog expliciet op.';
+    this.discoveryMessageTone = 'positive';
+  }
+
+  isDiscoveryCandidateSelected(candidateId: string): boolean {
+    return this.selectedDiscoveryCandidateId() === candidateId;
+  }
+
+  updateMerchant(value: string): void {
+    this.formModel.merchantId = value;
+    this.resetDiscoverySelectionIfAutofilled();
+    this.discoveryMessage = null;
+    this.discoveryMessageTone = null;
+
+    if (!this.supportsDiscovery && this.mode() === 'discover') {
+      this.mode.set('manual');
+    }
+
+    if (!this.isEditing && this.supportsDiscovery) {
+      this.mode.set('discover');
+    }
+  }
+
+  updateSet(value: string): void {
+    this.formModel.setId = value;
+    this.resetDiscoverySelectionIfAutofilled();
+    this.discoveryMessage = null;
+    this.discoveryMessageTone = null;
+  }
+
+  updateProductUrl(value: string): void {
+    this.formModel.productUrl = value;
+
+    if (value.trim() !== this.selectedDiscoveryCandidateUrl()) {
+      this.selectedDiscoveryCandidateId.set(null);
+      this.selectedDiscoveryCandidateUrl.set(null);
+    }
+  }
+
   private syncFormModel(): void {
     this.errorMessage = null;
+    this.discoveryMessage = null;
+    this.discoveryMessageTone = null;
     this.formModel = this.offerSeed
       ? {
           setId: this.offerSeed.setId,
@@ -166,8 +308,25 @@ export class CommerceAdminOfferSeedDialogComponent {
             this.commerceAdminStore.merchants()[0]?.id ??
             '',
           this.prefill?.setId ??
-            this.commerceAdminStore.catalogSetOptions[0]?.id ??
+            this.commerceAdminStore.catalogSetOptions()[0]?.id ??
             '',
         );
+    this.selectedDiscoveryCandidateId.set(null);
+    this.selectedDiscoveryCandidateUrl.set(null);
+    this.mode.set(
+      !this.offerSeed && this.supportsDiscovery ? 'discover' : 'manual',
+    );
+  }
+
+  private resetDiscoverySelectionIfAutofilled(): void {
+    if (
+      this.selectedDiscoveryCandidateUrl() &&
+      this.formModel.productUrl.trim() === this.selectedDiscoveryCandidateUrl()
+    ) {
+      this.formModel.productUrl = '';
+    }
+
+    this.selectedDiscoveryCandidateId.set(null);
+    this.selectedDiscoveryCandidateUrl.set(null);
   }
 }

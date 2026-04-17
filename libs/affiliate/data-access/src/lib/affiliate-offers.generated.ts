@@ -13,7 +13,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/titanic-10294",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:52.694Z",
+    "observedAt": "2026-04-16T19:21:01.858Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -45,7 +45,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/lion-knights-castle-10305",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:49.558Z",
+    "observedAt": "2026-04-16T19:21:06.442Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -61,7 +61,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-10305-leeuwenridders-kasteel/9300000118982560",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:51.454Z",
+    "observedAt": "2026-04-16T19:19:45.796Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -77,7 +77,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Icons-Knights-Castle-10305/dp/B0B5ZS6FTV?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=1ICB0EXP58149&dib=eyJ2IjoiMSJ9.4t2rJOMgQzWX0wkmffhwSDMyIymd-mpXx11baqPPlXUsf7_feo2R39-r7MnIU4TuoTvC2bt6eQk0i3cd9s6aoqUDbmfm1l6Wg1gE69PLjkkig_2Ztt9ByC08-ZVKNXvqOAb_GP8lhIMlMH0axkEk4w0dMRi8p63TY6dxQBs0sK0wbkZSEAojtg-jXz2ZzBR6mz0sIrCMcvEqOgvkqyZW7UflUBwy5-iaD8CsJg9jA82zo6XQAOsfwINz6bg51IfjZ495s641cJCCJvWk9DBjUXoOitcqxU3zo_4im7zBK6k.6MZaITTk3EQKDn-25lTC0rcNoWTCMTnzNJEvZocmGrg&dib_tag=se&keywords=lego+lion+knights+castle&qid=1775758964&sbo=RZvfv%2F%2FHxDF%2BO5021pAnSA%3D%3D&sprefix=lego+lion+knights%27+castle%2Caps%2C74&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=b8754cd43f594c6e5140ad43fc454573&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:22.637Z",
+    "observedAt": "2026-04-16T19:21:37.980Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -93,7 +93,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-10316-the-lord-of-the-rings-rivendell/9300000144104277",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:53.410Z",
+    "observedAt": "2026-04-16T19:19:43.069Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -109,7 +109,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-10316-Icons-LORD-RINGS/dp/B0BVMZ5NT5?crid=1PZX2UTHGPHQN&dib=eyJ2IjoiMSJ9.eV5BU8F5Ha1yyEu_F_vgmAq8ud289j12LwS936M_GLEQb2qBSlTJ0daClsdfbORpLFHahOSsox9ucg_dMXqRnWtEESZGcdk4rOgRf5ElQg5gopSMHRkiJyMDIguuVPHAhEcajIHvW5M27N2CXy9ilRIUJjJlsI9X5KKRAJp4I4Tc-v7Wca3KSZZ5jwHebrXhz_HpCpn4PEKuHLxjdTPluO74yAL9k4OeAnM0N9bUw9wL0BXaFJd1NRekk3_x6u_93FwiicKAu9zFUJG6FIeFBBDk9CenCrLyOMm793LMLfk.djPen0fBRza0RkXHY7s9nSUD5leeYbY5HwfzJg2uxZg&dib_tag=se&keywords=lego+lord+of+the+rings+barad-d%C3%BBr&qid=1775758479&sprefix=The+Lord+of+the+Rings%3A+Barad-d%C3%BBr%2Caps%2C88&sr=8-2&linkCode=ll2&tag=brickhunt09-21&linkId=527398c8997a060eeca3c83403d248bb&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:20.541Z",
+    "observedAt": "2026-04-16T19:21:41.418Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -125,7 +125,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/the-lord-of-the-rings-rivendell-10316",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:47.171Z",
+    "observedAt": "2026-04-16T19:21:08.545Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -141,10 +141,26 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/land-rover-classic-defender-90-10317",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:02.668Z",
+    "observedAt": "2026-04-16T19:20:52.660Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "10317",
+    "merchantId": "bol",
+    "merchantName": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 27995,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-10317-land-rover-classic-defender-90/9300000137836645",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-04-16T19:19:46.730Z",
+    "displayRank": 2,
+    "ctaLabel": "Shop at bol",
+    "perks": "Wide Dutch retail reach"
   },
   {
     "setId": "10317",
@@ -157,7 +173,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-10317-1984-Classic-Defender-onderdelen/dp/B0BSR933M2?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=C0VIB1H1Y0IK&dib=eyJ2IjoiMSJ9.xlYZ9NVh9to6gohBbw7JWDeYL2DCmoHRlkxu-qkrjizC0qTgdko33wv5Dunp_LcmG27FHYDP6Z3IW2xuRD9epO8NGQDo76Tp-6b80rSChuYTRO5gPQin2f1fqJemHYSGk4lKHA2GDyZFNf9AwuBnnXSkPHJrg3vtVdl4CW-NBxFT94FFUd6I0rC2smj2UcW94M7OE5Q3vFpPCcmBfAI79ZBsyXpD2sBG8nvqb_k4CE7ikS8Yn0Z42wRWNH_FVqQ2LN88j82jXr94l_-cyS6tJESwwrhP_VKAgwuoUxPwi4E.qHnjxzD8aWIVKxVZfyuQfnjSWSk8W02lfZ1zg_IJOHc&dib_tag=se&keywords=lego+Land+Rover+Classic+Defender+90&qid=1775759576&sprefix=lego+land+rover+classic+defender+90%2Caps%2C82&sr=8-3&linkCode=ll2&tag=brickhunt09-21&linkId=738343c26fcf121353d9ae5a178a228a&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:28.654Z",
+    "observedAt": "2026-04-16T19:21:27.785Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -173,7 +189,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-icons-dune-atreides-royal-ornithopter-10327/9300000157956163",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:48.286Z",
+    "observedAt": "2026-04-16T19:19:50.535Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -189,7 +205,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-10327-Ornithopter-Vliegtuigmodel-Volwassenen/dp/B01N1O0F2K?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=39JWELHDRS0HY&dib=eyJ2IjoiMSJ9.iAsJNUQ2iyj8mAzioiQrM5Hpp9kqwjfzNWa949HVMK4IybGFyF0ULFm3lRj1XLw8pByECRpM_RQIzeaUh6COMRAJtqghgiPJ11NSswJmL7xSuJ91ff2K_sumyfR19M3TNUpceXLOsIfkKdxeA4YNK-sHB1pdouwbm8zLPc-pTRhUtcT10ZrTEqRkLOawozyAgbMgbp28hENWSMmCOB02YKG-lLFiihYoG0k7-TzJFwnMmnVys6YDYskTYFHEcrAPRg91P8ABE9TcJiAWquKYYDmPdTc61HG5WWb0-cIpjlE.cQcQ4O0aIL6tM4v0yX3MXySZsLlevs96Qe2fUw0VTqI&dib_tag=se&keywords=10327&qid=1776260591&sprefix=10327%2Caps%2C101&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=4e1aee208ae9cee5f3e6b5654aad1684&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:53:45.187Z",
+    "observedAt": "2026-04-16T19:19:53.056Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -205,7 +221,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-icons-dune-atreides-royal-ornithopter-10327",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:49.155Z",
+    "observedAt": "2026-04-16T19:19:49.426Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -221,8 +237,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10327-icons-dune-atreides-royal-ornithopter-411-0327",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:50.192Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:19:48.148Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -236,7 +252,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/dune-atreides-royal-ornithopter-10327",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:14.948Z",
+    "observedAt": "2026-04-16T19:20:42.092Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -252,10 +268,25 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Rozenboeket-Moederdag-Cadeau-Ontspannende-10328/dp/B01MRT58RZ?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=1UMYAM33QP20Z&dib=eyJ2IjoiMSJ9.6UipO4ccJyOKV9iUuvWc9PTkgJFoE1YVeeaSiVQozDo5PToodlOOw-YVOHzNvze3YR7TqYvLMWqdyjL_I34nIown0UfNZ__MC9lj8At-8BZZoT3918Wf_WIx1r9NR3lVTVOL6Z32ro6y5o81U1EAWOgPXU82Y03AIbbbVoJtwTj-mtLNQPHfQz7aHOXrDT_IJ3U_vNXoVWGj7n8d4ABBi_B0QJZ0kyW9M5Ygh57d58Go2FN_bRnT_DQl_NAA5OgLPO0ihaO7c_YgadziAHx_S9fcwpRkuAXcnVoNdn_lR_w.kAa51h-RJlRKQcw4ynK8Nk6QtvHz5oFQAsTXVeAy3zA&dib_tag=se&keywords=lego%2BBouquet%2Bof%2BRoses&qid=1775761622&sprefix=lego%2Bbouquet%2Bof%2Broses%2Caps%2C84&sr=8-1&th=1&linkCode=ll2&tag=brickhunt09-21&linkId=fffcffbc7db5ec766045610079ec2ca7&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:37.492Z",
+    "observedAt": "2026-04-16T19:21:18.644Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
+  },
+  {
+    "setId": "10328",
+    "merchantId": "misterbricks",
+    "merchantName": "MisterBricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4995,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://misterbricks.nl/lego-botanicals-10328-rozenboeket.html",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-16T19:18:24.970Z",
+    "displayRank": 7,
+    "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
     "setId": "10328",
@@ -268,8 +299,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10328-icons-rozenboeket-411-1038",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:41.698Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:20:02.360Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -283,7 +314,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-icons-botanical-collection-rozenboeket-10328",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:40.758Z",
+    "observedAt": "2026-04-16T19:20:02.557Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -299,7 +330,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/bouquet-of-roses-10328",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:20.124Z",
+    "observedAt": "2026-04-16T19:20:37.667Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -315,7 +346,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/medieval-town-square-10332",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:50.493Z",
+    "observedAt": "2026-04-16T19:21:05.512Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -327,11 +358,11 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 25999,
+    "totalPriceMinor": 26099,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-icons-middeleeuws-stadsplein-10332/9300000173010312",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:52.290Z",
+    "observedAt": "2026-04-16T19:19:44.249Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -363,7 +394,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Icons-Lord-Rings-Volwassenen/dp/B0D5W8J5YV?crid=1PZX2UTHGPHQN&dib=eyJ2IjoiMSJ9.eV5BU8F5Ha1yyEu_F_vgmAq8ud289j12LwS936M_GLEQb2qBSlTJ0daClsdfbORpLFHahOSsox9ucg_dMXqRnWtEESZGcdk4rOgRf5ElQg5gopSMHRkiJyMDIguuVPHAhEcajIHvW5M27N2CXy9ilRIUJjJlsI9X5KKRAJp4I4Tc-v7Wca3KSZZ5jwHebrXhz_HpCpn4PEKuHLxjdTPluO74yAL9k4OeAnM0N9bUw9wL0BXaFJd1NRekk3_x6u_93FwiicKAu9zFUJG6FIeFBBDk9CenCrLyOMm793LMLfk.djPen0fBRza0RkXHY7s9nSUD5leeYbY5HwfzJg2uxZg&dib_tag=se&keywords=lego+lord+of+the+rings+barad-d%C3%BBr&qid=1775758479&sprefix=The+Lord+of+the+Rings%3A+Barad-d%C3%BBr%2Caps%2C88&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=658c1fea641d978ff43ab69afa307b35&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:18.250Z",
+    "observedAt": "2026-04-16T19:21:44.363Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -379,7 +410,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/the-lord-of-the-rings-barad-dur-10333",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:51.714Z",
+    "observedAt": "2026-04-16T19:21:03.892Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -395,7 +426,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/the-endurance-10335",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:13.925Z",
+    "observedAt": "2026-04-16T19:20:43.451Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -427,10 +458,25 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Kunstbloemen-Moederdag-Cadeau-Korenbloemen-10342/dp/B0DHSDBVKV?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=2VKL489BI1L2T&dib=eyJ2IjoiMSJ9.A1GmVVQOpYdf7LyrY1itSdQZTVTQBlEdf3DhVPMxS2KCkFrlGXPJXj8iklTmqIGoRC7mlVXzR6uo1W_ostSAg0jDvLnSna7lMjOGLUHwDAMH9cuO9g_7MHwdbrMYc3we_cFXy9SlkrGZmvwdUoe34c_UHb5iSB87vZ2ZUripe3wzIRCEZLxdJle-UBJv0TOhFlPsnY8e-ZaRPNW7ReJZh4xRKuYtcjwyTm6wb7wm3pwctntOshVAEhby_fG5ETaInajnYxwWbb3l6d56UiFfri9jPFm4Rw6eY3EzyXa6AsE.BNZ1NZBcftinCRtP6tOwnRjKRpCjkn1ZYsJEZ0OID6U&dib_tag=se&keywords=lego%2BPretty%2BPink%2BFlower%2BBouquet&qid=1775761545&sprefix=lego%2Bpretty%2Bpink%2Bflower%2Bbouquet%2Caps%2C118&sr=8-1&th=1&linkCode=ll2&tag=brickhunt09-21&linkId=99b548fd63b2c581fa1aa9659cb9e0fe&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:43.907Z",
+    "observedAt": "2026-04-16T19:21:11.879Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
+  },
+  {
+    "setId": "10342",
+    "merchantId": "misterbricks",
+    "merchantName": "MisterBricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://misterbricks.nl/lego-10342-roze-boeket.html",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-16T19:18:24.555Z",
+    "displayRank": 7,
+    "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
     "setId": "10342",
@@ -443,7 +489,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-botanicals-roze-boeket-10342",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:41.954Z",
+    "observedAt": "2026-04-16T19:20:01.509Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -459,7 +505,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/pretty-pink-flower-bouquet-10342",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:26.737Z",
+    "observedAt": "2026-04-16T19:21:31.615Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -475,8 +521,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10342-botanicals-roze-boeket",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:42.854Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:20:00.059Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -497,6 +543,22 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10354",
+    "merchantId": "bol",
+    "merchantName": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 25899,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-icons-the-lord-of-the-rings-the-shire-10354/9300000227400215",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-04-16T19:19:37.321Z",
+    "displayRank": 2,
+    "ctaLabel": "Shop at bol",
+    "perks": "Wide Dutch retail reach"
+  },
+  {
+    "setId": "10354",
     "merchantId": "top1toys",
     "merchantName": "Top1Toys",
     "regionCode": "NL",
@@ -506,8 +568,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10354-iconen-the-lord-of-the-rings-de-gouw",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:56.263Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:19:38.845Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -521,7 +583,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/the-shire-10354",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:14.618Z",
+    "observedAt": "2026-04-16T19:21:48.441Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -537,7 +599,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Limited stock",
     "outboundUrl": "https://www.amazon.nl/Lego-Auenland-Shire-10354-bedrukte/dp/B0FZBDWLT5?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=2AWWZ6F0AIB5R&dib=eyJ2IjoiMSJ9.eND83uolzMdoK3sUq15eYkuQfwAn8CDgs6YaNtI9eWCHIACPWsiF5paTyoxcRavIi31ifYAw2fDy7ftR_ZDVasbYbyEjLxg4k-35XU_RXl1yR0ky6RZfW7vxff69Zd3Pf7FfgP7zlZBR1HrH0tXMYc0cPTAUXZEyWESlUdoG6iVPe6S93yP2kExoP-3hQlXdxoNwmP67PBFobI_UpIbKZfdHEx9uuZKYjUGxVVcXWBTV4F4DQxoRsb61qTkkJYsVHkYVuqJo9ilYITOkwOSJBtCqJ0rznDV-ANLn7T-4j-g.Y-u8TEHEU7iBgySW13nL6njKwJiAO9n8FXvih3_EofI&dib_tag=se&keywords=lego+The+Lord+of+the+Rings%3A+The+Shire&qid=1775758663&sprefix=lego+the+lord+of+the+rings+the+shire%2Caps%2C147&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=66add913149e68e57c56f2536d98d169&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:41.859Z",
+    "observedAt": "2026-04-16T19:21:14.281Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -553,10 +615,25 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Architecture-Notre-Dame-Volwassenen-21061/dp/B0CWH1M12W?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=3N5ABECN3HXTQ&dib=eyJ2IjoiMSJ9.Ck2hsK5S2D885Jw3QzGx2lWniVums1R9f-d89Ub8kZ4kbZLwVodNkizUSNtSZ1RgNh0VQDSEw_g2_Y5xY-9qhJjcBxEiwy_ZB-XMu1nqPHffTNSxh4DgOuvgCErbP8NHCDcoMN2Ey2MTNW3pZLPRIyxI2-E2TVGQb9UYaY4bYt30gxkwXYhKKuKoZoV-LyxiItHYlQyztd5Uosk4v5rSLN3rWKKVe8QUY2Ysg2HXqu0JSjub--j3vsvI9wXrBIA6HL648CzSeaMwY5i7fqTwtGA1xhmepUoX2-kYh-0pV5I.dsNy_D7bVfQxS6ccCuURwoRG60MkQfew_hw093CRfrs&dib_tag=se&keywords=lego+Notre-Dame+de+Paris&qid=1775761749&sprefix=lego+notre-dame+de+paris%2Caps%2C85&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=6e5049d70294abbb1c399672a647d026&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:53:25.721Z",
+    "observedAt": "2026-04-16T19:20:26.364Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
+  },
+  {
+    "setId": "21061",
+    "merchantId": "misterbricks",
+    "merchantName": "MisterBricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 18400,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://misterbricks.nl/lego-architecture-21061-notre-dame-van-parijs.html",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-16T19:18:25.426Z",
+    "displayRank": 7,
+    "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
     "setId": "21061",
@@ -569,7 +646,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-architecture-notre-dame-van-parijs-21061",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:47.341Z",
+    "observedAt": "2026-04-16T19:19:51.628Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -585,7 +662,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/notre-dame-de-paris-21061",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:24.785Z",
+    "observedAt": "2026-04-16T19:20:28.205Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -601,8 +678,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-21061-architecture-notre-dame-van-parijs-411-1061",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:27.514Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:20:24.984Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -616,7 +693,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/vincent-van-gogh-the-starry-night-21333",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:53.633Z",
+    "observedAt": "2026-04-16T19:20:59.985Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -632,7 +709,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-ideas-vincent-van-gogh-sterrennacht-21333/9300000070995024",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:09.791Z",
+    "observedAt": "2026-04-16T19:19:22.672Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -648,7 +725,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-ideas-dungeons-dragons-het-verhaal-van-de-rode-draak-21348/9300000175725314",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:59.983Z",
+    "observedAt": "2026-04-16T19:19:33.668Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -664,7 +741,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/dungeons-dragons-red-dragons-tale-21348",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:48.722Z",
+    "observedAt": "2026-04-16T19:21:07.619Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -680,8 +757,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-ideas-dungeons-dragons-the-legend-of-the-red-dragon-21348",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:00.962Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:19:32.427Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -695,7 +772,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/tuxedo-cat-21349",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:54.767Z",
+    "observedAt": "2026-04-16T19:20:58.868Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -711,7 +788,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-ideas-jaws-21350",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:04.031Z",
+    "observedAt": "2026-04-16T19:19:28.762Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -727,7 +804,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/jaws-21350",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:01.152Z",
+    "observedAt": "2026-04-16T19:20:53.933Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -759,7 +836,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Mercedes-AMG-Performance-Woonaccessoire-42171/dp/B0CFVZ74KT?dib=eyJ2IjoiMSJ9.yTykY_NZjsgWKiIILMXWGEhlc0Qu78UHbAGMtvZMrGiHqdmkbxMZZ176HZeBlHTNtTzho08kjwyENEPzkKkX7heSzTQsQ7NbRGdlOnojancdo2Yc55bu2mTbVy_W8iCMVYZTZUBiA2PlDQTqMmTyf7JUTqfOBMg9IwqS9wHQ1iUc_4BtCR142T2Qb1s4Iku684qR_sCgkPNBTPIH638Fu1UsEIwJvFJLu2izZgKwQJJw0wA6Cy2x8rWlRxUp_F1eZOr5XpVsirBgbYPtI4PjDLHpmbmPhx4UqYntjPUKX4Y.sa1FzW_sTAdRnAuhSkUlxtKDvRYelyrjOLpl95vegwI&dib_tag=se&keywords=42171&qid=1776263092&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=87ae74d7d3d60523c2dd1a7071bcb9de&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:54:50.205Z",
+    "observedAt": "2026-04-16T19:18:35.279Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -775,7 +852,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-technic-mercedes-amg-f1-w14-e-performance-42171/9300000157956251",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:52.435Z",
+    "observedAt": "2026-04-16T19:18:33.873Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -791,7 +868,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-technic-mercedes-amg-f1-w14-e-performance-42171",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:53.442Z",
+    "observedAt": "2026-04-16T19:18:32.987Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -807,8 +884,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-4217-technic-mercedes-amg-f1-w14-e-performance-411-2171",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:54.348Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:18:31.546Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -822,7 +899,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/mercedes-amg-f1-w14-e-performance-42171",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:16.115Z",
+    "observedAt": "2026-04-16T19:20:41.140Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -838,7 +915,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Limited stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Volwassenen-V8-zuigermotor-versnellingen-42172/dp/B0CWH3TBGB?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=ZW4BUOFTBJBU&dib=eyJ2IjoiMSJ9.R4beTgqecU3syKSMvBBLQROun8XkT9aQA6C-Osa-nKUiFN7gxhKPkzsISpwrUW0xG9BsVCYLnrCa4UjkiyoRttDZwDBPdbIRUQUJa-tIC6ZpVigNEsv6Ot2dnATzNMPnD_pCzVknc-mQvFyrVBl2aBhPeW06UNscn_WmRAxgXrsC6LXI-mXNGmbtSgb4JoyL_x9SF__Qrydo--LFGG7RlsvuUjFW4sECesWVNFAWPi5GnM5HY3Xqh7atuB4_MtX5raVzSpSflh_cGdscna3MHnMnwIjdZZ-lkFyVBG5575M._3TVhlUXY2i1hvgXB6vt-ndBnBtMsRGv6yRyZiy5bQw&dib_tag=se&keywords=lego+McLaren+P1&qid=1775761309&sprefix=lego+mclaren+p1%2Caps%2C82&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=6448fc045362a99b2cbb881f89de238a&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:35.232Z",
+    "observedAt": "2026-04-16T19:21:21.079Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -854,7 +931,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-technic-mclaren-p1-42172",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:49.175Z",
+    "observedAt": "2026-04-16T19:18:38.589Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -870,8 +947,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42172-technic-mclaren-p1-411-2172",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:50.032Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:18:37.173Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -885,7 +962,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/mclaren-p1-42172",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:18.639Z",
+    "observedAt": "2026-04-16T19:20:39.496Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -901,7 +978,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-technic-mercedes-benz-g-500-professional-line-42177",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:58.669Z",
+    "observedAt": "2026-04-16T19:18:27.418Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -917,8 +994,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42177-technic-mercedes-benz-g-500-professional-line-411-2177",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:59.625Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:18:25.847Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -932,7 +1009,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/mercedes-benz-g-500-professional-line-42177",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:16.911Z",
+    "observedAt": "2026-04-16T19:21:47.008Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -948,7 +1025,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/at-at-75313",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:54:22.952Z",
+    "observedAt": "2026-04-16T19:19:07.392Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -964,7 +1041,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-at-at-75313/9300000070992525",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:20.998Z",
+    "observedAt": "2026-04-16T19:19:09.956Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -980,7 +1057,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-verzamel-set-volwassenen-presentatie-set-inclusief/dp/B09JKZ62H7?dib=eyJ2IjoiMSJ9.GIvXKNBJI-vkGLqExHWcw_DshPxxzsZXywmmNSCS4fF-6XBT_Mw-geg6fN3T013jbAv9b9RqfdtDwT3Ojt-DQDB_7v31aqj3F6Ir5LaM7iNWAoPDeX7zC3FOcG0HDOZJsv8XDCizkm-mG8YYl3eoEzFkK2RWFHxKNFrMBdJEjUa05uaorRAltKAo-leo5J5OhdyE9a_xVPP7qEg830gG_cbdUTBci-8l6Hu1BaL9nCjegG4srCwuAsMR9PkX8B0BH548Fl-b9cR4-vE2w3RdftfggjbWd7_DnJAqZMLiyIk.qeZwEgVVMjd9JbjAlZj1UxYI0salW1RzV21zyQnd-UQ&dib_tag=se&keywords=75313&qid=1776261864&sr=8-3&linkCode=ll2&tag=brickhunt09-21&linkId=d5cbfbf31be1592655f2c28ca987aab3&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:54:19.029Z",
+    "observedAt": "2026-04-16T19:19:11.063Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -1012,7 +1089,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/x-wing-starfighter-75355",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:05.172Z",
+    "observedAt": "2026-04-16T19:20:50.129Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1028,8 +1105,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-75355-star-wars-x-wing-starfighter",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:47.647Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:18:41.205Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1059,7 +1136,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-star-wars-venator-class-republic-attack-cruiser-75367",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:42.967Z",
+    "observedAt": "2026-04-16T19:18:47.821Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1075,7 +1152,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/venator-class-republic-attack-cruiser-75367",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:59.340Z",
+    "observedAt": "2026-04-16T19:20:54.862Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1091,8 +1168,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-star-wars-75367-venator-class-republic-attack-cruiser",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:43.866Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:18:45.916Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1106,7 +1183,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-star-wars-jabba-s-sail-barge-75397",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:39.325Z",
+    "observedAt": "2026-04-16T19:18:51.696Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1122,7 +1199,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/jabbas-sail-barge-75397",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:06.413Z",
+    "observedAt": "2026-04-16T19:20:48.157Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1138,7 +1215,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-c-3po-decoratie-bouwpakket-met-droid-figuur-75398/9300000175725370",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:26.441Z",
+    "observedAt": "2026-04-16T19:19:04.307Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1154,7 +1231,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-star-wars-c-3po-75398",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:27.655Z",
+    "observedAt": "2026-04-16T19:19:03.249Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1170,7 +1247,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/c-3po-75398",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:21.140Z",
+    "observedAt": "2026-04-16T19:20:32.284Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1186,7 +1263,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Droid-figuur-C-3PO-minifiguur-Wars-verzamelobject-kantoordecoratie/dp/B0CV236PM6?dib=eyJ2IjoiMSJ9.LEVDXrKjf1lPO--Ze3g5gQnjDos_wZbAH53lB_yIhG5ACCAjG8B9NefENy6PEtkWnrihRsQAcXQDTyPU3-akixgzEb66Gha4OStyys2lyHqdSyrznwXqjLrNqojiJARQ8RfooEUO9hCGyQxqrsrCf3eBFEoQ5SJkQXAcjOPt-KspPmqCJZYwSrZ6Aq05rwbq0qfDCqCKwT5_-F6MIejYfxfptdpBO6jqmRqvCu--6qGOnzw0AsG0i5xsZ5HUlA_OW6gT3P--hQYYapUqc-lp9jhkYjLAObb_g3C-8H7Llg8.aKaGNtKRHxRjzLdfN6OA1HYRQfmdg_6TWKGWJrQCBXU&dib_tag=se&keywords=75398&qid=1776261921&sr=8-2&linkCode=ll2&tag=brickhunt09-21&linkId=f9c639e3652780051ebd3473751310f4&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:54:24.335Z",
+    "observedAt": "2026-04-16T19:19:05.358Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -1202,7 +1279,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/daily-bugle-76178",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:52:58.476Z",
+    "observedAt": "2026-04-16T19:20:56.970Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1218,7 +1295,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Limited stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Marvel-Heroes-76178-Speelset/dp/B0966FVGSY?dib=eyJ2IjoiMSJ9.R6L_KmtGuGc6Gf6TrTl4XbjWLyecQhZxd8_mH7uetEd4nLp5OH82LnlD2ezs_vslqnmlDu0UP4ReATrqbzkTrLYufc-1JsHxgXTvL94YYGDv5wm4uNHr7RN16Qd5j2p9xlJIz6W-Fzbf3Rn7ggLPqxpldX6VSI6_jmC72lh3ZZ74Q3Xwvq2cT5WWu7i6rNvqZCtEwAXiq2SanvVuyPjOtbzF61pAyTS5FzOB00Yk0SE0W2kzc06LWmKx4_Pf0A1ZhDZS2w0iPYC-6mnfvzeTpnDWXxVIIiqLezY13bQ8OB4.prqcWUwkEbGbdwOTjz0JGccAUOd1YrGCgsHZ83C43xs&dib_tag=se&keywords=76178&qid=1776262009&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=3d221690f9ba421b9f26dc40f19107bb&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:54:29.691Z",
+    "observedAt": "2026-04-16T19:19:00.714Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -1234,7 +1311,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-spider-man-daily-bugle-76178/9300000040027340",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:31.791Z",
+    "observedAt": "2026-04-16T19:19:00.022Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1250,7 +1327,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.intertoys.nl/lego-marvel-avengers-toren-76269",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:52:46.316Z",
+    "observedAt": "2026-04-16T19:21:10.928Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1266,8 +1343,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-super-heros-avengers-tower-76269",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:13.846Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:19:18.444Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1281,7 +1358,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/avengers-tower-76269",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:04.124Z",
+    "observedAt": "2026-04-16T19:20:51.208Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1297,7 +1374,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-avengers-toren-lego-marvel/9300000168131115",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:12.509Z",
+    "observedAt": "2026-04-16T19:19:19.664Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1313,7 +1390,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-marvel-x-men-de-x-mansion-76294",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:35.455Z",
+    "observedAt": "2026-04-16T19:18:55.663Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1329,10 +1406,26 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/x-men-the-x-mansion-76294",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:12.732Z",
+    "observedAt": "2026-04-16T19:20:44.714Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "76313",
+    "merchantId": "bol",
+    "merchantName": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8153,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-marvel-marvel-logo-en-minifiguren-verzamelset-76313/9300000187249747",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-04-16T19:19:15.227Z",
+    "displayRank": 2,
+    "ctaLabel": "Shop at bol",
+    "perks": "Wide Dutch retail reach"
   },
   {
     "setId": "76313",
@@ -1345,7 +1438,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Marvel-minifiguren-Superhelden-Speelgoed/dp/B0DHSCVF64?dib=eyJ2IjoiMSJ9.InFE-ZgEn85DMM77w_DhIaiSvsNuoFIeyegJfzfG7FFJVE-qoJTU9qTf8Utvfz3RICIh5vqEXnLx--CgdCEvrjm9JSfu6l8nX3Ws9itlpXw.XkDvnKGR0ILijtX6OkVqIlTos0OsshkizlKokUVkd94&dib_tag=se&keywords=76313&qid=1776261821&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=05f8f7017a85f173299bdd0fa300d412&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:54:14.074Z",
+    "observedAt": "2026-04-16T19:19:16.171Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -1361,7 +1454,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-marvel-marvel-logo-en-minifiguren-76313",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:17.729Z",
+    "observedAt": "2026-04-16T19:19:14.365Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1377,25 +1470,9 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76313-super-heroes-marvel-marvel-logo-en-minifiguren",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:54:18.744Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:19:12.964Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
-  },
-  {
-    "setId": "76313",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 8599,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-marvel-marvel-logo-en-minifiguren-verzamelset-76313/9300000187249747",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:54:16.407Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
   },
   {
     "setId": "76313",
@@ -1408,7 +1485,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/marvel-logo-minifigures-76313",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:23.680Z",
+    "observedAt": "2026-04-16T19:20:29.390Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1424,7 +1501,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-76419-harry-potter-kasteel-zweinstein-en-terrein-grote-set/9300000147185737",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:34.356Z",
+    "observedAt": "2026-04-16T19:20:13.842Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1440,10 +1517,25 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-76419-Zweinstein-Inclusief-Iconische/dp/B0BV7BYNYD?dib=eyJ2IjoiMSJ9.rhjwCAJHXUsvpiqHV9QG9Z3wwLAxuX93uwX4xI5R4n7dla39eNUbFoWI7_muQVd8eBHRx288FwVrhIRuPVfdCjvubWMJaz1BhFhP0FolP6Xk-rWRWA1HtMdem_wqznJwP2E1ZXToXEJdK8fe5sMhsFspPa_Oy0BFZTVQar5KgCwH4oeh-BjOqQXc8vukheD1ACXOk1Ra_xqP_Ywf0mCqdpRqVGmD-Eje-pxAYvQo7h2qUKLRc0_--N6c5Ab3slU-KBiVuqGOsCoVLScP0wa5QhoN15d9xek-pjn1q23aXkc.Z1cSuXB82CHASG5BMubcyZWc7oWelE1Mo6aBnDGslps&dib_tag=se&keywords=76419+hogwarts+castle+and+ground+lego&qid=1776260013&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=fa6667b453bfbb229453bec77a5c344f&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:53:27.871Z",
+    "observedAt": "2026-04-16T19:20:22.778Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
+  },
+  {
+    "setId": "76419",
+    "merchantId": "misterbricks",
+    "merchantName": "MisterBricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76419-kasteel-zweinstein-en-terrein.html",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-16T19:18:23.832Z",
+    "displayRank": 7,
+    "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
     "setId": "76419",
@@ -1456,7 +1548,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-harry-potter-kasteel-zweinstein-en-terrein-76419",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:39.544Z",
+    "observedAt": "2026-04-16T19:20:05.218Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1472,7 +1564,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/hogwarts-castle-and-grounds-76419",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:29.967Z",
+    "observedAt": "2026-04-16T19:20:20.391Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1488,8 +1580,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76419-harry-potter-kasteel-zweinstein-en-ter-terrein-411-6419",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:40.541Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:20:03.442Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1503,7 +1595,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-harry-potter-pratende-sorteerhoed-76429/9300000157956309",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:43.022Z",
+    "observedAt": "2026-04-16T19:19:57.762Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1519,7 +1611,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Sorteerhoed-Willekeurige-Volwassenen-76429/dp/B0CFVZNGK7?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=1PTINBDNZAUXS&dib=eyJ2IjoiMSJ9.MemGRaFmnhvTJL4x_rFJSvansAk_ibUyeCTE_iZPI2leEsPE48T_-1e7i-XUw5-v8DaJcZvYxAZH0eIb8-nMvfV4kGLMagTut4cV19WRryPXyKDZT8W1Z_3Ued_NYATmWe5cuBvfJM0pzgHkces7TEKCeXsus-WE91Y7OIPUlAAvxtm0VbZHmwK5XGxBImGm.mDJzd-ftbFkS8nQssur7AHULo5oprpr1E4Aig5JIOiA&dib_tag=se&keywords=lego+Talking+Sorting+Hat&qid=1775761168&sprefix=lego+talking+sorting+hat%2Caps%2C76&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=05c876c2c7e3b0134dec62cc6436c49a&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:30.721Z",
+    "observedAt": "2026-04-16T19:21:25.311Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -1535,8 +1627,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76429-harry-potter-pratende-sorteerhoed-411-6429",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:45.019Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:19:55.430Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1550,7 +1642,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-harry-potter-pratende-sorteerhoed-76429",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:43.969Z",
+    "observedAt": "2026-04-16T19:19:56.750Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1566,7 +1658,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/talking-sorting-hat-76429",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:08.058Z",
+    "observedAt": "2026-04-16T19:20:47.127Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1594,11 +1686,11 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 14932,
+    "totalPriceMinor": 15200,
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-harry-potter-kasteel-zweinstein-de-grote-zaal-76435/9300000173010431",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:35.230Z",
+    "observedAt": "2026-04-16T19:20:12.732Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1614,7 +1706,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-harry-potter-kasteel-zweinstein-de-grote-zaal-76435",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:38.477Z",
+    "observedAt": "2026-04-16T19:20:07.890Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1630,7 +1722,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/hogwarts-castle-the-great-hall-76435",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:10.937Z",
+    "observedAt": "2026-04-16T19:20:45.850Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1646,8 +1738,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76435-harry-potter-kasteel-zweinstein-de-grote-zaal-411-6435",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:39.364Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:20:06.139Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1661,7 +1753,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-harry-potter-villa-malfidus-76453/9300000187249771",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:37.672Z",
+    "observedAt": "2026-04-16T19:20:08.723Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1677,7 +1769,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.amazon.nl/LEGO-Bouwpakket-Minifiguren-Voldermort-76453/dp/B0DHSBVGW6?__mk_nl_NL=%C3%85M%C3%85%C5%BD%C3%95%C3%91&crid=GBTO4DTLEJYH&dib=eyJ2IjoiMSJ9.4-UJDXPjlq0pBJW9iJYZjbwBLQePXI2Yh-TtwyFRjEl7REwObZVn9Uz_ycR-_RyB6VghvMT7H8ifz_UHNa1LO9YlGMoFr0Ahrk2DnQTcAoxBaQR04MWC4NIOYB2Wamtix8ZR1kpdLTP1y_YTEcrsIN3wQx7oGjjixwiAmrBcrLWUbaL3hQ1fNotKT2Ietu7yVKN16FXPRasWcfnYSfAANiwGJQMQLreJkTSClIxiSVCGL1-WAAPfJurAPeGvNZWCbb6XaNg2TzNslJ_KiSsBZjsv3Vh9o1NE4gUPMGGaWdU.YQIKNdE-Z3H-DKQZiJQeiOFjIkrijgRzeoCFp9t0UzA&dib_tag=se&keywords=lego+Malfoy+Manor&qid=1775761086&sprefix=lego+malfoy+manor%2Caps%2C90&sr=8-1&linkCode=ll2&tag=brickhunt09-21&linkId=7b4e3ef9de3b484a9420d2f52d5abbd0&ref_=as_li_ss_tl",
     "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-04-15T16:52:39.827Z",
+    "observedAt": "2026-04-16T19:21:16.528Z",
     "displayRank": 4,
     "ctaLabel": "Bekijk bij Amazon",
     "perks": "Grote beschikbaarheid en snelle levering"
@@ -1693,7 +1785,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-harry-potter-villa-malfidus-76453",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-15T16:53:36.562Z",
+    "observedAt": "2026-04-16T19:20:10.250Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1709,8 +1801,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76453-harry-potter-villa-malfidus",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-15T16:53:36.272Z",
-    "displayRank": 5,
+    "observedAt": "2026-04-16T19:20:11.372Z",
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1724,7 +1816,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/malfoy-manor-76453",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-15T16:53:22.691Z",
+    "observedAt": "2026-04-16T19:20:30.869Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"

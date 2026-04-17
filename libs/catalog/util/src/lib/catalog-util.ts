@@ -176,6 +176,125 @@ export interface CatalogThemeVisual {
   textColor?: string;
 }
 
+const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
+  [
+    'Icons',
+    {
+      backgroundColor: '#f0c63b',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Marvel',
+    {
+      backgroundColor: '#cf554c',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Ideas',
+    {
+      backgroundColor: '#68b8a0',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/21348-1/138409.jpg',
+      textColor: '#10241f',
+    },
+  ],
+  [
+    'Star Wars',
+    {
+      backgroundColor: '#5573b5',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Harry Potter',
+    {
+      backgroundColor: '#7f67bf',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/76417-1/127873.jpg',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Technic',
+    {
+      backgroundColor: '#a8b4c2',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/42177-1/142596.jpg',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Modular Buildings',
+    {
+      backgroundColor: '#b88d6c',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Botanicals',
+    {
+      backgroundColor: '#7caf76',
+      textColor: '#10241f',
+    },
+  ],
+  [
+    'Architecture',
+    {
+      backgroundColor: '#6f8594',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Art',
+    {
+      backgroundColor: '#d26d53',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Disney',
+    {
+      backgroundColor: '#6483d8',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'NINJAGO',
+    {
+      backgroundColor: '#bf4b47',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Super Mario',
+    {
+      backgroundColor: '#d85a50',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Jurassic World',
+    {
+      backgroundColor: '#5f7b70',
+      textColor: '#ffffff',
+    },
+  ],
+]);
+
+export function getCatalogThemeVisual(
+  themeName?: string,
+): CatalogThemeVisual | undefined {
+  if (!themeName) {
+    return undefined;
+  }
+
+  const curatedThemeVisual = curatedCatalogThemeVisualsByName.get(themeName);
+
+  return curatedThemeVisual ? { ...curatedThemeVisual } : undefined;
+}
+
 export interface CatalogSetRecord {
   canonicalId: string;
   sourceSetNumber: string;
@@ -187,6 +306,36 @@ export interface CatalogSetRecord {
   imageUrl?: string;
   images?: readonly CatalogSetImage[];
   primaryImage?: string;
+}
+
+export const catalogOverlaySetSources = ['rebrickable'] as const;
+
+export const catalogOverlaySetStatuses = ['active', 'inactive'] as const;
+
+export type CatalogOverlaySetSource = (typeof catalogOverlaySetSources)[number];
+
+export type CatalogOverlaySetStatus =
+  (typeof catalogOverlaySetStatuses)[number];
+
+export interface CatalogAddableSetRecord {
+  imageUrl?: string;
+  name: string;
+  pieces: number;
+  releaseYear: number;
+  setId: string;
+  slug: string;
+  source: CatalogOverlaySetSource;
+  sourceSetNumber: string;
+  theme: string;
+}
+
+export interface CatalogExternalSetSearchResult
+  extends CatalogAddableSetRecord {}
+
+export interface CatalogOverlaySet extends CatalogAddableSetRecord {
+  createdAt: string;
+  status: CatalogOverlaySetStatus;
+  updatedAt: string;
 }
 
 export interface CatalogSnapshot {

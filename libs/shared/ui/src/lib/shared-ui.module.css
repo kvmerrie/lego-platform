@@ -275,25 +275,25 @@
 }
 
 .interactiveSizeCompact {
-  --lego-action-min-height: var(--lego-control-height-compact);
-  --lego-action-padding-block: 0.46rem;
-  --lego-action-padding-inline: 0.72rem;
+  --lego-action-min-height: calc(var(--lego-control-height-compact) + 0.1rem);
+  --lego-action-padding-block: 0.5rem;
+  --lego-action-padding-inline: 0.8rem;
   --lego-action-font-size: var(--lego-font-size-sm);
   --lego-action-line-height: 1.05;
 }
 
 .interactiveSizeDefault {
-  --lego-action-min-height: 2.4rem;
-  --lego-action-padding-block: 0.52rem;
-  --lego-action-padding-inline: 0.82rem;
+  --lego-action-min-height: 2.55rem;
+  --lego-action-padding-block: 0.58rem;
+  --lego-action-padding-inline: 0.96rem;
   --lego-action-font-size: var(--lego-text-role-body-size);
   --lego-action-line-height: 1.1;
 }
 
 .interactiveSizeHero {
-  --lego-action-min-height: 2.9rem;
-  --lego-action-padding-block: 0.68rem;
-  --lego-action-padding-inline: 1.15rem;
+  --lego-action-min-height: 3.05rem;
+  --lego-action-padding-block: 0.74rem;
+  --lego-action-padding-inline: 1.26rem;
   --lego-action-font-size: var(--lego-font-size-base);
   --lego-action-line-height: 1.05;
 }
@@ -440,6 +440,7 @@
     --lego-button-accent-hover-background,
     var(--lego-button-surface-accent-hover-background, var(--lego-accent-hover))
   );
+  box-shadow: none;
   color: var(
     --lego-button-accent-hover-color,
     var(
@@ -471,6 +472,7 @@
       )
     )
   );
+  box-shadow: none;
   color: var(
     --lego-button-accent-active-color,
     var(
@@ -500,6 +502,7 @@
   background: transparent;
 }
 
+.buttonInline,
 .linkInline {
   border: 0;
   border-radius: var(--lego-radius-xs);
@@ -518,13 +521,16 @@
   text-underline-offset: 0.18em;
 }
 
+.buttonInline:hover,
 .linkInline:hover {
   color: var(--lego-accent-hover);
   text-decoration-color: currentColor;
   transform: none;
 }
 
+.buttonInline:active::after,
 .linkInline:active::after,
+.buttonInline[aria-pressed='true']::after,
 .linkInline[aria-pressed='true']::after {
   background: transparent;
 }

@@ -1,22 +1,39 @@
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import {
+  findCatalogSetSummaryByIdWithOverlay,
+  listCatalogOverlaySets,
+} from '@lego-platform/catalog/data-access-server';
+import {
+  approveCommerceDiscoveryCandidate,
+  createCommerceOfferSeedFromDiscoveryCandidate,
   createCommerceBenchmarkSet,
   createCommerceMerchant,
   createCommerceOfferSeed,
   deleteCommerceBenchmarkSet,
+  listCommerceDiscoveryCandidates,
+  listCommerceDiscoveryRuns,
   listCommerceBenchmarkSets,
   listCommerceMerchants,
   listCommerceOfferSeeds,
+  rejectCommerceDiscoveryCandidate,
+  runCommerceMerchantDiscovery,
   updateCommerceMerchant,
   updateCommerceOfferSeed,
 } from '@lego-platform/commerce/data-access-server';
 import {
+  type CommerceDiscoveryApprovalResult,
+  type CommerceDiscoveryCandidate,
+  type CommerceDiscoveryRun,
+  type CommerceDiscoveryRunInput,
   type CommerceBenchmarkSet,
   type CommerceBenchmarkSetInput,
+  type CommerceCoverageQueueRow,
   type CommerceMerchant,
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  buildCommerceCoverageQueueRows,
+  validateCommerceDiscoveryRunInput,
   validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
@@ -25,15 +42,31 @@ import { apiPaths } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminCommerceService {
+  approveDiscoveryCandidate(
+    candidateId: string,
+  ): Promise<CommerceDiscoveryApprovalResult>;
   createBenchmarkSet(
     input: CommerceBenchmarkSetInput,
   ): Promise<CommerceBenchmarkSet>;
+  listCoverageQueue(): Promise<CommerceCoverageQueueRow[]>;
   createMerchant(input: CommerceMerchantInput): Promise<CommerceMerchant>;
-  createOfferSeed(input: CommerceOfferSeedInput): Promise<CommerceOfferSeed>;
+  createOfferSeed(input: {
+    discoveryCandidateId?: string;
+    input: CommerceOfferSeedInput;
+  }): Promise<CommerceOfferSeed>;
   deleteBenchmarkSet(setId: string): Promise<void>;
+  listDiscoveryCandidates(): Promise<CommerceDiscoveryCandidate[]>;
+  listDiscoveryRuns(): Promise<CommerceDiscoveryRun[]>;
   listBenchmarkSets(): Promise<CommerceBenchmarkSet[]>;
   listMerchants(): Promise<CommerceMerchant[]>;
   listOfferSeeds(): Promise<CommerceOfferSeed[]>;
+  rejectDiscoveryCandidate(
+    candidateId: string,
+  ): Promise<CommerceDiscoveryCandidate>;
+  runDiscovery(input: CommerceDiscoveryRunInput): Promise<{
+    candidates: CommerceDiscoveryCandidate[];
+    run: CommerceDiscoveryRun;
+  }>;
   updateMerchant(input: {
     input: CommerceMerchantInput;
     merchantId: string;
@@ -46,15 +79,77 @@ export interface AdminCommerceService {
 
 function createAdminCommerceService(): AdminCommerceService {
   return {
+    listDiscoveryRuns: () => listCommerceDiscoveryRuns(),
+    listDiscoveryCandidates: () => listCommerceDiscoveryCandidates(),
+    runDiscovery: (input) => runCommerceMerchantDiscovery({ input }),
+    approveDiscoveryCandidate: (candidateId) =>
+      approveCommerceDiscoveryCandidate({ candidateId }),
+    rejectDiscoveryCandidate: (candidateId) =>
+      rejectCommerceDiscoveryCandidate({ candidateId }),
     listBenchmarkSets: () => listCommerceBenchmarkSets(),
     createBenchmarkSet: (input) => createCommerceBenchmarkSet({ input }),
     deleteBenchmarkSet: (setId) => deleteCommerceBenchmarkSet({ setId }),
+    listCoverageQueue: async () => {
+      const snapshotSummaries = listCatalogSetSummaries();
+      const [
+        benchmarkSets,
+        discoveryCandidates,
+        discoveryRuns,
+        merchants,
+        offerSeeds,
+        overlaySets,
+      ] = await Promise.all([
+        listCommerceBenchmarkSets(),
+        listCommerceDiscoveryCandidates(),
+        listCommerceDiscoveryRuns(),
+        listCommerceMerchants(),
+        listCommerceOfferSeeds(),
+        listCatalogOverlaySets(),
+      ]);
+      const snapshotSetIds = new Set(
+        snapshotSummaries.map((catalogSetSummary) => catalogSetSummary.id),
+      );
+      const catalogSets = [
+        ...snapshotSummaries.map((catalogSetSummary) => ({
+          id: catalogSetSummary.id,
+          name: catalogSetSummary.name,
+          theme: catalogSetSummary.theme,
+          slug: catalogSetSummary.slug,
+          source: 'snapshot' as const,
+        })),
+        ...overlaySets
+          .filter((overlaySet) => !snapshotSetIds.has(overlaySet.setId))
+          .map((overlaySet) => ({
+            id: overlaySet.setId,
+            name: overlaySet.name,
+            theme: overlaySet.theme,
+            slug: overlaySet.slug,
+            source: 'overlay' as const,
+            createdAt: overlaySet.createdAt,
+          })),
+      ];
+
+      return buildCommerceCoverageQueueRows({
+        benchmarkSets,
+        catalogSets,
+        discoveryCandidates,
+        discoveryRuns,
+        merchants,
+        offerSeeds,
+      });
+    },
     listMerchants: () => listCommerceMerchants(),
     createMerchant: (input) => createCommerceMerchant({ input }),
     updateMerchant: ({ input, merchantId }) =>
       updateCommerceMerchant({ input, merchantId }),
     listOfferSeeds: () => listCommerceOfferSeeds(),
-    createOfferSeed: (input) => createCommerceOfferSeed({ input }),
+    createOfferSeed: ({ discoveryCandidateId, input }) =>
+      discoveryCandidateId
+        ? createCommerceOfferSeedFromDiscoveryCandidate({
+            candidateId: discoveryCandidateId,
+            input,
+          })
+        : createCommerceOfferSeed({ input }),
     updateOfferSeed: ({ input, offerSeedId }) =>
       updateCommerceOfferSeed({ input, offerSeedId }),
   };
@@ -64,14 +159,27 @@ function toBadRequestMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof Error ? error.message : fallbackMessage;
 }
 
-function ensureCatalogSetExists(setId: string): void {
-  const catalogSetExists = listCatalogSetSummaries().some(
-    (catalogSetSummary) => catalogSetSummary.id === setId,
-  );
+function readOptionalDiscoveryCandidateId(value: unknown): string | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
 
-  if (!catalogSetExists) {
+  const candidateId = (value as { discoveryCandidateId?: unknown })
+    .discoveryCandidateId;
+
+  return typeof candidateId === 'string' && candidateId.trim()
+    ? candidateId.trim()
+    : undefined;
+}
+
+async function ensureCatalogSetExists(setId: string): Promise<void> {
+  const catalogSet = await findCatalogSetSummaryByIdWithOverlay({
+    setId,
+  });
+
+  if (!catalogSet) {
     throw new Error(
-      `Set ${setId} is not part of the synced Brickhunt catalog, so it cannot receive commerce seeds yet.`,
+      `Set ${setId} is not part of the Brickhunt catalog, so it cannot receive commerce seeds yet.`,
     );
   }
 }
@@ -82,6 +190,10 @@ export function createAdminCommerceRoutes({
   commerceService?: AdminCommerceService;
 } = {}) {
   return async function (fastify: FastifyInstance) {
+    fastify.get(apiPaths.adminCommerceCoverageQueue, async function () {
+      return commerceService.listCoverageQueue();
+    });
+
     fastify.get(apiPaths.adminCommerceBenchmarkSets, async function () {
       return commerceService.listBenchmarkSets();
     });
@@ -91,7 +203,7 @@ export function createAdminCommerceRoutes({
       async function (request, reply) {
         try {
           const input = validateCommerceBenchmarkSetInput(request.body);
-          ensureCatalogSetExists(input.setId);
+          await ensureCatalogSetExists(input.setId);
           const benchmarkSet = await commerceService.createBenchmarkSet(input);
 
           return reply.status(201).send(benchmarkSet);
@@ -172,13 +284,84 @@ export function createAdminCommerceRoutes({
       return commerceService.listOfferSeeds();
     });
 
+    fastify.get(apiPaths.adminCommerceDiscoveryRuns, async function () {
+      return commerceService.listDiscoveryRuns();
+    });
+
+    fastify.get(apiPaths.adminCommerceDiscoveryCandidates, async function () {
+      return commerceService.listDiscoveryCandidates();
+    });
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminCommerceDiscoveryRuns,
+      async function (request, reply) {
+        try {
+          const input = validateCommerceDiscoveryRunInput(request.body);
+          await ensureCatalogSetExists(input.setId);
+
+          const result = await commerceService.runDiscovery(input);
+
+          return reply.status(201).send(result);
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Commerce discovery run input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Params: { candidateId: string } }>(
+      `${apiPaths.adminCommerceDiscoveryCandidates}/:candidateId/approve`,
+      async function (request, reply) {
+        try {
+          return await commerceService.approveDiscoveryCandidate(
+            request.params.candidateId,
+          );
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Commerce discovery candidate could not be approved.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Params: { candidateId: string } }>(
+      `${apiPaths.adminCommerceDiscoveryCandidates}/:candidateId/reject`,
+      async function (request, reply) {
+        try {
+          return await commerceService.rejectDiscoveryCandidate(
+            request.params.candidateId,
+          );
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Commerce discovery candidate could not be rejected.',
+            ),
+          });
+        }
+      },
+    );
+
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceOfferSeeds,
       async function (request, reply) {
         try {
           const input = validateCommerceOfferSeedInput(request.body);
-          ensureCatalogSetExists(input.setId);
-          const offerSeed = await commerceService.createOfferSeed(input);
+          const discoveryCandidateId = readOptionalDiscoveryCandidateId(
+            request.body,
+          );
+          await ensureCatalogSetExists(input.setId);
+          const offerSeed = await commerceService.createOfferSeed({
+            input,
+            discoveryCandidateId,
+          });
 
           return reply.status(201).send(offerSeed);
         } catch (error) {
@@ -197,7 +380,7 @@ export function createAdminCommerceRoutes({
       async function (request, reply) {
         try {
           const input = validateCommerceOfferSeedInput(request.body);
-          ensureCatalogSetExists(input.setId);
+          await ensureCatalogSetExists(input.setId);
 
           return commerceService.updateOfferSeed({
             offerSeedId: request.params.offerSeedId,

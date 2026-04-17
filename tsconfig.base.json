@@ -44,6 +44,9 @@
       "@lego-platform/catalog/data-access": [
         "libs/catalog/data-access/src/index.ts"
       ],
+      "@lego-platform/catalog/data-access-server": [
+        "libs/catalog/data-access-server/src/index.ts"
+      ],
       "@lego-platform/catalog/data-access-sync": [
         "libs/catalog/data-access-sync/src/index.ts"
       ],

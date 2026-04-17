@@ -10,6 +10,7 @@ import {
   getCatalogSetBySlug,
   listCatalogSetSlugs,
 } from '@lego-platform/catalog/data-access';
+import { getCatalogSetBySlugWithOverlay } from '@lego-platform/catalog/data-access-server';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import type {
   CatalogSetDetailBestDeal,
@@ -41,7 +42,46 @@ import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { notFound } from 'next/navigation';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
+
+const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
+
+function getCalendarDayValue(date: Date): number {
+  const dateParts = new Intl.DateTimeFormat('en-CA', {
+    day: '2-digit',
+    month: '2-digit',
+    timeZone: BRICKHUNT_TIME_ZONE,
+    year: 'numeric',
+  }).formatToParts(date);
+
+  const day = Number(
+    dateParts.find((part) => part.type === 'day')?.value ?? '0',
+  );
+  const month = Number(
+    dateParts.find((part) => part.type === 'month')?.value ?? '0',
+  );
+  const year = Number(
+    dateParts.find((part) => part.type === 'year')?.value ?? '0',
+  );
+
+  return Math.floor(Date.UTC(year, month - 1, day) / 86_400_000);
+}
+
+function formatOfferCheckedTime(checkedAt: string): string {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: BRICKHUNT_TIME_ZONE,
+  }).format(new Date(checkedAt));
+}
+
+function formatOfferCheckedDate(checkedAt: string): string {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+    day: 'numeric',
+    month: 'short',
+    timeZone: BRICKHUNT_TIME_ZONE,
+  }).format(new Date(checkedAt));
+}
 
 function isEuroCatalogOffer(catalogOffer: CatalogOffer): boolean {
   return catalogOffer.currency === 'EUR';
@@ -55,19 +95,33 @@ function formatOfferPrice(catalogOffer: CatalogOffer): string {
 }
 
 function formatOfferCheckedAt(checkedAt: string): string {
-  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(checkedAt));
+  return formatOfferCheckedAtCompact(checkedAt);
 }
 
 function formatOfferCheckedAtCompact(checkedAt: string): string {
-  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    month: 'short',
-  }).format(new Date(checkedAt));
+  const checkedDate = new Date(checkedAt);
+
+  if (Number.isNaN(checkedDate.getTime())) {
+    return '';
+  }
+
+  const dayDifference =
+    getCalendarDayValue(new Date()) - getCalendarDayValue(checkedDate);
+  const timeLabel = formatOfferCheckedTime(checkedAt);
+
+  if (dayDifference === 0) {
+    return `Vandaag om ${timeLabel}`;
+  }
+
+  if (dayDifference === 1) {
+    return `Gisteren om ${timeLabel}`;
+  }
+
+  if (dayDifference === 2) {
+    return `Eergisteren om ${timeLabel}`;
+  }
+
+  return `${formatOfferCheckedDate(checkedAt)} om ${timeLabel}`;
 }
 
 function getOfferStockLabel(
@@ -103,9 +157,7 @@ function buildOfferSummaryLabel({
 }): string | undefined {
   const parts = [
     buildMerchantCoverageLabel(merchantCount),
-    observedAt
-      ? `Nagekeken ${formatOfferCheckedAtCompact(observedAt)}`
-      : undefined,
+    observedAt ? formatOfferCheckedAtCompact(observedAt) : undefined,
   ].filter(Boolean);
 
   return parts.length > 0 ? parts.join(' · ') : undefined;
@@ -120,19 +172,19 @@ function buildBestOfferRankingLabel({
 }): string {
   if (typeof merchantCount === 'number' && merchantCount <= 1) {
     return availability === 'in_stock'
-      ? 'Enige nagekeken prijs die nu op voorraad is.'
-      : 'Enige nagekeken prijs op dit moment.';
+      ? 'Enige nagekeken prijs op voorraad.'
+      : 'Enige nagekeken prijs nu.';
   }
 
   if (availability === 'in_stock') {
-    return 'Laagste nagekeken prijs die nu op voorraad is.';
+    return 'Laagste nagekeken prijs op voorraad.';
   }
 
   if (availability === 'unknown') {
-    return 'Laagste nagekeken prijs, maar voorraad is niet zeker.';
+    return 'Laagste nagekeken prijs, voorraad nog onzeker.';
   }
 
-  return 'Laagste nagekeken prijs, maar nu uitverkocht.';
+  return 'Laagste nagekeken prijs, nu uitverkocht.';
 }
 
 function buildOfferRankingLabel({
@@ -206,14 +258,12 @@ function buildBestDeal({
     const coverageLabel = buildMerchantCoverageLabel(merchantCount);
 
     return {
-      checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(
-        pricePanelSnapshot.observedAt,
-      )}`,
+      checkedLabel: formatOfferCheckedAtCompact(pricePanelSnapshot.observedAt),
       coverageLabel,
       decisionHelper: decisionPresentation.noOfferCopy,
       decisionLabel: dealVerdict.label,
       decisionTone: dealVerdict.tone,
-      eyebrow: 'Koopsignaal nu',
+      eyebrow: 'Beste deal nu',
       merchantLabel: decisionPresentation.noOfferTitle,
       price: formatPriceMinor({
         currencyCode: pricePanelSnapshot.currencyCode,
@@ -235,18 +285,15 @@ function buildBestDeal({
   return {
     affiliateNote:
       'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
-    checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(catalogOffer.checkedAt)}`,
+    checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
     ctaHref: catalogOffer.url,
-    ctaLabel:
-      dealVerdict.tone === 'warning'
-        ? `Bekijk prijs bij ${catalogOffer.merchantName}`
-        : `Bekijk bij ${catalogOffer.merchantName}`,
+    ctaLabel: `Bekijk bij ${catalogOffer.merchantName}`,
     ctaTone: dealVerdict.tone === 'positive' ? 'accent' : 'secondary',
     coverageLabel: buildMerchantCoverageLabel(merchantCount),
     decisionHelper: dealVerdict.explanation,
     decisionLabel: dealVerdict.label,
     decisionTone: dealVerdict.tone,
-    eyebrow: 'Beste winkel nu',
+    eyebrow: 'Beste deal nu',
     merchantLabel: catalogOffer.merchantName,
     price: formatOfferPrice(catalogOffer),
     rankingLabel: buildBestOfferRankingLabel({
@@ -288,36 +335,33 @@ function buildOfferList(
   },
   bestOffer?: CatalogOffer | null,
 ): CatalogSetDetailOfferItem[] {
-  return sortCatalogOffers(catalogOffers)
-    .slice(0, 3)
-    .map((catalogOffer, index) => ({
-      checkedLabel: `Nagekeken ${formatOfferCheckedAtCompact(catalogOffer.checkedAt)}`,
-      ctaHref: catalogOffer.url,
-      ctaLabel: `Bekijk bij ${catalogOffer.merchantName}`,
-      isBest: bestOffer?.url === catalogOffer.url,
-      merchantLabel: catalogOffer.merchantName,
-      price: formatOfferPrice(catalogOffer),
-      rankingLabel: buildOfferRankingLabel({
-        bestOffer,
-        catalogOffer,
-      }),
-      stockLabel: getOfferStockLabel(catalogOffer.availability),
-      trackingEvent: {
-        event: 'offer_click',
-        properties: {
-          merchantCount,
-          merchantName: catalogOffer.merchantName,
-          offerPlacement: 'comparison_row',
-          offerRole:
-            bestOffer?.url === catalogOffer.url ? 'best' : 'alternative',
-          pageSurface: 'set_detail',
-          priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
-          rankPosition: index + 1,
-          setId,
-          theme,
-        },
+  return sortCatalogOffers(catalogOffers).map((catalogOffer, index) => ({
+    checkedLabel: formatOfferCheckedAtCompact(catalogOffer.checkedAt),
+    ctaHref: catalogOffer.url,
+    ctaLabel: `Bekijk bij ${catalogOffer.merchantName}`,
+    isBest: bestOffer?.url === catalogOffer.url,
+    merchantLabel: catalogOffer.merchantName,
+    price: formatOfferPrice(catalogOffer),
+    rankingLabel: buildOfferRankingLabel({
+      bestOffer,
+      catalogOffer,
+    }),
+    stockLabel: getOfferStockLabel(catalogOffer.availability),
+    trackingEvent: {
+      event: 'offer_click',
+      properties: {
+        merchantCount,
+        merchantName: catalogOffer.merchantName,
+        offerPlacement: 'comparison_row',
+        offerRole: bestOffer?.url === catalogOffer.url ? 'best' : 'alternative',
+        pageSurface: 'set_detail',
+        priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
+        rankPosition: index + 1,
+        setId,
+        theme,
       },
-    }));
+    },
+  }));
 }
 
 function buildTrustSignals({
@@ -361,7 +405,11 @@ export default async function SetDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const catalogSetDetail = getCatalogSetBySlug(slug);
+  const catalogSetDetail =
+    getCatalogSetBySlug(slug) ??
+    (await getCatalogSetBySlugWithOverlay({
+      slug,
+    }));
 
   if (!catalogSetDetail) {
     notFound();

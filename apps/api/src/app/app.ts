@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import requestPrincipalPlugin from './plugins/request-principal';
+import adminCatalogRoutes from './routes/admin-catalog';
 import sensiblePlugin from './plugins/sensible';
 import adminCommerceRoutes from './routes/admin-commerce';
 import apiV1Routes from './routes/api-v1';
@@ -15,5 +16,6 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   await fastify.register(rootRoutes, { ...opts });
   await fastify.register(healthRoutes, { ...opts });
   await fastify.register(apiV1Routes, { ...opts });
+  await fastify.register(adminCatalogRoutes, { ...opts });
   await fastify.register(adminCommerceRoutes, { ...opts });
 }

@@ -400,7 +400,6 @@ export const SetDetailHeroStates: Story = {
           <>
             <Badge tone="accent">Icons</Badge>
             <Badge tone="neutral">The Lord of the Rings</Badge>
-            <Badge tone="positive">Nu interessant geprijsd</Badge>
           </>
         }
         decisionPanel={
@@ -416,7 +415,7 @@ export const SetDetailHeroStates: Story = {
               decisionTone: 'positive',
               merchantLabel: 'bol',
               price: '€ 469,99',
-              rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
+              rankingLabel: 'Laagste nagekeken prijs op voorraad.',
               stockLabel: 'Op voorraad',
             }}
             supportItems={[
@@ -425,7 +424,7 @@ export const SetDetailHeroStates: Story = {
                 text: 'De prijs zit onder het normale niveau voor Rivendell.',
               },
             ]}
-            supportTitle="Waarom dit nu interessant is"
+            supportTitle="Waarom nu"
             verdictTone="positive"
           />
         }
@@ -443,21 +442,10 @@ export const SetDetailHeroStates: Story = {
           </div>
         }
         keyFacts={<CatalogKeyFacts items={detailFacts} />}
-        pitch="Kies deze als je Midden-aarde groot en rustig op je plank wilt."
         title="Rivendell"
-        verdict={{
-          explanation: 'De prijs ligt onder wat we meestal zien voor deze set.',
-          label: 'Nu interessant geprijsd',
-          tone: 'positive',
-        }}
       />
       <CatalogSetDetailHero
-        badges={
-          <>
-            <Badge tone="accent">Star Wars</Badge>
-            <Badge tone="warning">Nog niet bijzonder</Badge>
-          </>
-        }
+        badges={<Badge tone="accent">Star Wars</Badge>}
         decisionPanel={
           <CatalogPriceDecisionPanel
             followAction={<Button tone="secondary">Volg prijs</Button>}
@@ -473,7 +461,7 @@ export const SetDetailHeroStates: Story = {
               decisionTone: 'warning',
               merchantLabel: 'bol',
               price: '€ 589,99',
-              rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
+              rankingLabel: 'Laagste nagekeken prijs op voorraad.',
               stockLabel: 'Op voorraad',
             }}
             supportItems={[
@@ -482,7 +470,7 @@ export const SetDetailHeroStates: Story = {
                 text: 'Wachten geeft vaak meer kans op een betere prijs.',
               },
             ]}
-            supportTitle="Waarom wachten slimmer is"
+            supportTitle="Waarom wachten"
             verdictTone="warning"
           />
         }
@@ -500,14 +488,7 @@ export const SetDetailHeroStates: Story = {
           </div>
         }
         keyFacts={<CatalogKeyFacts items={detailFacts.slice(0, 3)} />}
-        pitch="Een groot schip voor verzamelaars die liever wachten op een sterker moment."
         title="The Razor Crest"
-        verdict={{
-          explanation:
-            'De prijs is nu niet gek, maar ook niet het beste moment.',
-          label: 'Nog niet bijzonder',
-          tone: 'warning',
-        }}
       />
     </div>
   ),
@@ -536,7 +517,7 @@ export const SetDetailPanelStates: Story = {
           decisionTone: 'positive',
           merchantLabel: 'bol',
           price: '€ 469,99',
-          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
+          rankingLabel: 'Laagste nagekeken prijs op voorraad.',
           stockLabel: 'Op voorraad',
         }}
         dealVerdict={{
@@ -560,7 +541,7 @@ export const SetDetailPanelStates: Story = {
           decisionTone: 'warning',
           merchantLabel: 'bol',
           price: '€ 519,99',
-          rankingLabel: 'Laagste nagekeken prijs die nu op voorraad is.',
+          rankingLabel: 'Laagste nagekeken prijs op voorraad.',
           stockLabel: 'Op voorraad',
         }}
         dealSupportItems={[

@@ -13,6 +13,7 @@ import type {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
+  getCatalogThemeVisual,
   type CatalogSetImage,
   normalizeCatalogSetImages,
 } from '@lego-platform/catalog/util';
@@ -33,7 +34,8 @@ import {
 import {
   CatalogKeyFacts,
   CatalogOfferComparison,
-  CatalogPriceDecisionPanel,
+  CatalogPriceDecisionPrimary,
+  CatalogPriceDecisionSecondary,
   CatalogTrustPanel,
   getCatalogDecisionSupportTitle,
   type CatalogKeyFact,
@@ -534,14 +536,7 @@ function buildCatalogSetDetailHeroFacts({
   catalogSetDetail: CatalogSetDetail;
   setStatusLabel?: string;
 }): CatalogKeyFact[] {
-  const heroFacts: CatalogKeyFact[] = [
-    {
-      id: 'set-number',
-      icon: <Hash aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: 'Setnummer',
-      value: <CatalogCanonicalText>{catalogSetDetail.id}</CatalogCanonicalText>,
-    },
-  ];
+  const heroFacts: CatalogKeyFact[] = [];
   const recommendedAgeLabel = formatCatalogRecommendedAge(
     catalogSetDetail.recommendedAge,
   );
@@ -1108,14 +1103,45 @@ export function CatalogSetDetailPanel({
   const minifigureHighlightsLabel = formatMinifigureHighlights(
     catalogSetDetail.minifigureHighlights,
   );
-  const setHighlights =
-    catalogSetDetail.collectorHighlights.length > 0
-      ? catalogSetDetail.collectorHighlights.slice(0, 3)
-      : [catalogSetDetail.collectorAngle];
+  const notesDescription =
+    catalogSetDetail.tagline ?? catalogSetDetail.collectorAngle;
+  const setHighlights = Array.from(
+    new Set(
+      (catalogSetDetail.tagline
+        ? [
+            catalogSetDetail.collectorAngle,
+            ...catalogSetDetail.collectorHighlights,
+          ]
+        : catalogSetDetail.collectorHighlights.length > 0
+          ? catalogSetDetail.collectorHighlights
+          : [catalogSetDetail.collectorAngle]
+      ).filter(Boolean),
+    ),
+  ).slice(0, 3);
   const heroSpecs = buildCatalogSetDetailHeroFacts({
     catalogSetDetail,
     setStatusLabel,
   });
+  const offerComparisonSectionId = 'set-offers';
+  const themeVisual = getCatalogThemeVisual(catalogSetDetail.theme);
+  const themeBadgeStyle =
+    themeVisual?.backgroundColor || themeVisual?.textColor
+      ? ({
+          ...(themeVisual.backgroundColor
+            ? {
+                '--catalog-theme-badge-surface': themeVisual.backgroundColor,
+              }
+            : {}),
+          ...(themeVisual.textColor
+            ? {
+                '--catalog-theme-badge-text': themeVisual.textColor,
+              }
+            : {}),
+        } as CSSProperties)
+      : undefined;
+  const hasFollowModule = Boolean(
+    priceAlertAction || followCopy || followTitle || followEyebrow,
+  );
 
   return (
     <section className={styles.detailPage}>
@@ -1153,18 +1179,28 @@ export function CatalogSetDetailPanel({
                   href={themeHref}
                   tone="inline"
                 >
-                  <Badge tone="accent">
+                  <span
+                    className={styles.themeBadgeShell}
+                    style={themeBadgeStyle}
+                  >
+                    <Badge className={styles.themeBadge} tone="neutral">
+                      <CatalogCanonicalText>
+                        {catalogSetDetail.theme}
+                      </CatalogCanonicalText>
+                    </Badge>
+                  </span>
+                </ActionLink>
+              ) : (
+                <span
+                  className={styles.themeBadgeShell}
+                  style={themeBadgeStyle}
+                >
+                  <Badge className={styles.themeBadge} tone="neutral">
                     <CatalogCanonicalText>
                       {catalogSetDetail.theme}
                     </CatalogCanonicalText>
                   </Badge>
-                </ActionLink>
-              ) : (
-                <Badge tone="accent">
-                  <CatalogCanonicalText>
-                    {catalogSetDetail.theme}
-                  </CatalogCanonicalText>
-                </Badge>
+                </span>
               )}
               {catalogSetDetail.subtheme ? (
                 <Badge tone="neutral">
@@ -1173,44 +1209,59 @@ export function CatalogSetDetailPanel({
                   </CatalogCanonicalText>
                 </Badge>
               ) : null}
-              <Badge tone={dealVerdict.tone ?? 'neutral'}>
-                {dealVerdict.label}
-              </Badge>
             </>
           }
-          decisionPanel={
-            <CatalogPriceDecisionPanel
-              followAction={priceAlertAction}
-              followCopy={followCopy}
-              followEyebrow={followEyebrow}
-              followTitle={followTitle}
-              leadWithFollow={dealVerdict.tone === 'warning'}
-              primaryOffer={bestDeal}
-              supportItems={dealSupportItems}
-              supportTitle={getCatalogDecisionSupportTitle(dealVerdict)}
-              verdictTone={dealVerdict.tone}
-            />
+          decisionPrimary={
+            <CatalogPriceDecisionPrimary primaryOffer={bestDeal} />
+          }
+          eyebrow={
+            <span className={styles.detailHeroIdentifier}>
+              <Hash
+                aria-hidden="true"
+                className={styles.detailHeroIdentifierIcon}
+                size={14}
+                strokeWidth={2.2}
+              />
+              <CatalogCanonicalText>{catalogSetDetail.id}</CatalogCanonicalText>
+            </span>
           }
           gallery={
             <CatalogSetImageGallery catalogSetDetail={catalogSetDetail} />
           }
           keyFacts={<CatalogKeyFacts items={heroSpecs} />}
-          pitch={`Waarom veel verzamelaars deze willen: ${catalogSetDetail.tagline}`}
           title={
             <CatalogCanonicalText>{catalogSetDetail.name}</CatalogCanonicalText>
           }
-          verdict={dealVerdict}
         />
       </CatalogPageIntro>
 
-      <CatalogOfferComparison
-        offers={offerList}
-        summaryLabel={offerSummaryLabel}
-      />
-
-      {priceHistoryPanel ? (
-        <section className={styles.detailPricingStack}>
+      {offerList.length > 0 ||
+      dealSupportItems.length > 0 ||
+      priceHistoryPanel ||
+      hasFollowModule ? (
+        <section className={styles.detailCommerceFlow}>
+          <CatalogOfferComparison
+            className={styles.detailOfferComparisonSection}
+            id={offerComparisonSectionId}
+            offers={offerList}
+            summaryLabel={offerSummaryLabel}
+          />
+          <CatalogSetSupportCard
+            eyebrow="Koopsignaal"
+            items={dealSupportItems}
+            title={getCatalogDecisionSupportTitle(dealVerdict)}
+          />
           {priceHistoryPanel}
+          {hasFollowModule ? (
+            <CatalogPriceDecisionSecondary
+              compact
+              followAction={priceAlertAction}
+              followCopy={followCopy}
+              followEyebrow={followEyebrow}
+              followTitle={followTitle}
+              verdictTone={dealVerdict.tone}
+            />
+          ) : null}
         </section>
       ) : null}
 
@@ -1218,8 +1269,8 @@ export function CatalogSetDetailPanel({
         <Panel
           as="aside"
           className={styles.notesPanel}
-          description={catalogSetDetail.collectorAngle}
-          eyebrow="Waarom deze set"
+          description={notesDescription}
+          eyebrow="Waarom deze"
           elevation="rested"
           title="Wat hier blijft hangen"
           titleAs="h2"
@@ -1244,13 +1295,13 @@ export function CatalogSetDetailPanel({
           />
         </Panel>
         <CatalogSetOwnershipCard action={ownershipActions} />
+        <CatalogSetSupportCard
+          eyebrow="Brickhunt checkt"
+          items={brickhuntValueItems}
+          title="Zo lees je dit"
+        />
+        <CatalogTrustPanel trustSignals={trustSignals} />
       </section>
-      <CatalogSetSupportCard
-        eyebrow="Brickhunt kijkt mee"
-        items={brickhuntValueItems}
-        title="Waarom dit hier meer is dan een prijslink"
-      />
-      <CatalogTrustPanel trustSignals={trustSignals} />
     </section>
   );
 }

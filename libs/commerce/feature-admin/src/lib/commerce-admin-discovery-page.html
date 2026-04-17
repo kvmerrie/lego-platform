@@ -1,0 +1,385 @@
+<section class="admin-section">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Merchant Discovery</p>
+      <h2>
+        Zoek kandidaat-producten per set en merchant, score ze, en keur alleen
+        de veilige matches goed.
+      </h2>
+      <p class="admin-muted">
+        Discovery blijft bewust een review-stap. Kandidaten landen eerst hier,
+        pas daarna eventueel als echte offer seed.
+      </p>
+    </div>
+
+    <span class="admin-count-pill">
+      {{ commerceAdminStore.discoveryCandidates().length }} kandidaten
+    </span>
+  </header>
+
+  <section class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack">
+        <h3>Run discovery</h3>
+        <p class="admin-muted">
+          Start handmatig een zoekrun met alleen het setnummer als query.
+        </p>
+      </div>
+    </div>
+
+    <div class="admin-toolbar admin-toolbar--filters">
+      <select
+        [ngModel]="runSetId()"
+        (ngModelChange)="runSetId.set($event)"
+        class="admin-input"
+        name="discovery-run-set-id"
+      >
+        @for (catalogSet of commerceAdminStore.catalogSetOptions(); track
+        catalogSet.id) {
+        <option [value]="catalogSet.id">
+          {{ catalogSet.theme }} · {{ catalogSet.name }} ({{ catalogSet.id }})
+        </option>
+        }
+      </select>
+
+      <select
+        [ngModel]="runMerchantId()"
+        (ngModelChange)="runMerchantId.set($event)"
+        class="admin-input"
+        name="discovery-run-merchant-id"
+      >
+        @for (merchant of commerceAdminStore.discoveryMerchants(); track
+        merchant.id) {
+        <option [value]="merchant.id">{{ merchant.name }}</option>
+        }
+      </select>
+
+      <button
+        class="admin-button admin-button--primary"
+        [disabled]="
+          isRunning() || commerceAdminStore.discoveryMerchants().length === 0
+        "
+        type="button"
+        (click)="runDiscovery()"
+      >
+        {{ isRunning() ? 'Discovery draait…' : 'Run discovery' }}
+      </button>
+    </div>
+
+    @if (runFeedback()) {
+    <div
+      class="admin-panel"
+      [class.admin-panel--danger]="runFeedbackTone() === 'danger'"
+    >
+      <strong>
+        {{ runFeedbackTone() === 'positive' ? 'Discovery klaar' : 'Discovery
+        gestopt' }}
+      </strong>
+      <p class="admin-muted">{{ runFeedback() }}</p>
+    </div>
+    }
+  </section>
+
+  <section class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack">
+        <h3>Recente runs</h3>
+        <p class="admin-muted">
+          Hier zie je meteen welke merchants kandidaten teruggeven en waar de
+          zoekstap nog blokkeert.
+        </p>
+      </div>
+    </div>
+
+    <ul class="admin-list">
+      @for (run of recentRuns(); track run.id) {
+      <li>
+        <div class="admin-section__header">
+          <div class="admin-stack admin-stack--tight">
+            <strong>
+              {{ commerceAdminStore.getCatalogSetLabel(run.setId) }} · {{
+              commerceAdminStore.getMerchantName(run.merchantId) }}
+            </strong>
+            <span class="admin-muted">
+              Query: {{ run.searchQuery }} · {{
+              commerceAdminStore.formatTimestamp(run.finishedAt ??
+              run.createdAt) }}
+            </span>
+          </div>
+
+          <div class="admin-pill-cluster">
+            <span
+              class="admin-status-pill"
+              [class.admin-status-pill--danger]="
+                commerceAdminStore.getDiscoveryRunTone(run.status) === 'danger'
+              "
+              [class.admin-status-pill--positive]="
+                commerceAdminStore.getDiscoveryRunTone(run.status) === 'positive'
+              "
+              [class.admin-status-pill--neutral]="
+                commerceAdminStore.getDiscoveryRunTone(run.status) === 'neutral'
+              "
+            >
+              {{ run.status }}
+            </span>
+            <span class="admin-count-pill">
+              {{ run.candidateCount }} kandidaat{{ run.candidateCount === 1 ? ''
+              : 'en' }}
+            </span>
+          </div>
+        </div>
+
+        @if (run.errorMessage) {
+        <span class="admin-muted">{{ run.errorMessage }}</span>
+        }
+      </li>
+      } @if (recentRuns().length === 0) {
+      <li class="admin-list__empty">
+        Nog geen discovery-runs. Start hierboven de eerste merchant search.
+      </li>
+      }
+    </ul>
+  </section>
+
+  <div class="admin-toolbar admin-toolbar--filters">
+    <input
+      [ngModel]="search()"
+      (ngModelChange)="updateSearch($event)"
+      class="admin-input admin-search"
+      placeholder="Zoek op set, merchant, titel of URL"
+      type="search"
+    />
+
+    <select
+      [ngModel]="merchantFilter()"
+      (ngModelChange)="updateMerchantFilter($event)"
+      class="admin-input"
+      name="discovery-merchant-filter"
+    >
+      <option value="all">Alle merchants</option>
+      @for (merchant of commerceAdminStore.discoveryMerchants(); track
+      merchant.id) {
+      <option [value]="merchant.id">{{ merchant.name }}</option>
+      }
+    </select>
+
+    <select
+      [ngModel]="setFilter()"
+      (ngModelChange)="updateSetFilter($event)"
+      class="admin-input"
+      name="discovery-set-filter"
+    >
+      <option value="all">Alle sets</option>
+      @for (catalogSet of commerceAdminStore.catalogSetOptions(); track
+      catalogSet.id) {
+      <option [value]="catalogSet.id">
+        {{ catalogSet.name }} ({{ catalogSet.id }})
+      </option>
+      }
+    </select>
+
+    <select
+      [ngModel]="statusFilter()"
+      (ngModelChange)="updateStatusFilter($event)"
+      class="admin-input"
+      name="discovery-status-filter"
+    >
+      <option value="all">Alle score-statussen</option>
+      <option value="auto_approved">Auto-goedgekeurd</option>
+      <option value="needs_review">Review nodig</option>
+      <option value="rejected">Afgewezen</option>
+    </select>
+
+    <select
+      [ngModel]="reviewFilter()"
+      (ngModelChange)="updateReviewFilter($event)"
+      class="admin-input"
+      name="discovery-review-filter"
+    >
+      <option value="all">Alle review-staten</option>
+      <option value="pending">Wacht op review</option>
+      <option value="approved">Goedgekeurd</option>
+      <option value="rejected">Afgewezen</option>
+    </select>
+  </div>
+
+  @if (candidateFeedback()) {
+  <div
+    class="admin-panel"
+    [class.admin-panel--danger]="candidateFeedbackTone() === 'danger'"
+  >
+    <strong>
+      {{ candidateFeedbackTone() === 'positive' ? 'Review bijgewerkt' : 'Actie
+      gestopt' }}
+    </strong>
+    <p class="admin-muted">{{ candidateFeedback() }}</p>
+  </div>
+  }
+
+  <div class="admin-table-shell">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Set</th>
+          <th>Merchant</th>
+          <th>Kandidaat</th>
+          <th>Prijs / stock</th>
+          <th>Detected set</th>
+          <th>Score</th>
+          <th>Review / seed</th>
+          <th>Matchsignalen</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (candidate of filteredCandidates(); track candidate.id) {
+        <tr>
+          <td>
+            <strong
+              >{{ commerceAdminStore.getCatalogSetLabel(candidate.setId)
+              }}</strong
+            >
+            <span>{{ candidate.setId }}</span>
+          </td>
+          <td>
+            {{ commerceAdminStore.getMerchantName(candidate.merchantId) }}
+          </td>
+          <td class="admin-table__url">
+            <strong>{{ candidate.candidateTitle }}</strong>
+            <a [href]="candidate.candidateUrl" rel="noreferrer" target="_blank">
+              {{ candidate.candidateUrl }}
+            </a>
+          </td>
+          <td>
+            <strong>
+              {{ commerceAdminStore.formatPriceMinor( candidate.priceMinor,
+              candidate.currencyCode ?? 'EUR' ) }}
+            </strong>
+            <span
+              >{{ commerceAdminStore.getDiscoveryAvailabilityLabel(
+              candidate.availability ) }}</span
+            >
+          </td>
+          <td>{{ candidate.detectedSetId ?? 'unknown' }}</td>
+          <td>
+            <div class="admin-stack admin-stack--tight">
+              <strong>{{ candidate.confidenceScore }}</strong>
+              <div class="admin-pill-cluster">
+                <span
+                  class="admin-status-pill"
+                  [class.admin-status-pill--danger]="
+                    commerceAdminStore.getDiscoveryCandidateStatusTone(
+                      candidate.status
+                    ) === 'danger'
+                  "
+                  [class.admin-status-pill--warning]="
+                    commerceAdminStore.getDiscoveryCandidateStatusTone(
+                      candidate.status
+                    ) === 'warning'
+                  "
+                  [class.admin-status-pill--positive]="
+                    commerceAdminStore.getDiscoveryCandidateStatusTone(
+                      candidate.status
+                    ) === 'positive'
+                  "
+                >
+                  {{ commerceAdminStore.getDiscoveryCandidateStatusLabel(
+                  candidate.status ) }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="admin-stack admin-stack--tight">
+              <div class="admin-pill-cluster">
+                <span
+                  class="admin-status-pill"
+                  [class.admin-status-pill--danger]="
+                    commerceAdminStore.getDiscoveryReviewStatusTone(
+                      candidate.reviewStatus
+                    ) === 'danger'
+                  "
+                  [class.admin-status-pill--neutral]="
+                    commerceAdminStore.getDiscoveryReviewStatusTone(
+                      candidate.reviewStatus
+                    ) === 'neutral'
+                  "
+                  [class.admin-status-pill--positive]="
+                    commerceAdminStore.getDiscoveryReviewStatusTone(
+                      candidate.reviewStatus
+                    ) === 'positive'
+                  "
+                >
+                  {{ commerceAdminStore.getDiscoveryReviewStatusLabel(
+                  candidate.reviewStatus ) }}
+                </span>
+                <span
+                  class="admin-status-pill"
+                  [class.admin-status-pill--neutral]="
+                    commerceAdminStore.getDiscoveryCandidateLinkTone(candidate)
+                    === 'neutral'
+                  "
+                  [class.admin-status-pill--positive]="
+                    commerceAdminStore.getDiscoveryCandidateLinkTone(candidate)
+                    === 'positive'
+                  "
+                >
+                  {{ commerceAdminStore.getDiscoveryCandidateLinkLabel(
+                  candidate ) }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="admin-pill-cluster">
+              @for (reason of candidate.matchReasons; track reason) {
+              <span class="admin-count-pill">{{ reason }}</span>
+              }
+            </div>
+          </td>
+          <td class="admin-actions-inline">
+            <a
+              [href]="candidate.candidateUrl"
+              class="admin-button admin-button--subtle"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open URL
+            </a>
+            <button
+              class="admin-button admin-button--subtle"
+              [disabled]="
+                candidate.reviewStatus === 'approved' ||
+                isUpdatingCandidateId() === candidate.id
+              "
+              type="button"
+              (click)="approveCandidate(candidate)"
+            >
+              {{ candidate.reviewStatus === 'approved' ? 'Seed klaar' :
+              'Goedkeuren' }}
+            </button>
+            <button
+              class="admin-button admin-button--subtle"
+              [disabled]="
+                candidate.reviewStatus === 'rejected' ||
+                isUpdatingCandidateId() === candidate.id
+              "
+              type="button"
+              (click)="rejectCandidate(candidate)"
+            >
+              {{ candidate.reviewStatus === 'rejected' ? 'Afgewezen' :
+              'Afwijzen' }}
+            </button>
+          </td>
+        </tr>
+        } @if (filteredCandidates().length === 0) {
+        <tr>
+          <td class="admin-table__empty" colspan="9">
+            Geen discovery-kandidaten gevonden voor deze filters.
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
