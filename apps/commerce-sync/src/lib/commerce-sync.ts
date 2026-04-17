@@ -3,7 +3,8 @@ import {
   checkAffiliateGeneratedArtifacts,
   writeAffiliateGeneratedArtifacts,
 } from '@lego-platform/affiliate/data-access-server';
-import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
+import { listCatalogSetSummariesWithOverlay } from '@lego-platform/catalog/data-access-server';
+import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import {
   loadCommerceSyncInputs,
   refreshCommerceOfferSeeds,
@@ -36,18 +37,33 @@ export interface CommerceSyncRunResult {
   refreshUnavailableCount: number;
 }
 
-function validateEnabledSetIds(enabledSetIds: readonly string[]) {
-  const catalogSetIds = new Set(
-    listCatalogSetSummaries().map((catalogSetSummary) => catalogSetSummary.id),
+export async function resolveCommerceCatalogSetSummaries({
+  setIds,
+  listCatalogSetSummariesWithOverlayFn = listCatalogSetSummariesWithOverlay,
+}: {
+  setIds: readonly string[];
+  listCatalogSetSummariesWithOverlayFn?: typeof listCatalogSetSummariesWithOverlay;
+}): Promise<CatalogSetSummary[]> {
+  const catalogSetSummaries = await listCatalogSetSummariesWithOverlayFn();
+  const catalogSetSummaryById = new Map(
+    catalogSetSummaries.map((catalogSetSummary) => [
+      catalogSetSummary.id,
+      catalogSetSummary,
+    ]),
   );
+  const uniqueSetIds = [...new Set(setIds)];
 
-  for (const enabledSetId of enabledSetIds) {
-    if (!catalogSetIds.has(enabledSetId)) {
+  return uniqueSetIds.map((setId) => {
+    const catalogSetSummary = catalogSetSummaryById.get(setId);
+
+    if (!catalogSetSummary) {
       throw new Error(
-        `Commerce-enabled set ${enabledSetId} is missing from the current catalog snapshot.`,
+        `Commerce-enabled set ${setId} is missing from the current catalog (generated snapshot + active overlay).`,
       );
     }
-  }
+
+    return catalogSetSummary;
+  });
 }
 
 export async function runCommerceSync({
@@ -61,11 +77,11 @@ export async function runCommerceSync({
 }): Promise<CommerceSyncRunResult> {
   const initialCommerceSyncInputs = await loadCommerceSyncInputs();
 
-  validateEnabledSetIds(
-    initialCommerceSyncInputs.refreshSeeds.map(
+  await resolveCommerceCatalogSetSummaries({
+    setIds: initialCommerceSyncInputs.refreshSeeds.map(
       (refreshSeed) => refreshSeed.offerSeed.setId,
     ),
-  );
+  });
 
   const refreshSummary =
     mode === 'write'

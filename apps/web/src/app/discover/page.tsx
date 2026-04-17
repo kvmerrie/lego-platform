@@ -8,6 +8,11 @@ import {
   listDiscoverDealCandidateSetCards,
 } from '@lego-platform/catalog/data-access';
 import {
+  listCatalogSetSlugsWithOverlay,
+  listCatalogThemeDirectoryItemsWithOverlay,
+  listDiscoverBrowseThemeGroupsWithOverlay,
+} from '@lego-platform/catalog/data-access-web';
+import {
   buildSetDecisionPresentation,
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
@@ -221,6 +226,13 @@ export default async function DiscoverPage({
         : undefined,
     };
   });
+  const [themeGroups, totalSetSlugs, themeDirectoryItems] = await Promise.all([
+    listDiscoverBrowseThemeGroupsWithOverlay({
+      reviewedSetIds,
+    }),
+    listCatalogSetSlugsWithOverlay(),
+    listCatalogThemeDirectoryItemsWithOverlay(),
+  ]);
 
   return (
     <ShellWeb>
@@ -229,6 +241,9 @@ export default async function DiscoverPage({
         bestDealSetIds={strongDealSetIds}
         dealSetCards={featuredDealSetCards}
         reviewedSetIds={reviewedSetIds}
+        themeGroups={themeGroups}
+        totalSetCount={totalSetSlugs.length}
+        totalThemeCount={themeDirectoryItems.length}
       />
     </ShellWeb>
   );

@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import { listCatalogSearchMatches } from '@lego-platform/catalog/data-access';
+import {
+  listCatalogSearchMatches,
+  type CatalogSearchMatch,
+} from '@lego-platform/catalog/data-access';
 import {
   CatalogQuickFilterBar,
   CatalogSectionShell,
@@ -144,11 +147,13 @@ export function CatalogFeatureSearchResults({
   activeFilter,
   query,
   reviewedPriceContexts = [],
+  searchMatches,
   searchEntry,
 }: {
   activeFilter?: string;
   query?: string;
   reviewedPriceContexts?: readonly CatalogFeatureSearchReviewedPriceContext[];
+  searchMatches?: readonly CatalogSearchMatch[];
   searchEntry?: ReactNode;
 }) {
   const searchQuery = readSearchQuery(query);
@@ -194,10 +199,10 @@ export function CatalogFeatureSearchResults({
     );
   }
 
-  const searchResults = listCatalogSearchMatches(
-    searchQuery,
-    Number.MAX_SAFE_INTEGER,
-  )
+  const resolvedSearchMatches =
+    searchMatches ??
+    listCatalogSearchMatches(searchQuery, Number.MAX_SAFE_INTEGER);
+  const searchResults = resolvedSearchMatches
     .map((searchMatch) => ({
       ...searchMatch,
       priceContext: reviewedPriceContextBySetId.get(searchMatch.setCard.id),

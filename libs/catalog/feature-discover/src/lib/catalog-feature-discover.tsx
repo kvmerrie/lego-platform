@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import {
+  type CatalogBrowseThemeGroup,
   listDiscoverCharacterSetCards,
   listCatalogSetSummaries,
   listCatalogThemes,
@@ -125,26 +126,43 @@ function formatDiscoverFanContext(
 export function CatalogFeatureDiscover({
   activeFilter,
   bestDealSetIds = [],
+  characterSetCards,
   dealSetCards = [],
+  highlightSetCards,
   reviewedSetIds = [],
+  themeGroups,
+  totalSetCount,
+  totalThemeCount,
 }: {
   activeFilter?: string;
   bestDealSetIds?: readonly string[];
+  characterSetCards?: readonly CatalogHomepageSetCard[];
   dealSetCards?: readonly CatalogFeatureDiscoverDealItem[];
+  highlightSetCards?: readonly CatalogHomepageSetCard[];
   reviewedSetIds?: readonly string[];
+  themeGroups?: readonly CatalogBrowseThemeGroup[];
+  totalSetCount?: number;
+  totalThemeCount?: number;
 }) {
   const normalizedFilter = normalizeCatalogQuickFilterKey(activeFilter);
-  const characterSetCards = listDiscoverCharacterSetCards({
-    reviewedSetIds,
-  });
-  const highlightSetCards = listDiscoverHighlightSetCards({
-    reviewedSetIds,
-  });
-  const themeGroups = listDiscoverBrowseThemeGroups({
-    reviewedSetIds,
-  });
-  const totalSetCount = listCatalogSetSummaries().length;
-  const totalThemeCount = listCatalogThemes().length;
+  const resolvedCharacterSetCards =
+    characterSetCards ??
+    listDiscoverCharacterSetCards({
+      reviewedSetIds,
+    });
+  const resolvedHighlightSetCards =
+    highlightSetCards ??
+    listDiscoverHighlightSetCards({
+      reviewedSetIds,
+    });
+  const resolvedThemeGroups =
+    themeGroups ??
+    listDiscoverBrowseThemeGroups({
+      reviewedSetIds,
+    });
+  const resolvedTotalSetCount =
+    totalSetCount ?? listCatalogSetSummaries().length;
+  const resolvedTotalThemeCount = totalThemeCount ?? listCatalogThemes().length;
   const activeQuickFilterOption = listCatalogQuickFilterOptions().find(
     (catalogQuickFilterOption) =>
       catalogQuickFilterOption.key === normalizedFilter,
@@ -176,15 +194,15 @@ export function CatalogFeatureDiscover({
   });
   const filteredCharacterSetCards = filterDiscoverSetCards({
     filter: normalizedFilter,
-    setCards: characterSetCards,
+    setCards: resolvedCharacterSetCards,
     strongDealSetIds: bestDealSetIds,
   });
   const filteredHighlightSetCards = filterDiscoverSetCards({
     filter: normalizedFilter,
-    setCards: highlightSetCards,
+    setCards: resolvedHighlightSetCards,
     strongDealSetIds: bestDealSetIds,
   });
-  const filteredThemeGroups = themeGroups
+  const filteredThemeGroups = resolvedThemeGroups
     .map((themeGroup) => ({
       ...themeGroup,
       setCards: filterDiscoverSetCards({
@@ -200,7 +218,7 @@ export function CatalogFeatureDiscover({
     filteredHighlightSetCards.length > 0 ||
     filteredThemeGroups.length > 0;
 
-  if (!themeGroups.length) {
+  if (!resolvedThemeGroups.length) {
     return (
       <CatalogSectionShell
         as="section"
@@ -224,8 +242,8 @@ export function CatalogFeatureDiscover({
           titleAs="h1"
         />
         <p className={styles.introMeta}>
-          {totalSetCount} sets · {formatThemeCount(totalThemeCount)} in de
-          publieke catalogus
+          {resolvedTotalSetCount} sets ·{' '}
+          {formatThemeCount(resolvedTotalThemeCount)} in de publieke catalogus
         </p>
         <div className={styles.introActions}>
           <ActionLink href={webPathnames.themes} tone="secondary">

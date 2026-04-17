@@ -2,6 +2,7 @@ import {
   CatalogFeatureSearchResults,
   type CatalogFeatureSearchReviewedPriceContext,
 } from '@lego-platform/catalog/feature-search-results';
+import { listCatalogSearchMatchesWithOverlay } from '@lego-platform/catalog/data-access-web';
 import {
   getFeaturedSetPriceContext,
   listReviewedPriceSetIds,
@@ -43,6 +44,12 @@ export default async function SearchPage({
           ]
         : [];
     });
+  const searchMatches = query
+    ? await listCatalogSearchMatchesWithOverlay({
+        limit: Number.MAX_SAFE_INTEGER,
+        query,
+      })
+    : [];
 
   return (
     <ShellWeb
@@ -53,6 +60,7 @@ export default async function SearchPage({
         activeFilter={activeFilter}
         query={query}
         reviewedPriceContexts={reviewedPriceContexts}
+        searchMatches={searchMatches}
         searchEntry={
           shouldOpenMobileOverlay ? (
             <ShellWebSearchForm

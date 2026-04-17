@@ -5,12 +5,11 @@ import {
   sortCatalogOffers,
   toCatalogOffers,
 } from '@lego-platform/affiliate/util';
+import { getCatalogOffersBySetId } from '@lego-platform/catalog/data-access';
 import {
-  getCatalogOffersBySetId,
-  getCatalogSetBySlug,
-  listCatalogSetSlugs,
-} from '@lego-platform/catalog/data-access';
-import { getCatalogSetBySlugWithOverlay } from '@lego-platform/catalog/data-access-server';
+  getCatalogSetBySlugWithOverlay,
+  listCatalogSetSlugsWithOverlay,
+} from '@lego-platform/catalog/data-access-web';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import type {
   CatalogSetDetailBestDeal,
@@ -395,8 +394,8 @@ function buildTrustSignals({
   ];
 }
 
-export function generateStaticParams() {
-  return listCatalogSetSlugs().map((slug) => ({ slug }));
+export async function generateStaticParams() {
+  return (await listCatalogSetSlugsWithOverlay()).map((slug) => ({ slug }));
 }
 
 export default async function SetDetailPage({
@@ -405,11 +404,9 @@ export default async function SetDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const catalogSetDetail =
-    getCatalogSetBySlug(slug) ??
-    (await getCatalogSetBySlugWithOverlay({
-      slug,
-    }));
+  const catalogSetDetail = await getCatalogSetBySlugWithOverlay({
+    slug,
+  });
 
   if (!catalogSetDetail) {
     notFound();

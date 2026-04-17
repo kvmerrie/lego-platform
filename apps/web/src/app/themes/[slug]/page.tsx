@@ -1,7 +1,7 @@
 import {
-  getCatalogThemePageBySlug,
-  listCatalogThemePageSlugs,
-} from '@lego-platform/catalog/data-access';
+  getCatalogThemePageBySlugWithOverlay,
+  listCatalogThemePageSlugsWithOverlay,
+} from '@lego-platform/catalog/data-access-web';
 import { getBestAffiliateOffer } from '@lego-platform/affiliate/data-access';
 import {
   CatalogFeatureThemePage,
@@ -23,7 +23,7 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 function getPricePositionLabel({
   currencyCode,
@@ -117,8 +117,10 @@ function toThemeDealSetCards({
   });
 }
 
-export function generateStaticParams() {
-  return listCatalogThemePageSlugs().map((slug) => ({ slug }));
+export async function generateStaticParams() {
+  return (await listCatalogThemePageSlugsWithOverlay()).map((slug) => ({
+    slug,
+  }));
 }
 
 export async function generateMetadata({
@@ -127,7 +129,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const themePage = getCatalogThemePageBySlug(slug);
+  const themePage = await getCatalogThemePageBySlugWithOverlay({
+    slug,
+  });
 
   if (!themePage) {
     return {};
@@ -145,7 +149,9 @@ export default async function ThemePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const themePage = getCatalogThemePageBySlug(slug);
+  const themePage = await getCatalogThemePageBySlugWithOverlay({
+    slug,
+  });
 
   if (!themePage) {
     notFound();
