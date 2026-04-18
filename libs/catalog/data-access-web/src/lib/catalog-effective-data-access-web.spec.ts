@@ -9,8 +9,11 @@ import { describe, expect, test, vi } from 'vitest';
 
 import {
   type CatalogResolvedOffer,
+  getCanonicalCatalogSetById,
+  getCanonicalCatalogSetBySlug,
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlugWithOverlay,
+  listCanonicalCatalogSets,
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
   listCatalogSearchMatchesWithOverlay,
@@ -214,6 +217,68 @@ function createCatalogSupabaseClientMock({
 }
 
 describe('catalog effective data access web', () => {
+  test('prefers a Supabase-backed canonical catalog set over snapshot fallback', async () => {
+    const canonicalCatalogSets = await listCanonicalCatalogSets({
+      listCatalogOverlaySetsFn: async () => [
+        createOverlaySet({
+          name: 'Rivendell (Supabase)',
+          setId: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          sourceSetNumber: '10316-1',
+          theme: 'Icons',
+        }),
+      ],
+    });
+
+    expect(
+      canonicalCatalogSets.filter(
+        (canonicalCatalogSet) => canonicalCatalogSet.setId === '10316',
+      ),
+    ).toHaveLength(1);
+    expect(
+      canonicalCatalogSets.find(
+        (canonicalCatalogSet) => canonicalCatalogSet.setId === '10316',
+      ),
+    ).toMatchObject({
+      name: 'Rivendell (Supabase)',
+      setId: '10316',
+      slug: 'lord-of-the-rings-rivendell-10316',
+      source: 'rebrickable',
+    });
+  });
+
+  test('falls back to snapshot-backed canonical identity during transition', async () => {
+    const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      setId: '21061',
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      name: 'Notre-Dame de Paris',
+      primaryTheme: 'Architecture',
+      setId: '21061',
+      slug: 'notre-dame-de-paris-21061',
+      source: 'snapshot',
+    });
+  });
+
+  test('keeps slug lookups stable through the canonical catalog layer', async () => {
+    const canonicalCatalogSet = await getCanonicalCatalogSetBySlug({
+      listCanonicalCatalogSetsFn: async () =>
+        listCanonicalCatalogSets({
+          listCatalogOverlaySetsFn: async () => [createOverlaySet()],
+        }),
+      slug: 'mario-kart-mario-standard-kart-72037',
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      name: 'Mario Kart - Mario & Standard Kart',
+      primaryTheme: 'Super Mario',
+      setId: '72037',
+      slug: 'mario-kart-mario-standard-kart-72037',
+      source: 'rebrickable',
+    });
+  });
+
   test('includes active overlay sets in public search matches', async () => {
     const overlaySet = createOverlaySet();
 

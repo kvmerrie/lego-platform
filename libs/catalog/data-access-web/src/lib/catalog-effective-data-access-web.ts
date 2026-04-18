@@ -4,20 +4,22 @@ import {
   type CatalogSearchMatch,
   type CatalogThemeDirectoryItem,
   type CatalogThemeLandingPage,
+  catalogSnapshot,
   getCatalogOffersBySetId,
   getCatalogSetBySlug,
   getCatalogThemePageBySlug,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   listCatalogSearchMatches,
-  listCatalogSetSlugs,
   listCatalogThemeDirectoryItems,
   listDiscoverBrowseThemeGroups,
 } from '@lego-platform/catalog/data-access';
 import type {
+  CatalogCanonicalSet,
   CatalogHomepageSetCard,
   CatalogOverlaySet,
   CatalogSetDetail,
+  CatalogSetRecord,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import {
@@ -25,8 +27,10 @@ import {
   getCatalogPrimaryTheme,
   getCatalogThemeVisual,
   listCatalogSetCardSearchMatches,
+  mergeCanonicalCatalogSets,
   normalizeCatalogAsciiText,
   resolveCatalogThemeIdentity,
+  sortCanonicalCatalogSets,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogSetLiveOffersApiPath,
@@ -151,6 +155,92 @@ function toCatalogOverlaySet(row: CatalogOverlaySetRow): CatalogOverlaySet {
       rawTheme: row.theme,
     }),
     updatedAt: row.updated_at,
+  };
+}
+
+function toCanonicalCatalogSetFromSnapshotRecord(
+  catalogSetRecord: CatalogSetRecord,
+): CatalogCanonicalSet {
+  const themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: catalogSetRecord.theme,
+  });
+
+  return {
+    createdAt: catalogSnapshot.generatedAt,
+    imageUrl: catalogSetRecord.imageUrl,
+    name: catalogSetRecord.name,
+    pieceCount: catalogSetRecord.pieces,
+    primaryTheme: themeIdentity.primaryTheme,
+    releaseYear: catalogSetRecord.releaseYear,
+    secondaryLabels: themeIdentity.secondaryThemes,
+    setId: catalogSetRecord.canonicalId,
+    slug: catalogSetRecord.slug,
+    source: 'snapshot',
+    sourceSetNumber: catalogSetRecord.sourceSetNumber,
+    status: 'active',
+    updatedAt: catalogSnapshot.generatedAt,
+  };
+}
+
+function toCanonicalCatalogSetFromOverlaySet(
+  overlaySet: CatalogOverlaySet,
+): CatalogCanonicalSet {
+  const themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: overlaySet.theme,
+  });
+
+  return {
+    createdAt: overlaySet.createdAt,
+    imageUrl: overlaySet.imageUrl,
+    name: overlaySet.name,
+    pieceCount: overlaySet.pieces,
+    primaryTheme: themeIdentity.primaryTheme,
+    releaseYear: overlaySet.releaseYear,
+    secondaryLabels: themeIdentity.secondaryThemes,
+    setId: overlaySet.setId,
+    slug: overlaySet.slug,
+    source: overlaySet.source,
+    sourceSetNumber: overlaySet.sourceSetNumber,
+    status: overlaySet.status,
+    updatedAt: overlaySet.updatedAt,
+  };
+}
+
+function toCatalogSetDetailFromCanonicalSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogSetDetail {
+  return {
+    id: canonicalCatalogSet.setId,
+    slug: canonicalCatalogSet.slug,
+    name: canonicalCatalogSet.name,
+    theme: canonicalCatalogSet.primaryTheme,
+    releaseYear: canonicalCatalogSet.releaseYear,
+    pieces: canonicalCatalogSet.pieceCount,
+    imageUrl: canonicalCatalogSet.imageUrl,
+    collectorAngle: `Nieuw in Brickhunt. ${canonicalCatalogSet.name} staat klaar voor de eerste prijscheck.`,
+    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${canonicalCatalogSet.primaryTheme}-set.`,
+    availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
+    collectorHighlights: [
+      `${canonicalCatalogSet.pieceCount.toLocaleString('nl-NL')} stenen`,
+      `Release ${canonicalCatalogSet.releaseYear}`,
+    ],
+    ...(canonicalCatalogSet.secondaryLabels[0]
+      ? {
+          subtheme: canonicalCatalogSet.secondaryLabels[0],
+        }
+      : {}),
+    ...(canonicalCatalogSet.imageUrl
+      ? {
+          images: [
+            {
+              order: 0,
+              type: 'hero',
+              url: canonicalCatalogSet.imageUrl,
+            },
+          ],
+          primaryImage: canonicalCatalogSet.imageUrl,
+        }
+      : {}),
   };
 }
 
@@ -358,6 +448,10 @@ export function summarizeCatalogCurrentOffers({
   };
 }
 
+const snapshotCanonicalCatalogSets = sortCanonicalCatalogSets(
+  catalogSnapshot.setRecords.map(toCanonicalCatalogSetFromSnapshotRecord),
+);
+
 export async function listCatalogOverlaySets({
   supabaseClient,
 }: {
@@ -394,6 +488,51 @@ export async function listCatalogOverlaySets({
 
     throw error;
   }
+}
+
+export async function listCanonicalCatalogSets({
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogCanonicalSet[]> {
+  const canonicalOverlaySets = (await listCatalogOverlaySetsFn()).map(
+    toCanonicalCatalogSetFromOverlaySet,
+  );
+
+  return sortCanonicalCatalogSets(
+    mergeCanonicalCatalogSets({
+      fallbackSets: snapshotCanonicalCatalogSets,
+      preferredSets: canonicalOverlaySets,
+    }),
+  );
+}
+
+export async function getCanonicalCatalogSetById({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  setId,
+}: {
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  setId: string;
+}): Promise<CatalogCanonicalSet | undefined> {
+  const canonicalCatalogSets = await listCanonicalCatalogSetsFn();
+
+  return canonicalCatalogSets.find(
+    (canonicalCatalogSet) => canonicalCatalogSet.setId === setId,
+  );
+}
+
+export async function getCanonicalCatalogSetBySlug({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  slug,
+}: {
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  slug: string;
+}): Promise<CatalogCanonicalSet | undefined> {
+  const canonicalCatalogSets = await listCanonicalCatalogSetsFn();
+
+  return canonicalCatalogSets.find(
+    (canonicalCatalogSet) => canonicalCatalogSet.slug === slug,
+  );
 }
 
 export async function listCatalogSetLiveOffersBySetId({
@@ -781,14 +920,9 @@ export async function listCatalogSetSlugsWithOverlay({
 }: {
   listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
 } = {}): Promise<string[]> {
-  const snapshotSlugs = listCatalogSetSlugs();
-  const snapshotSlugSet = new Set(snapshotSlugs);
-  const overlaySlugs = (await listCatalogOverlaySetsFn())
-    .map((overlaySet) => overlaySet.slug)
-    .filter((slug) => !snapshotSlugSet.has(slug))
-    .sort((left, right) => left.localeCompare(right));
-
-  return [...snapshotSlugs, ...overlaySlugs];
+  return (await listCanonicalCatalogSets({ listCatalogOverlaySetsFn })).map(
+    (canonicalCatalogSet) => canonicalCatalogSet.slug,
+  );
 }
 
 export async function getCatalogSetBySlugWithOverlay({
@@ -798,17 +932,23 @@ export async function getCatalogSetBySlugWithOverlay({
   listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
   slug: string;
 }): Promise<CatalogSetDetail | undefined> {
-  const snapshotSet = getCatalogSetBySlug(slug);
+  const canonicalCatalogSet = await getCanonicalCatalogSetBySlug({
+    listCanonicalCatalogSetsFn: async () =>
+      listCanonicalCatalogSets({
+        listCatalogOverlaySetsFn,
+      }),
+    slug,
+  });
 
-  if (snapshotSet) {
-    return snapshotSet;
+  if (!canonicalCatalogSet) {
+    return undefined;
   }
 
-  const overlaySet = (await listCatalogOverlaySetsFn()).find(
-    (candidate) => candidate.slug === slug,
-  );
+  if (canonicalCatalogSet.source === 'snapshot') {
+    return getCatalogSetBySlug(slug);
+  }
 
-  return overlaySet ? toOverlayCatalogSetDetail(overlaySet) : undefined;
+  return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
 }
 
 export async function listCatalogSearchMatchesWithOverlay({

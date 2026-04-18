@@ -2,7 +2,10 @@ import { describe, expect, test, vi } from 'vitest';
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import {
   createCatalogOverlaySet,
+  getCanonicalCatalogSetById,
+  getCanonicalCatalogSetBySlug,
   getCatalogSetBySlugWithOverlay,
+  listCanonicalCatalogSets,
   listCatalogSetSummariesWithOverlay,
   searchCatalogMissingSets,
 } from './catalog-data-access-server';
@@ -87,6 +90,74 @@ function createCatalogOverlaySupabaseClient({
 }
 
 describe('catalog data access server', () => {
+  test('prefers a Supabase-backed canonical catalog set over snapshot fallback', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          name: 'Rivendell (Supabase)',
+          set_id: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          source_set_number: '10316-1',
+          theme: 'Icons',
+        }),
+      ],
+    });
+
+    const canonicalCatalogSets = await listCanonicalCatalogSets({
+      supabaseClient,
+    });
+    const rivendellCatalogSet = canonicalCatalogSets.find(
+      (canonicalCatalogSet) => canonicalCatalogSet.setId === '10316',
+    );
+
+    expect(rivendellCatalogSet).toMatchObject({
+      name: 'Rivendell (Supabase)',
+      setId: '10316',
+      slug: 'lord-of-the-rings-rivendell-10316',
+      source: 'rebrickable',
+      sourceSetNumber: '10316-1',
+    });
+    expect(
+      canonicalCatalogSets.filter(
+        (canonicalCatalogSet) => canonicalCatalogSet.setId === '10316',
+      ),
+    ).toHaveLength(1);
+  });
+
+  test('falls back to the generated snapshot when no Supabase canonical set exists', async () => {
+    const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      setId: '21061',
+      supabaseClient: createCatalogOverlaySupabaseClient({
+        overlayRows: [],
+      }).supabaseClient,
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      name: 'Notre-Dame de Paris',
+      primaryTheme: 'Architecture',
+      setId: '21061',
+      slug: 'notre-dame-de-paris-21061',
+      source: 'snapshot',
+    });
+  });
+
+  test('keeps slug lookups stable through the canonical catalog layer', async () => {
+    const canonicalCatalogSet = await getCanonicalCatalogSetBySlug({
+      slug: 'great-deku-tree-2-in-1-77092',
+      supabaseClient: createCatalogOverlaySupabaseClient({
+        overlayRows: [createCatalogOverlayRow()],
+      }).supabaseClient,
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      name: 'Great Deku Tree 2-in-1',
+      primaryTheme: 'The Legend of Zelda',
+      setId: '77092',
+      slug: 'great-deku-tree-2-in-1-77092',
+      source: 'rebrickable',
+    });
+  });
+
   test('merges active overlay sets into the admin catalog set list', async () => {
     const order = vi.fn().mockResolvedValue({
       data: [
@@ -475,39 +546,17 @@ describe('catalog data access server', () => {
   });
 
   test('resolves an active overlay set by slug for the public set page', async () => {
-    const maybeSingle = vi.fn().mockResolvedValue({
-      data: {
-        created_at: '2026-04-17T08:00:00.000Z',
-        image_url: 'https://cdn.rebrickable.com/media/sets/77092-1/1000.jpg',
-        name: 'Great Deku Tree 2-in-1',
-        piece_count: 2500,
-        release_year: 2024,
-        set_id: '77092',
-        slug: 'great-deku-tree-2-in-1-77092',
-        source: 'rebrickable',
-        source_set_number: '77092-1',
-        status: 'active',
-        theme: 'The Legend of Zelda',
-        updated_at: '2026-04-17T08:00:00.000Z',
-      },
-      error: null,
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          slug: 'great-deku-tree-2-in-1-77092',
+        }),
+      ],
     });
-    const eqStatus = vi.fn(() => ({
-      maybeSingle,
-    }));
-    const eqSlug = vi.fn(() => ({
-      eq: eqStatus,
-    }));
-    const select = vi.fn(() => ({
-      eq: eqSlug,
-    }));
-    const from = vi.fn(() => ({
-      select,
-    }));
 
     const result = await getCatalogSetBySlugWithOverlay({
       slug: 'great-deku-tree-2-in-1-77092',
-      supabaseClient: { from } as never,
+      supabaseClient,
     });
 
     expect(result).toEqual(

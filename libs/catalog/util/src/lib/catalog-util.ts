@@ -486,6 +486,32 @@ export interface CatalogOverlaySet extends CatalogAddableSetRecord {
   updatedAt: string;
 }
 
+export const catalogCanonicalSetSources = [
+  'snapshot',
+  ...catalogOverlaySetSources,
+] as const;
+
+export type CatalogCanonicalSetSource =
+  (typeof catalogCanonicalSetSources)[number];
+
+export type CatalogCanonicalSetStatus = CatalogOverlaySetStatus;
+
+export interface CatalogCanonicalSet {
+  createdAt: string;
+  imageUrl?: string;
+  name: string;
+  pieceCount: number;
+  primaryTheme: string;
+  releaseYear: number;
+  secondaryLabels: readonly string[];
+  setId: string;
+  slug: string;
+  source: CatalogCanonicalSetSource;
+  sourceSetNumber?: string;
+  status: CatalogCanonicalSetStatus;
+  updatedAt: string;
+}
+
 export interface CatalogSnapshot {
   source: string;
   generatedAt: string;
@@ -1044,6 +1070,40 @@ export function sortCatalogSetSummaries(
       right.releaseYear - left.releaseYear ||
       left.name.localeCompare(right.name),
   );
+}
+
+export function sortCanonicalCatalogSets(
+  canonicalCatalogSets: readonly CatalogCanonicalSet[],
+): CatalogCanonicalSet[] {
+  return [...canonicalCatalogSets].sort(
+    (left, right) =>
+      right.releaseYear - left.releaseYear ||
+      left.name.localeCompare(right.name),
+  );
+}
+
+export function mergeCanonicalCatalogSets({
+  fallbackSets,
+  preferredSets,
+}: {
+  fallbackSets: readonly CatalogCanonicalSet[];
+  preferredSets: readonly CatalogCanonicalSet[];
+}): CatalogCanonicalSet[] {
+  const preferredSetIds = new Set(
+    preferredSets.map((canonicalCatalogSet) => canonicalCatalogSet.setId),
+  );
+  const preferredSlugs = new Set(
+    preferredSets.map((canonicalCatalogSet) => canonicalCatalogSet.slug),
+  );
+
+  return [
+    ...preferredSets,
+    ...fallbackSets.filter(
+      (canonicalCatalogSet) =>
+        !preferredSetIds.has(canonicalCatalogSet.setId) &&
+        !preferredSlugs.has(canonicalCatalogSet.slug),
+    ),
+  ];
 }
 
 export function buildCatalogMetrics(
