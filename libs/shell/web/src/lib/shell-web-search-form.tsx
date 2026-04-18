@@ -9,7 +9,11 @@ import {
   useState,
 } from 'react';
 import { flushSync } from 'react-dom';
-import { listCatalogSearchSuggestions } from '@lego-platform/catalog/data-access';
+import { listCatalogSearchMatches } from '@lego-platform/catalog/data-access';
+import {
+  listCatalogSetCardSearchMatches,
+  type CatalogHomepageSetCard,
+} from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
   buildWebPath,
@@ -47,6 +51,106 @@ function buildSearchHref(query: string): string {
   return `${buildWebPath(webPathnames.search)}?${searchParams.toString()}`;
 }
 
+const searchSuggestionsApiPath = '/api/catalog/search-suggestions';
+let overlaySearchSuggestionSetCardsRequest:
+  | Promise<CatalogHomepageSetCard[]>
+  | undefined;
+
+export function clearShellWebSearchSuggestionOverlaySetCardsCache() {
+  overlaySearchSuggestionSetCardsRequest = undefined;
+}
+
+function isCatalogHomepageSetCard(
+  value: unknown,
+): value is CatalogHomepageSetCard {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<CatalogHomepageSetCard>;
+
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.slug === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.theme === 'string' &&
+    typeof candidate.releaseYear === 'number' &&
+    typeof candidate.pieces === 'number' &&
+    typeof candidate.collectorAngle === 'string' &&
+    typeof candidate.tagline === 'string' &&
+    typeof candidate.availability === 'string'
+  );
+}
+
+async function loadOverlaySearchSuggestionSetCards(): Promise<
+  CatalogHomepageSetCard[]
+> {
+  overlaySearchSuggestionSetCardsRequest ??= fetch(searchSuggestionsApiPath, {
+    cache: 'no-store',
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        return [];
+      }
+
+      const payload = (await response.json()) as unknown;
+
+      return Array.isArray(payload)
+        ? payload.filter(isCatalogHomepageSetCard)
+        : [];
+    })
+    .catch(() => []);
+
+  return overlaySearchSuggestionSetCardsRequest;
+}
+
+function listShellWebSearchSuggestions({
+  overlaySetCards,
+  query,
+}: {
+  overlaySetCards: readonly CatalogHomepageSetCard[];
+  query: string;
+}): CatalogHomepageSetCard[] {
+  const snapshotMatches = listCatalogSearchMatches(
+    query,
+    Number.MAX_SAFE_INTEGER,
+  );
+  const snapshotSetIds = new Set(
+    snapshotMatches.map((catalogSearchMatch) => catalogSearchMatch.setCard.id),
+  );
+  const dedupedOverlaySetCardsById = new Map<string, CatalogHomepageSetCard>();
+
+  for (const overlaySetCard of overlaySetCards) {
+    if (
+      snapshotSetIds.has(overlaySetCard.id) ||
+      dedupedOverlaySetCardsById.has(overlaySetCard.id)
+    ) {
+      continue;
+    }
+
+    dedupedOverlaySetCardsById.set(overlaySetCard.id, overlaySetCard);
+  }
+
+  const overlayMatches = listCatalogSetCardSearchMatches({
+    limit: Number.MAX_SAFE_INTEGER,
+    query,
+    setCards: [...dedupedOverlaySetCardsById.values()],
+  }).map(({ score, setCard }) => ({
+    score,
+    setCard,
+  }));
+
+  return [...snapshotMatches, ...overlayMatches]
+    .sort(
+      (left, right) =>
+        left.score - right.score ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
+        left.setCard.name.localeCompare(right.setCard.name),
+    )
+    .slice(0, 6)
+    .map((catalogSearchMatch) => catalogSearchMatch.setCard);
+}
+
 export function ShellWebSearchForm({
   autoFocus = false,
   className,
@@ -73,6 +177,8 @@ export function ShellWebSearchForm({
     ShellWebRecentSearchEntry[]
   >([]);
   const [searchValue, setSearchValue] = useState(query ?? '');
+  const [overlaySearchSuggestionSetCards, setOverlaySearchSuggestionSetCards] =
+    useState<CatalogHomepageSetCard[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
   const wasMobileOverlayOpenRef = useRef(false);
@@ -134,9 +240,26 @@ export function ShellWebSearchForm({
     }
   }, []);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    void loadOverlaySearchSuggestionSetCards().then((setCards) => {
+      if (!isCancelled) {
+        setOverlaySearchSuggestionSetCards(setCards);
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
   const normalizedSearchValue = normalizeRecentSearchQuery(searchValue);
   const searchSuggestions = normalizedSearchValue
-    ? listCatalogSearchSuggestions(normalizedSearchValue, 6)
+    ? listShellWebSearchSuggestions({
+        overlaySetCards: overlaySearchSuggestionSetCards,
+        query: normalizedSearchValue,
+      })
     : [];
   const searchResultsHref = normalizedSearchValue
     ? buildSearchHref(normalizedSearchValue)

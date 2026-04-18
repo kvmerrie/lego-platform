@@ -12,6 +12,7 @@ import {
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
   listCatalogSearchMatchesWithOverlay,
+  listCatalogSearchSuggestionOverlaySetCards,
   listCatalogSetSlugsWithOverlay,
   listCatalogThemeDirectoryItemsWithOverlay,
   listCatalogThemePageSlugsWithOverlay,
@@ -29,7 +30,7 @@ function createOverlaySet(
     slug: string;
     source: 'rebrickable';
     sourceSetNumber: string;
-    status: 'active';
+    status: 'active' | 'inactive';
     theme: string;
     updatedAt: string;
   }> = {},
@@ -65,6 +66,35 @@ describe('catalog effective data access web', () => {
       id: '72037',
       slug: 'mario-kart-mario-standard-kart-72037',
       theme: 'Super Mario',
+    });
+  });
+
+  test('returns only active deduped overlay cards for shell search suggestions', async () => {
+    const activeOverlaySet = createOverlaySet();
+    const duplicateOverlaySet = createOverlaySet({
+      createdAt: '2026-04-17T09:00:00.000Z',
+      updatedAt: '2026-04-17T09:00:00.000Z',
+    });
+    const inactiveOverlaySet = createOverlaySet({
+      name: 'Mario Kart - Luigi & Standard Kart',
+      setId: '72038',
+      slug: 'mario-kart-luigi-standard-kart-72038',
+      sourceSetNumber: '72038-1',
+      status: 'inactive',
+    });
+
+    const result = await listCatalogSearchSuggestionOverlaySetCards({
+      listCatalogOverlaySetsFn: async () => [
+        activeOverlaySet,
+        duplicateOverlaySet,
+        inactiveOverlaySet,
+      ],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      id: '72037',
+      slug: 'mario-kart-mario-standard-kart-72037',
     });
   });
 

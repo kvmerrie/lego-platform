@@ -31,6 +31,16 @@ export interface CatalogHomepageSetCard extends CatalogSetSummary {
   minifigureHighlights?: readonly string[];
 }
 
+export interface CatalogSetCardSearchMatch<
+  T extends Pick<
+    CatalogHomepageSetCard,
+    'id' | 'name' | 'releaseYear' | 'minifigureHighlights'
+  > = CatalogHomepageSetCard,
+> {
+  score: number;
+  setCard: T;
+}
+
 export interface CatalogSetDisplaySize {
   label?: string;
   value: string;
@@ -160,6 +170,140 @@ export function matchesCatalogQuickFilter({
   }
 
   return catalogQuickFilterOption.theme === setCard.theme;
+}
+
+function normalizeCatalogSearchText(value: string): string {
+  return normalizeCatalogAsciiText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeCatalogSearchToken(value: string): string {
+  return normalizeCatalogAsciiText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function getCatalogSetCardSearchScore<
+  T extends Pick<
+    CatalogHomepageSetCard,
+    'id' | 'name' | 'minifigureHighlights'
+  >,
+>({
+  queryText,
+  queryToken,
+  setCard,
+}: {
+  queryText: string;
+  queryToken: string;
+  setCard: T;
+}): number | undefined {
+  const canonicalIdToken = normalizeCatalogSearchToken(setCard.id);
+  const normalizedName = normalizeCatalogSearchText(setCard.name);
+  const compactName = normalizeCatalogSearchToken(setCard.name);
+  const highlightText = setCard.minifigureHighlights?.join(' ');
+  const normalizedHighlights = highlightText
+    ? normalizeCatalogSearchText(highlightText)
+    : undefined;
+  const compactHighlights = highlightText
+    ? normalizeCatalogSearchToken(highlightText)
+    : undefined;
+
+  if (canonicalIdToken === queryToken) {
+    return 0;
+  }
+
+  if (canonicalIdToken.startsWith(queryToken)) {
+    return 1;
+  }
+
+  if (
+    normalizedName.startsWith(queryText) ||
+    compactName.startsWith(queryToken)
+  ) {
+    return 2;
+  }
+
+  if (
+    normalizedName
+      .split(' ')
+      .some((normalizedNameWord) => normalizedNameWord.startsWith(queryText))
+  ) {
+    return 3;
+  }
+
+  if (normalizedName.includes(queryText) || compactName.includes(queryToken)) {
+    return 4;
+  }
+
+  if (
+    normalizedHighlights
+      ?.split(' ')
+      .some((normalizedHighlightWord) =>
+        normalizedHighlightWord.startsWith(queryText),
+      )
+  ) {
+    return 5;
+  }
+
+  if (
+    normalizedHighlights?.includes(queryText) ||
+    compactHighlights?.includes(queryToken)
+  ) {
+    return 6;
+  }
+
+  return undefined;
+}
+
+export function listCatalogSetCardSearchMatches<
+  T extends Pick<
+    CatalogHomepageSetCard,
+    'id' | 'name' | 'releaseYear' | 'minifigureHighlights'
+  >,
+>({
+  limit = 6,
+  query,
+  setCards,
+}: {
+  limit?: number;
+  query: string;
+  setCards: readonly T[];
+}): CatalogSetCardSearchMatch<T>[] {
+  const normalizedQueryText = normalizeCatalogSearchText(query);
+  const normalizedQueryToken = normalizeCatalogSearchToken(query);
+  const suggestionLimit = Math.max(0, Math.floor(limit));
+
+  if (!normalizedQueryText || !normalizedQueryToken || suggestionLimit === 0) {
+    return [];
+  }
+
+  return setCards
+    .flatMap((setCard) => {
+      const score = getCatalogSetCardSearchScore({
+        queryText: normalizedQueryText,
+        queryToken: normalizedQueryToken,
+        setCard,
+      });
+
+      return typeof score === 'number'
+        ? [
+            {
+              score,
+              setCard,
+            } satisfies CatalogSetCardSearchMatch<T>,
+          ]
+        : [];
+    })
+    .sort(
+      (left, right) =>
+        left.score - right.score ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
+        left.setCard.name.localeCompare(right.setCard.name),
+    )
+    .slice(0, suggestionLimit);
 }
 
 export interface CatalogThemeSnapshot {
@@ -329,8 +473,7 @@ export interface CatalogAddableSetRecord {
   theme: string;
 }
 
-export interface CatalogExternalSetSearchResult
-  extends CatalogAddableSetRecord {}
+export type CatalogExternalSetSearchResult = CatalogAddableSetRecord;
 
 export interface CatalogOverlaySet extends CatalogAddableSetRecord {
   createdAt: string;

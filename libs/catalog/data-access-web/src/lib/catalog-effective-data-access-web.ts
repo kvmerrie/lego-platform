@@ -15,12 +15,14 @@ import {
 } from '@lego-platform/catalog/data-access';
 import type {
   CatalogHomepageSetCard,
+  CatalogOverlaySet,
   CatalogSetDetail,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
   getCatalogThemeVisual,
+  listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
 } from '@lego-platform/catalog/util';
 import {
@@ -47,21 +49,6 @@ interface CatalogOverlaySetRow {
   status: 'active';
   theme: string;
   updated_at: string;
-}
-
-interface CatalogOverlaySet {
-  createdAt: string;
-  imageUrl?: string;
-  name: string;
-  pieces: number;
-  releaseYear: number;
-  setId: string;
-  slug: string;
-  source: 'rebrickable';
-  sourceSetNumber: string;
-  status: 'active';
-  theme: string;
-  updatedAt: string;
 }
 
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
@@ -194,87 +181,6 @@ function toCatalogHomepageSetCard(
   };
 }
 
-function normalizeCatalogSearchText(value: string): string {
-  return normalizeCatalogAsciiText(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
-    .replace(/\s+/g, ' ');
-}
-
-function normalizeCatalogSearchToken(value: string): string {
-  return normalizeCatalogAsciiText(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '');
-}
-
-function getCatalogSearchScore({
-  setCard,
-  queryText,
-  queryToken,
-}: {
-  queryText: string;
-  queryToken: string;
-  setCard: CatalogHomepageSetCard;
-}): number | undefined {
-  const canonicalIdToken = normalizeCatalogSearchToken(setCard.id);
-  const normalizedName = normalizeCatalogSearchText(setCard.name);
-  const compactName = normalizeCatalogSearchToken(setCard.name);
-  const highlightText = setCard.minifigureHighlights?.join(' ');
-  const normalizedHighlights = highlightText
-    ? normalizeCatalogSearchText(highlightText)
-    : undefined;
-  const compactHighlights = highlightText
-    ? normalizeCatalogSearchToken(highlightText)
-    : undefined;
-
-  if (canonicalIdToken === queryToken) {
-    return 0;
-  }
-
-  if (canonicalIdToken.startsWith(queryToken)) {
-    return 1;
-  }
-
-  if (
-    normalizedName.startsWith(queryText) ||
-    compactName.startsWith(queryToken)
-  ) {
-    return 2;
-  }
-
-  if (
-    normalizedName
-      .split(' ')
-      .some((normalizedNameWord) => normalizedNameWord.startsWith(queryText))
-  ) {
-    return 3;
-  }
-
-  if (normalizedName.includes(queryText) || compactName.includes(queryToken)) {
-    return 4;
-  }
-
-  if (
-    normalizedHighlights
-      ?.split(' ')
-      .some((normalizedHighlightWord) =>
-        normalizedHighlightWord.startsWith(queryText),
-      )
-  ) {
-    return 5;
-  }
-
-  if (
-    normalizedHighlights?.includes(queryText) ||
-    compactHighlights?.includes(queryToken)
-  ) {
-    return 6;
-  }
-
-  return undefined;
-}
-
 function getReviewedCoverageRank(
   canonicalId: string,
   reviewedSetIds?: readonly string[],
@@ -364,11 +270,34 @@ async function listOverlayCatalogSetCards({
 }: {
   listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  const overlaySetDetails = (await listCatalogOverlaySetsFn()).map(
-    toOverlayCatalogSetDetail,
-  );
+  const overlaySetDetails = (await listCatalogOverlaySetsFn())
+    .filter((overlaySet) => overlaySet.status === 'active')
+    .map(toOverlayCatalogSetDetail);
 
   return overlaySetDetails.map(toCatalogHomepageSetCard);
+}
+
+export async function listCatalogSearchSuggestionOverlaySetCards({
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  const overlaySetCards = await listOverlayCatalogSetCards({
+    listCatalogOverlaySetsFn,
+  });
+  const dedupedSetCardsById = new Map<string, CatalogHomepageSetCard>();
+
+  for (const overlaySetCard of overlaySetCards) {
+    if (!dedupedSetCardsById.has(overlaySetCard.id)) {
+      dedupedSetCardsById.set(overlaySetCard.id, overlaySetCard);
+    }
+  }
+
+  return [...dedupedSetCardsById.values()].sort(
+    (left, right) =>
+      right.releaseYear - left.releaseYear ||
+      left.name.localeCompare(right.name),
+  );
 }
 
 export async function listCatalogSetSlugsWithOverlay({
@@ -415,11 +344,9 @@ export async function listCatalogSearchMatchesWithOverlay({
   listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
   query: string;
 }): Promise<CatalogSearchMatch[]> {
-  const normalizedQueryText = normalizeCatalogSearchText(query);
-  const normalizedQueryToken = normalizeCatalogSearchToken(query);
   const suggestionLimit = Math.max(0, Math.floor(limit));
 
-  if (!normalizedQueryText || !normalizedQueryToken || suggestionLimit === 0) {
+  if (!normalizeCatalogAsciiText(query).trim() || suggestionLimit === 0) {
     return [];
   }
 
@@ -430,29 +357,21 @@ export async function listCatalogSearchMatchesWithOverlay({
   const existingSetIds = new Set(
     snapshotMatches.map((catalogSearchMatch) => catalogSearchMatch.setCard.id),
   );
-  const overlayMatches = (
-    await listOverlayCatalogSetCards({
-      listCatalogOverlaySetsFn,
-    })
-  )
-    .filter((setCard) => !existingSetIds.has(setCard.id))
-    .flatMap((setCard) => {
-      const score = getCatalogSearchScore({
-        queryText: normalizedQueryText,
-        queryToken: normalizedQueryToken,
-        setCard,
-      });
-
-      return typeof score === 'number'
-        ? [
-            {
-              discoverRank: Number.MAX_SAFE_INTEGER,
-              score,
-              setCard,
-            } satisfies CatalogSearchMatch,
-          ]
-        : [];
-    });
+  const overlayMatches = listCatalogSetCardSearchMatches({
+    limit: Number.MAX_SAFE_INTEGER,
+    query,
+    setCards: (
+      await listOverlayCatalogSetCards({
+        listCatalogOverlaySetsFn,
+      })
+    ).filter((setCard) => !existingSetIds.has(setCard.id)),
+  }).map(
+    ({ score, setCard }): CatalogSearchMatch => ({
+      discoverRank: Number.MAX_SAFE_INTEGER,
+      score,
+      setCard,
+    }),
+  );
 
   return [...snapshotMatches, ...overlayMatches]
     .sort(

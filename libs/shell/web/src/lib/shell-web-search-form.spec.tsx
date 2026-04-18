@@ -2,8 +2,19 @@
 
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ShellWebSearchForm } from './shell-web-search-form';
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+import {
+  clearShellWebSearchSuggestionOverlaySetCardsCache,
+  ShellWebSearchForm,
+} from './shell-web-search-form';
 import { writeSearchOverlayReturnState } from './shell-web-search-overlay-return-state';
 import { openMobileSearchOverlayEventName } from './shell-web-search-overlay-events';
 import {
@@ -13,6 +24,7 @@ import {
 
 const routerBack = vi.fn();
 const routerReplace = vi.fn();
+const fetchMock = vi.fn<typeof fetch>();
 const requestAnimationFrameMock = vi
   .spyOn(window, 'requestAnimationFrame')
   .mockImplementation((callback: FrameRequestCallback) => {
@@ -32,12 +44,23 @@ describe('ShellWebSearchForm', () => {
   let root: Root;
 
   beforeEach(() => {
+    vi.stubGlobal('fetch', fetchMock);
+    clearShellWebSearchSuggestionOverlaySetCardsCache();
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
     routerBack.mockReset();
     routerReplace.mockReset();
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
@@ -56,6 +79,10 @@ describe('ShellWebSearchForm', () => {
 
   afterEach(() => {
     requestAnimationFrameMock.mockClear();
+  });
+
+  afterAll(() => {
+    vi.unstubAllGlobals();
   });
 
   it('opens a full-screen mobile overlay with recent searches and live suggestions', () => {
@@ -125,6 +152,162 @@ describe('ShellWebSearchForm', () => {
     expect(container.querySelector('[role="dialog"]')).toBeNull();
     expect(document.body.style.overflow).toBe('');
     expect(document.activeElement).toBe(openButton);
+  });
+
+  it('shows overlay-backed sets in live shell suggestions', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify([
+          {
+            availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
+            collectorAngle:
+              'Nieuw in Brickhunt. Mario Kart - Mario & Standard Kart staat klaar voor de eerste prijscheck.',
+            id: '72037',
+            imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+            name: 'Mario Kart - Mario & Standard Kart',
+            pieces: 1972,
+            releaseYear: 2025,
+            slug: 'mario-kart-mario-standard-kart-72037',
+            tagline:
+              'We bouwen nu de eerste prijsvergelijking op voor deze Super Mario-set.',
+            theme: 'Super Mario',
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm autoFocus inputId="site-search-inline-overlay" />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = container.querySelector(
+      '#site-search-inline-overlay',
+    ) as HTMLInputElement | null;
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(searchInput, '72037');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    expect(container.textContent).toContain(
+      'Mario Kart - Mario & Standard Kart',
+    );
+    expect(
+      container.querySelector(
+        'a[href="/sets/mario-kart-mario-standard-kart-72037"]',
+      ),
+    ).not.toBeNull();
+  });
+
+  it('keeps snapshot-backed suggestions available while deduping overlay duplicates', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify([
+          {
+            availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
+            collectorAngle:
+              'Nieuw in Brickhunt. Mario Kart - Mario & Standard Kart staat klaar voor de eerste prijscheck.',
+            id: '72037',
+            imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+            name: 'Mario Kart - Mario & Standard Kart',
+            pieces: 1972,
+            releaseYear: 2025,
+            slug: 'mario-kart-mario-standard-kart-72037',
+            tagline:
+              'We bouwen nu de eerste prijsvergelijking op voor deze Super Mario-set.',
+            theme: 'Super Mario',
+          },
+          {
+            availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
+            collectorAngle:
+              'Nieuw in Brickhunt. Mario Kart - Mario & Standard Kart staat klaar voor de eerste prijscheck.',
+            id: '72037',
+            imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+            name: 'Mario Kart - Mario & Standard Kart',
+            pieces: 1972,
+            releaseYear: 2025,
+            slug: 'mario-kart-mario-standard-kart-72037',
+            tagline:
+              'We bouwen nu de eerste prijsvergelijking op voor deze Super Mario-set.',
+            theme: 'Super Mario',
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm autoFocus inputId="site-search-inline-snapshot" />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = container.querySelector(
+      '#site-search-inline-snapshot',
+    ) as HTMLInputElement | null;
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(searchInput, '10316');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    expect(container.textContent).toContain('Rivendell');
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(searchInput, '72037');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    expect(
+      container.querySelectorAll(
+        'a[href="/sets/mario-kart-mario-standard-kart-72037"]',
+      ),
+    ).toHaveLength(1);
   });
 
   it('can autofocus the inline search field for a direct search page entry', () => {
