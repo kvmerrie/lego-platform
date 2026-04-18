@@ -1,6 +1,12 @@
 import { getCanonicalCatalogSetId } from '@lego-platform/catalog/util';
 
-export const curatedCatalogSyncSetNumbers = [
+// Transitional local scope only:
+// this file no longer defines canonical catalog set identity.
+// It only decides which canonical sets are still emitted into the generated
+// snapshot during the migration period, plus which ids stay featured on the
+// homepage manifest.
+
+export const catalogSnapshotScopeSetNumbers = [
   '10316-1',
   '21348-1',
   '76269-1',
@@ -63,12 +69,19 @@ export const curatedCatalogSyncSetNumbers = [
   '10342-1',
 ] as const;
 
-export const curatedHomepageFeaturedSetNumbers = [
+export const homepageFeaturedSnapshotSetNumbers = [
   '10316-1',
   '10333-1',
   '21333-1',
 ] as const;
 
-export function getCuratedHomepageFeaturedSetIds(): string[] {
-  return curatedHomepageFeaturedSetNumbers.map(getCanonicalCatalogSetId);
+export function getHomepageFeaturedSnapshotSetIds(): string[] {
+  return homepageFeaturedSnapshotSetNumbers.map(getCanonicalCatalogSetId);
 }
+
+// Backward-compatible aliases for existing callers during the migration.
+export const curatedCatalogSyncSetNumbers = catalogSnapshotScopeSetNumbers;
+export const curatedHomepageFeaturedSetNumbers =
+  homepageFeaturedSnapshotSetNumbers;
+export const getCuratedHomepageFeaturedSetIds =
+  getHomepageFeaturedSnapshotSetIds;

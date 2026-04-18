@@ -23,6 +23,12 @@ import { catalogSetOverlays, catalogThemeOverlays } from './catalog-overlays';
 import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
+// Transitional snapshot-first read model.
+// This module still powers older static-friendly catalog reads, but catalog
+// identity is no longer authored here. Treat it as generated/fallback glue plus
+// presentation composition until the remaining consumers move onto canonical
+// Supabase-first adapters.
+
 const HOMEPAGE_SET_LIMIT = 3;
 const HOMEPAGE_THEME_SPOTLIGHT_LIMIT = 4;
 const DISCOVER_HIGHLIGHT_LIMIT = 6;

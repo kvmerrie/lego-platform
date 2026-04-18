@@ -3,6 +3,16 @@ import {
   CatalogThemeOverlay,
 } from '@lego-platform/catalog/util';
 
+// Transitional presentation overrides only.
+// This file no longer acts as the authoritative source for catalog identity,
+// slugs, names, or theme assignment. Those move through the canonical
+// Supabase-first catalog model.
+//
+// What still belongs here for now:
+// - product-facing display overrides that have not been migrated yet
+// - richer gallery/media choices for snapshot-backed set detail pages
+// - theme presentation hints that older snapshot-first read models still use
+
 export const catalogSetOverlays: readonly CatalogSetOverlay[] = [
   {
     canonicalId: '10316',

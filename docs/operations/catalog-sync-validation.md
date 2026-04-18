@@ -1,6 +1,6 @@
 # Catalog Sync Validation Plan
 
-This checklist is for the current Rebrickable-backed sync run using the curated product-ready catalog scope. It assumes the current sync runtime, generated artifacts, overlays, and tests are already in place.
+This checklist is for the current Supabase-first catalog sync run using the still-curated generated snapshot scope. It assumes the current sync runtime, generated artifacts, transitional overlays, and tests are already in place.
 
 The current curated public catalog scope is `60` sets.
 
@@ -8,7 +8,7 @@ The current curated public catalog scope is `60` sets.
 
 1. Start from a clean branch and confirm the workspace is not carrying unrelated catalog changes.
 2. Install dependencies with `pnpm install` if the workspace is not already current.
-3. Export `REBRICKABLE_API_KEY` in your shell.
+3. Export `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in your shell.
 4. Run `pnpm sync:catalog:check` first.
 5. If check mode reports drift, review the expected catalog changes before writing anything.
 6. Run `pnpm sync:catalog` only after the drift looks intentional.
@@ -23,19 +23,22 @@ The current curated public catalog scope is `60` sets.
 
 Required env vars:
 
-- `REBRICKABLE_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 Optional env vars:
 
 - `REBRICKABLE_BASE_URL`
   Use only for local proxying or mock-server testing.
+- `REBRICKABLE_API_KEY`
+  Only needed for separate enrichment flows, not for the snapshot generator itself.
 
 Safe setup guidance:
 
 - Run sync from the workspace root so the artifact writer resolves the correct paths.
 - Prefer `pnpm sync:catalog:check` before `pnpm sync:catalog`.
 - Do not run the first real sync in the middle of unrelated repo changes.
-- If you are intentionally expanding the curated sync scope, add the new set numbers and their local overlay entries in the same branch before running the sync.
+- If you are intentionally expanding the generated snapshot scope, first ensure the set exists in the canonical Supabase catalog source before changing the local scope file.
 
 ## 3. Files To Review After The Run
 
@@ -44,14 +47,14 @@ Primary generated outputs:
 - `libs/catalog/data-access/src/lib/catalog-snapshot.generated.ts`
 - `libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts`
 
-Reference local inputs that should usually remain unchanged:
+Reference local transition files that should usually remain unchanged:
 
 - `libs/catalog/data-access/src/lib/catalog-overlays.ts`
 - `libs/catalog/data-access-sync/src/lib/catalog-sync-curation.ts`
 
 What a healthy diff looks like:
 
-- generated snapshot values update to match Rebrickable source fields
+- generated snapshot values update to match the canonical Supabase catalog source
 - manifest metadata such as `generatedAt` updates
 - no unexpected structural changes to the generated module format
 - overlays remain unchanged unless the team is intentionally adjusting local collector-facing copy
@@ -262,12 +265,11 @@ If Rebrickable returns a different source variant or an unexpected identifier sh
 
 ### Overlay Merge Behavior
 
-The generated snapshot should only carry source-oriented fields. Product-facing normalization and collector-facing copy still come from overlays.
+The generated snapshot should only carry source-oriented fields. Older product-facing normalization and collector-facing copy may still come from overlays during migration, but overlays are no longer the authoritative source for synced set identity.
 
 Validate this by confirming:
 
 - generated artifacts do not contain `priceRange`, `collectorAngle`, `tagline`, `availability`, or `collectorHighlights`
-- every synced `canonicalId` has a matching overlay entry
 - any product slug overrides remain unique after the overlay merge
 - `pnpm nx run catalog-data-access:test` still passes
 - `pnpm nx run web:build` still produces the current set-detail routes
@@ -296,43 +298,28 @@ Review the diff for these questions:
 
 - Did only the two generated artifact files change?
 - Are changes limited to source-backed fields and timestamps?
-- If new set records were added, are they accompanied by matching overlay entries and reviewable product copy?
+- If new set records were added, are they present in the canonical catalog source and intentionally part of the local snapshot scope?
 - Did the generated module comment and formatting remain stable?
-- Did any local overlay or curation file change unexpectedly?
+- Did any local transition file change unexpectedly?
 
 If the answer to any of those is no, pause and inspect before committing.
 
 ## 5. Failure Cases And What They Mean
 
-`REBRICKABLE_API_KEY is required`
+`SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required`
 
 - Local setup issue.
-- Export the key and rerun.
+- Export the required secrets and rerun.
 
 `Generated catalog artifacts are stale`
 
 - Check mode found a meaningful diff between committed artifacts and the freshly built sync output.
 - Review the diff before deciding whether to write and commit it.
 
-`Invalid Rebrickable set payload...`
-
-- Upstream payload is missing a field or has a shape the validator does not accept.
-- Stop and inspect the source response before changing validation rules.
-
-`Invalid Rebrickable theme payload...`
-
-- Theme lookup did not match the expected theme id or name shape.
-- Stop and inspect the theme response before continuing.
-
 `duplicate canonicalId`, `duplicate sourceSetNumber`, or `duplicate slug`
 
 - The current normalization assumptions no longer safely represent the curated set scope.
 - Do not accept the generated artifacts until the mapping rules are reviewed.
-
-`Missing product overlay for synced catalog set ...`
-
-- A newly curated set was added to sync scope without its required local product-facing overlay.
-- Add the overlay before accepting the artifacts.
 
 `duplicate product slug`
 
@@ -350,8 +337,8 @@ If the generated artifacts are not acceptable:
 
 1. Do not commit the generated diff.
 2. Restore the generated artifact files to the last known-good committed state.
-3. Keep local overlay files unchanged unless the team explicitly intends to update them.
-4. If the problem came from a newly added curated set, remove it from the curation list or finish its overlay review before retrying.
+3. Keep local transition files unchanged unless the team explicitly intends to update them.
+4. If the problem came from a newly scoped set, remove it from the snapshot-scope list or finish the canonical catalog setup before retrying.
 5. Record which source field or validation assumption failed.
 6. Re-run `pnpm sync:catalog:check` only after the issue is understood.
 

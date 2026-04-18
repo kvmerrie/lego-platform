@@ -1,8 +1,9 @@
 import {
-  curatedCatalogSyncSetNumbers,
+  catalogSnapshotScopeSetNumbers,
   runLocalCatalogSyncCheck,
   runCatalogSync,
 } from '@lego-platform/catalog/data-access-sync';
+import { hasServerSupabaseConfig } from '@lego-platform/shared/config';
 
 function getSyncMode(
   argv: readonly string[],
@@ -32,9 +33,10 @@ async function main() {
   const mode = getSyncMode(process.argv.slice(2));
   const startedAt = Date.now();
   const workspaceRoot = process.cwd();
+  const scopedSetCount = catalogSnapshotScopeSetNumbers.length;
 
   console.log(
-    `[catalog-sync] start mode=${mode} curated_set_numbers=${curatedCatalogSyncSetNumbers.length}`,
+    `[catalog-sync] start mode=${mode} scoped_set_numbers=${scopedSetCount}`,
   );
 
   if (mode === 'local-check') {
@@ -51,22 +53,18 @@ async function main() {
     }
 
     console.log(
-      `[catalog-sync] end mode=${mode} status=clean curated_set_numbers=${curatedCatalogSyncSetNumbers.length} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+      `[catalog-sync] end mode=${mode} status=clean scoped_set_numbers=${scopedSetCount} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
     );
     return;
   }
 
-  const apiKey = process.env['REBRICKABLE_API_KEY'];
-
-  if (!apiKey) {
+  if (!hasServerSupabaseConfig()) {
     throw new Error(
-      'REBRICKABLE_API_KEY is required to run the live catalog sync.',
+      'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to run the live catalog sync.',
     );
   }
 
   const artifacts = await runCatalogSync({
-    apiKey,
-    baseUrl: process.env['REBRICKABLE_BASE_URL'],
     mode,
     workspaceRoot,
   });
@@ -81,13 +79,13 @@ async function main() {
     }
 
     console.log(
-      `[catalog-sync] end mode=${mode} status=clean curated_set_numbers=${curatedCatalogSyncSetNumbers.length} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+      `[catalog-sync] end mode=${mode} status=clean scoped_set_numbers=${scopedSetCount} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
     );
     return;
   }
 
   console.log(
-    `[catalog-sync] end mode=write status=${artifacts.artifactCheck.isClean ? 'verified' : 'updated'} curated_set_numbers=${curatedCatalogSyncSetNumbers.length} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+    `[catalog-sync] end mode=write status=${artifacts.artifactCheck.isClean ? 'verified' : 'updated'} scoped_set_numbers=${scopedSetCount} snapshot_records=${artifacts.catalogSnapshot.setRecords.length} homepage_featured=${artifacts.catalogSyncManifest.homepageFeaturedSetIds.length} stale_paths=${artifacts.artifactCheck.stalePaths.length} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
@@ -95,7 +93,7 @@ main().catch((error) => {
   const mode = getSyncMode(process.argv.slice(2));
 
   console.error(
-    `[catalog-sync] failed mode=${mode} curated_set_numbers=${curatedCatalogSyncSetNumbers.length}`,
+    `[catalog-sync] failed mode=${mode} scoped_set_numbers=${catalogSnapshotScopeSetNumbers.length}`,
   );
   if (error instanceof Error) {
     console.error(`[catalog-sync] error=${error.message}`);

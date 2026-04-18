@@ -1,22 +1,28 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  type CatalogCanonicalSet,
   type CatalogSetOverlay,
   type CatalogSetRecord,
   type CatalogSnapshot,
   type CatalogSyncManifest,
   createCatalogSetRecord,
-  getCatalogProductSlug,
   getCanonicalCatalogSetId,
+  getCatalogProductSlug,
+  mergeCanonicalCatalogSets,
   resolveCatalogThemeIdentity,
+  resolveCatalogThemeIdentityFromPersistence,
+  sortCanonicalCatalogSets,
 } from '@lego-platform/catalog/util';
-import { catalogSetOverlays } from '@lego-platform/catalog/data-access';
 import {
-  curatedCatalogSyncSetNumbers,
-  getCuratedHomepageFeaturedSetIds,
+  catalogSetOverlays,
+  catalogSnapshot,
+} from '@lego-platform/catalog/data-access';
+import { hasServerSupabaseConfig } from '@lego-platform/shared/config';
+import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
+import {
+  catalogSnapshotScopeSetNumbers,
+  getHomepageFeaturedSnapshotSetIds,
 } from './catalog-sync-curation';
-import {
-  createRebrickableClient,
-  type RebrickableClient,
-} from './rebrickable-client';
 import {
   checkCatalogGeneratedArtifacts,
   type CatalogGeneratedArtifactCheckResult,
@@ -24,19 +30,49 @@ import {
   writeCatalogGeneratedArtifacts,
 } from './catalog-artifact-writer';
 
-interface ValidatedRebrickableSet {
-  imageUrl?: string;
+const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
+const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
+const CATALOG_THEMES_TABLE = 'catalog_themes';
+const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
+
+const CATALOG_SYNC_SOURCE = 'supabase-canonical-catalog';
+const CATALOG_SYNC_NOTES =
+  'Generated from the Supabase-first canonical catalog source. Snapshot records remain a transitional fallback and homepage featured ids stay locally curated.';
+
+type CatalogSyncSupabaseClient = Pick<SupabaseClient, 'from'>;
+
+interface CatalogOverlaySetRow {
+  created_at: string;
+  image_url: string | null;
   name: string;
-  numParts: number;
-  setNumber: string;
-  themeId: number;
-  year: number;
+  piece_count: number;
+  primary_theme_id: string | null;
+  release_year: number;
+  set_id: string;
+  slug: string;
+  source: string;
+  source_theme_id: string | null;
+  source_set_number: string;
+  status: string;
+  theme: string;
+  updated_at: string;
 }
 
-interface ValidatedRebrickableTheme {
-  id: number;
-  name: string;
-  parentId?: number;
+interface CatalogSourceThemeRow {
+  id: string;
+  source_theme_name: string;
+}
+
+interface CatalogThemeMappingRow {
+  primary_theme_id: string;
+  source_theme_id: string;
+}
+
+interface CatalogThemeRow {
+  display_name: string;
+  id: string;
+  slug: string;
+  status: 'active' | 'inactive';
 }
 
 export interface CatalogSyncArtifacts {
@@ -50,16 +86,13 @@ export interface CatalogSyncRunResult extends CatalogSyncArtifacts {
 }
 
 export interface BuildCatalogSyncArtifactsOptions {
-  curatedSetNumbers?: readonly string[];
+  scopedSetNumbers?: readonly string[];
+  listCanonicalCatalogSetsFn?: typeof listCatalogSyncCanonicalCatalogSets;
   now?: Date;
-  rebrickableClient: RebrickableClient;
 }
 
 export interface RunCatalogSyncOptions {
-  apiKey: string;
-  baseUrl?: string;
-  fetchImpl?: typeof fetch;
-  minimumRequestSpacingMs?: number;
+  listCanonicalCatalogSetsFn?: typeof listCatalogSyncCanonicalCatalogSets;
   mode?: 'check' | 'write';
   now?: Date;
   workspaceRoot: string;
@@ -68,6 +101,108 @@ export interface RunCatalogSyncOptions {
 export interface LocalCatalogSyncCheckResult extends CatalogSyncArtifacts {
   artifactCheck: CatalogGeneratedArtifactCheckResult;
   mode: 'local-check';
+}
+
+const snapshotCanonicalCatalogSets = catalogSnapshot.setRecords.map(
+  toCanonicalCatalogSetFromSnapshotRecord,
+);
+
+const snapshotCatalogRecordById = new Map(
+  catalogSnapshot.setRecords.map((catalogSetRecord) => [
+    catalogSetRecord.canonicalId,
+    catalogSetRecord,
+  ]),
+);
+
+function toCanonicalCatalogSetFromSnapshotRecord(
+  catalogSetRecord: CatalogSetRecord,
+): CatalogCanonicalSet {
+  const themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: catalogSetRecord.theme,
+  });
+
+  return {
+    createdAt: catalogSnapshot.generatedAt,
+    imageUrl: catalogSetRecord.imageUrl,
+    name: catalogSetRecord.name,
+    pieceCount: catalogSetRecord.pieces,
+    primaryTheme: themeIdentity.primaryTheme,
+    releaseYear: catalogSetRecord.releaseYear,
+    secondaryLabels: themeIdentity.secondaryThemes,
+    setId: catalogSetRecord.canonicalId,
+    slug: catalogSetRecord.slug,
+    source: 'snapshot',
+    sourceSetNumber: catalogSetRecord.sourceSetNumber,
+    status: 'active',
+    updatedAt: catalogSnapshot.generatedAt,
+  };
+}
+
+function toCanonicalCatalogSetFromOverlayRow({
+  row,
+  themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: row.theme,
+  }),
+}: {
+  row: CatalogOverlaySetRow;
+  themeIdentity?: ReturnType<typeof resolveCatalogThemeIdentity>;
+}): CatalogCanonicalSet {
+  return {
+    createdAt: row.created_at,
+    imageUrl: row.image_url ?? undefined,
+    name: row.name,
+    pieceCount: row.piece_count,
+    primaryTheme: themeIdentity.primaryTheme,
+    releaseYear: row.release_year,
+    secondaryLabels: themeIdentity.secondaryThemes,
+    setId: row.set_id,
+    slug: row.slug,
+    source: 'rebrickable',
+    sourceSetNumber: row.source_set_number,
+    status: row.status === 'inactive' ? 'inactive' : 'active',
+    updatedAt: row.updated_at,
+  };
+}
+
+function toCatalogSetRecordFromCanonicalCatalogSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogSetRecord {
+  const snapshotCatalogSetRecord = snapshotCatalogRecordById.get(
+    canonicalCatalogSet.setId,
+  );
+
+  if (snapshotCatalogSetRecord) {
+    return {
+      ...snapshotCatalogSetRecord,
+      sourceSetNumber:
+        canonicalCatalogSet.sourceSetNumber ??
+        snapshotCatalogSetRecord.sourceSetNumber,
+      name: canonicalCatalogSet.name,
+      theme: canonicalCatalogSet.primaryTheme,
+      releaseYear: canonicalCatalogSet.releaseYear,
+      pieces: canonicalCatalogSet.pieceCount,
+      ...(canonicalCatalogSet.imageUrl
+        ? {
+            imageUrl: canonicalCatalogSet.imageUrl,
+          }
+        : {}),
+    };
+  }
+
+  if (!canonicalCatalogSet.sourceSetNumber) {
+    throw new Error(
+      `Catalog sync source is missing sourceSetNumber for ${canonicalCatalogSet.setId}.`,
+    );
+  }
+
+  return createCatalogSetRecord({
+    sourceSetNumber: canonicalCatalogSet.sourceSetNumber,
+    name: canonicalCatalogSet.name,
+    theme: canonicalCatalogSet.primaryTheme,
+    releaseYear: canonicalCatalogSet.releaseYear,
+    pieces: canonicalCatalogSet.pieceCount,
+    imageUrl: canonicalCatalogSet.imageUrl,
+  });
 }
 
 function haveCatalogArtifactsChanged({
@@ -169,225 +304,234 @@ async function stabilizeCatalogGeneratedAt({
   });
 }
 
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-function isInteger(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value);
-}
-
-function validateRebrickableSetPayload(
-  payload: unknown,
-  expectedSetNumber: string,
-): ValidatedRebrickableSet {
-  if (!isObjectRecord(payload)) {
-    throw new Error(
-      `Invalid Rebrickable set payload for ${expectedSetNumber}: expected an object.`,
-    );
-  }
-
-  const {
-    name,
-    num_parts: numParts,
-    set_img_url: setImgUrl,
-    set_num: setNumber,
-    theme_id: themeId,
-    year,
-  } = payload;
-
-  if (typeof setNumber !== 'string' || setNumber.trim() !== expectedSetNumber) {
-    throw new Error(
-      `Invalid Rebrickable set payload for ${expectedSetNumber}: set_num is missing or mismatched.`,
-    );
-  }
-
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new Error(
-      `Invalid Rebrickable set payload for ${expectedSetNumber}: name is required.`,
-    );
-  }
-
-  if (!isInteger(year) || year < 1940) {
-    throw new Error(
-      `Invalid Rebrickable set payload for ${expectedSetNumber}: year must be a valid integer.`,
-    );
-  }
-
-  if (!isInteger(numParts) || numParts <= 0) {
-    throw new Error(
-      `Invalid Rebrickable set payload for ${expectedSetNumber}: num_parts must be a positive integer.`,
-    );
-  }
-
-  if (!isInteger(themeId) || themeId <= 0) {
-    throw new Error(
-      `Invalid Rebrickable set payload for ${expectedSetNumber}: theme_id must be a positive integer.`,
-    );
-  }
-
-  if (
-    setImgUrl !== undefined &&
-    setImgUrl !== null &&
-    typeof setImgUrl !== 'string'
-  ) {
-    throw new Error(
-      `Invalid Rebrickable set payload for ${expectedSetNumber}: set_img_url must be a string when present.`,
-    );
-  }
-
-  return {
-    setNumber,
-    name: name.trim(),
-    year,
-    numParts,
-    themeId,
-    imageUrl:
-      typeof setImgUrl === 'string' && setImgUrl.trim()
-        ? setImgUrl.trim()
-        : undefined,
-  };
-}
-
-function validateRebrickableThemePayload(
-  payload: unknown,
-  expectedThemeId: number,
-): ValidatedRebrickableTheme {
-  if (!isObjectRecord(payload)) {
-    throw new Error(
-      `Invalid Rebrickable theme payload for ${expectedThemeId}: expected an object.`,
-    );
-  }
-
-  const { id, name, parent_id: parentId } = payload;
-
-  if (!isInteger(id) || id !== expectedThemeId) {
-    throw new Error(
-      `Invalid Rebrickable theme payload for ${expectedThemeId}: id is missing or mismatched.`,
-    );
-  }
-
-  if (typeof name !== 'string' || !name.trim()) {
-    throw new Error(
-      `Invalid Rebrickable theme payload for ${expectedThemeId}: name is required.`,
-    );
-  }
-
-  if (
-    parentId !== undefined &&
-    parentId !== null &&
-    (!isInteger(parentId) || parentId <= 0)
-  ) {
-    throw new Error(
-      `Invalid Rebrickable theme payload for ${expectedThemeId}: parent_id must be a positive integer when present.`,
-    );
-  }
-
-  return {
-    id,
-    name: name.trim(),
-    ...(isInteger(parentId)
-      ? {
-          parentId,
-        }
-      : {}),
-  };
-}
-
-async function getValidatedRebrickableTheme({
-  rebrickableClient,
-  themeCache,
-  themeId,
+async function listCatalogSyncOverlayRows({
+  includeInactive = false,
+  supabaseClient,
 }: {
-  rebrickableClient: RebrickableClient;
-  themeCache: Map<number, ValidatedRebrickableTheme>;
-  themeId: number;
-}): Promise<ValidatedRebrickableTheme> {
-  const cachedTheme = themeCache.get(themeId);
+  includeInactive?: boolean;
+  supabaseClient: CatalogSyncSupabaseClient;
+}): Promise<CatalogOverlaySetRow[]> {
+  let query = supabaseClient
+    .from(CATALOG_SETS_OVERLAY_TABLE)
+    .select(
+      'set_id, slug, name, theme, piece_count, release_year, image_url, source, source_set_number, source_theme_id, primary_theme_id, status, created_at, updated_at',
+    )
+    .order('created_at', { ascending: true });
 
-  if (cachedTheme) {
-    return cachedTheme;
+  if (!includeInactive) {
+    query = query.eq('status', 'active');
   }
 
-  const validatedTheme = validateRebrickableThemePayload(
-    await rebrickableClient.getTheme(themeId),
-    themeId,
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error('Unable to load the catalog sync source from Supabase.');
+  }
+
+  return (data as CatalogOverlaySetRow[] | null) ?? [];
+}
+
+async function listCatalogThemeIdentityBySetId({
+  overlayRows,
+  supabaseClient,
+}: {
+  overlayRows: readonly CatalogOverlaySetRow[];
+  supabaseClient: CatalogSyncSupabaseClient;
+}): Promise<Map<string, ReturnType<typeof resolveCatalogThemeIdentity>>> {
+  const fallbackThemeIdentityBySetId = new Map(
+    overlayRows.map((overlayRow) => [
+      overlayRow.set_id,
+      resolveCatalogThemeIdentity({
+        rawTheme: overlayRow.theme,
+      }),
+    ]),
+  );
+  const sourceThemeIds = [
+    ...new Set(
+      overlayRows
+        .map((overlayRow) => overlayRow.source_theme_id)
+        .filter((sourceThemeId): sourceThemeId is string =>
+          Boolean(sourceThemeId),
+        ),
+    ),
+  ];
+  const primaryThemeIds = [
+    ...new Set(
+      overlayRows
+        .map((overlayRow) => overlayRow.primary_theme_id)
+        .filter((primaryThemeId): primaryThemeId is string =>
+          Boolean(primaryThemeId),
+        ),
+    ),
+  ];
+
+  if (!sourceThemeIds.length && !primaryThemeIds.length) {
+    return fallbackThemeIdentityBySetId;
+  }
+
+  try {
+    const [sourceThemeResponse, themeMappingResponse] = await Promise.all([
+      sourceThemeIds.length
+        ? supabaseClient
+            .from(CATALOG_SOURCE_THEMES_TABLE)
+            .select('id, source_theme_name')
+            .in('id', sourceThemeIds)
+        : Promise.resolve({ data: [], error: null }),
+      sourceThemeIds.length
+        ? supabaseClient
+            .from(CATALOG_THEME_MAPPINGS_TABLE)
+            .select('source_theme_id, primary_theme_id')
+            .in('source_theme_id', sourceThemeIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (sourceThemeResponse.error || themeMappingResponse.error) {
+      return fallbackThemeIdentityBySetId;
+    }
+
+    const sourceThemes =
+      (sourceThemeResponse.data as CatalogSourceThemeRow[] | null) ?? [];
+    const themeMappings =
+      (themeMappingResponse.data as CatalogThemeMappingRow[] | null) ?? [];
+    const primaryThemeIdsToLoad = [
+      ...new Set([
+        ...primaryThemeIds,
+        ...themeMappings.map((themeMapping) => themeMapping.primary_theme_id),
+      ]),
+    ];
+    const primaryThemeResponse = primaryThemeIdsToLoad.length
+      ? await supabaseClient
+          .from(CATALOG_THEMES_TABLE)
+          .select('id, slug, display_name, status')
+          .in('id', primaryThemeIdsToLoad)
+      : { data: [], error: null };
+
+    if (primaryThemeResponse.error) {
+      return fallbackThemeIdentityBySetId;
+    }
+
+    const sourceThemeById = new Map(
+      sourceThemes.map((sourceTheme) => [sourceTheme.id, sourceTheme]),
+    );
+    const primaryThemeById = new Map(
+      ((primaryThemeResponse.data as CatalogThemeRow[] | null) ?? []).map(
+        (catalogTheme) => [catalogTheme.id, catalogTheme],
+      ),
+    );
+    const primaryThemeIdBySourceThemeId = new Map(
+      themeMappings.map((themeMapping) => [
+        themeMapping.source_theme_id,
+        themeMapping.primary_theme_id,
+      ]),
+    );
+
+    return new Map(
+      overlayRows.map((overlayRow) => {
+        const sourceThemeName = overlayRow.source_theme_id
+          ? sourceThemeById.get(overlayRow.source_theme_id)?.source_theme_name
+          : undefined;
+        const primaryThemeId =
+          overlayRow.primary_theme_id ??
+          (overlayRow.source_theme_id
+            ? primaryThemeIdBySourceThemeId.get(overlayRow.source_theme_id)
+            : undefined);
+        const primaryThemeName = primaryThemeId
+          ? primaryThemeById.get(primaryThemeId)?.display_name
+          : undefined;
+
+        return [
+          overlayRow.set_id,
+          resolveCatalogThemeIdentityFromPersistence({
+            legacyTheme: overlayRow.theme,
+            primaryThemeName,
+            sourceThemeName,
+          }),
+        ] as const;
+      }),
+    );
+  } catch {
+    return fallbackThemeIdentityBySetId;
+  }
+}
+
+async function listCatalogSyncCanonicalCatalogSets({
+  includeInactive = false,
+  supabaseClient,
+}: {
+  includeInactive?: boolean;
+  supabaseClient?: CatalogSyncSupabaseClient;
+} = {}): Promise<CatalogCanonicalSet[]> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return snapshotCanonicalCatalogSets;
+  }
+
+  try {
+    const activeSupabaseClient =
+      supabaseClient ?? getServerSupabaseAdminClient();
+    const overlayRows = await listCatalogSyncOverlayRows({
+      includeInactive,
+      supabaseClient: activeSupabaseClient,
+    });
+    const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+      overlayRows,
+      supabaseClient: activeSupabaseClient,
+    });
+    const canonicalOverlaySets = overlayRows.map((overlayRow) =>
+      toCanonicalCatalogSetFromOverlayRow({
+        row: overlayRow,
+        themeIdentity: themeIdentityBySetId.get(overlayRow.set_id),
+      }),
+    );
+
+    return sortCanonicalCatalogSets(
+      mergeCanonicalCatalogSets({
+        fallbackSets: snapshotCanonicalCatalogSets,
+        preferredSets: canonicalOverlaySets,
+      }),
+    );
+  } catch (error) {
+    if (!supabaseClient) {
+      return snapshotCanonicalCatalogSets;
+    }
+
+    throw error;
+  }
+}
+
+async function resolveCatalogSyncScopedCanonicalSets({
+  scopedSetNumbers = catalogSnapshotScopeSetNumbers,
+  listCanonicalCatalogSetsFn = listCatalogSyncCanonicalCatalogSets,
+}: {
+  scopedSetNumbers?: readonly string[];
+  listCanonicalCatalogSetsFn?: typeof listCatalogSyncCanonicalCatalogSets;
+}): Promise<CatalogCanonicalSet[]> {
+  const canonicalCatalogSets = await listCanonicalCatalogSetsFn();
+  const canonicalCatalogSetBySourceSetNumber = new Map(
+    canonicalCatalogSets
+      .filter(
+        (
+          canonicalCatalogSet,
+        ): canonicalCatalogSet is CatalogCanonicalSet & {
+          sourceSetNumber: string;
+        } => Boolean(canonicalCatalogSet.sourceSetNumber),
+      )
+      .map((canonicalCatalogSet) => [
+        canonicalCatalogSet.sourceSetNumber,
+        canonicalCatalogSet,
+      ]),
   );
 
-  themeCache.set(validatedTheme.id, validatedTheme);
+  return scopedSetNumbers.map((scopedSetNumber) => {
+    const canonicalCatalogSet =
+      canonicalCatalogSetBySourceSetNumber.get(scopedSetNumber);
 
-  return validatedTheme;
-}
+    if (!canonicalCatalogSet) {
+      throw new Error(
+        `Catalog sync source is missing scoped set ${scopedSetNumber}.`,
+      );
+    }
 
-async function resolveRebrickablePrimaryThemeName({
-  rebrickableClient,
-  resolvedThemeNameById,
-  themeCache,
-  themeId,
-  visitedThemeIds = new Set<number>(),
-}: {
-  rebrickableClient: RebrickableClient;
-  resolvedThemeNameById: Map<number, string>;
-  themeCache: Map<number, ValidatedRebrickableTheme>;
-  themeId: number;
-  visitedThemeIds?: Set<number>;
-}): Promise<string> {
-  const cachedThemeName = resolvedThemeNameById.get(themeId);
-
-  if (cachedThemeName) {
-    return cachedThemeName;
-  }
-
-  if (visitedThemeIds.has(themeId)) {
-    throw new Error(
-      `Invalid Rebrickable theme hierarchy: recursive parent detected for ${themeId}.`,
-    );
-  }
-
-  visitedThemeIds.add(themeId);
-
-  const validatedTheme = await getValidatedRebrickableTheme({
-    rebrickableClient,
-    themeCache,
-    themeId,
-  });
-  const parentThemeName = validatedTheme.parentId
-    ? await resolveRebrickablePrimaryThemeName({
-        rebrickableClient,
-        resolvedThemeNameById,
-        themeCache,
-        themeId: validatedTheme.parentId,
-        visitedThemeIds,
-      })
-    : undefined;
-  const resolvedThemeName = resolveCatalogThemeIdentity({
-    rawTheme: validatedTheme.name,
-    ...(parentThemeName
-      ? {
-          parentTheme: parentThemeName,
-        }
-      : {}),
-  }).primaryTheme;
-
-  resolvedThemeNameById.set(themeId, resolvedThemeName);
-
-  return resolvedThemeName;
-}
-
-function mapRebrickableSetToCatalogSetRecord({
-  rebrickableSet,
-  themeName,
-}: {
-  rebrickableSet: ValidatedRebrickableSet;
-  themeName: string;
-}): CatalogSetRecord {
-  return createCatalogSetRecord({
-    sourceSetNumber: rebrickableSet.setNumber,
-    name: rebrickableSet.name,
-    theme: themeName,
-    releaseYear: rebrickableSet.year,
-    pieces: rebrickableSet.numParts,
-    imageUrl: rebrickableSet.imageUrl,
+    return canonicalCatalogSet;
   });
 }
 
@@ -424,12 +568,6 @@ export function validateCatalogSyncArtifacts({
       catalogSetRecord.canonicalId,
     );
 
-    if (!catalogSetOverlay) {
-      throw new Error(
-        `Missing product overlay for synced catalog set ${catalogSetRecord.canonicalId}.`,
-      );
-    }
-
     if (canonicalIds.has(catalogSetRecord.canonicalId)) {
       throw new Error(
         `Catalog sync produced a duplicate canonicalId: ${catalogSetRecord.canonicalId}.`,
@@ -452,10 +590,12 @@ export function validateCatalogSyncArtifacts({
     sourceSetNumbers.add(catalogSetRecord.sourceSetNumber);
     slugs.add(catalogSetRecord.slug);
 
-    const productSlug = getCatalogProductSlug({
-      catalogSetRecord,
-      catalogSetOverlay,
-    });
+    const productSlug = catalogSetOverlay
+      ? getCatalogProductSlug({
+          catalogSetRecord,
+          catalogSetOverlay,
+        })
+      : catalogSetRecord.slug;
 
     if (productSlugs.has(productSlug)) {
       throw new Error(
@@ -478,11 +618,11 @@ export function validateCatalogSyncArtifacts({
 function validateCatalogArtifactsAgainstLocalCuration({
   catalogSnapshot,
   catalogSyncManifest,
-  curatedSetNumbers = curatedCatalogSyncSetNumbers,
+  scopedSetNumbers = catalogSnapshotScopeSetNumbers,
 }: CatalogSyncArtifacts & {
-  curatedSetNumbers?: readonly string[];
+  scopedSetNumbers?: readonly string[];
 }): void {
-  const expectedSourceSetNumbers = [...curatedSetNumbers];
+  const expectedSourceSetNumbers = [...scopedSetNumbers];
   const actualSourceSetNumbers = catalogSnapshot.setRecords.map(
     (catalogSetRecord) => catalogSetRecord.sourceSetNumber,
   );
@@ -495,11 +635,11 @@ function validateCatalogArtifactsAgainstLocalCuration({
     )
   ) {
     throw new Error(
-      'Committed catalog snapshot no longer matches curatedCatalogSyncSetNumbers. Run the live catalog sync to regenerate artifacts before pushing.',
+      'Committed catalog snapshot no longer matches the current catalog sync scope. Run the live catalog sync to regenerate artifacts before pushing.',
     );
   }
 
-  const expectedCanonicalIds = curatedSetNumbers.map(getCanonicalCatalogSetId);
+  const expectedCanonicalIds = scopedSetNumbers.map(getCanonicalCatalogSetId);
   const actualCanonicalIds = catalogSnapshot.setRecords.map(
     (catalogSetRecord) => catalogSetRecord.canonicalId,
   );
@@ -511,11 +651,11 @@ function validateCatalogArtifactsAgainstLocalCuration({
     )
   ) {
     throw new Error(
-      'Committed catalog snapshot canonical ids no longer match the current curated set list. Run the live catalog sync to regenerate artifacts before pushing.',
+      'Committed catalog snapshot canonical ids no longer match the current catalog sync scope. Run the live catalog sync to regenerate artifacts before pushing.',
     );
   }
 
-  const expectedHomepageFeaturedSetIds = getCuratedHomepageFeaturedSetIds();
+  const expectedHomepageFeaturedSetIds = getHomepageFeaturedSnapshotSetIds();
 
   if (
     catalogSyncManifest.homepageFeaturedSetIds.length !==
@@ -530,62 +670,39 @@ function validateCatalogArtifactsAgainstLocalCuration({
     );
   }
 
-  if (catalogSyncManifest.recordCount !== curatedSetNumbers.length) {
+  if (catalogSyncManifest.recordCount !== scopedSetNumbers.length) {
     throw new Error(
-      'Committed catalog manifest recordCount no longer matches the curated sync scope. Run the live catalog sync to regenerate artifacts before pushing.',
+      'Committed catalog manifest recordCount no longer matches the current catalog sync scope. Run the live catalog sync to regenerate artifacts before pushing.',
     );
   }
 }
 
 export async function buildCatalogSyncArtifacts({
-  curatedSetNumbers = curatedCatalogSyncSetNumbers,
+  scopedSetNumbers = catalogSnapshotScopeSetNumbers,
+  listCanonicalCatalogSetsFn = listCatalogSyncCanonicalCatalogSets,
   now = new Date(),
-  rebrickableClient,
 }: BuildCatalogSyncArtifactsOptions): Promise<CatalogSyncArtifacts> {
-  const themeCache = new Map<number, ValidatedRebrickableTheme>();
-  const themeNameById = new Map<number, string>();
-  const setRecords: CatalogSetRecord[] = [];
-
-  for (const curatedSetNumber of curatedSetNumbers) {
-    const validatedSet = validateRebrickableSetPayload(
-      await rebrickableClient.getSet(curatedSetNumber),
-      curatedSetNumber,
-    );
-
-    let themeName = themeNameById.get(validatedSet.themeId);
-
-    if (!themeName) {
-      themeName = await resolveRebrickablePrimaryThemeName({
-        rebrickableClient,
-        resolvedThemeNameById: themeNameById,
-        themeCache,
-        themeId: validatedSet.themeId,
-      });
-    }
-
-    setRecords.push(
-      mapRebrickableSetToCatalogSetRecord({
-        rebrickableSet: validatedSet,
-        themeName,
-      }),
-    );
-  }
-
+  const scopedCanonicalCatalogSets =
+    await resolveCatalogSyncScopedCanonicalSets({
+      scopedSetNumbers,
+      listCanonicalCatalogSetsFn,
+    });
+  const setRecords = scopedCanonicalCatalogSets.map(
+    toCatalogSetRecordFromCanonicalCatalogSet,
+  );
   const generatedAt = now.toISOString();
-
   const artifacts = {
     catalogSnapshot: {
-      source: 'rebrickable-api-v3',
+      source: CATALOG_SYNC_SOURCE,
       generatedAt,
       setRecords,
     },
     catalogSyncManifest: {
-      source: 'rebrickable-api-v3',
+      source: CATALOG_SYNC_SOURCE,
       generatedAt,
       recordCount: setRecords.length,
-      homepageFeaturedSetIds: getCuratedHomepageFeaturedSetIds(),
-      notes:
-        'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
+      homepageFeaturedSetIds: getHomepageFeaturedSnapshotSetIds(),
+      notes: CATALOG_SYNC_NOTES,
     },
   };
 
@@ -626,23 +743,14 @@ export async function runLocalCatalogSyncCheck({
 }
 
 export async function runCatalogSync({
-  apiKey,
-  baseUrl,
-  fetchImpl,
-  minimumRequestSpacingMs,
+  listCanonicalCatalogSetsFn,
   mode = 'write',
   now,
   workspaceRoot,
 }: RunCatalogSyncOptions): Promise<CatalogSyncRunResult> {
-  const rebrickableClient = createRebrickableClient({
-    apiKey,
-    baseUrl,
-    fetchImpl,
-    minimumRequestSpacingMs,
-  });
   const nextArtifacts = await buildCatalogSyncArtifacts({
+    listCanonicalCatalogSetsFn,
     now,
-    rebrickableClient,
   });
   const artifacts = await stabilizeCatalogGeneratedAt({
     ...nextArtifacts,

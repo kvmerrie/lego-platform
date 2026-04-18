@@ -2,7 +2,9 @@ import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { describe, expect, test } from 'vitest';
+import { catalogSnapshot } from '@lego-platform/catalog/data-access';
 import {
+  type CatalogCanonicalSet,
   renderCatalogSnapshotModule,
   renderCatalogSyncManifestModule,
   resolveCatalogThemeIdentity,
@@ -14,11 +16,8 @@ import {
   runCatalogSync,
   validateCatalogSyncArtifacts,
 } from './catalog-data-access-sync';
-import { curatedCatalogSyncSetNumbers } from './catalog-sync-curation';
-import {
-  createRebrickableClient,
-  type RebrickableClient,
-} from './rebrickable-client';
+import { catalogSnapshotScopeSetNumbers } from './catalog-sync-curation';
+import { createRebrickableClient } from './rebrickable-client';
 
 type MockCatalogSet = {
   canonicalId: string;
@@ -691,99 +690,103 @@ function getMockResolvedPrimaryThemeName(themeId: number): string {
   }).primaryTheme;
 }
 
+const mockCanonicalCatalogSets: readonly CatalogCanonicalSet[] =
+  mockCatalogSets.map((mockCatalogSet) => {
+    const parentThemeId = mockCatalogThemeParentIds.get(
+      mockCatalogSet.theme_id,
+    );
+
+    return {
+      createdAt: '2026-03-28T00:00:00.000Z',
+      imageUrl: mockCatalogSet.set_img_url,
+      name: mockCatalogSet.name,
+      pieceCount: mockCatalogSet.num_parts,
+      primaryTheme: getMockResolvedPrimaryThemeName(mockCatalogSet.theme_id),
+      releaseYear: mockCatalogSet.year,
+      secondaryLabels: resolveCatalogThemeIdentity({
+        rawTheme: getMockThemeName(mockCatalogSet.theme_id),
+        ...(parentThemeId
+          ? {
+              parentTheme: getMockThemeName(parentThemeId),
+            }
+          : {}),
+      }).secondaryThemes,
+      setId: mockCatalogSet.canonicalId,
+      slug: mockCatalogSet.slug,
+      source: 'rebrickable',
+      sourceSetNumber: mockCatalogSet.set_num,
+      status: 'active',
+      updatedAt: '2026-03-28T00:00:00.000Z',
+    };
+  });
+
+function requireCurrentSnapshotRecord(setId: string) {
+  const snapshotRecord = currentSnapshotRecordById.get(setId);
+
+  if (!snapshotRecord) {
+    throw new Error(`Expected a committed snapshot record for ${setId}.`);
+  }
+
+  return snapshotRecord;
+}
+
+function requireMockCanonicalCatalogSet(setId: string) {
+  const canonicalCatalogSet = mockCanonicalCatalogSets.find(
+    (candidateCatalogSet) => candidateCatalogSet.setId === setId,
+  );
+
+  if (!canonicalCatalogSet) {
+    throw new Error(`Expected mock canonical catalog set ${setId}.`);
+  }
+
+  return canonicalCatalogSet;
+}
+
+const currentSnapshotRecordById = new Map(
+  catalogSnapshot.setRecords.map((catalogSetRecord) => [
+    catalogSetRecord.canonicalId,
+    catalogSetRecord,
+  ]),
+);
+
 const expectedCatalogSnapshot = {
-  source: 'rebrickable-api-v3',
+  source: 'supabase-canonical-catalog',
   generatedAt: '2026-03-28T00:00:00.000Z',
-  setRecords: mockCatalogSets.map((mockCatalogSet) => ({
-    canonicalId: mockCatalogSet.canonicalId,
-    sourceSetNumber: mockCatalogSet.set_num,
-    slug: mockCatalogSet.slug,
-    name: mockCatalogSet.name,
-    theme: getMockResolvedPrimaryThemeName(mockCatalogSet.theme_id),
-    releaseYear: mockCatalogSet.year,
-    pieces: mockCatalogSet.num_parts,
-    imageUrl: mockCatalogSet.set_img_url,
-  })),
+  setRecords: mockCanonicalCatalogSets.map((canonicalCatalogSet) => {
+    const snapshotCatalogSetRecord = currentSnapshotRecordById.get(
+      canonicalCatalogSet.setId,
+    );
+    const sourceSetNumber = canonicalCatalogSet.sourceSetNumber;
+
+    if (!sourceSetNumber) {
+      throw new Error(
+        `Expected mock canonical catalog set ${canonicalCatalogSet.setId} to carry sourceSetNumber.`,
+      );
+    }
+
+    return {
+      ...(snapshotCatalogSetRecord ?? {
+        canonicalId: canonicalCatalogSet.setId,
+        slug: canonicalCatalogSet.slug,
+      }),
+      sourceSetNumber,
+      name: canonicalCatalogSet.name,
+      theme: canonicalCatalogSet.primaryTheme,
+      releaseYear: canonicalCatalogSet.releaseYear,
+      pieces: canonicalCatalogSet.pieceCount,
+      imageUrl: canonicalCatalogSet.imageUrl,
+    };
+  }),
 };
 
 const expectedCatalogSyncManifest = {
-  source: 'rebrickable-api-v3',
+  source: 'supabase-canonical-catalog',
   generatedAt: '2026-03-28T00:00:00.000Z',
   recordCount: mockCatalogSets.length,
   homepageFeaturedSetIds: ['10316', '10333', '21333'],
   notes:
-    'Generated from the curated Rebrickable sync scope. Collector-facing overlays remain local.',
+    'Generated from the Supabase-first canonical catalog source. Snapshot records remain a transitional fallback and homepage featured ids stay locally curated.',
 };
-
-function createMockRebrickableClient(): RebrickableClient {
-  const setPayloadByNumber = new Map(
-    mockCatalogSets.map((mockCatalogSet) => [
-      mockCatalogSet.set_num,
-      toRebrickableSetPayload(mockCatalogSet),
-    ]),
-  );
-
-  return {
-    async getSet(setNumber: string) {
-      const setPayload = setPayloadByNumber.get(setNumber);
-
-      if (!setPayload) {
-        throw new Error(`Unexpected set lookup for ${setNumber}.`);
-      }
-
-      return setPayload;
-    },
-    async getTheme(themeId: number) {
-      return {
-        id: themeId,
-        name: getMockThemeName(themeId),
-        ...(mockCatalogThemeParentIds.has(themeId)
-          ? {
-              parent_id: mockCatalogThemeParentIds.get(themeId),
-            }
-          : {}),
-      };
-    },
-  };
-}
-
-function createMockFetchImpl(): typeof fetch {
-  return async (input) => {
-    const url = String(input);
-
-    for (const mockCatalogSet of mockCatalogSets) {
-      if (url.endsWith(`/lego/sets/${mockCatalogSet.set_num}/`)) {
-        return new Response(
-          JSON.stringify(toRebrickableSetPayload(mockCatalogSet)),
-          {
-            status: 200,
-          },
-        );
-      }
-    }
-
-    for (const [themeId, themeName] of mockCatalogThemes) {
-      if (url.endsWith(`/lego/themes/${themeId}/`)) {
-        return new Response(
-          JSON.stringify({
-            id: themeId,
-            name: themeName,
-            ...(mockCatalogThemeParentIds.has(themeId)
-              ? {
-                  parent_id: mockCatalogThemeParentIds.get(themeId),
-                }
-              : {}),
-          }),
-          {
-            status: 200,
-          },
-        );
-      }
-    }
-
-    return new Response(null, { status: 404 });
-  };
-}
 
 describe('catalog sync artifacts', () => {
   test('reads committed-style generated artifact modules in canonical writer format', async () => {
@@ -802,7 +805,7 @@ describe('catalog sync artifacts', () => {
     await writeFile(
       snapshotPath,
       renderCatalogSnapshotModule({
-        source: 'rebrickable-api-v3',
+        source: 'supabase-canonical-catalog',
         generatedAt: '2026-03-28T00:00:00.000Z',
         setRecords: [
           {
@@ -822,11 +825,11 @@ describe('catalog sync artifacts', () => {
     await writeFile(
       manifestPath,
       renderCatalogSyncManifestModule({
-        source: 'rebrickable-api-v3',
+        source: 'supabase-canonical-catalog',
         generatedAt: '2026-03-28T00:00:00.000Z',
         recordCount: 1,
         homepageFeaturedSetIds: ['10316'],
-        notes: 'Generated from the curated Rebrickable sync scope.',
+        notes: 'Generated from the Supabase-first canonical catalog source.',
       }),
       'utf8',
     );
@@ -837,7 +840,7 @@ describe('catalog sync artifacts', () => {
       }),
     ).resolves.toEqual({
       catalogSnapshot: {
-        source: 'rebrickable-api-v3',
+        source: 'supabase-canonical-catalog',
         generatedAt: '2026-03-28T00:00:00.000Z',
         setRecords: [
           {
@@ -853,11 +856,11 @@ describe('catalog sync artifacts', () => {
         ],
       },
       catalogSyncManifest: {
-        source: 'rebrickable-api-v3',
+        source: 'supabase-canonical-catalog',
         generatedAt: '2026-03-28T00:00:00.000Z',
         recordCount: 1,
         homepageFeaturedSetIds: ['10316'],
-        notes: 'Generated from the curated Rebrickable sync scope.',
+        notes: 'Generated from the Supabase-first canonical catalog source.',
       },
     });
   });
@@ -881,7 +884,7 @@ describe('catalog sync artifacts', () => {
 
 // Generated by apps/catalog-sync. Do not edit by hand.
 export const catalogSnapshot: CatalogSnapshot = {
-  source: 'rebrickable-api-v3',
+  source: 'supabase-canonical-catalog',
   generatedAt: '2026-03-28T00:00:00.000Z',
   setRecords: [],
 };
@@ -891,7 +894,7 @@ export const catalogSnapshot: CatalogSnapshot = {
     await writeFile(
       manifestPath,
       renderCatalogSyncManifestModule({
-        source: 'rebrickable-api-v3',
+        source: 'supabase-canonical-catalog',
         generatedAt: '2026-03-28T00:00:00.000Z',
         recordCount: 0,
         homepageFeaturedSetIds: [],
@@ -906,47 +909,124 @@ export const catalogSnapshot: CatalogSnapshot = {
     ).rejects.toThrow('canonical JSON template payload format');
   });
 
-  test('builds normalized snapshot and manifest data from curated Rebrickable records', async () => {
+  test('builds normalized snapshot and manifest data from the canonical catalog source', async () => {
     const artifacts = await buildCatalogSyncArtifacts({
+      listCanonicalCatalogSetsFn: async () => mockCanonicalCatalogSets,
       now: new Date('2026-03-28T00:00:00.000Z'),
-      rebrickableClient: createMockRebrickableClient(),
     });
 
     expect(artifacts.catalogSnapshot).toEqual(expectedCatalogSnapshot);
     expect(artifacts.catalogSyncManifest).toEqual(expectedCatalogSyncManifest);
   });
 
-  test('rejects malformed source payloads before artifacts are built', async () => {
+  test('prefers canonical set fields while keeping existing snapshot slug compatibility', async () => {
+    const scopedCanonicalCatalogSets = [
+      {
+        ...mockCanonicalCatalogSets[0],
+        imageUrl: 'https://images.example/rivendell-updated.jpg',
+        name: 'Rivendell (Canonical)',
+      },
+      requireMockCanonicalCatalogSet('10333'),
+      requireMockCanonicalCatalogSet('21333'),
+    ];
+    const artifacts = await buildCatalogSyncArtifacts({
+      scopedSetNumbers: ['10316-1', '10333-1', '21333-1'],
+      listCanonicalCatalogSetsFn: async () => scopedCanonicalCatalogSets,
+      now: new Date('2026-03-28T00:00:00.000Z'),
+    });
+
+    expect(artifacts.catalogSnapshot.setRecords).toHaveLength(3);
+    expect(artifacts.catalogSnapshot.setRecords[0]).toEqual({
+      ...requireCurrentSnapshotRecord('10316'),
+      sourceSetNumber: '10316-1',
+      name: 'Rivendell (Canonical)',
+      theme: 'Icons',
+      releaseYear: 2023,
+      pieces: 6181,
+      imageUrl: 'https://images.example/rivendell-updated.jpg',
+    });
+  });
+
+  test('falls back cleanly when the canonical source only provides snapshot-backed sets', async () => {
+    const artifacts = await buildCatalogSyncArtifacts({
+      scopedSetNumbers: ['10316-1', '10333-1', '21333-1'],
+      listCanonicalCatalogSetsFn: async () => [
+        {
+          createdAt: catalogSnapshot.generatedAt,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          name: 'Lord of the Rings: Rivendell',
+          pieceCount: 6181,
+          primaryTheme: 'Icons',
+          releaseYear: 2023,
+          secondaryLabels: [],
+          setId: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          source: 'snapshot',
+          sourceSetNumber: '10316-1',
+          status: 'active',
+          updatedAt: catalogSnapshot.generatedAt,
+        },
+        {
+          createdAt: catalogSnapshot.generatedAt,
+          imageUrl: requireCurrentSnapshotRecord('10333').imageUrl,
+          name: requireCurrentSnapshotRecord('10333').name,
+          pieceCount: requireCurrentSnapshotRecord('10333').pieces,
+          primaryTheme: 'Icons',
+          releaseYear: requireCurrentSnapshotRecord('10333').releaseYear,
+          secondaryLabels: [],
+          setId: '10333',
+          slug: requireCurrentSnapshotRecord('10333').slug,
+          source: 'snapshot',
+          sourceSetNumber: '10333-1',
+          status: 'active',
+          updatedAt: catalogSnapshot.generatedAt,
+        },
+        {
+          createdAt: catalogSnapshot.generatedAt,
+          imageUrl: requireCurrentSnapshotRecord('21333').imageUrl,
+          name: requireCurrentSnapshotRecord('21333').name,
+          pieceCount: requireCurrentSnapshotRecord('21333').pieces,
+          primaryTheme: 'Ideas',
+          releaseYear: requireCurrentSnapshotRecord('21333').releaseYear,
+          secondaryLabels: [],
+          setId: '21333',
+          slug: requireCurrentSnapshotRecord('21333').slug,
+          source: 'snapshot',
+          sourceSetNumber: '21333-1',
+          status: 'active',
+          updatedAt: catalogSnapshot.generatedAt,
+        },
+      ],
+      now: new Date('2026-03-28T00:00:00.000Z'),
+    });
+
+    expect(artifacts.catalogSnapshot.setRecords).toHaveLength(3);
+    expect(artifacts.catalogSnapshot.setRecords[0]).toEqual({
+      ...requireCurrentSnapshotRecord('10316'),
+      sourceSetNumber: '10316-1',
+      name: 'Lord of the Rings: Rivendell',
+      theme: 'Icons',
+      releaseYear: 2023,
+      pieces: 6181,
+      imageUrl: 'https://images.example/rivendell.jpg',
+    });
+  });
+
+  test('fails when the configured sync scope is missing from the canonical source', async () => {
     await expect(
       buildCatalogSyncArtifacts({
+        scopedSetNumbers: ['10316-1', '21348-1'],
+        listCanonicalCatalogSetsFn: async () => [mockCanonicalCatalogSets[0]],
         now: new Date('2026-03-28T00:00:00.000Z'),
-        rebrickableClient: {
-          async getSet() {
-            return {
-              set_num: '10316-1',
-              name: '',
-              year: 2023,
-              num_parts: 6167,
-              theme_id: 1,
-            };
-          },
-          async getTheme() {
-            return { id: 1, name: 'Icons' };
-          },
-        },
       }),
-    ).rejects.toThrow(
-      'Invalid Rebrickable set payload for 10316-1: name is required.',
-    );
+    ).rejects.toThrow('Catalog sync source is missing scoped set 21348-1.');
   });
 
   test('writes generated artifact modules into the existing catalog read-artifact paths', async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), 'catalog-sync-'));
 
     await runCatalogSync({
-      apiKey: 'test-key',
-      fetchImpl: createMockFetchImpl(),
-      minimumRequestSpacingMs: 0,
+      listCanonicalCatalogSetsFn: async () => mockCanonicalCatalogSets,
       now: new Date('2026-03-28T00:00:00.000Z'),
       workspaceRoot,
     });
@@ -975,20 +1055,15 @@ export const catalogSnapshot: CatalogSnapshot = {
 
   test('keeps generated artifacts stable across repeated runs when source data is unchanged', async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), 'catalog-sync-stable-'));
-    const fetchImpl = createMockFetchImpl();
 
     const writeResult = await runCatalogSync({
-      apiKey: 'test-key',
-      fetchImpl,
-      minimumRequestSpacingMs: 0,
+      listCanonicalCatalogSetsFn: async () => mockCanonicalCatalogSets,
       now: new Date('2026-03-28T00:00:00.000Z'),
       workspaceRoot,
     });
 
     const checkResult = await runCatalogSync({
-      apiKey: 'test-key',
-      fetchImpl,
-      minimumRequestSpacingMs: 0,
+      listCanonicalCatalogSetsFn: async () => mockCanonicalCatalogSets,
       mode: 'check',
       now: new Date('2026-03-29T00:00:00.000Z'),
       workspaceRoot,
@@ -1007,13 +1082,11 @@ export const catalogSnapshot: CatalogSnapshot = {
     expect(checkResult.artifactCheck.stalePaths).toEqual([]);
   });
 
-  test('runs a local deterministic catalog artifact check without Rebrickable access', async () => {
+  test('runs a local deterministic catalog artifact check without live source access', async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), 'catalog-sync-local-'));
 
     await runCatalogSync({
-      apiKey: 'test-key',
-      fetchImpl: createMockFetchImpl(),
-      minimumRequestSpacingMs: 0,
+      listCanonicalCatalogSetsFn: async () => mockCanonicalCatalogSets,
       now: new Date('2026-03-28T00:00:00.000Z'),
       workspaceRoot,
     });
@@ -1026,7 +1099,7 @@ export const catalogSnapshot: CatalogSnapshot = {
     expect(result.artifactCheck.isClean).toBe(true);
     expect(result.artifactCheck.stalePaths).toEqual([]);
     expect(result.catalogSnapshot.setRecords).toHaveLength(
-      curatedCatalogSyncSetNumbers.length,
+      catalogSnapshotScopeSetNumbers.length,
     );
   });
 
@@ -1066,15 +1139,15 @@ export const catalogSnapshot: CatalogSnapshot = {
         workspaceRoot,
       }),
     ).rejects.toThrow(
-      'Committed catalog snapshot no longer matches curatedCatalogSyncSetNumbers.',
+      'Committed catalog snapshot no longer matches the current catalog sync scope.',
     );
   });
 
-  test('fails validation when a synced set is missing a local product overlay', () => {
+  test('does not require a local product overlay for synced identity validation', () => {
     expect(() =>
       validateCatalogSyncArtifacts({
         catalogSnapshot: {
-          source: 'rebrickable-api-v3',
+          source: 'supabase-canonical-catalog',
           generatedAt: '2026-03-28T00:00:00.000Z',
           setRecords: [
             {
@@ -1089,20 +1162,20 @@ export const catalogSnapshot: CatalogSnapshot = {
           ],
         },
         catalogSyncManifest: {
-          source: 'rebrickable-api-v3',
+          source: 'supabase-canonical-catalog',
           generatedAt: '2026-03-28T00:00:00.000Z',
           recordCount: 1,
           homepageFeaturedSetIds: ['99999'],
         },
       }),
-    ).toThrow('Missing product overlay for synced catalog set 99999.');
+    ).not.toThrow();
   });
 
   test('fails validation when product slug overrides collide', () => {
     expect(() =>
       validateCatalogSyncArtifacts({
         catalogSnapshot: {
-          source: 'rebrickable-api-v3',
+          source: 'supabase-canonical-catalog',
           generatedAt: '2026-03-28T00:00:00.000Z',
           setRecords: [
             {
@@ -1135,7 +1208,7 @@ export const catalogSnapshot: CatalogSnapshot = {
           ],
         },
         catalogSyncManifest: {
-          source: 'rebrickable-api-v3',
+          source: 'supabase-canonical-catalog',
           generatedAt: '2026-03-28T00:00:00.000Z',
           recordCount: 3,
           homepageFeaturedSetIds: ['10316'],
@@ -1167,9 +1240,9 @@ export const catalogSnapshot: CatalogSnapshot = {
   test('fails validation when homepage featured ids drift outside the snapshot', async () => {
     await expect(
       buildCatalogSyncArtifacts({
+        listCanonicalCatalogSetsFn: async () => [mockCanonicalCatalogSets[0]],
         now: new Date('2026-03-28T00:00:00.000Z'),
-        rebrickableClient: createMockRebrickableClient(),
-        curatedSetNumbers: ['10316-1'],
+        scopedSetNumbers: ['10316-1'],
       }),
     ).rejects.toThrow(
       'Homepage featured set 10333 is missing from the generated catalog snapshot.',
