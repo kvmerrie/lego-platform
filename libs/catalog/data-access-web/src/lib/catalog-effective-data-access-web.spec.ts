@@ -14,6 +14,7 @@ import {
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlugWithOverlay,
   listCanonicalCatalogSets,
+  listCatalogOverlaySets,
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
   listCatalogSearchMatchesWithOverlay,
@@ -33,11 +34,14 @@ function createOverlaySet(
     createdAt: string;
     imageUrl?: string;
     name: string;
+    primaryThemeId?: string;
     pieces: number;
     releaseYear: number;
+    secondaryThemeLabels?: readonly string[];
     setId: string;
     slug: string;
     source: 'rebrickable';
+    sourceThemeId?: string;
     sourceSetNumber: string;
     status: 'active' | 'inactive';
     theme: string;
@@ -48,11 +52,14 @@ function createOverlaySet(
     createdAt: '2026-04-17T08:00:00.000Z',
     imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
     name: 'Mario Kart - Mario & Standard Kart',
+    primaryThemeId: undefined,
     pieces: 1972,
     releaseYear: 2025,
+    secondaryThemeLabels: undefined,
     setId: '72037',
     slug: 'mario-kart-mario-standard-kart-72037',
     source: 'rebrickable' as const,
+    sourceThemeId: undefined,
     sourceSetNumber: '72037-1',
     status: 'active' as const,
     theme: 'Super Mario',
@@ -189,16 +196,40 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 }
 
 function createCatalogSupabaseClientMock({
+  overlayRows = [],
+  primaryThemeRows = [],
   latestOfferRows,
   merchantRows,
   offerSeedRows,
+  sourceThemeRows = [],
+  themeMappingRows = [],
 }: {
+  overlayRows?: readonly Record<string, unknown>[];
+  primaryThemeRows?: readonly Record<string, unknown>[];
   latestOfferRows: readonly Record<string, unknown>[];
   merchantRows: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
+  sourceThemeRows?: readonly Record<string, unknown>[];
+  themeMappingRows?: readonly Record<string, unknown>[];
 }) {
   return {
     from: vi.fn((table: string) => {
+      if (table === 'catalog_sets_overlay') {
+        return createSupabaseTableBuilder(overlayRows);
+      }
+
+      if (table === 'catalog_source_themes') {
+        return createSupabaseTableBuilder(sourceThemeRows);
+      }
+
+      if (table === 'catalog_themes') {
+        return createSupabaseTableBuilder(primaryThemeRows);
+      }
+
+      if (table === 'catalog_theme_mappings') {
+        return createSupabaseTableBuilder(themeMappingRows);
+      }
+
       if (table === 'commerce_offer_seeds') {
         return createSupabaseTableBuilder(offerSeedRows);
       }
@@ -217,6 +248,110 @@ function createCatalogSupabaseClientMock({
 }
 
 describe('catalog effective data access web', () => {
+  test('prefers normalized theme joins for UCS-like canonical reads', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      overlayRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
+          name: 'Millennium Falcon',
+          piece_count: 7541,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2017,
+          set_id: '75192',
+          slug: 'millennium-falcon-75192',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:592',
+          source_set_number: '75192-1',
+          status: 'active',
+          theme: 'Star Wars',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:592',
+          source_theme_name: 'Ultimate Collector Series',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:star-wars',
+          source_theme_id: 'rebrickable:592',
+        },
+      ],
+    });
+
+    const [overlaySet, canonicalCatalogSet] = await Promise.all([
+      listCatalogOverlaySets({
+        supabaseClient,
+      }),
+      listCanonicalCatalogSets({
+        listCatalogOverlaySetsFn: async () =>
+          listCatalogOverlaySets({
+            supabaseClient,
+          }),
+      }),
+    ]);
+
+    expect(overlaySet[0]).toMatchObject({
+      secondaryThemeLabels: ['Ultimate Collector Series'],
+      theme: 'Star Wars',
+    });
+    expect(
+      canonicalCatalogSet.find((set) => set.setId === '75192'),
+    ).toMatchObject({
+      primaryTheme: 'Star Wars',
+      secondaryLabels: ['Ultimate Collector Series'],
+    });
+  });
+
+  test('falls back to the legacy theme string when normalized theme ids are absent', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      overlayRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+          name: 'Mario Kart - Mario & Standard Kart',
+          piece_count: 1972,
+          primary_theme_id: null,
+          release_year: 2025,
+          set_id: '72037',
+          slug: 'mario-kart-mario-standard-kart-72037',
+          source: 'rebrickable',
+          source_theme_id: null,
+          source_set_number: '72037-1',
+          status: 'active',
+          theme: 'Super Mario',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+    });
+
+    const [overlaySet] = await Promise.all([
+      listCatalogOverlaySets({
+        supabaseClient,
+      }),
+    ]);
+
+    expect(overlaySet[0]).toMatchObject({
+      secondaryThemeLabels: [],
+      theme: 'Super Mario',
+    });
+  });
+
   test('prefers a Supabase-backed canonical catalog set over snapshot fallback', async () => {
     const canonicalCatalogSets = await listCanonicalCatalogSets({
       listCatalogOverlaySetsFn: async () => [

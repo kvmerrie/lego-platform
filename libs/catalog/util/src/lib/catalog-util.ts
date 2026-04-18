@@ -482,6 +482,9 @@ export type CatalogExternalSetSearchResult = CatalogAddableSetRecord;
 
 export interface CatalogOverlaySet extends CatalogAddableSetRecord {
   createdAt: string;
+  primaryThemeId?: string;
+  secondaryThemeLabels?: readonly string[];
+  sourceThemeId?: string;
   status: CatalogOverlaySetStatus;
   updatedAt: string;
 }
@@ -688,6 +691,38 @@ export function getCatalogPrimaryTheme({
     parentTheme,
     rawTheme,
   }).primaryTheme;
+}
+
+export function resolveCatalogThemeIdentityFromPersistence({
+  legacyTheme,
+  primaryThemeName,
+  sourceThemeName,
+}: {
+  legacyTheme: string;
+  primaryThemeName?: string;
+  sourceThemeName?: string;
+}): CatalogThemeIdentity {
+  if (!primaryThemeName) {
+    return resolveCatalogThemeIdentity({
+      rawTheme: legacyTheme,
+    });
+  }
+
+  const resolvedPrimaryTheme = getCatalogPrimaryTheme({
+    rawTheme: primaryThemeName,
+  });
+
+  if (!sourceThemeName) {
+    return {
+      primaryTheme: resolvedPrimaryTheme,
+      secondaryThemes: [],
+    };
+  }
+
+  return resolveCatalogThemeIdentity({
+    parentTheme: resolvedPrimaryTheme,
+    rawTheme: sourceThemeName,
+  });
 }
 
 export function getCatalogThemeDefinition(

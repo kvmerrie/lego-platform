@@ -13,9 +13,9 @@ import {
   type CatalogSetSummary,
   buildCatalogThemeSlug,
   createCatalogSetRecord,
-  getCatalogPrimaryTheme,
   mergeCanonicalCatalogSets,
   resolveCatalogThemeIdentity,
+  resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
@@ -285,21 +285,30 @@ function toCatalogLiveOffer({
   };
 }
 
-function toCatalogOverlaySet(row: CatalogOverlaySetRow): CatalogOverlaySet {
+function toCatalogOverlaySet({
+  row,
+  themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: row.theme,
+  }),
+}: {
+  row: CatalogOverlaySetRow;
+  themeIdentity?: ReturnType<typeof resolveCatalogThemeIdentity>;
+}): CatalogOverlaySet {
   return {
     createdAt: row.created_at,
     imageUrl: row.image_url ?? undefined,
     name: row.name,
     pieces: row.piece_count,
+    primaryThemeId: row.primary_theme_id ?? undefined,
     releaseYear: row.release_year,
+    secondaryThemeLabels: themeIdentity.secondaryThemes,
     setId: row.set_id,
     slug: row.slug,
     source: row.source === 'rebrickable' ? 'rebrickable' : 'rebrickable',
+    sourceThemeId: row.source_theme_id ?? undefined,
     sourceSetNumber: row.source_set_number,
     status: row.status === 'inactive' ? 'inactive' : 'active',
-    theme: getCatalogPrimaryTheme({
-      rawTheme: row.theme,
-    }),
+    theme: themeIdentity.primaryTheme,
     updatedAt: row.updated_at,
   };
 }
@@ -331,9 +340,14 @@ function toCanonicalCatalogSetFromSnapshotRecord(
 function toCanonicalCatalogSetFromOverlaySet(
   overlaySet: CatalogOverlaySet,
 ): CatalogCanonicalSet {
-  const themeIdentity = resolveCatalogThemeIdentity({
-    rawTheme: overlaySet.theme,
-  });
+  const themeIdentity = overlaySet.secondaryThemeLabels
+    ? {
+        primaryTheme: overlaySet.theme,
+        secondaryThemes: overlaySet.secondaryThemeLabels,
+      }
+    : resolveCatalogThemeIdentity({
+        rawTheme: overlaySet.theme,
+      });
 
   return {
     createdAt: overlaySet.createdAt,
@@ -404,6 +418,129 @@ function toCatalogSetDetailFromCanonicalSet(
         }
       : {}),
   };
+}
+
+async function listCatalogThemeIdentityBySetId({
+  overlayRows,
+  supabaseClient,
+}: {
+  overlayRows: readonly CatalogOverlaySetRow[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, ReturnType<typeof resolveCatalogThemeIdentity>>> {
+  const fallbackThemeIdentityBySetId = new Map(
+    overlayRows.map((overlayRow) => [
+      overlayRow.set_id,
+      resolveCatalogThemeIdentity({
+        rawTheme: overlayRow.theme,
+      }),
+    ]),
+  );
+  const sourceThemeIds = [
+    ...new Set(
+      overlayRows
+        .map((overlayRow) => overlayRow.source_theme_id)
+        .filter((sourceThemeId): sourceThemeId is string =>
+          Boolean(sourceThemeId),
+        ),
+    ),
+  ];
+  const primaryThemeIds = [
+    ...new Set(
+      overlayRows
+        .map((overlayRow) => overlayRow.primary_theme_id)
+        .filter((primaryThemeId): primaryThemeId is string =>
+          Boolean(primaryThemeId),
+        ),
+    ),
+  ];
+
+  if (!sourceThemeIds.length && !primaryThemeIds.length) {
+    return fallbackThemeIdentityBySetId;
+  }
+
+  try {
+    const [sourceThemeResponse, themeMappingResponse] = await Promise.all([
+      sourceThemeIds.length
+        ? supabaseClient
+            .from(CATALOG_SOURCE_THEMES_TABLE)
+            .select('id, source_theme_name')
+            .in('id', sourceThemeIds)
+        : Promise.resolve({ data: [], error: null }),
+      sourceThemeIds.length
+        ? supabaseClient
+            .from(CATALOG_THEME_MAPPINGS_TABLE)
+            .select('source_theme_id, primary_theme_id')
+            .in('source_theme_id', sourceThemeIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (sourceThemeResponse.error || themeMappingResponse.error) {
+      return fallbackThemeIdentityBySetId;
+    }
+
+    const sourceThemes =
+      (sourceThemeResponse.data as CatalogSourceThemeRow[]) ?? [];
+    const themeMappings =
+      (themeMappingResponse.data as CatalogThemeMappingRow[]) ?? [];
+    const primaryThemeIdsToLoad = [
+      ...new Set([
+        ...primaryThemeIds,
+        ...themeMappings.map((themeMapping) => themeMapping.primary_theme_id),
+      ]),
+    ];
+    const primaryThemeResponse = primaryThemeIdsToLoad.length
+      ? await supabaseClient
+          .from(CATALOG_THEMES_TABLE)
+          .select('id, slug, display_name, status')
+          .in('id', primaryThemeIdsToLoad)
+      : { data: [], error: null };
+
+    if (primaryThemeResponse.error) {
+      return fallbackThemeIdentityBySetId;
+    }
+
+    const sourceThemeById = new Map(
+      sourceThemes.map((sourceTheme) => [sourceTheme.id, sourceTheme]),
+    );
+    const primaryThemeById = new Map(
+      ((primaryThemeResponse.data as CatalogThemeRow[]) ?? []).map(
+        (catalogTheme) => [catalogTheme.id, catalogTheme],
+      ),
+    );
+    const primaryThemeIdBySourceThemeId = new Map(
+      themeMappings.map((themeMapping) => [
+        themeMapping.source_theme_id,
+        themeMapping.primary_theme_id,
+      ]),
+    );
+
+    return new Map(
+      overlayRows.map((overlayRow) => {
+        const sourceThemeName = overlayRow.source_theme_id
+          ? sourceThemeById.get(overlayRow.source_theme_id)?.source_theme_name
+          : undefined;
+        const primaryThemeId =
+          overlayRow.primary_theme_id ??
+          (overlayRow.source_theme_id
+            ? primaryThemeIdBySourceThemeId.get(overlayRow.source_theme_id)
+            : undefined);
+        const primaryThemeName = primaryThemeId
+          ? primaryThemeById.get(primaryThemeId)?.display_name
+          : undefined;
+
+        return [
+          overlayRow.set_id,
+          resolveCatalogThemeIdentityFromPersistence({
+            legacyTheme: overlayRow.theme,
+            primaryThemeName,
+            sourceThemeName,
+          }),
+        ] as const;
+      }),
+    );
+  } catch {
+    return fallbackThemeIdentityBySetId;
+  }
 }
 
 function buildCatalogConflictTargetLabel(
@@ -988,8 +1125,19 @@ export async function listCatalogOverlaySets({
       includeInactive,
       supabaseClient: supabaseClient ?? getServerSupabaseAdminClient(),
     });
+    const activeSupabaseClient =
+      supabaseClient ?? getServerSupabaseAdminClient();
+    const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+      overlayRows: rows,
+      supabaseClient: activeSupabaseClient,
+    });
 
-    return rows.map(toCatalogOverlaySet);
+    return rows.map((row) =>
+      toCatalogOverlaySet({
+        row,
+        themeIdentity: themeIdentityBySetId.get(row.set_id),
+      }),
+    );
   } catch (error) {
     if (!supabaseClient) {
       return [];
@@ -1513,5 +1661,12 @@ export async function createCatalogOverlaySet({
     throw new Error('Unable to create the catalog overlay set.');
   }
 
-  return toCatalogOverlaySet(data as CatalogOverlaySetRow);
+  return toCatalogOverlaySet({
+    row: data as CatalogOverlaySetRow,
+    themeIdentity: resolveCatalogThemeIdentityFromPersistence({
+      legacyTheme: (data as CatalogOverlaySetRow).theme,
+      primaryThemeName: themePersistence.primaryTheme.display_name,
+      sourceThemeName: themePersistence.sourceTheme.source_theme_name,
+    }),
+  });
 }

@@ -24,12 +24,12 @@ import type {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
-  getCatalogPrimaryTheme,
   getCatalogThemeVisual,
   listCatalogSetCardSearchMatches,
   mergeCanonicalCatalogSets,
   normalizeCatalogAsciiText,
   resolveCatalogThemeIdentity,
+  resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
 } from '@lego-platform/catalog/util';
 import {
@@ -40,6 +40,9 @@ import {
 } from '@lego-platform/shared/config';
 
 const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
+const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
+const CATALOG_THEMES_TABLE = 'catalog_themes';
+const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
@@ -53,14 +56,31 @@ interface CatalogOverlaySetRow {
   image_url: string | null;
   name: string;
   piece_count: number;
+  primary_theme_id: string | null;
   release_year: number;
   set_id: string;
   slug: string;
   source: 'rebrickable';
+  source_theme_id: string | null;
   source_set_number: string;
   status: 'active';
   theme: string;
   updated_at: string;
+}
+
+interface CatalogSourceThemeRow {
+  id: string;
+  source_theme_name: string;
+}
+
+interface CatalogThemeRow {
+  display_name: string;
+  id: string;
+}
+
+interface CatalogThemeMappingRow {
+  primary_theme_id: string;
+  source_theme_id: string;
 }
 
 interface CatalogCommerceMerchantRow {
@@ -139,21 +159,30 @@ function getCatalogApiBaseUrl(): string {
   return process.env['API_PROXY_TARGET'] ?? getRuntimeBaseUrl('api');
 }
 
-function toCatalogOverlaySet(row: CatalogOverlaySetRow): CatalogOverlaySet {
+function toCatalogOverlaySet({
+  row,
+  themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: row.theme,
+  }),
+}: {
+  row: CatalogOverlaySetRow;
+  themeIdentity?: ReturnType<typeof resolveCatalogThemeIdentity>;
+}): CatalogOverlaySet {
   return {
     createdAt: row.created_at,
     imageUrl: row.image_url ?? undefined,
     name: row.name,
     pieces: row.piece_count,
+    primaryThemeId: row.primary_theme_id ?? undefined,
     releaseYear: row.release_year,
+    secondaryThemeLabels: themeIdentity.secondaryThemes,
     setId: row.set_id,
     slug: row.slug,
     source: row.source,
+    sourceThemeId: row.source_theme_id ?? undefined,
     sourceSetNumber: row.source_set_number,
     status: row.status,
-    theme: getCatalogPrimaryTheme({
-      rawTheme: row.theme,
-    }),
+    theme: themeIdentity.primaryTheme,
     updatedAt: row.updated_at,
   };
 }
@@ -185,9 +214,14 @@ function toCanonicalCatalogSetFromSnapshotRecord(
 function toCanonicalCatalogSetFromOverlaySet(
   overlaySet: CatalogOverlaySet,
 ): CatalogCanonicalSet {
-  const themeIdentity = resolveCatalogThemeIdentity({
-    rawTheme: overlaySet.theme,
-  });
+  const themeIdentity = overlaySet.secondaryThemeLabels
+    ? {
+        primaryTheme: overlaySet.theme,
+        secondaryThemes: overlaySet.secondaryThemeLabels,
+      }
+    : resolveCatalogThemeIdentity({
+        rawTheme: overlaySet.theme,
+      });
 
   return {
     createdAt: overlaySet.createdAt,
@@ -242,6 +276,129 @@ function toCatalogSetDetailFromCanonicalSet(
         }
       : {}),
   };
+}
+
+async function listCatalogThemeIdentityBySetId({
+  overlayRows,
+  supabaseClient,
+}: {
+  overlayRows: readonly CatalogOverlaySetRow[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, ReturnType<typeof resolveCatalogThemeIdentity>>> {
+  const fallbackThemeIdentityBySetId = new Map(
+    overlayRows.map((overlayRow) => [
+      overlayRow.set_id,
+      resolveCatalogThemeIdentity({
+        rawTheme: overlayRow.theme,
+      }),
+    ]),
+  );
+  const sourceThemeIds = [
+    ...new Set(
+      overlayRows
+        .map((overlayRow) => overlayRow.source_theme_id)
+        .filter((sourceThemeId): sourceThemeId is string =>
+          Boolean(sourceThemeId),
+        ),
+    ),
+  ];
+  const primaryThemeIds = [
+    ...new Set(
+      overlayRows
+        .map((overlayRow) => overlayRow.primary_theme_id)
+        .filter((primaryThemeId): primaryThemeId is string =>
+          Boolean(primaryThemeId),
+        ),
+    ),
+  ];
+
+  if (!sourceThemeIds.length && !primaryThemeIds.length) {
+    return fallbackThemeIdentityBySetId;
+  }
+
+  try {
+    const [sourceThemeResponse, themeMappingResponse] = await Promise.all([
+      sourceThemeIds.length
+        ? supabaseClient
+            .from(CATALOG_SOURCE_THEMES_TABLE)
+            .select('id, source_theme_name')
+            .in('id', sourceThemeIds)
+        : Promise.resolve({ data: [], error: null }),
+      sourceThemeIds.length
+        ? supabaseClient
+            .from(CATALOG_THEME_MAPPINGS_TABLE)
+            .select('source_theme_id, primary_theme_id')
+            .in('source_theme_id', sourceThemeIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (sourceThemeResponse.error || themeMappingResponse.error) {
+      return fallbackThemeIdentityBySetId;
+    }
+
+    const sourceThemes =
+      (sourceThemeResponse.data as CatalogSourceThemeRow[]) ?? [];
+    const themeMappings =
+      (themeMappingResponse.data as CatalogThemeMappingRow[]) ?? [];
+    const primaryThemeIdsToLoad = [
+      ...new Set([
+        ...primaryThemeIds,
+        ...themeMappings.map((themeMapping) => themeMapping.primary_theme_id),
+      ]),
+    ];
+    const primaryThemeResponse = primaryThemeIdsToLoad.length
+      ? await supabaseClient
+          .from(CATALOG_THEMES_TABLE)
+          .select('id, display_name')
+          .in('id', primaryThemeIdsToLoad)
+      : { data: [], error: null };
+
+    if (primaryThemeResponse.error) {
+      return fallbackThemeIdentityBySetId;
+    }
+
+    const sourceThemeById = new Map(
+      sourceThemes.map((sourceTheme) => [sourceTheme.id, sourceTheme]),
+    );
+    const primaryThemeById = new Map(
+      ((primaryThemeResponse.data as CatalogThemeRow[]) ?? []).map(
+        (catalogTheme) => [catalogTheme.id, catalogTheme],
+      ),
+    );
+    const primaryThemeIdBySourceThemeId = new Map(
+      themeMappings.map((themeMapping) => [
+        themeMapping.source_theme_id,
+        themeMapping.primary_theme_id,
+      ]),
+    );
+
+    return new Map(
+      overlayRows.map((overlayRow) => {
+        const sourceThemeName = overlayRow.source_theme_id
+          ? sourceThemeById.get(overlayRow.source_theme_id)?.source_theme_name
+          : undefined;
+        const primaryThemeId =
+          overlayRow.primary_theme_id ??
+          (overlayRow.source_theme_id
+            ? primaryThemeIdBySourceThemeId.get(overlayRow.source_theme_id)
+            : undefined);
+        const primaryThemeName = primaryThemeId
+          ? primaryThemeById.get(primaryThemeId)?.display_name
+          : undefined;
+
+        return [
+          overlayRow.set_id,
+          resolveCatalogThemeIdentityFromPersistence({
+            legacyTheme: overlayRow.theme,
+            primaryThemeName,
+            sourceThemeName,
+          }),
+        ] as const;
+      }),
+    );
+  } catch {
+    return fallbackThemeIdentityBySetId;
+  }
 }
 
 function getCatalogOfferMerchantFromMerchantSlug(
@@ -462,12 +619,12 @@ export async function listCatalogOverlaySets({
   }
 
   try {
-    const { data, error } = await (
-      supabaseClient ?? getWebCatalogSupabaseAdminClient()
-    )
+    const activeSupabaseClient =
+      supabaseClient ?? getWebCatalogSupabaseAdminClient();
+    const { data, error } = await activeSupabaseClient
       .from(CATALOG_SETS_OVERLAY_TABLE)
       .select(
-        'set_id, source_set_number, slug, name, theme, release_year, piece_count, image_url, source, status, created_at, updated_at',
+        'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
       )
       .eq('status', 'active')
       .order('created_at', {
@@ -478,8 +635,17 @@ export async function listCatalogOverlaySets({
       throw new Error('Unable to load catalog overlay sets.');
     }
 
-    return ((data as CatalogOverlaySetRow[] | null) ?? []).map(
-      toCatalogOverlaySet,
+    const overlayRows = (data as CatalogOverlaySetRow[] | null) ?? [];
+    const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+      overlayRows,
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return overlayRows.map((row) =>
+      toCatalogOverlaySet({
+        row,
+        themeIdentity: themeIdentityBySetId.get(row.set_id),
+      }),
     );
   } catch (error) {
     if (!supabaseClient) {

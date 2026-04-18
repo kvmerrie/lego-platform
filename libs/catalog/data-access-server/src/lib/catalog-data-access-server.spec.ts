@@ -46,15 +46,136 @@ function createCatalogOverlayRow(
   };
 }
 
+function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
+  rows: readonly Row[],
+) {
+  const filters: Array<
+    | {
+        type: 'eq';
+        column: keyof Row & string;
+        value: unknown;
+      }
+    | {
+        type: 'in';
+        column: keyof Row & string;
+        values: readonly unknown[];
+      }
+    | {
+        type: 'order';
+        column: keyof Row & string;
+        ascending: boolean;
+      }
+  > = [];
+
+  const builder = {
+    eq(column: keyof Row & string, value: unknown) {
+      filters.push({
+        column,
+        type: 'eq',
+        value,
+      });
+
+      return builder;
+    },
+    in(column: keyof Row & string, values: readonly unknown[]) {
+      filters.push({
+        column,
+        type: 'in',
+        values,
+      });
+
+      return builder;
+    },
+    order(column: keyof Row & string, options: { ascending: boolean }) {
+      filters.push({
+        ascending: options.ascending,
+        column,
+        type: 'order',
+      });
+
+      return builder;
+    },
+    maybeSingle() {
+      return builder.then((result) => ({
+        data: result.data[0] ?? null,
+        error: result.error,
+      }));
+    },
+    select() {
+      return builder;
+    },
+    then<TResult1 = { data: Row[]; error: null }>(
+      onFulfilled?:
+        | ((value: {
+            data: Row[];
+            error: null;
+          }) => TResult1 | PromiseLike<TResult1>)
+        | null,
+      onRejected?: ((reason: unknown) => PromiseLike<never>) | null,
+    ) {
+      const filteredRows = filters.reduce<readonly Row[]>(
+        (resultRows, filter) => {
+          if (filter.type === 'eq') {
+            return resultRows.filter(
+              (row) => row[filter.column] === filter.value,
+            );
+          }
+
+          if (filter.type === 'in') {
+            return resultRows.filter((row) =>
+              filter.values.includes(row[filter.column]),
+            );
+          }
+
+          const sortedRows = [...resultRows].sort((left, right) => {
+            const leftValue = left[filter.column];
+            const rightValue = right[filter.column];
+
+            if (leftValue === rightValue) {
+              return 0;
+            }
+
+            if (leftValue == null) {
+              return filter.ascending ? -1 : 1;
+            }
+
+            if (rightValue == null) {
+              return filter.ascending ? 1 : -1;
+            }
+
+            return String(leftValue).localeCompare(String(rightValue));
+          });
+
+          return filter.ascending ? sortedRows : sortedRows.reverse();
+        },
+        rows,
+      );
+
+      return Promise.resolve({
+        data: [...filteredRows],
+        error: null,
+      }).then(onFulfilled, onRejected ?? undefined);
+    },
+  };
+
+  return builder;
+}
+
 function createCatalogOverlaySupabaseClient({
   insertResult,
   overlayRows = [],
+  primaryThemeRows = [],
+  sourceThemeRows = [],
+  themeMappingRows = [],
 }: {
   insertResult?: {
     data: Record<string, unknown> | null;
     error: { code?: string; details?: string; message?: string } | null;
   };
   overlayRows?: Record<string, unknown>[];
+  primaryThemeRows?: Record<string, unknown>[];
+  sourceThemeRows?: Record<string, unknown>[];
+  themeMappingRows?: Record<string, unknown>[];
 } = {}) {
   const sourceThemeUpsert = vi.fn().mockResolvedValue({
     data: null,
@@ -75,17 +196,6 @@ function createCatalogOverlaySupabaseClient({
   const update = vi.fn(() => ({
     eq: updateEq,
   }));
-  const order = vi.fn().mockResolvedValue({
-    data: overlayRows,
-    error: null,
-  });
-  const eq = vi.fn(() => ({
-    order,
-  }));
-  const select = vi.fn(() => ({
-    eq,
-    order,
-  }));
   const insertSingle = vi.fn().mockResolvedValue(
     insertResult ?? {
       data: createCatalogOverlayRow(),
@@ -100,27 +210,35 @@ function createCatalogOverlaySupabaseClient({
   }));
   const from = vi.fn((table: string) => {
     if (table === 'catalog_sets_overlay') {
+      const builder = createSupabaseTableBuilder(overlayRows);
       return {
         insert,
-        select,
+        maybeSingle: builder.maybeSingle,
+        select: builder.select,
         update,
       };
     }
 
     if (table === 'catalog_source_themes') {
+      const builder = createSupabaseTableBuilder(sourceThemeRows);
       return {
+        select: builder.select,
         upsert: sourceThemeUpsert,
       };
     }
 
     if (table === 'catalog_themes') {
+      const builder = createSupabaseTableBuilder(primaryThemeRows);
       return {
+        select: builder.select,
         upsert: primaryThemeUpsert,
       };
     }
 
     if (table === 'catalog_theme_mappings') {
+      const builder = createSupabaseTableBuilder(themeMappingRows);
       return {
+        select: builder.select,
         upsert: themeMappingUpsert,
       };
     }
@@ -131,7 +249,6 @@ function createCatalogOverlaySupabaseClient({
   return {
     insert,
     insertSingle,
-    order,
     primaryThemeUpsert,
     sourceThemeUpsert,
     supabaseClient: { from } as never,
@@ -178,6 +295,75 @@ function createRebrickableFetchMock({
 }
 
 describe('catalog data access server', () => {
+  test('prefers normalized theme joins for UCS-like canonical reads', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          primary_theme_id: 'theme:star-wars',
+          set_id: '75192',
+          slug: 'millennium-falcon-75192',
+          source_theme_id: 'rebrickable:592',
+          source_set_number: '75192-1',
+          theme: 'Star Wars',
+        }),
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:592',
+          source_theme_name: 'Ultimate Collector Series',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:star-wars',
+          source_theme_id: 'rebrickable:592',
+        },
+      ],
+    });
+
+    const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      setId: '75192',
+      supabaseClient,
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      primaryTheme: 'Star Wars',
+      secondaryLabels: ['Ultimate Collector Series'],
+    });
+  });
+
+  test('falls back to the legacy theme string when normalized theme ids are absent', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          name: 'Mario Kart - Mario & Standard Kart',
+          primary_theme_id: null,
+          set_id: '72037',
+          slug: 'mario-kart-mario-standard-kart-72037',
+          source_theme_id: null,
+          source_set_number: '72037-1',
+          theme: 'Super Mario',
+        }),
+      ],
+    });
+
+    const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      setId: '72037',
+      supabaseClient,
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      primaryTheme: 'Super Mario',
+      secondaryLabels: [],
+    });
+  });
+
   test('prefers a Supabase-backed canonical catalog set over snapshot fallback', async () => {
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
       overlayRows: [
