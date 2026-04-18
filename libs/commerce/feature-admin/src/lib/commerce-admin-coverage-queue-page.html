@@ -294,6 +294,14 @@
             }
 
             <a
+              [queryParams]="getSetsQueryParams(row)"
+              class="admin-button admin-button--subtle"
+              routerLink="/sets"
+            >
+              Open in Sets
+            </a>
+
+            <a
               class="admin-button admin-button--subtle"
               [queryParams]="getDiscoveryQueryParams(row)"
               routerLink="/discovery"
@@ -342,6 +350,9 @@
 
     <aside class="admin-workbench__context">
       <lego-commerce-admin-set-work-context
+        [contextLinkLabel]="'Open in Sets'"
+        [contextLinkQueryParams]="getSetsQueryParams(selectedRow())"
+        [contextLinkRoute]="'/sets'"
         [row]="selectedRow()"
         title="Werkcontext"
         (merchantActionRequested)="handleMerchantStatusAction($event)"

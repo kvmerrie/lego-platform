@@ -216,6 +216,14 @@
             Open context
           </button>
 
+          <a
+            [queryParams]="getWorkbenchQueryParams(row)"
+            class="admin-button admin-button--subtle"
+            routerLink="/workbench"
+          >
+            Continue in Workbench
+          </a>
+
           @if (getDiscoveryTargetMerchant(row)) {
           <button
             class="admin-button"
@@ -291,6 +299,9 @@
 
     <aside class="admin-sets-page__context">
       <lego-commerce-admin-set-work-context
+        [contextLinkLabel]="'Continue in Workbench'"
+        [contextLinkQueryParams]="getWorkbenchQueryParams(selectedRow())"
+        [contextLinkRoute]="'/workbench'"
         [row]="selectedRow()"
         title="Set context"
         (merchantActionRequested)="handleMerchantStatusAction($event)"

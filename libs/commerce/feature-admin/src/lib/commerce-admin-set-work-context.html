@@ -203,6 +203,14 @@
       >
         Open setpagina
       </a>
+      } @if (contextLinkLabel && contextLinkRoute) {
+      <a
+        [queryParams]="contextLinkQueryParams"
+        class="admin-button admin-button--subtle"
+        [routerLink]="contextLinkRoute"
+      >
+        {{ contextLinkLabel }}
+      </a>
       }
     </div>
   </section>

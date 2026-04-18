@@ -18,8 +18,11 @@ import {
   buildCommerceBenchmarkCoverageRows,
   type CommerceCoverageQueueMerchantState,
   type CommerceCoverageQueueMerchantStatus,
+  type CommerceCoverageQueueHealthFilter,
   type CommerceCoverageQueueNextAction,
+  type CommerceCoverageQueuePriorityFilter,
   type CommerceCoverageQueueRow,
+  type CommerceCoverageQueueSourceFilter,
   buildCommerceCoverageSnapshot,
   type CommerceBenchmarkCoverageRow,
   type CommerceBenchmarkMerchantCoverageStatus,
@@ -41,6 +44,21 @@ import { CommerceAdminApiService } from './commerce-admin-api.service';
 export interface CommerceCatalogSetOption extends CommerceCoverageSetOption {
   collectorAngle?: string;
   slug: string;
+}
+
+export interface CommerceWorkbenchViewState {
+  healthFilter: CommerceCoverageQueueHealthFilter;
+  merchantGapFilter: string;
+  priorityFilter: CommerceCoverageQueuePriorityFilter;
+  search: string;
+  sourceFilter: CommerceCoverageQueueSourceFilter;
+}
+
+export interface CommerceSetsViewState {
+  healthFilter: CommerceCoverageQueueHealthFilter;
+  priorityFilter: CommerceCoverageQueuePriorityFilter;
+  search: string;
+  sourceFilter: CommerceCoverageQueueSourceFilter;
 }
 
 export type CommerceCoverageQueueMerchantActionType =
@@ -67,6 +85,21 @@ const initialCatalogSetOptions = [...listCatalogSetSummaries()]
       collectorAngle: catalogSetSummary.collectorAngle,
     }),
   );
+
+const initialWorkbenchViewState: CommerceWorkbenchViewState = {
+  search: '',
+  healthFilter: 'under_covered',
+  sourceFilter: 'all',
+  priorityFilter: 'all',
+  merchantGapFilter: 'all',
+};
+
+const initialSetsViewState: CommerceSetsViewState = {
+  search: '',
+  sourceFilter: 'all',
+  healthFilter: 'all',
+  priorityFilter: 'all',
+};
 
 function buildOfferSeedHealthLabel(offerSeed: CommerceOfferSeed): string {
   if (offerSeed.latestOffer?.fetchStatus === 'error') {
@@ -193,6 +226,11 @@ export class CommerceAdminStore {
   readonly discoveryCandidates = signal<CommerceDiscoveryCandidate[]>([]);
   readonly merchants = signal<CommerceMerchant[]>([]);
   readonly offerSeeds = signal<CommerceOfferSeed[]>([]);
+  readonly activeSetId = signal<string | null>(null);
+  readonly workbenchViewState = signal<CommerceWorkbenchViewState>(
+    initialWorkbenchViewState,
+  );
+  readonly setsViewState = signal<CommerceSetsViewState>(initialSetsViewState);
   readonly isLoading = signal(false);
   readonly hasLoaded = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -549,6 +587,32 @@ export class CommerceAdminStore {
 
   isBenchmarkSet(setId: string): boolean {
     return this.benchmarkSetIds().has(setId);
+  }
+
+  setActiveSetId(setId: string | null): void {
+    this.activeSetId.set(setId?.trim() ? setId : null);
+  }
+
+  updateWorkbenchViewState(input: Partial<CommerceWorkbenchViewState>): void {
+    this.workbenchViewState.update((state) => ({
+      ...state,
+      ...input,
+    }));
+  }
+
+  updateSetsViewState(input: Partial<CommerceSetsViewState>): void {
+    this.setsViewState.update((state) => ({
+      ...state,
+      ...input,
+    }));
+  }
+
+  buildSetFocusQueryParams(setId?: string | null): Record<string, string> {
+    return setId?.trim()
+      ? {
+          set: setId.trim(),
+        }
+      : {};
   }
 
   getPublicSetUrl(setId: string): string | undefined {

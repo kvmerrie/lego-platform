@@ -142,6 +142,22 @@
             {{ validMerchantCount() }} geldig{{ validMerchantCount() === 1 ? 'e
             merchant' : 'e merchants' }}
           </span>
+          @if (!hasFirstValidOffer()) {
+          <button
+            class="admin-button admin-button--primary"
+            type="button"
+            (click)="continueToWorkbench()"
+          >
+            Werk verder in Workbench
+          </button>
+          <button
+            class="admin-button admin-button--subtle"
+            type="button"
+            (click)="continueToSets()"
+          >
+            Open in Sets
+          </button>
+          }
         </div>
       </section>
 
@@ -360,10 +376,18 @@
           </a>
           }
 
-          <a class="admin-button admin-button--subtle" routerLink="/workbench">
+          <a
+            [queryParams]="workbenchQueryParams()"
+            class="admin-button admin-button--subtle"
+            routerLink="/workbench"
+          >
             Ga naar Workbench
           </a>
-          <a class="admin-button admin-button--subtle" routerLink="/sets">
+          <a
+            [queryParams]="setsQueryParams()"
+            class="admin-button admin-button--subtle"
+            routerLink="/sets"
+          >
             Open in Sets
           </a>
         </div>
@@ -408,10 +432,18 @@
       </ul>
 
       <div class="admin-actions">
-        <a class="admin-button admin-button--subtle" routerLink="/workbench">
+        <a
+          [queryParams]="workbenchQueryParams()"
+          class="admin-button admin-button--subtle"
+          routerLink="/workbench"
+        >
           Open Workbench
         </a>
-        <a class="admin-button admin-button--subtle" routerLink="/sets">
+        <a
+          [queryParams]="setsQueryParams()"
+          class="admin-button admin-button--subtle"
+          routerLink="/sets"
+        >
           Open Sets
         </a>
       </div>

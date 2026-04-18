@@ -7,8 +7,9 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import {
   type CommerceCoverageQueueHealthFilter,
   type CommerceCoverageQueueMerchantStatus,
@@ -39,12 +40,31 @@ interface SetsRowFeedback {
   tone: SetsRowFeedbackTone;
 }
 
+const setsHealthFilters: readonly CommerceCoverageQueueHealthFilter[] = [
+  'all',
+  'fully_covered',
+  'needs_review',
+  'stale',
+  'under_covered',
+  'zero_valid',
+];
+const setsSourceFilters: readonly CommerceCoverageQueueSourceFilter[] = [
+  'all',
+  'overlay',
+  'snapshot',
+];
+const setsPriorityFilters: readonly CommerceCoverageQueuePriorityFilter[] = [
+  'all',
+  'benchmark_only',
+];
+
 @Component({
   selector: 'lego-commerce-admin-sets-page',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     CommerceAdminOfferSeedDialogComponent,
     CommerceAdminSetWorkContextComponent,
   ],
@@ -192,13 +212,19 @@ interface SetsRowFeedback {
 export class CommerceAdminSetsPageComponent {
   readonly commerceAdminStore = inject(CommerceAdminStore);
   private readonly router = inject(Router);
-  readonly search = signal('');
-  readonly sourceFilter = signal<CommerceCoverageQueueSourceFilter>('all');
-  readonly healthFilter = signal<CommerceCoverageQueueHealthFilter>('all');
-  readonly priorityFilter = signal<CommerceCoverageQueuePriorityFilter>('all');
+  private readonly route = inject(ActivatedRoute);
+  readonly search = signal(this.commerceAdminStore.setsViewState().search);
+  readonly sourceFilter = signal<CommerceCoverageQueueSourceFilter>(
+    this.commerceAdminStore.setsViewState().sourceFilter,
+  );
+  readonly healthFilter = signal<CommerceCoverageQueueHealthFilter>(
+    this.commerceAdminStore.setsViewState().healthFilter,
+  );
+  readonly priorityFilter = signal<CommerceCoverageQueuePriorityFilter>(
+    this.commerceAdminStore.setsViewState().priorityFilter,
+  );
   readonly themeFilter = signal('all');
   readonly sort = signal<SetManagementSort>('benchmark_first');
-  readonly selectedSetId = signal<string | null>(null);
   readonly runningDiscoverySetId = signal<string | null>(null);
   readonly refreshingSetId = signal<string | null>(null);
   readonly rowFeedback = signal<Record<string, SetsRowFeedback>>({});
@@ -269,7 +295,7 @@ export class CommerceAdminSetsPageComponent {
   });
 
   readonly selectedRow = computed(() => {
-    const selectedSetId = this.selectedSetId();
+    const selectedSetId = this.commerceAdminStore.activeSetId();
 
     return (
       this.filteredRows().find((row) => row.setId === selectedSetId) ??
@@ -279,14 +305,19 @@ export class CommerceAdminSetsPageComponent {
   });
 
   constructor() {
+    this.applyRouteContext(this.route.snapshot.queryParams);
+    this.route.queryParams
+      .pipe(takeUntilDestroyed())
+      .subscribe((params) => this.applyRouteContext(params));
+
     effect(
       () => {
         const rows = this.filteredRows();
-        const selectedSetId = this.selectedSetId();
+        const selectedSetId = this.commerceAdminStore.activeSetId();
 
         if (rows.length === 0) {
           if (selectedSetId !== null) {
-            this.selectedSetId.set(null);
+            this.commerceAdminStore.setActiveSetId(null);
           }
 
           return;
@@ -298,12 +329,22 @@ export class CommerceAdminSetsPageComponent {
           const firstRow = rows[0];
 
           if (firstRow) {
-            this.selectedSetId.set(firstRow.setId);
+            this.commerceAdminStore.setActiveSetId(firstRow.setId);
           }
         }
       },
       { allowSignalWrites: true },
     );
+
+    effect(() => {
+      this.commerceAdminStore.updateSetsViewState({
+        search: this.search(),
+        sourceFilter: this.sourceFilter(),
+        healthFilter: this.healthFilter(),
+        priorityFilter: this.priorityFilter(),
+      });
+      this.syncRouteContext();
+    });
   }
 
   updateSearch(value: string): void {
@@ -331,7 +372,7 @@ export class CommerceAdminSetsPageComponent {
   }
 
   selectRow(row: CommerceCoverageQueueRow): void {
-    this.selectedSetId.set(row.setId);
+    this.commerceAdminStore.setActiveSetId(row.setId);
   }
 
   isSelectedRow(row: CommerceCoverageQueueRow): boolean {
@@ -540,5 +581,90 @@ export class CommerceAdminSetsPageComponent {
     } finally {
       this.refreshingSetId.set(null);
     }
+  }
+
+  getWorkbenchQueryParams(
+    row?: CommerceCoverageQueueRow,
+  ): Record<string, string> {
+    return this.commerceAdminStore.buildSetFocusQueryParams(
+      row?.setId ?? this.selectedRow()?.setId,
+    );
+  }
+
+  private applyRouteContext(params: Params): void {
+    const setId = params['set'];
+    const search = params['q'];
+    const healthFilter = params['health'];
+    const sourceFilter = params['source'];
+    const priorityFilter = params['priority'];
+
+    if (typeof setId === 'string' && setId.trim()) {
+      this.commerceAdminStore.setActiveSetId(setId);
+    }
+
+    if (typeof search === 'string') {
+      this.search.set(search);
+    }
+
+    if (
+      typeof healthFilter === 'string' &&
+      setsHealthFilters.includes(
+        healthFilter as CommerceCoverageQueueHealthFilter,
+      )
+    ) {
+      this.healthFilter.set(healthFilter as CommerceCoverageQueueHealthFilter);
+    }
+
+    if (
+      typeof sourceFilter === 'string' &&
+      setsSourceFilters.includes(
+        sourceFilter as CommerceCoverageQueueSourceFilter,
+      )
+    ) {
+      this.sourceFilter.set(sourceFilter as CommerceCoverageQueueSourceFilter);
+    }
+
+    if (
+      typeof priorityFilter === 'string' &&
+      setsPriorityFilters.includes(
+        priorityFilter as CommerceCoverageQueuePriorityFilter,
+      )
+    ) {
+      this.priorityFilter.set(
+        priorityFilter as CommerceCoverageQueuePriorityFilter,
+      );
+    }
+  }
+
+  private syncRouteContext(): void {
+    const queryParams = {
+      set: this.commerceAdminStore.activeSetId() ?? null,
+      q: this.search().trim() || null,
+      health: this.healthFilter() === 'all' ? null : this.healthFilter(),
+      source: this.sourceFilter() === 'all' ? null : this.sourceFilter(),
+      priority: this.priorityFilter() === 'all' ? null : this.priorityFilter(),
+    };
+
+    if (this.hasMatchingQueryParams(queryParams)) {
+      return;
+    }
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      replaceUrl: true,
+    });
+  }
+
+  private hasMatchingQueryParams(
+    queryParams: Record<string, string | null>,
+  ): boolean {
+    const queryParamMap = this.route.snapshot.queryParamMap;
+
+    return Object.entries(queryParams).every(([key, value]) => {
+      const currentValue = queryParamMap.get(key);
+
+      return (value ?? null) === currentValue;
+    });
   }
 }

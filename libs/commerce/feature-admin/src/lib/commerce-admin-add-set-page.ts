@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   type CatalogExternalSetSearchResult,
   type CatalogOverlaySet,
@@ -163,6 +163,7 @@ type NewSetStepStatus = 'active' | 'complete' | 'upcoming';
 })
 export class CommerceAdminAddSetPageComponent {
   readonly commerceAdminStore = inject(CommerceAdminStore);
+  private readonly router = inject(Router);
   readonly searchQuery = signal('');
   readonly searchResults = signal<CatalogExternalSetSearchResult[]>([]);
   readonly selectedResult = signal<CatalogExternalSetSearchResult | null>(null);
@@ -303,6 +304,12 @@ export class CommerceAdminAddSetPageComponent {
       ? this.commerceAdminStore.getPublicSetUrl(overlaySet.setId)
       : undefined;
   });
+  readonly workbenchQueryParams = computed(() =>
+    this.commerceAdminStore.buildSetFocusQueryParams(this.addedSet()?.setId),
+  );
+  readonly setsQueryParams = computed(() =>
+    this.commerceAdminStore.buildSetFocusQueryParams(this.addedSet()?.setId),
+  );
 
   readonly flowSteps = computed(() => {
     const hasSelection = !!this.selectedResult();
@@ -523,6 +530,7 @@ export class CommerceAdminAddSetPageComponent {
         await this.commerceAdminStore.createCatalogOverlaySet(selectedResult);
 
       this.addedSet.set(overlaySet);
+      this.commerceAdminStore.setActiveSetId(overlaySet.setId);
       this.feedback.set(
         `${overlaySet.name} (${overlaySet.setId}) staat nu in de catalog-overlay.`,
       );
@@ -701,5 +709,31 @@ export class CommerceAdminAddSetPageComponent {
     } finally {
       this.isUpdatingCandidateId.set(null);
     }
+  }
+
+  async continueToWorkbench(): Promise<void> {
+    const overlaySet = this.addedSet();
+
+    if (!overlaySet) {
+      return;
+    }
+
+    this.commerceAdminStore.setActiveSetId(overlaySet.setId);
+    await this.router.navigate(['/workbench'], {
+      queryParams: this.workbenchQueryParams(),
+    });
+  }
+
+  async continueToSets(): Promise<void> {
+    const overlaySet = this.addedSet();
+
+    if (!overlaySet) {
+      return;
+    }
+
+    this.commerceAdminStore.setActiveSetId(overlaySet.setId);
+    await this.router.navigate(['/sets'], {
+      queryParams: this.setsQueryParams(),
+    });
   }
 }

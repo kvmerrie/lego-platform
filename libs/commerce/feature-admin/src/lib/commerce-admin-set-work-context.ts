@@ -25,6 +25,9 @@ import { CommerceAdminStore } from './commerce-admin-store.service';
 export class CommerceAdminSetWorkContextComponent {
   readonly commerceAdminStore = inject(CommerceAdminStore);
 
+  @Input() contextLinkLabel?: string;
+  @Input() contextLinkQueryParams: Record<string, string> = {};
+  @Input() contextLinkRoute?: string;
   @Input({ required: true }) row: CommerceCoverageQueueRow | null = null;
   @Input() title = 'Set context';
   @Output() readonly runDiscoveryRequested =
