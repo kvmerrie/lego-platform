@@ -1,16 +1,12 @@
-import { listAffiliateOffers } from '@lego-platform/affiliate/data-access';
 import {
-  type CatalogOffer,
   getBestOffer,
   sortCatalogOffers,
-  toCatalogOffers,
+  type CatalogOffer,
 } from '@lego-platform/affiliate/util';
-import { getCatalogOffersBySetId } from '@lego-platform/catalog/data-access';
 import {
   getCatalogSetBySlugWithOverlay,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugsWithOverlay,
-  resolveCatalogSetDetailOffers,
 } from '@lego-platform/catalog/data-access-web';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import type {
@@ -265,7 +261,7 @@ function buildBestDeal({
       decisionHelper: decisionPresentation.noOfferCopy,
       decisionLabel: dealVerdict.label,
       decisionTone: dealVerdict.tone,
-      eyebrow: 'Beste deal nu',
+      eyebrow: 'Prijsbeeld nu',
       merchantLabel: decisionPresentation.noOfferTitle,
       price: formatPriceMinor({
         currencyCode: pricePanelSnapshot.currencyCode,
@@ -415,33 +411,25 @@ export default async function SetDetailPage({
     notFound();
   }
 
-  const reviewedAffiliateOffers = listAffiliateOffers(catalogSetDetail.id);
-  const generatedSetDetailOffers =
-    reviewedAffiliateOffers.length > 0
-      ? toCatalogOffers(reviewedAffiliateOffers)
-      : getCatalogOffersBySetId(catalogSetDetail.id);
   const liveSetDetailOffers = await listCatalogSetLiveOffersBySetId({
     setId: catalogSetDetail.id,
   });
-  const localizedSetDetailOffers = resolveCatalogSetDetailOffers({
-    generatedOffers: generatedSetDetailOffers.filter(isEuroCatalogOffer),
-    liveOffers: liveSetDetailOffers,
-  });
+  // Only live validated offers count as current public pricing.
+  const localizedSetDetailOffers =
+    liveSetDetailOffers.filter(isEuroCatalogOffer);
   const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
+  const hasLiveCurrentOffer = Boolean(bestOffer);
   const decisionPresentation = buildSetDecisionPresentation({
-    hasCurrentOffer: Boolean(bestOffer),
+    hasCurrentOffer: hasLiveCurrentOffer,
     pricePanelSnapshot,
     theme: catalogSetDetail.theme,
   });
   const dealVerdict = buildSetDealVerdict(pricePanelSnapshot, {
-    hasCurrentOffer: Boolean(bestOffer),
+    hasCurrentOffer: hasLiveCurrentOffer,
     theme: catalogSetDetail.theme,
   });
-  const trackedMerchantCount = Math.max(
-    pricePanelSnapshot?.merchantCount ?? 0,
-    localizedSetDetailOffers.length,
-  );
+  const trackedMerchantCount = localizedSetDetailOffers.length;
 
   return (
     <ShellWeb>
@@ -462,7 +450,7 @@ export default async function SetDetailPage({
         })}
         catalogSetDetail={catalogSetDetail}
         dealSupportItems={buildSetDecisionSupportItems({
-          hasCurrentOffer: Boolean(bestOffer),
+          hasCurrentOffer: hasLiveCurrentOffer,
           merchantCount:
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
           pricePanelSnapshot,
@@ -509,7 +497,7 @@ export default async function SetDetailPage({
         }
         priceHistoryPanel={
           <PricingFeaturePriceHistory
-            hasCurrentOffer={Boolean(bestOffer)}
+            hasCurrentOffer={hasLiveCurrentOffer}
             merchantCount={
               trackedMerchantCount > 0 ? trackedMerchantCount : undefined
             }
