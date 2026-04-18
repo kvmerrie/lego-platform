@@ -2,7 +2,13 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   type CatalogBrowseThemeGroup,
   type CatalogSearchMatch,
+  listCatalogSetCardsByIds,
   listCatalogSetSummaries,
+  listDiscoverCharacterSetCards,
+  listDiscoverDealCandidateSetCards,
+  listDiscoverHighlightSetCards,
+  listHomepageDealCandidateSetCards,
+  listHomepageSetCards,
   type CatalogThemeDirectoryItem,
   type CatalogThemeLandingPage,
   catalogSnapshot,
@@ -725,6 +731,13 @@ const snapshotCatalogSummaryById = new Map(
     catalogSetSummary,
   ]),
 );
+const snapshotCatalogSetCardById = new Map(
+  listCatalogSetCardsByIds(
+    catalogSnapshot.setRecords.map(
+      (catalogSetRecord) => catalogSetRecord.canonicalId,
+    ),
+  ).map((catalogSetCard) => [catalogSetCard.id, catalogSetCard]),
+);
 
 export async function listCatalogSetSummariesWithOverlay({
   listCatalogOverlaySetsFn = listCatalogOverlaySets,
@@ -743,6 +756,47 @@ export async function listCatalogSetSummariesWithOverlay({
         : toCatalogSummaryFromCanonicalSet(canonicalCatalogSet),
     ),
   );
+}
+
+function toCatalogSetCardFromCanonicalSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogHomepageSetCard {
+  return toCatalogHomepageSetCard(
+    toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet),
+  );
+}
+
+export async function listCatalogSetCardsByIdsWithOverlay({
+  canonicalIds,
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  canonicalIds: readonly string[];
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+}): Promise<CatalogHomepageSetCard[]> {
+  const canonicalCatalogSets = await listCanonicalCatalogSets({
+    listCatalogOverlaySetsFn,
+  });
+  const canonicalCatalogSetById = new Map(
+    canonicalCatalogSets.map((canonicalCatalogSet) => [
+      canonicalCatalogSet.setId,
+      canonicalCatalogSet,
+    ]),
+  );
+
+  return canonicalIds.flatMap((canonicalId) => {
+    const canonicalCatalogSet = canonicalCatalogSetById.get(canonicalId);
+
+    if (!canonicalCatalogSet) {
+      return [];
+    }
+
+    return [
+      canonicalCatalogSet.source === 'snapshot'
+        ? (snapshotCatalogSetCardById.get(canonicalId) ??
+          toCatalogSetCardFromCanonicalSet(canonicalCatalogSet))
+        : toCatalogSetCardFromCanonicalSet(canonicalCatalogSet),
+    ];
+  });
 }
 
 export async function listCatalogSetLiveOffersBySetId({
@@ -1100,6 +1154,81 @@ async function listOverlayCatalogSetCards({
     .map(toOverlayCatalogSetDetail);
 
   return overlaySetDetails.map(toCatalogHomepageSetCard);
+}
+
+export async function listHomepageSetCardsWithOverlay({
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return listCatalogSetCardsByIdsWithOverlay({
+    canonicalIds: listHomepageSetCards().map(
+      (catalogSetCard) => catalogSetCard.id,
+    ),
+    listCatalogOverlaySetsFn,
+  });
+}
+
+export async function listHomepageDealCandidateSetCardsWithOverlay({
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return listCatalogSetCardsByIdsWithOverlay({
+    canonicalIds: listHomepageDealCandidateSetCards().map(
+      (catalogSetCard) => catalogSetCard.id,
+    ),
+    listCatalogOverlaySetsFn,
+  });
+}
+
+export async function listDiscoverDealCandidateSetCardsWithOverlay({
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return listCatalogSetCardsByIdsWithOverlay({
+    canonicalIds: listDiscoverDealCandidateSetCards().map(
+      (catalogSetCard) => catalogSetCard.id,
+    ),
+    listCatalogOverlaySetsFn,
+  });
+}
+
+export async function listDiscoverHighlightSetCardsWithOverlay({
+  limit = 6,
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  reviewedSetIds,
+}: {
+  limit?: number;
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  reviewedSetIds?: readonly string[];
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return listCatalogSetCardsByIdsWithOverlay({
+    canonicalIds: listDiscoverHighlightSetCards({
+      limit,
+      reviewedSetIds,
+    }).map((catalogSetCard) => catalogSetCard.id),
+    listCatalogOverlaySetsFn,
+  });
+}
+
+export async function listDiscoverCharacterSetCardsWithOverlay({
+  limit = 6,
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  reviewedSetIds,
+}: {
+  limit?: number;
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  reviewedSetIds?: readonly string[];
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return listCatalogSetCardsByIdsWithOverlay({
+    canonicalIds: listDiscoverCharacterSetCards({
+      limit,
+      reviewedSetIds,
+    }).map((catalogSetCard) => catalogSetCard.id),
+    listCatalogOverlaySetsFn,
+  });
 }
 
 export async function listCatalogSearchSuggestionOverlaySetCards({

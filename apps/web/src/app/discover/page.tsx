@@ -3,15 +3,15 @@ import {
   type CatalogFeatureDiscoverDealItem,
 } from '@lego-platform/catalog/feature-discover';
 import {
-  listCatalogSetCardsByIds,
-  listDiscoverDealCandidateSetCards,
-} from '@lego-platform/catalog/data-access';
-import {
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogSetSlugsWithOverlay,
   listCatalogThemeDirectoryItemsWithOverlay,
   listDiscoverBrowseThemeGroupsWithOverlay,
+  listDiscoverCharacterSetCardsWithOverlay,
+  listDiscoverDealCandidateSetCardsWithOverlay,
+  listDiscoverHighlightSetCardsWithOverlay,
 } from '@lego-platform/catalog/data-access-web';
+import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
@@ -44,8 +44,26 @@ function getDiscoverCandidateRank(
   return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
 }
 
+function selectSetCardsByIds({
+  setCards,
+  setIds,
+}: {
+  setCards: readonly CatalogHomepageSetCard[];
+  setIds: readonly string[];
+}): CatalogHomepageSetCard[] {
+  const setCardById = new Map(
+    setCards.map((catalogSetCard) => [catalogSetCard.id, catalogSetCard]),
+  );
+
+  return setIds.flatMap((setId) => {
+    const setCard = setCardById.get(setId);
+
+    return setCard ? [setCard] : [];
+  });
+}
+
 function toDealSetCards(
-  setCards: ReturnType<typeof listCatalogSetCardsByIds>,
+  setCards: readonly CatalogHomepageSetCard[],
   currentOfferSummaryBySetId: Awaited<
     ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
   >,
@@ -72,11 +90,31 @@ export default async function DiscoverPage({
 }) {
   const resolvedSearchParams = await searchParams;
   const activeFilter = readQueryParam(resolvedSearchParams.filter);
-  const discoverDealCandidateSetCards = listDiscoverDealCandidateSetCards();
+  const reviewedSetIds = listReviewedPriceSetIds();
+  const [
+    discoverDealCandidateSetCards,
+    highlightSetCards,
+    characterSetCards,
+    themeGroups,
+    totalSetSlugs,
+    themeDirectoryItems,
+  ] = await Promise.all([
+    listDiscoverDealCandidateSetCardsWithOverlay(),
+    listDiscoverHighlightSetCardsWithOverlay({
+      reviewedSetIds,
+    }),
+    listDiscoverCharacterSetCardsWithOverlay({
+      reviewedSetIds,
+    }),
+    listDiscoverBrowseThemeGroupsWithOverlay({
+      reviewedSetIds,
+    }),
+    listCatalogSetSlugsWithOverlay(),
+    listCatalogThemeDirectoryItemsWithOverlay(),
+  ]);
   const discoverDealCandidateSetIds = discoverDealCandidateSetCards.map(
     (catalogSetCard) => catalogSetCard.id,
   );
-  const reviewedSetIds = listReviewedPriceSetIds();
   const strongDealSetIds = reviewedSetIds.flatMap((setId) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(setId);
 
@@ -103,9 +141,12 @@ export default async function DiscoverPage({
       ),
     });
   const dealSetCards = toDealSetCards(
-    listCatalogSetCardsByIds(
-      dealPriceContexts.map((dealPriceContext) => dealPriceContext.setId),
-    ),
+    selectSetCardsByIds({
+      setCards: discoverDealCandidateSetCards,
+      setIds: dealPriceContexts.map(
+        (dealPriceContext) => dealPriceContext.setId,
+      ),
+    }),
     currentOfferSummaryBySetId,
   )
     .sort(
@@ -173,20 +214,15 @@ export default async function DiscoverPage({
         : undefined,
     };
   });
-  const [themeGroups, totalSetSlugs, themeDirectoryItems] = await Promise.all([
-    listDiscoverBrowseThemeGroupsWithOverlay({
-      reviewedSetIds,
-    }),
-    listCatalogSetSlugsWithOverlay(),
-    listCatalogThemeDirectoryItemsWithOverlay(),
-  ]);
 
   return (
     <ShellWeb>
       <CatalogFeatureDiscover
         activeFilter={activeFilter}
         bestDealSetIds={strongDealSetIds}
+        characterSetCards={characterSetCards}
         dealSetCards={featuredDealSetCards}
+        highlightSetCards={highlightSetCards}
         reviewedSetIds={reviewedSetIds}
         themeGroups={themeGroups}
         totalSetCount={totalSetSlugs.length}

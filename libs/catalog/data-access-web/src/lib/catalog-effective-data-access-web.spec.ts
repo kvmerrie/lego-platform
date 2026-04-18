@@ -1,6 +1,8 @@
 import {
   getCatalogThemePageBySlug,
+  listDiscoverHighlightSetCards,
   listCatalogSetSummaries,
+  listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   listCatalogThemePageSlugs,
@@ -15,7 +17,10 @@ import {
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlugWithOverlay,
   listCanonicalCatalogSets,
+  listCatalogSetCardsByIdsWithOverlay,
   listCatalogOverlaySets,
+  listDiscoverHighlightSetCardsWithOverlay,
+  listHomepageSetCardsWithOverlay,
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
   listCatalogSearchMatchesWithOverlay,
@@ -450,6 +455,80 @@ describe('catalog effective data access web', () => {
     expect(
       summaries.find((catalogSetSummary) => catalogSetSummary.id === '21061'),
     ).toEqual(baselineSummary);
+  });
+
+  test('prefers canonical overlay identity for curated set card reads when available', async () => {
+    const result = await listCatalogSetCardsByIdsWithOverlay({
+      canonicalIds: ['10316', '21061'],
+      listCatalogOverlaySetsFn: async () => [
+        createOverlaySet({
+          imageUrl:
+            'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
+          name: 'Rivendell (Supabase)',
+          setId: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          sourceSetNumber: '10316-1',
+          theme: 'Icons',
+        }),
+      ],
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({
+      id: '10316',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
+      name: 'Rivendell (Supabase)',
+      slug: 'lord-of-the-rings-rivendell-10316',
+      theme: 'Icons',
+    });
+    expect(result[1]?.id).toBe('21061');
+  });
+
+  test('keeps homepage curated card identity stable when only snapshot data exists', async () => {
+    const baselineHomepageSetCards = listHomepageSetCards();
+    const result = await listHomepageSetCardsWithOverlay();
+
+    expect(result).toEqual(baselineHomepageSetCards);
+  });
+
+  test('preserves discover highlight card order while preferring canonical identity', async () => {
+    const baselineHighlightSetCards = listDiscoverHighlightSetCards({
+      limit: 6,
+      reviewedSetIds: ['75355'],
+    });
+    const baselineHighlightIds = baselineHighlightSetCards.map(
+      (catalogSetCard) => catalogSetCard.id,
+    );
+    const highlightedSetCard = baselineHighlightSetCards[0];
+
+    expect(highlightedSetCard).toBeDefined();
+
+    const result = await listDiscoverHighlightSetCardsWithOverlay({
+      listCatalogOverlaySetsFn: async () => [
+        createOverlaySet({
+          imageUrl:
+            'https://cdn.rebrickable.com/media/sets/highlight-override.jpg',
+          name: `${highlightedSetCard?.name} (Supabase)`,
+          setId: highlightedSetCard?.id ?? '10316',
+          slug: highlightedSetCard?.slug ?? 'lord-of-the-rings-rivendell-10316',
+          sourceSetNumber: `${highlightedSetCard?.id ?? '10316'}-1`,
+          theme: highlightedSetCard?.theme ?? 'Icons',
+        }),
+      ],
+      reviewedSetIds: ['75355'],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual(
+      baselineHighlightIds,
+    );
+    expect(
+      result.find(
+        (catalogSetCard) => catalogSetCard.id === highlightedSetCard?.id,
+      ),
+    ).toMatchObject({
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/highlight-override.jpg',
+      name: `${highlightedSetCard?.name} (Supabase)`,
+    });
   });
 
   test('includes active overlay sets in public search matches', async () => {

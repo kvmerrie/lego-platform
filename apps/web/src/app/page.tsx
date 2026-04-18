@@ -11,16 +11,14 @@ import {
   CatalogFeatureThemeSpotlight,
 } from '@lego-platform/catalog/feature-theme-list';
 import {
-  listCatalogSetCardsByIds,
-  listDiscoverHighlightSetCards,
-  listHomepageDealCandidateSetCards,
-  listHomepageSetCards,
-} from '@lego-platform/catalog/data-access';
-import {
   listCatalogCurrentOfferSummariesBySetIds,
+  listDiscoverHighlightSetCardsWithOverlay,
+  listHomepageDealCandidateSetCardsWithOverlay,
+  listHomepageSetCardsWithOverlay,
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
 } from '@lego-platform/catalog/data-access-web';
+import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
 import { getHeroSection } from '@lego-platform/content/util';
@@ -60,7 +58,7 @@ const homepageValueSignals = [
 ] as const;
 
 function toFeatureSetListItems(
-  setCards: ReturnType<typeof listCatalogSetCardsByIds>,
+  setCards: readonly CatalogHomepageSetCard[],
   currentOfferSummaryBySetId: Awaited<
     ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
   >,
@@ -153,23 +151,42 @@ function toFeatureSetListItems(
   });
 }
 
+function selectSetCardsByIds({
+  setCards,
+  setIds,
+}: {
+  setCards: readonly CatalogHomepageSetCard[];
+  setIds: readonly string[];
+}): CatalogHomepageSetCard[] {
+  const setCardById = new Map(
+    setCards.map((catalogSetCard) => [catalogSetCard.id, catalogSetCard]),
+  );
+
+  return setIds.flatMap((setId) => {
+    const setCard = setCardById.get(setId);
+
+    return setCard ? [setCard] : [];
+  });
+}
+
 function createHomepageFeaturedRailItems({
+  additionalHighlightSetCards,
   excludedSetIds = [],
   currentOfferSummaryBySetId,
+  featuredSetCards,
 }: {
+  additionalHighlightSetCards: readonly CatalogHomepageSetCard[];
   currentOfferSummaryBySetId: Awaited<
     ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
   >;
   excludedSetIds?: readonly string[];
+  featuredSetCards: readonly CatalogHomepageSetCard[];
 }): CatalogFeatureSetListItem[] {
   const excludedSetIdSet = new Set(excludedSetIds);
-  const featuredSetCards = listHomepageSetCards().filter(
+  const filteredFeaturedSetCards = featuredSetCards.filter(
     (featuredSetCard) => !excludedSetIdSet.has(featuredSetCard.id),
   );
-  const additionalHighlightSetCards = listDiscoverHighlightSetCards({
-    limit: HOMEPAGE_FEATURED_RAIL_FILL_LIMIT,
-  });
-  const mergedSetCards = [...featuredSetCards];
+  const mergedSetCards = [...filteredFeaturedSetCards];
 
   for (const additionalHighlightSetCard of additionalHighlightSetCards) {
     if (
@@ -206,40 +223,51 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const queryMode = await getEditorialQueryMode();
-  const homepageDealSetIds = listDealSpotlightPriceContexts({
-    candidateSetIds: listHomepageDealCandidateSetCards().map(
-      (catalogSetCard) => catalogSetCard.id,
-    ),
-    limit: 3,
-  }).map((priceContext) => priceContext.setId);
-  const homepageFeaturedCandidateSetIds = listHomepageSetCards().map(
-    (featuredSetCard) => featuredSetCard.id,
-  );
-  const homepageFeaturedFillSetIds = listDiscoverHighlightSetCards({
-    limit: HOMEPAGE_FEATURED_RAIL_FILL_LIMIT,
-  }).map((highlightSetCard) => highlightSetCard.id);
   const [
     homepagePage,
     homepageThemeDirectoryItems,
     homepageThemeSpotlightItems,
-    currentOfferSummaryBySetId,
+    homepageDealCandidateSetCards,
+    homepageFeaturedCandidateSetCards,
+    homepageFeaturedFillSetCards,
   ] = await Promise.all([
     getHomepagePage({
       mode: queryMode,
     }),
     listHomepageThemeDirectoryItemsWithOverlay(),
     listHomepageThemeSpotlightItemsWithOverlay(),
-    listCatalogCurrentOfferSummariesBySetIds({
+    listHomepageDealCandidateSetCardsWithOverlay(),
+    listHomepageSetCardsWithOverlay(),
+    listDiscoverHighlightSetCardsWithOverlay({
+      limit: HOMEPAGE_FEATURED_RAIL_FILL_LIMIT,
+    }),
+  ]);
+  const homepageDealSetIds = listDealSpotlightPriceContexts({
+    candidateSetIds: homepageDealCandidateSetCards.map(
+      (catalogSetCard) => catalogSetCard.id,
+    ),
+    limit: 3,
+  }).map((priceContext) => priceContext.setId);
+  const homepageFeaturedCandidateSetIds = homepageFeaturedCandidateSetCards.map(
+    (featuredSetCard) => featuredSetCard.id,
+  );
+  const homepageFeaturedFillSetIds = homepageFeaturedFillSetCards.map(
+    (highlightSetCard) => highlightSetCard.id,
+  );
+  const currentOfferSummaryBySetId =
+    await listCatalogCurrentOfferSummariesBySetIds({
       setIds: [
         ...homepageDealSetIds,
         ...homepageFeaturedCandidateSetIds,
         ...homepageFeaturedFillSetIds,
       ],
-    }),
-  ]);
+    });
   const homepageHeroSection = getHeroSection(homepagePage.sections);
   const homepageDealSetCards = toFeatureSetListItems(
-    listCatalogSetCardsByIds(homepageDealSetIds),
+    selectSetCardsByIds({
+      setCards: homepageDealCandidateSetCards,
+      setIds: homepageDealSetIds,
+    }),
     currentOfferSummaryBySetId,
     {
       cardSurface: 'deal',
@@ -250,8 +278,10 @@ export default async function HomePage() {
     (homepageDealSetCard) => homepageDealSetCard.id,
   );
   const homepageSetCards = createHomepageFeaturedRailItems({
+    additionalHighlightSetCards: homepageFeaturedFillSetCards,
     currentOfferSummaryBySetId,
     excludedSetIds: homepageDealSetCardIds,
+    featuredSetCards: homepageFeaturedCandidateSetCards,
   });
   const homepageHeroPage = homepageHeroSection
     ? {
