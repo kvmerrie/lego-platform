@@ -11,6 +11,7 @@ import {
   type CatalogSetDetail,
   type CatalogSetRecord,
   type CatalogSetSummary,
+  buildCatalogThemeSlug,
   createCatalogSetRecord,
   getCatalogPrimaryTheme,
   mergeCanonicalCatalogSets,
@@ -26,6 +27,9 @@ import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
+const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
+const CATALOG_THEMES_TABLE = 'catalog_themes';
+const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
@@ -37,14 +41,35 @@ interface CatalogOverlaySetRow {
   image_url: string | null;
   name: string;
   piece_count: number;
+  primary_theme_id?: string | null;
   release_year: number;
   set_id: string;
   slug: string;
   source: string;
+  source_theme_id?: string | null;
   source_set_number: string;
   status: string;
   theme: string;
   updated_at: string;
+}
+
+interface CatalogSourceThemeRow {
+  id: string;
+  parent_source_theme_id: string | null;
+  source_system: 'rebrickable';
+  source_theme_name: string;
+}
+
+interface CatalogThemeRow {
+  display_name: string;
+  id: string;
+  slug: string;
+  status: 'active' | 'inactive';
+}
+
+interface CatalogThemeMappingRow {
+  primary_theme_id: string;
+  source_theme_id: string;
 }
 
 interface CatalogCommerceMerchantRow {
@@ -106,6 +131,24 @@ interface CatalogConflictTarget {
   name: string;
   setId: string;
   slug: string;
+}
+
+interface CatalogRebrickableSetThemePayload {
+  setNumber: string;
+  themeId: number;
+}
+
+interface CatalogResolvedThemePersistence {
+  primaryTheme: CatalogThemeRow;
+  sourceTheme: CatalogSourceThemeRow;
+  sourceThemeMapping: CatalogThemeMappingRow;
+  sourceThemeParent?: CatalogSourceThemeRow;
+}
+
+export interface CatalogThemeBackfillResult {
+  processedCount: number;
+  skippedCount: number;
+  updatedCount: number;
 }
 
 interface DatabaseConflictLike {
@@ -575,6 +618,36 @@ function validateRebrickableThemePayload(
   };
 }
 
+function validateRebrickableSetThemePayload(
+  payload: unknown,
+  expectedSetNumber: string,
+): CatalogRebrickableSetThemePayload {
+  if (!isObjectRecord(payload)) {
+    throw new Error(
+      `Invalid Rebrickable set payload for ${expectedSetNumber}: expected an object.`,
+    );
+  }
+
+  const { set_num: setNumber, theme_id: themeId } = payload;
+
+  if (typeof setNumber !== 'string' || setNumber.trim() !== expectedSetNumber) {
+    throw new Error(
+      `Invalid Rebrickable set payload for ${expectedSetNumber}: set_num is missing or mismatched.`,
+    );
+  }
+
+  if (!isInteger(themeId) || themeId <= 0) {
+    throw new Error(
+      `Invalid Rebrickable set payload for ${expectedSetNumber}: theme_id must be a positive integer.`,
+    );
+  }
+
+  return {
+    setNumber: setNumber.trim(),
+    themeId,
+  };
+}
+
 async function getValidatedRebrickableTheme({
   rebrickableClient,
   themeCache,
@@ -655,6 +728,177 @@ async function resolveRebrickablePrimaryThemeName({
   return resolvedThemeName;
 }
 
+function buildCatalogSourceThemeRecordId({
+  sourceSystem,
+  sourceThemeId,
+}: {
+  sourceSystem: 'rebrickable';
+  sourceThemeId: number;
+}): string {
+  return `${sourceSystem}:${sourceThemeId}`;
+}
+
+function buildCatalogThemeRecordId(primaryThemeName: string): string {
+  return `theme:${buildCatalogThemeSlug(primaryThemeName)}`;
+}
+
+async function resolveCatalogThemePersistenceForSourceSetNumber({
+  fetchImpl,
+  rebrickableClient,
+  resolvedThemeNameById,
+  sourceSetNumber,
+  themeCache,
+}: {
+  fetchImpl?: typeof fetch;
+  rebrickableClient?: ReturnType<typeof createRebrickableClient>;
+  resolvedThemeNameById?: Map<number, string>;
+  sourceSetNumber: string;
+  themeCache?: Map<number, ValidatedRebrickableTheme>;
+}): Promise<CatalogResolvedThemePersistence> {
+  const activeThemeCache =
+    themeCache ?? new Map<number, ValidatedRebrickableTheme>();
+  const activeResolvedThemeNameById =
+    resolvedThemeNameById ?? new Map<number, string>();
+  const activeRebrickableClient =
+    rebrickableClient ??
+    createRebrickableClient({
+      apiKey: getRebrickableApiConfig().apiKey,
+      baseUrl: getRebrickableApiConfig().baseUrl,
+      ...(fetchImpl ? { fetchImpl } : {}),
+    });
+  const validatedSetThemePayload = validateRebrickableSetThemePayload(
+    await activeRebrickableClient.getSet(sourceSetNumber),
+    sourceSetNumber,
+  );
+  const sourceTheme = await getValidatedRebrickableTheme({
+    rebrickableClient: activeRebrickableClient,
+    themeCache: activeThemeCache,
+    themeId: validatedSetThemePayload.themeId,
+  });
+  const parentSourceTheme = sourceTheme.parentId
+    ? await getValidatedRebrickableTheme({
+        rebrickableClient: activeRebrickableClient,
+        themeCache: activeThemeCache,
+        themeId: sourceTheme.parentId,
+      })
+    : undefined;
+  const primaryTheme = resolveCatalogThemeIdentity({
+    rawTheme: sourceTheme.name,
+    ...(parentSourceTheme
+      ? {
+          parentTheme: parentSourceTheme.name,
+        }
+      : {}),
+  }).primaryTheme;
+  const primaryThemeId = buildCatalogThemeRecordId(primaryTheme);
+
+  if (parentSourceTheme) {
+    activeResolvedThemeNameById.set(
+      parentSourceTheme.id,
+      parentSourceTheme.name,
+    );
+  }
+
+  activeResolvedThemeNameById.set(sourceTheme.id, primaryTheme);
+
+  return {
+    primaryTheme: {
+      display_name: primaryTheme,
+      id: primaryThemeId,
+      slug: buildCatalogThemeSlug(primaryTheme),
+      status: 'active',
+    },
+    sourceTheme: {
+      id: buildCatalogSourceThemeRecordId({
+        sourceSystem: 'rebrickable',
+        sourceThemeId: sourceTheme.id,
+      }),
+      parent_source_theme_id: parentSourceTheme
+        ? buildCatalogSourceThemeRecordId({
+            sourceSystem: 'rebrickable',
+            sourceThemeId: parentSourceTheme.id,
+          })
+        : null,
+      source_system: 'rebrickable',
+      source_theme_name: sourceTheme.name,
+    },
+    sourceThemeMapping: {
+      primary_theme_id: primaryThemeId,
+      source_theme_id: buildCatalogSourceThemeRecordId({
+        sourceSystem: 'rebrickable',
+        sourceThemeId: sourceTheme.id,
+      }),
+    },
+    ...(parentSourceTheme
+      ? {
+          sourceThemeParent: {
+            id: buildCatalogSourceThemeRecordId({
+              sourceSystem: 'rebrickable',
+              sourceThemeId: parentSourceTheme.id,
+            }),
+            parent_source_theme_id: null,
+            source_system: 'rebrickable' as const,
+            source_theme_name: parentSourceTheme.name,
+          },
+        }
+      : {}),
+  };
+}
+
+async function ensureCatalogThemePersistence({
+  supabaseClient,
+  themePersistence,
+}: {
+  supabaseClient: CatalogSupabaseClient;
+  themePersistence: CatalogResolvedThemePersistence;
+}): Promise<void> {
+  if (themePersistence.sourceThemeParent) {
+    const { error } = await supabaseClient
+      .from(CATALOG_SOURCE_THEMES_TABLE)
+      .upsert(themePersistence.sourceThemeParent, {
+        onConflict: 'id',
+      });
+
+    if (error) {
+      throw new Error('Unable to persist the parent source theme.');
+    }
+  }
+
+  const [
+    { error: sourceThemeError },
+    { error: primaryThemeError },
+    { error: sourceThemeMappingError },
+  ] = await Promise.all([
+    supabaseClient
+      .from(CATALOG_SOURCE_THEMES_TABLE)
+      .upsert(themePersistence.sourceTheme, {
+        onConflict: 'id',
+      }),
+    supabaseClient
+      .from(CATALOG_THEMES_TABLE)
+      .upsert(themePersistence.primaryTheme, {
+        onConflict: 'id',
+      }),
+    supabaseClient
+      .from(CATALOG_THEME_MAPPINGS_TABLE)
+      .upsert(themePersistence.sourceThemeMapping, {
+        onConflict: 'source_theme_id',
+      }),
+  ]);
+
+  if (sourceThemeError) {
+    throw new Error('Unable to persist the source theme.');
+  }
+
+  if (primaryThemeError) {
+    throw new Error('Unable to persist the primary theme.');
+  }
+
+  if (sourceThemeMappingError) {
+    throw new Error('Unable to persist the source-to-primary theme mapping.');
+  }
+}
+
 function toSearchResult({
   imageUrl,
   name,
@@ -702,7 +946,7 @@ async function listCatalogOverlaySetRows({
   const query = supabaseClient
     .from(CATALOG_SETS_OVERLAY_TABLE)
     .select(
-      'set_id, source_set_number, slug, name, theme, release_year, piece_count, image_url, source, status, created_at, updated_at',
+      'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
     );
 
   const { data, error } = includeInactive
@@ -753,6 +997,82 @@ export async function listCatalogOverlaySets({
 
     throw error;
   }
+}
+
+export async function backfillCatalogOverlayThemeIdentity({
+  fetchImpl,
+  setIds,
+  supabaseClient,
+}: {
+  fetchImpl?: typeof fetch;
+  setIds?: readonly string[];
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogThemeBackfillResult> {
+  const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
+  const overlayRows = await listCatalogOverlaySetRows({
+    includeInactive: true,
+    supabaseClient: activeSupabaseClient,
+  });
+  const candidateRows = overlayRows.filter((overlayRow) => {
+    if (setIds?.length && !setIds.includes(overlayRow.set_id)) {
+      return false;
+    }
+
+    return !overlayRow.source_theme_id || !overlayRow.primary_theme_id;
+  });
+
+  if (!candidateRows.length) {
+    return {
+      processedCount: 0,
+      skippedCount: overlayRows.length,
+      updatedCount: 0,
+    };
+  }
+
+  const rebrickableConfig = getRebrickableApiConfig();
+  const rebrickableClient = createRebrickableClient({
+    apiKey: rebrickableConfig.apiKey,
+    baseUrl: rebrickableConfig.baseUrl,
+    ...(fetchImpl ? { fetchImpl } : {}),
+  });
+  const themeCache = new Map<number, ValidatedRebrickableTheme>();
+  const resolvedThemeNameById = new Map<number, string>();
+  let updatedCount = 0;
+
+  for (const overlayRow of candidateRows) {
+    const themePersistence =
+      await resolveCatalogThemePersistenceForSourceSetNumber({
+        rebrickableClient,
+        resolvedThemeNameById,
+        sourceSetNumber: overlayRow.source_set_number,
+        themeCache,
+      });
+
+    await ensureCatalogThemePersistence({
+      supabaseClient: activeSupabaseClient,
+      themePersistence,
+    });
+
+    const { error } = await activeSupabaseClient
+      .from(CATALOG_SETS_OVERLAY_TABLE)
+      .update({
+        primary_theme_id: themePersistence.primaryTheme.id,
+        source_theme_id: themePersistence.sourceTheme.id,
+      })
+      .eq('set_id', overlayRow.set_id);
+
+    if (error) {
+      throw new Error('Unable to backfill catalog theme identity.');
+    }
+
+    updatedCount += 1;
+  }
+
+  return {
+    processedCount: candidateRows.length,
+    skippedCount: overlayRows.length - candidateRows.length,
+    updatedCount,
+  };
 }
 
 export async function listCanonicalCatalogSets({
@@ -1064,12 +1384,15 @@ export async function searchCatalogMissingSets({
 }
 
 export async function createCatalogOverlaySet({
+  fetchImpl,
   input,
   supabaseClient,
 }: {
+  fetchImpl?: typeof fetch;
   input: CatalogExternalSetSearchResult;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogOverlaySet> {
+  const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
   const normalizedSet = toSearchResult({
     imageUrl: input.imageUrl,
     name: input.name,
@@ -1142,24 +1465,35 @@ export async function createCatalogOverlaySet({
     );
   }
 
-  const { data, error } = await (
-    supabaseClient ?? getServerSupabaseAdminClient()
-  )
+  const themePersistence =
+    await resolveCatalogThemePersistenceForSourceSetNumber({
+      ...(fetchImpl ? { fetchImpl } : {}),
+      sourceSetNumber: normalizedSet.sourceSetNumber,
+    });
+
+  await ensureCatalogThemePersistence({
+    supabaseClient: activeSupabaseClient,
+    themePersistence,
+  });
+
+  const { data, error } = await activeSupabaseClient
     .from(CATALOG_SETS_OVERLAY_TABLE)
     .insert({
       image_url: normalizedSet.imageUrl ?? null,
       name: normalizedSet.name,
       piece_count: normalizedSet.pieces,
+      primary_theme_id: themePersistence.primaryTheme.id,
       release_year: normalizedSet.releaseYear,
       set_id: normalizedSet.setId,
       slug: normalizedSet.slug,
       source: normalizedSet.source,
+      source_theme_id: themePersistence.sourceTheme.id,
       source_set_number: normalizedSet.sourceSetNumber,
       status: 'active',
-      theme: normalizedSet.theme,
+      theme: themePersistence.primaryTheme.display_name,
     })
     .select(
-      'set_id, source_set_number, slug, name, theme, release_year, piece_count, image_url, source, status, created_at, updated_at',
+      'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
     )
     .single();
 

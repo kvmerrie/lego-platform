@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import {
+  backfillCatalogOverlayThemeIdentity,
   createCatalogOverlaySet,
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
@@ -16,10 +17,12 @@ function createCatalogOverlayRow(
     image_url: string | null;
     name: string;
     piece_count: number;
+    primary_theme_id?: string | null;
     release_year: number;
     set_id: string;
     slug: string;
     source: string;
+    source_theme_id?: string | null;
     source_set_number: string;
     status: string;
     theme: string;
@@ -53,6 +56,25 @@ function createCatalogOverlaySupabaseClient({
   };
   overlayRows?: Record<string, unknown>[];
 } = {}) {
+  const sourceThemeUpsert = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  });
+  const primaryThemeUpsert = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  });
+  const themeMappingUpsert = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  });
+  const updateEq = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  });
+  const update = vi.fn(() => ({
+    eq: updateEq,
+  }));
   const order = vi.fn().mockResolvedValue({
     data: overlayRows,
     error: null,
@@ -76,17 +98,83 @@ function createCatalogOverlaySupabaseClient({
   const insert = vi.fn(() => ({
     select: insertSelect,
   }));
-  const from = vi.fn(() => ({
-    insert,
-    select,
-  }));
+  const from = vi.fn((table: string) => {
+    if (table === 'catalog_sets_overlay') {
+      return {
+        insert,
+        select,
+        update,
+      };
+    }
+
+    if (table === 'catalog_source_themes') {
+      return {
+        upsert: sourceThemeUpsert,
+      };
+    }
+
+    if (table === 'catalog_themes') {
+      return {
+        upsert: primaryThemeUpsert,
+      };
+    }
+
+    if (table === 'catalog_theme_mappings') {
+      return {
+        upsert: themeMappingUpsert,
+      };
+    }
+
+    throw new Error(`Unexpected table requested in test: ${table}`);
+  });
 
   return {
     insert,
     insertSingle,
     order,
+    primaryThemeUpsert,
+    sourceThemeUpsert,
     supabaseClient: { from } as never,
+    themeMappingUpsert,
+    update,
+    updateEq,
   };
+}
+
+function createRebrickableFetchMock({
+  setPayloads,
+  themePayloads,
+}: {
+  setPayloads: Record<string, Record<string, unknown>>;
+  themePayloads: Record<string, Record<string, unknown>>;
+}) {
+  return vi.fn(async (input: string | URL) => {
+    const url = String(input);
+
+    if (url.includes('/lego/sets/?')) {
+      throw new Error(`Unexpected search fetch ${url}`);
+    }
+
+    for (const [setNumber, payload] of Object.entries(setPayloads)) {
+      if (url.endsWith(`/lego/sets/${setNumber}/`)) {
+        return {
+          ok: true,
+          json: async () => payload,
+        } as Response;
+      }
+    }
+
+    for (const [themeId, payload] of Object.entries(themePayloads)) {
+      if (url.endsWith(`/lego/themes/${themeId}/`)) {
+        return {
+          ok: true,
+          json: async () => payload,
+        } as Response;
+      }
+    }
+
+    throw new Error(`Unexpected fetch ${url}`);
+  }) as typeof fetch;
 }
 
 describe('catalog data access server', () => {
@@ -410,9 +498,25 @@ describe('catalog data access server', () => {
   });
 
   test('creates an overlay record with normalized set data', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
     const { insert, supabaseClient } = createCatalogOverlaySupabaseClient();
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '77092-1': {
+          set_num: '77092-1',
+          theme_id: 999,
+        },
+      },
+      themePayloads: {
+        '999': {
+          id: 999,
+          name: 'The Legend of Zelda',
+        },
+      },
+    });
 
     const result = await createCatalogOverlaySet({
+      fetchImpl,
       input: {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/77092-1/1000.jpg',
         name: 'Great Deku Tree 2-in-1',
@@ -430,12 +534,16 @@ describe('catalog data access server', () => {
     expect(result.slug).toBe('great-deku-tree-2-in-1-77092');
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({
+        primary_theme_id: 'theme:the-legend-of-zelda',
+        source_theme_id: 'rebrickable:999',
         slug: 'great-deku-tree-2-in-1-77092',
+        theme: 'The Legend of Zelda',
       }),
     );
   });
 
   test('normalizes raw external subthemes to the expected primary theme when creating an overlay set', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
     const { insert, supabaseClient } = createCatalogOverlaySupabaseClient({
       insertResult: {
         data: createCatalogOverlayRow({
@@ -451,8 +559,28 @@ describe('catalog data access server', () => {
         error: null,
       },
     });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '75192-1': {
+          set_num: '75192-1',
+          theme_id: 592,
+        },
+      },
+      themePayloads: {
+        '592': {
+          id: 592,
+          name: 'Ultimate Collector Series',
+          parent_id: 158,
+        },
+        '158': {
+          id: 158,
+          name: 'Star Wars',
+        },
+      },
+    });
 
     const result = await createCatalogOverlaySet({
+      fetchImpl,
       input: {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
         name: 'Millennium Falcon',
@@ -470,7 +598,138 @@ describe('catalog data access server', () => {
     expect(result.theme).toBe('Star Wars');
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({
+        primary_theme_id: 'theme:star-wars',
+        source_theme_id: 'rebrickable:592',
         theme: 'Star Wars',
+      }),
+    );
+  });
+
+  test('backfills a UCS-like source theme to Star Wars while keeping the legacy theme column intact', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+    const {
+      primaryThemeUpsert,
+      sourceThemeUpsert,
+      supabaseClient,
+      themeMappingUpsert,
+      update,
+      updateEq,
+    } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          set_id: '75192',
+          slug: 'millennium-falcon-75192',
+          source_set_number: '75192-1',
+          theme: 'Star Wars',
+        }),
+      ],
+    });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '75192-1': {
+          set_num: '75192-1',
+          theme_id: 592,
+        },
+      },
+      themePayloads: {
+        '592': {
+          id: 592,
+          name: 'Ultimate Collector Series',
+          parent_id: 158,
+        },
+        '158': {
+          id: 158,
+          name: 'Star Wars',
+        },
+      },
+    });
+
+    const result = await backfillCatalogOverlayThemeIdentity({
+      fetchImpl,
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      processedCount: 1,
+      skippedCount: 0,
+      updatedCount: 1,
+    });
+    expect(sourceThemeUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'rebrickable:592',
+        parent_source_theme_id: 'rebrickable:158',
+        source_system: 'rebrickable',
+        source_theme_name: 'Ultimate Collector Series',
+      }),
+      {
+        onConflict: 'id',
+      },
+    );
+    expect(primaryThemeUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        display_name: 'Star Wars',
+        id: 'theme:star-wars',
+        slug: 'star-wars',
+      }),
+      {
+        onConflict: 'id',
+      },
+    );
+    expect(themeMappingUpsert).toHaveBeenCalledWith(
+      {
+        primary_theme_id: 'theme:star-wars',
+        source_theme_id: 'rebrickable:592',
+      },
+      {
+        onConflict: 'source_theme_id',
+      },
+    );
+    expect(update).toHaveBeenCalledWith({
+      primary_theme_id: 'theme:star-wars',
+      source_theme_id: 'rebrickable:592',
+    });
+    expect(updateEq).toHaveBeenCalledWith('set_id', '75192');
+  });
+
+  test('backfills direct source themes without changing the legacy theme string', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+    const { supabaseClient, update } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          set_id: '72037',
+          slug: 'mario-kart-mario-standard-kart-72037',
+          source_set_number: '72037-1',
+          theme: 'Super Mario',
+        }),
+      ],
+    });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '72037-1': {
+          set_num: '72037-1',
+          theme_id: 696,
+        },
+      },
+      themePayloads: {
+        '696': {
+          id: 696,
+          name: 'Super Mario',
+        },
+      },
+    });
+
+    await backfillCatalogOverlayThemeIdentity({
+      fetchImpl,
+      supabaseClient,
+    });
+
+    expect(update).toHaveBeenCalledWith({
+      primary_theme_id: 'theme:super-mario',
+      source_theme_id: 'rebrickable:696',
+    });
+    expect(update).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        theme: expect.anything(),
       }),
     );
   });
@@ -564,6 +823,7 @@ describe('catalog data access server', () => {
   });
 
   test('translates database slug conflicts into an operator-friendly error message', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
       insertResult: {
         data: null,
@@ -574,9 +834,24 @@ describe('catalog data access server', () => {
         },
       },
     });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '77092-1': {
+          set_num: '77092-1',
+          theme_id: 999,
+        },
+      },
+      themePayloads: {
+        '999': {
+          id: 999,
+          name: 'The Legend of Zelda',
+        },
+      },
+    });
 
     await expect(
       createCatalogOverlaySet({
+        fetchImpl,
         input: {
           imageUrl: 'https://cdn.rebrickable.com/media/sets/77092-1/1000.jpg',
           name: 'Great Deku Tree 2-in-1',
