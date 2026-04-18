@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
+import { listCatalogSetCardsByIdsForBrowser } from '@lego-platform/catalog/data-access-web';
+import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSetCard,
   type CatalogSetCardPriceContext,
@@ -139,6 +140,9 @@ export function ShellFeatureCollectorCollection() {
   const [pendingSetIds, setPendingSetIds] = useState<Record<string, string>>(
     {},
   );
+  const [ownedSetCards, setOwnedSetCards] = useState<CatalogHomepageSetCard[]>(
+    [],
+  );
   const [sortOrder, setSortOrder] = useState<SavedSetSortOrder>('recent');
   const [statusMessage, setStatusMessage] = useState<string>();
   const isMountedRef = useRef(true);
@@ -146,11 +150,17 @@ export function ShellFeatureCollectorCollection() {
   async function loadUserSession() {
     try {
       const nextUserSession = await getUserSession();
+      const nextOwnedSetCards = isAuthenticatedSession(nextUserSession)
+        ? await listCatalogSetCardsByIdsForBrowser({
+            canonicalIds: nextUserSession.ownedSetIds,
+          })
+        : [];
 
       if (!isMountedRef.current) {
         return;
       }
 
+      setOwnedSetCards(nextOwnedSetCards);
       setUserSession(nextUserSession);
       setErrorMessage(undefined);
     } catch {
@@ -158,6 +168,7 @@ export function ShellFeatureCollectorCollection() {
         return;
       }
 
+      setOwnedSetCards([]);
       setUserSession(createAnonymousUserSession());
       setErrorMessage('Je prive collectie kon nu niet worden geladen.');
     } finally {
@@ -208,7 +219,6 @@ export function ShellFeatureCollectorCollection() {
     );
   }
 
-  const ownedSetCards = listCatalogSetCardsByIds(userSession.ownedSetIds);
   const sortedOwnedSetCards = sortSetCards(ownedSetCards, sortOrder);
   const hiddenOwnedCount = Math.max(
     0,

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
+import { listCatalogSetCardsByIdsForBrowser } from '@lego-platform/catalog/data-access-web';
+import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSetCard,
   type CatalogSetCardContextBadge,
@@ -185,17 +186,26 @@ export function ShellFeatureCollectorWishlist() {
   const [wishlistAlerts, setWishlistAlerts] = useState<
     Record<string, WishlistPriceAlert | undefined>
   >({});
+  const [wantedSetCards, setWantedSetCards] = useState<
+    CatalogHomepageSetCard[]
+  >([]);
   const isMountedRef = useRef(true);
   const hasMarkedViewedRef = useRef(false);
 
   async function loadUserSession() {
     try {
       const nextUserSession = await getUserSession();
+      const nextWantedSetCards = isAuthenticatedSession(nextUserSession)
+        ? await listCatalogSetCardsByIdsForBrowser({
+            canonicalIds: nextUserSession.wantedSetIds,
+          })
+        : [];
 
       if (!isMountedRef.current) {
         return;
       }
 
+      setWantedSetCards(nextWantedSetCards);
       setUserSession(nextUserSession);
       setErrorMessage(undefined);
     } catch {
@@ -203,6 +213,7 @@ export function ShellFeatureCollectorWishlist() {
         return;
       }
 
+      setWantedSetCards([]);
       setUserSession(createAnonymousUserSession());
       setErrorMessage('Je prive verlanglijst kon nu niet worden geladen.');
     } finally {
@@ -307,7 +318,6 @@ export function ShellFeatureCollectorWishlist() {
     );
   }
 
-  const wantedSetCards = listCatalogSetCardsByIds(userSession.wantedSetIds);
   const sortedWantedSetCards = sortSetCards(wantedSetCards, sortOrder);
   const activeWishlistAlertCount = wantedSetCards.filter(
     (catalogSetCard) => wishlistAlerts[catalogSetCard.id],

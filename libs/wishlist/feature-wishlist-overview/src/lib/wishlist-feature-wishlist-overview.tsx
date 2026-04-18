@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
+import { listCatalogSetCardsByIdsForBrowser } from '@lego-platform/catalog/data-access-web';
+import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
   CatalogSetCard,
@@ -125,6 +126,9 @@ function getInterestingNowBuyingNote(
 
 export function WishlistFeatureWishlistOverview() {
   const [followedSetIds, setFollowedSetIds] = useState<string[]>([]);
+  const [followedSetCards, setFollowedSetCards] = useState<
+    CatalogHomepageSetCard[]
+  >([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>();
@@ -137,11 +141,15 @@ export function WishlistFeatureWishlistOverview() {
       try {
         const followedPriceSetCollection =
           await getFollowedPriceSetCollection();
+        const nextFollowedSetCards = await listCatalogSetCardsByIdsForBrowser({
+          canonicalIds: followedPriceSetCollection.followedSetIds,
+        });
 
         if (!isMounted) {
           return;
         }
 
+        setFollowedSetCards(nextFollowedSetCards);
         setFollowedSetIds(followedPriceSetCollection.followedSetIds);
         setIsAuthenticated(followedPriceSetCollection.isAuthenticated);
         setErrorMessage(undefined);
@@ -150,6 +158,7 @@ export function WishlistFeatureWishlistOverview() {
           return;
         }
 
+        setFollowedSetCards([]);
         setErrorMessage(
           'De sets die Brickhunt voor je volgt konden nu niet worden geladen.',
         );
@@ -184,7 +193,6 @@ export function WishlistFeatureWishlistOverview() {
     };
   }, []);
 
-  const followedSetCards = listCatalogSetCardsByIds(followedSetIds);
   const followedSetItems = followedSetCards.map((catalogSetCard) => {
     const pricePanelSnapshot = getPricePanelSnapshot(catalogSetCard.id);
     const reviewedPriceSummary = getReviewedPriceSummary(catalogSetCard.id);
