@@ -72,6 +72,37 @@ describe('CatalogFeatureSearchResults', () => {
     expect(markup).toContain('href="/sets/the-razor-crest-75331"');
   });
 
+  it('does not fall back to local collector prose when no reviewed price or minifigure context exists', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSearchResults
+        query="rivendell"
+        searchMatches={[
+          {
+            discoverRank: 1,
+            score: 0,
+            setCard: {
+              id: '10316',
+              slug: 'rivendell-10316',
+              name: 'Rivendell',
+              theme: 'Icons',
+              releaseYear: 2023,
+              pieces: 6167,
+              collectorAngle: 'Epic fantasy display centerpiece',
+              tagline: 'A premium fantasy build with broad collector reach.',
+              availability: 'Steady flagship demand',
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('Rivendell');
+    expect(markup).not.toContain('Epic fantasy display centerpiece');
+    expect(markup).not.toContain(
+      'A premium fantasy build with broad collector reach.',
+    );
+  });
+
   it('renders quick filters and keeps best-deal results when a deal filter is active', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSearchResults

@@ -75,10 +75,7 @@ function isCatalogHomepageSetCard(
     typeof candidate.name === 'string' &&
     typeof candidate.theme === 'string' &&
     typeof candidate.releaseYear === 'number' &&
-    typeof candidate.pieces === 'number' &&
-    typeof candidate.collectorAngle === 'string' &&
-    typeof candidate.tagline === 'string' &&
-    typeof candidate.availability === 'string'
+    typeof candidate.pieces === 'number'
   );
 }
 

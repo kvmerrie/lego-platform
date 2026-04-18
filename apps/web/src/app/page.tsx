@@ -1,7 +1,7 @@
 import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
+import { buildCurrentSetCardPriceContext } from './lib/current-set-card-price-context';
 import styles from './page.module.css';
-import { getBestAffiliateOffer } from '@lego-platform/affiliate/data-access';
 import {
   CatalogFeatureSetList,
   type CatalogFeatureSetListItem,
@@ -17,6 +17,7 @@ import {
   listHomepageSetCards,
 } from '@lego-platform/catalog/data-access';
 import {
+  listCatalogCurrentOfferSummariesBySetIds,
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
 } from '@lego-platform/catalog/data-access-web';
@@ -24,12 +25,9 @@ import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
 import { getHeroSection } from '@lego-platform/content/util';
 import {
-  buildSetDecisionPresentation,
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
 } from '@lego-platform/pricing/data-access';
-import { formatPriceMinor } from '@lego-platform/pricing/util';
-import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import { ActionLink, Panel } from '@lego-platform/shared/ui';
 import {
   buildBrickhuntAnalyticsAttributes,
@@ -61,15 +59,11 @@ const homepageValueSignals = [
   },
 ] as const;
 
-function formatReviewedOn(observedAt: string): string {
-  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
-    day: 'numeric',
-    month: 'short',
-  }).format(new Date(observedAt));
-}
-
 function toFeatureSetListItems(
   setCards: ReturnType<typeof listCatalogSetCardsByIds>,
+  currentOfferSummaryBySetId: Awaited<
+    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
+  >,
   {
     cardSurface,
     sectionId,
@@ -82,77 +76,55 @@ function toFeatureSetListItems(
     const featuredSetPriceContext = getFeaturedSetPriceContext(
       homepageSetCard.id,
     );
-    const bestAffiliateOffer = getBestAffiliateOffer(homepageSetCard.id);
-    const decisionPresentation = buildSetDecisionPresentation({
-      hasCurrentOffer: Boolean(bestAffiliateOffer?.url),
-      pricePanelSnapshot: featuredSetPriceContext,
-      theme: homepageSetCard.theme,
-    });
+    const currentOfferSummary = currentOfferSummaryBySetId.get(
+      homepageSetCard.id,
+    );
+    const bestCurrentOffer = currentOfferSummary?.bestOffer;
     const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
       featuredSetPriceContext?.deltaMinor,
     );
     const primaryActionTrackingEvent:
       | BrickhuntAnalyticsEventDescriptor
-      | undefined =
-      bestAffiliateOffer && featuredSetPriceContext
-        ? {
-            event: 'offer_click',
-            properties: {
-              merchantCount: featuredSetPriceContext.merchantCount,
-              merchantName: bestAffiliateOffer.merchantName,
-              offerPlacement: 'card_primary_cta',
-              offerRole: 'best',
-              pageSurface: 'homepage',
-              priceVerdict,
-              rankPosition: index + 1,
-              sectionId,
-              setId: homepageSetCard.id,
-              theme: homepageSetCard.theme,
-            },
-          }
-        : undefined;
+      | undefined = bestCurrentOffer
+      ? {
+          event: 'offer_click',
+          properties: {
+            merchantCount: currentOfferSummary?.offers.length,
+            merchantName: bestCurrentOffer.merchantName,
+            offerPlacement: 'card_primary_cta',
+            offerRole: 'best',
+            pageSurface: 'homepage',
+            priceVerdict,
+            rankPosition: index + 1,
+            sectionId,
+            setId: homepageSetCard.id,
+            theme: homepageSetCard.theme,
+          },
+        }
+      : undefined;
 
     return {
       ...homepageSetCard,
       ctaMode: 'default' as const,
-      priceContext: featuredSetPriceContext
-        ? {
-            coverageLabel: featuredSetPriceContext.availabilityLabel
-              ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} winkels`
-              : `${featuredSetPriceContext.merchantCount} winkels`,
-            currentPrice: formatPriceMinor({
-              currencyCode: featuredSetPriceContext.currencyCode,
-              minorUnits: featuredSetPriceContext.headlinePriceMinor,
-            }),
-            merchantLabel: `Nu het laagst bij ${featuredSetPriceContext.merchantName}`,
-            decisionLabel: decisionPresentation.cardLabel,
-            decisionNote: decisionPresentation.cardSupportingCopy,
-            primaryActionHref: bestAffiliateOffer?.url,
-            primaryActionTrackingEvent,
-            pricePositionLabel:
-              typeof featuredSetPriceContext.deltaMinor === 'number'
-                ? featuredSetPriceContext.deltaMinor === 0
-                  ? 'Rond normaal'
-                  : `${formatPriceMinor({
-                      currencyCode: featuredSetPriceContext.currencyCode,
-                      minorUnits: Math.abs(featuredSetPriceContext.deltaMinor),
-                    })} ${
-                      featuredSetPriceContext.deltaMinor < 0
-                        ? 'onder normaal'
-                        : 'boven normaal'
-                    }`
-                : undefined,
-            pricePositionTone: decisionPresentation.verdict.tone,
-            reviewedLabel: `Nagekeken ${formatReviewedOn(
-              featuredSetPriceContext.observedAt,
-            )}`,
-          }
-        : undefined,
+      priceContext: (() => {
+        const currentSetCardPriceContext = buildCurrentSetCardPriceContext({
+          currentOfferSummary,
+          pricePanelSnapshot: featuredSetPriceContext,
+          theme: homepageSetCard.theme,
+        });
+
+        return currentSetCardPriceContext
+          ? {
+              ...currentSetCardPriceContext,
+              primaryActionTrackingEvent,
+            }
+          : undefined;
+      })(),
       trackingEvent: {
         event: 'catalog_set_click',
         properties: {
           cardSurface,
-          merchantCount: featuredSetPriceContext?.merchantCount,
+          merchantCount: currentOfferSummary?.offers.length,
           pageSurface: 'homepage',
           priceVerdict,
           rankPosition: index + 1,
@@ -165,14 +137,14 @@ function toFeatureSetListItems(
         <WishlistFeatureWishlistToggle
           analyticsContext={{
             cardSurface,
-            merchantCount: featuredSetPriceContext?.merchantCount,
+            merchantCount: currentOfferSummary?.offers.length,
             pageSurface: 'homepage',
             priceVerdict,
             sectionId,
             setId: homepageSetCard.id,
             theme: homepageSetCard.theme,
           }}
-          productIntent={featuredSetPriceContext ? 'price-alert' : 'wishlist'}
+          productIntent={bestCurrentOffer ? 'price-alert' : 'wishlist'}
           setId={homepageSetCard.id}
           variant="inline"
         />
@@ -183,9 +155,13 @@ function toFeatureSetListItems(
 
 function createHomepageFeaturedRailItems({
   excludedSetIds = [],
+  currentOfferSummaryBySetId,
 }: {
+  currentOfferSummaryBySetId: Awaited<
+    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
+  >;
   excludedSetIds?: readonly string[];
-} = {}): CatalogFeatureSetListItem[] {
+}): CatalogFeatureSetListItem[] {
   const excludedSetIdSet = new Set(excludedSetIds);
   const featuredSetCards = listHomepageSetCards().filter(
     (featuredSetCard) => !excludedSetIdSet.has(featuredSetCard.id),
@@ -213,7 +189,7 @@ function createHomepageFeaturedRailItems({
     }
   }
 
-  return toFeatureSetListItems(mergedSetCards, {
+  return toFeatureSetListItems(mergedSetCards, currentOfferSummaryBySetId, {
     cardSurface: 'featured',
     sectionId: 'featured-sets',
   });
@@ -230,37 +206,52 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const queryMode = await getEditorialQueryMode();
+  const homepageDealSetIds = listDealSpotlightPriceContexts({
+    candidateSetIds: listHomepageDealCandidateSetCards().map(
+      (catalogSetCard) => catalogSetCard.id,
+    ),
+    limit: 3,
+  }).map((priceContext) => priceContext.setId);
+  const homepageFeaturedCandidateSetIds = listHomepageSetCards().map(
+    (featuredSetCard) => featuredSetCard.id,
+  );
+  const homepageFeaturedFillSetIds = listDiscoverHighlightSetCards({
+    limit: HOMEPAGE_FEATURED_RAIL_FILL_LIMIT,
+  }).map((highlightSetCard) => highlightSetCard.id);
   const [
     homepagePage,
     homepageThemeDirectoryItems,
     homepageThemeSpotlightItems,
+    currentOfferSummaryBySetId,
   ] = await Promise.all([
     getHomepagePage({
       mode: queryMode,
     }),
     listHomepageThemeDirectoryItemsWithOverlay(),
     listHomepageThemeSpotlightItemsWithOverlay(),
+    listCatalogCurrentOfferSummariesBySetIds({
+      setIds: [
+        ...homepageDealSetIds,
+        ...homepageFeaturedCandidateSetIds,
+        ...homepageFeaturedFillSetIds,
+      ],
+    }),
   ]);
   const homepageHeroSection = getHeroSection(homepagePage.sections);
   const homepageDealSetCards = toFeatureSetListItems(
-    listCatalogSetCardsByIds(
-      listDealSpotlightPriceContexts({
-        candidateSetIds: listHomepageDealCandidateSetCards().map(
-          (catalogSetCard) => catalogSetCard.id,
-        ),
-        limit: 3,
-      }).map((priceContext) => priceContext.setId),
-    ),
+    listCatalogSetCardsByIds(homepageDealSetIds),
+    currentOfferSummaryBySetId,
     {
       cardSurface: 'deal',
       sectionId: 'best-current-deals',
     },
   );
-  const homepageDealSetIds = homepageDealSetCards.map(
+  const homepageDealSetCardIds = homepageDealSetCards.map(
     (homepageDealSetCard) => homepageDealSetCard.id,
   );
   const homepageSetCards = createHomepageFeaturedRailItems({
-    excludedSetIds: homepageDealSetIds,
+    currentOfferSummaryBySetId,
+    excludedSetIds: homepageDealSetCardIds,
   });
   const homepageHeroPage = homepageHeroSection
     ? {

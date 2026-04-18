@@ -110,17 +110,12 @@ function filterDiscoverSetCards<T extends CatalogHomepageSetCard>({
 }
 
 function formatDiscoverFanContext(
-  setCard: Pick<
-    CatalogHomepageSetCard,
-    'collectorAngle' | 'minifigureHighlights'
-  >,
+  setCard: Pick<CatalogHomepageSetCard, 'minifigureHighlights'>,
 ): ReactNode {
   if (setCard.minifigureHighlights?.length) {
     const visibleHighlights = setCard.minifigureHighlights.slice(0, 3);
     return <>Met {renderCanonicalNames(visibleHighlights)}</>;
   }
-
-  return setCard.collectorAngle;
 }
 
 export function CatalogFeatureDiscover({

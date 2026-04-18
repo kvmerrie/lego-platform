@@ -127,20 +127,14 @@ function formatMinifigureHighlights(
 }
 
 function getSearchResultSupportingNote(searchResult: {
-  collectorAngle: string;
   minifigureHighlights?: readonly string[];
   priceContext?: CatalogFeatureSearchReviewedPriceContext;
-  tagline: string;
 }): ReactNode {
   if (searchResult.priceContext) {
     return formatSearchPriceContext(searchResult.priceContext);
   }
 
-  return (
-    formatMinifigureHighlights(searchResult.minifigureHighlights) ??
-    searchResult.collectorAngle ??
-    searchResult.tagline
-  );
+  return formatMinifigureHighlights(searchResult.minifigureHighlights);
 }
 
 export function CatalogFeatureSearchResults({

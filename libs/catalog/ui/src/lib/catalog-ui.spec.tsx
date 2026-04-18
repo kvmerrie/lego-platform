@@ -389,10 +389,10 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('alt="Rivendell LEGO-set"');
     expect(markup).toContain('Dekking');
     expect(markup).toContain('Actualiteit');
-    expect(markup).toContain('Waarom verzamelaars dit kiezen');
-    expect(markup).toContain('Beschikbaarheid');
-    expect(markup).toContain('Healthy but premium availability');
-    expect(markup).toContain('Prestige display anchor');
+    expect(markup).not.toContain('Waarom verzamelaars dit kiezen');
+    expect(markup).not.toContain('Beschikbaarheid');
+    expect(markup).not.toContain('Healthy but premium availability');
+    expect(markup).not.toContain('Prestige display anchor');
     expect(markup).toContain('EUR 10.00 below ref');
   });
 
@@ -598,7 +598,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Zo lees je dit');
     expect(markup).toContain('Je ziet meteen of deze prijs echt opvalt.');
     expect(markup).toContain('Wat Brickhunt nu ziet');
-    expect(markup).toContain(
+    expect(markup).not.toContain(
       'Als je een grote Middle-earth-set wilt, pak je deze.',
     );
     expect(markup).toContain('Kies foto 2 van 2');
@@ -613,7 +613,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Formaat');
     expect(markup).toContain('72 × 50 × 39 cm');
     expect(markup).toContain('Stenen');
-    expect(markup).toContain('Wat hier blijft hangen');
+    expect(markup).not.toContain('Wat hier blijft hangen');
     expect(markup).not.toContain(
       'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
     );
@@ -856,7 +856,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('13');
   });
 
-  it('renders curated minifigure highlights as a lightweight includes line', () => {
+  it('keeps the detail flow lean and skips local collector prose blocks', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetDetailPanel
         dealVerdict={{
@@ -891,10 +891,13 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Minifigs');
-    expect(markup).toContain(
+    expect(markup).not.toContain('Waarom deze');
+    expect(markup).not.toContain('Wat hier blijft hangen');
+    expect(markup).not.toContain(
       'Jabba the Hutt, Princess Leia, Bib Fortuna, Max Rebo',
     );
+    expect(markup).toContain('Minifiguren');
+    expect(markup).toContain('11');
   });
 
   it('renders a larger feature tile variant for descriptive browsing surfaces', () => {

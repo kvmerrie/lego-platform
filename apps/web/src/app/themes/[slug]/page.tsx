@@ -1,19 +1,16 @@
 import {
+  listCatalogCurrentOfferSummariesBySetIds,
   getCatalogThemePageBySlugWithOverlay,
   listCatalogThemePageSlugsWithOverlay,
 } from '@lego-platform/catalog/data-access-web';
-import { getBestAffiliateOffer } from '@lego-platform/affiliate/data-access';
 import {
   CatalogFeatureThemePage,
   type CatalogFeatureThemePageDealItem,
 } from '@lego-platform/catalog/feature-theme-page';
 import {
-  buildSetDecisionPresentation,
   getFeaturedSetPriceContext,
   listDealSpotlightPriceContexts,
 } from '@lego-platform/pricing/data-access';
-import { formatPriceMinor } from '@lego-platform/pricing/util';
-import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import {
   type BrickhuntAnalyticsEventDescriptor,
   getBrickhuntAnalyticsPriceVerdictFromDelta,
@@ -22,52 +19,18 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
 
 export const dynamicParams = true;
 
-function getPricePositionLabel({
-  currencyCode,
-  deltaMinor,
-}: {
-  currencyCode: string;
-  deltaMinor?: number;
-}): string | undefined {
-  if (typeof deltaMinor !== 'number') {
-    return undefined;
-  }
-
-  if (deltaMinor === 0) {
-    return 'Rond normaal';
-  }
-
-  if (deltaMinor < 0) {
-    return `${formatPriceMinor({
-      currencyCode,
-      minorUnits: Math.abs(deltaMinor),
-    })} below reference`;
-  }
-
-  if (deltaMinor > 0) {
-    return `${formatPriceMinor({
-      currencyCode,
-      minorUnits: deltaMinor,
-    })} above reference`;
-  }
-
-  return 'At reference';
-}
-
-function formatReviewedOn(observedAt: string): string {
-  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
-    day: 'numeric',
-    month: 'short',
-  }).format(new Date(observedAt));
-}
-
 function toThemeDealSetCards({
+  currentOfferSummaryBySetId,
   setIds,
   setCardById,
 }: {
+  currentOfferSummaryBySetId: Awaited<
+    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
+  >;
   setCardById: Map<string, CatalogFeatureThemePageDealItem>;
   setIds: readonly string[];
 }): CatalogFeatureThemePageDealItem[] {
@@ -79,39 +42,16 @@ function toThemeDealSetCards({
     }
 
     const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
-    const bestAffiliateOffer = getBestAffiliateOffer(setCard.id);
-    const decisionPresentation = buildSetDecisionPresentation({
-      hasCurrentOffer: Boolean(bestAffiliateOffer?.url),
-      pricePanelSnapshot: featuredSetPriceContext,
-      theme: setCard.theme,
-    });
+    const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
 
     return [
       {
         ...setCard,
-        priceContext: featuredSetPriceContext
-          ? {
-              coverageLabel: featuredSetPriceContext.availabilityLabel
-                ? `${featuredSetPriceContext.availabilityLabel} · ${featuredSetPriceContext.merchantCount} reviewed offers`
-                : `${featuredSetPriceContext.merchantCount} reviewed offers`,
-              currentPrice: formatPriceMinor({
-                currencyCode: featuredSetPriceContext.currencyCode,
-                minorUnits: featuredSetPriceContext.headlinePriceMinor,
-              }),
-              merchantLabel: `Lowest reviewed price at ${featuredSetPriceContext.merchantName}`,
-              decisionLabel: decisionPresentation.cardLabel,
-              decisionNote: decisionPresentation.cardSupportingCopy,
-              primaryActionHref: bestAffiliateOffer?.url,
-              pricePositionLabel: getPricePositionLabel({
-                currencyCode: featuredSetPriceContext.currencyCode,
-                deltaMinor: featuredSetPriceContext.deltaMinor,
-              }),
-              pricePositionTone: decisionPresentation.verdict.tone,
-              reviewedLabel: `Checked ${formatReviewedOn(
-                featuredSetPriceContext.observedAt,
-              )}`,
-            }
-          : undefined,
+        priceContext: buildCurrentSetCardPriceContext({
+          currentOfferSummary,
+          pricePanelSnapshot: featuredSetPriceContext,
+          theme: setCard.theme,
+        }),
       },
     ];
   });
@@ -160,27 +100,34 @@ export default async function ThemePage({
   const setCardById = new Map(
     themePage.setCards.map((setCard) => [setCard.id, setCard]),
   );
+  const dealSetIds = listDealSpotlightPriceContexts({
+    candidateSetIds: themePage.setCards.map((setCard) => setCard.id),
+    limit: 4,
+  }).map((priceContext) => priceContext.setId);
+  const currentOfferSummaryBySetId =
+    await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: dealSetIds,
+    });
   const dealSetCards = toThemeDealSetCards({
+    currentOfferSummaryBySetId,
     setCardById,
-    setIds: listDealSpotlightPriceContexts({
-      candidateSetIds: themePage.setCards.map((setCard) => setCard.id),
-      limit: 4,
-    }).map((priceContext) => priceContext.setId),
+    setIds: dealSetIds,
   });
   const featuredDealSetCards = dealSetCards.map((dealSetCard, index) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(dealSetCard.id);
-    const bestAffiliateOffer = getBestAffiliateOffer(dealSetCard.id);
+    const currentOfferSummary = currentOfferSummaryBySetId.get(dealSetCard.id);
+    const bestCurrentOffer = currentOfferSummary?.bestOffer;
     const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
       featuredSetPriceContext?.deltaMinor,
     );
     const primaryActionTrackingEvent:
       | BrickhuntAnalyticsEventDescriptor
-      | undefined = bestAffiliateOffer
+      | undefined = bestCurrentOffer
       ? {
           event: 'offer_click',
           properties: {
-            merchantCount: featuredSetPriceContext?.merchantCount,
-            merchantName: bestAffiliateOffer.merchantName,
+            merchantCount: currentOfferSummary?.offers.length,
+            merchantName: bestCurrentOffer?.merchantName,
             offerPlacement: 'card_primary_cta',
             offerRole: 'best',
             pageSurface: 'theme_page',
@@ -198,14 +145,14 @@ export default async function ThemePage({
       actions: (
         <WishlistFeatureWishlistToggle
           analyticsContext={{
-            merchantCount: featuredSetPriceContext?.merchantCount,
+            merchantCount: currentOfferSummary?.offers.length,
             pageSurface: 'theme_page',
             priceVerdict,
             sectionId: 'theme-best-deals',
             setId: dealSetCard.id,
             theme: dealSetCard.theme,
           }}
-          productIntent={featuredSetPriceContext ? 'price-alert' : 'wishlist'}
+          productIntent={bestCurrentOffer ? 'price-alert' : 'wishlist'}
           setId={dealSetCard.id}
           variant="inline"
         />

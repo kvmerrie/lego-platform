@@ -508,14 +508,6 @@ function formatCatalogSetStatus(
   return 'Uit assortiment';
 }
 
-function formatMinifigureHighlights(
-  minifigureHighlights?: readonly string[],
-): string | undefined {
-  return minifigureHighlights?.length
-    ? minifigureHighlights.join(', ')
-    : undefined;
-}
-
 function formatCatalogRecommendedAge(
   recommendedAge?: number,
 ): string | undefined {
@@ -668,6 +660,9 @@ export function CatalogSetCard({
   const setThemeStyle = getCatalogThemeStyleVariables({
     themeName: setSummary.theme,
   });
+  const hasSupportingContext = Boolean(
+    (priceContext && priceDisplay === 'subtle') || supportingNote,
+  );
 
   if (variant === 'compact') {
     const overlayBadges = (
@@ -906,9 +901,6 @@ export function CatalogSetCard({
         <h3 className={`${styles.cardTitle} ${styles.cardTitleClamp}`}>
           <CatalogCanonicalText>{setSummary.name}</CatalogCanonicalText>
         </h3>
-        <p className={`${styles.cardTagline} ${styles.cardTaglineClamp}`}>
-          {setSummary.tagline ?? setSummary.collectorAngle}
-        </p>
       </div>
       {priceContext && priceDisplay === 'default' ? (
         <div className={styles.priceBlock}>
@@ -943,37 +935,29 @@ export function CatalogSetCard({
           </p>
         </div>
       ) : null}
-      <div className={styles.collectorContext}>
-        {priceContext && priceDisplay === 'subtle' ? (
-          <CatalogSupportingDetail
-            label="Huidige reviewed prijs"
-            tone="muted"
-            value={`${priceContext.currentPrice} · ${
-              priceContext.decisionNote ?? priceContext.merchantLabel
-            }`}
-          />
-        ) : null}
-        {supportingNote ? (
-          <CatalogSupportingDetail
-            label={
-              priceContext && priceDisplay === 'default'
-                ? 'Koopsignaal'
-                : 'Huidige marktnotitie'
-            }
-            value={supportingNote}
-          />
-        ) : null}
-        <CatalogSupportingDetail
-          label="Waarom verzamelaars dit kiezen"
-          value={setSummary.collectorAngle}
-        />
-        {setSummary.availability ? (
-          <CatalogSupportingDetail
-            label="Beschikbaarheid"
-            value={setSummary.availability}
-          />
-        ) : null}
-      </div>
+      {hasSupportingContext ? (
+        <div className={styles.collectorContext}>
+          {priceContext && priceDisplay === 'subtle' ? (
+            <CatalogSupportingDetail
+              label="Huidige reviewed prijs"
+              tone="muted"
+              value={`${priceContext.currentPrice} · ${
+                priceContext.decisionNote ?? priceContext.merchantLabel
+              }`}
+            />
+          ) : null}
+          {supportingNote ? (
+            <CatalogSupportingDetail
+              label={
+                priceContext && priceDisplay === 'default'
+                  ? 'Koopsignaal'
+                  : 'Huidige marktnotitie'
+              }
+              value={supportingNote}
+            />
+          ) : null}
+        </div>
+      ) : null}
       <CatalogSetMetadata
         items={[
           { label: 'Steentjes', value: setSummary.pieces.toLocaleString() },
@@ -1143,24 +1127,6 @@ export function CatalogSetDetailPanel({
   trustSignals?: readonly CatalogSetDetailTrustSignal[];
 }) {
   const setStatusLabel = formatCatalogSetStatus(catalogSetDetail.setStatus);
-  const minifigureHighlightsLabel = formatMinifigureHighlights(
-    catalogSetDetail.minifigureHighlights,
-  );
-  const notesDescription =
-    catalogSetDetail.tagline ?? catalogSetDetail.collectorAngle;
-  const setHighlights = Array.from(
-    new Set(
-      (catalogSetDetail.tagline
-        ? [
-            catalogSetDetail.collectorAngle,
-            ...catalogSetDetail.collectorHighlights,
-          ]
-        : catalogSetDetail.collectorHighlights.length > 0
-          ? catalogSetDetail.collectorHighlights
-          : [catalogSetDetail.collectorAngle]
-      ).filter(Boolean),
-    ),
-  ).slice(0, 3);
   const heroSpecs = buildCatalogSetDetailHeroFacts({
     catalogSetDetail,
     setStatusLabel,
@@ -1309,34 +1275,6 @@ export function CatalogSetDetailPanel({
       ) : null}
 
       <section className={styles.detailInfoGrid}>
-        <Panel
-          as="aside"
-          className={styles.notesPanel}
-          description={notesDescription}
-          eyebrow="Waarom deze"
-          elevation="rested"
-          title="Wat hier blijft hangen"
-          titleAs="h2"
-          tone="muted"
-        >
-          {minifigureHighlightsLabel ? (
-            <CatalogSupportingDetail
-              label="Minifigs"
-              value={
-                <CatalogCanonicalText>
-                  {minifigureHighlightsLabel}
-                </CatalogCanonicalText>
-              }
-            />
-          ) : null}
-          <MarkerList
-            className={styles.highlightsList}
-            items={setHighlights.map((collectorHighlight) => ({
-              content: collectorHighlight,
-              id: collectorHighlight,
-            }))}
-          />
-        </Panel>
         <CatalogSetOwnershipCard action={ownershipActions} />
         <CatalogSetSupportCard
           eyebrow="Brickhunt checkt"

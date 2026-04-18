@@ -9,6 +9,7 @@ import { describe, expect, test, vi } from 'vitest';
 
 import {
   type CatalogResolvedOffer,
+  getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlugWithOverlay,
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
@@ -19,7 +20,9 @@ import {
   listCatalogThemeDirectoryItemsWithOverlay,
   listCatalogThemePageSlugsWithOverlay,
   listDiscoverBrowseThemeGroupsWithOverlay,
+  resolveCatalogCurrentOffers,
   resolveCatalogSetDetailOffers,
+  summarizeCatalogCurrentOffers,
 } from './catalog-effective-data-access-web';
 
 function createOverlaySet(
@@ -731,5 +734,111 @@ describe('catalog effective data access web', () => {
       merchantName: 'Intertoys',
       priceCents: 16999,
     });
+  });
+
+  test('uses the same live best merchant summary as the set detail offer path when live offers exist', () => {
+    const generatedOffers = [
+      createCatalogOffer({
+        merchant: 'other',
+        merchantName: 'bol',
+        priceCents: 23399,
+        setId: '75355',
+        url: 'https://brickhunt.nl/out/75355-bol',
+      }),
+      createCatalogOffer({
+        merchant: 'other',
+        merchantName: 'Top1Toys',
+        priceCents: 23999,
+        setId: '75355',
+        url: 'https://brickhunt.nl/out/75355-top1toys',
+      }),
+    ];
+    const liveOffers = [
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-04-18T13:45:00.000Z',
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Top1Toys',
+        merchantSlug: 'top1toys',
+        priceCents: 23999,
+        setId: '75355',
+        url: 'https://www.top1toys.nl/x-wing',
+      },
+    ];
+
+    const detailOffers = resolveCatalogSetDetailOffers({
+      generatedOffers,
+      liveOffers,
+    });
+    const summary = summarizeCatalogCurrentOffers({
+      generatedOffers,
+      liveOffers,
+      setId: '75355',
+    });
+
+    expect(detailOffers[0]).toMatchObject({
+      merchantName: 'Top1Toys',
+      priceCents: 23999,
+      url: 'https://brickhunt.nl/out/75355-top1toys',
+    });
+    expect(summary.bestOffer).toMatchObject({
+      merchantName: 'Top1Toys',
+      priceCents: 23999,
+      url: 'https://brickhunt.nl/out/75355-top1toys',
+    });
+  });
+
+  test('does not let generated-only merchants masquerade as current best offers on listing cards', () => {
+    const result = resolveCatalogCurrentOffers({
+      generatedOffers: [
+        createCatalogOffer({
+          merchant: 'other',
+          merchantName: 'bol',
+          priceCents: 23399,
+          setId: '75355',
+          url: 'https://brickhunt.nl/out/75355-bol',
+        }),
+      ],
+      liveOffers: [
+        {
+          availability: 'in_stock',
+          checkedAt: '2026-04-18T13:45:00.000Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'other',
+          merchantName: 'Top1Toys',
+          merchantSlug: 'top1toys',
+          priceCents: 23999,
+          setId: '75355',
+          url: 'https://www.top1toys.nl/x-wing',
+        },
+      ],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      merchantName: 'Top1Toys',
+      priceCents: 23999,
+    });
+    expect(
+      result.some((catalogOffer) => catalogOffer.merchantName === 'bol'),
+    ).toBe(false);
+  });
+
+  test('generated fallback pricing does not masquerade as a live current best deal when no live offers exist', async () => {
+    const summary = await getCatalogCurrentOfferSummaryBySetId({
+      fetchImpl: vi.fn().mockResolvedValue({
+        json: vi.fn().mockResolvedValue([]),
+        ok: true,
+      }),
+      setId: '21061',
+    });
+
+    expect(summary.offers).toEqual([]);
+    expect(summary.bestOffer).toBeUndefined();
   });
 });

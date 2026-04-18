@@ -159,17 +159,12 @@ describe('ShellWebSearchForm', () => {
       new Response(
         JSON.stringify([
           {
-            availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
-            collectorAngle:
-              'Nieuw in Brickhunt. Mario Kart - Mario & Standard Kart staat klaar voor de eerste prijscheck.',
             id: '72037',
             imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
             name: 'Mario Kart - Mario & Standard Kart',
             pieces: 1972,
             releaseYear: 2025,
             slug: 'mario-kart-mario-standard-kart-72037',
-            tagline:
-              'We bouwen nu de eerste prijsvergelijking op voor deze Super Mario-set.',
             theme: 'Super Mario',
           },
         ]),
@@ -224,31 +219,21 @@ describe('ShellWebSearchForm', () => {
       new Response(
         JSON.stringify([
           {
-            availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
-            collectorAngle:
-              'Nieuw in Brickhunt. Mario Kart - Mario & Standard Kart staat klaar voor de eerste prijscheck.',
             id: '72037',
             imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
             name: 'Mario Kart - Mario & Standard Kart',
             pieces: 1972,
             releaseYear: 2025,
             slug: 'mario-kart-mario-standard-kart-72037',
-            tagline:
-              'We bouwen nu de eerste prijsvergelijking op voor deze Super Mario-set.',
             theme: 'Super Mario',
           },
           {
-            availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
-            collectorAngle:
-              'Nieuw in Brickhunt. Mario Kart - Mario & Standard Kart staat klaar voor de eerste prijscheck.',
             id: '72037',
             imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
             name: 'Mario Kart - Mario & Standard Kart',
             pieces: 1972,
             releaseYear: 2025,
             slug: 'mario-kart-mario-standard-kart-72037',
-            tagline:
-              'We bouwen nu de eerste prijsvergelijking op voor deze Super Mario-set.',
             theme: 'Super Mario',
           },
         ]),

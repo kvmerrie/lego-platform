@@ -145,6 +145,39 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 
+  it('does not fall back to local collector prose when minifigure highlights are absent', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureDiscover
+        dealSetCards={[
+          {
+            id: '10316',
+            slug: 'rivendell-10316',
+            name: 'Rivendell',
+            theme: 'Icons',
+            releaseYear: 2023,
+            pieces: 6167,
+            collectorAngle: 'Epic fantasy display centerpiece',
+            tagline: 'A premium fantasy build with broad collector reach.',
+            availability: 'Steady flagship demand',
+            priceContext: {
+              coverageLabel: 'In stock · 2 reviewed offers',
+              currentPrice: 'EUR 469.99',
+              merchantLabel: 'Lowest reviewed price at LEGO',
+              pricePositionLabel: 'EUR 20.00 below reference',
+              reviewedLabel: 'Checked 31 mrt',
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('Rivendell');
+    expect(markup).not.toContain('Epic fantasy display centerpiece');
+    expect(markup).not.toContain(
+      'A premium fantasy build with broad collector reach.',
+    );
+  });
+
   it('renders discover quick filters and a calm empty state when the active filter has no matches', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureDiscover activeFilter="best-deals" />,

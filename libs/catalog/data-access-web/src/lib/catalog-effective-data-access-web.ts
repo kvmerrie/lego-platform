@@ -4,6 +4,7 @@ import {
   type CatalogSearchMatch,
   type CatalogThemeDirectoryItem,
   type CatalogThemeLandingPage,
+  getCatalogOffersBySetId,
   getCatalogSetBySlug,
   getCatalogThemePageBySlug,
   listHomepageThemeDirectoryItems,
@@ -99,6 +100,12 @@ export interface CatalogResolvedOffer {
 
 export interface CatalogRuntimeOffer extends CatalogResolvedOffer {
   merchantSlug: string;
+}
+
+export interface CatalogCurrentOfferSummary {
+  bestOffer?: CatalogResolvedOffer;
+  offers: readonly CatalogResolvedOffer[];
+  setId: string;
 }
 
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
@@ -219,6 +226,12 @@ function sortResolvedCatalogOffers<Offer extends CatalogResolvedOffer>(
   );
 }
 
+function isResolvedEuroCatalogOffer(
+  catalogOffer: CatalogResolvedOffer,
+): boolean {
+  return catalogOffer.currency === 'EUR' && catalogOffer.market === 'NL';
+}
+
 function toCatalogRuntimeOffer({
   latestOffer,
   merchant,
@@ -305,6 +318,44 @@ export function resolveCatalogSetDetailOffers({
       } satisfies CatalogResolvedOffer;
     }),
   );
+}
+
+export function resolveCatalogCurrentOffers({
+  generatedOffers,
+  liveOffers,
+}: {
+  generatedOffers: readonly CatalogResolvedOffer[];
+  liveOffers: readonly CatalogRuntimeOffer[];
+}): CatalogResolvedOffer[] {
+  if (!liveOffers.length) {
+    return [];
+  }
+
+  return resolveCatalogSetDetailOffers({
+    generatedOffers,
+    liveOffers,
+  }).filter(isResolvedEuroCatalogOffer);
+}
+
+export function summarizeCatalogCurrentOffers({
+  generatedOffers,
+  liveOffers,
+  setId,
+}: {
+  generatedOffers: readonly CatalogResolvedOffer[];
+  liveOffers: readonly CatalogRuntimeOffer[];
+  setId: string;
+}): CatalogCurrentOfferSummary {
+  const offers = resolveCatalogCurrentOffers({
+    generatedOffers,
+    liveOffers,
+  });
+
+  return {
+    bestOffer: offers[0],
+    offers,
+    setId,
+  };
 }
 
 export async function listCatalogOverlaySets({
@@ -484,6 +535,65 @@ export async function listCatalogSetLiveOffersBySetId({
 
     throw error;
   }
+}
+
+export async function getCatalogCurrentOfferSummaryBySetId({
+  apiBaseUrl,
+  fetchImpl,
+  setId,
+  supabaseClient,
+}: {
+  apiBaseUrl?: string;
+  fetchImpl?: typeof fetch;
+  setId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogCurrentOfferSummary> {
+  const [generatedOffers, liveOffers] = await Promise.all([
+    Promise.resolve(getCatalogOffersBySetId(setId)),
+    listCatalogSetLiveOffersBySetId({
+      apiBaseUrl,
+      fetchImpl,
+      setId,
+      supabaseClient,
+    }),
+  ]);
+
+  return summarizeCatalogCurrentOffers({
+    generatedOffers,
+    liveOffers,
+    setId,
+  });
+}
+
+export async function listCatalogCurrentOfferSummariesBySetIds({
+  apiBaseUrl,
+  fetchImpl,
+  setIds,
+  supabaseClient,
+}: {
+  apiBaseUrl?: string;
+  fetchImpl?: typeof fetch;
+  setIds: readonly string[];
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<Map<string, CatalogCurrentOfferSummary>> {
+  const uniqueSetIds = [...new Set(setIds)];
+  const summaries = await Promise.all(
+    uniqueSetIds.map((setId) =>
+      getCatalogCurrentOfferSummaryBySetId({
+        apiBaseUrl,
+        fetchImpl,
+        setId,
+        supabaseClient,
+      }),
+    ),
+  );
+
+  return new Map(
+    summaries.map((catalogCurrentOfferSummary) => [
+      catalogCurrentOfferSummary.setId,
+      catalogCurrentOfferSummary,
+    ]),
+  );
 }
 
 function toOverlayCatalogSetDetail(
