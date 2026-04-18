@@ -118,6 +118,8 @@ async function createAdminCommerceServer({
             missingMerchantNames: ['LEGO'],
             missingMerchantSlugs: ['lego-nl'],
             needsReviewCount: 0,
+            notAvailableConfirmedMerchantCount: 0,
+            notAvailableConfirmedMerchantNames: [],
             staleMerchantCount: 0,
             unavailableMerchantCount: 0,
             merchantStatuses: [],

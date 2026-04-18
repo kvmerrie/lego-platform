@@ -5,8 +5,8 @@
         <p class="eyebrow">Commerce backoffice</p>
         <h1>{{ productName }} operations</h1>
         <p class="muted">
-          Beheer merchants en offer seeds bovenop de bestaande catalogussync.
-          Klein, duidelijk en bruikbaar voor dagelijkse commerce-operaties.
+          Begin bij nieuwe sets in de workflow. Voor dagelijks werk pak je
+          daarna meteen Te doen.
         </p>
       </div>
 
@@ -16,15 +16,37 @@
     </div>
 
     <nav aria-label="Admin navigatie" class="admin-shell__nav">
-      @for (navigationItem of navigationItems; track navigationItem.path) {
-      <a
-        [routerLink]="navigationItem.path"
-        class="admin-shell__nav-link"
-        routerLinkActive="is-active"
-      >
-        {{ navigationItem.label }}
-      </a>
-      }
+      <div class="admin-shell__nav-group">
+        <span class="admin-shell__nav-heading">Snel aan de slag</span>
+        <div class="admin-shell__nav-items">
+          @for (navigationItem of primaryNavigationItems; track
+          navigationItem.path) {
+          <a
+            [routerLink]="navigationItem.path"
+            class="admin-shell__nav-link"
+            routerLinkActive="is-active"
+          >
+            {{ navigationItem.label }}
+          </a>
+          }
+        </div>
+      </div>
+
+      <div class="admin-shell__nav-group">
+        <span class="admin-shell__nav-heading">Meer tools</span>
+        <div class="admin-shell__nav-items">
+          @for (navigationItem of secondaryNavigationItems; track
+          navigationItem.path) {
+          <a
+            [routerLink]="navigationItem.path"
+            class="admin-shell__nav-link"
+            routerLinkActive="is-active"
+          >
+            {{ navigationItem.label }}
+          </a>
+          }
+        </div>
+      </div>
     </nav>
   </header>
 

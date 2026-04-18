@@ -20,23 +20,21 @@ import { getThemeToggleLabel } from '@lego-platform/shared/util';
 export class ShellAdminComponent {
   readonly productName = platformConfig.productName;
   readonly themeMode = signal<ThemeMode>(getPreferredThemeMode());
-  readonly navigationItems = [
+  readonly primaryNavigationItems = [
     {
-      label: 'Dashboard',
-      path: '/dashboard',
+      label: 'Te doen',
+      path: '/coverage-queue',
+    },
+    {
+      label: 'Set workflow',
+      path: '/workflow',
     },
     {
       label: 'Add set',
       path: '/add-set',
     },
-    {
-      label: 'Operations',
-      path: '/operations',
-    },
-    {
-      label: 'Coverage Queue',
-      path: '/coverage-queue',
-    },
+  ] as const;
+  readonly secondaryNavigationItems = [
     {
       label: 'Discovery',
       path: '/discovery',
@@ -52,6 +50,10 @@ export class ShellAdminComponent {
     {
       label: 'Coverage',
       path: '/coverage',
+    },
+    {
+      label: 'Operations',
+      path: '/operations',
     },
   ] as const;
 

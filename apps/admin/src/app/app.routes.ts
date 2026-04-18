@@ -8,6 +8,7 @@ import {
   CommerceAdminMerchantsPageComponent,
   CommerceAdminOperationsPageComponent,
   CommerceAdminOfferSeedsPageComponent,
+  CommerceAdminSetsPageComponent,
   CommerceFeatureAdminComponent,
 } from '@lego-platform/commerce/feature-admin';
 
@@ -19,11 +20,16 @@ export const appRoutes: Route[] = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'dashboard',
+        redirectTo: 'workflow',
+      },
+      {
+        path: 'workflow',
+        component: CommerceAdminDashboardPageComponent,
       },
       {
         path: 'dashboard',
-        component: CommerceAdminDashboardPageComponent,
+        pathMatch: 'full',
+        redirectTo: 'workflow',
       },
       {
         path: 'add-set',
@@ -44,6 +50,10 @@ export const appRoutes: Route[] = [
       {
         path: 'offer-seeds',
         component: CommerceAdminOfferSeedsPageComponent,
+      },
+      {
+        path: 'sets',
+        component: CommerceAdminSetsPageComponent,
       },
       {
         path: 'coverage-queue',

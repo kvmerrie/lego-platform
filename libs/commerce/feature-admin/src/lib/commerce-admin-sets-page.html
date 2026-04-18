@@ -1,0 +1,305 @@
+<section class="admin-section admin-sets-page">
+  <header class="admin-panel admin-sets-page__bar">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Sets</p>
+      <h2>Zoek elke set terug, check de dekking, en pak direct de juiste actie.</h2>
+      <p class="admin-muted">
+        Dit is je brede beheerindex. Minder “wat moet ik vandaag doen”, meer
+        “laat me elke set snel vinden en in context beheren”.
+      </p>
+    </div>
+
+    <div class="admin-actions">
+      <span class="admin-count-pill">
+        {{ filteredRows().length }}/{{
+          commerceAdminStore.coverageQueueRows().length
+        }}
+        sets
+      </span>
+      @if (selectedRow(); as selectedRow) {
+        <span class="admin-count-pill">
+          Actief: {{ selectedRow.setId }}
+        </span>
+      }
+    </div>
+  </header>
+
+  <section class="admin-panel admin-sets-page__toolbar">
+    <div class="admin-actions">
+      <strong>Filters en sortering</strong>
+      <span class="admin-muted">
+        Brede setweergave voor beheer, zoeken en context. Niet alleen de
+        hoogste prioriteit.
+      </span>
+    </div>
+
+    <div class="admin-sets-page__filters">
+      <input
+        [ngModel]="search()"
+        (ngModelChange)="updateSearch($event)"
+        class="admin-input"
+        placeholder="Zoek op setnaam of nummer"
+        type="search"
+      />
+
+      <select
+        [ngModel]="sourceFilter()"
+        (ngModelChange)="updateSourceFilter($event)"
+        class="admin-input"
+        name="sets-source-filter"
+      >
+        <option value="all">Alle bronnen</option>
+        <option value="snapshot">Alleen snapshot</option>
+        <option value="overlay">Alleen overlay</option>
+      </select>
+
+      <select
+        [ngModel]="healthFilter()"
+        (ngModelChange)="updateHealthFilter($event)"
+        class="admin-input"
+        name="sets-health-filter"
+      >
+        <option value="all">Alle dekking</option>
+        <option value="zero_valid">0 geldige merchants</option>
+        <option value="under_covered">Minder dan 3 geldige merchants</option>
+        <option value="fully_covered">Volledig gedekt</option>
+        <option value="stale">Stale aanwezig</option>
+        <option value="needs_review">Review nodig</option>
+      </select>
+
+      <select
+        [ngModel]="priorityFilter()"
+        (ngModelChange)="updatePriorityFilter($event)"
+        class="admin-input"
+        name="sets-priority-filter"
+      >
+        <option value="all">Alle prioriteiten</option>
+        <option value="benchmark_only">Alleen benchmark</option>
+      </select>
+
+      <select
+        [ngModel]="themeFilter()"
+        (ngModelChange)="updateThemeFilter($event)"
+        class="admin-input"
+        name="sets-theme-filter"
+      >
+        <option value="all">Alle thema's</option>
+        @for (theme of themeOptions(); track theme) {
+          <option [value]="theme">{{ theme }}</option>
+        }
+      </select>
+
+      <select
+        [ngModel]="sort()"
+        (ngModelChange)="updateSort($event)"
+        class="admin-input"
+        name="sets-sort"
+      >
+        <option value="benchmark_first">Benchmark eerst</option>
+        <option value="lowest_coverage">Laagste dekking eerst</option>
+        <option value="recent_activity">Recente activiteit</option>
+        <option value="newly_added">Nieuw toegevoegd</option>
+        <option value="alphabetical">Alfabetisch</option>
+      </select>
+    </div>
+  </section>
+
+  <div class="admin-sets-page__shell">
+    <section class="admin-sets-page__list">
+      <div class="admin-actions">
+        <div class="admin-stack admin-stack--tight">
+          <p class="admin-eyebrow">Setindex</p>
+          <h3>Open een setcontext vanuit de lijst en werk meteen door.</h3>
+        </div>
+      </div>
+
+      @if (filteredRows().length > 0) {
+        @for (row of filteredRows(); track row.setId) {
+          <article
+            class="admin-panel admin-sets-page__row"
+            [class.is-selected]="isSelectedRow(row)"
+          >
+            <button
+              class="admin-sets-page__row-summary"
+              type="button"
+              (click)="selectRow(row)"
+            >
+              <div class="admin-sets-page__row-heading">
+                <div class="admin-sets-page__row-title">
+                  <h3>{{ row.setName }}</h3>
+                  <span class="admin-muted">{{ row.theme }} · {{ row.setId }}</span>
+                </div>
+
+                <div class="admin-pill-cluster">
+                  <span class="admin-count-pill">
+                    {{ getCoverageQueueSourceLabel(row.source) }}
+                  </span>
+                  @if (row.isBenchmark) {
+                    <span class="admin-count-pill">Benchmark</span>
+                  }
+                  <span class="admin-status-pill admin-status-pill--neutral">
+                    {{ row.statusSummary }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="admin-sets-page__row-grid">
+                <div class="admin-sets-page__row-cell">
+                  <span class="admin-muted">Geldige merchants</span>
+                  <strong>{{ row.validMerchantCount }}</strong>
+                </div>
+
+                <div class="admin-sets-page__row-cell">
+                  <span class="admin-muted">Actieve seeds</span>
+                  <strong>{{ row.activeSeedCount }}</strong>
+                </div>
+
+                <div class="admin-sets-page__row-cell">
+                  <span class="admin-muted">Laatste check</span>
+                  <strong>{{
+                    commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
+                  }}</strong>
+                </div>
+
+                <div class="admin-sets-page__row-cell">
+                  <span class="admin-muted">Aanbevolen stap</span>
+                  <strong>
+                    {{
+                      commerceAdminStore.getCoverageQueueActionLabel(
+                        row.recommendedNextAction
+                      )
+                    }}
+                  </strong>
+                </div>
+              </div>
+            </button>
+
+            <div class="admin-sets-page__row-merchant-strip">
+              @for (merchantStatus of row.merchantStatuses; track merchantStatus.merchantId) {
+                <span
+                  class="admin-status-pill"
+                  [attr.title]="getMerchantStatusTitle(merchantStatus)"
+                  [class.admin-status-pill--danger]="
+                    commerceAdminStore.getCoverageQueueMerchantStateTone(
+                      merchantStatus.state
+                    ) === 'danger'
+                  "
+                  [class.admin-status-pill--warning]="
+                    commerceAdminStore.getCoverageQueueMerchantStateTone(
+                      merchantStatus.state
+                    ) === 'warning'
+                  "
+                  [class.admin-status-pill--positive]="
+                    commerceAdminStore.getCoverageQueueMerchantStateTone(
+                      merchantStatus.state
+                    ) === 'positive'
+                  "
+                  [class.admin-status-pill--neutral]="
+                    commerceAdminStore.getCoverageQueueMerchantStateTone(
+                      merchantStatus.state
+                    ) === 'neutral'
+                  "
+                >
+                  {{ merchantStatus.merchantName }} ·
+                  {{
+                    commerceAdminStore.getCoverageQueueMerchantStateLabel(
+                      merchantStatus.state
+                    )
+                  }}
+                </span>
+              }
+            </div>
+
+            <div class="admin-sets-page__row-actions">
+              <button
+                class="admin-button admin-button--subtle"
+                type="button"
+                (click)="selectRow(row)"
+              >
+                Open context
+              </button>
+
+              @if (getDiscoveryTargetMerchant(row)) {
+                <button
+                  class="admin-button"
+                  [class.admin-button--primary]="
+                    row.recommendedNextAction === 'run_discovery'
+                  "
+                  [class.admin-button--subtle]="
+                    row.recommendedNextAction !== 'run_discovery'
+                  "
+                  [disabled]="runningDiscoverySetId() === row.setId"
+                  type="button"
+                  (click)="runDiscovery(row)"
+                >
+                  {{
+                    runningDiscoverySetId() === row.setId
+                      ? 'Discovery draait…'
+                      : 'Run discovery'
+                  }}
+                </button>
+              }
+
+              <button
+                class="admin-button admin-button--subtle"
+                [disabled]="!getSeedActionMerchant(row)"
+                type="button"
+                (click)="openOfferSeedDialogForRow(row)"
+              >
+                {{ getSeedActionLabel(row) }}
+              </button>
+
+              @if (commerceAdminStore.getPublicSetUrl(row.setId); as publicSetUrl) {
+                <a
+                  [href]="publicSetUrl"
+                  class="admin-button admin-button--subtle"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  Open setpagina
+                </a>
+              }
+            </div>
+
+            @if (rowFeedback()[row.setId]; as feedback) {
+              <span
+                class="admin-status-pill"
+                [class.admin-status-pill--danger]="feedback.tone === 'danger'"
+                [class.admin-status-pill--positive]="feedback.tone === 'positive'"
+                [class.admin-status-pill--neutral]="feedback.tone === 'neutral'"
+              >
+                {{ feedback.message }}
+              </span>
+            }
+          </article>
+        }
+      } @else {
+        <article class="admin-panel admin-sets-page__empty">
+          <div class="admin-stack admin-stack--tight">
+            <h3>Geen sets gevonden</h3>
+            <p class="admin-muted">
+              Probeer je filters te verbreden of zoek op een ander setnummer.
+            </p>
+          </div>
+        </article>
+      }
+    </section>
+
+    <aside class="admin-sets-page__context">
+      <lego-commerce-admin-set-work-context
+        [row]="selectedRow()"
+        title="Set context"
+        (runDiscoveryRequested)="runDiscovery($event)"
+        (seedActionRequested)="openOfferSeedDialogForRow($event)"
+      ></lego-commerce-admin-set-work-context>
+    </aside>
+  </div>
+</section>
+
+@if (isDialogOpen()) {
+  <lego-commerce-admin-offer-seed-dialog
+    [offerSeed]="selectedOfferSeed()"
+    [prefill]="offerSeedPrefill()"
+    (closed)="closeDialog()"
+  ></lego-commerce-admin-offer-seed-dialog>
+}

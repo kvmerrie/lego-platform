@@ -1,0 +1,218 @@
+@if (row) {
+<article class="admin-panel admin-context-panel">
+  <header class="admin-stack">
+    <p class="admin-eyebrow">{{ title }}</p>
+    <div class="admin-stack admin-stack--tight">
+      <h3>{{ row.setName }}</h3>
+      <span class="admin-muted">{{ row.theme }} · {{ row.setId }}</span>
+    </div>
+
+    <div class="admin-pill-cluster">
+      <span class="admin-count-pill">
+        {{ row.source === 'overlay' ? 'Overlay' : 'Snapshot' }}
+      </span>
+      @if (row.isBenchmark) {
+      <span class="admin-count-pill">Benchmark</span>
+      }
+      <span class="admin-status-pill admin-status-pill--neutral">
+        {{ row.statusSummary }}
+      </span>
+    </div>
+  </header>
+
+  <div class="admin-context-panel__stats">
+    <div class="admin-context-panel__stat">
+      <span class="admin-context-panel__stat-value">{{
+        row.validMerchantCount
+      }}</span>
+      <span class="admin-context-panel__stat-label">geldige merchants</span>
+    </div>
+    <div class="admin-context-panel__stat">
+      <span class="admin-context-panel__stat-value">{{
+        row.activeSeedCount
+      }}</span>
+      <span class="admin-context-panel__stat-label">actieve seeds</span>
+    </div>
+    <div class="admin-context-panel__stat">
+      <span class="admin-context-panel__stat-value">{{
+        row.merchantsCheckedCount
+      }}</span>
+      <span class="admin-context-panel__stat-label">merchants gecheckt</span>
+    </div>
+    <div class="admin-context-panel__stat">
+      <span class="admin-context-panel__stat-value">
+        {{ commerceAdminStore.getCoverageQueueActionLabel(row.recommendedNextAction) }}
+      </span>
+      <span class="admin-context-panel__stat-label">
+        @if (row.recommendedMerchantName) {
+        Richting {{ row.recommendedMerchantName }}
+        } @else {
+        aanbevolen stap
+        }
+      </span>
+    </div>
+  </div>
+
+  <section class="admin-stack admin-stack--tight">
+    <h4>Merchantbeeld</h4>
+    <div class="admin-pill-cluster">
+      @for (merchantStatus of row.merchantStatuses; track merchantStatus.merchantId) {
+      <span
+        class="admin-status-pill"
+        [class.admin-status-pill--danger]="
+          commerceAdminStore.getCoverageQueueMerchantStateTone(
+            merchantStatus.state
+          ) === 'danger'
+        "
+        [class.admin-status-pill--warning]="
+          commerceAdminStore.getCoverageQueueMerchantStateTone(
+            merchantStatus.state
+          ) === 'warning'
+        "
+        [class.admin-status-pill--positive]="
+          commerceAdminStore.getCoverageQueueMerchantStateTone(
+            merchantStatus.state
+          ) === 'positive'
+        "
+        [class.admin-status-pill--neutral]="
+          commerceAdminStore.getCoverageQueueMerchantStateTone(
+            merchantStatus.state
+          ) === 'neutral'
+        "
+      >
+        {{ merchantStatus.merchantName }} ·
+        {{ commerceAdminStore.getCoverageQueueMerchantStateLabel(merchantStatus.state) }}
+      </span>
+      }
+    </div>
+  </section>
+
+  <section class="admin-stack admin-stack--tight">
+    <h4>Wat heeft nu aandacht nodig</h4>
+    <ul class="admin-bullet-list">
+      @if (row.missingMerchantNames.length > 0) {
+      <li>Mist nog: {{ row.missingMerchantNames.join(', ') }}</li>
+      }
+      @if (row.notAvailableConfirmedMerchantNames.length > 0) {
+      <li class="admin-muted">
+        Recent niet beschikbaar: {{
+        row.notAvailableConfirmedMerchantNames.join(', ') }}
+      </li>
+      }
+      @if (row.needsReviewCount > 0) {
+      <li>{{ row.needsReviewCount }} merchant{{ row.needsReviewCount === 1 ? '' : 's' }} wachten op review</li>
+      }
+      @if (row.staleMerchantCount > 0) {
+      <li>{{ row.staleMerchantCount }} stale merchant{{ row.staleMerchantCount === 1 ? '' : 's' }}</li>
+      }
+      @if (
+        row.missingMerchantNames.length === 0 &&
+        row.notAvailableConfirmedMerchantNames.length === 0 &&
+        row.needsReviewCount === 0 &&
+        row.staleMerchantCount === 0
+      ) {
+      <li class="admin-muted">Geen directe gaten open voor deze set.</li>
+      }
+    </ul>
+  </section>
+
+  @if (latestRelevantDiscoveryRun()) {
+  <section class="admin-stack admin-stack--tight">
+    <h4>Recente discovery</h4>
+    <div class="admin-pill-cluster">
+      <span
+        class="admin-status-pill"
+        [class.admin-status-pill--danger]="
+          commerceAdminStore.getDiscoveryRunTone(latestRelevantDiscoveryRun()!.status) ===
+          'danger'
+        "
+        [class.admin-status-pill--neutral]="
+          commerceAdminStore.getDiscoveryRunTone(latestRelevantDiscoveryRun()!.status) ===
+          'neutral'
+        "
+        [class.admin-status-pill--positive]="
+          commerceAdminStore.getDiscoveryRunTone(latestRelevantDiscoveryRun()!.status) ===
+          'positive'
+        "
+      >
+        {{ latestRelevantDiscoveryRun()!.status }}
+      </span>
+      <span class="admin-count-pill">
+        {{ latestRelevantCandidateCount() }} kandidaat{{
+          latestRelevantCandidateCount() === 1 ? '' : 'en'
+        }}
+      </span>
+    </div>
+    <p class="admin-muted">
+      {{
+        commerceAdminStore.formatRelativeTimestamp(
+          latestRelevantDiscoveryRun()!.finishedAt ??
+            latestRelevantDiscoveryRun()!.createdAt
+        )
+      }}
+    </p>
+    @if (latestRelevantDiscoveryRun()!.errorMessage) {
+    <p class="admin-muted">{{ latestRelevantDiscoveryRun()!.errorMessage }}</p>
+    }
+  </section>
+  }
+
+  <section class="admin-stack admin-stack--tight">
+    <h4>Snelle acties</h4>
+    <div class="admin-actions-inline">
+      @if (discoveryTargetMerchant()) {
+      <button
+        class="admin-button admin-button--primary"
+        type="button"
+        (click)="triggerRunDiscovery()"
+      >
+        Run discovery
+      </button>
+      }
+
+      @if (seedActionMerchant()) {
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        (click)="triggerSeedAction()"
+      >
+        {{ seedActionMerchant()!.offerSeed ? 'Seed bewerken' : 'Seed toevoegen' }}
+      </button>
+      }
+
+      <a
+        class="admin-button admin-button--subtle"
+        [queryParams]="discoveryQueryParams()"
+        routerLink="/discovery"
+      >
+        Open discovery
+      </a>
+
+      @if (publicSetUrl(); as publicSetUrl) {
+      <a
+        [href]="publicSetUrl"
+        class="admin-button admin-button--subtle"
+        rel="noreferrer"
+        target="_blank"
+      >
+        Open setpagina
+      </a>
+      }
+    </div>
+  </section>
+
+  <p class="admin-muted">
+    Laatste check:
+    {{ commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt) }}
+  </p>
+</article>
+} @else {
+<article class="admin-panel admin-context-panel admin-context-panel--empty">
+  <p class="admin-eyebrow">{{ title }}</p>
+  <h3>Kies een set</h3>
+  <p class="admin-muted">
+    Selecteer links een set om coverage, merchants en de volgende actie in
+    context te zien.
+  </p>
+</article>
+}

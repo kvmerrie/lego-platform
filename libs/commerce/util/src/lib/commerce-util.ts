@@ -169,6 +169,7 @@ export type CommerceCoverageQueueSetSource = 'overlay' | 'snapshot';
 
 export type CommerceCoverageQueueMerchantState =
   | 'missing'
+  | 'not_available_confirmed'
   | 'pending'
   | 'review'
   | 'stale'
@@ -179,6 +180,7 @@ export type CommerceCoverageQueueNextAction =
   | 'add_seed_manually'
   | 'edit_seed'
   | 'no_action_needed'
+  | 'recheck_later'
   | 'review_candidates'
   | 'run_discovery';
 
@@ -223,6 +225,8 @@ export interface CommerceCoverageQueueRow {
   missingMerchantNames: string[];
   missingMerchantSlugs: string[];
   needsReviewCount: number;
+  notAvailableConfirmedMerchantCount: number;
+  notAvailableConfirmedMerchantNames: string[];
   recommendedMerchantId?: string;
   recommendedMerchantName?: string;
   recommendedNextAction: CommerceCoverageQueueNextAction;
@@ -259,6 +263,15 @@ export const commerceMerchantSearchableSlugs = [
 
 export type CommerceMerchantSearchableSlug =
   (typeof commerceMerchantSearchableSlugs)[number];
+
+export const commerceMerchantDiscoverySupportedSlugs = [
+  'misterbricks',
+  'proshop',
+  'smyths-toys',
+] as const;
+
+export type CommerceMerchantDiscoverySupportedSlug =
+  (typeof commerceMerchantDiscoverySupportedSlugs)[number];
 
 function assertObjectRecord(
   value: unknown,
@@ -375,6 +388,20 @@ export function isCommerceMerchantSearchableSlug(
 
 export function supportsCommerceMerchantSearch(merchantSlug: string): boolean {
   return isCommerceMerchantSearchableSlug(merchantSlug);
+}
+
+export function supportsCommerceMerchantDiscovery(
+  merchantSlug: string,
+): boolean {
+  return commerceMerchantDiscoverySupportedSlugs.includes(
+    merchantSlug as CommerceMerchantDiscoverySupportedSlug,
+  );
+}
+
+export function supportsCommerceMerchantManualSeed(
+  merchantSlug: string,
+): boolean {
+  return normalizeCommerceSlug(merchantSlug).length > 0;
 }
 
 export function buildCommerceMerchantSearchQuery({
@@ -646,6 +673,10 @@ const commerceDiscoveryPrioritySlugs = [
   'smyths-toys',
 ] as const;
 
+const COMMERCE_COVERAGE_UNAVAILABLE_RECHECK_DAYS = 14;
+const NO_USABLE_DISCOVERY_CANDIDATES_PATTERN =
+  /geen bruikbare discovery-kandidaten/i;
+
 function buildCoverageQueueKey(input: {
   merchantId: string;
   setId: string;
@@ -683,6 +714,31 @@ function getLatestTimestamp(
   return latestValue;
 }
 
+function isWithinLastDays({
+  now,
+  days,
+  value,
+}: {
+  now: Date;
+  days: number;
+  value?: string;
+}): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const parsedValue = new Date(value);
+
+  if (Number.isNaN(parsedValue.getTime())) {
+    return false;
+  }
+
+  const cutoff = new Date(now);
+  cutoff.setUTCDate(cutoff.getUTCDate() - days);
+
+  return parsedValue.getTime() >= cutoff.getTime();
+}
+
 function getMerchantDiscoveryPriority(merchantSlug: string): number {
   const priorityIndex = commerceDiscoveryPrioritySlugs.indexOf(
     merchantSlug as (typeof commerceDiscoveryPrioritySlugs)[number],
@@ -707,10 +763,43 @@ function getCoverageQueueMerchantStatePriority(
       return 3;
     case 'pending':
       return 4;
+    case 'not_available_confirmed':
+      return 5;
     case 'missing':
     default:
-      return 5;
+      return 6;
   }
+}
+
+function isNoUsableDiscoveryRun(discoveryRun?: CommerceDiscoveryRun): boolean {
+  if (
+    !discoveryRun ||
+    discoveryRun.candidateCount > 0 ||
+    !discoveryRun.finishedAt
+  ) {
+    return false;
+  }
+
+  if (discoveryRun.status === 'success') {
+    return true;
+  }
+
+  return NO_USABLE_DISCOVERY_CANDIDATES_PATTERN.test(
+    discoveryRun.errorMessage ?? '',
+  );
+}
+
+function areAllDiscoveryCandidatesRejected(
+  discoveryCandidates: readonly CommerceDiscoveryCandidate[],
+): boolean {
+  return (
+    discoveryCandidates.length > 0 &&
+    discoveryCandidates.every(
+      (discoveryCandidate) =>
+        discoveryCandidate.reviewStatus === 'rejected' &&
+        !discoveryCandidate.offerSeedId,
+    )
+  );
 }
 
 function getOfferSeedCoverageQueueState({
@@ -758,17 +847,21 @@ function getOfferSeedCoverageQueueState({
 
 function buildCoverageQueueStatusSummary({
   activeSeedCount,
+  actionableMissingCount,
   merchantsCheckedCount,
   minimumValidMerchantCount,
   needsReviewCount,
+  notAvailableConfirmedMerchantCount,
   staleMerchantCount,
   unavailableMerchantCount,
   validMerchantCount,
 }: {
   activeSeedCount: number;
+  actionableMissingCount: number;
   merchantsCheckedCount: number;
   minimumValidMerchantCount: number;
   needsReviewCount: number;
+  notAvailableConfirmedMerchantCount: number;
   staleMerchantCount: number;
   unavailableMerchantCount: number;
   validMerchantCount: number;
@@ -783,6 +876,15 @@ function buildCoverageQueueStatusSummary({
     merchantsCheckedCount === 0
   ) {
     return 'Discovery nodig';
+  }
+
+  if (
+    validMerchantCount < minimumValidMerchantCount &&
+    actionableMissingCount === 0 &&
+    notAvailableConfirmedMerchantCount > 0 &&
+    staleMerchantCount === 0
+  ) {
+    return 'Later opnieuw checken';
   }
 
   if (validMerchantCount === 0) {
@@ -809,6 +911,13 @@ function buildCoverageQueueStatusSummary({
   return 'Goed gedekt';
 }
 
+function isCoverageQueueActionable(row: CommerceCoverageQueueRow): boolean {
+  return (
+    row.recommendedNextAction !== 'no_action_needed' &&
+    row.recommendedNextAction !== 'recheck_later'
+  );
+}
+
 function compareCoverageQueueRows(
   left: CommerceCoverageQueueRow,
   right: CommerceCoverageQueueRow,
@@ -816,6 +925,13 @@ function compareCoverageQueueRows(
 ): number {
   if (left.isBenchmark !== right.isBenchmark) {
     return left.isBenchmark ? -1 : 1;
+  }
+
+  const leftIsActionable = isCoverageQueueActionable(left);
+  const rightIsActionable = isCoverageQueueActionable(right);
+
+  if (leftIsActionable !== rightIsActionable) {
+    return leftIsActionable ? -1 : 1;
   }
 
   const leftHasZeroValid = left.validMerchantCount === 0;
@@ -1080,18 +1196,60 @@ export function buildCommerceCoverageQueueRows({
                 discoveryCandidate.reviewStatus === 'pending',
             ) ?? [];
         const latestDiscoveryRun = latestDiscoveryRunByKey.get(discoveryKey);
+        const latestDiscoveryCandidates = latestDiscoveryRun
+          ? (discoveryCandidatesByKey.get(discoveryKey) ?? []).filter(
+              (discoveryCandidate) =>
+                discoveryCandidate.discoveryRunId === latestDiscoveryRun.id,
+            )
+          : [];
         const preferredOfferSeed = merchantOfferSeeds[0];
-        const state: CommerceCoverageQueueMerchantState = preferredOfferSeed
+        const seedState = preferredOfferSeed
           ? getOfferSeedCoverageQueueState({
               now,
               offerSeed: preferredOfferSeed,
               staleAfterDays,
             })
+          : undefined;
+        const lastCheckedAt = getLatestTimestamp([
+          preferredOfferSeed?.lastVerifiedAt,
+          preferredOfferSeed?.latestOffer?.fetchedAt,
+          preferredOfferSeed?.latestOffer?.observedAt,
+          latestDiscoveryRun?.finishedAt,
+          latestDiscoveryRun?.updatedAt,
+          latestDiscoveryRun?.createdAt,
+          ...pendingDiscoveryCandidates.flatMap((candidate) => [
+            candidate.updatedAt,
+            candidate.createdAt,
+          ]),
+          ...latestDiscoveryCandidates.flatMap((candidate) => [
+            candidate.updatedAt,
+            candidate.createdAt,
+          ]),
+        ]);
+        const hasRecentDiscoveryUnavailableConfirmation =
+          isNoUsableDiscoveryRun(latestDiscoveryRun) ||
+          areAllDiscoveryCandidatesRejected(latestDiscoveryCandidates);
+        const isRecentConfirmedUnavailable =
+          isWithinLastDays({
+            now,
+            days: COMMERCE_COVERAGE_UNAVAILABLE_RECHECK_DAYS,
+            value: lastCheckedAt,
+          }) &&
+          (seedState === 'unavailable' ||
+            hasRecentDiscoveryUnavailableConfirmation);
+        const state: CommerceCoverageQueueMerchantState = preferredOfferSeed
+          ? seedState === 'unavailable'
+            ? isRecentConfirmedUnavailable
+              ? 'not_available_confirmed'
+              : 'missing'
+            : (seedState ?? 'pending')
           : pendingDiscoveryCandidates.length > 0
             ? 'review'
             : latestDiscoveryRun?.status === 'running'
               ? 'pending'
-              : 'missing';
+              : isRecentConfirmedUnavailable
+                ? 'not_available_confirmed'
+                : 'missing';
 
         return {
           merchantId: merchant.id,
@@ -1100,24 +1258,7 @@ export function buildCommerceCoverageQueueRows({
           offerSeed: preferredOfferSeed,
           state,
           hasPendingDiscoveryCandidate: pendingDiscoveryCandidates.length > 0,
-          lastCheckedAt: preferredOfferSeed
-            ? getLatestTimestamp([
-                preferredOfferSeed.lastVerifiedAt,
-                preferredOfferSeed.latestOffer?.fetchedAt,
-                preferredOfferSeed.latestOffer?.observedAt,
-              ])
-            : pendingDiscoveryCandidates.length > 0
-              ? getLatestTimestamp(
-                  pendingDiscoveryCandidates.flatMap((candidate) => [
-                    candidate.updatedAt,
-                    candidate.createdAt,
-                  ]),
-                )
-              : getLatestTimestamp([
-                  latestDiscoveryRun?.finishedAt,
-                  latestDiscoveryRun?.updatedAt,
-                  latestDiscoveryRun?.createdAt,
-                ]),
+          lastCheckedAt,
         } satisfies CommerceCoverageQueueMerchantStatus;
       });
       const validMerchantCount = merchantStatuses.filter(
@@ -1129,9 +1270,10 @@ export function buildCommerceCoverageQueueRows({
       const staleMerchantCount = merchantStatuses.filter(
         (merchantStatus) => merchantStatus.state === 'stale',
       ).length;
-      const unavailableMerchantCount = merchantStatuses.filter(
-        (merchantStatus) => merchantStatus.state === 'unavailable',
-      ).length;
+      const unavailableMerchantCount = 0;
+      const notAvailableConfirmedMerchantStatuses = merchantStatuses.filter(
+        (merchantStatus) => merchantStatus.state === 'not_available_confirmed',
+      );
       const merchantsCheckedCount = merchantStatuses.filter(
         (merchantStatus) => merchantStatus.state !== 'missing',
       ).length;
@@ -1143,7 +1285,7 @@ export function buildCommerceCoverageQueueRows({
       );
       const missingDiscoveryMerchant = [...missingMerchantStatuses]
         .filter((merchantStatus) =>
-          supportsCommerceMerchantSearch(merchantStatus.merchantSlug),
+          supportsCommerceMerchantDiscovery(merchantStatus.merchantSlug),
         )
         .sort(
           (left, right) =>
@@ -1151,13 +1293,17 @@ export function buildCommerceCoverageQueueRows({
               getMerchantDiscoveryPriority(right.merchantSlug) ||
             left.merchantName.localeCompare(right.merchantName),
         )[0];
+      const firstManualSeedMerchant = missingMerchantStatuses.find(
+        (merchantStatus) =>
+          supportsCommerceMerchantManualSeed(merchantStatus.merchantSlug),
+      );
       const fixableSeedMerchant = merchantStatuses.find(
         (merchantStatus) =>
           Boolean(merchantStatus.offerSeed) &&
           merchantStatus.state !== 'valid' &&
-          merchantStatus.state !== 'missing',
+          merchantStatus.state !== 'missing' &&
+          merchantStatus.state !== 'not_available_confirmed',
       );
-      const firstMissingMerchant = missingMerchantStatuses[0];
       const recommendedAction = candidateReviewMerchant
         ? ({
             action: 'review_candidates',
@@ -1178,15 +1324,20 @@ export function buildCommerceCoverageQueueRows({
                 merchantName: fixableSeedMerchant.merchantName,
               } as const)
             : validMerchantCount < minimumValidMerchantCount &&
-                firstMissingMerchant
+                firstManualSeedMerchant
               ? ({
                   action: 'add_seed_manually',
-                  merchantId: firstMissingMerchant.merchantId,
-                  merchantName: firstMissingMerchant.merchantName,
+                  merchantId: firstManualSeedMerchant.merchantId,
+                  merchantName: firstManualSeedMerchant.merchantName,
                 } as const)
-              : ({
-                  action: 'no_action_needed',
-                } as const);
+              : validMerchantCount < minimumValidMerchantCount &&
+                  notAvailableConfirmedMerchantStatuses.length > 0
+                ? ({
+                    action: 'recheck_later',
+                  } as const)
+                : ({
+                    action: 'no_action_needed',
+                  } as const);
 
       return {
         setId: catalogSet.id,
@@ -1208,6 +1359,12 @@ export function buildCommerceCoverageQueueRows({
           (merchantStatus) => merchantStatus.merchantSlug,
         ),
         needsReviewCount,
+        notAvailableConfirmedMerchantCount:
+          notAvailableConfirmedMerchantStatuses.length,
+        notAvailableConfirmedMerchantNames:
+          notAvailableConfirmedMerchantStatuses.map(
+            (merchantStatus) => merchantStatus.merchantName,
+          ),
         staleMerchantCount,
         unavailableMerchantCount,
         latestCheckedAt: getLatestTimestamp(
@@ -1218,9 +1375,12 @@ export function buildCommerceCoverageQueueRows({
         merchantStatuses,
         statusSummary: buildCoverageQueueStatusSummary({
           activeSeedCount: setActiveOfferSeeds.length,
+          actionableMissingCount: missingMerchantStatuses.length,
           merchantsCheckedCount,
           minimumValidMerchantCount,
           needsReviewCount,
+          notAvailableConfirmedMerchantCount:
+            notAvailableConfirmedMerchantStatuses.length,
           staleMerchantCount,
           unavailableMerchantCount,
           validMerchantCount,

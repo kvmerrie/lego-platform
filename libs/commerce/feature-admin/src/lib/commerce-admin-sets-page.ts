@@ -8,7 +8,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import {
   type CommerceCoverageQueueHealthFilter,
   type CommerceCoverageQueueMerchantStatus,
@@ -25,36 +24,42 @@ import {
 import { CommerceAdminSetWorkContextComponent } from './commerce-admin-set-work-context';
 import { CommerceAdminStore } from './commerce-admin-store.service';
 
-type CoverageQueueRowFeedbackTone = 'danger' | 'neutral' | 'positive';
+type SetManagementSort =
+  | 'benchmark_first'
+  | 'lowest_coverage'
+  | 'recent_activity'
+  | 'newly_added'
+  | 'alphabetical';
 
-interface CoverageQueueRowFeedback {
+type SetsRowFeedbackTone = 'danger' | 'neutral' | 'positive';
+
+interface SetsRowFeedback {
   message: string;
-  tone: CoverageQueueRowFeedbackTone;
+  tone: SetsRowFeedbackTone;
 }
 
 @Component({
-  selector: 'lib-commerce-admin-coverage-queue-page',
+  selector: 'lego-commerce-admin-sets-page',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     CommerceAdminOfferSeedDialogComponent,
     CommerceAdminSetWorkContextComponent,
   ],
-  templateUrl: './commerce-admin-coverage-queue-page.html',
+  templateUrl: './commerce-admin-sets-page.html',
   styles: [
     `
       :host {
         display: block;
       }
 
-      .admin-workbench {
+      .admin-sets-page {
         display: grid;
         gap: 1rem;
       }
 
-      .admin-workbench__bar {
+      .admin-sets-page__bar {
         align-items: start;
         display: flex;
         flex-wrap: wrap;
@@ -62,60 +67,28 @@ interface CoverageQueueRowFeedback {
         justify-content: space-between;
       }
 
-      .admin-workbench__summary {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-      }
-
-      .admin-workbench__summary-card {
-        background: color-mix(
-          in srgb,
-          var(--lego-surface-muted) 72%,
-          transparent
-        );
-        border: 1px solid var(--lego-border-subtle);
-        border-radius: var(--lego-radius-md);
-        display: grid;
-        gap: 0.3rem;
-        padding: 0.9rem 1rem;
-      }
-
-      .admin-workbench__summary-value {
-        color: var(--lego-text);
-        font-size: 1.4rem;
-        font-weight: 700;
-        line-height: 1;
-      }
-
-      .admin-workbench__toolbar {
-        align-items: center;
+      .admin-sets-page__toolbar {
         display: grid;
         gap: 0.75rem;
       }
 
-      .admin-workbench__filters {
+      .admin-sets-page__filters {
         display: grid;
         gap: 0.75rem;
         grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
       }
 
-      .admin-workbench__shell {
+      .admin-sets-page__shell {
         display: grid;
         gap: 1rem;
       }
 
-      .admin-workbench__queue {
+      .admin-sets-page__list {
         display: grid;
         gap: 0.85rem;
       }
 
-      .admin-workbench__queue-list {
-        display: grid;
-        gap: 0.85rem;
-      }
-
-      .admin-workbench__row {
+      .admin-sets-page__row {
         display: grid;
         gap: 0.85rem;
         transition:
@@ -123,7 +96,7 @@ interface CoverageQueueRowFeedback {
           background 120ms ease;
       }
 
-      .admin-workbench__row.is-selected {
+      .admin-sets-page__row.is-selected {
         background: color-mix(in srgb, var(--lego-accent) 6%, var(--lego-surface));
         border-color: color-mix(
           in srgb,
@@ -132,7 +105,7 @@ interface CoverageQueueRowFeedback {
         );
       }
 
-      .admin-workbench__row-summary {
+      .admin-sets-page__row-summary {
         appearance: none;
         background: transparent;
         border: 0;
@@ -145,7 +118,7 @@ interface CoverageQueueRowFeedback {
         width: 100%;
       }
 
-      .admin-workbench__row-heading {
+      .admin-sets-page__row-heading {
         align-items: start;
         display: flex;
         flex-wrap: wrap;
@@ -153,57 +126,56 @@ interface CoverageQueueRowFeedback {
         justify-content: space-between;
       }
 
-      .admin-workbench__row-title {
+      .admin-sets-page__row-title {
         display: grid;
         gap: 0.35rem;
       }
 
-      .admin-workbench__row-title h3 {
+      .admin-sets-page__row-title h3 {
         margin: 0;
       }
 
-      .admin-workbench__row-meta,
-      .admin-workbench__row-merchant-strip,
-      .admin-workbench__row-actions {
+      .admin-sets-page__row-grid {
+        display: grid;
+        gap: 0.75rem;
+        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+      }
+
+      .admin-sets-page__row-cell {
+        display: grid;
+        gap: 0.2rem;
+      }
+
+      .admin-sets-page__row-cell strong {
+        color: var(--lego-text);
+        font-size: 1rem;
+      }
+
+      .admin-sets-page__row-merchant-strip,
+      .admin-sets-page__row-actions {
         align-items: center;
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
       }
 
-      .admin-workbench__row-stats {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-      }
-
-      .admin-workbench__row-stat {
-        display: grid;
-        gap: 0.2rem;
-      }
-
-      .admin-workbench__row-stat strong {
-        color: var(--lego-text);
-        font-size: 1rem;
-      }
-
-      .admin-workbench__queue-empty {
+      .admin-sets-page__empty {
         min-height: 12rem;
         place-items: center;
         text-align: center;
       }
 
-      .admin-workbench__context {
+      .admin-sets-page__context {
         align-self: start;
       }
 
-      @media (min-width: 1120px) {
-        .admin-workbench__shell {
+      @media (min-width: 1180px) {
+        .admin-sets-page__shell {
           align-items: start;
-          grid-template-columns: minmax(0, 1.45fr) minmax(20rem, 0.95fr);
+          grid-template-columns: minmax(0, 1.55fr) minmax(21rem, 0.95fr);
         }
 
-        .admin-workbench__context {
+        .admin-sets-page__context {
           position: sticky;
           top: 1rem;
         }
@@ -212,42 +184,78 @@ interface CoverageQueueRowFeedback {
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CommerceAdminCoverageQueuePageComponent {
+export class CommerceAdminSetsPageComponent {
   readonly commerceAdminStore = inject(CommerceAdminStore);
   readonly search = signal('');
-  readonly healthFilter =
-    signal<CommerceCoverageQueueHealthFilter>('under_covered');
   readonly sourceFilter = signal<CommerceCoverageQueueSourceFilter>('all');
+  readonly healthFilter = signal<CommerceCoverageQueueHealthFilter>('all');
   readonly priorityFilter =
     signal<CommerceCoverageQueuePriorityFilter>('all');
-  readonly merchantGapFilter = signal('all');
+  readonly themeFilter = signal('all');
+  readonly sort = signal<SetManagementSort>('benchmark_first');
   readonly selectedSetId = signal<string | null>(null);
   readonly runningDiscoverySetId = signal<string | null>(null);
-  readonly rowFeedback = signal<Record<string, CoverageQueueRowFeedback>>({});
+  readonly rowFeedback = signal<Record<string, SetsRowFeedback>>({});
   readonly isDialogOpen = signal(false);
   readonly selectedOfferSeed = signal<CommerceOfferSeed | null>(null);
   readonly offerSeedPrefill = signal<CommerceOfferSeedDialogPrefill | null>(
     null,
   );
 
-  readonly merchantGapOptions = computed(() =>
-    this.commerceAdminStore
-      .merchants()
-      .filter((merchant) => merchant.isActive)
-      .sort((left, right) => left.name.localeCompare(right.name)),
+  readonly themeOptions = computed(() =>
+    [...new Set(this.commerceAdminStore.coverageQueueRows().map((row) => row.theme))]
+      .sort((left, right) => left.localeCompare(right)),
   );
 
-  readonly filteredRows = computed(() =>
-    filterCommerceCoverageQueueRows({
+  readonly filteredRows = computed(() => {
+    const themeFilter = this.themeFilter();
+    const sort = this.sort();
+
+    const rows = filterCommerceCoverageQueueRows({
       rows: this.commerceAdminStore.coverageQueueRows(),
       healthFilter: this.healthFilter(),
-      merchantGapMerchantId: this.merchantGapFilter(),
+      merchantGapMerchantId: 'all',
       minimumValidMerchantCount: 3,
       priorityFilter: this.priorityFilter(),
       search: this.search(),
       sourceFilter: this.sourceFilter(),
-    }),
-  );
+    }).filter((row) => themeFilter === 'all' || row.theme === themeFilter);
+
+    return [...rows].sort((left, right) => {
+      switch (sort) {
+        case 'lowest_coverage':
+          return (
+            left.validMerchantCount - right.validMerchantCount ||
+            right.needsReviewCount - left.needsReviewCount ||
+            right.staleMerchantCount - left.staleMerchantCount ||
+            left.setName.localeCompare(right.setName)
+          );
+        case 'recent_activity':
+          return (
+            (right.latestCheckedAt ?? '').localeCompare(left.latestCheckedAt ?? '') ||
+            left.setName.localeCompare(right.setName)
+          );
+        case 'newly_added':
+          return (
+            (right.sourceCreatedAt ?? '').localeCompare(left.sourceCreatedAt ?? '') ||
+            left.setName.localeCompare(right.setName)
+          );
+        case 'alphabetical':
+          return (
+            left.theme.localeCompare(right.theme) ||
+            left.setName.localeCompare(right.setName)
+          );
+        case 'benchmark_first':
+        default:
+          return (
+            Number(right.isBenchmark) - Number(left.isBenchmark) ||
+            left.validMerchantCount - right.validMerchantCount ||
+            right.needsReviewCount - left.needsReviewCount ||
+            left.setName.localeCompare(right.setName)
+          );
+      }
+    });
+  });
 
   readonly selectedRow = computed(() => {
     const selectedSetId = this.selectedSetId();
@@ -258,35 +266,6 @@ export class CommerceAdminCoverageQueuePageComponent {
       null
     );
   });
-
-  readonly noFirstOfferCount = computed(
-    () =>
-      this.commerceAdminStore
-        .coverageQueueRows()
-        .filter((row) => row.validMerchantCount === 0).length,
-  );
-  readonly underCoveredCount = computed(
-    () =>
-      this.commerceAdminStore
-        .coverageQueueRows()
-        .filter((row) => row.validMerchantCount < 3).length,
-  );
-  readonly overlayWorkCount = computed(
-    () =>
-      this.commerceAdminStore
-        .coverageQueueRows()
-        .filter(
-          (row) => row.source === 'overlay' && row.recommendedNextAction !== 'no_action_needed',
-        ).length,
-  );
-  readonly reviewOrStaleCount = computed(
-    () =>
-      this.commerceAdminStore
-        .coverageQueueRows()
-        .filter(
-          (row) => row.needsReviewCount > 0 || row.staleMerchantCount > 0,
-        ).length,
-  );
 
   constructor() {
     effect(
@@ -316,20 +295,24 @@ export class CommerceAdminCoverageQueuePageComponent {
     this.search.set(value);
   }
 
-  updateHealthFilter(value: CommerceCoverageQueueHealthFilter): void {
-    this.healthFilter.set(value);
-  }
-
   updateSourceFilter(value: CommerceCoverageQueueSourceFilter): void {
     this.sourceFilter.set(value);
+  }
+
+  updateHealthFilter(value: CommerceCoverageQueueHealthFilter): void {
+    this.healthFilter.set(value);
   }
 
   updatePriorityFilter(value: CommerceCoverageQueuePriorityFilter): void {
     this.priorityFilter.set(value);
   }
 
-  updateMerchantGapFilter(value: string): void {
-    this.merchantGapFilter.set(value);
+  updateThemeFilter(value: string): void {
+    this.themeFilter.set(value);
+  }
+
+  updateSort(value: SetManagementSort): void {
+    this.sort.set(value);
   }
 
   selectRow(row: CommerceCoverageQueueRow): void {

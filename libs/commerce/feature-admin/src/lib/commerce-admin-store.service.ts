@@ -17,6 +17,7 @@ import {
   buildCommerceMerchantSearchUrl,
   buildCommerceBenchmarkCoverageRows,
   type CommerceCoverageQueueMerchantState,
+  type CommerceCoverageQueueMerchantStatus,
   type CommerceCoverageQueueNextAction,
   type CommerceCoverageQueueRow,
   buildCommerceCoverageSnapshot,
@@ -28,7 +29,7 @@ import {
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
-  supportsCommerceMerchantSearch,
+  supportsCommerceMerchantDiscovery,
   validateCommerceDiscoveryRunInput,
   validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
@@ -263,7 +264,7 @@ export class CommerceAdminStore {
   });
   readonly discoveryMerchants = computed(() =>
     this.merchants().filter((merchant) =>
-      supportsCommerceMerchantSearch(merchant.slug),
+      supportsCommerceMerchantDiscovery(merchant.slug),
     ),
   );
 
@@ -516,7 +517,7 @@ export class CommerceAdminStore {
   supportsMerchantDiscovery(merchantId: string): boolean {
     const merchant = this.getMerchantById(merchantId);
 
-    return merchant ? supportsCommerceMerchantSearch(merchant.slug) : false;
+    return merchant ? supportsCommerceMerchantDiscovery(merchant.slug) : false;
   }
 
   getMerchantActiveSeedCount(merchantId: string): number {
@@ -757,6 +758,8 @@ export class CommerceAdminStore {
         return 'Seed bijwerken';
       case 'add_seed_manually':
         return 'Seed toevoegen';
+      case 'recheck_later':
+        return 'Later opnieuw checken';
       case 'no_action_needed':
       default:
         return 'Geen actie nodig';
@@ -775,6 +778,7 @@ export class CommerceAdminStore {
       case 'missing':
       case 'unavailable':
         return 'danger';
+      case 'not_available_confirmed':
       case 'pending':
       default:
         return 'neutral';
@@ -791,6 +795,8 @@ export class CommerceAdminStore {
         return 'stale';
       case 'unavailable':
         return 'unavailable';
+      case 'not_available_confirmed':
+        return 'niet beschikbaar';
       case 'review':
         return 'review';
       case 'pending':
@@ -903,5 +909,66 @@ export class CommerceAdminStore {
       dateStyle: 'medium',
       timeStyle: 'short',
     }).format(parsedValue);
+  }
+
+  getCoverageQueueDiscoveryTargetMerchant(
+    row: CommerceCoverageQueueRow,
+  ): CommerceCoverageQueueMerchantStatus | undefined {
+    const recommendedMerchant = row.recommendedMerchantId
+      ? row.merchantStatuses.find(
+          (merchantStatus) =>
+            merchantStatus.merchantId === row.recommendedMerchantId,
+        )
+      : undefined;
+
+    if (
+      recommendedMerchant &&
+      recommendedMerchant.state === 'missing' &&
+      this.supportsMerchantDiscovery(recommendedMerchant.merchantId)
+    ) {
+      return recommendedMerchant;
+    }
+
+    return row.merchantStatuses.find(
+      (merchantStatus) =>
+        merchantStatus.state === 'missing' &&
+        this.supportsMerchantDiscovery(merchantStatus.merchantId),
+    );
+  }
+
+  getCoverageQueueSeedActionMerchant(
+    row: CommerceCoverageQueueRow,
+  ): CommerceCoverageQueueMerchantStatus | undefined {
+    const recommendedMerchant = row.recommendedMerchantId
+      ? row.merchantStatuses.find(
+          (merchantStatus) =>
+            merchantStatus.merchantId === row.recommendedMerchantId,
+        )
+      : undefined;
+
+    if (recommendedMerchant) {
+      return recommendedMerchant;
+    }
+
+    return (
+      row.merchantStatuses.find((merchantStatus) => merchantStatus.offerSeed) ??
+      row.merchantStatuses.find(
+        (merchantStatus) => merchantStatus.state !== 'valid',
+      ) ??
+      row.merchantStatuses[0]
+    );
+  }
+
+  getCoverageQueueDiscoveryLinkParams(
+    row: CommerceCoverageQueueRow,
+  ): Record<string, string> {
+    return {
+      set: row.setId,
+      ...(row.recommendedMerchantId
+        ? {
+            merchant: row.recommendedMerchantId,
+          }
+        : {}),
+    };
   }
 }
