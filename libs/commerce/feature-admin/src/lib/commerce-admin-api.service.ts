@@ -16,6 +16,7 @@ import {
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  type CommerceSetRefreshResult,
 } from '@lego-platform/commerce/util';
 import { apiPaths } from '@lego-platform/shared/config';
 import { firstValueFrom } from 'rxjs';
@@ -68,6 +69,15 @@ export class CommerceAdminApiService {
     return firstValueFrom(
       this.http.get<CommerceCoverageQueueRow[]>(
         apiPaths.adminCommerceCoverageQueue,
+      ),
+    );
+  }
+
+  async refreshSet(setId: string): Promise<CommerceSetRefreshResult> {
+    return firstValueFrom(
+      this.http.post<CommerceSetRefreshResult>(
+        apiPaths.adminCommerceSetRefreshes,
+        { setId },
       ),
     );
   }

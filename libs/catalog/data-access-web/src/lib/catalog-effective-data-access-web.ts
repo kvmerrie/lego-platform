@@ -33,6 +33,9 @@ import {
 } from '@lego-platform/shared/config';
 
 const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
+const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
+const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
+const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 const genericOverlayThemeMomentum =
   'Nieuw in Brickhunt. We bouwen hier nu de eerste prijsvergelijkingen op.';
 
@@ -51,6 +54,49 @@ interface CatalogOverlaySetRow {
   status: 'active';
   theme: string;
   updated_at: string;
+}
+
+interface CatalogCommerceMerchantRow {
+  id: string;
+  is_active: boolean;
+  name: string;
+  slug: string;
+}
+
+interface CatalogCommerceOfferLatestRow {
+  availability: string | null;
+  currency_code: string | null;
+  fetch_status: string;
+  observed_at: string | null;
+  offer_seed_id: string;
+  price_minor: number | null;
+  updated_at: string;
+}
+
+interface CatalogCommerceOfferSeedRow {
+  id: string;
+  is_active: boolean;
+  merchant_id: string;
+  product_url: string;
+  set_id: string;
+  validation_status: string;
+}
+
+export interface CatalogResolvedOffer {
+  availability: 'in_stock' | 'out_of_stock' | 'unknown';
+  checkedAt: string;
+  condition: 'new';
+  currency: 'EUR';
+  market: 'NL';
+  merchant: 'amazon' | 'bol' | 'lego' | 'other';
+  merchantName: string;
+  priceCents: number;
+  setId: string;
+  url: string;
+}
+
+export interface CatalogRuntimeOffer extends CatalogResolvedOffer {
+  merchantSlug: string;
 }
 
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
@@ -95,6 +141,166 @@ function toCatalogOverlaySet(row: CatalogOverlaySetRow): CatalogOverlaySet {
   };
 }
 
+function getCatalogOfferMerchantFromMerchantSlug(
+  merchantSlug: string,
+): CatalogResolvedOffer['merchant'] {
+  if (merchantSlug === 'bol') {
+    return 'bol';
+  }
+
+  if (merchantSlug.startsWith('amazon')) {
+    return 'amazon';
+  }
+
+  if (merchantSlug === 'lego') {
+    return 'lego';
+  }
+
+  return 'other';
+}
+
+function normalizeRuntimeOfferAvailability(
+  availability?: string | null,
+): CatalogResolvedOffer['availability'] {
+  if (availability === 'in_stock' || availability === 'limited') {
+    return 'in_stock';
+  }
+
+  if (availability === 'out_of_stock' || availability === 'preorder') {
+    return 'out_of_stock';
+  }
+
+  return 'unknown';
+}
+
+function getOfferLookupKey({
+  merchantName,
+  merchantSlug,
+}: {
+  merchantName: string;
+  merchantSlug?: string;
+}): string {
+  const baseValue = merchantSlug || merchantName;
+
+  return normalizeCatalogAsciiText(baseValue)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function getCatalogOfferAvailabilityRank(
+  availability: CatalogResolvedOffer['availability'],
+): number {
+  if (availability === 'in_stock') {
+    return 0;
+  }
+
+  if (availability === 'unknown') {
+    return 1;
+  }
+
+  return 2;
+}
+
+function sortResolvedCatalogOffers<Offer extends CatalogResolvedOffer>(
+  catalogOffers: readonly Offer[],
+): Offer[] {
+  return [...catalogOffers].sort(
+    (left, right) =>
+      getCatalogOfferAvailabilityRank(left.availability) -
+        getCatalogOfferAvailabilityRank(right.availability) ||
+      left.priceCents - right.priceCents ||
+      left.merchantName.localeCompare(right.merchantName),
+  );
+}
+
+function toCatalogRuntimeOffer({
+  latestOffer,
+  merchant,
+  offerSeed,
+}: {
+  latestOffer: CatalogCommerceOfferLatestRow;
+  merchant: CatalogCommerceMerchantRow;
+  offerSeed: CatalogCommerceOfferSeedRow;
+}): CatalogRuntimeOffer | undefined {
+  if (
+    !offerSeed.is_active ||
+    offerSeed.validation_status !== 'valid' ||
+    !merchant.is_active ||
+    latestOffer.fetch_status !== 'success' ||
+    typeof latestOffer.price_minor !== 'number' ||
+    latestOffer.price_minor <= 0 ||
+    latestOffer.currency_code !== 'EUR'
+  ) {
+    return undefined;
+  }
+
+  const checkedAt =
+    latestOffer.observed_at ?? latestOffer.updated_at ?? undefined;
+
+  if (!checkedAt) {
+    return undefined;
+  }
+
+  return {
+    availability: normalizeRuntimeOfferAvailability(latestOffer.availability),
+    checkedAt,
+    condition: 'new',
+    currency: 'EUR',
+    market: 'NL',
+    merchant: getCatalogOfferMerchantFromMerchantSlug(merchant.slug),
+    merchantName: merchant.name,
+    merchantSlug: merchant.slug,
+    priceCents: latestOffer.price_minor,
+    setId: offerSeed.set_id,
+    url: offerSeed.product_url,
+  };
+}
+
+export function resolveCatalogSetDetailOffers({
+  generatedOffers,
+  liveOffers,
+}: {
+  generatedOffers: readonly CatalogResolvedOffer[];
+  liveOffers: readonly CatalogRuntimeOffer[];
+}): CatalogResolvedOffer[] {
+  if (!liveOffers.length) {
+    return sortResolvedCatalogOffers(generatedOffers);
+  }
+
+  const generatedOfferByMerchantKey = new Map(
+    generatedOffers.map((catalogOffer) => [
+      getOfferLookupKey({
+        merchantName: catalogOffer.merchantName,
+      }),
+      catalogOffer,
+    ]),
+  );
+
+  return sortResolvedCatalogOffers(
+    liveOffers.map((liveOffer) => {
+      const matchingGeneratedOffer = generatedOfferByMerchantKey.get(
+        getOfferLookupKey({
+          merchantName: liveOffer.merchantName,
+          merchantSlug: liveOffer.merchantSlug,
+        }),
+      );
+
+      if (!matchingGeneratedOffer) {
+        return liveOffer;
+      }
+
+      return {
+        ...liveOffer,
+        condition: matchingGeneratedOffer.condition,
+        market: matchingGeneratedOffer.market,
+        merchant: matchingGeneratedOffer.merchant,
+        merchantName: matchingGeneratedOffer.merchantName,
+        url: matchingGeneratedOffer.url,
+      } satisfies CatalogResolvedOffer;
+    }),
+  );
+}
+
 export async function listCatalogOverlaySets({
   supabaseClient,
 }: {
@@ -124,6 +330,112 @@ export async function listCatalogOverlaySets({
     return ((data as CatalogOverlaySetRow[] | null) ?? []).map(
       toCatalogOverlaySet,
     );
+  } catch (error) {
+    if (!supabaseClient) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function listCatalogSetLiveOffersBySetId({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogRuntimeOffer[]> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return [];
+  }
+
+  try {
+    const activeSupabaseClient =
+      supabaseClient ?? getWebCatalogSupabaseAdminClient();
+    const { data: seedData, error: seedError } = await activeSupabaseClient
+      .from(COMMERCE_OFFER_SEEDS_TABLE)
+      .select(
+        'id, set_id, merchant_id, product_url, is_active, validation_status',
+      )
+      .eq('set_id', setId)
+      .eq('is_active', true)
+      .eq('validation_status', 'valid');
+
+    if (seedError) {
+      throw new Error('Unable to load live catalog offers.');
+    }
+
+    const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
+
+    if (!offerSeeds.length) {
+      return [];
+    }
+
+    const merchantIds = [
+      ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
+    ];
+    const offerSeedIds = offerSeeds.map((offerSeed) => offerSeed.id);
+    const [
+      { data: merchantData, error: merchantError },
+      { data: latestOfferData, error: latestOfferError },
+    ] = await Promise.all([
+      activeSupabaseClient
+        .from(COMMERCE_MERCHANTS_TABLE)
+        .select('id, slug, name, is_active')
+        .in('id', merchantIds)
+        .eq('is_active', true),
+      activeSupabaseClient
+        .from(COMMERCE_OFFER_LATEST_TABLE)
+        .select(
+          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+        )
+        .in('offer_seed_id', offerSeedIds)
+        .order('updated_at', {
+          ascending: false,
+        }),
+    ]);
+
+    if (merchantError || latestOfferError) {
+      throw new Error('Unable to load live catalog offers.');
+    }
+
+    const merchantById = new Map(
+      ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
+        (merchantRow) => [merchantRow.id, merchantRow],
+      ),
+    );
+    const latestOfferBySeedId = new Map<
+      string,
+      CatalogCommerceOfferLatestRow
+    >();
+
+    for (const latestOfferRow of (latestOfferData as
+      | CatalogCommerceOfferLatestRow[]
+      | null) ?? []) {
+      if (!latestOfferBySeedId.has(latestOfferRow.offer_seed_id)) {
+        latestOfferBySeedId.set(latestOfferRow.offer_seed_id, latestOfferRow);
+      }
+    }
+
+    return sortResolvedCatalogOffers(
+      offerSeeds.flatMap((offerSeed) => {
+        const merchant = merchantById.get(offerSeed.merchant_id);
+        const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+
+        if (!merchant || !latestOffer) {
+          return [];
+        }
+
+        const catalogRuntimeOffer = toCatalogRuntimeOffer({
+          latestOffer,
+          merchant,
+          offerSeed,
+        });
+
+        return catalogRuntimeOffer ? [catalogRuntimeOffer] : [];
+      }),
+    ) as CatalogRuntimeOffer[];
   } catch (error) {
     if (!supabaseClient) {
       return [];

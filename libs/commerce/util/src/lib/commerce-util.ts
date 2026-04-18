@@ -241,6 +241,15 @@ export interface CommerceCoverageQueueRow {
   validMerchantCount: number;
 }
 
+export interface CommerceSetRefreshResult {
+  invalidCount: number;
+  setId: string;
+  staleCount: number;
+  successCount: number;
+  totalCount: number;
+  unavailableCount: number;
+}
+
 export interface CommerceCoverageQueueFilters {
   healthFilter?: CommerceCoverageQueueHealthFilter;
   merchantGapMerchantId?: string;

@@ -130,6 +130,14 @@ async function createAdminCommerceServer({
           },
         ] satisfies CommerceCoverageQueueRow[],
     ),
+    refreshSet: vi.fn(async (setId: string) => ({
+      setId,
+      totalCount: 2,
+      successCount: 1,
+      unavailableCount: 1,
+      staleCount: 0,
+      invalidCount: 0,
+    })),
     listMerchants: vi.fn(async () => []),
     createMerchant: vi.fn(
       async () =>
@@ -284,6 +292,31 @@ describe('admin commerce routes', () => {
         recommendedNextAction: 'run_discovery',
       }),
     ]);
+
+    await server.close();
+  });
+
+  test('refreshes all active seeds for a set through the admin route', async () => {
+    const { commerceService, server } = await createAdminCommerceServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/set-refreshes',
+      payload: {
+        setId: '10316',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(commerceService.refreshSet).toHaveBeenCalledWith('10316');
+    expect(response.json()).toEqual({
+      setId: '10316',
+      totalCount: 2,
+      successCount: 1,
+      unavailableCount: 1,
+      staleCount: 0,
+      invalidCount: 0,
+    });
 
     await server.close();
   });

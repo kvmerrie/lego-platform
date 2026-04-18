@@ -8,7 +8,9 @@ import {
 import { getCatalogOffersBySetId } from '@lego-platform/catalog/data-access';
 import {
   getCatalogSetBySlugWithOverlay,
+  listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugsWithOverlay,
+  resolveCatalogSetDetailOffers,
 } from '@lego-platform/catalog/data-access-web';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import type {
@@ -42,6 +44,7 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import { notFound } from 'next/navigation';
 
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 
@@ -413,11 +416,17 @@ export default async function SetDetailPage({
   }
 
   const reviewedAffiliateOffers = listAffiliateOffers(catalogSetDetail.id);
-  const setDetailOffers =
+  const generatedSetDetailOffers =
     reviewedAffiliateOffers.length > 0
       ? toCatalogOffers(reviewedAffiliateOffers)
       : getCatalogOffersBySetId(catalogSetDetail.id);
-  const localizedSetDetailOffers = setDetailOffers.filter(isEuroCatalogOffer);
+  const liveSetDetailOffers = await listCatalogSetLiveOffersBySetId({
+    setId: catalogSetDetail.id,
+  });
+  const localizedSetDetailOffers = resolveCatalogSetDetailOffers({
+    generatedOffers: generatedSetDetailOffers.filter(isEuroCatalogOffer),
+    liveOffers: liveSetDetailOffers,
+  });
   const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
   const decisionPresentation = buildSetDecisionPresentation({
@@ -428,8 +437,10 @@ export default async function SetDetailPage({
   const dealVerdict = buildSetDealVerdict(pricePanelSnapshot, {
     theme: catalogSetDetail.theme,
   });
-  const trackedMerchantCount =
-    pricePanelSnapshot?.merchantCount ?? localizedSetDetailOffers.length;
+  const trackedMerchantCount = Math.max(
+    pricePanelSnapshot?.merchantCount ?? 0,
+    localizedSetDetailOffers.length,
+  );
 
   return (
     <ShellWeb>
@@ -470,7 +481,7 @@ export default async function SetDetailPage({
         offerSummaryLabel={buildOfferSummaryLabel({
           merchantCount:
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
-          observedAt: pricePanelSnapshot?.observedAt ?? bestOffer?.checkedAt,
+          observedAt: bestOffer?.checkedAt ?? pricePanelSnapshot?.observedAt,
         })}
         ownershipActions={
           <>
@@ -507,8 +518,9 @@ export default async function SetDetailPage({
         )}
         trustSignals={buildTrustSignals({
           bestOffer,
-          merchantCount: pricePanelSnapshot?.merchantCount,
-          observedAt: pricePanelSnapshot?.observedAt,
+          merchantCount:
+            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+          observedAt: bestOffer?.checkedAt ?? pricePanelSnapshot?.observedAt,
         })}
         followCopy={decisionPresentation.followCopy}
         followEyebrow={decisionPresentation.followEyebrow}

@@ -212,9 +212,9 @@
           <div class="admin-workbench__row-merchant-strip">
             @for (merchantStatus of row.merchantStatuses; track
             merchantStatus.merchantId) {
-            <span
-              class="admin-status-pill"
-              [attr.title]="getMerchantStatusTitle(merchantStatus)"
+            <button
+              class="admin-status-pill admin-pill-button"
+              [attr.title]="getMerchantStatusTitle(merchantStatus, row)"
               [class.admin-status-pill--danger]="
                       commerceAdminStore.getCoverageQueueMerchantStateTone(
                         merchantStatus.state
@@ -235,11 +235,13 @@
                         merchantStatus.state
                       ) === 'neutral'
                     "
+              type="button"
+              (click)="handleMerchantStatusAction({ merchantStatus, row })"
             >
               {{ merchantStatus.merchantName }} · {{
               commerceAdminStore.getCoverageQueueMerchantStateLabel(
               merchantStatus.state ) }}
-            </span>
+            </button>
             }
           </div>
 
@@ -278,6 +280,18 @@
             >
               {{ getSeedActionLabel(row) }}
             </button>
+
+            @if (row.activeSeedCount > 0) {
+            <button
+              class="admin-button admin-button--subtle"
+              [disabled]="refreshingSetId() === row.setId"
+              type="button"
+              (click)="refreshSet(row)"
+            >
+              {{ refreshingSetId() === row.setId ? 'Hercheck draait…' :
+              'Hercheck prijzen' }}
+            </button>
+            }
 
             <a
               class="admin-button admin-button--subtle"
@@ -330,6 +344,8 @@
       <lego-commerce-admin-set-work-context
         [row]="selectedRow()"
         title="Werkcontext"
+        (merchantActionRequested)="handleMerchantStatusAction($event)"
+        (refreshRequested)="refreshSet($event)"
         (runDiscoveryRequested)="runDiscovery($event)"
         (seedActionRequested)="openOfferSeedDialogForRow($event)"
       ></lego-commerce-admin-set-work-context>

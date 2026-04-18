@@ -5,18 +5,21 @@ import {
   listCatalogThemePageSlugs,
 } from '@lego-platform/catalog/data-access';
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 
 import {
+  type CatalogResolvedOffer,
   getCatalogThemePageBySlugWithOverlay,
   listHomepageThemeDirectoryItemsWithOverlay,
   listHomepageThemeSpotlightItemsWithOverlay,
   listCatalogSearchMatchesWithOverlay,
+  listCatalogSetLiveOffersBySetId,
   listCatalogSearchSuggestionOverlaySetCards,
   listCatalogSetSlugsWithOverlay,
   listCatalogThemeDirectoryItemsWithOverlay,
   listCatalogThemePageSlugsWithOverlay,
   listDiscoverBrowseThemeGroupsWithOverlay,
+  resolveCatalogSetDetailOffers,
 } from './catalog-effective-data-access-web';
 
 function createOverlaySet(
@@ -49,6 +52,161 @@ function createOverlaySet(
     theme: 'Super Mario',
     updatedAt: '2026-04-17T08:00:00.000Z',
     ...overrides,
+  };
+}
+
+function createCatalogOffer(
+  overrides: Partial<CatalogResolvedOffer> = {},
+): CatalogResolvedOffer {
+  return {
+    availability: 'in_stock',
+    checkedAt: '2026-04-18T08:30:00.000Z',
+    condition: 'new',
+    currency: 'EUR',
+    market: 'NL',
+    merchant: 'other',
+    merchantName: 'Intertoys',
+    priceCents: 7999,
+    setId: '72037',
+    url: 'https://www.intertoys.nl/mario-kart',
+    ...overrides,
+  };
+}
+
+function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
+  rows: readonly Row[],
+) {
+  const filters: Array<
+    | {
+        type: 'eq';
+        column: keyof Row & string;
+        value: unknown;
+      }
+    | {
+        type: 'in';
+        column: keyof Row & string;
+        values: readonly unknown[];
+      }
+    | {
+        type: 'order';
+        column: keyof Row & string;
+        ascending: boolean;
+      }
+  > = [];
+
+  const builder = {
+    eq(column: keyof Row & string, value: unknown) {
+      filters.push({
+        column,
+        type: 'eq',
+        value,
+      });
+
+      return builder;
+    },
+    in(column: keyof Row & string, values: readonly unknown[]) {
+      filters.push({
+        column,
+        type: 'in',
+        values,
+      });
+
+      return builder;
+    },
+    order(column: keyof Row & string, options: { ascending: boolean }) {
+      filters.push({
+        ascending: options.ascending,
+        column,
+        type: 'order',
+      });
+
+      return builder;
+    },
+    select() {
+      return builder;
+    },
+    then<TResult1 = { data: Row[]; error: null }>(
+      onFulfilled?:
+        | ((value: {
+            data: Row[];
+            error: null;
+          }) => TResult1 | PromiseLike<TResult1>)
+        | null,
+      onRejected?: ((reason: unknown) => PromiseLike<never>) | null,
+    ) {
+      const filteredRows = filters.reduce<readonly Row[]>(
+        (resultRows, filter) => {
+          if (filter.type === 'eq') {
+            return resultRows.filter(
+              (row) => row[filter.column] === filter.value,
+            );
+          }
+
+          if (filter.type === 'in') {
+            return resultRows.filter((row) =>
+              filter.values.includes(row[filter.column]),
+            );
+          }
+
+          const sortedRows = [...resultRows].sort((left, right) => {
+            const leftValue = left[filter.column];
+            const rightValue = right[filter.column];
+
+            if (leftValue === rightValue) {
+              return 0;
+            }
+
+            if (leftValue == null) {
+              return filter.ascending ? -1 : 1;
+            }
+
+            if (rightValue == null) {
+              return filter.ascending ? 1 : -1;
+            }
+
+            return String(leftValue).localeCompare(String(rightValue));
+          });
+
+          return filter.ascending ? sortedRows : sortedRows.reverse();
+        },
+        rows,
+      );
+
+      return Promise.resolve({
+        data: [...filteredRows],
+        error: null,
+      }).then(onFulfilled, onRejected ?? undefined);
+    },
+  };
+
+  return builder;
+}
+
+function createCatalogSupabaseClientMock({
+  latestOfferRows,
+  merchantRows,
+  offerSeedRows,
+}: {
+  latestOfferRows: readonly Record<string, unknown>[];
+  merchantRows: readonly Record<string, unknown>[];
+  offerSeedRows: readonly Record<string, unknown>[];
+}) {
+  return {
+    from: vi.fn((table: string) => {
+      if (table === 'commerce_offer_seeds') {
+        return createSupabaseTableBuilder(offerSeedRows);
+      }
+
+      if (table === 'commerce_merchants') {
+        return createSupabaseTableBuilder(merchantRows);
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return createSupabaseTableBuilder(latestOfferRows);
+      }
+
+      throw new Error(`Unexpected table requested in test: ${table}`);
+    }),
   };
 }
 
@@ -350,5 +508,185 @@ describe('catalog effective data access web', () => {
     expect(baselineThemeSlugs.has(buildCatalogThemeSlug('Star Wars'))).toBe(
       true,
     );
+  });
+
+  test('returns live catalog offers for valid active merchant seeds', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-18T09:10:00.000Z',
+          offer_seed_id: 'seed-intertoys',
+          price_minor: 16999,
+          updated_at: '2026-04-18T09:10:00.000Z',
+        },
+        {
+          availability: 'limited',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-18T09:12:00.000Z',
+          offer_seed_id: 'seed-misterbricks',
+          price_minor: 16499,
+          updated_at: '2026-04-18T09:12:00.000Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-18T09:14:00.000Z',
+          offer_seed_id: 'seed-inactive',
+          price_minor: 15999,
+          updated_at: '2026-04-18T09:14:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-intertoys',
+          is_active: true,
+          name: 'Intertoys',
+          slug: 'intertoys',
+        },
+        {
+          id: 'merchant-misterbricks',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+        {
+          id: 'merchant-inactive',
+          is_active: false,
+          name: 'Inactive Merchant',
+          slug: 'inactive-merchant',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-intertoys',
+          is_active: true,
+          merchant_id: 'merchant-intertoys',
+          product_url: 'https://www.intertoys.nl/mario-kart',
+          set_id: '72037',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-misterbricks',
+          is_active: true,
+          merchant_id: 'merchant-misterbricks',
+          product_url: 'https://www.misterbricks.nl/mario-kart',
+          set_id: '72037',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-inactive',
+          is_active: true,
+          merchant_id: 'merchant-inactive',
+          product_url: 'https://www.inactive-merchant.nl/mario-kart',
+          set_id: '72037',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-pending',
+          is_active: true,
+          merchant_id: 'merchant-intertoys',
+          product_url: 'https://www.intertoys.nl/mario-kart-pending',
+          set_id: '72037',
+          validation_status: 'pending',
+        },
+      ],
+    });
+
+    const result = await listCatalogSetLiveOffersBySetId({
+      setId: '72037',
+      supabaseClient,
+    });
+
+    expect(result).toHaveLength(2);
+    expect(result.map((catalogOffer) => catalogOffer.merchantName)).toEqual([
+      'MisterBricks',
+      'Intertoys',
+    ]);
+    expect(result[0]).toMatchObject({
+      availability: 'in_stock',
+      merchantSlug: 'misterbricks',
+      priceCents: 16499,
+      setId: '72037',
+    });
+  });
+
+  test('prefers live pricing data while preserving generated outbound urls for matching merchants', () => {
+    const result = resolveCatalogSetDetailOffers({
+      generatedOffers: [
+        createCatalogOffer({
+          merchant: 'other',
+          merchantName: 'MisterBricks',
+          priceCents: 18999,
+          url: 'https://brickhunt.nl/out/misterbricks-72037',
+        }),
+      ],
+      liveOffers: [
+        {
+          availability: 'in_stock',
+          checkedAt: '2026-04-18T09:12:00.000Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'other',
+          merchantName: 'MisterBricks',
+          merchantSlug: 'misterbricks',
+          priceCents: 16499,
+          setId: '72037',
+          url: 'https://www.misterbricks.nl/mario-kart',
+        },
+      ],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      merchantName: 'MisterBricks',
+      priceCents: 16499,
+      url: 'https://brickhunt.nl/out/misterbricks-72037',
+    });
+  });
+
+  test('a successful live refresh keeps the public pricing state out of no-deal mode', () => {
+    const resolvedOffers = resolveCatalogSetDetailOffers({
+      generatedOffers: [],
+      liveOffers: [
+        {
+          availability: 'in_stock',
+          checkedAt: '2026-04-18T09:12:00.000Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'other',
+          merchantName: 'Intertoys',
+          merchantSlug: 'intertoys',
+          priceCents: 16999,
+          setId: '72037',
+          url: 'https://www.intertoys.nl/mario-kart',
+        },
+        {
+          availability: 'in_stock',
+          checkedAt: '2026-04-18T09:15:00.000Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'other',
+          merchantName: 'Top1Toys',
+          merchantSlug: 'top1toys',
+          priceCents: 17499,
+          setId: '72037',
+          url: 'https://www.top1toys.nl/mario-kart',
+        },
+      ],
+    });
+
+    expect(resolvedOffers).toHaveLength(2);
+    expect(resolvedOffers[0]).toMatchObject({
+      merchantName: 'Intertoys',
+      priceCents: 16999,
+    });
   });
 });

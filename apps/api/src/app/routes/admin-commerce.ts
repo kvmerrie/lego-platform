@@ -1,4 +1,5 @@
 import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
+import { refreshCommerceSetOfferSeeds } from '@lego-platform/api/data-access-server';
 import {
   findCatalogSetSummaryByIdWithOverlay,
   listCatalogOverlaySets,
@@ -32,6 +33,7 @@ import {
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  type CommerceSetRefreshResult,
   buildCommerceCoverageQueueRows,
   validateCommerceDiscoveryRunInput,
   validateCommerceBenchmarkSetInput,
@@ -49,6 +51,7 @@ export interface AdminCommerceService {
     input: CommerceBenchmarkSetInput,
   ): Promise<CommerceBenchmarkSet>;
   listCoverageQueue(): Promise<CommerceCoverageQueueRow[]>;
+  refreshSet(setId: string): Promise<CommerceSetRefreshResult>;
   createMerchant(input: CommerceMerchantInput): Promise<CommerceMerchant>;
   createOfferSeed(input: {
     discoveryCandidateId?: string;
@@ -138,6 +141,10 @@ function createAdminCommerceService(): AdminCommerceService {
         offerSeeds,
       });
     },
+    refreshSet: async (setId) => ({
+      setId,
+      ...(await refreshCommerceSetOfferSeeds({ setId })),
+    }),
     listMerchants: () => listCommerceMerchants(),
     createMerchant: (input) => createCommerceMerchant({ input }),
     updateMerchant: ({ input, merchantId }) =>
@@ -170,6 +177,20 @@ function readOptionalDiscoveryCandidateId(value: unknown): string | undefined {
   return typeof candidateId === 'string' && candidateId.trim()
     ? candidateId.trim()
     : undefined;
+}
+
+function readRequiredSetId(value: unknown): string {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Kies eerst een set om opnieuw te checken.');
+  }
+
+  const setId = (value as { setId?: unknown }).setId;
+
+  if (typeof setId !== 'string' || !setId.trim()) {
+    throw new Error('Kies eerst een set om opnieuw te checken.');
+  }
+
+  return setId.trim();
 }
 
 async function ensureCatalogSetExists(setId: string): Promise<void> {
@@ -291,6 +312,25 @@ export function createAdminCommerceRoutes({
     fastify.get(apiPaths.adminCommerceDiscoveryCandidates, async function () {
       return commerceService.listDiscoveryCandidates();
     });
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminCommerceSetRefreshes,
+      async function (request, reply) {
+        try {
+          const setId = readRequiredSetId(request.body);
+          await ensureCatalogSetExists(setId);
+
+          return await commerceService.refreshSet(setId);
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Commerce set refresh kon niet starten.',
+            ),
+          });
+        }
+      },
+    );
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceDiscoveryRuns,

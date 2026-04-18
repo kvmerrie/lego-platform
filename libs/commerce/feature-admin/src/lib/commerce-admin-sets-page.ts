@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   type CommerceCoverageQueueHealthFilter,
   type CommerceCoverageQueueMerchantStatus,
@@ -190,6 +191,7 @@ interface SetsRowFeedback {
 })
 export class CommerceAdminSetsPageComponent {
   readonly commerceAdminStore = inject(CommerceAdminStore);
+  private readonly router = inject(Router);
   readonly search = signal('');
   readonly sourceFilter = signal<CommerceCoverageQueueSourceFilter>('all');
   readonly healthFilter = signal<CommerceCoverageQueueHealthFilter>('all');
@@ -198,6 +200,7 @@ export class CommerceAdminSetsPageComponent {
   readonly sort = signal<SetManagementSort>('benchmark_first');
   readonly selectedSetId = signal<string | null>(null);
   readonly runningDiscoverySetId = signal<string | null>(null);
+  readonly refreshingSetId = signal<string | null>(null);
   readonly rowFeedback = signal<Record<string, SetsRowFeedback>>({});
   readonly isDialogOpen = signal(false);
   readonly selectedOfferSeed = signal<CommerceOfferSeed | null>(null);
@@ -343,6 +346,7 @@ export class CommerceAdminSetsPageComponent {
 
   getMerchantStatusTitle(
     merchantStatus: CommerceCoverageQueueMerchantStatus,
+    row?: CommerceCoverageQueueRow,
   ): string {
     const parts = [
       merchantStatus.merchantName,
@@ -355,6 +359,15 @@ export class CommerceAdminSetsPageComponent {
       parts.push(
         this.commerceAdminStore.formatRelativeTimestamp(
           merchantStatus.lastCheckedAt,
+        ),
+      );
+    }
+
+    if (row) {
+      parts.push(
+        this.commerceAdminStore.getCoverageQueueMerchantActionLabel(
+          row,
+          merchantStatus,
         ),
       );
     }
@@ -384,6 +397,32 @@ export class CommerceAdminSetsPageComponent {
     row: CommerceCoverageQueueRow,
   ): Record<string, string> {
     return this.commerceAdminStore.getCoverageQueueDiscoveryLinkParams(row);
+  }
+
+  handleMerchantStatusAction(input: {
+    merchantStatus: CommerceCoverageQueueMerchantStatus;
+    row: CommerceCoverageQueueRow;
+  }): void {
+    const { merchantStatus, row } = input;
+    const action = this.commerceAdminStore.getCoverageQueueMerchantAction(
+      row,
+      merchantStatus,
+    );
+
+    this.selectRow(row);
+
+    if (action.type === 'open_discovery') {
+      void this.router.navigate(['/discovery'], {
+        queryParams:
+          this.commerceAdminStore.getCoverageQueueDiscoveryLinkParamsForMerchant(
+            row,
+            merchantStatus.merchantId,
+          ),
+      });
+      return;
+    }
+
+    this.openOfferSeedDialogForMerchant(merchantStatus, row);
   }
 
   openOfferSeedDialogForMerchant(
@@ -464,6 +503,42 @@ export class CommerceAdminSetsPageComponent {
       }));
     } finally {
       this.runningDiscoverySetId.set(null);
+    }
+  }
+
+  async refreshSet(row: CommerceCoverageQueueRow): Promise<void> {
+    if (row.activeSeedCount === 0) {
+      return;
+    }
+
+    this.selectRow(row);
+    this.refreshingSetId.set(row.setId);
+
+    try {
+      const result = await this.commerceAdminStore.refreshSet(row.setId);
+
+      this.rowFeedback.update((feedback) => ({
+        ...feedback,
+        [row.setId]: {
+          tone: 'positive',
+          message: this.commerceAdminStore.formatSetRefreshResult(result),
+        },
+      }));
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'De prijscheck kon niet opnieuw starten.';
+
+      this.rowFeedback.update((feedback) => ({
+        ...feedback,
+        [row.setId]: {
+          tone: 'danger',
+          message,
+        },
+      }));
+    } finally {
+      this.refreshingSetId.set(null);
     }
   }
 }

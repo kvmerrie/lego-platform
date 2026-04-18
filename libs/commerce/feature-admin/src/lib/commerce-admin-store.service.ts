@@ -29,6 +29,7 @@ import {
   type CommerceMerchantInput,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  type CommerceSetRefreshResult,
   supportsCommerceMerchantDiscovery,
   validateCommerceDiscoveryRunInput,
   validateCommerceBenchmarkSetInput,
@@ -40,6 +41,15 @@ import { CommerceAdminApiService } from './commerce-admin-api.service';
 export interface CommerceCatalogSetOption extends CommerceCoverageSetOption {
   collectorAngle?: string;
   slug: string;
+}
+
+export type CommerceCoverageQueueMerchantActionType =
+  | 'open_discovery'
+  | 'open_seed';
+
+export interface CommerceCoverageQueueMerchantAction {
+  label: string;
+  type: CommerceCoverageQueueMerchantActionType;
 }
 
 const initialCatalogSetOptions = [...listCatalogSetSummaries()]
@@ -520,6 +530,19 @@ export class CommerceAdminStore {
     return merchant ? supportsCommerceMerchantDiscovery(merchant.slug) : false;
   }
 
+  async refreshSet(setId: string): Promise<CommerceSetRefreshResult> {
+    try {
+      const result = await this.commerceAdminApi.refreshSet(setId);
+      await this.reload();
+      return result;
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
   getMerchantActiveSeedCount(merchantId: string): number {
     return this.merchantActiveSeedCounts().get(merchantId) ?? 0;
   }
@@ -766,6 +789,84 @@ export class CommerceAdminStore {
     }
   }
 
+  getCoverageQueueMerchantAction(
+    row: CommerceCoverageQueueRow,
+    merchantStatus: CommerceCoverageQueueMerchantStatus,
+  ): CommerceCoverageQueueMerchantAction {
+    switch (merchantStatus.state) {
+      case 'pending':
+      case 'review':
+        return {
+          type: 'open_discovery',
+          label: 'Open discovery',
+        };
+      case 'not_available_confirmed':
+        return this.supportsMerchantDiscovery(merchantStatus.merchantId)
+          ? {
+              type: 'open_discovery',
+              label: 'Open laatste check',
+            }
+          : {
+              type: 'open_seed',
+              label: merchantStatus.offerSeed
+                ? 'Bekijk seed'
+                : 'Seed toevoegen',
+            };
+      case 'stale':
+      case 'unavailable':
+      case 'valid':
+        return {
+          type: 'open_seed',
+          label: merchantStatus.offerSeed ? 'Bekijk seed' : 'Seed toevoegen',
+        };
+      case 'missing':
+      default:
+        return {
+          type: 'open_seed',
+          label:
+            row.recommendedMerchantId === merchantStatus.merchantId &&
+            row.recommendedNextAction === 'edit_seed'
+              ? 'Seed bewerken'
+              : 'Seed toevoegen',
+        };
+    }
+  }
+
+  getCoverageQueueMerchantActionLabel(
+    row: CommerceCoverageQueueRow,
+    merchantStatus: CommerceCoverageQueueMerchantStatus,
+  ): string {
+    return this.getCoverageQueueMerchantAction(row, merchantStatus).label;
+  }
+
+  formatSetRefreshResult(result: CommerceSetRefreshResult): string {
+    const parts = [
+      `${result.totalCount} seed${result.totalCount === 1 ? '' : 's'} gecheckt`,
+    ];
+
+    if (result.successCount > 0) {
+      parts.push(
+        `${result.successCount} geldig${
+          result.successCount === 1 ? '' : 'e'
+        } prijs${result.successCount === 1 ? '' : 'en'}`,
+      );
+    }
+
+    if (result.unavailableCount > 0) {
+      parts.push(`${result.unavailableCount} niet leverbaar`);
+    }
+
+    if (result.staleCount > 0) {
+      parts.push(`${result.staleCount} stale`);
+    }
+
+    if (result.invalidCount > 0) {
+      parts.push(`${result.invalidCount} ongeldig`);
+    }
+
+    return parts.join(' · ');
+  }
+
   getCoverageQueueMerchantStateTone(
     state: CommerceCoverageQueueMerchantState,
   ): 'danger' | 'neutral' | 'positive' | 'warning' {
@@ -962,11 +1063,21 @@ export class CommerceAdminStore {
   getCoverageQueueDiscoveryLinkParams(
     row: CommerceCoverageQueueRow,
   ): Record<string, string> {
+    return this.getCoverageQueueDiscoveryLinkParamsForMerchant(
+      row,
+      row.recommendedMerchantId,
+    );
+  }
+
+  getCoverageQueueDiscoveryLinkParamsForMerchant(
+    row: CommerceCoverageQueueRow,
+    merchantId?: string,
+  ): Record<string, string> {
     return {
       set: row.setId,
-      ...(row.recommendedMerchantId
+      ...(merchantId
         ? {
-            merchant: row.recommendedMerchantId,
+            merchant: merchantId,
           }
         : {}),
     };

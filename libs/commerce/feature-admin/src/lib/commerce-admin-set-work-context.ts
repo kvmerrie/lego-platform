@@ -29,6 +29,12 @@ export class CommerceAdminSetWorkContextComponent {
   @Input() title = 'Set context';
   @Output() readonly runDiscoveryRequested =
     new EventEmitter<CommerceCoverageQueueRow>();
+  @Output() readonly merchantActionRequested = new EventEmitter<{
+    merchantStatus: CommerceCoverageQueueMerchantStatus;
+    row: CommerceCoverageQueueRow;
+  }>();
+  @Output() readonly refreshRequested =
+    new EventEmitter<CommerceCoverageQueueRow>();
   @Output() readonly seedActionRequested =
     new EventEmitter<CommerceCoverageQueueRow>();
 
@@ -104,6 +110,25 @@ export class CommerceAdminSetWorkContextComponent {
   triggerSeedAction(): void {
     if (this.row && this.seedActionMerchant()) {
       this.seedActionRequested.emit(this.row);
+    }
+  }
+
+  triggerMerchantAction(
+    merchantStatus: CommerceCoverageQueueMerchantStatus,
+  ): void {
+    if (!this.row) {
+      return;
+    }
+
+    this.merchantActionRequested.emit({
+      row: this.row,
+      merchantStatus,
+    });
+  }
+
+  triggerRefresh(): void {
+    if (this.row?.activeSeedCount) {
+      this.refreshRequested.emit(this.row);
     }
   }
 }

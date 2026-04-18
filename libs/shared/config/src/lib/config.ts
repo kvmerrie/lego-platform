@@ -132,6 +132,7 @@ export const apiPaths = {
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
   adminCommerceCoverageQueue: '/api/v1/admin/commerce/coverage-queue',
+  adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
   adminCommerceDiscoveryRuns: '/api/v1/admin/commerce/discovery-runs',
   adminCommerceDiscoveryCandidates:
     '/api/v1/admin/commerce/discovery-candidates',

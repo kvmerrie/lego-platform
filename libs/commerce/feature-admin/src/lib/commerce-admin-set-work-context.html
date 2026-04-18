@@ -57,8 +57,8 @@
     <div class="admin-pill-cluster">
       @for (merchantStatus of row.merchantStatuses; track
       merchantStatus.merchantId) {
-      <span
-        class="admin-status-pill"
+      <button
+        class="admin-status-pill admin-pill-button"
         [class.admin-status-pill--danger]="
           commerceAdminStore.getCoverageQueueMerchantStateTone(
             merchantStatus.state
@@ -79,11 +79,14 @@
             merchantStatus.state
           ) === 'neutral'
         "
+        [attr.title]="commerceAdminStore.getCoverageQueueMerchantActionLabel(row, merchantStatus)"
+        type="button"
+        (click)="triggerMerchantAction(merchantStatus)"
       >
         {{ merchantStatus.merchantName }} · {{
         commerceAdminStore.getCoverageQueueMerchantStateLabel(merchantStatus.state)
         }}
-      </span>
+      </button>
       }
     </div>
   </section>
@@ -172,6 +175,14 @@
       >
         {{ seedActionMerchant()!.offerSeed ? 'Seed bewerken' : 'Seed toevoegen'
         }}
+      </button>
+      } @if (row.activeSeedCount > 0) {
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        (click)="triggerRefresh()"
+      >
+        Hercheck prijzen
       </button>
       }
 
