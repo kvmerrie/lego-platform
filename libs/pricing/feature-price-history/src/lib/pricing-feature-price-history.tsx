@@ -15,9 +15,13 @@ import type { PriceHistoryPoint } from '@lego-platform/pricing/util';
 import { useEffect, useState } from 'react';
 
 export function PricingFeaturePriceHistory({
+  hasCurrentOffer = false,
+  merchantCount,
   setId,
   variant = 'default',
 }: {
+  hasCurrentOffer?: boolean;
+  merchantCount?: number;
   setId: string;
   variant?: 'default' | 'set-detail';
 }) {
@@ -60,6 +64,8 @@ export function PricingFeaturePriceHistory({
 
   if (variant === 'set-detail') {
     const insights = buildSetPriceInsights({
+      hasCurrentOffer,
+      merchantCount,
       priceHistorySummaryState: priceHistorySummaryState ?? undefined,
       pricePanelSnapshot: getPricePanelSnapshot(setId),
     });

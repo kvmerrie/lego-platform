@@ -435,6 +435,7 @@ export default async function SetDetailPage({
     theme: catalogSetDetail.theme,
   });
   const dealVerdict = buildSetDealVerdict(pricePanelSnapshot, {
+    hasCurrentOffer: Boolean(bestOffer),
     theme: catalogSetDetail.theme,
   });
   const trackedMerchantCount = Math.max(
@@ -508,6 +509,10 @@ export default async function SetDetailPage({
         }
         priceHistoryPanel={
           <PricingFeaturePriceHistory
+            hasCurrentOffer={Boolean(bestOffer)}
+            merchantCount={
+              trackedMerchantCount > 0 ? trackedMerchantCount : undefined
+            }
             setId={catalogSetDetail.id}
             variant="set-detail"
           />

@@ -107,6 +107,7 @@ export interface PriceDealSummary {
 export interface SetDealVerdict {
   explanation: string;
   label:
+    | 'Actuele prijzen binnen'
     | 'Goede deal'
     | 'Prijsdata nog beperkt'
     | 'Prima prijs'

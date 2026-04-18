@@ -92,6 +92,7 @@ export interface SetDecisionSupportItem {
     | 'brickhunt-guidance'
     | 'brickhunt-monitoring'
     | 'limited-data'
+    | 'limited-history'
     | 'merchant-coverage'
     | 'no-reliable-offer'
     | 'price-above-normal'
@@ -298,6 +299,7 @@ export function buildSetDealVerdict(
     'deltaMinor' | 'referencePriceMinor'
   >,
   options?: {
+    hasCurrentOffer?: boolean;
     theme?: string;
   },
 ): SetDealVerdict {
@@ -305,6 +307,15 @@ export function buildSetDealVerdict(
   const decisionVoice = getDecisionVoice(options?.theme);
 
   if (decisionState === 'limited') {
+    if (options?.hasCurrentOffer) {
+      return {
+        explanation:
+          'Actuele prijzen zijn er al. Het prijsverloop bouwt nog op, dus het koopmoment wordt nog scherper.',
+        label: 'Actuele prijzen binnen',
+        tone: 'info',
+      };
+    }
+
     return {
       explanation:
         'Prijsdata nog beperkt. Even volgen geeft straks een beter signaal.',
@@ -365,15 +376,30 @@ export function buildSetDecisionPresentation({
 }): SetDecisionPresentation {
   const state = getSetDecisionState(pricePanelSnapshot);
   const verdict = buildSetDealVerdict(pricePanelSnapshot, {
+    hasCurrentOffer,
     theme,
   });
 
   if (state === 'limited') {
+    if (hasCurrentOffer) {
+      return {
+        cardLabel: 'Actuele prijzen binnen',
+        cardSupportingCopy: 'Prijsverloop bouwt nog op',
+        followCopy:
+          'We zien de huidige prijzen al. Volg deze set als je ook wilt zien wanneer hij echt scherp zakt.',
+        followEyebrow: 'Historie volgt nog',
+        followTitle: 'Volg deze prijs',
+        noOfferCopy:
+          'Actuele prijzen zijn er al, maar het prijsverloop over tijd bouwt nog op.',
+        noOfferTitle: 'Prijsverloop bouwt nog op',
+        state,
+        verdict,
+      };
+    }
+
     return {
       cardLabel: 'Prijsdata nog beperkt',
-      cardSupportingCopy: hasCurrentOffer
-        ? undefined
-        : 'Prijsbeeld bouwt nog op',
+      cardSupportingCopy: 'Prijsbeeld bouwt nog op',
       followCopy:
         'Brickhunt bouwt het prijsbeeld nog op. Volgen helpt hier het meest.',
       followEyebrow: 'Prijs volgen',
@@ -447,10 +473,34 @@ export function buildSetDecisionSupportItems({
   const trackedMerchantCount =
     merchantCount ?? pricePanelSnapshot?.merchantCount;
   const items: SetDecisionSupportItem[] = [];
+  const decisionState = getSetDecisionState(pricePanelSnapshot);
   const decisionPresentation = buildSetDecisionPresentation({
     hasCurrentOffer,
     pricePanelSnapshot,
   });
+
+  if (decisionState === 'limited' && hasCurrentOffer) {
+    items.push({
+      id: 'best-price-now',
+      text: 'Dit is nu de beste prijs die we zien.',
+    });
+
+    if (typeof trackedMerchantCount === 'number' && trackedMerchantCount > 0) {
+      items.push({
+        id: 'merchant-coverage',
+        text: `${trackedMerchantCount} winkel${
+          trackedMerchantCount === 1 ? '' : 's'
+        } nagekeken.`,
+      });
+    }
+
+    items.push({
+      id: 'limited-history',
+      text: 'Prijsverloop bouwt nog op.',
+    });
+
+    return items.slice(0, 3);
+  }
 
   if (!pricePanelSnapshot) {
     items.push({
@@ -622,13 +672,48 @@ export function getReviewedPriceSummary(
 }
 
 export function buildSetPriceInsights({
+  hasCurrentOffer = false,
+  merchantCount,
   priceHistorySummaryState,
   pricePanelSnapshot,
 }: {
+  hasCurrentOffer?: boolean;
+  merchantCount?: number;
   priceHistorySummaryState?: PriceHistorySummaryState;
   pricePanelSnapshot?: PricePanelSnapshot;
 }): SetPriceInsight[] {
+  const trackedMerchantCount =
+    merchantCount ?? pricePanelSnapshot?.merchantCount;
+
   if (!pricePanelSnapshot) {
+    if (hasCurrentOffer) {
+      return [
+        {
+          id: 'limited-data',
+          text: 'Actuele prijzen zijn er al.',
+        },
+        ...(typeof trackedMerchantCount === 'number' && trackedMerchantCount > 0
+          ? [
+              {
+                id: 'coverage',
+                text: `${trackedMerchantCount} winkel${
+                  trackedMerchantCount === 1 ? '' : 's'
+                } nagekeken.`,
+              } satisfies SetPriceInsight,
+            ]
+          : [
+              {
+                id: 'more-data',
+                text: 'Met meer checks wordt dit signaal scherper.',
+              } satisfies SetPriceInsight,
+            ]),
+        {
+          id: 'limited-history',
+          text: 'Prijsverloop bouwt nog op.',
+        },
+      ];
+    }
+
     return [
       {
         id: 'limited-data',
@@ -665,7 +750,9 @@ export function buildSetPriceInsights({
   } else {
     insights.push({
       id: 'limited-history',
-      text: 'Prijsverloop nog beperkt.',
+      text: hasCurrentOffer
+        ? 'Actuele prijzen zijn er al, maar het prijsverloop bouwt nog op.'
+        : 'Prijsverloop nog beperkt.',
     });
   }
 

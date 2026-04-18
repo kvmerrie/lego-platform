@@ -204,6 +204,44 @@ describe('pricing data access', () => {
     });
   });
 
+  test('treats live current offers as meaningful even when history is still limited', () => {
+    expect(
+      buildSetDealVerdict(undefined, {
+        hasCurrentOffer: true,
+        theme: 'Super Mario',
+      }),
+    ).toEqual({
+      explanation:
+        'Actuele prijzen zijn er al. Het prijsverloop bouwt nog op, dus het koopmoment wordt nog scherper.',
+      label: 'Actuele prijzen binnen',
+      tone: 'info',
+    });
+
+    expect(
+      buildSetDecisionPresentation({
+        hasCurrentOffer: true,
+        theme: 'Super Mario',
+      }),
+    ).toEqual({
+      cardLabel: 'Actuele prijzen binnen',
+      cardSupportingCopy: 'Prijsverloop bouwt nog op',
+      followCopy:
+        'We zien de huidige prijzen al. Volg deze set als je ook wilt zien wanneer hij echt scherp zakt.',
+      followEyebrow: 'Historie volgt nog',
+      followTitle: 'Volg deze prijs',
+      noOfferCopy:
+        'Actuele prijzen zijn er al, maar het prijsverloop over tijd bouwt nog op.',
+      noOfferTitle: 'Prijsverloop bouwt nog op',
+      state: 'limited',
+      verdict: {
+        explanation:
+          'Actuele prijzen zijn er al. Het prijsverloop bouwt nog op, dus het koopmoment wordt nog scherper.',
+        label: 'Actuele prijzen binnen',
+        tone: 'info',
+      },
+    });
+  });
+
   test('builds compact deal-support copy from current price signals', () => {
     expect(
       buildSetDecisionSupportItems({
@@ -262,18 +300,44 @@ describe('pricing data access', () => {
       }),
     ).toEqual([
       {
-        id: 'limited-data',
-        text: 'Prijsdata nog beperkt, maar dit is nu de beste prijs die we zien.',
+        id: 'best-price-now',
+        text: 'Dit is nu de beste prijs die we zien.',
       },
       {
         id: 'merchant-coverage',
         text: '1 winkel nagekeken.',
       },
       {
-        id: 'brickhunt-guidance',
-        text: 'Met meer checks wordt dit signaal scherper.',
+        id: 'limited-history',
+        text: 'Prijsverloop bouwt nog op.',
       },
     ]);
+  });
+
+  test('keeps the empty pricing state when no live current offer exists', () => {
+    expect(
+      buildSetDecisionPresentation({
+        hasCurrentOffer: false,
+        theme: 'Super Mario',
+      }),
+    ).toEqual({
+      cardLabel: 'Prijsdata nog beperkt',
+      cardSupportingCopy: 'Prijsbeeld bouwt nog op',
+      followCopy:
+        'Brickhunt bouwt het prijsbeeld nog op. Volgen helpt hier het meest.',
+      followEyebrow: 'Prijs volgen',
+      followTitle: 'Volg deze set',
+      noOfferCopy:
+        'Nog te weinig prijschecks voor een hard koopmoment of klikroute.',
+      noOfferTitle: 'Prijsbeeld bouwt nog op',
+      state: 'limited',
+      verdict: {
+        explanation:
+          'Prijsdata nog beperkt. Even volgen geeft straks een beter signaal.',
+        label: 'Prijsdata nog beperkt',
+        tone: 'neutral',
+      },
+    });
   });
 
   test('builds a compact Brickhunt value block for the set detail page', () => {
@@ -336,6 +400,28 @@ describe('pricing data access', () => {
       {
         id: 'tracked-low',
         text: 'Deze set zakt meestal niet veel lager dan dit.',
+      },
+    ]);
+  });
+
+  test('builds set-detail price insights that separate live prices from limited history', () => {
+    expect(
+      buildSetPriceInsights({
+        hasCurrentOffer: true,
+        merchantCount: 3,
+      }),
+    ).toEqual([
+      {
+        id: 'limited-data',
+        text: 'Actuele prijzen zijn er al.',
+      },
+      {
+        id: 'coverage',
+        text: '3 winkels nagekeken.',
+      },
+      {
+        id: 'limited-history',
+        text: 'Prijsverloop bouwt nog op.',
       },
     ]);
   });
