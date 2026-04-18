@@ -213,6 +213,81 @@ describe('catalog data access server', () => {
     ]);
   });
 
+  test('uses the parent theme as the primary theme for search results', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+
+    const order = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    const eq = vi.fn(() => ({
+      order,
+    }));
+    const select = vi.fn(() => ({
+      eq,
+      order,
+    }));
+    const from = vi.fn(() => ({
+      select,
+    }));
+    const fetchImpl = vi.fn(async (input: string | URL) => {
+      const url = String(input);
+
+      if (url.includes('/lego/sets/?')) {
+        return {
+          ok: true,
+          json: async () => ({
+            results: [
+              {
+                set_num: '75192-1',
+                name: 'Millennium Falcon',
+                year: 2017,
+                num_parts: 7541,
+                theme_id: 592,
+                set_img_url:
+                  'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
+              },
+            ],
+          }),
+        } as Response;
+      }
+
+      if (url.endsWith('/lego/themes/592/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 592,
+            name: 'Ultimate Collector Series',
+            parent_id: 158,
+          }),
+        } as Response;
+      }
+
+      if (url.endsWith('/lego/themes/158/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 158,
+            name: 'Star Wars',
+          }),
+        } as Response;
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    }) as typeof fetch;
+
+    const [result] = await searchCatalogMissingSets({
+      fetchImpl,
+      query: 'millennium falcon',
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toMatchObject({
+      setId: '75192',
+      theme: 'Star Wars',
+    });
+  });
+
   test('creates an overlay record with normalized set data', async () => {
     const { insert, supabaseClient } = createCatalogOverlaySupabaseClient();
 
@@ -235,6 +310,46 @@ describe('catalog data access server', () => {
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({
         slug: 'great-deku-tree-2-in-1-77092',
+      }),
+    );
+  });
+
+  test('normalizes raw external subthemes to the expected primary theme when creating an overlay set', async () => {
+    const { insert, supabaseClient } = createCatalogOverlaySupabaseClient({
+      insertResult: {
+        data: createCatalogOverlayRow({
+          image_url: 'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
+          name: 'Millennium Falcon',
+          piece_count: 7541,
+          release_year: 2017,
+          set_id: '75192',
+          slug: 'millennium-falcon-75192',
+          source_set_number: '75192-1',
+          theme: 'Star Wars',
+        }),
+        error: null,
+      },
+    });
+
+    const result = await createCatalogOverlaySet({
+      input: {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
+        name: 'Millennium Falcon',
+        pieces: 7541,
+        releaseYear: 2017,
+        setId: '75192',
+        slug: 'millennium-falcon-75192',
+        source: 'rebrickable',
+        sourceSetNumber: '75192-1',
+        theme: 'Ultimate Collector Series',
+      },
+      supabaseClient,
+    });
+
+    expect(result.theme).toBe('Star Wars');
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        theme: 'Star Wars',
       }),
     );
   });

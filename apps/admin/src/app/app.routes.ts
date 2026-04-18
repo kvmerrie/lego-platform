@@ -20,7 +20,11 @@ export const appRoutes: Route[] = [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'workflow',
+        redirectTo: 'workbench',
+      },
+      {
+        path: 'workbench',
+        component: CommerceAdminCoverageQueuePageComponent,
       },
       {
         path: 'workflow',
@@ -29,11 +33,16 @@ export const appRoutes: Route[] = [
       {
         path: 'dashboard',
         pathMatch: 'full',
-        redirectTo: 'workflow',
+        redirectTo: 'workbench',
+      },
+      {
+        path: 'new-set',
+        component: CommerceAdminAddSetPageComponent,
       },
       {
         path: 'add-set',
-        component: CommerceAdminAddSetPageComponent,
+        pathMatch: 'full',
+        redirectTo: 'new-set',
       },
       {
         path: 'merchants',
@@ -57,7 +66,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'coverage-queue',
-        component: CommerceAdminCoverageQueuePageComponent,
+        pathMatch: 'full',
+        redirectTo: 'workbench',
       },
       {
         path: 'coverage',

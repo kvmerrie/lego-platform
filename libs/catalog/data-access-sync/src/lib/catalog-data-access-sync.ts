@@ -6,6 +6,7 @@ import {
   createCatalogSetRecord,
   getCatalogProductSlug,
   getCanonicalCatalogSetId,
+  resolveCatalogThemeIdentity,
 } from '@lego-platform/catalog/util';
 import { catalogSetOverlays } from '@lego-platform/catalog/data-access';
 import {
@@ -35,6 +36,7 @@ interface ValidatedRebrickableSet {
 interface ValidatedRebrickableTheme {
   id: number;
   name: string;
+  parentId?: number;
 }
 
 export interface CatalogSyncArtifacts {
@@ -257,7 +259,7 @@ function validateRebrickableThemePayload(
     );
   }
 
-  const { id, name } = payload;
+  const { id, name, parent_id: parentId } = payload;
 
   if (!isInteger(id) || id !== expectedThemeId) {
     throw new Error(
@@ -271,10 +273,105 @@ function validateRebrickableThemePayload(
     );
   }
 
+  if (
+    parentId !== undefined &&
+    parentId !== null &&
+    (!isInteger(parentId) || parentId <= 0)
+  ) {
+    throw new Error(
+      `Invalid Rebrickable theme payload for ${expectedThemeId}: parent_id must be a positive integer when present.`,
+    );
+  }
+
   return {
     id,
     name: name.trim(),
+    ...(isInteger(parentId)
+      ? {
+          parentId,
+        }
+      : {}),
   };
+}
+
+async function getValidatedRebrickableTheme({
+  rebrickableClient,
+  themeCache,
+  themeId,
+}: {
+  rebrickableClient: RebrickableClient;
+  themeCache: Map<number, ValidatedRebrickableTheme>;
+  themeId: number;
+}): Promise<ValidatedRebrickableTheme> {
+  const cachedTheme = themeCache.get(themeId);
+
+  if (cachedTheme) {
+    return cachedTheme;
+  }
+
+  const validatedTheme = validateRebrickableThemePayload(
+    await rebrickableClient.getTheme(themeId),
+    themeId,
+  );
+
+  themeCache.set(validatedTheme.id, validatedTheme);
+
+  return validatedTheme;
+}
+
+async function resolveRebrickablePrimaryThemeName({
+  rebrickableClient,
+  resolvedThemeNameById,
+  themeCache,
+  themeId,
+  visitedThemeIds = new Set<number>(),
+}: {
+  rebrickableClient: RebrickableClient;
+  resolvedThemeNameById: Map<number, string>;
+  themeCache: Map<number, ValidatedRebrickableTheme>;
+  themeId: number;
+  visitedThemeIds?: Set<number>;
+}): Promise<string> {
+  const cachedThemeName = resolvedThemeNameById.get(themeId);
+
+  if (cachedThemeName) {
+    return cachedThemeName;
+  }
+
+  if (visitedThemeIds.has(themeId)) {
+    throw new Error(
+      `Invalid Rebrickable theme hierarchy: recursive parent detected for ${themeId}.`,
+    );
+  }
+
+  visitedThemeIds.add(themeId);
+
+  const validatedTheme = await getValidatedRebrickableTheme({
+    rebrickableClient,
+    themeCache,
+    themeId,
+  });
+  const parentThemeName = validatedTheme.parentId
+    ? await resolveRebrickablePrimaryThemeName({
+        rebrickableClient,
+        resolvedThemeNameById,
+        themeCache,
+        themeId: validatedTheme.parentId,
+        visitedThemeIds,
+      })
+    : undefined;
+  const resolvedThemeName = resolveCatalogThemeIdentity({
+    rawTheme: validatedTheme.name,
+    ...(parentThemeName
+      ? {
+          parentTheme: parentThemeName,
+        }
+      : {}),
+  }).primaryTheme;
+
+  resolvedThemeNameById.set(themeId, resolvedThemeName);
+
+  return resolvedThemeName;
 }
 
 function mapRebrickableSetToCatalogSetRecord({
@@ -445,6 +542,7 @@ export async function buildCatalogSyncArtifacts({
   now = new Date(),
   rebrickableClient,
 }: BuildCatalogSyncArtifactsOptions): Promise<CatalogSyncArtifacts> {
+  const themeCache = new Map<number, ValidatedRebrickableTheme>();
   const themeNameById = new Map<number, string>();
   const setRecords: CatalogSetRecord[] = [];
 
@@ -457,13 +555,12 @@ export async function buildCatalogSyncArtifacts({
     let themeName = themeNameById.get(validatedSet.themeId);
 
     if (!themeName) {
-      const validatedTheme = validateRebrickableThemePayload(
-        await rebrickableClient.getTheme(validatedSet.themeId),
-        validatedSet.themeId,
-      );
-
-      themeName = validatedTheme.name;
-      themeNameById.set(validatedTheme.id, validatedTheme.name);
+      themeName = await resolveRebrickablePrimaryThemeName({
+        rebrickableClient,
+        resolvedThemeNameById: themeNameById,
+        themeCache,
+        themeId: validatedSet.themeId,
+      });
     }
 
     setRecords.push(

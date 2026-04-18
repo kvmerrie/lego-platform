@@ -11,6 +11,7 @@ import {
   getCatalogProductSlug,
   normalizeCatalogSetImages,
   normalizeCatalogAsciiText,
+  resolveCatalogThemeIdentity,
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import {
@@ -252,7 +253,32 @@ function getCatalogDisplayTheme(
   catalogSetRecord: CatalogSetRecord,
   catalogSetOverlay: CatalogSetOverlay,
 ): string {
-  return catalogSetOverlay.displayTheme ?? catalogSetRecord.theme;
+  return resolveCatalogThemeIdentity({
+    rawTheme: catalogSetRecord.theme,
+    ...(catalogSetOverlay.displayTheme
+      ? {
+          parentTheme: catalogSetOverlay.displayTheme,
+        }
+      : {}),
+  }).primaryTheme;
+}
+
+function getCatalogDisplaySubtheme(
+  catalogSetRecord: CatalogSetRecord,
+  catalogSetOverlay: CatalogSetOverlay,
+): string | undefined {
+  if (catalogSetOverlay.subtheme) {
+    return catalogSetOverlay.subtheme;
+  }
+
+  return resolveCatalogThemeIdentity({
+    rawTheme: catalogSetRecord.theme,
+    ...(catalogSetOverlay.displayTheme
+      ? {
+          parentTheme: catalogSetOverlay.displayTheme,
+        }
+      : {}),
+  }).secondaryThemes[0];
 }
 
 function buildCatalogSetImages({
@@ -421,9 +447,12 @@ function toCatalogSetDetail(
           displaySize: { ...catalogSetOverlay.displaySize },
         }
       : {}),
-    ...(catalogSetOverlay.subtheme
+    ...(getCatalogDisplaySubtheme(catalogSetRecord, catalogSetOverlay)
       ? {
-          subtheme: catalogSetOverlay.subtheme,
+          subtheme: getCatalogDisplaySubtheme(
+            catalogSetRecord,
+            catalogSetOverlay,
+          ),
         }
       : {}),
     ...(catalogSetOverlay.setStatus

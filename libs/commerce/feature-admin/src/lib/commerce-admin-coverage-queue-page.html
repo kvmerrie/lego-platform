@@ -12,9 +12,7 @@
     <div class="admin-actions">
       <span class="admin-count-pill">
         {{ filteredRows().length }}/{{
-          commerceAdminStore.coverageQueueRows().length
-        }}
-        sets in beeld
+        commerceAdminStore.coverageQueueRows().length }} sets in beeld
       </span>
       <a class="admin-button admin-button--primary" routerLink="/add-set">
         Add new set
@@ -24,21 +22,27 @@
 
   <section class="admin-workbench__summary">
     <article class="admin-workbench__summary-card">
-      <span class="admin-workbench__summary-value">{{ noFirstOfferCount() }}</span>
+      <span class="admin-workbench__summary-value"
+        >{{ noFirstOfferCount() }}</span
+      >
       <span class="admin-muted">sets zonder eerste offer</span>
     </article>
     <article class="admin-workbench__summary-card">
-      <span class="admin-workbench__summary-value">{{ underCoveredCount() }}</span>
+      <span class="admin-workbench__summary-value"
+        >{{ underCoveredCount() }}</span
+      >
       <span class="admin-muted">sets onder 3 merchants</span>
     </article>
     <article class="admin-workbench__summary-card">
-      <span class="admin-workbench__summary-value">{{ overlayWorkCount() }}</span>
+      <span class="admin-workbench__summary-value"
+        >{{ overlayWorkCount() }}</span
+      >
       <span class="admin-muted">overlay sets die nog werk vragen</span>
     </article>
     <article class="admin-workbench__summary-card">
-      <span class="admin-workbench__summary-value">{{
-        reviewOrStaleCount()
-      }}</span>
+      <span class="admin-workbench__summary-value"
+        >{{ reviewOrStaleCount() }}</span
+      >
       <span class="admin-muted">review- of stale signalen</span>
     </article>
   </section>
@@ -104,7 +108,7 @@
       >
         <option value="all">Alle merchantgaten</option>
         @for (merchant of merchantGapOptions(); track merchant.id) {
-          <option [value]="merchant.id">Mist {{ merchant.name }}</option>
+        <option [value]="merchant.id">Mist {{ merchant.name }}</option>
         }
       </select>
     </div>
@@ -119,213 +123,206 @@
         </div>
 
         @if (selectedRow(); as selectedRow) {
-          <span class="admin-count-pill">
-            Geselecteerd: {{ selectedRow.setName }}
-          </span>
+        <span class="admin-count-pill">
+          Geselecteerd: {{ selectedRow.setName }}
+        </span>
         }
       </div>
 
       @if (filteredRows().length > 0) {
-        <div class="admin-workbench__queue-list">
-          @for (row of filteredRows(); track row.setId) {
-            <article
-              class="admin-panel admin-workbench__row"
-              [class.is-selected]="isSelectedRow(row)"
-            >
-              <button
-                class="admin-workbench__row-summary"
-                type="button"
-                (click)="selectRow(row)"
-              >
-                <div class="admin-workbench__row-heading">
-                  <div class="admin-workbench__row-title">
-                    <h3>{{ row.setName }}</h3>
-                    <span class="admin-muted">{{ row.theme }} · {{ row.setId }}</span>
-                  </div>
+      <div class="admin-workbench__queue-list">
+        @for (row of filteredRows(); track row.setId) {
+        <article
+          class="admin-panel admin-workbench__row"
+          [class.is-selected]="isSelectedRow(row)"
+        >
+          <button
+            class="admin-workbench__row-summary"
+            type="button"
+            (click)="selectRow(row)"
+          >
+            <div class="admin-workbench__row-heading">
+              <div class="admin-workbench__row-title">
+                <h3>{{ row.setName }}</h3>
+                <span class="admin-muted"
+                  >{{ row.theme }} · {{ row.setId }}</span
+                >
+              </div>
 
-                  <div class="admin-pill-cluster">
-                    <span class="admin-count-pill">
-                      {{ getCoverageQueueSourceLabel(row.source) }}
-                    </span>
-                    @if (row.isBenchmark) {
-                      <span class="admin-count-pill">Benchmark</span>
-                    }
-                    <span class="admin-status-pill admin-status-pill--neutral">
-                      {{ row.statusSummary }}
-                    </span>
-                  </div>
-                </div>
+              <div class="admin-pill-cluster">
+                <span class="admin-count-pill">
+                  {{ getCoverageQueueSourceLabel(row.source) }}
+                </span>
+                @if (row.isBenchmark) {
+                <span class="admin-count-pill">Benchmark</span>
+                }
+                <span class="admin-status-pill admin-status-pill--neutral">
+                  {{ row.statusSummary }}
+                </span>
+              </div>
+            </div>
 
-                <div class="admin-workbench__row-stats">
-                  <div class="admin-workbench__row-stat">
-                    <span class="admin-muted">Dekking</span>
-                    <strong>
-                      {{ row.validMerchantCount }} valid · {{ row.activeSeedCount }}
-                      seeds
-                    </strong>
-                  </div>
+            <div class="admin-workbench__row-stats">
+              <div class="admin-workbench__row-stat">
+                <span class="admin-muted">Dekking</span>
+                <strong>
+                  {{ row.validMerchantCount }} valid · {{ row.activeSeedCount }}
+                  seeds
+                </strong>
+              </div>
 
-                  <div class="admin-workbench__row-stat">
-                    <span class="admin-muted">Volgende stap</span>
-                    <strong>
-                      {{
-                        commerceAdminStore.getCoverageQueueActionLabel(
-                          row.recommendedNextAction
-                        )
-                      }}
-                    </strong>
-                    @if (row.recommendedMerchantName) {
-                      <span class="admin-muted">
-                        Richting {{ row.recommendedMerchantName }}
-                      </span>
-                    }
-                  </div>
+              <div class="admin-workbench__row-stat">
+                <span class="admin-muted">Volgende stap</span>
+                <strong>
+                  {{ commerceAdminStore.getCoverageQueueActionLabel(
+                  row.recommendedNextAction ) }}
+                </strong>
+                @if (row.recommendedMerchantName) {
+                <span class="admin-muted">
+                  Richting {{ row.recommendedMerchantName }}
+                </span>
+                }
+              </div>
 
-                  <div class="admin-workbench__row-stat">
-                    <span class="admin-muted">Laatste check</span>
-                    <strong>{{
-                      commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
-                    }}</strong>
-                  </div>
-                </div>
+              <div class="admin-workbench__row-stat">
+                <span class="admin-muted">Laatste check</span>
+                <strong
+                  >{{
+                  commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
+                  }}</strong
+                >
+              </div>
+            </div>
 
-                <div class="admin-workbench__row-meta">
-                  @if (row.missingMerchantNames.length > 0) {
-                    <span>Mist: {{ row.missingMerchantNames.join(', ') }}</span>
-                  }
-                  @if (row.notAvailableConfirmedMerchantNames.length > 0) {
-                    <span class="admin-muted">
-                      Niet beschikbaar (recent):
-                      {{ row.notAvailableConfirmedMerchantNames.join(', ') }}
-                    </span>
-                  }
-                  @if (
-                    row.missingMerchantNames.length === 0 &&
-                    row.notAvailableConfirmedMerchantNames.length === 0
-                  ) {
-                    <span class="admin-muted">Geen open merchantgaten</span>
-                  }
-                </div>
-              </button>
+            <div class="admin-workbench__row-meta">
+              @if (row.missingMerchantNames.length > 0) {
+              <span>Mist: {{ row.missingMerchantNames.join(', ') }}</span>
+              } @if (row.notAvailableConfirmedMerchantNames.length > 0) {
+              <span class="admin-muted">
+                Niet beschikbaar (recent): {{
+                row.notAvailableConfirmedMerchantNames.join(', ') }}
+              </span>
+              } @if ( row.missingMerchantNames.length === 0 &&
+              row.notAvailableConfirmedMerchantNames.length === 0 ) {
+              <span class="admin-muted">Geen open merchantgaten</span>
+              }
+            </div>
+          </button>
 
-              <div class="admin-workbench__row-merchant-strip">
-                @for (merchantStatus of row.merchantStatuses; track merchantStatus.merchantId) {
-                  <span
-                    class="admin-status-pill"
-                    [attr.title]="getMerchantStatusTitle(merchantStatus)"
-                    [class.admin-status-pill--danger]="
+          <div class="admin-workbench__row-merchant-strip">
+            @for (merchantStatus of row.merchantStatuses; track
+            merchantStatus.merchantId) {
+            <span
+              class="admin-status-pill"
+              [attr.title]="getMerchantStatusTitle(merchantStatus)"
+              [class.admin-status-pill--danger]="
                       commerceAdminStore.getCoverageQueueMerchantStateTone(
                         merchantStatus.state
                       ) === 'danger'
                     "
-                    [class.admin-status-pill--warning]="
+              [class.admin-status-pill--warning]="
                       commerceAdminStore.getCoverageQueueMerchantStateTone(
                         merchantStatus.state
                       ) === 'warning'
                     "
-                    [class.admin-status-pill--positive]="
+              [class.admin-status-pill--positive]="
                       commerceAdminStore.getCoverageQueueMerchantStateTone(
                         merchantStatus.state
                       ) === 'positive'
                     "
-                    [class.admin-status-pill--neutral]="
+              [class.admin-status-pill--neutral]="
                       commerceAdminStore.getCoverageQueueMerchantStateTone(
                         merchantStatus.state
                       ) === 'neutral'
                     "
-                  >
-                    {{ merchantStatus.merchantName }} ·
-                    {{
-                      commerceAdminStore.getCoverageQueueMerchantStateLabel(
-                        merchantStatus.state
-                      )
-                    }}
-                  </span>
-                }
-              </div>
+            >
+              {{ merchantStatus.merchantName }} · {{
+              commerceAdminStore.getCoverageQueueMerchantStateLabel(
+              merchantStatus.state ) }}
+            </span>
+            }
+          </div>
 
-              <div class="admin-workbench__row-actions">
-                @if (getDiscoveryTargetMerchant(row)) {
-                  <button
-                    class="admin-button"
-                    [class.admin-button--primary]="
+          <div class="admin-workbench__row-actions">
+            @if (getDiscoveryTargetMerchant(row)) {
+            <button
+              class="admin-button"
+              [class.admin-button--primary]="
                       row.recommendedNextAction === 'run_discovery'
                     "
-                    [class.admin-button--subtle]="
+              [class.admin-button--subtle]="
                       row.recommendedNextAction !== 'run_discovery'
                     "
-                    [disabled]="runningDiscoverySetId() === row.setId"
-                    type="button"
-                    (click)="runDiscovery(row)"
-                  >
-                    {{
-                      runningDiscoverySetId() === row.setId
-                        ? 'Discovery draait…'
-                        : 'Run discovery'
-                    }}
-                  </button>
-                }
+              [disabled]="runningDiscoverySetId() === row.setId"
+              type="button"
+              (click)="runDiscovery(row)"
+            >
+              {{ runningDiscoverySetId() === row.setId ? 'Discovery draait…' :
+              'Run discovery' }}
+            </button>
+            }
 
-                <button
-                  class="admin-button"
-                  [class.admin-button--primary]="
+            <button
+              class="admin-button"
+              [class.admin-button--primary]="
                     row.recommendedNextAction === 'edit_seed' ||
                     row.recommendedNextAction === 'add_seed_manually'
                   "
-                  [class.admin-button--subtle]="
+              [class.admin-button--subtle]="
                     row.recommendedNextAction !== 'edit_seed' &&
                     row.recommendedNextAction !== 'add_seed_manually'
                   "
-                  [disabled]="!getSeedActionMerchant(row)"
-                  type="button"
-                  (click)="openOfferSeedDialogForRow(row)"
-                >
-                  {{ getSeedActionLabel(row) }}
-                </button>
+              [disabled]="!getSeedActionMerchant(row)"
+              type="button"
+              (click)="openOfferSeedDialogForRow(row)"
+            >
+              {{ getSeedActionLabel(row) }}
+            </button>
 
-                <a
-                  class="admin-button admin-button--subtle"
-                  [queryParams]="getDiscoveryQueryParams(row)"
-                  routerLink="/discovery"
-                >
-                  Open discovery
-                </a>
+            <a
+              class="admin-button admin-button--subtle"
+              [queryParams]="getDiscoveryQueryParams(row)"
+              routerLink="/discovery"
+            >
+              Open discovery
+            </a>
 
-                @if (commerceAdminStore.getPublicSetUrl(row.setId); as publicSetUrl) {
-                  <a
-                    [href]="publicSetUrl"
-                    class="admin-button admin-button--subtle"
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    Open setpagina
-                  </a>
-                }
-              </div>
-
-              @if (rowFeedback()[row.setId]; as feedback) {
-                <span
-                  class="admin-status-pill"
-                  [class.admin-status-pill--danger]="feedback.tone === 'danger'"
-                  [class.admin-status-pill--positive]="feedback.tone === 'positive'"
-                  [class.admin-status-pill--neutral]="feedback.tone === 'neutral'"
-                >
-                  {{ feedback.message }}
-                </span>
-              }
-            </article>
-          }
-        </div>
-      } @else {
-        <article class="admin-panel admin-workbench__queue-empty">
-          <div class="admin-stack admin-stack--tight">
-            <h3>Geen sets in deze selectie</h3>
-            <p class="admin-muted">
-              Met deze filters is er nu niets direct op te pakken. Verbreden mag
-              hier juist een goed signaal zijn.
-            </p>
+            @if (commerceAdminStore.getPublicSetUrl(row.setId); as publicSetUrl)
+            {
+            <a
+              [href]="publicSetUrl"
+              class="admin-button admin-button--subtle"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open setpagina
+            </a>
+            }
           </div>
+
+          @if (rowFeedback()[row.setId]; as feedback) {
+          <span
+            class="admin-status-pill"
+            [class.admin-status-pill--danger]="feedback.tone === 'danger'"
+            [class.admin-status-pill--positive]="feedback.tone === 'positive'"
+            [class.admin-status-pill--neutral]="feedback.tone === 'neutral'"
+          >
+            {{ feedback.message }}
+          </span>
+          }
         </article>
+        }
+      </div>
+      } @else {
+      <article class="admin-panel admin-workbench__queue-empty">
+        <div class="admin-stack admin-stack--tight">
+          <h3>Geen sets in deze selectie</h3>
+          <p class="admin-muted">
+            Met deze filters is er nu niets direct op te pakken. Verbreden mag
+            hier juist een goed signaal zijn.
+          </p>
+        </div>
+      </article>
       }
     </section>
 
@@ -341,9 +338,9 @@
 </section>
 
 @if (isDialogOpen()) {
-  <lego-commerce-admin-offer-seed-dialog
-    [offerSeed]="selectedOfferSeed()"
-    [prefill]="offerSeedPrefill()"
-    (closed)="closeDialog()"
-  ></lego-commerce-admin-offer-seed-dialog>
+<lego-commerce-admin-offer-seed-dialog
+  [offerSeed]="selectedOfferSeed()"
+  [prefill]="offerSeedPrefill()"
+  (closed)="closeDialog()"
+></lego-commerce-admin-offer-seed-dialog>
 }

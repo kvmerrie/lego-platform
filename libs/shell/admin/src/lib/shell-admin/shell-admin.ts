@@ -22,36 +22,49 @@ export class ShellAdminComponent {
   readonly themeMode = signal<ThemeMode>(getPreferredThemeMode());
   readonly primaryNavigationItems = [
     {
-      label: 'Te doen',
-      path: '/coverage-queue',
+      description: 'Wat vandaag aandacht nodig heeft',
+      label: 'Workbench',
+      path: '/workbench',
     },
     {
-      label: 'Set workflow',
-      path: '/workflow',
+      description: 'Voeg een set toe en zet de eerste offer live',
+      label: 'New set',
+      path: '/new-set',
     },
     {
-      label: 'Add set',
-      path: '/add-set',
+      description: 'Vind en beheer elke set in de catalogus',
+      label: 'Sets',
+      path: '/sets',
     },
   ] as const;
   readonly secondaryNavigationItems = [
     {
+      description: 'Korte uitleg van de operatorflow',
+      label: 'Zo werkt het',
+      path: '/workflow',
+    },
+    {
+      description: 'Losse discovery-runs en kandidaatreview',
       label: 'Discovery',
       path: '/discovery',
     },
     {
-      label: 'Merchants',
-      path: '/merchants',
-    },
-    {
+      description: 'Handmatige seed-URL’s beheren',
       label: 'Offer seeds',
       path: '/offer-seeds',
     },
     {
-      label: 'Coverage',
+      description: 'Merchantinstellingen en bronstatus',
+      label: 'Merchants',
+      path: '/merchants',
+    },
+    {
+      description: 'Brede dekkingchecks en uitzonderingen',
+      label: 'Coverage diagnostics',
       path: '/coverage',
     },
     {
+      description: 'Rauwere operationele checks',
       label: 'Operations',
       path: '/operations',
     },

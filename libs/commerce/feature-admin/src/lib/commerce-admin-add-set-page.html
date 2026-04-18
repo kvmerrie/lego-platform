@@ -1,13 +1,27 @@
-<section class="admin-section">
-  <header class="admin-section__header">
+<section class="admin-section admin-new-set">
+  <header class="admin-panel admin-stack">
     <div class="admin-stack">
-      <p class="admin-eyebrow">Add set</p>
-      <h2>Van missende LEGO-set naar eerste offer seed in een paar klikken.</h2>
+      <p class="admin-eyebrow">New set</p>
+      <h2>Werk een missende set in één flow door naar de eerste live offer.</h2>
       <p class="admin-muted">
-        Zoek in Rebrickable, voeg alleen de set-overlay toe, en start meteen de
-        eerste discovery-run voor MisterBricks.
+        Zoek de set, zet hem in de overlay, kies de eerste merchant, en ga
+        meteen door tot de set bruikbaar is op de publieke pagina.
       </p>
     </div>
+
+    <ol class="admin-new-set__stepper">
+      @for (step of flowSteps(); track step.label; let index = $index) {
+      <li
+        class="admin-new-set__step"
+        [class.is-active]="step.status === 'active'"
+        [class.is-complete]="step.status === 'complete'"
+      >
+        <span class="admin-new-set__step-index">Stap {{ index + 1 }}</span>
+        <span class="admin-new-set__step-title">{{ step.label }}</span>
+        <span class="admin-new-set__step-hint">{{ step.hint }}</span>
+      </li>
+      }
+    </ol>
   </header>
 
   <section class="admin-panel admin-stack">
@@ -15,7 +29,7 @@
       <div class="admin-stack">
         <h3>1. Zoek een missende set</h3>
         <p class="admin-muted">
-          Resultaten die al in Brickhunt staan, vallen hier automatisch weg.
+          Resultaten die al in Brickhunt zitten, vallen hier automatisch weg.
         </p>
       </div>
     </div>
@@ -72,9 +86,10 @@
   <section class="admin-panel admin-stack">
     <div class="admin-section__header">
       <div class="admin-stack">
-        <h3>2. Preview en toevoegen</h3>
+        <h3>2. Controleer set en voeg toe</h3>
         <p class="admin-muted">
-          Geen extra velden. We nemen de basisdata direct over uit Rebrickable.
+          We nemen de basisdata direct over uit Rebrickable. Geen extra velden,
+          geen handwerk.
         </p>
       </div>
 
@@ -84,7 +99,7 @@
         type="button"
         (click)="addSelectedSet()"
       >
-        {{ isAdding() ? 'Toevoegen…' : 'Voeg toe aan catalogus' }}
+        {{ isAdding() ? 'Toevoegen…' : 'Voeg toe aan overlay' }}
       </button>
     </div>
 
@@ -109,158 +124,298 @@
     </article>
   </section>
   } @if (addedSet()) {
-  <section class="admin-panel admin-stack">
-    <div class="admin-section__header">
-      <div class="admin-stack">
-        <h3>3. Start discovery</h3>
-        <p class="admin-muted">
-          Eerste route: MisterBricks. Daarmee gaan we zo snel mogelijk naar de
-          eerste seed voor deze set.
-        </p>
-      </div>
-
-      <button
-        class="admin-button admin-button--primary"
-        [disabled]="isRunningDiscovery() || !discoveryMerchant()"
-        type="button"
-        (click)="runDiscovery()"
-      >
-        {{ isRunningDiscovery() ? 'Discovery draait…' : 'Run discovery
-        (MisterBricks)' }}
-      </button>
-    </div>
-
-    @if (discoveryMessage()) {
-    <div
-      class="admin-panel"
-      [class.admin-panel--danger]="discoveryMessageTone() === 'danger'"
-    >
-      <p class="admin-muted">{{ discoveryMessage() }}</p>
-    </div>
-    } @if (activeOfferCount() > 0) {
-    <div class="admin-panel">
-      <strong>
-        Set staat nu live met {{ activeOfferCount() }} offer{{
-        activeOfferCount() === 1 ? '' : 's' }}.
-      </strong>
-      @if (publicSetUrl()) {
-      <p class="admin-muted">
-        <a [href]="publicSetUrl()" rel="noreferrer" target="_blank">
-          Open set page
-        </a>
-      </p>
-      }
-    </div>
-    } @if (latestDiscoveryRun()) {
-    <div class="admin-stack admin-stack--tight">
-      <strong>Laatste run</strong>
-      <span class="admin-muted">
-        {{ latestDiscoveryRun()?.candidateCount }} kandidaat{{
-        latestDiscoveryRun()?.candidateCount === 1 ? '' : 'en' }} · {{
-        commerceAdminStore.formatTimestamp( latestDiscoveryRun()?.finishedAt ??
-        latestDiscoveryRun()?.createdAt ) }}
-      </span>
-      @if (latestDiscoveryRun()?.errorMessage) {
-      <span class="admin-muted">{{ latestDiscoveryRun()?.errorMessage }}</span>
-      }
-    </div>
-    } @if (discoveryCandidates().length > 0) {
-    <div class="admin-discovery-candidates">
-      @for (candidate of discoveryCandidates(); track candidate.id) {
-      <article class="admin-discovery-candidate-card">
-        <div class="admin-stack admin-stack--tight">
-          <strong>{{ candidate.candidateTitle }}</strong>
-          <a [href]="candidate.candidateUrl" rel="noreferrer" target="_blank">
-            {{ candidate.candidateUrl }}
-          </a>
+  <section class="admin-new-set__activation-shell">
+    <div class="admin-stack">
+      <section class="admin-panel admin-new-set__status">
+        <div class="admin-stack">
+          <p class="admin-eyebrow">3. Set toegevoegd</p>
+          <h3>{{ addedSet()?.name }} staat nu in de overlay.</h3>
+          <p class="admin-muted">{{ activationSummary() }}</p>
         </div>
 
-        <div class="admin-discovery-candidate__meta">
-          <span>
-            {{ commerceAdminStore.formatPriceMinor( candidate.priceMinor,
-            candidate.currencyCode ?? 'EUR' ) }}
+        <div class="admin-new-set__status-actions">
+          <span class="admin-count-pill"> {{ addedSet()?.setId }} </span>
+          <span class="admin-count-pill">
+            {{ activeSeedCount() }} seed{{ activeSeedCount() === 1 ? '' : 's' }}
           </span>
-          <span>
-            {{ commerceAdminStore.getDiscoveryAvailabilityLabel(
-            candidate.availability ) }}
+          <span class="admin-count-pill">
+            {{ validMerchantCount() }} geldig{{ validMerchantCount() === 1 ? 'e
+            merchant' : 'e merchants' }}
           </span>
-          <span>Score {{ candidate.confidenceScore }}</span>
-          @if (candidate.detectedSetId) {
-          <span>Detected {{ candidate.detectedSetId }}</span>
+        </div>
+      </section>
+
+      <section class="admin-panel admin-stack">
+        <div class="admin-section__header">
+          <div class="admin-stack">
+            <p class="admin-eyebrow">4. Eerste offer live</p>
+            <h3>
+              @if (supportsActivationDiscovery()) { Draai discovery of val
+              meteen terug op een handmatige seed. } @else { Voeg handmatig de
+              eerste seed toe. }
+            </h3>
+            <p class="admin-muted">
+              Deze stap stopt pas als de set echt een bruikbare route heeft.
+            </p>
+          </div>
+        </div>
+
+        <div class="admin-new-set__merchant-picker">
+          <label class="admin-field">
+            <span>Eerste merchant</span>
+            <select
+              [ngModel]="activationMerchantId()"
+              (ngModelChange)="updateActivationMerchant($event)"
+              class="admin-input"
+              name="new-set-activation-merchant"
+            >
+              @for (merchant of activeMerchants(); track merchant.id) {
+              <option [value]="merchant.id">
+                {{ merchant.name }} @if
+                (commerceAdminStore.supportsMerchantDiscovery(merchant.id)) { ·
+                discovery } @else { · handmatig }
+              </option>
+              }
+            </select>
+          </label>
+
+          @if (activationMerchant(); as activationMerchant) {
+          <div class="admin-new-set__merchant-summary">
+            <span class="admin-muted">
+              @if (supportsActivationDiscovery()) { {{ activationMerchant.name
+              }} ondersteunt discovery in deze flow. } @else { {{
+              activationMerchant.name }} vraagt nu om een handmatige seed. }
+            </span>
+
+            @if (activationMerchantSearchUrl(); as merchantSearchUrl) {
+            <a
+              [href]="merchantSearchUrl"
+              class="admin-new-set__helper-link"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open merchantzoekopdracht
+            </a>
+            }
+          </div>
           }
         </div>
 
-        <div class="admin-stack admin-stack--tight">
-          @for (reason of candidate.matchReasons; track reason) {
-          <span class="admin-muted">{{ reason }}</span>
-          }
-        </div>
-
-        <div class="admin-actions-inline">
-          <button
-            class="admin-button admin-button--subtle"
-            [disabled]="candidate.offerSeedId !== undefined"
-            type="button"
-            (click)="useCandidate(candidate)"
-          >
-            Gebruik URL
-          </button>
+        @if (supportsActivationDiscovery()) {
+        <div class="admin-actions">
           <button
             class="admin-button admin-button--primary"
-            [disabled]="isUpdatingCandidateId() === candidate.id"
+            [disabled]="isRunningDiscovery()"
             type="button"
-            (click)="approveCandidate(candidate)"
+            (click)="runDiscovery()"
           >
-            {{ candidate.reviewStatus === 'approved' ? 'Al goedgekeurd' :
-            'Approve' }}
-          </button>
-          <button
-            class="admin-button admin-button--subtle"
-            [disabled]="isUpdatingCandidateId() === candidate.id"
-            type="button"
-            (click)="rejectCandidate(candidate)"
-          >
-            Reject
+            {{ isRunningDiscovery() ? 'Discovery draait…' : 'Run discovery' }}
           </button>
         </div>
-      </article>
+        } @if (discoveryMessage()) {
+        <div
+          class="admin-panel"
+          [class.admin-panel--danger]="discoveryMessageTone() === 'danger'"
+        >
+          <p class="admin-muted">{{ discoveryMessage() }}</p>
+        </div>
+        } @if (latestDiscoveryRun()) {
+        <div class="admin-stack admin-stack--tight">
+          <strong>Laatste discovery-run</strong>
+          <span class="admin-muted">
+            {{ latestDiscoveryRun()?.candidateCount }} kandidaat{{
+            latestDiscoveryRun()?.candidateCount === 1 ? '' : 'en' }} · {{
+            commerceAdminStore.formatRelativeTimestamp(
+            latestDiscoveryRun()?.finishedAt ?? latestDiscoveryRun()?.createdAt
+            ) }}
+          </span>
+          @if (latestDiscoveryRun()?.errorMessage) {
+          <span class="admin-muted">
+            {{ latestDiscoveryRun()?.errorMessage }}
+          </span>
+          }
+        </div>
+        } @if (supportsActivationDiscovery() && discoveryCandidates().length >
+        0) {
+        <div class="admin-new-set__candidate-section">
+          <strong>Kandidaten uit discovery</strong>
+
+          <div class="admin-discovery-candidates">
+            @for (candidate of discoveryCandidates(); track candidate.id) {
+            <article class="admin-discovery-candidate-card">
+              <div class="admin-stack admin-stack--tight">
+                <strong>{{ candidate.candidateTitle }}</strong>
+                <a
+                  [href]="candidate.candidateUrl"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {{ candidate.candidateUrl }}
+                </a>
+              </div>
+
+              <div class="admin-discovery-candidate__meta">
+                <span>
+                  {{ commerceAdminStore.formatPriceMinor( candidate.priceMinor,
+                  candidate.currencyCode ?? 'EUR' ) }}
+                </span>
+                <span>
+                  {{ commerceAdminStore.getDiscoveryAvailabilityLabel(
+                  candidate.availability ) }}
+                </span>
+                <span>Score {{ candidate.confidenceScore }}</span>
+                @if (candidate.detectedSetId) {
+                <span>Detected {{ candidate.detectedSetId }}</span>
+                }
+              </div>
+
+              <div class="admin-stack admin-stack--tight">
+                @for (reason of candidate.matchReasons; track reason) {
+                <span class="admin-muted">{{ reason }}</span>
+                }
+              </div>
+
+              <div class="admin-actions-inline">
+                <button
+                  class="admin-button admin-button--subtle"
+                  [disabled]="candidate.offerSeedId !== undefined"
+                  type="button"
+                  (click)="useCandidate(candidate)"
+                >
+                  Gebruik URL
+                </button>
+                <button
+                  class="admin-button admin-button--primary"
+                  [disabled]="isUpdatingCandidateId() === candidate.id"
+                  type="button"
+                  (click)="approveCandidate(candidate)"
+                >
+                  {{ candidate.reviewStatus === 'approved' ? 'Al goedgekeurd' :
+                  'Approve' }}
+                </button>
+                <button
+                  class="admin-button admin-button--subtle"
+                  [disabled]="isUpdatingCandidateId() === candidate.id"
+                  type="button"
+                  (click)="rejectCandidate(candidate)"
+                >
+                  Reject
+                </button>
+              </div>
+            </article>
+            }
+          </div>
+        </div>
+        }
+
+        <div class="admin-form-grid">
+          <label class="admin-field admin-field--full">
+            <span>Offer seed URL</span>
+            <input
+              [ngModel]="seedDraftUrl()"
+              (ngModelChange)="seedDraftUrl.set($event)"
+              class="admin-input"
+              placeholder="Kies een kandidaat of plak hier handmatig een product-URL"
+              type="url"
+            />
+          </label>
+
+          <div class="admin-actions">
+            <button
+              class="admin-button admin-button--primary"
+              [disabled]="isSavingSeed() || !seedDraftUrl().trim()"
+              type="button"
+              (click)="saveSeedFromDraft()"
+            >
+              {{ isSavingSeed() ? 'Opslaan…' : 'Sla eerste seed op' }}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      @if (hasFirstValidOffer()) {
+      <section class="admin-panel admin-stack admin-new-set__success">
+        <div class="admin-stack">
+          <p class="admin-eyebrow">5. Klaar</p>
+          <h3>
+            {{ addedSet()?.name }} is nu operationeel met {{
+            validMerchantCount() }} geldige merchant{{ validMerchantCount() ===
+            1 ? '' : 's' }}.
+          </h3>
+          <p class="admin-muted">
+            De eerste live deal staat er. Je kunt nu de publieke pagina checken
+            of later in Workbench verder bouwen naar 3+ merchants.
+          </p>
+        </div>
+
+        <div class="admin-actions">
+          @if (publicSetUrl()) {
+          <a
+            [href]="publicSetUrl()"
+            class="admin-button admin-button--primary"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Open public set page
+          </a>
+          }
+
+          <a class="admin-button admin-button--subtle" routerLink="/workbench">
+            Ga naar Workbench
+          </a>
+          <a class="admin-button admin-button--subtle" routerLink="/sets">
+            Open in Sets
+          </a>
+        </div>
+      </section>
       }
     </div>
 
-    <div class="admin-form-grid">
-      <label class="admin-field admin-field--full">
-        <span>Offer seed URL</span>
-        <input
-          [ngModel]="seedDraftUrl()"
-          (ngModelChange)="seedDraftUrl.set($event)"
-          class="admin-input"
-          placeholder="Kies een kandidaat of plak hier handmatig een URL"
-          type="url"
-        />
-      </label>
+    <aside class="admin-panel admin-stack">
+      <div class="admin-stack">
+        <p class="admin-eyebrow">Werkstatus</p>
+        <h3>Waar staat deze set nu?</h3>
+      </div>
+
+      <div class="admin-stack admin-stack--tight">
+        <strong>{{ addedSet()?.name }}</strong>
+        <span class="admin-muted">
+          {{ addedSet()?.theme }} · {{ addedSet()?.setId }}
+        </span>
+      </div>
+
+      <div class="admin-pill-cluster">
+        <span class="admin-count-pill">Overlay</span>
+        <span class="admin-count-pill">
+          {{ activeSeedCount() }} seed{{ activeSeedCount() === 1 ? '' : 's' }}
+        </span>
+        <span class="admin-count-pill">
+          {{ validMerchantCount() }} geldig
+        </span>
+      </div>
+
+      <ul class="admin-bullet-list">
+        @if (hasFirstValidOffer()) {
+        <li>De eerste geldige merchant staat live.</li>
+        <li>Volgende logische stap: later doorwerken naar 3+ merchants.</li>
+        } @else if (activeSeedCount() > 0) {
+        <li>De set is toegevoegd en de eerste seed staat klaar.</li>
+        <li>Deze flow stopt pas echt als de set een geldige offer heeft.</li>
+        } @else {
+        <li>De set staat in de overlay, maar heeft nog geen eerste route.</li>
+        <li>Kies nu hierboven de merchant die je als eerste wilt activeren.</li>
+        }
+      </ul>
 
       <div class="admin-actions">
-        <button
-          class="admin-button admin-button--primary"
-          [disabled]="isSavingSeed() || !seedDraftUrl().trim()"
-          type="button"
-          (click)="saveSeedFromDraft()"
-        >
-          {{ isSavingSeed() ? 'Opslaan…' : 'Sla offer seed op' }}
-        </button>
+        <a class="admin-button admin-button--subtle" routerLink="/workbench">
+          Open Workbench
+        </a>
+        <a class="admin-button admin-button--subtle" routerLink="/sets">
+          Open Sets
+        </a>
       </div>
-    </div>
-    } @else if (latestDiscoveryRun()?.status === 'failed') {
-    <p class="admin-muted">
-      Deze run liep vast voordat er kandidaten terugkwamen. Corrigeer de fout of
-      probeer de run opnieuw.
-    </p>
-    } @else {
-    <p class="admin-muted">
-      Nog geen discovery-kandidaten voor deze set. Start hierboven de eerste
-      MisterBricks-run.
-    </p>
-    }
+    </aside>
   </section>
   }
 </section>

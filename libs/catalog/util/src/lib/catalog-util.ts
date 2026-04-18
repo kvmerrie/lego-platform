@@ -46,6 +46,11 @@ export interface CatalogSetDisplaySize {
   value: string;
 }
 
+export interface CatalogThemeIdentity {
+  primaryTheme: string;
+  secondaryThemes: readonly string[];
+}
+
 export interface CatalogSetDetail extends CatalogSetSummary {
   tagline: string;
   availability: string;
@@ -434,7 +439,11 @@ export function getCatalogThemeVisual(
     return undefined;
   }
 
-  const curatedThemeVisual = curatedCatalogThemeVisualsByName.get(themeName);
+  const curatedThemeVisual = curatedCatalogThemeVisualsByName.get(
+    resolveCatalogThemeIdentity({
+      rawTheme: themeName,
+    }).primaryTheme,
+  );
 
   return curatedThemeVisual ? { ...curatedThemeVisual } : undefined;
 }
@@ -534,6 +543,129 @@ export interface CatalogSetSeed {
 
 function normalizeCatalogText(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
+}
+
+const catalogCanonicalThemeNames = new Map<string, string>([
+  ['LEGO Art', 'Art'],
+  ['LEGO Ideas and CUUSOO', 'Ideas'],
+  ['Ninjago', 'NINJAGO'],
+]);
+
+const catalogPrimaryThemeBySecondaryTheme = new Map<string, string>([
+  ['Avengers', 'Marvel'],
+  ['Spider-Man', 'Marvel'],
+  ['The Infinity Saga', 'Marvel'],
+  ['Ultimate Collector Series', 'Star Wars'],
+  ['X-Men', 'Marvel'],
+]);
+
+function canonicalizeCatalogThemeName(themeName: string): string {
+  const normalizedThemeName = normalizeCatalogText(themeName);
+
+  return (
+    catalogCanonicalThemeNames.get(normalizedThemeName) ?? normalizedThemeName
+  );
+}
+
+function dedupeCatalogSecondaryThemes({
+  primaryTheme,
+  secondaryThemes,
+}: CatalogThemeIdentity): readonly string[] {
+  const seenThemes = new Set<string>();
+
+  return secondaryThemes.filter((secondaryTheme) => {
+    if (!secondaryTheme || secondaryTheme === primaryTheme) {
+      return false;
+    }
+
+    if (seenThemes.has(secondaryTheme)) {
+      return false;
+    }
+
+    seenThemes.add(secondaryTheme);
+
+    return true;
+  });
+}
+
+export function resolveCatalogThemeIdentity({
+  parentTheme,
+  rawTheme,
+}: {
+  parentTheme?: string;
+  rawTheme: string;
+}): CatalogThemeIdentity {
+  const normalizedRawTheme = normalizeCatalogText(rawTheme);
+  const rawThemeSegments = normalizedRawTheme
+    .split('>')
+    .map((segment) => canonicalizeCatalogThemeName(segment))
+    .filter(Boolean);
+  const canonicalRawTheme =
+    rawThemeSegments.length > 0
+      ? rawThemeSegments[rawThemeSegments.length - 1]
+      : canonicalizeCatalogThemeName(normalizedRawTheme);
+  const canonicalParentTheme = parentTheme
+    ? canonicalizeCatalogThemeName(parentTheme)
+    : undefined;
+
+  if (canonicalParentTheme) {
+    const secondaryThemes =
+      rawThemeSegments.length > 1
+        ? rawThemeSegments[0] === canonicalParentTheme
+          ? rawThemeSegments.slice(1)
+          : rawThemeSegments
+        : canonicalRawTheme !== canonicalParentTheme
+          ? [canonicalRawTheme]
+          : [];
+
+    return {
+      primaryTheme: canonicalParentTheme,
+      secondaryThemes: dedupeCatalogSecondaryThemes({
+        primaryTheme: canonicalParentTheme,
+        secondaryThemes,
+      }),
+    };
+  }
+
+  if (rawThemeSegments.length > 1) {
+    const primaryTheme = rawThemeSegments[0];
+
+    return {
+      primaryTheme,
+      secondaryThemes: dedupeCatalogSecondaryThemes({
+        primaryTheme,
+        secondaryThemes: rawThemeSegments.slice(1),
+      }),
+    };
+  }
+
+  const derivedPrimaryTheme =
+    catalogPrimaryThemeBySecondaryTheme.get(canonicalRawTheme);
+
+  if (derivedPrimaryTheme) {
+    return {
+      primaryTheme: derivedPrimaryTheme,
+      secondaryThemes: [canonicalRawTheme],
+    };
+  }
+
+  return {
+    primaryTheme: canonicalRawTheme,
+    secondaryThemes: [],
+  };
+}
+
+export function getCatalogPrimaryTheme({
+  parentTheme,
+  rawTheme,
+}: {
+  parentTheme?: string;
+  rawTheme: string;
+}): string {
+  return resolveCatalogThemeIdentity({
+    parentTheme,
+    rawTheme,
+  }).primaryTheme;
 }
 
 function normalizeCatalogImageUrl(value?: string): string | undefined {
@@ -753,7 +885,11 @@ export function buildCatalogSetSlug(name: string, canonicalId: string): string {
 }
 
 export function buildCatalogThemeSlug(themeName: string): string {
-  return normalizeCatalogAsciiText(themeName)
+  return normalizeCatalogAsciiText(
+    getCatalogPrimaryTheme({
+      rawTheme: themeName,
+    }),
+  )
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/-{2,}/g, '-')
@@ -791,7 +927,9 @@ export function createCatalogSetRecord(
     sourceSetNumber: normalizedSourceSetNumber,
     slug: buildCatalogSetSlug(catalogSetSeed.name, canonicalId),
     name: normalizeCatalogText(catalogSetSeed.name),
-    theme: normalizeCatalogText(catalogSetSeed.theme),
+    theme: getCatalogPrimaryTheme({
+      rawTheme: catalogSetSeed.theme,
+    }),
     releaseYear: catalogSetSeed.releaseYear,
     pieces: catalogSetSeed.pieces,
     imageUrl: catalogSetImages.imageUrl,

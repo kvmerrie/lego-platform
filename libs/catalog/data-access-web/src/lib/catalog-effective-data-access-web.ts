@@ -21,9 +21,11 @@ import type {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
+  getCatalogPrimaryTheme,
   getCatalogThemeVisual,
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
+  resolveCatalogThemeIdentity,
 } from '@lego-platform/catalog/util';
 import {
   getServerSupabaseConfig,
@@ -86,7 +88,9 @@ function toCatalogOverlaySet(row: CatalogOverlaySetRow): CatalogOverlaySet {
     source: row.source,
     sourceSetNumber: row.source_set_number,
     status: row.status,
-    theme: row.theme,
+    theme: getCatalogPrimaryTheme({
+      rawTheme: row.theme,
+    }),
     updatedAt: row.updated_at,
   };
 }
@@ -132,21 +136,30 @@ export async function listCatalogOverlaySets({
 function toOverlayCatalogSetDetail(
   overlaySet: Awaited<ReturnType<typeof listCatalogOverlaySets>>[number],
 ): CatalogSetDetail {
+  const themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: overlaySet.theme,
+  });
+
   return {
     id: overlaySet.setId,
     slug: overlaySet.slug,
     name: overlaySet.name,
-    theme: overlaySet.theme,
+    theme: themeIdentity.primaryTheme,
     releaseYear: overlaySet.releaseYear,
     pieces: overlaySet.pieces,
     imageUrl: overlaySet.imageUrl,
     collectorAngle: `Nieuw in Brickhunt. ${overlaySet.name} staat klaar voor de eerste prijscheck.`,
-    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${overlaySet.theme}-set.`,
+    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${themeIdentity.primaryTheme}-set.`,
     availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
     collectorHighlights: [
       `${overlaySet.pieces.toLocaleString('nl-NL')} stenen`,
       `Release ${overlaySet.releaseYear}`,
     ],
+    ...(themeIdentity.secondaryThemes[0]
+      ? {
+          subtheme: themeIdentity.secondaryThemes[0],
+        }
+      : {}),
     images: overlaySet.imageUrl
       ? [
           {

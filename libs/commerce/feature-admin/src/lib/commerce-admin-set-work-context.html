@@ -22,33 +22,32 @@
 
   <div class="admin-context-panel__stats">
     <div class="admin-context-panel__stat">
-      <span class="admin-context-panel__stat-value">{{
-        row.validMerchantCount
-      }}</span>
+      <span class="admin-context-panel__stat-value"
+        >{{ row.validMerchantCount }}</span
+      >
       <span class="admin-context-panel__stat-label">geldige merchants</span>
     </div>
     <div class="admin-context-panel__stat">
-      <span class="admin-context-panel__stat-value">{{
-        row.activeSeedCount
-      }}</span>
+      <span class="admin-context-panel__stat-value"
+        >{{ row.activeSeedCount }}</span
+      >
       <span class="admin-context-panel__stat-label">actieve seeds</span>
     </div>
     <div class="admin-context-panel__stat">
-      <span class="admin-context-panel__stat-value">{{
-        row.merchantsCheckedCount
-      }}</span>
+      <span class="admin-context-panel__stat-value"
+        >{{ row.merchantsCheckedCount }}</span
+      >
       <span class="admin-context-panel__stat-label">merchants gecheckt</span>
     </div>
     <div class="admin-context-panel__stat">
       <span class="admin-context-panel__stat-value">
-        {{ commerceAdminStore.getCoverageQueueActionLabel(row.recommendedNextAction) }}
+        {{
+        commerceAdminStore.getCoverageQueueActionLabel(row.recommendedNextAction)
+        }}
       </span>
       <span class="admin-context-panel__stat-label">
-        @if (row.recommendedMerchantName) {
-        Richting {{ row.recommendedMerchantName }}
-        } @else {
-        aanbevolen stap
-        }
+        @if (row.recommendedMerchantName) { Richting {{
+        row.recommendedMerchantName }} } @else { aanbevolen stap }
       </span>
     </div>
   </div>
@@ -56,7 +55,8 @@
   <section class="admin-stack admin-stack--tight">
     <h4>Merchantbeeld</h4>
     <div class="admin-pill-cluster">
-      @for (merchantStatus of row.merchantStatuses; track merchantStatus.merchantId) {
+      @for (merchantStatus of row.merchantStatuses; track
+      merchantStatus.merchantId) {
       <span
         class="admin-status-pill"
         [class.admin-status-pill--danger]="
@@ -80,8 +80,9 @@
           ) === 'neutral'
         "
       >
-        {{ merchantStatus.merchantName }} ·
-        {{ commerceAdminStore.getCoverageQueueMerchantStateLabel(merchantStatus.state) }}
+        {{ merchantStatus.merchantName }} · {{
+        commerceAdminStore.getCoverageQueueMerchantStateLabel(merchantStatus.state)
+        }}
       </span>
       }
     </div>
@@ -92,25 +93,24 @@
     <ul class="admin-bullet-list">
       @if (row.missingMerchantNames.length > 0) {
       <li>Mist nog: {{ row.missingMerchantNames.join(', ') }}</li>
-      }
-      @if (row.notAvailableConfirmedMerchantNames.length > 0) {
+      } @if (row.notAvailableConfirmedMerchantNames.length > 0) {
       <li class="admin-muted">
         Recent niet beschikbaar: {{
         row.notAvailableConfirmedMerchantNames.join(', ') }}
       </li>
-      }
-      @if (row.needsReviewCount > 0) {
-      <li>{{ row.needsReviewCount }} merchant{{ row.needsReviewCount === 1 ? '' : 's' }} wachten op review</li>
-      }
-      @if (row.staleMerchantCount > 0) {
-      <li>{{ row.staleMerchantCount }} stale merchant{{ row.staleMerchantCount === 1 ? '' : 's' }}</li>
-      }
-      @if (
-        row.missingMerchantNames.length === 0 &&
-        row.notAvailableConfirmedMerchantNames.length === 0 &&
-        row.needsReviewCount === 0 &&
-        row.staleMerchantCount === 0
-      ) {
+      } @if (row.needsReviewCount > 0) {
+      <li>
+        {{ row.needsReviewCount }} merchant{{ row.needsReviewCount === 1 ? '' :
+        's' }} wachten op review
+      </li>
+      } @if (row.staleMerchantCount > 0) {
+      <li>
+        {{ row.staleMerchantCount }} stale merchant{{ row.staleMerchantCount ===
+        1 ? '' : 's' }}
+      </li>
+      } @if ( row.missingMerchantNames.length === 0 &&
+      row.notAvailableConfirmedMerchantNames.length === 0 &&
+      row.needsReviewCount === 0 && row.staleMerchantCount === 0 ) {
       <li class="admin-muted">Geen directe gaten open voor deze set.</li>
       }
     </ul>
@@ -139,17 +139,13 @@
       </span>
       <span class="admin-count-pill">
         {{ latestRelevantCandidateCount() }} kandidaat{{
-          latestRelevantCandidateCount() === 1 ? '' : 'en'
-        }}
+        latestRelevantCandidateCount() === 1 ? '' : 'en' }}
       </span>
     </div>
     <p class="admin-muted">
-      {{
-        commerceAdminStore.formatRelativeTimestamp(
-          latestRelevantDiscoveryRun()!.finishedAt ??
-            latestRelevantDiscoveryRun()!.createdAt
-        )
-      }}
+      {{ commerceAdminStore.formatRelativeTimestamp(
+      latestRelevantDiscoveryRun()!.finishedAt ??
+      latestRelevantDiscoveryRun()!.createdAt ) }}
     </p>
     @if (latestRelevantDiscoveryRun()!.errorMessage) {
     <p class="admin-muted">{{ latestRelevantDiscoveryRun()!.errorMessage }}</p>
@@ -168,15 +164,14 @@
       >
         Run discovery
       </button>
-      }
-
-      @if (seedActionMerchant()) {
+      } @if (seedActionMerchant()) {
       <button
         class="admin-button admin-button--subtle"
         type="button"
         (click)="triggerSeedAction()"
       >
-        {{ seedActionMerchant()!.offerSeed ? 'Seed bewerken' : 'Seed toevoegen' }}
+        {{ seedActionMerchant()!.offerSeed ? 'Seed bewerken' : 'Seed toevoegen'
+        }}
       </button>
       }
 
@@ -202,8 +197,8 @@
   </section>
 
   <p class="admin-muted">
-    Laatste check:
-    {{ commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt) }}
+    Laatste check: {{
+    commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt) }}
   </p>
 </article>
 } @else {

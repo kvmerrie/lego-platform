@@ -49,7 +49,9 @@ export class CommerceAdminSetWorkContextComponent {
       : undefined,
   );
   readonly publicSetUrl = computed(() =>
-    this.row ? this.commerceAdminStore.getPublicSetUrl(this.row.setId) : undefined,
+    this.row
+      ? this.commerceAdminStore.getPublicSetUrl(this.row.setId)
+      : undefined,
   );
   readonly discoveryQueryParams = computed(() =>
     this.row
@@ -62,7 +64,8 @@ export class CommerceAdminSetWorkContextComponent {
     }
 
     const merchantId =
-      this.discoveryTargetMerchant()?.merchantId ?? this.row.recommendedMerchantId;
+      this.discoveryTargetMerchant()?.merchantId ??
+      this.row.recommendedMerchantId;
 
     if (!merchantId) {
       return undefined;
@@ -79,7 +82,8 @@ export class CommerceAdminSetWorkContextComponent {
     }
 
     const merchantId =
-      this.discoveryTargetMerchant()?.merchantId ?? this.row.recommendedMerchantId;
+      this.discoveryTargetMerchant()?.merchantId ??
+      this.row.recommendedMerchantId;
 
     if (!merchantId) {
       return 0;

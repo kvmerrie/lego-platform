@@ -6,10 +6,12 @@ import {
   getCatalogThemeVisual,
   getCatalogProductSlug,
   getCanonicalCatalogSetId,
+  getCatalogPrimaryTheme,
   listCatalogQuickFilterOptions,
   matchesCatalogQuickFilter,
   normalizeCatalogSetImages,
   normalizeCatalogQuickFilterKey,
+  resolveCatalogThemeIdentity,
 } from './catalog-util';
 
 describe('catalog snapshot helpers', () => {
@@ -39,6 +41,9 @@ describe('catalog snapshot helpers', () => {
   test('builds stable theme slugs for dedicated theme pages', () => {
     expect(buildCatalogThemeSlug('Star Wars')).toBe('star-wars');
     expect(buildCatalogThemeSlug('Harry Potter')).toBe('harry-potter');
+    expect(buildCatalogThemeSlug('Ultimate Collector Series')).toBe(
+      'star-wars',
+    );
   });
 
   test('returns curated theme visuals for recognizable theme surfaces', () => {
@@ -51,7 +56,53 @@ describe('catalog snapshot helpers', () => {
       backgroundColor: '#6f8594',
       textColor: '#ffffff',
     });
+    expect(getCatalogThemeVisual('Ultimate Collector Series')).toEqual({
+      backgroundColor: '#5573b5',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
+      textColor: '#ffffff',
+    });
     expect(getCatalogThemeVisual('Unknown Theme')).toBeUndefined();
+  });
+
+  test('resolves primary themes and secondary labels from external subthemes', () => {
+    expect(
+      resolveCatalogThemeIdentity({
+        rawTheme: 'Ultimate Collector Series',
+      }),
+    ).toEqual({
+      primaryTheme: 'Star Wars',
+      secondaryThemes: ['Ultimate Collector Series'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        rawTheme: 'Star Wars > Ultimate Collector Series',
+      }),
+    ).toEqual({
+      primaryTheme: 'Star Wars',
+      secondaryThemes: ['Ultimate Collector Series'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        parentTheme: 'Marvel',
+        rawTheme: 'Spider-Man',
+      }),
+    ).toEqual({
+      primaryTheme: 'Marvel',
+      secondaryThemes: ['Spider-Man'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        rawTheme: 'LEGO Ideas and CUUSOO',
+      }),
+    ).toEqual({
+      primaryTheme: 'Ideas',
+      secondaryThemes: [],
+    });
+    expect(
+      getCatalogPrimaryTheme({
+        rawTheme: 'Ninjago',
+      }),
+    ).toBe('NINJAGO');
   });
 
   test('prefers product slug overrides when present', () => {

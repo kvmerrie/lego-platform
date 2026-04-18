@@ -97,7 +97,11 @@ interface SetsRowFeedback {
       }
 
       .admin-sets-page__row.is-selected {
-        background: color-mix(in srgb, var(--lego-accent) 6%, var(--lego-surface));
+        background: color-mix(
+          in srgb,
+          var(--lego-accent) 6%,
+          var(--lego-surface)
+        );
         border-color: color-mix(
           in srgb,
           var(--lego-accent) 35%,
@@ -189,8 +193,7 @@ export class CommerceAdminSetsPageComponent {
   readonly search = signal('');
   readonly sourceFilter = signal<CommerceCoverageQueueSourceFilter>('all');
   readonly healthFilter = signal<CommerceCoverageQueueHealthFilter>('all');
-  readonly priorityFilter =
-    signal<CommerceCoverageQueuePriorityFilter>('all');
+  readonly priorityFilter = signal<CommerceCoverageQueuePriorityFilter>('all');
   readonly themeFilter = signal('all');
   readonly sort = signal<SetManagementSort>('benchmark_first');
   readonly selectedSetId = signal<string | null>(null);
@@ -203,8 +206,11 @@ export class CommerceAdminSetsPageComponent {
   );
 
   readonly themeOptions = computed(() =>
-    [...new Set(this.commerceAdminStore.coverageQueueRows().map((row) => row.theme))]
-      .sort((left, right) => left.localeCompare(right)),
+    [
+      ...new Set(
+        this.commerceAdminStore.coverageQueueRows().map((row) => row.theme),
+      ),
+    ].sort((left, right) => left.localeCompare(right)),
   );
 
   readonly filteredRows = computed(() => {
@@ -232,13 +238,15 @@ export class CommerceAdminSetsPageComponent {
           );
         case 'recent_activity':
           return (
-            (right.latestCheckedAt ?? '').localeCompare(left.latestCheckedAt ?? '') ||
-            left.setName.localeCompare(right.setName)
+            (right.latestCheckedAt ?? '').localeCompare(
+              left.latestCheckedAt ?? '',
+            ) || left.setName.localeCompare(right.setName)
           );
         case 'newly_added':
           return (
-            (right.sourceCreatedAt ?? '').localeCompare(left.sourceCreatedAt ?? '') ||
-            left.setName.localeCompare(right.setName)
+            (right.sourceCreatedAt ?? '').localeCompare(
+              left.sourceCreatedAt ?? '',
+            ) || left.setName.localeCompare(right.setName)
           );
         case 'alphabetical':
           return (
@@ -284,7 +292,11 @@ export class CommerceAdminSetsPageComponent {
         const hasSelectedRow = rows.some((row) => row.setId === selectedSetId);
 
         if (!selectedSetId || !hasSelectedRow) {
-          this.selectedSetId.set(rows[0]!.setId);
+          const firstRow = rows[0];
+
+          if (firstRow) {
+            this.selectedSetId.set(firstRow.setId);
+          }
         }
       },
       { allowSignalWrites: true },
@@ -323,7 +335,9 @@ export class CommerceAdminSetsPageComponent {
     return this.selectedRow()?.setId === row.setId;
   }
 
-  getCoverageQueueSourceLabel(source: CommerceCoverageQueueRow['source']): string {
+  getCoverageQueueSourceLabel(
+    source: CommerceCoverageQueueRow['source'],
+  ): string {
     return source === 'overlay' ? 'Overlay' : 'Snapshot';
   }
 
@@ -366,7 +380,9 @@ export class CommerceAdminSetsPageComponent {
       : 'Seed toevoegen';
   }
 
-  getDiscoveryQueryParams(row: CommerceCoverageQueueRow): Record<string, string> {
+  getDiscoveryQueryParams(
+    row: CommerceCoverageQueueRow,
+  ): Record<string, string> {
     return this.commerceAdminStore.getCoverageQueueDiscoveryLinkParams(row);
   }
 

@@ -5,6 +5,7 @@ import { describe, expect, test } from 'vitest';
 import {
   renderCatalogSnapshotModule,
   renderCatalogSyncManifestModule,
+  resolveCatalogThemeIdentity,
 } from '@lego-platform/catalog/util';
 import { readCatalogGeneratedArtifacts } from './catalog-artifact-writer';
 import {
@@ -38,7 +39,7 @@ const mockCatalogThemes = new Map<number, string>([
   [5, 'LEGO Art'],
   [6, 'Harry Potter'],
   [7, 'Disney'],
-  [8, 'Star Wars > Ultimate Collector Series'],
+  [8, 'Ultimate Collector Series'],
   [9, 'Modular Buildings'],
   [10, 'Botanicals'],
   [11, 'Technic'],
@@ -50,6 +51,8 @@ const mockCatalogThemes = new Map<number, string>([
   [17, 'X-Men'],
   [18, 'Star Wars'],
 ]);
+
+const mockCatalogThemeParentIds = new Map<number, number>([[8, 18]]);
 
 const mockCatalogSets: readonly MockCatalogSet[] = [
   {
@@ -675,6 +678,19 @@ function getMockThemeName(themeId: number): string {
   return themeName;
 }
 
+function getMockResolvedPrimaryThemeName(themeId: number): string {
+  const parentThemeId = mockCatalogThemeParentIds.get(themeId);
+
+  return resolveCatalogThemeIdentity({
+    rawTheme: getMockThemeName(themeId),
+    ...(parentThemeId
+      ? {
+          parentTheme: getMockThemeName(parentThemeId),
+        }
+      : {}),
+  }).primaryTheme;
+}
+
 const expectedCatalogSnapshot = {
   source: 'rebrickable-api-v3',
   generatedAt: '2026-03-28T00:00:00.000Z',
@@ -683,7 +699,7 @@ const expectedCatalogSnapshot = {
     sourceSetNumber: mockCatalogSet.set_num,
     slug: mockCatalogSet.slug,
     name: mockCatalogSet.name,
-    theme: getMockThemeName(mockCatalogSet.theme_id),
+    theme: getMockResolvedPrimaryThemeName(mockCatalogSet.theme_id),
     releaseYear: mockCatalogSet.year,
     pieces: mockCatalogSet.num_parts,
     imageUrl: mockCatalogSet.set_img_url,
@@ -718,7 +734,15 @@ function createMockRebrickableClient(): RebrickableClient {
       return setPayload;
     },
     async getTheme(themeId: number) {
-      return { id: themeId, name: getMockThemeName(themeId) };
+      return {
+        id: themeId,
+        name: getMockThemeName(themeId),
+        ...(mockCatalogThemeParentIds.has(themeId)
+          ? {
+              parent_id: mockCatalogThemeParentIds.get(themeId),
+            }
+          : {}),
+      };
     },
   };
 }
@@ -740,9 +764,20 @@ function createMockFetchImpl(): typeof fetch {
 
     for (const [themeId, themeName] of mockCatalogThemes) {
       if (url.endsWith(`/lego/themes/${themeId}/`)) {
-        return new Response(JSON.stringify({ id: themeId, name: themeName }), {
-          status: 200,
-        });
+        return new Response(
+          JSON.stringify({
+            id: themeId,
+            name: themeName,
+            ...(mockCatalogThemeParentIds.has(themeId)
+              ? {
+                  parent_id: mockCatalogThemeParentIds.get(themeId),
+                }
+              : {}),
+          }),
+          {
+            status: 200,
+          },
+        );
       }
     }
 

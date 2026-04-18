@@ -33,7 +33,7 @@ interface CoverageQueueRowFeedback {
 }
 
 @Component({
-  selector: 'lib-commerce-admin-coverage-queue-page',
+  selector: 'lego-commerce-admin-coverage-queue-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -124,7 +124,11 @@ interface CoverageQueueRowFeedback {
       }
 
       .admin-workbench__row.is-selected {
-        background: color-mix(in srgb, var(--lego-accent) 6%, var(--lego-surface));
+        background: color-mix(
+          in srgb,
+          var(--lego-accent) 6%,
+          var(--lego-surface)
+        );
         border-color: color-mix(
           in srgb,
           var(--lego-accent) 35%,
@@ -218,8 +222,7 @@ export class CommerceAdminCoverageQueuePageComponent {
   readonly healthFilter =
     signal<CommerceCoverageQueueHealthFilter>('under_covered');
   readonly sourceFilter = signal<CommerceCoverageQueueSourceFilter>('all');
-  readonly priorityFilter =
-    signal<CommerceCoverageQueuePriorityFilter>('all');
+  readonly priorityFilter = signal<CommerceCoverageQueuePriorityFilter>('all');
   readonly merchantGapFilter = signal('all');
   readonly selectedSetId = signal<string | null>(null);
   readonly runningDiscoverySetId = signal<string | null>(null);
@@ -276,16 +279,17 @@ export class CommerceAdminCoverageQueuePageComponent {
       this.commerceAdminStore
         .coverageQueueRows()
         .filter(
-          (row) => row.source === 'overlay' && row.recommendedNextAction !== 'no_action_needed',
+          (row) =>
+            row.source === 'overlay' &&
+            row.recommendedNextAction !== 'no_action_needed',
         ).length,
   );
   readonly reviewOrStaleCount = computed(
     () =>
       this.commerceAdminStore
         .coverageQueueRows()
-        .filter(
-          (row) => row.needsReviewCount > 0 || row.staleMerchantCount > 0,
-        ).length,
+        .filter((row) => row.needsReviewCount > 0 || row.staleMerchantCount > 0)
+        .length,
   );
 
   constructor() {
@@ -305,7 +309,11 @@ export class CommerceAdminCoverageQueuePageComponent {
         const hasSelectedRow = rows.some((row) => row.setId === selectedSetId);
 
         if (!selectedSetId || !hasSelectedRow) {
-          this.selectedSetId.set(rows[0]!.setId);
+          const firstRow = rows[0];
+
+          if (firstRow) {
+            this.selectedSetId.set(firstRow.setId);
+          }
         }
       },
       { allowSignalWrites: true },
@@ -340,7 +348,9 @@ export class CommerceAdminCoverageQueuePageComponent {
     return this.selectedRow()?.setId === row.setId;
   }
 
-  getCoverageQueueSourceLabel(source: CommerceCoverageQueueRow['source']): string {
+  getCoverageQueueSourceLabel(
+    source: CommerceCoverageQueueRow['source'],
+  ): string {
     return source === 'overlay' ? 'Overlay' : 'Snapshot';
   }
 
@@ -383,7 +393,9 @@ export class CommerceAdminCoverageQueuePageComponent {
       : 'Seed toevoegen';
   }
 
-  getDiscoveryQueryParams(row: CommerceCoverageQueueRow): Record<string, string> {
+  getDiscoveryQueryParams(
+    row: CommerceCoverageQueueRow,
+  ): Record<string, string> {
     return this.commerceAdminStore.getCoverageQueueDiscoveryLinkParams(row);
   }
 

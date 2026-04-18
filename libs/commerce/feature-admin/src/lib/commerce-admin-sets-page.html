@@ -2,7 +2,9 @@
   <header class="admin-panel admin-sets-page__bar">
     <div class="admin-stack">
       <p class="admin-eyebrow">Sets</p>
-      <h2>Zoek elke set terug, check de dekking, en pak direct de juiste actie.</h2>
+      <h2>
+        Zoek elke set terug, check de dekking, en pak direct de juiste actie.
+      </h2>
       <p class="admin-muted">
         Dit is je brede beheerindex. Minder “wat moet ik vandaag doen”, meer
         “laat me elke set snel vinden en in context beheren”.
@@ -12,14 +14,10 @@
     <div class="admin-actions">
       <span class="admin-count-pill">
         {{ filteredRows().length }}/{{
-          commerceAdminStore.coverageQueueRows().length
-        }}
-        sets
+        commerceAdminStore.coverageQueueRows().length }} sets
       </span>
       @if (selectedRow(); as selectedRow) {
-        <span class="admin-count-pill">
-          Actief: {{ selectedRow.setId }}
-        </span>
+      <span class="admin-count-pill"> Actief: {{ selectedRow.setId }} </span>
       }
     </div>
   </header>
@@ -28,8 +26,8 @@
     <div class="admin-actions">
       <strong>Filters en sortering</strong>
       <span class="admin-muted">
-        Brede setweergave voor beheer, zoeken en context. Niet alleen de
-        hoogste prioriteit.
+        Brede setweergave voor beheer, zoeken en context. Niet alleen de hoogste
+        prioriteit.
       </span>
     </div>
 
@@ -85,7 +83,7 @@
       >
         <option value="all">Alle thema's</option>
         @for (theme of themeOptions(); track theme) {
-          <option [value]="theme">{{ theme }}</option>
+        <option [value]="theme">{{ theme }}</option>
         }
       </select>
 
@@ -113,175 +111,168 @@
         </div>
       </div>
 
-      @if (filteredRows().length > 0) {
-        @for (row of filteredRows(); track row.setId) {
-          <article
-            class="admin-panel admin-sets-page__row"
-            [class.is-selected]="isSelectedRow(row)"
-          >
-            <button
-              class="admin-sets-page__row-summary"
-              type="button"
-              (click)="selectRow(row)"
-            >
-              <div class="admin-sets-page__row-heading">
-                <div class="admin-sets-page__row-title">
-                  <h3>{{ row.setName }}</h3>
-                  <span class="admin-muted">{{ row.theme }} · {{ row.setId }}</span>
-                </div>
+      @if (filteredRows().length > 0) { @for (row of filteredRows(); track
+      row.setId) {
+      <article
+        class="admin-panel admin-sets-page__row"
+        [class.is-selected]="isSelectedRow(row)"
+      >
+        <button
+          class="admin-sets-page__row-summary"
+          type="button"
+          (click)="selectRow(row)"
+        >
+          <div class="admin-sets-page__row-heading">
+            <div class="admin-sets-page__row-title">
+              <h3>{{ row.setName }}</h3>
+              <span class="admin-muted">{{ row.theme }} · {{ row.setId }}</span>
+            </div>
 
-                <div class="admin-pill-cluster">
-                  <span class="admin-count-pill">
-                    {{ getCoverageQueueSourceLabel(row.source) }}
-                  </span>
-                  @if (row.isBenchmark) {
-                    <span class="admin-count-pill">Benchmark</span>
-                  }
-                  <span class="admin-status-pill admin-status-pill--neutral">
-                    {{ row.statusSummary }}
-                  </span>
-                </div>
-              </div>
+            <div class="admin-pill-cluster">
+              <span class="admin-count-pill">
+                {{ getCoverageQueueSourceLabel(row.source) }}
+              </span>
+              @if (row.isBenchmark) {
+              <span class="admin-count-pill">Benchmark</span>
+              }
+              <span class="admin-status-pill admin-status-pill--neutral">
+                {{ row.statusSummary }}
+              </span>
+            </div>
+          </div>
 
-              <div class="admin-sets-page__row-grid">
-                <div class="admin-sets-page__row-cell">
-                  <span class="admin-muted">Geldige merchants</span>
-                  <strong>{{ row.validMerchantCount }}</strong>
-                </div>
+          <div class="admin-sets-page__row-grid">
+            <div class="admin-sets-page__row-cell">
+              <span class="admin-muted">Geldige merchants</span>
+              <strong>{{ row.validMerchantCount }}</strong>
+            </div>
 
-                <div class="admin-sets-page__row-cell">
-                  <span class="admin-muted">Actieve seeds</span>
-                  <strong>{{ row.activeSeedCount }}</strong>
-                </div>
+            <div class="admin-sets-page__row-cell">
+              <span class="admin-muted">Actieve seeds</span>
+              <strong>{{ row.activeSeedCount }}</strong>
+            </div>
 
-                <div class="admin-sets-page__row-cell">
-                  <span class="admin-muted">Laatste check</span>
-                  <strong>{{
-                    commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
-                  }}</strong>
-                </div>
+            <div class="admin-sets-page__row-cell">
+              <span class="admin-muted">Laatste check</span>
+              <strong
+                >{{
+                commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
+                }}</strong
+              >
+            </div>
 
-                <div class="admin-sets-page__row-cell">
-                  <span class="admin-muted">Aanbevolen stap</span>
-                  <strong>
-                    {{
-                      commerceAdminStore.getCoverageQueueActionLabel(
-                        row.recommendedNextAction
-                      )
-                    }}
-                  </strong>
-                </div>
-              </div>
-            </button>
+            <div class="admin-sets-page__row-cell">
+              <span class="admin-muted">Aanbevolen stap</span>
+              <strong>
+                {{ commerceAdminStore.getCoverageQueueActionLabel(
+                row.recommendedNextAction ) }}
+              </strong>
+            </div>
+          </div>
+        </button>
 
-            <div class="admin-sets-page__row-merchant-strip">
-              @for (merchantStatus of row.merchantStatuses; track merchantStatus.merchantId) {
-                <span
-                  class="admin-status-pill"
-                  [attr.title]="getMerchantStatusTitle(merchantStatus)"
-                  [class.admin-status-pill--danger]="
+        <div class="admin-sets-page__row-merchant-strip">
+          @for (merchantStatus of row.merchantStatuses; track
+          merchantStatus.merchantId) {
+          <span
+            class="admin-status-pill"
+            [attr.title]="getMerchantStatusTitle(merchantStatus)"
+            [class.admin-status-pill--danger]="
                     commerceAdminStore.getCoverageQueueMerchantStateTone(
                       merchantStatus.state
                     ) === 'danger'
                   "
-                  [class.admin-status-pill--warning]="
+            [class.admin-status-pill--warning]="
                     commerceAdminStore.getCoverageQueueMerchantStateTone(
                       merchantStatus.state
                     ) === 'warning'
                   "
-                  [class.admin-status-pill--positive]="
+            [class.admin-status-pill--positive]="
                     commerceAdminStore.getCoverageQueueMerchantStateTone(
                       merchantStatus.state
                     ) === 'positive'
                   "
-                  [class.admin-status-pill--neutral]="
+            [class.admin-status-pill--neutral]="
                     commerceAdminStore.getCoverageQueueMerchantStateTone(
                       merchantStatus.state
                     ) === 'neutral'
                   "
-                >
-                  {{ merchantStatus.merchantName }} ·
-                  {{
-                    commerceAdminStore.getCoverageQueueMerchantStateLabel(
-                      merchantStatus.state
-                    )
-                  }}
-                </span>
-              }
-            </div>
+          >
+            {{ merchantStatus.merchantName }} · {{
+            commerceAdminStore.getCoverageQueueMerchantStateLabel(
+            merchantStatus.state ) }}
+          </span>
+          }
+        </div>
 
-            <div class="admin-sets-page__row-actions">
-              <button
-                class="admin-button admin-button--subtle"
-                type="button"
-                (click)="selectRow(row)"
-              >
-                Open context
-              </button>
+        <div class="admin-sets-page__row-actions">
+          <button
+            class="admin-button admin-button--subtle"
+            type="button"
+            (click)="selectRow(row)"
+          >
+            Open context
+          </button>
 
-              @if (getDiscoveryTargetMerchant(row)) {
-                <button
-                  class="admin-button"
-                  [class.admin-button--primary]="
+          @if (getDiscoveryTargetMerchant(row)) {
+          <button
+            class="admin-button"
+            [class.admin-button--primary]="
                     row.recommendedNextAction === 'run_discovery'
                   "
-                  [class.admin-button--subtle]="
+            [class.admin-button--subtle]="
                     row.recommendedNextAction !== 'run_discovery'
                   "
-                  [disabled]="runningDiscoverySetId() === row.setId"
-                  type="button"
-                  (click)="runDiscovery(row)"
-                >
-                  {{
-                    runningDiscoverySetId() === row.setId
-                      ? 'Discovery draait…'
-                      : 'Run discovery'
-                  }}
-                </button>
-              }
+            [disabled]="runningDiscoverySetId() === row.setId"
+            type="button"
+            (click)="runDiscovery(row)"
+          >
+            {{ runningDiscoverySetId() === row.setId ? 'Discovery draait…' :
+            'Run discovery' }}
+          </button>
+          }
 
-              <button
-                class="admin-button admin-button--subtle"
-                [disabled]="!getSeedActionMerchant(row)"
-                type="button"
-                (click)="openOfferSeedDialogForRow(row)"
-              >
-                {{ getSeedActionLabel(row) }}
-              </button>
+          <button
+            class="admin-button admin-button--subtle"
+            [disabled]="!getSeedActionMerchant(row)"
+            type="button"
+            (click)="openOfferSeedDialogForRow(row)"
+          >
+            {{ getSeedActionLabel(row) }}
+          </button>
 
-              @if (commerceAdminStore.getPublicSetUrl(row.setId); as publicSetUrl) {
-                <a
-                  [href]="publicSetUrl"
-                  class="admin-button admin-button--subtle"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  Open setpagina
-                </a>
-              }
-            </div>
+          @if (commerceAdminStore.getPublicSetUrl(row.setId); as publicSetUrl) {
+          <a
+            [href]="publicSetUrl"
+            class="admin-button admin-button--subtle"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Open setpagina
+          </a>
+          }
+        </div>
 
-            @if (rowFeedback()[row.setId]; as feedback) {
-              <span
-                class="admin-status-pill"
-                [class.admin-status-pill--danger]="feedback.tone === 'danger'"
-                [class.admin-status-pill--positive]="feedback.tone === 'positive'"
-                [class.admin-status-pill--neutral]="feedback.tone === 'neutral'"
-              >
-                {{ feedback.message }}
-              </span>
-            }
-          </article>
+        @if (rowFeedback()[row.setId]; as feedback) {
+        <span
+          class="admin-status-pill"
+          [class.admin-status-pill--danger]="feedback.tone === 'danger'"
+          [class.admin-status-pill--positive]="feedback.tone === 'positive'"
+          [class.admin-status-pill--neutral]="feedback.tone === 'neutral'"
+        >
+          {{ feedback.message }}
+        </span>
         }
-      } @else {
-        <article class="admin-panel admin-sets-page__empty">
-          <div class="admin-stack admin-stack--tight">
-            <h3>Geen sets gevonden</h3>
-            <p class="admin-muted">
-              Probeer je filters te verbreden of zoek op een ander setnummer.
-            </p>
-          </div>
-        </article>
+      </article>
+      } } @else {
+      <article class="admin-panel admin-sets-page__empty">
+        <div class="admin-stack admin-stack--tight">
+          <h3>Geen sets gevonden</h3>
+          <p class="admin-muted">
+            Probeer je filters te verbreden of zoek op een ander setnummer.
+          </p>
+        </div>
+      </article>
       }
     </section>
 
@@ -297,9 +288,9 @@
 </section>
 
 @if (isDialogOpen()) {
-  <lego-commerce-admin-offer-seed-dialog
-    [offerSeed]="selectedOfferSeed()"
-    [prefill]="offerSeedPrefill()"
-    (closed)="closeDialog()"
-  ></lego-commerce-admin-offer-seed-dialog>
+<lego-commerce-admin-offer-seed-dialog
+  [offerSeed]="selectedOfferSeed()"
+  [prefill]="offerSeedPrefill()"
+  (closed)="closeDialog()"
+></lego-commerce-admin-offer-seed-dialog>
 }

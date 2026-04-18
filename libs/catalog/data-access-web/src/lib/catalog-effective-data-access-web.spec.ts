@@ -129,6 +129,29 @@ describe('catalog effective data access web', () => {
     );
   });
 
+  test('routes overlay-backed UCS sets into the Star Wars theme page', async () => {
+    const result = await getCatalogThemePageBySlugWithOverlay({
+      listCatalogOverlaySetsFn: async () => [
+        createOverlaySet({
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
+          name: 'Millennium Falcon',
+          pieces: 7541,
+          releaseYear: 2017,
+          setId: '75192',
+          slug: 'millennium-falcon-75192',
+          sourceSetNumber: '75192-1',
+          theme: 'Ultimate Collector Series',
+        }),
+      ],
+      slug: 'star-wars',
+    });
+
+    expect(result?.setCards.some((setCard) => setCard.id === '75192')).toBe(
+      true,
+    );
+    expect(result?.themeSnapshot.name).toBe('Star Wars');
+  });
+
   test('creates fallback theme directory and theme page entries for overlay-only themes', async () => {
     const overlaySet = createOverlaySet({
       name: 'Great Deku Tree 2-in-1',

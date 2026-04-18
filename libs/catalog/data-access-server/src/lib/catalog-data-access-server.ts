@@ -9,6 +9,8 @@ import {
   type CatalogSetDetail,
   type CatalogSetSummary,
   createCatalogSetRecord,
+  getCatalogPrimaryTheme,
+  resolveCatalogThemeIdentity,
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import {
@@ -49,6 +51,7 @@ interface ValidatedRebrickableSearchSet {
 interface ValidatedRebrickableTheme {
   id: number;
   name: string;
+  parentId?: number;
 }
 
 interface CatalogConflictTarget {
@@ -83,41 +86,56 @@ function toCatalogOverlaySet(row: CatalogOverlaySetRow): CatalogOverlaySet {
     source: row.source === 'rebrickable' ? 'rebrickable' : 'rebrickable',
     sourceSetNumber: row.source_set_number,
     status: row.status === 'inactive' ? 'inactive' : 'active',
-    theme: row.theme,
+    theme: getCatalogPrimaryTheme({
+      rawTheme: row.theme,
+    }),
     updatedAt: row.updated_at,
   };
 }
 
 function toCatalogSummary(overlaySet: CatalogOverlaySet): CatalogSetSummary {
+  const themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: overlaySet.theme,
+  });
+
   return {
     id: overlaySet.setId,
     slug: overlaySet.slug,
     name: overlaySet.name,
-    theme: overlaySet.theme,
+    theme: themeIdentity.primaryTheme,
     releaseYear: overlaySet.releaseYear,
     pieces: overlaySet.pieces,
-    collectorAngle: `Nieuw in Brickhunt. ${overlaySet.theme} staat klaar voor de eerste prijscheck.`,
+    collectorAngle: `Nieuw in Brickhunt. ${themeIdentity.primaryTheme} staat klaar voor de eerste prijscheck.`,
     imageUrl: overlaySet.imageUrl,
   };
 }
 
 function toCatalogSetDetail(overlaySet: CatalogOverlaySet): CatalogSetDetail {
+  const themeIdentity = resolveCatalogThemeIdentity({
+    rawTheme: overlaySet.theme,
+  });
+
   return {
     id: overlaySet.setId,
     slug: overlaySet.slug,
     name: overlaySet.name,
-    theme: overlaySet.theme,
+    theme: themeIdentity.primaryTheme,
     releaseYear: overlaySet.releaseYear,
     pieces: overlaySet.pieces,
     imageUrl: overlaySet.imageUrl,
     collectorAngle: `Nieuw in Brickhunt. ${overlaySet.name} staat klaar voor de eerste prijscheck.`,
-    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${overlaySet.theme}-set.`,
+    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${themeIdentity.primaryTheme}-set.`,
     availability: 'Eerste winkels worden nu gekoppeld',
     collectorHighlights: [
       `${overlaySet.pieces.toLocaleString('nl-NL')} stenen`,
       `Release ${overlaySet.releaseYear}`,
       'Zodra de eerste merchants landen, zie je hier de beste route',
     ],
+    ...(themeIdentity.secondaryThemes[0]
+      ? {
+          subtheme: themeIdentity.secondaryThemes[0],
+        }
+      : {}),
   };
 }
 
@@ -314,7 +332,7 @@ function validateRebrickableThemePayload(
     );
   }
 
-  const { id, name } = payload;
+  const { id, name, parent_id: parentId } = payload;
 
   if (!isInteger(id) || id !== expectedThemeId) {
     throw new Error(
@@ -328,10 +346,105 @@ function validateRebrickableThemePayload(
     );
   }
 
+  if (
+    parentId !== undefined &&
+    parentId !== null &&
+    (!isInteger(parentId) || parentId <= 0)
+  ) {
+    throw new Error(
+      `Invalid Rebrickable theme payload for ${expectedThemeId}: parent_id must be a positive integer when present.`,
+    );
+  }
+
   return {
     id,
     name: name.trim(),
+    ...(isInteger(parentId)
+      ? {
+          parentId,
+        }
+      : {}),
   };
+}
+
+async function getValidatedRebrickableTheme({
+  rebrickableClient,
+  themeCache,
+  themeId,
+}: {
+  rebrickableClient: ReturnType<typeof createRebrickableClient>;
+  themeCache: Map<number, ValidatedRebrickableTheme>;
+  themeId: number;
+}): Promise<ValidatedRebrickableTheme> {
+  const cachedTheme = themeCache.get(themeId);
+
+  if (cachedTheme) {
+    return cachedTheme;
+  }
+
+  const validatedTheme = validateRebrickableThemePayload(
+    await rebrickableClient.getTheme(themeId),
+    themeId,
+  );
+
+  themeCache.set(validatedTheme.id, validatedTheme);
+
+  return validatedTheme;
+}
+
+async function resolveRebrickablePrimaryThemeName({
+  rebrickableClient,
+  resolvedThemeNameById,
+  themeCache,
+  themeId,
+  visitedThemeIds = new Set<number>(),
+}: {
+  rebrickableClient: ReturnType<typeof createRebrickableClient>;
+  resolvedThemeNameById: Map<number, string>;
+  themeCache: Map<number, ValidatedRebrickableTheme>;
+  themeId: number;
+  visitedThemeIds?: Set<number>;
+}): Promise<string> {
+  const cachedThemeName = resolvedThemeNameById.get(themeId);
+
+  if (cachedThemeName) {
+    return cachedThemeName;
+  }
+
+  if (visitedThemeIds.has(themeId)) {
+    throw new Error(
+      `Invalid Rebrickable theme hierarchy: recursive parent detected for ${themeId}.`,
+    );
+  }
+
+  visitedThemeIds.add(themeId);
+
+  const validatedTheme = await getValidatedRebrickableTheme({
+    rebrickableClient,
+    themeCache,
+    themeId,
+  });
+  const parentThemeName = validatedTheme.parentId
+    ? await resolveRebrickablePrimaryThemeName({
+        rebrickableClient,
+        resolvedThemeNameById,
+        themeCache,
+        themeId: validatedTheme.parentId,
+        visitedThemeIds,
+      })
+    : undefined;
+  const resolvedThemeName = resolveCatalogThemeIdentity({
+    rawTheme: validatedTheme.name,
+    ...(parentThemeName
+      ? {
+          parentTheme: parentThemeName,
+        }
+      : {}),
+  }).primaryTheme;
+
+  resolvedThemeNameById.set(themeId, resolvedThemeName);
+
+  return resolvedThemeName;
 }
 
 function toSearchResult({
@@ -563,14 +676,18 @@ export async function searchCatalogMissingSets({
   const uniqueThemeIds = [
     ...new Set(validatedSearchSets.map((searchSet) => searchSet.themeId)),
   ];
+  const themeCache = new Map<number, ValidatedRebrickableTheme>();
+  const resolvedThemeNameById = new Map<number, string>();
   const themeEntries = await Promise.all(
     uniqueThemeIds.map(async (themeId) => {
-      const theme = validateRebrickableThemePayload(
-        await rebrickableClient.getTheme(themeId),
+      const themeName = await resolveRebrickablePrimaryThemeName({
+        rebrickableClient,
+        resolvedThemeNameById,
+        themeCache,
         themeId,
-      );
+      });
 
-      return [theme.id, theme.name] as const;
+      return [themeId, themeName] as const;
     }),
   );
   const themeNameById = new Map(themeEntries);

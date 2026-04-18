@@ -1,32 +1,34 @@
 <section class="admin-shell">
-  <header class="admin-shell__header">
+  <aside class="admin-shell__sidebar admin-panel">
     <div class="admin-shell__masthead">
       <div class="stack">
-        <p class="eyebrow">Commerce backoffice</p>
+        <p class="eyebrow">Operator portal</p>
         <h1>{{ productName }} operations</h1>
         <p class="muted">
-          Begin bij nieuwe sets in de workflow. Voor dagelijks werk pak je
-          daarna meteen Te doen.
+          Workbench voor vandaag, New set voor intake, Sets voor gericht beheer.
+          Alles daarbuiten is ondersteunend gereedschap.
         </p>
       </div>
-
-      <button class="theme-toggle" type="button" (click)="toggleTheme()">
-        {{ themeToggleLabel }}
-      </button>
     </div>
 
     <nav aria-label="Admin navigatie" class="admin-shell__nav">
-      <div class="admin-shell__nav-group">
-        <span class="admin-shell__nav-heading">Snel aan de slag</span>
-        <div class="admin-shell__nav-items">
+      <div class="admin-shell__nav-group admin-shell__nav-group--primary">
+        <span class="admin-shell__nav-heading">Hoofdroute</span>
+
+        <div class="admin-shell__primary-nav">
           @for (navigationItem of primaryNavigationItems; track
           navigationItem.path) {
           <a
             [routerLink]="navigationItem.path"
-            class="admin-shell__nav-link"
+            class="admin-shell__primary-link"
             routerLinkActive="is-active"
           >
-            {{ navigationItem.label }}
+            <span class="admin-shell__primary-link-label">
+              {{ navigationItem.label }}
+            </span>
+            <span class="admin-shell__primary-link-description">
+              {{ navigationItem.description }}
+            </span>
           </a>
           }
         </div>
@@ -34,23 +36,37 @@
 
       <div class="admin-shell__nav-group">
         <span class="admin-shell__nav-heading">Meer tools</span>
-        <div class="admin-shell__nav-items">
+
+        <div class="admin-shell__secondary-nav">
           @for (navigationItem of secondaryNavigationItems; track
           navigationItem.path) {
           <a
             [routerLink]="navigationItem.path"
-            class="admin-shell__nav-link"
+            class="admin-shell__secondary-link"
             routerLinkActive="is-active"
           >
-            {{ navigationItem.label }}
+            <span class="admin-shell__secondary-link-label">
+              {{ navigationItem.label }}
+            </span>
+            <span class="admin-shell__secondary-link-description">
+              {{ navigationItem.description }}
+            </span>
           </a>
           }
         </div>
       </div>
     </nav>
-  </header>
 
-  <main class="admin-shell__body">
-    <ng-content></ng-content>
+    <div class="admin-shell__sidebar-footer">
+      <button class="theme-toggle" type="button" (click)="toggleTheme()">
+        {{ themeToggleLabel }}
+      </button>
+    </div>
+  </aside>
+
+  <main class="admin-shell__content">
+    <div class="admin-shell__body">
+      <ng-content></ng-content>
+    </div>
   </main>
 </section>

@@ -1,13 +1,14 @@
 <section class="admin-section">
   <header class="admin-section__header">
     <div class="admin-stack">
-      <p class="admin-eyebrow">Set workflow</p>
+      <p class="admin-eyebrow">Zo werkt het</p>
       <h2>
-        Van missende set naar bruikbare setpagina zonder te zoeken naar losse
-        tools.
+        Zo lopen de drie hoofdroutes in Brickhunt operations logisch in elkaar
+        over.
       </h2>
       <p class="admin-muted">
-        Nieuwe set? Begin hier. Dagelijks werk? Open daarna meteen Te doen.
+        Dit is nu een gids, geen startscherm. Voor dagelijks werk begin je in
+        Workbench.
       </p>
     </div>
   </header>
@@ -22,11 +23,8 @@
         </p>
       </div>
 
-      <a
-        class="admin-button admin-button--primary"
-        routerLink="/coverage-queue"
-      >
-        Open Te doen
+      <a class="admin-button admin-button--primary" routerLink="/workbench">
+        Open Workbench
       </a>
     </div>
 
@@ -79,8 +77,8 @@
         </p>
       </div>
 
-      <a class="admin-link-card" routerLink="/add-set">
-        <strong>Open Add set</strong>
+      <a class="admin-link-card" routerLink="/new-set">
+        <strong>Open New set</strong>
         <span>
           Dit is de snelste route van “nog niet in Brickhunt” naar “klaar voor
           discovery”.
@@ -98,7 +96,7 @@
         </p>
       </div>
 
-      <a class="admin-link-card" routerLink="/coverage-queue">
+      <a class="admin-link-card" routerLink="/workbench">
         <strong>Pak sets zonder geldig offer op</strong>
         <span>
           {{ firstOfferCount() }} set{{ firstOfferCount() === 1 ? '' : 's' }}
@@ -135,7 +133,7 @@
         </span>
       </a>
       } } @else {
-      <a class="admin-link-card" routerLink="/coverage-queue">
+      <a class="admin-link-card" routerLink="/workbench">
         <strong>Open een setpagina vanuit Te doen</strong>
         <span>
           Zodra een set een eerste offer heeft, open je daar direct de publieke
@@ -155,7 +153,7 @@
         </p>
       </div>
 
-      <a class="admin-link-card" routerLink="/coverage-queue">
+      <a class="admin-link-card" routerLink="/workbench">
         <strong>Breng ondergedekte sets verder</strong>
         <span>
           {{ underCoveredCount() }} set{{ underCoveredCount() === 1 ? '' : 's'
