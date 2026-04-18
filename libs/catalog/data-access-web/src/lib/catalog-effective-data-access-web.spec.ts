@@ -615,6 +615,49 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('loads live set-detail offers through the API when no Supabase client is injected', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue([
+        {
+          availability: 'in_stock',
+          checkedAt: '2026-04-18T11:45:11.617Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'other',
+          merchantName: 'Proshop',
+          merchantSlug: 'proshop',
+          priceCents: 16541,
+          setId: '21061',
+          url: 'https://www.proshop.nl/LEGO/LEGO-Architecture-21061-Notre-Dame-van-Parijs/3259265',
+        },
+      ]),
+      ok: true,
+    });
+
+    const result = await listCatalogSetLiveOffersBySetId({
+      apiBaseUrl: 'https://api.example.test',
+      fetchImpl,
+      setId: '21061',
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://api.example.test/api/v1/catalog/sets/21061/live-offers',
+      expect.objectContaining({
+        cache: 'no-store',
+        headers: {
+          accept: 'application/json',
+        },
+      }),
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      merchantName: 'Proshop',
+      priceCents: 16541,
+      setId: '21061',
+    });
+  });
+
   test('prefers live pricing data while preserving generated outbound urls for matching merchants', () => {
     const result = resolveCatalogSetDetailOffers({
       generatedOffers: [

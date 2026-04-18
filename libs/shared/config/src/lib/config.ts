@@ -122,6 +122,7 @@ const webNavigationItems = [
 export const apiPaths = {
   session: '/api/v1/session',
   profile: '/api/v1/me/profile',
+  catalogSets: '/api/v1/catalog/sets',
   wishlistAlertsViewed: '/api/v1/me/profile/wishlist-alerts/viewed',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
@@ -137,6 +138,10 @@ export const apiPaths = {
   adminCommerceDiscoveryCandidates:
     '/api/v1/admin/commerce/discovery-candidates',
 } as const;
+
+export function buildCatalogSetLiveOffersApiPath(setId: string): string {
+  return `${apiPaths.catalogSets}/${encodeURIComponent(setId)}/live-offers`;
+}
 
 export const supabaseEnvKeys = {
   browserUrl: 'NEXT_PUBLIC_SUPABASE_URL',

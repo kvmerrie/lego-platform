@@ -1,3 +1,4 @@
+import { listCatalogSetLiveOffersBySetId as listCatalogSetLiveOffersBySetIdServer } from '@lego-platform/catalog/data-access-server';
 import { apiPaths } from '@lego-platform/shared/config';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
 import {
@@ -16,6 +17,11 @@ import {
 import type { FastifyInstance } from 'fastify';
 
 export interface ApiV1RouteDependencies {
+  listCatalogSetLiveOffersBySetId?: (
+    setId: string,
+  ) => Promise<
+    Awaited<ReturnType<typeof listCatalogSetLiveOffersBySetIdServer>>
+  >;
   userProfileRepository?: UserProfileRepository;
   userSessionService?: UserSessionService;
   userSetStatusRepository?: UserSetStatusRepository;
@@ -58,6 +64,9 @@ function toCollectorProfile({
 }
 
 export function createApiV1Routes({
+  listCatalogSetLiveOffersBySetId: listCatalogSetLiveOffersBySetIdDependency = (
+    setId,
+  ) => listCatalogSetLiveOffersBySetIdServer({ setId }),
   userProfileRepository = createUserProfileRepository(),
   userSetStatusRepository = createUserSetStatusRepository(),
   userSessionService = createUserSessionService({
@@ -66,6 +75,13 @@ export function createApiV1Routes({
   }),
 }: ApiV1RouteDependencies = {}) {
   return async function (fastify: FastifyInstance) {
+    fastify.get<{ Params: { setId: string } }>(
+      `${apiPaths.catalogSets}/:setId/live-offers`,
+      async function (request) {
+        return listCatalogSetLiveOffersBySetIdDependency(request.params.setId);
+      },
+    );
+
     fastify.get(apiPaths.session, async function (request) {
       return userSessionService.getUserSession(
         getRequestPrincipal(request.requestPrincipal),

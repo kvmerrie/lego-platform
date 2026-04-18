@@ -28,7 +28,9 @@ import {
   resolveCatalogThemeIdentity,
 } from '@lego-platform/catalog/util';
 import {
+  buildCatalogSetLiveOffersApiPath,
   getServerSupabaseConfig,
+  getRuntimeBaseUrl,
   hasServerSupabaseConfig,
 } from '@lego-platform/shared/config';
 
@@ -120,6 +122,10 @@ function getWebCatalogSupabaseAdminClient(): SupabaseClient {
   webCatalogSupabaseAdminClient ??= createWebCatalogSupabaseAdminClient();
 
   return webCatalogSupabaseAdminClient;
+}
+
+function getCatalogApiBaseUrl(): string {
+  return process.env['API_PROXY_TARGET'] ?? getRuntimeBaseUrl('api');
 }
 
 function toCatalogOverlaySet(row: CatalogOverlaySetRow): CatalogOverlaySet {
@@ -340,17 +346,45 @@ export async function listCatalogOverlaySets({
 }
 
 export async function listCatalogSetLiveOffersBySetId({
+  apiBaseUrl,
+  fetchImpl,
   setId,
   supabaseClient,
 }: {
+  apiBaseUrl?: string;
+  fetchImpl?: typeof fetch;
   setId: string;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogRuntimeOffer[]> {
-  if (!supabaseClient && !hasServerSupabaseConfig()) {
-    return [];
-  }
-
   try {
+    if (!supabaseClient) {
+      const response = await (fetchImpl ?? fetch)(
+        `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogSetLiveOffersApiPath(setId)}`,
+        {
+          cache: 'no-store',
+          headers: {
+            accept: 'application/json',
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Unable to load live catalog offers.');
+      }
+
+      const payload = await response.json();
+
+      if (Array.isArray(payload)) {
+        return payload as CatalogRuntimeOffer[];
+      }
+
+      return [];
+    }
+
+    if (!supabaseClient && !hasServerSupabaseConfig()) {
+      return [];
+    }
+
     const activeSupabaseClient =
       supabaseClient ?? getWebCatalogSupabaseAdminClient();
     const { data: seedData, error: seedError } = await activeSupabaseClient
@@ -437,6 +471,13 @@ export async function listCatalogSetLiveOffersBySetId({
       }),
     ) as CatalogRuntimeOffer[];
   } catch (error) {
+    if (!supabaseClient && hasServerSupabaseConfig()) {
+      return listCatalogSetLiveOffersBySetId({
+        setId,
+        supabaseClient: getWebCatalogSupabaseAdminClient(),
+      });
+    }
+
     if (!supabaseClient) {
       return [];
     }

@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
+import { buildCatalogSetLiveOffersApiPath } from '@lego-platform/shared/config';
 import {
   createAnonymousUserSession,
   type UserSession,
@@ -11,16 +12,27 @@ import {
   type UserSetStatusRepository,
 } from '@lego-platform/user/data-access-server';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
-import { createApiV1Routes } from '../app/routes/api-v1';
+import {
+  createApiV1Routes,
+  type ApiV1RouteDependencies,
+} from '../app/routes/api-v1';
 import { createRequestPrincipalPlugin } from '../app/plugins/request-principal';
 
 async function createApiServer({
   requestPrincipal = {
     state: 'anonymous',
   } satisfies RequestPrincipal,
+  listCatalogSetLiveOffersBySetId = vi
+    .fn()
+    .mockResolvedValue([]) as NonNullable<
+    ApiV1RouteDependencies['listCatalogSetLiveOffersBySetId']
+  >,
   userProfileRepository,
   userSession = createAnonymousUserSession(),
 }: {
+  listCatalogSetLiveOffersBySetId?: NonNullable<
+    ApiV1RouteDependencies['listCatalogSetLiveOffersBySetId']
+  >;
   requestPrincipal?: RequestPrincipal;
   userProfileRepository?: UserProfileRepository;
   userSession?: UserSession;
@@ -86,6 +98,7 @@ async function createApiServer({
   );
   await server.register(
     createApiV1Routes({
+      listCatalogSetLiveOffersBySetId,
       userProfileRepository: nextUserProfileRepository,
       userSessionService,
       userSetStatusRepository,
@@ -95,6 +108,7 @@ async function createApiServer({
   return {
     server,
     resolveRequestPrincipal,
+    listCatalogSetLiveOffersBySetId,
     userProfileRepository: nextUserProfileRepository,
     userSessionService,
     userSetStatusRepository,
@@ -102,6 +116,38 @@ async function createApiServer({
 }
 
 describe('api v1 auth and set-status routes', () => {
+  test('returns public live catalog offers for a set', async () => {
+    const liveOffers = [
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-04-18T11:45:11.617Z',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchant: 'other',
+        merchantName: 'Proshop',
+        merchantSlug: 'proshop',
+        priceCents: 16541,
+        setId: '21061',
+        url: 'https://www.proshop.nl/LEGO/LEGO-Architecture-21061-Notre-Dame-van-Parijs/3259265',
+      },
+    ];
+    const { listCatalogSetLiveOffersBySetId, server } = await createApiServer({
+      listCatalogSetLiveOffersBySetId: vi.fn().mockResolvedValue(liveOffers),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: buildCatalogSetLiveOffersApiPath('21061'),
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(listCatalogSetLiveOffersBySetId).toHaveBeenCalledWith('21061');
+    expect(response.json()).toEqual(liveOffers);
+
+    await server.close();
+  });
+
   test('returns an anonymous session when no valid user is present', async () => {
     const { server, userSessionService } = await createApiServer();
 
