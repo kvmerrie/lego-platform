@@ -3,8 +3,10 @@
 import {
   logGuard,
   readCommandLines,
+  restageFiles,
   runCommand,
   runPrettierCheck,
+  runPrettierWrite,
 } from './_shared.mjs';
 
 const stagedFiles = readCommandLines('git', [
@@ -19,7 +21,11 @@ if (stagedFiles.length === 0) {
   process.exit(0);
 }
 
+logGuard('Auto-formatting staged files with Prettier.');
+runPrettierWrite(stagedFiles);
+restageFiles(stagedFiles);
+
 logGuard('Running staged whitespace and formatting checks.');
-runCommand('git', ['diff', '--cached', '--check']);
 runPrettierCheck(stagedFiles);
+runCommand('git', ['diff', '--cached', '--check']);
 logGuard('Pre-commit guard checks passed.');

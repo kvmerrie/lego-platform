@@ -40,14 +40,16 @@ The generated Husky support folder stays untracked through `.husky/.gitignore`.
 
 The pre-commit hook runs fast staged-file hygiene checks only:
 
-1. `git diff --cached --check`
-2. Prettier check on staged files only
+1. Prettier write on staged files only
+2. Re-stage formatter changes for those same files
+3. `git diff --cached --check`
+4. Prettier check on staged files only
 
 This is intended to catch:
 
 - trailing whitespace
 - patch-format issues
-- staged formatting drift
+- staged formatting drift that remains after auto-fix
 
 ## Pre-Push Hook
 
@@ -112,6 +114,6 @@ Live catalog validation:
 
 Formatting failure:
 
-- run `pnpm format:write`
-- review the formatter-only diff
-- recommit before pushing
+- most staged formatting drift is fixed automatically in pre-commit
+- run `pnpm format:write` manually when you want to format a wider area than the staged files
+- review the formatter-only diff before pushing

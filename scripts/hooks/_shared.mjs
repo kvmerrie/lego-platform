@@ -98,6 +98,28 @@ export function runPrettierCheck(files) {
   }
 }
 
+export function runPrettierWrite(files) {
+  const existingFiles = getExistingRepoFiles(files);
+
+  for (const fileChunk of chunkItems(existingFiles)) {
+    runCommand(pnpmCommand, [
+      'exec',
+      'prettier',
+      '--write',
+      '--ignore-unknown',
+      ...fileChunk,
+    ]);
+  }
+}
+
+export function restageFiles(files) {
+  const existingFiles = getExistingRepoFiles(files);
+
+  for (const fileChunk of chunkItems(existingFiles)) {
+    runCommand('git', ['add', '--', ...fileChunk]);
+  }
+}
+
 export function hasPrefixMatch(files, prefixes) {
   return files.some((file) =>
     prefixes.some((prefix) => file.startsWith(prefix)),
