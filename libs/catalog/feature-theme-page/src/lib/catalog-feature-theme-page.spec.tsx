@@ -108,6 +108,40 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).not.toContain('Scroll All Marvel sets forward');
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
+
+  it('uses the shared theme visual mapping for theme page surfaces', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureThemePage
+        themePage={{
+          themeSnapshot: {
+            name: 'Architecture',
+            slug: 'architecture',
+            setCount: 1,
+            momentum:
+              'Voor strakke landmarks die rust, schaal en herkenning op één plank brengen.',
+            signatureSet: 'Notre-Dame de Paris',
+          },
+          setCards: [
+            {
+              id: '21061',
+              slug: 'notre-dame-de-paris-21061',
+              name: 'Notre-Dame de Paris',
+              theme: 'Architecture',
+              releaseYear: 2024,
+              pieces: 4383,
+              collectorAngle: 'Monumentale skylineblikvanger',
+              tagline: 'Een landmark die meteen statig leest op je plank.',
+              availability: 'Goed verkrijgbaar',
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('--theme-page-surface:#6f8594');
+    expect(markup).toContain('--theme-page-text:#ffffff');
+    expect(markup).toContain('interactiveSurfaceDark');
+  });
 });
 
 describe('CatalogFeatureThemeIndex', () => {

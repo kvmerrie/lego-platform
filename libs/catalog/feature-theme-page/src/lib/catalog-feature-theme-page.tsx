@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { CatalogThemeLandingPage } from '@lego-platform/catalog/data-access';
 import {
   CatalogPageIntro,
@@ -10,6 +10,11 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
+import {
+  getCatalogThemeMutedTextColor,
+  getCatalogThemeSurfaceTone,
+  getCatalogThemeVisual,
+} from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
   buildWebPath,
@@ -24,17 +29,6 @@ export interface CatalogFeatureThemePageDealItem
   ctaMode?: CatalogSetCardCtaMode;
   priceContext?: CatalogSetCardPriceContext;
 }
-
-const themeHeroSurfaceBySlug: Record<string, 'dark' | 'light'> = {
-  art: 'dark',
-  botanicals: 'dark',
-  disney: 'dark',
-  'harry-potter': 'dark',
-  'jurassic-world': 'dark',
-  marvel: 'dark',
-  ninjago: 'dark',
-  'star-wars': 'dark',
-};
 
 const themeEditorialIntroByName: Record<string, string> = {
   Icons: 'Voor grote displaysets die je collectie meteen meer statuur geven.',
@@ -77,11 +71,33 @@ export function CatalogFeatureThemePage({
   const themeSignatureSet = themeSnapshot.signatureSet;
   const dealSectionId = 'theme-deals';
   const browseSectionId = 'theme-browse';
-  const themeHeroButtonSurface =
-    themeHeroSurfaceBySlug[themeSnapshot.slug] ?? 'light';
+  const themeVisual = getCatalogThemeVisual(themeName);
+  const themeHeroButtonSurface = getCatalogThemeSurfaceTone(themeName);
+  const themePageStyle =
+    themeVisual?.backgroundColor || themeVisual?.textColor
+      ? ({
+          ...(themeVisual?.backgroundColor
+            ? {
+                '--theme-page-surface': themeVisual.backgroundColor,
+              }
+            : {}),
+          ...(themeVisual?.textColor
+            ? {
+                '--theme-page-text': themeVisual.textColor,
+                '--theme-page-muted': getCatalogThemeMutedTextColor(
+                  themeVisual.textColor,
+                ),
+              }
+            : {}),
+        } as CSSProperties)
+      : undefined;
 
   return (
-    <div className={styles.page} data-theme={themeSnapshot.slug}>
+    <div
+      className={styles.page}
+      data-theme={themeSnapshot.slug}
+      style={themePageStyle}
+    >
       <CatalogPageIntro
         breadcrumbs={{
           ariaLabel: 'Themacontext',

@@ -67,6 +67,30 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Icons');
   });
 
+  it('uses the shared theme color mapping for compact set cards', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/notre-dame-de-paris-21061"
+        setSummary={{
+          id: '21061',
+          slug: 'notre-dame-de-paris-21061',
+          name: 'Notre-Dame de Paris',
+          theme: 'Architecture',
+          releaseYear: 2024,
+          pieces: 4383,
+          imageUrl: 'https://images.example/notre-dame.jpg',
+          collectorAngle: 'Monumentale skylineblikvanger',
+          tagline: 'Een landmark die meteen statig leest op je plank.',
+          availability: 'Goed verkrijgbaar',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('--card-theme-badge-bg:#6f8594');
+    expect(markup).toContain('--card-theme-badge-text:#ffffff');
+  });
+
   it('renders optional list actions below the default set-card metadata', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard

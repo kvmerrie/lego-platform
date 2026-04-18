@@ -13,6 +13,7 @@ import type {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
+  getCatalogThemeMutedTextColor,
   getCatalogThemeVisual,
   type CatalogSetImage,
   normalizeCatalogSetImages,
@@ -596,6 +597,38 @@ function buildCatalogSetDetailHeroFacts({
   return heroFacts;
 }
 
+function getCatalogThemeStyleVariables({
+  themeName,
+  visual,
+}: {
+  themeName?: string;
+  visual?: CatalogThemeVisual;
+}): CSSProperties | undefined {
+  const resolvedVisual = visual ?? getCatalogThemeVisual(themeName);
+
+  if (!resolvedVisual?.backgroundColor && !resolvedVisual?.textColor) {
+    return undefined;
+  }
+
+  return {
+    ...(resolvedVisual.backgroundColor
+      ? ({
+          '--card-theme-badge-bg': resolvedVisual.backgroundColor,
+          '--theme-surface': resolvedVisual.backgroundColor,
+        } as CSSProperties)
+      : {}),
+    ...(resolvedVisual.textColor
+      ? ({
+          '--card-theme-badge-text': resolvedVisual.textColor,
+          '--theme-text': resolvedVisual.textColor,
+          '--theme-muted': getCatalogThemeMutedTextColor(
+            resolvedVisual.textColor,
+          ),
+        } as CSSProperties)
+      : {}),
+  };
+}
+
 export function CatalogSetCard({
   actions,
   ctaMode = 'default',
@@ -632,6 +665,9 @@ export function CatalogSetCard({
   });
   const PrimaryActionIcon = primaryAction.icon;
   const setThemeSlug = buildCatalogThemeSlug(setSummary.theme);
+  const setThemeStyle = getCatalogThemeStyleVariables({
+    themeName: setSummary.theme,
+  });
 
   if (variant === 'compact') {
     const overlayBadges = (
@@ -686,6 +722,7 @@ export function CatalogSetCard({
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
         data-theme={setThemeSlug}
+        style={setThemeStyle}
       >
         {href ? (
           <ActionLink
@@ -777,6 +814,7 @@ export function CatalogSetCard({
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
         data-theme={setThemeSlug}
+        style={setThemeStyle}
       >
         {href ? (
           <ActionLink
@@ -832,7 +870,12 @@ export function CatalogSetCard({
   }
 
   return (
-    <Surface as="article" className={styles.setCard} data-theme={setThemeSlug}>
+    <Surface
+      as="article"
+      className={styles.setCard}
+      data-theme={setThemeSlug}
+      style={setThemeStyle}
+    >
       <CatalogSetVisual
         imageUrl={setSummary.imageUrl}
         name={setSummary.name}
@@ -1323,36 +1366,11 @@ export function CatalogThemeHighlight({
   variant?: 'default' | 'feature' | 'portrait';
   visual?: CatalogThemeVisual;
 }) {
-  function getThemeMutedColor(textColor: string): string {
-    const normalizedTextColor = textColor.trim().toLowerCase();
-
-    if (
-      normalizedTextColor === '#fff' ||
-      normalizedTextColor === '#ffffff' ||
-      normalizedTextColor === 'white' ||
-      normalizedTextColor === 'rgb(255, 255, 255)' ||
-      normalizedTextColor === 'rgb(255,255,255)'
-    ) {
-      return '#f4f7fb';
-    }
-
-    return '#425066';
-  }
-
   if (variant === 'portrait') {
-    const portraitVisualStyle = {
-      ...(visual?.backgroundColor
-        ? ({
-            '--theme-surface': visual.backgroundColor,
-          } as CSSProperties)
-        : {}),
-      ...(visual?.textColor
-        ? ({
-            '--theme-text': visual.textColor,
-            '--theme-muted': getThemeMutedColor(visual.textColor),
-          } as CSSProperties)
-        : {}),
-    };
+    const portraitVisualStyle = getCatalogThemeStyleVariables({
+      themeName: themeSnapshot.name,
+      visual,
+    });
     const portraitImageUrl = visual?.imageUrl ?? imageUrl;
     const portraitContent = (
       <>
@@ -1385,11 +1403,7 @@ export function CatalogThemeHighlight({
           className ? ` ${className}` : ''
         }`}
         data-theme={themeSnapshot.slug}
-        style={
-          Object.keys(portraitVisualStyle).length > 0
-            ? portraitVisualStyle
-            : undefined
-        }
+        style={portraitVisualStyle}
         tone="muted"
       >
         {href ? (
@@ -1409,19 +1423,10 @@ export function CatalogThemeHighlight({
   }
 
   if (variant === 'feature') {
-    const featureVisualStyle = {
-      ...(visual?.backgroundColor
-        ? ({
-            '--theme-surface': visual.backgroundColor,
-          } as CSSProperties)
-        : {}),
-      ...(visual?.textColor
-        ? ({
-            '--theme-text': visual.textColor,
-            '--theme-muted': getThemeMutedColor(visual.textColor),
-          } as CSSProperties)
-        : {}),
-    };
+    const featureVisualStyle = getCatalogThemeStyleVariables({
+      themeName: themeSnapshot.name,
+      visual,
+    });
     const featureImageUrl = visual?.imageUrl ?? imageUrl;
     const featureContent = (
       <>
@@ -1464,11 +1469,7 @@ export function CatalogThemeHighlight({
           className ? ` ${className}` : ''
         }`}
         data-theme={themeSnapshot.slug}
-        style={
-          Object.keys(featureVisualStyle).length > 0
-            ? featureVisualStyle
-            : undefined
-        }
+        style={featureVisualStyle}
         tone="muted"
       >
         {href ? (

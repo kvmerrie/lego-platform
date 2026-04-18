@@ -325,6 +325,12 @@ export interface CatalogThemeVisual {
   textColor?: string;
 }
 
+export interface CatalogThemeDefinition {
+  name: string;
+  slug: string;
+  visual: CatalogThemeVisual;
+}
+
 const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
   [
     'Icons',
@@ -435,17 +441,7 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
 export function getCatalogThemeVisual(
   themeName?: string,
 ): CatalogThemeVisual | undefined {
-  if (!themeName) {
-    return undefined;
-  }
-
-  const curatedThemeVisual = curatedCatalogThemeVisualsByName.get(
-    resolveCatalogThemeIdentity({
-      rawTheme: themeName,
-    }).primaryTheme,
-  );
-
-  return curatedThemeVisual ? { ...curatedThemeVisual } : undefined;
+  return getCatalogThemeDefinition(themeName)?.visual;
 }
 
 export interface CatalogSetRecord {
@@ -666,6 +662,56 @@ export function getCatalogPrimaryTheme({
     parentTheme,
     rawTheme,
   }).primaryTheme;
+}
+
+export function getCatalogThemeDefinition(
+  themeName?: string,
+): CatalogThemeDefinition | undefined {
+  if (!themeName) {
+    return undefined;
+  }
+
+  const primaryTheme = getCatalogPrimaryTheme({
+    rawTheme: themeName,
+  });
+  const curatedThemeVisual = curatedCatalogThemeVisualsByName.get(primaryTheme);
+
+  if (!curatedThemeVisual) {
+    return undefined;
+  }
+
+  return {
+    name: primaryTheme,
+    slug: buildCatalogThemeSlug(primaryTheme),
+    visual: { ...curatedThemeVisual },
+  };
+}
+
+function usesLightCatalogThemeText(textColor?: string): boolean {
+  const normalizedTextColor = textColor?.trim().toLowerCase();
+
+  return Boolean(
+    normalizedTextColor &&
+      [
+        '#fff',
+        '#ffffff',
+        'white',
+        'rgb(255, 255, 255)',
+        'rgb(255,255,255)',
+      ].includes(normalizedTextColor),
+  );
+}
+
+export function getCatalogThemeMutedTextColor(textColor?: string): string {
+  return usesLightCatalogThemeText(textColor) ? '#f4f7fb' : '#425066';
+}
+
+export function getCatalogThemeSurfaceTone(
+  themeName?: string,
+): 'dark' | 'light' {
+  return usesLightCatalogThemeText(getCatalogThemeVisual(themeName)?.textColor)
+    ? 'dark'
+    : 'light';
 }
 
 function normalizeCatalogImageUrl(value?: string): string | undefined {

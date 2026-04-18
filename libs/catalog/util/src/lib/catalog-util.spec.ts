@@ -3,6 +3,9 @@ import {
   buildCatalogThemeSlug,
   buildCatalogSetSlug,
   createCatalogSetRecord,
+  getCatalogThemeDefinition,
+  getCatalogThemeMutedTextColor,
+  getCatalogThemeSurfaceTone,
   getCatalogThemeVisual,
   getCatalogProductSlug,
   getCanonicalCatalogSetId,
@@ -61,6 +64,19 @@ describe('catalog snapshot helpers', () => {
       imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
       textColor: '#ffffff',
     });
+    expect(getCatalogThemeDefinition('Ultimate Collector Series')).toEqual({
+      name: 'Star Wars',
+      slug: 'star-wars',
+      visual: {
+        backgroundColor: '#5573b5',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
+        textColor: '#ffffff',
+      },
+    });
+    expect(getCatalogThemeSurfaceTone('Star Wars')).toBe('dark');
+    expect(getCatalogThemeSurfaceTone('Icons')).toBe('light');
+    expect(getCatalogThemeMutedTextColor('#ffffff')).toBe('#f4f7fb');
+    expect(getCatalogThemeMutedTextColor('#171a22')).toBe('#425066');
     expect(getCatalogThemeVisual('Unknown Theme')).toBeUndefined();
   });
 
