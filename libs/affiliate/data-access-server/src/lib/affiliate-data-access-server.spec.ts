@@ -50,6 +50,44 @@ describe('affiliate data access server', () => {
     );
   });
 
+  test('accepts equivalent outbound hosts that only differ by a leading www', () => {
+    const result = buildAffiliateSyncArtifacts({
+      affiliateMerchantConfigs: [
+        {
+          merchantId: 'proshop',
+          displayName: 'Proshop',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          enabled: true,
+          displayRank: 1,
+          urlHost: 'www.proshop.nl',
+          disclosureCopy: 'Direct merchant link.',
+          ctaLabel: 'Bekijk bij Proshop',
+        },
+      ],
+      enabledSetIds: ['10317'],
+      offerCandidateInputs: [
+        {
+          setId: '10317',
+          merchantId: 'proshop',
+          merchantProductUrl:
+            'https://proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3174210',
+          totalPriceMinor: 23999,
+          availability: 'in_stock',
+          observedAt: '2026-04-18T08:10:00.000Z',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          condition: 'new',
+        },
+      ],
+    });
+
+    expect(result.affiliateOfferSnapshots).toHaveLength(1);
+    expect(result.affiliateOfferSnapshots[0]?.outboundUrl).toBe(
+      'https://proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3174210',
+    );
+  });
+
   test('rejects duplicate merchant display ranks within the Dutch market', () => {
     expect(() =>
       buildAffiliateSyncArtifacts({

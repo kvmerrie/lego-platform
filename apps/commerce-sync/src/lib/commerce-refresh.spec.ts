@@ -1325,4 +1325,85 @@ describe('commerce refresh', () => {
       }),
     ]);
   });
+
+  test('normalizes dynamic fallback merchant hosts when seeds mix www and non-www product urls', () => {
+    const result = buildCommerceSyncInputs({
+      refreshSeeds: [
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            id: 'merchant-proshop-1',
+            slug: 'proshop',
+            name: 'Proshop',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-proshop-www',
+            merchantId: 'merchant-proshop-1',
+            setId: '10317',
+            productUrl:
+              'https://www.proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3174210',
+            validationStatus: 'valid',
+            latestOffer: {
+              id: 'latest-proshop-www',
+              offerSeedId: 'seed-proshop-www',
+              setId: '10317',
+              merchantId: 'merchant-proshop-1',
+              productUrl:
+                'https://www.proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3174210',
+              fetchStatus: 'success',
+              priceMinor: 23999,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              observedAt: '2026-04-18T10:00:00.000Z',
+              fetchedAt: '2026-04-18T10:01:00.000Z',
+              createdAt: '2026-04-18T10:01:00.000Z',
+              updatedAt: '2026-04-18T10:01:00.000Z',
+            },
+          },
+        }),
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            id: 'merchant-proshop-2',
+            slug: 'proshop',
+            name: 'Proshop',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-proshop-root',
+            merchantId: 'merchant-proshop-2',
+            setId: '10320',
+            productUrl:
+              'https://proshop.nl/LEGO/LEGO-Star-Wars-10320-Example/3174222',
+            validationStatus: 'valid',
+            latestOffer: {
+              id: 'latest-proshop-root',
+              offerSeedId: 'seed-proshop-root',
+              setId: '10320',
+              merchantId: 'merchant-proshop-2',
+              productUrl:
+                'https://proshop.nl/LEGO/LEGO-Star-Wars-10320-Example/3174222',
+              fetchStatus: 'success',
+              priceMinor: 24999,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              observedAt: '2026-04-18T10:05:00.000Z',
+              fetchedAt: '2026-04-18T10:06:00.000Z',
+              createdAt: '2026-04-18T10:06:00.000Z',
+              updatedAt: '2026-04-18T10:06:00.000Z',
+            },
+          },
+        }),
+      ],
+    });
+
+    expect(result.affiliateMerchantConfigs).toEqual([
+      expect.objectContaining({
+        merchantId: 'proshop',
+        displayName: 'Proshop',
+        urlHost: 'proshop.nl',
+      }),
+    ]);
+  });
 });

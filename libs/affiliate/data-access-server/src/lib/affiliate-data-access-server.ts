@@ -5,6 +5,7 @@ import {
   type AffiliateMerchantConfig,
   type AffiliateOfferSnapshot,
   type AffiliateSyncManifest,
+  normalizeAffiliateUrlHost,
 } from '@lego-platform/affiliate/util';
 import { dutchAffiliateMerchantConfigs } from './merchant-config';
 
@@ -225,7 +226,10 @@ export function buildAffiliateSyncArtifacts({
 
       const outboundUrl = new URL(offerCandidateInput.merchantProductUrl);
 
-      if (outboundUrl.host !== affiliateMerchantConfig.urlHost) {
+      if (
+        normalizeAffiliateUrlHost(outboundUrl.host) !==
+        normalizeAffiliateUrlHost(affiliateMerchantConfig.urlHost)
+      ) {
         throw new Error(
           `Offer candidate ${offerCandidateInput.setId}/${offerCandidateInput.merchantId} has an unexpected outbound host.`,
         );

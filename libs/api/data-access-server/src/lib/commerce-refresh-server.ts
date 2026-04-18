@@ -1,5 +1,8 @@
 import { dutchAffiliateMerchantConfigs } from '@lego-platform/affiliate/data-access-server';
-import type { AffiliateMerchantConfig } from '@lego-platform/affiliate/util';
+import {
+  normalizeAffiliateUrlHost,
+  type AffiliateMerchantConfig,
+} from '@lego-platform/affiliate/util';
 import {
   DEFAULT_COMMERCE_STALE_DAYS,
   type CommerceOfferLatestRecordInput,
@@ -1399,7 +1402,8 @@ export async function refreshCommerceOfferSeeds({
 
       if (
         staticMerchantConfig &&
-        productUrl.host !== staticMerchantConfig.urlHost
+        normalizeAffiliateUrlHost(productUrl.host) !==
+          normalizeAffiliateUrlHost(staticMerchantConfig.urlHost)
       ) {
         await persistRefreshState({
           offerSeedId,
@@ -1737,7 +1741,9 @@ export function buildCommerceSyncInputs({
     if (!hostByMerchantSlug.has(merchantSlug)) {
       hostByMerchantSlug.set(
         merchantSlug,
-        new URL(refreshSeed.offerSeed.productUrl).host,
+        normalizeAffiliateUrlHost(
+          new URL(refreshSeed.offerSeed.productUrl).host,
+        ),
       );
     }
   }

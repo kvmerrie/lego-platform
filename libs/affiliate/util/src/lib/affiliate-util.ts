@@ -83,6 +83,13 @@ export interface AffiliateSyncManifest {
   source: string;
 }
 
+export function normalizeAffiliateUrlHost(host: string): string {
+  return host
+    .trim()
+    .toLowerCase()
+    .replace(/^www\./, '');
+}
+
 function getCatalogOfferAvailabilityRank(
   availability: CatalogOfferAvailability,
 ): number {
