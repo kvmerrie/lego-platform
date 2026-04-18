@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import {
   type CatalogBrowseThemeGroup,
   type CatalogSearchMatch,
+  listCatalogSetSummaries,
   type CatalogThemeDirectoryItem,
   type CatalogThemeLandingPage,
   catalogSnapshot,
@@ -20,6 +21,7 @@ import type {
   CatalogOverlaySet,
   CatalogSetDetail,
   CatalogSetRecord,
+  CatalogSetSummary,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import {
@@ -31,6 +33,7 @@ import {
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
+  sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogSetLiveOffersApiPath,
@@ -237,6 +240,21 @@ function toCanonicalCatalogSetFromOverlaySet(
     sourceSetNumber: overlaySet.sourceSetNumber,
     status: overlaySet.status,
     updatedAt: overlaySet.updatedAt,
+  };
+}
+
+function toCatalogSummaryFromCanonicalSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogSetSummary {
+  return {
+    id: canonicalCatalogSet.setId,
+    slug: canonicalCatalogSet.slug,
+    name: canonicalCatalogSet.name,
+    theme: canonicalCatalogSet.primaryTheme,
+    releaseYear: canonicalCatalogSet.releaseYear,
+    pieces: canonicalCatalogSet.pieceCount,
+    collectorAngle: `Nieuw in Brickhunt. ${canonicalCatalogSet.primaryTheme} staat klaar voor de eerste prijscheck.`,
+    imageUrl: canonicalCatalogSet.imageUrl,
   };
 }
 
@@ -698,6 +716,32 @@ export async function getCanonicalCatalogSetBySlug({
 
   return canonicalCatalogSets.find(
     (canonicalCatalogSet) => canonicalCatalogSet.slug === slug,
+  );
+}
+
+const snapshotCatalogSummaryById = new Map(
+  listCatalogSetSummaries().map((catalogSetSummary) => [
+    catalogSetSummary.id,
+    catalogSetSummary,
+  ]),
+);
+
+export async function listCatalogSetSummariesWithOverlay({
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogSetSummary[]> {
+  const canonicalCatalogSets = await listCanonicalCatalogSets({
+    listCatalogOverlaySetsFn,
+  });
+
+  return sortCatalogSetSummaries(
+    canonicalCatalogSets.map((canonicalCatalogSet) =>
+      canonicalCatalogSet.source === 'snapshot'
+        ? (snapshotCatalogSummaryById.get(canonicalCatalogSet.setId) ??
+          toCatalogSummaryFromCanonicalSet(canonicalCatalogSet))
+        : toCatalogSummaryFromCanonicalSet(canonicalCatalogSet),
+    ),
   );
 }
 

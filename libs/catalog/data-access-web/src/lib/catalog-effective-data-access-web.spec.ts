@@ -1,5 +1,6 @@
 import {
   getCatalogThemePageBySlug,
+  listCatalogSetSummaries,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   listCatalogThemePageSlugs,
@@ -20,6 +21,7 @@ import {
   listCatalogSearchMatchesWithOverlay,
   listCatalogSetLiveOffersBySetId,
   listCatalogSearchSuggestionOverlaySetCards,
+  listCatalogSetSummariesWithOverlay,
   listCatalogSetSlugsWithOverlay,
   listCatalogThemeDirectoryItemsWithOverlay,
   listCatalogThemePageSlugsWithOverlay,
@@ -412,6 +414,42 @@ describe('catalog effective data access web', () => {
       slug: 'mario-kart-mario-standard-kart-72037',
       source: 'rebrickable',
     });
+  });
+
+  test('prefers canonical overlay identity in summary reads when available', async () => {
+    const summaries = await listCatalogSetSummariesWithOverlay({
+      listCatalogOverlaySetsFn: async () => [
+        createOverlaySet({
+          imageUrl:
+            'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
+          name: 'Rivendell (Supabase)',
+          setId: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          sourceSetNumber: '10316-1',
+          theme: 'Icons',
+        }),
+      ],
+    });
+
+    expect(
+      summaries.find((catalogSetSummary) => catalogSetSummary.id === '10316'),
+    ).toMatchObject({
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
+      name: 'Rivendell (Supabase)',
+      slug: 'lord-of-the-rings-rivendell-10316',
+      theme: 'Icons',
+    });
+  });
+
+  test('falls back to snapshot summaries when canonical overlay identity is absent', async () => {
+    const baselineSummary = listCatalogSetSummaries().find(
+      (catalogSetSummary) => catalogSetSummary.id === '21061',
+    );
+    const summaries = await listCatalogSetSummariesWithOverlay();
+
+    expect(
+      summaries.find((catalogSetSummary) => catalogSetSummary.id === '21061'),
+    ).toEqual(baselineSummary);
   });
 
   test('includes active overlay sets in public search matches', async () => {

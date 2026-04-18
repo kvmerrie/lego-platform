@@ -1,4 +1,5 @@
 import {
+  CatalogCanonicalSet,
   CatalogHomepageSetCard,
   CatalogSetDetail,
   CatalogSetOverlay,
@@ -206,6 +207,39 @@ function toCatalogHomepageSetCard(
   };
 }
 
+function toCanonicalCatalogSetFromSnapshotRecord(
+  catalogSetRecord: CatalogSetRecord,
+): CatalogCanonicalSet {
+  const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
+  const catalogSetImages = buildCatalogSetImages({
+    catalogSetOverlay,
+    catalogSetRecord,
+  });
+  const subtheme = getCatalogDisplaySubtheme(
+    catalogSetRecord,
+    catalogSetOverlay,
+  );
+
+  return {
+    createdAt: catalogSnapshot.generatedAt,
+    imageUrl: catalogSetImages.imageUrl,
+    name: getCatalogDisplayName(catalogSetRecord, catalogSetOverlay),
+    pieceCount: catalogSetRecord.pieces,
+    primaryTheme: getCatalogDisplayTheme(catalogSetRecord, catalogSetOverlay),
+    releaseYear: catalogSetRecord.releaseYear,
+    secondaryLabels: subtheme ? [subtheme] : [],
+    setId: catalogSetRecord.canonicalId,
+    slug: getCatalogProductSlug({
+      catalogSetOverlay,
+      catalogSetRecord,
+    }),
+    source: 'snapshot',
+    sourceSetNumber: catalogSetRecord.sourceSetNumber,
+    status: 'active',
+    updatedAt: catalogSnapshot.generatedAt,
+  };
+}
+
 function getThemeVisual({
   fallbackImageUrl,
   themeSnapshot,
@@ -224,6 +258,47 @@ function getThemeVisual({
     imageUrl: curatedThemeVisual?.imageUrl ?? fallbackImageUrl,
     textColor: curatedThemeVisual?.textColor,
   };
+}
+
+function toCatalogSetDetailFromSnapshotCanonicalSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogSetDetail {
+  const catalogSetDetail = getCatalogSetDetailById(canonicalCatalogSet.setId);
+
+  return {
+    ...catalogSetDetail,
+    name: canonicalCatalogSet.name,
+    pieces: canonicalCatalogSet.pieceCount,
+    releaseYear: canonicalCatalogSet.releaseYear,
+    slug: canonicalCatalogSet.slug,
+    theme: canonicalCatalogSet.primaryTheme,
+    ...(canonicalCatalogSet.imageUrl
+      ? {
+          imageUrl: canonicalCatalogSet.imageUrl,
+        }
+      : {}),
+    ...(canonicalCatalogSet.secondaryLabels[0]
+      ? {
+          subtheme: canonicalCatalogSet.secondaryLabels[0],
+        }
+      : {}),
+  };
+}
+
+function toCatalogSetSummaryFromSnapshotCanonicalSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogSetSummary {
+  return toCatalogSetSummary(
+    toCatalogSetDetailFromSnapshotCanonicalSet(canonicalCatalogSet),
+  );
+}
+
+function toCatalogHomepageSetCardFromSnapshotCanonicalSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogHomepageSetCard {
+  return toCatalogHomepageSetCard(
+    toCatalogSetDetailFromSnapshotCanonicalSet(canonicalCatalogSet),
+  );
 }
 
 function requireCatalogSetOverlay(
@@ -319,48 +394,21 @@ function buildCatalogSetImages({
   };
 }
 
-function registerCatalogSetRecordForSlug({
-  catalogSetRecord,
-  map,
-  slug,
-}: {
-  catalogSetRecord: CatalogSetRecord;
-  map: Map<string, CatalogSetRecord>;
-  slug: string;
-}) {
-  const existingCatalogSetRecord = map.get(slug);
-
-  if (
-    existingCatalogSetRecord &&
-    existingCatalogSetRecord.canonicalId !== catalogSetRecord.canonicalId
-  ) {
-    throw new Error(`Duplicate product catalog slug: ${slug}.`);
-  }
-
-  map.set(slug, catalogSetRecord);
-}
-
-function createCatalogSetRecordByProductSlug() {
-  const catalogSetRecordByProductSlug = new Map<string, CatalogSetRecord>();
-
-  for (const catalogSetRecord of catalogSnapshot.setRecords) {
-    const catalogSetOverlay = requireCatalogSetOverlay(catalogSetRecord);
-    const productSlug = getCatalogProductSlug({
-      catalogSetRecord,
-      catalogSetOverlay,
-    });
-
-    registerCatalogSetRecordForSlug({
-      catalogSetRecord,
-      map: catalogSetRecordByProductSlug,
-      slug: productSlug,
-    });
-  }
-
-  return catalogSetRecordByProductSlug;
-}
-
-const catalogSetRecordBySlug = createCatalogSetRecordByProductSlug();
+const snapshotCanonicalCatalogSetList = catalogSnapshot.setRecords.map(
+  toCanonicalCatalogSetFromSnapshotRecord,
+);
+const snapshotCanonicalCatalogSetById = new Map(
+  snapshotCanonicalCatalogSetList.map((canonicalCatalogSet) => [
+    canonicalCatalogSet.setId,
+    canonicalCatalogSet,
+  ]),
+);
+const snapshotCanonicalCatalogSetBySlug = new Map(
+  snapshotCanonicalCatalogSetList.map((canonicalCatalogSet) => [
+    canonicalCatalogSet.slug,
+    canonicalCatalogSet,
+  ]),
+);
 
 interface CatalogSearchIndexEntry {
   canonicalIdToken: string;
@@ -464,16 +512,13 @@ function toCatalogSetDetail(
 }
 
 function createCatalogSearchIndex(): CatalogSearchIndexEntry[] {
-  return catalogSnapshot.setRecords.map((catalogSetRecord) => {
-    const catalogSetCard = toCatalogHomepageSetCard(
-      toCatalogSetDetail(catalogSetRecord),
-    );
+  return snapshotCanonicalCatalogSetList.map((canonicalCatalogSet) => {
+    const catalogSetCard =
+      toCatalogHomepageSetCardFromSnapshotCanonicalSet(canonicalCatalogSet);
     const minifigureHighlights = catalogSetCard.minifigureHighlights?.join(' ');
 
     return {
-      canonicalIdToken: normalizeCatalogSearchToken(
-        catalogSetRecord.canonicalId,
-      ),
+      canonicalIdToken: normalizeCatalogSearchToken(canonicalCatalogSet.setId),
       ...(minifigureHighlights
         ? {
             compactHighlights:
@@ -490,7 +535,7 @@ function createCatalogSearchIndex(): CatalogSearchIndexEntry[] {
       normalizedName: normalizeCatalogSearchText(catalogSetCard.name),
       setCard: catalogSetCard,
       sourceSetNumberToken: normalizeCatalogSearchToken(
-        catalogSetRecord.sourceSetNumber,
+        canonicalCatalogSet.sourceSetNumber ?? canonicalCatalogSet.setId,
       ),
     };
   });
@@ -690,8 +735,8 @@ function getCatalogSetDetailById(canonicalId: string): CatalogSetDetail {
 
 export function listCatalogSetSummaries(): CatalogSetSummary[] {
   return sortCatalogSetSummaries(
-    catalogSnapshot.setRecords.map((catalogSetRecord) =>
-      toCatalogSetSummary(toCatalogSetDetail(catalogSetRecord)),
+    snapshotCanonicalCatalogSetList.map((canonicalCatalogSet) =>
+      toCatalogSetSummaryFromSnapshotCanonicalSet(canonicalCatalogSet),
     ),
   );
 }
@@ -707,9 +752,18 @@ export function listHomepageSets(): CatalogSetSummary[] {
 export function listHomepageSetCards(): CatalogHomepageSetCard[] {
   return [...catalogSyncManifest.homepageFeaturedSetIds]
     .slice(0, HOMEPAGE_SET_LIMIT)
-    .map((canonicalId) =>
-      toCatalogHomepageSetCard(getCatalogSetDetailById(canonicalId)),
-    )
+    .flatMap((canonicalId) => {
+      const canonicalCatalogSet =
+        snapshotCanonicalCatalogSetById.get(canonicalId);
+
+      return canonicalCatalogSet
+        ? [
+            toCatalogHomepageSetCardFromSnapshotCanonicalSet(
+              canonicalCatalogSet,
+            ),
+          ]
+        : [];
+    })
     .slice(0, HOMEPAGE_SET_LIMIT);
 }
 
@@ -717,13 +771,16 @@ export function listCatalogSetCardsByIds(
   canonicalIds: readonly string[],
 ): CatalogHomepageSetCard[] {
   return canonicalIds.flatMap((canonicalId) => {
-    const catalogSetRecord = catalogSetRecordById.get(canonicalId);
+    const canonicalCatalogSet =
+      snapshotCanonicalCatalogSetById.get(canonicalId);
 
-    if (!catalogSetRecord) {
+    if (!canonicalCatalogSet) {
       return [];
     }
 
-    return [toCatalogHomepageSetCard(toCatalogSetDetail(catalogSetRecord))];
+    return [
+      toCatalogHomepageSetCardFromSnapshotCanonicalSet(canonicalCatalogSet),
+    ];
   });
 }
 
@@ -770,10 +827,9 @@ export function getCatalogOffersBySetId(setId: string): CatalogOfferRecord[] {
 export function listCatalogBrowseThemeGroups(): CatalogBrowseThemeGroup[] {
   const setCardsByTheme = new Map<string, CatalogHomepageSetCard[]>();
 
-  for (const catalogSetRecord of catalogSnapshot.setRecords) {
-    const catalogSetCard = toCatalogHomepageSetCard(
-      toCatalogSetDetail(catalogSetRecord),
-    );
+  for (const canonicalCatalogSet of snapshotCanonicalCatalogSetList) {
+    const catalogSetCard =
+      toCatalogHomepageSetCardFromSnapshotCanonicalSet(canonicalCatalogSet);
     const existingSetCards = setCardsByTheme.get(catalogSetCard.theme) ?? [];
 
     existingSetCards.push(catalogSetCard);
@@ -870,18 +926,17 @@ export function listCatalogSearchSuggestions(
 }
 
 export function listCatalogSetSlugs(): string[] {
-  return catalogSnapshot.setRecords.map((catalogSetRecord) =>
-    getCatalogProductSlug({
-      catalogSetRecord,
-      catalogSetOverlay: requireCatalogSetOverlay(catalogSetRecord),
-    }),
+  return snapshotCanonicalCatalogSetList.map(
+    (canonicalCatalogSet) => canonicalCatalogSet.slug,
   );
 }
 
 export function getCatalogSetBySlug(slug: string) {
-  const catalogSetRecord = catalogSetRecordBySlug.get(slug);
+  const canonicalCatalogSet = snapshotCanonicalCatalogSetBySlug.get(slug);
 
-  return catalogSetRecord ? toCatalogSetDetail(catalogSetRecord) : undefined;
+  return canonicalCatalogSet
+    ? toCatalogSetDetailFromSnapshotCanonicalSet(canonicalCatalogSet)
+    : undefined;
 }
 
 export function listCatalogThemes(): CatalogThemeSnapshot[] {
