@@ -284,6 +284,56 @@ describe('catalog data access server', () => {
     ]);
   });
 
+  test('filters out sets that already exist in Supabase-backed catalog identity when searching Rebrickable', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [createCatalogOverlayRow()],
+    });
+    const fetchImpl = vi.fn(async (input: string | URL) => {
+      const url = String(input);
+
+      if (url.includes('/lego/sets/?')) {
+        return {
+          ok: true,
+          json: async () => ({
+            results: [
+              {
+                set_num: '77092-1',
+                name: 'Great Deku Tree 2-in-1',
+                year: 2024,
+                num_parts: 2500,
+                theme_id: 999,
+                set_img_url:
+                  'https://cdn.rebrickable.com/media/sets/77092-1/1000.jpg',
+              },
+            ],
+          }),
+        } as Response;
+      }
+
+      if (url.endsWith('/lego/themes/999/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 999,
+            name: 'The Legend of Zelda',
+          }),
+        } as Response;
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    }) as typeof fetch;
+
+    const results = await searchCatalogMissingSets({
+      fetchImpl,
+      query: 'deku',
+      supabaseClient,
+    });
+
+    expect(results).toEqual([]);
+  });
+
   test('uses the parent theme as the primary theme for search results', async () => {
     process.env.REBRICKABLE_API_KEY = 'test-key';
 

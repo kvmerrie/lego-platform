@@ -1,8 +1,7 @@
-import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import { refreshCommerceSetOfferSeeds } from '@lego-platform/api/data-access-server';
 import {
   findCatalogSetSummaryByIdWithOverlay,
-  listCatalogOverlaySets,
+  listCanonicalCatalogSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
   approveCommerceDiscoveryCandidate,
@@ -93,48 +92,36 @@ function createAdminCommerceService(): AdminCommerceService {
     createBenchmarkSet: (input) => createCommerceBenchmarkSet({ input }),
     deleteBenchmarkSet: (setId) => deleteCommerceBenchmarkSet({ setId }),
     listCoverageQueue: async () => {
-      const snapshotSummaries = listCatalogSetSummaries();
       const [
         benchmarkSets,
+        catalogSets,
         discoveryCandidates,
         discoveryRuns,
         merchants,
         offerSeeds,
-        overlaySets,
       ] = await Promise.all([
         listCommerceBenchmarkSets(),
+        listCanonicalCatalogSets(),
         listCommerceDiscoveryCandidates(),
         listCommerceDiscoveryRuns(),
         listCommerceMerchants(),
         listCommerceOfferSeeds(),
-        listCatalogOverlaySets(),
       ]);
-      const snapshotSetIds = new Set(
-        snapshotSummaries.map((catalogSetSummary) => catalogSetSummary.id),
-      );
-      const catalogSets = [
-        ...snapshotSummaries.map((catalogSetSummary) => ({
-          id: catalogSetSummary.id,
-          name: catalogSetSummary.name,
-          theme: catalogSetSummary.theme,
-          slug: catalogSetSummary.slug,
-          source: 'snapshot' as const,
-        })),
-        ...overlaySets
-          .filter((overlaySet) => !snapshotSetIds.has(overlaySet.setId))
-          .map((overlaySet) => ({
-            id: overlaySet.setId,
-            name: overlaySet.name,
-            theme: overlaySet.theme,
-            slug: overlaySet.slug,
-            source: 'overlay' as const,
-            createdAt: overlaySet.createdAt,
-          })),
-      ];
 
       return buildCommerceCoverageQueueRows({
         benchmarkSets,
-        catalogSets,
+        catalogSets: catalogSets.map((catalogSet) => ({
+          id: catalogSet.setId,
+          name: catalogSet.name,
+          theme: catalogSet.primaryTheme,
+          slug: catalogSet.slug,
+          source: catalogSet.source === 'snapshot' ? 'snapshot' : 'overlay',
+          ...(catalogSet.source === 'snapshot'
+            ? {}
+            : {
+                createdAt: catalogSet.createdAt,
+              }),
+        })),
         discoveryCandidates,
         discoveryRuns,
         merchants,

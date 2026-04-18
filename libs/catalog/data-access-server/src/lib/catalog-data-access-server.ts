@@ -400,9 +400,13 @@ function toCatalogConflictTarget(
   catalogSet: Pick<CatalogOverlaySet, 'setId' | 'name' | 'slug'>,
 ): CatalogConflictTarget;
 function toCatalogConflictTarget(
+  catalogSet: Pick<CatalogCanonicalSet, 'setId' | 'name' | 'slug'>,
+): CatalogConflictTarget;
+function toCatalogConflictTarget(
   catalogSet:
     | Pick<CatalogSetSummary, 'id' | 'name' | 'slug'>
-    | Pick<CatalogOverlaySet, 'setId' | 'name' | 'slug'>,
+    | Pick<CatalogOverlaySet, 'setId' | 'name' | 'slug'>
+    | Pick<CatalogCanonicalSet, 'setId' | 'name' | 'slug'>,
 ): CatalogConflictTarget {
   return {
     name: catalogSet.name,
@@ -412,15 +416,13 @@ function toCatalogConflictTarget(
 }
 
 function getCatalogOverlayInsertConflictMessage({
+  existingCatalogSets,
   error,
   normalizedSet,
-  overlaySets,
-  snapshotSummaries,
 }: {
+  existingCatalogSets: readonly CatalogCanonicalSet[];
   error: DatabaseConflictLike;
   normalizedSet: CatalogExternalSetSearchResult;
-  overlaySets: readonly CatalogOverlaySet[];
-  snapshotSummaries: readonly CatalogSetSummary[];
 }) {
   if (error.code !== '23505') {
     return null;
@@ -428,45 +430,27 @@ function getCatalogOverlayInsertConflictMessage({
 
   const rawConflictText =
     `${error.message ?? ''} ${error.details ?? ''}`.toLowerCase();
-  const snapshotSlugConflict = snapshotSummaries.find(
-    (catalogSetSummary) => catalogSetSummary.slug === normalizedSet.slug,
-  );
-  const overlaySlugConflict = overlaySets.find(
-    (overlaySet) => overlaySet.slug === normalizedSet.slug,
+  const slugConflict = existingCatalogSets.find(
+    (catalogSet) => catalogSet.slug === normalizedSet.slug,
   );
 
   if (rawConflictText.includes('slug')) {
     return buildCatalogOverlaySlugConflictMessage({
-      conflictTarget:
-        (snapshotSlugConflict
-          ? toCatalogConflictTarget(snapshotSlugConflict)
-          : undefined) ??
-        (overlaySlugConflict
-          ? toCatalogConflictTarget(overlaySlugConflict)
-          : undefined),
+      conflictTarget: slugConflict
+        ? toCatalogConflictTarget(slugConflict)
+        : undefined,
       slug: normalizedSet.slug,
     });
   }
 
-  const snapshotSetConflict = snapshotSummaries.find(
-    (catalogSetSummary) => catalogSetSummary.id === normalizedSet.setId,
+  const setConflict = existingCatalogSets.find(
+    (catalogSet) => catalogSet.setId === normalizedSet.setId,
   );
 
-  if (snapshotSetConflict) {
+  if (setConflict) {
     return buildCatalogOverlaySetIdConflictMessage({
-      conflictTarget: toCatalogConflictTarget(snapshotSetConflict),
-      source: 'snapshot',
-    });
-  }
-
-  const overlaySetConflict = overlaySets.find(
-    (overlaySet) => overlaySet.setId === normalizedSet.setId,
-  );
-
-  if (overlaySetConflict) {
-    return buildCatalogOverlaySetIdConflictMessage({
-      conflictTarget: toCatalogConflictTarget(overlaySetConflict),
-      source: 'overlay',
+      conflictTarget: toCatalogConflictTarget(setConflict),
+      source: setConflict.source === 'snapshot' ? 'snapshot' : 'overlay',
     });
   }
 
@@ -1034,20 +1018,18 @@ export async function searchCatalogMissingSets({
     baseUrl: rebrickableConfig.baseUrl,
     ...(fetchImpl ? { fetchImpl } : {}),
   });
-  const [overlaySets, snapshotSummaries, payload] = await Promise.all([
-    listCatalogOverlaySets({
+  const [existingCatalogSets, payload] = await Promise.all([
+    listCanonicalCatalogSets({
       includeInactive: true,
       supabaseClient,
     }),
-    Promise.resolve(listCatalogSetSummaries()),
     rebrickableClient.searchSets(normalizedQuery, {
       pageSize: 12,
     }),
   ]);
-  const existingSetIds = new Set([
-    ...snapshotSummaries.map((catalogSetSummary) => catalogSetSummary.id),
-    ...overlaySets.map((overlaySet) => overlaySet.setId),
-  ]);
+  const existingSetIds = new Set(
+    existingCatalogSets.map((catalogSet) => catalogSet.setId),
+  );
   const validatedSearchSets = validateRebrickableSearchPayload(payload).map(
     validateRebrickableSearchSetPayload,
   );
@@ -1096,9 +1078,14 @@ export async function createCatalogOverlaySet({
     themeName: input.theme,
     year: input.releaseYear,
   });
-  const snapshotSummaries = listCatalogSetSummaries();
-  const snapshotSetConflict = snapshotSummaries.find(
-    (catalogSetSummary) => catalogSetSummary.id === normalizedSet.setId,
+  const existingCatalogSets = await listCanonicalCatalogSets({
+    includeInactive: true,
+    supabaseClient,
+  });
+  const snapshotSetConflict = existingCatalogSets.find(
+    (catalogSet) =>
+      catalogSet.setId === normalizedSet.setId &&
+      catalogSet.source === 'snapshot',
   );
 
   if (snapshotSetConflict) {
@@ -1110,8 +1097,10 @@ export async function createCatalogOverlaySet({
     );
   }
 
-  const snapshotSlugConflict = snapshotSummaries.find(
-    (catalogSetSummary) => catalogSetSummary.slug === normalizedSet.slug,
+  const snapshotSlugConflict = existingCatalogSets.find(
+    (catalogSet) =>
+      catalogSet.slug === normalizedSet.slug &&
+      catalogSet.source === 'snapshot',
   );
 
   if (snapshotSlugConflict) {
@@ -1123,12 +1112,10 @@ export async function createCatalogOverlaySet({
     );
   }
 
-  const existingOverlaySets = await listCatalogOverlaySets({
-    includeInactive: true,
-    supabaseClient,
-  });
-  const overlaySetConflict = existingOverlaySets.find(
-    (overlaySet) => overlaySet.setId === normalizedSet.setId,
+  const overlaySetConflict = existingCatalogSets.find(
+    (catalogSet) =>
+      catalogSet.setId === normalizedSet.setId &&
+      catalogSet.source !== 'snapshot',
   );
 
   if (overlaySetConflict) {
@@ -1140,8 +1127,10 @@ export async function createCatalogOverlaySet({
     );
   }
 
-  const overlaySlugConflict = existingOverlaySets.find(
-    (overlaySet) => overlaySet.slug === normalizedSet.slug,
+  const overlaySlugConflict = existingCatalogSets.find(
+    (catalogSet) =>
+      catalogSet.slug === normalizedSet.slug &&
+      catalogSet.source !== 'snapshot',
   );
 
   if (overlaySlugConflict) {
@@ -1178,10 +1167,9 @@ export async function createCatalogOverlaySet({
     const conflictMessage =
       error &&
       getCatalogOverlayInsertConflictMessage({
+        existingCatalogSets,
         error,
         normalizedSet,
-        overlaySets: existingOverlaySets,
-        snapshotSummaries,
       });
 
     if (conflictMessage) {

@@ -4,7 +4,6 @@ import {
   type CatalogOverlaySet,
   type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
-import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import { buildPublicSetDetailUrl } from '@lego-platform/shared/config';
 import {
   type CommerceDiscoveryApprovalResult,
@@ -70,21 +69,7 @@ export interface CommerceCoverageQueueMerchantAction {
   type: CommerceCoverageQueueMerchantActionType;
 }
 
-const initialCatalogSetOptions = [...listCatalogSetSummaries()]
-  .sort(
-    (left, right) =>
-      left.theme.localeCompare(right.theme) ||
-      left.name.localeCompare(right.name),
-  )
-  .map(
-    (catalogSetSummary): CommerceCatalogSetOption => ({
-      id: catalogSetSummary.id,
-      name: catalogSetSummary.name,
-      theme: catalogSetSummary.theme,
-      slug: catalogSetSummary.slug,
-      collectorAngle: catalogSetSummary.collectorAngle,
-    }),
-  );
+const initialCatalogSetOptions: CommerceCatalogSetOption[] = [];
 
 const initialWorkbenchViewState: CommerceWorkbenchViewState = {
   search: '',
