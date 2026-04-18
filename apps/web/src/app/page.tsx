@@ -16,6 +16,10 @@ import {
   listHomepageDealCandidateSetCards,
   listHomepageSetCards,
 } from '@lego-platform/catalog/data-access';
+import {
+  listHomepageThemeDirectoryItemsWithOverlay,
+  listHomepageThemeSpotlightItemsWithOverlay,
+} from '@lego-platform/catalog/data-access-web';
 import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
 import { getHeroSection } from '@lego-platform/content/util';
@@ -226,9 +230,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const queryMode = await getEditorialQueryMode();
-  const homepagePage = await getHomepagePage({
-    mode: queryMode,
-  });
+  const [
+    homepagePage,
+    homepageThemeDirectoryItems,
+    homepageThemeSpotlightItems,
+  ] = await Promise.all([
+    getHomepagePage({
+      mode: queryMode,
+    }),
+    listHomepageThemeDirectoryItemsWithOverlay(),
+    listHomepageThemeSpotlightItemsWithOverlay(),
+  ]);
   const homepageHeroSection = getHeroSection(homepagePage.sections);
   const homepageDealSetCards = toFeatureSetListItems(
     listCatalogSetCardsByIds(
@@ -326,7 +338,10 @@ export default async function HomePage() {
           </p>
         </Panel>
         <div className={styles.themeSection}>
-          <CatalogFeatureThemeList tone="inverse" />
+          <CatalogFeatureThemeList
+            themeItems={homepageThemeDirectoryItems}
+            tone="inverse"
+          />
         </div>
         <div className={styles.sectionGroup}>
           <CatalogFeatureSetList
@@ -338,7 +353,9 @@ export default async function HomePage() {
           />
         </div>
         <div className={styles.spotlightSection}>
-          <CatalogFeatureThemeSpotlight />
+          <CatalogFeatureThemeSpotlight
+            themeItems={homepageThemeSpotlightItems}
+          />
         </div>
       </div>
     </ShellWeb>

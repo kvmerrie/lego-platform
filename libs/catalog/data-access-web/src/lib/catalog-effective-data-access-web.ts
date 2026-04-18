@@ -6,6 +6,8 @@ import {
   type CatalogThemeLandingPage,
   getCatalogSetBySlug,
   getCatalogThemePageBySlug,
+  listHomepageThemeDirectoryItems,
+  listHomepageThemeSpotlightItems,
   listCatalogSearchMatches,
   listCatalogSetSlugs,
   listCatalogThemeDirectoryItems,
@@ -552,6 +554,60 @@ export async function listCatalogThemeDirectoryItemsWithOverlay({
     });
 
   return [...mergedSnapshotItems, ...overlayOnlyItems];
+}
+
+export async function listHomepageThemeDirectoryItemsWithOverlay({
+  limit = 6,
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  limit?: number;
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogThemeDirectoryItem[]> {
+  const snapshotHomepageItems = listHomepageThemeDirectoryItems(limit);
+  const mergedThemeDirectoryItems =
+    await listCatalogThemeDirectoryItemsWithOverlay({
+      listCatalogOverlaySetsFn,
+    });
+  const mergedThemeDirectoryItemByName = new Map(
+    mergedThemeDirectoryItems.map((catalogThemeDirectoryItem) => [
+      catalogThemeDirectoryItem.themeSnapshot.name,
+      catalogThemeDirectoryItem,
+    ]),
+  );
+
+  return snapshotHomepageItems.map(
+    (snapshotHomepageThemeDirectoryItem) =>
+      mergedThemeDirectoryItemByName.get(
+        snapshotHomepageThemeDirectoryItem.themeSnapshot.name,
+      ) ?? snapshotHomepageThemeDirectoryItem,
+  );
+}
+
+export async function listHomepageThemeSpotlightItemsWithOverlay({
+  limit = 4,
+  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+}: {
+  limit?: number;
+  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+} = {}): Promise<CatalogThemeDirectoryItem[]> {
+  const snapshotHomepageSpotlightItems = listHomepageThemeSpotlightItems(limit);
+  const mergedThemeDirectoryItems =
+    await listCatalogThemeDirectoryItemsWithOverlay({
+      listCatalogOverlaySetsFn,
+    });
+  const mergedThemeDirectoryItemByName = new Map(
+    mergedThemeDirectoryItems.map((catalogThemeDirectoryItem) => [
+      catalogThemeDirectoryItem.themeSnapshot.name,
+      catalogThemeDirectoryItem,
+    ]),
+  );
+
+  return snapshotHomepageSpotlightItems.map(
+    (snapshotHomepageThemeDirectoryItem) =>
+      mergedThemeDirectoryItemByName.get(
+        snapshotHomepageThemeDirectoryItem.themeSnapshot.name,
+      ) ?? snapshotHomepageThemeDirectoryItem,
+  );
 }
 
 export async function listCatalogThemePageSlugsWithOverlay({

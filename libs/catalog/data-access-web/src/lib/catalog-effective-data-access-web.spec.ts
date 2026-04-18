@@ -1,5 +1,7 @@
 import {
   getCatalogThemePageBySlug,
+  listHomepageThemeDirectoryItems,
+  listHomepageThemeSpotlightItems,
   listCatalogThemePageSlugs,
 } from '@lego-platform/catalog/data-access';
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
@@ -7,6 +9,8 @@ import { describe, expect, test } from 'vitest';
 
 import {
   getCatalogThemePageBySlugWithOverlay,
+  listHomepageThemeDirectoryItemsWithOverlay,
+  listHomepageThemeSpotlightItemsWithOverlay,
   listCatalogSearchMatchesWithOverlay,
   listCatalogSetSlugsWithOverlay,
   listCatalogThemeDirectoryItemsWithOverlay,
@@ -137,6 +141,124 @@ describe('catalog effective data access web', () => {
       },
     });
     expect(themePage?.setCards[0]?.id).toBe('77092');
+  });
+
+  test('keeps the homepage theme rail lineup stable while merging overlay coverage into existing themes', async () => {
+    const baselineHomepageThemeItems = listHomepageThemeDirectoryItems();
+    const result = await listHomepageThemeDirectoryItemsWithOverlay({
+      listCatalogOverlaySetsFn: async () => [
+        createOverlaySet({
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10334-1/1000.jpg',
+          name: 'Retro Radio',
+          pieces: 906,
+          releaseYear: 2026,
+          setId: '10334',
+          slug: 'retro-radio-10334',
+          sourceSetNumber: '10334-1',
+          theme: 'Icons',
+        }),
+      ],
+    });
+
+    expect(
+      result.map(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name,
+      ),
+    ).toEqual(
+      baselineHomepageThemeItems.map(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name,
+      ),
+    );
+    expect(
+      result.find(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name === 'Icons',
+      )?.themeSnapshot.setCount,
+    ).toBe(
+      (baselineHomepageThemeItems.find(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name === 'Icons',
+      )?.themeSnapshot.setCount ?? 0) + 1,
+    );
+  });
+
+  test('keeps the homepage theme spotlight stable while merging overlay coverage into spotlight themes', async () => {
+    const baselineHomepageThemeSpotlightItems =
+      listHomepageThemeSpotlightItems();
+    const result = await listHomepageThemeSpotlightItemsWithOverlay({
+      listCatalogOverlaySetsFn: async () => [
+        createOverlaySet({
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/10342-1/1000.jpg',
+          name: 'Pretty Pink Flower Bouquet',
+          pieces: 749,
+          releaseYear: 2026,
+          setId: '10342',
+          slug: 'pretty-pink-flower-bouquet-10342',
+          sourceSetNumber: '10342-1',
+          theme: 'Botanicals',
+        }),
+      ],
+    });
+
+    expect(
+      result.map(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name,
+      ),
+    ).toEqual(
+      baselineHomepageThemeSpotlightItems.map(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name,
+      ),
+    );
+    expect(
+      result.find(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name === 'Botanicals',
+      )?.themeSnapshot.setCount,
+    ).toBe(
+      (baselineHomepageThemeSpotlightItems.find(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name === 'Botanicals',
+      )?.themeSnapshot.setCount ?? 0) + 1,
+    );
+  });
+
+  test('does not auto-promote overlay-only themes into the limited homepage theme rows', async () => {
+    const overlayOnlyTheme = createOverlaySet({
+      name: 'Great Deku Tree 2-in-1',
+      setId: '77092',
+      slug: 'great-deku-tree-2-in-1-77092',
+      sourceSetNumber: '77092-1',
+      theme: 'The Legend of Zelda',
+    });
+    const [homepageThemeItems, homepageThemeSpotlightItems] = await Promise.all(
+      [
+        listHomepageThemeDirectoryItemsWithOverlay({
+          listCatalogOverlaySetsFn: async () => [overlayOnlyTheme],
+        }),
+        listHomepageThemeSpotlightItemsWithOverlay({
+          listCatalogOverlaySetsFn: async () => [overlayOnlyTheme],
+        }),
+      ],
+    );
+
+    expect(
+      homepageThemeItems.some(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name ===
+          'The Legend of Zelda',
+      ),
+    ).toBe(false);
+    expect(
+      homepageThemeSpotlightItems.some(
+        (catalogThemeDirectoryItem) =>
+          catalogThemeDirectoryItem.themeSnapshot.name ===
+          'The Legend of Zelda',
+      ),
+    ).toBe(false);
   });
 
   test('adds overlay sets to discover browse groups and set slugs', async () => {
