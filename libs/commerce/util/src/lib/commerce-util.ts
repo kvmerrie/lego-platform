@@ -4,6 +4,12 @@ export const commerceMerchantSourceTypes = [
   'marketplace',
 ] as const;
 
+export const commerceMerchantSupportTiers = [
+  'primary',
+  'secondary',
+  'blocked',
+] as const;
+
 export const commerceOfferSeedValidationStatuses = [
   'pending',
   'valid',
@@ -21,6 +27,9 @@ export const commerceOfferLatestFetchStatuses = [
 export type CommerceMerchantSourceType =
   (typeof commerceMerchantSourceTypes)[number];
 
+export type CommerceMerchantSupportTier =
+  (typeof commerceMerchantSupportTiers)[number];
+
 export type CommerceOfferSeedValidationStatus =
   (typeof commerceOfferSeedValidationStatuses)[number];
 
@@ -28,6 +37,71 @@ export type CommerceOfferLatestFetchStatus =
   (typeof commerceOfferLatestFetchStatuses)[number];
 
 export const DEFAULT_COMMERCE_STALE_DAYS = 14;
+
+export interface CommerceMerchantSupportProfile {
+  defaultSeedGeneration: boolean;
+  defaultRefresh: boolean;
+  operatorLabel: string;
+  tier: CommerceMerchantSupportTier;
+}
+
+const commerceMerchantSupportProfiles = {
+  'lego-nl': {
+    tier: 'primary',
+    defaultSeedGeneration: true,
+    defaultRefresh: true,
+    operatorLabel: 'Primary',
+  },
+  intertoys: {
+    tier: 'primary',
+    defaultSeedGeneration: true,
+    defaultRefresh: true,
+    operatorLabel: 'Primary',
+  },
+  bol: {
+    tier: 'primary',
+    defaultSeedGeneration: true,
+    defaultRefresh: true,
+    operatorLabel: 'Primary',
+  },
+  misterbricks: {
+    tier: 'primary',
+    defaultSeedGeneration: true,
+    defaultRefresh: true,
+    operatorLabel: 'Primary',
+  },
+  top1toys: {
+    tier: 'secondary',
+    defaultSeedGeneration: false,
+    defaultRefresh: true,
+    operatorLabel: 'Secondary',
+  },
+  'smyths-toys': {
+    tier: 'secondary',
+    defaultSeedGeneration: false,
+    defaultRefresh: true,
+    operatorLabel: 'Secondary',
+  },
+  'amazon-nl': {
+    tier: 'blocked',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Blocked',
+  },
+  proshop: {
+    tier: 'blocked',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Blocked',
+  },
+} as const satisfies Record<string, CommerceMerchantSupportProfile>;
+
+const defaultCommerceMerchantSupportProfile: CommerceMerchantSupportProfile = {
+  tier: 'secondary',
+  defaultSeedGeneration: false,
+  defaultRefresh: false,
+  operatorLabel: 'Secondary',
+};
 
 export interface CommerceMerchant {
   affiliateNetwork?: string;
@@ -160,6 +234,40 @@ export interface CommerceCoverageSnapshot {
   uncoveredSets: CommerceCoverageSetOption[];
 }
 
+export const commercePrimaryCoverageStatuses = [
+  'no_primary_seeds',
+  'no_valid_primary_offers',
+  'partial_primary_coverage',
+  'full_primary_coverage',
+] as const;
+
+export type CommercePrimaryCoverageStatus =
+  (typeof commercePrimaryCoverageStatuses)[number];
+
+export interface CommercePrimaryCoverageRow {
+  missingPrimarySeedMerchantNames: string[];
+  missingPrimarySeedMerchantSlugs: string[];
+  missingValidPrimaryOfferMerchantNames: string[];
+  missingValidPrimaryOfferMerchantSlugs: string[];
+  primaryMerchantTargetCount: number;
+  primarySeedCount: number;
+  setId: string;
+  setName: string;
+  status: CommercePrimaryCoverageStatus;
+  theme: string;
+  validPrimaryOfferCount: number;
+}
+
+export interface CommercePrimaryCoverageSummary {
+  fullPrimaryCoverageCount: number;
+  noPrimarySeedsCount: number;
+  noValidPrimaryOffersCount: number;
+  partialPrimaryCoverageCount: number;
+  primaryMerchantSlugs: readonly string[];
+  rows: CommercePrimaryCoverageRow[];
+  totalSetCount: number;
+}
+
 export type CommerceCoverageQueueSetSource = 'overlay' | 'snapshot';
 
 export type CommerceCoverageQueueMerchantState =
@@ -264,6 +372,64 @@ export const commerceMerchantSearchableSlugs = [
 
 export type CommerceMerchantSearchableSlug =
   (typeof commerceMerchantSearchableSlugs)[number];
+
+export function getCommerceMerchantSupportProfile(
+  merchantSlug: string,
+): CommerceMerchantSupportProfile {
+  const normalizedMerchantSlug = normalizeCommerceSlug(merchantSlug);
+
+  return (
+    commerceMerchantSupportProfiles[
+      normalizedMerchantSlug as keyof typeof commerceMerchantSupportProfiles
+    ] ?? defaultCommerceMerchantSupportProfile
+  );
+}
+
+export function getCommerceMerchantSupportTier(
+  merchantSlug: string,
+): CommerceMerchantSupportTier {
+  return getCommerceMerchantSupportProfile(merchantSlug).tier;
+}
+
+export function getCommerceMerchantSupportTierLabel(merchantSlug: string) {
+  return getCommerceMerchantSupportProfile(merchantSlug).operatorLabel;
+}
+
+function getCommerceMerchantSupportTierPriority(merchantSlug: string): number {
+  switch (getCommerceMerchantSupportTier(merchantSlug)) {
+    case 'primary':
+      return 0;
+    case 'secondary':
+      return 1;
+    case 'blocked':
+    default:
+      return 2;
+  }
+}
+
+export function compareCommerceMerchantsByOperationalPriority(
+  left: Pick<CommerceMerchant, 'name' | 'slug'>,
+  right: Pick<CommerceMerchant, 'name' | 'slug'>,
+): number {
+  return (
+    getCommerceMerchantSupportTierPriority(left.slug) -
+      getCommerceMerchantSupportTierPriority(right.slug) ||
+    left.name.localeCompare(right.name) ||
+    left.slug.localeCompare(right.slug)
+  );
+}
+
+export function includeCommerceMerchantInDefaultSeedGeneration(
+  merchantSlug: string,
+): boolean {
+  return getCommerceMerchantSupportProfile(merchantSlug).defaultSeedGeneration;
+}
+
+export function includeCommerceMerchantInDefaultRefresh(
+  merchantSlug: string,
+): boolean {
+  return getCommerceMerchantSupportProfile(merchantSlug).defaultRefresh;
+}
 
 function assertObjectRecord(
   value: unknown,
@@ -573,7 +739,7 @@ export function buildCommerceCoverageSnapshot({
 }): CommerceCoverageSnapshot {
   const activeMerchants = merchants
     .filter((merchant) => merchant.isActive)
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .sort(compareCommerceMerchantsByOperationalPriority);
   const activeOfferSeeds = offerSeeds.filter((offerSeed) => offerSeed.isActive);
   const coveredSetIds = new Set(
     activeOfferSeeds.map((offerSeed) => offerSeed.setId),
@@ -627,6 +793,166 @@ export function buildCommerceCoverageSnapshot({
     merchantsWithoutActiveSeeds,
     brokenSeeds,
     staleSeeds,
+  };
+}
+
+function compareCommercePrimaryCoverageRows(
+  left: CommercePrimaryCoverageRow,
+  right: CommercePrimaryCoverageRow,
+): number {
+  const getStatusPriority = (status: CommercePrimaryCoverageStatus) => {
+    switch (status) {
+      case 'no_primary_seeds':
+        return 0;
+      case 'no_valid_primary_offers':
+        return 1;
+      case 'partial_primary_coverage':
+        return 2;
+      case 'full_primary_coverage':
+      default:
+        return 3;
+    }
+  };
+
+  return (
+    getStatusPriority(left.status) - getStatusPriority(right.status) ||
+    left.theme.localeCompare(right.theme) ||
+    left.setName.localeCompare(right.setName) ||
+    left.setId.localeCompare(right.setId)
+  );
+}
+
+function buildCommercePrimaryCoverageStatus({
+  primaryMerchantTargetCount,
+  primarySeedCount,
+  validPrimaryOfferCount,
+}: {
+  primaryMerchantTargetCount: number;
+  primarySeedCount: number;
+  validPrimaryOfferCount: number;
+}): CommercePrimaryCoverageStatus {
+  if (primarySeedCount === 0) {
+    return 'no_primary_seeds';
+  }
+
+  if (validPrimaryOfferCount === 0) {
+    return 'no_valid_primary_offers';
+  }
+
+  if (validPrimaryOfferCount < primaryMerchantTargetCount) {
+    return 'partial_primary_coverage';
+  }
+
+  return 'full_primary_coverage';
+}
+
+export function buildCommercePrimaryCoverageRows({
+  catalogSets,
+  merchants,
+  offerSeeds,
+}: {
+  catalogSets: readonly CommerceCoverageSetOption[];
+  merchants: readonly CommerceMerchant[];
+  offerSeeds: readonly CommerceOfferSeed[];
+}): CommercePrimaryCoverageRow[] {
+  const activePrimaryMerchants = merchants
+    .filter(
+      (merchant) =>
+        merchant.isActive &&
+        getCommerceMerchantSupportTier(merchant.slug) === 'primary',
+    )
+    .sort(compareCommerceMerchantsByOperationalPriority);
+  const primaryMerchantIdSet = new Set(
+    activePrimaryMerchants.map((merchant) => merchant.id),
+  );
+
+  return [...catalogSets]
+    .map((catalogSet) => {
+      const setPrimarySeeds = offerSeeds.filter(
+        (offerSeed) =>
+          offerSeed.setId === catalogSet.id &&
+          primaryMerchantIdSet.has(offerSeed.merchantId),
+      );
+      const primarySeedMerchantIds = new Set(
+        setPrimarySeeds.map((offerSeed) => offerSeed.merchantId),
+      );
+      const validPrimaryOfferMerchantIds = new Set(
+        setPrimarySeeds
+          .filter((offerSeed) => isOfferSeedCoveredState(offerSeed))
+          .map((offerSeed) => offerSeed.merchantId),
+      );
+      const missingPrimarySeedMerchants = activePrimaryMerchants.filter(
+        (merchant) => !primarySeedMerchantIds.has(merchant.id),
+      );
+      const missingValidPrimaryOfferMerchants = activePrimaryMerchants.filter(
+        (merchant) => !validPrimaryOfferMerchantIds.has(merchant.id),
+      );
+
+      return {
+        setId: catalogSet.id,
+        setName: catalogSet.name,
+        theme: catalogSet.theme,
+        primaryMerchantTargetCount: activePrimaryMerchants.length,
+        primarySeedCount: primarySeedMerchantIds.size,
+        validPrimaryOfferCount: validPrimaryOfferMerchantIds.size,
+        missingPrimarySeedMerchantNames: missingPrimarySeedMerchants.map(
+          (merchant) => merchant.name,
+        ),
+        missingPrimarySeedMerchantSlugs: missingPrimarySeedMerchants.map(
+          (merchant) => merchant.slug,
+        ),
+        missingValidPrimaryOfferMerchantNames:
+          missingValidPrimaryOfferMerchants.map((merchant) => merchant.name),
+        missingValidPrimaryOfferMerchantSlugs:
+          missingValidPrimaryOfferMerchants.map((merchant) => merchant.slug),
+        status: buildCommercePrimaryCoverageStatus({
+          primaryMerchantTargetCount: activePrimaryMerchants.length,
+          primarySeedCount: primarySeedMerchantIds.size,
+          validPrimaryOfferCount: validPrimaryOfferMerchantIds.size,
+        }),
+      } satisfies CommercePrimaryCoverageRow;
+    })
+    .sort(compareCommercePrimaryCoverageRows);
+}
+
+export function buildCommercePrimaryCoverageSummary({
+  catalogSets,
+  merchants,
+  offerSeeds,
+}: {
+  catalogSets: readonly CommerceCoverageSetOption[];
+  merchants: readonly CommerceMerchant[];
+  offerSeeds: readonly CommerceOfferSeed[];
+}): CommercePrimaryCoverageSummary {
+  const activePrimaryMerchantSlugs = merchants
+    .filter(
+      (merchant) =>
+        merchant.isActive &&
+        getCommerceMerchantSupportTier(merchant.slug) === 'primary',
+    )
+    .sort(compareCommerceMerchantsByOperationalPriority)
+    .map((merchant) => merchant.slug);
+  const rows = buildCommercePrimaryCoverageRows({
+    catalogSets,
+    merchants,
+    offerSeeds,
+  });
+
+  return {
+    rows,
+    totalSetCount: rows.length,
+    primaryMerchantSlugs: activePrimaryMerchantSlugs,
+    noPrimarySeedsCount: rows.filter((row) => row.status === 'no_primary_seeds')
+      .length,
+    noValidPrimaryOffersCount: rows.filter(
+      (row) => row.status === 'no_valid_primary_offers',
+    ).length,
+    partialPrimaryCoverageCount: rows.filter(
+      (row) => row.status === 'partial_primary_coverage',
+    ).length,
+    fullPrimaryCoverageCount: rows.filter(
+      (row) => row.status === 'full_primary_coverage',
+    ).length,
   };
 }
 
@@ -918,7 +1244,7 @@ export function buildCommerceBenchmarkCoverageRows({
 }): CommerceBenchmarkCoverageRow[] {
   const activeMerchants = merchants
     .filter((merchant) => merchant.isActive)
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .sort(compareCommerceMerchantsByOperationalPriority);
   const activeOfferSeeds = offerSeeds.filter(
     (offerSeed) => offerSeed.isActive && offerSeed.merchant?.isActive === true,
   );
@@ -1020,7 +1346,7 @@ export function buildCommerceCoverageQueueRows({
 }): CommerceCoverageQueueRow[] {
   const activeMerchants = merchants
     .filter((merchant) => merchant.isActive)
-    .sort((left, right) => left.name.localeCompare(right.name));
+    .sort(compareCommerceMerchantsByOperationalPriority);
   const activeOfferSeeds = offerSeeds.filter(
     (offerSeed) => offerSeed.isActive && offerSeed.merchant?.isActive === true,
   );

@@ -2,6 +2,7 @@ import {
   commerceMerchantSourceTypes,
   commerceOfferLatestFetchStatuses,
   commerceOfferSeedValidationStatuses,
+  includeCommerceMerchantInDefaultRefresh,
   type CommerceBenchmarkSet,
   type CommerceBenchmarkSetInput,
   type CommerceMerchant,
@@ -455,8 +456,10 @@ export async function updateCommerceOfferSeed({
 }
 
 export async function listActiveCommerceRefreshSeeds({
+  includeBlockedMerchants = false,
   supabaseClient = getServerSupabaseAdminClient(),
 }: {
+  includeBlockedMerchants?: boolean;
   supabaseClient?: CommerceSupabaseClient;
 } = {}): Promise<CommerceRefreshSeed[]> {
   const offerSeeds = await listCommerceOfferSeeds({ supabaseClient });
@@ -465,6 +468,11 @@ export async function listActiveCommerceRefreshSeeds({
     .filter(
       (offerSeed) =>
         offerSeed.isActive && offerSeed.merchant?.isActive === true,
+    )
+    .filter(
+      (offerSeed) =>
+        includeBlockedMerchants ||
+        includeCommerceMerchantInDefaultRefresh(offerSeed.merchant?.slug ?? ''),
     )
     .map((offerSeed) => ({
       merchant: offerSeed.merchant as CommerceMerchant,

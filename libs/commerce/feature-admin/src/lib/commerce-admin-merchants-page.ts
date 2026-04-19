@@ -7,7 +7,11 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { type CommerceMerchant } from '@lego-platform/commerce/util';
+import {
+  getCommerceMerchantSupportTierLabel,
+  compareCommerceMerchantsByOperationalPriority,
+  type CommerceMerchant,
+} from '@lego-platform/commerce/util';
 import { CommerceAdminMerchantDialogComponent } from './commerce-admin-merchant-dialog';
 import { CommerceAdminStore } from './commerce-admin-store.service';
 
@@ -24,20 +28,23 @@ export class CommerceAdminMerchantsPageComponent {
   readonly selectedMerchant = signal<CommerceMerchant | null>(null);
   readonly filteredMerchants = computed(() => {
     const searchValue = this.merchantSearch().trim().toLowerCase();
+    const merchants = [...this.commerceAdminStore.merchants()].sort(
+      compareCommerceMerchantsByOperationalPriority,
+    );
 
     if (!searchValue) {
-      return this.commerceAdminStore.merchants();
+      return merchants;
     }
 
-    return this.commerceAdminStore
-      .merchants()
-      .filter(
-        (merchant) =>
-          merchant.name.toLowerCase().includes(searchValue) ||
-          merchant.slug.toLowerCase().includes(searchValue) ||
-          (merchant.affiliateNetwork ?? '').toLowerCase().includes(searchValue),
-      );
+    return merchants.filter(
+      (merchant) =>
+        merchant.name.toLowerCase().includes(searchValue) ||
+        merchant.slug.toLowerCase().includes(searchValue) ||
+        (merchant.affiliateNetwork ?? '').toLowerCase().includes(searchValue),
+    );
   });
+
+  readonly getMerchantSupportTierLabel = getCommerceMerchantSupportTierLabel;
 
   openCreateDialog(): void {
     this.selectedMerchant.set(null);

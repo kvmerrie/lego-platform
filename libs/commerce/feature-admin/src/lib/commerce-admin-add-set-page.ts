@@ -13,7 +13,10 @@ import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
 } from '@lego-platform/catalog/util';
-import { type CommerceMerchant } from '@lego-platform/commerce/util';
+import {
+  compareCommerceMerchantsByOperationalPriority,
+  type CommerceMerchant,
+} from '@lego-platform/commerce/util';
 import { CommerceAdminStore } from './commerce-admin-store.service';
 
 type AdminFeedbackTone = 'danger' | 'neutral' | 'positive' | null;
@@ -178,7 +181,7 @@ export class CommerceAdminAddSetPageComponent {
   readonly activeMerchants = computed(() =>
     [...this.commerceAdminStore.merchants()]
       .filter((merchant) => merchant.isActive)
-      .sort((left, right) => left.name.localeCompare(right.name)),
+      .sort(compareCommerceMerchantsByOperationalPriority),
   );
 
   readonly activationMerchant = computed<CommerceMerchant | undefined>(

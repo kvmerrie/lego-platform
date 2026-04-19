@@ -138,10 +138,14 @@ This check does not call merchants and does not write Supabase latest or history
 - The current snapshot-backed price panel remains unchanged for the public app.
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
 - Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
-- `pnpm sync:commerce` refreshes every active Supabase seed, updates `commerce_offer_latest`, and updates `validation_status` plus `last_verified_at` on the seed itself.
+- `pnpm sync:commerce` now refreshes the default operational merchants only: primary plus secondary tiers. Deprioritized merchants such as `amazon-nl` and `proshop` stay in Supabase, but are not part of the standard batch refresh loop.
 - `pnpm sync:commerce:check` and `pnpm sync:commerce:local:check` remain generated-artifact drift checks only and do not write latest or history rows.
 - Merchant presentation metadata and reference pricing remain curated locally.
 - Active merchant and seed scope now come from Supabase, not from local seed files.
+- Current tiering:
+  - primary: `lego-nl`, `intertoys`, `bol`, `misterbricks`
+  - secondary: `top1toys`, `smyths-toys`
+  - blocked/deprioritized: `amazon-nl`, `proshop`
 - If a stable merchant product page cannot be verified for a seed, keep the seed reviewable in admin instead of guessing a replacement URL.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.
 

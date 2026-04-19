@@ -214,6 +214,28 @@ describe('commerce data access server', () => {
           created_at: '2026-04-14T08:00:00.000Z',
           updated_at: '2026-04-14T08:00:00.000Z',
         },
+        {
+          id: 'merchant-2',
+          slug: 'top1toys',
+          name: 'Top1Toys',
+          is_active: true,
+          source_type: 'direct',
+          affiliate_network: null,
+          notes: null,
+          created_at: '2026-04-14T08:00:00.000Z',
+          updated_at: '2026-04-14T08:00:00.000Z',
+        },
+        {
+          id: 'merchant-3',
+          slug: 'amazon-nl',
+          name: 'Amazon',
+          is_active: true,
+          source_type: 'affiliate',
+          affiliate_network: 'Amazon Associates',
+          notes: null,
+          created_at: '2026-04-14T08:00:00.000Z',
+          updated_at: '2026-04-14T08:00:00.000Z',
+        },
       ],
       error: null,
     });
@@ -247,6 +269,30 @@ describe('commerce data access server', () => {
           created_at: '2026-04-14T08:00:00.000Z',
           updated_at: '2026-04-14T08:00:00.000Z',
         },
+        {
+          id: 'seed-3',
+          set_id: '10316',
+          merchant_id: 'merchant-2',
+          product_url: 'https://www.top1toys.nl/rivendell',
+          is_active: true,
+          validation_status: 'pending',
+          last_verified_at: null,
+          notes: null,
+          created_at: '2026-04-14T08:00:00.000Z',
+          updated_at: '2026-04-14T08:00:00.000Z',
+        },
+        {
+          id: 'seed-4',
+          set_id: '10316',
+          merchant_id: 'merchant-3',
+          product_url: 'https://www.amazon.nl/rivendell',
+          is_active: true,
+          validation_status: 'pending',
+          last_verified_at: null,
+          notes: null,
+          created_at: '2026-04-14T08:00:00.000Z',
+          updated_at: '2026-04-14T08:00:00.000Z',
+        },
       ],
       error: null,
     });
@@ -270,8 +316,72 @@ describe('commerce data access server', () => {
       supabaseClient: { from } as never,
     });
 
-    expect(result).toHaveLength(1);
+    expect(result).toHaveLength(2);
     expect(result[0].offerSeed.id).toBe('seed-1');
+    expect(result[1].offerSeed.id).toBe('seed-3');
+  });
+
+  test('can include blocked merchants when refresh consumers explicitly ask for the full set', async () => {
+    const merchantOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'merchant-1',
+          slug: 'amazon-nl',
+          name: 'Amazon',
+          is_active: true,
+          source_type: 'affiliate',
+          affiliate_network: 'Amazon Associates',
+          notes: null,
+          created_at: '2026-04-14T08:00:00.000Z',
+          updated_at: '2026-04-14T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const latestSelect = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    const seedOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'seed-1',
+          set_id: '10316',
+          merchant_id: 'merchant-1',
+          product_url: 'https://www.amazon.nl/rivendell',
+          is_active: true,
+          validation_status: 'pending',
+          last_verified_at: null,
+          notes: null,
+          created_at: '2026-04-14T08:00:00.000Z',
+          updated_at: '2026-04-14T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_merchants') {
+        return { select: vi.fn(() => ({ order: merchantOrder })) };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return { select: latestSelect };
+      }
+
+      if (table === 'commerce_offer_seeds') {
+        return { select: vi.fn(() => ({ order: seedOrder })) };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    const result = await listActiveCommerceRefreshSeeds({
+      includeBlockedMerchants: true,
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].merchant.slug).toBe('amazon-nl');
   });
 
   test('upserts latest offer records by offer seed id for future refresh jobs', async () => {

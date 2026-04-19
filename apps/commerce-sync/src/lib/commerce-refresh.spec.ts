@@ -248,6 +248,81 @@ describe('commerce refresh', () => {
     });
   });
 
+  test('uses Amazon structured-data price when the buy box exposes stock but not a visible price', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'amazon-nl',
+      html: `
+        <html>
+          <head>
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "EUR",
+                  "price": "165.41",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            </script>
+          </head>
+          <body>
+            <div id="desktop_qualifiedBuyBox">
+              <div id="availabilityInsideBuyBox_feature_div">
+                <div id="availability">
+                  <span>Op voorraad</span>
+                </div>
+              </div>
+              <input id="add-to-cart-button" type="submit" value="In winkelwagen" />
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      availability: 'in_stock',
+      currencyCode: 'EUR',
+      priceMinor: 16541,
+    });
+  });
+
+  test('extracts an Amazon all-buying-choices offer as limited when no featured offer is available', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'amazon-nl',
+      html: `
+        <html>
+          <body>
+            <div id="availability_feature_div">
+              <div id="availability">
+                <div id="all-offers-display"></div>
+                <span>Geen aanbevolen aanbod beschikbaar</span>
+                <a id="buybox-see-all-buying-choices">Alle koopopties bekijken</a>
+              </div>
+            </div>
+            <div id="apex_desktop">
+              <span class="a-price apex-price-to-pay-value" data-a-size="medium_plus">
+                <span class="a-offscreen">€ 201,00</span>
+                <span aria-hidden="true">
+                  <span class="a-price-symbol">€</span>
+                  <span class="a-price-whole">201<span class="a-price-decimal">,</span></span>
+                  <span class="a-price-fraction">00</span>
+                </span>
+              </span>
+            </div>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      availability: 'limited',
+      currencyCode: 'EUR',
+      priceMinor: 20100,
+    });
+  });
+
   test('extracts a bol main offer only when the in-stock block is explicit', () => {
     const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
       merchantSlug: 'bol',
@@ -383,6 +458,44 @@ describe('commerce refresh', () => {
       availability: 'in_stock',
       currencyCode: 'EUR',
       priceMinor: 104995,
+    });
+  });
+
+  test('uses bol structured-data availability to resolve an otherwise ambiguous main offer', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'bol',
+      html: `
+        <html>
+          <head>
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "EUR",
+                  "price": "239.99",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            </script>
+          </head>
+          <body>
+            <section>
+              <h2>Prijsinformatie en bestellen</h2>
+              <p>€ 239,99</p>
+              <p>Bekijk alle verkopers</p>
+              <button>In winkelwagen</button>
+            </section>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      availability: 'in_stock',
+      currencyCode: 'EUR',
+      priceMinor: 23999,
     });
   });
 
@@ -670,6 +783,176 @@ describe('commerce refresh', () => {
         validationStatus: 'stale',
         lastVerifiedAt: '2026-04-12T08:00:00.000Z',
       },
+    });
+  });
+
+  test('retries Proshop against the redirected canonical product url before giving up', async () => {
+    const upsertLatestRecord = vi.fn().mockResolvedValue(undefined);
+    const updateSeedValidationState = vi.fn().mockResolvedValue(undefined);
+    const redirectedForbiddenResponse = {
+      status: 403,
+      statusText: 'Forbidden',
+      redirected: true,
+      url: 'https://www.proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3174210',
+      headers: new Headers({
+        'content-type': 'text/html',
+      }),
+      ok: false,
+      text: async () => '',
+    } as unknown as Response;
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(redirectedForbiddenResponse)
+      .mockResolvedValueOnce(
+        new Response(
+          `
+            <html>
+              <head>
+                <script type="application/ld+json">
+                  {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "offers": {
+                      "@type": "Offer",
+                      "priceCurrency": "EUR",
+                      "price": "239.99",
+                      "availability": "https://schema.org/InStock"
+                    }
+                  }
+                </script>
+              </head>
+            </html>
+          `,
+          {
+            status: 200,
+            headers: {
+              'content-type': 'text/html',
+            },
+          },
+        ),
+      );
+
+    const summary = await refreshCommerceOfferSeeds({
+      refreshSeeds: [
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            slug: 'proshop',
+            name: 'Proshop',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-proshop',
+            setId: '10317',
+            productUrl: 'https://www.proshop.nl/?s=10317',
+            validationStatus: 'pending',
+          },
+        }),
+      ],
+      now: new Date('2026-04-14T12:00:00.000Z'),
+      fetchImpl,
+      logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+      },
+      upsertLatestRecord,
+      updateSeedValidationState,
+    });
+
+    expect(summary).toEqual({
+      totalCount: 1,
+      successCount: 1,
+      unavailableCount: 0,
+      invalidCount: 0,
+      staleCount: 0,
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls[1]?.[0]).toBe(
+      'https://www.proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3174210',
+    );
+    expect(fetchImpl.mock.calls[1]?.[1]).toEqual(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          referer: 'https://www.proshop.nl/',
+        }),
+      }),
+    );
+  });
+
+  test('normalizes Proshop to the canonical www host and reports Cloudflare challenge blocks explicitly', async () => {
+    const upsertLatestRecord = vi.fn().mockResolvedValue(undefined);
+    const updateSeedValidationState = vi.fn().mockResolvedValue(undefined);
+    const blockedResponse = new Response(
+      '<html><title>Just a moment...</title><span>Enable JavaScript and cookies to continue</span></html>',
+      {
+        status: 403,
+        statusText: 'Forbidden',
+        headers: {
+          'content-type': 'text/html',
+          'cf-mitigated': 'challenge',
+        },
+      },
+    );
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(blockedResponse)
+      .mockResolvedValueOnce(blockedResponse);
+
+    const summary = await refreshCommerceOfferSeeds({
+      refreshSeeds: [
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            slug: 'proshop',
+            name: 'Proshop',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-proshop-canonical',
+            setId: '10317',
+            productUrl:
+              'https://proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3190354',
+            validationStatus: 'valid',
+          },
+        }),
+      ],
+      now: new Date('2026-04-19T09:00:00.000Z'),
+      fetchImpl,
+      logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+      },
+      upsertLatestRecord,
+      updateSeedValidationState,
+    });
+
+    expect(summary).toEqual({
+      totalCount: 1,
+      successCount: 0,
+      unavailableCount: 0,
+      invalidCount: 0,
+      staleCount: 1,
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(
+      'https://www.proshop.nl/LEGO/LEGO-Icons-10317-Land-Rover-Classic-Defender-90/3190354',
+    );
+    expect(fetchImpl.mock.calls[1]?.[1]).toEqual(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          referer: 'https://www.proshop.nl/',
+          'sec-fetch-mode': 'navigate',
+        }),
+      }),
+    );
+    expect(upsertLatestRecord).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        offerSeedId: 'seed-proshop-canonical',
+        fetchStatus: 'error',
+        fetchedAt: '2026-04-19T09:00:00.000Z',
+        errorMessage:
+          'Proshop returned a Cloudflare challenge even after retrying with the canonical www referer. The lightweight refresh request did not receive a parseable product page.',
+      }),
     });
   });
 
@@ -1267,6 +1550,81 @@ describe('commerce refresh', () => {
         lastVerifiedAt: '2026-04-12T08:00:00.000Z',
       },
     });
+  });
+
+  test('retries Top1Toys once after a timeout before marking the seed stale', async () => {
+    const upsertLatestRecord = vi.fn().mockResolvedValue(undefined);
+    const updateSeedValidationState = vi.fn().mockResolvedValue(undefined);
+    const timeoutError = new Error('The operation timed out.');
+    timeoutError.name = 'TimeoutError';
+    const fetchImpl = vi
+      .fn()
+      .mockRejectedValueOnce(timeoutError)
+      .mockResolvedValueOnce(
+        new Response(
+          `
+            <html>
+              <head>
+                <script type="application/ld+json">
+                  {
+                    "@context": "https://schema.org",
+                    "@type": "Product",
+                    "offers": {
+                      "@type": "Offer",
+                      "priceCurrency": "EUR",
+                      "price": "159.99",
+                      "availability": "https://schema.org/InStock"
+                    }
+                  }
+                </script>
+              </head>
+            </html>
+          `,
+          {
+            status: 200,
+            headers: {
+              'content-type': 'text/html',
+            },
+          },
+        ),
+      );
+
+    const summary = await refreshCommerceOfferSeeds({
+      refreshSeeds: [
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            slug: 'top1toys',
+            name: 'Top1Toys',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-top1toys',
+            merchantId: 'merchant-top1toys',
+            setId: '76437',
+            productUrl: 'https://www.top1toys.nl/catalog/product/view/id/12345',
+            validationStatus: 'valid',
+          },
+        }),
+      ],
+      now: new Date('2026-04-14T12:00:00.000Z'),
+      fetchImpl,
+      logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+      },
+      upsertLatestRecord,
+      updateSeedValidationState,
+    });
+
+    expect(summary).toEqual({
+      totalCount: 1,
+      successCount: 1,
+      unavailableCount: 0,
+      invalidCount: 0,
+      staleCount: 0,
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
   test('builds pricing sync inputs from active refresh seeds and merchant slugs', () => {

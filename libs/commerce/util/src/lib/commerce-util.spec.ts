@@ -5,8 +5,13 @@ import {
   buildCommerceCoverageSnapshot,
   buildCommerceMerchantSearchQuery,
   buildCommerceMerchantSearchUrl,
+  buildCommercePrimaryCoverageSummary,
+  compareCommerceMerchantsByOperationalPriority,
   filterCommerceCoverageQueueRows,
+  getCommerceMerchantSupportTier,
   normalizeCommerceSlug,
+  includeCommerceMerchantInDefaultRefresh,
+  includeCommerceMerchantInDefaultSeedGeneration,
   supportsCommerceMerchantManualSeed,
   validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
@@ -84,6 +89,272 @@ describe('commerce util', () => {
   test('treats any normalized merchant slug as manual-seed capable', () => {
     expect(supportsCommerceMerchantManualSeed('intertoys')).toBe(true);
     expect(supportsCommerceMerchantManualSeed(' top1toys ')).toBe(true);
+  });
+
+  test('classifies merchant support tiers and default automation scope conservatively', () => {
+    expect(getCommerceMerchantSupportTier('lego-nl')).toBe('primary');
+    expect(getCommerceMerchantSupportTier('top1toys')).toBe('secondary');
+    expect(getCommerceMerchantSupportTier('amazon-nl')).toBe('blocked');
+    expect(includeCommerceMerchantInDefaultSeedGeneration('lego-nl')).toBe(
+      true,
+    );
+    expect(includeCommerceMerchantInDefaultSeedGeneration('top1toys')).toBe(
+      false,
+    );
+    expect(includeCommerceMerchantInDefaultSeedGeneration('proshop')).toBe(
+      false,
+    );
+    expect(includeCommerceMerchantInDefaultRefresh('smyths-toys')).toBe(true);
+    expect(includeCommerceMerchantInDefaultRefresh('amazon-nl')).toBe(false);
+  });
+
+  test('sorts merchants by operational priority before alphabetical fallback', () => {
+    const merchants = [
+      { slug: 'amazon-nl', name: 'Amazon' },
+      { slug: 'top1toys', name: 'Top1Toys' },
+      { slug: 'bol', name: 'bol' },
+      { slug: 'intertoys', name: 'Intertoys' },
+    ];
+
+    expect(
+      [...merchants]
+        .sort(compareCommerceMerchantsByOperationalPriority)
+        .map((merchant) => merchant.slug),
+    ).toEqual(['bol', 'intertoys', 'top1toys', 'amazon-nl']);
+  });
+
+  test('summarizes primary coverage gaps across no-seed, no-offer, partial, and full states', () => {
+    const summary = buildCommercePrimaryCoverageSummary({
+      catalogSets: [
+        { id: '10316', name: 'Rivendell', theme: 'Icons' },
+        { id: '21061', name: 'Notre-Dame de Paris', theme: 'Architecture' },
+        { id: '76437', name: 'The Burrow', theme: 'Harry Potter' },
+        { id: '76269', name: 'Avengers Tower', theme: 'Marvel' },
+      ],
+      merchants: [
+        {
+          id: 'merchant-lego',
+          slug: 'lego-nl',
+          name: 'LEGO',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+        {
+          id: 'merchant-intertoys',
+          slug: 'intertoys',
+          name: 'Intertoys',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+        {
+          id: 'merchant-bol',
+          slug: 'bol',
+          name: 'bol',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+        {
+          id: 'merchant-misterbricks',
+          slug: 'misterbricks',
+          name: 'MisterBricks',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+        {
+          id: 'merchant-top1toys',
+          slug: 'top1toys',
+          name: 'Top1Toys',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+      ],
+      offerSeeds: [
+        {
+          id: 'seed-10316-lego',
+          setId: '10316',
+          merchantId: 'merchant-lego',
+          productUrl: 'https://www.lego.com/rivendell',
+          isActive: false,
+          validationStatus: 'pending',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+        {
+          id: 'seed-21061-lego',
+          setId: '21061',
+          merchantId: 'merchant-lego',
+          productUrl: 'https://www.lego.com/notre-dame',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+          latestOffer: {
+            id: 'offer-21061-lego',
+            offerSeedId: 'seed-21061-lego',
+            setId: '21061',
+            merchantId: 'merchant-lego',
+            productUrl: 'https://www.lego.com/notre-dame',
+            fetchStatus: 'success',
+            priceMinor: 22999,
+            currencyCode: 'EUR',
+            availability: 'in_stock',
+            observedAt: '2026-04-19T10:00:00.000Z',
+            fetchedAt: '2026-04-19T10:00:00.000Z',
+            createdAt: '2026-04-19T10:00:00.000Z',
+            updatedAt: '2026-04-19T10:00:00.000Z',
+          },
+        },
+        {
+          id: 'seed-21061-bol',
+          setId: '21061',
+          merchantId: 'merchant-bol',
+          productUrl: 'https://www.bol.com/notre-dame',
+          isActive: false,
+          validationStatus: 'pending',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+        {
+          id: 'seed-76437-lego',
+          setId: '76437',
+          merchantId: 'merchant-lego',
+          productUrl: 'https://www.lego.com/the-burrow',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+          latestOffer: {
+            id: 'offer-76437-lego',
+            offerSeedId: 'seed-76437-lego',
+            setId: '76437',
+            merchantId: 'merchant-lego',
+            productUrl: 'https://www.lego.com/the-burrow',
+            fetchStatus: 'success',
+            priceMinor: 25999,
+            currencyCode: 'EUR',
+            availability: 'in_stock',
+            observedAt: '2026-04-19T10:00:00.000Z',
+            fetchedAt: '2026-04-19T10:00:00.000Z',
+            createdAt: '2026-04-19T10:00:00.000Z',
+            updatedAt: '2026-04-19T10:00:00.000Z',
+          },
+        },
+        {
+          id: 'seed-76437-intertoys',
+          setId: '76437',
+          merchantId: 'merchant-intertoys',
+          productUrl: 'https://www.intertoys.nl/the-burrow',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+          latestOffer: {
+            id: 'offer-76437-intertoys',
+            offerSeedId: 'seed-76437-intertoys',
+            setId: '76437',
+            merchantId: 'merchant-intertoys',
+            productUrl: 'https://www.intertoys.nl/the-burrow',
+            fetchStatus: 'success',
+            priceMinor: 23999,
+            currencyCode: 'EUR',
+            availability: 'in_stock',
+            observedAt: '2026-04-19T10:00:00.000Z',
+            fetchedAt: '2026-04-19T10:00:00.000Z',
+            createdAt: '2026-04-19T10:00:00.000Z',
+            updatedAt: '2026-04-19T10:00:00.000Z',
+          },
+        },
+        {
+          id: 'seed-76437-bol',
+          setId: '76437',
+          merchantId: 'merchant-bol',
+          productUrl: 'https://www.bol.com/the-burrow',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+          latestOffer: {
+            id: 'offer-76437-bol',
+            offerSeedId: 'seed-76437-bol',
+            setId: '76437',
+            merchantId: 'merchant-bol',
+            productUrl: 'https://www.bol.com/the-burrow',
+            fetchStatus: 'success',
+            priceMinor: 24499,
+            currencyCode: 'EUR',
+            availability: 'in_stock',
+            observedAt: '2026-04-19T10:00:00.000Z',
+            fetchedAt: '2026-04-19T10:00:00.000Z',
+            createdAt: '2026-04-19T10:00:00.000Z',
+            updatedAt: '2026-04-19T10:00:00.000Z',
+          },
+        },
+        {
+          id: 'seed-76437-misterbricks',
+          setId: '76437',
+          merchantId: 'merchant-misterbricks',
+          productUrl: 'https://misterbricks.nl/the-burrow',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+          latestOffer: {
+            id: 'offer-76437-misterbricks',
+            offerSeedId: 'seed-76437-misterbricks',
+            setId: '76437',
+            merchantId: 'merchant-misterbricks',
+            productUrl: 'https://misterbricks.nl/the-burrow',
+            fetchStatus: 'success',
+            priceMinor: 24999,
+            currencyCode: 'EUR',
+            availability: 'in_stock',
+            observedAt: '2026-04-19T10:00:00.000Z',
+            fetchedAt: '2026-04-19T10:00:00.000Z',
+            createdAt: '2026-04-19T10:00:00.000Z',
+            updatedAt: '2026-04-19T10:00:00.000Z',
+          },
+        },
+      ],
+    });
+
+    expect(summary.primaryMerchantSlugs).toEqual([
+      'bol',
+      'intertoys',
+      'lego-nl',
+      'misterbricks',
+    ]);
+    expect(summary.noPrimarySeedsCount).toBe(1);
+    expect(summary.noValidPrimaryOffersCount).toBe(1);
+    expect(summary.partialPrimaryCoverageCount).toBe(1);
+    expect(summary.fullPrimaryCoverageCount).toBe(1);
+    expect(summary.rows.map((row) => [row.setId, row.status])).toEqual([
+      ['76269', 'no_primary_seeds'],
+      ['10316', 'no_valid_primary_offers'],
+      ['21061', 'partial_primary_coverage'],
+      ['76437', 'full_primary_coverage'],
+    ]);
   });
 
   test('builds coverage for uncovered, broken, and stale commerce work', () => {
@@ -287,6 +558,54 @@ describe('commerce util', () => {
         missingMerchantNames: ['Intertoys'],
         pendingMerchantNames: [],
         reviewMerchantNames: ['Amazon'],
+      }),
+    );
+  });
+
+  test('prefers primary merchants when the coverage queue recommends the next merchant to seed', () => {
+    const rows = buildCommerceCoverageQueueRows({
+      benchmarkSets: [],
+      catalogSets: [
+        {
+          id: '10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          slug: 'rivendell-10316',
+          source: 'snapshot',
+        },
+      ],
+      merchants: [
+        {
+          id: 'merchant-amazon',
+          slug: 'amazon-nl',
+          name: 'Amazon',
+          isActive: true,
+          sourceType: 'affiliate',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+        {
+          id: 'merchant-intertoys',
+          slug: 'intertoys',
+          name: 'Intertoys',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-01T08:00:00.000Z',
+          updatedAt: '2026-04-01T08:00:00.000Z',
+        },
+      ],
+      offerSeeds: [],
+      minimumValidMerchantCount: 1,
+    });
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toEqual(
+      expect.objectContaining({
+        recommendedNextAction: 'add_seed_manually',
+        recommendedMerchantName: 'Intertoys',
+        missingMerchantSlugs: ['intertoys', 'amazon-nl'],
       }),
     );
   });

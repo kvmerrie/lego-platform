@@ -28,6 +28,7 @@ import {
 } from '@lego-platform/commerce/data-access-server';
 
 const MERCHANT_REQUEST_TIMEOUT_MS = 15000;
+const TOP1TOYS_REQUEST_TIMEOUT_MS = 30000;
 const browserLikeMerchantUserAgent =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36';
 const browserLikeMerchantAcceptHeader =
@@ -55,6 +56,7 @@ const amazonPrimaryPriceMarkers = [
   'corePriceDisplay_mobile_feature_div',
   'corePrice_feature_div',
   'apex_desktop',
+  'apex-price-to-pay-value',
   'apex_offerDisplay_desktop',
   'apex_offerDisplay_mobile',
   'priceblock_ourprice',
@@ -127,7 +129,27 @@ interface CommerceOfferSnapshotExtractionResult {
 
 type LatestOfferWriter = typeof upsertCommerceOfferLatestRecord;
 type SeedValidationWriter = typeof updateCommerceOfferSeedValidationState;
-type MerchantRequestProfile = 'default' | 'merchant-home';
+type MerchantRequestProfile = 'default' | 'merchant-home' | 'retry';
+
+function normalizeMerchantProductUrlForFetch({
+  merchantSlug,
+  productUrl,
+}: {
+  merchantSlug: string;
+  productUrl: URL;
+}) {
+  if (merchantSlug !== 'proshop') {
+    return productUrl;
+  }
+
+  if (productUrl.hostname === 'proshop.nl') {
+    const normalizedUrl = new URL(productUrl.toString());
+    normalizedUrl.hostname = 'www.proshop.nl';
+    return normalizedUrl;
+  }
+
+  return productUrl;
+}
 
 function isHeadlineEligibleAvailability(availability: PricingAvailability) {
   return availability === 'in_stock' || availability === 'limited';
@@ -723,6 +745,22 @@ function extractBolStructuredDataPriceFromHtml(
   return undefined;
 }
 
+function getStructuredDataOfferCandidateForEuro(
+  html: string,
+): StructuredDataOfferCandidate | undefined {
+  const candidate = getBestStructuredDataOfferCandidate(html);
+
+  if (!candidate) {
+    return undefined;
+  }
+
+  if (normalizeCurrencyCode(candidate.currencyCode) !== EURO_CURRENCY_CODE) {
+    return undefined;
+  }
+
+  return candidate;
+}
+
 function extractAmazonAvailabilityFromHtmlSlice(
   htmlSlice: string,
 ): PricingAvailability | undefined {
@@ -742,6 +780,16 @@ function extractAmazonAvailabilityFromHtmlSlice(
     normalizedHtmlSlice.includes('je hebt het al in huis op')
   ) {
     return 'in_stock';
+  }
+
+  if (
+    (normalizedHtmlSlice.includes('geen aanbevolen aanbod beschikbaar') ||
+      normalizedHtmlSlice.includes('no featured offers available')) &&
+    (normalizedHtmlSlice.includes('alle koopopties bekijken') ||
+      normalizedHtmlSlice.includes('buybox-see-all-buying-choices') ||
+      normalizedHtmlSlice.includes('all-offers-display'))
+  ) {
+    return 'limited';
   }
 
   if (
@@ -767,10 +815,17 @@ function extractAmazonAvailabilityFromHtmlSlice(
 function extractAmazonCommerceOfferSnapshotFromHtmlDetailed(
   html: string,
 ): CommerceOfferSnapshotExtractionResult {
+  const structuredDataCandidate = getStructuredDataOfferCandidateForEuro(html);
   const mainOfferContainerSlices = getHtmlSlicesAroundMarkers({
     html,
     markers: amazonPrimaryContainerMarkers,
     charsAfter: 2600,
+    charsBefore: 500,
+  });
+  const mainOfferActionSlices = getHtmlSlicesAroundMarkers({
+    html,
+    markers: amazonPrimaryActionMarkers,
+    charsAfter: 1200,
     charsBefore: 500,
   });
   const mainOfferAvailabilitySlices = getHtmlSlicesAroundMarkers({
@@ -779,32 +834,34 @@ function extractAmazonCommerceOfferSnapshotFromHtmlDetailed(
     charsAfter: 1400,
     charsBefore: 300,
   });
+  const mainOfferPriceSlices = getHtmlSlicesAroundMarkers({
+    html,
+    markers: amazonPrimaryPriceMarkers,
+    charsAfter: 2200,
+    charsBefore: 500,
+  });
   const primaryAvailability = [
     ...mainOfferAvailabilitySlices,
-    ...getHtmlSlicesAroundMarkers({
-      html,
-      markers: amazonPrimaryActionMarkers,
-      charsAfter: 1200,
-      charsBefore: 500,
-    }),
+    ...mainOfferActionSlices,
     ...mainOfferContainerSlices,
   ]
     .map((htmlSlice) => extractAmazonAvailabilityFromHtmlSlice(htmlSlice))
     .find((availability) => availability !== undefined);
   const primaryPriceMinor = [
-    ...getHtmlSlicesAroundMarkers({
-      html,
-      markers: amazonPrimaryPriceMarkers,
-      charsAfter: 2200,
-      charsBefore: 500,
-    }),
+    ...mainOfferPriceSlices,
     ...mainOfferContainerSlices,
   ]
     .map((htmlSlice) => extractAmazonPriceFromHtmlSlice(htmlSlice))
     .find((priceMinor) => typeof priceMinor === 'number');
+  const structuredAvailability = normalizeAvailability(
+    structuredDataCandidate?.availability,
+  );
+  const structuredPriceMinor = structuredDataCandidate?.priceMinor;
   const sawMainOfferBlock =
     mainOfferContainerSlices.length > 0 ||
-    mainOfferAvailabilitySlices.length > 0;
+    mainOfferAvailabilitySlices.length > 0 ||
+    mainOfferActionSlices.length > 0 ||
+    mainOfferPriceSlices.length > 0;
   const normalizedAvailability = primaryAvailability;
 
   if (!sawMainOfferBlock) {
@@ -816,12 +873,48 @@ function extractAmazonCommerceOfferSnapshotFromHtmlDetailed(
 
   if (
     typeof primaryPriceMinor !== 'number' &&
-    typeof normalizedAvailability === 'undefined'
+    typeof normalizedAvailability === 'undefined' &&
+    typeof structuredPriceMinor !== 'number' &&
+    structuredAvailability === 'unknown'
   ) {
     return {
       snapshot: null,
       reason:
         'Amazon page resolved, but the main offer block did not expose a usable price or stock signal.',
+    };
+  }
+
+  if (
+    typeof primaryPriceMinor !== 'number' &&
+    typeof structuredPriceMinor === 'number'
+  ) {
+    if (
+      normalizedAvailability === 'out_of_stock' ||
+      normalizedAvailability === 'preorder'
+    ) {
+      return {
+        snapshot: {
+          availability: normalizedAvailability,
+          currencyCode: EURO_CURRENCY_CODE,
+        },
+      };
+    }
+
+    return {
+      snapshot: {
+        priceMinor: structuredPriceMinor,
+        currencyCode: EURO_CURRENCY_CODE,
+        availability:
+          normalizedAvailability ??
+          (structuredAvailability === 'unknown'
+            ? 'unknown'
+            : structuredAvailability),
+      },
+      reason:
+        normalizedAvailability === undefined &&
+        structuredAvailability === 'unknown'
+          ? 'Amazon page resolved, but the main offer price came from structured data while availability stayed ambiguous.'
+          : undefined,
     };
   }
 
@@ -885,6 +978,7 @@ function extractBolCommerceOfferSnapshotFromHtmlDetailed(
   html: string,
 ): CommerceOfferSnapshotExtractionResult {
   const mainOfferSlice = extractBolMainOfferSlice(html);
+  const structuredDataCandidate = getStructuredDataOfferCandidateForEuro(html);
 
   if (!mainOfferSlice) {
     return {
@@ -895,7 +989,13 @@ function extractBolCommerceOfferSnapshotFromHtmlDetailed(
   }
 
   const normalizedMainOfferText = extractTextContent(mainOfferSlice);
-  const structuredDataPriceMinor = extractBolStructuredDataPriceFromHtml(html);
+  const pageText = extractTextContent(html);
+  const structuredDataPriceMinor =
+    structuredDataCandidate?.priceMinor ??
+    extractBolStructuredDataPriceFromHtml(html);
+  const structuredAvailability = normalizeAvailability(
+    structuredDataCandidate?.availability,
+  );
   const slicePriceMinor = extractBolPriceFromHtmlSlice(mainOfferSlice);
   const priceMinor =
     typeof structuredDataPriceMinor === 'number'
@@ -918,6 +1018,16 @@ function extractBolCommerceOfferSnapshotFromHtmlDetailed(
     textualAvailability === 'limited' ||
     hasBuyBoxSignal ||
     hasDeliverySignal;
+  const hasPageWideBuySignal =
+    pageText.includes('in winkelwagen') ||
+    pageText.includes('verkoop door bol') ||
+    pageText.includes('verstuurd door bol');
+  const hasStructuredStockSignal =
+    structuredAvailability === 'in_stock' ||
+    structuredAvailability === 'limited';
+  const hasStructuredUnavailableSignal =
+    structuredAvailability === 'out_of_stock' ||
+    structuredAvailability === 'preorder';
 
   if (hasExplicitUnavailableSignal && !hasExplicitStockSignal) {
     return {
@@ -928,7 +1038,12 @@ function extractBolCommerceOfferSnapshotFromHtmlDetailed(
     };
   }
 
-  if (hasExplicitStockSignal) {
+  if (
+    hasExplicitStockSignal ||
+    (typeof priceMinor === 'number' &&
+      hasStructuredStockSignal &&
+      hasPageWideBuySignal)
+  ) {
     if (typeof priceMinor === 'number') {
       return {
         snapshot: {
@@ -950,6 +1065,21 @@ function extractBolCommerceOfferSnapshotFromHtmlDetailed(
         typeof slicePriceMinor === 'number'
           ? 'bol page resolved, but the bol main-offer price fragment was incomplete.'
           : 'bol page resolved, but no trustworthy bol main-offer price was found.',
+    };
+  }
+
+  if (
+    hasStructuredUnavailableSignal &&
+    !hasPageWideBuySignal &&
+    !hasExplicitStockSignal
+  ) {
+    return {
+      snapshot: {
+        availability:
+          structuredAvailability === 'preorder' ? 'preorder' : 'out_of_stock',
+        currencyCode: EURO_CURRENCY_CODE,
+        priceMinor,
+      },
     };
   }
 
@@ -1021,15 +1151,57 @@ function buildMerchantRequestHeaders({
     'user-agent': browserLikeMerchantUserAgent,
   };
 
-  if (merchantSlug === 'intertoys' && requestProfile === 'merchant-home') {
-    headers.referer = `${productUrl.origin}/`;
+  if (
+    (merchantSlug === 'intertoys' || merchantSlug === 'proshop') &&
+    requestProfile === 'merchant-home'
+  ) {
+    headers.referer =
+      merchantSlug === 'proshop'
+        ? 'https://www.proshop.nl/'
+        : `${productUrl.origin}/`;
   }
 
   if (merchantSlug === 'amazon-nl') {
     headers.referer = `${productUrl.origin}/`;
   }
 
+  if (merchantSlug === 'proshop') {
+    headers['sec-ch-ua'] =
+      '"Google Chrome";v="135", "Chromium";v="135", "Not:A-Brand";v="8"';
+    headers['sec-ch-ua-mobile'] = '?0';
+    headers['sec-ch-ua-platform'] = '"macOS"';
+    headers['sec-fetch-dest'] = 'document';
+    headers['sec-fetch-mode'] = 'navigate';
+    headers['sec-fetch-site'] = 'same-origin';
+    headers['sec-fetch-user'] = '?1';
+  }
+
   return headers;
+}
+
+function getMerchantRequestTimeoutMs(merchantSlug: string): number {
+  return merchantSlug === 'top1toys'
+    ? TOP1TOYS_REQUEST_TIMEOUT_MS
+    : MERCHANT_REQUEST_TIMEOUT_MS;
+}
+
+function shouldRetryAfterTimeout({
+  attempt,
+  error,
+  merchantSlug,
+}: {
+  attempt: number;
+  error: unknown;
+  merchantSlug: string;
+}) {
+  if (merchantSlug !== 'top1toys' || attempt > 0) {
+    return false;
+  }
+
+  return (
+    error instanceof Error &&
+    (error.name === 'AbortError' || error.name === 'TimeoutError')
+  );
 }
 
 async function fetchMerchantPage({
@@ -1042,39 +1214,84 @@ async function fetchMerchantPage({
   productUrl: URL;
 }) {
   const requestProfiles: readonly MerchantRequestProfile[] =
-    merchantSlug === 'intertoys'
+    merchantSlug === 'intertoys' || merchantSlug === 'proshop'
       ? (['default', 'merchant-home'] as const)
-      : (['default'] as const);
+      : merchantSlug === 'top1toys'
+        ? (['default', 'retry'] as const)
+        : (['default'] as const);
+  const lastRetryableProfile = requestProfiles.at(-1) ?? requestProfiles[0];
 
   let lastResponse: Response | null = null;
   let lastRequestProfile: MerchantRequestProfile = requestProfiles[0];
+  let activeProductUrl = normalizeMerchantProductUrlForFetch({
+    merchantSlug,
+    productUrl,
+  });
 
   for (const requestProfile of requestProfiles) {
-    const response = await fetchImpl(productUrl.toString(), {
-      headers: buildMerchantRequestHeaders({
-        merchantSlug,
-        productUrl,
-        requestProfile,
-      }),
-      redirect: 'follow',
-      signal: AbortSignal.timeout(MERCHANT_REQUEST_TIMEOUT_MS),
-    });
+    let response: Response | null = null;
 
-    lastResponse = response;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        response = await fetchImpl(activeProductUrl.toString(), {
+          headers: buildMerchantRequestHeaders({
+            merchantSlug,
+            productUrl: activeProductUrl,
+            requestProfile,
+          }),
+          redirect: 'follow',
+          signal: AbortSignal.timeout(
+            getMerchantRequestTimeoutMs(merchantSlug),
+          ),
+        });
+        break;
+      } catch (error) {
+        if (!shouldRetryAfterTimeout({ attempt, error, merchantSlug })) {
+          throw error;
+        }
+      }
+    }
+
+    lastResponse = response as Response;
     lastRequestProfile = requestProfile;
 
-    if (!(merchantSlug === 'intertoys' && response.status === 403)) {
-      return {
-        requestProfile,
-        response,
-      };
+    if (
+      merchantSlug === 'proshop' &&
+      response?.status === 403 &&
+      response.redirected &&
+      response.url &&
+      response.url !== activeProductUrl.toString()
+    ) {
+      activeProductUrl = normalizeMerchantProductUrlForFetch({
+        merchantSlug,
+        productUrl: new URL(response.url),
+      });
     }
+
+    if (
+      response?.status === 403 &&
+      (merchantSlug === 'intertoys' || merchantSlug === 'proshop') &&
+      requestProfile !== lastRetryableProfile
+    ) {
+      continue;
+    }
+
+    return {
+      productUrl: activeProductUrl,
+      requestProfile,
+      response: response as Response,
+    };
   }
 
   return {
+    productUrl: activeProductUrl,
     requestProfile: lastRequestProfile,
     response: lastResponse as Response,
   };
+}
+
+function isCloudflareChallengeResponse(response: Response) {
+  return response.headers.get('cf-mitigated') === 'challenge';
 }
 
 function getMerchantHttpErrorMessage({
@@ -1102,6 +1319,18 @@ function getMerchantHttpErrorMessage({
         ? ' even after retrying with a merchant referer'
         : ''
     }. The product page blocked the refresh request.${redirectMessage}`;
+  }
+
+  if (
+    merchantSlug === 'proshop' &&
+    response.status === 403 &&
+    isCloudflareChallengeResponse(response)
+  ) {
+    return `Proshop returned a Cloudflare challenge${
+      requestProfile === 'merchant-home'
+        ? ' even after retrying with the canonical www referer'
+        : ''
+    }. The lightweight refresh request did not receive a parseable product page.${redirectMessage}`;
   }
 
   return `Merchant returned ${response.status} ${response.statusText}.${redirectMessage}`;
@@ -1431,7 +1660,11 @@ export async function refreshCommerceOfferSeeds({
         continue;
       }
 
-      const { response, requestProfile } = await fetchMerchantPage({
+      const {
+        productUrl: resolvedProductUrl,
+        response,
+        requestProfile,
+      } = await fetchMerchantPage({
         fetchImpl,
         merchantSlug,
         productUrl,
@@ -1467,7 +1700,7 @@ export async function refreshCommerceOfferSeeds({
       if (!response.ok) {
         const errorMessage = getMerchantHttpErrorMessage({
           merchantSlug,
-          productUrl,
+          productUrl: resolvedProductUrl,
           requestProfile,
           response,
         });

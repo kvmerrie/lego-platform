@@ -33,6 +33,7 @@
         <tr>
           <th>Merchant</th>
           <th>Status</th>
+          <th>Tier</th>
           <th>Bron</th>
           <th>Actieve seeds</th>
           <th></th>
@@ -57,6 +58,7 @@
               {{ merchant.isActive ? 'Actief' : 'Inactief' }}
             </span>
           </td>
+          <td>{{ getMerchantSupportTierLabel(merchant.slug) }}</td>
           <td>{{ merchant.sourceType }}</td>
           <td>
             {{ commerceAdminStore.getMerchantActiveSeedCount(merchant.id) }}
@@ -80,7 +82,7 @@
         </tr>
         } @if (filteredMerchants().length === 0) {
         <tr>
-          <td class="admin-table__empty" colspan="5">
+          <td class="admin-table__empty" colspan="6">
             Geen merchants gevonden voor deze zoekterm.
           </td>
         </tr>

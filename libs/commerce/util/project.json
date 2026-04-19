@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "libs/commerce/util",
-        "command": "vitest run src/lib/commerce-util.spec.ts --config ../../vitest.config.mts"
+        "command": "vitest run src/lib/*.spec.ts --config ../../vitest.config.mts"
       }
     }
   }
