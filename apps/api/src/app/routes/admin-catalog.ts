@@ -1,27 +1,25 @@
 import {
-  createCatalogOverlaySet,
+  createCatalogSet,
   listCatalogSetSummariesWithOverlay,
   searchCatalogMissingSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
   type CatalogExternalSetSearchResult,
-  type CatalogOverlaySet,
+  type CatalogSet,
   type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import { apiPaths } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminCatalogService {
-  createOverlaySet(
-    input: CatalogExternalSetSearchResult,
-  ): Promise<CatalogOverlaySet>;
+  createSet(input: CatalogExternalSetSearchResult): Promise<CatalogSet>;
   listCatalogSets(): Promise<CatalogSetSummary[]>;
   searchMissingSets(query: string): Promise<CatalogExternalSetSearchResult[]>;
 }
 
 function createAdminCatalogService(): AdminCatalogService {
   return {
-    createOverlaySet: (input) => createCatalogOverlaySet({ input }),
+    createSet: (input) => createCatalogSet({ input }),
     listCatalogSets: () => listCatalogSetSummariesWithOverlay(),
     searchMissingSets: (query) => searchCatalogMissingSets({ query }),
   };
@@ -45,7 +43,7 @@ function readSearchQuery(value: unknown): string {
   return query.trim();
 }
 
-function readOverlaySetInput(value: unknown): CatalogExternalSetSearchResult {
+function readCatalogSetInput(value: unknown): CatalogExternalSetSearchResult {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Set-input ontbreekt.');
   }
@@ -122,18 +120,18 @@ export function createAdminCatalogRoutes({
     );
 
     fastify.post<{ Body: unknown }>(
-      apiPaths.adminCatalogOverlaySets,
+      apiPaths.adminCatalogSets,
       async function (request, reply) {
         try {
-          const input = readOverlaySetInput(request.body);
-          const overlaySet = await catalogService.createOverlaySet(input);
+          const input = readCatalogSetInput(request.body);
+          const catalogSet = await catalogService.createSet(input);
 
-          return reply.status(201).send(overlaySet);
+          return reply.status(201).send(catalogSet);
         } catch (error) {
           return reply.status(400).send({
             message: toBadRequestMessage(
               error,
-              'Catalog overlay set input is invalid.',
+              'Catalog set input is invalid.',
             ),
           });
         }

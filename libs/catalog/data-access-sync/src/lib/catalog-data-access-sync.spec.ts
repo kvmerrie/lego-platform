@@ -1217,18 +1217,10 @@ export const catalogSnapshot: CatalogSnapshot = {
           {
             canonicalId: '10316',
             productSlug: 'shared-product-slug',
-            collectorAngle: 'Anchor',
-            tagline: 'Tagline',
-            availability: 'Availability',
-            collectorHighlights: ['One'],
           },
           {
             canonicalId: '10305',
             productSlug: 'shared-product-slug',
-            collectorAngle: 'Anchor',
-            tagline: 'Tagline',
-            availability: 'Availability',
-            collectorHighlights: ['One'],
           },
         ],
       }),

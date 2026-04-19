@@ -30,8 +30,6 @@ export class CommerceAdminSetWorkContextComponent {
   @Input() contextLinkRoute?: string;
   @Input({ required: true }) row: CommerceCoverageQueueRow | null = null;
   @Input() title = 'Set context';
-  @Output() readonly runDiscoveryRequested =
-    new EventEmitter<CommerceCoverageQueueRow>();
   @Output() readonly merchantActionRequested = new EventEmitter<{
     merchantStatus: CommerceCoverageQueueMerchantStatus;
     row: CommerceCoverageQueueRow;
@@ -41,15 +39,6 @@ export class CommerceAdminSetWorkContextComponent {
   @Output() readonly seedActionRequested =
     new EventEmitter<CommerceCoverageQueueRow>();
 
-  readonly discoveryTargetMerchant = computed<
-    CommerceCoverageQueueMerchantStatus | undefined
-  >(() =>
-    this.row
-      ? this.commerceAdminStore.getCoverageQueueDiscoveryTargetMerchant(
-          this.row,
-        )
-      : undefined,
-  );
   readonly seedActionMerchant = computed<
     CommerceCoverageQueueMerchantStatus | undefined
   >(() =>
@@ -62,53 +51,6 @@ export class CommerceAdminSetWorkContextComponent {
       ? this.commerceAdminStore.getPublicSetUrl(this.row.setId)
       : undefined,
   );
-  readonly discoveryQueryParams = computed(() =>
-    this.row
-      ? this.commerceAdminStore.getCoverageQueueDiscoveryLinkParams(this.row)
-      : {},
-  );
-  readonly latestRelevantDiscoveryRun = computed(() => {
-    if (!this.row) {
-      return undefined;
-    }
-
-    const merchantId =
-      this.discoveryTargetMerchant()?.merchantId ??
-      this.row.recommendedMerchantId;
-
-    if (!merchantId) {
-      return undefined;
-    }
-
-    return this.commerceAdminStore.getLatestDiscoveryRun({
-      setId: this.row.setId,
-      merchantId,
-    });
-  });
-  readonly latestRelevantCandidateCount = computed(() => {
-    if (!this.row) {
-      return 0;
-    }
-
-    const merchantId =
-      this.discoveryTargetMerchant()?.merchantId ??
-      this.row.recommendedMerchantId;
-
-    if (!merchantId) {
-      return 0;
-    }
-
-    return this.commerceAdminStore.getDiscoveryCandidatesForSetMerchant({
-      setId: this.row.setId,
-      merchantId,
-    }).length;
-  });
-
-  triggerRunDiscovery(): void {
-    if (this.row && this.discoveryTargetMerchant()) {
-      this.runDiscoveryRequested.emit(this.row);
-    }
-  }
 
   triggerSeedAction(): void {
     if (this.row && this.seedActionMerchant()) {

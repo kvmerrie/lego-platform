@@ -1,19 +1,12 @@
-import {
-  catalogSnapshot,
-  getCatalogSetBySlug,
-  listCatalogSetSummaries,
-} from '@lego-platform/catalog/data-access';
 import { createRebrickableClient } from '@lego-platform/catalog/data-access-sync';
 import {
   type CatalogCanonicalSet,
   type CatalogExternalSetSearchResult,
-  type CatalogOverlaySet,
+  type CatalogSet,
   type CatalogSetDetail,
-  type CatalogSetRecord,
   type CatalogSetSummary,
   buildCatalogThemeSlug,
   createCatalogSetRecord,
-  mergeCanonicalCatalogSets,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
@@ -26,6 +19,7 @@ import {
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+export const CATALOG_SETS_TABLE = 'catalog_sets';
 export const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
@@ -49,7 +43,7 @@ interface CatalogOverlaySetRow {
   source_theme_id?: string | null;
   source_set_number: string;
   status: string;
-  theme: string;
+  theme?: string | null;
   updated_at: string;
 }
 
@@ -155,6 +149,30 @@ interface DatabaseConflictLike {
   code?: string;
   details?: string;
   message?: string;
+}
+
+function formatSupabaseLikeError(error: {
+  code?: string;
+  details?: string;
+  hint?: string;
+  message?: string;
+}): string {
+  return [error.message, error.details, error.hint, error.code]
+    .filter(
+      (value): value is string =>
+        typeof value === 'string' && value.trim().length > 0,
+    )
+    .join(' | ');
+}
+
+function isMissingSupabaseRelationError(error: DatabaseConflictLike): boolean {
+  return (
+    error.code === 'PGRST205' ||
+    error.code === '42P01' ||
+    error.message?.toLowerCase().includes('could not find the table') ===
+      true ||
+    error.message?.toLowerCase().includes('does not exist') === true
+  );
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
@@ -285,15 +303,15 @@ function toCatalogLiveOffer({
   };
 }
 
-function toCatalogOverlaySet({
+function toCatalogSet({
   row,
   themeIdentity = resolveCatalogThemeIdentity({
-    rawTheme: row.theme,
+    rawTheme: row.theme ?? 'Unknown',
   }),
 }: {
   row: CatalogOverlaySetRow;
   themeIdentity?: ReturnType<typeof resolveCatalogThemeIdentity>;
-}): CatalogOverlaySet {
+}): CatalogSet {
   return {
     createdAt: row.created_at,
     imageUrl: row.image_url ?? undefined,
@@ -313,32 +331,8 @@ function toCatalogOverlaySet({
   };
 }
 
-function toCanonicalCatalogSetFromSnapshotRecord(
-  catalogSetRecord: CatalogSetRecord,
-): CatalogCanonicalSet {
-  const themeIdentity = resolveCatalogThemeIdentity({
-    rawTheme: catalogSetRecord.theme,
-  });
-
-  return {
-    createdAt: catalogSnapshot.generatedAt,
-    imageUrl: catalogSetRecord.imageUrl,
-    name: catalogSetRecord.name,
-    pieceCount: catalogSetRecord.pieces,
-    primaryTheme: themeIdentity.primaryTheme,
-    releaseYear: catalogSetRecord.releaseYear,
-    secondaryLabels: themeIdentity.secondaryThemes,
-    setId: catalogSetRecord.canonicalId,
-    slug: catalogSetRecord.slug,
-    source: 'snapshot',
-    sourceSetNumber: catalogSetRecord.sourceSetNumber,
-    status: 'active',
-    updatedAt: catalogSnapshot.generatedAt,
-  };
-}
-
 function toCanonicalCatalogSetFromOverlaySet(
-  overlaySet: CatalogOverlaySet,
+  overlaySet: CatalogSet,
 ): CatalogCanonicalSet {
   const themeIdentity = overlaySet.secondaryThemeLabels
     ? {
@@ -376,7 +370,6 @@ function toCatalogSummaryFromCanonicalSet(
     theme: canonicalCatalogSet.primaryTheme,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
-    collectorAngle: `Nieuw in Brickhunt. ${canonicalCatalogSet.primaryTheme} staat klaar voor de eerste prijscheck.`,
     imageUrl: canonicalCatalogSet.imageUrl,
   };
 }
@@ -392,14 +385,6 @@ function toCatalogSetDetailFromCanonicalSet(
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
-    collectorAngle: `Nieuw in Brickhunt. ${canonicalCatalogSet.name} staat klaar voor de eerste prijscheck.`,
-    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${canonicalCatalogSet.primaryTheme}-set.`,
-    availability: 'Eerste winkels worden nu gekoppeld',
-    collectorHighlights: [
-      `${canonicalCatalogSet.pieceCount.toLocaleString('nl-NL')} stenen`,
-      `Release ${canonicalCatalogSet.releaseYear}`,
-      'Zodra de eerste merchants landen, zie je hier de beste route',
-    ],
     ...(canonicalCatalogSet.secondaryLabels[0]
       ? {
           subtheme: canonicalCatalogSet.secondaryLabels[0],
@@ -431,7 +416,7 @@ async function listCatalogThemeIdentityBySetId({
     overlayRows.map((overlayRow) => [
       overlayRow.set_id,
       resolveCatalogThemeIdentity({
-        rawTheme: overlayRow.theme,
+        rawTheme: overlayRow.theme ?? 'Unknown',
       }),
     ]),
   );
@@ -531,7 +516,11 @@ async function listCatalogThemeIdentityBySetId({
         return [
           overlayRow.set_id,
           resolveCatalogThemeIdentityFromPersistence({
-            legacyTheme: overlayRow.theme,
+            legacyTheme:
+              overlayRow.theme ??
+              sourceThemeName ??
+              primaryThemeName ??
+              'Unknown',
             primaryThemeName,
             sourceThemeName,
           }),
@@ -549,19 +538,15 @@ function buildCatalogConflictTargetLabel(
   return `${conflictTarget.name} (${conflictTarget.setId})`;
 }
 
-function buildCatalogOverlaySetIdConflictMessage({
+function buildCatalogSetIdConflictMessage({
   conflictTarget,
-  source,
 }: {
   conflictTarget: CatalogConflictTarget;
-  source: 'overlay' | 'snapshot';
 }) {
-  return source === 'snapshot'
-    ? `Set ${conflictTarget.setId} staat al in de Brickhunt-catalogus als ${buildCatalogConflictTargetLabel(conflictTarget)}.`
-    : `Set ${conflictTarget.setId} staat al in de catalog-overlay als ${buildCatalogConflictTargetLabel(conflictTarget)}.`;
+  return `Set ${conflictTarget.setId} staat al in de Brickhunt-catalogus als ${buildCatalogConflictTargetLabel(conflictTarget)}.`;
 }
 
-function buildCatalogOverlaySlugConflictMessage({
+function buildCatalogSetSlugConflictMessage({
   conflictTarget,
   slug,
 }: {
@@ -577,7 +562,7 @@ function toCatalogConflictTarget(
   catalogSet: Pick<CatalogSetSummary, 'id' | 'name' | 'slug'>,
 ): CatalogConflictTarget;
 function toCatalogConflictTarget(
-  catalogSet: Pick<CatalogOverlaySet, 'setId' | 'name' | 'slug'>,
+  catalogSet: Pick<CatalogSet, 'setId' | 'name' | 'slug'>,
 ): CatalogConflictTarget;
 function toCatalogConflictTarget(
   catalogSet: Pick<CatalogCanonicalSet, 'setId' | 'name' | 'slug'>,
@@ -585,7 +570,7 @@ function toCatalogConflictTarget(
 function toCatalogConflictTarget(
   catalogSet:
     | Pick<CatalogSetSummary, 'id' | 'name' | 'slug'>
-    | Pick<CatalogOverlaySet, 'setId' | 'name' | 'slug'>
+    | Pick<CatalogSet, 'setId' | 'name' | 'slug'>
     | Pick<CatalogCanonicalSet, 'setId' | 'name' | 'slug'>,
 ): CatalogConflictTarget {
   return {
@@ -595,7 +580,7 @@ function toCatalogConflictTarget(
   };
 }
 
-function getCatalogOverlayInsertConflictMessage({
+function getCatalogSetInsertConflictMessage({
   existingCatalogSets,
   error,
   normalizedSet,
@@ -615,7 +600,7 @@ function getCatalogOverlayInsertConflictMessage({
   );
 
   if (rawConflictText.includes('slug')) {
-    return buildCatalogOverlaySlugConflictMessage({
+    return buildCatalogSetSlugConflictMessage({
       conflictTarget: slugConflict
         ? toCatalogConflictTarget(slugConflict)
         : undefined,
@@ -628,9 +613,8 @@ function getCatalogOverlayInsertConflictMessage({
   );
 
   if (setConflict) {
-    return buildCatalogOverlaySetIdConflictMessage({
+    return buildCatalogSetIdConflictMessage({
       conflictTarget: toCatalogConflictTarget(setConflict),
-      source: setConflict.source === 'snapshot' ? 'snapshot' : 'overlay',
     });
   }
 
@@ -997,42 +981,48 @@ async function ensureCatalogThemePersistence({
       });
 
     if (error) {
-      throw new Error('Unable to persist the parent source theme.');
+      throw new Error(
+        `Unable to persist the parent source theme. ${formatSupabaseLikeError(error)}`,
+      );
     }
   }
 
-  const [
-    { error: sourceThemeError },
-    { error: primaryThemeError },
-    { error: sourceThemeMappingError },
-  ] = await Promise.all([
-    supabaseClient
-      .from(CATALOG_SOURCE_THEMES_TABLE)
-      .upsert(themePersistence.sourceTheme, {
-        onConflict: 'id',
-      }),
-    supabaseClient
-      .from(CATALOG_THEMES_TABLE)
-      .upsert(themePersistence.primaryTheme, {
-        onConflict: 'id',
-      }),
-    supabaseClient
-      .from(CATALOG_THEME_MAPPINGS_TABLE)
-      .upsert(themePersistence.sourceThemeMapping, {
-        onConflict: 'source_theme_id',
-      }),
-  ]);
+  const [{ error: sourceThemeError }, { error: primaryThemeError }] =
+    await Promise.all([
+      supabaseClient
+        .from(CATALOG_SOURCE_THEMES_TABLE)
+        .upsert(themePersistence.sourceTheme, {
+          onConflict: 'id',
+        }),
+      supabaseClient
+        .from(CATALOG_THEMES_TABLE)
+        .upsert(themePersistence.primaryTheme, {
+          onConflict: 'id',
+        }),
+    ]);
 
   if (sourceThemeError) {
-    throw new Error('Unable to persist the source theme.');
+    throw new Error(
+      `Unable to persist the source theme. ${formatSupabaseLikeError(sourceThemeError)}`,
+    );
   }
 
   if (primaryThemeError) {
-    throw new Error('Unable to persist the primary theme.');
+    throw new Error(
+      `Unable to persist the primary theme. ${formatSupabaseLikeError(primaryThemeError)}`,
+    );
   }
 
+  const { error: sourceThemeMappingError } = await supabaseClient
+    .from(CATALOG_THEME_MAPPINGS_TABLE)
+    .upsert(themePersistence.sourceThemeMapping, {
+      onConflict: 'source_theme_id',
+    });
+
   if (sourceThemeMappingError) {
-    throw new Error('Unable to persist the source-to-primary theme mapping.');
+    throw new Error(
+      `Unable to persist the source-to-primary theme mapping. ${formatSupabaseLikeError(sourceThemeMappingError)}`,
+    );
   }
 }
 
@@ -1073,17 +1063,21 @@ function toSearchResult({
   };
 }
 
-async function listCatalogOverlaySetRows({
+async function listCatalogOverlaySetRowsFromTable({
   includeInactive = false,
+  table,
   supabaseClient,
 }: {
   includeInactive?: boolean;
+  table: string;
   supabaseClient: CatalogSupabaseClient;
 }): Promise<CatalogOverlaySetRow[]> {
   const query = supabaseClient
-    .from(CATALOG_SETS_OVERLAY_TABLE)
+    .from(table)
     .select(
-      'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+      table === CATALOG_SETS_TABLE
+        ? 'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at'
+        : 'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
     );
 
   const { data, error } = includeInactive
@@ -1093,21 +1087,82 @@ async function listCatalogOverlaySetRows({
       });
 
   if (error) {
-    throw new Error('Unable to load catalog overlay sets.');
+    throw error;
   }
 
-  return (data as CatalogOverlaySetRow[] | null) ?? [];
+  return (data as unknown as CatalogOverlaySetRow[] | null) ?? [];
 }
 
-const snapshotCanonicalCatalogSets = sortCanonicalCatalogSets(
-  catalogSnapshot.setRecords.map(toCanonicalCatalogSetFromSnapshotRecord),
-);
-const snapshotCatalogSummaryById = new Map(
-  listCatalogSetSummaries().map((catalogSetSummary) => [
-    catalogSetSummary.id,
-    catalogSetSummary,
-  ]),
-);
+async function listCatalogOverlaySetRows({
+  includeInactive = false,
+  supabaseClient,
+}: {
+  includeInactive?: boolean;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<CatalogOverlaySetRow[]> {
+  try {
+    return await listCatalogOverlaySetRowsFromTable({
+      includeInactive,
+      supabaseClient,
+      table: CATALOG_SETS_TABLE,
+    });
+  } catch (error) {
+    if (
+      !isObjectRecord(error) ||
+      !isMissingSupabaseRelationError(error as DatabaseConflictLike)
+    ) {
+      throw new Error('Unable to load catalog sets.');
+    }
+  }
+
+  try {
+    return await listCatalogOverlaySetRowsFromTable({
+      includeInactive,
+      supabaseClient,
+      table: CATALOG_SETS_OVERLAY_TABLE,
+    });
+  } catch {
+    throw new Error('Unable to load catalog sets.');
+  }
+}
+
+async function insertCatalogSetRow({
+  normalizedSet,
+  supabaseClient,
+  themePersistence,
+}: {
+  normalizedSet: CatalogExternalSetSearchResult;
+  supabaseClient: CatalogSupabaseClient;
+  themePersistence: Awaited<
+    ReturnType<typeof resolveCatalogThemePersistenceForSourceSetNumber>
+  >;
+}): Promise<CatalogOverlaySetRow> {
+  const { data, error } = await supabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .insert({
+      image_url: normalizedSet.imageUrl ?? null,
+      name: normalizedSet.name,
+      piece_count: normalizedSet.pieces,
+      primary_theme_id: themePersistence.primaryTheme.id,
+      release_year: normalizedSet.releaseYear,
+      set_id: normalizedSet.setId,
+      slug: normalizedSet.slug,
+      source: normalizedSet.source,
+      source_theme_id: themePersistence.sourceTheme.id,
+      source_set_number: normalizedSet.sourceSetNumber,
+      status: 'active',
+    })
+    .select(
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+    )
+    .single();
+
+  if (error || !data) {
+    throw error ?? new Error('Unable to create the catalog set.');
+  }
+
+  return data as CatalogOverlaySetRow;
+}
 
 export async function listCatalogOverlaySets({
   includeInactive = false,
@@ -1115,7 +1170,7 @@ export async function listCatalogOverlaySets({
 }: {
   includeInactive?: boolean;
   supabaseClient?: CatalogSupabaseClient;
-} = {}): Promise<CatalogOverlaySet[]> {
+} = {}): Promise<CatalogSet[]> {
   if (!supabaseClient && !hasServerSupabaseConfig()) {
     return [];
   }
@@ -1133,7 +1188,7 @@ export async function listCatalogOverlaySets({
     });
 
     return rows.map((row) =>
-      toCatalogOverlaySet({
+      toCatalogSet({
         row,
         themeIdentity: themeIdentityBySetId.get(row.set_id),
       }),
@@ -1231,26 +1286,21 @@ export async function listCanonicalCatalogSets({
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogCanonicalSet[]> {
   if (!supabaseClient && !hasServerSupabaseConfig()) {
-    return snapshotCanonicalCatalogSets;
+    return [];
   }
 
   try {
-    const canonicalOverlaySets = (
-      await listCatalogOverlaySets({
-        includeInactive,
-        supabaseClient,
-      })
-    ).map(toCanonicalCatalogSetFromOverlaySet);
-
     return sortCanonicalCatalogSets(
-      mergeCanonicalCatalogSets({
-        fallbackSets: snapshotCanonicalCatalogSets,
-        preferredSets: canonicalOverlaySets,
-      }),
+      (
+        await listCatalogOverlaySets({
+          includeInactive,
+          supabaseClient,
+        })
+      ).map(toCanonicalCatalogSetFromOverlaySet),
     );
   } catch (error) {
     if (!supabaseClient) {
-      return snapshotCanonicalCatalogSets;
+      return [];
     }
 
     throw error;
@@ -1300,16 +1350,13 @@ export async function listCatalogSetSummariesWithOverlay({
 }: {
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogSetSummary[]> {
-  const canonicalCatalogSets = await listCanonicalCatalogSets({
-    supabaseClient,
-  });
-
   return sortCatalogSetSummaries(
-    canonicalCatalogSets.map((canonicalCatalogSet) =>
-      canonicalCatalogSet.source === 'snapshot'
-        ? (snapshotCatalogSummaryById.get(canonicalCatalogSet.setId) ??
-          toCatalogSummaryFromCanonicalSet(canonicalCatalogSet))
-        : toCatalogSummaryFromCanonicalSet(canonicalCatalogSet),
+    (
+      await listCanonicalCatalogSets({
+        supabaseClient,
+      })
+    ).map((canonicalCatalogSet) =>
+      toCatalogSummaryFromCanonicalSet(canonicalCatalogSet),
     ),
   );
 }
@@ -1330,10 +1377,7 @@ export async function findCatalogSetSummaryByIdWithOverlay({
     return undefined;
   }
 
-  return canonicalCatalogSet.source === 'snapshot'
-    ? (snapshotCatalogSummaryById.get(canonicalCatalogSet.setId) ??
-        toCatalogSummaryFromCanonicalSet(canonicalCatalogSet))
-    : toCatalogSummaryFromCanonicalSet(canonicalCatalogSet);
+  return toCatalogSummaryFromCanonicalSet(canonicalCatalogSet);
 }
 
 export async function listCatalogSetLiveOffersBySetId({
@@ -1458,10 +1502,6 @@ export async function getCatalogSetBySlugWithOverlay({
     return undefined;
   }
 
-  if (canonicalCatalogSet.source === 'snapshot') {
-    return getCatalogSetBySlug(slug);
-  }
-
   return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
 }
 
@@ -1498,8 +1538,14 @@ export async function searchCatalogMissingSets({
   const existingSetIds = new Set(
     existingCatalogSets.map((catalogSet) => catalogSet.setId),
   );
-  const validatedSearchSets = validateRebrickableSearchPayload(payload).map(
-    validateRebrickableSearchSetPayload,
+  const validatedSearchSets = validateRebrickableSearchPayload(payload).flatMap(
+    (searchSetPayload) => {
+      try {
+        return [validateRebrickableSearchSetPayload(searchSetPayload)];
+      } catch {
+        return [];
+      }
+    },
   );
   const uniqueThemeIds = [
     ...new Set(validatedSearchSets.map((searchSet) => searchSet.themeId)),
@@ -1531,7 +1577,7 @@ export async function searchCatalogMissingSets({
     .filter((searchResult) => !existingSetIds.has(searchResult.setId));
 }
 
-export async function createCatalogOverlaySet({
+export async function createCatalogSet({
   fetchImpl,
   input,
   supabaseClient,
@@ -1539,7 +1585,7 @@ export async function createCatalogOverlaySet({
   fetchImpl?: typeof fetch;
   input: CatalogExternalSetSearchResult;
   supabaseClient?: CatalogSupabaseClient;
-}): Promise<CatalogOverlaySet> {
+}): Promise<CatalogSet> {
   const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
   const normalizedSet = toSearchResult({
     imageUrl: input.imageUrl,
@@ -1553,61 +1599,26 @@ export async function createCatalogOverlaySet({
     includeInactive: true,
     supabaseClient,
   });
-  const snapshotSetConflict = existingCatalogSets.find(
-    (catalogSet) =>
-      catalogSet.setId === normalizedSet.setId &&
-      catalogSet.source === 'snapshot',
+  const setConflict = existingCatalogSets.find(
+    (catalogSet) => catalogSet.setId === normalizedSet.setId,
   );
 
-  if (snapshotSetConflict) {
+  if (setConflict) {
     throw new Error(
-      buildCatalogOverlaySetIdConflictMessage({
-        conflictTarget: toCatalogConflictTarget(snapshotSetConflict),
-        source: 'snapshot',
+      buildCatalogSetIdConflictMessage({
+        conflictTarget: toCatalogConflictTarget(setConflict),
       }),
     );
   }
 
-  const snapshotSlugConflict = existingCatalogSets.find(
-    (catalogSet) =>
-      catalogSet.slug === normalizedSet.slug &&
-      catalogSet.source === 'snapshot',
+  const slugConflict = existingCatalogSets.find(
+    (catalogSet) => catalogSet.slug === normalizedSet.slug,
   );
 
-  if (snapshotSlugConflict) {
+  if (slugConflict) {
     throw new Error(
-      buildCatalogOverlaySlugConflictMessage({
-        conflictTarget: toCatalogConflictTarget(snapshotSlugConflict),
-        slug: normalizedSet.slug,
-      }),
-    );
-  }
-
-  const overlaySetConflict = existingCatalogSets.find(
-    (catalogSet) =>
-      catalogSet.setId === normalizedSet.setId &&
-      catalogSet.source !== 'snapshot',
-  );
-
-  if (overlaySetConflict) {
-    throw new Error(
-      buildCatalogOverlaySetIdConflictMessage({
-        conflictTarget: toCatalogConflictTarget(overlaySetConflict),
-        source: 'overlay',
-      }),
-    );
-  }
-
-  const overlaySlugConflict = existingCatalogSets.find(
-    (catalogSet) =>
-      catalogSet.slug === normalizedSet.slug &&
-      catalogSet.source !== 'snapshot',
-  );
-
-  if (overlaySlugConflict) {
-    throw new Error(
-      buildCatalogOverlaySlugConflictMessage({
-        conflictTarget: toCatalogConflictTarget(overlaySlugConflict),
+      buildCatalogSetSlugConflictMessage({
+        conflictTarget: toCatalogConflictTarget(slugConflict),
         slug: normalizedSet.slug,
       }),
     );
@@ -1624,33 +1635,27 @@ export async function createCatalogOverlaySet({
     themePersistence,
   });
 
-  const { data, error } = await activeSupabaseClient
-    .from(CATALOG_SETS_OVERLAY_TABLE)
-    .insert({
-      image_url: normalizedSet.imageUrl ?? null,
-      name: normalizedSet.name,
-      piece_count: normalizedSet.pieces,
-      primary_theme_id: themePersistence.primaryTheme.id,
-      release_year: normalizedSet.releaseYear,
-      set_id: normalizedSet.setId,
-      slug: normalizedSet.slug,
-      source: normalizedSet.source,
-      source_theme_id: themePersistence.sourceTheme.id,
-      source_set_number: normalizedSet.sourceSetNumber,
-      status: 'active',
-      theme: themePersistence.primaryTheme.display_name,
-    })
-    .select(
-      'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
-    )
-    .single();
+  try {
+    const data = await insertCatalogSetRow({
+      normalizedSet,
+      supabaseClient: activeSupabaseClient,
+      themePersistence,
+    });
 
-  if (error || !data) {
+    return toCatalogSet({
+      row: data,
+      themeIdentity: resolveCatalogThemeIdentityFromPersistence({
+        legacyTheme: data.theme,
+        primaryThemeName: themePersistence.primaryTheme.display_name,
+        sourceThemeName: themePersistence.sourceTheme.source_theme_name,
+      }),
+    });
+  } catch (error) {
     const conflictMessage =
       error &&
-      getCatalogOverlayInsertConflictMessage({
+      getCatalogSetInsertConflictMessage({
         existingCatalogSets,
-        error,
+        error: error as DatabaseConflictLike,
         normalizedSet,
       });
 
@@ -1658,15 +1663,6 @@ export async function createCatalogOverlaySet({
       throw new Error(conflictMessage);
     }
 
-    throw new Error('Unable to create the catalog overlay set.');
+    throw new Error('Unable to create the catalog set.');
   }
-
-  return toCatalogOverlaySet({
-    row: data as CatalogOverlaySetRow,
-    themeIdentity: resolveCatalogThemeIdentityFromPersistence({
-      legacyTheme: (data as CatalogOverlaySetRow).theme,
-      primaryThemeName: themePersistence.primaryTheme.display_name,
-      sourceThemeName: themePersistence.sourceTheme.source_theme_name,
-    }),
-  });
 }

@@ -4,12 +4,12 @@ import {
 } from '@lego-platform/catalog/feature-discover';
 import {
   listCatalogCurrentOfferSummariesBySetIds,
-  listCatalogSetSlugsWithOverlay,
-  listCatalogThemeDirectoryItemsWithOverlay,
-  listDiscoverBrowseThemeGroupsWithOverlay,
-  listDiscoverCharacterSetCardsWithOverlay,
-  listDiscoverDealCandidateSetCardsWithOverlay,
-  listDiscoverHighlightSetCardsWithOverlay,
+  listCatalogSetSlugs,
+  listCatalogThemeDirectoryItems,
+  listDiscoverBrowseThemeGroups,
+  listDiscoverCharacterSetCards,
+  listDiscoverDealCandidateSetCards,
+  listDiscoverHighlightSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
@@ -99,18 +99,18 @@ export default async function DiscoverPage({
     totalSetSlugs,
     themeDirectoryItems,
   ] = await Promise.all([
-    listDiscoverDealCandidateSetCardsWithOverlay(),
-    listDiscoverHighlightSetCardsWithOverlay({
+    listDiscoverDealCandidateSetCards(),
+    listDiscoverHighlightSetCards({
       reviewedSetIds,
     }),
-    listDiscoverCharacterSetCardsWithOverlay({
+    listDiscoverCharacterSetCards({
       reviewedSetIds,
     }),
-    listDiscoverBrowseThemeGroupsWithOverlay({
+    listDiscoverBrowseThemeGroups({
       reviewedSetIds,
     }),
-    listCatalogSetSlugsWithOverlay(),
-    listCatalogThemeDirectoryItemsWithOverlay(),
+    listCatalogSetSlugs(),
+    listCatalogThemeDirectoryItems(),
   ]);
   const discoverDealCandidateSetIds = discoverDealCandidateSetCards.map(
     (catalogSetCard) => catalogSetCard.id,

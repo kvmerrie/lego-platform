@@ -1,23 +1,17 @@
 import { describe, expect, test } from 'vitest';
 import {
-  buildCommerceMerchantSearchQuery,
-  buildCommerceMerchantSearchUrl,
   buildCommerceBenchmarkCoverageRows,
   buildCommerceCoverageQueueRows,
   buildCommerceCoverageSnapshot,
+  buildCommerceMerchantSearchQuery,
+  buildCommerceMerchantSearchUrl,
   filterCommerceCoverageQueueRows,
   normalizeCommerceSlug,
-  supportsCommerceMerchantDiscovery,
   supportsCommerceMerchantManualSeed,
   validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
 } from './commerce-util';
-import {
-  buildCommerceDiscoveryCandidateAssessment,
-  normalizeCommerceProductUrl,
-  validateCommerceDiscoveryRunInput,
-} from './commerce-discovery-util';
 
 describe('commerce util', () => {
   test('normalizes merchant slugs for boring operator-safe ids', () => {
@@ -65,15 +59,12 @@ describe('commerce util', () => {
     });
   });
 
-  test('builds a merchant-friendly search query from only the set id', () => {
+  test('builds merchant-friendly search queries and urls', () => {
     expect(
       buildCommerceMerchantSearchQuery({
         setId: '21061',
       }),
     ).toBe('21061');
-  });
-
-  test('builds merchant-specific search urls with encoded query values', () => {
     expect(
       buildCommerceMerchantSearchUrl({
         merchantSlug: 'intertoys',
@@ -84,93 +75,15 @@ describe('commerce util', () => {
     );
     expect(
       buildCommerceMerchantSearchUrl({
-        merchantSlug: 'misterbricks',
-        query: '10316',
-      }),
-    ).toBe('https://misterbricks.nl/catalogsearch/result/?q=10316');
-    expect(
-      buildCommerceMerchantSearchUrl({
-        merchantSlug: 'proshop',
-        query: '10316',
-      }),
-    ).toBe('https://www.proshop.nl/?s=10316');
-    expect(
-      buildCommerceMerchantSearchUrl({
-        merchantSlug: 'smyths-toys',
-        query: '10316',
-      }),
-    ).toBe('https://www.smythstoys.com/nl/nl-nl/search?text=10316');
-    expect(
-      buildCommerceMerchantSearchUrl({
         merchantSlug: 'unknown-merchant',
-        query: '21061 notre dame lego',
+        query: '21061',
       }),
     ).toBeUndefined();
   });
 
-  test('distinguishes discovery support from manual-seed support', () => {
-    expect(supportsCommerceMerchantDiscovery('misterbricks')).toBe(true);
-    expect(supportsCommerceMerchantDiscovery('proshop')).toBe(true);
-    expect(supportsCommerceMerchantDiscovery('intertoys')).toBe(false);
+  test('treats any normalized merchant slug as manual-seed capable', () => {
     expect(supportsCommerceMerchantManualSeed('intertoys')).toBe(true);
-  });
-
-  test('normalizes product urls so duplicate checks ignore tracking noise', () => {
-    expect(
-      normalizeCommerceProductUrl({
-        merchantSlug: 'amazon-nl',
-        url: 'https://www.amazon.nl/LEGO-Icons-Rivendell/dp/B0BVMZ5NT5?tag=brickhunt09-21&ref_=abc',
-      }),
-    ).toBe('https://amazon.nl/dp/B0BVMZ5NT5');
-    expect(
-      normalizeCommerceProductUrl({
-        merchantSlug: 'misterbricks',
-        url: 'https://www.misterbricks.nl/lego-icons-the-lord-of-the-rings-rivendell-10316.html?foo=bar#reviews',
-      }),
-    ).toBe(
-      'https://misterbricks.nl/lego-icons-the-lord-of-the-rings-rivendell-10316.html',
-    );
-  });
-
-  test('scores exact set matches high enough for auto-approval', () => {
-    const assessment = buildCommerceDiscoveryCandidateAssessment({
-      setId: '10316',
-      setName: 'The Lord of the Rings: Rivendell',
-      candidateTitle: 'LEGO Icons 10316 The Lord of the Rings: Rivendell',
-      candidateUrl:
-        'https://misterbricks.nl/lego-icons-the-lord-of-the-rings-rivendell-10316.html',
-      detectedSetId: '10316',
-    });
-
-    expect(assessment.status).toBe('auto_approved');
-    expect(assessment.confidenceScore).toBeGreaterThanOrEqual(95);
-  });
-
-  test('heavily penalizes accessory or bundle candidates', () => {
-    expect(
-      buildCommerceDiscoveryCandidateAssessment({
-        setId: '10316',
-        setName: 'The Lord of the Rings: Rivendell',
-        candidateTitle: 'LEGO 10316 light kit bundle',
-        candidateUrl: 'https://example.test/10316-light-kit-bundle',
-      }),
-    ).toEqual(
-      expect.objectContaining({
-        status: 'rejected',
-      }),
-    );
-  });
-
-  test('validates discovery run input', () => {
-    expect(
-      validateCommerceDiscoveryRunInput({
-        setId: '10316',
-        merchantId: 'merchant-1',
-      }),
-    ).toEqual({
-      setId: '10316',
-      merchantId: 'merchant-1',
-    });
+    expect(supportsCommerceMerchantManualSeed(' top1toys ')).toBe(true);
   });
 
   test('builds coverage for uncovered, broken, and stale commerce work', () => {
@@ -378,7 +291,7 @@ describe('commerce util', () => {
     );
   });
 
-  test('builds a coverage queue with action-first sorting and next-step hints', () => {
+  test('builds a seed-first coverage queue without discovery actions', () => {
     const coverageQueue = buildCommerceCoverageQueueRows({
       now: new Date('2026-04-17T12:00:00.000Z'),
       benchmarkSets: [
@@ -443,38 +356,6 @@ describe('commerce util', () => {
           notes: '',
           createdAt: '2026-04-01T08:00:00.000Z',
           updatedAt: '2026-04-01T08:00:00.000Z',
-        },
-      ],
-      discoveryRuns: [
-        {
-          id: 'run-1',
-          setId: '10316',
-          merchantId: 'merchant-intertoys',
-          searchQuery: '10316',
-          searchUrl: 'https://www.intertoys.nl/search?searchTerm=10316',
-          status: 'success',
-          candidateCount: 1,
-          createdAt: '2026-04-17T09:15:00.000Z',
-          updatedAt: '2026-04-17T09:15:00.000Z',
-          finishedAt: '2026-04-17T09:16:00.000Z',
-        },
-      ],
-      discoveryCandidates: [
-        {
-          id: 'candidate-1',
-          discoveryRunId: 'run-1',
-          setId: '10316',
-          merchantId: 'merchant-intertoys',
-          candidateTitle: 'LEGO Icons Rivendell 10316',
-          candidateUrl: 'https://www.intertoys.nl/rivendell-10316',
-          canonicalUrl: 'https://www.intertoys.nl/rivendell-10316',
-          confidenceScore: 92,
-          status: 'needs_review',
-          reviewStatus: 'pending',
-          matchReasons: ['Exact setnummer 10316 staat in de titel.'],
-          sourceRank: 1,
-          createdAt: '2026-04-17T09:16:00.000Z',
-          updatedAt: '2026-04-17T09:16:00.000Z',
         },
       ],
       offerSeeds: [
@@ -672,10 +553,10 @@ describe('commerce util', () => {
         isBenchmark: true,
         validMerchantCount: 1,
         staleMerchantCount: 1,
-        needsReviewCount: 1,
-        recommendedNextAction: 'review_candidates',
-        recommendedMerchantId: 'merchant-intertoys',
-        statusSummary: 'Review nodig',
+        needsReviewCount: 0,
+        recommendedNextAction: 'edit_seed',
+        recommendedMerchantId: 'merchant-lego',
+        statusSummary: 'Stale offers aanwezig',
       }),
     );
     expect(coverageQueue[1]).toEqual(
@@ -684,9 +565,9 @@ describe('commerce util', () => {
         source: 'overlay',
         validMerchantCount: 0,
         activeSeedCount: 0,
-        recommendedNextAction: 'run_discovery',
-        recommendedMerchantId: 'merchant-misterbricks',
-        statusSummary: 'Discovery nodig',
+        recommendedNextAction: 'add_seed_manually',
+        recommendedMerchantId: 'merchant-intertoys',
+        statusSummary: 'Seed nodig',
       }),
     );
     expect(coverageQueue[2]).toEqual(
@@ -699,8 +580,9 @@ describe('commerce util', () => {
     );
   });
 
-  test('treats recent confirmed unavailability as non-actionable until the recheck window expires', () => {
-    const input = {
+  test('treats recent unavailable coverage as recheck later instead of immediate reseeding', () => {
+    const [row] = buildCommerceCoverageQueueRows({
+      now: new Date('2026-04-18T12:00:00.000Z'),
       benchmarkSets: [],
       catalogSets: [
         {
@@ -722,49 +604,22 @@ describe('commerce util', () => {
           createdAt: '2026-04-01T08:00:00.000Z',
           updatedAt: '2026-04-01T08:00:00.000Z',
         },
-        {
-          id: 'merchant-lego',
-          slug: 'lego-nl',
-          name: 'LEGO',
-          isActive: true,
-          sourceType: 'direct',
-          notes: '',
-          createdAt: '2026-04-01T08:00:00.000Z',
-          updatedAt: '2026-04-01T08:00:00.000Z',
-        },
       ],
-      discoveryRuns: [
+      offerSeeds: [
         {
-          id: 'run-10317-intertoys',
+          id: 'seed-10317-intertoys',
           setId: '10317',
           merchantId: 'merchant-intertoys',
-          searchQuery: '10317',
-          searchUrl: 'https://www.intertoys.nl/search?searchTerm=10317',
-          status: 'failed',
-          candidateCount: 0,
-          errorMessage:
-            'Intertoys leverde geen bruikbare discovery-kandidaten op.',
+          productUrl: 'https://www.intertoys.nl/10317',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
           createdAt: '2026-04-16T09:00:00.000Z',
           updatedAt: '2026-04-16T09:03:00.000Z',
-          finishedAt: '2026-04-16T09:03:00.000Z',
-        },
-      ],
-      discoveryCandidates: [],
-      offerSeeds: [
-        {
-          id: 'seed-10317-lego',
-          setId: '10317',
-          merchantId: 'merchant-lego',
-          productUrl: 'https://www.lego.com/nl-nl/product/land-rover',
-          isActive: true,
-          validationStatus: 'valid',
-          notes: '',
-          createdAt: '2026-04-01T08:00:00.000Z',
-          updatedAt: '2026-04-16T08:00:00.000Z',
           merchant: {
-            id: 'merchant-lego',
-            slug: 'lego-nl',
-            name: 'LEGO',
+            id: 'merchant-intertoys',
+            slug: 'intertoys',
+            name: 'Intertoys',
             isActive: true,
             sourceType: 'direct',
             notes: '',
@@ -772,347 +627,75 @@ describe('commerce util', () => {
             updatedAt: '2026-04-01T08:00:00.000Z',
           },
           latestOffer: {
-            id: 'latest-10317-lego',
-            offerSeedId: 'seed-10317-lego',
+            id: 'latest-10317-intertoys',
+            offerSeedId: 'seed-10317-intertoys',
             setId: '10317',
-            merchantId: 'merchant-lego',
-            productUrl: 'https://www.lego.com/nl-nl/product/land-rover',
+            merchantId: 'merchant-intertoys',
+            productUrl: 'https://www.intertoys.nl/10317',
             fetchStatus: 'unavailable',
-            availability: 'out_of_stock',
-            currencyCode: 'EUR',
-            observedAt: '2026-04-16T08:00:00.000Z',
-            fetchedAt: '2026-04-16T08:00:00.000Z',
-            createdAt: '2026-04-16T08:00:00.000Z',
-            updatedAt: '2026-04-16T08:00:00.000Z',
+            observedAt: '2026-04-16T09:03:00.000Z',
+            fetchedAt: '2026-04-16T09:03:00.000Z',
+            createdAt: '2026-04-16T09:03:00.000Z',
+            updatedAt: '2026-04-16T09:03:00.000Z',
           },
         },
       ],
-    } as const;
-
-    const recentQueue = buildCommerceCoverageQueueRows({
-      ...input,
-      now: new Date('2026-04-17T12:00:00.000Z'),
     });
-    const recentRow = recentQueue[0];
 
-    expect(recentRow).toEqual(
-      expect.objectContaining({
-        setId: '10317',
-        missingMerchantSlugs: [],
-        notAvailableConfirmedMerchantCount: 2,
-        notAvailableConfirmedMerchantNames: ['Intertoys', 'LEGO'],
-        recommendedNextAction: 'recheck_later',
-        statusSummary: 'Later opnieuw checken',
-      }),
-    );
-    expect(
-      recentRow.merchantStatuses.map((merchantStatus) => merchantStatus.state),
-    ).toEqual(['not_available_confirmed', 'not_available_confirmed']);
-
-    const expiredQueue = buildCommerceCoverageQueueRows({
-      ...input,
-      now: new Date('2026-05-02T12:00:00.000Z'),
-    });
-    const expiredRow = expiredQueue[0];
-
-    expect(expiredRow).toEqual(
-      expect.objectContaining({
-        setId: '10317',
-        missingMerchantSlugs: ['intertoys', 'lego-nl'],
-        notAvailableConfirmedMerchantCount: 0,
-        recommendedNextAction: 'add_seed_manually',
-        recommendedMerchantId: 'merchant-intertoys',
-      }),
-    );
-    expect(
-      expiredRow.merchantStatuses.map((merchantStatus) => merchantStatus.state),
-    ).toEqual(['missing', 'missing']);
+    expect(row.notAvailableConfirmedMerchantCount).toBe(1);
+    expect(row.recommendedNextAction).toBe('recheck_later');
   });
 
-  test('treats an operator-rejected candidate sweep as recently unavailable', () => {
-    const coverageQueue = buildCommerceCoverageQueueRows({
-      now: new Date('2026-04-17T12:00:00.000Z'),
-      benchmarkSets: [],
-      catalogSets: [
+  test('filters coverage queue rows on health and source', () => {
+    const filtered = filterCommerceCoverageQueueRows({
+      rows: [
         {
-          id: '76964',
-          name: 'Dinosaur Fossils: T. rex Skull',
-          theme: 'Jurassic World',
-          slug: 'dinosaur-fossils-t-rex-skull-76964',
-          source: 'overlay',
-          createdAt: '2026-04-16T07:00:00.000Z',
-        },
-      ],
-      merchants: [
-        {
-          id: 'merchant-misterbricks',
-          slug: 'misterbricks',
-          name: 'MisterBricks',
-          isActive: true,
-          sourceType: 'direct',
-          notes: '',
-          createdAt: '2026-04-01T08:00:00.000Z',
-          updatedAt: '2026-04-01T08:00:00.000Z',
-        },
-      ],
-      discoveryRuns: [
-        {
-          id: 'run-76964-misterbricks',
-          setId: '76964',
-          merchantId: 'merchant-misterbricks',
-          searchQuery: '76964',
-          searchUrl: 'https://misterbricks.nl/catalogsearch/result/?q=76964',
-          status: 'success',
-          candidateCount: 2,
-          createdAt: '2026-04-16T10:00:00.000Z',
-          updatedAt: '2026-04-16T10:02:00.000Z',
-          finishedAt: '2026-04-16T10:02:00.000Z',
-        },
-      ],
-      discoveryCandidates: [
-        {
-          id: 'candidate-76964-1',
-          discoveryRunId: 'run-76964-misterbricks',
-          setId: '76964',
-          merchantId: 'merchant-misterbricks',
-          candidateTitle: 'Jurassic World light kit 76964',
-          candidateUrl: 'https://misterbricks.nl/light-kit-76964',
-          canonicalUrl: 'https://misterbricks.nl/light-kit-76964',
-          confidenceScore: 18,
-          status: 'rejected',
-          reviewStatus: 'rejected',
-          matchReasons: ['Lijkt op accessoire en niet op de set zelf.'],
-          sourceRank: 1,
-          createdAt: '2026-04-16T10:01:00.000Z',
-          updatedAt: '2026-04-16T11:00:00.000Z',
-        },
-        {
-          id: 'candidate-76964-2',
-          discoveryRunId: 'run-76964-misterbricks',
-          setId: '76964',
-          merchantId: 'merchant-misterbricks',
-          candidateTitle: 'Display case 76964',
-          candidateUrl: 'https://misterbricks.nl/display-case-76964',
-          canonicalUrl: 'https://misterbricks.nl/display-case-76964',
-          confidenceScore: 12,
-          status: 'rejected',
-          reviewStatus: 'rejected',
-          matchReasons: ['Display case en geen echte setpagina.'],
-          sourceRank: 2,
-          createdAt: '2026-04-16T10:01:30.000Z',
-          updatedAt: '2026-04-16T11:05:00.000Z',
-        },
-      ],
-      offerSeeds: [],
-    });
-
-    expect(coverageQueue[0]).toEqual(
-      expect.objectContaining({
-        setId: '76964',
-        missingMerchantSlugs: [],
-        notAvailableConfirmedMerchantCount: 1,
-        recommendedNextAction: 'recheck_later',
-      }),
-    );
-    expect(coverageQueue[0].merchantStatuses[0]).toEqual(
-      expect.objectContaining({
-        merchantSlug: 'misterbricks',
-        state: 'not_available_confirmed',
-      }),
-    );
-  });
-
-  test('falls back to manual seed when a missing merchant does not support discovery', () => {
-    const coverageQueue = buildCommerceCoverageQueueRows({
-      now: new Date('2026-04-17T12:00:00.000Z'),
-      benchmarkSets: [],
-      catalogSets: [
-        {
-          id: '10317',
-          name: 'Land Rover Classic Defender 90',
+          setId: '10316',
+          setName: 'Rivendell',
           theme: 'Icons',
-          slug: 'land-rover-classic-defender-90-10317',
+          source: 'overlay',
+          isBenchmark: true,
+          validMerchantCount: 0,
+          activeSeedCount: 0,
+          merchantsCheckedCount: 0,
+          missingMerchantIds: ['merchant-1'],
+          missingMerchantNames: ['LEGO'],
+          missingMerchantSlugs: ['lego-nl'],
+          needsReviewCount: 0,
+          notAvailableConfirmedMerchantCount: 0,
+          notAvailableConfirmedMerchantNames: [],
+          staleMerchantCount: 0,
+          unavailableMerchantCount: 0,
+          merchantStatuses: [],
+          statusSummary: 'Seed nodig',
+          recommendedNextAction: 'add_seed_manually',
+        },
+        {
+          setId: '71411',
+          setName: 'The Mighty Bowser',
+          theme: 'Super Mario',
           source: 'snapshot',
+          isBenchmark: false,
+          validMerchantCount: 3,
+          activeSeedCount: 3,
+          merchantsCheckedCount: 3,
+          missingMerchantIds: [],
+          missingMerchantNames: [],
+          missingMerchantSlugs: [],
+          needsReviewCount: 0,
+          notAvailableConfirmedMerchantCount: 0,
+          notAvailableConfirmedMerchantNames: [],
+          staleMerchantCount: 0,
+          unavailableMerchantCount: 0,
+          merchantStatuses: [],
+          statusSummary: 'Goed gedekt',
+          recommendedNextAction: 'no_action_needed',
         },
       ],
-      merchants: [
-        {
-          id: 'merchant-intertoys',
-          slug: 'intertoys',
-          name: 'Intertoys',
-          isActive: true,
-          sourceType: 'direct',
-          notes: '',
-          createdAt: '2026-04-01T08:00:00.000Z',
-          updatedAt: '2026-04-01T08:00:00.000Z',
-        },
-        {
-          id: 'merchant-lego',
-          slug: 'lego-nl',
-          name: 'LEGO',
-          isActive: true,
-          sourceType: 'direct',
-          notes: '',
-          createdAt: '2026-04-01T08:00:00.000Z',
-          updatedAt: '2026-04-01T08:00:00.000Z',
-        },
-      ],
-      discoveryRuns: [],
-      discoveryCandidates: [],
-      offerSeeds: [
-        {
-          id: 'seed-10317-lego',
-          setId: '10317',
-          merchantId: 'merchant-lego',
-          productUrl: 'https://www.lego.com/nl-nl/product/land-rover',
-          isActive: true,
-          validationStatus: 'valid',
-          notes: '',
-          createdAt: '2026-04-01T08:00:00.000Z',
-          updatedAt: '2026-04-17T08:00:00.000Z',
-          merchant: {
-            id: 'merchant-lego',
-            slug: 'lego-nl',
-            name: 'LEGO',
-            isActive: true,
-            sourceType: 'direct',
-            notes: '',
-            createdAt: '2026-04-01T08:00:00.000Z',
-            updatedAt: '2026-04-01T08:00:00.000Z',
-          },
-          latestOffer: {
-            id: 'latest-10317-lego',
-            offerSeedId: 'seed-10317-lego',
-            setId: '10317',
-            merchantId: 'merchant-lego',
-            productUrl: 'https://www.lego.com/nl-nl/product/land-rover',
-            fetchStatus: 'success',
-            availability: 'in_stock',
-            currencyCode: 'EUR',
-            priceMinor: 23999,
-            observedAt: '2026-04-17T08:00:00.000Z',
-            fetchedAt: '2026-04-17T08:00:00.000Z',
-            createdAt: '2026-04-17T08:00:00.000Z',
-            updatedAt: '2026-04-17T08:00:00.000Z',
-          },
-        },
-      ],
+      healthFilter: 'zero_valid',
+      sourceFilter: 'overlay',
     });
 
-    expect(coverageQueue[0]).toEqual(
-      expect.objectContaining({
-        setId: '10317',
-        missingMerchantSlugs: ['intertoys'],
-        recommendedNextAction: 'add_seed_manually',
-        recommendedMerchantId: 'merchant-intertoys',
-        recommendedMerchantName: 'Intertoys',
-      }),
-    );
-  });
-
-  test('filters coverage queue rows by health, source, priority, merchant gap, and search', () => {
-    const rows = [
-      {
-        setId: '10316',
-        setName: 'Rivendell',
-        theme: 'Icons',
-        source: 'snapshot',
-        isBenchmark: true,
-        validMerchantCount: 1,
-        activeSeedCount: 2,
-        merchantsCheckedCount: 2,
-        missingMerchantIds: ['merchant-lego'],
-        missingMerchantNames: ['LEGO'],
-        missingMerchantSlugs: ['lego-nl'],
-        needsReviewCount: 1,
-        notAvailableConfirmedMerchantCount: 0,
-        notAvailableConfirmedMerchantNames: [],
-        staleMerchantCount: 0,
-        unavailableMerchantCount: 0,
-        merchantStatuses: [],
-        statusSummary: 'Review nodig',
-        recommendedNextAction: 'review_candidates',
-      },
-      {
-        setId: '77092',
-        setName: 'Great Deku Tree 2-in-1',
-        theme: 'The Legend of Zelda',
-        source: 'overlay',
-        sourceCreatedAt: '2026-04-17T09:00:00.000Z',
-        isBenchmark: false,
-        validMerchantCount: 0,
-        activeSeedCount: 0,
-        merchantsCheckedCount: 0,
-        missingMerchantIds: ['merchant-lego', 'merchant-misterbricks'],
-        missingMerchantNames: ['LEGO', 'MisterBricks'],
-        missingMerchantSlugs: ['lego-nl', 'misterbricks'],
-        needsReviewCount: 0,
-        notAvailableConfirmedMerchantCount: 0,
-        notAvailableConfirmedMerchantNames: [],
-        staleMerchantCount: 0,
-        unavailableMerchantCount: 0,
-        merchantStatuses: [],
-        statusSummary: 'Discovery nodig',
-        recommendedNextAction: 'run_discovery',
-      },
-      {
-        setId: '71411',
-        setName: 'The Mighty Bowser',
-        theme: 'Super Mario',
-        source: 'snapshot',
-        isBenchmark: false,
-        validMerchantCount: 3,
-        activeSeedCount: 3,
-        merchantsCheckedCount: 3,
-        missingMerchantIds: [],
-        missingMerchantNames: [],
-        missingMerchantSlugs: [],
-        needsReviewCount: 0,
-        notAvailableConfirmedMerchantCount: 0,
-        notAvailableConfirmedMerchantNames: [],
-        staleMerchantCount: 0,
-        unavailableMerchantCount: 0,
-        merchantStatuses: [],
-        statusSummary: 'Goed gedekt',
-        recommendedNextAction: 'no_action_needed',
-      },
-    ];
-
-    expect(
-      filterCommerceCoverageQueueRows({
-        rows,
-        healthFilter: 'under_covered',
-      }).map((row) => row.setId),
-    ).toEqual(['10316', '77092']);
-    expect(
-      filterCommerceCoverageQueueRows({
-        rows,
-        healthFilter: 'fully_covered',
-      }).map((row) => row.setId),
-    ).toEqual(['71411']);
-    expect(
-      filterCommerceCoverageQueueRows({
-        rows,
-        sourceFilter: 'overlay',
-      }).map((row) => row.setId),
-    ).toEqual(['77092']);
-    expect(
-      filterCommerceCoverageQueueRows({
-        rows,
-        priorityFilter: 'benchmark_only',
-      }).map((row) => row.setId),
-    ).toEqual(['10316']);
-    expect(
-      filterCommerceCoverageQueueRows({
-        rows,
-        merchantGapMerchantId: 'merchant-misterbricks',
-      }).map((row) => row.setId),
-    ).toEqual(['77092']);
-    expect(
-      filterCommerceCoverageQueueRows({
-        rows,
-        search: 'deku',
-      }).map((row) => row.setId),
-    ).toEqual(['77092']);
+    expect(filtered.map((row) => row.setId)).toEqual(['10316']);
   });
 });

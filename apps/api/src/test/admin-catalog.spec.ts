@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
 import {
   type CatalogExternalSetSearchResult,
-  type CatalogOverlaySet,
+  type CatalogSet,
   type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import {
@@ -16,7 +16,7 @@ async function createAdminCatalogServer({
   catalogService?: AdminCatalogService;
 } = {}) {
   const nextCatalogService: AdminCatalogService = catalogService ?? {
-    createOverlaySet: vi.fn(
+    createSet: vi.fn(
       async () =>
         ({
           createdAt: '2026-04-17T08:00:00.000Z',
@@ -31,7 +31,7 @@ async function createAdminCatalogServer({
           status: 'active',
           theme: 'The Legend of Zelda',
           updatedAt: '2026-04-17T08:00:00.000Z',
-        }) satisfies CatalogOverlaySet,
+        }) satisfies CatalogSet,
     ),
     listCatalogSets: vi.fn(
       async () =>
@@ -117,12 +117,12 @@ describe('admin catalog routes', () => {
     await server.close();
   });
 
-  test('creates a catalog overlay set from a search result', async () => {
+  test('creates a catalog set from a search result', async () => {
     const { catalogService, server } = await createAdminCatalogServer();
 
     const response = await server.inject({
       method: 'POST',
-      url: '/api/v1/admin/catalog/overlay-sets',
+      url: '/api/v1/admin/catalog/sets',
       payload: {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/77092-1/1000.jpg',
         name: 'Great Deku Tree 2-in-1',
@@ -137,7 +137,7 @@ describe('admin catalog routes', () => {
     });
 
     expect(response.statusCode).toBe(201);
-    expect(catalogService.createOverlaySet).toHaveBeenCalledWith({
+    expect(catalogService.createSet).toHaveBeenCalledWith({
       imageUrl: 'https://cdn.rebrickable.com/media/sets/77092-1/1000.jpg',
       name: 'Great Deku Tree 2-in-1',
       pieces: 2500,

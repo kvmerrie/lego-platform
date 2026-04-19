@@ -1,7 +1,4 @@
-import {
-  listCatalogThemeDirectoryItems,
-  type CatalogThemeDirectoryItem,
-} from '@lego-platform/catalog/data-access';
+import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
 import {
   CatalogPageIntro,
   CatalogSectionShell,
@@ -16,7 +13,7 @@ import { SectionHeading } from '@lego-platform/shared/ui';
 import styles from './catalog-feature-theme-index.module.css';
 
 export function CatalogFeatureThemeIndex({
-  themeDirectoryItems = listCatalogThemeDirectoryItems(),
+  themeDirectoryItems = [],
 }: {
   themeDirectoryItems?: readonly CatalogThemeDirectoryItem[];
 }) {

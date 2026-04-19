@@ -4,7 +4,7 @@ import {
 } from '@lego-platform/catalog/feature-search-results';
 import {
   listCatalogCurrentOfferSummariesBySetIds,
-  listCatalogSearchMatchesWithOverlay,
+  listCatalogSearchMatches,
 } from '@lego-platform/catalog/data-access-web';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
@@ -30,7 +30,7 @@ export default async function SearchPage({
   const query = readQueryParam(resolvedSearchParams.q);
   const shouldOpenMobileOverlay = overlay === '1' && !query;
   const searchMatches = query
-    ? await listCatalogSearchMatchesWithOverlay({
+    ? await listCatalogSearchMatches({
         limit: Number.MAX_SAFE_INTEGER,
         query,
       })

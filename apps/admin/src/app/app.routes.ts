@@ -3,7 +3,6 @@ import {
   CommerceAdminAddSetPageComponent,
   CommerceAdminCoveragePageComponent,
   CommerceAdminCoverageQueuePageComponent,
-  CommerceAdminDiscoveryPageComponent,
   CommerceAdminDashboardPageComponent,
   CommerceAdminMerchantsPageComponent,
   CommerceAdminOperationsPageComponent,
@@ -51,10 +50,6 @@ export const appRoutes: Route[] = [
       {
         path: 'operations',
         component: CommerceAdminOperationsPageComponent,
-      },
-      {
-        path: 'discovery',
-        component: CommerceAdminDiscoveryPageComponent,
       },
       {
         path: 'offer-seeds',

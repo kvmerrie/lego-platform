@@ -224,24 +224,6 @@
             Continue in Workbench
           </a>
 
-          @if (getDiscoveryTargetMerchant(row)) {
-          <button
-            class="admin-button"
-            [class.admin-button--primary]="
-                    row.recommendedNextAction === 'run_discovery'
-                  "
-            [class.admin-button--subtle]="
-                    row.recommendedNextAction !== 'run_discovery'
-                  "
-            [disabled]="runningDiscoverySetId() === row.setId"
-            type="button"
-            (click)="runDiscovery(row)"
-          >
-            {{ runningDiscoverySetId() === row.setId ? 'Discovery draait…' :
-            'Run discovery' }}
-          </button>
-          }
-
           <button
             class="admin-button admin-button--subtle"
             [disabled]="!getSeedActionMerchant(row)"
@@ -306,7 +288,6 @@
         title="Set context"
         (merchantActionRequested)="handleMerchantStatusAction($event)"
         (refreshRequested)="refreshSet($event)"
-        (runDiscoveryRequested)="runDiscovery($event)"
         (seedActionRequested)="openOfferSeedDialogForRow($event)"
       ></lego-commerce-admin-set-work-context>
     </aside>

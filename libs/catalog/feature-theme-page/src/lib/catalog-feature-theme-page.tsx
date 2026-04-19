@@ -1,5 +1,4 @@
 import type { CSSProperties, ReactNode } from 'react';
-import type { CatalogThemeLandingPage } from '@lego-platform/catalog/data-access';
 import {
   CatalogPageIntro,
   CatalogSectionShell,
@@ -9,8 +8,9 @@ import {
   CatalogSetCardRailSection,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
-import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
+  type CatalogHomepageSetCard,
+  type CatalogThemeLandingPage,
   getCatalogThemeMutedTextColor,
   getCatalogThemeSurfaceTone,
   getCatalogThemeVisual,

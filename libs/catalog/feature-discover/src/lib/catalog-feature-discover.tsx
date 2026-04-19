@@ -1,13 +1,5 @@
 import type { ReactNode } from 'react';
 import {
-  type CatalogBrowseThemeGroup,
-  listDiscoverCharacterSetCards,
-  listCatalogSetSummaries,
-  listCatalogThemes,
-  listDiscoverBrowseThemeGroups,
-  listDiscoverHighlightSetCards,
-} from '@lego-platform/catalog/data-access';
-import {
   CatalogQuickFilterBar,
   CatalogSectionShell,
   CatalogSetCard,
@@ -17,6 +9,7 @@ import {
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
 import {
+  type CatalogBrowseThemeGroup,
   type CatalogHomepageSetCard,
   type CatalogQuickFilterKey,
   listCatalogQuickFilterOptions,
@@ -140,24 +133,11 @@ export function CatalogFeatureDiscover({
   totalThemeCount?: number;
 }) {
   const normalizedFilter = normalizeCatalogQuickFilterKey(activeFilter);
-  const resolvedCharacterSetCards =
-    characterSetCards ??
-    listDiscoverCharacterSetCards({
-      reviewedSetIds,
-    });
-  const resolvedHighlightSetCards =
-    highlightSetCards ??
-    listDiscoverHighlightSetCards({
-      reviewedSetIds,
-    });
-  const resolvedThemeGroups =
-    themeGroups ??
-    listDiscoverBrowseThemeGroups({
-      reviewedSetIds,
-    });
-  const resolvedTotalSetCount =
-    totalSetCount ?? listCatalogSetSummaries().length;
-  const resolvedTotalThemeCount = totalThemeCount ?? listCatalogThemes().length;
+  const resolvedCharacterSetCards = characterSetCards ?? [];
+  const resolvedHighlightSetCards = highlightSetCards ?? [];
+  const resolvedThemeGroups = themeGroups ?? [];
+  const resolvedTotalSetCount = totalSetCount ?? 0;
+  const resolvedTotalThemeCount = totalThemeCount ?? 0;
   const activeQuickFilterOption = listCatalogQuickFilterOptions().find(
     (catalogQuickFilterOption) =>
       catalogQuickFilterOption.key === normalizedFilter,

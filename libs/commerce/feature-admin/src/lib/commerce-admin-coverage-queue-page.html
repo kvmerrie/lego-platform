@@ -246,24 +246,6 @@
           </div>
 
           <div class="admin-workbench__row-actions">
-            @if (getDiscoveryTargetMerchant(row)) {
-            <button
-              class="admin-button"
-              [class.admin-button--primary]="
-                      row.recommendedNextAction === 'run_discovery'
-                    "
-              [class.admin-button--subtle]="
-                      row.recommendedNextAction !== 'run_discovery'
-                    "
-              [disabled]="runningDiscoverySetId() === row.setId"
-              type="button"
-              (click)="runDiscovery(row)"
-            >
-              {{ runningDiscoverySetId() === row.setId ? 'Discovery draait…' :
-              'Run discovery' }}
-            </button>
-            }
-
             <button
               class="admin-button"
               [class.admin-button--primary]="
@@ -299,14 +281,6 @@
               routerLink="/sets"
             >
               Open in Sets
-            </a>
-
-            <a
-              class="admin-button admin-button--subtle"
-              [queryParams]="getDiscoveryQueryParams(row)"
-              routerLink="/discovery"
-            >
-              Open discovery
             </a>
 
             @if (commerceAdminStore.getPublicSetUrl(row.setId); as publicSetUrl)
@@ -357,7 +331,6 @@
         title="Werkcontext"
         (merchantActionRequested)="handleMerchantStatusAction($event)"
         (refreshRequested)="refreshSet($event)"
-        (runDiscoveryRequested)="runDiscovery($event)"
         (seedActionRequested)="openOfferSeedDialogForRow($event)"
       ></lego-commerce-admin-set-work-context>
     </aside>

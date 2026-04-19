@@ -1,4 +1,3 @@
-import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 
 const catalogSetCardsApiPath = '/api/catalog/set-cards';
@@ -44,21 +43,13 @@ export async function listCatalogSetCardsByIdsForBrowser({
         catalogSetCard,
       ]),
     );
-    const fallbackSetCardById = new Map(
-      listCatalogSetCardsByIds(uniqueCanonicalIds).map((catalogSetCard) => [
-        catalogSetCard.id,
-        catalogSetCard,
-      ]),
-    );
 
     return orderedCanonicalIds.flatMap((canonicalId) => {
-      const catalogSetCard =
-        responseSetCardById.get(canonicalId) ??
-        fallbackSetCardById.get(canonicalId);
+      const catalogSetCard = responseSetCardById.get(canonicalId);
 
       return catalogSetCard ? [catalogSetCard] : [];
     });
   } catch {
-    return listCatalogSetCardsByIds(orderedCanonicalIds);
+    return [];
   }
 }

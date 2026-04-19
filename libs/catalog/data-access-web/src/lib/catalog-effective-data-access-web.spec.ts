@@ -1,12 +1,3 @@
-import {
-  getCatalogThemePageBySlug,
-  listDiscoverHighlightSetCards,
-  listCatalogSetSummaries,
-  listHomepageSetCards,
-  listHomepageThemeDirectoryItems,
-  listHomepageThemeSpotlightItems,
-  listCatalogThemePageSlugs,
-} from '@lego-platform/catalog/data-access';
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import { describe, expect, test, vi } from 'vitest';
 
@@ -15,43 +6,41 @@ import {
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
   getCatalogCurrentOfferSummaryBySetId,
-  getCatalogThemePageBySlugWithOverlay,
+  getCatalogSetBySlug,
+  getCatalogThemePageBySlug,
   listCanonicalCatalogSets,
-  listCatalogSetCardsByIdsWithOverlay,
-  listCatalogOverlaySets,
-  listDiscoverHighlightSetCardsWithOverlay,
-  listHomepageSetCardsWithOverlay,
-  listHomepageThemeDirectoryItemsWithOverlay,
-  listHomepageThemeSpotlightItemsWithOverlay,
-  listCatalogSearchMatchesWithOverlay,
+  listCatalogSearchMatches,
+  listCatalogSearchSuggestionSetCards,
+  listCatalogSetCardsByIds,
   listCatalogSetLiveOffersBySetId,
-  listCatalogSearchSuggestionOverlaySetCards,
-  listCatalogSetSummariesWithOverlay,
-  listCatalogSetSlugsWithOverlay,
-  listCatalogThemeDirectoryItemsWithOverlay,
-  listCatalogThemePageSlugsWithOverlay,
-  listDiscoverBrowseThemeGroupsWithOverlay,
+  listCatalogSetSlugs,
+  listCatalogSetSummaries,
+  listCatalogThemeDirectoryItems,
+  listCatalogThemePageSlugs,
+  listDiscoverBrowseThemeGroups,
+  listDiscoverHighlightSetCards,
+  listHomepageSetCards,
+  listHomepageThemeDirectoryItems,
+  listHomepageThemeSpotlightItems,
   resolveCatalogCurrentOffers,
   resolveCatalogSetDetailOffers,
   summarizeCatalogCurrentOffers,
 } from './catalog-effective-data-access-web';
 
-function createOverlaySet(
+function createCanonicalCatalogSet(
   overrides: Partial<{
     createdAt: string;
     imageUrl?: string;
     name: string;
-    primaryThemeId?: string;
-    pieces: number;
+    pieceCount: number;
     releaseYear: number;
-    secondaryThemeLabels?: readonly string[];
     setId: string;
     slug: string;
     source: 'rebrickable';
-    sourceThemeId?: string;
     sourceSetNumber: string;
     status: 'active' | 'inactive';
-    theme: string;
+    primaryTheme: string;
+    secondaryLabels?: readonly string[];
     updatedAt: string;
   }> = {},
 ) {
@@ -59,17 +48,15 @@ function createOverlaySet(
     createdAt: '2026-04-17T08:00:00.000Z',
     imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
     name: 'Mario Kart - Mario & Standard Kart',
-    primaryThemeId: undefined,
-    pieces: 1972,
+    pieceCount: 1972,
+    primaryTheme: 'Super Mario',
     releaseYear: 2025,
-    secondaryThemeLabels: undefined,
+    secondaryLabels: [],
     setId: '72037',
     slug: 'mario-kart-mario-standard-kart-72037',
     source: 'rebrickable' as const,
-    sourceThemeId: undefined,
     sourceSetNumber: '72037-1',
     status: 'active' as const,
-    theme: 'Super Mario',
     updatedAt: '2026-04-17T08:00:00.000Z',
     ...overrides,
   };
@@ -203,7 +190,7 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 }
 
 function createCatalogSupabaseClientMock({
-  overlayRows = [],
+  catalogRows = [],
   primaryThemeRows = [],
   latestOfferRows,
   merchantRows,
@@ -211,7 +198,7 @@ function createCatalogSupabaseClientMock({
   sourceThemeRows = [],
   themeMappingRows = [],
 }: {
-  overlayRows?: readonly Record<string, unknown>[];
+  catalogRows?: readonly Record<string, unknown>[];
   primaryThemeRows?: readonly Record<string, unknown>[];
   latestOfferRows: readonly Record<string, unknown>[];
   merchantRows: readonly Record<string, unknown>[];
@@ -221,8 +208,8 @@ function createCatalogSupabaseClientMock({
 }) {
   return {
     from: vi.fn((table: string) => {
-      if (table === 'catalog_sets_overlay') {
-        return createSupabaseTableBuilder(overlayRows);
+      if (table === 'catalog_sets') {
+        return createSupabaseTableBuilder(catalogRows);
       }
 
       if (table === 'catalog_source_themes') {
@@ -260,7 +247,7 @@ describe('catalog effective data access web', () => {
       latestOfferRows: [],
       merchantRows: [],
       offerSeedRows: [],
-      overlayRows: [
+      catalogRows: [
         {
           created_at: '2026-04-17T08:00:00.000Z',
           image_url: 'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
@@ -274,7 +261,6 @@ describe('catalog effective data access web', () => {
           source_theme_id: 'rebrickable:592',
           source_set_number: '75192-1',
           status: 'active',
-          theme: 'Star Wars',
           updated_at: '2026-04-17T08:00:00.000Z',
         },
       ],
@@ -298,22 +284,10 @@ describe('catalog effective data access web', () => {
       ],
     });
 
-    const [overlaySet, canonicalCatalogSet] = await Promise.all([
-      listCatalogOverlaySets({
-        supabaseClient,
-      }),
-      listCanonicalCatalogSets({
-        listCatalogOverlaySetsFn: async () =>
-          listCatalogOverlaySets({
-            supabaseClient,
-          }),
-      }),
-    ]);
-
-    expect(overlaySet[0]).toMatchObject({
-      secondaryThemeLabels: ['Ultimate Collector Series'],
-      theme: 'Star Wars',
+    const canonicalCatalogSet = await listCanonicalCatalogSets({
+      supabaseClient,
     });
+
     expect(
       canonicalCatalogSet.find((set) => set.setId === '75192'),
     ).toMatchObject({
@@ -322,66 +296,108 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('falls back to the legacy theme string when normalized theme ids are absent', async () => {
+  test('uses direct normalized themes for clean canonical reads', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
       merchantRows: [],
       offerSeedRows: [],
-      overlayRows: [
+      catalogRows: [
         {
           created_at: '2026-04-17T08:00:00.000Z',
           image_url: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
           name: 'Mario Kart - Mario & Standard Kart',
           piece_count: 1972,
-          primary_theme_id: null,
+          primary_theme_id: 'theme:super-mario',
           release_year: 2025,
           set_id: '72037',
           slug: 'mario-kart-mario-standard-kart-72037',
           source: 'rebrickable',
-          source_theme_id: null,
+          source_theme_id: 'rebrickable:695',
           source_set_number: '72037-1',
           status: 'active',
-          theme: 'Super Mario',
           updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Super Mario',
+          id: 'theme:super-mario',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:695',
+          source_theme_name: 'Super Mario',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:super-mario',
+          source_theme_id: 'rebrickable:695',
         },
       ],
     });
 
-    const [overlaySet] = await Promise.all([
-      listCatalogOverlaySets({
+    const [canonicalCatalogSet] = await Promise.all([
+      listCanonicalCatalogSets({
         supabaseClient,
       }),
     ]);
 
-    expect(overlaySet[0]).toMatchObject({
-      secondaryThemeLabels: [],
-      theme: 'Super Mario',
+    expect(canonicalCatalogSet[0]).toMatchObject({
+      primaryTheme: 'Super Mario',
+      secondaryLabels: [],
     });
   });
 
-  test('prefers a Supabase-backed canonical catalog set over snapshot fallback', async () => {
-    const canonicalCatalogSets = await listCanonicalCatalogSets({
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
+  test('uses only canonical Supabase-backed sets for canonical lookups', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
           name: 'Rivendell (Supabase)',
-          setId: '10316',
+          piece_count: 6167,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10316',
           slug: 'lord-of-the-rings-rivendell-10316',
-          sourceSetNumber: '10316-1',
-          theme: 'Icons',
-        }),
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:721',
+          source_set_number: '10316-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:721',
+          source_theme_name: 'Icons',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:icons',
+          source_theme_id: 'rebrickable:721',
+        },
       ],
     });
 
-    expect(
-      canonicalCatalogSets.filter(
-        (canonicalCatalogSet) => canonicalCatalogSet.setId === '10316',
-      ),
-    ).toHaveLength(1);
-    expect(
-      canonicalCatalogSets.find(
-        (canonicalCatalogSet) => canonicalCatalogSet.setId === '10316',
-      ),
-    ).toMatchObject({
+    const canonicalCatalogSets = await listCanonicalCatalogSets({
+      supabaseClient,
+    });
+
+    expect(canonicalCatalogSets).toHaveLength(1);
+    expect(canonicalCatalogSets[0]).toMatchObject({
       name: 'Rivendell (Supabase)',
       setId: '10316',
       slug: 'lord-of-the-rings-rivendell-10316',
@@ -389,26 +405,17 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('falls back to snapshot-backed canonical identity during transition', async () => {
+  test('does not fall back to snapshot canonical identity when a set is absent', async () => {
     const canonicalCatalogSet = await getCanonicalCatalogSetById({
       setId: '21061',
     });
 
-    expect(canonicalCatalogSet).toMatchObject({
-      name: 'Notre-Dame de Paris',
-      primaryTheme: 'Architecture',
-      setId: '21061',
-      slug: 'notre-dame-de-paris-21061',
-      source: 'snapshot',
-    });
+    expect(canonicalCatalogSet).toBeUndefined();
   });
 
   test('keeps slug lookups stable through the canonical catalog layer', async () => {
     const canonicalCatalogSet = await getCanonicalCatalogSetBySlug({
-      listCanonicalCatalogSetsFn: async () =>
-        listCanonicalCatalogSets({
-          listCatalogOverlaySetsFn: async () => [createOverlaySet()],
-        }),
+      listCanonicalCatalogSetsFn: async () => [createCanonicalCatalogSet()],
       slug: 'mario-kart-mario-standard-kart-72037',
     });
 
@@ -421,122 +428,114 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('prefers canonical overlay identity in summary reads when available', async () => {
-    const summaries = await listCatalogSetSummariesWithOverlay({
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
+  test('builds summaries and slugs from canonical catalog sets only', async () => {
+    const summaries = await listCatalogSetSummaries({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
           imageUrl:
             'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
           name: 'Rivendell (Supabase)',
           setId: '10316',
           slug: 'lord-of-the-rings-rivendell-10316',
           sourceSetNumber: '10316-1',
-          theme: 'Icons',
+          primaryTheme: 'Icons',
+        }),
+      ],
+    });
+    const slugs = await listCatalogSetSlugs({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          setId: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          sourceSetNumber: '10316-1',
+          primaryTheme: 'Icons',
         }),
       ],
     });
 
-    expect(
-      summaries.find((catalogSetSummary) => catalogSetSummary.id === '10316'),
-    ).toMatchObject({
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
-      name: 'Rivendell (Supabase)',
-      slug: 'lord-of-the-rings-rivendell-10316',
-      theme: 'Icons',
-    });
+    expect(summaries).toMatchObject([
+      {
+        id: '10316',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
+        name: 'Rivendell (Supabase)',
+        slug: 'lord-of-the-rings-rivendell-10316',
+        theme: 'Icons',
+      },
+    ]);
+    expect(slugs).toEqual(['lord-of-the-rings-rivendell-10316']);
   });
 
-  test('falls back to snapshot summaries when canonical overlay identity is absent', async () => {
-    const baselineSummary = listCatalogSetSummaries().find(
-      (catalogSetSummary) => catalogSetSummary.id === '21061',
-    );
-    const summaries = await listCatalogSetSummariesWithOverlay();
-
-    expect(
-      summaries.find((catalogSetSummary) => catalogSetSummary.id === '21061'),
-    ).toEqual(baselineSummary);
-  });
-
-  test('prefers canonical overlay identity for curated set card reads when available', async () => {
-    const result = await listCatalogSetCardsByIdsWithOverlay({
-      canonicalIds: ['10316', '21061'],
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
-          imageUrl:
-            'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
+  test('preserves requested order for canonical set card reads', async () => {
+    const result = await listCatalogSetCardsByIds({
+      canonicalIds: ['10316', '21061', '10316'],
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
           name: 'Rivendell (Supabase)',
           setId: '10316',
           slug: 'lord-of-the-rings-rivendell-10316',
           sourceSetNumber: '10316-1',
-          theme: 'Icons',
+          primaryTheme: 'Icons',
+        }),
+        createCanonicalCatalogSet({
+          imageUrl: 'https://cdn.rebrickable.com/media/sets/21061-1/140433.jpg',
+          name: 'Notre-Dame de Paris',
+          pieceCount: 4382,
+          releaseYear: 2024,
+          setId: '21061',
+          slug: 'notre-dame-de-paris-21061',
+          sourceSetNumber: '21061-1',
+          primaryTheme: 'Architecture',
         }),
       ],
     });
 
-    expect(result).toHaveLength(2);
-    expect(result[0]).toMatchObject({
-      id: '10316',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
-      name: 'Rivendell (Supabase)',
-      slug: 'lord-of-the-rings-rivendell-10316',
-      theme: 'Icons',
-    });
-    expect(result[1]?.id).toBe('21061');
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10316',
+      '21061',
+      '10316',
+    ]);
   });
 
-  test('keeps homepage curated card identity stable when only snapshot data exists', async () => {
-    const baselineHomepageSetCards = listHomepageSetCards();
-    const result = await listHomepageSetCardsWithOverlay();
-
-    expect(result).toEqual(baselineHomepageSetCards);
-  });
-
-  test('preserves discover highlight card order while preferring canonical identity', async () => {
-    const baselineHighlightSetCards = listDiscoverHighlightSetCards({
-      limit: 6,
-      reviewedSetIds: ['75355'],
-    });
-    const baselineHighlightIds = baselineHighlightSetCards.map(
-      (catalogSetCard) => catalogSetCard.id,
-    );
-    const highlightedSetCard = baselineHighlightSetCards[0];
-
-    expect(highlightedSetCard).toBeDefined();
-
-    const result = await listDiscoverHighlightSetCardsWithOverlay({
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
-          imageUrl:
-            'https://cdn.rebrickable.com/media/sets/highlight-override.jpg',
-          name: `${highlightedSetCard?.name} (Supabase)`,
-          setId: highlightedSetCard?.id ?? '10316',
-          slug: highlightedSetCard?.slug ?? 'lord-of-the-rings-rivendell-10316',
-          sourceSetNumber: `${highlightedSetCard?.id ?? '10316'}-1`,
-          theme: highlightedSetCard?.theme ?? 'Icons',
+  test('keeps homepage featured cards on the curated id order when canonical sets exist', async () => {
+    const result = await listHomepageSetCards({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Rivendell',
+          setId: '10316',
+          slug: 'rivendell-10316',
+          sourceSetNumber: '10316-1',
+          primaryTheme: 'Icons',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: Barad-dur',
+          setId: '10333',
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          sourceSetNumber: '10333-1',
+          primaryTheme: 'Icons',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Vincent van Gogh - The Starry Night',
+          pieceCount: 2316,
+          releaseYear: 2022,
+          setId: '21333',
+          slug: 'vincent-van-gogh-the-starry-night-21333',
+          sourceSetNumber: '21333-1',
+          primaryTheme: 'Ideas',
         }),
       ],
-      reviewedSetIds: ['75355'],
     });
 
-    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual(
-      baselineHighlightIds,
-    );
-    expect(
-      result.find(
-        (catalogSetCard) => catalogSetCard.id === highlightedSetCard?.id,
-      ),
-    ).toMatchObject({
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/highlight-override.jpg',
-      name: `${highlightedSetCard?.name} (Supabase)`,
-    });
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10316',
+      '10333',
+      '21333',
+    ]);
   });
 
-  test('includes active overlay sets in public search matches', async () => {
-    const overlaySet = createOverlaySet();
-
-    const results = await listCatalogSearchMatchesWithOverlay({
+  test('searches canonical set cards without snapshot fallback', async () => {
+    const results = await listCatalogSearchMatches({
       limit: 6,
-      listCatalogOverlaySetsFn: async () => [overlaySet],
+      listCanonicalCatalogSetsFn: async () => [createCanonicalCatalogSet()],
       query: '72037',
     });
 
@@ -547,533 +546,318 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('returns only active deduped overlay cards for shell search suggestions', async () => {
-    const activeOverlaySet = createOverlaySet();
-    const duplicateOverlaySet = createOverlaySet({
-      createdAt: '2026-04-17T09:00:00.000Z',
-      updatedAt: '2026-04-17T09:00:00.000Z',
-    });
-    const inactiveOverlaySet = createOverlaySet({
-      name: 'Mario Kart - Luigi & Standard Kart',
-      setId: '72038',
-      slug: 'mario-kart-luigi-standard-kart-72038',
-      sourceSetNumber: '72038-1',
-      status: 'inactive',
-    });
-
-    const result = await listCatalogSearchSuggestionOverlaySetCards({
-      listCatalogOverlaySetsFn: async () => [
-        activeOverlaySet,
-        duplicateOverlaySet,
-        inactiveOverlaySet,
-      ],
-    });
-
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
-      id: '72037',
-      slug: 'mario-kart-mario-standard-kart-72037',
-    });
-  });
-
-  test('merges overlay sets into existing theme pages', async () => {
-    const snapshotThemePage = getCatalogThemePageBySlug('star-wars');
-
-    expect(snapshotThemePage).toBeDefined();
-
-    const result = await getCatalogThemePageBySlugWithOverlay({
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
-          imageUrl: 'https://cdn.rebrickable.com/media/sets/75399-1/1000.jpg',
-          name: 'Rebel U-Wing Starfighter',
-          pieces: 594,
-          releaseYear: 2026,
-          setId: '75399',
-          slug: 'rebel-u-wing-starfighter-75399',
-          sourceSetNumber: '75399-1',
-          theme: 'Star Wars',
+  test('returns canonical suggestion cards sorted by recency and name', async () => {
+    const result = await listCatalogSearchSuggestionSetCards({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          setId: '72038',
+          slug: 'mario-kart-luigi-standard-kart-72038',
+          sourceSetNumber: '72038-1',
+          name: 'Mario Kart - Luigi & Standard Kart',
+          releaseYear: 2024,
         }),
+        createCanonicalCatalogSet(),
       ],
-      slug: 'star-wars',
     });
 
-    expect(result).toBeDefined();
-    expect(result?.setCards[0]).toMatchObject({
-      id: '75399',
-      theme: 'Star Wars',
-    });
-    expect(result?.themeSnapshot.setCount).toBe(
-      (snapshotThemePage?.themeSnapshot.setCount ?? 0) + 1,
-    );
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '72037',
+      '72038',
+    ]);
   });
 
-  test('routes overlay-backed UCS sets into the Star Wars theme page', async () => {
-    const result = await getCatalogThemePageBySlugWithOverlay({
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
-          imageUrl: 'https://cdn.rebrickable.com/media/sets/75192-1/1000.jpg',
-          name: 'Millennium Falcon',
-          pieces: 7541,
-          releaseYear: 2017,
-          setId: '75192',
-          slug: 'millennium-falcon-75192',
-          sourceSetNumber: '75192-1',
-          theme: 'Ultimate Collector Series',
-        }),
-      ],
-      slug: 'star-wars',
-    });
-
-    expect(result?.setCards.some((setCard) => setCard.id === '75192')).toBe(
-      true,
-    );
-    expect(result?.themeSnapshot.name).toBe('Star Wars');
-  });
-
-  test('creates fallback theme directory and theme page entries for overlay-only themes', async () => {
-    const overlaySet = createOverlaySet({
-      name: 'Great Deku Tree 2-in-1',
-      setId: '77092',
-      slug: 'great-deku-tree-2-in-1-77092',
-      sourceSetNumber: '77092-1',
-      theme: 'The Legend of Zelda',
-    });
-    const overlayThemeSlug = buildCatalogThemeSlug(overlaySet.theme);
-
-    const [themeDirectoryItems, themePageSlugs, themePage] = await Promise.all([
-      listCatalogThemeDirectoryItemsWithOverlay({
-        listCatalogOverlaySetsFn: async () => [overlaySet],
+  test('builds theme directory and homepage theme rails from canonical themes', async () => {
+    const listCanonicalCatalogSetsFn = async () => [
+      createCanonicalCatalogSet({
+        setId: '10316',
+        slug: 'rivendell-10316',
+        sourceSetNumber: '10316-1',
+        name: 'Rivendell',
+        primaryTheme: 'Icons',
       }),
-      listCatalogThemePageSlugsWithOverlay({
-        listCatalogOverlaySetsFn: async () => [overlaySet],
+      createCanonicalCatalogSet({
+        setId: '76269',
+        slug: 'avengers-tower-76269',
+        sourceSetNumber: '76269-1',
+        name: 'Avengers Tower',
+        primaryTheme: 'Marvel',
       }),
-      getCatalogThemePageBySlugWithOverlay({
-        listCatalogOverlaySetsFn: async () => [overlaySet],
-        slug: overlayThemeSlug,
+      createCanonicalCatalogSet({
+        setId: '21348',
+        slug: 'red-dragons-tale-21348',
+        sourceSetNumber: '21348-1',
+        name: "Dungeons & Dragons: Red Dragon's Tale",
+        primaryTheme: 'Ideas',
+      }),
+      createCanonicalCatalogSet({
+        setId: '75313',
+        slug: 'at-at-75313',
+        sourceSetNumber: '75313-1',
+        name: 'AT-AT',
+        primaryTheme: 'Star Wars',
+      }),
+      createCanonicalCatalogSet({
+        setId: '76419',
+        slug: 'hogwarts-castle-and-grounds-76419',
+        sourceSetNumber: '76419-1',
+        name: 'Hogwarts Castle and Grounds',
+        primaryTheme: 'Harry Potter',
+      }),
+      createCanonicalCatalogSet({
+        setId: '42143',
+        slug: 'ferrari-daytona-sp3-42143',
+        sourceSetNumber: '42143-1',
+        name: 'Ferrari Daytona SP3',
+        primaryTheme: 'Technic',
+      }),
+      createCanonicalCatalogSet({
+        setId: '10280',
+        slug: 'flower-bouquet-10280',
+        sourceSetNumber: '10280-1',
+        name: 'Flower Bouquet',
+        primaryTheme: 'Botanicals',
+      }),
+    ];
+
+    const [directoryItems, homepageItems, spotlightItems] = await Promise.all([
+      listCatalogThemeDirectoryItems({
+        listCanonicalCatalogSetsFn,
+      }),
+      listHomepageThemeDirectoryItems({
+        listCanonicalCatalogSetsFn,
+      }),
+      listHomepageThemeSpotlightItems({
+        listCanonicalCatalogSetsFn,
       }),
     ]);
 
-    expect(
-      themeDirectoryItems.find(
-        (themeDirectoryItem) =>
-          themeDirectoryItem.themeSnapshot.slug === overlayThemeSlug,
-      ),
-    ).toMatchObject({
-      themeSnapshot: {
-        name: 'The Legend of Zelda',
-        slug: overlayThemeSlug,
-      },
-    });
-    expect(themePageSlugs).toContain(overlayThemeSlug);
-    expect(themePage).toMatchObject({
-      themeSnapshot: {
-        name: 'The Legend of Zelda',
-        slug: overlayThemeSlug,
-      },
-    });
-    expect(themePage?.setCards[0]?.id).toBe('77092');
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Icons',
+      'Marvel',
+      'Ideas',
+      'Star Wars',
+      'Harry Potter',
+      'Technic',
+      'Botanicals',
+    ]);
+    expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Icons',
+      'Marvel',
+      'Ideas',
+      'Star Wars',
+      'Harry Potter',
+      'Technic',
+    ]);
+    expect(spotlightItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Botanicals',
+    ]);
   });
 
-  test('keeps the homepage theme rail lineup stable while merging overlay coverage into existing themes', async () => {
-    const baselineHomepageThemeItems = listHomepageThemeDirectoryItems();
-    const result = await listHomepageThemeDirectoryItemsWithOverlay({
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
-          imageUrl: 'https://cdn.rebrickable.com/media/sets/10334-1/1000.jpg',
-          name: 'Retro Radio',
-          pieces: 906,
-          releaseYear: 2026,
-          setId: '10334',
-          slug: 'retro-radio-10334',
-          sourceSetNumber: '10334-1',
-          theme: 'Icons',
-        }),
-      ],
-    });
-
-    expect(
-      result.map(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name,
-      ),
-    ).toEqual(
-      baselineHomepageThemeItems.map(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name,
-      ),
-    );
-    expect(
-      result.find(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name === 'Icons',
-      )?.themeSnapshot.setCount,
-    ).toBe(
-      (baselineHomepageThemeItems.find(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name === 'Icons',
-      )?.themeSnapshot.setCount ?? 0) + 1,
-    );
-  });
-
-  test('keeps the homepage theme spotlight stable while merging overlay coverage into spotlight themes', async () => {
-    const baselineHomepageThemeSpotlightItems =
-      listHomepageThemeSpotlightItems();
-    const result = await listHomepageThemeSpotlightItemsWithOverlay({
-      listCatalogOverlaySetsFn: async () => [
-        createOverlaySet({
-          imageUrl: 'https://cdn.rebrickable.com/media/sets/10342-1/1000.jpg',
-          name: 'Pretty Pink Flower Bouquet',
-          pieces: 749,
-          releaseYear: 2026,
-          setId: '10342',
-          slug: 'pretty-pink-flower-bouquet-10342',
-          sourceSetNumber: '10342-1',
-          theme: 'Botanicals',
-        }),
-      ],
-    });
-
-    expect(
-      result.map(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name,
-      ),
-    ).toEqual(
-      baselineHomepageThemeSpotlightItems.map(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name,
-      ),
-    );
-    expect(
-      result.find(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name === 'Botanicals',
-      )?.themeSnapshot.setCount,
-    ).toBe(
-      (baselineHomepageThemeSpotlightItems.find(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name === 'Botanicals',
-      )?.themeSnapshot.setCount ?? 0) + 1,
-    );
-  });
-
-  test('does not auto-promote overlay-only themes into the limited homepage theme rows', async () => {
-    const overlayOnlyTheme = createOverlaySet({
-      name: 'Great Deku Tree 2-in-1',
-      setId: '77092',
-      slug: 'great-deku-tree-2-in-1-77092',
-      sourceSetNumber: '77092-1',
-      theme: 'The Legend of Zelda',
-    });
-    const [homepageThemeItems, homepageThemeSpotlightItems] = await Promise.all(
-      [
-        listHomepageThemeDirectoryItemsWithOverlay({
-          listCatalogOverlaySetsFn: async () => [overlayOnlyTheme],
-        }),
-        listHomepageThemeSpotlightItemsWithOverlay({
-          listCatalogOverlaySetsFn: async () => [overlayOnlyTheme],
-        }),
-      ],
-    );
-
-    expect(
-      homepageThemeItems.some(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name ===
-          'The Legend of Zelda',
-      ),
-    ).toBe(false);
-    expect(
-      homepageThemeSpotlightItems.some(
-        (catalogThemeDirectoryItem) =>
-          catalogThemeDirectoryItem.themeSnapshot.name ===
-          'The Legend of Zelda',
-      ),
-    ).toBe(false);
-  });
-
-  test('adds overlay sets to discover browse groups and set slugs', async () => {
-    const overlaySet = createOverlaySet({
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/75399-1/1000.jpg',
-      name: 'Rebel U-Wing Starfighter',
-      pieces: 594,
-      releaseYear: 2026,
-      setId: '75399',
-      slug: 'rebel-u-wing-starfighter-75399',
-      sourceSetNumber: '75399-1',
-      theme: 'Star Wars',
-    });
-    const baselineThemeSlugs = new Set(listCatalogThemePageSlugs());
-
-    const [setSlugs, discoverThemeGroups] = await Promise.all([
-      listCatalogSetSlugsWithOverlay({
-        listCatalogOverlaySetsFn: async () => [overlaySet],
+  test('builds theme pages and theme slugs from canonical theme groups', async () => {
+    const listCanonicalCatalogSetsFn = async () => [
+      createCanonicalCatalogSet({
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75399-1/1000.jpg',
+        name: 'Rebel U-Wing Starfighter',
+        pieceCount: 594,
+        releaseYear: 2026,
+        setId: '75399',
+        slug: 'rebel-u-wing-starfighter-75399',
+        sourceSetNumber: '75399-1',
+        primaryTheme: 'Star Wars',
       }),
-      listDiscoverBrowseThemeGroupsWithOverlay({
-        listCatalogOverlaySetsFn: async () => [overlaySet],
-        setLimit: 12,
-        themeLimit: 12,
+      createCanonicalCatalogSet({
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/75313-1/1000.jpg',
+        name: 'AT-AT',
+        pieceCount: 6785,
+        releaseYear: 2021,
+        setId: '75313',
+        slug: 'at-at-75313',
+        sourceSetNumber: '75313-1',
+        primaryTheme: 'Star Wars',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+        name: 'Rivendell',
+        pieceCount: 6167,
+        releaseYear: 2023,
+        setId: '10316',
+        slug: 'rivendell-10316',
+        sourceSetNumber: '10316-1',
+        primaryTheme: 'Icons',
+      }),
+    ];
+
+    const [themePageSlugs, themePage] = await Promise.all([
+      listCatalogThemePageSlugs({
+        listCanonicalCatalogSetsFn,
+      }),
+      getCatalogThemePageBySlug({
+        listCanonicalCatalogSetsFn,
+        slug: buildCatalogThemeSlug('Star Wars'),
       }),
     ]);
 
-    expect(setSlugs).toContain('rebel-u-wing-starfighter-75399');
+    expect(themePageSlugs).toEqual(['icons', 'star-wars']);
+    expect(themePage).toBeDefined();
+    expect(themePage?.themeSnapshot.name).toBe('Star Wars');
     expect(
-      discoverThemeGroups
-        .find(
-          (catalogThemeGroup) =>
-            catalogThemeGroup.slug === buildCatalogThemeSlug('Star Wars'),
-        )
-        ?.setCards.some((setCard) => setCard.id === '75399'),
-    ).toBe(true);
-    expect(baselineThemeSlugs.has(buildCatalogThemeSlug('Star Wars'))).toBe(
-      true,
-    );
+      themePage?.setCards.map((catalogSetCard) => catalogSetCard.id),
+    ).toEqual(['75313', '75399']);
   });
 
-  test('returns live catalog offers for valid active merchant seeds', async () => {
+  test('builds discover browse theme groups from canonical theme data', async () => {
+    const result = await listDiscoverBrowseThemeGroups({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          setId: '10316',
+          slug: 'rivendell-10316',
+          sourceSetNumber: '10316-1',
+          name: 'Rivendell',
+          primaryTheme: 'Icons',
+        }),
+        createCanonicalCatalogSet({
+          setId: '10333',
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          sourceSetNumber: '10333-1',
+          name: 'The Lord of the Rings: Barad-dur',
+          primaryTheme: 'Icons',
+        }),
+        createCanonicalCatalogSet({
+          setId: '76269',
+          slug: 'avengers-tower-76269',
+          sourceSetNumber: '76269-1',
+          name: 'Avengers Tower',
+          primaryTheme: 'Marvel',
+        }),
+      ],
+      setLimit: 6,
+      themeLimit: 6,
+    });
+
+    expect(result.map((themeGroup) => themeGroup.theme)).toEqual([
+      'Icons',
+      'Marvel',
+    ]);
+    expect(result[0]?.totalSetCount).toBe(2);
+  });
+
+  test('keeps discover highlight cards on canonical discover order', async () => {
+    const result = await listDiscoverHighlightSetCards({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          setId: '76178',
+          slug: 'daily-bugle-76178',
+          sourceSetNumber: '76178-1',
+          name: 'Daily Bugle',
+          releaseYear: 2021,
+          primaryTheme: 'Marvel',
+        }),
+        createCanonicalCatalogSet({
+          setId: '75313',
+          slug: 'at-at-75313',
+          sourceSetNumber: '75313-1',
+          name: 'AT-AT',
+          releaseYear: 2021,
+          primaryTheme: 'Star Wars',
+        }),
+        createCanonicalCatalogSet({
+          setId: '10316',
+          slug: 'rivendell-10316',
+          sourceSetNumber: '10316-1',
+          name: 'Rivendell',
+          releaseYear: 2023,
+          primaryTheme: 'Icons',
+        }),
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10316',
+      '76178',
+      '75313',
+    ]);
+  });
+
+  test('loads live valid offers from Supabase-backed commerce state', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [
-        {
-          availability: 'in_stock',
-          currency_code: 'EUR',
-          fetch_status: 'success',
-          observed_at: '2026-04-18T09:10:00.000Z',
-          offer_seed_id: 'seed-intertoys',
-          price_minor: 16999,
-          updated_at: '2026-04-18T09:10:00.000Z',
-        },
         {
           availability: 'limited',
           currency_code: 'EUR',
           fetch_status: 'success',
-          observed_at: '2026-04-18T09:12:00.000Z',
-          offer_seed_id: 'seed-misterbricks',
-          price_minor: 16499,
-          updated_at: '2026-04-18T09:12:00.000Z',
+          observed_at: '2026-04-18T11:44:00.000Z',
+          offer_seed_id: 'seed-1',
+          price_minor: 16541,
+          updated_at: '2026-04-18T11:44:05.000Z',
         },
         {
-          availability: 'in_stock',
+          availability: 'out_of_stock',
           currency_code: 'EUR',
           fetch_status: 'success',
-          observed_at: '2026-04-18T09:14:00.000Z',
-          offer_seed_id: 'seed-inactive',
-          price_minor: 15999,
-          updated_at: '2026-04-18T09:14:00.000Z',
+          observed_at: '2026-04-18T11:40:00.000Z',
+          offer_seed_id: 'seed-2',
+          price_minor: 17240,
+          updated_at: '2026-04-18T11:40:05.000Z',
         },
       ],
       merchantRows: [
         {
-          id: 'merchant-intertoys',
+          id: 'merchant-1',
           is_active: true,
-          name: 'Intertoys',
-          slug: 'intertoys',
+          name: 'Proshop',
+          slug: 'proshop',
         },
         {
-          id: 'merchant-misterbricks',
+          id: 'merchant-2',
           is_active: true,
-          name: 'MisterBricks',
-          slug: 'misterbricks',
-        },
-        {
-          id: 'merchant-inactive',
-          is_active: false,
-          name: 'Inactive Merchant',
-          slug: 'inactive-merchant',
+          name: 'Amazon',
+          slug: 'amazon-nl',
         },
       ],
       offerSeedRows: [
         {
-          id: 'seed-intertoys',
+          id: 'seed-1',
           is_active: true,
-          merchant_id: 'merchant-intertoys',
-          product_url: 'https://www.intertoys.nl/mario-kart',
-          set_id: '72037',
+          merchant_id: 'merchant-1',
+          product_url: 'https://www.proshop.nl/lego/21061',
+          set_id: '21061',
           validation_status: 'valid',
         },
         {
-          id: 'seed-misterbricks',
+          id: 'seed-2',
           is_active: true,
-          merchant_id: 'merchant-misterbricks',
-          product_url: 'https://www.misterbricks.nl/mario-kart',
-          set_id: '72037',
+          merchant_id: 'merchant-2',
+          product_url: 'https://www.amazon.nl/dp/21061',
+          set_id: '21061',
           validation_status: 'valid',
-        },
-        {
-          id: 'seed-inactive',
-          is_active: true,
-          merchant_id: 'merchant-inactive',
-          product_url: 'https://www.inactive-merchant.nl/mario-kart',
-          set_id: '72037',
-          validation_status: 'valid',
-        },
-        {
-          id: 'seed-pending',
-          is_active: true,
-          merchant_id: 'merchant-intertoys',
-          product_url: 'https://www.intertoys.nl/mario-kart-pending',
-          set_id: '72037',
-          validation_status: 'pending',
         },
       ],
     });
 
     const result = await listCatalogSetLiveOffersBySetId({
-      setId: '72037',
+      setId: '21061',
       supabaseClient,
     });
 
-    expect(result).toHaveLength(2);
-    expect(result.map((catalogOffer) => catalogOffer.merchantName)).toEqual([
-      'MisterBricks',
-      'Intertoys',
+    expect(result).toMatchObject([
+      {
+        merchantName: 'Proshop',
+        priceCents: 16541,
+        availability: 'in_stock',
+      },
+      {
+        merchantName: 'Amazon',
+        priceCents: 17240,
+        availability: 'out_of_stock',
+      },
     ]);
-    expect(result[0]).toMatchObject({
-      availability: 'in_stock',
-      merchantSlug: 'misterbricks',
-      priceCents: 16499,
-      setId: '72037',
-    });
   });
 
-  test('loads live set-detail offers through the API when no Supabase client is injected', async () => {
-    const fetchImpl = vi.fn().mockResolvedValue({
-      json: vi.fn().mockResolvedValue([
-        {
-          availability: 'in_stock',
-          checkedAt: '2026-04-18T11:45:11.617Z',
-          condition: 'new',
-          currency: 'EUR',
-          market: 'NL',
-          merchant: 'other',
-          merchantName: 'Proshop',
-          merchantSlug: 'proshop',
-          priceCents: 16541,
-          setId: '21061',
-          url: 'https://www.proshop.nl/LEGO/LEGO-Architecture-21061-Notre-Dame-van-Parijs/3259265',
-        },
-      ]),
-      ok: true,
-    });
-
-    const result = await listCatalogSetLiveOffersBySetId({
-      apiBaseUrl: 'https://api.example.test',
-      fetchImpl,
-      setId: '21061',
-    });
-
-    expect(fetchImpl).toHaveBeenCalledWith(
-      'https://api.example.test/api/v1/catalog/sets/21061/live-offers',
-      expect.objectContaining({
-        cache: 'no-store',
-        headers: {
-          accept: 'application/json',
-        },
-      }),
-    );
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
-      merchantName: 'Proshop',
-      priceCents: 16541,
-      setId: '21061',
-    });
-  });
-
-  test('prefers live pricing data while preserving generated outbound urls for matching merchants', () => {
-    const result = resolveCatalogSetDetailOffers({
-      generatedOffers: [
-        createCatalogOffer({
-          merchant: 'other',
-          merchantName: 'MisterBricks',
-          priceCents: 18999,
-          url: 'https://brickhunt.nl/out/misterbricks-72037',
-        }),
-      ],
-      liveOffers: [
-        {
-          availability: 'in_stock',
-          checkedAt: '2026-04-18T09:12:00.000Z',
-          condition: 'new',
-          currency: 'EUR',
-          market: 'NL',
-          merchant: 'other',
-          merchantName: 'MisterBricks',
-          merchantSlug: 'misterbricks',
-          priceCents: 16499,
-          setId: '72037',
-          url: 'https://www.misterbricks.nl/mario-kart',
-        },
-      ],
-    });
-
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
-      merchantName: 'MisterBricks',
-      priceCents: 16499,
-      url: 'https://brickhunt.nl/out/misterbricks-72037',
-    });
-  });
-
-  test('a successful live refresh keeps the public pricing state out of no-deal mode', () => {
-    const resolvedOffers = resolveCatalogSetDetailOffers({
-      generatedOffers: [],
-      liveOffers: [
-        {
-          availability: 'in_stock',
-          checkedAt: '2026-04-18T09:12:00.000Z',
-          condition: 'new',
-          currency: 'EUR',
-          market: 'NL',
-          merchant: 'other',
-          merchantName: 'Intertoys',
-          merchantSlug: 'intertoys',
-          priceCents: 16999,
-          setId: '72037',
-          url: 'https://www.intertoys.nl/mario-kart',
-        },
-        {
-          availability: 'in_stock',
-          checkedAt: '2026-04-18T09:15:00.000Z',
-          condition: 'new',
-          currency: 'EUR',
-          market: 'NL',
-          merchant: 'other',
-          merchantName: 'Top1Toys',
-          merchantSlug: 'top1toys',
-          priceCents: 17499,
-          setId: '72037',
-          url: 'https://www.top1toys.nl/mario-kart',
-        },
-      ],
-    });
-
-    expect(resolvedOffers).toHaveLength(2);
-    expect(resolvedOffers[0]).toMatchObject({
-      merchantName: 'Intertoys',
-      priceCents: 16999,
-    });
-  });
-
-  test('uses the same live best merchant summary as the set detail offer path when live offers exist', () => {
-    const generatedOffers = [
-      createCatalogOffer({
-        merchant: 'other',
-        merchantName: 'bol',
-        priceCents: 23399,
-        setId: '75355',
-        url: 'https://brickhunt.nl/out/75355-bol',
-      }),
-      createCatalogOffer({
-        merchant: 'other',
-        merchantName: 'Top1Toys',
-        priceCents: 23999,
-        setId: '75355',
-        url: 'https://brickhunt.nl/out/75355-top1toys',
-      }),
-    ];
+  test('set-detail offer resolution and current summary stay aligned on live offers', () => {
     const liveOffers = [
       {
         availability: 'in_stock' as const,
-        checkedAt: '2026-04-18T13:45:00.000Z',
+        checkedAt: '2026-04-18T11:45:00.000Z',
         condition: 'new' as const,
         currency: 'EUR' as const,
         market: 'NL' as const,
@@ -1081,9 +865,17 @@ describe('catalog effective data access web', () => {
         merchantName: 'Top1Toys',
         merchantSlug: 'top1toys',
         priceCents: 23999,
-        setId: '75355',
-        url: 'https://www.top1toys.nl/x-wing',
+        setId: '75398',
+        url: 'https://top1toys.nl/lego/75398',
       },
+    ];
+    const generatedOffers = [
+      createCatalogOffer({
+        merchantName: 'Top1Toys',
+        priceCents: 23999,
+        setId: '75398',
+        url: 'https://brickhunt.nl/out/top1toys/75398',
+      }),
     ];
 
     const detailOffers = resolveCatalogSetDetailOffers({
@@ -1093,69 +885,50 @@ describe('catalog effective data access web', () => {
     const summary = summarizeCatalogCurrentOffers({
       generatedOffers,
       liveOffers,
-      setId: '75355',
+      setId: '75398',
     });
 
     expect(detailOffers[0]).toMatchObject({
       merchantName: 'Top1Toys',
       priceCents: 23999,
-      url: 'https://brickhunt.nl/out/75355-top1toys',
+      url: 'https://brickhunt.nl/out/top1toys/75398',
     });
     expect(summary.bestOffer).toMatchObject({
       merchantName: 'Top1Toys',
       priceCents: 23999,
-      url: 'https://brickhunt.nl/out/75355-top1toys',
     });
   });
 
-  test('does not let generated-only merchants masquerade as current best offers on listing cards', () => {
+  test('does not produce a current live offer summary when no live offers exist', async () => {
+    const summary = await getCatalogCurrentOfferSummaryBySetId({
+      fetchImpl: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(JSON.stringify([]), {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        }),
+      ),
+      setId: '71411',
+    });
+
+    expect(summary.bestOffer).toBeUndefined();
+    expect(summary.offers).toEqual([]);
+  });
+
+  test('generated fallback pricing does not masquerade as a live current best deal when no live offers exist', () => {
     const result = resolveCatalogCurrentOffers({
       generatedOffers: [
         createCatalogOffer({
-          merchant: 'other',
-          merchantName: 'bol',
-          priceCents: 23399,
-          setId: '75355',
-          url: 'https://brickhunt.nl/out/75355-bol',
+          merchantName: 'LEGO',
+          priceCents: 24999,
+          setId: '71411',
+          url: 'https://www.lego.com/nl-nl/product/71411',
         }),
       ],
-      liveOffers: [
-        {
-          availability: 'in_stock',
-          checkedAt: '2026-04-18T13:45:00.000Z',
-          condition: 'new',
-          currency: 'EUR',
-          market: 'NL',
-          merchant: 'other',
-          merchantName: 'Top1Toys',
-          merchantSlug: 'top1toys',
-          priceCents: 23999,
-          setId: '75355',
-          url: 'https://www.top1toys.nl/x-wing',
-        },
-      ],
+      liveOffers: [],
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
-      merchantName: 'Top1Toys',
-      priceCents: 23999,
-    });
-    expect(
-      result.some((catalogOffer) => catalogOffer.merchantName === 'bol'),
-    ).toBe(false);
-  });
-
-  test('generated fallback pricing does not masquerade as a live current best deal when no live offers exist', async () => {
-    const summary = await getCatalogCurrentOfferSummaryBySetId({
-      fetchImpl: vi.fn().mockResolvedValue({
-        json: vi.fn().mockResolvedValue([]),
-        ok: true,
-      }),
-      setId: '21061',
-    });
-
-    expect(summary.offers).toEqual([]);
-    expect(summary.bestOffer).toBeUndefined();
+    expect(result).toEqual([]);
   });
 });

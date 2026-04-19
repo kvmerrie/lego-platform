@@ -1,9 +1,5 @@
 import type { ReactNode } from 'react';
 import {
-  listCatalogSearchMatches,
-  type CatalogSearchMatch,
-} from '@lego-platform/catalog/data-access';
-import {
   CatalogQuickFilterBar,
   CatalogSectionShell,
   CatalogSetCard,
@@ -11,6 +7,7 @@ import {
 } from '@lego-platform/catalog/ui';
 import {
   type CatalogQuickFilterKey,
+  type CatalogSearchMatch,
   listCatalogQuickFilterOptions,
   matchesCatalogQuickFilter,
   normalizeCatalogQuickFilterKey,
@@ -193,9 +190,7 @@ export function CatalogFeatureSearchResults({
     );
   }
 
-  const resolvedSearchMatches =
-    searchMatches ??
-    listCatalogSearchMatches(searchQuery, Number.MAX_SAFE_INTEGER);
+  const resolvedSearchMatches = searchMatches ?? [];
   const searchResults = resolvedSearchMatches
     .map((searchMatch) => ({
       ...searchMatch,

@@ -225,7 +225,6 @@ export class CommerceAdminSetsPageComponent {
   );
   readonly themeFilter = signal('all');
   readonly sort = signal<SetManagementSort>('benchmark_first');
-  readonly runningDiscoverySetId = signal<string | null>(null);
   readonly refreshingSetId = signal<string | null>(null);
   readonly rowFeedback = signal<Record<string, SetsRowFeedback>>({});
   readonly isDialogOpen = signal(false);
@@ -416,12 +415,6 @@ export class CommerceAdminSetsPageComponent {
     return parts.join(' · ');
   }
 
-  getDiscoveryTargetMerchant(
-    row: CommerceCoverageQueueRow,
-  ): CommerceCoverageQueueMerchantStatus | undefined {
-    return this.commerceAdminStore.getCoverageQueueDiscoveryTargetMerchant(row);
-  }
-
   getSeedActionMerchant(
     row: CommerceCoverageQueueRow,
   ): CommerceCoverageQueueMerchantStatus | undefined {
@@ -434,35 +427,12 @@ export class CommerceAdminSetsPageComponent {
       : 'Seed toevoegen';
   }
 
-  getDiscoveryQueryParams(
-    row: CommerceCoverageQueueRow,
-  ): Record<string, string> {
-    return this.commerceAdminStore.getCoverageQueueDiscoveryLinkParams(row);
-  }
-
   handleMerchantStatusAction(input: {
     merchantStatus: CommerceCoverageQueueMerchantStatus;
     row: CommerceCoverageQueueRow;
   }): void {
     const { merchantStatus, row } = input;
-    const action = this.commerceAdminStore.getCoverageQueueMerchantAction(
-      row,
-      merchantStatus,
-    );
-
     this.selectRow(row);
-
-    if (action.type === 'open_discovery') {
-      void this.router.navigate(['/discovery'], {
-        queryParams:
-          this.commerceAdminStore.getCoverageQueueDiscoveryLinkParamsForMerchant(
-            row,
-            merchantStatus.merchantId,
-          ),
-      });
-      return;
-    }
-
     this.openOfferSeedDialogForMerchant(merchantStatus, row);
   }
 
@@ -500,51 +470,6 @@ export class CommerceAdminSetsPageComponent {
     this.selectedOfferSeed.set(null);
     this.offerSeedPrefill.set(null);
     this.isDialogOpen.set(false);
-  }
-
-  async runDiscovery(row: CommerceCoverageQueueRow): Promise<void> {
-    const merchantStatus = this.getDiscoveryTargetMerchant(row);
-
-    if (!merchantStatus) {
-      return;
-    }
-
-    this.selectRow(row);
-    this.runningDiscoverySetId.set(row.setId);
-
-    try {
-      const result = await this.commerceAdminStore.runDiscovery({
-        setId: row.setId,
-        merchantId: merchantStatus.merchantId,
-      });
-      const candidateCount = result.candidates.length;
-
-      this.rowFeedback.update((feedback) => ({
-        ...feedback,
-        [row.setId]: {
-          tone: candidateCount > 0 ? 'positive' : 'neutral',
-          message:
-            candidateCount > 0
-              ? `${candidateCount} kandidaat${
-                  candidateCount === 1 ? '' : 'en'
-                } gevonden bij ${merchantStatus.merchantName}`
-              : `${merchantStatus.merchantName} gecheckt, geen kandidaten gevonden`,
-        },
-      }));
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Discovery kon niet starten.';
-
-      this.rowFeedback.update((feedback) => ({
-        ...feedback,
-        [row.setId]: {
-          tone: 'danger',
-          message,
-        },
-      }));
-    } finally {
-      this.runningDiscoverySetId.set(null);
-    }
   }
 
   async refreshSet(row: CommerceCoverageQueueRow): Promise<void> {

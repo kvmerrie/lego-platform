@@ -2,7 +2,6 @@ export * from './lib/commerce-admin-api.service';
 export * from './lib/commerce-admin-add-set-page';
 export * from './lib/commerce-admin-coverage-page';
 export * from './lib/commerce-admin-coverage-queue-page';
-export * from './lib/commerce-admin-discovery-page';
 export * from './lib/commerce-admin-dashboard-page';
 export * from './lib/commerce-admin-merchants-page';
 export * from './lib/commerce-admin-operations-page';

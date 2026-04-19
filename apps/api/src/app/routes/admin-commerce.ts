@@ -4,27 +4,17 @@ import {
   listCanonicalCatalogSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
-  approveCommerceDiscoveryCandidate,
-  createCommerceOfferSeedFromDiscoveryCandidate,
   createCommerceBenchmarkSet,
   createCommerceMerchant,
   createCommerceOfferSeed,
   deleteCommerceBenchmarkSet,
-  listCommerceDiscoveryCandidates,
-  listCommerceDiscoveryRuns,
   listCommerceBenchmarkSets,
   listCommerceMerchants,
   listCommerceOfferSeeds,
-  rejectCommerceDiscoveryCandidate,
-  runCommerceMerchantDiscovery,
   updateCommerceMerchant,
   updateCommerceOfferSeed,
 } from '@lego-platform/commerce/data-access-server';
 import {
-  type CommerceDiscoveryApprovalResult,
-  type CommerceDiscoveryCandidate,
-  type CommerceDiscoveryRun,
-  type CommerceDiscoveryRunInput,
   type CommerceBenchmarkSet,
   type CommerceBenchmarkSetInput,
   type CommerceCoverageQueueRow,
@@ -34,7 +24,6 @@ import {
   type CommerceOfferSeedInput,
   type CommerceSetRefreshResult,
   buildCommerceCoverageQueueRows,
-  validateCommerceDiscoveryRunInput,
   validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
@@ -43,32 +32,17 @@ import { apiPaths } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminCommerceService {
-  approveDiscoveryCandidate(
-    candidateId: string,
-  ): Promise<CommerceDiscoveryApprovalResult>;
   createBenchmarkSet(
     input: CommerceBenchmarkSetInput,
   ): Promise<CommerceBenchmarkSet>;
   listCoverageQueue(): Promise<CommerceCoverageQueueRow[]>;
   refreshSet(setId: string): Promise<CommerceSetRefreshResult>;
   createMerchant(input: CommerceMerchantInput): Promise<CommerceMerchant>;
-  createOfferSeed(input: {
-    discoveryCandidateId?: string;
-    input: CommerceOfferSeedInput;
-  }): Promise<CommerceOfferSeed>;
+  createOfferSeed(input: CommerceOfferSeedInput): Promise<CommerceOfferSeed>;
   deleteBenchmarkSet(setId: string): Promise<void>;
-  listDiscoveryCandidates(): Promise<CommerceDiscoveryCandidate[]>;
-  listDiscoveryRuns(): Promise<CommerceDiscoveryRun[]>;
   listBenchmarkSets(): Promise<CommerceBenchmarkSet[]>;
   listMerchants(): Promise<CommerceMerchant[]>;
   listOfferSeeds(): Promise<CommerceOfferSeed[]>;
-  rejectDiscoveryCandidate(
-    candidateId: string,
-  ): Promise<CommerceDiscoveryCandidate>;
-  runDiscovery(input: CommerceDiscoveryRunInput): Promise<{
-    candidates: CommerceDiscoveryCandidate[];
-    run: CommerceDiscoveryRun;
-  }>;
   updateMerchant(input: {
     input: CommerceMerchantInput;
     merchantId: string;
@@ -81,32 +55,17 @@ export interface AdminCommerceService {
 
 function createAdminCommerceService(): AdminCommerceService {
   return {
-    listDiscoveryRuns: () => listCommerceDiscoveryRuns(),
-    listDiscoveryCandidates: () => listCommerceDiscoveryCandidates(),
-    runDiscovery: (input) => runCommerceMerchantDiscovery({ input }),
-    approveDiscoveryCandidate: (candidateId) =>
-      approveCommerceDiscoveryCandidate({ candidateId }),
-    rejectDiscoveryCandidate: (candidateId) =>
-      rejectCommerceDiscoveryCandidate({ candidateId }),
     listBenchmarkSets: () => listCommerceBenchmarkSets(),
     createBenchmarkSet: (input) => createCommerceBenchmarkSet({ input }),
     deleteBenchmarkSet: (setId) => deleteCommerceBenchmarkSet({ setId }),
     listCoverageQueue: async () => {
-      const [
-        benchmarkSets,
-        catalogSets,
-        discoveryCandidates,
-        discoveryRuns,
-        merchants,
-        offerSeeds,
-      ] = await Promise.all([
-        listCommerceBenchmarkSets(),
-        listCanonicalCatalogSets(),
-        listCommerceDiscoveryCandidates(),
-        listCommerceDiscoveryRuns(),
-        listCommerceMerchants(),
-        listCommerceOfferSeeds(),
-      ]);
+      const [benchmarkSets, catalogSets, merchants, offerSeeds] =
+        await Promise.all([
+          listCommerceBenchmarkSets(),
+          listCanonicalCatalogSets(),
+          listCommerceMerchants(),
+          listCommerceOfferSeeds(),
+        ]);
 
       return buildCommerceCoverageQueueRows({
         benchmarkSets,
@@ -115,15 +74,9 @@ function createAdminCommerceService(): AdminCommerceService {
           name: catalogSet.name,
           theme: catalogSet.primaryTheme,
           slug: catalogSet.slug,
-          source: catalogSet.source === 'snapshot' ? 'snapshot' : 'overlay',
-          ...(catalogSet.source === 'snapshot'
-            ? {}
-            : {
-                createdAt: catalogSet.createdAt,
-              }),
+          source: 'overlay',
+          createdAt: catalogSet.createdAt,
         })),
-        discoveryCandidates,
-        discoveryRuns,
         merchants,
         offerSeeds,
       });
@@ -137,13 +90,7 @@ function createAdminCommerceService(): AdminCommerceService {
     updateMerchant: ({ input, merchantId }) =>
       updateCommerceMerchant({ input, merchantId }),
     listOfferSeeds: () => listCommerceOfferSeeds(),
-    createOfferSeed: ({ discoveryCandidateId, input }) =>
-      discoveryCandidateId
-        ? createCommerceOfferSeedFromDiscoveryCandidate({
-            candidateId: discoveryCandidateId,
-            input,
-          })
-        : createCommerceOfferSeed({ input }),
+    createOfferSeed: (input) => createCommerceOfferSeed({ input }),
     updateOfferSeed: ({ input, offerSeedId }) =>
       updateCommerceOfferSeed({ input, offerSeedId }),
   };
@@ -151,19 +98,6 @@ function createAdminCommerceService(): AdminCommerceService {
 
 function toBadRequestMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof Error ? error.message : fallbackMessage;
-}
-
-function readOptionalDiscoveryCandidateId(value: unknown): string | undefined {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return undefined;
-  }
-
-  const candidateId = (value as { discoveryCandidateId?: unknown })
-    .discoveryCandidateId;
-
-  return typeof candidateId === 'string' && candidateId.trim()
-    ? candidateId.trim()
-    : undefined;
 }
 
 function readRequiredSetId(value: unknown): string {
@@ -292,14 +226,6 @@ export function createAdminCommerceRoutes({
       return commerceService.listOfferSeeds();
     });
 
-    fastify.get(apiPaths.adminCommerceDiscoveryRuns, async function () {
-      return commerceService.listDiscoveryRuns();
-    });
-
-    fastify.get(apiPaths.adminCommerceDiscoveryCandidates, async function () {
-      return commerceService.listDiscoveryCandidates();
-    });
-
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceSetRefreshes,
       async function (request, reply) {
@@ -320,75 +246,12 @@ export function createAdminCommerceRoutes({
     );
 
     fastify.post<{ Body: unknown }>(
-      apiPaths.adminCommerceDiscoveryRuns,
-      async function (request, reply) {
-        try {
-          const input = validateCommerceDiscoveryRunInput(request.body);
-          await ensureCatalogSetExists(input.setId);
-
-          const result = await commerceService.runDiscovery(input);
-
-          return reply.status(201).send(result);
-        } catch (error) {
-          return reply.status(400).send({
-            message: toBadRequestMessage(
-              error,
-              'Commerce discovery run input is invalid.',
-            ),
-          });
-        }
-      },
-    );
-
-    fastify.post<{ Params: { candidateId: string } }>(
-      `${apiPaths.adminCommerceDiscoveryCandidates}/:candidateId/approve`,
-      async function (request, reply) {
-        try {
-          return await commerceService.approveDiscoveryCandidate(
-            request.params.candidateId,
-          );
-        } catch (error) {
-          return reply.status(400).send({
-            message: toBadRequestMessage(
-              error,
-              'Commerce discovery candidate could not be approved.',
-            ),
-          });
-        }
-      },
-    );
-
-    fastify.post<{ Params: { candidateId: string } }>(
-      `${apiPaths.adminCommerceDiscoveryCandidates}/:candidateId/reject`,
-      async function (request, reply) {
-        try {
-          return await commerceService.rejectDiscoveryCandidate(
-            request.params.candidateId,
-          );
-        } catch (error) {
-          return reply.status(400).send({
-            message: toBadRequestMessage(
-              error,
-              'Commerce discovery candidate could not be rejected.',
-            ),
-          });
-        }
-      },
-    );
-
-    fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceOfferSeeds,
       async function (request, reply) {
         try {
           const input = validateCommerceOfferSeedInput(request.body);
-          const discoveryCandidateId = readOptionalDiscoveryCandidateId(
-            request.body,
-          );
           await ensureCatalogSetExists(input.setId);
-          const offerSeed = await commerceService.createOfferSeed({
-            input,
-            discoveryCandidateId,
-          });
+          const offerSeed = await commerceService.createOfferSeed(input);
 
           return reply.status(201).send(offerSeed);
         } catch (error) {

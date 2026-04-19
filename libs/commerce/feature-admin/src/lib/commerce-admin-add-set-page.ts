@@ -11,12 +11,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
   type CatalogExternalSetSearchResult,
-  type CatalogOverlaySet,
+  type CatalogSet,
 } from '@lego-platform/catalog/util';
-import {
-  type CommerceDiscoveryCandidate,
-  type CommerceMerchant,
-} from '@lego-platform/commerce/util';
+import { type CommerceMerchant } from '@lego-platform/commerce/util';
 import { CommerceAdminStore } from './commerce-admin-store.service';
 
 type AdminFeedbackTone = 'danger' | 'neutral' | 'positive' | null;
@@ -167,35 +164,21 @@ export class CommerceAdminAddSetPageComponent {
   readonly searchQuery = signal('');
   readonly searchResults = signal<CatalogExternalSetSearchResult[]>([]);
   readonly selectedResult = signal<CatalogExternalSetSearchResult | null>(null);
-  readonly addedSet = signal<CatalogOverlaySet | null>(null);
+  readonly addedSet = signal<CatalogSet | null>(null);
   readonly activationMerchantId = signal('');
   readonly feedback = signal<string | null>(null);
   readonly feedbackTone = signal<AdminFeedbackTone>(null);
-  readonly discoveryMessage = signal<string | null>(null);
-  readonly discoveryMessageTone = signal<AdminFeedbackTone>(null);
+  readonly activationMessage = signal<string | null>(null);
+  readonly activationMessageTone = signal<AdminFeedbackTone>(null);
   readonly isSearching = signal(false);
   readonly isAdding = signal(false);
-  readonly isRunningDiscovery = signal(false);
   readonly isSavingSeed = signal(false);
-  readonly isUpdatingCandidateId = signal<string | null>(null);
-  readonly selectedCandidateId = signal<string | null>(null);
   readonly seedDraftUrl = signal('');
 
   readonly activeMerchants = computed(() =>
     [...this.commerceAdminStore.merchants()]
       .filter((merchant) => merchant.isActive)
-      .sort((left, right) => {
-        const leftDiscovery = Number(
-          this.commerceAdminStore.supportsMerchantDiscovery(left.id),
-        );
-        const rightDiscovery = Number(
-          this.commerceAdminStore.supportsMerchantDiscovery(right.id),
-        );
-
-        return (
-          rightDiscovery - leftDiscovery || left.name.localeCompare(right.name)
-        );
-      }),
+      .sort((left, right) => left.name.localeCompare(right.name)),
   );
 
   readonly activationMerchant = computed<CommerceMerchant | undefined>(
@@ -205,67 +188,31 @@ export class CommerceAdminAddSetPageComponent {
       ) ?? this.activeMerchants()[0],
   );
 
-  readonly supportsActivationDiscovery = computed(() => {
-    const merchant = this.activationMerchant();
-
-    return merchant
-      ? this.commerceAdminStore.supportsMerchantDiscovery(merchant.id)
-      : false;
-  });
-
   readonly activationMerchantSearchUrl = computed(() => {
-    const overlaySet = this.addedSet();
+    const catalogSet = this.addedSet();
     const merchant = this.activationMerchant();
 
-    if (!overlaySet || !merchant) {
+    if (!catalogSet || !merchant) {
       return undefined;
     }
 
     return this.commerceAdminStore.getMerchantSearchUrl({
       merchantId: merchant.id,
-      setId: overlaySet.setId,
-    });
-  });
-
-  readonly discoveryCandidates = computed(() => {
-    const overlaySet = this.addedSet();
-    const merchant = this.activationMerchant();
-
-    if (!overlaySet || !merchant) {
-      return [];
-    }
-
-    return this.commerceAdminStore.getDiscoveryCandidatesForSetMerchant({
-      merchantId: merchant.id,
-      setId: overlaySet.setId,
-    });
-  });
-
-  readonly latestDiscoveryRun = computed(() => {
-    const overlaySet = this.addedSet();
-    const merchant = this.activationMerchant();
-
-    if (!overlaySet || !merchant) {
-      return undefined;
-    }
-
-    return this.commerceAdminStore.getLatestDiscoveryRun({
-      merchantId: merchant.id,
-      setId: overlaySet.setId,
+      setId: catalogSet.setId,
     });
   });
 
   readonly addedSetCoverageRow = computed(() => {
-    const overlaySet = this.addedSet();
+    const catalogSet = this.addedSet();
 
-    if (!overlaySet) {
+    if (!catalogSet) {
       return null;
     }
 
     return (
       this.commerceAdminStore
         .coverageQueueRows()
-        .find((row) => row.setId === overlaySet.setId) ?? null
+        .find((row) => row.setId === catalogSet.setId) ?? null
     );
   });
 
@@ -275,13 +222,13 @@ export class CommerceAdminAddSetPageComponent {
 
   readonly activeSeedCount = computed(() => {
     const coverageRow = this.addedSetCoverageRow();
-    const overlaySet = this.addedSet();
+    const catalogSet = this.addedSet();
 
     if (coverageRow) {
       return coverageRow.activeSeedCount;
     }
 
-    if (!overlaySet) {
+    if (!catalogSet) {
       return 0;
     }
 
@@ -289,7 +236,7 @@ export class CommerceAdminAddSetPageComponent {
       .offerSeeds()
       .filter(
         (offerSeed) =>
-          offerSeed.setId === overlaySet.setId &&
+          offerSeed.setId === catalogSet.setId &&
           offerSeed.isActive &&
           offerSeed.validationStatus !== 'invalid',
       ).length;
@@ -298,10 +245,10 @@ export class CommerceAdminAddSetPageComponent {
   readonly hasFirstValidOffer = computed(() => this.validMerchantCount() > 0);
 
   readonly publicSetUrl = computed(() => {
-    const overlaySet = this.addedSet();
+    const catalogSet = this.addedSet();
 
-    return overlaySet
-      ? this.commerceAdminStore.getPublicSetUrl(overlaySet.setId)
+    return catalogSet
+      ? this.commerceAdminStore.getPublicSetUrl(catalogSet.setId)
       : undefined;
   });
   readonly workbenchQueryParams = computed(() =>
@@ -319,7 +266,7 @@ export class CommerceAdminAddSetPageComponent {
       this.searchResults().length > 0 || hasSelection || hasAddedSet;
 
     const buildStatus = (
-      step: 'search' | 'confirm' | 'overlay' | 'activation' | 'success',
+      step: 'search' | 'confirm' | 'catalog' | 'activation' | 'success',
     ): NewSetStepStatus => {
       switch (step) {
         case 'search':
@@ -330,7 +277,7 @@ export class CommerceAdminAddSetPageComponent {
             : hasSelection
               ? 'active'
               : 'upcoming';
-        case 'overlay':
+        case 'catalog':
           return hasAddedSet
             ? 'complete'
             : hasSelection
@@ -361,9 +308,9 @@ export class CommerceAdminAddSetPageComponent {
         status: buildStatus('confirm'),
       },
       {
-        hint: 'Zet de set in de overlay-catalogus.',
+        hint: 'Zet de set in de Brickhunt-catalogus.',
         label: 'Voeg toe',
-        status: buildStatus('overlay'),
+        status: buildStatus('catalog'),
       },
       {
         hint: 'Pak meteen de eerste merchantroute op.',
@@ -397,10 +344,6 @@ export class CommerceAdminAddSetPageComponent {
       return 'Kies of activeer eerst een merchant om deze set verder te brengen.';
     }
 
-    if (this.supportsActivationDiscovery()) {
-      return `Volgende stap: draai discovery bij ${merchant.name} en kies daarna de beste kandidaat.`;
-    }
-
     return `Volgende stap: voeg handmatig de eerste seed toe voor ${merchant.name}.`;
   });
 
@@ -423,12 +366,7 @@ export class CommerceAdminAddSetPageComponent {
         );
 
         if (!activationMerchantId || !currentMerchantStillExists) {
-          const preferredMerchant =
-            merchants.find((merchant) =>
-              this.commerceAdminStore.supportsMerchantDiscovery(merchant.id),
-            ) ?? merchants[0];
-
-          this.activationMerchantId.set(preferredMerchant?.id ?? '');
+          this.activationMerchantId.set(merchants[0]?.id ?? '');
         }
       },
       { allowSignalWrites: true },
@@ -441,10 +379,9 @@ export class CommerceAdminAddSetPageComponent {
 
   updateActivationMerchant(value: string): void {
     this.activationMerchantId.set(value);
-    this.selectedCandidateId.set(null);
     this.seedDraftUrl.set('');
-    this.discoveryMessage.set(null);
-    this.discoveryMessageTone.set(null);
+    this.activationMessage.set(null);
+    this.activationMessageTone.set(null);
   }
 
   selectSearchResult(result: CatalogExternalSetSearchResult): void {
@@ -452,19 +389,9 @@ export class CommerceAdminAddSetPageComponent {
     this.addedSet.set(null);
     this.feedback.set(null);
     this.feedbackTone.set(null);
-    this.discoveryMessage.set(null);
-    this.discoveryMessageTone.set(null);
-    this.selectedCandidateId.set(null);
+    this.activationMessage.set(null);
+    this.activationMessageTone.set(null);
     this.seedDraftUrl.set('');
-  }
-
-  useCandidate(candidate: CommerceDiscoveryCandidate): void {
-    this.selectedCandidateId.set(candidate.id);
-    this.seedDraftUrl.set(candidate.canonicalUrl ?? candidate.candidateUrl);
-    this.discoveryMessage.set(
-      'Kandidaat overgenomen. Controleer de URL nog één keer en sla daarna de seed op.',
-    );
-    this.discoveryMessageTone.set('positive');
   }
 
   async search(): Promise<void> {
@@ -487,9 +414,8 @@ export class CommerceAdminAddSetPageComponent {
       this.searchResults.set(results);
       this.selectedResult.set(results[0] ?? null);
       this.addedSet.set(null);
-      this.discoveryMessage.set(null);
-      this.discoveryMessageTone.set(null);
-      this.selectedCandidateId.set(null);
+      this.activationMessage.set(null);
+      this.activationMessageTone.set(null);
       this.seedDraftUrl.set('');
 
       this.feedback.set(
@@ -526,31 +452,29 @@ export class CommerceAdminAddSetPageComponent {
     this.feedbackTone.set(null);
 
     try {
-      const overlaySet =
-        await this.commerceAdminStore.createCatalogOverlaySet(selectedResult);
+      const catalogSet =
+        await this.commerceAdminStore.createCatalogSet(selectedResult);
 
-      this.addedSet.set(overlaySet);
-      this.commerceAdminStore.setActiveSetId(overlaySet.setId);
+      this.addedSet.set(catalogSet);
+      this.commerceAdminStore.setActiveSetId(catalogSet.setId);
       this.feedback.set(
-        `${overlaySet.name} (${overlaySet.setId}) staat nu in de catalog-overlay.`,
+        `${catalogSet.name} (${catalogSet.setId}) staat nu in de Brickhunt-catalogus.`,
       );
       this.feedbackTone.set('positive');
 
       const merchant = this.activationMerchant();
 
-      this.discoveryMessage.set(
+      this.activationMessage.set(
         merchant
-          ? this.commerceAdminStore.supportsMerchantDiscovery(merchant.id)
-            ? `Set toegevoegd. Volgende stap: run discovery bij ${merchant.name}.`
-            : `Set toegevoegd. Volgende stap: voeg handmatig een seed toe voor ${merchant.name}.`
+          ? `Set toegevoegd. Volgende stap: voeg handmatig een seed toe voor ${merchant.name}.`
           : 'Set toegevoegd. Kies nu de merchant waarmee je de eerste route live zet.',
       );
-      this.discoveryMessageTone.set('neutral');
+      this.activationMessageTone.set('neutral');
     } catch (error) {
       this.feedback.set(
         error instanceof Error
           ? error.message
-          : 'Set kon niet aan de catalog-overlay worden toegevoegd.',
+          : 'Set kon niet aan de Brickhunt-catalogus worden toegevoegd.',
       );
       this.feedbackTone.set('danger');
     } finally {
@@ -558,78 +482,16 @@ export class CommerceAdminAddSetPageComponent {
     }
   }
 
-  async runDiscovery(): Promise<void> {
-    const overlaySet = this.addedSet();
-    const merchant = this.activationMerchant();
-
-    this.discoveryMessage.set(null);
-    this.discoveryMessageTone.set(null);
-
-    if (!overlaySet || !merchant) {
-      this.discoveryMessage.set(
-        'Voeg eerst een set toe en kies daarna een merchant.',
-      );
-      this.discoveryMessageTone.set('danger');
-      return;
-    }
-
-    if (!this.supportsActivationDiscovery()) {
-      this.discoveryMessage.set(
-        `${merchant.name} heeft hier nog geen discovery-ondersteuning. Ga direct door met een handmatige seed.`,
-      );
-      this.discoveryMessageTone.set('neutral');
-      return;
-    }
-
-    this.isRunningDiscovery.set(true);
-
-    try {
-      const result = await this.commerceAdminStore.runDiscovery({
-        merchantId: merchant.id,
-        setId: overlaySet.setId,
-      });
-
-      if (result.run.status === 'success' && result.run.candidateCount > 0) {
-        this.discoveryMessage.set(
-          `${result.run.candidateCount} kandidaat${
-            result.run.candidateCount === 1 ? '' : 'en'
-          } gevonden voor ${overlaySet.name}. Kies er één of vul hieronder meteen handmatig een URL in.`,
-        );
-        this.discoveryMessageTone.set('positive');
-      } else if (result.run.status === 'success') {
-        this.discoveryMessage.set(
-          `${merchant.name} is gecheckt, maar leverde nog geen bruikbare kandidaat op. Ga hieronder verder met een handmatige seed.`,
-        );
-        this.discoveryMessageTone.set('neutral');
-      } else {
-        this.discoveryMessage.set(
-          result.run.errorMessage ??
-            'Discovery kwam terug zonder bruikbare kandidaten.',
-        );
-        this.discoveryMessageTone.set('danger');
-      }
-    } catch (error) {
-      this.discoveryMessage.set(
-        error instanceof Error
-          ? error.message
-          : 'Discovery kon niet worden gestart.',
-      );
-      this.discoveryMessageTone.set('danger');
-    } finally {
-      this.isRunningDiscovery.set(false);
-    }
-  }
-
   async saveSeedFromDraft(): Promise<void> {
-    const overlaySet = this.addedSet();
+    const catalogSet = this.addedSet();
     const merchant = this.activationMerchant();
     const productUrl = this.seedDraftUrl().trim();
 
-    if (!overlaySet || !merchant || !productUrl) {
-      this.discoveryMessage.set(
-        'Kies eerst een kandidaat of vul handmatig een product-URL in.',
+    if (!catalogSet || !merchant || !productUrl) {
+      this.activationMessage.set(
+        'Kies eerst een merchant en vul daarna een product-URL in.',
       );
-      this.discoveryMessageTone.set('danger');
+      this.activationMessageTone.set('danger');
       return;
     }
 
@@ -637,9 +499,8 @@ export class CommerceAdminAddSetPageComponent {
 
     try {
       await this.commerceAdminStore.saveOfferSeed({
-        discoveryCandidateId: this.selectedCandidateId() ?? undefined,
         input: {
-          setId: overlaySet.setId,
+          setId: catalogSet.setId,
           merchantId: merchant.id,
           productUrl,
           isActive: true,
@@ -648,90 +509,45 @@ export class CommerceAdminAddSetPageComponent {
         },
       });
 
-      this.discoveryMessage.set(
+      this.activationMessage.set(
         this.hasFirstValidOffer()
           ? 'Eerste geldige offer staat live voor deze set.'
           : 'Seed opgeslagen. De set is toegevoegd en de eerste route staat klaar.',
       );
-      this.discoveryMessageTone.set('positive');
+      this.activationMessageTone.set('positive');
     } catch (error) {
-      this.discoveryMessage.set(
+      this.activationMessage.set(
         error instanceof Error
           ? error.message
           : 'Offer seed kon niet worden opgeslagen.',
       );
-      this.discoveryMessageTone.set('danger');
+      this.activationMessageTone.set('danger');
     } finally {
       this.isSavingSeed.set(false);
     }
   }
 
-  async approveCandidate(candidate: CommerceDiscoveryCandidate): Promise<void> {
-    this.isUpdatingCandidateId.set(candidate.id);
-    this.discoveryMessage.set(null);
-    this.discoveryMessageTone.set(null);
-
-    try {
-      const result = await this.commerceAdminStore.approveDiscoveryCandidate(
-        candidate.id,
-      );
-
-      this.discoveryMessage.set(result.message);
-      this.discoveryMessageTone.set('positive');
-    } catch (error) {
-      this.discoveryMessage.set(
-        error instanceof Error
-          ? error.message
-          : 'Kandidaat kon niet worden goedgekeurd.',
-      );
-      this.discoveryMessageTone.set('danger');
-    } finally {
-      this.isUpdatingCandidateId.set(null);
-    }
-  }
-
-  async rejectCandidate(candidate: CommerceDiscoveryCandidate): Promise<void> {
-    this.isUpdatingCandidateId.set(candidate.id);
-    this.discoveryMessage.set(null);
-    this.discoveryMessageTone.set(null);
-
-    try {
-      await this.commerceAdminStore.rejectDiscoveryCandidate(candidate.id);
-      this.discoveryMessage.set('Kandidaat gemarkeerd als afgewezen.');
-      this.discoveryMessageTone.set('positive');
-    } catch (error) {
-      this.discoveryMessage.set(
-        error instanceof Error
-          ? error.message
-          : 'Kandidaat kon niet worden afgewezen.',
-      );
-      this.discoveryMessageTone.set('danger');
-    } finally {
-      this.isUpdatingCandidateId.set(null);
-    }
-  }
-
   async continueToWorkbench(): Promise<void> {
-    const overlaySet = this.addedSet();
+    const catalogSet = this.addedSet();
 
-    if (!overlaySet) {
+    if (!catalogSet) {
       return;
     }
 
-    this.commerceAdminStore.setActiveSetId(overlaySet.setId);
+    this.commerceAdminStore.setActiveSetId(catalogSet.setId);
     await this.router.navigate(['/workbench'], {
       queryParams: this.workbenchQueryParams(),
     });
   }
 
   async continueToSets(): Promise<void> {
-    const overlaySet = this.addedSet();
+    const catalogSet = this.addedSet();
 
-    if (!overlaySet) {
+    if (!catalogSet) {
       return;
     }
 
-    this.commerceAdminStore.setActiveSetId(overlaySet.setId);
+    this.commerceAdminStore.setActiveSetId(catalogSet.setId);
     await this.router.navigate(['/sets'], {
       queryParams: this.setsQueryParams(),
     });

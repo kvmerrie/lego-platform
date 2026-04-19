@@ -7,7 +7,7 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
-import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
+import { listCatalogSetSummariesWithOverlay } from '@lego-platform/catalog/data-access-server';
 import {
   buildWishlistAlertNotificationCandidate,
   buildWishlistPriceAlert,
@@ -677,10 +677,11 @@ export async function runWishlistAlertEmailFlow({
     }),
   );
   const catalogSetCardsById = new Map(
-    listCatalogSetCardsByIds(uniqueSetIds).map((catalogSetCard) => [
-      catalogSetCard.id,
-      catalogSetCard,
-    ]),
+    (await listCatalogSetSummariesWithOverlay())
+      .filter((catalogSetSummary) =>
+        uniqueSetIds.includes(catalogSetSummary.id),
+      )
+      .map((catalogSetSummary) => [catalogSetSummary.id, catalogSetSummary]),
   );
   const evaluatedAt = dependencies.getNow().toISOString();
   const wishlistUrl = buildAbsoluteUrl(

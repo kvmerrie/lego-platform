@@ -1,40 +1,25 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import {
-  type CatalogBrowseThemeGroup,
-  type CatalogSearchMatch,
-  listCatalogSetCardsByIds,
-  listCatalogSetSummaries,
-  listDiscoverCharacterSetCards,
-  listDiscoverDealCandidateSetCards,
-  listDiscoverHighlightSetCards,
-  listHomepageDealCandidateSetCards,
-  listHomepageSetCards,
-  type CatalogThemeDirectoryItem,
-  type CatalogThemeLandingPage,
-  catalogSnapshot,
-  getCatalogOffersBySetId,
-  getCatalogSetBySlug,
-  getCatalogThemePageBySlug,
-  listHomepageThemeDirectoryItems,
-  listHomepageThemeSpotlightItems,
-  listCatalogSearchMatches,
-  listCatalogThemeDirectoryItems,
-  listDiscoverBrowseThemeGroups,
-} from '@lego-platform/catalog/data-access';
 import type {
   CatalogCanonicalSet,
+  CatalogBrowseThemeGroup,
   CatalogHomepageSetCard,
-  CatalogOverlaySet,
+  CatalogSearchMatch,
   CatalogSetDetail,
-  CatalogSetRecord,
   CatalogSetSummary,
+  CatalogThemeDirectoryItem,
+  CatalogThemeLandingPage,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
+  catalogDiscoverDealCandidateIds,
+  catalogDiscoverSetOrder,
+  catalogDiscoverThemeOrder,
+  catalogHomepageDealCandidateIds,
+  catalogHomepageFeaturedSetIds,
+  catalogThemeOverlays,
   getCatalogThemeVisual,
   listCatalogSetCardSearchMatches,
-  mergeCanonicalCatalogSets,
   normalizeCatalogAsciiText,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
@@ -48,19 +33,19 @@ import {
   hasServerSupabaseConfig,
 } from '@lego-platform/shared/config';
 
-const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
+const CATALOG_SETS_TABLE = 'catalog_sets';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
-const genericOverlayThemeMomentum =
+const genericCatalogThemeMomentum =
   'Nieuw in Brickhunt. We bouwen hier nu de eerste prijsvergelijkingen op.';
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 
-interface CatalogOverlaySetRow {
+interface CatalogSetRow {
   created_at: string;
   image_url: string | null;
   name: string;
@@ -73,7 +58,6 @@ interface CatalogOverlaySetRow {
   source_theme_id: string | null;
   source_set_number: string;
   status: 'active';
-  theme: string;
   updated_at: string;
 }
 
@@ -168,84 +152,34 @@ function getCatalogApiBaseUrl(): string {
   return process.env['API_PROXY_TARGET'] ?? getRuntimeBaseUrl('api');
 }
 
-function toCatalogOverlaySet({
+function toCanonicalCatalogSetFromRow({
   row,
-  themeIdentity = resolveCatalogThemeIdentity({
-    rawTheme: row.theme,
-  }),
+  themeIdentity,
 }: {
-  row: CatalogOverlaySetRow;
+  row: CatalogSetRow;
   themeIdentity?: ReturnType<typeof resolveCatalogThemeIdentity>;
-}): CatalogOverlaySet {
+}): CatalogCanonicalSet {
+  const resolvedThemeIdentity =
+    themeIdentity ??
+    resolveCatalogThemeIdentityFromPersistence({
+      primaryThemeName: undefined,
+      sourceThemeName: undefined,
+    });
+
   return {
     createdAt: row.created_at,
     imageUrl: row.image_url ?? undefined,
     name: row.name,
-    pieces: row.piece_count,
-    primaryThemeId: row.primary_theme_id ?? undefined,
+    pieceCount: row.piece_count,
+    primaryTheme: resolvedThemeIdentity.primaryTheme,
     releaseYear: row.release_year,
-    secondaryThemeLabels: themeIdentity.secondaryThemes,
+    secondaryLabels: resolvedThemeIdentity.secondaryThemes,
     setId: row.set_id,
     slug: row.slug,
     source: row.source,
-    sourceThemeId: row.source_theme_id ?? undefined,
     sourceSetNumber: row.source_set_number,
     status: row.status,
-    theme: themeIdentity.primaryTheme,
     updatedAt: row.updated_at,
-  };
-}
-
-function toCanonicalCatalogSetFromSnapshotRecord(
-  catalogSetRecord: CatalogSetRecord,
-): CatalogCanonicalSet {
-  const themeIdentity = resolveCatalogThemeIdentity({
-    rawTheme: catalogSetRecord.theme,
-  });
-
-  return {
-    createdAt: catalogSnapshot.generatedAt,
-    imageUrl: catalogSetRecord.imageUrl,
-    name: catalogSetRecord.name,
-    pieceCount: catalogSetRecord.pieces,
-    primaryTheme: themeIdentity.primaryTheme,
-    releaseYear: catalogSetRecord.releaseYear,
-    secondaryLabels: themeIdentity.secondaryThemes,
-    setId: catalogSetRecord.canonicalId,
-    slug: catalogSetRecord.slug,
-    source: 'snapshot',
-    sourceSetNumber: catalogSetRecord.sourceSetNumber,
-    status: 'active',
-    updatedAt: catalogSnapshot.generatedAt,
-  };
-}
-
-function toCanonicalCatalogSetFromOverlaySet(
-  overlaySet: CatalogOverlaySet,
-): CatalogCanonicalSet {
-  const themeIdentity = overlaySet.secondaryThemeLabels
-    ? {
-        primaryTheme: overlaySet.theme,
-        secondaryThemes: overlaySet.secondaryThemeLabels,
-      }
-    : resolveCatalogThemeIdentity({
-        rawTheme: overlaySet.theme,
-      });
-
-  return {
-    createdAt: overlaySet.createdAt,
-    imageUrl: overlaySet.imageUrl,
-    name: overlaySet.name,
-    pieceCount: overlaySet.pieces,
-    primaryTheme: themeIdentity.primaryTheme,
-    releaseYear: overlaySet.releaseYear,
-    secondaryLabels: themeIdentity.secondaryThemes,
-    setId: overlaySet.setId,
-    slug: overlaySet.slug,
-    source: overlaySet.source,
-    sourceSetNumber: overlaySet.sourceSetNumber,
-    status: overlaySet.status,
-    updatedAt: overlaySet.updatedAt,
   };
 }
 
@@ -259,7 +193,6 @@ function toCatalogSummaryFromCanonicalSet(
     theme: canonicalCatalogSet.primaryTheme,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
-    collectorAngle: `Nieuw in Brickhunt. ${canonicalCatalogSet.primaryTheme} staat klaar voor de eerste prijscheck.`,
     imageUrl: canonicalCatalogSet.imageUrl,
   };
 }
@@ -275,13 +208,6 @@ function toCatalogSetDetailFromCanonicalSet(
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
-    collectorAngle: `Nieuw in Brickhunt. ${canonicalCatalogSet.name} staat klaar voor de eerste prijscheck.`,
-    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${canonicalCatalogSet.primaryTheme}-set.`,
-    availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
-    collectorHighlights: [
-      `${canonicalCatalogSet.pieceCount.toLocaleString('nl-NL')} stenen`,
-      `Release ${canonicalCatalogSet.releaseYear}`,
-    ],
     ...(canonicalCatalogSet.secondaryLabels[0]
       ? {
           subtheme: canonicalCatalogSet.secondaryLabels[0],
@@ -303,24 +229,16 @@ function toCatalogSetDetailFromCanonicalSet(
 }
 
 async function listCatalogThemeIdentityBySetId({
-  overlayRows,
+  catalogRows,
   supabaseClient,
 }: {
-  overlayRows: readonly CatalogOverlaySetRow[];
+  catalogRows: readonly CatalogSetRow[];
   supabaseClient: CatalogSupabaseClient;
 }): Promise<Map<string, ReturnType<typeof resolveCatalogThemeIdentity>>> {
-  const fallbackThemeIdentityBySetId = new Map(
-    overlayRows.map((overlayRow) => [
-      overlayRow.set_id,
-      resolveCatalogThemeIdentity({
-        rawTheme: overlayRow.theme,
-      }),
-    ]),
-  );
   const sourceThemeIds = [
     ...new Set(
-      overlayRows
-        .map((overlayRow) => overlayRow.source_theme_id)
+      catalogRows
+        .map((catalogRow) => catalogRow.source_theme_id)
         .filter((sourceThemeId): sourceThemeId is string =>
           Boolean(sourceThemeId),
         ),
@@ -328,8 +246,8 @@ async function listCatalogThemeIdentityBySetId({
   ];
   const primaryThemeIds = [
     ...new Set(
-      overlayRows
-        .map((overlayRow) => overlayRow.primary_theme_id)
+      catalogRows
+        .map((catalogRow) => catalogRow.primary_theme_id)
         .filter((primaryThemeId): primaryThemeId is string =>
           Boolean(primaryThemeId),
         ),
@@ -337,7 +255,7 @@ async function listCatalogThemeIdentityBySetId({
   ];
 
   if (!sourceThemeIds.length && !primaryThemeIds.length) {
-    return fallbackThemeIdentityBySetId;
+    return new Map();
   }
 
   try {
@@ -357,7 +275,7 @@ async function listCatalogThemeIdentityBySetId({
     ]);
 
     if (sourceThemeResponse.error || themeMappingResponse.error) {
-      return fallbackThemeIdentityBySetId;
+      return new Map();
     }
 
     const sourceThemes =
@@ -378,7 +296,7 @@ async function listCatalogThemeIdentityBySetId({
       : { data: [], error: null };
 
     if (primaryThemeResponse.error) {
-      return fallbackThemeIdentityBySetId;
+      return new Map();
     }
 
     const sourceThemeById = new Map(
@@ -397,23 +315,22 @@ async function listCatalogThemeIdentityBySetId({
     );
 
     return new Map(
-      overlayRows.map((overlayRow) => {
-        const sourceThemeName = overlayRow.source_theme_id
-          ? sourceThemeById.get(overlayRow.source_theme_id)?.source_theme_name
+      catalogRows.map((catalogRow) => {
+        const sourceThemeName = catalogRow.source_theme_id
+          ? sourceThemeById.get(catalogRow.source_theme_id)?.source_theme_name
           : undefined;
         const primaryThemeId =
-          overlayRow.primary_theme_id ??
-          (overlayRow.source_theme_id
-            ? primaryThemeIdBySourceThemeId.get(overlayRow.source_theme_id)
+          catalogRow.primary_theme_id ??
+          (catalogRow.source_theme_id
+            ? primaryThemeIdBySourceThemeId.get(catalogRow.source_theme_id)
             : undefined);
         const primaryThemeName = primaryThemeId
           ? primaryThemeById.get(primaryThemeId)?.display_name
           : undefined;
 
         return [
-          overlayRow.set_id,
+          catalogRow.set_id,
           resolveCatalogThemeIdentityFromPersistence({
-            legacyTheme: overlayRow.theme,
             primaryThemeName,
             sourceThemeName,
           }),
@@ -421,7 +338,7 @@ async function listCatalogThemeIdentityBySetId({
       }),
     );
   } catch {
-    return fallbackThemeIdentityBySetId;
+    return new Map();
   }
 }
 
@@ -629,15 +546,11 @@ export function summarizeCatalogCurrentOffers({
   };
 }
 
-const snapshotCanonicalCatalogSets = sortCanonicalCatalogSets(
-  catalogSnapshot.setRecords.map(toCanonicalCatalogSetFromSnapshotRecord),
-);
-
-export async function listCatalogOverlaySets({
+export async function listCanonicalCatalogSets({
   supabaseClient,
 }: {
   supabaseClient?: CatalogSupabaseClient;
-} = {}): Promise<CatalogOverlaySet[]> {
+} = {}): Promise<CatalogCanonicalSet[]> {
   if (!supabaseClient && !hasServerSupabaseConfig()) {
     return [];
   }
@@ -646,9 +559,9 @@ export async function listCatalogOverlaySets({
     const activeSupabaseClient =
       supabaseClient ?? getWebCatalogSupabaseAdminClient();
     const { data, error } = await activeSupabaseClient
-      .from(CATALOG_SETS_OVERLAY_TABLE)
+      .from(CATALOG_SETS_TABLE)
       .select(
-        'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+        'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
       )
       .eq('status', 'active')
       .order('created_at', {
@@ -656,20 +569,22 @@ export async function listCatalogOverlaySets({
       });
 
     if (error) {
-      throw new Error('Unable to load catalog overlay sets.');
+      throw new Error('Unable to load canonical catalog sets.');
     }
 
-    const overlayRows = (data as CatalogOverlaySetRow[] | null) ?? [];
+    const catalogRows = (data as CatalogSetRow[] | null) ?? [];
     const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
-      overlayRows,
+      catalogRows,
       supabaseClient: activeSupabaseClient,
     });
 
-    return overlayRows.map((row) =>
-      toCatalogOverlaySet({
-        row,
-        themeIdentity: themeIdentityBySetId.get(row.set_id),
-      }),
+    return sortCanonicalCatalogSets(
+      catalogRows.map((row) =>
+        toCanonicalCatalogSetFromRow({
+          row,
+          themeIdentity: themeIdentityBySetId.get(row.set_id),
+        }),
+      ),
     );
   } catch (error) {
     if (!supabaseClient) {
@@ -678,23 +593,6 @@ export async function listCatalogOverlaySets({
 
     throw error;
   }
-}
-
-export async function listCanonicalCatalogSets({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
-}: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
-} = {}): Promise<CatalogCanonicalSet[]> {
-  const canonicalOverlaySets = (await listCatalogOverlaySetsFn()).map(
-    toCanonicalCatalogSetFromOverlaySet,
-  );
-
-  return sortCanonicalCatalogSets(
-    mergeCanonicalCatalogSets({
-      fallbackSets: snapshotCanonicalCatalogSets,
-      preferredSets: canonicalOverlaySets,
-    }),
-  );
 }
 
 export async function getCanonicalCatalogSetById({
@@ -725,35 +623,14 @@ export async function getCanonicalCatalogSetBySlug({
   );
 }
 
-const snapshotCatalogSummaryById = new Map(
-  listCatalogSetSummaries().map((catalogSetSummary) => [
-    catalogSetSummary.id,
-    catalogSetSummary,
-  ]),
-);
-const snapshotCatalogSetCardById = new Map(
-  listCatalogSetCardsByIds(
-    catalogSnapshot.setRecords.map(
-      (catalogSetRecord) => catalogSetRecord.canonicalId,
-    ),
-  ).map((catalogSetCard) => [catalogSetCard.id, catalogSetCard]),
-);
-
-export async function listCatalogSetSummariesWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listCatalogSetSummaries({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogSetSummary[]> {
-  const canonicalCatalogSets = await listCanonicalCatalogSets({
-    listCatalogOverlaySetsFn,
-  });
-
   return sortCatalogSetSummaries(
-    canonicalCatalogSets.map((canonicalCatalogSet) =>
-      canonicalCatalogSet.source === 'snapshot'
-        ? (snapshotCatalogSummaryById.get(canonicalCatalogSet.setId) ??
-          toCatalogSummaryFromCanonicalSet(canonicalCatalogSet))
-        : toCatalogSummaryFromCanonicalSet(canonicalCatalogSet),
+    (await listCanonicalCatalogSetsFn()).map((canonicalCatalogSet) =>
+      toCatalogSummaryFromCanonicalSet(canonicalCatalogSet),
     ),
   );
 }
@@ -761,41 +638,212 @@ export async function listCatalogSetSummariesWithOverlay({
 function toCatalogSetCardFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogHomepageSetCard {
-  return toCatalogHomepageSetCard(
-    toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet),
+  const catalogSetDetail =
+    toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
+
+  return {
+    id: catalogSetDetail.id,
+    slug: catalogSetDetail.slug,
+    name: catalogSetDetail.name,
+    theme: catalogSetDetail.theme,
+    releaseYear: catalogSetDetail.releaseYear,
+    pieces: catalogSetDetail.pieces,
+    imageUrl: catalogSetDetail.imageUrl,
+    images: catalogSetDetail.images,
+    primaryImage: catalogSetDetail.primaryImage,
+  };
+}
+
+async function listAllCatalogSetCards({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+}: {
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return (await listCanonicalCatalogSetsFn()).map(
+    toCatalogSetCardFromCanonicalSet,
   );
 }
 
-export async function listCatalogSetCardsByIdsWithOverlay({
+function selectCatalogSetCardsByIds({
   canonicalIds,
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  setCards,
 }: {
   canonicalIds: readonly string[];
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
-}): Promise<CatalogHomepageSetCard[]> {
-  const canonicalCatalogSets = await listCanonicalCatalogSets({
-    listCatalogOverlaySetsFn,
-  });
-  const canonicalCatalogSetById = new Map(
-    canonicalCatalogSets.map((canonicalCatalogSet) => [
-      canonicalCatalogSet.setId,
-      canonicalCatalogSet,
-    ]),
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const setCardById = new Map(
+    setCards.map((catalogSetCard) => [catalogSetCard.id, catalogSetCard]),
   );
 
   return canonicalIds.flatMap((canonicalId) => {
-    const canonicalCatalogSet = canonicalCatalogSetById.get(canonicalId);
+    const catalogSetCard = setCardById.get(canonicalId);
 
-    if (!canonicalCatalogSet) {
-      return [];
-    }
+    return catalogSetCard ? [catalogSetCard] : [];
+  });
+}
 
-    return [
-      canonicalCatalogSet.source === 'snapshot'
-        ? (snapshotCatalogSetCardById.get(canonicalId) ??
-          toCatalogSetCardFromCanonicalSet(canonicalCatalogSet))
-        : toCatalogSetCardFromCanonicalSet(canonicalCatalogSet),
-    ];
+function getExplicitBrowseRank(
+  canonicalId: string,
+  rankedIds: readonly string[],
+): number {
+  const rank = rankedIds.indexOf(canonicalId);
+
+  return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
+}
+
+function getReviewedCoverageRank(
+  canonicalId: string,
+  reviewedSetIds?: readonly string[],
+): number {
+  if (!reviewedSetIds?.length) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  return reviewedSetIds.includes(canonicalId) ? 0 : 1;
+}
+
+function getMinifigureHighlightRank(
+  minifigureHighlights?: readonly string[],
+): number {
+  return minifigureHighlights?.length ? 0 : 1;
+}
+
+function sortDiscoverShowcaseSetCards({
+  reviewedSetIds,
+  setCards,
+}: {
+  reviewedSetIds?: readonly string[];
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return [...setCards].sort(
+    (left, right) =>
+      getReviewedCoverageRank(left.id, reviewedSetIds) -
+        getReviewedCoverageRank(right.id, reviewedSetIds) ||
+      getMinifigureHighlightRank(left.minifigureHighlights) -
+        getMinifigureHighlightRank(right.minifigureHighlights) ||
+      getExplicitBrowseRank(left.id, catalogDiscoverSetOrder) -
+        getExplicitBrowseRank(right.id, catalogDiscoverSetOrder) ||
+      right.releaseYear - left.releaseYear ||
+      left.name.localeCompare(right.name),
+  );
+}
+
+function sortDiscoverThemeSetCards({
+  reviewedSetIds,
+  setCards,
+}: {
+  reviewedSetIds?: readonly string[];
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return sortDiscoverShowcaseSetCards({
+    reviewedSetIds,
+    setCards,
+  });
+}
+
+function getCatalogThemeBrowseOrder(theme: string): number {
+  const curatedThemeOrderIndex = catalogDiscoverThemeOrder.indexOf(
+    theme as (typeof catalogDiscoverThemeOrder)[number],
+  );
+
+  if (curatedThemeOrderIndex !== -1) {
+    return curatedThemeOrderIndex;
+  }
+
+  const fallbackThemeOrder = catalogThemeOverlays.map(
+    (catalogThemeOverlay) => catalogThemeOverlay.name,
+  );
+  const fallbackThemeOrderIndex = fallbackThemeOrder.indexOf(theme);
+
+  return fallbackThemeOrderIndex === -1
+    ? Number.MAX_SAFE_INTEGER
+    : fallbackThemeOrderIndex + catalogDiscoverThemeOrder.length;
+}
+
+function getCatalogThemeRepresentativeImageUrl({
+  setCards,
+  themeSnapshot,
+}: {
+  setCards: readonly CatalogHomepageSetCard[];
+  themeSnapshot: CatalogThemeSnapshot;
+}): string | undefined {
+  const signatureSetCard = setCards.find(
+    (catalogSetCard) => catalogSetCard.name === themeSnapshot.signatureSet,
+  );
+
+  if (signatureSetCard?.imageUrl) {
+    return signatureSetCard.imageUrl;
+  }
+
+  return setCards.find((catalogSetCard) => catalogSetCard.imageUrl)?.imageUrl;
+}
+
+function createThemeSnapshot({
+  setCards,
+  theme,
+}: {
+  setCards: readonly CatalogHomepageSetCard[];
+  theme: string;
+}): CatalogThemeSnapshot {
+  const catalogThemeOverlay = catalogThemeOverlays.find(
+    (themeOverlay) => themeOverlay.name === theme,
+  );
+
+  return {
+    name: theme,
+    slug: buildCatalogThemeSlug(theme),
+    setCount: setCards.length,
+    momentum: catalogThemeOverlay?.momentum ?? genericCatalogThemeMomentum,
+    signatureSet:
+      catalogThemeOverlay?.signatureSet ?? setCards[0]?.name ?? theme,
+  };
+}
+
+async function listCatalogBrowseThemeGroupsInternal({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+}: {
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+} = {}): Promise<CatalogBrowseThemeGroup[]> {
+  const setCards = await listAllCatalogSetCards({
+    listCanonicalCatalogSetsFn,
+  });
+  const setCardsByTheme = new Map<string, CatalogHomepageSetCard[]>();
+
+  for (const setCard of setCards) {
+    const existingSetCards = setCardsByTheme.get(setCard.theme) ?? [];
+    existingSetCards.push(setCard);
+    setCardsByTheme.set(setCard.theme, existingSetCards);
+  }
+
+  return [...setCardsByTheme.entries()]
+    .map(([theme, themeSetCards]) => ({
+      slug: buildCatalogThemeSlug(theme),
+      theme,
+      setCards: sortDiscoverShowcaseSetCards({
+        setCards: themeSetCards,
+      }),
+      totalSetCount: themeSetCards.length,
+    }))
+    .sort(
+      (left, right) =>
+        getCatalogThemeBrowseOrder(left.theme) -
+          getCatalogThemeBrowseOrder(right.theme) ||
+        left.theme.localeCompare(right.theme),
+    );
+}
+
+export async function listCatalogSetCardsByIds({
+  canonicalIds = [],
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+}: {
+  canonicalIds?: readonly string[];
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return selectCatalogSetCardsByIds({
+    canonicalIds,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
   });
 }
 
@@ -951,18 +999,15 @@ export async function getCatalogCurrentOfferSummaryBySetId({
   setId: string;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCurrentOfferSummary> {
-  const [generatedOffers, liveOffers] = await Promise.all([
-    Promise.resolve(getCatalogOffersBySetId(setId)),
-    listCatalogSetLiveOffersBySetId({
-      apiBaseUrl,
-      fetchImpl,
-      setId,
-      supabaseClient,
-    }),
-  ]);
+  const liveOffers = await listCatalogSetLiveOffersBySetId({
+    apiBaseUrl,
+    fetchImpl,
+    setId,
+    supabaseClient,
+  });
 
   return summarizeCatalogCurrentOffers({
-    generatedOffers,
+    generatedOffers: [],
     liveOffers,
     setId,
   });
@@ -999,283 +1044,110 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   );
 }
 
-function toOverlayCatalogSetDetail(
-  overlaySet: Awaited<ReturnType<typeof listCatalogOverlaySets>>[number],
-): CatalogSetDetail {
-  const themeIdentity = resolveCatalogThemeIdentity({
-    rawTheme: overlaySet.theme,
-  });
-
-  return {
-    id: overlaySet.setId,
-    slug: overlaySet.slug,
-    name: overlaySet.name,
-    theme: themeIdentity.primaryTheme,
-    releaseYear: overlaySet.releaseYear,
-    pieces: overlaySet.pieces,
-    imageUrl: overlaySet.imageUrl,
-    collectorAngle: `Nieuw in Brickhunt. ${overlaySet.name} staat klaar voor de eerste prijscheck.`,
-    tagline: `We bouwen nu de eerste prijsvergelijking op voor deze ${themeIdentity.primaryTheme}-set.`,
-    availability: 'Brickhunt bouwt nu de eerste prijschecks op.',
-    collectorHighlights: [
-      `${overlaySet.pieces.toLocaleString('nl-NL')} stenen`,
-      `Release ${overlaySet.releaseYear}`,
-    ],
-    ...(themeIdentity.secondaryThemes[0]
-      ? {
-          subtheme: themeIdentity.secondaryThemes[0],
-        }
-      : {}),
-    images: overlaySet.imageUrl
-      ? [
-          {
-            order: 0,
-            type: 'hero',
-            url: overlaySet.imageUrl,
-          },
-        ]
-      : undefined,
-    primaryImage: overlaySet.imageUrl,
-  };
-}
-
-function toCatalogHomepageSetCard(
-  catalogSetDetail: CatalogSetDetail,
-): CatalogHomepageSetCard {
-  return {
-    id: catalogSetDetail.id,
-    slug: catalogSetDetail.slug,
-    name: catalogSetDetail.name,
-    theme: catalogSetDetail.theme,
-    releaseYear: catalogSetDetail.releaseYear,
-    pieces: catalogSetDetail.pieces,
-    collectorAngle: catalogSetDetail.collectorAngle,
-    imageUrl: catalogSetDetail.imageUrl,
-    images: catalogSetDetail.images,
-    primaryImage: catalogSetDetail.primaryImage,
-    tagline: catalogSetDetail.tagline,
-    availability: catalogSetDetail.availability,
-    minifigureCount: catalogSetDetail.minifigureCount,
-    minifigureHighlights: catalogSetDetail.minifigureHighlights,
-  };
-}
-
-function getReviewedCoverageRank(
-  canonicalId: string,
-  reviewedSetIds?: readonly string[],
-): number {
-  if (!reviewedSetIds?.length) {
-    return Number.MAX_SAFE_INTEGER;
-  }
-
-  return reviewedSetIds.includes(canonicalId) ? 0 : 1;
-}
-
-function getMinifigureHighlightRank(
-  minifigureHighlights?: readonly string[],
-): number {
-  return minifigureHighlights?.length ? 0 : 1;
-}
-
-function sortDiscoverThemeSetCards({
-  reviewedSetIds,
-  setCards,
+export async function listHomepageSetCards({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  reviewedSetIds?: readonly string[];
-  setCards: readonly CatalogHomepageSetCard[];
-}): CatalogHomepageSetCard[] {
-  return [...setCards].sort(
-    (left, right) =>
-      getReviewedCoverageRank(left.id, reviewedSetIds) -
-        getReviewedCoverageRank(right.id, reviewedSetIds) ||
-      getMinifigureHighlightRank(left.minifigureHighlights) -
-        getMinifigureHighlightRank(right.minifigureHighlights) ||
-      right.releaseYear - left.releaseYear ||
-      left.name.localeCompare(right.name),
-  );
-}
-
-function getCatalogThemeRepresentativeImageUrl({
-  setCards,
-  themeSnapshot,
-}: {
-  setCards: readonly CatalogHomepageSetCard[];
-  themeSnapshot: CatalogThemeSnapshot;
-}): string | undefined {
-  const signatureSetCard = setCards.find(
-    (catalogSetCard) => catalogSetCard.name === themeSnapshot.signatureSet,
-  );
-
-  if (signatureSetCard?.imageUrl) {
-    return signatureSetCard.imageUrl;
-  }
-
-  return setCards.find((catalogSetCard) => catalogSetCard.imageUrl)?.imageUrl;
-}
-
-function createFallbackThemeSnapshot({
-  setCards,
-  theme,
-}: {
-  setCards: readonly CatalogHomepageSetCard[];
-  theme: string;
-}): CatalogThemeSnapshot {
-  return {
-    name: theme,
-    slug: buildCatalogThemeSlug(theme),
-    setCount: setCards.length,
-    momentum: genericOverlayThemeMomentum,
-    signatureSet: setCards[0]?.name ?? theme,
-  };
-}
-
-function mergeThemeSetCards({
-  overlaySetCards,
-  snapshotSetCards,
-}: {
-  overlaySetCards: readonly CatalogHomepageSetCard[];
-  snapshotSetCards: readonly CatalogHomepageSetCard[];
-}): CatalogHomepageSetCard[] {
-  const overlaySetIds = new Set(overlaySetCards.map((setCard) => setCard.id));
-
-  return [
-    ...overlaySetCards,
-    ...snapshotSetCards.filter((setCard) => !overlaySetIds.has(setCard.id)),
-  ];
-}
-
-async function listOverlayCatalogSetCards({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
-}: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  const overlaySetDetails = (await listCatalogOverlaySetsFn())
-    .filter((overlaySet) => overlaySet.status === 'active')
-    .map(toOverlayCatalogSetDetail);
-
-  return overlaySetDetails.map(toCatalogHomepageSetCard);
-}
-
-export async function listHomepageSetCardsWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
-}: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
-} = {}): Promise<CatalogHomepageSetCard[]> {
-  return listCatalogSetCardsByIdsWithOverlay({
-    canonicalIds: listHomepageSetCards().map(
-      (catalogSetCard) => catalogSetCard.id,
-    ),
-    listCatalogOverlaySetsFn,
+  return listCatalogSetCardsByIds({
+    canonicalIds: catalogHomepageFeaturedSetIds,
+    listCanonicalCatalogSetsFn,
   });
 }
 
-export async function listHomepageDealCandidateSetCardsWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listHomepageDealCandidateSetCards({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  return listCatalogSetCardsByIdsWithOverlay({
-    canonicalIds: listHomepageDealCandidateSetCards().map(
-      (catalogSetCard) => catalogSetCard.id,
-    ),
-    listCatalogOverlaySetsFn,
+  return listCatalogSetCardsByIds({
+    canonicalIds: catalogHomepageDealCandidateIds,
+    listCanonicalCatalogSetsFn,
   });
 }
 
-export async function listDiscoverDealCandidateSetCardsWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listDiscoverDealCandidateSetCards({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  return listCatalogSetCardsByIdsWithOverlay({
-    canonicalIds: listDiscoverDealCandidateSetCards().map(
-      (catalogSetCard) => catalogSetCard.id,
-    ),
-    listCatalogOverlaySetsFn,
+  return listCatalogSetCardsByIds({
+    canonicalIds: catalogDiscoverDealCandidateIds,
+    listCanonicalCatalogSetsFn,
   });
 }
 
-export async function listDiscoverHighlightSetCardsWithOverlay({
+export async function listDiscoverHighlightSetCards({
   limit = 6,
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   reviewedSetIds,
 }: {
   limit?: number;
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   reviewedSetIds?: readonly string[];
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  return listCatalogSetCardsByIdsWithOverlay({
-    canonicalIds: listDiscoverHighlightSetCards({
-      limit,
-      reviewedSetIds,
-    }).map((catalogSetCard) => catalogSetCard.id),
-    listCatalogOverlaySetsFn,
-  });
+  return sortDiscoverShowcaseSetCards({
+    reviewedSetIds,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
+  }).slice(0, limit);
 }
 
-export async function listDiscoverCharacterSetCardsWithOverlay({
+export async function listDiscoverCharacterSetCards({
   limit = 6,
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   reviewedSetIds,
 }: {
   limit?: number;
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   reviewedSetIds?: readonly string[];
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  return listCatalogSetCardsByIdsWithOverlay({
-    canonicalIds: listDiscoverCharacterSetCards({
-      limit,
-      reviewedSetIds,
-    }).map((catalogSetCard) => catalogSetCard.id),
-    listCatalogOverlaySetsFn,
-  });
+  return sortDiscoverShowcaseSetCards({
+    reviewedSetIds,
+    setCards: (
+      await listAllCatalogSetCards({
+        listCanonicalCatalogSetsFn,
+      })
+    ).filter((catalogSetCard) => catalogSetCard.minifigureHighlights?.length),
+  }).slice(0, limit);
 }
 
-export async function listCatalogSearchSuggestionOverlaySetCards({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listCatalogSearchSuggestionSetCards({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  const overlaySetCards = await listOverlayCatalogSetCards({
-    listCatalogOverlaySetsFn,
-  });
-  const dedupedSetCardsById = new Map<string, CatalogHomepageSetCard>();
-
-  for (const overlaySetCard of overlaySetCards) {
-    if (!dedupedSetCardsById.has(overlaySetCard.id)) {
-      dedupedSetCardsById.set(overlaySetCard.id, overlaySetCard);
-    }
-  }
-
-  return [...dedupedSetCardsById.values()].sort(
+  return (
+    await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    })
+  ).sort(
     (left, right) =>
       right.releaseYear - left.releaseYear ||
       left.name.localeCompare(right.name),
   );
 }
 
-export async function listCatalogSetSlugsWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listCatalogSetSlugs({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<string[]> {
-  return (await listCanonicalCatalogSets({ listCatalogOverlaySetsFn })).map(
+  return (await listCanonicalCatalogSetsFn()).map(
     (canonicalCatalogSet) => canonicalCatalogSet.slug,
   );
 }
 
-export async function getCatalogSetBySlugWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function getCatalogSetBySlug({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   slug,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   slug: string;
 }): Promise<CatalogSetDetail | undefined> {
   const canonicalCatalogSet = await getCanonicalCatalogSetBySlug({
-    listCanonicalCatalogSetsFn: async () =>
-      listCanonicalCatalogSets({
-        listCatalogOverlaySetsFn,
-      }),
+    listCanonicalCatalogSetsFn,
     slug,
   });
 
@@ -1283,20 +1155,16 @@ export async function getCatalogSetBySlugWithOverlay({
     return undefined;
   }
 
-  if (canonicalCatalogSet.source === 'snapshot') {
-    return getCatalogSetBySlug(slug);
-  }
-
   return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
 }
 
-export async function listCatalogSearchMatchesWithOverlay({
+export async function listCatalogSearchMatches({
   limit = 6,
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   query,
 }: {
   limit?: number;
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   query: string;
 }): Promise<CatalogSearchMatch[]> {
   const suggestionLimit = Math.max(0, Math.floor(limit));
@@ -1305,30 +1173,23 @@ export async function listCatalogSearchMatchesWithOverlay({
     return [];
   }
 
-  const snapshotMatches = listCatalogSearchMatches(
-    query,
-    Number.MAX_SAFE_INTEGER,
-  );
-  const existingSetIds = new Set(
-    snapshotMatches.map((catalogSearchMatch) => catalogSearchMatch.setCard.id),
-  );
-  const overlayMatches = listCatalogSetCardSearchMatches({
+  return listCatalogSetCardSearchMatches({
     limit: Number.MAX_SAFE_INTEGER,
     query,
-    setCards: (
-      await listOverlayCatalogSetCards({
-        listCatalogOverlaySetsFn,
-      })
-    ).filter((setCard) => !existingSetIds.has(setCard.id)),
-  }).map(
-    ({ score, setCard }): CatalogSearchMatch => ({
-      discoverRank: Number.MAX_SAFE_INTEGER,
-      score,
-      setCard,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
     }),
-  );
-
-  return [...snapshotMatches, ...overlayMatches]
+  })
+    .map(
+      ({ score, setCard }): CatalogSearchMatch => ({
+        discoverRank: getExplicitBrowseRank(
+          setCard.id,
+          catalogDiscoverSetOrder,
+        ),
+        score,
+        setCard,
+      }),
+    )
     .sort(
       (left, right) =>
         left.score - right.score ||
@@ -1339,55 +1200,33 @@ export async function listCatalogSearchMatchesWithOverlay({
     .slice(0, suggestionLimit);
 }
 
-export async function listCatalogThemeDirectoryItemsWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listCatalogThemeDirectoryItems({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
-  const snapshotItems = listCatalogThemeDirectoryItems();
-  const snapshotItemByTheme = new Map(
-    snapshotItems.map((catalogThemeDirectoryItem) => [
-      catalogThemeDirectoryItem.themeSnapshot.name,
-      catalogThemeDirectoryItem,
-    ]),
-  );
-  const overlaySetCards = await listOverlayCatalogSetCards({
-    listCatalogOverlaySetsFn,
+  const themeGroups = await listCatalogBrowseThemeGroupsInternal({
+    listCanonicalCatalogSetsFn,
   });
-  const overlayCardsByTheme = new Map<string, CatalogHomepageSetCard[]>();
 
-  for (const overlaySetCard of overlaySetCards) {
-    const existingSetCards =
-      overlayCardsByTheme.get(overlaySetCard.theme) ?? [];
-    existingSetCards.push(overlaySetCard);
-    overlayCardsByTheme.set(overlaySetCard.theme, existingSetCards);
-  }
-
-  const mergedSnapshotItems = snapshotItems.map((snapshotItem) => {
-    const overlayCards = overlayCardsByTheme.get(
-      snapshotItem.themeSnapshot.name,
-    );
-
-    if (!overlayCards?.length) {
-      return snapshotItem;
-    }
-
-    const themeSnapshot = {
-      ...snapshotItem.themeSnapshot,
-      setCount: snapshotItem.themeSnapshot.setCount + overlayCards.length,
-    };
-    const imageUrl =
-      snapshotItem.imageUrl ??
-      overlayCards.find((setCard) => setCard.imageUrl)?.imageUrl;
+  return themeGroups.map((themeGroup) => {
+    const themeSnapshot = createThemeSnapshot({
+      setCards: themeGroup.setCards,
+      theme: themeGroup.theme,
+    });
+    const imageUrl = getCatalogThemeRepresentativeImageUrl({
+      setCards: themeGroup.setCards,
+      themeSnapshot,
+    });
+    const themeVisual = getCatalogThemeVisual(themeSnapshot.name);
 
     return {
       imageUrl,
       themeSnapshot,
-      visual: getCatalogThemeVisual(themeSnapshot.name)
+      visual: themeVisual
         ? {
-            ...getCatalogThemeVisual(themeSnapshot.name),
-            imageUrl:
-              getCatalogThemeVisual(themeSnapshot.name)?.imageUrl ?? imageUrl,
+            ...themeVisual,
+            imageUrl: themeVisual.imageUrl ?? imageUrl,
           }
         : imageUrl
           ? {
@@ -1396,220 +1235,118 @@ export async function listCatalogThemeDirectoryItemsWithOverlay({
           : undefined,
     } satisfies CatalogThemeDirectoryItem;
   });
-
-  const overlayOnlyItems = [...overlayCardsByTheme.entries()]
-    .filter(([theme]) => !snapshotItemByTheme.has(theme))
-    .sort(([leftTheme], [rightTheme]) => leftTheme.localeCompare(rightTheme))
-    .map(([theme, setCards]) => {
-      const themeSnapshot = createFallbackThemeSnapshot({
-        setCards,
-        theme,
-      });
-      const imageUrl = getCatalogThemeRepresentativeImageUrl({
-        setCards,
-        themeSnapshot,
-      });
-
-      return {
-        imageUrl,
-        themeSnapshot,
-        visual: getCatalogThemeVisual(themeSnapshot.name)
-          ? {
-              ...getCatalogThemeVisual(themeSnapshot.name),
-              imageUrl:
-                getCatalogThemeVisual(themeSnapshot.name)?.imageUrl ?? imageUrl,
-            }
-          : imageUrl
-            ? {
-                imageUrl,
-              }
-            : undefined,
-      } satisfies CatalogThemeDirectoryItem;
-    });
-
-  return [...mergedSnapshotItems, ...overlayOnlyItems];
 }
 
-export async function listHomepageThemeDirectoryItemsWithOverlay({
+export async function listHomepageThemeDirectoryItems({
   limit = 6,
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
   limit?: number;
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
-  const snapshotHomepageItems = listHomepageThemeDirectoryItems(limit);
-  const mergedThemeDirectoryItems =
-    await listCatalogThemeDirectoryItemsWithOverlay({
-      listCatalogOverlaySetsFn,
-    });
-  const mergedThemeDirectoryItemByName = new Map(
-    mergedThemeDirectoryItems.map((catalogThemeDirectoryItem) => [
-      catalogThemeDirectoryItem.themeSnapshot.name,
-      catalogThemeDirectoryItem,
-    ]),
-  );
-
-  return snapshotHomepageItems.map(
-    (snapshotHomepageThemeDirectoryItem) =>
-      mergedThemeDirectoryItemByName.get(
-        snapshotHomepageThemeDirectoryItem.themeSnapshot.name,
-      ) ?? snapshotHomepageThemeDirectoryItem,
-  );
+  return (
+    await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn,
+    })
+  ).slice(0, limit);
 }
 
-export async function listHomepageThemeSpotlightItemsWithOverlay({
+export async function listHomepageThemeSpotlightItems({
   limit = 4,
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
   limit?: number;
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
-  const snapshotHomepageSpotlightItems = listHomepageThemeSpotlightItems(limit);
-  const mergedThemeDirectoryItems =
-    await listCatalogThemeDirectoryItemsWithOverlay({
-      listCatalogOverlaySetsFn,
-    });
-  const mergedThemeDirectoryItemByName = new Map(
-    mergedThemeDirectoryItems.map((catalogThemeDirectoryItem) => [
-      catalogThemeDirectoryItem.themeSnapshot.name,
-      catalogThemeDirectoryItem,
-    ]),
+  const primaryHomepageThemeNames = new Set(
+    (
+      await listHomepageThemeDirectoryItems({
+        listCanonicalCatalogSetsFn,
+      })
+    ).map(
+      (catalogThemeDirectoryItem) =>
+        catalogThemeDirectoryItem.themeSnapshot.name,
+    ),
   );
 
-  return snapshotHomepageSpotlightItems.map(
-    (snapshotHomepageThemeDirectoryItem) =>
-      mergedThemeDirectoryItemByName.get(
-        snapshotHomepageThemeDirectoryItem.themeSnapshot.name,
-      ) ?? snapshotHomepageThemeDirectoryItem,
-  );
+  return (
+    await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn,
+    })
+  )
+    .filter(
+      (catalogThemeDirectoryItem) =>
+        !primaryHomepageThemeNames.has(
+          catalogThemeDirectoryItem.themeSnapshot.name,
+        ),
+    )
+    .slice(0, limit);
 }
 
-export async function listCatalogThemePageSlugsWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listCatalogThemePageSlugs({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<string[]> {
   return (
-    await listCatalogThemeDirectoryItemsWithOverlay({
-      listCatalogOverlaySetsFn,
+    await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn,
     })
   ).map(
     (catalogThemeDirectoryItem) => catalogThemeDirectoryItem.themeSnapshot.slug,
   );
 }
 
-export async function getCatalogThemePageBySlugWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function getCatalogThemePageBySlug({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   slug,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   slug: string;
 }): Promise<CatalogThemeLandingPage | undefined> {
-  const snapshotThemePage = getCatalogThemePageBySlug(slug);
-  const overlaySetCards = await listOverlayCatalogSetCards({
-    listCatalogOverlaySetsFn,
+  const themeGroups = await listCatalogBrowseThemeGroupsInternal({
+    listCanonicalCatalogSetsFn,
   });
-  const overlayCardsForTheme = overlaySetCards.filter(
-    (setCard) => buildCatalogThemeSlug(setCard.theme) === slug,
+  const themeGroup = themeGroups.find(
+    (catalogThemeGroup) => catalogThemeGroup.slug === slug,
   );
 
-  if (!snapshotThemePage && overlayCardsForTheme.length === 0) {
+  if (!themeGroup) {
     return undefined;
   }
 
-  if (!snapshotThemePage) {
-    return {
-      themeSnapshot: createFallbackThemeSnapshot({
-        setCards: overlayCardsForTheme,
-        theme: overlayCardsForTheme[0]?.theme ?? slug,
-      }),
-      setCards: sortDiscoverThemeSetCards({
-        setCards: overlayCardsForTheme,
-      }),
-    };
-  }
-
-  const mergedSetCards = mergeThemeSetCards({
-    overlaySetCards: overlayCardsForTheme,
-    snapshotSetCards: snapshotThemePage.setCards,
-  });
-
   return {
-    themeSnapshot: {
-      ...snapshotThemePage.themeSnapshot,
-      setCount: mergedSetCards.length,
-    },
-    setCards: mergedSetCards,
+    themeSnapshot: createThemeSnapshot({
+      setCards: themeGroup.setCards,
+      theme: themeGroup.theme,
+    }),
+    setCards: themeGroup.setCards,
   };
 }
 
-export async function listDiscoverBrowseThemeGroupsWithOverlay({
-  listCatalogOverlaySetsFn = listCatalogOverlaySets,
+export async function listDiscoverBrowseThemeGroups({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   reviewedSetIds,
   setLimit = 6,
   themeLimit = 6,
 }: {
-  listCatalogOverlaySetsFn?: typeof listCatalogOverlaySets;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   reviewedSetIds?: readonly string[];
   setLimit?: number;
   themeLimit?: number;
 } = {}): Promise<CatalogBrowseThemeGroup[]> {
-  const snapshotThemeGroups = listDiscoverBrowseThemeGroups({
-    reviewedSetIds,
-    setLimit: Number.MAX_SAFE_INTEGER,
-    themeLimit: Number.MAX_SAFE_INTEGER,
-  });
-  const snapshotThemeGroupBySlug = new Map(
-    snapshotThemeGroups.map((catalogThemeGroup) => [
-      catalogThemeGroup.slug,
-      catalogThemeGroup,
-    ]),
-  );
-  const overlaySetCards = await listOverlayCatalogSetCards({
-    listCatalogOverlaySetsFn,
-  });
-  const overlayCardsBySlug = new Map<string, CatalogHomepageSetCard[]>();
-
-  for (const overlaySetCard of overlaySetCards) {
-    const slug = buildCatalogThemeSlug(overlaySetCard.theme);
-    const existingSetCards = overlayCardsBySlug.get(slug) ?? [];
-    existingSetCards.push(overlaySetCard);
-    overlayCardsBySlug.set(slug, existingSetCards);
-  }
-
-  const mergedSnapshotGroups = snapshotThemeGroups.map((snapshotThemeGroup) => {
-    const overlayCards = overlayCardsBySlug.get(snapshotThemeGroup.slug) ?? [];
-    const mergedSetCards = sortDiscoverThemeSetCards({
-      reviewedSetIds,
-      setCards: mergeThemeSetCards({
-        overlaySetCards: overlayCards,
-        snapshotSetCards: snapshotThemeGroup.setCards,
-      }),
-    });
-
-    return {
-      ...snapshotThemeGroup,
-      setCards: mergedSetCards.slice(0, setLimit),
-      totalSetCount: mergedSetCards.length,
-    };
-  });
-
-  const overlayOnlyGroups = [...overlayCardsBySlug.entries()]
-    .filter(([slug]) => !snapshotThemeGroupBySlug.has(slug))
-    .sort(([leftSlug], [rightSlug]) => leftSlug.localeCompare(rightSlug))
-    .map(([slug, setCards]) => {
-      const sortedSetCards = sortDiscoverThemeSetCards({
+  return (
+    await listCatalogBrowseThemeGroupsInternal({
+      listCanonicalCatalogSetsFn,
+    })
+  )
+    .map((catalogThemeGroup) => ({
+      ...catalogThemeGroup,
+      setCards: sortDiscoverThemeSetCards({
         reviewedSetIds,
-        setCards,
-      });
-
-      return {
-        slug,
-        theme: setCards[0]?.theme ?? slug,
-        setCards: sortedSetCards.slice(0, setLimit),
-        totalSetCount: sortedSetCards.length,
-      } satisfies CatalogBrowseThemeGroup;
-    });
-
-  return [...mergedSnapshotGroups, ...overlayOnlyGroups].slice(0, themeLimit);
+        setCards: catalogThemeGroup.setCards,
+      }).slice(0, setLimit),
+      totalSetCount: catalogThemeGroup.setCards.length,
+    }))
+    .slice(0, themeLimit);
 }

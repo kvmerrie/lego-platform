@@ -43,7 +43,7 @@
         <span class="admin-stat-card__value"
           >{{ recentlyAddedOverlayCount() }}</span
         >
-        <span class="admin-stat-card__label">overlay-sets in beheer</span>
+        <span class="admin-stat-card__label">recent toegevoegde sets</span>
       </article>
       <article class="admin-stat-card">
         <span class="admin-stat-card__value">{{ reviewQueueCount() }}</span>
@@ -72,7 +72,7 @@
         <p class="admin-eyebrow">1. Add set</p>
         <h3>Voeg een missende set toe</h3>
         <p class="admin-muted">
-          Zoek de set in Rebrickable, zet hem in de overlay, en start daarna
+          Zoek de set in Rebrickable, zet hem in de catalogus, en start daarna
           meteen de eerste merchantstap.
         </p>
       </div>
@@ -81,7 +81,7 @@
         <strong>Open New set</strong>
         <span>
           Dit is de snelste route van “nog niet in Brickhunt” naar “klaar voor
-          discovery”.
+          de eerste seed”.
         </span>
       </a>
     </article>
@@ -91,8 +91,8 @@
         <p class="admin-eyebrow">2. Eerste offers</p>
         <h3>Zet de eerste offer live</h3>
         <p class="admin-muted">
-          Gebruik discovery waar het kan, en val terug op handmatige seeds waar
-          dat sneller of realistischer is.
+          Werk nu rechtstreeks van merchant naar seed. Dat is de kortste route
+          naar een eerste live offer.
         </p>
       </div>
 
@@ -175,12 +175,6 @@
     </div>
 
     <div class="admin-quick-links">
-      <a class="admin-link-card" routerLink="/discovery">
-        <strong>Discovery</strong>
-        <span>
-          Draai losse merchant-runs en review kandidaten buiten de werkqueue om.
-        </span>
-      </a>
       <a class="admin-link-card" routerLink="/offer-seeds">
         <strong>Offer seeds</strong>
         <span>

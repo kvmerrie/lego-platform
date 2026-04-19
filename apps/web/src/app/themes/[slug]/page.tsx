@@ -1,7 +1,7 @@
 import {
   listCatalogCurrentOfferSummariesBySetIds,
-  getCatalogThemePageBySlugWithOverlay,
-  listCatalogThemePageSlugsWithOverlay,
+  getCatalogThemePageBySlug,
+  listCatalogThemePageSlugs,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CatalogFeatureThemePage,
@@ -58,7 +58,7 @@ function toThemeDealSetCards({
 }
 
 export async function generateStaticParams() {
-  return (await listCatalogThemePageSlugsWithOverlay()).map((slug) => ({
+  return (await listCatalogThemePageSlugs()).map((slug) => ({
     slug,
   }));
 }
@@ -69,7 +69,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const themePage = await getCatalogThemePageBySlugWithOverlay({
+  const themePage = await getCatalogThemePageBySlug({
     slug,
   });
 
@@ -89,7 +89,7 @@ export default async function ThemePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const themePage = await getCatalogThemePageBySlugWithOverlay({
+  const themePage = await getCatalogThemePageBySlug({
     slug,
   });
 

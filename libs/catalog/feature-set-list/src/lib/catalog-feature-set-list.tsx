@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { listHomepageSetCards } from '@lego-platform/catalog/data-access';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
@@ -40,12 +39,7 @@ export function CatalogFeatureSetList({
   tone?: 'default' | 'muted';
   title?: string;
 }) {
-  const homepageSets: readonly CatalogFeatureSetListItem[] =
-    setCards ??
-    listHomepageSetCards().map((catalogHomepageSetCard) => ({
-      ...catalogHomepageSetCard,
-      priceContext: undefined,
-    }));
+  const homepageSets: readonly CatalogFeatureSetListItem[] = setCards ?? [];
   const reviewedSetCount = homepageSets.filter(
     (catalogHomepageSetCard) => catalogHomepageSetCard.priceContext,
   ).length;

@@ -1,0 +1,38 @@
+{
+  "name": "catalog-set-import",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-set-import/src",
+  "projectType": "application",
+  "tags": ["scope:catalog", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-set-import",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-set-import/src/main.ts",
+        "tsConfig": "apps/catalog-set-import/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-set-import/main.cjs"
+      }
+    }
+  }
+}

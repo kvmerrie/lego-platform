@@ -1,4 +1,3 @@
-import { listCatalogSetSummaries } from '@lego-platform/catalog/data-access';
 import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import { describe, expect, test } from 'vitest';
 
@@ -24,7 +23,7 @@ function createCatalogSetSummary(
 }
 
 describe('commerce sync catalog validation', () => {
-  test('accepts a set present only in the active overlay catalog', async () => {
+  test('accepts a set present in the current canonical catalog', async () => {
     const overlaySetSummary = createCatalogSetSummary({
       id: '72037',
       slug: 'mario-kart-set-72037',
@@ -41,23 +40,27 @@ describe('commerce sync catalog validation', () => {
     ).resolves.toEqual([overlaySetSummary]);
   });
 
-  test('rejects a set missing from both snapshot and active overlay', async () => {
+  test('rejects a set missing from the current canonical catalog', async () => {
     await expect(
       resolveCommerceCatalogSetSummaries({
         setIds: ['72037'],
         listCatalogSetSummariesWithOverlayFn: async () => [],
       }),
     ).rejects.toThrow(
-      'Commerce-enabled set 72037 is missing from the current catalog (generated snapshot + active overlay).',
+      'Commerce-enabled set 72037 is missing from the current canonical catalog.',
     );
   });
 
-  test('returns merged catalog metadata for overlay-backed commerce sets', async () => {
-    const snapshotSetSummary = listCatalogSetSummaries()[0];
-
-    if (!snapshotSetSummary) {
-      throw new Error('Expected at least one generated snapshot set in tests.');
-    }
+  test('returns current catalog metadata for commerce-enabled sets', async () => {
+    const canonicalSetSummary = createCatalogSetSummary({
+      id: '10316',
+      slug: 'rivendell-10316',
+      name: 'Rivendell',
+      theme: 'Icons',
+      pieces: 6167,
+      releaseYear: 2023,
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+    });
 
     const overlaySetSummary = createCatalogSetSummary({
       id: '72037',
@@ -68,14 +71,14 @@ describe('commerce sync catalog validation', () => {
     });
 
     const resolvedSummaries = await resolveCommerceCatalogSetSummaries({
-      setIds: [overlaySetSummary.id, snapshotSetSummary.id],
+      setIds: [overlaySetSummary.id, canonicalSetSummary.id],
       listCatalogSetSummariesWithOverlayFn: async () => [
-        snapshotSetSummary,
+        canonicalSetSummary,
         overlaySetSummary,
       ],
     });
 
-    expect(resolvedSummaries).toEqual([overlaySetSummary, snapshotSetSummary]);
+    expect(resolvedSummaries).toEqual([overlaySetSummary, canonicalSetSummary]);
     expect(resolvedSummaries[0]).toMatchObject({
       id: '72037',
       slug: 'mario-kart-set-72037',

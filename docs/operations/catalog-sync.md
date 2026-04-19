@@ -5,6 +5,7 @@ This repository keeps runtime catalog reads static-friendly by generating local 
 See also:
 
 - `docs/architecture/catalog-supabase-first-migration.md`
+- `docs/operations/supabase-clean-bootstrap.md`
 - `docs/operations/catalog-sync-validation.md`
 - `docs/operations/mvp-operator-troubleshooting.md`
 

@@ -4,9 +4,9 @@ import {
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
 import {
-  getCatalogSetBySlugWithOverlay,
+  getCatalogSetBySlug,
   listCatalogSetLiveOffersBySetId,
-  listCatalogSetSlugsWithOverlay,
+  listCatalogSetSlugs,
 } from '@lego-platform/catalog/data-access-web';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import type {
@@ -394,7 +394,7 @@ function buildTrustSignals({
 }
 
 export async function generateStaticParams() {
-  return (await listCatalogSetSlugsWithOverlay()).map((slug) => ({ slug }));
+  return (await listCatalogSetSlugs()).map((slug) => ({ slug }));
 }
 
 export default async function SetDetailPage({
@@ -403,7 +403,7 @@ export default async function SetDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const catalogSetDetail = await getCatalogSetBySlugWithOverlay({
+  const catalogSetDetail = await getCatalogSetBySlug({
     slug,
   });
 

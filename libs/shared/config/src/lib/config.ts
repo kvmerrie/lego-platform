@@ -127,16 +127,12 @@ export const apiPaths = {
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
   adminCatalogSets: '/api/v1/admin/catalog/sets',
-  adminCatalogOverlaySets: '/api/v1/admin/catalog/overlay-sets',
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
   adminCommerceCoverageQueue: '/api/v1/admin/commerce/coverage-queue',
   adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
-  adminCommerceDiscoveryRuns: '/api/v1/admin/commerce/discovery-runs',
-  adminCommerceDiscoveryCandidates:
-    '/api/v1/admin/commerce/discovery-candidates',
 } as const;
 
 export function buildCatalogSetLiveOffersApiPath(setId: string): string {
@@ -378,6 +374,152 @@ function getSupabaseServerUrl(
   );
 }
 
+function getSupabaseProjectRefFromUrl(url?: string): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+
+  try {
+    const parsedUrl = new URL(url);
+
+    return parsedUrl.hostname.split('.')[0] || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function getSupabaseProjectRefFromJwt(token?: string): string | undefined {
+  if (!token) {
+    return undefined;
+  }
+
+  const payload = token.split('.')[1];
+
+  if (!payload) {
+    return undefined;
+  }
+
+  try {
+    const normalizedPayload = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const paddedPayload = normalizedPayload.padEnd(
+      Math.ceil(normalizedPayload.length / 4) * 4,
+      '=',
+    );
+    const parsedPayload = JSON.parse(
+      Buffer.from(paddedPayload, 'base64').toString('utf8'),
+    ) as { ref?: unknown };
+
+    return typeof parsedPayload.ref === 'string'
+      ? parsedPayload.ref
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function formatSupabaseProjectLabel({
+  fallbackValue,
+  projectRef,
+}: {
+  fallbackValue?: string;
+  projectRef?: string;
+}): string {
+  return projectRef ?? fallbackValue ?? 'onbekend project';
+}
+
+export function getServerSupabaseUrlSource(
+  environment: Record<string, string | undefined> = process.env,
+): string | undefined {
+  if (environment[supabaseEnvKeys.serverUrl]) {
+    return supabaseEnvKeys.serverUrl;
+  }
+
+  return getBrowserSupabaseUrl(environment)
+    ? supabaseEnvKeys.browserUrl
+    : undefined;
+}
+
+export function getServerSupabaseProjectRef(
+  environment: Record<string, string | undefined> = process.env,
+): string | undefined {
+  return getSupabaseProjectRefFromUrl(getSupabaseServerUrl(environment));
+}
+
+export function getServerSupabaseEnvIssues(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const issues: string[] = [];
+  const explicitServerUrl = environment[supabaseEnvKeys.serverUrl];
+  const browserUrl = getBrowserSupabaseUrl(environment);
+  const serviceRoleKey = environment[supabaseEnvKeys.serverServiceRoleKey];
+  const browserAnonKey = getBrowserSupabaseAnonKey(environment);
+  const explicitServerProjectRef =
+    getSupabaseProjectRefFromUrl(explicitServerUrl);
+  const browserProjectRef = getSupabaseProjectRefFromUrl(browserUrl);
+  const serviceRoleProjectRef = getSupabaseProjectRefFromJwt(serviceRoleKey);
+  const browserAnonProjectRef = getSupabaseProjectRefFromJwt(browserAnonKey);
+
+  if (
+    explicitServerUrl &&
+    browserUrl &&
+    explicitServerProjectRef &&
+    browserProjectRef &&
+    explicitServerProjectRef !== browserProjectRef
+  ) {
+    issues.push(
+      `${supabaseEnvKeys.serverUrl} points to ${formatSupabaseProjectLabel({
+        fallbackValue: explicitServerUrl,
+        projectRef: explicitServerProjectRef,
+      })}, but ${supabaseEnvKeys.browserUrl} points to ${formatSupabaseProjectLabel(
+        {
+          fallbackValue: browserUrl,
+          projectRef: browserProjectRef,
+        },
+      )}. Server writes always use ${supabaseEnvKeys.serverUrl}.`,
+    );
+  }
+
+  if (
+    explicitServerProjectRef &&
+    serviceRoleProjectRef &&
+    explicitServerProjectRef !== serviceRoleProjectRef
+  ) {
+    issues.push(
+      `${supabaseEnvKeys.serverServiceRoleKey} belongs to ${formatSupabaseProjectLabel(
+        {
+          projectRef: serviceRoleProjectRef,
+        },
+      )}, but ${supabaseEnvKeys.serverUrl} points to ${formatSupabaseProjectLabel(
+        {
+          fallbackValue: explicitServerUrl,
+          projectRef: explicitServerProjectRef,
+        },
+      )}.`,
+    );
+  }
+
+  if (
+    browserProjectRef &&
+    browserAnonProjectRef &&
+    browserProjectRef !== browserAnonProjectRef
+  ) {
+    issues.push(
+      `${supabaseEnvKeys.browserAnonKey} belongs to ${formatSupabaseProjectLabel(
+        {
+          projectRef: browserAnonProjectRef,
+        },
+      )}, but ${supabaseEnvKeys.browserUrl} points to ${formatSupabaseProjectLabel(
+        {
+          fallbackValue: browserUrl,
+          projectRef: browserProjectRef,
+        },
+      )}.`,
+    );
+  }
+
+  return issues;
+}
+
 function requireEnvValue({
   environment,
   key,
@@ -446,6 +588,14 @@ export function getMissingBrowserSupabaseEnvKeys(
 export function getServerSupabaseConfig(
   environment: Record<string, string | undefined> = process.env,
 ): ServerSupabaseConfig {
+  const issues = getServerSupabaseEnvIssues(environment);
+
+  if (issues.length > 0) {
+    throw new Error(
+      `Inconsistent Supabase server configuration: ${issues.join(' ')}`,
+    );
+  }
+
   return {
     url:
       getSupabaseServerUrl(environment) ??
@@ -465,7 +615,8 @@ export function hasServerSupabaseConfig(
 ): boolean {
   return Boolean(
     getSupabaseServerUrl(environment) &&
-      environment[supabaseEnvKeys.serverServiceRoleKey],
+      environment[supabaseEnvKeys.serverServiceRoleKey] &&
+      getServerSupabaseEnvIssues(environment).length === 0,
   );
 }
 

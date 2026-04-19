@@ -1,7 +1,4 @@
-import {
-  listHomepageThemeDirectoryItems,
-  type CatalogThemeDirectoryItem,
-} from '@lego-platform/catalog/data-access';
+import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
   CatalogThemeHighlight,
@@ -16,7 +13,7 @@ import { buildBrickhuntAnalyticsAttributes } from '@lego-platform/shared/util';
 import styles from './catalog-feature-theme-list.module.css';
 
 export function CatalogFeatureThemeList({
-  themeItems = listHomepageThemeDirectoryItems(),
+  themeItems = [],
   tone = 'default',
 }: {
   themeItems?: readonly CatalogThemeDirectoryItem[];

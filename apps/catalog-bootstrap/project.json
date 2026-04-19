@@ -1,0 +1,38 @@
+{
+  "name": "catalog-bootstrap",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-bootstrap/src",
+  "projectType": "application",
+  "tags": ["scope:catalog", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-bootstrap",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-bootstrap/src/main.ts",
+        "tsConfig": "apps/catalog-bootstrap/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-bootstrap/main.cjs"
+      }
+    }
+  }
+}

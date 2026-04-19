@@ -12,11 +12,11 @@ import {
 } from '@lego-platform/catalog/feature-theme-list';
 import {
   listCatalogCurrentOfferSummariesBySetIds,
-  listDiscoverHighlightSetCardsWithOverlay,
-  listHomepageDealCandidateSetCardsWithOverlay,
-  listHomepageSetCardsWithOverlay,
-  listHomepageThemeDirectoryItemsWithOverlay,
-  listHomepageThemeSpotlightItemsWithOverlay,
+  listDiscoverHighlightSetCards,
+  listHomepageDealCandidateSetCards,
+  listHomepageSetCards,
+  listHomepageThemeDirectoryItems,
+  listHomepageThemeSpotlightItems,
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { getHomepagePage } from '@lego-platform/content/data-access';
@@ -234,11 +234,11 @@ export default async function HomePage() {
     getHomepagePage({
       mode: queryMode,
     }),
-    listHomepageThemeDirectoryItemsWithOverlay(),
-    listHomepageThemeSpotlightItemsWithOverlay(),
-    listHomepageDealCandidateSetCardsWithOverlay(),
-    listHomepageSetCardsWithOverlay(),
-    listDiscoverHighlightSetCardsWithOverlay({
+    listHomepageThemeDirectoryItems(),
+    listHomepageThemeSpotlightItems(),
+    listHomepageDealCandidateSetCards(),
+    listHomepageSetCards(),
+    listDiscoverHighlightSetCards({
       limit: HOMEPAGE_FEATURED_RAIL_FILL_LIMIT,
     }),
   ]);

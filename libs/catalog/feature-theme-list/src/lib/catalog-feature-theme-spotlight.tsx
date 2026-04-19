@@ -1,7 +1,4 @@
-import {
-  listHomepageThemeSpotlightItems,
-  type CatalogThemeDirectoryItem,
-} from '@lego-platform/catalog/data-access';
+import type { CatalogThemeDirectoryItem } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
   CatalogThemeHighlight,
@@ -10,7 +7,7 @@ import { buildThemePath } from '@lego-platform/shared/config';
 import styles from './catalog-feature-theme-spotlight.module.css';
 
 export function CatalogFeatureThemeSpotlight({
-  themeItems = listHomepageThemeSpotlightItems(),
+  themeItems = [],
 }: {
   themeItems?: readonly CatalogThemeDirectoryItem[];
 }) {

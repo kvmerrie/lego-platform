@@ -214,54 +214,6 @@ a {
   gap: 0.65rem;
 }
 
-.admin-discovery-shell {
-  display: grid;
-  gap: 0.85rem;
-}
-
-.admin-discovery-summary {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  justify-content: space-between;
-}
-
-.admin-discovery-candidates {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.admin-discovery-candidate {
-  background: color-mix(in srgb, var(--lego-surface) 97%, transparent);
-  border: 1px solid var(--lego-border);
-  border-radius: var(--lego-radius-md);
-  color: inherit;
-  cursor: pointer;
-  display: grid;
-  gap: 0.75rem;
-  padding: 0.95rem;
-  text-align: left;
-}
-
-.admin-discovery-candidate.is-selected {
-  border-color: var(--lego-accent);
-  background: color-mix(in srgb, var(--lego-accent) 8%, var(--lego-surface));
-}
-
-.admin-discovery-candidate[disabled] {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.admin-discovery-candidate__meta {
-  color: var(--lego-text-muted);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  font-size: 0.92rem;
-}
-
 .admin-toolbar {
   align-items: center;
   display: flex;
@@ -401,15 +353,6 @@ a {
   width: 7rem;
 }
 
-.admin-discovery-candidate-card {
-  background: color-mix(in srgb, var(--lego-surface) 97%, transparent);
-  border: 1px solid var(--lego-border);
-  border-radius: var(--lego-radius-md);
-  display: grid;
-  gap: 0.8rem;
-  padding: 1rem;
-}
-
 .admin-count-pill,
 .admin-status-pill {
   border-radius: var(--lego-radius-pill);
@@ -519,7 +462,6 @@ a {
 .admin-input:focus-visible,
 .admin-input-action:focus-visible,
 .admin-segmented-control__button:focus-visible,
-.admin-discovery-candidate:focus-visible,
 .admin-link-card:focus-visible,
 .admin-pill-button:focus-visible,
 .admin-table a:focus-visible {
@@ -544,10 +486,6 @@ p {
   .admin-button--primary:hover {
     background: color-mix(in srgb, var(--lego-text) 92%, black 8%);
     border-color: color-mix(in srgb, var(--lego-text) 92%, black 8%);
-  }
-
-  .admin-discovery-candidate:hover {
-    border-color: color-mix(in srgb, var(--lego-text) 30%, var(--lego-border));
   }
 }
 

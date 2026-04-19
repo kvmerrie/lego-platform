@@ -8,7 +8,8 @@ export interface CatalogSetSummary {
   theme: string;
   releaseYear: number;
   pieces: number;
-  collectorAngle: string;
+  // Transitional legacy copy field. New runtime reads should not depend on it.
+  collectorAngle?: string;
   imageUrl?: string;
   images?: readonly CatalogSetImage[];
   primaryImage?: string;
@@ -25,8 +26,10 @@ export interface CatalogSetImage {
 export type CatalogSetImageSeed = CatalogSetImage | string;
 
 export interface CatalogHomepageSetCard extends CatalogSetSummary {
-  tagline: string;
-  availability: string;
+  // Transitional legacy copy fields. Card UIs should prefer price context
+  // and source metadata over local per-set prose.
+  tagline?: string;
+  availability?: string;
   minifigureCount?: number;
   minifigureHighlights?: readonly string[];
 }
@@ -41,6 +44,12 @@ export interface CatalogSetCardSearchMatch<
   setCard: T;
 }
 
+export interface CatalogSearchMatch {
+  discoverRank: number;
+  score: number;
+  setCard: CatalogHomepageSetCard;
+}
+
 export interface CatalogSetDisplaySize {
   label?: string;
   value: string;
@@ -52,9 +61,9 @@ export interface CatalogThemeIdentity {
 }
 
 export interface CatalogSetDetail extends CatalogSetSummary {
-  tagline: string;
-  availability: string;
-  collectorHighlights: readonly string[];
+  tagline?: string;
+  availability?: string;
+  collectorHighlights?: readonly string[];
   minifigureCount?: number;
   minifigureHighlights?: readonly string[];
   recommendedAge?: number;
@@ -480,7 +489,7 @@ export interface CatalogAddableSetRecord {
 
 export type CatalogExternalSetSearchResult = CatalogAddableSetRecord;
 
-export interface CatalogOverlaySet extends CatalogAddableSetRecord {
+export interface CatalogSet extends CatalogAddableSetRecord {
   createdAt: string;
   primaryThemeId?: string;
   secondaryThemeLabels?: readonly string[];
@@ -488,6 +497,9 @@ export interface CatalogOverlaySet extends CatalogAddableSetRecord {
   status: CatalogOverlaySetStatus;
   updatedAt: string;
 }
+
+// Transitional read alias. New write paths should use CatalogSet.
+export type CatalogOverlaySet = CatalogSet;
 
 export const catalogCanonicalSetSources = [
   'snapshot',
@@ -526,10 +538,12 @@ export interface CatalogSetOverlay {
   productSlug?: string;
   displayName?: string;
   displayTheme?: string;
-  collectorAngle: string;
-  tagline: string;
-  availability: string;
-  collectorHighlights: readonly string[];
+  // Transitional legacy copy fields. Keep them optional during cleanup while
+  // older adapters finish moving off local per-set prose.
+  collectorAngle?: string;
+  tagline?: string;
+  availability?: string;
+  collectorHighlights?: readonly string[];
   minifigureCount?: number;
   minifigureHighlights?: readonly string[];
   recommendedAge?: number;
@@ -546,6 +560,205 @@ export interface CatalogThemeOverlay {
   momentum: string;
   signatureSet: string;
 }
+
+export interface CatalogBrowseThemeGroup {
+  slug: string;
+  setCards: CatalogHomepageSetCard[];
+  theme: string;
+  totalSetCount?: number;
+}
+
+export interface CatalogThemeLandingPage {
+  setCards: CatalogHomepageSetCard[];
+  themeSnapshot: CatalogThemeSnapshot;
+}
+
+export interface CatalogThemeDirectoryItem {
+  imageUrl?: string;
+  themeSnapshot: CatalogThemeSnapshot;
+  visual?: CatalogThemeVisual;
+}
+
+export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
+  {
+    name: 'Icons',
+    setCount: 17,
+    momentum:
+      'Rivendell, Titanic, Concorde. Dit zijn de dozen waar je ruimte voor maakt.',
+    signatureSet: 'Rivendell',
+  },
+  {
+    name: 'Ideas',
+    setCount: 10,
+    momentum:
+      'Rode draak, boshut, sterrennacht. Ideas zet meteen een hele wereld neer.',
+    signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
+  },
+  {
+    name: 'Marvel',
+    setCount: 5,
+    momentum:
+      'Torens, chaos en bekende gezichten. Marvel komt hier meteen vol binnen.',
+    signatureSet: 'Avengers Tower',
+  },
+  {
+    name: 'Modular Buildings',
+    setCount: 1,
+    momentum:
+      'Gevels, etalages en verdiepingen vol leven. Hier begint een straat waar je naar blijft kijken.',
+    signatureSet: 'Natural History Museum',
+  },
+  {
+    name: 'Botanicals',
+    setCount: 4,
+    momentum:
+      'Boeketten en planten die tafel, kast en cadeau meteen meer kleur geven.',
+    signatureSet: 'Flower Bouquet',
+  },
+  {
+    name: 'Technic',
+    setCount: 5,
+    momentum:
+      'Supercars en machines met techniek waar je ook na het bouwen in blijft kijken.',
+    signatureSet: 'Ferrari Daytona SP3',
+  },
+  {
+    name: 'Super Mario',
+    setCount: 1,
+    momentum:
+      'Nintendo-herkenning op displayformaat, met Bowser als pure blikvanger.',
+    signatureSet: 'The Mighty Bowser',
+  },
+  {
+    name: 'NINJAGO',
+    setCount: 1,
+    momentum:
+      'Een stadsdisplay vol kleur, hoogte en hoekjes die je steeds opnieuw ziet.',
+    signatureSet: 'NINJAGO City Gardens',
+  },
+  {
+    name: 'Jurassic World',
+    setCount: 1,
+    momentum:
+      'Dino, hekwerk en chaos in een scene die meteen spanning op je plank zet.',
+    signatureSet: 'T. rex Breakout',
+  },
+  {
+    name: 'Star Wars',
+    setCount: 6,
+    momentum:
+      'Walkers, kruisers en schepen met silhouetten die je van ver al herkent.',
+    signatureSet: 'AT-AT',
+  },
+  {
+    name: 'Harry Potter',
+    setCount: 6,
+    momentum:
+      'Van Burrow-warmte tot Gringotts-drama. Hier kies je je favoriete tovenaarsgevoel.',
+    signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
+  },
+  {
+    name: 'Architecture',
+    setCount: 1,
+    momentum:
+      'Wereldiconen in strakke lijnen, gemaakt voor een rustige plank met klasse.',
+    signatureSet: 'Notre-Dame de Paris',
+  },
+  {
+    name: 'Art',
+    setCount: 1,
+    momentum: 'LEGO met reliëf en kleur. Meer kunstwerk dan bouwset.',
+    signatureSet: 'Hokusai - The Great Wave',
+  },
+  {
+    name: 'Disney',
+    setCount: 1,
+    momentum:
+      'Torens, goud en sprookjessfeer met genoeg statuur voor een echte blikvanger.',
+    signatureSet: 'Disney Castle',
+  },
+] as const;
+
+export const catalogHomepageFeaturedSetIds = [
+  '10316',
+  '10333',
+  '21333',
+] as const;
+
+export const catalogHomepageDealCandidateIds = [
+  '76269',
+  '21348',
+  '10294',
+  '21349',
+  '10332',
+  '10305',
+  '21061',
+] as const;
+
+export const catalogDiscoverDealCandidateIds = [
+  '76269',
+  '10316',
+  '21348',
+  '10333',
+  '10294',
+  '21333',
+  '21349',
+  '10332',
+  '10305',
+  '21061',
+] as const;
+
+export const catalogDiscoverSetOrder = [
+  '10316',
+  '10333',
+  '10294',
+  '76269',
+  '76178',
+  '75367',
+  '75313',
+  '75331',
+  '76417',
+  '76419',
+  '76437',
+  '21348',
+  '21350',
+  '10300',
+  '21333',
+  '10280',
+  '10311',
+  '31208',
+  '21345',
+  '21349',
+  '10305',
+  '10326',
+  '10332',
+  '10318',
+  '10341',
+  '10317',
+  '76218',
+  '42143',
+  '42115',
+  '43222',
+  '71411',
+  '71741',
+] as const;
+
+export const catalogDiscoverThemeOrder = [
+  'Icons',
+  'Marvel',
+  'Ideas',
+  'Star Wars',
+  'Harry Potter',
+  'Technic',
+  'Modular Buildings',
+  'Botanicals',
+  'Architecture',
+  'Art',
+  'Disney',
+  'NINJAGO',
+  'Super Mario',
+  'Jurassic World',
+] as const;
 
 export interface CatalogSyncManifest {
   source: string;
@@ -698,13 +911,16 @@ export function resolveCatalogThemeIdentityFromPersistence({
   primaryThemeName,
   sourceThemeName,
 }: {
-  legacyTheme: string;
+  legacyTheme?: string;
   primaryThemeName?: string;
   sourceThemeName?: string;
 }): CatalogThemeIdentity {
+  const fallbackThemeName =
+    legacyTheme ?? sourceThemeName ?? primaryThemeName ?? 'Unknown';
+
   if (!primaryThemeName) {
     return resolveCatalogThemeIdentity({
-      rawTheme: legacyTheme,
+      rawTheme: fallbackThemeName,
     });
   }
 
@@ -1008,9 +1224,9 @@ export function getCatalogProductSlug({
   catalogSetOverlay,
 }: {
   catalogSetRecord: CatalogSetRecord;
-  catalogSetOverlay: Pick<CatalogSetOverlay, 'productSlug'>;
+  catalogSetOverlay?: Pick<CatalogSetOverlay, 'productSlug'>;
 }): string {
-  return catalogSetOverlay.productSlug ?? catalogSetRecord.slug;
+  return catalogSetOverlay?.productSlug ?? catalogSetRecord.slug;
 }
 
 export function createCatalogSetRecord(

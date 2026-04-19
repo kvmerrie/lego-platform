@@ -1,8 +1,3 @@
-import type {
-  CommerceDiscoveryCandidate,
-  CommerceDiscoveryRun,
-} from './commerce-discovery-util';
-
 export const commerceMerchantSourceTypes = [
   'direct',
   'affiliate',
@@ -180,9 +175,7 @@ export type CommerceCoverageQueueNextAction =
   | 'add_seed_manually'
   | 'edit_seed'
   | 'no_action_needed'
-  | 'recheck_later'
-  | 'review_candidates'
-  | 'run_discovery';
+  | 'recheck_later';
 
 export type CommerceCoverageQueueHealthFilter =
   | 'all'
@@ -206,7 +199,6 @@ export interface CommerceCoverageQueueSetOption
 }
 
 export interface CommerceCoverageQueueMerchantStatus {
-  hasPendingDiscoveryCandidate: boolean;
   lastCheckedAt?: string;
   merchantId: string;
   merchantName: string;
@@ -272,15 +264,6 @@ export const commerceMerchantSearchableSlugs = [
 
 export type CommerceMerchantSearchableSlug =
   (typeof commerceMerchantSearchableSlugs)[number];
-
-export const commerceMerchantDiscoverySupportedSlugs = [
-  'misterbricks',
-  'proshop',
-  'smyths-toys',
-] as const;
-
-export type CommerceMerchantDiscoverySupportedSlug =
-  (typeof commerceMerchantDiscoverySupportedSlugs)[number];
 
 function assertObjectRecord(
   value: unknown,
@@ -397,14 +380,6 @@ export function isCommerceMerchantSearchableSlug(
 
 export function supportsCommerceMerchantSearch(merchantSlug: string): boolean {
   return isCommerceMerchantSearchableSlug(merchantSlug);
-}
-
-export function supportsCommerceMerchantDiscovery(
-  merchantSlug: string,
-): boolean {
-  return commerceMerchantDiscoverySupportedSlugs.includes(
-    merchantSlug as CommerceMerchantDiscoverySupportedSlug,
-  );
 }
 
 export function supportsCommerceMerchantManualSeed(
@@ -671,27 +646,7 @@ function isOfferSeedCoveredState(offerSeed: CommerceOfferSeed): boolean {
   );
 }
 
-const commerceDiscoveryPrioritySlugs = [
-  'misterbricks',
-  'lego-nl',
-  'intertoys',
-  'bol',
-  'top1toys',
-  'amazon-nl',
-  'proshop',
-  'smyths-toys',
-] as const;
-
 const COMMERCE_COVERAGE_UNAVAILABLE_RECHECK_DAYS = 14;
-const NO_USABLE_DISCOVERY_CANDIDATES_PATTERN =
-  /geen bruikbare discovery-kandidaten/i;
-
-function buildCoverageQueueKey(input: {
-  merchantId: string;
-  setId: string;
-}): string {
-  return `${input.setId}::${input.merchantId}`;
-}
 
 function getTimestampMs(value?: string): number | null {
   if (!value) {
@@ -748,16 +703,6 @@ function isWithinLastDays({
   return parsedValue.getTime() >= cutoff.getTime();
 }
 
-function getMerchantDiscoveryPriority(merchantSlug: string): number {
-  const priorityIndex = commerceDiscoveryPrioritySlugs.indexOf(
-    merchantSlug as (typeof commerceDiscoveryPrioritySlugs)[number],
-  );
-
-  return priorityIndex === -1
-    ? commerceDiscoveryPrioritySlugs.length
-    : priorityIndex;
-}
-
 function getCoverageQueueMerchantStatePriority(
   state: CommerceCoverageQueueMerchantState,
 ): number {
@@ -778,37 +723,6 @@ function getCoverageQueueMerchantStatePriority(
     default:
       return 6;
   }
-}
-
-function isNoUsableDiscoveryRun(discoveryRun?: CommerceDiscoveryRun): boolean {
-  if (
-    !discoveryRun ||
-    discoveryRun.candidateCount > 0 ||
-    !discoveryRun.finishedAt
-  ) {
-    return false;
-  }
-
-  if (discoveryRun.status === 'success') {
-    return true;
-  }
-
-  return NO_USABLE_DISCOVERY_CANDIDATES_PATTERN.test(
-    discoveryRun.errorMessage ?? '',
-  );
-}
-
-function areAllDiscoveryCandidatesRejected(
-  discoveryCandidates: readonly CommerceDiscoveryCandidate[],
-): boolean {
-  return (
-    discoveryCandidates.length > 0 &&
-    discoveryCandidates.every(
-      (discoveryCandidate) =>
-        discoveryCandidate.reviewStatus === 'rejected' &&
-        !discoveryCandidate.offerSeedId,
-    )
-  );
 }
 
 function getOfferSeedCoverageQueueState({
@@ -884,7 +798,7 @@ function buildCoverageQueueStatusSummary({
     activeSeedCount === 0 &&
     merchantsCheckedCount === 0
   ) {
-    return 'Discovery nodig';
+    return 'Seed nodig';
   }
 
   if (
@@ -1090,8 +1004,6 @@ export function buildCommerceBenchmarkCoverageRows({
 export function buildCommerceCoverageQueueRows({
   benchmarkSets,
   catalogSets,
-  discoveryCandidates,
-  discoveryRuns,
   merchants,
   now = new Date(),
   offerSeeds,
@@ -1100,8 +1012,6 @@ export function buildCommerceCoverageQueueRows({
 }: {
   benchmarkSets: readonly CommerceBenchmarkSet[];
   catalogSets: readonly CommerceCoverageQueueSetOption[];
-  discoveryCandidates: readonly CommerceDiscoveryCandidate[];
-  discoveryRuns: readonly CommerceDiscoveryRun[];
   merchants: readonly CommerceMerchant[];
   now?: Date;
   offerSeeds: readonly CommerceOfferSeed[];
@@ -1117,38 +1027,6 @@ export function buildCommerceCoverageQueueRows({
   const benchmarkSetIds = new Set(
     benchmarkSets.map((benchmarkSet) => benchmarkSet.setId),
   );
-  const discoveryCandidatesByKey = new Map<
-    string,
-    CommerceDiscoveryCandidate[]
-  >();
-  const latestDiscoveryRunByKey = new Map<string, CommerceDiscoveryRun>();
-
-  for (const discoveryCandidate of discoveryCandidates) {
-    const key = buildCoverageQueueKey({
-      setId: discoveryCandidate.setId,
-      merchantId: discoveryCandidate.merchantId,
-    });
-    const existingCandidates = discoveryCandidatesByKey.get(key) ?? [];
-
-    existingCandidates.push(discoveryCandidate);
-    discoveryCandidatesByKey.set(key, existingCandidates);
-  }
-
-  for (const discoveryRun of discoveryRuns) {
-    const key = buildCoverageQueueKey({
-      setId: discoveryRun.setId,
-      merchantId: discoveryRun.merchantId,
-    });
-    const currentRun = latestDiscoveryRunByKey.get(key);
-
-    if (
-      !currentRun ||
-      (getTimestampMs(discoveryRun.createdAt) ?? 0) >
-        (getTimestampMs(currentRun.createdAt) ?? 0)
-    ) {
-      latestDiscoveryRunByKey.set(key, discoveryRun);
-    }
-  }
 
   return [...catalogSets]
     .map((catalogSet) => {
@@ -1193,24 +1071,6 @@ export function buildCommerceCoverageQueueRows({
                 ) ?? 0)
             );
           });
-        const discoveryKey = buildCoverageQueueKey({
-          setId: catalogSet.id,
-          merchantId: merchant.id,
-        });
-        const pendingDiscoveryCandidates =
-          discoveryCandidatesByKey
-            .get(discoveryKey)
-            ?.filter(
-              (discoveryCandidate) =>
-                discoveryCandidate.reviewStatus === 'pending',
-            ) ?? [];
-        const latestDiscoveryRun = latestDiscoveryRunByKey.get(discoveryKey);
-        const latestDiscoveryCandidates = latestDiscoveryRun
-          ? (discoveryCandidatesByKey.get(discoveryKey) ?? []).filter(
-              (discoveryCandidate) =>
-                discoveryCandidate.discoveryRunId === latestDiscoveryRun.id,
-            )
-          : [];
         const preferredOfferSeed = merchantOfferSeeds[0];
         const seedState = preferredOfferSeed
           ? getOfferSeedCoverageQueueState({
@@ -1223,42 +1083,22 @@ export function buildCommerceCoverageQueueRows({
           preferredOfferSeed?.lastVerifiedAt,
           preferredOfferSeed?.latestOffer?.fetchedAt,
           preferredOfferSeed?.latestOffer?.observedAt,
-          latestDiscoveryRun?.finishedAt,
-          latestDiscoveryRun?.updatedAt,
-          latestDiscoveryRun?.createdAt,
-          ...pendingDiscoveryCandidates.flatMap((candidate) => [
-            candidate.updatedAt,
-            candidate.createdAt,
-          ]),
-          ...latestDiscoveryCandidates.flatMap((candidate) => [
-            candidate.updatedAt,
-            candidate.createdAt,
-          ]),
         ]);
-        const hasRecentDiscoveryUnavailableConfirmation =
-          isNoUsableDiscoveryRun(latestDiscoveryRun) ||
-          areAllDiscoveryCandidatesRejected(latestDiscoveryCandidates);
         const isRecentConfirmedUnavailable =
           isWithinLastDays({
             now,
             days: COMMERCE_COVERAGE_UNAVAILABLE_RECHECK_DAYS,
             value: lastCheckedAt,
-          }) &&
-          (seedState === 'unavailable' ||
-            hasRecentDiscoveryUnavailableConfirmation);
+          }) && seedState === 'unavailable';
         const state: CommerceCoverageQueueMerchantState = preferredOfferSeed
           ? seedState === 'unavailable'
             ? isRecentConfirmedUnavailable
               ? 'not_available_confirmed'
               : 'missing'
             : (seedState ?? 'pending')
-          : pendingDiscoveryCandidates.length > 0
-            ? 'review'
-            : latestDiscoveryRun?.status === 'running'
-              ? 'pending'
-              : isRecentConfirmedUnavailable
-                ? 'not_available_confirmed'
-                : 'missing';
+          : isRecentConfirmedUnavailable
+            ? 'not_available_confirmed'
+            : 'missing';
 
         return {
           merchantId: merchant.id,
@@ -1266,7 +1106,6 @@ export function buildCommerceCoverageQueueRows({
           merchantSlug: merchant.slug,
           offerSeed: preferredOfferSeed,
           state,
-          hasPendingDiscoveryCandidate: pendingDiscoveryCandidates.length > 0,
           lastCheckedAt,
         } satisfies CommerceCoverageQueueMerchantStatus;
       });
@@ -1289,19 +1128,6 @@ export function buildCommerceCoverageQueueRows({
       const missingMerchantStatuses = merchantStatuses.filter(
         (merchantStatus) => merchantStatus.state === 'missing',
       );
-      const candidateReviewMerchant = merchantStatuses.find(
-        (merchantStatus) => merchantStatus.hasPendingDiscoveryCandidate,
-      );
-      const missingDiscoveryMerchant = [...missingMerchantStatuses]
-        .filter((merchantStatus) =>
-          supportsCommerceMerchantDiscovery(merchantStatus.merchantSlug),
-        )
-        .sort(
-          (left, right) =>
-            getMerchantDiscoveryPriority(left.merchantSlug) -
-              getMerchantDiscoveryPriority(right.merchantSlug) ||
-            left.merchantName.localeCompare(right.merchantName),
-        )[0];
       const firstManualSeedMerchant = missingMerchantStatuses.find(
         (merchantStatus) =>
           supportsCommerceMerchantManualSeed(merchantStatus.merchantSlug),
@@ -1313,40 +1139,27 @@ export function buildCommerceCoverageQueueRows({
           merchantStatus.state !== 'missing' &&
           merchantStatus.state !== 'not_available_confirmed',
       );
-      const recommendedAction = candidateReviewMerchant
+      const recommendedAction = fixableSeedMerchant
         ? ({
-            action: 'review_candidates',
-            merchantId: candidateReviewMerchant.merchantId,
-            merchantName: candidateReviewMerchant.merchantName,
+            action: 'edit_seed',
+            merchantId: fixableSeedMerchant.merchantId,
+            merchantName: fixableSeedMerchant.merchantName,
           } as const)
         : validMerchantCount < minimumValidMerchantCount &&
-            missingDiscoveryMerchant
+            firstManualSeedMerchant
           ? ({
-              action: 'run_discovery',
-              merchantId: missingDiscoveryMerchant.merchantId,
-              merchantName: missingDiscoveryMerchant.merchantName,
+              action: 'add_seed_manually',
+              merchantId: firstManualSeedMerchant.merchantId,
+              merchantName: firstManualSeedMerchant.merchantName,
             } as const)
-          : fixableSeedMerchant
+          : validMerchantCount < minimumValidMerchantCount &&
+              notAvailableConfirmedMerchantStatuses.length > 0
             ? ({
-                action: 'edit_seed',
-                merchantId: fixableSeedMerchant.merchantId,
-                merchantName: fixableSeedMerchant.merchantName,
+                action: 'recheck_later',
               } as const)
-            : validMerchantCount < minimumValidMerchantCount &&
-                firstManualSeedMerchant
-              ? ({
-                  action: 'add_seed_manually',
-                  merchantId: firstManualSeedMerchant.merchantId,
-                  merchantName: firstManualSeedMerchant.merchantName,
-                } as const)
-              : validMerchantCount < minimumValidMerchantCount &&
-                  notAvailableConfirmedMerchantStatuses.length > 0
-                ? ({
-                    action: 'recheck_later',
-                  } as const)
-                : ({
-                    action: 'no_action_needed',
-                  } as const);
+            : ({
+                action: 'no_action_needed',
+              } as const);
 
       return {
         setId: catalogSet.id,

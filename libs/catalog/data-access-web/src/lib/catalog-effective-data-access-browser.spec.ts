@@ -1,5 +1,4 @@
 import { describe, expect, test, vi } from 'vitest';
-import { listCatalogSetCardsByIds } from '@lego-platform/catalog/data-access';
 import { listCatalogSetCardsByIdsForBrowser } from './catalog-effective-data-access-browser';
 
 describe('catalog effective data access browser', () => {
@@ -48,7 +47,7 @@ describe('catalog effective data access browser', () => {
     ]);
   });
 
-  test('falls back to snapshot card identity when api fetch fails', async () => {
+  test('returns no cards when the canonical api fetch fails', async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockRejectedValue(new Error('network offline'));
@@ -58,10 +57,10 @@ describe('catalog effective data access browser', () => {
       fetchImpl: fetchMock,
     });
 
-    expect(result).toEqual(listCatalogSetCardsByIds(['21061']));
+    expect(result).toEqual([]);
   });
 
-  test('preserves requested order while falling back for missing api rows', async () => {
+  test('preserves requested order for api-backed rows and skips missing cards', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(
         JSON.stringify([
@@ -89,24 +88,18 @@ describe('catalog effective data access browser', () => {
         },
       ),
     );
-    const baselineNotreDame = listCatalogSetCardsByIds(['21061'])[0];
-
     const result = await listCatalogSetCardsByIdsForBrowser({
       canonicalIds: ['21061', '10316', '21061'],
       fetchImpl: fetchMock,
     });
 
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '21061',
       '10316',
-      '21061',
     ]);
-    expect(result[1]).toMatchObject({
+    expect(result[0]).toMatchObject({
       id: '10316',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
       name: 'Rivendell (Supabase)',
     });
-    expect(result[0]).toEqual(baselineNotreDame);
-    expect(result[2]).toEqual(baselineNotreDame);
   });
 });

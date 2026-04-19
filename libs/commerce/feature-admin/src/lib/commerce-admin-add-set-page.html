@@ -4,7 +4,7 @@
       <p class="admin-eyebrow">New set</p>
       <h2>Werk een missende set in één flow door naar de eerste live offer.</h2>
       <p class="admin-muted">
-        Zoek de set, zet hem in de overlay, kies de eerste merchant, en ga
+        Zoek de set, zet hem in de catalogus, kies de eerste merchant, en ga
         meteen door tot de set bruikbaar is op de publieke pagina.
       </p>
     </div>
@@ -99,7 +99,7 @@
         type="button"
         (click)="addSelectedSet()"
       >
-        {{ isAdding() ? 'Toevoegen…' : 'Voeg toe aan overlay' }}
+        {{ isAdding() ? 'Toevoegen…' : 'Voeg toe aan catalogus' }}
       </button>
     </div>
 
@@ -129,7 +129,7 @@
       <section class="admin-panel admin-new-set__status">
         <div class="admin-stack">
           <p class="admin-eyebrow">3. Set toegevoegd</p>
-          <h3>{{ addedSet()?.name }} staat nu in de overlay.</h3>
+          <h3>{{ addedSet()?.name }} staat nu in de catalogus.</h3>
           <p class="admin-muted">{{ activationSummary() }}</p>
         </div>
 
@@ -165,11 +165,7 @@
         <div class="admin-section__header">
           <div class="admin-stack">
             <p class="admin-eyebrow">4. Eerste offer live</p>
-            <h3>
-              @if (supportsActivationDiscovery()) { Draai discovery of val
-              meteen terug op een handmatige seed. } @else { Voeg handmatig de
-              eerste seed toe. }
-            </h3>
+            <h3>Voeg handmatig de eerste seed toe.</h3>
             <p class="admin-muted">
               Deze stap stopt pas als de set echt een bruikbare route heeft.
             </p>
@@ -186,11 +182,7 @@
               name="new-set-activation-merchant"
             >
               @for (merchant of activeMerchants(); track merchant.id) {
-              <option [value]="merchant.id">
-                {{ merchant.name }} @if
-                (commerceAdminStore.supportsMerchantDiscovery(merchant.id)) { ·
-                discovery } @else { · handmatig }
-              </option>
+              <option [value]="merchant.id">{{ merchant.name }}</option>
               }
             </select>
           </label>
@@ -198,9 +190,8 @@
           @if (activationMerchant(); as activationMerchant) {
           <div class="admin-new-set__merchant-summary">
             <span class="admin-muted">
-              @if (supportsActivationDiscovery()) { {{ activationMerchant.name
-              }} ondersteunt discovery in deze flow. } @else { {{
-              activationMerchant.name }} vraagt nu om een handmatige seed. }
+              {{ activationMerchant.name }} vraagt nu om een concrete
+              product-URL als eerste seed.
             </span>
 
             @if (activationMerchantSearchUrl(); as merchantSearchUrl) {
@@ -217,110 +208,12 @@
           }
         </div>
 
-        @if (supportsActivationDiscovery()) {
-        <div class="admin-actions">
-          <button
-            class="admin-button admin-button--primary"
-            [disabled]="isRunningDiscovery()"
-            type="button"
-            (click)="runDiscovery()"
-          >
-            {{ isRunningDiscovery() ? 'Discovery draait…' : 'Run discovery' }}
-          </button>
-        </div>
-        } @if (discoveryMessage()) {
+        @if (activationMessage()) {
         <div
           class="admin-panel"
-          [class.admin-panel--danger]="discoveryMessageTone() === 'danger'"
+          [class.admin-panel--danger]="activationMessageTone() === 'danger'"
         >
-          <p class="admin-muted">{{ discoveryMessage() }}</p>
-        </div>
-        } @if (latestDiscoveryRun()) {
-        <div class="admin-stack admin-stack--tight">
-          <strong>Laatste discovery-run</strong>
-          <span class="admin-muted">
-            {{ latestDiscoveryRun()?.candidateCount }} kandidaat{{
-            latestDiscoveryRun()?.candidateCount === 1 ? '' : 'en' }} · {{
-            commerceAdminStore.formatRelativeTimestamp(
-            latestDiscoveryRun()?.finishedAt ?? latestDiscoveryRun()?.createdAt
-            ) }}
-          </span>
-          @if (latestDiscoveryRun()?.errorMessage) {
-          <span class="admin-muted">
-            {{ latestDiscoveryRun()?.errorMessage }}
-          </span>
-          }
-        </div>
-        } @if (supportsActivationDiscovery() && discoveryCandidates().length >
-        0) {
-        <div class="admin-new-set__candidate-section">
-          <strong>Kandidaten uit discovery</strong>
-
-          <div class="admin-discovery-candidates">
-            @for (candidate of discoveryCandidates(); track candidate.id) {
-            <article class="admin-discovery-candidate-card">
-              <div class="admin-stack admin-stack--tight">
-                <strong>{{ candidate.candidateTitle }}</strong>
-                <a
-                  [href]="candidate.candidateUrl"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {{ candidate.candidateUrl }}
-                </a>
-              </div>
-
-              <div class="admin-discovery-candidate__meta">
-                <span>
-                  {{ commerceAdminStore.formatPriceMinor( candidate.priceMinor,
-                  candidate.currencyCode ?? 'EUR' ) }}
-                </span>
-                <span>
-                  {{ commerceAdminStore.getDiscoveryAvailabilityLabel(
-                  candidate.availability ) }}
-                </span>
-                <span>Score {{ candidate.confidenceScore }}</span>
-                @if (candidate.detectedSetId) {
-                <span>Detected {{ candidate.detectedSetId }}</span>
-                }
-              </div>
-
-              <div class="admin-stack admin-stack--tight">
-                @for (reason of candidate.matchReasons; track reason) {
-                <span class="admin-muted">{{ reason }}</span>
-                }
-              </div>
-
-              <div class="admin-actions-inline">
-                <button
-                  class="admin-button admin-button--subtle"
-                  [disabled]="candidate.offerSeedId !== undefined"
-                  type="button"
-                  (click)="useCandidate(candidate)"
-                >
-                  Gebruik URL
-                </button>
-                <button
-                  class="admin-button admin-button--primary"
-                  [disabled]="isUpdatingCandidateId() === candidate.id"
-                  type="button"
-                  (click)="approveCandidate(candidate)"
-                >
-                  {{ candidate.reviewStatus === 'approved' ? 'Al goedgekeurd' :
-                  'Approve' }}
-                </button>
-                <button
-                  class="admin-button admin-button--subtle"
-                  [disabled]="isUpdatingCandidateId() === candidate.id"
-                  type="button"
-                  (click)="rejectCandidate(candidate)"
-                >
-                  Reject
-                </button>
-              </div>
-            </article>
-            }
-          </div>
+          <p class="admin-muted">{{ activationMessage() }}</p>
         </div>
         }
 
@@ -331,7 +224,7 @@
               [ngModel]="seedDraftUrl()"
               (ngModelChange)="seedDraftUrl.set($event)"
               class="admin-input"
-              placeholder="Kies een kandidaat of plak hier handmatig een product-URL"
+              placeholder="Plak hier de product-URL van de merchant"
               type="url"
             />
           </label>
@@ -409,7 +302,7 @@
       </div>
 
       <div class="admin-pill-cluster">
-        <span class="admin-count-pill">Overlay</span>
+        <span class="admin-count-pill">Catalogus</span>
         <span class="admin-count-pill">
           {{ activeSeedCount() }} seed{{ activeSeedCount() === 1 ? '' : 's' }}
         </span>
@@ -426,7 +319,7 @@
         <li>De set is toegevoegd en de eerste seed staat klaar.</li>
         <li>Deze flow stopt pas echt als de set een geldige offer heeft.</li>
         } @else {
-        <li>De set staat in de overlay, maar heeft nog geen eerste route.</li>
+        <li>De set staat in de catalogus, maar heeft nog geen eerste route.</li>
         <li>Kies nu hierboven de merchant die je als eerste wilt activeren.</li>
         }
       </ul>

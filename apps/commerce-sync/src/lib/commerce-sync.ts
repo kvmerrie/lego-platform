@@ -58,7 +58,7 @@ export async function resolveCommerceCatalogSetSummaries({
 
     if (!catalogSetSummary) {
       throw new Error(
-        `Commerce-enabled set ${setId} is missing from the current catalog (generated snapshot + active overlay).`,
+        `Commerce-enabled set ${setId} is missing from the current canonical catalog.`,
       );
     }
 

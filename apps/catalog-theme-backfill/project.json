@@ -1,0 +1,38 @@
+{
+  "name": "catalog-theme-backfill",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-theme-backfill/src",
+  "projectType": "application",
+  "tags": ["scope:catalog", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-theme-backfill",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-theme-backfill/src/main.ts",
+        "tsConfig": "apps/catalog-theme-backfill/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-theme-backfill/main.cjs"
+      }
+    }
+  }
+}

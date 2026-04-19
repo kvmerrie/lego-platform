@@ -1,17 +1,11 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   type CatalogExternalSetSearchResult,
-  type CatalogOverlaySet,
+  type CatalogSet,
   type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import { buildPublicSetDetailUrl } from '@lego-platform/shared/config';
 import {
-  type CommerceDiscoveryApprovalResult,
-  type CommerceDiscoveryCandidate,
-  type CommerceDiscoveryCandidateReviewStatus,
-  type CommerceDiscoveryCandidateStatus,
-  type CommerceDiscoveryRun,
-  type CommerceDiscoveryRunInput,
   buildCommerceMerchantSearchQuery,
   buildCommerceMerchantSearchUrl,
   buildCommerceBenchmarkCoverageRows,
@@ -32,8 +26,6 @@ import {
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
   type CommerceSetRefreshResult,
-  supportsCommerceMerchantDiscovery,
-  validateCommerceDiscoveryRunInput,
   validateCommerceBenchmarkSetInput,
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
@@ -60,9 +52,7 @@ export interface CommerceSetsViewState {
   sourceFilter: CommerceCoverageQueueSourceFilter;
 }
 
-export type CommerceCoverageQueueMerchantActionType =
-  | 'open_discovery'
-  | 'open_seed';
+export type CommerceCoverageQueueMerchantActionType = 'open_seed';
 
 export interface CommerceCoverageQueueMerchantAction {
   label: string;
@@ -207,8 +197,6 @@ export class CommerceAdminStore {
   );
   readonly benchmarkSets = signal<CommerceBenchmarkSet[]>([]);
   readonly coverageQueueRows = signal<CommerceCoverageQueueRow[]>([]);
-  readonly discoveryRuns = signal<CommerceDiscoveryRun[]>([]);
-  readonly discoveryCandidates = signal<CommerceDiscoveryCandidate[]>([]);
   readonly merchants = signal<CommerceMerchant[]>([]);
   readonly offerSeeds = signal<CommerceOfferSeed[]>([]);
   readonly activeSetId = signal<string | null>(null);
@@ -295,11 +283,6 @@ export class CommerceAdminStore {
 
     return counts;
   });
-  readonly discoveryMerchants = computed(() =>
-    this.merchants().filter((merchant) =>
-      supportsCommerceMerchantDiscovery(merchant.slug),
-    ),
-  );
 
   async ensureLoaded(): Promise<void> {
     if (this.hasLoaded() || this.isLoading()) {
@@ -318,16 +301,12 @@ export class CommerceAdminStore {
         catalogSets,
         benchmarkSets,
         coverageQueueRows,
-        discoveryCandidates,
-        discoveryRuns,
         merchants,
         offerSeeds,
       ] = await Promise.all([
         this.commerceAdminApi.listCatalogSets(),
         this.commerceAdminApi.listBenchmarkSets(),
         this.commerceAdminApi.listCoverageQueue(),
-        this.commerceAdminApi.listDiscoveryCandidates(),
-        this.commerceAdminApi.listDiscoveryRuns(),
         this.commerceAdminApi.listMerchants(),
         this.commerceAdminApi.listOfferSeeds(),
       ]);
@@ -335,8 +314,6 @@ export class CommerceAdminStore {
       this.catalogSetOptions.set(this.toCatalogSetOptions(catalogSets));
       this.benchmarkSets.set(benchmarkSets);
       this.coverageQueueRows.set(coverageQueueRows);
-      this.discoveryCandidates.set(discoveryCandidates);
-      this.discoveryRuns.set(discoveryRuns);
       this.merchants.set(merchants);
       this.offerSeeds.set(offerSeeds);
       this.hasLoaded.set(true);
@@ -383,7 +360,6 @@ export class CommerceAdminStore {
   }
 
   async saveOfferSeed(input: {
-    discoveryCandidateId?: string;
     input: CommerceOfferSeedInput;
     offerSeedId?: string;
   }): Promise<void> {
@@ -396,10 +372,7 @@ export class CommerceAdminStore {
           input: validatedInput,
         });
       } else {
-        await this.commerceAdminApi.createOfferSeed({
-          input: validatedInput,
-          discoveryCandidateId: input.discoveryCandidateId,
-        });
+        await this.commerceAdminApi.createOfferSeed(validatedInput);
       }
 
       await this.reload();
@@ -419,52 +392,6 @@ export class CommerceAdminStore {
         isActive: !offerSeed.isActive,
       },
     });
-  }
-
-  async runDiscovery(input: CommerceDiscoveryRunInput): Promise<{
-    candidates: CommerceDiscoveryCandidate[];
-    run: CommerceDiscoveryRun;
-  }> {
-    const validatedInput = validateCommerceDiscoveryRunInput(input);
-
-    try {
-      const result = await this.commerceAdminApi.runDiscovery(validatedInput);
-      await this.reload();
-      return result;
-    } catch (error) {
-      const message = toApiErrorMessage(error);
-
-      this.errorMessage.set(message);
-      throw new Error(message);
-    }
-  }
-
-  async approveDiscoveryCandidate(
-    candidateId: string,
-  ): Promise<CommerceDiscoveryApprovalResult> {
-    try {
-      const result =
-        await this.commerceAdminApi.approveDiscoveryCandidate(candidateId);
-      await this.reload();
-      return result;
-    } catch (error) {
-      const message = toApiErrorMessage(error);
-
-      this.errorMessage.set(message);
-      throw new Error(message);
-    }
-  }
-
-  async rejectDiscoveryCandidate(candidateId: string): Promise<void> {
-    try {
-      await this.commerceAdminApi.rejectDiscoveryCandidate(candidateId);
-      await this.reload();
-    } catch (error) {
-      const message = toApiErrorMessage(error);
-
-      this.errorMessage.set(message);
-      throw new Error(message);
-    }
   }
 
   async addBenchmarkSet(input: {
@@ -509,11 +436,11 @@ export class CommerceAdminStore {
     }
   }
 
-  async createCatalogOverlaySet(
+  async createCatalogSet(
     input: CatalogExternalSetSearchResult,
-  ): Promise<CatalogOverlaySet> {
+  ): Promise<CatalogSet> {
     try {
-      const result = await this.commerceAdminApi.createCatalogOverlaySet(input);
+      const result = await this.commerceAdminApi.createCatalogSet(input);
       await this.reload();
       return result;
     } catch (error) {
@@ -545,12 +472,6 @@ export class CommerceAdminStore {
 
   getMerchantById(merchantId: string): CommerceMerchant | undefined {
     return this.merchants().find((merchant) => merchant.id === merchantId);
-  }
-
-  supportsMerchantDiscovery(merchantId: string): boolean {
-    const merchant = this.getMerchantById(merchantId);
-
-    return merchant ? supportsCommerceMerchantDiscovery(merchant.slug) : false;
   }
 
   async refreshSet(setId: string): Promise<CommerceSetRefreshResult> {
@@ -635,43 +556,6 @@ export class CommerceAdminStore {
     });
   }
 
-  getLatestDiscoveryRun(input: {
-    merchantId: string;
-    setId: string;
-  }): CommerceDiscoveryRun | undefined {
-    return this.discoveryRuns().find(
-      (run) => run.merchantId === input.merchantId && run.setId === input.setId,
-    );
-  }
-
-  getDiscoveryCandidatesForSetMerchant(input: {
-    merchantId: string;
-    setId: string;
-  }): CommerceDiscoveryCandidate[] {
-    const runById = new Map(
-      this.discoveryRuns().map((run) => [run.id, run] as const),
-    );
-
-    return this.discoveryCandidates()
-      .filter(
-        (candidate) =>
-          candidate.merchantId === input.merchantId &&
-          candidate.setId === input.setId,
-      )
-      .sort((left, right) => {
-        const leftRunCreatedAt =
-          runById.get(left.discoveryRunId)?.createdAt ?? left.createdAt;
-        const rightRunCreatedAt =
-          runById.get(right.discoveryRunId)?.createdAt ?? right.createdAt;
-
-        return (
-          rightRunCreatedAt.localeCompare(leftRunCreatedAt) ||
-          right.confidenceScore - left.confidenceScore ||
-          left.sourceRank - right.sourceRank
-        );
-      });
-  }
-
   getOfferSeedHealthLabel(offerSeed: CommerceOfferSeed): string {
     return buildOfferSeedHealthLabel(offerSeed);
   }
@@ -723,109 +607,8 @@ export class CommerceAdminStore {
     return null;
   }
 
-  getDiscoveryRunTone(
-    status: CommerceDiscoveryRun['status'],
-  ): 'danger' | 'neutral' | 'positive' {
-    switch (status) {
-      case 'success':
-        return 'positive';
-      case 'failed':
-        return 'danger';
-      case 'running':
-      default:
-        return 'neutral';
-    }
-  }
-
-  getDiscoveryCandidateStatusLabel(
-    status: CommerceDiscoveryCandidateStatus,
-  ): string {
-    switch (status) {
-      case 'auto_approved':
-        return 'Auto-goedgekeurd';
-      case 'needs_review':
-        return 'Review nodig';
-      case 'rejected':
-      default:
-        return 'Afgewezen';
-    }
-  }
-
-  getDiscoveryCandidateStatusTone(
-    status: CommerceDiscoveryCandidateStatus,
-  ): 'danger' | 'positive' | 'warning' {
-    switch (status) {
-      case 'auto_approved':
-        return 'positive';
-      case 'needs_review':
-        return 'warning';
-      case 'rejected':
-      default:
-        return 'danger';
-    }
-  }
-
-  getDiscoveryReviewStatusLabel(
-    reviewStatus: CommerceDiscoveryCandidateReviewStatus,
-  ): string {
-    switch (reviewStatus) {
-      case 'approved':
-        return 'Goedgekeurd';
-      case 'rejected':
-        return 'Afgewezen';
-      case 'pending':
-      default:
-        return 'Wacht op review';
-    }
-  }
-
-  getDiscoveryReviewStatusTone(
-    reviewStatus: CommerceDiscoveryCandidateReviewStatus,
-  ): 'danger' | 'neutral' | 'positive' {
-    switch (reviewStatus) {
-      case 'approved':
-        return 'positive';
-      case 'rejected':
-        return 'danger';
-      case 'pending':
-      default:
-        return 'neutral';
-    }
-  }
-
-  getDiscoveryCandidateLinkLabel(
-    candidate: CommerceDiscoveryCandidate,
-  ): string {
-    return candidate.offerSeedId ? 'Seed gekoppeld' : 'Nog geen seed';
-  }
-
-  getDiscoveryCandidateLinkTone(
-    candidate: CommerceDiscoveryCandidate,
-  ): 'neutral' | 'positive' {
-    return candidate.offerSeedId ? 'positive' : 'neutral';
-  }
-
-  getDiscoveryAvailabilityLabel(availability?: string): string {
-    switch (availability) {
-      case 'in_stock':
-        return 'Op voorraad';
-      case 'limited':
-        return 'Beperkt';
-      case 'out_of_stock':
-        return 'Uitverkocht';
-      case 'preorder':
-        return 'Pre-order';
-      default:
-        return 'Onbekend';
-    }
-  }
-
   getCoverageQueueActionLabel(action: CommerceCoverageQueueNextAction): string {
     switch (action) {
-      case 'run_discovery':
-        return 'Run discovery';
-      case 'review_candidates':
-        return 'Review candidates';
       case 'edit_seed':
         return 'Seed bijwerken';
       case 'add_seed_manually':
@@ -845,35 +628,19 @@ export class CommerceAdminStore {
     switch (merchantStatus.state) {
       case 'pending':
       case 'review':
-        return {
-          type: 'open_discovery',
-          label: 'Open discovery',
-        };
       case 'not_available_confirmed':
-        return this.supportsMerchantDiscovery(merchantStatus.merchantId)
-          ? {
-              type: 'open_discovery',
-              label: 'Open laatste check',
-            }
-          : {
-              type: 'open_seed',
-              label: merchantStatus.offerSeed
-                ? 'Bekijk seed'
-                : 'Seed toevoegen',
-            };
       case 'stale':
       case 'unavailable':
       case 'valid':
         return {
           type: 'open_seed',
-          label: merchantStatus.offerSeed ? 'Bekijk seed' : 'Seed toevoegen',
+          label: merchantStatus.offerSeed ? 'Seed bewerken' : 'Seed toevoegen',
         };
       case 'missing':
       default:
         return {
           type: 'open_seed',
           label:
-            row.recommendedMerchantId === merchantStatus.merchantId &&
             row.recommendedNextAction === 'edit_seed'
               ? 'Seed bewerken'
               : 'Seed toevoegen',
@@ -1061,31 +828,6 @@ export class CommerceAdminStore {
     }).format(parsedValue);
   }
 
-  getCoverageQueueDiscoveryTargetMerchant(
-    row: CommerceCoverageQueueRow,
-  ): CommerceCoverageQueueMerchantStatus | undefined {
-    const recommendedMerchant = row.recommendedMerchantId
-      ? row.merchantStatuses.find(
-          (merchantStatus) =>
-            merchantStatus.merchantId === row.recommendedMerchantId,
-        )
-      : undefined;
-
-    if (
-      recommendedMerchant &&
-      recommendedMerchant.state === 'missing' &&
-      this.supportsMerchantDiscovery(recommendedMerchant.merchantId)
-    ) {
-      return recommendedMerchant;
-    }
-
-    return row.merchantStatuses.find(
-      (merchantStatus) =>
-        merchantStatus.state === 'missing' &&
-        this.supportsMerchantDiscovery(merchantStatus.merchantId),
-    );
-  }
-
   getCoverageQueueSeedActionMerchant(
     row: CommerceCoverageQueueRow,
   ): CommerceCoverageQueueMerchantStatus | undefined {
@@ -1107,28 +849,5 @@ export class CommerceAdminStore {
       ) ??
       row.merchantStatuses[0]
     );
-  }
-
-  getCoverageQueueDiscoveryLinkParams(
-    row: CommerceCoverageQueueRow,
-  ): Record<string, string> {
-    return this.getCoverageQueueDiscoveryLinkParamsForMerchant(
-      row,
-      row.recommendedMerchantId,
-    );
-  }
-
-  getCoverageQueueDiscoveryLinkParamsForMerchant(
-    row: CommerceCoverageQueueRow,
-    merchantId?: string,
-  ): Record<string, string> {
-    return {
-      set: row.setId,
-      ...(merchantId
-        ? {
-            merchant: merchantId,
-          }
-        : {}),
-    };
   }
 }

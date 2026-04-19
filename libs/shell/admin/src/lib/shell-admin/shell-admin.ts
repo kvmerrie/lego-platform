@@ -44,11 +44,6 @@ export class ShellAdminComponent {
       path: '/workflow',
     },
     {
-      description: 'Losse discovery-runs en kandidaatreview',
-      label: 'Discovery',
-      path: '/discovery',
-    },
-    {
       description: 'Handmatige seed-URL’s beheren',
       label: 'Offer seeds',
       path: '/offer-seeds',

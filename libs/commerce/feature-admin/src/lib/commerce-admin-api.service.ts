@@ -2,14 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
   type CatalogExternalSetSearchResult,
-  type CatalogOverlaySet,
+  type CatalogSet,
   type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import {
-  type CommerceDiscoveryApprovalResult,
-  type CommerceDiscoveryCandidate,
-  type CommerceDiscoveryRun,
-  type CommerceDiscoveryRunInput,
   type CommerceBenchmarkSet,
   type CommerceCoverageQueueRow,
   type CommerceMerchant,
@@ -46,14 +42,11 @@ export class CommerceAdminApiService {
     );
   }
 
-  async createCatalogOverlaySet(
+  async createCatalogSet(
     input: CatalogExternalSetSearchResult,
-  ): Promise<CatalogOverlaySet> {
+  ): Promise<CatalogSet> {
     return firstValueFrom(
-      this.http.post<CatalogOverlaySet>(
-        apiPaths.adminCatalogOverlaySets,
-        input,
-      ),
+      this.http.post<CatalogSet>(apiPaths.adminCatalogSets, input),
     );
   }
 
@@ -106,56 +99,6 @@ export class CommerceAdminApiService {
     );
   }
 
-  async listDiscoveryRuns(): Promise<CommerceDiscoveryRun[]> {
-    return firstValueFrom(
-      this.http.get<CommerceDiscoveryRun[]>(
-        apiPaths.adminCommerceDiscoveryRuns,
-      ),
-    );
-  }
-
-  async listDiscoveryCandidates(): Promise<CommerceDiscoveryCandidate[]> {
-    return firstValueFrom(
-      this.http.get<CommerceDiscoveryCandidate[]>(
-        apiPaths.adminCommerceDiscoveryCandidates,
-      ),
-    );
-  }
-
-  async runDiscovery(input: CommerceDiscoveryRunInput): Promise<{
-    candidates: CommerceDiscoveryCandidate[];
-    run: CommerceDiscoveryRun;
-  }> {
-    return firstValueFrom(
-      this.http.post<{
-        candidates: CommerceDiscoveryCandidate[];
-        run: CommerceDiscoveryRun;
-      }>(apiPaths.adminCommerceDiscoveryRuns, input),
-    );
-  }
-
-  async approveDiscoveryCandidate(
-    candidateId: string,
-  ): Promise<CommerceDiscoveryApprovalResult> {
-    return firstValueFrom(
-      this.http.post<CommerceDiscoveryApprovalResult>(
-        `${apiPaths.adminCommerceDiscoveryCandidates}/${candidateId}/approve`,
-        {},
-      ),
-    );
-  }
-
-  async rejectDiscoveryCandidate(
-    candidateId: string,
-  ): Promise<CommerceDiscoveryCandidate> {
-    return firstValueFrom(
-      this.http.post<CommerceDiscoveryCandidate>(
-        `${apiPaths.adminCommerceDiscoveryCandidates}/${candidateId}/reject`,
-        {},
-      ),
-    );
-  }
-
   async createMerchant(
     input: CommerceMerchantInput,
   ): Promise<CommerceMerchant> {
@@ -182,19 +125,13 @@ export class CommerceAdminApiService {
     );
   }
 
-  async createOfferSeed(input: {
-    discoveryCandidateId?: string;
-    input: CommerceOfferSeedInput;
-  }): Promise<CommerceOfferSeed> {
+  async createOfferSeed(
+    input: CommerceOfferSeedInput,
+  ): Promise<CommerceOfferSeed> {
     return firstValueFrom(
       this.http.post<CommerceOfferSeed>(
         apiPaths.adminCommerceOfferSeeds,
-        input.discoveryCandidateId
-          ? {
-              ...input.input,
-              discoveryCandidateId: input.discoveryCandidateId,
-            }
-          : input.input,
+        input,
       ),
     );
   }

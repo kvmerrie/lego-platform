@@ -9,7 +9,6 @@ import {
   useState,
 } from 'react';
 import { flushSync } from 'react-dom';
-import { listCatalogSearchMatches } from '@lego-platform/catalog/data-access';
 import {
   listCatalogSetCardSearchMatches,
   type CatalogHomepageSetCard,
@@ -102,49 +101,23 @@ async function loadOverlaySearchSuggestionSetCards(): Promise<
 }
 
 function listShellWebSearchSuggestions({
-  overlaySetCards,
+  suggestionSetCards,
   query,
 }: {
-  overlaySetCards: readonly CatalogHomepageSetCard[];
+  suggestionSetCards: readonly CatalogHomepageSetCard[];
   query: string;
 }): CatalogHomepageSetCard[] {
-  const snapshotMatches = listCatalogSearchMatches(
+  return listCatalogSetCardSearchMatches({
+    limit: 6,
     query,
-    Number.MAX_SAFE_INTEGER,
-  );
-  const snapshotSetIds = new Set(
-    snapshotMatches.map((catalogSearchMatch) => catalogSearchMatch.setCard.id),
-  );
-  const dedupedOverlaySetCardsById = new Map<string, CatalogHomepageSetCard>();
-
-  for (const overlaySetCard of overlaySetCards) {
-    if (
-      snapshotSetIds.has(overlaySetCard.id) ||
-      dedupedOverlaySetCardsById.has(overlaySetCard.id)
-    ) {
-      continue;
-    }
-
-    dedupedOverlaySetCardsById.set(overlaySetCard.id, overlaySetCard);
-  }
-
-  const overlayMatches = listCatalogSetCardSearchMatches({
-    limit: Number.MAX_SAFE_INTEGER,
-    query,
-    setCards: [...dedupedOverlaySetCardsById.values()],
-  }).map(({ score, setCard }) => ({
-    score,
-    setCard,
-  }));
-
-  return [...snapshotMatches, ...overlayMatches]
+    setCards: suggestionSetCards,
+  })
     .sort(
       (left, right) =>
         left.score - right.score ||
         right.setCard.releaseYear - left.setCard.releaseYear ||
         left.setCard.name.localeCompare(right.setCard.name),
     )
-    .slice(0, 6)
     .map((catalogSearchMatch) => catalogSearchMatch.setCard);
 }
 
@@ -254,7 +227,7 @@ export function ShellWebSearchForm({
   const normalizedSearchValue = normalizeRecentSearchQuery(searchValue);
   const searchSuggestions = normalizedSearchValue
     ? listShellWebSearchSuggestions({
-        overlaySetCards: overlaySearchSuggestionSetCards,
+        suggestionSetCards: overlaySearchSuggestionSetCards,
         query: normalizedSearchValue,
       })
     : [];

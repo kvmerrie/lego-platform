@@ -104,7 +104,7 @@
       } @if (row.needsReviewCount > 0) {
       <li>
         {{ row.needsReviewCount }} merchant{{ row.needsReviewCount === 1 ? '' :
-        's' }} wachten op review
+        's' }} vragen om seed-review
       </li>
       } @if (row.staleMerchantCount > 0) {
       <li>
@@ -119,57 +119,12 @@
     </ul>
   </section>
 
-  @if (latestRelevantDiscoveryRun()) {
-  <section class="admin-stack admin-stack--tight">
-    <h4>Recente discovery</h4>
-    <div class="admin-pill-cluster">
-      <span
-        class="admin-status-pill"
-        [class.admin-status-pill--danger]="
-          commerceAdminStore.getDiscoveryRunTone(latestRelevantDiscoveryRun()!.status) ===
-          'danger'
-        "
-        [class.admin-status-pill--neutral]="
-          commerceAdminStore.getDiscoveryRunTone(latestRelevantDiscoveryRun()!.status) ===
-          'neutral'
-        "
-        [class.admin-status-pill--positive]="
-          commerceAdminStore.getDiscoveryRunTone(latestRelevantDiscoveryRun()!.status) ===
-          'positive'
-        "
-      >
-        {{ latestRelevantDiscoveryRun()!.status }}
-      </span>
-      <span class="admin-count-pill">
-        {{ latestRelevantCandidateCount() }} kandidaat{{
-        latestRelevantCandidateCount() === 1 ? '' : 'en' }}
-      </span>
-    </div>
-    <p class="admin-muted">
-      {{ commerceAdminStore.formatRelativeTimestamp(
-      latestRelevantDiscoveryRun()!.finishedAt ??
-      latestRelevantDiscoveryRun()!.createdAt ) }}
-    </p>
-    @if (latestRelevantDiscoveryRun()!.errorMessage) {
-    <p class="admin-muted">{{ latestRelevantDiscoveryRun()!.errorMessage }}</p>
-    }
-  </section>
-  }
-
   <section class="admin-stack admin-stack--tight">
     <h4>Snelle acties</h4>
     <div class="admin-actions-inline">
-      @if (discoveryTargetMerchant()) {
+      @if (seedActionMerchant()) {
       <button
         class="admin-button admin-button--primary"
-        type="button"
-        (click)="triggerRunDiscovery()"
-      >
-        Run discovery
-      </button>
-      } @if (seedActionMerchant()) {
-      <button
-        class="admin-button admin-button--subtle"
         type="button"
         (click)="triggerSeedAction()"
       >
@@ -184,17 +139,7 @@
       >
         Hercheck prijzen
       </button>
-      }
-
-      <a
-        class="admin-button admin-button--subtle"
-        [queryParams]="discoveryQueryParams()"
-        routerLink="/discovery"
-      >
-        Open discovery
-      </a>
-
-      @if (publicSetUrl(); as publicSetUrl) {
+      } @if (publicSetUrl(); as publicSetUrl) {
       <a
         [href]="publicSetUrl"
         class="admin-button admin-button--subtle"
@@ -218,15 +163,6 @@
   <p class="admin-muted">
     Laatste check: {{
     commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt) }}
-  </p>
-</article>
-} @else {
-<article class="admin-panel admin-context-panel admin-context-panel--empty">
-  <p class="admin-eyebrow">{{ title }}</p>
-  <h3>Kies een set</h3>
-  <p class="admin-muted">
-    Selecteer links een set om coverage, merchants en de volgende actie in
-    context te zien.
   </p>
 </article>
 }
