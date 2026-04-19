@@ -116,6 +116,11 @@ export interface CommerceSyncInputs {
   pricingObservationSeeds: readonly PricingObservationSeed[];
 }
 
+export interface CommerceSyncInputFilters {
+  merchantSlugs?: readonly string[];
+  setIds?: readonly string[];
+}
+
 export interface ParsedCommerceOfferSnapshot {
   availability: PricingAvailability;
   currencyCode?: string;
@@ -1092,6 +1097,27 @@ function extractBolCommerceOfferSnapshotFromHtmlDetailed(
   };
 }
 
+function extractLegoCommerceOfferSnapshotFromHtmlDetailed(
+  html: string,
+): CommerceOfferSnapshotExtractionResult {
+  const extractionResult = extractGenericCommerceOfferSnapshotFromHtml(html);
+  const snapshot = extractionResult.snapshot;
+
+  if (!snapshot) {
+    return extractionResult;
+  }
+
+  if (snapshot.availability === 'unknown') {
+    return {
+      snapshot: null,
+      reason:
+        'LEGO page resolved, but no trustworthy stock signal was found alongside the price.',
+    };
+  }
+
+  return extractionResult;
+}
+
 function extractCommerceOfferSnapshotFromHtmlDetailed({
   html,
   merchantSlug,
@@ -1105,6 +1131,10 @@ function extractCommerceOfferSnapshotFromHtmlDetailed({
 
   if (merchantSlug === 'bol') {
     return extractBolCommerceOfferSnapshotFromHtmlDetailed(html);
+  }
+
+  if (merchantSlug === 'lego-nl') {
+    return extractLegoCommerceOfferSnapshotFromHtmlDetailed(html);
   }
 
   return extractGenericCommerceOfferSnapshotFromHtml(html);
@@ -2080,8 +2110,59 @@ export function buildCommerceSyncInputs({
   };
 }
 
-export async function loadCommerceSyncInputs() {
-  const refreshSeeds = await listActiveCommerceRefreshSeeds();
+function filterCommerceRefreshSeeds({
+  filters,
+  refreshSeeds,
+}: {
+  filters?: CommerceSyncInputFilters;
+  refreshSeeds: readonly CommerceRefreshSeed[];
+}) {
+  const requestedSetIds = new Set(
+    (filters?.setIds ?? []).map((setId) => setId.trim()).filter(Boolean),
+  );
+  const requestedMerchantSlugs = new Set(
+    (filters?.merchantSlugs ?? [])
+      .map((merchantSlug) => merchantSlug.trim())
+      .filter(Boolean),
+  );
+
+  if (requestedSetIds.size === 0 && requestedMerchantSlugs.size === 0) {
+    return [...refreshSeeds];
+  }
+
+  return refreshSeeds.filter((refreshSeed) => {
+    if (
+      requestedSetIds.size > 0 &&
+      !requestedSetIds.has(refreshSeed.offerSeed.setId)
+    ) {
+      return false;
+    }
+
+    if (
+      requestedMerchantSlugs.size > 0 &&
+      !requestedMerchantSlugs.has(refreshSeed.merchant.slug)
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+export async function loadCommerceSyncInputs({
+  listActiveCommerceRefreshSeedsFn = listActiveCommerceRefreshSeeds,
+  merchantSlugs,
+  setIds,
+}: CommerceSyncInputFilters & {
+  listActiveCommerceRefreshSeedsFn?: typeof listActiveCommerceRefreshSeeds;
+} = {}) {
+  const refreshSeeds = filterCommerceRefreshSeeds({
+    filters: {
+      merchantSlugs,
+      setIds,
+    },
+    refreshSeeds: await listActiveCommerceRefreshSeedsFn(),
+  });
 
   return {
     refreshSeeds,

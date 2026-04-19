@@ -8,12 +8,19 @@ import {
   buildGeneratedCommerceSeedRejectedNote,
   buildGeneratedCommerceSeedStaleNote,
   buildGeneratedCommerceSeedValidatedNote,
+  compareCommerceMerchantsByOperationalPriority,
+  getCommerceGapRecoveryProfile,
+  getCommerceMerchantSupportTier,
+  includeCatalogSetInDefaultCommerceCoverage,
   includeCommerceMerchantInDefaultSeedGeneration,
   isGeneratedCommerceSeedNote,
   supportsCommerceMerchantSearch,
   type CommerceMerchant,
+  type CommerceGapRecoveryPriority,
+  type CommerceOfferLatestFetchStatus,
   type CommerceOfferSeed,
   type CommerceOfferSeedInput,
+  type CommerceOfferSeedValidationStatus,
   type CommercePrimaryCoverageRow,
   type CommercePrimaryCoverageStatus,
 } from '@lego-platform/commerce/util';
@@ -47,6 +54,10 @@ const htmlNextDataPattern =
 const htmlQuotedNamePattern = /"name"\s*:\s*"([^"]+)"/gi;
 const htmlQuotedBrandPattern =
   /"brand"\s*:\s*(?:"([^"]+)"|\{[\s\S]*?"name"\s*:\s*"([^"]+)")/gi;
+const htmlProductItemPattern =
+  /<li\b[^>]*class=(["'])[^"']*\bproduct-item\b[^"']*\1[^>]*>([\s\S]*?)<\/li>/gi;
+const misterbricksProductAnchorClassPattern =
+  /\bproduct-item-(?:link|photo)\b/i;
 const disallowedProductUrlPathFragments = [
   '/account',
   '/cart',
@@ -61,6 +72,7 @@ export interface CommerceSeedGenerationFilters {
   batchIndex?: number;
   batchSize?: number;
   benchmarkOnly?: boolean;
+  includeNonActive?: boolean;
   limit?: number;
   merchantSlugs?: readonly string[];
   primaryCoverageStatus?: CommercePrimaryCoverageStatus | 'all';
@@ -95,6 +107,84 @@ export interface CommercePrimaryCoverageReport {
   totalSetCount: number;
 }
 
+export const commercePrimaryCoverageGapTypes = [
+  'missing_seed',
+  'seed_pending',
+  'seed_invalid',
+  'seed_stale',
+  'no_latest_refresh',
+  'refresh_pending',
+  'refresh_unavailable',
+  'refresh_error',
+] as const;
+
+export type CommercePrimaryCoverageGapType =
+  (typeof commercePrimaryCoverageGapTypes)[number];
+
+export interface CommercePrimaryCoverageGapMerchantAuditRow {
+  gapType: CommercePrimaryCoverageGapType;
+  hasSeed: boolean;
+  latestRefreshReason?: string;
+  latestRefreshStatus?: CommerceOfferLatestFetchStatus;
+  merchantId: string;
+  merchantName: string;
+  merchantSlug: string;
+  recoveryPriority: CommerceGapRecoveryPriority;
+  recoveryReason: string;
+  seedIsActive?: boolean;
+  seedValidationStatus?: CommerceOfferSeedValidationStatus;
+}
+
+export interface CommercePrimaryCoverageGapAuditRow {
+  merchantGaps: readonly CommercePrimaryCoverageGapMerchantAuditRow[];
+  missingValidPrimaryOfferMerchantNames: readonly string[];
+  missingValidPrimaryOfferMerchantSlugs: readonly string[];
+  primaryMerchantTargetCount: number;
+  primarySeedCount: number;
+  setId: string;
+  setName: string;
+  status: CommercePrimaryCoverageStatus;
+  theme: string;
+  validPrimaryOfferCount: number;
+}
+
+export interface CommercePrimaryCoverageGapAuditMerchantSummary {
+  merchantName: string;
+  merchantSlug: string;
+  missingValidOfferCount: number;
+}
+
+export interface CommercePrimaryCoverageGapAuditTypeSummary {
+  count: number;
+  gapType: CommercePrimaryCoverageGapType;
+}
+
+export interface CommercePrimaryCoverageGapAuditSummary {
+  actionablePartialSetCount: number;
+  countsByRecoveryPriority: readonly CommercePrimaryCoverageGapAuditRecoverySummary[];
+  gapCountsByType: readonly CommercePrimaryCoverageGapAuditTypeSummary[];
+  missingValidOfferCountsByMerchant: readonly CommercePrimaryCoverageGapAuditMerchantSummary[];
+  parkedCount: number;
+  recoverNowCount: number;
+  setsMissingSeedCount: number;
+  setsWithFullSeedButMissingOfferCount: number;
+  verifyFirstCount: number;
+}
+
+export interface CommercePrimaryCoverageGapAuditReport {
+  auditedMerchantSlugs: readonly string[];
+  primaryMerchantSlugs: readonly string[];
+  rows: readonly CommercePrimaryCoverageGapAuditRow[];
+  selectedSetCount: number;
+  summary: CommercePrimaryCoverageGapAuditSummary;
+  totalSetCount: number;
+}
+
+export interface CommercePrimaryCoverageGapAuditRecoverySummary {
+  count: number;
+  recoveryPriority: CommerceGapRecoveryPriority;
+}
+
 export interface CommerceSeedValidationDebugCandidate {
   decision: 'invalid' | 'stale' | 'valid';
   pageAssessmentReason?: string;
@@ -120,6 +210,7 @@ export interface CommerceSeedValidationDebugResult {
 }
 
 interface CommerceHtmlLinkCandidate {
+  source?: 'html-anchor' | 'intertoys-partner-search';
   text: string;
   url: string;
 }
@@ -141,6 +232,12 @@ interface LegoGraphQlSearchResponse {
 
 interface IntertoysPartnerSearchResponse {
   result?: Array<{
+    brand?: string | null;
+    description?: string | null;
+    extraData?: {
+      legoNr?: string | null;
+    } | null;
+    keywords?: string | null;
     originalUrl?: string | null;
     productNumber?: string | null;
     title?: string | null;
@@ -404,6 +501,7 @@ function extractIntertoysSearchConfigFromHtml(html: string): {
   configKey?: string;
   langId?: string;
   storeId?: string;
+  websiteUuid?: string;
 } {
   const nextData = parseCommerceNextDataJson(html);
   const props = (nextData?.props as Record<string, unknown> | undefined)
@@ -422,6 +520,12 @@ function extractIntertoysSearchConfigFromHtml(html: string): {
         ?.HelloretailSearchConfigKey === 'string'
         ? ((settings?.userData as Record<string, unknown>)
             .HelloretailSearchConfigKey as string)
+        : undefined,
+    websiteUuid:
+      typeof (settings?.userData as Record<string, unknown> | undefined)
+        ?.HelloRetailUUID === 'string'
+        ? ((settings?.userData as Record<string, unknown>)
+            .HelloRetailUUID as string)
         : undefined,
   };
 }
@@ -483,6 +587,83 @@ function hasPromisingGenericSearchCandidates({
 
     return assessment.decision === 'valid' || assessment.score >= 60;
   });
+}
+
+function normalizeResolvedCandidateUrl(value: string): string {
+  try {
+    const resolvedUrl = new URL(value);
+
+    resolvedUrl.hash = '';
+
+    return resolvedUrl.toString();
+  } catch {
+    return value;
+  }
+}
+
+function isLikelyMisterbricksProductDetailUrl(value: string): boolean {
+  try {
+    const candidateUrl = new URL(value);
+
+    return candidateUrl.pathname.toLowerCase().endsWith('.html');
+  } catch {
+    return false;
+  }
+}
+
+function extractMisterbricksProductItemCandidates({
+  html,
+  seedUrl,
+}: {
+  html: string;
+  seedUrl: URL;
+}): CommerceHtmlLinkCandidate[] {
+  const candidates: CommerceHtmlLinkCandidate[] = [];
+
+  for (const match of html.matchAll(htmlProductItemPattern)) {
+    const blockHtml = match[2] ?? '';
+    const blockText = trimDecodedHtmlText(blockHtml);
+
+    for (const anchorMatch of blockHtml.matchAll(htmlAnchorPattern)) {
+      const attributes =
+        `${anchorMatch[1] ?? ''} ${anchorMatch[4] ?? ''}`.trim();
+
+      if (!misterbricksProductAnchorClassPattern.test(attributes)) {
+        continue;
+      }
+
+      const resolvedCandidateUrl = resolveCandidateUrlAgainstSeedUrl({
+        candidateUrl: anchorMatch[3] ?? '',
+        seedUrl,
+      });
+
+      if (
+        !resolvedCandidateUrl ||
+        !isLikelyMisterbricksProductDetailUrl(resolvedCandidateUrl)
+      ) {
+        continue;
+      }
+
+      const candidateText = [
+        trimDecodedHtmlText(anchorMatch[5] ?? ''),
+        extractAttributeValue(titleAttributePattern, attributes),
+        extractAttributeValue(ariaLabelAttributePattern, attributes),
+        ...extractAnchorImageAltTexts(anchorMatch[5] ?? ''),
+        blockText,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+
+      candidates.push({
+        source: 'html-anchor',
+        text: candidateText || blockText,
+        url: normalizeResolvedCandidateUrl(resolvedCandidateUrl),
+      });
+    }
+  }
+
+  return dedupeCommerceHtmlLinkCandidates(candidates);
 }
 
 async function fetchMerchantJson<T>({
@@ -644,7 +825,8 @@ async function extractIntertoysSearchCandidates({
   searchHtml: string;
   seedUrl: URL;
 }): Promise<CommerceHtmlLinkCandidate[]> {
-  const { configKey } = extractIntertoysSearchConfigFromHtml(searchHtml);
+  const { configKey, websiteUuid } =
+    extractIntertoysSearchConfigFromHtml(searchHtml);
   const searchTerm = extractSearchTermFromSeedUrl({
     catalogSet,
     seedUrl,
@@ -654,61 +836,86 @@ async function extractIntertoysSearchCandidates({
     return [];
   }
 
-  const partnerSearchUrl = new URL(
-    'https://core.helloretail.com/api/v1/search/partnerSearch',
-  );
+  const runPartnerSearch = async (term: string) => {
+    const requestBody = new URLSearchParams();
 
-  partnerSearchUrl.searchParams.set('key', configKey);
-  partnerSearchUrl.searchParams.set('q', searchTerm);
-  partnerSearchUrl.searchParams.set('device_type', 'DESKTOP');
-  partnerSearchUrl.searchParams.set('format', 'json');
-  partnerSearchUrl.searchParams.set('return_filters', 'true');
-  partnerSearchUrl.searchParams.set('sorting', '');
-  partnerSearchUrl.searchParams.set('product_count', '36');
-  partnerSearchUrl.searchParams.set('product_start', '0');
-  partnerSearchUrl.searchParams.set(
-    'product_fields',
-    'title,url,productNumber,ean,price,oldPrice,currency,trackingCode,imgUrl',
-  );
-  partnerSearchUrl.searchParams.set('category_count', '25');
-  partnerSearchUrl.searchParams.set('category_start', '0');
-  partnerSearchUrl.searchParams.set('redirects_count', '2');
-  partnerSearchUrl.searchParams.set('redirects_start', '0');
+    requestBody.set('key', configKey);
+    requestBody.set('q', term);
+    requestBody.set('device_type', 'DESKTOP');
+    requestBody.set('format', 'json');
+    requestBody.set('return_filters', 'true');
+    requestBody.set('sorting', '');
+    requestBody.set('product_count', '36');
+    requestBody.set('product_start', '0');
+    requestBody.set('category_count', '25');
+    requestBody.set('category_start', '0');
+    requestBody.set('redirects_count', '2');
+    requestBody.set('redirects_start', '0');
 
-  const response = await fetchMerchantJson<IntertoysPartnerSearchResponse>({
-    fetchImpl,
-    merchantSlug: 'intertoys',
-    url: partnerSearchUrl.toString(),
-    headers: {
-      accept: 'application/json, text/plain, */*',
-      origin: seedUrl.origin,
-      referer: seedUrl.toString(),
-    },
-  });
+    if (websiteUuid) {
+      requestBody.set('websiteUuid', websiteUuid);
+    }
+
+    return fetchMerchantJson<IntertoysPartnerSearchResponse>({
+      fetchImpl,
+      merchantSlug: 'intertoys',
+      method: 'POST',
+      url: 'https://core.helloretail.com/api/v1/search/partnerSearch',
+      body: requestBody.toString(),
+      headers: {
+        accept: 'application/json, text/plain, */*',
+        'content-type': 'application/x-www-form-urlencoded',
+        origin: seedUrl.origin,
+        referer: seedUrl.toString(),
+      },
+    });
+  };
+  const searchTerms = new Set<string>([searchTerm]);
+
+  if (searchTerm === catalogSet.setId) {
+    searchTerms.add(`LEGO ${catalogSet.setId}`);
+  }
+
+  const partnerSearchResponses = await Promise.all(
+    [...searchTerms].map((term) => runPartnerSearch(term)),
+  );
 
   return dedupeCommerceHtmlLinkCandidates(
-    (response?.result ?? []).flatMap((entry) => {
-      const candidateUrl =
-        entry?.originalUrl?.trim() || entry?.url?.split('#')[0]?.trim() || '';
-      const resolvedCandidateUrl = candidateUrl
-        ? resolveCandidateUrlAgainstSeedUrl({
-            candidateUrl,
-            seedUrl,
-          })
-        : undefined;
+    partnerSearchResponses.flatMap((response) =>
+      (response?.result ?? []).flatMap((entry) => {
+        const candidateUrl =
+          entry?.originalUrl?.trim() || entry?.url?.split('#')[0]?.trim() || '';
+        const resolvedCandidateUrl = candidateUrl
+          ? resolveCandidateUrlAgainstSeedUrl({
+              candidateUrl,
+              seedUrl,
+            })
+          : undefined;
+        const candidateText = [
+          entry?.brand?.trim(),
+          entry?.title?.trim(),
+          entry?.description?.trim(),
+          entry?.keywords?.trim(),
+          entry?.extraData?.legoNr?.trim(),
+          entry?.productNumber?.trim(),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .trim();
 
-      return resolvedCandidateUrl
-        ? [
-            {
-              text:
-                entry?.title?.trim() ||
-                entry?.productNumber?.trim() ||
-                `LEGO ${catalogSet.setId} ${catalogSet.name}`.trim(),
-              url: resolvedCandidateUrl,
-            },
-          ]
-        : [];
-    }),
+        return resolvedCandidateUrl
+          ? [
+              {
+                source: 'intertoys-partner-search' as const,
+                text:
+                  candidateText ||
+                  `LEGO ${catalogSet.setId} ${catalogSet.name}`.trim(),
+                url: resolvedCandidateUrl,
+              },
+            ]
+          : [];
+      }),
+    ),
   );
 }
 
@@ -772,6 +979,24 @@ async function extractMerchantSearchCandidates({
     ]);
   }
 
+  if (merchant.slug === 'misterbricks') {
+    const productItemCandidates = extractMisterbricksProductItemCandidates({
+      html: searchPage.html,
+      seedUrl: resolvedSearchUrl,
+    });
+
+    if (productItemCandidates.length > 0) {
+      return productItemCandidates;
+    }
+
+    return genericCandidates.filter(
+      (candidate) =>
+        isLikelyMisterbricksProductDetailUrl(candidate.url) &&
+        (candidate.url.includes(catalogSet.setId) ||
+          candidate.text.includes(catalogSet.setId)),
+    );
+  }
+
   return genericCandidates;
 }
 
@@ -827,6 +1052,7 @@ function extractCommerceHtmlLinkCandidates({
 
     seenUrls.add(candidateUrlString);
     candidates.push({
+      source: 'html-anchor',
       text: rawText,
       url: candidateUrlString,
     });
@@ -935,6 +1161,12 @@ function applySetFilters({
       ? sets.filter((set) => requestedSetIds.has(set.setId))
       : [...sets];
 
+  if (requestedSetIds.size === 0 && filters.includeNonActive !== true) {
+    nextSets = nextSets.filter((set) =>
+      includeCatalogSetInDefaultCommerceCoverage(set.setId),
+    );
+  }
+
   if (
     requestedSetIds.size === 0 &&
     filters.primaryCoverageStatus &&
@@ -985,6 +1217,371 @@ function applyMerchantFilters({
 
     return includeCommerceMerchantInDefaultSeedGeneration(merchant.slug);
   });
+}
+
+function listActivePrimaryMerchants(
+  merchants: readonly CommerceMerchant[],
+): CommerceMerchant[] {
+  return merchants
+    .filter(
+      (merchant) =>
+        merchant.isActive &&
+        getCommerceMerchantSupportTier(merchant.slug) === 'primary',
+    )
+    .sort(compareCommerceMerchantsByOperationalPriority);
+}
+
+function filterAuditPrimaryMerchants({
+  filters,
+  primaryMerchants,
+}: {
+  filters: CommerceSeedGenerationFilters;
+  primaryMerchants: readonly CommerceMerchant[];
+}): CommerceMerchant[] {
+  const requestedMerchantSlugs = normalizeRequestedSlugs(filters.merchantSlugs);
+
+  if (requestedMerchantSlugs.size === 0) {
+    return [...primaryMerchants];
+  }
+
+  return primaryMerchants.filter((merchant) =>
+    requestedMerchantSlugs.has(merchant.slug),
+  );
+}
+
+function getComparableSeedTimestampMs(offerSeed: CommerceOfferSeed): number {
+  const comparableValue =
+    offerSeed.latestOffer?.fetchedAt ||
+    offerSeed.lastVerifiedAt ||
+    offerSeed.updatedAt ||
+    offerSeed.createdAt;
+  const comparableTimestamp = new Date(comparableValue).getTime();
+
+  return Number.isFinite(comparableTimestamp) ? comparableTimestamp : 0;
+}
+
+function getValidationStatusPriority(
+  validationStatus: CommerceOfferSeedValidationStatus,
+): number {
+  switch (validationStatus) {
+    case 'valid':
+      return 0;
+    case 'pending':
+      return 1;
+    case 'stale':
+      return 2;
+    case 'invalid':
+    default:
+      return 3;
+  }
+}
+
+function selectMostRelevantOfferSeed(
+  offerSeeds: readonly CommerceOfferSeed[],
+): CommerceOfferSeed | undefined {
+  return [...offerSeeds].sort((left, right) => {
+    return (
+      Number(right.isActive) - Number(left.isActive) ||
+      getValidationStatusPriority(left.validationStatus) -
+        getValidationStatusPriority(right.validationStatus) ||
+      getComparableSeedTimestampMs(right) -
+        getComparableSeedTimestampMs(left) ||
+      right.updatedAt.localeCompare(left.updatedAt) ||
+      right.createdAt.localeCompare(left.createdAt) ||
+      left.id.localeCompare(right.id)
+    );
+  })[0];
+}
+
+function getRecoveryPrioritySortOrder(
+  recoveryPriority: CommerceGapRecoveryPriority,
+): number {
+  switch (recoveryPriority) {
+    case 'recover_now':
+      return 0;
+    case 'verify_first':
+      return 1;
+    case 'parked':
+    default:
+      return 2;
+  }
+}
+
+function buildCommercePrimaryCoverageGapMerchantAuditRow({
+  merchant,
+  offerSeed,
+}: {
+  merchant: CommerceMerchant;
+  offerSeed?: CommerceOfferSeed;
+}): CommercePrimaryCoverageGapMerchantAuditRow {
+  if (!offerSeed) {
+    const recoveryProfile = getCommerceGapRecoveryProfile({
+      merchantSlug: merchant.slug,
+      gapType: 'missing_seed',
+    });
+
+    return {
+      gapType: 'missing_seed',
+      hasSeed: false,
+      merchantId: merchant.id,
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+      recoveryPriority: recoveryProfile.priority,
+      recoveryReason: recoveryProfile.reason,
+    };
+  }
+
+  if (offerSeed.validationStatus === 'pending') {
+    const recoveryProfile = getCommerceGapRecoveryProfile({
+      merchantSlug: merchant.slug,
+      gapType: 'seed_pending',
+    });
+
+    return {
+      gapType: 'seed_pending',
+      hasSeed: true,
+      latestRefreshReason: offerSeed.latestOffer?.errorMessage,
+      latestRefreshStatus: offerSeed.latestOffer?.fetchStatus,
+      merchantId: merchant.id,
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+      recoveryPriority: recoveryProfile.priority,
+      recoveryReason: recoveryProfile.reason,
+      seedIsActive: offerSeed.isActive,
+      seedValidationStatus: offerSeed.validationStatus,
+    };
+  }
+
+  if (offerSeed.validationStatus === 'invalid') {
+    const recoveryProfile = getCommerceGapRecoveryProfile({
+      merchantSlug: merchant.slug,
+      gapType: 'seed_invalid',
+    });
+
+    return {
+      gapType: 'seed_invalid',
+      hasSeed: true,
+      latestRefreshReason: offerSeed.latestOffer?.errorMessage,
+      latestRefreshStatus: offerSeed.latestOffer?.fetchStatus,
+      merchantId: merchant.id,
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+      recoveryPriority: recoveryProfile.priority,
+      recoveryReason: recoveryProfile.reason,
+      seedIsActive: offerSeed.isActive,
+      seedValidationStatus: offerSeed.validationStatus,
+    };
+  }
+
+  if (offerSeed.validationStatus === 'stale') {
+    const recoveryProfile = getCommerceGapRecoveryProfile({
+      merchantSlug: merchant.slug,
+      gapType: 'seed_stale',
+    });
+
+    return {
+      gapType: 'seed_stale',
+      hasSeed: true,
+      latestRefreshReason: offerSeed.latestOffer?.errorMessage,
+      latestRefreshStatus: offerSeed.latestOffer?.fetchStatus,
+      merchantId: merchant.id,
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+      recoveryPriority: recoveryProfile.priority,
+      recoveryReason: recoveryProfile.reason,
+      seedIsActive: offerSeed.isActive,
+      seedValidationStatus: offerSeed.validationStatus,
+    };
+  }
+
+  if (!offerSeed.latestOffer) {
+    const recoveryProfile = getCommerceGapRecoveryProfile({
+      merchantSlug: merchant.slug,
+      gapType: 'no_latest_refresh',
+    });
+
+    return {
+      gapType: 'no_latest_refresh',
+      hasSeed: true,
+      merchantId: merchant.id,
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+      recoveryPriority: recoveryProfile.priority,
+      recoveryReason: recoveryProfile.reason,
+      seedIsActive: offerSeed.isActive,
+      seedValidationStatus: offerSeed.validationStatus,
+    };
+  }
+
+  switch (offerSeed.latestOffer.fetchStatus) {
+    case 'pending': {
+      const recoveryProfile = getCommerceGapRecoveryProfile({
+        merchantSlug: merchant.slug,
+        gapType: 'refresh_pending',
+      });
+
+      return {
+        gapType: 'refresh_pending',
+        hasSeed: true,
+        latestRefreshReason: offerSeed.latestOffer.errorMessage,
+        latestRefreshStatus: offerSeed.latestOffer.fetchStatus,
+        merchantId: merchant.id,
+        merchantName: merchant.name,
+        merchantSlug: merchant.slug,
+        recoveryPriority: recoveryProfile.priority,
+        recoveryReason: recoveryProfile.reason,
+        seedIsActive: offerSeed.isActive,
+        seedValidationStatus: offerSeed.validationStatus,
+      };
+    }
+    case 'unavailable': {
+      const recoveryProfile = getCommerceGapRecoveryProfile({
+        merchantSlug: merchant.slug,
+        gapType: 'refresh_unavailable',
+      });
+
+      return {
+        gapType: 'refresh_unavailable',
+        hasSeed: true,
+        latestRefreshReason: offerSeed.latestOffer.errorMessage,
+        latestRefreshStatus: offerSeed.latestOffer.fetchStatus,
+        merchantId: merchant.id,
+        merchantName: merchant.name,
+        merchantSlug: merchant.slug,
+        recoveryPriority: recoveryProfile.priority,
+        recoveryReason: recoveryProfile.reason,
+        seedIsActive: offerSeed.isActive,
+        seedValidationStatus: offerSeed.validationStatus,
+      };
+    }
+    case 'error': {
+      const recoveryProfile = getCommerceGapRecoveryProfile({
+        merchantSlug: merchant.slug,
+        gapType: 'refresh_error',
+      });
+
+      return {
+        gapType: 'refresh_error',
+        hasSeed: true,
+        latestRefreshReason: offerSeed.latestOffer.errorMessage,
+        latestRefreshStatus: offerSeed.latestOffer.fetchStatus,
+        merchantId: merchant.id,
+        merchantName: merchant.name,
+        merchantSlug: merchant.slug,
+        recoveryPriority: recoveryProfile.priority,
+        recoveryReason: recoveryProfile.reason,
+        seedIsActive: offerSeed.isActive,
+        seedValidationStatus: offerSeed.validationStatus,
+      };
+    }
+    case 'success':
+    default: {
+      const recoveryProfile = getCommerceGapRecoveryProfile({
+        merchantSlug: merchant.slug,
+        gapType: 'no_latest_refresh',
+      });
+
+      return {
+        gapType: 'no_latest_refresh',
+        hasSeed: true,
+        latestRefreshReason: offerSeed.latestOffer.errorMessage,
+        latestRefreshStatus: offerSeed.latestOffer.fetchStatus,
+        merchantId: merchant.id,
+        merchantName: merchant.name,
+        merchantSlug: merchant.slug,
+        recoveryPriority: recoveryProfile.priority,
+        recoveryReason: recoveryProfile.reason,
+        seedIsActive: offerSeed.isActive,
+        seedValidationStatus: offerSeed.validationStatus,
+      };
+    }
+  }
+}
+
+function compareGapTypeSummary(
+  left: CommercePrimaryCoverageGapAuditTypeSummary,
+  right: CommercePrimaryCoverageGapAuditTypeSummary,
+): number {
+  return right.count - left.count || left.gapType.localeCompare(right.gapType);
+}
+
+function compareGapRecoverySummary(
+  left: CommercePrimaryCoverageGapAuditRecoverySummary,
+  right: CommercePrimaryCoverageGapAuditRecoverySummary,
+): number {
+  return (
+    getRecoveryPrioritySortOrder(left.recoveryPriority) -
+      getRecoveryPrioritySortOrder(right.recoveryPriority) ||
+    right.count - left.count ||
+    left.recoveryPriority.localeCompare(right.recoveryPriority)
+  );
+}
+
+function compareGapMerchantSummary(
+  left: CommercePrimaryCoverageGapAuditMerchantSummary,
+  right: CommercePrimaryCoverageGapAuditMerchantSummary,
+): number {
+  return (
+    right.missingValidOfferCount - left.missingValidOfferCount ||
+    compareCommerceMerchantsByOperationalPriority(
+      { name: left.merchantName, slug: left.merchantSlug },
+      { name: right.merchantName, slug: right.merchantSlug },
+    )
+  );
+}
+
+function compareGapMerchantAuditRows(
+  left: CommercePrimaryCoverageGapMerchantAuditRow,
+  right: CommercePrimaryCoverageGapMerchantAuditRow,
+): number {
+  return (
+    getRecoveryPrioritySortOrder(left.recoveryPriority) -
+      getRecoveryPrioritySortOrder(right.recoveryPriority) ||
+    compareCommerceMerchantsByOperationalPriority(
+      { name: left.merchantName, slug: left.merchantSlug },
+      { name: right.merchantName, slug: right.merchantSlug },
+    ) ||
+    left.gapType.localeCompare(right.gapType)
+  );
+}
+
+function getHighestRecoveryPriority(
+  merchantGaps: readonly CommercePrimaryCoverageGapMerchantAuditRow[],
+): CommerceGapRecoveryPriority {
+  let highestRecoveryPriority: CommerceGapRecoveryPriority = 'parked';
+  let highestRecoveryPrioritySortOrder = getRecoveryPrioritySortOrder(
+    highestRecoveryPriority,
+  );
+
+  for (const gap of merchantGaps) {
+    const gapRecoveryPrioritySortOrder = getRecoveryPrioritySortOrder(
+      gap.recoveryPriority,
+    );
+
+    if (gapRecoveryPrioritySortOrder < highestRecoveryPrioritySortOrder) {
+      highestRecoveryPriority = gap.recoveryPriority;
+      highestRecoveryPrioritySortOrder = gapRecoveryPrioritySortOrder;
+    }
+  }
+
+  return highestRecoveryPriority;
+}
+
+function compareGapAuditRows(
+  left: CommercePrimaryCoverageGapAuditRow,
+  right: CommercePrimaryCoverageGapAuditRow,
+): number {
+  return (
+    getRecoveryPrioritySortOrder(
+      getHighestRecoveryPriority(left.merchantGaps),
+    ) -
+      getRecoveryPrioritySortOrder(
+        getHighestRecoveryPriority(right.merchantGaps),
+      ) ||
+    left.merchantGaps.length - right.merchantGaps.length ||
+    left.setId.localeCompare(right.setId) ||
+    left.setName.localeCompare(right.setName)
+  );
 }
 
 function shouldUpdateGeneratedCandidate({
@@ -1115,6 +1712,41 @@ function rankLinkCandidates({
     .slice(0, 5);
 }
 
+function canTrustIntertoysPartnerSearchCandidate(input: {
+  assessment: ReturnType<typeof assessCommerceGeneratedSeedCandidate>;
+  linkCandidate: CommerceHtmlLinkCandidate;
+}): boolean {
+  if (
+    input.linkCandidate.source !== 'intertoys-partner-search' ||
+    input.assessment.decision !== 'valid'
+  ) {
+    return false;
+  }
+
+  if (
+    !input.assessment.signals.exactSetIdMatch ||
+    !input.assessment.signals.legoBrandSignal ||
+    input.assessment.signals.accessorySignal ||
+    input.assessment.signals.marketplaceNoiseSignal ||
+    input.assessment.signals.otherSetNumbers.length > 0
+  ) {
+    return false;
+  }
+
+  const matchedNameTokenCount =
+    input.assessment.signals.matchedNameTokens.length;
+
+  if (
+    input.assessment.signals.nameMatchRatio >= 0.5 ||
+    matchedNameTokenCount >= 2 ||
+    input.assessment.signals.pieceCountMatch
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 async function inspectGeneratedCommerceSeedValidation({
   catalogSet,
   fetchImpl,
@@ -1190,6 +1822,28 @@ async function inspectGeneratedCommerceSeedValidation({
     }
 
     sawPlausibleCandidate = true;
+
+    if (
+      merchant.slug === 'intertoys' &&
+      canTrustIntertoysPartnerSearchCandidate({
+        linkCandidate,
+        assessment: linkCandidate.assessment,
+      })
+    ) {
+      debugCandidates.push({
+        url: linkCandidate.url,
+        text: linkCandidate.text,
+        decision: 'valid',
+        reason: linkCandidate.assessment.reason,
+        score: linkCandidate.assessment.score,
+        pageUrl: linkCandidate.url,
+        pageAssessmentReason:
+          'Validated from the Intertoys product result card with exact LEGO and set-number signals.',
+      });
+      finalDecision = 'valid';
+      didValidate = true;
+      break;
+    }
 
     const candidatePage = await fetchMerchantHtmlPage({
       fetchImpl,
@@ -1293,24 +1947,43 @@ export async function listCommercePrimaryCoverageReport({
     filters.benchmarkOnly === true
       ? catalogSets.filter((set) => benchmarkSetIds.has(set.setId))
       : catalogSets;
-  const primaryCoverageRows = buildCommercePrimaryCoverageRows({
+  const allPrimaryCoverageRows = buildCommercePrimaryCoverageRows({
     catalogSets: scopedCatalogSets.map(toCoverageCatalogSetOption),
     merchants,
     offerSeeds,
   });
+  const reportSetIds = new Set(
+    (filters.includeNonActive === true
+      ? scopedCatalogSets
+      : scopedCatalogSets.filter((set) =>
+          includeCatalogSetInDefaultCommerceCoverage(set.setId),
+        )
+    ).map((set) => set.setId),
+  );
+  const reportPrimaryCoverageRows = allPrimaryCoverageRows.filter((row) =>
+    reportSetIds.has(row.setId),
+  );
   const primaryCoverageRowBySetId = new Map(
-    primaryCoverageRows.map((row) => [row.setId, row] as const),
+    allPrimaryCoverageRows.map((row) => [row.setId, row] as const),
   );
-  const selectedSetIds = new Set(
-    applySetFilters({
-      filters,
-      sets: scopedCatalogSets,
-      primaryCoverageRowBySetId,
-    }).map((catalogSet) => catalogSet.setId),
+  const selectedSetIds = applySetFilters({
+    filters,
+    sets: scopedCatalogSets,
+    primaryCoverageRowBySetId,
+  }).map((catalogSet) => catalogSet.setId);
+  const reportPrimaryCoverageRowBySetId = new Map(
+    reportPrimaryCoverageRows.map((row) => [row.setId, row] as const),
   );
-  const selectedRows = primaryCoverageRows.filter((row) =>
-    selectedSetIds.has(row.setId),
+  const allPrimaryCoverageRowBySetId = new Map(
+    allPrimaryCoverageRows.map((row) => [row.setId, row] as const),
   );
+  const selectedRows = selectedSetIds
+    .map(
+      (setId) =>
+        reportPrimaryCoverageRowBySetId.get(setId) ??
+        allPrimaryCoverageRowBySetId.get(setId),
+    )
+    .filter((row): row is CommercePrimaryCoverageRow => Boolean(row));
   const primaryMerchantSlugs = merchants
     .filter(
       (merchant) =>
@@ -1321,22 +1994,204 @@ export async function listCommercePrimaryCoverageReport({
     .map((merchant) => merchant.slug);
 
   return {
-    totalSetCount: primaryCoverageRows.length,
+    totalSetCount: reportPrimaryCoverageRows.length,
     selectedSetCount: selectedRows.length,
     rows: selectedRows,
     primaryMerchantSlugs,
-    noPrimarySeedsCount: primaryCoverageRows.filter(
+    noPrimarySeedsCount: reportPrimaryCoverageRows.filter(
       (row) => row.status === 'no_primary_seeds',
     ).length,
-    noValidPrimaryOffersCount: primaryCoverageRows.filter(
+    noValidPrimaryOffersCount: reportPrimaryCoverageRows.filter(
       (row) => row.status === 'no_valid_primary_offers',
     ).length,
-    partialPrimaryCoverageCount: primaryCoverageRows.filter(
+    partialPrimaryCoverageCount: reportPrimaryCoverageRows.filter(
       (row) => row.status === 'partial_primary_coverage',
     ).length,
-    fullPrimaryCoverageCount: primaryCoverageRows.filter(
+    fullPrimaryCoverageCount: reportPrimaryCoverageRows.filter(
       (row) => row.status === 'full_primary_coverage',
     ).length,
+  };
+}
+
+export async function listCommercePrimaryCoverageGapAudit({
+  filters = {},
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  listCommerceBenchmarkSetsFn = listCommerceBenchmarkSets,
+  listCommerceMerchantsFn = listCommerceMerchants,
+  listCommerceOfferSeedsFn = listCommerceOfferSeeds,
+}: {
+  filters?: CommerceSeedGenerationFilters;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  listCommerceBenchmarkSetsFn?: typeof listCommerceBenchmarkSets;
+  listCommerceMerchantsFn?: typeof listCommerceMerchants;
+  listCommerceOfferSeedsFn?: typeof listCommerceOfferSeeds;
+} = {}): Promise<CommercePrimaryCoverageGapAuditReport> {
+  const [catalogSets, benchmarkSets, merchants, offerSeeds] = await Promise.all(
+    [
+      listCanonicalCatalogSetsFn(),
+      listCommerceBenchmarkSetsFn(),
+      listCommerceMerchantsFn(),
+      listCommerceOfferSeedsFn(),
+    ],
+  );
+  const benchmarkSetIds = new Set(
+    benchmarkSets.map((benchmarkSet) => benchmarkSet.setId),
+  );
+  const scopedCatalogSets =
+    filters.benchmarkOnly === true
+      ? catalogSets.filter((set) => benchmarkSetIds.has(set.setId))
+      : catalogSets;
+  const allPrimaryCoverageRows = buildCommercePrimaryCoverageRows({
+    catalogSets: scopedCatalogSets.map(toCoverageCatalogSetOption),
+    merchants,
+    offerSeeds,
+  });
+  const reportSetIds = new Set(
+    (filters.includeNonActive === true
+      ? scopedCatalogSets
+      : scopedCatalogSets.filter((set) =>
+          includeCatalogSetInDefaultCommerceCoverage(set.setId),
+        )
+    ).map((set) => set.setId),
+  );
+  const reportPrimaryCoverageRows = allPrimaryCoverageRows.filter((row) =>
+    reportSetIds.has(row.setId),
+  );
+  const primaryCoverageRowBySetId = new Map(
+    allPrimaryCoverageRows.map((row) => [row.setId, row] as const),
+  );
+  const selectedSetIds = applySetFilters({
+    filters,
+    sets: scopedCatalogSets,
+    primaryCoverageRowBySetId,
+  }).map((catalogSet) => catalogSet.setId);
+  const allPrimaryMerchants = listActivePrimaryMerchants(merchants);
+  const auditedPrimaryMerchants = filterAuditPrimaryMerchants({
+    filters,
+    primaryMerchants: allPrimaryMerchants,
+  });
+  const offerSeedsBySetId = new Map<string, CommerceOfferSeed[]>();
+
+  for (const offerSeed of offerSeeds) {
+    const nextOfferSeeds = offerSeedsBySetId.get(offerSeed.setId) ?? [];
+    nextOfferSeeds.push(offerSeed);
+    offerSeedsBySetId.set(offerSeed.setId, nextOfferSeeds);
+  }
+
+  const rows = selectedSetIds
+    .map((setId) => {
+      const coverageRow = primaryCoverageRowBySetId.get(setId);
+
+      if (!coverageRow) {
+        return undefined;
+      }
+
+      const setOfferSeeds = offerSeedsBySetId.get(setId) ?? [];
+      const merchantGaps = auditedPrimaryMerchants
+        .filter((merchant) =>
+          coverageRow.missingValidPrimaryOfferMerchantSlugs.includes(
+            merchant.slug,
+          ),
+        )
+        .map((merchant) =>
+          buildCommercePrimaryCoverageGapMerchantAuditRow({
+            merchant,
+            offerSeed: selectMostRelevantOfferSeed(
+              setOfferSeeds.filter(
+                (offerSeed) => offerSeed.merchantId === merchant.id,
+              ),
+            ),
+          }),
+        );
+
+      if (filters.merchantSlugs?.length && merchantGaps.length === 0) {
+        return undefined;
+      }
+
+      return {
+        merchantGaps: [...merchantGaps].sort(compareGapMerchantAuditRows),
+        missingValidPrimaryOfferMerchantNames:
+          coverageRow.missingValidPrimaryOfferMerchantNames,
+        missingValidPrimaryOfferMerchantSlugs:
+          coverageRow.missingValidPrimaryOfferMerchantSlugs,
+        primaryMerchantTargetCount: coverageRow.primaryMerchantTargetCount,
+        primarySeedCount: coverageRow.primarySeedCount,
+        setId: coverageRow.setId,
+        setName: coverageRow.setName,
+        status: coverageRow.status,
+        theme: coverageRow.theme,
+        validPrimaryOfferCount: coverageRow.validPrimaryOfferCount,
+      } satisfies CommercePrimaryCoverageGapAuditRow;
+    })
+    .filter(Boolean)
+    .sort(compareGapAuditRows) as CommercePrimaryCoverageGapAuditRow[];
+
+  const missingValidOfferCountsByMerchant = auditedPrimaryMerchants
+    .map((merchant) => ({
+      merchantName: merchant.name,
+      merchantSlug: merchant.slug,
+      missingValidOfferCount: rows.filter((row) =>
+        row.merchantGaps.some((gap) => gap.merchantSlug === merchant.slug),
+      ).length,
+    }))
+    .filter((row) => row.missingValidOfferCount > 0)
+    .sort(compareGapMerchantSummary);
+  const gapCountByTypeMap = new Map<CommercePrimaryCoverageGapType, number>();
+  const recoveryCountByPriorityMap = new Map<
+    CommerceGapRecoveryPriority,
+    number
+  >();
+
+  for (const row of rows) {
+    for (const gap of row.merchantGaps) {
+      gapCountByTypeMap.set(
+        gap.gapType,
+        (gapCountByTypeMap.get(gap.gapType) ?? 0) + 1,
+      );
+      recoveryCountByPriorityMap.set(
+        gap.recoveryPriority,
+        (recoveryCountByPriorityMap.get(gap.recoveryPriority) ?? 0) + 1,
+      );
+    }
+  }
+
+  return {
+    totalSetCount: reportPrimaryCoverageRows.length,
+    selectedSetCount: rows.length,
+    rows,
+    primaryMerchantSlugs: allPrimaryMerchants.map((merchant) => merchant.slug),
+    auditedMerchantSlugs: auditedPrimaryMerchants.map(
+      (merchant) => merchant.slug,
+    ),
+    summary: {
+      actionablePartialSetCount: reportPrimaryCoverageRows.filter(
+        (row) => row.status === 'partial_primary_coverage',
+      ).length,
+      countsByRecoveryPriority: [...recoveryCountByPriorityMap.entries()]
+        .map(([recoveryPriority, count]) => ({
+          recoveryPriority,
+          count,
+        }))
+        .sort(compareGapRecoverySummary),
+      gapCountsByType: [...gapCountByTypeMap.entries()]
+        .map(([gapType, count]) => ({
+          gapType,
+          count,
+        }))
+        .sort(compareGapTypeSummary),
+      missingValidOfferCountsByMerchant,
+      parkedCount: recoveryCountByPriorityMap.get('parked') ?? 0,
+      recoverNowCount: recoveryCountByPriorityMap.get('recover_now') ?? 0,
+      setsMissingSeedCount: rows.filter((row) =>
+        row.merchantGaps.some((gap) => gap.gapType === 'missing_seed'),
+      ).length,
+      setsWithFullSeedButMissingOfferCount: rows.filter(
+        (row) =>
+          row.primarySeedCount === row.primaryMerchantTargetCount &&
+          row.validPrimaryOfferCount < row.primaryMerchantTargetCount,
+      ).length,
+      verifyFirstCount: recoveryCountByPriorityMap.get('verify_first') ?? 0,
+    },
   };
 }
 
@@ -1759,6 +2614,31 @@ export async function validateGeneratedCommerceOfferSeedCandidates({
         }
 
         sawPlausibleCandidate = true;
+
+        if (
+          merchant.slug === 'intertoys' &&
+          canTrustIntertoysPartnerSearchCandidate({
+            linkCandidate,
+            assessment: linkCandidate.assessment,
+          })
+        ) {
+          if (write) {
+            await updateCommerceOfferSeedFn({
+              offerSeedId: offerSeed.id,
+              input: buildCandidateValidationUpdateInput({
+                decision: 'valid',
+                existingSeed: offerSeed,
+                merchant,
+                nowIsoString,
+                productUrl: linkCandidate.url,
+              }),
+            });
+          }
+
+          validCount += 1;
+          didValidate = true;
+          break;
+        }
 
         const candidatePage = await fetchMerchantHtmlPage({
           fetchImpl,

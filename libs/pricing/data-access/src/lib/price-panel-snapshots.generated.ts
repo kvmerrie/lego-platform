@@ -373,8 +373,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 4,
-    "observedAt": "2026-04-19T09:34:14.380Z"
+    "merchantCount": 5,
+    "observedAt": "2026-04-19T17:57:52.628Z"
   },
   {
     "setId": "72050",
@@ -386,7 +386,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:31:54.629Z"
+    "observedAt": "2026-04-19T17:57:55.638Z"
   },
   {
     "setId": "75192",
@@ -395,10 +395,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 63799,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 2,
-    "observedAt": "2026-04-19T09:32:28.710Z"
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 4,
+    "observedAt": "2026-04-19T17:15:18.782Z"
   },
   {
     "setId": "75313",
@@ -422,7 +422,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-04-19T09:31:50.773Z",
+    "observedAt": "2026-04-19T10:27:19.036Z",
     "referencePriceMinor": 23999,
     "deltaMinor": -1099
   },
@@ -501,10 +501,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 49900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "top1toys",
-    "lowestMerchantName": "Top1Toys",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:33:56.451Z",
+    "observedAt": "2026-04-19T10:27:18.497Z",
     "referencePriceMinor": 49999,
     "deltaMinor": -99
   },
@@ -518,7 +518,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-19T09:34:03.086Z",
+    "observedAt": "2026-04-19T10:28:07.062Z",
     "referencePriceMinor": 32999,
     "deltaMinor": -5000
   },

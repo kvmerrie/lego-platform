@@ -8,7 +8,10 @@ import {
   buildCommercePrimaryCoverageSummary,
   compareCommerceMerchantsByOperationalPriority,
   filterCommerceCoverageQueueRows,
+  getCommerceCoverageEligibilityStatus,
+  getCommerceGapRecoveryProfile,
   getCommerceMerchantSupportTier,
+  includeCatalogSetInDefaultCommerceCoverage,
   normalizeCommerceSlug,
   includeCommerceMerchantInDefaultRefresh,
   includeCommerceMerchantInDefaultSeedGeneration,
@@ -106,6 +109,66 @@ describe('commerce util', () => {
     );
     expect(includeCommerceMerchantInDefaultRefresh('smyths-toys')).toBe(true);
     expect(includeCommerceMerchantInDefaultRefresh('amazon-nl')).toBe(false);
+  });
+
+  test('marks retired catalog sets as non-actionable in the default coverage queue', () => {
+    expect(getCommerceCoverageEligibilityStatus('70728')).toBe('retired');
+    expect(includeCatalogSetInDefaultCommerceCoverage('70728')).toBe(false);
+    expect(getCommerceCoverageEligibilityStatus('76437')).toBe('active');
+    expect(includeCatalogSetInDefaultCommerceCoverage('76437')).toBe(true);
+  });
+
+  test('classifies recoverable-first gap priorities conservatively', () => {
+    expect(
+      getCommerceGapRecoveryProfile({
+        merchantSlug: 'bol',
+        gapType: 'missing_seed',
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        priority: 'recover_now',
+      }),
+    );
+    expect(
+      getCommerceGapRecoveryProfile({
+        merchantSlug: 'lego-nl',
+        gapType: 'refresh_unavailable',
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        priority: 'parked',
+      }),
+    );
+    expect(
+      getCommerceGapRecoveryProfile({
+        merchantSlug: 'intertoys',
+        gapType: 'seed_invalid',
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        priority: 'parked',
+      }),
+    );
+    expect(
+      getCommerceGapRecoveryProfile({
+        merchantSlug: 'misterbricks',
+        gapType: 'seed_stale',
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        priority: 'parked',
+      }),
+    );
+    expect(
+      getCommerceGapRecoveryProfile({
+        merchantSlug: 'bol',
+        gapType: 'refresh_error',
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        priority: 'verify_first',
+      }),
+    );
   });
 
   test('sorts merchants by operational priority before alphabetical fallback', () => {

@@ -170,7 +170,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/lion-knights-castle-10305",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:46.974Z",
+    "observedAt": "2026-04-19T17:24:53.041Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -296,7 +296,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://misterbricks.nl/lego-icons-the-lord-of-the-rings-rivendell-10316.html",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-19T09:31:53.827Z",
+    "observedAt": "2026-04-19T18:54:37.194Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
@@ -342,7 +342,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/land-rover-classic-defender-90-10317",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:57.580Z",
+    "observedAt": "2026-04-19T17:25:02.312Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -374,7 +374,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/eldorado-fortress-10320",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:04.106Z",
+    "observedAt": "2026-04-19T17:24:49.334Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -562,7 +562,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/medieval-town-square-10332",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:48.823Z",
+    "observedAt": "2026-04-19T17:24:59.689Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -908,7 +908,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/a-frame-cabin-21338",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:31:57.757Z",
+    "observedAt": "2026-04-19T17:24:48.161Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1098,7 +1098,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.intertoys.nl/lego-art-hokusai-de-grote-golf-31208",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-19T09:32:20.727Z",
+    "observedAt": "2026-04-19T18:23:01.759Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1472,7 +1472,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/disney-castle-43222",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:15.265Z",
+    "observedAt": "2026-04-19T17:24:51.259Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1504,7 +1504,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-mario-kart-mario-en-standaardkart-lego-mario-72037/9300000227400222",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-19T09:34:14.380Z",
+    "observedAt": "2026-04-19T17:57:52.628Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -1520,7 +1520,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-super-mario-mario-kart-mario-en-standaardkart-72037",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-19T09:34:13.528Z",
+    "observedAt": "2026-04-19T17:57:54.688Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -1536,7 +1536,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://misterbricks.nl/lego-super-mario-72037-mario-kart-mario-en-standaardkart.html",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-19T09:34:15.518Z",
+    "observedAt": "2026-04-19T17:57:52.339Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
@@ -1556,6 +1556,37 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
+    "setId": "72037",
+    "merchantId": "lego-nl",
+    "merchantName": "LEGO",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.lego.com/nl-nl/product/mario-kart-mario-standard-kart-72037",
+    "disclosureCopy": "Direct official merchant link.",
+    "observedAt": "2026-04-19T17:57:49.089Z",
+    "displayRank": 1,
+    "ctaLabel": "Shop at LEGO",
+    "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "72050",
+    "merchantId": "misterbricks",
+    "merchantName": "MisterBricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15500,
+    "availabilityLabel": "Out of stock",
+    "outboundUrl": "https://misterbricks.nl/lego-super-mario-72050-mario-kart-luigi-en-mach-8.html",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-19T17:57:51.505Z",
+    "displayRank": 5,
+    "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
     "setId": "72050",
     "merchantId": "lego-nl",
     "merchantName": "LEGO",
@@ -1566,7 +1597,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/mario-kart-luigi-mach-8-72050",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:31:54.629Z",
+    "observedAt": "2026-04-19T17:57:55.638Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1589,6 +1620,22 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75192",
+    "merchantId": "intertoys",
+    "merchantName": "Intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 63799,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.intertoys.nl/lego-star-wars-millennium-falcon-75192",
+    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
+    "observedAt": "2026-04-19T17:15:18.782Z",
+    "displayRank": 3,
+    "ctaLabel": "Shop at Intertoys",
+    "perks": "Strong toy-specialist relevance"
+  },
+  {
+    "setId": "75192",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -1603,6 +1650,22 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
+    "setId": "75192",
+    "merchantId": "lego-nl",
+    "merchantName": "LEGO",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 84999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.lego.com/nl-nl/product/millennium-falcon-75192",
+    "disclosureCopy": "Direct official merchant link.",
+    "observedAt": "2026-04-19T18:14:45.876Z",
+    "displayRank": 1,
+    "ctaLabel": "Shop at LEGO",
+    "perks": "Direct brand purchase and reference pricing"
+  },
+  {
     "setId": "75313",
     "merchantId": "lego-nl",
     "merchantName": "LEGO",
@@ -1613,7 +1676,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/at-at-75313",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:33.242Z",
+    "observedAt": "2026-04-19T17:25:04.734Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1645,7 +1708,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75355-x-wing-starfighter.html",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-19T09:31:50.773Z",
+    "observedAt": "2026-04-19T10:27:19.036Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
@@ -1676,7 +1739,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/x-wing-starfighter-75355",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:23.779Z",
+    "observedAt": "2026-04-19T17:25:06.934Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -1974,7 +2037,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/daily-bugle-76178",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:55.069Z",
+    "observedAt": "2026-04-19T17:25:03.683Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -2006,7 +2069,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.intertoys.nl/lego-marvel-avengers-toren-76269",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-19T09:32:43.812Z",
+    "observedAt": "2026-04-19T18:23:32.363Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -2022,7 +2085,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://misterbricks.nl/lego-marvel-76269-avengers-toren.html",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-19T09:31:51.816Z",
+    "observedAt": "2026-04-19T10:27:18.497Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
@@ -2052,7 +2115,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/avengers-tower-76269",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:32:59.263Z",
+    "observedAt": "2026-04-19T10:28:56.377Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -2084,7 +2147,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-marvel-x-men-de-x-mansion-76294",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-19T09:34:03.086Z",
+    "observedAt": "2026-04-19T10:28:07.062Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -2116,7 +2179,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/x-men-the-x-mansion-76294",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:33:06.081Z",
+    "observedAt": "2026-04-19T10:28:54.814Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
@@ -2210,7 +2273,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Availability unknown",
     "outboundUrl": "https://www.lego.com/nl-nl/product/gringotts-wizarding-bank-collectors-edition-76417",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-19T09:31:55.600Z",
+    "observedAt": "2026-04-19T10:29:02.430Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"

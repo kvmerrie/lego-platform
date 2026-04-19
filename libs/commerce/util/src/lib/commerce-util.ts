@@ -241,8 +241,46 @@ export const commercePrimaryCoverageStatuses = [
   'full_primary_coverage',
 ] as const;
 
+export const commerceCoverageEligibilityStatuses = [
+  'active',
+  'retired',
+  'deprioritized',
+] as const;
+
+export const commerceGapRecoveryPriorities = [
+  'recover_now',
+  'verify_first',
+  'parked',
+] as const;
+
 export type CommercePrimaryCoverageStatus =
   (typeof commercePrimaryCoverageStatuses)[number];
+
+export type CommerceCoverageEligibilityStatus =
+  (typeof commerceCoverageEligibilityStatuses)[number];
+
+export type CommerceGapRecoveryPriority =
+  (typeof commerceGapRecoveryPriorities)[number];
+
+export type CommerceGapRecoveryType =
+  | 'missing_seed'
+  | 'seed_pending'
+  | 'seed_invalid'
+  | 'seed_stale'
+  | 'no_latest_refresh'
+  | 'refresh_pending'
+  | 'refresh_unavailable'
+  | 'refresh_error';
+
+export interface CommerceCoverageEligibilityProfile {
+  operatorLabel: string;
+  status: CommerceCoverageEligibilityStatus;
+}
+
+export interface CommerceGapRecoveryProfile {
+  priority: CommerceGapRecoveryPriority;
+  reason: string;
+}
 
 export interface CommercePrimaryCoverageRow {
   missingPrimarySeedMerchantNames: string[];
@@ -267,6 +305,19 @@ export interface CommercePrimaryCoverageSummary {
   rows: CommercePrimaryCoverageRow[];
   totalSetCount: number;
 }
+
+const commerceCoverageEligibilityProfiles = {
+  '70728': {
+    status: 'retired',
+    operatorLabel: 'Retired',
+  },
+} as const satisfies Record<string, CommerceCoverageEligibilityProfile>;
+
+const defaultCommerceCoverageEligibilityProfile: CommerceCoverageEligibilityProfile =
+  {
+    status: 'active',
+    operatorLabel: 'Active',
+  };
 
 export type CommerceCoverageQueueSetSource = 'overlay' | 'snapshot';
 
@@ -429,6 +480,94 @@ export function includeCommerceMerchantInDefaultRefresh(
   merchantSlug: string,
 ): boolean {
   return getCommerceMerchantSupportProfile(merchantSlug).defaultRefresh;
+}
+
+export function getCommerceCoverageEligibilityProfile(
+  setId: string,
+): CommerceCoverageEligibilityProfile {
+  return (
+    commerceCoverageEligibilityProfiles[
+      setId.trim() as keyof typeof commerceCoverageEligibilityProfiles
+    ] ?? defaultCommerceCoverageEligibilityProfile
+  );
+}
+
+export function getCommerceCoverageEligibilityStatus(
+  setId: string,
+): CommerceCoverageEligibilityStatus {
+  return getCommerceCoverageEligibilityProfile(setId).status;
+}
+
+export function includeCatalogSetInDefaultCommerceCoverage(
+  setId: string,
+): boolean {
+  return getCommerceCoverageEligibilityStatus(setId) === 'active';
+}
+
+export function getCommerceGapRecoveryProfile({
+  gapType,
+  merchantSlug,
+}: {
+  gapType: CommerceGapRecoveryType;
+  merchantSlug: string;
+}): CommerceGapRecoveryProfile {
+  const normalizedMerchantSlug = normalizeCommerceSlug(merchantSlug);
+
+  if (gapType === 'missing_seed') {
+    return {
+      priority: 'recover_now',
+      reason:
+        'Er ontbreekt nog helemaal een seed, dus dit is de schoonste en goedkoopste recovery-stap.',
+    };
+  }
+
+  if (
+    normalizedMerchantSlug === 'lego-nl' &&
+    gapType === 'refresh_unavailable'
+  ) {
+    return {
+      priority: 'parked',
+      reason:
+        'LEGO.nl refresh_unavailable bleek in de huidige runs meestal echte niet-op-voorraad-status, niet een snelle recovery.',
+    };
+  }
+
+  if (normalizedMerchantSlug === 'intertoys' && gapType === 'seed_invalid') {
+    return {
+      priority: 'parked',
+      reason:
+        'Intertoys seed_invalid wijst nu meestal op generieke of verkeerde zoekresultaten, niet op een snelle lokale fix.',
+    };
+  }
+
+  if (
+    normalizedMerchantSlug === 'misterbricks' &&
+    (gapType === 'seed_invalid' || gapType === 'seed_stale')
+  ) {
+    return {
+      priority: 'parked',
+      reason:
+        'MisterBricks seed-invalidaties en stale-cases wijzen nu vooral op upstream no-results of verkeerde producthits.',
+    };
+  }
+
+  if (
+    gapType === 'refresh_unavailable' ||
+    gapType === 'seed_stale' ||
+    gapType === 'seed_invalid'
+  ) {
+    return {
+      priority: 'verify_first',
+      reason:
+        'Dit kan nog recoverable zijn, maar vraagt eerst een gerichte inspectie voordat write of sync zinvol is.',
+    };
+  }
+
+  return {
+    priority: 'verify_first',
+    reason:
+      'Deze gap vraagt eerst een kleine verificatiestap; de huidige heuristiek ziet hem niet als directe cheap win of expliciet parked.',
+  };
 }
 
 function assertObjectRecord(

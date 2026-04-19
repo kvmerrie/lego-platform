@@ -20,6 +20,20 @@ Primary coverage report:
 pnpm nx run commerce-seed-generator:run -- --report
 ```
 
+Primary coverage gap audit for actionable partial coverage:
+
+```bash
+pnpm nx run commerce-seed-generator:run -- --gap-audit
+```
+
+Coverage metrics and deterministic batch selection default to actionable sets
+only. Retired or otherwise deprioritized sets such as `70728` stay out of the
+normal queue unless you opt in explicitly:
+
+```bash
+pnpm nx run commerce-seed-generator:run -- --report --include-non-active
+```
+
 Focus the report on sets with no primary seeds yet:
 
 ```bash
@@ -30,6 +44,12 @@ Take a deterministic batch from that report:
 
 ```bash
 pnpm nx run commerce-seed-generator:run -- --report --primary-coverage-status no_primary_seeds --batch-size 25 --batch-index 0
+```
+
+Take the first deterministic partial-coverage audit batch:
+
+```bash
+pnpm nx run commerce-seed-generator:run -- --gap-audit --batch-size 10 --batch-index 0
 ```
 
 Without `--merchant-slugs`, generation and validation now default to the
@@ -127,6 +147,89 @@ This keeps the operator loop simple:
 2. generate the next deterministic batch
 3. validate that batch conservatively
 4. rerun report and watch sets move into `no_valid_primary_offers`, `partial_primary_coverage`, and eventually `full_primary_coverage`
+
+Direct `--set-ids` targeting still works for exceptions. The eligibility filter
+only changes the default queue and default metrics, not explicit one-off runs.
+
+## Gap Audit
+
+Use `--gap-audit` when a set is already in `partial_primary_coverage` and you
+want to see why it is still stuck there.
+
+This differs from the normal coverage report:
+
+- `--report` tells you where the queue stands
+- `--gap-audit` shows what kind of gap is still blocking the missing primary merchants
+- `--gap-audit` now also tags every merchant-gap with a conservative recovery hint:
+  - `recover_now`
+  - `verify_first`
+  - `parked`
+
+The gap audit focuses on operator decisions such as:
+
+- no seed yet
+- seed exists but is `pending`, `invalid`, or `stale`
+- seed is valid, but the latest refresh is `unavailable` or `error`
+
+This recoverable-first hint is only an operator aid. It does not change:
+
+- coverage states
+- merchant tiering
+- workflow execution
+- sync semantics
+
+Useful examples:
+
+```bash
+pnpm nx run commerce-seed-generator:run -- --gap-audit --primary-coverage-status partial_primary_coverage --batch-size 10 --batch-index 0
+pnpm nx run commerce-seed-generator:run -- --gap-audit --merchant-slugs lego-nl
+pnpm nx run commerce-seed-generator:run -- --gap-audit --set-ids 10316,76437
+pnpm nx run commerce-seed-generator:run -- --gap-audit --include-non-active --set-ids 70728
+```
+
+## Batch Workflow Wrapper
+
+For the current daily primary-coverage loop, use the thin workflow wrapper:
+
+```bash
+pnpm nx run commerce-coverage-workflow:run -- --primary-coverage-status partial_primary_coverage --batch-size 10 --batch-index 0
+```
+
+The same wrapper can narrow the batch to selected merchants:
+
+```bash
+pnpm nx run commerce-coverage-workflow:run -- --primary-coverage-status partial_primary_coverage --batch-size 10 --batch-index 2 --merchant-slugs misterbricks
+```
+
+If you explicitly want retired or deprioritized sets back in that queue, add:
+
+```bash
+pnpm nx run commerce-coverage-workflow:run -- --primary-coverage-status no_valid_primary_offers --batch-size 10 --batch-index 0 --include-non-active
+```
+
+If a merchant-scoped batch writes no new candidates and validates nothing, you
+can skip the scoped sync step:
+
+```bash
+pnpm nx run commerce-coverage-workflow:run -- --primary-coverage-status partial_primary_coverage --batch-size 10 --batch-index 2 --merchant-slugs misterbricks --skip-sync-when-no-seed-work
+```
+
+If you still want the scoped sync to run anyway, `--force-sync` wins:
+
+```bash
+pnpm nx run commerce-coverage-workflow:run -- --primary-coverage-status partial_primary_coverage --batch-size 10 --batch-index 2 --merchant-slugs misterbricks --skip-sync-when-no-seed-work --force-sync
+```
+
+That command runs this exact sequence for the selected batch:
+
+1. `report`
+2. `generate --write`
+3. `validate --write`
+4. scoped `commerce-sync`
+5. final `report`
+
+If the selected batch is empty, the workflow stops immediately without running
+generate, validate, or sync.
 
 ## Validation Rules
 

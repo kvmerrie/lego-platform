@@ -67,6 +67,166 @@ describe('commerce refresh', () => {
     });
   });
 
+  test('extracts a LEGO in-stock offer from structured data even when the page shell contains sold-out fragments', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'lego-nl',
+      html: `
+        <html>
+          <head>
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": "The Burrow – Collectors’ Edition",
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "EUR",
+                  "price": "259.99",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            </script>
+          </head>
+          <body>
+            <script>
+              window.__LEGOSTATE__ = {
+                upsell: [
+                  { availability: "https://schema.org/OutOfStock" }
+                ],
+                labels: ["SoldOut", "Niet op voorraad"]
+              };
+            </script>
+            <span>Op voorraad</span>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      priceMinor: 25999,
+      currencyCode: 'EUR',
+      availability: 'in_stock',
+    });
+  });
+
+  test('keeps a LEGO discontinued page unavailable when the price remains visible', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'lego-nl',
+      html: `
+        <html>
+          <head>
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": "Lion Knights' Castle",
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "EUR",
+                  "price": "399.99",
+                  "availability": "https://schema.org/Discontinued"
+                }
+              }
+            </script>
+          </head>
+          <body>
+            <div>Uitverkocht</div>
+            <div>Niet op voorraad</div>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      priceMinor: 39999,
+      currencyCode: 'EUR',
+      availability: 'out_of_stock',
+    });
+  });
+
+  test('marks a LEGO page with price but no trustworthy stock signal as stale instead of a successful offer', async () => {
+    const upsertLatestRecord = vi.fn().mockResolvedValue(undefined);
+    const updateSeedValidationState = vi.fn().mockResolvedValue(undefined);
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(
+        `
+          <html>
+            <head>
+              <script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@type": "Product",
+                  "name": "Disney Castle",
+                  "offers": {
+                    "@type": "Offer",
+                    "priceCurrency": "EUR",
+                    "price": "399.99"
+                  }
+                }
+              </script>
+            </head>
+            <body>
+              <div>Bekijk de details van deze set.</div>
+            </body>
+          </html>
+        `,
+        {
+          status: 200,
+          headers: {
+            'content-type': 'text/html',
+          },
+        },
+      ),
+    );
+
+    const summary = await refreshCommerceOfferSeeds({
+      refreshSeeds: [
+        createRefreshSeed({
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-lego-ambiguous',
+            setId: '43222',
+            productUrl:
+              'https://www.lego.com/nl-nl/product/disney-castle-43222',
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-10T08:00:00.000Z',
+          },
+        }),
+      ],
+      now: new Date('2026-04-14T12:00:00.000Z'),
+      fetchImpl,
+      logger: {
+        info: vi.fn(),
+        warn: vi.fn(),
+      },
+      upsertLatestRecord,
+      updateSeedValidationState,
+    });
+
+    expect(summary).toEqual({
+      totalCount: 1,
+      successCount: 0,
+      unavailableCount: 0,
+      invalidCount: 0,
+      staleCount: 1,
+    });
+    expect(upsertLatestRecord).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        offerSeedId: 'seed-lego-ambiguous',
+        fetchStatus: 'error',
+        errorMessage:
+          'LEGO page resolved, but no trustworthy stock signal was found alongside the price.',
+      }),
+    });
+    expect(updateSeedValidationState).toHaveBeenCalledWith({
+      offerSeedId: 'seed-lego-ambiguous',
+      input: {
+        validationStatus: 'stale',
+        lastVerifiedAt: '2026-04-10T08:00:00.000Z',
+      },
+    });
+  });
+
   test('ignores Amazon related-product prices when the main offer is unavailable', () => {
     const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
       merchantSlug: 'amazon-nl',

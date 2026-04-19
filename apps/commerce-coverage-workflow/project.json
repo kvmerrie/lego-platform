@@ -1,0 +1,45 @@
+{
+  "name": "commerce-coverage-workflow",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/commerce-coverage-workflow/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/commerce-coverage-workflow",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/commerce-coverage-workflow/src/main.ts",
+        "tsConfig": "apps/commerce-coverage-workflow/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/commerce-coverage-workflow",
+        "command": "vitest run src/lib/*.spec.ts --config ../../libs/vitest.config.mts"
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/commerce-coverage-workflow/main.cjs"
+      }
+    }
+  }
+}

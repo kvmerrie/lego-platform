@@ -1,13 +1,19 @@
 import {
   generateCommerceOfferSeedCandidates,
   inspectCommerceGeneratedSeedCandidates,
+  listCommercePrimaryCoverageGapAudit,
   listCommercePrimaryCoverageReport,
   validateGeneratedCommerceOfferSeedCandidates,
   type CommerceSeedGenerationFilters,
 } from '@lego-platform/commerce/data-access-server';
 import { hasServerSupabaseConfig } from '@lego-platform/shared/config';
 
-type CommerceSeedGeneratorMode = 'generate' | 'inspect' | 'report' | 'validate';
+type CommerceSeedGeneratorMode =
+  | 'gap-audit'
+  | 'generate'
+  | 'inspect'
+  | 'report'
+  | 'validate';
 
 function getFlagValue({
   argv,
@@ -65,6 +71,7 @@ function parsePositiveIntegerFlag({
 
 function resolveMode(argv: readonly string[]): CommerceSeedGeneratorMode {
   const requestedGenerate = argv.includes('--generate');
+  const requestedGapAudit = argv.includes('--gap-audit');
   const requestedInspect = argv.includes('--inspect');
   const requestedReport = argv.includes('--report');
   const requestedValidate = argv.includes('--validate');
@@ -72,18 +79,23 @@ function resolveMode(argv: readonly string[]): CommerceSeedGeneratorMode {
   if (
     [
       requestedGenerate,
+      requestedGapAudit,
       requestedInspect,
       requestedReport,
       requestedValidate,
     ].filter(Boolean).length !== 1
   ) {
     throw new Error(
-      'Use exactly one of --generate, --inspect, --report, or --validate.',
+      'Use exactly one of --generate, --gap-audit, --inspect, --report, or --validate.',
     );
   }
 
   if (requestedGenerate) {
     return 'generate';
+  }
+
+  if (requestedGapAudit) {
+    return 'gap-audit';
   }
 
   if (requestedInspect) {
@@ -93,7 +105,13 @@ function resolveMode(argv: readonly string[]): CommerceSeedGeneratorMode {
   return requestedReport ? 'report' : 'validate';
 }
 
-function buildFilters(argv: readonly string[]): CommerceSeedGenerationFilters {
+function buildFilters({
+  argv,
+  mode,
+}: {
+  argv: readonly string[];
+  mode: CommerceSeedGeneratorMode;
+}): CommerceSeedGenerationFilters {
   const parsedLimit = parsePositiveIntegerFlag({
     argv,
     flag: '--limit',
@@ -144,6 +162,7 @@ function buildFilters(argv: readonly string[]): CommerceSeedGenerationFilters {
     batchIndex: parsedBatchIndex,
     batchSize: parsedBatchSize,
     benchmarkOnly: argv.includes('--benchmark-only'),
+    includeNonActive: argv.includes('--include-non-active'),
     limit: parsedLimit ? Math.floor(parsedLimit) : undefined,
     merchantSlugs: parseCsvFlagValue(
       getFlagValue({
@@ -153,7 +172,7 @@ function buildFilters(argv: readonly string[]): CommerceSeedGenerationFilters {
     ),
     primaryCoverageStatus:
       (primaryCoverageStatus as CommerceSeedGenerationFilters['primaryCoverageStatus']) ??
-      'all',
+      (mode === 'gap-audit' ? 'partial_primary_coverage' : 'all'),
     recheckGenerated: argv.includes('--recheck-generated'),
     setIds: parseCsvFlagValue(
       getFlagValue({
@@ -168,7 +187,10 @@ async function main() {
   const argv = process.argv.slice(2);
   const mode = resolveMode(argv);
   const write = argv.includes('--write');
-  const filters = buildFilters(argv);
+  const filters = buildFilters({
+    argv,
+    mode,
+  });
   const startedAt = Date.now();
 
   if (!hasServerSupabaseConfig()) {
@@ -182,7 +204,9 @@ async function main() {
       filters.setIds?.join(',') ?? 'all'
     } merchant_slugs=${filters.merchantSlugs?.join(',') ?? 'all'} benchmark_only=${
       filters.benchmarkOnly === true
-    } primary_coverage_status=${filters.primaryCoverageStatus ?? 'all'} batch_size=${
+    } include_non_active=${filters.includeNonActive === true} primary_coverage_status=${
+      filters.primaryCoverageStatus ?? 'all'
+    } batch_size=${
       filters.batchSize ?? 'none'
     } batch_index=${filters.batchIndex ?? 0} limit=${filters.limit ?? 'none'} recheck_generated=${filters.recheckGenerated === true}`,
   );
@@ -217,6 +241,56 @@ async function main() {
       console.log(
         `[commerce-seed-generator] coverage set_id=${row.setId} set_name=${JSON.stringify(row.setName)} theme=${JSON.stringify(row.theme)} status=${row.status} primary_seed_count=${row.primarySeedCount}/${row.primaryMerchantTargetCount} valid_primary_offer_count=${row.validPrimaryOfferCount}/${row.primaryMerchantTargetCount} missing_primary_seed_merchants=${row.missingPrimarySeedMerchantSlugs.join(',') || 'none'} missing_valid_primary_offer_merchants=${row.missingValidPrimaryOfferMerchantSlugs.join(',') || 'none'}`,
       );
+    }
+
+    return;
+  }
+
+  if (mode === 'gap-audit') {
+    const summary = await listCommercePrimaryCoverageGapAudit({
+      filters,
+    });
+
+    console.log(
+      `[commerce-seed-generator] end mode=gap-audit total_set_count=${summary.totalSetCount} selected_set_count=${summary.selectedSetCount} actionable_partial_set_count=${summary.summary.actionablePartialSetCount} sets_with_full_seed_but_missing_offer_count=${summary.summary.setsWithFullSeedButMissingOfferCount} sets_missing_seed_count=${summary.summary.setsMissingSeedCount} recover_now_count=${summary.summary.recoverNowCount} verify_first_count=${summary.summary.verifyFirstCount} parked_count=${summary.summary.parkedCount} primary_merchants=${summary.primaryMerchantSlugs.join(',') || 'none'} audited_merchants=${summary.auditedMerchantSlugs.join(',') || 'none'} duration_ms=${Date.now() - startedAt}`,
+    );
+    console.log(
+      `[commerce-seed-generator] gap-audit selected_set_ids=${
+        summary.rows.map((row) => row.setId).join(',') || 'none'
+      }`,
+    );
+    console.log(
+      `[commerce-seed-generator] gap-audit missing_valid_offer_counts_by_merchant=${
+        summary.summary.missingValidOfferCountsByMerchant
+          .map((row) => `${row.merchantSlug}:${row.missingValidOfferCount}`)
+          .join(',') || 'none'
+      }`,
+    );
+    console.log(
+      `[commerce-seed-generator] gap-audit gap_counts_by_type=${
+        summary.summary.gapCountsByType
+          .map((row) => `${row.gapType}:${row.count}`)
+          .join(',') || 'none'
+      }`,
+    );
+    console.log(
+      `[commerce-seed-generator] gap-audit counts_by_recovery_priority=${
+        summary.summary.countsByRecoveryPriority
+          .map((row) => `${row.recoveryPriority}:${row.count}`)
+          .join(',') || 'none'
+      }`,
+    );
+
+    for (const row of summary.rows) {
+      console.log(
+        `[commerce-seed-generator] gap-audit-row set_id=${row.setId} set_name=${JSON.stringify(row.setName)} theme=${JSON.stringify(row.theme)} status=${row.status} primary_seed_count=${row.primarySeedCount}/${row.primaryMerchantTargetCount} valid_primary_offer_count=${row.validPrimaryOfferCount}/${row.primaryMerchantTargetCount} missing_valid_primary_offer_merchants=${row.missingValidPrimaryOfferMerchantSlugs.join(',') || 'none'} audited_missing_valid_primary_offer_merchants=${row.merchantGaps.map((gap) => gap.merchantSlug).join(',') || 'none'}`,
+      );
+
+      for (const merchantGap of row.merchantGaps) {
+        console.log(
+          `[commerce-seed-generator] gap-audit-merchant set_id=${row.setId} merchant_slug=${merchantGap.merchantSlug} gap_type=${merchantGap.gapType} recovery_priority=${merchantGap.recoveryPriority} recovery_reason=${JSON.stringify(merchantGap.recoveryReason)} has_seed=${merchantGap.hasSeed} seed_validation_status=${merchantGap.seedValidationStatus ?? 'none'} seed_is_active=${merchantGap.seedIsActive ?? false} latest_refresh_status=${merchantGap.latestRefreshStatus ?? 'none'} latest_refresh_reason=${JSON.stringify(merchantGap.latestRefreshReason ?? '')}`,
+        );
+      }
     }
 
     return;

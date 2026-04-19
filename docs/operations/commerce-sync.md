@@ -113,6 +113,30 @@ Or directly:
 pnpm nx run commerce-sync:run
 ```
 
+Scoped operator refresh for a selected batch:
+
+```bash
+pnpm nx run commerce-sync:run -- --set-ids 10300,10320,10317
+```
+
+Scoped operator refresh for selected sets and merchants:
+
+```bash
+pnpm nx run commerce-sync:run -- --write --set-ids 10316,76437 --merchant-slugs intertoys,lego-nl
+```
+
+Scoped runs keep the refresh pass, offer state, and history writes limited to the
+requested sets. In `write` mode the generated pricing and affiliate artifacts are
+still rewritten from the full current Supabase state afterward, so the committed
+artifact files stay coherent.
+The same rule now applies to merchant scoping: only the requested merchants are
+refreshed, but generated files are still rebuilt from the full current Supabase
+state after the scoped write run.
+
+When you run the higher-level coverage workflow, `--skip-sync-when-no-seed-work`
+can skip this scoped sync step if the merchant batch produced no new candidates
+and validated nothing. `--force-sync` overrides that and keeps the scoped sync on.
+
 ## Check Mode
 
 Check mode rebuilds the Dutch commerce artifacts from the current Supabase commerce state in memory and fails if committed generated files would change.
@@ -139,6 +163,9 @@ This check does not call merchants and does not write Supabase latest or history
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
 - Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
 - `pnpm sync:commerce` now refreshes the default operational merchants only: primary plus secondary tiers. Deprioritized merchants such as `amazon-nl` and `proshop` stay in Supabase, but are not part of the standard batch refresh loop.
+- `pnpm nx run commerce-sync:run -- --set-ids ...` is the fast operator path for batch coverage work. It scopes refresh metrics to the requested sets while keeping generated files consistent after the run.
+- The upstream coverage reports and workflow batches now default to actionable sets only. Retired or deprioritized exceptions such as `70728` only re-enter that queue when you explicitly use `--include-non-active` on the reporting or workflow command.
+- When a set stays stuck in `partial_primary_coverage`, use `pnpm nx run commerce-seed-generator:run -- --gap-audit ...` before rerunning sync. That tells you whether the blocker is a missing seed, a stale or invalid seed, or a refresh problem on an already valid seed. The gap audit also adds a conservative `recover_now / verify_first / parked` hint so operators can separate cheap wins from queues that are better parked for later.
 - `pnpm sync:commerce:check` and `pnpm sync:commerce:local:check` remain generated-artifact drift checks only and do not write latest or history rows.
 - Merchant presentation metadata and reference pricing remain curated locally.
 - Active merchant and seed scope now come from Supabase, not from local seed files.
