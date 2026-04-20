@@ -153,8 +153,10 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('Beste deal');
     expect(markup).toContain('bol');
     expect(markup).toContain('Amazon');
-    expect(markup).toContain('+€30,04');
-    expect(markup).toContain('Bekijk deal');
+    expect(markup).toContain('Beste prijs bij 2 winkels');
+    expect(markup).toContain('€30,04 duurder');
+    expect(markup).toContain('Ga naar beste deal');
+    expect(markup).toContain('Bekijk alternatief');
     expect(markup).toContain('Vergelijk alle 2 winkels');
   });
 
@@ -243,6 +245,7 @@ describe('Catalog commerce UI', () => {
   it('builds one compact comparison presentation for rail and overlay use', () => {
     const presentation = buildCompactOfferPresentation({
       bestPriceMinor: 104995,
+      comparedOfferCount: 3,
       offer: {
         checkedLabel: 'Nagekeken 2 apr, 09:00',
         ctaHref: 'https://example.com/atat-amazon',
@@ -256,7 +259,48 @@ describe('Catalog commerce UI', () => {
 
     expect(presentation.stockLabel).toBe('Uitverkocht');
     expect(presentation.checkedLabel).toBe('2 apr om 09:00');
-    expect(presentation.deltaLabel).toBe('+€30,04');
+    expect(presentation.deltaLabel).toBe('€30,04 duurder');
+    expect(presentation.actionLabel).toBe('Bekijk alternatief');
+    expect(presentation.priceComparisonState).toBe('higher');
+  });
+
+  it('marks exact price ties as secondary alternatives', () => {
+    const presentation = buildCompactOfferPresentation({
+      bestPriceMinor: 104995,
+      comparedOfferCount: 3,
+      offer: {
+        checkedLabel: 'Nagekeken 2 apr, 09:00',
+        ctaHref: 'https://example.com/atat-lego',
+        ctaLabel: 'Bekijk bij LEGO',
+        merchantLabel: 'LEGO',
+        price: '€ 1.049,95',
+        rankingLabel: 'Zelfde prijs als de beste optie',
+        stockLabel: 'Op voorraad',
+      },
+    });
+
+    expect(presentation.deltaLabel).toBe('Zelfde prijs');
+    expect(presentation.priceComparisonState).toBe('same');
+  });
+
+  it('adds a confidence hint for the current best offer', () => {
+    const presentation = buildCompactOfferPresentation({
+      bestPriceMinor: 104995,
+      comparedOfferCount: 4,
+      offer: {
+        checkedLabel: 'Nagekeken 2 apr, 09:00',
+        ctaHref: 'https://example.com/atat-bol',
+        ctaLabel: 'Bekijk bij bol',
+        isBest: true,
+        merchantLabel: 'bol',
+        price: '€ 1.049,95',
+        stockLabel: 'Op voorraad',
+      },
+    });
+
+    expect(presentation.confidenceLabel).toBe('Beste prijs bij 4 winkels');
+    expect(presentation.actionLabel).toBe('Ga naar beste deal');
+    expect(presentation.priceComparisonState).toBe('best');
   });
 
   it('renders a trust panel with compact signal rows', () => {

@@ -14,6 +14,7 @@ describe('App', () => {
           provide: CommerceAdminApiService,
           useValue: {
             listCatalogSets: async () => [],
+            listCatalogSuggestedSets: async () => [],
             searchCatalogMissingSets: async () => [],
             createCatalogSet: async () => undefined,
             startCatalogBulkOnboarding: async () => ({

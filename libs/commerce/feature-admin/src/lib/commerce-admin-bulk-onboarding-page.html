@@ -196,194 +196,374 @@
             }
           </section>
 
-          <section class="bulk-onboarding__intake-subsection">
-            <div class="bulk-onboarding__subsection-header">
-              <span class="admin-table__heading">Browse bron</span>
-              <span class="admin-muted">
-                Zoek missende sets en voeg ze met multi-select of per rij toe.
-              </span>
-            </div>
+          <div class="bulk-onboarding__intake-stack">
+            <section class="bulk-onboarding__intake-subsection">
+              <div class="bulk-onboarding__subsection-header">
+                <span class="admin-table__heading">Suggested sets</span>
+                <span class="admin-muted">
+                  Recente missende Rebrickable-sets, gerankt op jaar, thema en
+                  stukcount.
+                </span>
+              </div>
 
-            <div class="admin-filterbar">
-              <label
-                class="admin-filterbar__group admin-filterbar__group--wide"
-              >
-                <span class="admin-filterbar__label">Zoekopdracht</span>
-                <input
-                  [ngModel]="searchQuery()"
-                  (keydown.enter)="search()"
-                  (ngModelChange)="updateSearchQuery($event)"
-                  class="admin-input"
-                  placeholder="Setnummer, naam of thema"
-                  type="search"
-                />
-              </label>
-
-              <label class="admin-filterbar__group">
-                <span class="admin-filterbar__label">Sortering</span>
-                <select
-                  [ngModel]="searchSort()"
-                  (ngModelChange)="updateSearchSort($event)"
-                  class="admin-input"
-                  name="bulk-onboarding-search-sort"
+              <div class="admin-filterbar">
+                <div
+                  class="admin-filterbar__group admin-filterbar__group--wide"
                 >
-                  <option value="release_year_desc">Nieuwste eerst</option>
-                  <option value="release_year_asc">Oudste eerst</option>
-                  <option value="name">Naam</option>
-                  <option value="set_id">Setnummer</option>
-                </select>
-              </label>
+                  <span class="admin-filterbar__label">Discovery</span>
+                  <span class="admin-muted">
+                    Deze lijst filtert sets weg die al in Brickhunt staan.
+                  </span>
+                </div>
 
-              <div class="admin-filterbar__actions">
+                <div class="admin-filterbar__actions">
+                  <button
+                    class="admin-button admin-button--primary"
+                    [disabled]="isLoadingSuggestedSets()"
+                    type="button"
+                    (click)="loadSuggestedSets()"
+                  >
+                    {{ isLoadingSuggestedSets() ? 'Verversen…' : 'Ververs
+                    suggested sets' }}
+                  </button>
+                  <button
+                    class="admin-button admin-button--small admin-button--subtle"
+                    [disabled]="suggestedSets().length === 0"
+                    type="button"
+                    (click)="clearSuggestedSelection()"
+                  >
+                    Wis selectie
+                  </button>
+                </div>
+              </div>
+
+              @if (suggestedMessage()) {
+              <div
+                class="bulk-onboarding__inline-notice"
+                [class.is-danger]="suggestedMessageTone() === 'danger'"
+                [class.is-positive]="suggestedMessageTone() === 'positive'"
+              >
+                {{ suggestedMessage() }}
+              </div>
+              } @if (selectedSuggestedSetCount() > 0) {
+              <lego-admin-batch-selection-bar
+                [selectedCount]="selectedSuggestedSetCount()"
+                description="Deze suggested rows staan klaar voor de batch-cart."
+                label="Suggested selectie"
+              >
                 <button
                   class="admin-button admin-button--primary"
-                  [disabled]="isSearching()"
                   type="button"
-                  (click)="search()"
+                  (click)="addSuggestedSelectionToCart()"
                 >
-                  {{ isSearching() ? 'Zoeken…' : 'Zoek missende sets' }}
+                  Voeg selectie toe
                 </button>
                 <button
                   class="admin-button admin-button--small admin-button--subtle"
-                  [disabled]="searchResults().length === 0"
+                  type="button"
+                  (click)="clearSuggestedSelection()"
+                >
+                  Wis
+                </button>
+              </lego-admin-batch-selection-bar>
+              } @if (sortedSuggestedSets().length === 0 &&
+              !isLoadingSuggestedSets()) {
+              <lego-admin-empty-state
+                title="Nog geen suggested sets"
+                description="Ververs de discovery-lijst om recente missende sets op te halen."
+              ></lego-admin-empty-state>
+              } @else if (sortedSuggestedSets().length > 0) {
+              <div
+                class="admin-data-table-shell bulk-onboarding__scroll-shell bulk-onboarding__suggested-shell"
+              >
+                <table class="admin-data-table">
+                  <thead>
+                    <tr>
+                      <th class="bulk-onboarding__checkbox-cell">
+                        <div class="admin-data-table__header-cell">
+                          <span class="admin-table__heading">Alles</span>
+                          <div class="admin-data-table__header-controls">
+                            <input
+                              [checked]="areAllSuggestedSetsSelected()"
+                              class="bulk-onboarding__checkbox"
+                              type="checkbox"
+                              (change)="
+                                toggleAllSuggestedSelection($any($event.target).checked)
+                              "
+                            />
+                          </div>
+                        </div>
+                      </th>
+                      <th><span class="admin-table__heading">Set</span></th>
+                      <th><span class="admin-table__heading">Thema</span></th>
+                      <th><span class="admin-table__heading">Jaar</span></th>
+                      <th><span class="admin-table__heading">Score</span></th>
+                      <th><span class="admin-table__heading">Status</span></th>
+                      <th><span class="admin-table__heading">Actie</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (result of sortedSuggestedSets(); track result.setId) {
+                    <tr>
+                      <td class="bulk-onboarding__checkbox-cell">
+                        <input
+                          [checked]="isSuggestedSelected(result.setId)"
+                          class="bulk-onboarding__checkbox"
+                          type="checkbox"
+                          (change)="
+                            toggleSuggestedSelection(
+                              result.setId,
+                              $any($event.target).checked
+                            )
+                          "
+                        />
+                      </td>
+                      <td>
+                        <div class="bulk-onboarding__set-cell">
+                          @if (result.imageUrl) {
+                          <img
+                            [alt]="result.name"
+                            [src]="result.imageUrl"
+                            class="bulk-onboarding__thumb"
+                          />
+                          } @else {
+                          <div
+                            class="bulk-onboarding__thumb bulk-onboarding__thumb--empty"
+                          ></div>
+                          }
+
+                          <div class="bulk-onboarding__meta">
+                            <span class="admin-data-table__cell-title">
+                              {{ result.name }}
+                            </span>
+                            <span class="admin-data-table__cell-meta">
+                              {{ result.setId }} · {{ result.pieces }} stenen
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{{ result.theme }}</td>
+                      <td class="admin-data-table__cell--numeric">
+                        {{ result.releaseYear }}
+                      </td>
+                      <td class="admin-data-table__cell--numeric">
+                        {{ result.score }}
+                      </td>
+                      <td>
+                        @let suggestedStatus = getSuggestedSetStatus(result);
+                        <lego-admin-status-badge [tone]="suggestedStatus.tone">
+                          {{ suggestedStatus.label }}
+                        </lego-admin-status-badge>
+                      </td>
+                      <td>
+                        <button
+                          class="admin-button admin-button--small admin-button--subtle"
+                          [disabled]="isSelected(result.setId)"
+                          type="button"
+                          (click)="addSetToSelection(result)"
+                        >
+                          {{ isSelected(result.setId) ? 'In cart' : 'Toevoegen'
+                          }}
+                        </button>
+                      </td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              }
+            </section>
+
+            <section class="bulk-onboarding__intake-subsection">
+              <div class="bulk-onboarding__subsection-header">
+                <span class="admin-table__heading">Browse bron</span>
+                <span class="admin-muted">
+                  Zoek missende sets en voeg ze met multi-select of per rij toe.
+                </span>
+              </div>
+
+              <div class="admin-filterbar">
+                <label
+                  class="admin-filterbar__group admin-filterbar__group--wide"
+                >
+                  <span class="admin-filterbar__label">Zoekopdracht</span>
+                  <input
+                    [ngModel]="searchQuery()"
+                    (keydown.enter)="search()"
+                    (ngModelChange)="updateSearchQuery($event)"
+                    class="admin-input"
+                    placeholder="Setnummer, naam of thema"
+                    type="search"
+                  />
+                </label>
+
+                <label class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Sortering</span>
+                  <select
+                    [ngModel]="searchSort()"
+                    (ngModelChange)="updateSearchSort($event)"
+                    class="admin-input"
+                    name="bulk-onboarding-search-sort"
+                  >
+                    <option value="release_year_desc">Nieuwste eerst</option>
+                    <option value="release_year_asc">Oudste eerst</option>
+                    <option value="name">Naam</option>
+                    <option value="set_id">Setnummer</option>
+                  </select>
+                </label>
+
+                <div class="admin-filterbar__actions">
+                  <button
+                    class="admin-button admin-button--primary"
+                    [disabled]="isSearching()"
+                    type="button"
+                    (click)="search()"
+                  >
+                    {{ isSearching() ? 'Zoeken…' : 'Zoek missende sets' }}
+                  </button>
+                  <button
+                    class="admin-button admin-button--small admin-button--subtle"
+                    [disabled]="searchResults().length === 0"
+                    type="button"
+                    (click)="clearBrowseSelection()"
+                  >
+                    Wis selectie
+                  </button>
+                </div>
+              </div>
+
+              @if (searchMessage()) {
+              <div
+                class="bulk-onboarding__inline-notice"
+                [class.is-danger]="searchMessageTone() === 'danger'"
+                [class.is-positive]="searchMessageTone() === 'positive'"
+              >
+                {{ searchMessage() }}
+              </div>
+              } @if (selectedBrowseResultCount() > 0) {
+              <lego-admin-batch-selection-bar
+                [selectedCount]="selectedBrowseResultCount()"
+                description="Deze rijen staan klaar voor de batch-cart."
+                label="Browse-selectie"
+              >
+                <button
+                  class="admin-button admin-button--primary"
+                  type="button"
+                  (click)="addBrowseSelectionToCart()"
+                >
+                  Voeg selectie toe
+                </button>
+                <button
+                  class="admin-button admin-button--small admin-button--subtle"
                   type="button"
                   (click)="clearBrowseSelection()"
                 >
-                  Wis selectie
+                  Wis
                 </button>
-              </div>
-            </div>
-
-            @if (searchMessage()) {
-            <div
-              class="bulk-onboarding__inline-notice"
-              [class.is-danger]="searchMessageTone() === 'danger'"
-              [class.is-positive]="searchMessageTone() === 'positive'"
-            >
-              {{ searchMessage() }}
-            </div>
-            } @if (selectedBrowseResultCount() > 0) {
-            <lego-admin-batch-selection-bar
-              [selectedCount]="selectedBrowseResultCount()"
-              description="Deze rijen staan klaar voor de batch-cart."
-              label="Browse-selectie"
-            >
-              <button
-                class="admin-button admin-button--primary"
-                type="button"
-                (click)="addBrowseSelectionToCart()"
+              </lego-admin-batch-selection-bar>
+              } @if (sortedSearchResults().length === 0 && !isSearching()) {
+              <lego-admin-empty-state
+                title="Nog geen browse-resultaten"
+                description="Zoek hierboven om sets uit de missende bron te laden."
+              ></lego-admin-empty-state>
+              } @else if (sortedSearchResults().length > 0) {
+              <div
+                class="admin-data-table-shell bulk-onboarding__scroll-shell bulk-onboarding__browse-shell"
               >
-                Voeg selectie toe
-              </button>
-              <button
-                class="admin-button admin-button--small admin-button--subtle"
-                type="button"
-                (click)="clearBrowseSelection()"
-              >
-                Wis
-              </button>
-            </lego-admin-batch-selection-bar>
-            } @if (sortedSearchResults().length === 0 && !isSearching()) {
-            <lego-admin-empty-state
-              title="Nog geen browse-resultaten"
-              description="Zoek hierboven om sets uit de missende bron te laden."
-            ></lego-admin-empty-state>
-            } @else if (sortedSearchResults().length > 0) {
-            <div
-              class="admin-data-table-shell bulk-onboarding__scroll-shell bulk-onboarding__browse-shell"
-            >
-              <table class="admin-data-table">
-                <thead>
-                  <tr>
-                    <th class="bulk-onboarding__checkbox-cell">
-                      <div class="admin-data-table__header-cell">
-                        <span class="admin-table__heading">Alles</span>
-                        <div class="admin-data-table__header-controls">
-                          <input
-                            [checked]="areAllSearchResultsSelected()"
-                            class="bulk-onboarding__checkbox"
-                            type="checkbox"
-                            (change)="
-                              toggleAllBrowseSelection($any($event.target).checked)
-                            "
-                          />
+                <table class="admin-data-table">
+                  <thead>
+                    <tr>
+                      <th class="bulk-onboarding__checkbox-cell">
+                        <div class="admin-data-table__header-cell">
+                          <span class="admin-table__heading">Alles</span>
+                          <div class="admin-data-table__header-controls">
+                            <input
+                              [checked]="areAllSearchResultsSelected()"
+                              class="bulk-onboarding__checkbox"
+                              type="checkbox"
+                              (change)="
+                                toggleAllBrowseSelection($any($event.target).checked)
+                              "
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </th>
-                    <th><span class="admin-table__heading">Set</span></th>
-                    <th><span class="admin-table__heading">Thema</span></th>
-                    <th><span class="admin-table__heading">Jaar</span></th>
-                    <th><span class="admin-table__heading">Status</span></th>
-                    <th><span class="admin-table__heading">Actie</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (result of sortedSearchResults(); track result.setId) {
-                  <tr>
-                    <td class="bulk-onboarding__checkbox-cell">
-                      <input
-                        [checked]="isBrowseSelected(result.setId)"
-                        class="bulk-onboarding__checkbox"
-                        type="checkbox"
-                        (change)="
-                          toggleBrowseSelection(
-                            result.setId,
-                            $any($event.target).checked
-                          )
-                        "
-                      />
-                    </td>
-                    <td>
-                      <div class="bulk-onboarding__set-cell">
-                        @if (result.imageUrl) {
-                        <img
-                          [alt]="result.name"
-                          [src]="result.imageUrl"
-                          class="bulk-onboarding__thumb"
+                      </th>
+                      <th><span class="admin-table__heading">Set</span></th>
+                      <th><span class="admin-table__heading">Thema</span></th>
+                      <th><span class="admin-table__heading">Jaar</span></th>
+                      <th><span class="admin-table__heading">Status</span></th>
+                      <th><span class="admin-table__heading">Actie</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (result of sortedSearchResults(); track result.setId) {
+                    <tr>
+                      <td class="bulk-onboarding__checkbox-cell">
+                        <input
+                          [checked]="isBrowseSelected(result.setId)"
+                          class="bulk-onboarding__checkbox"
+                          type="checkbox"
+                          (change)="
+                            toggleBrowseSelection(
+                              result.setId,
+                              $any($event.target).checked
+                            )
+                          "
                         />
-                        } @else {
-                        <div
-                          class="bulk-onboarding__thumb bulk-onboarding__thumb--empty"
-                        ></div>
-                        }
+                      </td>
+                      <td>
+                        <div class="bulk-onboarding__set-cell">
+                          @if (result.imageUrl) {
+                          <img
+                            [alt]="result.name"
+                            [src]="result.imageUrl"
+                            class="bulk-onboarding__thumb"
+                          />
+                          } @else {
+                          <div
+                            class="bulk-onboarding__thumb bulk-onboarding__thumb--empty"
+                          ></div>
+                          }
 
-                        <div class="bulk-onboarding__meta">
-                          <span class="admin-data-table__cell-title">
-                            {{ result.name }}
-                          </span>
-                          <span class="admin-data-table__cell-meta">
-                            {{ result.setId }} · {{ result.pieces }} stenen
-                          </span>
+                          <div class="bulk-onboarding__meta">
+                            <span class="admin-data-table__cell-title">
+                              {{ result.name }}
+                            </span>
+                            <span class="admin-data-table__cell-meta">
+                              {{ result.setId }} · {{ result.pieces }} stenen
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>{{ result.theme }}</td>
-                    <td class="admin-data-table__cell--numeric">
-                      {{ result.releaseYear }}
-                    </td>
-                    <td>
-                      @let browseStatus = getBrowseResultStatus(result);
-                      <lego-admin-status-badge [tone]="browseStatus.tone">
-                        {{ browseStatus.label }}
-                      </lego-admin-status-badge>
-                    </td>
-                    <td>
-                      <button
-                        class="admin-button admin-button--small admin-button--subtle"
-                        [disabled]="isSelected(result.setId)"
-                        type="button"
-                        (click)="addSetToSelection(result)"
-                      >
-                        {{ isSelected(result.setId) ? 'In cart' : 'Toevoegen' }}
-                      </button>
-                    </td>
-                  </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-            }
-          </section>
+                      </td>
+                      <td>{{ result.theme }}</td>
+                      <td class="admin-data-table__cell--numeric">
+                        {{ result.releaseYear }}
+                      </td>
+                      <td>
+                        @let browseStatus = getBrowseResultStatus(result);
+                        <lego-admin-status-badge [tone]="browseStatus.tone">
+                          {{ browseStatus.label }}
+                        </lego-admin-status-badge>
+                      </td>
+                      <td>
+                        <button
+                          class="admin-button admin-button--small admin-button--subtle"
+                          [disabled]="isSelected(result.setId)"
+                          type="button"
+                          (click)="addSetToSelection(result)"
+                        >
+                          {{ isSelected(result.setId) ? 'In cart' : 'Toevoegen'
+                          }}
+                        </button>
+                      </td>
+                    </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              }
+            </section>
+          </div>
         </div>
       </section>
       <section class="admin-panel admin-panel--compact bulk-onboarding__panel">

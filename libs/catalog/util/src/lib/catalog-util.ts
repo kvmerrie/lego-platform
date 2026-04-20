@@ -518,6 +518,10 @@ export interface CatalogAddableSetRecord {
 
 export type CatalogExternalSetSearchResult = CatalogAddableSetRecord;
 
+export interface CatalogSuggestedSet extends CatalogExternalSetSearchResult {
+  score: number;
+}
+
 export interface CatalogSet extends CatalogAddableSetRecord {
   createdAt: string;
   primaryThemeId?: string;

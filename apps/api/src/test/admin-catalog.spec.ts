@@ -7,6 +7,7 @@ import type {
 } from '@lego-platform/api/data-access-server';
 import {
   type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSet,
   type CatalogSet,
 } from '@lego-platform/catalog/util';
 import {
@@ -78,6 +79,24 @@ function createBulkOnboardingStartResult(): CatalogBulkOnboardingStartResult {
   };
 }
 
+function createSuggestedSet(
+  overrides: Partial<CatalogSuggestedSet> = {},
+): CatalogSuggestedSet {
+  return {
+    imageUrl: 'https://cdn.rebrickable.com/media/sets/10312-1/1000.jpg',
+    name: 'Jazz Club',
+    pieces: 2899,
+    releaseYear: 2023,
+    score: 112,
+    setId: '10312',
+    slug: 'jazz-club-10312',
+    source: 'rebrickable',
+    sourceSetNumber: '10312-1',
+    theme: 'Icons',
+    ...overrides,
+  };
+}
+
 async function createAdminCatalogServer({
   catalogService,
 }: {
@@ -123,6 +142,7 @@ async function createAdminCatalogServer({
           },
         ] satisfies AdminCatalogSetSummary[],
     ),
+    listSuggestedSets: vi.fn(async () => [createSuggestedSet()]),
     searchMissingSets: vi.fn(
       async () =>
         [
@@ -187,6 +207,26 @@ describe('admin catalog routes', () => {
     expect(response.json()).toEqual([
       expect.objectContaining({
         setId: '77092',
+      }),
+    ]);
+
+    await server.close();
+  });
+
+  test('lists suggested missing sets for bulk onboarding discovery', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/catalog/suggested-sets',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.listSuggestedSets).toHaveBeenCalled();
+    expect(response.json()).toEqual([
+      expect.objectContaining({
+        score: 112,
+        setId: '10312',
       }),
     ]);
 

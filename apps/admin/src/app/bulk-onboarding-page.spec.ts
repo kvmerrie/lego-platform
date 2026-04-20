@@ -8,7 +8,10 @@ import {
   type CommerceAdminCatalogSetSummary,
   CommerceAdminBulkOnboardingPageComponent,
 } from '@lego-platform/commerce/feature-admin';
-import { type CatalogExternalSetSearchResult } from '@lego-platform/catalog/util';
+import {
+  type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSet,
+} from '@lego-platform/catalog/util';
 
 const selectionStorageKey = 'brickhunt.admin.bulk-onboarding.selection';
 const runIdStorageKey = 'brickhunt.admin.bulk-onboarding.active-run-id';
@@ -18,6 +21,7 @@ type BulkOnboardingApiStub = Pick<
   | 'getCatalogBulkOnboardingRun'
   | 'getLatestCatalogBulkOnboardingRun'
   | 'listCatalogSets'
+  | 'listCatalogSuggestedSets'
   | 'searchCatalogMissingSets'
   | 'startCatalogBulkOnboarding'
 >;
@@ -52,6 +56,16 @@ function createCatalogSetSummary(
     slug: 'lord-of-the-rings-rivendell-10316',
     theme: 'Icons',
     updatedAt: '2026-04-18T08:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function createSuggestedSet(
+  overrides: Partial<CatalogSuggestedSet> = {},
+): CatalogSuggestedSet {
+  return {
+    ...createSearchResult(),
+    score: 118,
     ...overrides,
   };
 }
@@ -133,6 +147,7 @@ function createApiServiceStub(
     getCatalogBulkOnboardingRun: async () => null,
     getLatestCatalogBulkOnboardingRun: async () => null,
     listCatalogSets: async () => [],
+    listCatalogSuggestedSets: async () => [],
     searchCatalogMissingSets: async () => [],
     startCatalogBulkOnboarding: async () => {
       throw new Error('not used');
@@ -358,6 +373,54 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
       '10316',
       '76437',
     ]);
+  });
+
+  it('loads suggested sets and adds the selected suggestion to the batch cart', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CommerceAdminBulkOnboardingPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CommerceAdminApiService,
+          useValue: createApiServiceStub({
+            listCatalogSuggestedSets: async () => [
+              createSuggestedSet({
+                imageUrl: 'https://images.example.test/10312.jpg',
+                name: 'Jazz Club',
+                pieces: 2899,
+                releaseYear: 2023,
+                score: 112,
+                setId: '10312',
+                slug: 'jazz-club-10312',
+                sourceSetNumber: '10312-1',
+                theme: 'Icons',
+              }),
+            ],
+          }),
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      CommerceAdminBulkOnboardingPageComponent,
+    );
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+
+    expect(
+      component.sortedSuggestedSets().map((setItem) => setItem.setId),
+    ).toEqual(['10312']);
+
+    component.toggleSuggestedSelection('10312', true);
+    component.addSuggestedSelectionToCart();
+
+    expect(component.selectedSets().map((setItem) => setItem.setId)).toEqual([
+      '10312',
+    ]);
+    expect(component.selectedSuggestedSetCount()).toBe(0);
   });
 
   it('starts bulk onboarding for the selected set ids and stores the active run id', async () => {

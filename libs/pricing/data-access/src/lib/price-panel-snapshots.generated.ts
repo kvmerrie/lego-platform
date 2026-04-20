@@ -171,6 +171,30 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-20T11:07:03.363Z"
   },
   {
+    "setId": "10330",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T12:49:48.376Z"
+  },
+  {
+    "setId": "10331",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3199,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T12:49:51.056Z"
+  },
+  {
     "setId": "10332",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -239,6 +263,102 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-19T09:31:54.254Z",
     "referencePriceMinor": 26999,
     "deltaMinor": -2099
+  },
+  {
+    "setId": "11370",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 23995,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T14:17:24.146Z"
+  },
+  {
+    "setId": "11371",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 23899,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T14:17:26.242Z"
+  },
+  {
+    "setId": "11372",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:17:30.677Z"
+  },
+  {
+    "setId": "11373",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:17:33.712Z"
+  },
+  {
+    "setId": "11375",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:17:37.135Z"
+  },
+  {
+    "setId": "11376",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 10900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T14:17:49.164Z"
+  },
+  {
+    "setId": "11378",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 21999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:17:49.501Z"
+  },
+  {
+    "setId": "11384",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 11600,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:17:51.655Z"
   },
   {
     "setId": "21061",
@@ -335,6 +455,18 @@ const pricePanelSnapshotsPayload = String.raw`[
     "deltaMinor": -2500
   },
   {
+    "setId": "21376",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 8499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T14:18:01.268Z"
+  },
+  {
     "setId": "31208",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -359,6 +491,54 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-20T10:04:38.813Z"
   },
   {
+    "setId": "31218",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 10495,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T14:18:05.565Z"
+  },
+  {
+    "setId": "31220",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 19999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:18:05.984Z"
+  },
+  {
+    "setId": "40955",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 14999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:18:07.661Z"
+  },
+  {
+    "setId": "42115",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 40595,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T13:51:42.507Z"
+  },
+  {
     "setId": "42143",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -369,6 +549,66 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "bol",
     "merchantCount": 3,
     "observedAt": "2026-04-19T09:32:03.034Z"
+  },
+  {
+    "setId": "42154",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 8400,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T12:49:55.209Z"
+  },
+  {
+    "setId": "42155",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6495,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T12:49:57.871Z"
+  },
+  {
+    "setId": "42156",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 16598,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T13:51:45.930Z"
+  },
+  {
+    "setId": "42161",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3899,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T12:50:00.193Z"
+  },
+  {
+    "setId": "42162",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 7700,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T12:50:03.386Z"
   },
   {
     "setId": "42171",
@@ -473,6 +713,126 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-20T06:38:18.796Z"
   },
   {
+    "setId": "42221",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4995,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T14:18:10.095Z"
+  },
+  {
+    "setId": "42222",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4500,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:11.393Z"
+  },
+  {
+    "setId": "42223",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:15.773Z"
+  },
+  {
+    "setId": "42224",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 10000,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:18.305Z"
+  },
+  {
+    "setId": "42226",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5190,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:22.126Z"
+  },
+  {
+    "setId": "42227",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5199,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:26.917Z"
+  },
+  {
+    "setId": "42228",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 19900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:34.554Z"
+  },
+  {
+    "setId": "42691",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 12999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T14:18:36.290Z"
+  },
+  {
+    "setId": "43019",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 9500,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:37.583Z"
+  },
+  {
+    "setId": "43020",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 13800,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:40.738Z"
+  },
+  {
     "setId": "43222",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -483,6 +843,30 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "bol",
     "merchantCount": 1,
     "observedAt": "2026-04-19T09:32:17.537Z"
+  },
+  {
+    "setId": "43224",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6450,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T12:50:05.251Z"
+  },
+  {
+    "setId": "43226",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 7399,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T12:50:08.708Z"
   },
   {
     "setId": "43230",
@@ -545,6 +929,78 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-19T20:42:34.683Z"
   },
   {
+    "setId": "43287",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3699,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:45.075Z"
+  },
+  {
+    "setId": "43290",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:18:48.033Z"
+  },
+  {
+    "setId": "43300",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 11599,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T14:18:53.480Z"
+  },
+  {
+    "setId": "43305",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:18:57.665Z"
+  },
+  {
+    "setId": "71515",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 10600,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:19:00.657Z"
+  },
+  {
+    "setId": "71861",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 29999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T14:19:04.434Z"
+  },
+  {
     "setId": "72037",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -567,6 +1023,30 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
     "observedAt": "2026-04-19T17:57:55.638Z"
+  },
+  {
+    "setId": "72152",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 19999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:19:07.301Z"
+  },
+  {
+    "setId": "72153",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 64999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 2,
+    "observedAt": "2026-04-20T14:19:10.576Z"
   },
   {
     "setId": "75192",
@@ -1071,6 +1551,18 @@ const pricePanelSnapshotsPayload = String.raw`[
     "deltaMinor": -3000
   },
   {
+    "setId": "76466",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 12400,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T14:19:12.341Z"
+  },
+  {
     "setId": "77243",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1081,6 +1573,54 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
     "observedAt": "2026-04-20T06:38:26.121Z"
+  },
+  {
+    "setId": "910054",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 37995,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:19:15.337Z"
+  },
+  {
+    "setId": "910055",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 41999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:19:16.014Z"
+  },
+  {
+    "setId": "910057",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 34900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:19:16.759Z"
+  },
+  {
+    "setId": "910058",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 37500,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T14:19:17.549Z"
   }
 ]`;
 

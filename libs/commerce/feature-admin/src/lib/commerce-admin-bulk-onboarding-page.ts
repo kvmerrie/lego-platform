@@ -19,7 +19,10 @@ import {
   AdminStatusBadgeComponent,
   type AdminStatusBadgeTone,
 } from '@lego-platform/admin/ui';
-import { type CatalogExternalSetSearchResult } from '@lego-platform/catalog/util';
+import {
+  type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSet,
+} from '@lego-platform/catalog/util';
 import {
   CommerceAdminApiService,
   type CommerceAdminBulkOnboardingRun,
@@ -83,6 +86,11 @@ interface DirectSetIntakeRow {
   status: DirectSetIntakeStatus;
   statusLabel: string;
   statusTone: AdminStatusBadgeTone;
+}
+
+interface SuggestedSetStatus {
+  label: string;
+  tone: AdminStatusBadgeTone;
 }
 
 const BULK_ONBOARDING_SELECTION_STORAGE_KEY =
@@ -546,6 +554,7 @@ async function mapWithConcurrency<TValue, TResult>({
       .bulk-onboarding__panel,
       .bulk-onboarding__direct-intake,
       .bulk-onboarding__intake-zone,
+      .bulk-onboarding__intake-stack,
       .bulk-onboarding__intake-subsection {
         display: grid;
         gap: 0.45rem;
@@ -569,6 +578,10 @@ async function mapWithConcurrency<TValue, TResult>({
 
       .bulk-onboarding__browse-shell {
         max-height: 16rem;
+      }
+
+      .bulk-onboarding__suggested-shell {
+        max-height: 15rem;
       }
 
       .bulk-onboarding__cart-shell {
@@ -737,6 +750,10 @@ async function mapWithConcurrency<TValue, TResult>({
           max-height: 18rem;
         }
 
+        .bulk-onboarding__suggested-shell {
+          max-height: 16rem;
+        }
+
         .bulk-onboarding__queue-shell {
           max-height: 24rem;
         }
@@ -768,7 +785,9 @@ export class CommerceAdminBulkOnboardingPageComponent
   );
 
   readonly searchResults = signal<CatalogExternalSetSearchResult[]>([]);
+  readonly suggestedSets = signal<CatalogSuggestedSet[]>([]);
   readonly browseSelectionIds = signal<string[]>([]);
+  readonly suggestedSelectionIds = signal<string[]>([]);
   readonly selectedSets = signal<CatalogExternalSetSearchResult[]>(
     readStoredJson<CatalogExternalSetSearchResult[]>(
       BULK_ONBOARDING_SELECTION_STORAGE_KEY,
@@ -782,11 +801,14 @@ export class CommerceAdminBulkOnboardingPageComponent
 
   readonly isLoadingCatalogIndex = signal(false);
   readonly isSearching = signal(false);
+  readonly isLoadingSuggestedSets = signal(false);
   readonly isResolvingDirectInput = signal(false);
   readonly isStarting = signal(false);
   readonly isLoadingRun = signal(false);
   readonly searchMessage = signal<string | null>(null);
   readonly searchMessageTone = signal<AdminFeedbackTone>(null);
+  readonly suggestedMessage = signal<string | null>(null);
+  readonly suggestedMessageTone = signal<AdminFeedbackTone>(null);
   readonly runMessage = signal<string | null>(null);
   readonly runMessageTone = signal<AdminFeedbackTone>(null);
 
@@ -842,6 +864,28 @@ export class CommerceAdminBulkOnboardingPageComponent
 
   readonly selectedBrowseResultCount = computed(
     () => this.browseSelectionIds().length,
+  );
+
+  readonly selectedSuggestedSetCount = computed(
+    () => this.suggestedSelectionIds().length,
+  );
+
+  readonly sortedSuggestedSets = computed(() =>
+    [...this.suggestedSets()].sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      if (right.releaseYear !== left.releaseYear) {
+        return right.releaseYear - left.releaseYear;
+      }
+
+      if (right.pieces !== left.pieces) {
+        return right.pieces - left.pieces;
+      }
+
+      return left.setId.localeCompare(right.setId);
+    }),
   );
 
   readonly filteredSelectedSets = computed(() => {
@@ -1026,7 +1070,11 @@ export class CommerceAdminBulkOnboardingPageComponent
   }
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.loadCatalogIndex(), this.loadInitialRun()]);
+    await Promise.all([
+      this.loadCatalogIndex(),
+      this.loadInitialRun(),
+      this.loadSuggestedSets(),
+    ]);
   }
 
   ngOnDestroy(): void {
@@ -1061,12 +1109,25 @@ export class CommerceAdminBulkOnboardingPageComponent
     return this.browseSelectionIds().includes(setId);
   }
 
+  isSuggestedSelected(setId: string): boolean {
+    return this.suggestedSelectionIds().includes(setId);
+  }
+
   areAllSearchResultsSelected(): boolean {
     const currentResults = this.sortedSearchResults();
 
     return (
       currentResults.length > 0 &&
       currentResults.every((result) => this.isBrowseSelected(result.setId))
+    );
+  }
+
+  areAllSuggestedSetsSelected(): boolean {
+    const currentResults = this.sortedSuggestedSets();
+
+    return (
+      currentResults.length > 0 &&
+      currentResults.every((result) => this.isSuggestedSelected(result.setId))
     );
   }
 
@@ -1102,6 +1163,24 @@ export class CommerceAdminBulkOnboardingPageComponent
     this.browseSelectionIds.set([]);
   }
 
+  addSuggestedSelectionToCart(): void {
+    const selection = new Set(this.suggestedSelectionIds());
+
+    if (selection.size === 0) {
+      return;
+    }
+
+    const rowsToAdd = this.suggestedSets().filter((result) =>
+      selection.has(result.setId),
+    );
+
+    for (const result of rowsToAdd) {
+      this.addSetToSelection(result);
+    }
+
+    this.suggestedSelectionIds.set([]);
+  }
+
   removeSetFromSelection(setId: string): void {
     this.selectedSets.set(
       this.selectedSets().filter((setItem) => setItem.setId !== setId),
@@ -1132,6 +1211,10 @@ export class CommerceAdminBulkOnboardingPageComponent
     this.browseSelectionIds.set([]);
   }
 
+  clearSuggestedSelection(): void {
+    this.suggestedSelectionIds.set([]);
+  }
+
   clearDirectInput(): void {
     this.directInput.set('');
     this.directIntakeRows.set([]);
@@ -1158,6 +1241,32 @@ export class CommerceAdminBulkOnboardingPageComponent
 
     this.browseSelectionIds.set(
       this.sortedSearchResults()
+        .map((result) => result.setId)
+        .sort((left, right) => left.localeCompare(right)),
+    );
+  }
+
+  toggleSuggestedSelection(setId: string, checked: boolean): void {
+    const currentSelection = new Set(this.suggestedSelectionIds());
+
+    if (checked) {
+      currentSelection.add(setId);
+    } else {
+      currentSelection.delete(setId);
+    }
+
+    this.suggestedSelectionIds.set([...currentSelection].sort());
+  }
+
+  toggleAllSuggestedSelection(checked: boolean): void {
+    if (!checked) {
+      this.suggestedSelectionIds.set([]);
+
+      return;
+    }
+
+    this.suggestedSelectionIds.set(
+      this.sortedSuggestedSets()
         .map((result) => result.setId)
         .sort((left, right) => left.localeCompare(right)),
     );
@@ -1206,6 +1315,42 @@ export class CommerceAdminBulkOnboardingPageComponent
       this.searchMessageTone.set('danger');
     } finally {
       this.isSearching.set(false);
+    }
+  }
+
+  async loadSuggestedSets(): Promise<void> {
+    this.isLoadingSuggestedSets.set(true);
+    this.suggestedMessage.set(null);
+    this.suggestedMessageTone.set(null);
+
+    try {
+      const results = await this.commerceAdminApi.listCatalogSuggestedSets();
+
+      this.suggestedSets.set(results);
+      this.suggestedSelectionIds.set(
+        this.suggestedSelectionIds().filter((setId) =>
+          results.some((result) => result.setId === setId),
+        ),
+      );
+      this.suggestedMessage.set(
+        results.length === 0
+          ? 'Geen nieuwe suggested sets gevonden buiten de huidige catalogus.'
+          : `${results.length} suggested sets klaar voor intake.`,
+      );
+      this.suggestedMessageTone.set(
+        results.length === 0 ? 'neutral' : 'positive',
+      );
+    } catch (error) {
+      this.suggestedSets.set([]);
+      this.suggestedSelectionIds.set([]);
+      this.suggestedMessage.set(
+        error instanceof Error
+          ? error.message
+          : 'Suggested sets ophalen mislukte.',
+      );
+      this.suggestedMessageTone.set('danger');
+    } finally {
+      this.isLoadingSuggestedSets.set(false);
     }
   }
 
@@ -1433,6 +1578,27 @@ export class CommerceAdminBulkOnboardingPageComponent
 
     return {
       label: 'Beschikbaar',
+      tone: 'neutral',
+    };
+  }
+
+  getSuggestedSetStatus(result: CatalogSuggestedSet): SuggestedSetStatus {
+    if (this.isSelected(result.setId)) {
+      return {
+        label: 'Al geselecteerd',
+        tone: 'neutral',
+      };
+    }
+
+    if (this.isSuggestedSelected(result.setId)) {
+      return {
+        label: 'Klaar om toe te voegen',
+        tone: 'positive',
+      };
+    }
+
+    return {
+      label: 'Suggested',
       tone: 'neutral',
     };
   }

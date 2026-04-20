@@ -93,6 +93,7 @@ function createOfferSeed(
 function createApiServiceStub(): CommerceAdminApiService {
   return {
     listCatalogSets: async () => [],
+    listCatalogSuggestedSets: async () => [],
     searchCatalogMissingSets: async () => [],
     createCatalogSet: async () => undefined,
     startCatalogBulkOnboarding: async () => ({

@@ -1,5 +1,11 @@
 export interface RebrickableClient {
   getSet(setNumber: string): Promise<unknown>;
+  listSets(options?: {
+    minYear?: number;
+    ordering?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<unknown>;
   searchSets(query: string, options?: { pageSize?: number }): Promise<unknown>;
   getTheme(themeId: number): Promise<unknown>;
 }
@@ -25,6 +31,24 @@ function wait(delayMs: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, delayMs);
   });
+}
+
+function buildListQueryString(
+  params: Record<string, number | string | undefined>,
+): string {
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === '') {
+      continue;
+    }
+
+    searchParams.set(key, String(value));
+  }
+
+  const queryString = searchParams.toString();
+
+  return queryString ? `?${queryString}` : '';
 }
 
 function readRetryAfterDelayMs({
@@ -148,6 +172,32 @@ export function createRebrickableClient({
     getSet(setNumber: string) {
       return requestJson(`/lego/sets/${encodeURIComponent(setNumber)}/`);
     },
+    listSets(options) {
+      const page = Math.max(1, Math.floor(options?.page ?? 1));
+      const pageSize = Math.max(
+        1,
+        Math.min(1000, Math.floor(options?.pageSize ?? 100)),
+      );
+      const minYear =
+        typeof options?.minYear === 'number' &&
+        Number.isInteger(options.minYear) &&
+        options.minYear > 0
+          ? options.minYear
+          : undefined;
+      const ordering =
+        typeof options?.ordering === 'string' && options.ordering.trim()
+          ? options.ordering.trim()
+          : undefined;
+
+      return requestJson(
+        `/lego/sets/${buildListQueryString({
+          min_year: minYear,
+          ordering,
+          page,
+          page_size: pageSize,
+        })}`,
+      );
+    },
     searchSets(query: string, options?: { pageSize?: number }) {
       const normalizedQuery = query.trim();
       const pageSize = Math.max(
@@ -156,7 +206,10 @@ export function createRebrickableClient({
       );
 
       return requestJson(
-        `/lego/sets/?search=${encodeURIComponent(normalizedQuery)}&page_size=${pageSize}`,
+        `/lego/sets/${buildListQueryString({
+          page_size: pageSize,
+          search: normalizedQuery,
+        })}`,
       );
     },
     getTheme(themeId: number) {

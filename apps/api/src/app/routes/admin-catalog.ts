@@ -1,5 +1,6 @@
 import {
   createCatalogSet,
+  listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   searchCatalogMissingSets,
 } from '@lego-platform/catalog/data-access-server';
@@ -12,6 +13,7 @@ import {
 } from '@lego-platform/api/data-access-server';
 import {
   type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSet,
   type CatalogSet,
 } from '@lego-platform/catalog/util';
 import { apiPaths } from '@lego-platform/shared/config';
@@ -40,6 +42,7 @@ export interface AdminCatalogService {
   }): Promise<CatalogBulkOnboardingStartResult>;
   createSet(input: CatalogExternalSetSearchResult): Promise<CatalogSet>;
   listCatalogSets(): Promise<AdminCatalogSetSummary[]>;
+  listSuggestedSets(): Promise<CatalogSuggestedSet[]>;
   searchMissingSets(query: string): Promise<CatalogExternalSetSearchResult[]>;
 }
 
@@ -78,6 +81,7 @@ function createAdminCatalogService(): AdminCatalogService {
         theme: catalogSet.primaryTheme,
         updatedAt: catalogSet.updatedAt,
       })),
+    listSuggestedSets: () => listCatalogSuggestedMissingSets(),
     searchMissingSets: (query) => searchCatalogMissingSets({ query }),
   };
 }
@@ -194,6 +198,10 @@ export function createAdminCatalogRoutes({
   return async function (fastify: FastifyInstance) {
     fastify.get(apiPaths.adminCatalogSets, async function () {
       return catalogService.listCatalogSets();
+    });
+
+    fastify.get(apiPaths.adminCatalogSuggestedSets, async function () {
+      return catalogService.listSuggestedSets();
     });
 
     fastify.get<{ Querystring: { query?: string } }>(

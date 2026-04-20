@@ -5,6 +5,7 @@ import {
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
   getCatalogSetBySlugWithOverlay,
+  listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   listCatalogSetSummariesWithOverlay,
   searchCatalogMissingSets,
@@ -291,9 +292,11 @@ function createCatalogOverlaySupabaseClient({
 }
 
 function createRebrickableFetchMock({
+  listPayloads = {},
   setPayloads,
   themePayloads,
 }: {
+  listPayloads?: Record<string, Record<string, unknown>>;
   setPayloads: Record<string, Record<string, unknown>>;
   themePayloads: Record<string, Record<string, unknown>>;
 }) {
@@ -301,6 +304,15 @@ function createRebrickableFetchMock({
     const url = String(input);
 
     if (url.includes('/lego/sets/?')) {
+      for (const [urlFragment, payload] of Object.entries(listPayloads)) {
+        if (url.includes(urlFragment)) {
+          return {
+            ok: true,
+            json: async () => payload,
+          } as Response;
+        }
+      }
+
       throw new Error(`Unexpected search fetch ${url}`);
     }
 
@@ -845,6 +857,106 @@ describe('catalog data access server', () => {
         theme: 'Icons',
       }),
     ]);
+  });
+
+  test('lists suggested missing sets from recent Rebrickable results, filtered against the catalog and ranked by recency first', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          name: 'Downtown Jazz Club',
+          piece_count: 2899,
+          release_year: 2025,
+          set_id: '10350',
+          slug: 'downtown-jazz-club-10350',
+          source_set_number: '10350-1',
+          theme: 'Icons',
+        }),
+      ],
+    });
+    const fetchImpl = createRebrickableFetchMock({
+      listPayloads: {
+        'min_year=2024&ordering=-year%2C-num_parts&page=1&page_size=100': {
+          results: [
+            {
+              set_num: '10350-1',
+              name: 'Downtown Jazz Club',
+              year: 2025,
+              num_parts: 2899,
+              theme_id: 171,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/10350-1/1000.jpg',
+            },
+            {
+              set_num: '31162-1',
+              name: 'Cute Bunny',
+              year: 2026,
+              num_parts: 326,
+              theme_id: 1,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/31162-1/1000.jpg',
+            },
+            {
+              set_num: '42174-1',
+              name: 'Volvo FMX Truck & EC230 Electric Excavator',
+              year: 2025,
+              num_parts: 2274,
+              theme_id: 2,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/42174-1/1000.jpg',
+            },
+            {
+              set_num: '43263-1',
+              name: 'Beauty and the Beast Castle',
+              year: 2025,
+              num_parts: 2916,
+              theme_id: 3,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/43263-1/1000.jpg',
+            },
+          ],
+        },
+      },
+      setPayloads: {},
+      themePayloads: {
+        '1': {
+          id: 1,
+          name: 'Creator',
+        },
+        '2': {
+          id: 2,
+          name: 'Technic',
+        },
+        '3': {
+          id: 3,
+          name: 'Disney',
+        },
+        '171': {
+          id: 171,
+          name: 'Icons',
+        },
+      },
+    });
+
+    const results = await listCatalogSuggestedMissingSets({
+      fetchImpl,
+      limit: 3,
+      nowImpl: () => new Date('2026-04-20T08:00:00.000Z').getTime(),
+      supabaseClient,
+    });
+
+    expect(results.map((result) => result.setId)).toEqual([
+      '31162',
+      '42174',
+      '43263',
+    ]);
+    expect(results[0]).toMatchObject({
+      score: expect.any(Number),
+      setId: '31162',
+      theme: 'Creator',
+    });
+    expect(results[1].score).toBeGreaterThan(results[2].score);
   });
 
   test('creates a canonical catalog record with normalized set data', async () => {

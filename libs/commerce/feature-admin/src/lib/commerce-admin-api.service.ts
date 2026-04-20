@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSet,
   type CatalogSet,
 } from '@lego-platform/catalog/util';
 import {
@@ -177,6 +178,12 @@ export class CommerceAdminApiService {
           },
         },
       ),
+    );
+  }
+
+  async listCatalogSuggestedSets(): Promise<CatalogSuggestedSet[]> {
+    return firstValueFrom(
+      this.http.get<CatalogSuggestedSet[]>(apiPaths.adminCatalogSuggestedSets),
     );
   }
 

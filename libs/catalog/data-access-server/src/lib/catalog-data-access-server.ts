@@ -2,6 +2,7 @@ import { createRebrickableClient } from '@lego-platform/catalog/data-access-sync
 import {
   type CatalogCanonicalSet,
   type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSet,
   type CatalogSet,
   type CatalogSetDetail,
   type CatalogSetSummary,
@@ -138,6 +139,16 @@ interface CatalogResolvedThemePersistence {
   sourceThemeMapping: CatalogThemeMappingRow;
   sourceThemeParent?: CatalogSourceThemeRow;
 }
+
+const CATALOG_SUGGESTED_SET_DEFAULT_LIMIT = 36;
+const CATALOG_SUGGESTED_SET_FETCH_PAGE_SIZE = 100;
+const CATALOG_SUGGESTED_SET_MAX_PAGES = 3;
+const CATALOG_SUGGESTED_SET_RECENT_YEAR_WINDOW = 3;
+const CATALOG_SUGGESTED_THEME_BONUS_BY_THEME = new Map([
+  ['Technic', 90],
+  ['Disney', 80],
+  ['Icons', 70],
+]);
 
 export interface CatalogThemeBackfillResult {
   processedCount: number;
@@ -1063,6 +1074,58 @@ function toSearchResult({
   };
 }
 
+function getCanonicalCatalogSetIdFromSourceSetNumber(
+  setNumber: string,
+): string {
+  return createCatalogSetRecord({
+    name: 'placeholder',
+    pieces: 1,
+    releaseYear: 2000,
+    sourceSetNumber: setNumber,
+    theme: 'placeholder',
+  }).canonicalId;
+}
+
+function buildCatalogSuggestedSetScore({
+  currentYear,
+  pieces,
+  releaseYear,
+  themeName,
+}: {
+  currentYear: number;
+  pieces: number;
+  releaseYear: number;
+  themeName: string;
+}): number {
+  const minYear = currentYear - (CATALOG_SUGGESTED_SET_RECENT_YEAR_WINDOW - 1);
+  const recencyBand = Math.max(0, releaseYear - minYear + 1);
+  const recencyScore = recencyBand * 200;
+  const themeBonus = CATALOG_SUGGESTED_THEME_BONUS_BY_THEME.get(themeName) ?? 0;
+  const pieceBonus = Math.min(40, Math.max(0, Math.round(pieces / 100)));
+
+  return recencyScore + themeBonus + pieceBonus;
+}
+
+function sortCatalogSuggestedSets(
+  suggestions: readonly CatalogSuggestedSet[],
+): CatalogSuggestedSet[] {
+  return [...suggestions].sort((left, right) => {
+    if (right.score !== left.score) {
+      return right.score - left.score;
+    }
+
+    if (right.releaseYear !== left.releaseYear) {
+      return right.releaseYear - left.releaseYear;
+    }
+
+    if (right.pieces !== left.pieces) {
+      return right.pieces - left.pieces;
+    }
+
+    return left.setId.localeCompare(right.setId);
+  });
+}
+
 async function listCatalogOverlaySetRowsFromTable({
   includeInactive = false,
   table,
@@ -1575,6 +1638,132 @@ export async function searchCatalogMissingSets({
       }),
     )
     .filter((searchResult) => !existingSetIds.has(searchResult.setId));
+}
+
+export async function listCatalogSuggestedMissingSets({
+  fetchImpl,
+  limit = CATALOG_SUGGESTED_SET_DEFAULT_LIMIT,
+  nowImpl = Date.now,
+  supabaseClient,
+}: {
+  fetchImpl?: typeof fetch;
+  limit?: number;
+  nowImpl?: () => number;
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogSuggestedSet[]> {
+  const safeLimit = Math.max(1, Math.min(100, Math.floor(limit)));
+  const currentYear = new Date(nowImpl()).getUTCFullYear();
+  const minYear = currentYear - (CATALOG_SUGGESTED_SET_RECENT_YEAR_WINDOW - 1);
+  const rebrickableConfig = getRebrickableApiConfig();
+  const rebrickableClient = createRebrickableClient({
+    apiKey: rebrickableConfig.apiKey,
+    baseUrl: rebrickableConfig.baseUrl,
+    ...(fetchImpl ? { fetchImpl } : {}),
+  });
+  const existingCatalogSets = await listCanonicalCatalogSets({
+    includeInactive: true,
+    supabaseClient,
+  });
+  const existingSetIds = new Set(
+    existingCatalogSets.map((catalogSet) => catalogSet.setId),
+  );
+  const fetchedSearchSets: ValidatedRebrickableSearchSet[] = [];
+
+  for (
+    let pageNumber = 1;
+    pageNumber <= CATALOG_SUGGESTED_SET_MAX_PAGES;
+    pageNumber += 1
+  ) {
+    const payload = await rebrickableClient.listSets({
+      minYear,
+      ordering: '-year,-num_parts',
+      page: pageNumber,
+      pageSize: CATALOG_SUGGESTED_SET_FETCH_PAGE_SIZE,
+    });
+    const validatedSearchSets = validateRebrickableSearchPayload(payload)
+      .flatMap((searchSetPayload) => {
+        try {
+          return [validateRebrickableSearchSetPayload(searchSetPayload)];
+        } catch {
+          return [];
+        }
+      })
+      .filter(
+        (searchSet) =>
+          !existingSetIds.has(
+            getCanonicalCatalogSetIdFromSourceSetNumber(searchSet.setNumber),
+          ),
+      );
+
+    fetchedSearchSets.push(...validatedSearchSets);
+
+    if (validatedSearchSets.length < CATALOG_SUGGESTED_SET_FETCH_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  const uniqueSuggestedSets = new Map<string, ValidatedRebrickableSearchSet>();
+
+  for (const searchSet of fetchedSearchSets) {
+    const normalizedSetId = getCanonicalCatalogSetIdFromSourceSetNumber(
+      searchSet.setNumber,
+    );
+
+    if (
+      existingSetIds.has(normalizedSetId) ||
+      uniqueSuggestedSets.has(normalizedSetId)
+    ) {
+      continue;
+    }
+
+    uniqueSuggestedSets.set(normalizedSetId, searchSet);
+  }
+
+  const uniqueThemeIds = [
+    ...new Set(
+      [...uniqueSuggestedSets.values()].map((searchSet) => searchSet.themeId),
+    ),
+  ];
+  const themeCache = new Map<number, ValidatedRebrickableTheme>();
+  const resolvedThemeNameById = new Map<number, string>();
+  const themeEntries = await Promise.all(
+    uniqueThemeIds.map(async (themeId) => {
+      const themeName = await resolveRebrickablePrimaryThemeName({
+        rebrickableClient,
+        resolvedThemeNameById,
+        themeCache,
+        themeId,
+      });
+
+      return [themeId, themeName] as const;
+    }),
+  );
+  const themeNameById = new Map(themeEntries);
+
+  return sortCatalogSuggestedSets(
+    [...uniqueSuggestedSets.values()].map((searchSet) => {
+      const themeName =
+        themeNameById.get(searchSet.themeId) ?? 'Onbekend thema';
+      const normalizedSet = toSearchResult({
+        imageUrl: searchSet.imageUrl,
+        name: searchSet.name,
+        numParts: searchSet.numParts,
+        setNumber: searchSet.setNumber,
+        themeName,
+        year: searchSet.year,
+      });
+
+      return {
+        ...normalizedSet,
+        score: buildCatalogSuggestedSetScore({
+          currentYear,
+          pieces: normalizedSet.pieces,
+          releaseYear: normalizedSet.releaseYear,
+          themeName: normalizedSet.theme,
+        }),
+      };
+    }),
+  ).slice(0, safeLimit);
 }
 
 export async function createCatalogSet({
