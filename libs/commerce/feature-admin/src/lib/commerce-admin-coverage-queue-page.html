@@ -41,6 +41,54 @@
     </div>
   </div>
 
+  <section class="admin-panel admin-panel--compact">
+    <div class="admin-actions">
+      <div class="admin-stack admin-stack--tight">
+        <p class="admin-eyebrow">Recovery priority</p>
+        <h3>Kies eerst de merchant-gaten die nu echt operatorwaarde hebben.</h3>
+      </div>
+
+      <div class="admin-data-table__actions">
+        <button
+          class="admin-button admin-button--small"
+          [class.admin-button--primary]="recoveryFilter() === 'all'"
+          [class.admin-button--subtle]="recoveryFilter() !== 'all'"
+          type="button"
+          (click)="updateRecoveryFilter('all')"
+        >
+          Alles · {{ baseFilteredRows().length }}
+        </button>
+        <button
+          class="admin-button admin-button--small"
+          [class.admin-button--primary]="recoveryFilter() === 'recover_now'"
+          [class.admin-button--subtle]="recoveryFilter() !== 'recover_now'"
+          type="button"
+          (click)="updateRecoveryFilter('recover_now')"
+        >
+          Recover now · {{ recoveryPriorityCounts().recover_now }}
+        </button>
+        <button
+          class="admin-button admin-button--small"
+          [class.admin-button--primary]="recoveryFilter() === 'verify_first'"
+          [class.admin-button--subtle]="recoveryFilter() !== 'verify_first'"
+          type="button"
+          (click)="updateRecoveryFilter('verify_first')"
+        >
+          Verify first · {{ recoveryPriorityCounts().verify_first }}
+        </button>
+        <button
+          class="admin-button admin-button--small"
+          [class.admin-button--primary]="recoveryFilter() === 'parked'"
+          [class.admin-button--subtle]="recoveryFilter() !== 'parked'"
+          type="button"
+          (click)="updateRecoveryFilter('parked')"
+        >
+          Parked · {{ recoveryPriorityCounts().parked }}
+        </button>
+      </div>
+    </div>
+  </section>
+
   <section class="admin-panel admin-panel--compact admin-workbench__toolbar">
     <div class="admin-filterbar">
       <label class="admin-filterbar__group admin-filterbar__group--wide">
@@ -141,7 +189,11 @@
               <th><span class="admin-table__heading">Dekking</span></th>
               <th><span class="admin-table__heading">Merchantgaten</span></th>
               <th><span class="admin-table__heading">Merchantstatus</span></th>
-              <th><span class="admin-table__heading">Volgende stap</span></th>
+              <th>
+                <span class="admin-table__heading"
+                  >Recovery / volgende stap</span
+                >
+              </th>
               <th><span class="admin-table__heading">Acties</span></th>
             </tr>
           </thead>
@@ -198,9 +250,19 @@
               </td>
               <td class="admin-workbench__gap-cell">
                 <div class="admin-data-table__cell-stack">
-                  @if (row.missingMerchantNames.length > 0) {
+                  <div class="admin-data-table__badges">
+                    <lego-admin-status-badge
+                      [tone]="
+                        getRecoveryPriorityTone(getRowRecoveryPriority(row))
+                      "
+                    >
+                      {{ getRecoveryPriorityLabel(getRowRecoveryPriority(row))
+                      }}
+                    </lego-admin-status-badge>
+                  </div>
+                  @if (getMerchantGapEntries(row).length > 0) {
                   <span class="admin-data-table__cell-title">
-                    Mist: {{ row.missingMerchantNames.join(', ') }}
+                    {{ getRowGapSummary(row) }}
                   </span>
                   } @else {
                   <span class="admin-data-table__cell-meta">
@@ -256,6 +318,9 @@
                   <span class="admin-data-table__cell-title">
                     {{ commerceAdminStore.getCoverageQueueActionLabel(
                     row.recommendedNextAction ) }}
+                  </span>
+                  <span class="admin-data-table__cell-meta">
+                    {{ getRowRecoveryReason(row) }}
                   </span>
                   @if (row.recommendedMerchantName) {
                   <span class="admin-data-table__cell-meta">

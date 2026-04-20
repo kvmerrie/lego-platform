@@ -8,9 +8,9 @@ import type {
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
-  type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import {
+  type AdminCatalogSetSummary,
   createAdminCatalogRoutes,
   type AdminCatalogService,
 } from '../app/routes/admin-catalog';
@@ -112,15 +112,16 @@ async function createAdminCatalogServer({
       async () =>
         [
           {
+            createdAt: '2026-04-17T08:00:00.000Z',
             id: '10316',
-            slug: 'lord-of-the-rings-rivendell-10316',
             name: 'Rivendell',
-            theme: 'Icons',
-            releaseYear: 2023,
             pieces: 6167,
-            collectorAngle: 'De vallei blijft meteen hangen op je plank.',
+            releaseYear: 2023,
+            slug: 'lord-of-the-rings-rivendell-10316',
+            theme: 'Icons',
+            updatedAt: '2026-04-17T08:00:00.000Z',
           },
-        ] satisfies CatalogSetSummary[],
+        ] satisfies AdminCatalogSetSummary[],
     ),
     searchMissingSets: vi.fn(
       async () =>

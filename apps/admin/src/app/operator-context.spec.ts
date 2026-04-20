@@ -12,6 +12,7 @@ import {
 import type {
   CommerceCoverageQueueMerchantStatus,
   CommerceCoverageQueueRow,
+  CommerceOfferSeed,
 } from '@lego-platform/commerce/util';
 
 function createMerchantStatus(
@@ -59,11 +60,33 @@ function createCoverageRow(
 
 function createCatalogSetOption(row: CommerceCoverageQueueRow) {
   return {
+    createdAt: '2026-04-18T08:00:00.000Z',
     id: row.setId,
     name: row.setName,
     theme: row.theme,
+    imageUrl: undefined,
+    pieces: 1000,
+    releaseYear: 2024,
     slug: `set-${row.setId.toLowerCase()}`,
     collectorAngle: undefined,
+    updatedAt: '2026-04-18T08:00:00.000Z',
+  };
+}
+
+function createOfferSeed(
+  overrides: Partial<CommerceOfferSeed> = {},
+): CommerceOfferSeed {
+  return {
+    createdAt: '2026-04-18T08:00:00.000Z',
+    id: 'seed-1',
+    isActive: true,
+    merchantId: 'merchant-1',
+    notes: '',
+    productUrl: 'https://example.test/product',
+    setId: '72037',
+    updatedAt: '2026-04-18T08:00:00.000Z',
+    validationStatus: 'valid',
+    ...overrides,
   };
 }
 
@@ -229,6 +252,37 @@ describe('operator context continuity', () => {
     expect(store.activeSetId()).toBe('10317');
   });
 
+  it('restores catalog filter and sort on the Sets page route', async () => {
+    const { harness, store } = await configureHarness([
+      {
+        path: 'sets',
+        component: CommerceAdminSetsPageComponent,
+      },
+    ]);
+
+    store.coverageQueueRows.set([]);
+    store.catalogSetOptions.set([
+      {
+        ...createCatalogSetOption(createCoverageRow()),
+        createdAt: '2026-04-19T08:00:00.000Z',
+        id: '75192',
+        name: 'Millennium Falcon',
+        slug: 'millennium-falcon-75192',
+        theme: 'Star Wars',
+        updatedAt: '2026-04-19T08:00:00.000Z',
+      },
+    ]);
+
+    const component = await harness.navigateByUrl(
+      '/sets?catalog=no_commerce_context&sort=recent_added&q=75192',
+      CommerceAdminSetsPageComponent,
+    );
+
+    expect(component.catalogFilter()).toBe('no_commerce_context');
+    expect(component.sort()).toBe('recent_added');
+    expect(component.filteredRows().map((row) => row.setId)).toEqual(['75192']);
+  });
+
   it('shows canonical catalog sets in the Sets page even when no coverage row exists yet', async () => {
     const { harness, store } = await configureHarness([
       {
@@ -253,6 +307,60 @@ describe('operator context continuity', () => {
     expect(component.filteredRows().map((row) => row.setId)).toEqual(['75192']);
     expect(component.selectedRow()?.setId).toBe('75192');
     expect(component.selectedCoverageRow()).toBeNull();
+  });
+
+  it('applies recovery-first filters on the workbench queue', async () => {
+    const { harness, store } = await configureHarness([
+      {
+        path: 'workbench',
+        component: CommerceAdminCoverageQueuePageComponent,
+      },
+    ]);
+    const recoverNowRow = createCoverageRow({
+      setId: '72050',
+      setName: 'Mario Kart - Baby Peach & Grand Prix Set',
+      merchantStatuses: [
+        createMerchantStatus({
+          merchantId: 'merchant-1',
+          merchantName: 'MisterBricks',
+          merchantSlug: 'misterbricks',
+          offerSeed: undefined,
+          state: 'missing',
+        }),
+      ],
+    });
+    const parkedRow = createCoverageRow({
+      setId: '10300',
+      setName: 'Back to the Future Time Machine',
+      merchantStatuses: [
+        createMerchantStatus({
+          merchantId: 'merchant-2',
+          merchantName: 'Intertoys',
+          merchantSlug: 'intertoys',
+          offerSeed: createOfferSeed({
+            id: 'seed-intertoys',
+            merchantId: 'merchant-2',
+            setId: '10300',
+            validationStatus: 'invalid',
+          }),
+          state: 'review',
+        }),
+      ],
+    });
+
+    store.coverageQueueRows.set([parkedRow, recoverNowRow]);
+    store.catalogSetOptions.set([
+      createCatalogSetOption(recoverNowRow),
+      createCatalogSetOption(parkedRow),
+    ]);
+
+    const component = await harness.navigateByUrl(
+      '/workbench?recovery=recover_now',
+      CommerceAdminCoverageQueuePageComponent,
+    );
+
+    expect(component.recoveryFilter()).toBe('recover_now');
+    expect(component.filteredRows().map((row) => row.setId)).toEqual(['72050']);
   });
 
   it('sends a newly added set into Workbench with the focused set query param', async () => {

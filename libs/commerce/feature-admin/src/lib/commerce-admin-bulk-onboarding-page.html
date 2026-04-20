@@ -41,6 +41,29 @@
               </span>
             </div>
 
+            @if (directInputStats().rawTokenCount > 0) {
+            <div class="admin-metric-strip">
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Invoer</span>
+                <strong class="admin-metric-value">
+                  {{ directInputStats().rawTokenCount }}
+                </strong>
+              </div>
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Geldige tokens</span>
+                <strong class="admin-metric-value">
+                  {{ directInputStats().validTokenCount }}
+                </strong>
+              </div>
+              <div class="admin-metric-cell">
+                <span class="admin-metric-label">Unieke setnummers</span>
+                <strong class="admin-metric-value">
+                  {{ directInputStats().uniqueValidTokenCount }}
+                </strong>
+              </div>
+            </div>
+            }
+
             <div class="bulk-onboarding__direct-intake">
               <label class="admin-field bulk-onboarding__direct-field">
                 <span class="admin-filterbar__label">Setnummers</span>
@@ -80,6 +103,40 @@
             ></lego-admin-empty-state>
             } @else {
             <div class="admin-data-table-shell">
+              @if (directIntakeSummary().processedCount > 0) {
+              <div class="admin-metric-strip">
+                <div class="admin-metric-cell">
+                  <span class="admin-metric-label">Nieuw</span>
+                  <strong class="admin-metric-value">
+                    {{ directIntakeSummary().addedCount }}
+                  </strong>
+                </div>
+                <div class="admin-metric-cell">
+                  <span class="admin-metric-label">Al in catalogus</span>
+                  <strong class="admin-metric-value">
+                    {{ directIntakeSummary().alreadyInCatalogCount }}
+                  </strong>
+                </div>
+                <div class="admin-metric-cell">
+                  <span class="admin-metric-label">Al geselecteerd</span>
+                  <strong class="admin-metric-value">
+                    {{ directIntakeSummary().alreadySelectedCount }}
+                  </strong>
+                </div>
+                <div class="admin-metric-cell">
+                  <span class="admin-metric-label">Niet gevonden</span>
+                  <strong class="admin-metric-value">
+                    {{ directIntakeSummary().notFoundCount }}
+                  </strong>
+                </div>
+                <div class="admin-metric-cell">
+                  <span class="admin-metric-label">Ongeldig</span>
+                  <strong class="admin-metric-value">
+                    {{ directIntakeSummary().invalidCount }}
+                  </strong>
+                </div>
+              </div>
+              }
               <table class="admin-data-table">
                 <thead>
                   <tr>
@@ -345,8 +402,11 @@
               >
                 <option value="all">Alle sets</option>
                 <option value="attention">Alleen aandacht nodig</option>
-                <option value="running">Alleen bezig</option>
-                <option value="completed">Alleen volledig</option>
+                <option value="in_progress">Alleen bezig</option>
+                <option value="full">Alleen full coverage</option>
+                <option value="no_commerce_context">
+                  Alleen zonder commerce-context
+                </option>
               </select>
             </label>
           </div>
@@ -456,7 +516,35 @@
           label="Geselecteerde sets"
         ></lego-admin-batch-selection-bar>
 
-        @if (selectedSets().length === 0) {
+        @if (selectedSets().length > 0) {
+        <div class="admin-filterbar">
+          <label class="admin-filterbar__group admin-filterbar__group--wide">
+            <span class="admin-filterbar__label">Filter cart</span>
+            <input
+              [ngModel]="cartSearch()"
+              (ngModelChange)="updateCartSearch($event)"
+              class="admin-input"
+              placeholder="Zoek op setnummer, naam of thema"
+              type="search"
+            />
+          </label>
+
+          <div class="admin-filterbar__actions">
+            <span class="admin-count-pill">
+              {{ filteredSelectedSets().length }}/{{ selectedSets().length }}
+              zichtbaar
+            </span>
+            <button
+              class="admin-button admin-button--small admin-button--subtle"
+              [disabled]="filteredSelectedSets().length === 0"
+              type="button"
+              (click)="removeVisibleSelection()"
+            >
+              Verwijder zichtbaar
+            </button>
+          </div>
+        </div>
+        } @if (selectedSets().length === 0) {
         <lego-admin-empty-state
           title="Nog geen batch opgebouwd"
           description="Voeg sets toe via directe intake of via de browse-tabel."
@@ -475,7 +563,8 @@
               </tr>
             </thead>
             <tbody>
-              @for (selectedSet of selectedSets(); track selectedSet.setId) {
+              @for (selectedSet of filteredSelectedSets(); track
+              selectedSet.setId) {
               <tr>
                 <td>
                   <span class="admin-data-table__cell-title">
@@ -495,6 +584,12 @@
                   >
                     Verwijder
                   </button>
+                </td>
+              </tr>
+              } @if (filteredSelectedSets().length === 0) {
+              <tr>
+                <td class="admin-data-table__empty" colspan="4">
+                  Geen sets zichtbaar voor deze cart-filter.
                 </td>
               </tr>
               }

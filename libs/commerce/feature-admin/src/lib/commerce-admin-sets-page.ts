@@ -30,10 +30,17 @@ import {
 
 type SetManagementSort =
   | 'benchmark_first'
-  | 'lowest_coverage'
-  | 'recent_activity'
-  | 'newly_added'
+  | 'coverage'
+  | 'last_updated'
+  | 'recent_added'
   | 'alphabetical';
+
+type SetCatalogFilter =
+  | 'all'
+  | 'full_coverage'
+  | 'no_commerce_context'
+  | 'partial_coverage'
+  | 'recently_onboarded';
 
 type SetsRowFeedbackTone = 'danger' | 'neutral' | 'positive';
 
@@ -45,6 +52,7 @@ interface SetsRowFeedback {
 interface CommerceAdminSetListRow {
   activeSeedCount: number;
   coverageRow?: CommerceCoverageQueueRow;
+  createdAt?: string;
   isBenchmark: boolean;
   latestCheckedAt?: string;
   needsReviewCount: number;
@@ -56,8 +64,11 @@ interface CommerceAdminSetListRow {
   statusSummary: string;
   theme: string;
   unavailableMerchantCount: number;
+  updatedAt?: string;
   validMerchantCount: number;
 }
+
+const SETS_RECENTLY_ONBOARDED_DAYS = 14;
 
 const setsHealthFilters: readonly CommerceCoverageQueueHealthFilter[] = [
   'all',
@@ -75,6 +86,20 @@ const setsSourceFilters: readonly CommerceCoverageQueueSourceFilter[] = [
 const setsPriorityFilters: readonly CommerceCoverageQueuePriorityFilter[] = [
   'all',
   'benchmark_only',
+];
+const setsCatalogFilters: readonly SetCatalogFilter[] = [
+  'all',
+  'no_commerce_context',
+  'partial_coverage',
+  'full_coverage',
+  'recently_onboarded',
+];
+const setSortOptions: readonly SetManagementSort[] = [
+  'benchmark_first',
+  'coverage',
+  'last_updated',
+  'recent_added',
+  'alphabetical',
 ];
 
 @Component({
@@ -128,6 +153,10 @@ export class CommerceAdminSetsPageComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly search = signal(this.commerceAdminStore.setsViewState().search);
+  readonly catalogFilter = signal<SetCatalogFilter>(
+    (this.commerceAdminStore.setsViewState()
+      .catalogFilter as SetCatalogFilter) ?? 'all',
+  );
   readonly sourceFilter = signal<CommerceCoverageQueueSourceFilter>(
     this.commerceAdminStore.setsViewState().sourceFilter,
   );
@@ -138,7 +167,10 @@ export class CommerceAdminSetsPageComponent {
     this.commerceAdminStore.setsViewState().priorityFilter,
   );
   readonly themeFilter = signal('all');
-  readonly sort = signal<SetManagementSort>('benchmark_first');
+  readonly sort = signal<SetManagementSort>(
+    (this.commerceAdminStore.setsViewState().sort as SetManagementSort) ??
+      'benchmark_first',
+  );
   readonly refreshingSetId = signal<string | null>(null);
   readonly rowFeedback = signal<Record<string, SetsRowFeedback>>({});
   readonly isDialogOpen = signal(false);
@@ -179,6 +211,31 @@ export class CommerceAdminSetsPageComponent {
 
     const rows = this.catalogRows().filter((row) => {
       if (themeFilter !== 'all' && row.theme !== themeFilter) {
+        return false;
+      }
+
+      if (this.catalogFilter() === 'no_commerce_context' && row.coverageRow) {
+        return false;
+      }
+
+      if (
+        this.catalogFilter() === 'partial_coverage' &&
+        !this.isPartialCoverageRow(row)
+      ) {
+        return false;
+      }
+
+      if (
+        this.catalogFilter() === 'full_coverage' &&
+        !this.isFullCoverageRow(row)
+      ) {
+        return false;
+      }
+
+      if (
+        this.catalogFilter() === 'recently_onboarded' &&
+        !this.isRecentlyOnboardedRow(row)
+      ) {
         return false;
       }
 
@@ -237,24 +294,25 @@ export class CommerceAdminSetsPageComponent {
 
     return [...rows].sort((left, right) => {
       switch (sort) {
-        case 'lowest_coverage':
+        case 'coverage':
           return (
+            Number(Boolean(left.coverageRow)) -
+              Number(Boolean(right.coverageRow)) ||
             left.validMerchantCount - right.validMerchantCount ||
             right.needsReviewCount - left.needsReviewCount ||
             right.staleMerchantCount - left.staleMerchantCount ||
             left.setName.localeCompare(right.setName)
           );
-        case 'recent_activity':
+        case 'last_updated':
           return (
-            (right.latestCheckedAt ?? '').localeCompare(
-              left.latestCheckedAt ?? '',
+            (this.getRowLastUpdatedAt(right) ?? '').localeCompare(
+              this.getRowLastUpdatedAt(left) ?? '',
             ) || left.setName.localeCompare(right.setName)
           );
-        case 'newly_added':
+        case 'recent_added':
           return (
-            (right.sourceCreatedAt ?? '').localeCompare(
-              left.sourceCreatedAt ?? '',
-            ) || left.setName.localeCompare(right.setName)
+            (right.createdAt ?? '').localeCompare(left.createdAt ?? '') ||
+            left.setName.localeCompare(right.setName)
           );
         case 'alphabetical':
           return (
@@ -265,6 +323,8 @@ export class CommerceAdminSetsPageComponent {
         default:
           return (
             Number(right.isBenchmark) - Number(left.isBenchmark) ||
+            Number(Boolean(left.coverageRow)) -
+              Number(Boolean(right.coverageRow)) ||
             left.validMerchantCount - right.validMerchantCount ||
             right.needsReviewCount - left.needsReviewCount ||
             left.setName.localeCompare(right.setName)
@@ -320,10 +380,12 @@ export class CommerceAdminSetsPageComponent {
 
     effect(() => {
       this.commerceAdminStore.updateSetsViewState({
+        catalogFilter: this.catalogFilter(),
         search: this.search(),
         sourceFilter: this.sourceFilter(),
         healthFilter: this.healthFilter(),
         priorityFilter: this.priorityFilter(),
+        sort: this.sort(),
       });
       this.syncRouteContext();
     });
@@ -331,6 +393,10 @@ export class CommerceAdminSetsPageComponent {
 
   updateSearch(value: string): void {
     this.search.set(value);
+  }
+
+  updateCatalogFilter(value: SetCatalogFilter): void {
+    this.catalogFilter.set(value);
   }
 
   updateSourceFilter(value: CommerceCoverageQueueSourceFilter): void {
@@ -373,6 +439,10 @@ export class CommerceAdminSetsPageComponent {
     }
 
     return 'Catalogus';
+  }
+
+  getRowLastUpdatedAt(row: CommerceAdminSetListRow): string | undefined {
+    return row.latestCheckedAt ?? row.updatedAt ?? row.createdAt;
   }
 
   getMerchantStatusTitle(
@@ -509,10 +579,12 @@ export class CommerceAdminSetsPageComponent {
 
   private applyRouteContext(params: Params): void {
     const setId = params['set'];
+    const catalogFilter = params['catalog'];
     const search = params['q'];
     const healthFilter = params['health'];
     const sourceFilter = params['source'];
     const priorityFilter = params['priority'];
+    const sort = params['sort'];
 
     if (typeof setId === 'string' && setId.trim()) {
       this.commerceAdminStore.setActiveSetId(setId);
@@ -520,6 +592,13 @@ export class CommerceAdminSetsPageComponent {
 
     if (typeof search === 'string') {
       this.search.set(search);
+    }
+
+    if (
+      typeof catalogFilter === 'string' &&
+      setsCatalogFilters.includes(catalogFilter as SetCatalogFilter)
+    ) {
+      this.catalogFilter.set(catalogFilter as SetCatalogFilter);
     }
 
     if (
@@ -550,15 +629,24 @@ export class CommerceAdminSetsPageComponent {
         priorityFilter as CommerceCoverageQueuePriorityFilter,
       );
     }
+
+    if (
+      typeof sort === 'string' &&
+      setSortOptions.includes(sort as SetManagementSort)
+    ) {
+      this.sort.set(sort as SetManagementSort);
+    }
   }
 
   private syncRouteContext(): void {
     const queryParams = {
       set: this.commerceAdminStore.activeSetId() ?? null,
+      catalog: this.catalogFilter() === 'all' ? null : this.catalogFilter(),
       q: this.search().trim() || null,
       health: this.healthFilter() === 'all' ? null : this.healthFilter(),
       source: this.sourceFilter() === 'all' ? null : this.sourceFilter(),
       priority: this.priorityFilter() === 'all' ? null : this.priorityFilter(),
+      sort: this.sort() === 'benchmark_first' ? null : this.sort(),
     };
 
     if (this.hasMatchingQueryParams(queryParams)) {
@@ -593,6 +681,7 @@ export class CommerceAdminSetsPageComponent {
     return {
       activeSeedCount: coverageRow?.activeSeedCount ?? 0,
       coverageRow,
+      createdAt: catalogSet.createdAt,
       isBenchmark: coverageRow?.isBenchmark ?? false,
       latestCheckedAt: coverageRow?.latestCheckedAt,
       needsReviewCount: coverageRow?.needsReviewCount ?? 0,
@@ -604,7 +693,39 @@ export class CommerceAdminSetsPageComponent {
       statusSummary: coverageRow?.statusSummary ?? 'Nog geen commerce-context',
       theme: catalogSet.theme,
       unavailableMerchantCount: coverageRow?.unavailableMerchantCount ?? 0,
+      updatedAt: catalogSet.updatedAt,
       validMerchantCount: coverageRow?.validMerchantCount ?? 0,
     };
+  }
+
+  private isFullCoverageRow(row: CommerceAdminSetListRow): boolean {
+    return (
+      Boolean(row.coverageRow) &&
+      row.validMerchantCount >= 3 &&
+      row.needsReviewCount === 0 &&
+      row.staleMerchantCount === 0 &&
+      row.unavailableMerchantCount === 0
+    );
+  }
+
+  private isPartialCoverageRow(row: CommerceAdminSetListRow): boolean {
+    return Boolean(row.coverageRow) && !this.isFullCoverageRow(row);
+  }
+
+  private isRecentlyOnboardedRow(row: CommerceAdminSetListRow): boolean {
+    if (!row.createdAt) {
+      return false;
+    }
+
+    const createdAt = new Date(row.createdAt);
+
+    if (Number.isNaN(createdAt.getTime())) {
+      return false;
+    }
+
+    return (
+      Date.now() - createdAt.getTime() <=
+      SETS_RECENTLY_ONBOARDED_DAYS * 86_400_000
+    );
   }
 }

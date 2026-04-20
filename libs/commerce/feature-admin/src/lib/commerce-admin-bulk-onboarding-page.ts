@@ -28,7 +28,13 @@ import {
 } from './commerce-admin-api.service';
 
 type AdminFeedbackTone = 'danger' | 'neutral' | 'positive' | null;
-type BulkOnboardingResultFilter = 'all' | 'attention' | 'completed' | 'running';
+type BulkOnboardingCartFilter = string;
+type BulkOnboardingResultFilter =
+  | 'all'
+  | 'attention'
+  | 'full'
+  | 'in_progress'
+  | 'no_commerce_context';
 type BulkOnboardingResultTone = 'danger' | 'neutral' | 'positive' | 'warning';
 type BulkOnboardingRunOutcome = 'attention' | 'completed' | 'running';
 type BulkOnboardingStageTone = 'danger' | 'neutral' | 'positive' | 'warning';
@@ -54,7 +60,9 @@ interface BulkOnboardingStageCard {
 interface BulkOnboardingSetRow {
   coverageLabel: string;
   generateLabel: string;
+  hasCommerceContext: boolean;
   importLabel: string;
+  isFullCoverage: boolean;
   lastUpdatedAt: string;
   missingMerchantLabel: string | null;
   outcome: BulkOnboardingRunOutcome;
@@ -83,10 +91,13 @@ const BULK_ONBOARDING_RUN_ID_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.active-run-id';
 const BULK_ONBOARDING_SEARCH_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.search-query';
+const BULK_ONBOARDING_CART_SEARCH_STORAGE_KEY =
+  'brickhunt.admin.bulk-onboarding.cart-search';
 const BULK_ONBOARDING_DIRECT_INPUT_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.direct-input';
 const BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.result-filter';
+const BULK_ONBOARDING_DIRECT_LOOKUP_CONCURRENCY = 12;
 
 const processingStateOrder = {
   pending_import: 0,
@@ -339,7 +350,9 @@ function buildRunSetRow(
     return {
       coverageLabel: 'Nog geen coverage snapshot',
       generateLabel: 'wacht',
+      hasCommerceContext: false,
       importLabel: 'wacht',
+      isFullCoverage: false,
       lastUpdatedAt: '',
       missingMerchantLabel: null,
       outcome: 'running',
@@ -429,7 +442,9 @@ function buildRunSetRow(
   return {
     coverageLabel,
     generateLabel,
+    hasCommerceContext: Boolean(snapshot),
     importLabel,
+    isFullCoverage,
     lastUpdatedAt: progress.lastUpdatedAt,
     missingMerchantLabel,
     outcome,
@@ -458,7 +473,7 @@ function normalizeDirectSetToken(value: string): string | null {
 
 function parseDirectSetTokens(value: string): string[] {
   return value
-    .split(/[\s,]+/g)
+    .split(/[\s,;]+/g)
     .map((token) => token.trim())
     .filter(Boolean);
 }
@@ -743,6 +758,9 @@ export class CommerceAdminBulkOnboardingPageComponent
   readonly directInput = signal(
     readStoredString(BULK_ONBOARDING_DIRECT_INPUT_STORAGE_KEY),
   );
+  readonly cartSearch = signal<BulkOnboardingCartFilter>(
+    readStoredString(BULK_ONBOARDING_CART_SEARCH_STORAGE_KEY),
+  );
   readonly resultFilter = signal<BulkOnboardingResultFilter>(
     (readStoredString(
       BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY,
@@ -776,9 +794,70 @@ export class CommerceAdminBulkOnboardingPageComponent
     this.selectedSets().map((setItem) => setItem.setId),
   );
 
+  readonly directInputStats = computed(() => {
+    const rawTokens = parseDirectSetTokens(this.directInput());
+    const normalizedTokens = rawTokens
+      .map((token) => normalizeDirectSetToken(token))
+      .filter((setId): setId is string => Boolean(setId));
+
+    return {
+      rawTokenCount: rawTokens.length,
+      validTokenCount: normalizedTokens.length,
+      uniqueValidTokenCount: new Set(normalizedTokens).size,
+    };
+  });
+
+  readonly directIntakeSummary = computed(() => {
+    const summary = {
+      addedCount: 0,
+      alreadyInCatalogCount: 0,
+      alreadySelectedCount: 0,
+      invalidCount: 0,
+      notFoundCount: 0,
+      processedCount: this.directIntakeRows().length,
+    };
+
+    for (const row of this.directIntakeRows()) {
+      switch (row.status) {
+        case 'added':
+          summary.addedCount += 1;
+          break;
+        case 'already_in_catalog':
+          summary.alreadyInCatalogCount += 1;
+          break;
+        case 'already_selected':
+          summary.alreadySelectedCount += 1;
+          break;
+        case 'invalid':
+          summary.invalidCount += 1;
+          break;
+        case 'not_found':
+          summary.notFoundCount += 1;
+          break;
+      }
+    }
+
+    return summary;
+  });
+
   readonly selectedBrowseResultCount = computed(
     () => this.browseSelectionIds().length,
   );
+
+  readonly filteredSelectedSets = computed(() => {
+    const normalizedSearch = this.cartSearch().trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return this.selectedSets();
+    }
+
+    return this.selectedSets().filter(
+      (setItem) =>
+        setItem.setId.toLowerCase().includes(normalizedSearch) ||
+        setItem.name.toLowerCase().includes(normalizedSearch) ||
+        setItem.theme.toLowerCase().includes(normalizedSearch),
+    );
+  });
 
   readonly sortedSearchResults = computed(() => {
     const sort = this.searchSort();
@@ -866,12 +945,16 @@ export class CommerceAdminBulkOnboardingPageComponent
           return row.outcome === 'attention';
         }
 
-        if (filter === 'completed') {
-          return row.outcome === 'completed';
+        if (filter === 'full') {
+          return row.isFullCoverage;
         }
 
-        if (filter === 'running') {
+        if (filter === 'in_progress') {
           return row.outcome === 'running';
+        }
+
+        if (filter === 'no_commerce_context') {
+          return !row.hasCommerceContext;
         }
 
         return true;
@@ -930,6 +1013,12 @@ export class CommerceAdminBulkOnboardingPageComponent
     });
     effect(() => {
       writeStoredString(
+        BULK_ONBOARDING_CART_SEARCH_STORAGE_KEY,
+        this.cartSearch().trim() || null,
+      );
+    });
+    effect(() => {
+      writeStoredString(
         BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY,
         this.resultFilter(),
       );
@@ -954,6 +1043,10 @@ export class CommerceAdminBulkOnboardingPageComponent
 
   updateDirectInput(value: string): void {
     this.directInput.set(value);
+  }
+
+  updateCartSearch(value: string): void {
+    this.cartSearch.set(value);
   }
 
   updateResultFilter(value: BulkOnboardingResultFilter): void {
@@ -1017,6 +1110,22 @@ export class CommerceAdminBulkOnboardingPageComponent
 
   clearSelection(): void {
     this.selectedSets.set([]);
+  }
+
+  removeVisibleSelection(): void {
+    const visibleSetIds = new Set(
+      this.filteredSelectedSets().map((setItem) => setItem.setId),
+    );
+
+    if (visibleSetIds.size === 0) {
+      return;
+    }
+
+    this.selectedSets.set(
+      this.selectedSets().filter(
+        (setItem) => !visibleSetIds.has(setItem.setId),
+      ),
+    );
   }
 
   clearBrowseSelection(): void {
@@ -1139,7 +1248,7 @@ export class CommerceAdminBulkOnboardingPageComponent
       ];
       const lookupResults = await mapWithConcurrency({
         items: lookupSetIds,
-        limit: 6,
+        limit: BULK_ONBOARDING_DIRECT_LOOKUP_CONCURRENCY,
         mapFn: async (setId) => {
           const searchResults =
             await this.commerceAdminApi.searchCatalogMissingSets(setId);

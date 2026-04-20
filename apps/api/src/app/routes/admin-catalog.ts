@@ -1,6 +1,6 @@
 import {
   createCatalogSet,
-  listCatalogSetSummariesWithOverlay,
+  listCanonicalCatalogSets,
   searchCatalogMissingSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
@@ -13,10 +13,22 @@ import {
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
-  type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import { apiPaths } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
+
+export interface AdminCatalogSetSummary {
+  collectorAngle?: string;
+  createdAt: string;
+  id: string;
+  imageUrl?: string;
+  name: string;
+  pieces: number;
+  releaseYear: number;
+  slug: string;
+  theme: string;
+  updatedAt: string;
+}
 
 export interface AdminCatalogService {
   getBulkOnboardingRun(
@@ -27,7 +39,7 @@ export interface AdminCatalogService {
     setIds: readonly string[];
   }): Promise<CatalogBulkOnboardingStartResult>;
   createSet(input: CatalogExternalSetSearchResult): Promise<CatalogSet>;
-  listCatalogSets(): Promise<CatalogSetSummary[]>;
+  listCatalogSets(): Promise<AdminCatalogSetSummary[]>;
   searchMissingSets(query: string): Promise<CatalogExternalSetSearchResult[]>;
 }
 
@@ -54,7 +66,18 @@ function createAdminCatalogService(): AdminCatalogService {
         },
       }),
     createSet: (input) => createCatalogSet({ input }),
-    listCatalogSets: () => listCatalogSetSummariesWithOverlay(),
+    listCatalogSets: async () =>
+      (await listCanonicalCatalogSets()).map((catalogSet) => ({
+        createdAt: catalogSet.createdAt,
+        id: catalogSet.setId,
+        imageUrl: catalogSet.imageUrl,
+        name: catalogSet.name,
+        pieces: catalogSet.pieceCount,
+        releaseYear: catalogSet.releaseYear,
+        slug: catalogSet.slug,
+        theme: catalogSet.primaryTheme,
+        updatedAt: catalogSet.updatedAt,
+      })),
     searchMissingSets: (query) => searchCatalogMissingSets({ query }),
   };
 }

@@ -12,7 +12,7 @@
     <div class="admin-actions">
       <span class="admin-count-pill">
         {{ filteredRows().length }}/{{
-        commerceAdminStore.coverageQueueRows().length }} sets
+        commerceAdminStore.catalogSetOptions().length }} sets
       </span>
       @if (selectedRow(); as selectedRow) {
       <span class="admin-count-pill">Actief: {{ selectedRow.setId }}</span>
@@ -31,6 +31,22 @@
           placeholder="Zoek op setnaam of nummer"
           type="search"
         />
+      </label>
+
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Catalogus</span>
+        <select
+          [ngModel]="catalogFilter()"
+          (ngModelChange)="updateCatalogFilter($event)"
+          class="admin-input"
+          name="sets-catalog-filter"
+        >
+          <option value="all">Alle sets</option>
+          <option value="no_commerce_context">Geen commerce-context</option>
+          <option value="partial_coverage">Deels gedekt</option>
+          <option value="full_coverage">Volledig gedekt</option>
+          <option value="recently_onboarded">Recent toegevoegd</option>
+        </select>
       </label>
 
       <label class="admin-filterbar__group">
@@ -101,9 +117,9 @@
           name="sets-sort"
         >
           <option value="benchmark_first">Benchmark eerst</option>
-          <option value="lowest_coverage">Laagste dekking eerst</option>
-          <option value="recent_activity">Recente activiteit</option>
-          <option value="newly_added">Nieuw toegevoegd</option>
+          <option value="coverage">Laagste dekking eerst</option>
+          <option value="last_updated">Recent bijgewerkt</option>
+          <option value="recent_added">Recent toegevoegd</option>
           <option value="alphabetical">Alfabetisch</option>
         </select>
       </label>
@@ -137,7 +153,7 @@
               <th><span class="admin-table__heading">Dekking</span></th>
               <th><span class="admin-table__heading">Merchantstatus</span></th>
               <th><span class="admin-table__heading">Volgende stap</span></th>
-              <th><span class="admin-table__heading">Laatste check</span></th>
+              <th><span class="admin-table__heading">Laatste update</span></th>
               <th><span class="admin-table__heading">Acties</span></th>
             </tr>
           </thead>
@@ -276,9 +292,8 @@
                 </div>
               </td>
               <td class="admin-data-table__column-tight">
-                {{
-                commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
-                }}
+                {{ commerceAdminStore.formatRelativeTimestamp(
+                getRowLastUpdatedAt(row) ) }}
               </td>
               <td class="admin-sets-page__actions-cell">
                 <div class="admin-data-table__actions">

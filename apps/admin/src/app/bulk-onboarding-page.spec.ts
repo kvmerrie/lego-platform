@@ -3,7 +3,9 @@ import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 import {
   CommerceAdminApiService,
+  type CommerceAdminBulkOnboardingRun,
   type CommerceAdminBulkOnboardingStartResult,
+  type CommerceAdminCatalogSetSummary,
   CommerceAdminBulkOnboardingPageComponent,
 } from '@lego-platform/commerce/feature-admin';
 import { type CatalogExternalSetSearchResult } from '@lego-platform/catalog/util';
@@ -37,6 +39,23 @@ function createSearchResult(
   };
 }
 
+function createCatalogSetSummary(
+  overrides: Partial<CommerceAdminCatalogSetSummary> = {},
+): CommerceAdminCatalogSetSummary {
+  return {
+    createdAt: '2026-04-18T08:00:00.000Z',
+    id: '10316',
+    imageUrl: 'https://images.example.test/10316.jpg',
+    name: 'Rivendell',
+    pieces: 6167,
+    releaseYear: 2023,
+    slug: 'lord-of-the-rings-rivendell-10316',
+    theme: 'Icons',
+    updatedAt: '2026-04-18T08:00:00.000Z',
+    ...overrides,
+  };
+}
+
 function createStartResult(
   setIds: readonly string[],
 ): CommerceAdminBulkOnboardingStartResult {
@@ -58,6 +77,52 @@ function createStartResult(
     runCreated: true,
     runId: 'bulk-10316-21061',
     stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
+  };
+}
+
+function createRun(
+  overrides: Partial<CommerceAdminBulkOnboardingRun> = {},
+): CommerceAdminBulkOnboardingRun {
+  return {
+    createdAt: '2026-04-19T08:00:00.000Z',
+    generateStep: { appliedSetIds: [], status: 'completed' },
+    importStep: { appliedSetIds: [], status: 'completed' },
+    requestedSetIds: ['10316', '21061'],
+    runId: 'bulk-10316-21061',
+    setProgressById: {
+      '10316': {
+        catalogSetName: 'Rivendell',
+        catalogSetTheme: 'Icons',
+        importStatus: 'created',
+        lastUpdatedAt: '2026-04-19T08:00:00.000Z',
+        processingState: 'commerce_sync_completed',
+        setId: '10316',
+        snapshot: {
+          coverageStatus: 'full_primary_coverage',
+          gapMerchants: [],
+          missingValidPrimaryOfferMerchantSlugs: [],
+          setId: '10316',
+          setName: 'Rivendell',
+          theme: 'Icons',
+        },
+        sourceSetNumber: '10316-1',
+      },
+      '21061': {
+        catalogSetName: 'Notre-Dame de Paris',
+        catalogSetTheme: 'Architecture',
+        importStatus: 'created',
+        lastUpdatedAt: '2026-04-19T08:00:00.000Z',
+        processingState: 'seed_validation_completed',
+        setId: '21061',
+        sourceSetNumber: '21061-1',
+      },
+    },
+    snapshotStep: { appliedSetIds: [], status: 'completed' },
+    status: 'completed',
+    syncStep: { appliedSetIds: [], status: 'completed' },
+    updatedAt: '2026-04-19T08:05:00.000Z',
+    validateStep: { appliedSetIds: [], status: 'completed' },
+    ...overrides,
   };
 }
 
@@ -171,15 +236,9 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
           provide: CommerceAdminApiService,
           useValue: createApiServiceStub({
             listCatalogSets: async () => [
-              {
+              createCatalogSetSummary({
                 collectorAngle: 'Rivendell blijft groot en rustig op je plank.',
-                id: '10316',
-                name: 'Rivendell',
-                pieces: 6167,
-                releaseYear: 2023,
-                slug: 'lord-of-the-rings-rivendell-10316',
-                theme: 'Icons',
-              },
+              }),
             ],
             searchCatalogMissingSets,
           }),
@@ -228,6 +287,76 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
         normalizedSetId: undefined,
         status: 'invalid',
       },
+    ]);
+    expect(component.directInputStats()).toEqual({
+      rawTokenCount: 4,
+      validTokenCount: 3,
+      uniqueValidTokenCount: 2,
+    });
+    expect(component.directIntakeSummary()).toEqual({
+      addedCount: 1,
+      alreadyInCatalogCount: 1,
+      alreadySelectedCount: 1,
+      invalidCount: 1,
+      notFoundCount: 0,
+      processedCount: 4,
+    });
+  });
+
+  it('filters and removes only the visible sets in the batch cart', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CommerceAdminBulkOnboardingPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CommerceAdminApiService,
+          useValue: createApiServiceStub(),
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      CommerceAdminBulkOnboardingPageComponent,
+    );
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+
+    component.selectedSets.set([
+      createSearchResult(),
+      createSearchResult({
+        name: 'Notre-Dame de Paris',
+        pieces: 4383,
+        releaseYear: 2024,
+        setId: '21061',
+        slug: 'notre-dame-de-paris-21061',
+        sourceSetNumber: '21061-1',
+        theme: 'Architecture',
+      }),
+      createSearchResult({
+        name: 'The Burrow - Collectors’ Edition',
+        pieces: 2405,
+        releaseYear: 2024,
+        setId: '76437',
+        slug: 'the-burrow-collectors-edition-76437',
+        sourceSetNumber: '76437-1',
+        theme: 'Harry Potter',
+      }),
+    ]);
+
+    component.updateCartSearch('Paris');
+
+    expect(component.filteredSelectedSets().map((row) => row.setId)).toEqual([
+      '21061',
+    ]);
+
+    component.removeVisibleSelection();
+
+    expect(component.selectedSets().map((row) => row.setId)).toEqual([
+      '10316',
+      '76437',
     ]);
   });
 
@@ -283,5 +412,34 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
     expect(window.sessionStorage.getItem(runIdStorageKey)).toBe(
       'bulk-10316-21061',
     );
+  });
+
+  it('filters the per-set queue for sets without commerce context', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CommerceAdminBulkOnboardingPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CommerceAdminApiService,
+          useValue: createApiServiceStub(),
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      CommerceAdminBulkOnboardingPageComponent,
+    );
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+
+    component.activeRun.set(createRun());
+    component.updateResultFilter('no_commerce_context');
+
+    expect(component.runResultRows().map((row) => row.setId)).toEqual([
+      '21061',
+    ]);
   });
 });

@@ -3,7 +3,6 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
-  type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import {
   type CommerceBenchmarkSet,
@@ -16,6 +15,19 @@ import {
 } from '@lego-platform/commerce/util';
 import { apiPaths } from '@lego-platform/shared/config';
 import { firstValueFrom } from 'rxjs';
+
+export interface CommerceAdminCatalogSetSummary {
+  collectorAngle?: string;
+  createdAt: string;
+  id: string;
+  imageUrl?: string;
+  name: string;
+  pieces: number;
+  releaseYear: number;
+  slug: string;
+  theme: string;
+  updatedAt: string;
+}
 
 export interface CommerceAdminBulkOnboardingSnapshotSetSummary {
   coverageStatus?: string;
@@ -145,9 +157,11 @@ export interface CommerceAdminBulkOnboardingStartResult {
 export class CommerceAdminApiService {
   private readonly http = inject(HttpClient);
 
-  async listCatalogSets(): Promise<CatalogSetSummary[]> {
+  async listCatalogSets(): Promise<CommerceAdminCatalogSetSummary[]> {
     return firstValueFrom(
-      this.http.get<CatalogSetSummary[]>(apiPaths.adminCatalogSets),
+      this.http.get<CommerceAdminCatalogSetSummary[]>(
+        apiPaths.adminCatalogSets,
+      ),
     );
   }
 

@@ -2,7 +2,6 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
-  type CatalogSetSummary,
 } from '@lego-platform/catalog/util';
 import { buildPublicSetDetailUrl } from '@lego-platform/shared/config';
 import {
@@ -30,11 +29,19 @@ import {
   validateCommerceMerchantInput,
   validateCommerceOfferSeedInput,
 } from '@lego-platform/commerce/util';
-import { CommerceAdminApiService } from './commerce-admin-api.service';
+import {
+  type CommerceAdminCatalogSetSummary,
+  CommerceAdminApiService,
+} from './commerce-admin-api.service';
 
 export interface CommerceCatalogSetOption extends CommerceCoverageSetOption {
   collectorAngle?: string;
+  createdAt?: string;
+  imageUrl?: string;
+  pieces?: number;
+  releaseYear?: number;
   slug: string;
+  updatedAt?: string;
 }
 
 export interface CommerceWorkbenchViewState {
@@ -46,9 +53,11 @@ export interface CommerceWorkbenchViewState {
 }
 
 export interface CommerceSetsViewState {
+  catalogFilter: string;
   healthFilter: CommerceCoverageQueueHealthFilter;
   priorityFilter: CommerceCoverageQueuePriorityFilter;
   search: string;
+  sort: string;
   sourceFilter: CommerceCoverageQueueSourceFilter;
 }
 
@@ -70,10 +79,12 @@ const initialWorkbenchViewState: CommerceWorkbenchViewState = {
 };
 
 const initialSetsViewState: CommerceSetsViewState = {
+  catalogFilter: 'all',
   search: '',
   sourceFilter: 'all',
   healthFilter: 'all',
   priorityFilter: 'all',
+  sort: 'benchmark_first',
 };
 
 function buildOfferSeedHealthLabel(offerSeed: CommerceOfferSeed): string {
@@ -792,7 +803,7 @@ export class CommerceAdminStore {
   }
 
   private toCatalogSetOptions(
-    catalogSetSummaries: readonly CatalogSetSummary[],
+    catalogSetSummaries: readonly CommerceAdminCatalogSetSummary[],
   ): CommerceCatalogSetOption[] {
     return [...catalogSetSummaries]
       .sort(
@@ -807,6 +818,11 @@ export class CommerceAdminStore {
           theme: catalogSetSummary.theme,
           slug: catalogSetSummary.slug,
           collectorAngle: catalogSetSummary.collectorAngle,
+          createdAt: catalogSetSummary.createdAt,
+          imageUrl: catalogSetSummary.imageUrl,
+          pieces: catalogSetSummary.pieces,
+          releaseYear: catalogSetSummary.releaseYear,
+          updatedAt: catalogSetSummary.updatedAt,
         }),
       );
   }
