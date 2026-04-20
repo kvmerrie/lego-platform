@@ -2077,7 +2077,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-ideas-drijvende-zeeotters-21366/9300000243481704/",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-20T17:11:45.686Z",
+    "observedAt": "2026-04-20T20:25:29.022Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -2093,7 +2093,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://misterbricks.nl/lego-ideas-21366-drijvende-zeeotters.html",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-20T17:11:48.957Z",
+    "observedAt": "2026-04-20T20:25:26.487Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
@@ -2108,7 +2108,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-ideas-drijvende-zeeotters-21366",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-20T17:11:46.741Z",
+    "observedAt": "2026-04-20T20:25:27.924Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -2124,7 +2124,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/floating-sea-otters-21366",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-20T17:11:47.655Z",
+    "observedAt": "2026-04-20T20:25:26.988Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"

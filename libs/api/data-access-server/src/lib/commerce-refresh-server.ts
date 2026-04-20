@@ -2175,7 +2175,9 @@ export async function loadCommerceSyncInputs({
       merchantSlugs,
       setIds,
     },
-    refreshSeeds: await listActiveCommerceRefreshSeedsFn(),
+    refreshSeeds: await listActiveCommerceRefreshSeedsFn({
+      merchantSlugs,
+    }),
   });
 
   return {

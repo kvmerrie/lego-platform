@@ -58,6 +58,9 @@ const htmlProductItemPattern =
   /<li\b[^>]*class=(["'])[^"']*\bproduct-item\b[^"']*\1[^>]*>([\s\S]*?)<\/li>/gi;
 const misterbricksProductAnchorClassPattern =
   /\bproduct-item-(?:link|photo)\b/i;
+const wehkampProductTilePattern =
+  /<article\b[^>]*class=(["'])[^"']*\bUI_ProductTile_productTile\b[^"']*\1[^>]*>([\s\S]*?)<\/article>/gi;
+const wehkampProductTileLinkClassPattern = /\bUI_ProductTileLink_tileLink\b/i;
 const disallowedProductUrlPathFragments = [
   '/account',
   '/cart',
@@ -621,6 +624,16 @@ function isLikelyKruidvatProductDetailUrl(value: string): boolean {
   }
 }
 
+function isLikelyWehkampProductDetailUrl(value: string): boolean {
+  try {
+    const candidateUrl = new URL(value);
+
+    return /\/[^/?#]+-\d{5,}\/?$/i.test(candidateUrl.pathname);
+  } catch {
+    return false;
+  }
+}
+
 function extractMisterbricksProductItemCandidates({
   html,
   seedUrl,
@@ -668,6 +681,50 @@ function extractMisterbricksProductItemCandidates({
       candidates.push({
         source: 'html-anchor',
         text: candidateText || blockText,
+        url: normalizeResolvedCandidateUrl(resolvedCandidateUrl),
+      });
+    }
+  }
+
+  return dedupeCommerceHtmlLinkCandidates(candidates);
+}
+
+function extractWehkampProductTileCandidates({
+  html,
+  seedUrl,
+}: {
+  html: string;
+  seedUrl: URL;
+}): CommerceHtmlLinkCandidate[] {
+  const candidates: CommerceHtmlLinkCandidate[] = [];
+
+  for (const match of html.matchAll(wehkampProductTilePattern)) {
+    const blockHtml = match[2] ?? '';
+    const blockText = trimDecodedHtmlText(blockHtml);
+
+    for (const anchorMatch of blockHtml.matchAll(htmlAnchorPattern)) {
+      const attributes =
+        `${anchorMatch[1] ?? ''} ${anchorMatch[4] ?? ''}`.trim();
+
+      if (!wehkampProductTileLinkClassPattern.test(attributes)) {
+        continue;
+      }
+
+      const resolvedCandidateUrl = resolveCandidateUrlAgainstSeedUrl({
+        candidateUrl: anchorMatch[3] ?? '',
+        seedUrl,
+      });
+
+      if (
+        !resolvedCandidateUrl ||
+        !isLikelyWehkampProductDetailUrl(resolvedCandidateUrl)
+      ) {
+        continue;
+      }
+
+      candidates.push({
+        source: 'html-anchor',
+        text: blockText,
         url: normalizeResolvedCandidateUrl(resolvedCandidateUrl),
       });
     }
@@ -1011,6 +1068,28 @@ async function extractMerchantSearchCandidates({
     return genericCandidates.filter(
       (candidate) =>
         isLikelyKruidvatProductDetailUrl(candidate.url) &&
+        (candidate.url.includes(catalogSet.setId) ||
+          candidate.text.includes(catalogSet.setId)),
+    );
+  }
+
+  if (merchant.slug === 'wehkamp') {
+    const productTileCandidates = extractWehkampProductTileCandidates({
+      html: searchPage.html,
+      seedUrl: resolvedSearchUrl,
+    });
+
+    if (productTileCandidates.length > 0) {
+      return productTileCandidates.filter(
+        (candidate) =>
+          candidate.url.includes(catalogSet.setId) ||
+          candidate.text.includes(catalogSet.setId),
+      );
+    }
+
+    return genericCandidates.filter(
+      (candidate) =>
+        isLikelyWehkampProductDetailUrl(candidate.url) &&
         (candidate.url.includes(catalogSet.setId) ||
           candidate.text.includes(catalogSet.setId)),
     );

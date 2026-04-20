@@ -92,6 +92,17 @@ const kruidvatMerchant: CommerceMerchant = {
   updatedAt: '2026-04-19T08:00:00.000Z',
 };
 
+const wehkampMerchant: CommerceMerchant = {
+  id: 'merchant-wehkamp',
+  slug: 'wehkamp',
+  name: 'Wehkamp',
+  isActive: true,
+  sourceType: 'direct',
+  notes: '',
+  createdAt: '2026-04-19T08:00:00.000Z',
+  updatedAt: '2026-04-19T08:00:00.000Z',
+};
+
 describe('commerce seed generation data access server', () => {
   test('defaults generation to primary merchants and only includes blocked merchants when explicitly requested', async () => {
     const merchants: CommerceMerchant[] = [
@@ -1965,6 +1976,255 @@ describe('commerce seed generation data access server', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(updateCommerceOfferSeedFn).toHaveBeenCalledWith({
       offerSeedId: 'seed-kruidvat-21340',
+      input: expect.objectContaining({
+        isActive: false,
+        validationStatus: 'stale',
+      }),
+    });
+  });
+
+  test('prefers a Wehkamp product tile with an exact set id over nearby search matches', async () => {
+    const updateCommerceOfferSeedFn = vi.fn(async () => undefined as never);
+    const darthMaulSet: CatalogCanonicalSet = {
+      ...baseCatalogSet,
+      setId: '75411',
+      slug: 'darth-maul-mecha-75411',
+      sourceSetNumber: '75411-1',
+      name: 'Darth Maul Mecha',
+      primaryTheme: 'Star Wars',
+      pieceCount: 143,
+    };
+    const fetchedUrls: string[] = [];
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      const requestUrl = input instanceof Request ? input.url : String(input);
+
+      fetchedUrls.push(requestUrl);
+
+      if (
+        requestUrl === 'https://www.wehkamp.nl/zoeken/?term=75411&type=manual'
+      ) {
+        return new Response(
+          `
+            <html>
+              <body>
+                <article class="position-relative full-height UI_ProductTile_productTile">
+                  <a
+                    href="https://www.wehkamp.nl/lego-star-wars-the-clone-wars-darth-maul-mecha-75411-17380916/"
+                    class="UI_ProductTileLink_tileLink full-height"
+                  >
+                    <h3>LEGO Star Wars</h3>
+                    <h3>The Clone Wars Darth Maul Mecha 75411</h3>
+                    <span>morgen in huis</span>
+                  </a>
+                </article>
+                <article class="position-relative full-height UI_ProductTile_productTile">
+                  <a
+                    href="https://www.wehkamp.nl/lego-marvel-spider-man-vs-doc-ock-metroscene-76321-17408412/"
+                    class="UI_ProductTileLink_tileLink full-height"
+                  >
+                    <h3>LEGO Marvel</h3>
+                    <h3>Spider-Man vs. Doc Ock metroscene 76321</h3>
+                  </a>
+                </article>
+              </body>
+            </html>
+          `,
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          },
+        );
+      }
+
+      if (
+        requestUrl ===
+        'https://www.wehkamp.nl/lego-star-wars-the-clone-wars-darth-maul-mecha-75411-17380916/'
+      ) {
+        return new Response(
+          `
+            <html>
+              <head>
+                <title>LEGO Star Wars The Clone Wars Darth Maul Mecha 75411</title>
+              </head>
+              <body>
+                <h1>LEGO Star Wars The Clone Wars Darth Maul Mecha 75411</h1>
+                <p>143 onderdelen</p>
+              </body>
+            </html>
+          `,
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          },
+        );
+      }
+
+      throw new Error(`Unexpected fetch url: ${requestUrl}`);
+    });
+
+    const summary = await validateGeneratedCommerceOfferSeedCandidates({
+      write: true,
+      now: new Date('2026-04-20T10:00:00.000Z'),
+      fetchImpl,
+      filters: {
+        merchantSlugs: ['wehkamp'],
+      },
+      listCanonicalCatalogSetsFn: vi.fn(async () => [darthMaulSet]),
+      listCommerceBenchmarkSetsFn: vi.fn(async () => []),
+      listCommerceMerchantsFn: vi.fn(async () => [wehkampMerchant]),
+      listCommerceOfferSeedsFn: vi.fn(
+        async () =>
+          [
+            {
+              id: 'seed-wehkamp-75411',
+              setId: '75411',
+              merchantId: 'merchant-wehkamp',
+              productUrl:
+                'https://www.wehkamp.nl/zoeken/?term=75411&type=manual',
+              isActive: false,
+              validationStatus: 'pending',
+              notes: buildGeneratedCommerceSeedCandidateNote({
+                merchantSlug: 'wehkamp',
+                setId: '75411',
+              }),
+              createdAt: '2026-04-20T08:00:00.000Z',
+              updatedAt: '2026-04-20T08:00:00.000Z',
+              merchant: wehkampMerchant,
+            },
+          ] satisfies CommerceOfferSeed[],
+      ),
+      updateCommerceOfferSeedFn,
+    });
+
+    expect(summary).toEqual({
+      processedCount: 1,
+      validCount: 1,
+      invalidCount: 0,
+      staleCount: 0,
+      skippedCount: 0,
+    });
+    expect(fetchedUrls).toEqual([
+      'https://www.wehkamp.nl/zoeken/?term=75411&type=manual',
+      'https://www.wehkamp.nl/lego-star-wars-the-clone-wars-darth-maul-mecha-75411-17380916/',
+    ]);
+    expect(updateCommerceOfferSeedFn).toHaveBeenCalledWith({
+      offerSeedId: 'seed-wehkamp-75411',
+      input: expect.objectContaining({
+        productUrl:
+          'https://www.wehkamp.nl/lego-star-wars-the-clone-wars-darth-maul-mecha-75411-17380916/',
+        isActive: true,
+        validationStatus: 'valid',
+      }),
+    });
+  });
+
+  test('keeps Wehkamp search pages stale when only nearby set-number matches are present', async () => {
+    const updateCommerceOfferSeedFn = vi.fn(async () => undefined as never);
+    const groguSet: CatalogCanonicalSet = {
+      ...baseCatalogSet,
+      setId: '75403',
+      slug: 'grogu-met-zweefkinderwagen-75403',
+      sourceSetNumber: '75403-1',
+      name: 'Grogu met Zweefkinderwagen',
+      primaryTheme: 'Star Wars',
+      pieceCount: 1048,
+    };
+    const fetchedUrls: string[] = [];
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      const requestUrl = input instanceof Request ? input.url : String(input);
+
+      fetchedUrls.push(requestUrl);
+
+      if (
+        requestUrl !== 'https://www.wehkamp.nl/zoeken/?term=75403&type=manual'
+      ) {
+        throw new Error(`Unexpected fetch url: ${requestUrl}`);
+      }
+
+      return new Response(
+        `
+          <html>
+            <body>
+              <article class="position-relative full-height UI_ProductTile_productTile">
+                <a
+                  href="https://www.wehkamp.nl/lego-star-wars-logo-decoratie-bouwpakket-voor-volwassenen-75407-17363468/"
+                  class="UI_ProductTileLink_tileLink full-height"
+                >
+                  <h3>LEGO Star Wars</h3>
+                  <h3>Logo Decoratie Bouwpakket voor volwassenen 75407</h3>
+                </a>
+              </article>
+              <article class="position-relative full-height UI_ProductTile_productTile">
+                <a
+                  href="https://www.wehkamp.nl/lego-star-wars-de-mandalorian-en-grogus-speederbike-set-75436-17478772/"
+                  class="UI_ProductTileLink_tileLink full-height"
+                >
+                  <h3>LEGO Star Wars</h3>
+                  <h3>De Mandalorian en Grogus Speederbike Set 75436</h3>
+                </a>
+              </article>
+            </body>
+          </html>
+        `,
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html',
+          },
+        },
+      );
+    });
+
+    const summary = await validateGeneratedCommerceOfferSeedCandidates({
+      write: true,
+      now: new Date('2026-04-20T10:00:00.000Z'),
+      fetchImpl,
+      filters: {
+        merchantSlugs: ['wehkamp'],
+      },
+      listCanonicalCatalogSetsFn: vi.fn(async () => [groguSet]),
+      listCommerceBenchmarkSetsFn: vi.fn(async () => []),
+      listCommerceMerchantsFn: vi.fn(async () => [wehkampMerchant]),
+      listCommerceOfferSeedsFn: vi.fn(
+        async () =>
+          [
+            {
+              id: 'seed-wehkamp-75403',
+              setId: '75403',
+              merchantId: 'merchant-wehkamp',
+              productUrl:
+                'https://www.wehkamp.nl/zoeken/?term=75403&type=manual',
+              isActive: false,
+              validationStatus: 'pending',
+              notes: buildGeneratedCommerceSeedCandidateNote({
+                merchantSlug: 'wehkamp',
+                setId: '75403',
+              }),
+              createdAt: '2026-04-20T08:00:00.000Z',
+              updatedAt: '2026-04-20T08:00:00.000Z',
+              merchant: wehkampMerchant,
+            },
+          ] satisfies CommerceOfferSeed[],
+      ),
+      updateCommerceOfferSeedFn,
+    });
+
+    expect(summary).toEqual({
+      processedCount: 1,
+      validCount: 0,
+      invalidCount: 0,
+      staleCount: 1,
+      skippedCount: 0,
+    });
+    expect(fetchedUrls).toEqual([
+      'https://www.wehkamp.nl/zoeken/?term=75403&type=manual',
+    ]);
+    expect(updateCommerceOfferSeedFn).toHaveBeenCalledWith({
+      offerSeedId: 'seed-wehkamp-75403',
       input: expect.objectContaining({
         isActive: false,
         validationStatus: 'stale',

@@ -76,6 +76,12 @@ const commerceMerchantSupportProfiles = {
     defaultRefresh: false,
     operatorLabel: 'Secondary',
   },
+  wehkamp: {
+    tier: 'secondary',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Secondary',
+  },
   top1toys: {
     tier: 'secondary',
     defaultSeedGeneration: false,
@@ -426,6 +432,7 @@ export const commerceMerchantSearchableSlugs = [
   'proshop',
   'smyths-toys',
   'top1toys',
+  'wehkamp',
 ] as const;
 
 export type CommerceMerchantSearchableSlug =
@@ -738,6 +745,8 @@ export function buildCommerceMerchantSearchUrl({
       return `https://www.amazon.nl/s?k=${encodedQuery}`;
     case 'kruidvat':
       return `https://www.kruidvat.nl/search?q=${encodedQuery}`;
+    case 'wehkamp':
+      return `https://www.wehkamp.nl/zoeken/?term=${encodedQuery}&type=manual`;
     case 'misterbricks':
       return `https://misterbricks.nl/catalogsearch/result/?q=${encodedQuery}`;
     case 'lego-nl':

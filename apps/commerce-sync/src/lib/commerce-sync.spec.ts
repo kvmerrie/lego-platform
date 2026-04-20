@@ -218,93 +218,156 @@ describe('commerce sync scoped runs', () => {
   });
 
   test('filters loaded sync inputs by requested merchant slugs', async () => {
-    const result = await loadCommerceSyncInputs({
-      listActiveCommerceRefreshSeedsFn: vi.fn().mockResolvedValue([
-        {
-          merchant: {
-            id: 'merchant-bol',
-            slug: 'bol',
-            name: 'bol',
-            isActive: true,
-            sourceType: 'affiliate',
-            notes: '',
-            createdAt: '2026-04-19T10:00:00.000Z',
-            updatedAt: '2026-04-19T10:00:00.000Z',
-          },
-          offerSeed: {
-            id: 'seed-10316-bol',
+    const listActiveCommerceRefreshSeedsFn = vi.fn().mockResolvedValue([
+      {
+        merchant: {
+          id: 'merchant-bol',
+          slug: 'bol',
+          name: 'bol',
+          isActive: true,
+          sourceType: 'affiliate',
+          notes: '',
+          createdAt: '2026-04-19T10:00:00.000Z',
+          updatedAt: '2026-04-19T10:00:00.000Z',
+        },
+        offerSeed: {
+          id: 'seed-10316-bol',
+          setId: '10316',
+          merchantId: 'merchant-bol',
+          productUrl: 'https://www.bol.com/nl/nl/p/rivendell-10316/',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-19T10:00:00.000Z',
+          updatedAt: '2026-04-19T10:00:00.000Z',
+          latestOffer: {
+            id: 'offer-10316-bol',
+            offerSeedId: 'seed-10316-bol',
             setId: '10316',
             merchantId: 'merchant-bol',
             productUrl: 'https://www.bol.com/nl/nl/p/rivendell-10316/',
-            isActive: true,
-            validationStatus: 'valid',
-            notes: '',
+            fetchStatus: 'success',
+            availability: 'in_stock',
+            currencyCode: 'EUR',
+            fetchedAt: '2026-04-19T10:00:00.000Z',
+            observedAt: '2026-04-19T10:00:00.000Z',
+            priceMinor: 42999,
             createdAt: '2026-04-19T10:00:00.000Z',
             updatedAt: '2026-04-19T10:00:00.000Z',
-            latestOffer: {
-              id: 'offer-10316-bol',
-              offerSeedId: 'seed-10316-bol',
-              setId: '10316',
-              merchantId: 'merchant-bol',
-              productUrl: 'https://www.bol.com/nl/nl/p/rivendell-10316/',
-              fetchStatus: 'success',
-              availability: 'in_stock',
-              currencyCode: 'EUR',
-              fetchedAt: '2026-04-19T10:00:00.000Z',
-              observedAt: '2026-04-19T10:00:00.000Z',
-              priceMinor: 42999,
-              createdAt: '2026-04-19T10:00:00.000Z',
-              updatedAt: '2026-04-19T10:00:00.000Z',
-            },
           },
         },
-        {
-          merchant: {
-            id: 'merchant-lego',
-            slug: 'lego-nl',
-            name: 'LEGO',
-            isActive: true,
-            sourceType: 'direct',
-            notes: '',
-            createdAt: '2026-04-19T10:00:00.000Z',
-            updatedAt: '2026-04-19T10:00:00.000Z',
-          },
-          offerSeed: {
-            id: 'seed-76437-lego',
+      },
+      {
+        merchant: {
+          id: 'merchant-lego',
+          slug: 'lego-nl',
+          name: 'LEGO',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-19T10:00:00.000Z',
+          updatedAt: '2026-04-19T10:00:00.000Z',
+        },
+        offerSeed: {
+          id: 'seed-76437-lego',
+          setId: '76437',
+          merchantId: 'merchant-lego',
+          productUrl:
+            'https://www.lego.com/nl-nl/product/the-burrow-collectors-edition-76437',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-19T10:00:00.000Z',
+          updatedAt: '2026-04-19T10:00:00.000Z',
+          latestOffer: {
+            id: 'offer-76437-lego',
+            offerSeedId: 'seed-76437-lego',
             setId: '76437',
             merchantId: 'merchant-lego',
             productUrl:
               'https://www.lego.com/nl-nl/product/the-burrow-collectors-edition-76437',
-            isActive: true,
-            validationStatus: 'valid',
-            notes: '',
+            fetchStatus: 'success',
+            availability: 'in_stock',
+            currencyCode: 'EUR',
+            fetchedAt: '2026-04-19T10:00:00.000Z',
+            observedAt: '2026-04-19T10:00:00.000Z',
+            priceMinor: 29999,
             createdAt: '2026-04-19T10:00:00.000Z',
             updatedAt: '2026-04-19T10:00:00.000Z',
-            latestOffer: {
-              id: 'offer-76437-lego',
-              offerSeedId: 'seed-76437-lego',
-              setId: '76437',
-              merchantId: 'merchant-lego',
-              productUrl:
-                'https://www.lego.com/nl-nl/product/the-burrow-collectors-edition-76437',
-              fetchStatus: 'success',
-              availability: 'in_stock',
-              currencyCode: 'EUR',
-              fetchedAt: '2026-04-19T10:00:00.000Z',
-              observedAt: '2026-04-19T10:00:00.000Z',
-              priceMinor: 29999,
-              createdAt: '2026-04-19T10:00:00.000Z',
-              updatedAt: '2026-04-19T10:00:00.000Z',
-            },
           },
         },
-      ]),
+      },
+    ]);
+
+    const result = await loadCommerceSyncInputs({
+      listActiveCommerceRefreshSeedsFn,
       merchantSlugs: ['lego-nl'],
     });
 
+    expect(listActiveCommerceRefreshSeedsFn).toHaveBeenCalledWith({
+      merchantSlugs: ['lego-nl'],
+    });
     expect(result.refreshSeeds).toHaveLength(1);
     expect(result.refreshSeeds[0]?.merchant.slug).toBe('lego-nl');
     expect(result.syncInputs.enabledSetIds).toEqual(['76437']);
+  });
+
+  test('passes explicitly requested non-default refresh merchants through loadCommerceSyncInputs', async () => {
+    const listActiveCommerceRefreshSeedsFn = vi.fn().mockResolvedValue([
+      {
+        merchant: {
+          id: 'merchant-wehkamp',
+          slug: 'wehkamp',
+          name: 'Wehkamp',
+          isActive: true,
+          sourceType: 'direct',
+          notes: '',
+          createdAt: '2026-04-20T10:00:00.000Z',
+          updatedAt: '2026-04-20T10:00:00.000Z',
+        },
+        offerSeed: {
+          id: 'seed-21366-wehkamp',
+          setId: '21366',
+          merchantId: 'merchant-wehkamp',
+          productUrl:
+            'https://www.wehkamp.nl/lego-ideas-drijvende-zeeotters-bouwpakket-voor-volwassenen-21366-17517964/',
+          isActive: true,
+          validationStatus: 'valid',
+          notes: '',
+          createdAt: '2026-04-20T10:00:00.000Z',
+          updatedAt: '2026-04-20T10:00:00.000Z',
+          latestOffer: {
+            id: 'offer-21366-wehkamp',
+            offerSeedId: 'seed-21366-wehkamp',
+            setId: '21366',
+            merchantId: 'merchant-wehkamp',
+            productUrl:
+              'https://www.wehkamp.nl/lego-ideas-drijvende-zeeotters-bouwpakket-voor-volwassenen-21366-17517964/',
+            fetchStatus: 'success',
+            availability: 'in_stock',
+            currencyCode: 'EUR',
+            fetchedAt: '2026-04-20T10:00:00.000Z',
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceMinor: 7999,
+            createdAt: '2026-04-20T10:00:00.000Z',
+            updatedAt: '2026-04-20T10:00:00.000Z',
+          },
+        },
+      },
+    ]);
+
+    const result = await loadCommerceSyncInputs({
+      listActiveCommerceRefreshSeedsFn,
+      merchantSlugs: ['wehkamp'],
+      setIds: ['21366'],
+    });
+
+    expect(listActiveCommerceRefreshSeedsFn).toHaveBeenCalledWith({
+      merchantSlugs: ['wehkamp'],
+    });
+    expect(result.refreshSeeds).toHaveLength(1);
+    expect(result.refreshSeeds[0]?.merchant.slug).toBe('wehkamp');
+    expect(result.syncInputs.enabledSetIds).toEqual(['21366']);
   });
 
   test('combines requested set ids and merchant slugs when loading sync inputs', async () => {

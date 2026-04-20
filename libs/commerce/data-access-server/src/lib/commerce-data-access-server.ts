@@ -457,12 +457,19 @@ export async function updateCommerceOfferSeed({
 
 export async function listActiveCommerceRefreshSeeds({
   includeBlockedMerchants = false,
+  merchantSlugs,
   supabaseClient = getServerSupabaseAdminClient(),
 }: {
   includeBlockedMerchants?: boolean;
+  merchantSlugs?: readonly string[];
   supabaseClient?: CommerceSupabaseClient;
 } = {}): Promise<CommerceRefreshSeed[]> {
   const offerSeeds = await listCommerceOfferSeeds({ supabaseClient });
+  const requestedMerchantSlugs = new Set(
+    (merchantSlugs ?? [])
+      .map((merchantSlug) => merchantSlug.trim())
+      .filter(Boolean),
+  );
 
   return offerSeeds
     .filter(
@@ -472,6 +479,7 @@ export async function listActiveCommerceRefreshSeeds({
     .filter(
       (offerSeed) =>
         includeBlockedMerchants ||
+        requestedMerchantSlugs.has(offerSeed.merchant?.slug ?? '') ||
         includeCommerceMerchantInDefaultRefresh(offerSeed.merchant?.slug ?? ''),
     )
     .map((offerSeed) => ({

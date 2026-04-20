@@ -102,6 +102,75 @@ describe('commerce refresh', () => {
     });
   });
 
+  test('extracts a Wehkamp priced in-stock offer from structured data and stock text', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'wehkamp',
+      html: `
+        <html>
+          <head>
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": "LEGO Star Wars Darth Maul Mecha 75411",
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "EUR",
+                  "price": "13.99",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            </script>
+          </head>
+          <body>
+            <div>In winkelmandje</div>
+            <div>Nog 7 op voorraad</div>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      priceMinor: 1399,
+      currencyCode: 'EUR',
+      availability: 'in_stock',
+    });
+  });
+
+  test('extracts a Wehkamp unavailable offer from sold-out structured data', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'wehkamp',
+      html: `
+        <html>
+          <head>
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": "LEGO Star Wars Grogu met Zweefkinderwagen 75403",
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "EUR",
+                  "price": "89.99",
+                  "availability": "https://schema.org/OutOfStock"
+                }
+              }
+            </script>
+          </head>
+          <body>
+            <div>Uitverkocht</div>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      priceMinor: 8999,
+      currencyCode: 'EUR',
+      availability: 'out_of_stock',
+    });
+  });
+
   test('extracts a LEGO in-stock offer from structured data even when the page shell contains sold-out fragments', () => {
     const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
       merchantSlug: 'lego-nl',
