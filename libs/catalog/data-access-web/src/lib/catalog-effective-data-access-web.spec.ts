@@ -2,6 +2,7 @@ import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import { describe, expect, test, vi } from 'vitest';
 
 import {
+  getCatalogPrimaryOfferAvailabilityStateBySetId,
   type CatalogResolvedOffer,
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
@@ -930,5 +931,130 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result).toEqual([]);
+  });
+
+  test('derives primary-offer unavailable state from active primary seeds without in-stock offers', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [
+        {
+          availability: 'out_of_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-18T11:40:00.000Z',
+          offer_seed_id: 'seed-lego',
+          price_minor: 4999,
+          updated_at: '2026-04-18T11:40:05.000Z',
+        },
+        {
+          availability: 'unavailable',
+          currency_code: 'EUR',
+          fetch_status: 'unavailable',
+          observed_at: '2026-04-18T11:42:00.000Z',
+          offer_seed_id: 'seed-bol',
+          price_minor: null,
+          updated_at: '2026-04-18T11:42:05.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-lego',
+          is_active: true,
+          name: 'LEGO',
+          slug: 'lego-nl',
+        },
+        {
+          id: 'merchant-bol',
+          is_active: true,
+          name: 'bol',
+          slug: 'bol',
+        },
+        {
+          id: 'merchant-top1toys',
+          is_active: true,
+          name: 'Top1Toys',
+          slug: 'top1toys',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-lego',
+          is_active: true,
+          merchant_id: 'merchant-lego',
+          product_url: 'https://www.lego.com/nl-nl/product/21340',
+          set_id: '21340',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-bol',
+          is_active: true,
+          merchant_id: 'merchant-bol',
+          product_url: 'https://www.bol.com/nl/nl/p/21340',
+          set_id: '21340',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-top1toys',
+          is_active: true,
+          merchant_id: 'merchant-top1toys',
+          product_url: 'https://www.top1toys.nl/21340',
+          set_id: '21340',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await getCatalogPrimaryOfferAvailabilityStateBySetId({
+      setId: '21340',
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      latestPrimaryOfferCheckedAt: '2026-04-18T11:42:00.000Z',
+      primaryMerchantCount: 2,
+      primarySeedCount: 2,
+      validPrimaryOfferCount: 0,
+    });
+  });
+
+  test('counts in-stock primary offers only when a primary merchant is actually available', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-18T11:44:00.000Z',
+          offer_seed_id: 'seed-lego',
+          price_minor: 16999,
+          updated_at: '2026-04-18T11:44:05.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-lego',
+          is_active: true,
+          name: 'LEGO',
+          slug: 'lego-nl',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-lego',
+          is_active: true,
+          merchant_id: 'merchant-lego',
+          product_url: 'https://www.lego.com/nl-nl/product/72037',
+          set_id: '72037',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await getCatalogPrimaryOfferAvailabilityStateBySetId({
+      setId: '72037',
+      supabaseClient,
+    });
+
+    expect(result.validPrimaryOfferCount).toBe(1);
+    expect(result.primarySeedCount).toBe(1);
   });
 });

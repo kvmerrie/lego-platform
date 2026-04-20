@@ -40,6 +40,12 @@ const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
+const PRIMARY_CATALOG_MERCHANT_SLUGS = [
+  'lego-nl',
+  'intertoys',
+  'bol',
+  'misterbricks',
+] as const;
 const genericCatalogThemeMomentum =
   'Nieuw in Brickhunt. We bouwen hier nu de eerste prijsvergelijkingen op.';
 
@@ -123,6 +129,13 @@ export interface CatalogCurrentOfferSummary {
   bestOffer?: CatalogResolvedOffer;
   offers: readonly CatalogResolvedOffer[];
   setId: string;
+}
+
+export interface CatalogPrimaryOfferAvailabilityState {
+  latestPrimaryOfferCheckedAt?: string;
+  primaryMerchantCount: number;
+  primarySeedCount: number;
+  validPrimaryOfferCount: number;
 }
 
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
@@ -461,6 +474,15 @@ function toCatalogRuntimeOffer({
     setId: offerSeed.set_id,
     url: offerSeed.product_url,
   };
+}
+
+function getLatestCheckedAtForPrimaryOffers(
+  latestOffers: readonly CatalogCommerceOfferLatestRow[],
+): string | undefined {
+  return latestOffers
+    .map((latestOffer) => latestOffer.observed_at ?? latestOffer.updated_at)
+    .filter((checkedAt): checkedAt is string => Boolean(checkedAt))
+    .sort((left, right) => right.localeCompare(left))[0];
 }
 
 export function resolveCatalogSetDetailOffers({
@@ -986,6 +1008,126 @@ export async function listCatalogSetLiveOffersBySetId({
 
     throw error;
   }
+}
+
+export async function getCatalogPrimaryOfferAvailabilityStateBySetId({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogPrimaryOfferAvailabilityState> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return {
+      primaryMerchantCount: PRIMARY_CATALOG_MERCHANT_SLUGS.length,
+      primarySeedCount: 0,
+      validPrimaryOfferCount: 0,
+    };
+  }
+
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseAdminClient();
+  const { data: merchantData, error: merchantError } =
+    await activeSupabaseClient
+      .from(COMMERCE_MERCHANTS_TABLE)
+      .select('id, slug, name, is_active')
+      .in('slug', [...PRIMARY_CATALOG_MERCHANT_SLUGS])
+      .eq('is_active', true);
+
+  if (merchantError) {
+    throw new Error('Unable to load primary catalog merchant availability.');
+  }
+
+  const primaryMerchants =
+    (merchantData as CatalogCommerceMerchantRow[] | null) ?? [];
+  const primaryMerchantIds = primaryMerchants.map((merchant) => merchant.id);
+
+  if (primaryMerchantIds.length === 0) {
+    return {
+      primaryMerchantCount: 0,
+      primarySeedCount: 0,
+      validPrimaryOfferCount: 0,
+    };
+  }
+
+  const { data: seedData, error: seedError } = await activeSupabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .select(
+      'id, set_id, merchant_id, product_url, is_active, validation_status',
+    )
+    .eq('set_id', setId)
+    .eq('is_active', true)
+    .in('merchant_id', primaryMerchantIds);
+
+  if (seedError) {
+    throw new Error('Unable to load primary catalog merchant availability.');
+  }
+
+  const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
+
+  if (offerSeeds.length === 0) {
+    return {
+      primaryMerchantCount: primaryMerchantIds.length,
+      primarySeedCount: 0,
+      validPrimaryOfferCount: 0,
+    };
+  }
+
+  const offerSeedIds = offerSeeds.map((offerSeed) => offerSeed.id);
+  const { data: latestOfferData, error: latestOfferError } =
+    await activeSupabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .select(
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+      )
+      .in('offer_seed_id', offerSeedIds)
+      .order('updated_at', {
+        ascending: false,
+      });
+
+  if (latestOfferError) {
+    throw new Error('Unable to load primary catalog merchant availability.');
+  }
+
+  const latestOffers =
+    (latestOfferData as CatalogCommerceOfferLatestRow[] | null) ?? [];
+  const latestOfferBySeedId = new Map<string, CatalogCommerceOfferLatestRow>();
+
+  for (const latestOffer of latestOffers) {
+    if (!latestOfferBySeedId.has(latestOffer.offer_seed_id)) {
+      latestOfferBySeedId.set(latestOffer.offer_seed_id, latestOffer);
+    }
+  }
+
+  const primarySeedMerchantIds = new Set(
+    offerSeeds.map((offerSeed) => offerSeed.merchant_id),
+  );
+  const validPrimaryOfferMerchantIds = new Set(
+    offerSeeds.flatMap((offerSeed) => {
+      const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+
+      if (
+        offerSeed.validation_status !== 'valid' ||
+        !latestOffer ||
+        latestOffer.fetch_status !== 'success' ||
+        normalizeRuntimeOfferAvailability(latestOffer.availability) !==
+          'in_stock'
+      ) {
+        return [];
+      }
+
+      return [offerSeed.merchant_id];
+    }),
+  );
+
+  return {
+    latestPrimaryOfferCheckedAt: getLatestCheckedAtForPrimaryOffers([
+      ...latestOfferBySeedId.values(),
+    ]),
+    primaryMerchantCount: primaryMerchantIds.length,
+    primarySeedCount: primarySeedMerchantIds.size,
+    validPrimaryOfferCount: validPrimaryOfferMerchantIds.size,
+  };
 }
 
 export async function getCatalogCurrentOfferSummaryBySetId({

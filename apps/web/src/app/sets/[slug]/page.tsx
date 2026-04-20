@@ -4,6 +4,7 @@ import {
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
 import {
+  getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogSetBySlug,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
@@ -12,7 +13,9 @@ import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-deta
 import type {
   CatalogSetDetailBestDeal,
   CatalogSetDetailOfferItem,
+  CatalogSetDetailSupportItem,
   CatalogSetDetailTrustSignal,
+  CatalogSetDetailVerdict,
 } from '@lego-platform/catalog/ui';
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
@@ -393,6 +396,98 @@ function buildTrustSignals({
   ];
 }
 
+function buildUnavailableBestDeal({
+  checkedAt,
+  primarySeedCount,
+}: {
+  checkedAt?: string;
+  primarySeedCount: number;
+}): CatalogSetDetailBestDeal {
+  return {
+    checkedLabel: checkedAt
+      ? formatOfferCheckedAtCompact(checkedAt)
+      : 'Recent gecontroleerd',
+    coverageLabel: buildMerchantCoverageLabel(primarySeedCount),
+    decisionHelper:
+      'Bij de vaste winkels die Brickhunt volgt zien we nu geen nieuwe voorraad meer.',
+    decisionLabel: 'Uit productie',
+    decisionTone: 'neutral',
+    eyebrow: 'Beschikbaarheid nu',
+    merchantLabel: 'Niet meer verkrijgbaar',
+    price: 'Niet meer verkrijgbaar',
+    stockLabel: 'Soms nog tweedehands te vinden',
+  };
+}
+
+function buildUnavailableDealVerdict(): CatalogSetDetailVerdict {
+  return {
+    explanation:
+      'Bij de vaste winkels zien we nu geen nieuwe voorraad meer. Deze set lijkt vooral uit productie of alleen nog incidenteel vindbaar.',
+    label: 'Niet meer verkrijgbaar',
+    tone: 'neutral' as const,
+  };
+}
+
+function buildUnavailableSupportItems({
+  primarySeedCount,
+}: {
+  primarySeedCount: number;
+}): CatalogSetDetailSupportItem[] {
+  return [
+    {
+      id: 'unavailable-primary-shops',
+      text: 'Bij de vaste winkels zien we nu geen nieuwe voorraad meer.',
+    },
+    ...(primarySeedCount > 0
+      ? [
+          {
+            id: 'unavailable-merchant-coverage',
+            text: `${primarySeedCount} winkel${primarySeedCount === 1 ? '' : 's'} nagekeken.`,
+          },
+        ]
+      : []),
+    {
+      id: 'unavailable-secondhand',
+      text: 'Soms duikt hij nog op via tweedehands of losse restvoorraad.',
+    },
+  ];
+}
+
+function buildUnavailableTrustSignals({
+  checkedAt,
+  primarySeedCount,
+}: {
+  checkedAt?: string;
+  primarySeedCount: number;
+}): CatalogSetDetailTrustSignal[] {
+  return [
+    {
+      label: 'Beschikbaarheid',
+      value: 'Niet meer verkrijgbaar',
+    },
+    ...(checkedAt
+      ? [
+          {
+            label: 'Laatst nagekeken',
+            value: formatOfferCheckedAt(checkedAt),
+          },
+        ]
+      : []),
+    ...(primarySeedCount > 0
+      ? [
+          {
+            label: 'Winkels nagekeken',
+            value: `${primarySeedCount} winkel${primarySeedCount === 1 ? '' : 's'} nagekeken`,
+          },
+        ]
+      : []),
+    {
+      label: 'Alternatief',
+      value: 'Soms nog tweedehands te vinden',
+    },
+  ];
+}
+
 export async function generateStaticParams() {
   return (await listCatalogSetSlugs()).map((slug) => ({ slug }));
 }
@@ -414,64 +509,107 @@ export default async function SetDetailPage({
   const liveSetDetailOffers = await listCatalogSetLiveOffersBySetId({
     setId: catalogSetDetail.id,
   });
+  const primaryOfferAvailability =
+    await getCatalogPrimaryOfferAvailabilityStateBySetId({
+      setId: catalogSetDetail.id,
+    });
   // Only live validated offers count as current public pricing.
   const localizedSetDetailOffers =
     liveSetDetailOffers.filter(isEuroCatalogOffer);
+  const hasInStockOffer = localizedSetDetailOffers.some(
+    (catalogOffer) => catalogOffer.availability === 'in_stock',
+  );
+  const isUnavailableSet =
+    primaryOfferAvailability.primarySeedCount > 0 &&
+    primaryOfferAvailability.validPrimaryOfferCount === 0 &&
+    !hasInStockOffer;
   const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
-  const hasLiveCurrentOffer = Boolean(bestOffer);
-  const decisionPresentation = buildSetDecisionPresentation({
+  const hasLiveCurrentOffer = Boolean(bestOffer) && !isUnavailableSet;
+  const defaultDecisionPresentation = buildSetDecisionPresentation({
     hasCurrentOffer: hasLiveCurrentOffer,
     pricePanelSnapshot,
     theme: catalogSetDetail.theme,
   });
-  const dealVerdict = buildSetDealVerdict(pricePanelSnapshot, {
+  const defaultDealVerdict = buildSetDealVerdict(pricePanelSnapshot, {
     hasCurrentOffer: hasLiveCurrentOffer,
     theme: catalogSetDetail.theme,
   });
+  const dealVerdict: CatalogSetDetailVerdict = isUnavailableSet
+    ? buildUnavailableDealVerdict()
+    : defaultDealVerdict;
   const trackedMerchantCount = localizedSetDetailOffers.length;
+  const unavailableCheckedAt =
+    primaryOfferAvailability.latestPrimaryOfferCheckedAt ??
+    pricePanelSnapshot?.observedAt;
+  const unavailablePrimarySeedCount = primaryOfferAvailability.primarySeedCount;
+  const analyticsPriceVerdict = isUnavailableSet
+    ? 'neutral'
+    : getBrickhuntAnalyticsPriceVerdict(defaultDealVerdict.tone);
 
   return (
     <ShellWeb>
       <CatalogFeatureSetDetail
-        bestDeal={buildBestDeal({
-          catalogOffer: bestOffer,
-          decisionPresentation,
-          dealVerdict,
-          merchantCount:
-            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
-          setId: catalogSetDetail.id,
-          pricePanelSnapshot,
-          theme: catalogSetDetail.theme,
-        })}
+        bestDeal={
+          isUnavailableSet
+            ? buildUnavailableBestDeal({
+                checkedAt: unavailableCheckedAt,
+                primarySeedCount: unavailablePrimarySeedCount,
+              })
+            : buildBestDeal({
+                catalogOffer: bestOffer,
+                decisionPresentation: defaultDecisionPresentation,
+                dealVerdict: defaultDealVerdict,
+                merchantCount:
+                  trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+                setId: catalogSetDetail.id,
+                pricePanelSnapshot,
+                theme: catalogSetDetail.theme,
+              })
+        }
         brickhuntValueItems={buildBrickhuntValueItems({
           merchantCount:
             trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
         })}
         catalogSetDetail={catalogSetDetail}
-        dealSupportItems={buildSetDecisionSupportItems({
-          hasCurrentOffer: hasLiveCurrentOffer,
-          merchantCount:
-            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
-          pricePanelSnapshot,
-        })}
+        dealSupportItems={
+          isUnavailableSet
+            ? buildUnavailableSupportItems({
+                primarySeedCount: unavailablePrimarySeedCount,
+              })
+            : buildSetDecisionSupportItems({
+                hasCurrentOffer: hasLiveCurrentOffer,
+                merchantCount:
+                  trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+                pricePanelSnapshot,
+              })
+        }
         dealVerdict={dealVerdict}
-        offerList={buildOfferList(
-          localizedSetDetailOffers,
-          {
-            dealVerdict,
-            merchantCount:
-              trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
-            setId: catalogSetDetail.id,
-            theme: catalogSetDetail.theme,
-          },
-          bestOffer,
-        )}
-        offerSummaryLabel={buildOfferSummaryLabel({
-          merchantCount:
-            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
-          observedAt: bestOffer?.checkedAt ?? pricePanelSnapshot?.observedAt,
-        })}
+        offerList={
+          isUnavailableSet
+            ? []
+            : buildOfferList(
+                localizedSetDetailOffers,
+                {
+                  dealVerdict: defaultDealVerdict,
+                  merchantCount:
+                    trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+                  setId: catalogSetDetail.id,
+                  theme: catalogSetDetail.theme,
+                },
+                bestOffer,
+              )
+        }
+        offerSummaryLabel={
+          isUnavailableSet
+            ? undefined
+            : buildOfferSummaryLabel({
+                merchantCount:
+                  trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+                observedAt:
+                  bestOffer?.checkedAt ?? pricePanelSnapshot?.observedAt,
+              })
+        }
         ownershipActions={
           <>
             <CollectionFeatureOwnedToggle
@@ -486,7 +624,7 @@ export default async function SetDetailPage({
               merchantCount:
                 trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
               pageSurface: 'set_detail',
-              priceVerdict: getBrickhuntAnalyticsPriceVerdict(dealVerdict.tone),
+              priceVerdict: analyticsPriceVerdict,
               setId: catalogSetDetail.id,
               theme: catalogSetDetail.theme,
             }}
@@ -509,15 +647,35 @@ export default async function SetDetailPage({
         themeHref={buildThemePath(
           buildCatalogThemeSlug(catalogSetDetail.theme),
         )}
-        trustSignals={buildTrustSignals({
-          bestOffer,
-          merchantCount:
-            trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
-          observedAt: bestOffer?.checkedAt ?? pricePanelSnapshot?.observedAt,
-        })}
-        followCopy={decisionPresentation.followCopy}
-        followEyebrow={decisionPresentation.followEyebrow}
-        followTitle={decisionPresentation.followTitle}
+        trustSignals={
+          isUnavailableSet
+            ? buildUnavailableTrustSignals({
+                checkedAt: unavailableCheckedAt,
+                primarySeedCount: unavailablePrimarySeedCount,
+              })
+            : buildTrustSignals({
+                bestOffer,
+                merchantCount:
+                  trackedMerchantCount > 0 ? trackedMerchantCount : undefined,
+                observedAt:
+                  bestOffer?.checkedAt ?? pricePanelSnapshot?.observedAt,
+              })
+        }
+        followCopy={
+          isUnavailableSet
+            ? 'Hou deze set op je lijst als je hem later nog eens wilt spotten.'
+            : defaultDecisionPresentation.followCopy
+        }
+        followEyebrow={
+          isUnavailableSet
+            ? 'Beschikbaarheid'
+            : defaultDecisionPresentation.followEyebrow
+        }
+        followTitle={
+          isUnavailableSet
+            ? 'Soms nog tweedehands te vinden'
+            : defaultDecisionPresentation.followTitle
+        }
       />
     </ShellWeb>
   );
