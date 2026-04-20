@@ -83,6 +83,12 @@ describe('commerce util', () => {
     );
     expect(
       buildCommerceMerchantSearchUrl({
+        merchantSlug: 'kruidvat',
+        query: '75403 lego grogu',
+      }),
+    ).toBe('https://www.kruidvat.nl/search?q=75403%20lego%20grogu');
+    expect(
+      buildCommerceMerchantSearchUrl({
         merchantSlug: 'unknown-merchant',
         query: '21061',
       }),
@@ -96,6 +102,7 @@ describe('commerce util', () => {
 
   test('classifies merchant support tiers and default automation scope conservatively', () => {
     expect(getCommerceMerchantSupportTier('lego-nl')).toBe('primary');
+    expect(getCommerceMerchantSupportTier('kruidvat')).toBe('secondary');
     expect(getCommerceMerchantSupportTier('top1toys')).toBe('secondary');
     expect(getCommerceMerchantSupportTier('amazon-nl')).toBe('blocked');
     expect(includeCommerceMerchantInDefaultSeedGeneration('lego-nl')).toBe(
@@ -104,10 +111,14 @@ describe('commerce util', () => {
     expect(includeCommerceMerchantInDefaultSeedGeneration('top1toys')).toBe(
       false,
     );
+    expect(includeCommerceMerchantInDefaultSeedGeneration('kruidvat')).toBe(
+      false,
+    );
     expect(includeCommerceMerchantInDefaultSeedGeneration('proshop')).toBe(
       false,
     );
     expect(includeCommerceMerchantInDefaultRefresh('smyths-toys')).toBe(true);
+    expect(includeCommerceMerchantInDefaultRefresh('kruidvat')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('amazon-nl')).toBe(false);
   });
 

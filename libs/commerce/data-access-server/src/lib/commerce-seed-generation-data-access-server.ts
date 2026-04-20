@@ -611,6 +611,16 @@ function isLikelyMisterbricksProductDetailUrl(value: string): boolean {
   }
 }
 
+function isLikelyKruidvatProductDetailUrl(value: string): boolean {
+  try {
+    const candidateUrl = new URL(value);
+
+    return /\/p\/\d+\/?$/i.test(candidateUrl.pathname);
+  } catch {
+    return false;
+  }
+}
+
 function extractMisterbricksProductItemCandidates({
   html,
   seedUrl,
@@ -997,6 +1007,15 @@ async function extractMerchantSearchCandidates({
     );
   }
 
+  if (merchant.slug === 'kruidvat') {
+    return genericCandidates.filter(
+      (candidate) =>
+        isLikelyKruidvatProductDetailUrl(candidate.url) &&
+        (candidate.url.includes(catalogSet.setId) ||
+          candidate.text.includes(catalogSet.setId)),
+    );
+  }
+
   return genericCandidates;
 }
 
@@ -1077,7 +1096,11 @@ function buildMerchantRequestHeaders({
     'user-agent': browserLikeMerchantUserAgent,
   };
 
-  if (merchantSlug === 'amazon-nl' || merchantSlug === 'intertoys') {
+  if (
+    merchantSlug === 'amazon-nl' ||
+    merchantSlug === 'intertoys' ||
+    merchantSlug === 'kruidvat'
+  ) {
     headers.referer = `${requestUrl.origin}/`;
   }
 

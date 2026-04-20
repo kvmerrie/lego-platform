@@ -67,6 +67,41 @@ describe('commerce refresh', () => {
     });
   });
 
+  test('extracts a Kruidvat priced in-stock offer from structured data ahead of noisy page text', () => {
+    const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
+      merchantSlug: 'kruidvat',
+      html: `
+        <html>
+          <head>
+            <script type="application/ld+json">
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                "name": "LEGO Star Wars 75403 Grogu met Zweefkinderwagen",
+                "offers": {
+                  "@type": "Offer",
+                  "priceCurrency": "EUR",
+                  "price": "89.99",
+                  "availability": "https://schema.org/InStock"
+                }
+              }
+            </script>
+          </head>
+          <body>
+            <div>Online op voorraad</div>
+            <div>Momenteel online niet op voorraad</div>
+          </body>
+        </html>
+      `,
+    });
+
+    expect(parsedOfferSnapshot).toEqual({
+      priceMinor: 8999,
+      currencyCode: 'EUR',
+      availability: 'in_stock',
+    });
+  });
+
   test('extracts a LEGO in-stock offer from structured data even when the page shell contains sold-out fragments', () => {
     const parsedOfferSnapshot = extractCommerceOfferSnapshotFromHtml({
       merchantSlug: 'lego-nl',

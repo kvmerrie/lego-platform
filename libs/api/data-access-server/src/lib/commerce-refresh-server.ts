@@ -1182,7 +1182,9 @@ function buildMerchantRequestHeaders({
   };
 
   if (
-    (merchantSlug === 'intertoys' || merchantSlug === 'proshop') &&
+    (merchantSlug === 'intertoys' ||
+      merchantSlug === 'kruidvat' ||
+      merchantSlug === 'proshop') &&
     requestProfile === 'merchant-home'
   ) {
     headers.referer =
@@ -1244,7 +1246,9 @@ async function fetchMerchantPage({
   productUrl: URL;
 }) {
   const requestProfiles: readonly MerchantRequestProfile[] =
-    merchantSlug === 'intertoys' || merchantSlug === 'proshop'
+    merchantSlug === 'intertoys' ||
+    merchantSlug === 'kruidvat' ||
+    merchantSlug === 'proshop'
       ? (['default', 'merchant-home'] as const)
       : merchantSlug === 'top1toys'
         ? (['default', 'retry'] as const)
@@ -1300,7 +1304,9 @@ async function fetchMerchantPage({
 
     if (
       response?.status === 403 &&
-      (merchantSlug === 'intertoys' || merchantSlug === 'proshop') &&
+      (merchantSlug === 'intertoys' ||
+        merchantSlug === 'kruidvat' ||
+        merchantSlug === 'proshop') &&
       requestProfile !== lastRetryableProfile
     ) {
       continue;
@@ -1345,6 +1351,14 @@ function getMerchantHttpErrorMessage({
 
   if (merchantSlug === 'intertoys' && response.status === 403) {
     return `Intertoys returned 403 Forbidden${
+      requestProfile === 'merchant-home'
+        ? ' even after retrying with a merchant referer'
+        : ''
+    }. The product page blocked the refresh request.${redirectMessage}`;
+  }
+
+  if (merchantSlug === 'kruidvat' && response.status === 403) {
+    return `Kruidvat returned 403 Forbidden${
       requestProfile === 'merchant-home'
         ? ' even after retrying with a merchant referer'
         : ''

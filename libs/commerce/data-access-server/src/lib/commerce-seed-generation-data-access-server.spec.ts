@@ -81,6 +81,17 @@ const activeMerchants: CommerceMerchant[] = [
   },
 ];
 
+const kruidvatMerchant: CommerceMerchant = {
+  id: 'merchant-kruidvat',
+  slug: 'kruidvat',
+  name: 'Kruidvat',
+  isActive: true,
+  sourceType: 'direct',
+  notes: '',
+  createdAt: '2026-04-19T08:00:00.000Z',
+  updatedAt: '2026-04-19T08:00:00.000Z',
+};
+
 describe('commerce seed generation data access server', () => {
   test('defaults generation to primary merchants and only includes blocked merchants when explicitly requested', async () => {
     const merchants: CommerceMerchant[] = [
@@ -1741,6 +1752,219 @@ describe('commerce seed generation data access server', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(updateCommerceOfferSeedFn).toHaveBeenCalledWith({
       offerSeedId: 'seed-misterbricks-21333',
+      input: expect.objectContaining({
+        isActive: false,
+        validationStatus: 'stale',
+      }),
+    });
+  });
+
+  test('prefers a Kruidvat product detail url over taxonomy links when the search page contains a real product result', async () => {
+    const updateCommerceOfferSeedFn = vi.fn(async () => undefined as never);
+    const groguSet: CatalogCanonicalSet = {
+      ...baseCatalogSet,
+      setId: '75403',
+      slug: 'grogu-met-zweefkinderwagen-75403',
+      sourceSetNumber: '75403-1',
+      name: 'Grogu met Zweefkinderwagen',
+      primaryTheme: 'Star Wars',
+      pieceCount: 1048,
+    };
+    const fetchedUrls: string[] = [];
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      const requestUrl = input instanceof Request ? input.url : String(input);
+
+      fetchedUrls.push(requestUrl);
+
+      if (requestUrl === 'https://www.kruidvat.nl/search?q=75403') {
+        return new Response(
+          `
+            <html>
+              <body>
+                <a href="https://www.kruidvat.nl/speelgoed/lego/lego-star-wars">LEGO Star Wars</a>
+                <a href="https://www.kruidvat.nl/speelgoed/lego/lego-icons">LEGO Icons</a>
+                <a href="https://www.kruidvat.nl/lego-star-wars-75403-grogu-met-zweefkinderwagen/p/6231972">
+                  LEGO Star Wars 75403 Grogu met Zweefkinderwagen
+                </a>
+                <a href="https://www.kruidvat.nl/lego-star-wars-75411-darth-maul-mecha/p/6346821">
+                  LEGO Star Wars 75411 Darth Maul Mecha
+                </a>
+              </body>
+            </html>
+          `,
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          },
+        );
+      }
+
+      if (
+        requestUrl ===
+        'https://www.kruidvat.nl/lego-star-wars-75403-grogu-met-zweefkinderwagen/p/6231972'
+      ) {
+        return new Response(
+          `
+            <html>
+              <head>
+                <title>LEGO Star Wars 75403 Grogu met Zweefkinderwagen</title>
+              </head>
+              <body>
+                <h1>LEGO Star Wars 75403 Grogu met Zweefkinderwagen</h1>
+                <p>1048 onderdelen</p>
+              </body>
+            </html>
+          `,
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/html',
+            },
+          },
+        );
+      }
+
+      throw new Error(`Unexpected fetch url: ${requestUrl}`);
+    });
+
+    const summary = await validateGeneratedCommerceOfferSeedCandidates({
+      write: true,
+      now: new Date('2026-04-19T10:00:00.000Z'),
+      fetchImpl,
+      filters: {
+        merchantSlugs: ['kruidvat'],
+      },
+      listCanonicalCatalogSetsFn: vi.fn(async () => [groguSet]),
+      listCommerceBenchmarkSetsFn: vi.fn(async () => []),
+      listCommerceMerchantsFn: vi.fn(async () => [kruidvatMerchant]),
+      listCommerceOfferSeedsFn: vi.fn(
+        async () =>
+          [
+            {
+              id: 'seed-kruidvat-75403',
+              setId: '75403',
+              merchantId: 'merchant-kruidvat',
+              productUrl: 'https://www.kruidvat.nl/search?q=75403',
+              isActive: false,
+              validationStatus: 'pending',
+              notes: buildGeneratedCommerceSeedCandidateNote({
+                merchantSlug: 'kruidvat',
+                setId: '75403',
+              }),
+              createdAt: '2026-04-19T08:00:00.000Z',
+              updatedAt: '2026-04-19T08:00:00.000Z',
+              merchant: kruidvatMerchant,
+            },
+          ] satisfies CommerceOfferSeed[],
+      ),
+      updateCommerceOfferSeedFn,
+    });
+
+    expect(summary).toEqual({
+      processedCount: 1,
+      validCount: 1,
+      invalidCount: 0,
+      staleCount: 0,
+      skippedCount: 0,
+    });
+    expect(fetchedUrls).toEqual([
+      'https://www.kruidvat.nl/search?q=75403',
+      'https://www.kruidvat.nl/lego-star-wars-75403-grogu-met-zweefkinderwagen/p/6231972',
+    ]);
+    expect(updateCommerceOfferSeedFn).toHaveBeenCalledWith({
+      offerSeedId: 'seed-kruidvat-75403',
+      input: expect.objectContaining({
+        productUrl:
+          'https://www.kruidvat.nl/lego-star-wars-75403-grogu-met-zweefkinderwagen/p/6231972',
+        isActive: true,
+        validationStatus: 'valid',
+      }),
+    });
+  });
+
+  test('keeps Kruidvat taxonomy-only search pages stale instead of validating category links', async () => {
+    const updateCommerceOfferSeedFn = vi.fn(async () => undefined as never);
+    const ideasSet: CatalogCanonicalSet = {
+      ...baseCatalogSet,
+      setId: '21340',
+      slug: 'tales-of-the-space-age-21340',
+      sourceSetNumber: '21340-1',
+      name: 'Tales of the Space Age',
+      primaryTheme: 'Ideas',
+      pieceCount: 688,
+    };
+    const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+      const requestUrl = input instanceof Request ? input.url : String(input);
+
+      if (requestUrl !== 'https://www.kruidvat.nl/search?q=21340') {
+        throw new Error(`Unexpected fetch url: ${requestUrl}`);
+      }
+
+      return new Response(
+        `
+          <html>
+            <body>
+              <div class="search-result-count">0 producten gevonden</div>
+              <a href="https://www.kruidvat.nl/speelgoed/lego/lego-art">LEGO Art</a>
+              <a href="https://www.kruidvat.nl/speelgoed/lego/lego-ideas">LEGO Ideas</a>
+              <a href="https://www.kruidvat.nl/exclusief-assortiment-lego">Exclusief Assortiment LEGO</a>
+            </body>
+          </html>
+        `,
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/html',
+          },
+        },
+      );
+    });
+
+    const summary = await validateGeneratedCommerceOfferSeedCandidates({
+      write: true,
+      now: new Date('2026-04-19T10:00:00.000Z'),
+      fetchImpl,
+      filters: {
+        merchantSlugs: ['kruidvat'],
+      },
+      listCanonicalCatalogSetsFn: vi.fn(async () => [ideasSet]),
+      listCommerceBenchmarkSetsFn: vi.fn(async () => []),
+      listCommerceMerchantsFn: vi.fn(async () => [kruidvatMerchant]),
+      listCommerceOfferSeedsFn: vi.fn(
+        async () =>
+          [
+            {
+              id: 'seed-kruidvat-21340',
+              setId: '21340',
+              merchantId: 'merchant-kruidvat',
+              productUrl: 'https://www.kruidvat.nl/search?q=21340',
+              isActive: false,
+              validationStatus: 'pending',
+              notes: buildGeneratedCommerceSeedCandidateNote({
+                merchantSlug: 'kruidvat',
+                setId: '21340',
+              }),
+              createdAt: '2026-04-19T08:00:00.000Z',
+              updatedAt: '2026-04-19T08:00:00.000Z',
+              merchant: kruidvatMerchant,
+            },
+          ] satisfies CommerceOfferSeed[],
+      ),
+      updateCommerceOfferSeedFn,
+    });
+
+    expect(summary).toEqual({
+      processedCount: 1,
+      validCount: 0,
+      invalidCount: 0,
+      staleCount: 1,
+      skippedCount: 0,
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(updateCommerceOfferSeedFn).toHaveBeenCalledWith({
+      offerSeedId: 'seed-kruidvat-21340',
       input: expect.objectContaining({
         isActive: false,
         validationStatus: 'stale',

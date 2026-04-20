@@ -70,6 +70,12 @@ const commerceMerchantSupportProfiles = {
     defaultRefresh: true,
     operatorLabel: 'Primary',
   },
+  kruidvat: {
+    tier: 'secondary',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Secondary',
+  },
   top1toys: {
     tier: 'secondary',
     defaultSeedGeneration: false,
@@ -414,6 +420,7 @@ export const commerceMerchantSearchableSlugs = [
   'amazon-nl',
   'bol',
   'intertoys',
+  'kruidvat',
   'misterbricks',
   'lego-nl',
   'proshop',
@@ -729,6 +736,8 @@ export function buildCommerceMerchantSearchUrl({
       return `https://www.bol.com/nl/nl/s/?searchtext=${encodedQuery}`;
     case 'amazon-nl':
       return `https://www.amazon.nl/s?k=${encodedQuery}`;
+    case 'kruidvat':
+      return `https://www.kruidvat.nl/search?q=${encodedQuery}`;
     case 'misterbricks':
       return `https://misterbricks.nl/catalogsearch/result/?q=${encodedQuery}`;
     case 'lego-nl':
