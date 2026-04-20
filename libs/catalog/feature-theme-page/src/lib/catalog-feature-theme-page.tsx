@@ -42,6 +42,8 @@ const themeEditorialIntroByName: Record<string, string> = {
     'Voor Hogwarts-hoeken, Gringotts en sets waar sfeer net zo belangrijk is als stenen.',
   Technic:
     'Voor supercars en machines waar de bouw net zo boeiend is als het eindresultaat.',
+  'Speed Champions':
+    'Voor racewagens waar teamkleuren, livery en F1-herkenning de hele display dragen.',
   Botanicals:
     'Voor boeketten en planten die kleur geven zonder dat het als speelgoed voelt.',
   'Modular Buildings':

@@ -340,6 +340,11 @@ export interface CatalogThemeDefinition {
   visual: CatalogThemeVisual;
 }
 
+const catalogPresentedThemeNamesByRawName = new Map<string, string>([
+  ['Super Heroes Marvel', 'Marvel'],
+  ['Super Heroes DC', 'DC'],
+]);
+
 const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
   [
     'Icons',
@@ -387,6 +392,13 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
       backgroundColor: '#a8b4c2',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/42177-1/142596.jpg',
       textColor: '#171a22',
+    },
+  ],
+  [
+    'Speed Champions',
+    {
+      backgroundColor: '#3c5f96',
+      textColor: '#ffffff',
     },
   ],
   [
@@ -451,6 +463,23 @@ export function getCatalogThemeVisual(
   themeName?: string,
 ): CatalogThemeVisual | undefined {
   return getCatalogThemeDefinition(themeName)?.visual;
+}
+
+export function getCatalogThemeDisplayName(
+  themeName?: string,
+): string | undefined {
+  if (!themeName) {
+    return undefined;
+  }
+
+  const normalizedThemeName = normalizeCatalogText(themeName);
+
+  return (
+    catalogPresentedThemeNamesByRawName.get(normalizedThemeName) ??
+    getCatalogPrimaryTheme({
+      rawTheme: normalizedThemeName,
+    })
+  );
 }
 
 export interface CatalogSetRecord {
@@ -623,6 +652,13 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
     signatureSet: 'Ferrari Daytona SP3',
   },
   {
+    name: 'Speed Champions',
+    setCount: 1,
+    momentum:
+      'Racewagens met F1- en endurance-DNA die meteen snelheid en teamkleuren op je plank zetten.',
+    signatureSet: 'Oracle Red Bull Racing RB20 F1 Race Car',
+  },
+  {
     name: 'Super Mario',
     setCount: 1,
     momentum:
@@ -750,6 +786,7 @@ export const catalogDiscoverThemeOrder = [
   'Star Wars',
   'Harry Potter',
   'Technic',
+  'Speed Champions',
   'Modular Buildings',
   'Botanicals',
   'Architecture',
@@ -948,18 +985,22 @@ export function getCatalogThemeDefinition(
     return undefined;
   }
 
-  const primaryTheme = getCatalogPrimaryTheme({
-    rawTheme: themeName,
-  });
-  const curatedThemeVisual = curatedCatalogThemeVisualsByName.get(primaryTheme);
+  const displayThemeName = getCatalogThemeDisplayName(themeName);
+
+  if (!displayThemeName) {
+    return undefined;
+  }
+
+  const curatedThemeVisual =
+    curatedCatalogThemeVisualsByName.get(displayThemeName);
 
   if (!curatedThemeVisual) {
     return undefined;
   }
 
   return {
-    name: primaryTheme,
-    slug: buildCatalogThemeSlug(primaryTheme),
+    name: displayThemeName,
+    slug: buildCatalogThemeSlug(displayThemeName),
     visual: { ...curatedThemeVisual },
   };
 }

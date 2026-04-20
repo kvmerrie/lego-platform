@@ -742,6 +742,53 @@ describe('catalog effective data access web', () => {
     expect(result[0]?.totalSetCount).toBe(2);
   });
 
+  test('normalizes public theme presentation from raw source theme labels', async () => {
+    const listCanonicalCatalogSetsFn = async () => [
+      createCanonicalCatalogSet({
+        setId: '76269',
+        slug: 'avengers-tower-76269',
+        sourceSetNumber: '76269-1',
+        name: 'Avengers Tower',
+        primaryTheme: 'Super Heroes Marvel',
+      }),
+      createCanonicalCatalogSet({
+        setId: '77243',
+        slug: 'oracle-red-bull-racing-rb20-f1-race-car-77243',
+        sourceSetNumber: '77243-1',
+        name: 'Oracle Red Bull Racing RB20 F1 Race Car',
+        primaryTheme: 'Speed Champions',
+      }),
+    ];
+
+    const [setSummaries, directoryItems, themePage] = await Promise.all([
+      listCatalogSetSummaries({
+        listCanonicalCatalogSetsFn,
+      }),
+      listCatalogThemeDirectoryItems({
+        listCanonicalCatalogSetsFn,
+      }),
+      getCatalogThemePageBySlug({
+        listCanonicalCatalogSetsFn,
+        slug: 'marvel',
+      }),
+    ]);
+
+    expect(
+      setSummaries.map((catalogSetSummary) => catalogSetSummary.theme),
+    ).toEqual(['Marvel', 'Speed Champions']);
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Marvel',
+      'Speed Champions',
+    ]);
+    expect(directoryItems[1]?.visual).toEqual({
+      backgroundColor: '#3c5f96',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+      textColor: '#ffffff',
+    });
+    expect(themePage?.themeSnapshot.name).toBe('Marvel');
+    expect(themePage?.setCards[0]?.theme).toBe('Marvel');
+  });
+
   test('keeps discover highlight cards on canonical discover order', async () => {
     const result = await listDiscoverHighlightSetCards({
       listCanonicalCatalogSetsFn: async () => [

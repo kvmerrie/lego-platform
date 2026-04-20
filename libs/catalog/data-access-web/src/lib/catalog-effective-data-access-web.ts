@@ -18,6 +18,7 @@ import {
   catalogHomepageDealCandidateIds,
   catalogHomepageFeaturedSetIds,
   catalogThemeOverlays,
+  getCatalogThemeDisplayName,
   getCatalogThemeVisual,
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
@@ -199,11 +200,15 @@ function toCanonicalCatalogSetFromRow({
 function toCatalogSummaryFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetSummary {
+  const displayTheme =
+    getCatalogThemeDisplayName(canonicalCatalogSet.primaryTheme) ??
+    canonicalCatalogSet.primaryTheme;
+
   return {
     id: canonicalCatalogSet.setId,
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
-    theme: canonicalCatalogSet.primaryTheme,
+    theme: displayTheme,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
@@ -213,11 +218,15 @@ function toCatalogSummaryFromCanonicalSet(
 function toCatalogSetDetailFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetDetail {
+  const displayTheme =
+    getCatalogThemeDisplayName(canonicalCatalogSet.primaryTheme) ??
+    canonicalCatalogSet.primaryTheme;
+
   return {
     id: canonicalCatalogSet.setId,
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
-    theme: canonicalCatalogSet.primaryTheme,
+    theme: displayTheme,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,

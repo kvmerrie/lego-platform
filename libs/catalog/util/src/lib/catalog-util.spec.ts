@@ -3,6 +3,7 @@ import {
   buildCatalogThemeSlug,
   buildCatalogSetSlug,
   createCatalogSetRecord,
+  getCatalogThemeDisplayName,
   getCatalogThemeDefinition,
   getCatalogThemeMutedTextColor,
   getCatalogThemeSurfaceTone,
@@ -49,6 +50,14 @@ describe('catalog snapshot helpers', () => {
     );
   });
 
+  test('normalizes public theme display names from raw source labels', () => {
+    expect(getCatalogThemeDisplayName('Super Heroes Marvel')).toBe('Marvel');
+    expect(getCatalogThemeDisplayName('Super Heroes DC')).toBe('DC');
+    expect(getCatalogThemeDisplayName('Ultimate Collector Series')).toBe(
+      'Star Wars',
+    );
+  });
+
   test('returns curated theme visuals for recognizable theme surfaces', () => {
     expect(getCatalogThemeVisual('Star Wars')).toEqual({
       backgroundColor: '#5573b5',
@@ -73,8 +82,22 @@ describe('catalog snapshot helpers', () => {
         textColor: '#ffffff',
       },
     });
+    expect(getCatalogThemeDefinition('Super Heroes Marvel')).toEqual({
+      name: 'Marvel',
+      slug: 'marvel',
+      visual: {
+        backgroundColor: '#cf554c',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
+        textColor: '#ffffff',
+      },
+    });
+    expect(getCatalogThemeVisual('Speed Champions')).toEqual({
+      backgroundColor: '#3c5f96',
+      textColor: '#ffffff',
+    });
     expect(getCatalogThemeSurfaceTone('Star Wars')).toBe('dark');
     expect(getCatalogThemeSurfaceTone('Icons')).toBe('light');
+    expect(getCatalogThemeSurfaceTone('Speed Champions')).toBe('dark');
     expect(getCatalogThemeMutedTextColor('#ffffff')).toBe('#f4f7fb');
     expect(getCatalogThemeMutedTextColor('#171a22')).toBe('#425066');
     expect(getCatalogThemeVisual('Unknown Theme')).toBeUndefined();
