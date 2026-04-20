@@ -1,13 +1,11 @@
-<section class="admin-section admin-sets-page">
-  <header class="admin-panel admin-sets-page__bar">
-    <div class="admin-stack">
+<section class="admin-section admin-table-page admin-sets-page">
+  <header class="admin-panel admin-panel--compact admin-sets-page__bar">
+    <div class="admin-stack admin-stack--tight">
       <p class="admin-eyebrow">Sets</p>
-      <h2>
-        Zoek elke set terug, check de dekking, en pak direct de juiste actie.
-      </h2>
+      <h2>Zoek snel elke set terug en open direct de juiste werkcontext.</h2>
       <p class="admin-muted">
-        Dit is je brede beheerindex. Minder “wat moet ik vandaag doen”, meer
-        “laat me elke set snel vinden en in context beheren”.
+        Brede beheerindex voor setdekking, seeds en prijschecks zonder losse
+        detailkaarten.
       </p>
     </div>
 
@@ -17,274 +15,341 @@
         commerceAdminStore.coverageQueueRows().length }} sets
       </span>
       @if (selectedRow(); as selectedRow) {
-      <span class="admin-count-pill"> Actief: {{ selectedRow.setId }} </span>
+      <span class="admin-count-pill">Actief: {{ selectedRow.setId }}</span>
       }
     </div>
   </header>
 
-  <section class="admin-panel admin-sets-page__toolbar">
-    <div class="admin-actions">
-      <strong>Filters en sortering</strong>
-      <span class="admin-muted">
-        Brede setweergave voor beheer, zoeken en context. Niet alleen de hoogste
-        prioriteit.
-      </span>
-    </div>
+  <section class="admin-panel admin-panel--compact admin-sets-page__toolbar">
+    <div class="admin-filterbar">
+      <label class="admin-filterbar__group admin-filterbar__group--wide">
+        <span class="admin-filterbar__label">Zoek</span>
+        <input
+          [ngModel]="search()"
+          (ngModelChange)="updateSearch($event)"
+          class="admin-input"
+          placeholder="Zoek op setnaam of nummer"
+          type="search"
+        />
+      </label>
 
-    <div class="admin-sets-page__filters">
-      <input
-        [ngModel]="search()"
-        (ngModelChange)="updateSearch($event)"
-        class="admin-input"
-        placeholder="Zoek op setnaam of nummer"
-        type="search"
-      />
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Bron</span>
+        <select
+          [ngModel]="sourceFilter()"
+          (ngModelChange)="updateSourceFilter($event)"
+          class="admin-input"
+          name="sets-source-filter"
+        >
+          <option value="all">Alle bronnen</option>
+          <option value="snapshot">Alleen snapshot</option>
+          <option value="overlay">Alleen overlay</option>
+        </select>
+      </label>
 
-      <select
-        [ngModel]="sourceFilter()"
-        (ngModelChange)="updateSourceFilter($event)"
-        class="admin-input"
-        name="sets-source-filter"
-      >
-        <option value="all">Alle bronnen</option>
-        <option value="snapshot">Alleen snapshot</option>
-        <option value="overlay">Alleen overlay</option>
-      </select>
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Dekking</span>
+        <select
+          [ngModel]="healthFilter()"
+          (ngModelChange)="updateHealthFilter($event)"
+          class="admin-input"
+          name="sets-health-filter"
+        >
+          <option value="all">Alle dekking</option>
+          <option value="zero_valid">0 geldige merchants</option>
+          <option value="under_covered">Minder dan 3 geldige merchants</option>
+          <option value="fully_covered">Volledig gedekt</option>
+          <option value="stale">Stale aanwezig</option>
+          <option value="needs_review">Review nodig</option>
+        </select>
+      </label>
 
-      <select
-        [ngModel]="healthFilter()"
-        (ngModelChange)="updateHealthFilter($event)"
-        class="admin-input"
-        name="sets-health-filter"
-      >
-        <option value="all">Alle dekking</option>
-        <option value="zero_valid">0 geldige merchants</option>
-        <option value="under_covered">Minder dan 3 geldige merchants</option>
-        <option value="fully_covered">Volledig gedekt</option>
-        <option value="stale">Stale aanwezig</option>
-        <option value="needs_review">Review nodig</option>
-      </select>
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Prioriteit</span>
+        <select
+          [ngModel]="priorityFilter()"
+          (ngModelChange)="updatePriorityFilter($event)"
+          class="admin-input"
+          name="sets-priority-filter"
+        >
+          <option value="all">Alle prioriteiten</option>
+          <option value="benchmark_only">Alleen benchmark</option>
+        </select>
+      </label>
 
-      <select
-        [ngModel]="priorityFilter()"
-        (ngModelChange)="updatePriorityFilter($event)"
-        class="admin-input"
-        name="sets-priority-filter"
-      >
-        <option value="all">Alle prioriteiten</option>
-        <option value="benchmark_only">Alleen benchmark</option>
-      </select>
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Thema</span>
+        <select
+          [ngModel]="themeFilter()"
+          (ngModelChange)="updateThemeFilter($event)"
+          class="admin-input"
+          name="sets-theme-filter"
+        >
+          <option value="all">Alle thema's</option>
+          @for (theme of themeOptions(); track theme) {
+          <option [value]="theme">{{ theme }}</option>
+          }
+        </select>
+      </label>
 
-      <select
-        [ngModel]="themeFilter()"
-        (ngModelChange)="updateThemeFilter($event)"
-        class="admin-input"
-        name="sets-theme-filter"
-      >
-        <option value="all">Alle thema's</option>
-        @for (theme of themeOptions(); track theme) {
-        <option [value]="theme">{{ theme }}</option>
-        }
-      </select>
-
-      <select
-        [ngModel]="sort()"
-        (ngModelChange)="updateSort($event)"
-        class="admin-input"
-        name="sets-sort"
-      >
-        <option value="benchmark_first">Benchmark eerst</option>
-        <option value="lowest_coverage">Laagste dekking eerst</option>
-        <option value="recent_activity">Recente activiteit</option>
-        <option value="newly_added">Nieuw toegevoegd</option>
-        <option value="alphabetical">Alfabetisch</option>
-      </select>
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Sortering</span>
+        <select
+          [ngModel]="sort()"
+          (ngModelChange)="updateSort($event)"
+          class="admin-input"
+          name="sets-sort"
+        >
+          <option value="benchmark_first">Benchmark eerst</option>
+          <option value="lowest_coverage">Laagste dekking eerst</option>
+          <option value="recent_activity">Recente activiteit</option>
+          <option value="newly_added">Nieuw toegevoegd</option>
+          <option value="alphabetical">Alfabetisch</option>
+        </select>
+      </label>
     </div>
   </section>
 
-  <div class="admin-sets-page__shell">
-    <section class="admin-sets-page__list">
+  <div class="admin-table-layout">
+    <section
+      class="admin-table-main admin-panel admin-panel--compact admin-table-panel"
+    >
       <div class="admin-actions">
         <div class="admin-stack admin-stack--tight">
           <p class="admin-eyebrow">Setindex</p>
-          <h3>Open een setcontext vanuit de lijst en werk meteen door.</h3>
+          <h3>
+            Open context vanuit de lijst en werk door zonder schermwissels.
+          </h3>
         </div>
-      </div>
-
-      @if (filteredRows().length > 0) { @for (row of filteredRows(); track
-      row.setId) {
-      <article
-        class="admin-panel admin-sets-page__row"
-        [class.is-selected]="isSelectedRow(row)"
-      >
-        <button
-          class="admin-sets-page__row-summary"
-          type="button"
-          (click)="selectRow(row)"
-        >
-          <div class="admin-sets-page__row-heading">
-            <div class="admin-sets-page__row-title">
-              <h3>{{ row.setName }}</h3>
-              <span class="admin-muted">{{ row.theme }} · {{ row.setId }}</span>
-            </div>
-
-            <div class="admin-pill-cluster">
-              <span class="admin-count-pill">
-                {{ getCoverageQueueSourceLabel(row.source) }}
-              </span>
-              @if (row.isBenchmark) {
-              <span class="admin-count-pill">Benchmark</span>
-              }
-              <span class="admin-status-pill admin-status-pill--neutral">
-                {{ row.statusSummary }}
-              </span>
-            </div>
-          </div>
-
-          <div class="admin-sets-page__row-grid">
-            <div class="admin-sets-page__row-cell">
-              <span class="admin-muted">Geldige merchants</span>
-              <strong>{{ row.validMerchantCount }}</strong>
-            </div>
-
-            <div class="admin-sets-page__row-cell">
-              <span class="admin-muted">Actieve seeds</span>
-              <strong>{{ row.activeSeedCount }}</strong>
-            </div>
-
-            <div class="admin-sets-page__row-cell">
-              <span class="admin-muted">Laatste check</span>
-              <strong
-                >{{
-                commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
-                }}</strong
-              >
-            </div>
-
-            <div class="admin-sets-page__row-cell">
-              <span class="admin-muted">Aanbevolen stap</span>
-              <strong>
-                {{ commerceAdminStore.getCoverageQueueActionLabel(
-                row.recommendedNextAction ) }}
-              </strong>
-            </div>
-          </div>
-        </button>
-
-        <div class="admin-sets-page__row-merchant-strip">
-          @for (merchantStatus of row.merchantStatuses; track
-          merchantStatus.merchantId) {
-          <button
-            class="admin-status-pill admin-pill-button"
-            [attr.title]="getMerchantStatusTitle(merchantStatus, row)"
-            [class.admin-status-pill--danger]="
-                    commerceAdminStore.getCoverageQueueMerchantStateTone(
-                      merchantStatus.state
-                    ) === 'danger'
-                  "
-            [class.admin-status-pill--warning]="
-                    commerceAdminStore.getCoverageQueueMerchantStateTone(
-                      merchantStatus.state
-                    ) === 'warning'
-                  "
-            [class.admin-status-pill--positive]="
-                    commerceAdminStore.getCoverageQueueMerchantStateTone(
-                      merchantStatus.state
-                    ) === 'positive'
-                  "
-            [class.admin-status-pill--neutral]="
-                    commerceAdminStore.getCoverageQueueMerchantStateTone(
-                      merchantStatus.state
-                    ) === 'neutral'
-                  "
-            type="button"
-            (click)="handleMerchantStatusAction({ merchantStatus, row })"
-          >
-            {{ merchantStatus.merchantName }} · {{
-            commerceAdminStore.getCoverageQueueMerchantStateLabel(
-            merchantStatus.state ) }}
-          </button>
-          }
-        </div>
-
-        <div class="admin-sets-page__row-actions">
-          <button
-            class="admin-button admin-button--subtle"
-            type="button"
-            (click)="selectRow(row)"
-          >
-            Open context
-          </button>
-
-          <a
-            [queryParams]="getWorkbenchQueryParams(row)"
-            class="admin-button admin-button--subtle"
-            routerLink="/workbench"
-          >
-            Continue in Workbench
-          </a>
-
-          <button
-            class="admin-button admin-button--subtle"
-            [disabled]="!getSeedActionMerchant(row)"
-            type="button"
-            (click)="openOfferSeedDialogForRow(row)"
-          >
-            {{ getSeedActionLabel(row) }}
-          </button>
-
-          @if (row.activeSeedCount > 0) {
-          <button
-            class="admin-button admin-button--subtle"
-            [disabled]="refreshingSetId() === row.setId"
-            type="button"
-            (click)="refreshSet(row)"
-          >
-            {{ refreshingSetId() === row.setId ? 'Hercheck draait…' : 'Hercheck
-            prijzen' }}
-          </button>
-          } @if (commerceAdminStore.getPublicSetUrl(row.setId); as publicSetUrl)
-          {
-          <a
-            [href]="publicSetUrl"
-            class="admin-button admin-button--subtle"
-            rel="noreferrer"
-            target="_blank"
-          >
-            Open setpagina
-          </a>
-          }
-        </div>
-
-        @if (rowFeedback()[row.setId]; as feedback) {
-        <span
-          class="admin-status-pill"
-          [class.admin-status-pill--danger]="feedback.tone === 'danger'"
-          [class.admin-status-pill--positive]="feedback.tone === 'positive'"
-          [class.admin-status-pill--neutral]="feedback.tone === 'neutral'"
-        >
-          {{ feedback.message }}
+        @if (selectedRow(); as selectedRow) {
+        <span class="admin-count-pill">
+          Geselecteerd: {{ selectedRow.setName }}
         </span>
         }
-      </article>
-      } } @else {
-      <article class="admin-panel admin-sets-page__empty">
-        <div class="admin-stack admin-stack--tight">
-          <h3>Geen sets gevonden</h3>
-          <p class="admin-muted">
-            Probeer je filters te verbreden of zoek op een ander setnummer.
-          </p>
-        </div>
-      </article>
-      }
+      </div>
+
+      <div class="admin-data-table-shell admin-table-scroll">
+        <table class="admin-data-table">
+          <thead>
+            <tr>
+              <th><span class="admin-table__heading">Set</span></th>
+              <th><span class="admin-table__heading">Bron / status</span></th>
+              <th><span class="admin-table__heading">Dekking</span></th>
+              <th><span class="admin-table__heading">Merchantstatus</span></th>
+              <th><span class="admin-table__heading">Volgende stap</span></th>
+              <th><span class="admin-table__heading">Laatste check</span></th>
+              <th><span class="admin-table__heading">Acties</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filteredRows(); track row.setId) {
+            <tr [class.is-selected]="isSelectedRow(row)">
+              <td>
+                <button
+                  class="admin-data-table__row-link"
+                  type="button"
+                  (click)="selectRow(row)"
+                >
+                  <span class="admin-data-table__cell-title">
+                    {{ row.setName }}
+                  </span>
+                  <span class="admin-data-table__cell-meta">
+                    {{ row.theme }} · {{ row.setId }}
+                  </span>
+                </button>
+              </td>
+              <td>
+                <div class="admin-data-table__cell-stack">
+                  <div class="admin-data-table__badges">
+                    <span class="admin-count-pill">
+                      {{ getCoverageQueueSourceLabel(row.source) }}
+                    </span>
+                    @if (row.isBenchmark) {
+                    <span class="admin-count-pill">Benchmark</span>
+                    }
+                  </div>
+                  <span class="admin-data-table__cell-meta">
+                    {{ row.statusSummary }}
+                  </span>
+                </div>
+              </td>
+              <td class="admin-data-table__column-tight">
+                <div class="admin-data-table__cell-stack">
+                  <span class="admin-data-table__cell-title">
+                    {{ row.validMerchantCount }} valid
+                  </span>
+                  <span class="admin-data-table__cell-meta">
+                    {{ row.activeSeedCount }} actieve seeds
+                  </span>
+                  @if (row.needsReviewCount > 0 || row.staleMerchantCount > 0) {
+                  <span class="admin-data-table__cell-meta">
+                    {{ row.needsReviewCount }} review · {{
+                    row.staleMerchantCount }} stale
+                  </span>
+                  }
+                </div>
+              </td>
+              <td class="admin-sets-page__merchant-cell">
+                @if (row.coverageRow) {
+                <div class="admin-data-table__badges">
+                  @for ( merchantStatus of row.coverageRow.merchantStatuses;
+                  track merchantStatus.merchantId ) {
+                  <button
+                    class="admin-status-pill admin-pill-button"
+                    [attr.title]="
+                            getMerchantStatusTitle(merchantStatus, row.coverageRow)
+                          "
+                    [class.admin-status-pill--danger]="
+                            commerceAdminStore.getCoverageQueueMerchantStateTone(
+                              merchantStatus.state
+                            ) === 'danger'
+                          "
+                    [class.admin-status-pill--warning]="
+                            commerceAdminStore.getCoverageQueueMerchantStateTone(
+                              merchantStatus.state
+                            ) === 'warning'
+                          "
+                    [class.admin-status-pill--positive]="
+                            commerceAdminStore.getCoverageQueueMerchantStateTone(
+                              merchantStatus.state
+                            ) === 'positive'
+                          "
+                    [class.admin-status-pill--neutral]="
+                            commerceAdminStore.getCoverageQueueMerchantStateTone(
+                              merchantStatus.state
+                            ) === 'neutral'
+                          "
+                    type="button"
+                    (click)="
+                            handleMerchantStatusAction({
+                              merchantStatus,
+                              row: row.coverageRow
+                            })
+                          "
+                  >
+                    {{ merchantStatus.merchantName }} · {{
+                    commerceAdminStore.getCoverageQueueMerchantStateLabel(
+                    merchantStatus.state ) }}
+                  </button>
+                  }
+                </div>
+                } @else {
+                <span class="admin-data-table__cell-meta">
+                  Nog geen merchantcontext geladen.
+                </span>
+                }
+              </td>
+              <td>
+                <div class="admin-data-table__cell-stack">
+                  @if (row.coverageRow) {
+                  <span class="admin-data-table__cell-title">
+                    {{ commerceAdminStore.getCoverageQueueActionLabel(
+                    row.coverageRow.recommendedNextAction ) }}
+                  </span>
+                  @if (row.coverageRow.recommendedMerchantName) {
+                  <span class="admin-data-table__cell-meta">
+                    Richting {{ row.coverageRow.recommendedMerchantName }}
+                  </span>
+                  } } @else {
+                  <span class="admin-data-table__cell-title">
+                    Open context
+                  </span>
+                  <span class="admin-data-table__cell-meta">
+                    Set staat in de catalogus, maar heeft nog geen coverage-rij.
+                  </span>
+                  } @if (rowFeedback()[row.setId]; as feedback) {
+                  <span
+                    class="admin-status-pill"
+                    [class.admin-status-pill--danger]="
+                          feedback.tone === 'danger'
+                        "
+                    [class.admin-status-pill--positive]="
+                          feedback.tone === 'positive'
+                        "
+                    [class.admin-status-pill--neutral]="
+                          feedback.tone === 'neutral'
+                        "
+                  >
+                    {{ feedback.message }}
+                  </span>
+                  }
+                </div>
+              </td>
+              <td class="admin-data-table__column-tight">
+                {{
+                commerceAdminStore.formatRelativeTimestamp(row.latestCheckedAt)
+                }}
+              </td>
+              <td class="admin-sets-page__actions-cell">
+                <div class="admin-data-table__actions">
+                  <button
+                    class="admin-button admin-button--small admin-button--subtle"
+                    type="button"
+                    (click)="selectRow(row)"
+                  >
+                    Open context
+                  </button>
+
+                  <a
+                    [queryParams]="getWorkbenchQueryParams(row)"
+                    class="admin-button admin-button--small admin-button--subtle"
+                    routerLink="/workbench"
+                  >
+                    Workbench
+                  </a>
+
+                  @if (row.coverageRow) {
+                  <button
+                    class="admin-button admin-button--small admin-button--subtle"
+                    [disabled]="!getSeedActionMerchant(row.coverageRow)"
+                    type="button"
+                    (click)="openOfferSeedDialogForRow(row.coverageRow)"
+                  >
+                    {{ getSeedActionLabel(row.coverageRow) }}
+                  </button>
+
+                  @if (row.activeSeedCount > 0) {
+                  <button
+                    class="admin-button admin-button--small admin-button--subtle"
+                    [disabled]="refreshingSetId() === row.setId"
+                    type="button"
+                    (click)="refreshSet(row.coverageRow)"
+                  >
+                    {{ refreshingSetId() === row.setId ? 'Hercheck draait…' :
+                    'Hercheck prijzen' }}
+                  </button>
+                  } } @if ( commerceAdminStore.getPublicSetUrl(row.setId); as
+                  publicSetUrl ) {
+                  <a
+                    [href]="publicSetUrl"
+                    class="admin-button admin-button--small admin-button--subtle"
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    Setpagina
+                  </a>
+                  }
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td class="admin-data-table__empty" colspan="7">
+                Geen sets gevonden voor deze filters.
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </section>
 
-    <aside class="admin-sets-page__context">
+    <aside class="admin-table-sidebar admin-sets-page__context">
       <lego-commerce-admin-set-work-context
         [contextLinkLabel]="'Continue in Workbench'"
         [contextLinkQueryParams]="getWorkbenchQueryParams(selectedRow())"
         [contextLinkRoute]="'/workbench'"
-        [row]="selectedRow()"
+        [row]="selectedCoverageRow()"
         title="Set context"
         (merchantActionRequested)="handleMerchantStatusAction($event)"
         (refreshRequested)="refreshSet($event)"

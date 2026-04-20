@@ -94,11 +94,17 @@ The admin surface now exposes the same flow at:
 
 The page lets an operator:
 
+- paste one or many set numbers directly into the batch cart
 - search missing sets in the Rebrickable-backed add-set source
-- multi-select a batch
+- multi-select from the browse table
 - start one bulk onboarding run
 - follow the latest or active run with stage summaries and per-set status
 - quickly see which sets ended on full, partial, or failed coverage
+
+The operator has two intake paths that both land in the same batch cart:
+
+- direct set-number intake with comma, space, or newline separators
+- browse and search with checkbox-based multi-select
 
 The admin flow only wraps the existing engine. It does not duplicate the
 business logic from import, seed generation, validation, or sync.

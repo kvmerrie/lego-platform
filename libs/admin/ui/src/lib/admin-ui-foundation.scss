@@ -1,0 +1,431 @@
+.admin-page {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-page__header,
+.admin-page__intro,
+.admin-section-header,
+.admin-selection-bar {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.admin-page__actions,
+.admin-page__meta,
+.admin-section-header__meta,
+.admin-section-header__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-page__header {
+  border-bottom: 1px solid var(--lego-border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.admin-page__heading,
+.admin-section-header__content,
+.admin-state__content,
+.admin-selection-bar__text {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.admin-section-header__heading {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.admin-page__eyebrow,
+.admin-section-header__eyebrow,
+.admin-table__heading,
+.admin-filterbar__label {
+  color: var(--lego-text-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.admin-page__title,
+.admin-section-header__title {
+  font-size: 0.98rem;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.admin-page__description,
+.admin-section-header__description,
+.admin-state__description,
+.admin-selection-bar__text p {
+  color: var(--lego-text-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.admin-page__body {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-table-page {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-table-layout {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-table-main,
+.admin-table-sidebar {
+  min-width: 0;
+}
+
+.admin-table-panel {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.admin-table-scroll {
+  overflow: auto;
+}
+
+.admin-panel--compact {
+  padding: 0.55rem 0.65rem;
+}
+
+.admin-filterbar {
+  align-items: end;
+  background: var(--lego-surface);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.admin-filterbar__group {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.admin-filterbar__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-form-rhythm {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.admin-form-rhythm--compact {
+  gap: 0.25rem;
+}
+
+.admin-data-table-shell {
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.admin-data-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  width: 100%;
+}
+
+.admin-data-table th,
+.admin-data-table td {
+  border-top: 1px solid var(--lego-border-subtle);
+  line-height: 1.25;
+  padding: 0.36rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-data-table thead th {
+  background: color-mix(in srgb, var(--lego-surface-muted) 68%, transparent);
+  border-top: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.admin-data-table__header-cell {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.admin-data-table__header-meta {
+  color: var(--lego-text-muted);
+  font-size: 0.68rem;
+}
+
+.admin-data-table__header-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.admin-data-table__cell-title {
+  color: var(--lego-text);
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.admin-data-table__cell-stack {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.admin-data-table__cell-meta {
+  color: var(--lego-text-muted);
+  display: block;
+  font-size: 0.74rem;
+  margin-top: 0.1rem;
+}
+
+.admin-data-table__row-link {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  gap: 0.1rem;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.admin-data-table__cell--numeric {
+  white-space: nowrap;
+}
+
+.admin-data-table__empty {
+  color: var(--lego-text-muted);
+  padding: 0.75rem 0.55rem;
+}
+
+.admin-data-table tbody tr:hover {
+  background: color-mix(in srgb, var(--lego-surface-muted) 38%, transparent);
+}
+
+.admin-data-table tbody tr.is-selected {
+  background: color-mix(in srgb, var(--lego-accent) 5%, var(--lego-surface));
+}
+
+.admin-data-table__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: flex-start;
+}
+
+.admin-data-table__badges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.16rem;
+}
+
+.admin-data-table__column-tight {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.admin-state {
+  align-items: center;
+  background: var(--lego-surface);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
+  padding: 0.625rem 0.75rem;
+}
+
+.admin-state--loading {
+  background: color-mix(in srgb, var(--lego-surface-muted) 45%, transparent);
+}
+
+.admin-state--danger {
+  background: #fef3f2;
+  border-color: color-mix(in srgb, #b42318 30%, var(--lego-border) 70%);
+}
+
+.admin-state__title {
+  color: var(--lego-text);
+}
+
+.admin-status-badge {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  display: inline-flex;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 0.16rem 0.32rem;
+  text-transform: uppercase;
+}
+
+.admin-status-badge--neutral {
+  background: color-mix(in srgb, var(--lego-surface-muted) 74%, transparent);
+  border-color: var(--lego-border-subtle);
+  color: var(--lego-text-muted);
+}
+
+.admin-status-badge--positive {
+  background: #ecfdf3;
+  border-color: color-mix(in srgb, #166534 16%, #ecfdf3 84%);
+  color: #166534;
+}
+
+.admin-status-badge--warning {
+  background: #fff7db;
+  border-color: color-mix(in srgb, #92400e 16%, #fff7db 84%);
+  color: #92400e;
+}
+
+.admin-status-badge--danger {
+  background: #fef3f2;
+  border-color: color-mix(in srgb, #b42318 16%, #fef3f2 84%);
+  color: #b42318;
+}
+
+.admin-selection-bar {
+  background: color-mix(in srgb, var(--lego-surface-muted) 28%, transparent);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  padding: 0.5rem 0.625rem;
+}
+
+.admin-selection-bar__summary,
+.admin-selection-bar__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.admin-selection-bar__count {
+  align-items: center;
+  background: var(--lego-surface);
+  border: 1px solid var(--lego-border);
+  border-radius: 0.35rem;
+  color: var(--lego-text);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 700;
+  height: 1.3rem;
+  justify-content: center;
+  min-width: 1.3rem;
+  padding: 0 0.3rem;
+}
+
+.admin-metric-strip {
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  display: grid;
+  overflow: hidden;
+}
+
+.admin-metric-cell {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.45rem 0.55rem;
+}
+
+.admin-metric-cell + .admin-metric-cell {
+  border-top: 1px solid var(--lego-border-subtle);
+}
+
+.admin-metric-label {
+  color: var(--lego-text-muted);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.admin-metric-value {
+  color: var(--lego-text);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@media (min-width: 960px) {
+  .admin-page__header,
+  .admin-section-header,
+  .admin-selection-bar {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .admin-page__intro {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .admin-filterbar {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .admin-filterbar__group {
+    grid-column: span 3;
+  }
+
+  .admin-filterbar__group--wide {
+    grid-column: span 6;
+  }
+
+  .admin-filterbar__actions {
+    grid-column: span 12;
+    justify-content: flex-end;
+  }
+
+  .admin-metric-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .admin-metric-cell + .admin-metric-cell {
+    border-left: 1px solid var(--lego-border-subtle);
+    border-top: 0;
+  }
+}
+
+@media (min-width: 1180px) {
+  .admin-table-layout {
+    align-items: start;
+    grid-template-columns: minmax(0, 1.5fr) minmax(20rem, 0.95fr);
+  }
+
+  .admin-table-sidebar {
+    align-self: start;
+    position: sticky;
+    top: 0.75rem;
+  }
+}

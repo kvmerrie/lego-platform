@@ -61,6 +61,25 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 
 ---
 
+## Admin UX And Design Rules
+
+- Public web and admin are different UX systems.
+- Public web is collector-facing, premium, playful, and visually rich.
+- Admin is operator-facing and must be compact, fast, clear, and data-dense.
+- Admin should feel closer to Supabase, Stripe Dashboard, Linear, or a clean backoffice.
+- In admin, prefer tables, filters, sorting, status badges, bulk actions, and compact panels over marketing-style cards.
+- Admin uses dense CRUD and SaaS patterns by default.
+- In admin, tables and toolbars are primary. Cards are secondary and should be used sparingly.
+- Admin pages should converge on a shared dense table rhythm instead of inventing page-specific spacing or layouts.
+- Admin tables are the default pattern for lists, queues, diagnostics, and management views.
+- Do not automatically apply public web copy or design rules to admin.
+- Reuse only low-level primitives and tokens when that stays functional.
+- Admin optimization means scan speed and action speed, not brand expression.
+- When in doubt, optimize admin for operational efficiency, not brand expression.
+- As admin grows, add admin-specific Angular `ui` and `feature` libraries instead of forcing web React UI patterns into the admin surface.
+
+---
+
 # Brickhunt Copy System (Critical)
 
 This overrides general tone rules.
@@ -276,34 +295,6 @@ If copy fails:
 - UI components are presentational only
 - No page-specific naming
 - Use generic variants (compact, featured, etc.)
-
----
-
-## Admin UX And Design Rules
-
-These rules are separate from the public web experience.
-
-### Public Web
-
-- The public site is collector-facing, premium, playful, visual, and editorial.
-- It should feel polished, brand-led, and emotionally engaging.
-- Public-facing UI may use richer presentation patterns, stronger branding, and more expressive layout.
-
-### Admin
-
-- The admin is operator-facing and should behave like a compact SaaS/CRUD tool.
-- Prefer density, clarity, and speed over branding or visual flourish.
-- Admin should feel closer to tools like Supabase, Stripe Dashboard, Linear, or a clean backoffice.
-- Use compact spacing, clear table layouts, filters, sorting, bulk actions, and status badges.
-- Default admin surfaces to data tables and structured forms, not marketing-style cards or editorial sections.
-- Avoid reusing public-web presentation components when they reduce density or operator efficiency.
-- When admin grows, prefer admin-specific Angular feature/ui libraries over adapting public React UI patterns.
-
-### Separation Rule
-
-- Do not apply public-site copy, layout, or visual design rules to admin by default.
-- Public web and admin may share low-level tokens and primitives where useful, but they are different UX systems.
-- If there is doubt, optimize admin for operational efficiency, not brand expression.
 
 ---
 

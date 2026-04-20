@@ -1,365 +1,641 @@
-<section class="admin-section admin-bulk-onboarding">
-  <header class="admin-panel admin-stack">
-    <div class="admin-stack">
-      <p class="admin-eyebrow">Bulk onboarding</p>
-      <h2>
-        Zoek meerdere missende sets en laat de intake daarna in één run
-        doorlopen.
-      </h2>
-      <p class="admin-muted">
-        Dit is een dunne operatorflow bovenop de bestaande onboarding-engine:
-        zoek sets in Rebrickable, kies je batch, start de run, en volg daarna
-        direct import, seeds, sync en coverage-uitkomst.
-      </p>
-    </div>
-  </header>
-
-  <div class="admin-bulk-onboarding__layout">
-    <section class="admin-panel admin-stack">
-      <div class="admin-section__header">
-        <div class="admin-stack">
-          <h3>1. Zoek missende sets</h3>
-          <p class="admin-muted">
-            Zoek op setnummer, naam of thema. Resultaten die al in Brickhunt
-            zitten, vallen hier vanzelf weg.
-          </p>
-        </div>
-      </div>
-
-      <div class="admin-toolbar">
-        <input
-          [ngModel]="searchQuery()"
-          (keydown.enter)="search()"
-          (ngModelChange)="updateSearchQuery($event)"
-          class="admin-input admin-search"
-          placeholder="Zoek op setnummer, naam of thema"
-          type="search"
-        />
-
-        <button
-          class="admin-button admin-button--primary"
-          [disabled]="isSearching()"
-          type="button"
-          (click)="search()"
-        >
-          {{ isSearching() ? 'Zoeken…' : 'Zoek in Rebrickable' }}
-        </button>
-      </div>
-
-      @if (searchMessage()) {
-      <div
-        class="admin-panel"
-        [class.admin-panel--danger]="searchMessageTone() === 'danger'"
-      >
-        <p class="admin-muted">{{ searchMessage() }}</p>
-      </div>
-      } @if (searchResults().length > 0) {
-      <div class="admin-bulk-onboarding__search-results">
-        @for (result of searchResults(); track result.setId) {
-        <button
-          class="admin-bulk-onboarding__search-result"
-          [class.is-selected]="isSelected(result.setId)"
-          type="button"
-          (click)="addSetToSelection(result)"
-        >
-          @if (result.imageUrl) {
-          <img
-            [alt]="result.name"
-            [src]="result.imageUrl"
-            class="admin-bulk-onboarding__thumb"
-          />
-          } @else {
-          <div class="admin-bulk-onboarding__thumb"></div>
-          }
-
-          <div class="admin-stack admin-stack--tight">
-            <strong>{{ result.name }}</strong>
-            <span class="admin-muted">
-              {{ result.setId }} · {{ result.theme }} · {{ result.releaseYear }}
-            </span>
-            <span class="admin-muted">{{ result.pieces }} stenen</span>
-          </div>
-
-          <span class="admin-count-pill">
-            {{ isSelected(result.setId) ? 'Geselecteerd' : 'Voeg toe' }}
-          </span>
-        </button>
-        }
-      </div>
-      }
-    </section>
-
-    <section class="admin-panel admin-stack">
-      <div class="admin-section__header">
-        <div class="admin-stack">
-          <h3>2. Geselecteerde sets</h3>
-          <p class="admin-muted">
-            Deze selectie blijft in deze sessie bewaard. Je kunt dus rustig
-            zoeken, aanvullen en pas daarna starten.
-          </p>
-        </div>
-        <span class="admin-count-pill">{{ selectedSets().length }}</span>
-      </div>
-
-      @if (selectedSets().length === 0) {
-      <div class="admin-panel">
-        <p class="admin-muted">
-          Nog geen sets gekozen. Zoek links en voeg de sets toe die je in bulk
-          wilt onboarden.
-        </p>
-      </div>
-      } @else {
-      <div class="admin-bulk-onboarding__selection-list">
-        @for (selectedSet of selectedSets(); track selectedSet.setId) {
-        <article class="admin-bulk-onboarding__selection-card">
-          <div class="admin-bulk-onboarding__card-header">
-            <strong>{{ selectedSet.name }}</strong>
-            <span class="admin-count-pill">{{ selectedSet.setId }}</span>
-          </div>
-          <div class="admin-bulk-onboarding__selection-meta">
-            <span class="admin-muted">{{ selectedSet.theme }}</span>
-            <span class="admin-muted">{{ selectedSet.releaseYear }}</span>
-            <span class="admin-muted">{{ selectedSet.pieces }} stenen</span>
-          </div>
-          <div class="admin-actions">
-            <button
-              class="admin-button admin-button--subtle"
-              type="button"
-              (click)="removeSetFromSelection(selectedSet.setId)"
-            >
-              Verwijder
-            </button>
-          </div>
-        </article>
-        }
-      </div>
-
-      <div class="admin-actions">
-        <button
-          class="admin-button admin-button--primary"
-          [disabled]="isStarting() || selectedSets().length === 0"
-          type="button"
-          (click)="startBulkOnboarding()"
-        >
-          {{ isStarting() ? 'Run starten…' : 'Start bulk onboarding' }}
-        </button>
-        <button
-          class="admin-button admin-button--subtle"
-          [disabled]="selectedSets().length === 0"
-          type="button"
-          (click)="clearSelection()"
-        >
-          Leeg selectie
-        </button>
-      </div>
-      } @if (runMessage()) {
-      <div
-        class="admin-panel"
-        [class.admin-panel--danger]="runMessageTone() === 'danger'"
-      >
-        <p class="admin-muted">{{ runMessage() }}</p>
-      </div>
-      }
-    </section>
+<lego-admin-page
+  eyebrow="Catalogus"
+  title="Bulk onboarding workbench"
+  description="Zoek, selecteer en start een intake-run voor exact de sets die nu door de onboarding-engine moeten."
+>
+  <div adminPageMeta class="bulk-onboarding__header-status">
+    @if (isLoadingCatalogIndex()) {
+    <lego-admin-status-badge tone="warning">
+      catalogusindex laden
+    </lego-admin-status-badge>
+    } @if (isLoadingRun()) {
+    <lego-admin-status-badge tone="warning">
+      runstatus laden
+    </lego-admin-status-badge>
+    }
+    <lego-admin-status-badge tone="neutral">
+      {{ selectedSets().length }} in cart
+    </lego-admin-status-badge>
   </div>
 
-  <section class="admin-panel admin-stack">
-    <div class="admin-section__header">
-      <div class="admin-stack">
-        <h3>3. Laatste of lopende run</h3>
-        <p class="admin-muted">
-          Hier zie je de laatste bekende bulk onboarding run, inclusief
-          stage-samenvatting en setresultaten.
-        </p>
-      </div>
-
-      <div class="admin-actions">
-        @if (isLoadingRun()) {
-        <span class="admin-count-pill">Runstatus laden…</span>
-        }
-        <button
-          class="admin-button admin-button--subtle"
-          type="button"
-          (click)="refreshRun()"
+  <section class="bulk-onboarding__workbench">
+    <div class="bulk-onboarding__main-column">
+      <section class="admin-panel admin-panel--compact bulk-onboarding__panel">
+        <lego-admin-section-header
+          title="Intake en selectie"
+          description="Voer setnummers direct in of zoek in de bron. Alles komt hier samen voordat het naar de batch-cart gaat."
         >
-          Ververs run
-        </button>
-      </div>
-    </div>
-
-    @if (!activeRun()) {
-    <div class="admin-panel">
-      <p class="admin-muted">
-        Er is nog geen bulk onboarding run bekend in deze sessie of state file.
-      </p>
-    </div>
-    } @else {
-    <article class="admin-panel admin-stack">
-      <div class="admin-bulk-onboarding__run-meta">
-        <span class="admin-count-pill">{{ activeRun()?.runId }}</span>
-        <span
-          class="admin-status-pill"
-          [class.admin-status-pill--positive]="activeRun()?.status === 'completed'"
-          [class.admin-status-pill--warning]="
-            activeRun()?.status === 'running' ||
-            activeRun()?.status === 'completed_with_errors'
-          "
-          [class.admin-status-pill--danger]="activeRun()?.status === 'failed'"
-          [class.admin-status-pill--neutral]="
-            activeRun()?.status !== 'completed' &&
-            activeRun()?.status !== 'running' &&
-            activeRun()?.status !== 'completed_with_errors' &&
-            activeRun()?.status !== 'failed'
-          "
-        >
-          {{ activeRun()?.status }}
-        </span>
-        <span class="admin-muted">
-          {{ activeRun()?.requestedSetIds?.length }} sets
-        </span>
-        <span class="admin-muted">
-          Gestart: {{ formatDateTime(activeRun()?.createdAt) }}
-        </span>
-        <span class="admin-muted">
-          Laatst bijgewerkt: {{ formatDateTime(activeRun()?.updatedAt) }}
-        </span>
-      </div>
-
-      @if (activeRunStateFilePath()) {
-      <p class="admin-muted admin-bulk-onboarding__state-file">
-        State file: {{ activeRunStateFilePath() }}
-      </p>
-      }
-
-      <div class="admin-bulk-onboarding__run-summary">
-        <article class="admin-panel admin-stack">
-          <p class="admin-eyebrow">Volledig</p>
-          <strong>{{ runOutcomeSummary().completedCount }}</strong>
-          <span class="admin-muted">Sets met full primary coverage</span>
-        </article>
-
-        <article class="admin-panel admin-stack">
-          <p class="admin-eyebrow">Aandacht</p>
-          <strong>{{ runOutcomeSummary().attentionCount }}</strong>
-          <span class="admin-muted">
-            Sets die nog merchants missen of fouten hebben
-          </span>
-        </article>
-
-        <article class="admin-panel admin-stack">
-          <p class="admin-eyebrow">Nog bezig</p>
-          <strong>{{ runOutcomeSummary().runningCount }}</strong>
-          <span class="admin-muted"
-            >Sets die nog niet door alle stages zijn</span
-          >
-        </article>
-      </div>
-
-      <div class="admin-bulk-onboarding__stage-grid">
-        @for (stageCard of stageCards(); track stageCard.label) {
-        <article class="admin-bulk-onboarding__stage-card">
-          <div class="admin-bulk-onboarding__card-header">
-            <strong>{{ stageCard.label }}</strong>
-            <span
-              class="admin-status-pill"
-              [class.admin-status-pill--positive]="stageCard.tone === 'positive'"
-              [class.admin-status-pill--warning]="stageCard.tone === 'warning'"
-              [class.admin-status-pill--danger]="stageCard.tone === 'danger'"
-              [class.admin-status-pill--neutral]="stageCard.tone === 'neutral'"
-            >
-              {{ stageCard.status }}
-            </span>
+          <div adminSectionMeta>
+            <lego-admin-status-badge tone="neutral">
+              intake flow
+            </lego-admin-status-badge>
           </div>
-          <p class="admin-muted">{{ stageCard.summary }}</p>
-        </article>
-        }
-      </div>
+        </lego-admin-section-header>
 
-      <div class="admin-toolbar admin-toolbar--filters">
-        <select
-          [ngModel]="resultFilter()"
-          (ngModelChange)="updateResultFilter($event)"
-          class="admin-input"
-          name="bulk-onboarding-result-filter"
-        >
-          <option value="all">Alle setresultaten</option>
-          <option value="attention">Alleen aandacht nodig</option>
-          <option value="running">Alleen nog bezig</option>
-          <option value="completed">Alleen volledig klaar</option>
-        </select>
-      </div>
-
-      <div class="admin-bulk-onboarding__result-list">
-        @for (resultRow of runResultRows(); track resultRow.setId) {
-        <article class="admin-bulk-onboarding__result-card">
-          <div class="admin-bulk-onboarding__result-main">
-            <div class="admin-bulk-onboarding__card-header">
-              <strong>{{ resultRow.setLabel }}</strong>
-              <span class="admin-count-pill">{{ resultRow.setId }}</span>
-              @if (resultRow.themeLabel) {
-              <span class="admin-bulk-onboarding__pill">
-                {{ resultRow.themeLabel }}
+        <div class="bulk-onboarding__intake-zone">
+          <section class="bulk-onboarding__intake-subsection">
+            <div class="bulk-onboarding__subsection-header">
+              <span class="admin-table__heading">Direct intake</span>
+              <span class="admin-muted">
+                Plak setnummers en zet ze direct in de batch-cart.
               </span>
-              }
-              <span
-                class="admin-status-pill"
-                [class.admin-status-pill--positive]="resultRow.outcomeTone === 'positive'"
-                [class.admin-status-pill--warning]="resultRow.outcomeTone === 'warning'"
-                [class.admin-status-pill--danger]="resultRow.outcomeTone === 'danger'"
-                [class.admin-status-pill--neutral]="resultRow.outcomeTone === 'neutral'"
+            </div>
+
+            <div class="bulk-onboarding__direct-intake">
+              <label class="admin-field bulk-onboarding__direct-field">
+                <span class="admin-filterbar__label">Setnummers</span>
+                <textarea
+                  [ngModel]="directInput()"
+                  (ngModelChange)="updateDirectInput($event)"
+                  class="admin-input bulk-onboarding__textarea"
+                  placeholder="10316, 21061, 76437"
+                ></textarea>
+              </label>
+
+              <div class="bulk-onboarding__toolbar-actions">
+                <button
+                  class="admin-button admin-button--primary"
+                  [disabled]="isResolvingDirectInput()"
+                  type="button"
+                  (click)="addDirectSetIds()"
+                >
+                  {{ isResolvingDirectInput() ? 'Verwerken…' : 'Voeg toe aan
+                  batch-cart' }}
+                </button>
+                <button
+                  class="admin-button admin-button--small admin-button--subtle"
+                  [disabled]="!directInput().trim()"
+                  type="button"
+                  (click)="clearDirectInput()"
+                >
+                  Leeg invoer
+                </button>
+              </div>
+            </div>
+
+            @if (directIntakeRows().length === 0) {
+            <lego-admin-empty-state
+              title="Nog geen directe intake"
+              description="Plak hierboven één of meer setnummers om direct een batch op te bouwen."
+            ></lego-admin-empty-state>
+            } @else {
+            <div class="admin-data-table-shell">
+              <table class="admin-data-table">
+                <thead>
+                  <tr>
+                    <th><span class="admin-table__heading">Invoer</span></th>
+                    <th><span class="admin-table__heading">Set</span></th>
+                    <th><span class="admin-table__heading">Status</span></th>
+                    <th><span class="admin-table__heading">Resultaat</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (intakeRow of directIntakeRows(); track $index) {
+                  <tr>
+                    <td class="admin-data-table__cell--numeric">
+                      {{ intakeRow.input }}
+                    </td>
+                    <td class="admin-data-table__cell--numeric">
+                      {{ intakeRow.normalizedSetId ?? '—' }}
+                    </td>
+                    <td>
+                      <lego-admin-status-badge [tone]="intakeRow.statusTone">
+                        {{ intakeRow.statusLabel }}
+                      </lego-admin-status-badge>
+                    </td>
+                    <td>
+                      @if (intakeRow.result) {
+                      <span class="admin-data-table__cell-title">
+                        {{ intakeRow.result.name }}
+                      </span>
+                      <span class="admin-data-table__cell-meta">
+                        {{ intakeRow.result.theme }} · {{
+                        intakeRow.result.releaseYear }}
+                      </span>
+                      } @else if (intakeRow.status === 'not_found') {
+                      <span class="admin-data-table__cell-meta">
+                        Niet gevonden of niet beschikbaar in de bron.
+                      </span>
+                      } @else if (intakeRow.status === 'invalid') {
+                      <span class="admin-data-table__cell-meta">
+                        Alleen numerieke setnummers of een `-1` suffix zijn
+                        geldig.
+                      </span>
+                      } @else if (intakeRow.status === 'already_in_catalog') {
+                      <span class="admin-data-table__cell-meta">
+                        Staat al in Brickhunt.
+                      </span>
+                      } @else {
+                      <span class="admin-data-table__cell-meta">
+                        Zit al in de huidige batch-cart.
+                      </span>
+                      }
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </section>
+
+          <section class="bulk-onboarding__intake-subsection">
+            <div class="bulk-onboarding__subsection-header">
+              <span class="admin-table__heading">Browse bron</span>
+              <span class="admin-muted">
+                Zoek missende sets en voeg ze met multi-select of per rij toe.
+              </span>
+            </div>
+
+            <div class="admin-filterbar">
+              <label
+                class="admin-filterbar__group admin-filterbar__group--wide"
               >
-                {{ resultRow.outcomeLabel }}
-              </span>
+                <span class="admin-filterbar__label">Zoekopdracht</span>
+                <input
+                  [ngModel]="searchQuery()"
+                  (keydown.enter)="search()"
+                  (ngModelChange)="updateSearchQuery($event)"
+                  class="admin-input"
+                  placeholder="Setnummer, naam of thema"
+                  type="search"
+                />
+              </label>
+
+              <label class="admin-filterbar__group">
+                <span class="admin-filterbar__label">Sortering</span>
+                <select
+                  [ngModel]="searchSort()"
+                  (ngModelChange)="updateSearchSort($event)"
+                  class="admin-input"
+                  name="bulk-onboarding-search-sort"
+                >
+                  <option value="release_year_desc">Nieuwste eerst</option>
+                  <option value="release_year_asc">Oudste eerst</option>
+                  <option value="name">Naam</option>
+                  <option value="set_id">Setnummer</option>
+                </select>
+              </label>
+
+              <div class="admin-filterbar__actions">
+                <button
+                  class="admin-button admin-button--primary"
+                  [disabled]="isSearching()"
+                  type="button"
+                  (click)="search()"
+                >
+                  {{ isSearching() ? 'Zoeken…' : 'Zoek missende sets' }}
+                </button>
+                <button
+                  class="admin-button admin-button--small admin-button--subtle"
+                  [disabled]="searchResults().length === 0"
+                  type="button"
+                  (click)="clearBrowseSelection()"
+                >
+                  Wis selectie
+                </button>
+              </div>
             </div>
 
-            <div class="admin-bulk-onboarding__result-statuses">
-              <span class="admin-bulk-onboarding__pill">
-                Import: {{ resultRow.importLabel }}
-              </span>
-              <span class="admin-bulk-onboarding__pill">
-                Generate: {{ resultRow.generateLabel }}
-              </span>
-              <span class="admin-bulk-onboarding__pill">
-                Validate: {{ resultRow.validateLabel }}
-              </span>
-              <span class="admin-bulk-onboarding__pill">
-                Sync: {{ resultRow.syncLabel }}
-              </span>
-            </div>
-
-            <div class="admin-bulk-onboarding__result-meta">
-              <span class="admin-muted">{{ resultRow.coverageLabel }}</span>
-              @if (resultRow.missingMerchantLabel) {
-              <span class="admin-muted">
-                Mist nog: {{ resultRow.missingMerchantLabel }}
-              </span>
-              }
-              <span class="admin-muted">
-                Laatst bijgewerkt: {{ formatDateTime(resultRow.lastUpdatedAt) }}
-              </span>
-            </div>
-          </div>
-
-          <div class="admin-actions">
-            <a
-              [queryParams]="{ set: resultRow.setId }"
-              [routerLink]="['/sets']"
-              class="admin-button admin-button--subtle"
+            @if (searchMessage()) {
+            <div
+              class="bulk-onboarding__inline-notice"
+              [class.is-danger]="searchMessageTone() === 'danger'"
+              [class.is-positive]="searchMessageTone() === 'positive'"
             >
-              Open in Sets
-            </a>
+              {{ searchMessage() }}
+            </div>
+            } @if (selectedBrowseResultCount() > 0) {
+            <lego-admin-batch-selection-bar
+              [selectedCount]="selectedBrowseResultCount()"
+              description="Deze rijen staan klaar voor de batch-cart."
+              label="Browse-selectie"
+            >
+              <button
+                class="admin-button admin-button--primary"
+                type="button"
+                (click)="addBrowseSelectionToCart()"
+              >
+                Voeg selectie toe
+              </button>
+              <button
+                class="admin-button admin-button--small admin-button--subtle"
+                type="button"
+                (click)="clearBrowseSelection()"
+              >
+                Wis
+              </button>
+            </lego-admin-batch-selection-bar>
+            } @if (sortedSearchResults().length === 0 && !isSearching()) {
+            <lego-admin-empty-state
+              title="Nog geen browse-resultaten"
+              description="Zoek hierboven om sets uit de missende bron te laden."
+            ></lego-admin-empty-state>
+            } @else if (sortedSearchResults().length > 0) {
+            <div
+              class="admin-data-table-shell bulk-onboarding__scroll-shell bulk-onboarding__browse-shell"
+            >
+              <table class="admin-data-table">
+                <thead>
+                  <tr>
+                    <th class="bulk-onboarding__checkbox-cell">
+                      <div class="admin-data-table__header-cell">
+                        <span class="admin-table__heading">Alles</span>
+                        <div class="admin-data-table__header-controls">
+                          <input
+                            [checked]="areAllSearchResultsSelected()"
+                            class="bulk-onboarding__checkbox"
+                            type="checkbox"
+                            (change)="
+                              toggleAllBrowseSelection($any($event.target).checked)
+                            "
+                          />
+                        </div>
+                      </div>
+                    </th>
+                    <th><span class="admin-table__heading">Set</span></th>
+                    <th><span class="admin-table__heading">Thema</span></th>
+                    <th><span class="admin-table__heading">Jaar</span></th>
+                    <th><span class="admin-table__heading">Status</span></th>
+                    <th><span class="admin-table__heading">Actie</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (result of sortedSearchResults(); track result.setId) {
+                  <tr>
+                    <td class="bulk-onboarding__checkbox-cell">
+                      <input
+                        [checked]="isBrowseSelected(result.setId)"
+                        class="bulk-onboarding__checkbox"
+                        type="checkbox"
+                        (change)="
+                          toggleBrowseSelection(
+                            result.setId,
+                            $any($event.target).checked
+                          )
+                        "
+                      />
+                    </td>
+                    <td>
+                      <div class="bulk-onboarding__set-cell">
+                        @if (result.imageUrl) {
+                        <img
+                          [alt]="result.name"
+                          [src]="result.imageUrl"
+                          class="bulk-onboarding__thumb"
+                        />
+                        } @else {
+                        <div
+                          class="bulk-onboarding__thumb bulk-onboarding__thumb--empty"
+                        ></div>
+                        }
+
+                        <div class="bulk-onboarding__meta">
+                          <span class="admin-data-table__cell-title">
+                            {{ result.name }}
+                          </span>
+                          <span class="admin-data-table__cell-meta">
+                            {{ result.setId }} · {{ result.pieces }} stenen
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ result.theme }}</td>
+                    <td class="admin-data-table__cell--numeric">
+                      {{ result.releaseYear }}
+                    </td>
+                    <td>
+                      @let browseStatus = getBrowseResultStatus(result);
+                      <lego-admin-status-badge [tone]="browseStatus.tone">
+                        {{ browseStatus.label }}
+                      </lego-admin-status-badge>
+                    </td>
+                    <td>
+                      <button
+                        class="admin-button admin-button--small admin-button--subtle"
+                        [disabled]="isSelected(result.setId)"
+                        type="button"
+                        (click)="addSetToSelection(result)"
+                      >
+                        {{ isSelected(result.setId) ? 'In cart' : 'Toevoegen' }}
+                      </button>
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </section>
+        </div>
+      </section>
+      <section class="admin-panel admin-panel--compact bulk-onboarding__panel">
+        <lego-admin-section-header
+          title="Per-set queue"
+          description="Triageview van de laatste run: stages, coverage en missende merchants in één compacte tabel."
+        >
+          <div adminSectionActions class="bulk-onboarding__result-actions">
+            <label class="admin-field bulk-onboarding__result-filter">
+              <span class="admin-filterbar__label">Toon</span>
+              <select
+                [ngModel]="resultFilter()"
+                (ngModelChange)="updateResultFilter($event)"
+                class="admin-input"
+                name="bulk-onboarding-result-filter"
+              >
+                <option value="all">Alle sets</option>
+                <option value="attention">Alleen aandacht nodig</option>
+                <option value="running">Alleen bezig</option>
+                <option value="completed">Alleen volledig</option>
+              </select>
+            </label>
           </div>
-        </article>
-        } @if (runResultRows().length === 0) {
-        <div class="admin-panel">
-          <p class="admin-muted">
-            Geen setresultaten voor deze filter. Kies een bredere filter of
-            wacht tot de run verder is.
-          </p>
+        </lego-admin-section-header>
+
+        @if (!activeRun()) {
+        <lego-admin-empty-state
+          title="Nog geen per-set resultaten"
+          description="Start of laad eerst een run om hier de queue-uitkomst te zien."
+        ></lego-admin-empty-state>
+        } @else if (runResultRows().length === 0) {
+        <lego-admin-empty-state
+          title="Geen setresultaten voor deze filter"
+          description="Kies een bredere filter of wacht tot de run verder is."
+        ></lego-admin-empty-state>
+        } @else {
+        <div class="admin-data-table-shell bulk-onboarding__queue-shell">
+          <table class="admin-data-table">
+            <thead>
+              <tr>
+                <th><span class="admin-table__heading">Status</span></th>
+                <th><span class="admin-table__heading">Set</span></th>
+                <th><span class="admin-table__heading">Import</span></th>
+                <th><span class="admin-table__heading">Generate</span></th>
+                <th><span class="admin-table__heading">Validate</span></th>
+                <th><span class="admin-table__heading">Sync</span></th>
+                <th><span class="admin-table__heading">Coverage</span></th>
+                <th>
+                  <span class="admin-table__heading">Missing merchants</span>
+                </th>
+                <th><span class="admin-table__heading">Actie</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (resultRow of runResultRows(); track resultRow.setId) {
+              <tr>
+                <td>
+                  <lego-admin-status-badge [tone]="resultRow.outcomeTone">
+                    {{ resultRow.outcomeLabel }}
+                  </lego-admin-status-badge>
+                </td>
+                <td>
+                  <span class="admin-data-table__cell-title">
+                    {{ resultRow.setLabel }}
+                  </span>
+                  <span class="admin-data-table__cell-meta">
+                    {{ resultRow.setId }} @if (resultRow.themeLabel) { · {{
+                    resultRow.themeLabel }} }
+                  </span>
+                  <span class="admin-data-table__cell-meta">
+                    Bijgewerkt: {{ formatDateTime(resultRow.lastUpdatedAt) }}
+                  </span>
+                </td>
+                <td>{{ resultRow.importLabel }}</td>
+                <td>{{ resultRow.generateLabel }}</td>
+                <td>{{ resultRow.validateLabel }}</td>
+                <td>{{ resultRow.syncLabel }}</td>
+                <td>{{ resultRow.coverageLabel }}</td>
+                <td>{{ resultRow.missingMerchantLabel ?? '—' }}</td>
+                <td>
+                  <a
+                    [queryParams]="{ set: resultRow.setId }"
+                    [routerLink]="['/sets']"
+                    class="admin-button admin-button--small admin-button--subtle"
+                  >
+                    Open in Sets
+                  </a>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
         </div>
         }
-      </div>
-    </article>
-    }
+      </section>
+    </div>
+
+    <aside class="bulk-onboarding__side-column">
+      <section class="admin-panel admin-panel--compact bulk-onboarding__panel">
+        <lego-admin-section-header
+          title="Batch-cart"
+          description="De exacte setlijst die de run straks gebruikt."
+        >
+          <div adminSectionActions class="admin-actions">
+            <button
+              class="admin-button admin-button--primary"
+              [disabled]="isStarting() || selectedSets().length === 0"
+              type="button"
+              (click)="startBulkOnboarding()"
+            >
+              {{ isStarting() ? 'Run starten…' : 'Start run' }}
+            </button>
+            <button
+              class="admin-button admin-button--small admin-button--subtle"
+              [disabled]="selectedSets().length === 0"
+              type="button"
+              (click)="clearSelection()"
+            >
+              Leeg
+            </button>
+          </div>
+        </lego-admin-section-header>
+
+        <lego-admin-batch-selection-bar
+          [selectedCount]="selectedSets().length"
+          description="Elke set komt maar één keer in deze cart."
+          label="Geselecteerde sets"
+        ></lego-admin-batch-selection-bar>
+
+        @if (selectedSets().length === 0) {
+        <lego-admin-empty-state
+          title="Nog geen batch opgebouwd"
+          description="Voeg sets toe via directe intake of via de browse-tabel."
+        ></lego-admin-empty-state>
+        } @else {
+        <div
+          class="admin-data-table-shell bulk-onboarding__scroll-shell bulk-onboarding__cart-shell"
+        >
+          <table class="admin-data-table">
+            <thead>
+              <tr>
+                <th><span class="admin-table__heading">Set</span></th>
+                <th><span class="admin-table__heading">Thema</span></th>
+                <th><span class="admin-table__heading">Bron</span></th>
+                <th><span class="admin-table__heading">Actie</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (selectedSet of selectedSets(); track selectedSet.setId) {
+              <tr>
+                <td>
+                  <span class="admin-data-table__cell-title">
+                    {{ selectedSet.name }}
+                  </span>
+                  <span class="admin-data-table__cell-meta">
+                    {{ selectedSet.setId }} · {{ selectedSet.releaseYear }}
+                  </span>
+                </td>
+                <td>{{ selectedSet.theme }}</td>
+                <td>{{ selectedSet.sourceSetNumber }}</td>
+                <td>
+                  <button
+                    class="admin-button admin-button--small admin-button--subtle"
+                    type="button"
+                    (click)="removeSetFromSelection(selectedSet.setId)"
+                  >
+                    Verwijder
+                  </button>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        } @if (runMessage()) {
+        <div
+          class="bulk-onboarding__inline-notice"
+          [class.is-danger]="runMessageTone() === 'danger'"
+          [class.is-positive]="runMessageTone() === 'positive'"
+        >
+          {{ runMessage() }}
+        </div>
+        }
+      </section>
+
+      <section class="admin-panel admin-panel--compact bulk-onboarding__panel">
+        <lego-admin-section-header
+          title="Run summary"
+          description="Laatste of lopende bulk-run voor deze workbench."
+        >
+          <div adminSectionActions class="admin-actions">
+            <button
+              class="admin-button admin-button--small admin-button--subtle"
+              type="button"
+              (click)="refreshRun()"
+            >
+              Ververs
+            </button>
+          </div>
+        </lego-admin-section-header>
+
+        @if (!activeRun()) {
+        <lego-admin-empty-state
+          title="Nog geen onboarding run"
+          description="Start hierboven een batch of laad de laatste run opnieuw in."
+        ></lego-admin-empty-state>
+        } @else {
+        <div class="bulk-onboarding__run-meta">
+          <div class="bulk-onboarding__run-meta-row">
+            <span class="bulk-onboarding__run-meta-label">Status</span>
+            <lego-admin-status-badge
+              [tone]="
+                activeRun()?.status === 'completed'
+                  ? 'positive'
+                  : activeRun()?.status === 'failed'
+                    ? 'danger'
+                    : 'warning'
+              "
+            >
+              {{ activeRun()?.status }}
+            </lego-admin-status-badge>
+          </div>
+          <div class="bulk-onboarding__run-meta-row">
+            <span class="bulk-onboarding__run-meta-label">Run</span>
+            <span class="bulk-onboarding__run-meta-value">
+              {{ activeRun()?.runId }}
+            </span>
+          </div>
+          <div class="bulk-onboarding__run-meta-row">
+            <span class="bulk-onboarding__run-meta-label">Sets</span>
+            <span class="bulk-onboarding__run-meta-value">
+              {{ activeRun()?.requestedSetIds?.length }}
+            </span>
+          </div>
+          <div class="bulk-onboarding__run-meta-row">
+            <span class="bulk-onboarding__run-meta-label">Gestart</span>
+            <span class="bulk-onboarding__run-meta-value">
+              {{ formatDateTime(activeRun()?.createdAt) }}
+            </span>
+          </div>
+          <div class="bulk-onboarding__run-meta-row">
+            <span class="bulk-onboarding__run-meta-label">Bijgewerkt</span>
+            <span class="bulk-onboarding__run-meta-value">
+              {{ formatDateTime(activeRun()?.updatedAt) }}
+            </span>
+          </div>
+          @if (activeRunStateFilePath()) {
+          <div class="bulk-onboarding__run-meta-row">
+            <span class="bulk-onboarding__run-meta-label">State</span>
+            <span
+              class="bulk-onboarding__run-meta-value bulk-onboarding__run-meta-value--path"
+            >
+              {{ activeRunStateFilePath() }}
+            </span>
+          </div>
+          }
+        </div>
+
+        <div class="admin-metric-strip">
+          <div class="admin-metric-cell">
+            <span class="admin-metric-label">Full</span>
+            <strong class="admin-metric-value">
+              {{ runOutcomeSummary().completedCount }}
+            </strong>
+          </div>
+          <div class="admin-metric-cell">
+            <span class="admin-metric-label">Aandacht</span>
+            <strong class="admin-metric-value">
+              {{ runOutcomeSummary().attentionCount }}
+            </strong>
+          </div>
+          <div class="admin-metric-cell">
+            <span class="admin-metric-label">Bezig</span>
+            <strong class="admin-metric-value">
+              {{ runOutcomeSummary().runningCount }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="admin-data-table-shell bulk-onboarding__stage-table-shell">
+          <table class="admin-data-table bulk-onboarding__stage-table">
+            <thead>
+              <tr>
+                <th><span class="admin-table__heading">Stage</span></th>
+                <th><span class="admin-table__heading">Status</span></th>
+                <th><span class="admin-table__heading">Resultaat</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (stageCard of stageCards(); track stageCard.label) {
+              <tr>
+                <td class="bulk-onboarding__stage-name">
+                  {{ stageCard.label }}
+                </td>
+                <td>
+                  <lego-admin-status-badge [tone]="stageCard.tone">
+                    {{ stageCard.status }}
+                  </lego-admin-status-badge>
+                </td>
+                <td class="bulk-onboarding__stage-summary">
+                  {{ stageCard.summary }}
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
+      </section>
+    </aside>
   </section>
-</section>
+</lego-admin-page>

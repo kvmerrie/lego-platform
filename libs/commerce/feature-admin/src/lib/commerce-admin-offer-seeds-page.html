@@ -1,18 +1,15 @@
-<section class="admin-section">
-  <header class="admin-section__header">
-    <div class="admin-stack">
+<section class="admin-section admin-table-page">
+  <header class="admin-panel admin-panel--compact admin-section__header">
+    <div class="admin-stack admin-stack--tight">
       <p class="admin-eyebrow">Offer seeds</p>
-      <h2>
-        Beheer de set ↔ merchant ↔ URL koppelingen voor pricing-refresh.
-      </h2>
+      <h2>Beheer set ↔ merchant ↔ URL koppelingen voor pricing-refresh.</h2>
       <p class="admin-muted">
-        Dit is de hoofdwerkplek voor operators: zoeken, filteren, corrigeren en
-        nieuwe seeds toevoegen.
+        Zoek, filter en corrigeer seeds in één compacte beheertabel.
       </p>
     </div>
 
     <button
-      class="admin-button admin-button--primary"
+      class="admin-button admin-button--small admin-button--primary"
       [disabled]="commerceAdminStore.merchants().length === 0"
       type="button"
       (click)="openCreateDialog()"
@@ -21,152 +18,188 @@
     </button>
   </header>
 
-  <div class="admin-toolbar admin-toolbar--filters">
-    <input
-      [ngModel]="offerSeedSearch()"
-      (ngModelChange)="updateSearch($event)"
-      class="admin-input admin-search"
-      placeholder="Zoek op set, merchant of URL"
-      type="search"
-    />
+  <section class="admin-panel admin-panel--compact">
+    <div class="admin-filterbar">
+      <label class="admin-filterbar__group admin-filterbar__group--wide">
+        <span class="admin-filterbar__label">Zoek</span>
+        <input
+          [ngModel]="offerSeedSearch()"
+          (ngModelChange)="updateSearch($event)"
+          class="admin-input"
+          placeholder="Zoek op set, merchant of URL"
+          type="search"
+        />
+      </label>
 
-    <select
-      [ngModel]="benchmarkFilter()"
-      (ngModelChange)="updateBenchmarkFilter($event)"
-      class="admin-input"
-      name="benchmark-filter"
-    >
-      <option value="all">Alle sets</option>
-      <option value="benchmark">Alleen benchmarksets</option>
-      <option value="non-benchmark">Zonder benchmarksets</option>
-    </select>
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Sets</span>
+        <select
+          [ngModel]="benchmarkFilter()"
+          (ngModelChange)="updateBenchmarkFilter($event)"
+          class="admin-input"
+          name="benchmark-filter"
+        >
+          <option value="all">Alle sets</option>
+          <option value="benchmark">Alleen benchmarksets</option>
+          <option value="non-benchmark">Zonder benchmarksets</option>
+        </select>
+      </label>
 
-    <select
-      [ngModel]="merchantFilter()"
-      (ngModelChange)="updateMerchantFilter($event)"
-      class="admin-input"
-      name="merchant-filter"
-    >
-      <option value="all">Alle merchants</option>
-      @for (merchant of commerceAdminStore.merchants(); track merchant.id) {
-      <option [value]="merchant.id">{{ merchant.name }}</option>
-      }
-    </select>
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Merchant</span>
+        <select
+          [ngModel]="merchantFilter()"
+          (ngModelChange)="updateMerchantFilter($event)"
+          class="admin-input"
+          name="merchant-filter"
+        >
+          <option value="all">Alle merchants</option>
+          @for (merchant of commerceAdminStore.merchants(); track merchant.id) {
+          <option [value]="merchant.id">{{ merchant.name }}</option>
+          }
+        </select>
+      </label>
 
-    <select
-      [ngModel]="offerSeedFilter()"
-      (ngModelChange)="updateOfferSeedFilter($event)"
-      class="admin-input"
-      name="offer-seed-filter"
-    >
-      <option value="all">Alle statussen</option>
-      <option value="active">Alleen actief</option>
-      <option value="inactive">Alleen inactief</option>
-      <option value="valid">Validation: valid</option>
-      <option value="pending">Validation: pending</option>
-      <option value="stale">Validation: stale</option>
-      <option value="invalid">Validation: invalid</option>
-      <option value="success">Refresh: success</option>
-      <option value="unavailable">Refresh: unavailable</option>
-      <option value="error">Refresh: error</option>
-    </select>
-  </div>
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Status</span>
+        <select
+          [ngModel]="offerSeedFilter()"
+          (ngModelChange)="updateOfferSeedFilter($event)"
+          class="admin-input"
+          name="offer-seed-filter"
+        >
+          <option value="all">Alle statussen</option>
+          <option value="active">Alleen actief</option>
+          <option value="inactive">Alleen inactief</option>
+          <option value="valid">Validation: valid</option>
+          <option value="pending">Validation: pending</option>
+          <option value="stale">Validation: stale</option>
+          <option value="invalid">Validation: invalid</option>
+          <option value="success">Refresh: success</option>
+          <option value="unavailable">Refresh: unavailable</option>
+          <option value="error">Refresh: error</option>
+        </select>
+      </label>
+    </div>
+  </section>
 
-  <div class="admin-table-shell">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Set</th>
-          <th>Merchant</th>
-          <th>Status</th>
-          <th>Laatste prijs</th>
-          <th>Laatst gecheckt</th>
-          <th>URL</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (offerSeed of filteredOfferSeeds(); track offerSeed.id) {
-        <tr>
-          <td>
-            <strong
-              >{{ commerceAdminStore.getCatalogSetLabel(offerSeed.setId)
-              }}</strong
-            >
-            <span>{{ offerSeed.setId }}</span>
-            @if (commerceAdminStore.isBenchmarkSet(offerSeed.setId)) {
-            <span class="admin-count-pill">Benchmark</span>
-            }
-          </td>
-          <td>
-            {{ commerceAdminStore.getMerchantName(offerSeed.merchantId) }}
-          </td>
-          <td>
-            <div class="admin-stack admin-stack--tight">
-              <span
-                class="admin-status-pill"
-                [class.admin-status-pill--neutral]="!offerSeed.isActive"
-                [class.admin-status-pill--positive]="offerSeed.isActive"
-              >
-                {{ offerSeed.isActive ? 'Actief' : 'Inactief' }}
-              </span>
-              <span
-                class="admin-status-pill"
-                [class.admin-status-pill--danger]="
-                  commerceAdminStore.getOfferSeedHealthTone(offerSeed) === 'danger'
-                "
-                [class.admin-status-pill--warning]="
-                  commerceAdminStore.getOfferSeedHealthTone(offerSeed) === 'warning'
-                "
-                [class.admin-status-pill--positive]="
-                  commerceAdminStore.getOfferSeedHealthTone(offerSeed) === 'positive'
-                "
-              >
-                {{ commerceAdminStore.getOfferSeedHealthLabel(offerSeed) }}
-              </span>
-            </div>
-          </td>
-          <td>
-            {{ commerceAdminStore.formatPriceMinor(
-            offerSeed.latestOffer?.priceMinor,
-            offerSeed.latestOffer?.currencyCode ?? 'EUR' ) }}
-          </td>
-          <td>
-            {{ commerceAdminStore.formatTimestamp(
-            offerSeed.latestOffer?.fetchedAt ?? offerSeed.lastVerifiedAt ) }}
-          </td>
-          <td class="admin-table__url">
-            <a [href]="offerSeed.productUrl" rel="noreferrer" target="_blank">
-              {{ offerSeed.productUrl }}
-            </a>
-          </td>
-          <td class="admin-actions-inline">
-            <button
-              class="admin-button admin-button--subtle"
-              type="button"
-              (click)="openEditDialog(offerSeed)"
-            >
-              Bewerken
-            </button>
-            <button
-              class="admin-button admin-button--subtle"
-              type="button"
-              (click)="toggleOfferSeedActive(offerSeed)"
-            >
-              {{ offerSeed.isActive ? 'Pauzeren' : 'Activeren' }}
-            </button>
-          </td>
-        </tr>
-        } @if (filteredOfferSeeds().length === 0) {
-        <tr>
-          <td class="admin-table__empty" colspan="7">
-            Geen offer seeds gevonden voor deze combinatie van filters.
-          </td>
-        </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+  <section class="admin-panel admin-panel--compact admin-table-panel">
+    <div class="admin-actions">
+      <div class="admin-stack admin-stack--tight">
+        <p class="admin-eyebrow">Seedlijst</p>
+        <h3>
+          Gebruik filters om snel naar de juiste merchant-URL koppeling te
+          springen.
+        </h3>
+      </div>
+      <span class="admin-count-pill"
+        >{{ filteredOfferSeeds().length }} seeds</span
+      >
+    </div>
+
+    <div class="admin-data-table-shell admin-table-scroll">
+      <table class="admin-data-table">
+        <thead>
+          <tr>
+            <th><span class="admin-table__heading">Set</span></th>
+            <th><span class="admin-table__heading">Merchant</span></th>
+            <th><span class="admin-table__heading">Status</span></th>
+            <th><span class="admin-table__heading">Laatste prijs</span></th>
+            <th><span class="admin-table__heading">Laatst gecheckt</span></th>
+            <th><span class="admin-table__heading">URL</span></th>
+            <th><span class="admin-table__heading">Acties</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (offerSeed of filteredOfferSeeds(); track offerSeed.id) {
+          <tr>
+            <td>
+              <div class="admin-data-table__cell-stack">
+                <span class="admin-data-table__cell-title">
+                  {{ commerceAdminStore.getCatalogSetLabel(offerSeed.setId) }}
+                </span>
+                <span class="admin-data-table__cell-meta">
+                  {{ offerSeed.setId }}
+                </span>
+                @if (commerceAdminStore.isBenchmarkSet(offerSeed.setId)) {
+                <div class="admin-data-table__badges">
+                  <span class="admin-count-pill">Benchmark</span>
+                </div>
+                }
+              </div>
+            </td>
+            <td>
+              {{ commerceAdminStore.getMerchantName(offerSeed.merchantId) }}
+            </td>
+            <td>
+              <div class="admin-data-table__badges">
+                <span
+                  class="admin-status-pill"
+                  [class.admin-status-pill--neutral]="!offerSeed.isActive"
+                  [class.admin-status-pill--positive]="offerSeed.isActive"
+                >
+                  {{ offerSeed.isActive ? 'Actief' : 'Inactief' }}
+                </span>
+                <span
+                  class="admin-status-pill"
+                  [class.admin-status-pill--danger]="
+                      commerceAdminStore.getOfferSeedHealthTone(offerSeed) === 'danger'
+                    "
+                  [class.admin-status-pill--warning]="
+                      commerceAdminStore.getOfferSeedHealthTone(offerSeed) === 'warning'
+                    "
+                  [class.admin-status-pill--positive]="
+                      commerceAdminStore.getOfferSeedHealthTone(offerSeed) === 'positive'
+                    "
+                >
+                  {{ commerceAdminStore.getOfferSeedHealthLabel(offerSeed) }}
+                </span>
+              </div>
+            </td>
+            <td class="admin-data-table__column-tight">
+              {{ commerceAdminStore.formatPriceMinor(
+              offerSeed.latestOffer?.priceMinor,
+              offerSeed.latestOffer?.currencyCode ?? 'EUR' ) }}
+            </td>
+            <td class="admin-data-table__column-tight">
+              {{ commerceAdminStore.formatTimestamp(
+              offerSeed.latestOffer?.fetchedAt ?? offerSeed.lastVerifiedAt ) }}
+            </td>
+            <td class="admin-table__url">
+              <a [href]="offerSeed.productUrl" rel="noreferrer" target="_blank">
+                {{ offerSeed.productUrl }}
+              </a>
+            </td>
+            <td>
+              <div class="admin-data-table__actions">
+                <button
+                  class="admin-button admin-button--small admin-button--subtle"
+                  type="button"
+                  (click)="openEditDialog(offerSeed)"
+                >
+                  Bewerken
+                </button>
+                <button
+                  class="admin-button admin-button--small admin-button--subtle"
+                  type="button"
+                  (click)="toggleOfferSeedActive(offerSeed)"
+                >
+                  {{ offerSeed.isActive ? 'Pauzeren' : 'Activeren' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td class="admin-data-table__empty" colspan="7">
+              Geen offer seeds gevonden voor deze combinatie van filters.
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 </section>
 
 @if (isDialogOpen()) {

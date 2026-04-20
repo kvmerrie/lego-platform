@@ -1,29 +1,4 @@
 <section class="commerce-admin">
-  <header class="commerce-admin__intro admin-panel">
-    <div class="admin-stack">
-      <p class="admin-eyebrow">Operator status</p>
-      <h2>De portal werkt op de live commerce-laag bovenop de catalogus.</h2>
-      <p class="admin-muted">
-        Gebruik Workbench voor dagelijkse prioriteiten, New set voor intake, en
-        Sets voor gericht beheer. Deze statusbalk is er alleen om je context en
-        refresh dichtbij te houden.
-      </p>
-    </div>
-
-    <div class="admin-actions">
-      @if (commerceAdminStore.isLoading()) {
-      <span class="admin-count-pill">Status verversen…</span>
-      }
-      <button
-        class="admin-button admin-button--subtle"
-        type="button"
-        (click)="reload()"
-      >
-        Ververs status
-      </button>
-    </div>
-  </header>
-
   @if (commerceAdminStore.errorMessage()) {
   <section class="admin-panel admin-panel--danger">
     <strong>Admin API fout</strong>

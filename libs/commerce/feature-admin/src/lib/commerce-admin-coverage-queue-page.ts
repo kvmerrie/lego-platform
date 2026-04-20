@@ -68,165 +68,41 @@ const workbenchPriorityFilters: readonly CommerceCoverageQueuePriorityFilter[] =
 
       .admin-workbench {
         display: grid;
-        gap: 1rem;
+        gap: 0.75rem;
       }
 
       .admin-workbench__bar {
         align-items: start;
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.75rem;
         justify-content: space-between;
       }
 
       .admin-workbench__summary {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-      }
-
-      .admin-workbench__summary-card {
-        background: color-mix(
-          in srgb,
-          var(--lego-surface-muted) 72%,
-          transparent
-        );
-        border: 1px solid var(--lego-border-subtle);
-        border-radius: var(--lego-radius-md);
-        display: grid;
-        gap: 0.3rem;
-        padding: 0.9rem 1rem;
-      }
-
-      .admin-workbench__summary-value {
-        color: var(--lego-text);
-        font-size: 1.4rem;
-        font-weight: 700;
-        line-height: 1;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .admin-workbench__toolbar {
-        align-items: center;
         display: grid;
-        gap: 0.75rem;
-      }
-
-      .admin-workbench__filters {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-      }
-
-      .admin-workbench__shell {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .admin-workbench__queue {
-        display: grid;
-        gap: 0.85rem;
-      }
-
-      .admin-workbench__queue-list {
-        display: grid;
-        gap: 0.85rem;
-      }
-
-      .admin-workbench__row {
-        display: grid;
-        gap: 0.85rem;
-        transition:
-          border-color 120ms ease,
-          background 120ms ease;
-      }
-
-      .admin-workbench__row.is-selected {
-        background: color-mix(
-          in srgb,
-          var(--lego-accent) 6%,
-          var(--lego-surface)
-        );
-        border-color: color-mix(
-          in srgb,
-          var(--lego-accent) 35%,
-          var(--lego-border) 65%
-        );
-      }
-
-      .admin-workbench__row-summary {
-        appearance: none;
-        background: transparent;
-        border: 0;
-        color: inherit;
-        cursor: pointer;
-        display: grid;
-        gap: 0.8rem;
-        padding: 0;
-        text-align: left;
-        width: 100%;
-      }
-
-      .admin-workbench__row-heading {
-        align-items: start;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        justify-content: space-between;
-      }
-
-      .admin-workbench__row-title {
-        display: grid;
-        gap: 0.35rem;
-      }
-
-      .admin-workbench__row-title h3 {
-        margin: 0;
-      }
-
-      .admin-workbench__row-meta,
-      .admin-workbench__row-merchant-strip,
-      .admin-workbench__row-actions {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
         gap: 0.5rem;
       }
 
-      .admin-workbench__row-stats {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+      .admin-workbench__merchant-cell {
+        min-width: 16rem;
       }
 
-      .admin-workbench__row-stat {
-        display: grid;
-        gap: 0.2rem;
+      .admin-workbench__gap-cell {
+        min-width: 13rem;
       }
 
-      .admin-workbench__row-stat strong {
-        color: var(--lego-text);
-        font-size: 1rem;
+      .admin-workbench__actions-cell {
+        min-width: 15rem;
       }
 
-      .admin-workbench__queue-empty {
-        min-height: 12rem;
-        place-items: center;
-        text-align: center;
-      }
-
-      .admin-workbench__context {
-        align-self: start;
-      }
-
-      @media (min-width: 1120px) {
-        .admin-workbench__shell {
-          align-items: start;
-          grid-template-columns: minmax(0, 1.45fr) minmax(20rem, 0.95fr);
-        }
-
-        .admin-workbench__context {
-          position: sticky;
-          top: 1rem;
+      @media (min-width: 960px) {
+        .admin-workbench__summary {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
         }
       }
     `,

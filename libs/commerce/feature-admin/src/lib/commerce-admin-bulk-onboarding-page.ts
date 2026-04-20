@@ -11,6 +11,14 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import {
+  AdminBatchSelectionBarComponent,
+  AdminEmptyStateComponent,
+  AdminPageComponent,
+  AdminSectionHeaderComponent,
+  AdminStatusBadgeComponent,
+  type AdminStatusBadgeTone,
+} from '@lego-platform/admin/ui';
 import { type CatalogExternalSetSearchResult } from '@lego-platform/catalog/util';
 import {
   CommerceAdminApiService,
@@ -24,6 +32,17 @@ type BulkOnboardingResultFilter = 'all' | 'attention' | 'completed' | 'running';
 type BulkOnboardingResultTone = 'danger' | 'neutral' | 'positive' | 'warning';
 type BulkOnboardingRunOutcome = 'attention' | 'completed' | 'running';
 type BulkOnboardingStageTone = 'danger' | 'neutral' | 'positive' | 'warning';
+type BulkOnboardingSearchSort =
+  | 'name'
+  | 'release_year_desc'
+  | 'release_year_asc'
+  | 'set_id';
+type DirectSetIntakeStatus =
+  | 'added'
+  | 'already_in_catalog'
+  | 'already_selected'
+  | 'invalid'
+  | 'not_found';
 
 interface BulkOnboardingStageCard {
   label: string;
@@ -49,12 +68,25 @@ interface BulkOnboardingSetRow {
   validateLabel: string;
 }
 
+interface DirectSetIntakeRow {
+  input: string;
+  normalizedSetId?: string;
+  result?: CatalogExternalSetSearchResult;
+  status: DirectSetIntakeStatus;
+  statusLabel: string;
+  statusTone: AdminStatusBadgeTone;
+}
+
 const BULK_ONBOARDING_SELECTION_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.selection';
 const BULK_ONBOARDING_RUN_ID_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.active-run-id';
 const BULK_ONBOARDING_SEARCH_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.search-query';
+const BULK_ONBOARDING_DIRECT_INPUT_STORAGE_KEY =
+  'brickhunt.admin.bulk-onboarding.direct-input';
+const BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY =
+  'brickhunt.admin.bulk-onboarding.result-filter';
 
 const processingStateOrder = {
   pending_import: 0,
@@ -412,9 +444,66 @@ function buildRunSetRow(
   };
 }
 
+function normalizeDirectSetToken(value: string): string | null {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  const match = trimmedValue.match(/^(\d+)(?:-\d+)?$/);
+
+  return match?.[1] ?? null;
+}
+
+function parseDirectSetTokens(value: string): string[] {
+  return value
+    .split(/[\s,]+/g)
+    .map((token) => token.trim())
+    .filter(Boolean);
+}
+
+async function mapWithConcurrency<TValue, TResult>({
+  items,
+  limit,
+  mapFn,
+}: {
+  items: readonly TValue[];
+  limit: number;
+  mapFn: (item: TValue) => Promise<TResult>;
+}): Promise<TResult[]> {
+  const safeLimit = Math.max(1, limit);
+  const results = new Array<TResult>(items.length);
+  let nextIndex = 0;
+
+  const worker = async () => {
+    while (nextIndex < items.length) {
+      const currentIndex = nextIndex;
+
+      nextIndex += 1;
+      results[currentIndex] = await mapFn(items[currentIndex]);
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(safeLimit, items.length) }, () => worker()),
+  );
+
+  return results;
+}
+
 @Component({
   selector: 'lego-commerce-admin-bulk-onboarding-page',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    AdminBatchSelectionBarComponent,
+    AdminEmptyStateComponent,
+    AdminPageComponent,
+    AdminSectionHeaderComponent,
+    AdminStatusBadgeComponent,
+  ],
   templateUrl: './commerce-admin-bulk-onboarding-page.html',
   styles: [
     `
@@ -422,112 +511,219 @@ function buildRunSetRow(
         display: block;
       }
 
-      .admin-bulk-onboarding {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .admin-bulk-onboarding__layout,
-      .admin-bulk-onboarding__run-summary,
-      .admin-bulk-onboarding__stage-grid {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .admin-bulk-onboarding__search-results,
-      .admin-bulk-onboarding__selection-list,
-      .admin-bulk-onboarding__result-list {
-        display: grid;
-        gap: 0.75rem;
-      }
-
-      .admin-bulk-onboarding__search-result,
-      .admin-bulk-onboarding__selection-card,
-      .admin-bulk-onboarding__stage-card,
-      .admin-bulk-onboarding__result-card {
-        border: 1px solid var(--lego-border-subtle);
-        border-radius: var(--lego-radius-md);
-        display: grid;
-        gap: 0.55rem;
-        padding: 0.9rem 1rem;
-      }
-
-      .admin-bulk-onboarding__search-result {
-        align-items: start;
-        background: transparent;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        text-align: left;
-        width: 100%;
-      }
-
-      .admin-bulk-onboarding__search-result.is-selected {
-        background: color-mix(
-          in srgb,
-          var(--lego-accent) 8%,
-          var(--lego-surface)
-        );
-        border-color: color-mix(
-          in srgb,
-          var(--lego-accent) 35%,
-          var(--lego-border) 65%
-        );
-      }
-
-      .admin-bulk-onboarding__thumb {
-        border-radius: var(--lego-radius-sm);
-        height: 4.5rem;
-        object-fit: cover;
-        width: 4.5rem;
-      }
-
-      .admin-bulk-onboarding__card-header,
-      .admin-bulk-onboarding__selection-meta,
-      .admin-bulk-onboarding__run-meta,
-      .admin-bulk-onboarding__result-meta,
-      .admin-bulk-onboarding__result-statuses {
+      .bulk-onboarding__header-status,
+      .bulk-onboarding__toolbar-actions,
+      .bulk-onboarding__result-actions {
+        align-items: center;
         display: flex;
         flex-wrap: wrap;
-        gap: 0.5rem;
+        gap: 0.35rem;
+        justify-content: flex-start;
       }
 
-      .admin-bulk-onboarding__run-meta,
-      .admin-bulk-onboarding__result-statuses {
-        row-gap: 0.35rem;
+      .bulk-onboarding__header-status {
+        justify-content: flex-end;
       }
 
-      .admin-bulk-onboarding__state-file {
+      .bulk-onboarding__workbench,
+      .bulk-onboarding__main-column,
+      .bulk-onboarding__side-column,
+      .bulk-onboarding__panel,
+      .bulk-onboarding__direct-intake,
+      .bulk-onboarding__intake-zone,
+      .bulk-onboarding__intake-subsection {
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .bulk-onboarding__subsection-header {
+        border-bottom: 1px solid var(--lego-border-subtle);
+        display: grid;
+        gap: 0.15rem;
+        padding-bottom: 0.35rem;
+      }
+
+      .bulk-onboarding__scroll-shell {
+        overflow: auto;
+      }
+
+      .bulk-onboarding__textarea {
+        min-height: 4rem;
+        resize: vertical;
+      }
+
+      .bulk-onboarding__browse-shell {
+        max-height: 16rem;
+      }
+
+      .bulk-onboarding__cart-shell {
+        max-height: 12rem;
+      }
+
+      .bulk-onboarding__queue-shell {
+        max-height: 22rem;
+      }
+
+      .bulk-onboarding__inline-notice {
+        background: color-mix(
+          in srgb,
+          var(--lego-surface-muted) 28%,
+          transparent
+        );
+        border: 1px solid var(--lego-border-subtle);
+        border-radius: 0.65rem;
+        color: var(--lego-text-muted);
+        font-size: 0.83rem;
+        line-height: 1.4;
+        padding: 0.45rem 0.55rem;
+      }
+
+      .bulk-onboarding__inline-notice.is-danger {
+        background: #fef3f2;
+        border-color: color-mix(in srgb, #b42318 24%, var(--lego-border) 76%);
+        color: #b42318;
+      }
+
+      .bulk-onboarding__inline-notice.is-positive {
+        background: #ecfdf3;
+        border-color: color-mix(in srgb, #166534 24%, var(--lego-border) 76%);
+        color: #166534;
+      }
+
+      .bulk-onboarding__checkbox-cell {
+        width: 2.2rem;
+      }
+
+      .bulk-onboarding__checkbox {
+        accent-color: var(--lego-text);
+        height: 0.95rem;
+        width: 0.95rem;
+      }
+
+      .bulk-onboarding__set-cell {
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: auto minmax(0, 1fr);
+      }
+
+      .bulk-onboarding__thumb {
+        aspect-ratio: 1;
+        background: color-mix(
+          in srgb,
+          var(--lego-surface-muted) 70%,
+          transparent
+        );
+        border-radius: 0.55rem;
+        height: 2rem;
+        object-fit: cover;
+        width: 2rem;
+      }
+
+      .bulk-onboarding__thumb--empty {
+        border: 1px dashed var(--lego-border-subtle);
+      }
+
+      .bulk-onboarding__meta {
+        display: grid;
+        gap: 0.1rem;
+      }
+
+      .bulk-onboarding__run-meta {
+        border: 1px solid var(--lego-border-subtle);
+        border-radius: 0.7rem;
+        overflow: hidden;
+      }
+
+      .bulk-onboarding__run-meta-row {
+        border-top: 1px solid var(--lego-border-subtle);
+        display: grid;
+        gap: 0.35rem;
+        grid-template-columns: minmax(4.8rem, 5.5rem) minmax(0, 1fr);
+        padding: 0.4rem 0.5rem;
+      }
+
+      .bulk-onboarding__run-meta-row:first-child {
+        border-top: 0;
+      }
+
+      .bulk-onboarding__run-meta-label,
+      .bulk-onboarding__metric-label,
+      .bulk-onboarding__stage-label {
+        color: var(--lego-text-muted);
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .bulk-onboarding__run-meta-value {
+        color: var(--lego-text);
+        font-size: 0.78rem;
+        line-height: 1.35;
+      }
+
+      .bulk-onboarding__run-meta-value--path {
         overflow-wrap: anywhere;
       }
 
-      .admin-bulk-onboarding__result-card {
-        grid-template-columns: minmax(0, 1fr) auto;
+      .bulk-onboarding__stage-table-shell {
+        border-radius: 0.7rem;
       }
 
-      .admin-bulk-onboarding__result-main {
-        display: grid;
-        gap: 0.4rem;
+      .bulk-onboarding__stage-table td,
+      .bulk-onboarding__stage-table th {
+        vertical-align: middle;
       }
 
-      .admin-bulk-onboarding__pill {
-        border: 1px solid var(--lego-border-subtle);
-        border-radius: 999px;
+      .bulk-onboarding__stage-name {
+        font-size: 0.76rem;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .bulk-onboarding__stage-summary {
         color: var(--lego-text-muted);
-        font-size: 0.83rem;
-        padding: 0.16rem 0.55rem;
+        font-size: 0.74rem;
+        line-height: 1.3;
       }
 
-      @media (min-width: 960px) {
-        .admin-bulk-onboarding__layout {
+      .bulk-onboarding__result-filter {
+        min-width: 9rem;
+      }
+
+      @media (min-width: 1180px) {
+        .bulk-onboarding__workbench {
           align-items: start;
-          grid-template-columns: minmax(0, 1.35fr) minmax(20rem, 0.9fr);
+          grid-template-columns: minmax(0, 1.55fr) minmax(20rem, 0.95fr);
         }
 
-        .admin-bulk-onboarding__run-summary {
+        .bulk-onboarding__intake-zone {
+          align-items: start;
+          gap: 0.5rem;
+          grid-template-columns: minmax(15rem, 0.78fr) minmax(0, 1.22fr);
+        }
+
+        .bulk-onboarding__side-column {
+          align-self: start;
+          position: sticky;
+          top: 0.75rem;
+        }
+
+        .bulk-onboarding__metric-strip {
           grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
-        .admin-bulk-onboarding__stage-grid {
-          grid-template-columns: repeat(5, minmax(0, 1fr));
+        .bulk-onboarding__metric-cell + .bulk-onboarding__metric-cell {
+          border-left: 1px solid var(--lego-border-subtle);
+          border-top: 0;
+        }
+
+        .bulk-onboarding__browse-shell {
+          max-height: 18rem;
+        }
+
+        .bulk-onboarding__queue-shell {
+          max-height: 24rem;
         }
       }
     `,
@@ -539,20 +735,36 @@ export class CommerceAdminBulkOnboardingPageComponent
 {
   private readonly commerceAdminApi = inject(CommerceAdminApiService);
   private refreshTimeoutId: number | undefined;
+
   readonly searchQuery = signal(
     readStoredString(BULK_ONBOARDING_SEARCH_STORAGE_KEY),
   );
+  readonly searchSort = signal<BulkOnboardingSearchSort>('release_year_desc');
+  readonly directInput = signal(
+    readStoredString(BULK_ONBOARDING_DIRECT_INPUT_STORAGE_KEY),
+  );
+  readonly resultFilter = signal<BulkOnboardingResultFilter>(
+    (readStoredString(
+      BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY,
+    ) as BulkOnboardingResultFilter) || 'all',
+  );
+
   readonly searchResults = signal<CatalogExternalSetSearchResult[]>([]);
+  readonly browseSelectionIds = signal<string[]>([]);
   readonly selectedSets = signal<CatalogExternalSetSearchResult[]>(
     readStoredJson<CatalogExternalSetSearchResult[]>(
       BULK_ONBOARDING_SELECTION_STORAGE_KEY,
       [],
     ),
   );
+  readonly directIntakeRows = signal<DirectSetIntakeRow[]>([]);
   readonly activeRun = signal<CommerceAdminBulkOnboardingRun | null>(null);
   readonly activeRunStateFilePath = signal<string | null>(null);
-  readonly resultFilter = signal<BulkOnboardingResultFilter>('all');
+  readonly catalogSetIds = signal<string[]>([]);
+
+  readonly isLoadingCatalogIndex = signal(false);
   readonly isSearching = signal(false);
+  readonly isResolvingDirectInput = signal(false);
   readonly isStarting = signal(false);
   readonly isLoadingRun = signal(false);
   readonly searchMessage = signal<string | null>(null);
@@ -563,6 +775,39 @@ export class CommerceAdminBulkOnboardingPageComponent
   readonly selectedSetIds = computed(() =>
     this.selectedSets().map((setItem) => setItem.setId),
   );
+
+  readonly selectedBrowseResultCount = computed(
+    () => this.browseSelectionIds().length,
+  );
+
+  readonly sortedSearchResults = computed(() => {
+    const sort = this.searchSort();
+
+    return [...this.searchResults()].sort((left, right) => {
+      if (sort === 'set_id') {
+        return left.setId.localeCompare(right.setId);
+      }
+
+      if (sort === 'name') {
+        return (
+          left.name.localeCompare(right.name) ||
+          left.setId.localeCompare(right.setId)
+        );
+      }
+
+      if (sort === 'release_year_asc') {
+        return (
+          left.releaseYear - right.releaseYear ||
+          left.setId.localeCompare(right.setId)
+        );
+      }
+
+      return (
+        right.releaseYear - left.releaseYear ||
+        left.setId.localeCompare(right.setId)
+      );
+    });
+  });
 
   readonly stageCards = computed<BulkOnboardingStageCard[]>(() => {
     const run = this.activeRun();
@@ -612,7 +857,7 @@ export class CommerceAdminBulkOnboardingPageComponent
       return [];
     }
 
-    const filteredRows = run.requestedSetIds
+    return run.requestedSetIds
       .map((setId) => buildRunSetRow(run, setId))
       .filter((row) => {
         const filter = this.resultFilter();
@@ -630,20 +875,19 @@ export class CommerceAdminBulkOnboardingPageComponent
         }
 
         return true;
+      })
+      .sort((left, right) => {
+        const outcomeOrder: Record<BulkOnboardingRunOutcome, number> = {
+          attention: 0,
+          running: 1,
+          completed: 2,
+        };
+
+        return (
+          outcomeOrder[left.outcome] - outcomeOrder[right.outcome] ||
+          left.setId.localeCompare(right.setId)
+        );
       });
-
-    return filteredRows.sort((left, right) => {
-      const outcomeOrder: Record<BulkOnboardingRunOutcome, number> = {
-        attention: 0,
-        running: 1,
-        completed: 2,
-      };
-
-      return (
-        outcomeOrder[left.outcome] - outcomeOrder[right.outcome] ||
-        left.setId.localeCompare(right.setId)
-      );
-    });
   });
 
   readonly runOutcomeSummary = computed(() => {
@@ -678,10 +922,22 @@ export class CommerceAdminBulkOnboardingPageComponent
         this.searchQuery().trim() || null,
       );
     });
+    effect(() => {
+      writeStoredString(
+        BULK_ONBOARDING_DIRECT_INPUT_STORAGE_KEY,
+        this.directInput().trim() || null,
+      );
+    });
+    effect(() => {
+      writeStoredString(
+        BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY,
+        this.resultFilter(),
+      );
+    });
   }
 
   async ngOnInit(): Promise<void> {
-    await this.loadInitialRun();
+    await Promise.all([this.loadCatalogIndex(), this.loadInitialRun()]);
   }
 
   ngOnDestroy(): void {
@@ -692,8 +948,33 @@ export class CommerceAdminBulkOnboardingPageComponent
     this.searchQuery.set(value);
   }
 
+  updateSearchSort(value: BulkOnboardingSearchSort): void {
+    this.searchSort.set(value);
+  }
+
+  updateDirectInput(value: string): void {
+    this.directInput.set(value);
+  }
+
   updateResultFilter(value: BulkOnboardingResultFilter): void {
     this.resultFilter.set(value);
+  }
+
+  isSelected(setId: string): boolean {
+    return this.selectedSets().some((setItem) => setItem.setId === setId);
+  }
+
+  isBrowseSelected(setId: string): boolean {
+    return this.browseSelectionIds().includes(setId);
+  }
+
+  areAllSearchResultsSelected(): boolean {
+    const currentResults = this.sortedSearchResults();
+
+    return (
+      currentResults.length > 0 &&
+      currentResults.every((result) => this.isBrowseSelected(result.setId))
+    );
   }
 
   addSetToSelection(result: CatalogExternalSetSearchResult): void {
@@ -710,6 +991,24 @@ export class CommerceAdminBulkOnboardingPageComponent
     );
   }
 
+  addBrowseSelectionToCart(): void {
+    const selection = new Set(this.browseSelectionIds());
+
+    if (selection.size === 0) {
+      return;
+    }
+
+    const rowsToAdd = this.searchResults().filter((result) =>
+      selection.has(result.setId),
+    );
+
+    for (const result of rowsToAdd) {
+      this.addSetToSelection(result);
+    }
+
+    this.browseSelectionIds.set([]);
+  }
+
   removeSetFromSelection(setId: string): void {
     this.selectedSets.set(
       this.selectedSets().filter((setItem) => setItem.setId !== setId),
@@ -720,8 +1019,39 @@ export class CommerceAdminBulkOnboardingPageComponent
     this.selectedSets.set([]);
   }
 
-  isSelected(setId: string): boolean {
-    return this.selectedSets().some((setItem) => setItem.setId === setId);
+  clearBrowseSelection(): void {
+    this.browseSelectionIds.set([]);
+  }
+
+  clearDirectInput(): void {
+    this.directInput.set('');
+    this.directIntakeRows.set([]);
+  }
+
+  toggleBrowseSelection(setId: string, checked: boolean): void {
+    const currentSelection = new Set(this.browseSelectionIds());
+
+    if (checked) {
+      currentSelection.add(setId);
+    } else {
+      currentSelection.delete(setId);
+    }
+
+    this.browseSelectionIds.set([...currentSelection].sort());
+  }
+
+  toggleAllBrowseSelection(checked: boolean): void {
+    if (!checked) {
+      this.browseSelectionIds.set([]);
+
+      return;
+    }
+
+    this.browseSelectionIds.set(
+      this.sortedSearchResults()
+        .map((result) => result.setId)
+        .sort((left, right) => left.localeCompare(right)),
+    );
   }
 
   async search(): Promise<void> {
@@ -729,6 +1059,7 @@ export class CommerceAdminBulkOnboardingPageComponent
 
     if (!query) {
       this.searchResults.set([]);
+      this.browseSelectionIds.set([]);
       this.searchMessage.set('Vul eerst een setnummer, naam of thema in.');
       this.searchMessageTone.set('neutral');
 
@@ -744,6 +1075,11 @@ export class CommerceAdminBulkOnboardingPageComponent
         await this.commerceAdminApi.searchCatalogMissingSets(query);
 
       this.searchResults.set(results);
+      this.browseSelectionIds.set(
+        this.browseSelectionIds().filter((setId) =>
+          results.some((result) => result.setId === setId),
+        ),
+      );
       this.searchMessage.set(
         results.length === 0
           ? 'Geen missende sets gevonden voor deze zoekopdracht.'
@@ -752,6 +1088,7 @@ export class CommerceAdminBulkOnboardingPageComponent
       this.searchMessageTone.set(results.length === 0 ? 'neutral' : 'positive');
     } catch (error) {
       this.searchResults.set([]);
+      this.browseSelectionIds.set([]);
       this.searchMessage.set(
         error instanceof Error
           ? error.message
@@ -760,6 +1097,131 @@ export class CommerceAdminBulkOnboardingPageComponent
       this.searchMessageTone.set('danger');
     } finally {
       this.isSearching.set(false);
+    }
+  }
+
+  async addDirectSetIds(): Promise<void> {
+    await this.ensureCatalogIndexLoaded();
+
+    const rawTokens = parseDirectSetTokens(this.directInput());
+
+    if (rawTokens.length === 0) {
+      this.directIntakeRows.set([]);
+      this.searchMessage.set(
+        'Plak eerst één of meer setnummers. Komma’s, spaties en enters mogen allemaal.',
+      );
+      this.searchMessageTone.set('neutral');
+
+      return;
+    }
+
+    this.isResolvingDirectInput.set(true);
+    this.directIntakeRows.set([]);
+
+    try {
+      const currentSelectedSetIds = new Set(this.selectedSetIds());
+      const currentCatalogSetIds = new Set(this.catalogSetIds());
+      const lookupSetIds = [
+        ...new Set(
+          rawTokens
+            .map((token) => normalizeDirectSetToken(token))
+            .filter((setId): setId is string => {
+              if (!setId) {
+                return false;
+              }
+
+              return (
+                !currentSelectedSetIds.has(setId) &&
+                !currentCatalogSetIds.has(setId)
+              );
+            }),
+        ),
+      ];
+      const lookupResults = await mapWithConcurrency({
+        items: lookupSetIds,
+        limit: 6,
+        mapFn: async (setId) => {
+          const searchResults =
+            await this.commerceAdminApi.searchCatalogMissingSets(setId);
+          const exactMatch = searchResults.find(
+            (searchResult) =>
+              searchResult.setId === setId ||
+              searchResult.sourceSetNumber === `${setId}-1`,
+          );
+
+          return [setId, exactMatch] as const;
+        },
+      });
+      const exactResultBySetId = new Map(lookupResults);
+      const addedInThisPass = new Set<string>();
+      const setsToAdd = new Map<string, CatalogExternalSetSearchResult>();
+      const intakeRows: DirectSetIntakeRow[] = rawTokens.map((token) => {
+        const normalizedSetId = normalizeDirectSetToken(token);
+
+        if (!normalizedSetId) {
+          return {
+            input: token,
+            status: 'invalid',
+            statusLabel: 'Ongeldig',
+            statusTone: 'danger',
+          };
+        }
+
+        if (
+          currentSelectedSetIds.has(normalizedSetId) ||
+          addedInThisPass.has(normalizedSetId)
+        ) {
+          return {
+            input: token,
+            normalizedSetId,
+            status: 'already_selected',
+            statusLabel: 'Al geselecteerd',
+            statusTone: 'neutral',
+          };
+        }
+
+        if (currentCatalogSetIds.has(normalizedSetId)) {
+          return {
+            input: token,
+            normalizedSetId,
+            status: 'already_in_catalog',
+            statusLabel: 'Al in catalogus',
+            statusTone: 'neutral',
+          };
+        }
+
+        const exactResult = exactResultBySetId.get(normalizedSetId);
+
+        if (!exactResult) {
+          return {
+            input: token,
+            normalizedSetId,
+            status: 'not_found',
+            statusLabel: 'Niet gevonden',
+            statusTone: 'warning',
+          };
+        }
+
+        setsToAdd.set(normalizedSetId, exactResult);
+        addedInThisPass.add(normalizedSetId);
+
+        return {
+          input: token,
+          normalizedSetId,
+          result: exactResult,
+          status: 'added',
+          statusLabel: 'Toegevoegd',
+          statusTone: 'positive',
+        };
+      });
+
+      for (const result of setsToAdd.values()) {
+        this.addSetToSelection(result);
+      }
+
+      this.directIntakeRows.set(intakeRows);
+    } finally {
+      this.isResolvingDirectInput.set(false);
     }
   }
 
@@ -842,6 +1304,30 @@ export class CommerceAdminBulkOnboardingPageComponent
     }
   }
 
+  getBrowseResultStatus(result: CatalogExternalSetSearchResult): {
+    label: string;
+    tone: AdminStatusBadgeTone;
+  } {
+    if (this.isSelected(result.setId)) {
+      return {
+        label: 'Al geselecteerd',
+        tone: 'neutral',
+      };
+    }
+
+    if (this.isBrowseSelected(result.setId)) {
+      return {
+        label: 'Klaar om toe te voegen',
+        tone: 'positive',
+      };
+    }
+
+    return {
+      label: 'Beschikbaar',
+      tone: 'neutral',
+    };
+  }
+
   private applyRunReadResult(
     result: CommerceAdminBulkOnboardingRunReadResult,
   ): void {
@@ -897,6 +1383,26 @@ export class CommerceAdminBulkOnboardingPageComponent
     } finally {
       this.isLoadingRun.set(false);
     }
+  }
+
+  private async loadCatalogIndex(): Promise<void> {
+    this.isLoadingCatalogIndex.set(true);
+
+    try {
+      const catalogSets = await this.commerceAdminApi.listCatalogSets();
+
+      this.catalogSetIds.set(catalogSets.map((catalogSet) => catalogSet.id));
+    } finally {
+      this.isLoadingCatalogIndex.set(false);
+    }
+  }
+
+  private async ensureCatalogIndexLoaded(): Promise<void> {
+    if (this.catalogSetIds().length > 0 || this.isLoadingCatalogIndex()) {
+      return;
+    }
+
+    await this.loadCatalogIndex();
   }
 
   private scheduleRunRefresh(): void {

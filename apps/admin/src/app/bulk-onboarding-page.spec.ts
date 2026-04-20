@@ -3,12 +3,22 @@ import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 import {
   CommerceAdminApiService,
+  type CommerceAdminBulkOnboardingStartResult,
   CommerceAdminBulkOnboardingPageComponent,
 } from '@lego-platform/commerce/feature-admin';
 import { type CatalogExternalSetSearchResult } from '@lego-platform/catalog/util';
 
 const selectionStorageKey = 'brickhunt.admin.bulk-onboarding.selection';
 const runIdStorageKey = 'brickhunt.admin.bulk-onboarding.active-run-id';
+
+type BulkOnboardingApiStub = Pick<
+  CommerceAdminApiService,
+  | 'getCatalogBulkOnboardingRun'
+  | 'getLatestCatalogBulkOnboardingRun'
+  | 'listCatalogSets'
+  | 'searchCatalogMissingSets'
+  | 'startCatalogBulkOnboarding'
+>;
 
 function createSearchResult(
   overrides: Partial<CatalogExternalSetSearchResult> = {},
@@ -23,6 +33,49 @@ function createSearchResult(
     source: 'rebrickable',
     sourceSetNumber: '10316-1',
     theme: 'Icons',
+    ...overrides,
+  };
+}
+
+function createStartResult(
+  setIds: readonly string[],
+): CommerceAdminBulkOnboardingStartResult {
+  return {
+    alreadyRunning: false,
+    run: {
+      createdAt: '2026-04-19T08:00:00.000Z',
+      generateStep: { appliedSetIds: [], status: 'pending' },
+      importStep: { appliedSetIds: [], status: 'pending' },
+      requestedSetIds: [...setIds],
+      runId: 'bulk-10316-21061',
+      setProgressById: {},
+      snapshotStep: { appliedSetIds: [], status: 'pending' },
+      status: 'completed',
+      syncStep: { appliedSetIds: [], status: 'pending' },
+      updatedAt: '2026-04-19T08:05:00.000Z',
+      validateStep: { appliedSetIds: [], status: 'pending' },
+    },
+    runCreated: true,
+    runId: 'bulk-10316-21061',
+    stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
+  };
+}
+
+function createApiServiceStub(
+  overrides: Partial<BulkOnboardingApiStub> = {},
+): BulkOnboardingApiStub {
+  const baseValue: BulkOnboardingApiStub = {
+    getCatalogBulkOnboardingRun: async () => null,
+    getLatestCatalogBulkOnboardingRun: async () => null,
+    listCatalogSets: async () => [],
+    searchCatalogMissingSets: async () => [],
+    startCatalogBulkOnboarding: async () => {
+      throw new Error('not used');
+    },
+  };
+
+  return {
+    ...baseValue,
     ...overrides,
   };
 }
@@ -46,14 +99,7 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
         provideRouter([]),
         {
           provide: CommerceAdminApiService,
-          useValue: {
-            getCatalogBulkOnboardingRun: async () => null,
-            getLatestCatalogBulkOnboardingRun: async () => null,
-            searchCatalogMissingSets: async () => [],
-            startCatalogBulkOnboarding: async () => {
-              throw new Error('not used');
-            },
-          },
+          useValue: createApiServiceStub(),
         },
       ],
     }).compileComponents();
@@ -95,27 +141,26 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
     ).toEqual(component.selectedSets());
   });
 
-  it('starts bulk onboarding for the selected set ids and stores the active run id', async () => {
-    const startCatalogBulkOnboarding = vi.fn(
-      async (setIds: readonly string[]) => ({
-        alreadyRunning: false,
-        run: {
-          createdAt: '2026-04-19T08:00:00.000Z',
-          generateStep: { appliedSetIds: [], status: 'pending' },
-          importStep: { appliedSetIds: [], status: 'pending' },
-          requestedSetIds: [...setIds],
-          runId: 'bulk-10316-21061',
-          setProgressById: {},
-          snapshotStep: { appliedSetIds: [], status: 'pending' },
-          status: 'completed',
-          syncStep: { appliedSetIds: [], status: 'pending' },
-          updatedAt: '2026-04-19T08:05:00.000Z',
-          validateStep: { appliedSetIds: [], status: 'pending' },
-        },
-        runCreated: true,
-        runId: 'bulk-10316-21061',
-        stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
-      }),
+  it('normalizes direct set ids, dedupes, and flags already present or invalid input', async () => {
+    const searchCatalogMissingSets = vi.fn(
+      async (query: string): Promise<CatalogExternalSetSearchResult[]> => {
+        if (query === '21061') {
+          return [
+            createSearchResult({
+              imageUrl: 'https://images.example.test/21061.jpg',
+              name: 'Notre-Dame de Paris',
+              pieces: 4383,
+              releaseYear: 2024,
+              setId: '21061',
+              slug: 'notre-dame-de-paris-21061',
+              sourceSetNumber: '21061-1',
+              theme: 'Architecture',
+            }),
+          ];
+        }
+
+        return [];
+      },
     );
 
     await TestBed.configureTestingModule({
@@ -124,12 +169,82 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
         provideRouter([]),
         {
           provide: CommerceAdminApiService,
-          useValue: {
-            getCatalogBulkOnboardingRun: async () => null,
-            getLatestCatalogBulkOnboardingRun: async () => null,
-            searchCatalogMissingSets: async () => [],
+          useValue: createApiServiceStub({
+            listCatalogSets: async () => [
+              {
+                collectorAngle: 'Rivendell blijft groot en rustig op je plank.',
+                id: '10316',
+                name: 'Rivendell',
+                pieces: 6167,
+                releaseYear: 2023,
+                slug: 'lord-of-the-rings-rivendell-10316',
+                theme: 'Icons',
+              },
+            ],
+            searchCatalogMissingSets,
+          }),
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      CommerceAdminBulkOnboardingPageComponent,
+    );
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+
+    component.updateDirectInput('10316, 21061 21061 foo');
+    await component.addDirectSetIds();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(searchCatalogMissingSets).toHaveBeenCalledTimes(1);
+    expect(searchCatalogMissingSets).toHaveBeenCalledWith('21061');
+    expect(component.selectedSets().map((setItem) => setItem.setId)).toEqual([
+      '21061',
+    ]);
+    expect(
+      component.directIntakeRows().map((row) => ({
+        normalizedSetId: row.normalizedSetId,
+        status: row.status,
+      })),
+    ).toEqual([
+      {
+        normalizedSetId: '10316',
+        status: 'already_in_catalog',
+      },
+      {
+        normalizedSetId: '21061',
+        status: 'added',
+      },
+      {
+        normalizedSetId: '21061',
+        status: 'already_selected',
+      },
+      {
+        normalizedSetId: undefined,
+        status: 'invalid',
+      },
+    ]);
+  });
+
+  it('starts bulk onboarding for the selected set ids and stores the active run id', async () => {
+    const startCatalogBulkOnboarding = vi.fn(
+      async (setIds: readonly string[]) => createStartResult(setIds),
+    );
+
+    await TestBed.configureTestingModule({
+      imports: [CommerceAdminBulkOnboardingPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CommerceAdminApiService,
+          useValue: createApiServiceStub({
             startCatalogBulkOnboarding,
-          },
+          }),
         },
       ],
     }).compileComponents();

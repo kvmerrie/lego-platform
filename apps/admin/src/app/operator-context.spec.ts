@@ -229,6 +229,32 @@ describe('operator context continuity', () => {
     expect(store.activeSetId()).toBe('10317');
   });
 
+  it('shows canonical catalog sets in the Sets page even when no coverage row exists yet', async () => {
+    const { harness, store } = await configureHarness([
+      {
+        path: 'sets',
+        component: CommerceAdminSetsPageComponent,
+      },
+    ]);
+    const catalogOnlyRow = createCoverageRow({
+      setId: '75192',
+      setName: 'Millennium Falcon',
+      theme: 'Star Wars',
+    });
+
+    store.coverageQueueRows.set([]);
+    store.catalogSetOptions.set([createCatalogSetOption(catalogOnlyRow)]);
+
+    const component = await harness.navigateByUrl(
+      '/sets?q=75192',
+      CommerceAdminSetsPageComponent,
+    );
+
+    expect(component.filteredRows().map((row) => row.setId)).toEqual(['75192']);
+    expect(component.selectedRow()?.setId).toBe('75192');
+    expect(component.selectedCoverageRow()).toBeNull();
+  });
+
   it('sends a newly added set into Workbench with the focused set query param', async () => {
     const { harness, router, store } = await configureHarness([
       {

@@ -1,72 +1,71 @@
 <section class="admin-shell">
-  <aside class="admin-shell__sidebar admin-panel">
-    <div class="admin-shell__masthead">
-      <div class="stack">
-        <p class="eyebrow">Operator portal</p>
-        <h1>{{ productName }} operations</h1>
-        <p class="muted">
-          Workbench voor vandaag, New set voor intake, Sets voor gericht beheer.
-          Alles daarbuiten is ondersteunend gereedschap.
-        </p>
-      </div>
+  <aside class="admin-shell__sidebar">
+    <div class="admin-shell__brand">
+      <span class="admin-shell__brand-name">{{ productName }}</span>
+      <span class="admin-shell__brand-meta">Admin</span>
     </div>
 
     <nav aria-label="Admin navigatie" class="admin-shell__nav">
       <div class="admin-shell__nav-group admin-shell__nav-group--primary">
-        <span class="admin-shell__nav-heading">Hoofdroute</span>
+        <span class="admin-shell__nav-heading">Core flows</span>
 
         <div class="admin-shell__primary-nav">
           @for (navigationItem of primaryNavigationItems; track
           navigationItem.path) {
           <a
             [routerLink]="navigationItem.path"
-            class="admin-shell__primary-link"
+            class="admin-shell__nav-link admin-shell__nav-link--primary"
             routerLinkActive="is-active"
           >
-            <span class="admin-shell__primary-link-label">
-              {{ navigationItem.label }}
-            </span>
-            <span class="admin-shell__primary-link-description">
-              {{ navigationItem.description }}
-            </span>
+            <span class="admin-shell__nav-link-label"
+              >{{ navigationItem.label }}</span
+            >
           </a>
           }
         </div>
       </div>
 
       <div class="admin-shell__nav-group">
-        <span class="admin-shell__nav-heading">Meer tools</span>
+        <span class="admin-shell__nav-heading">Tools</span>
 
         <div class="admin-shell__secondary-nav">
           @for (navigationItem of secondaryNavigationItems; track
           navigationItem.path) {
           <a
             [routerLink]="navigationItem.path"
-            class="admin-shell__secondary-link"
+            class="admin-shell__nav-link"
             routerLinkActive="is-active"
           >
-            <span class="admin-shell__secondary-link-label">
-              {{ navigationItem.label }}
-            </span>
-            <span class="admin-shell__secondary-link-description">
-              {{ navigationItem.description }}
-            </span>
+            <span class="admin-shell__nav-link-label"
+              >{{ navigationItem.label }}</span
+            >
           </a>
           }
         </div>
       </div>
     </nav>
+  </aside>
 
-    <div class="admin-shell__sidebar-footer">
+  <section class="admin-shell__main">
+    <header class="admin-shell__topbar">
+      <div class="admin-shell__topbar-copy">
+        <strong class="admin-shell__topbar-title"
+          >{{ productName }} admin</strong
+        >
+        <span class="admin-shell__topbar-meta">
+          Compacte operatoromgeving voor catalogus- en commercewerk.
+        </span>
+      </div>
+
       <button class="theme-toggle" type="button" (click)="toggleTheme()">
         {{ themeToggleLabel }}
       </button>
-    </div>
-  </aside>
+    </header>
 
-  <main class="admin-shell__content">
-    <div class="admin-shell__body">
-      <ng-content></ng-content>
-    </div>
-  </main>
+    <main class="admin-shell__content">
+      <div class="admin-shell__body">
+        <ng-content></ng-content>
+      </div>
+    </main>
+  </section>
 </section>

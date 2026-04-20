@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@lego-platform/admin/ui": ["libs/admin/ui/src/index.ts"],
       "@lego-platform/shared/config": ["libs/shared/config/src/index.ts"],
       "@lego-platform/shell/web": ["libs/shell/web/src/index.ts"],
       "@lego-platform/shell/feature-collector-collection": [

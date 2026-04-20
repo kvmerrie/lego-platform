@@ -17,14 +17,16 @@ import {
   type CommerceCoverageQueueRow,
   type CommerceCoverageQueueSourceFilter,
   type CommerceOfferSeed,
-  filterCommerceCoverageQueueRows,
 } from '@lego-platform/commerce/util';
 import {
   CommerceAdminOfferSeedDialogComponent,
   type CommerceOfferSeedDialogPrefill,
 } from './commerce-admin-offer-seed-dialog';
 import { CommerceAdminSetWorkContextComponent } from './commerce-admin-set-work-context';
-import { CommerceAdminStore } from './commerce-admin-store.service';
+import {
+  type CommerceCatalogSetOption,
+  CommerceAdminStore,
+} from './commerce-admin-store.service';
 
 type SetManagementSort =
   | 'benchmark_first'
@@ -38,6 +40,23 @@ type SetsRowFeedbackTone = 'danger' | 'neutral' | 'positive';
 interface SetsRowFeedback {
   message: string;
   tone: SetsRowFeedbackTone;
+}
+
+interface CommerceAdminSetListRow {
+  activeSeedCount: number;
+  coverageRow?: CommerceCoverageQueueRow;
+  isBenchmark: boolean;
+  latestCheckedAt?: string;
+  needsReviewCount: number;
+  setId: string;
+  setName: string;
+  source?: CommerceCoverageQueueRow['source'];
+  sourceCreatedAt?: string;
+  staleMerchantCount: number;
+  statusSummary: string;
+  theme: string;
+  unavailableMerchantCount: number;
+  validMerchantCount: number;
 }
 
 const setsHealthFilters: readonly CommerceCoverageQueueHealthFilter[] = [
@@ -77,133 +96,28 @@ const setsPriorityFilters: readonly CommerceCoverageQueuePriorityFilter[] = [
 
       .admin-sets-page {
         display: grid;
-        gap: 1rem;
+        gap: 0.75rem;
       }
 
       .admin-sets-page__bar {
         align-items: start;
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.75rem;
         justify-content: space-between;
       }
 
       .admin-sets-page__toolbar {
         display: grid;
-        gap: 0.75rem;
-      }
-
-      .admin-sets-page__filters {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-      }
-
-      .admin-sets-page__shell {
-        display: grid;
-        gap: 1rem;
-      }
-
-      .admin-sets-page__list {
-        display: grid;
-        gap: 0.85rem;
-      }
-
-      .admin-sets-page__row {
-        display: grid;
-        gap: 0.85rem;
-        transition:
-          border-color 120ms ease,
-          background 120ms ease;
-      }
-
-      .admin-sets-page__row.is-selected {
-        background: color-mix(
-          in srgb,
-          var(--lego-accent) 6%,
-          var(--lego-surface)
-        );
-        border-color: color-mix(
-          in srgb,
-          var(--lego-accent) 35%,
-          var(--lego-border) 65%
-        );
-      }
-
-      .admin-sets-page__row-summary {
-        appearance: none;
-        background: transparent;
-        border: 0;
-        color: inherit;
-        cursor: pointer;
-        display: grid;
-        gap: 0.8rem;
-        padding: 0;
-        text-align: left;
-        width: 100%;
-      }
-
-      .admin-sets-page__row-heading {
-        align-items: start;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        justify-content: space-between;
-      }
-
-      .admin-sets-page__row-title {
-        display: grid;
-        gap: 0.35rem;
-      }
-
-      .admin-sets-page__row-title h3 {
-        margin: 0;
-      }
-
-      .admin-sets-page__row-grid {
-        display: grid;
-        gap: 0.75rem;
-        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-      }
-
-      .admin-sets-page__row-cell {
-        display: grid;
-        gap: 0.2rem;
-      }
-
-      .admin-sets-page__row-cell strong {
-        color: var(--lego-text);
-        font-size: 1rem;
-      }
-
-      .admin-sets-page__row-merchant-strip,
-      .admin-sets-page__row-actions {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
         gap: 0.5rem;
       }
 
-      .admin-sets-page__empty {
-        min-height: 12rem;
-        place-items: center;
-        text-align: center;
+      .admin-sets-page__merchant-cell {
+        min-width: 16rem;
       }
 
-      .admin-sets-page__context {
-        align-self: start;
-      }
-
-      @media (min-width: 1180px) {
-        .admin-sets-page__shell {
-          align-items: start;
-          grid-template-columns: minmax(0, 1.55fr) minmax(21rem, 0.95fr);
-        }
-
-        .admin-sets-page__context {
-          position: sticky;
-          top: 1rem;
-        }
+      .admin-sets-page__actions-cell {
+        min-width: 18rem;
       }
     `,
   ],
@@ -232,28 +146,94 @@ export class CommerceAdminSetsPageComponent {
   readonly offerSeedPrefill = signal<CommerceOfferSeedDialogPrefill | null>(
     null,
   );
+  readonly coverageRowsBySetId = computed(
+    () =>
+      new Map(
+        this.commerceAdminStore
+          .coverageQueueRows()
+          .map((row) => [row.setId, row] as const),
+      ),
+  );
 
   readonly themeOptions = computed(() =>
     [
       ...new Set(
-        this.commerceAdminStore.coverageQueueRows().map((row) => row.theme),
+        this.commerceAdminStore.catalogSetOptions().map((row) => row.theme),
       ),
     ].sort((left, right) => left.localeCompare(right)),
   );
 
-  readonly filteredRows = computed(() => {
+  readonly catalogRows = computed<CommerceAdminSetListRow[]>(() =>
+    this.commerceAdminStore.catalogSetOptions().map((catalogSet) =>
+      this.toCatalogRow({
+        catalogSet,
+        coverageRow: this.coverageRowsBySetId().get(catalogSet.id),
+      }),
+    ),
+  );
+
+  readonly filteredRows = computed<CommerceAdminSetListRow[]>(() => {
     const themeFilter = this.themeFilter();
     const sort = this.sort();
+    const normalizedSearch = this.search().trim().toLowerCase();
 
-    const rows = filterCommerceCoverageQueueRows({
-      rows: this.commerceAdminStore.coverageQueueRows(),
-      healthFilter: this.healthFilter(),
-      merchantGapMerchantId: 'all',
-      minimumValidMerchantCount: 3,
-      priorityFilter: this.priorityFilter(),
-      search: this.search(),
-      sourceFilter: this.sourceFilter(),
-    }).filter((row) => themeFilter === 'all' || row.theme === themeFilter);
+    const rows = this.catalogRows().filter((row) => {
+      if (themeFilter !== 'all' && row.theme !== themeFilter) {
+        return false;
+      }
+
+      if (this.priorityFilter() === 'benchmark_only' && !row.isBenchmark) {
+        return false;
+      }
+
+      if (this.sourceFilter() !== 'all' && row.source !== this.sourceFilter()) {
+        return false;
+      }
+
+      if (this.healthFilter() === 'zero_valid' && row.validMerchantCount > 0) {
+        return false;
+      }
+
+      if (
+        this.healthFilter() === 'under_covered' &&
+        row.validMerchantCount >= 3
+      ) {
+        return false;
+      }
+
+      if (this.healthFilter() === 'stale' && row.staleMerchantCount === 0) {
+        return false;
+      }
+
+      if (
+        this.healthFilter() === 'needs_review' &&
+        row.needsReviewCount === 0
+      ) {
+        return false;
+      }
+
+      if (
+        this.healthFilter() === 'fully_covered' &&
+        !(
+          row.validMerchantCount >= 3 &&
+          row.needsReviewCount === 0 &&
+          row.staleMerchantCount === 0 &&
+          row.unavailableMerchantCount === 0
+        )
+      ) {
+        return false;
+      }
+
+      if (!normalizedSearch) {
+        return true;
+      }
+
+      return (
+        row.setId.toLowerCase().includes(normalizedSearch) ||
+        row.setName.toLowerCase().includes(normalizedSearch) ||
+        row.theme.toLowerCase().includes(normalizedSearch)
+      );
+    });
 
     return [...rows].sort((left, right) => {
       switch (sort) {
@@ -302,6 +282,9 @@ export class CommerceAdminSetsPageComponent {
       null
     );
   });
+  readonly selectedCoverageRow = computed(
+    () => this.selectedRow()?.coverageRow ?? null,
+  );
 
   constructor() {
     this.applyRouteContext(this.route.snapshot.queryParams);
@@ -370,18 +353,26 @@ export class CommerceAdminSetsPageComponent {
     this.sort.set(value);
   }
 
-  selectRow(row: CommerceCoverageQueueRow): void {
+  selectRow(row: CommerceAdminSetListRow): void {
     this.commerceAdminStore.setActiveSetId(row.setId);
   }
 
-  isSelectedRow(row: CommerceCoverageQueueRow): boolean {
+  isSelectedRow(row: CommerceAdminSetListRow): boolean {
     return this.selectedRow()?.setId === row.setId;
   }
 
   getCoverageQueueSourceLabel(
-    source: CommerceCoverageQueueRow['source'],
+    source?: CommerceCoverageQueueRow['source'],
   ): string {
-    return source === 'overlay' ? 'Overlay' : 'Snapshot';
+    if (source === 'overlay') {
+      return 'Overlay';
+    }
+
+    if (source === 'snapshot') {
+      return 'Snapshot';
+    }
+
+    return 'Catalogus';
   }
 
   getMerchantStatusTitle(
@@ -509,7 +500,7 @@ export class CommerceAdminSetsPageComponent {
   }
 
   getWorkbenchQueryParams(
-    row?: CommerceCoverageQueueRow,
+    row?: Pick<CommerceAdminSetListRow, 'setId'> | null,
   ): Record<string, string> {
     return this.commerceAdminStore.buildSetFocusQueryParams(
       row?.setId ?? this.selectedRow()?.setId,
@@ -591,5 +582,29 @@ export class CommerceAdminSetsPageComponent {
 
       return (value ?? null) === currentValue;
     });
+  }
+
+  private toCatalogRow(input: {
+    catalogSet: CommerceCatalogSetOption;
+    coverageRow?: CommerceCoverageQueueRow;
+  }): CommerceAdminSetListRow {
+    const { catalogSet, coverageRow } = input;
+
+    return {
+      activeSeedCount: coverageRow?.activeSeedCount ?? 0,
+      coverageRow,
+      isBenchmark: coverageRow?.isBenchmark ?? false,
+      latestCheckedAt: coverageRow?.latestCheckedAt,
+      needsReviewCount: coverageRow?.needsReviewCount ?? 0,
+      setId: catalogSet.id,
+      setName: catalogSet.name,
+      source: coverageRow?.source,
+      sourceCreatedAt: coverageRow?.sourceCreatedAt,
+      staleMerchantCount: coverageRow?.staleMerchantCount ?? 0,
+      statusSummary: coverageRow?.statusSummary ?? 'Nog geen commerce-context',
+      theme: catalogSet.theme,
+      unavailableMerchantCount: coverageRow?.unavailableMerchantCount ?? 0,
+      validMerchantCount: coverageRow?.validMerchantCount ?? 0,
+    };
   }
 }
