@@ -2,6 +2,7 @@ import { createRebrickableClient } from '@lego-platform/catalog/data-access-sync
 import {
   type CatalogCanonicalSet,
   type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSetConfidence,
   type CatalogSuggestedSet,
   type CatalogSet,
   type CatalogSetDetail,
@@ -144,10 +145,32 @@ const CATALOG_SUGGESTED_SET_DEFAULT_LIMIT = 36;
 const CATALOG_SUGGESTED_SET_FETCH_PAGE_SIZE = 100;
 const CATALOG_SUGGESTED_SET_MAX_PAGES = 3;
 const CATALOG_SUGGESTED_SET_RECENT_YEAR_WINDOW = 3;
-const CATALOG_SUGGESTED_THEME_BONUS_BY_THEME = new Map([
-  ['Technic', 90],
-  ['Disney', 80],
-  ['Icons', 70],
+const CATALOG_SUGGESTED_EXCLUDED_THEMES = new Set([
+  'BrickLink Designer Program',
+  'Editions',
+  'Other',
+  'Pokemon',
+  'Pokémon',
+]);
+const CATALOG_SUGGESTED_PRIMARY_THEME_SCORE_BY_THEME = new Map([
+  ['Technic', 240],
+  ['Disney', 220],
+  ['Icons', 190],
+  ['Harry Potter', 185],
+  ['Botanicals', 180],
+  ['Art', 145],
+  ['Ideas', 140],
+]);
+const CATALOG_SUGGESTED_SECONDARY_THEME_SCORE_BY_THEME = new Map([
+  ['Architecture', 95],
+  ['Marvel', 90],
+  ['Star Wars', 90],
+  ['Speed Champions', 85],
+  ['Super Mario', 80],
+  ['Jurassic World', 70],
+  ['Friends', 40],
+  ['NINJAGO', 35],
+  ['Dreamzzz', 20],
 ]);
 
 export interface CatalogThemeBackfillResult {
@@ -1086,24 +1109,143 @@ function getCanonicalCatalogSetIdFromSourceSetNumber(
   }).canonicalId;
 }
 
+function getCatalogSuggestedThemeFit(themeName: string): {
+  isExcluded: boolean;
+  isRetailFriendlyTheme: boolean;
+  score: number;
+} {
+  if (CATALOG_SUGGESTED_EXCLUDED_THEMES.has(themeName)) {
+    return {
+      isExcluded: true,
+      isRetailFriendlyTheme: false,
+      score: Number.NEGATIVE_INFINITY,
+    };
+  }
+
+  const primaryThemeScore =
+    CATALOG_SUGGESTED_PRIMARY_THEME_SCORE_BY_THEME.get(themeName);
+
+  if (typeof primaryThemeScore === 'number') {
+    return {
+      isExcluded: false,
+      isRetailFriendlyTheme: true,
+      score: primaryThemeScore,
+    };
+  }
+
+  const secondaryThemeScore =
+    CATALOG_SUGGESTED_SECONDARY_THEME_SCORE_BY_THEME.get(themeName);
+
+  if (typeof secondaryThemeScore === 'number') {
+    return {
+      isExcluded: false,
+      isRetailFriendlyTheme: false,
+      score: secondaryThemeScore,
+    };
+  }
+
+  return {
+    isExcluded: false,
+    isRetailFriendlyTheme: false,
+    score: 45,
+  };
+}
+
+function getCatalogSuggestedRecencyScore({
+  currentYear,
+  releaseYear,
+}: {
+  currentYear: number;
+  releaseYear: number;
+}): number {
+  const yearDelta = Math.max(0, currentYear - releaseYear);
+
+  if (yearDelta === 0) {
+    return 95;
+  }
+
+  if (yearDelta === 1) {
+    return 72;
+  }
+
+  if (yearDelta === 2) {
+    return 48;
+  }
+
+  return 20;
+}
+
+function getCatalogSuggestedPieceBandScore(pieces: number): number {
+  if (pieces < 250) {
+    return -50;
+  }
+
+  if (pieces < 500) {
+    return -20;
+  }
+
+  if (pieces < 900) {
+    return 12;
+  }
+
+  if (pieces < 1800) {
+    return 42;
+  }
+
+  if (pieces < 3200) {
+    return 60;
+  }
+
+  if (pieces < 5000) {
+    return 38;
+  }
+
+  return 24;
+}
+
 function buildCatalogSuggestedSetScore({
   currentYear,
   pieces,
   releaseYear,
-  themeName,
+  themeFitScore,
 }: {
   currentYear: number;
   pieces: number;
   releaseYear: number;
-  themeName: string;
+  themeFitScore: number;
 }): number {
-  const minYear = currentYear - (CATALOG_SUGGESTED_SET_RECENT_YEAR_WINDOW - 1);
-  const recencyBand = Math.max(0, releaseYear - minYear + 1);
-  const recencyScore = recencyBand * 200;
-  const themeBonus = CATALOG_SUGGESTED_THEME_BONUS_BY_THEME.get(themeName) ?? 0;
-  const pieceBonus = Math.min(40, Math.max(0, Math.round(pieces / 100)));
+  return (
+    themeFitScore +
+    getCatalogSuggestedRecencyScore({
+      currentYear,
+      releaseYear,
+    }) +
+    getCatalogSuggestedPieceBandScore(pieces)
+  );
+}
 
-  return recencyScore + themeBonus + pieceBonus;
+function getCatalogSuggestedConfidence({
+  isRetailFriendlyTheme,
+  score,
+  themeName,
+}: {
+  isRetailFriendlyTheme: boolean;
+  score: number;
+  themeName: string;
+}): CatalogSuggestedSetConfidence {
+  if (CATALOG_SUGGESTED_EXCLUDED_THEMES.has(themeName)) {
+    return 'experimental';
+  }
+
+  if (isRetailFriendlyTheme && score >= 250) {
+    return 'high';
+  }
+
+  if (score >= 150) {
+    return 'medium';
+  }
+
+  return 'experimental';
 }
 
 function sortCatalogSuggestedSets(
@@ -1741,9 +1883,15 @@ export async function listCatalogSuggestedMissingSets({
   const themeNameById = new Map(themeEntries);
 
   return sortCatalogSuggestedSets(
-    [...uniqueSuggestedSets.values()].map((searchSet) => {
+    [...uniqueSuggestedSets.values()].flatMap((searchSet) => {
       const themeName =
         themeNameById.get(searchSet.themeId) ?? 'Onbekend thema';
+      const themeFit = getCatalogSuggestedThemeFit(themeName);
+
+      if (themeFit.isExcluded) {
+        return [];
+      }
+
       const normalizedSet = toSearchResult({
         imageUrl: searchSet.imageUrl,
         name: searchSet.name,
@@ -1752,16 +1900,25 @@ export async function listCatalogSuggestedMissingSets({
         themeName,
         year: searchSet.year,
       });
+      const score = buildCatalogSuggestedSetScore({
+        currentYear,
+        pieces: normalizedSet.pieces,
+        releaseYear: normalizedSet.releaseYear,
+        themeFitScore: themeFit.score,
+      });
 
-      return {
-        ...normalizedSet,
-        score: buildCatalogSuggestedSetScore({
-          currentYear,
-          pieces: normalizedSet.pieces,
-          releaseYear: normalizedSet.releaseYear,
-          themeName: normalizedSet.theme,
-        }),
-      };
+      return [
+        {
+          ...normalizedSet,
+          confidence: getCatalogSuggestedConfidence({
+            isRetailFriendlyTheme: themeFit.isRetailFriendlyTheme,
+            score,
+            themeName: normalizedSet.theme,
+          }),
+          isRetailFriendlyTheme: themeFit.isRetailFriendlyTheme,
+          score,
+        },
+      ];
     }),
   ).slice(0, safeLimit);
 }

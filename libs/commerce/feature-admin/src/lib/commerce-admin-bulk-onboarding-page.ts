@@ -21,6 +21,7 @@ import {
 } from '@lego-platform/admin/ui';
 import {
   type CatalogExternalSetSearchResult,
+  type CatalogSuggestedSetConfidence,
   type CatalogSuggestedSet,
 } from '@lego-platform/catalog/util';
 import {
@@ -46,6 +47,7 @@ type BulkOnboardingSearchSort =
   | 'release_year_desc'
   | 'release_year_asc'
   | 'set_id';
+type BulkOnboardingSuggestedConfidenceFilter = 'all' | 'high';
 type DirectSetIntakeStatus =
   | 'added'
   | 'already_in_catalog'
@@ -93,6 +95,34 @@ interface SuggestedSetStatus {
   tone: AdminStatusBadgeTone;
 }
 
+function formatSuggestedSetConfidenceLabel(
+  confidence: CatalogSuggestedSetConfidence,
+): string {
+  if (confidence === 'high') {
+    return 'High';
+  }
+
+  if (confidence === 'medium') {
+    return 'Medium';
+  }
+
+  return 'Experimental';
+}
+
+function formatSuggestedSetConfidenceTone(
+  confidence: CatalogSuggestedSetConfidence,
+): AdminStatusBadgeTone {
+  if (confidence === 'high') {
+    return 'positive';
+  }
+
+  if (confidence === 'medium') {
+    return 'warning';
+  }
+
+  return 'neutral';
+}
+
 const BULK_ONBOARDING_SELECTION_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.selection';
 const BULK_ONBOARDING_RUN_ID_STORAGE_KEY =
@@ -105,6 +135,12 @@ const BULK_ONBOARDING_DIRECT_INPUT_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.direct-input';
 const BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY =
   'brickhunt.admin.bulk-onboarding.result-filter';
+const BULK_ONBOARDING_SUGGESTED_CONFIDENCE_STORAGE_KEY =
+  'brickhunt.admin.bulk-onboarding.suggested-confidence';
+const BULK_ONBOARDING_SUGGESTED_EXPERIMENTAL_STORAGE_KEY =
+  'brickhunt.admin.bulk-onboarding.suggested-show-experimental';
+const BULK_ONBOARDING_SUGGESTED_RETAIL_STORAGE_KEY =
+  'brickhunt.admin.bulk-onboarding.suggested-retail-only';
 const BULK_ONBOARDING_DIRECT_LOOKUP_CONCURRENCY = 12;
 
 const processingStateOrder = {
@@ -161,6 +197,24 @@ function readStoredString(key: string): string {
   }
 
   return window.sessionStorage.getItem(key) ?? '';
+}
+
+function readStoredBoolean(key: string, fallbackValue: boolean): boolean {
+  if (typeof window === 'undefined') {
+    return fallbackValue;
+  }
+
+  const value = window.sessionStorage.getItem(key);
+
+  if (value === 'true') {
+    return true;
+  }
+
+  if (value === 'false') {
+    return false;
+  }
+
+  return fallbackValue;
 }
 
 function formatDateTime(value?: string): string {
@@ -783,6 +837,21 @@ export class CommerceAdminBulkOnboardingPageComponent
       BULK_ONBOARDING_RESULT_FILTER_STORAGE_KEY,
     ) as BulkOnboardingResultFilter) || 'all',
   );
+  readonly suggestedConfidenceFilter =
+    signal<BulkOnboardingSuggestedConfidenceFilter>(
+      (readStoredString(
+        BULK_ONBOARDING_SUGGESTED_CONFIDENCE_STORAGE_KEY,
+      ) as BulkOnboardingSuggestedConfidenceFilter) || 'all',
+    );
+  readonly suggestedRetailFriendlyOnly = signal(
+    readStoredBoolean(BULK_ONBOARDING_SUGGESTED_RETAIL_STORAGE_KEY, false),
+  );
+  readonly suggestedShowExperimental = signal(
+    readStoredBoolean(
+      BULK_ONBOARDING_SUGGESTED_EXPERIMENTAL_STORAGE_KEY,
+      false,
+    ),
+  );
 
   readonly searchResults = signal<CatalogExternalSetSearchResult[]>([]);
   readonly suggestedSets = signal<CatalogSuggestedSet[]>([]);
@@ -870,8 +939,30 @@ export class CommerceAdminBulkOnboardingPageComponent
     () => this.suggestedSelectionIds().length,
   );
 
+  readonly filteredSuggestedSets = computed(() => {
+    const confidenceFilter = this.suggestedConfidenceFilter();
+    const retailFriendlyOnly = this.suggestedRetailFriendlyOnly();
+    const showExperimental = this.suggestedShowExperimental();
+
+    return this.suggestedSets().filter((suggestedSet) => {
+      if (!showExperimental && suggestedSet.confidence === 'experimental') {
+        return false;
+      }
+
+      if (retailFriendlyOnly && !suggestedSet.isRetailFriendlyTheme) {
+        return false;
+      }
+
+      if (confidenceFilter === 'high' && suggestedSet.confidence !== 'high') {
+        return false;
+      }
+
+      return true;
+    });
+  });
+
   readonly sortedSuggestedSets = computed(() =>
-    [...this.suggestedSets()].sort((left, right) => {
+    [...this.filteredSuggestedSets()].sort((left, right) => {
       if (right.score !== left.score) {
         return right.score - left.score;
       }
@@ -1067,6 +1158,24 @@ export class CommerceAdminBulkOnboardingPageComponent
         this.resultFilter(),
       );
     });
+    effect(() => {
+      writeStoredString(
+        BULK_ONBOARDING_SUGGESTED_CONFIDENCE_STORAGE_KEY,
+        this.suggestedConfidenceFilter(),
+      );
+    });
+    effect(() => {
+      writeStoredString(
+        BULK_ONBOARDING_SUGGESTED_EXPERIMENTAL_STORAGE_KEY,
+        String(this.suggestedShowExperimental()),
+      );
+    });
+    effect(() => {
+      writeStoredString(
+        BULK_ONBOARDING_SUGGESTED_RETAIL_STORAGE_KEY,
+        String(this.suggestedRetailFriendlyOnly()),
+      );
+    });
   }
 
   async ngOnInit(): Promise<void> {
@@ -1099,6 +1208,20 @@ export class CommerceAdminBulkOnboardingPageComponent
 
   updateResultFilter(value: BulkOnboardingResultFilter): void {
     this.resultFilter.set(value);
+  }
+
+  updateSuggestedConfidenceFilter(
+    value: BulkOnboardingSuggestedConfidenceFilter,
+  ): void {
+    this.suggestedConfidenceFilter.set(value);
+  }
+
+  updateSuggestedRetailFriendlyOnly(value: boolean): void {
+    this.suggestedRetailFriendlyOnly.set(value);
+  }
+
+  updateSuggestedShowExperimental(value: boolean): void {
+    this.suggestedShowExperimental.set(value);
   }
 
   isSelected(setId: string): boolean {
@@ -1703,4 +1826,7 @@ export class CommerceAdminBulkOnboardingPageComponent
   }
 
   readonly formatDateTime = formatDateTime;
+  readonly formatSuggestedSetConfidenceLabel =
+    formatSuggestedSetConfidenceLabel;
+  readonly formatSuggestedSetConfidenceTone = formatSuggestedSetConfidenceTone;
 }

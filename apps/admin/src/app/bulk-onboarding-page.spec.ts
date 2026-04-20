@@ -65,6 +65,8 @@ function createSuggestedSet(
 ): CatalogSuggestedSet {
   return {
     ...createSearchResult(),
+    confidence: 'high',
+    isRetailFriendlyTheme: true,
     score: 118,
     ...overrides,
   };
@@ -421,6 +423,84 @@ describe('CommerceAdminBulkOnboardingPageComponent', () => {
       '10312',
     ]);
     expect(component.selectedSuggestedSetCount()).toBe(0);
+  });
+
+  it('filters suggested sets by confidence, retail friendliness, and experimental visibility', async () => {
+    await TestBed.configureTestingModule({
+      imports: [CommerceAdminBulkOnboardingPageComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: CommerceAdminApiService,
+          useValue: createApiServiceStub({
+            listCatalogSuggestedSets: async () => [
+              createSuggestedSet({
+                confidence: 'high',
+                isRetailFriendlyTheme: true,
+                name: 'Technic Crane',
+                score: 320,
+                setId: '42146',
+                slug: 'technic-crane-42146',
+                sourceSetNumber: '42146-1',
+                theme: 'Technic',
+              }),
+              createSuggestedSet({
+                confidence: 'medium',
+                isRetailFriendlyTheme: false,
+                name: 'Mario Kart Set',
+                score: 155,
+                setId: '72037',
+                slug: 'mario-kart-set-72037',
+                sourceSetNumber: '72037-1',
+                theme: 'Super Mario',
+              }),
+              createSuggestedSet({
+                confidence: 'experimental',
+                isRetailFriendlyTheme: false,
+                name: 'Dreamzzz Portal',
+                score: 98,
+                setId: '71490',
+                slug: 'dreamzzz-portal-71490',
+                sourceSetNumber: '71490-1',
+                theme: 'Dreamzzz',
+              }),
+            ],
+          }),
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      CommerceAdminBulkOnboardingPageComponent,
+    );
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const component = fixture.componentInstance;
+
+    expect(
+      component.sortedSuggestedSets().map((setItem) => setItem.setId),
+    ).toEqual(['42146', '72037']);
+
+    component.updateSuggestedRetailFriendlyOnly(true);
+
+    expect(
+      component.sortedSuggestedSets().map((setItem) => setItem.setId),
+    ).toEqual(['42146']);
+
+    component.updateSuggestedRetailFriendlyOnly(false);
+    component.updateSuggestedShowExperimental(true);
+
+    expect(
+      component.sortedSuggestedSets().map((setItem) => setItem.setId),
+    ).toEqual(['42146', '72037', '71490']);
+
+    component.updateSuggestedConfidenceFilter('high');
+
+    expect(
+      component.sortedSuggestedSets().map((setItem) => setItem.setId),
+    ).toEqual(['42146']);
   });
 
   it('starts bulk onboarding for the selected set ids and stores the active run id', async () => {

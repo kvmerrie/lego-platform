@@ -1,5 +1,18 @@
+vi.mock('@supabase/supabase-js', async () => {
+  const actual = await vi.importActual<typeof import('@supabase/supabase-js')>(
+    '@supabase/supabase-js',
+  );
+
+  return {
+    ...actual,
+    createClient: vi.fn(),
+  };
+});
+
+import * as sharedConfig from '@lego-platform/shared/config';
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
-import { describe, expect, test, vi } from 'vitest';
+import * as supabaseSdk from '@supabase/supabase-js';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import {
   getCatalogPrimaryOfferAvailabilityStateBySetId,
@@ -23,6 +36,7 @@ import {
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
+  resetWebCatalogSupabaseClientsForTests,
   resolveCatalogCurrentOffers,
   resolveCatalogSetDetailOffers,
   summarizeCatalogCurrentOffers,
@@ -243,6 +257,12 @@ function createCatalogSupabaseClientMock({
 }
 
 describe('catalog effective data access web', () => {
+  afterEach(() => {
+    resetWebCatalogSupabaseClientsForTests();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
   test('prefers normalized theme joins for UCS-like canonical reads', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
@@ -406,8 +426,153 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('loads public catalog SSR reads through service-role Supabase config when available', async () => {
+    const createClientSpy = vi.mocked(supabaseSdk.createClient).mockReturnValue(
+      createCatalogSupabaseClientMock({
+        latestOfferRows: [],
+        merchantRows: [],
+        offerSeedRows: [],
+        catalogRows: [
+          {
+            created_at: '2026-04-17T08:00:00.000Z',
+            image_url:
+              'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+            name: 'Rivendell',
+            piece_count: 6167,
+            primary_theme_id: 'theme:icons',
+            release_year: 2023,
+            set_id: '10316',
+            slug: 'lord-of-the-rings-rivendell-10316',
+            source: 'rebrickable',
+            source_theme_id: 'rebrickable:721',
+            source_set_number: '10316-1',
+            status: 'active',
+            updated_at: '2026-04-17T08:00:00.000Z',
+          },
+        ],
+        primaryThemeRows: [
+          {
+            display_name: 'Icons',
+            id: 'theme:icons',
+          },
+        ],
+        sourceThemeRows: [
+          {
+            id: 'rebrickable:721',
+            source_theme_name: 'Icons',
+          },
+        ],
+        themeMappingRows: [
+          {
+            primary_theme_id: 'theme:icons',
+            source_theme_id: 'rebrickable:721',
+          },
+        ],
+      }) as ReturnType<typeof supabaseSdk.createClient>,
+    );
+
+    vi.spyOn(sharedConfig, 'hasServerSupabaseConfig').mockReturnValue(true);
+    vi.spyOn(sharedConfig, 'hasBrowserSupabaseConfig').mockReturnValue(false);
+    vi.spyOn(sharedConfig, 'getServerSupabaseConfig').mockReturnValue({
+      serviceRoleKey: 'service-role-key',
+      url: 'https://example.supabase.co',
+    });
+
+    const result = await listCanonicalCatalogSets();
+
+    expect(result).toHaveLength(1);
+    expect(createClientSpy).toHaveBeenCalledWith(
+      'https://example.supabase.co',
+      'service-role-key',
+      expect.objectContaining({
+        auth: expect.objectContaining({
+          autoRefreshToken: false,
+          persistSession: false,
+        }),
+      }),
+    );
+  });
+
+  test('falls back to browser-safe anon Supabase config for public catalog SSR reads', async () => {
+    const createClientSpy = vi.mocked(supabaseSdk.createClient).mockReturnValue(
+      createCatalogSupabaseClientMock({
+        latestOfferRows: [],
+        merchantRows: [],
+        offerSeedRows: [],
+        catalogRows: [
+          {
+            created_at: '2026-04-17T08:00:00.000Z',
+            image_url:
+              'https://cdn.rebrickable.com/media/sets/21061-1/1000.jpg',
+            name: 'Notre-Dame de Paris',
+            piece_count: 4383,
+            primary_theme_id: 'theme:architecture',
+            release_year: 2024,
+            set_id: '21061',
+            slug: 'notre-dame-de-paris-21061',
+            source: 'rebrickable',
+            source_theme_id: 'rebrickable:249',
+            source_set_number: '21061-1',
+            status: 'active',
+            updated_at: '2026-04-17T08:00:00.000Z',
+          },
+        ],
+        primaryThemeRows: [
+          {
+            display_name: 'Architecture',
+            id: 'theme:architecture',
+          },
+        ],
+        sourceThemeRows: [
+          {
+            id: 'rebrickable:249',
+            source_theme_name: 'Architecture',
+          },
+        ],
+        themeMappingRows: [
+          {
+            primary_theme_id: 'theme:architecture',
+            source_theme_id: 'rebrickable:249',
+          },
+        ],
+      }) as ReturnType<typeof supabaseSdk.createClient>,
+    );
+
+    vi.spyOn(sharedConfig, 'hasServerSupabaseConfig').mockReturnValue(false);
+    vi.spyOn(sharedConfig, 'hasBrowserSupabaseConfig').mockReturnValue(true);
+    vi.spyOn(sharedConfig, 'getBrowserSupabaseConfig').mockReturnValue({
+      anonKey: 'anon-key',
+      url: 'https://example.supabase.co',
+    });
+
+    const result = await listCanonicalCatalogSets();
+
+    expect(result).toHaveLength(1);
+    expect(createClientSpy).toHaveBeenCalledWith(
+      'https://example.supabase.co',
+      'anon-key',
+      expect.objectContaining({
+        auth: expect.objectContaining({
+          autoRefreshToken: false,
+          persistSession: false,
+        }),
+      }),
+    );
+  });
+
+  test('returns an empty safe fallback when no Supabase read config is available', async () => {
+    const createClientSpy = vi.mocked(supabaseSdk.createClient);
+
+    vi.spyOn(sharedConfig, 'hasServerSupabaseConfig').mockReturnValue(false);
+    vi.spyOn(sharedConfig, 'hasBrowserSupabaseConfig').mockReturnValue(false);
+
+    await expect(listCanonicalCatalogSets()).resolves.toEqual([]);
+    expect(createClientSpy).not.toHaveBeenCalled();
+  });
+
   test('does not fall back to snapshot canonical identity when a set is absent', async () => {
     const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      listCanonicalCatalogSetsFn: async () => [],
       setId: '21061',
     });
 

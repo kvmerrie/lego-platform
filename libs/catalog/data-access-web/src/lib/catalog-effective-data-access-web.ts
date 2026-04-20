@@ -29,8 +29,10 @@ import {
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogSetLiveOffersApiPath,
+  getBrowserSupabaseConfig,
   getServerSupabaseConfig,
   getRuntimeBaseUrl,
+  hasBrowserSupabaseConfig,
   hasServerSupabaseConfig,
 } from '@lego-platform/shared/config';
 
@@ -140,6 +142,7 @@ export interface CatalogPrimaryOfferAvailabilityState {
 }
 
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
+let webCatalogSupabasePublicClient: SupabaseClient | undefined;
 
 function createWebCatalogSupabaseAdminClient(): SupabaseClient {
   const serverSupabaseConfig = getServerSupabaseConfig();
@@ -160,6 +163,39 @@ function getWebCatalogSupabaseAdminClient(): SupabaseClient {
   webCatalogSupabaseAdminClient ??= createWebCatalogSupabaseAdminClient();
 
   return webCatalogSupabaseAdminClient;
+}
+
+function createWebCatalogSupabasePublicClient(): SupabaseClient {
+  const browserSupabaseConfig = getBrowserSupabaseConfig();
+
+  return createClient(
+    browserSupabaseConfig.url,
+    browserSupabaseConfig.anonKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    },
+  );
+}
+
+function getWebCatalogSupabasePublicClient(): SupabaseClient {
+  webCatalogSupabasePublicClient ??= createWebCatalogSupabasePublicClient();
+
+  return webCatalogSupabasePublicClient;
+}
+
+function getWebCatalogSupabaseReadClient(): CatalogSupabaseClient | undefined {
+  if (hasServerSupabaseConfig()) {
+    return getWebCatalogSupabaseAdminClient();
+  }
+
+  if (hasBrowserSupabaseConfig()) {
+    return getWebCatalogSupabasePublicClient();
+  }
+
+  return undefined;
 }
 
 function getCatalogApiBaseUrl(): string {
@@ -582,13 +618,14 @@ export async function listCanonicalCatalogSets({
 }: {
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogCanonicalSet[]> {
-  if (!supabaseClient && !hasServerSupabaseConfig()) {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
     return [];
   }
 
   try {
-    const activeSupabaseClient =
-      supabaseClient ?? getWebCatalogSupabaseAdminClient();
     const { data, error } = await activeSupabaseClient
       .from(CATALOG_SETS_TABLE)
       .select(
@@ -624,6 +661,11 @@ export async function listCanonicalCatalogSets({
 
     throw error;
   }
+}
+
+export function resetWebCatalogSupabaseClientsForTests() {
+  webCatalogSupabaseAdminClient = undefined;
+  webCatalogSupabasePublicClient = undefined;
 }
 
 export async function getCanonicalCatalogSetById({

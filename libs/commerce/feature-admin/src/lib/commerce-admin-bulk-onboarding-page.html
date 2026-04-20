@@ -216,6 +216,43 @@
                   </span>
                 </div>
 
+                <label class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Confidence</span>
+                  <select
+                    [ngModel]="suggestedConfidenceFilter()"
+                    (ngModelChange)="updateSuggestedConfidenceFilter($event)"
+                    class="admin-input"
+                    name="bulk-onboarding-suggested-confidence"
+                  >
+                    <option value="all">Alles</option>
+                    <option value="high">Alleen high</option>
+                  </select>
+                </label>
+
+                <div class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Retail</span>
+                  <label class="admin-checkbox">
+                    <input
+                      [ngModel]="suggestedRetailFriendlyOnly()"
+                      (ngModelChange)="updateSuggestedRetailFriendlyOnly($event)"
+                      type="checkbox"
+                    />
+                    <span>Retail-friendly only</span>
+                  </label>
+                </div>
+
+                <div class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Experimental</span>
+                  <label class="admin-checkbox">
+                    <input
+                      [ngModel]="suggestedShowExperimental()"
+                      (ngModelChange)="updateSuggestedShowExperimental($event)"
+                      type="checkbox"
+                    />
+                    <span>Toon experimental</span>
+                  </label>
+                </div>
+
                 <div class="admin-filterbar__actions">
                   <button
                     class="admin-button admin-button--primary"
@@ -298,6 +335,9 @@
                       <th><span class="admin-table__heading">Thema</span></th>
                       <th><span class="admin-table__heading">Jaar</span></th>
                       <th><span class="admin-table__heading">Score</span></th>
+                      <th>
+                        <span class="admin-table__heading">Confidence</span>
+                      </th>
                       <th><span class="admin-table__heading">Status</span></th>
                       <th><span class="admin-table__heading">Actie</span></th>
                     </tr>
@@ -348,6 +388,15 @@
                       </td>
                       <td class="admin-data-table__cell--numeric">
                         {{ result.score }}
+                      </td>
+                      <td>
+                        <lego-admin-status-badge
+                          [tone]="formatSuggestedSetConfidenceTone(result.confidence)"
+                        >
+                          {{
+                          formatSuggestedSetConfidenceLabel(result.confidence)
+                          }}
+                        </lego-admin-status-badge>
                       </td>
                       <td>
                         @let suggestedStatus = getSuggestedSetStatus(result);

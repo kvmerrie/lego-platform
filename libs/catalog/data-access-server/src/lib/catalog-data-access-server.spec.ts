@@ -859,7 +859,7 @@ describe('catalog data access server', () => {
     ]);
   });
 
-  test('lists suggested missing sets from recent Rebrickable results, filtered against the catalog and ranked by recency first', async () => {
+  test('lists suggested missing sets with retail-weighted ranking and excludes weak themes', async () => {
     process.env.REBRICKABLE_API_KEY = 'test-key';
 
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
@@ -915,6 +915,15 @@ describe('catalog data access server', () => {
               set_img_url:
                 'https://cdn.rebrickable.com/media/sets/43263-1/1000.jpg',
             },
+            {
+              set_num: '50001-1',
+              name: 'Pokemon Center',
+              year: 2026,
+              num_parts: 1200,
+              theme_id: 4,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/50001-1/1000.jpg',
+            },
           ],
         },
       },
@@ -936,6 +945,10 @@ describe('catalog data access server', () => {
           id: 171,
           name: 'Icons',
         },
+        '4': {
+          id: 4,
+          name: 'Pokémon',
+        },
       },
     });
 
@@ -947,16 +960,30 @@ describe('catalog data access server', () => {
     });
 
     expect(results.map((result) => result.setId)).toEqual([
-      '31162',
       '42174',
       '43263',
+      '31162',
     ]);
     expect(results[0]).toMatchObject({
+      confidence: 'high',
+      isRetailFriendlyTheme: true,
       score: expect.any(Number),
+      setId: '42174',
+      theme: 'Technic',
+    });
+    expect(results[1]).toMatchObject({
+      confidence: 'high',
+      isRetailFriendlyTheme: true,
+      setId: '43263',
+      theme: 'Disney',
+    });
+    expect(results[2]).toMatchObject({
+      confidence: 'experimental',
+      isRetailFriendlyTheme: false,
       setId: '31162',
       theme: 'Creator',
     });
-    expect(results[1].score).toBeGreaterThan(results[2].score);
+    expect(results.some((result) => result.theme === 'Pokémon')).toBe(false);
   });
 
   test('creates a canonical catalog record with normalized set data', async () => {

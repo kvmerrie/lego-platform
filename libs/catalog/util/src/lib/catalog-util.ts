@@ -518,7 +518,11 @@ export interface CatalogAddableSetRecord {
 
 export type CatalogExternalSetSearchResult = CatalogAddableSetRecord;
 
+export type CatalogSuggestedSetConfidence = 'experimental' | 'high' | 'medium';
+
 export interface CatalogSuggestedSet extends CatalogExternalSetSearchResult {
+  confidence: CatalogSuggestedSetConfidence;
+  isRetailFriendlyTheme: boolean;
   score: number;
 }
 

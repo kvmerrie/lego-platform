@@ -83,7 +83,9 @@ function createSuggestedSet(
   overrides: Partial<CatalogSuggestedSet> = {},
 ): CatalogSuggestedSet {
   return {
+    confidence: 'high',
     imageUrl: 'https://cdn.rebrickable.com/media/sets/10312-1/1000.jpg',
+    isRetailFriendlyTheme: true,
     name: 'Jazz Club',
     pieces: 2899,
     releaseYear: 2023,
