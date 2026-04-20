@@ -1,0 +1,38 @@
+{
+  "name": "catalog-bulk-onboarding",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-bulk-onboarding/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-bulk-onboarding",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-bulk-onboarding/src/main.ts",
+        "tsConfig": "apps/catalog-bulk-onboarding/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-bulk-onboarding/main.cjs"
+      }
+    }
+  }
+}

@@ -279,6 +279,34 @@ If copy fails:
 
 ---
 
+## Admin UX And Design Rules
+
+These rules are separate from the public web experience.
+
+### Public Web
+
+- The public site is collector-facing, premium, playful, visual, and editorial.
+- It should feel polished, brand-led, and emotionally engaging.
+- Public-facing UI may use richer presentation patterns, stronger branding, and more expressive layout.
+
+### Admin
+
+- The admin is operator-facing and should behave like a compact SaaS/CRUD tool.
+- Prefer density, clarity, and speed over branding or visual flourish.
+- Admin should feel closer to tools like Supabase, Stripe Dashboard, Linear, or a clean backoffice.
+- Use compact spacing, clear table layouts, filters, sorting, bulk actions, and status badges.
+- Default admin surfaces to data tables and structured forms, not marketing-style cards or editorial sections.
+- Avoid reusing public-web presentation components when they reduce density or operator efficiency.
+- When admin grows, prefer admin-specific Angular feature/ui libraries over adapting public React UI patterns.
+
+### Separation Rule
+
+- Do not apply public-site copy, layout, or visual design rules to admin by default.
+- Public web and admin may share low-level tokens and primitives where useful, but they are different UX systems.
+- If there is doubt, optimize admin for operational efficiency, not brand expression.
+
+---
+
 ## Storybook Guidance
 
 - Cover reusable UI components

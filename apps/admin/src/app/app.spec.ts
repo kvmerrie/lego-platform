@@ -16,6 +16,27 @@ describe('App', () => {
             listCatalogSets: async () => [],
             searchCatalogMissingSets: async () => [],
             createCatalogSet: async () => undefined,
+            startCatalogBulkOnboarding: async () => ({
+              alreadyRunning: false,
+              run: {
+                createdAt: '2026-04-19T08:00:00.000Z',
+                generateStep: { appliedSetIds: [], status: 'pending' },
+                importStep: { appliedSetIds: [], status: 'pending' },
+                requestedSetIds: [],
+                runId: 'bulk-test',
+                setProgressById: {},
+                snapshotStep: { appliedSetIds: [], status: 'pending' },
+                status: 'running',
+                syncStep: { appliedSetIds: [], status: 'pending' },
+                updatedAt: '2026-04-19T08:00:00.000Z',
+                validateStep: { appliedSetIds: [], status: 'pending' },
+              },
+              runCreated: true,
+              runId: 'bulk-test',
+              stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
+            }),
+            getLatestCatalogBulkOnboardingRun: async () => null,
+            getCatalogBulkOnboardingRun: async () => null,
             listBenchmarkSets: async () => [],
             createBenchmarkSet: async () => undefined,
             deleteBenchmarkSet: async () => undefined,
@@ -67,10 +88,14 @@ describe('App', () => {
     const addSetAliasRoute = appRoutes[0]?.children?.find(
       (route) => route.path === 'add-set',
     );
+    const bulkOnboardingRoute = appRoutes[0]?.children?.find(
+      (route) => route.path === 'bulk-onboarding',
+    );
 
     expect(rootRoute?.redirectTo).toBe('workbench');
     expect(dashboardRoute?.redirectTo).toBe('workbench');
     expect(workbenchRoute?.component).toBeTruthy();
     expect(addSetAliasRoute?.redirectTo).toBe('new-set');
+    expect(bulkOnboardingRoute?.component).toBeTruthy();
   });
 });

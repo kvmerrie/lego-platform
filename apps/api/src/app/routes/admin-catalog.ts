@@ -4,6 +4,13 @@ import {
   searchCatalogMissingSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
+  type CatalogBulkOnboardingRunReadResult,
+  type CatalogBulkOnboardingStartResult,
+  getCatalogBulkOnboardingRun,
+  getLatestCatalogBulkOnboardingRun,
+  startCatalogBulkOnboardingRun,
+} from '@lego-platform/api/data-access-server';
+import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
   type CatalogSetSummary,
@@ -12,6 +19,13 @@ import { apiPaths } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminCatalogService {
+  getBulkOnboardingRun(
+    runId: string,
+  ): Promise<CatalogBulkOnboardingRunReadResult>;
+  getLatestBulkOnboardingRun(): Promise<CatalogBulkOnboardingRunReadResult>;
+  startBulkOnboarding(input: {
+    setIds: readonly string[];
+  }): Promise<CatalogBulkOnboardingStartResult>;
   createSet(input: CatalogExternalSetSearchResult): Promise<CatalogSet>;
   listCatalogSets(): Promise<CatalogSetSummary[]>;
   searchMissingSets(query: string): Promise<CatalogExternalSetSearchResult[]>;
@@ -19,6 +33,26 @@ export interface AdminCatalogService {
 
 function createAdminCatalogService(): AdminCatalogService {
   return {
+    getBulkOnboardingRun: async (runId) =>
+      getCatalogBulkOnboardingRun({
+        options: {
+          workspaceRoot: process.cwd(),
+        },
+        runId,
+      }),
+    getLatestBulkOnboardingRun: async () =>
+      getLatestCatalogBulkOnboardingRun({
+        options: {
+          workspaceRoot: process.cwd(),
+        },
+      }),
+    startBulkOnboarding: async (input) =>
+      startCatalogBulkOnboardingRun({
+        options: {
+          setIds: input.setIds,
+          workspaceRoot: process.cwd(),
+        },
+      }),
     createSet: (input) => createCatalogSet({ input }),
     listCatalogSets: () => listCatalogSetSummariesWithOverlay(),
     searchMissingSets: (query) => searchCatalogMissingSets({ query }),
@@ -41,6 +75,44 @@ function readSearchQuery(value: unknown): string {
   }
 
   return query.trim();
+}
+
+function readBulkOnboardingInput(value: unknown): { setIds: string[] } {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Bulk onboarding input ontbreekt.');
+  }
+
+  const setIds = (value as { setIds?: unknown }).setIds;
+
+  if (!Array.isArray(setIds)) {
+    throw new Error('Bulk onboarding input mist een setIds-lijst.');
+  }
+
+  const normalizedSetIds = setIds
+    .map((setId) => (typeof setId === 'string' ? setId.trim() : ''))
+    .filter(Boolean);
+
+  if (normalizedSetIds.length === 0) {
+    throw new Error('Bulk onboarding input mist geldige setIds.');
+  }
+
+  return {
+    setIds: normalizedSetIds,
+  };
+}
+
+function readRunId(value: unknown): string {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Run id ontbreekt.');
+  }
+
+  const runId = (value as { runId?: unknown }).runId;
+
+  if (typeof runId !== 'string' || !runId.trim()) {
+    throw new Error('Run id ontbreekt.');
+  }
+
+  return runId.trim();
 }
 
 function readCatalogSetInput(value: unknown): CatalogExternalSetSearchResult {
@@ -119,6 +191,47 @@ export function createAdminCatalogRoutes({
       },
     );
 
+    fastify.get(
+      `${apiPaths.adminCatalogBulkOnboardingRuns}/latest`,
+      async function (_request, reply) {
+        const latestRunResult =
+          await catalogService.getLatestBulkOnboardingRun();
+
+        if (!latestRunResult.run) {
+          return reply.status(404).send({
+            message: 'Er is nog geen bulk onboarding run gestart.',
+          });
+        }
+
+        return latestRunResult;
+      },
+    );
+
+    fastify.get<{ Params: { runId?: string } }>(
+      `${apiPaths.adminCatalogBulkOnboardingRuns}/:runId`,
+      async function (request, reply) {
+        try {
+          const runId = readRunId(request.params);
+          const runResult = await catalogService.getBulkOnboardingRun(runId);
+
+          if (!runResult.run) {
+            return reply.status(404).send({
+              message: 'Bulk onboarding run niet gevonden.',
+            });
+          }
+
+          return runResult;
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Bulk onboarding run input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCatalogSets,
       async function (request, reply) {
@@ -132,6 +245,25 @@ export function createAdminCatalogRoutes({
             message: toBadRequestMessage(
               error,
               'Catalog set input is invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminCatalogBulkOnboardingRuns,
+      async function (request, reply) {
+        try {
+          const input = readBulkOnboardingInput(request.body);
+          const result = await catalogService.startBulkOnboarding(input);
+
+          return reply.status(202).send(result);
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Bulk onboarding input is invalid.',
             ),
           });
         }

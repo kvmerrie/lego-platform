@@ -44,6 +44,11 @@ export class ShellAdminComponent {
       path: '/workflow',
     },
     {
+      description: 'Zoek meerdere missende sets en start één bulk intake-run',
+      label: 'Bulk onboarding',
+      path: '/bulk-onboarding',
+    },
+    {
       description: 'Handmatige seed-URL’s beheren',
       label: 'Offer seeds',
       path: '/offer-seeds',

@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import {
   CommerceAdminAddSetPageComponent,
+  CommerceAdminBulkOnboardingPageComponent,
   CommerceAdminCoveragePageComponent,
   CommerceAdminCoverageQueuePageComponent,
   CommerceAdminDashboardPageComponent,
@@ -37,6 +38,10 @@ export const appRoutes: Route[] = [
       {
         path: 'new-set',
         component: CommerceAdminAddSetPageComponent,
+      },
+      {
+        path: 'bulk-onboarding',
+        component: CommerceAdminBulkOnboardingPageComponent,
       },
       {
         path: 'add-set',

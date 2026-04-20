@@ -953,6 +953,46 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-04-19T09:32:17.537Z"
   },
   {
+    "setId": "43269",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10900,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:51.840Z"
+  },
+  {
+    "setId": "43269",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11500,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:54.815Z"
+  },
+  {
+    "setId": "43269",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:52.506Z"
+  },
+  {
+    "setId": "43269",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:53.665Z"
+  },
+  {
     "setId": "72037",
     "merchantId": "bol",
     "regionCode": "NL",
@@ -1441,6 +1481,46 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 9999,
     "availability": "in_stock",
     "observedAt": "2026-04-19T09:33:16.291Z"
+  },
+  {
+    "setId": "76330",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6300,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:55.362Z"
+  },
+  {
+    "setId": "76330",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6500,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:55.821Z"
+  },
+  {
+    "setId": "76330",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6695,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:57.546Z"
+  },
+  {
+    "setId": "76330",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-19T20:21:56.528Z"
   },
   {
     "setId": "76417",

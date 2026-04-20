@@ -1,0 +1,365 @@
+<section class="admin-section admin-bulk-onboarding">
+  <header class="admin-panel admin-stack">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Bulk onboarding</p>
+      <h2>
+        Zoek meerdere missende sets en laat de intake daarna in één run
+        doorlopen.
+      </h2>
+      <p class="admin-muted">
+        Dit is een dunne operatorflow bovenop de bestaande onboarding-engine:
+        zoek sets in Rebrickable, kies je batch, start de run, en volg daarna
+        direct import, seeds, sync en coverage-uitkomst.
+      </p>
+    </div>
+  </header>
+
+  <div class="admin-bulk-onboarding__layout">
+    <section class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>1. Zoek missende sets</h3>
+          <p class="admin-muted">
+            Zoek op setnummer, naam of thema. Resultaten die al in Brickhunt
+            zitten, vallen hier vanzelf weg.
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-toolbar">
+        <input
+          [ngModel]="searchQuery()"
+          (keydown.enter)="search()"
+          (ngModelChange)="updateSearchQuery($event)"
+          class="admin-input admin-search"
+          placeholder="Zoek op setnummer, naam of thema"
+          type="search"
+        />
+
+        <button
+          class="admin-button admin-button--primary"
+          [disabled]="isSearching()"
+          type="button"
+          (click)="search()"
+        >
+          {{ isSearching() ? 'Zoeken…' : 'Zoek in Rebrickable' }}
+        </button>
+      </div>
+
+      @if (searchMessage()) {
+      <div
+        class="admin-panel"
+        [class.admin-panel--danger]="searchMessageTone() === 'danger'"
+      >
+        <p class="admin-muted">{{ searchMessage() }}</p>
+      </div>
+      } @if (searchResults().length > 0) {
+      <div class="admin-bulk-onboarding__search-results">
+        @for (result of searchResults(); track result.setId) {
+        <button
+          class="admin-bulk-onboarding__search-result"
+          [class.is-selected]="isSelected(result.setId)"
+          type="button"
+          (click)="addSetToSelection(result)"
+        >
+          @if (result.imageUrl) {
+          <img
+            [alt]="result.name"
+            [src]="result.imageUrl"
+            class="admin-bulk-onboarding__thumb"
+          />
+          } @else {
+          <div class="admin-bulk-onboarding__thumb"></div>
+          }
+
+          <div class="admin-stack admin-stack--tight">
+            <strong>{{ result.name }}</strong>
+            <span class="admin-muted">
+              {{ result.setId }} · {{ result.theme }} · {{ result.releaseYear }}
+            </span>
+            <span class="admin-muted">{{ result.pieces }} stenen</span>
+          </div>
+
+          <span class="admin-count-pill">
+            {{ isSelected(result.setId) ? 'Geselecteerd' : 'Voeg toe' }}
+          </span>
+        </button>
+        }
+      </div>
+      }
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <div class="admin-section__header">
+        <div class="admin-stack">
+          <h3>2. Geselecteerde sets</h3>
+          <p class="admin-muted">
+            Deze selectie blijft in deze sessie bewaard. Je kunt dus rustig
+            zoeken, aanvullen en pas daarna starten.
+          </p>
+        </div>
+        <span class="admin-count-pill">{{ selectedSets().length }}</span>
+      </div>
+
+      @if (selectedSets().length === 0) {
+      <div class="admin-panel">
+        <p class="admin-muted">
+          Nog geen sets gekozen. Zoek links en voeg de sets toe die je in bulk
+          wilt onboarden.
+        </p>
+      </div>
+      } @else {
+      <div class="admin-bulk-onboarding__selection-list">
+        @for (selectedSet of selectedSets(); track selectedSet.setId) {
+        <article class="admin-bulk-onboarding__selection-card">
+          <div class="admin-bulk-onboarding__card-header">
+            <strong>{{ selectedSet.name }}</strong>
+            <span class="admin-count-pill">{{ selectedSet.setId }}</span>
+          </div>
+          <div class="admin-bulk-onboarding__selection-meta">
+            <span class="admin-muted">{{ selectedSet.theme }}</span>
+            <span class="admin-muted">{{ selectedSet.releaseYear }}</span>
+            <span class="admin-muted">{{ selectedSet.pieces }} stenen</span>
+          </div>
+          <div class="admin-actions">
+            <button
+              class="admin-button admin-button--subtle"
+              type="button"
+              (click)="removeSetFromSelection(selectedSet.setId)"
+            >
+              Verwijder
+            </button>
+          </div>
+        </article>
+        }
+      </div>
+
+      <div class="admin-actions">
+        <button
+          class="admin-button admin-button--primary"
+          [disabled]="isStarting() || selectedSets().length === 0"
+          type="button"
+          (click)="startBulkOnboarding()"
+        >
+          {{ isStarting() ? 'Run starten…' : 'Start bulk onboarding' }}
+        </button>
+        <button
+          class="admin-button admin-button--subtle"
+          [disabled]="selectedSets().length === 0"
+          type="button"
+          (click)="clearSelection()"
+        >
+          Leeg selectie
+        </button>
+      </div>
+      } @if (runMessage()) {
+      <div
+        class="admin-panel"
+        [class.admin-panel--danger]="runMessageTone() === 'danger'"
+      >
+        <p class="admin-muted">{{ runMessage() }}</p>
+      </div>
+      }
+    </section>
+  </div>
+
+  <section class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack">
+        <h3>3. Laatste of lopende run</h3>
+        <p class="admin-muted">
+          Hier zie je de laatste bekende bulk onboarding run, inclusief
+          stage-samenvatting en setresultaten.
+        </p>
+      </div>
+
+      <div class="admin-actions">
+        @if (isLoadingRun()) {
+        <span class="admin-count-pill">Runstatus laden…</span>
+        }
+        <button
+          class="admin-button admin-button--subtle"
+          type="button"
+          (click)="refreshRun()"
+        >
+          Ververs run
+        </button>
+      </div>
+    </div>
+
+    @if (!activeRun()) {
+    <div class="admin-panel">
+      <p class="admin-muted">
+        Er is nog geen bulk onboarding run bekend in deze sessie of state file.
+      </p>
+    </div>
+    } @else {
+    <article class="admin-panel admin-stack">
+      <div class="admin-bulk-onboarding__run-meta">
+        <span class="admin-count-pill">{{ activeRun()?.runId }}</span>
+        <span
+          class="admin-status-pill"
+          [class.admin-status-pill--positive]="activeRun()?.status === 'completed'"
+          [class.admin-status-pill--warning]="
+            activeRun()?.status === 'running' ||
+            activeRun()?.status === 'completed_with_errors'
+          "
+          [class.admin-status-pill--danger]="activeRun()?.status === 'failed'"
+          [class.admin-status-pill--neutral]="
+            activeRun()?.status !== 'completed' &&
+            activeRun()?.status !== 'running' &&
+            activeRun()?.status !== 'completed_with_errors' &&
+            activeRun()?.status !== 'failed'
+          "
+        >
+          {{ activeRun()?.status }}
+        </span>
+        <span class="admin-muted">
+          {{ activeRun()?.requestedSetIds?.length }} sets
+        </span>
+        <span class="admin-muted">
+          Gestart: {{ formatDateTime(activeRun()?.createdAt) }}
+        </span>
+        <span class="admin-muted">
+          Laatst bijgewerkt: {{ formatDateTime(activeRun()?.updatedAt) }}
+        </span>
+      </div>
+
+      @if (activeRunStateFilePath()) {
+      <p class="admin-muted admin-bulk-onboarding__state-file">
+        State file: {{ activeRunStateFilePath() }}
+      </p>
+      }
+
+      <div class="admin-bulk-onboarding__run-summary">
+        <article class="admin-panel admin-stack">
+          <p class="admin-eyebrow">Volledig</p>
+          <strong>{{ runOutcomeSummary().completedCount }}</strong>
+          <span class="admin-muted">Sets met full primary coverage</span>
+        </article>
+
+        <article class="admin-panel admin-stack">
+          <p class="admin-eyebrow">Aandacht</p>
+          <strong>{{ runOutcomeSummary().attentionCount }}</strong>
+          <span class="admin-muted">
+            Sets die nog merchants missen of fouten hebben
+          </span>
+        </article>
+
+        <article class="admin-panel admin-stack">
+          <p class="admin-eyebrow">Nog bezig</p>
+          <strong>{{ runOutcomeSummary().runningCount }}</strong>
+          <span class="admin-muted"
+            >Sets die nog niet door alle stages zijn</span
+          >
+        </article>
+      </div>
+
+      <div class="admin-bulk-onboarding__stage-grid">
+        @for (stageCard of stageCards(); track stageCard.label) {
+        <article class="admin-bulk-onboarding__stage-card">
+          <div class="admin-bulk-onboarding__card-header">
+            <strong>{{ stageCard.label }}</strong>
+            <span
+              class="admin-status-pill"
+              [class.admin-status-pill--positive]="stageCard.tone === 'positive'"
+              [class.admin-status-pill--warning]="stageCard.tone === 'warning'"
+              [class.admin-status-pill--danger]="stageCard.tone === 'danger'"
+              [class.admin-status-pill--neutral]="stageCard.tone === 'neutral'"
+            >
+              {{ stageCard.status }}
+            </span>
+          </div>
+          <p class="admin-muted">{{ stageCard.summary }}</p>
+        </article>
+        }
+      </div>
+
+      <div class="admin-toolbar admin-toolbar--filters">
+        <select
+          [ngModel]="resultFilter()"
+          (ngModelChange)="updateResultFilter($event)"
+          class="admin-input"
+          name="bulk-onboarding-result-filter"
+        >
+          <option value="all">Alle setresultaten</option>
+          <option value="attention">Alleen aandacht nodig</option>
+          <option value="running">Alleen nog bezig</option>
+          <option value="completed">Alleen volledig klaar</option>
+        </select>
+      </div>
+
+      <div class="admin-bulk-onboarding__result-list">
+        @for (resultRow of runResultRows(); track resultRow.setId) {
+        <article class="admin-bulk-onboarding__result-card">
+          <div class="admin-bulk-onboarding__result-main">
+            <div class="admin-bulk-onboarding__card-header">
+              <strong>{{ resultRow.setLabel }}</strong>
+              <span class="admin-count-pill">{{ resultRow.setId }}</span>
+              @if (resultRow.themeLabel) {
+              <span class="admin-bulk-onboarding__pill">
+                {{ resultRow.themeLabel }}
+              </span>
+              }
+              <span
+                class="admin-status-pill"
+                [class.admin-status-pill--positive]="resultRow.outcomeTone === 'positive'"
+                [class.admin-status-pill--warning]="resultRow.outcomeTone === 'warning'"
+                [class.admin-status-pill--danger]="resultRow.outcomeTone === 'danger'"
+                [class.admin-status-pill--neutral]="resultRow.outcomeTone === 'neutral'"
+              >
+                {{ resultRow.outcomeLabel }}
+              </span>
+            </div>
+
+            <div class="admin-bulk-onboarding__result-statuses">
+              <span class="admin-bulk-onboarding__pill">
+                Import: {{ resultRow.importLabel }}
+              </span>
+              <span class="admin-bulk-onboarding__pill">
+                Generate: {{ resultRow.generateLabel }}
+              </span>
+              <span class="admin-bulk-onboarding__pill">
+                Validate: {{ resultRow.validateLabel }}
+              </span>
+              <span class="admin-bulk-onboarding__pill">
+                Sync: {{ resultRow.syncLabel }}
+              </span>
+            </div>
+
+            <div class="admin-bulk-onboarding__result-meta">
+              <span class="admin-muted">{{ resultRow.coverageLabel }}</span>
+              @if (resultRow.missingMerchantLabel) {
+              <span class="admin-muted">
+                Mist nog: {{ resultRow.missingMerchantLabel }}
+              </span>
+              }
+              <span class="admin-muted">
+                Laatst bijgewerkt: {{ formatDateTime(resultRow.lastUpdatedAt) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="admin-actions">
+            <a
+              [queryParams]="{ set: resultRow.setId }"
+              [routerLink]="['/sets']"
+              class="admin-button admin-button--subtle"
+            >
+              Open in Sets
+            </a>
+          </div>
+        </article>
+        } @if (runResultRows().length === 0) {
+        <div class="admin-panel">
+          <p class="admin-muted">
+            Geen setresultaten voor deze filter. Kies een bredere filter of
+            wacht tot de run verder is.
+          </p>
+        </div>
+        }
+      </div>
+    </article>
+    }
+  </section>
+</section>

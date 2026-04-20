@@ -128,6 +128,7 @@ export const apiPaths = {
   wantedSets: '/api/v1/me/wanted-sets',
   adminCatalogSets: '/api/v1/admin/catalog/sets',
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
+  adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',

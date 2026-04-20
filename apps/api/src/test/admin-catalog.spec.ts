@@ -1,5 +1,10 @@
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
+import type {
+  CatalogBulkOnboardingRunReadResult,
+  CatalogBulkOnboardingRunState,
+  CatalogBulkOnboardingStartResult,
+} from '@lego-platform/api/data-access-server';
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
@@ -10,12 +15,82 @@ import {
   type AdminCatalogService,
 } from '../app/routes/admin-catalog';
 
+function createBulkOnboardingRunState(): CatalogBulkOnboardingRunState {
+  return {
+    createdAt: '2026-04-19T08:00:00.000Z',
+    generateStep: {
+      appliedSetIds: [],
+      status: 'pending',
+    },
+    importStep: {
+      appliedSetIds: [],
+      status: 'pending',
+    },
+    requestedSetIds: ['10316', '21061'],
+    runId: 'bulk-10316-21061',
+    setProgressById: {
+      '10316': {
+        importStatus: 'pending',
+        lastUpdatedAt: '2026-04-19T08:00:00.000Z',
+        processingState: 'pending_import',
+        setId: '10316',
+        sourceSetNumber: '10316-1',
+      },
+      '21061': {
+        importStatus: 'pending',
+        lastUpdatedAt: '2026-04-19T08:00:00.000Z',
+        processingState: 'pending_import',
+        setId: '21061',
+        sourceSetNumber: '21061-1',
+      },
+    },
+    snapshotStep: {
+      appliedSetIds: [],
+      status: 'pending',
+    },
+    status: 'running',
+    syncStep: {
+      appliedSetIds: [],
+      status: 'pending',
+    },
+    updatedAt: '2026-04-19T08:00:00.000Z',
+    validateStep: {
+      appliedSetIds: [],
+      status: 'pending',
+    },
+  };
+}
+
+function createBulkOnboardingRunReadResult(): CatalogBulkOnboardingRunReadResult {
+  return {
+    run: createBulkOnboardingRunState(),
+    stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
+  };
+}
+
+function createBulkOnboardingStartResult(): CatalogBulkOnboardingStartResult {
+  return {
+    alreadyRunning: false,
+    run: createBulkOnboardingRunState(),
+    runCreated: true,
+    runId: 'bulk-10316-21061',
+    stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
+  };
+}
+
 async function createAdminCatalogServer({
   catalogService,
 }: {
   catalogService?: AdminCatalogService;
 } = {}) {
   const nextCatalogService: AdminCatalogService = catalogService ?? {
+    getBulkOnboardingRun: vi.fn(async () =>
+      createBulkOnboardingRunReadResult(),
+    ),
+    getLatestBulkOnboardingRun: vi.fn(async () =>
+      createBulkOnboardingRunReadResult(),
+    ),
+    startBulkOnboarding: vi.fn(async () => createBulkOnboardingStartResult()),
     createSet: vi.fn(
       async () =>
         ({
@@ -148,6 +223,76 @@ describe('admin catalog routes', () => {
       sourceSetNumber: '77092-1',
       theme: 'The Legend of Zelda',
     });
+
+    await server.close();
+  });
+
+  test('starts a bulk onboarding run', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        setIds: ['10316', '21061'],
+      },
+      url: '/api/v1/admin/catalog/bulk-onboarding/runs',
+    });
+
+    expect(response.statusCode).toBe(202);
+    expect(catalogService.startBulkOnboarding).toHaveBeenCalledWith({
+      setIds: ['10316', '21061'],
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        runId: 'bulk-10316-21061',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('returns the latest bulk onboarding run when present', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/catalog/bulk-onboarding/runs/latest',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.getLatestBulkOnboardingRun).toHaveBeenCalled();
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        run: expect.objectContaining({
+          runId: 'bulk-10316-21061',
+        }),
+        stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('returns a bulk onboarding run by id', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/catalog/bulk-onboarding/runs/bulk-10316-21061',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(catalogService.getBulkOnboardingRun).toHaveBeenCalledWith(
+      'bulk-10316-21061',
+    );
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        run: expect.objectContaining({
+          runId: 'bulk-10316-21061',
+        }),
+        stateFilePath: '/tmp/catalog-bulk-onboarding-state.json',
+      }),
+    );
 
     await server.close();
   });
