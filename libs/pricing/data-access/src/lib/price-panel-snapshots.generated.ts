@@ -67,6 +67,30 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-19T09:32:07.108Z"
   },
   {
+    "setId": "10313",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T11:06:52.950Z"
+  },
+  {
+    "setId": "10314",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-20T11:07:01.142Z"
+  },
+  {
     "setId": "10316",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -133,6 +157,18 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-19T09:33:21.694Z",
     "referencePriceMinor": 5999,
     "deltaMinor": -1400
+  },
+  {
+    "setId": "10329",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3899,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T11:07:03.363Z"
   },
   {
     "setId": "10332",
@@ -363,6 +399,54 @@ const pricePanelSnapshotsPayload = String.raw`[
     "deltaMinor": -13000
   },
   {
+    "setId": "42173",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3974,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T11:07:07.523Z"
+  },
+  {
+    "setId": "42174",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 9799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T11:07:10.651Z"
+  },
+  {
+    "setId": "42175",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 16700,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 3,
+    "observedAt": "2026-04-20T11:07:16.658Z"
+  },
+  {
+    "setId": "42176",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 11599,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T11:07:17.989Z"
+  },
+  {
     "setId": "42177",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -411,6 +495,42 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "bol",
     "merchantCount": 1,
     "observedAt": "2026-04-20T10:04:41.173Z"
+  },
+  {
+    "setId": "43244",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 8395,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T11:11:42.235Z"
+  },
+  {
+    "setId": "43247",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 9299,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T11:07:21.647Z"
+  },
+  {
+    "setId": "43249",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4699,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-20T11:11:42.682Z"
   },
   {
     "setId": "43269",
