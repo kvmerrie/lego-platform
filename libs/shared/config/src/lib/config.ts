@@ -123,6 +123,7 @@ export const apiPaths = {
   session: '/api/v1/session',
   profile: '/api/v1/me/profile',
   catalogSets: '/api/v1/catalog/sets',
+  catalogDiscoverySignals: '/api/v1/catalog/discovery-signals',
   wishlistAlertsViewed: '/api/v1/me/profile/wishlist-alerts/viewed',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
@@ -139,6 +140,10 @@ export const apiPaths = {
 
 export function buildCatalogSetLiveOffersApiPath(setId: string): string {
   return `${apiPaths.catalogSets}/${encodeURIComponent(setId)}/live-offers`;
+}
+
+export function buildCatalogDiscoverySignalsApiPath(): string {
+  return apiPaths.catalogDiscoverySignals;
 }
 
 export const supabaseEnvKeys = {

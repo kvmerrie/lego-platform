@@ -585,10 +585,13 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Nu bij 2 winkels');
     expect(markup).toContain('2 winkels nagekeken · 31 mrt om 09:00');
     expect(markup).toContain('Beste deal');
-    expect(markup).toContain('Beste prijs bij 2 winkels');
+    expect(markup).toContain('data-wrap="best"');
+    expect(markup).toContain('data-wrap="default"');
+    expect(markup).toContain('€30 goedkoper dan de rest');
     expect(markup).toContain('€30 duurder');
     expect(markup).toContain('Ga naar beste deal');
     expect(markup).toContain('Bekijk alternatief');
+    expect(markup).not.toContain('Sterke deal');
     expect(markup.indexOf('Vergelijk winkels')).toBeLessThan(
       markup.indexOf('Prijs in het kort'),
     );

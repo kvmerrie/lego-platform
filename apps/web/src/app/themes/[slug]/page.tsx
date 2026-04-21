@@ -1,16 +1,15 @@
 import {
   listCatalogCurrentOfferSummariesBySetIds,
+  listCatalogDiscoverySignalsBySetId,
   getCatalogThemePageBySlug,
   listCatalogThemePageSlugs,
+  rankCatalogComparisonDiscoverySetCards,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CatalogFeatureThemePage,
   type CatalogFeatureThemePageDealItem,
 } from '@lego-platform/catalog/feature-theme-page';
-import {
-  getFeaturedSetPriceContext,
-  listDealSpotlightPriceContexts,
-} from '@lego-platform/pricing/data-access';
+import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import {
   type BrickhuntAnalyticsEventDescriptor,
   getBrickhuntAnalyticsPriceVerdictFromDelta,
@@ -23,25 +22,18 @@ import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-pric
 
 export const dynamicParams = true;
 export const revalidate = 300;
+const THEME_DISCOVERY_RAIL_LIMIT = 6;
 
 function toThemeDealSetCards({
   currentOfferSummaryBySetId,
-  setIds,
-  setCardById,
+  setCards,
 }: {
   currentOfferSummaryBySetId: Awaited<
     ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
   >;
-  setCardById: Map<string, CatalogFeatureThemePageDealItem>;
-  setIds: readonly string[];
+  setCards: readonly CatalogFeatureThemePageDealItem[];
 }): CatalogFeatureThemePageDealItem[] {
-  return setIds.flatMap((setId) => {
-    const setCard = setCardById.get(setId);
-
-    if (!setCard) {
-      return [];
-    }
-
+  return setCards.flatMap((setCard) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
     const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
 
@@ -90,32 +82,39 @@ export default async function ThemePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const themePage = await getCatalogThemePageBySlug({
-    slug,
-  });
+  const [themePage, catalogDiscoverySignalBySetId] = await Promise.all([
+    getCatalogThemePageBySlug({
+      slug,
+    }),
+    listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+      },
+    }),
+  ]);
 
   if (!themePage) {
     notFound();
   }
 
-  const setCardById = new Map(
-    themePage.setCards.map((setCard) => [setCard.id, setCard]),
-  );
-  const dealSetIds = listDealSpotlightPriceContexts({
-    candidateSetIds: themePage.setCards.map((setCard) => setCard.id),
-    limit: 4,
-  }).map((priceContext) => priceContext.setId);
+  const themeDiscoverySetCards = catalogDiscoverySignalBySetId.size
+    ? rankCatalogComparisonDiscoverySetCards({
+        getCatalogDiscoverySignalFn: (setId) =>
+          catalogDiscoverySignalBySetId.get(setId),
+        limit: THEME_DISCOVERY_RAIL_LIMIT,
+        setCards: themePage.setCards,
+      })
+    : themePage.setCards.slice(0, THEME_DISCOVERY_RAIL_LIMIT);
   const currentOfferSummaryBySetId =
     await listCatalogCurrentOfferSummariesBySetIds({
       cacheOptions: {
         revalidateSeconds: revalidate,
       },
-      setIds: dealSetIds,
+      setIds: themeDiscoverySetCards.map((setCard) => setCard.id),
     });
   const dealSetCards = toThemeDealSetCards({
     currentOfferSummaryBySetId,
-    setCardById,
-    setIds: dealSetIds,
+    setCards: themeDiscoverySetCards,
   });
   const featuredDealSetCards = dealSetCards.map((dealSetCard, index) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(dealSetCard.id);

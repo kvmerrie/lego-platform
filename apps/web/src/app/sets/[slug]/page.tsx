@@ -5,10 +5,17 @@ import {
 } from '@lego-platform/affiliate/util';
 import {
   getCatalogPrimaryOfferAvailabilityStateBySetId,
+  listCatalogCurrentOfferSummariesBySetIds,
+  listCatalogDiscoverySignalsBySetId,
   getCatalogSetBySlug,
+  listCatalogSimilarSetCards,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
 } from '@lego-platform/catalog/data-access-web';
+import {
+  CatalogFeatureSetList,
+  type CatalogFeatureSetListItem,
+} from '@lego-platform/catalog/feature-set-list';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
 import type {
   CatalogSetDetailBestDeal,
@@ -24,6 +31,7 @@ import {
   buildBrickhuntValueItems,
   buildSetDecisionSupportItems,
   buildSetDealVerdict,
+  getFeaturedSetPriceContext,
   getPricePanelSnapshot,
 } from '@lego-platform/pricing/data-access';
 import {
@@ -41,11 +49,14 @@ import {
 import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { notFound } from 'next/navigation';
+import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
+import { buildSimilarSetsRailDescription } from '../../lib/similar-sets-rail-copy';
 
 export const dynamicParams = true;
 export const revalidate = 300;
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
+const SIMILAR_SETS_RAIL_LIMIT = 6;
 
 function getCalendarDayValue(date: Date): number {
   const dateParts = new Intl.DateTimeFormat('en-CA', {
@@ -488,6 +499,31 @@ function buildUnavailableTrustSignals({
   ];
 }
 
+function toSimilarSetRailItems({
+  currentOfferSummaryBySetId,
+  setCards,
+}: {
+  currentOfferSummaryBySetId: Awaited<
+    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
+  >;
+  setCards: readonly CatalogFeatureSetListItem[];
+}): CatalogFeatureSetListItem[] {
+  return setCards.map((setCard) => {
+    const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+    const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
+
+    return {
+      ...setCard,
+      ctaMode: 'default' as const,
+      priceContext: buildCurrentSetCardPriceContext({
+        currentOfferSummary,
+        pricePanelSnapshot: featuredSetPriceContext,
+        theme: setCard.theme,
+      }),
+    };
+  });
+}
+
 export async function generateStaticParams() {
   return (await listCatalogSetSlugs()).map((slug) => ({ slug }));
 }
@@ -512,6 +548,12 @@ export default async function SetDetailPage({
     },
     setId: catalogSetDetail.id,
   });
+  const catalogDiscoverySignalBySetId =
+    await listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+      },
+    });
   const primaryOfferAvailability =
     await getCatalogPrimaryOfferAvailabilityStateBySetId({
       setId: catalogSetDetail.id,
@@ -549,6 +591,33 @@ export default async function SetDetailPage({
   const analyticsPriceVerdict = isUnavailableSet
     ? 'neutral'
     : getBrickhuntAnalyticsPriceVerdict(defaultDealVerdict.tone);
+  const similarSetCards = await listCatalogSimilarSetCards({
+    currentSetCard: {
+      id: catalogSetDetail.id,
+      name: catalogSetDetail.name,
+      pieces: catalogSetDetail.pieces,
+      releaseYear: catalogSetDetail.releaseYear,
+      theme: catalogSetDetail.theme,
+    },
+    getCatalogDiscoverySignalFn: (setId) =>
+      catalogDiscoverySignalBySetId.get(setId),
+    limit: SIMILAR_SETS_RAIL_LIMIT,
+    referenceBestPriceMinor:
+      bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor,
+  });
+  const similarSetCurrentOfferSummaryBySetId =
+    similarSetCards.length > 0
+      ? await listCatalogCurrentOfferSummariesBySetIds({
+          cacheOptions: {
+            revalidateSeconds: revalidate,
+          },
+          setIds: similarSetCards.map((setCard) => setCard.id),
+        })
+      : new Map();
+  const similarSetRailItems = toSimilarSetRailItems({
+    currentOfferSummaryBySetId: similarSetCurrentOfferSummaryBySetId,
+    setCards: similarSetCards,
+  });
 
   return (
     <ShellWeb>
@@ -645,6 +714,21 @@ export default async function SetDetailPage({
             setId={catalogSetDetail.id}
             variant="set-detail"
           />
+        }
+        similarSetsRail={
+          similarSetRailItems.length > 0 ? (
+            <CatalogFeatureSetList
+              description={buildSimilarSetsRailDescription(
+                catalogSetDetail.name,
+              )}
+              eyebrow="Hierna kijken"
+              sectionId="similar-sets"
+              setCards={similarSetRailItems}
+              signalText={`${similarSetRailItems.length} sets in ${catalogSetDetail.theme} met een vergelijkbare schaal of prijszone`}
+              tone="muted"
+              title="Vergelijkbare sets"
+            />
+          ) : undefined
         }
         themeDirectoryHref={buildWebPath(webPathnames.themes)}
         themeHref={buildThemePath(

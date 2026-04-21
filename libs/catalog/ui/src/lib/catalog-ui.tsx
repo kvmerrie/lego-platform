@@ -1105,6 +1105,7 @@ export function CatalogSetDetailPanel({
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
+  similarSetsRail,
   themeDirectoryHref,
   themeHref,
   trustSignals = [],
@@ -1122,6 +1123,7 @@ export function CatalogSetDetailPanel({
   ownershipActions?: ReactNode;
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
+  similarSetsRail?: ReactNode;
   themeDirectoryHref?: string;
   themeHref?: string;
   trustSignals?: readonly CatalogSetDetailTrustSignal[];
@@ -1272,6 +1274,10 @@ export function CatalogSetDetailPanel({
             />
           ) : null}
         </section>
+      ) : null}
+
+      {similarSetsRail ? (
+        <div className={styles.detailSimilarRail}>{similarSetsRail}</div>
       ) : null}
 
       <section className={styles.detailInfoGrid}>

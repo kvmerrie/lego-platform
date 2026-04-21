@@ -1,6 +1,9 @@
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
-import { buildCatalogSetLiveOffersApiPath } from '@lego-platform/shared/config';
+import {
+  buildCatalogDiscoverySignalsApiPath,
+  buildCatalogSetLiveOffersApiPath,
+} from '@lego-platform/shared/config';
 import {
   createAnonymousUserSession,
   type UserSession,
@@ -19,6 +22,9 @@ import {
 import { createRequestPrincipalPlugin } from '../app/plugins/request-principal';
 
 async function createApiServer({
+  listCatalogDiscoverySignals = vi.fn().mockResolvedValue([]) as NonNullable<
+    ApiV1RouteDependencies['listCatalogDiscoverySignals']
+  >,
   requestPrincipal = {
     state: 'anonymous',
   } satisfies RequestPrincipal,
@@ -30,6 +36,9 @@ async function createApiServer({
   userProfileRepository,
   userSession = createAnonymousUserSession(),
 }: {
+  listCatalogDiscoverySignals?: NonNullable<
+    ApiV1RouteDependencies['listCatalogDiscoverySignals']
+  >;
   listCatalogSetLiveOffersBySetId?: NonNullable<
     ApiV1RouteDependencies['listCatalogSetLiveOffersBySetId']
   >;
@@ -98,6 +107,7 @@ async function createApiServer({
   );
   await server.register(
     createApiV1Routes({
+      listCatalogDiscoverySignals,
       listCatalogSetLiveOffersBySetId,
       userProfileRepository: nextUserProfileRepository,
       userSessionService,
@@ -106,6 +116,7 @@ async function createApiServer({
   );
 
   return {
+    listCatalogDiscoverySignals,
     server,
     resolveRequestPrincipal,
     listCatalogSetLiveOffersBySetId,
@@ -116,6 +127,34 @@ async function createApiServer({
 }
 
 describe('api v1 auth and set-status routes', () => {
+  test('returns public catalog discovery signals', async () => {
+    const discoverySignals = [
+      {
+        setId: '42172',
+        bestPriceMinor: 32999,
+        merchantCount: 4,
+        nextBestPriceMinor: 35999,
+        observedAt: '2026-04-20T10:00:00.000Z',
+        priceSpreadMinor: 4000,
+        referenceDeltaMinor: -2000,
+      },
+    ];
+    const { listCatalogDiscoverySignals, server } = await createApiServer({
+      listCatalogDiscoverySignals: vi.fn().mockResolvedValue(discoverySignals),
+    });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: buildCatalogDiscoverySignalsApiPath(),
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(listCatalogDiscoverySignals).toHaveBeenCalledWith();
+    expect(response.json()).toEqual(discoverySignals);
+
+    await server.close();
+  });
+
   test('returns public live catalog offers for a set', async () => {
     const liveOffers = [
       {

@@ -5,6 +5,7 @@ import {
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
   getCatalogSetBySlugWithOverlay,
+  listCatalogDiscoverySignals,
   listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   listCatalogSetSummariesWithOverlay,
@@ -165,7 +166,11 @@ function createCatalogOverlaySupabaseClient({
   canonicalInsertResult,
   insertResult,
   canonicalRows,
+  latestOfferRows = [],
+  merchantRows = [],
   overlayRows = [],
+  offerSeedRows = [],
+  priceHistoryRows = [],
   primaryThemeRows = [],
   sourceThemeRows = [],
   themeMappingRows = [],
@@ -179,7 +184,11 @@ function createCatalogOverlaySupabaseClient({
     error: { code?: string; details?: string; message?: string } | null;
   };
   canonicalRows?: Record<string, unknown>[];
+  latestOfferRows?: Record<string, unknown>[];
+  merchantRows?: Record<string, unknown>[];
   overlayRows?: Record<string, unknown>[];
+  offerSeedRows?: Record<string, unknown>[];
+  priceHistoryRows?: Record<string, unknown>[];
   primaryThemeRows?: Record<string, unknown>[];
   sourceThemeRows?: Record<string, unknown>[];
   themeMappingRows?: Record<string, unknown>[];
@@ -273,6 +282,22 @@ function createCatalogOverlaySupabaseClient({
       };
     }
 
+    if (table === 'commerce_offer_seeds') {
+      return createSupabaseTableBuilder(offerSeedRows);
+    }
+
+    if (table === 'commerce_merchants') {
+      return createSupabaseTableBuilder(merchantRows);
+    }
+
+    if (table === 'commerce_offer_latest') {
+      return createSupabaseTableBuilder(latestOfferRows);
+    }
+
+    if (table === 'pricing_daily_set_history') {
+      return createSupabaseTableBuilder(priceHistoryRows);
+    }
+
     throw new Error(`Unexpected table requested in test: ${table}`);
   });
 
@@ -339,6 +364,126 @@ function createRebrickableFetchMock({
 }
 
 describe('catalog data access server', () => {
+  test('builds current discovery signals from active validated merchant offers', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          offer_seed_id: 'seed-2',
+          price_minor: 32999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T09:30:00.000Z',
+          updated_at: '2026-04-20T09:35:00.000Z',
+        },
+        {
+          offer_seed_id: 'seed-1',
+          price_minor: 34999,
+          currency_code: 'EUR',
+          availability: 'limited',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T08:30:00.000Z',
+          updated_at: '2026-04-20T08:35:00.000Z',
+        },
+        {
+          offer_seed_id: 'seed-3',
+          price_minor: 49999,
+          currency_code: 'EUR',
+          availability: 'out_of_stock',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T10:30:00.000Z',
+          updated_at: '2026-04-20T10:35:00.000Z',
+        },
+        {
+          offer_seed_id: 'seed-4',
+          price_minor: 31999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'error',
+          observed_at: '2026-04-20T11:30:00.000Z',
+          updated_at: '2026-04-20T11:35:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-bol',
+          is_active: true,
+          name: 'bol',
+          slug: 'bol',
+        },
+        {
+          id: 'merchant-intertoys',
+          is_active: true,
+          name: 'Intertoys',
+          slug: 'intertoys',
+        },
+        {
+          id: 'merchant-blocked',
+          is_active: false,
+          name: 'Dormant Merchant',
+          slug: 'dormant',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-1',
+          is_active: true,
+          merchant_id: 'merchant-intertoys',
+          product_url: 'https://www.intertoys.nl/technic',
+          set_id: '42172',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-2',
+          is_active: true,
+          merchant_id: 'merchant-bol',
+          product_url: 'https://www.bol.com/nl/nl/p/technic',
+          set_id: '42172',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-3',
+          is_active: true,
+          merchant_id: 'merchant-blocked',
+          product_url: 'https://example.test/dormant',
+          set_id: '42172',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-4',
+          is_active: true,
+          merchant_id: 'merchant-bol',
+          product_url: 'https://www.bol.com/nl/nl/p/technic-duplicate',
+          set_id: '42171',
+          validation_status: 'valid',
+        },
+      ],
+      priceHistoryRows: [
+        {
+          recorded_on: '2026-04-20',
+          reference_price_minor: 44999,
+          set_id: '42172',
+        },
+      ],
+    });
+
+    const result = await listCatalogDiscoverySignals({
+      supabaseClient,
+    });
+
+    expect(result).toEqual([
+      {
+        setId: '42172',
+        bestPriceMinor: 32999,
+        merchantCount: 2,
+        nextBestPriceMinor: 34999,
+        observedAt: '2026-04-20T09:30:00.000Z',
+        priceSpreadMinor: 2000,
+        referenceDeltaMinor: -12000,
+      },
+    ]);
+  });
+
   test('reads canonical catalog sets from the clean catalog_sets table when available', async () => {
     const { from, supabaseClient } = createCatalogOverlaySupabaseClient({
       canonicalRows: [

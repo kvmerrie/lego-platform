@@ -28,6 +28,7 @@ import {
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import {
+  buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
   getBrowserSupabaseConfig,
   getServerSupabaseConfig,
@@ -145,6 +146,15 @@ export interface CatalogApiReadCacheOptions {
   revalidateSeconds?: number;
 }
 
+export interface CatalogDiscoverySignal {
+  bestPriceMinor: number;
+  merchantCount: number;
+  nextBestPriceMinor?: number;
+  observedAt: string;
+  priceSpreadMinor: number;
+  referenceDeltaMinor?: number;
+}
+
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
 let webCatalogSupabasePublicClient: SupabaseClient | undefined;
 
@@ -204,6 +214,31 @@ function getWebCatalogSupabaseReadClient(): CatalogSupabaseClient | undefined {
 
 function getCatalogApiBaseUrl(): string {
   return process.env['API_PROXY_TARGET'] ?? getRuntimeBaseUrl('api');
+}
+
+interface CatalogDiscoverySignalRecord extends CatalogDiscoverySignal {
+  setId: string;
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isCatalogDiscoverySignalRecord(
+  value: unknown,
+): value is CatalogDiscoverySignalRecord {
+  return (
+    isObjectRecord(value) &&
+    typeof value['setId'] === 'string' &&
+    typeof value['bestPriceMinor'] === 'number' &&
+    typeof value['merchantCount'] === 'number' &&
+    typeof value['observedAt'] === 'string' &&
+    typeof value['priceSpreadMinor'] === 'number' &&
+    (typeof value['nextBestPriceMinor'] === 'undefined' ||
+      typeof value['nextBestPriceMinor'] === 'number') &&
+    (typeof value['referenceDeltaMinor'] === 'undefined' ||
+      typeof value['referenceDeltaMinor'] === 'number')
+  );
 }
 
 function toCanonicalCatalogSetFromRow({
@@ -759,6 +794,492 @@ function selectCatalogSetCardsByIds({
   });
 }
 
+function getCatalogDiscoverySignalAgeDays(observedAt: string): number {
+  const observedTimestamp = Date.parse(observedAt);
+
+  if (!Number.isFinite(observedTimestamp)) {
+    return 30;
+  }
+
+  const elapsedMilliseconds = Math.max(0, Date.now() - observedTimestamp);
+
+  return elapsedMilliseconds / (1000 * 60 * 60 * 24);
+}
+
+function getCatalogDiscoveryFreshnessScore(observedAt: string): number {
+  return Math.max(0, 21 - getCatalogDiscoverySignalAgeDays(observedAt)) * 2.5;
+}
+
+function getCatalogComparisonDiscoveryScore(
+  catalogDiscoverySignal: CatalogDiscoverySignal,
+): number {
+  const coverageScore = Math.min(catalogDiscoverySignal.merchantCount, 6) * 18;
+  const spreadScore = Math.min(
+    catalogDiscoverySignal.priceSpreadMinor / 150,
+    60,
+  );
+  const freshnessScore = getCatalogDiscoveryFreshnessScore(
+    catalogDiscoverySignal.observedAt,
+  );
+  const bestOfferClarityScore =
+    typeof catalogDiscoverySignal.referenceDeltaMinor === 'number' &&
+    catalogDiscoverySignal.referenceDeltaMinor < 0
+      ? Math.min(Math.abs(catalogDiscoverySignal.referenceDeltaMinor) / 250, 20)
+      : 0;
+
+  return coverageScore + spreadScore + freshnessScore + bestOfferClarityScore;
+}
+
+function getCatalogPremiumDiscoveryScore(
+  catalogDiscoverySignal: CatalogDiscoverySignal,
+): number {
+  const priceLevelScore = Math.min(
+    catalogDiscoverySignal.bestPriceMinor / 1500,
+    80,
+  );
+  const coverageScore = Math.min(catalogDiscoverySignal.merchantCount, 6) * 14;
+  const spreadScore = Math.min(
+    catalogDiscoverySignal.priceSpreadMinor / 125,
+    70,
+  );
+  const freshnessScore =
+    getCatalogDiscoveryFreshnessScore(catalogDiscoverySignal.observedAt) * 0.6;
+
+  return priceLevelScore + coverageScore + spreadScore + freshnessScore;
+}
+
+function getCatalogSimilarSetPriceProximityScore({
+  candidateBestPriceMinor,
+  referenceBestPriceMinor,
+}: {
+  candidateBestPriceMinor?: number;
+  referenceBestPriceMinor?: number;
+}): number {
+  if (
+    typeof candidateBestPriceMinor !== 'number' ||
+    typeof referenceBestPriceMinor !== 'number' ||
+    candidateBestPriceMinor <= 0 ||
+    referenceBestPriceMinor <= 0
+  ) {
+    return 0;
+  }
+
+  const relativeGap =
+    Math.abs(candidateBestPriceMinor - referenceBestPriceMinor) /
+    Math.max(candidateBestPriceMinor, referenceBestPriceMinor);
+
+  return Math.max(0, 54 - relativeGap * 108);
+}
+
+function getCatalogSimilarSetPieceProximityScore({
+  candidatePieces,
+  currentPieces,
+}: {
+  candidatePieces: number;
+  currentPieces: number;
+}): number {
+  if (candidatePieces <= 0 || currentPieces <= 0) {
+    return 0;
+  }
+
+  const pieceGapRatio =
+    Math.abs(candidatePieces - currentPieces) /
+    Math.max(candidatePieces, currentPieces);
+
+  return Math.max(0, 42 - pieceGapRatio * 84);
+}
+
+function getCatalogSimilarSetReleaseYearScore({
+  candidateReleaseYear,
+  currentReleaseYear,
+}: {
+  candidateReleaseYear: number;
+  currentReleaseYear: number;
+}): number {
+  const releaseYearGap = Math.abs(candidateReleaseYear - currentReleaseYear);
+
+  return Math.max(0, 12 - releaseYearGap * 3);
+}
+
+function getCatalogSimilarSetComparisonReadinessScore(
+  catalogDiscoverySignal?: CatalogDiscoverySignal,
+): number {
+  if (!catalogDiscoverySignal) {
+    return 0;
+  }
+
+  const coverageScore = Math.min(catalogDiscoverySignal.merchantCount, 6) * 4;
+  const spreadScore = Math.min(
+    catalogDiscoverySignal.priceSpreadMinor / 500,
+    12,
+  );
+  const freshnessScore =
+    getCatalogDiscoveryFreshnessScore(catalogDiscoverySignal.observedAt) * 0.3;
+
+  return coverageScore + spreadScore + freshnessScore;
+}
+
+const catalogSimilarSetTitleAliases = [
+  {
+    pattern: /\blotr\b/g,
+    replacement: 'the lord of the rings',
+  },
+  {
+    pattern: /\bhp\b/g,
+    replacement: 'harry potter',
+  },
+] as const;
+
+const catalogSimilarSetKnownFamilyMarkers = [
+  ['the lord of the rings', 'the lord of the rings'],
+  ['harry potter', 'harry potter'],
+  ['star wars', 'star wars'],
+  ['mario kart', 'mario kart'],
+  ['animal crossing', 'animal crossing'],
+  ['jurassic world', 'jurassic world'],
+  ['the botanical collection', 'the botanical collection'],
+  ['botanical collection', 'the botanical collection'],
+  ['modular buildings', 'modular buildings'],
+] as const;
+
+const catalogSimilarSetAffinityStopWords = new Set([
+  'a',
+  'an',
+  'and',
+  'at',
+  'de',
+  'den',
+  'der',
+  'dit',
+  'een',
+  'for',
+  'het',
+  'in',
+  'met',
+  'of',
+  'op',
+  'set',
+  'the',
+  'to',
+  'van',
+  'voor',
+  'with',
+]);
+
+interface CatalogSimilarSetAffinityDescriptor {
+  familyMarker?: string;
+  tokens: readonly string[];
+}
+
+function normalizeCatalogSimilarSetTitle(value: string): string {
+  let normalizedValue = normalizeCatalogAsciiText(value)
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/&/g, ' and ');
+
+  for (const { pattern, replacement } of catalogSimilarSetTitleAliases) {
+    normalizedValue = normalizedValue.replace(pattern, replacement);
+  }
+
+  return normalizedValue
+    .replace(/[^a-z0-9:]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function getCatalogSimilarSetFamilyMarker(
+  normalizedTitle: string,
+): string | undefined {
+  const knownFamilyMarker = catalogSimilarSetKnownFamilyMarkers.find(
+    ([marker]) => normalizedTitle.includes(marker),
+  );
+
+  if (knownFamilyMarker) {
+    return knownFamilyMarker[1];
+  }
+
+  const [prefixSegment] = normalizedTitle.split(':');
+
+  if (!prefixSegment) {
+    return undefined;
+  }
+
+  const normalizedPrefixSegment = prefixSegment.trim();
+
+  if (!normalizedPrefixSegment) {
+    return undefined;
+  }
+
+  const informativeTokenCount = normalizedPrefixSegment
+    .split(' ')
+    .filter(
+      (token) =>
+        token.length >= 3 && !catalogSimilarSetAffinityStopWords.has(token),
+    ).length;
+
+  return informativeTokenCount >= 2 ? normalizedPrefixSegment : undefined;
+}
+
+function getCatalogSimilarSetAffinityDescriptor(
+  setName: string,
+): CatalogSimilarSetAffinityDescriptor {
+  const normalizedTitle = normalizeCatalogSimilarSetTitle(setName);
+
+  return {
+    familyMarker: getCatalogSimilarSetFamilyMarker(normalizedTitle),
+    tokens: [
+      ...new Set(
+        normalizedTitle
+          .split(/[: ]/)
+          .filter(
+            (token) =>
+              token.length >= 3 &&
+              !catalogSimilarSetAffinityStopWords.has(token),
+          ),
+      ),
+    ],
+  };
+}
+
+function getCatalogSimilarSetAffinityScore({
+  candidateName,
+  currentSetAffinityDescriptor,
+}: {
+  candidateName: string;
+  currentSetAffinityDescriptor: CatalogSimilarSetAffinityDescriptor;
+}): number {
+  const candidateSetAffinityDescriptor =
+    getCatalogSimilarSetAffinityDescriptor(candidateName);
+
+  if (
+    currentSetAffinityDescriptor.familyMarker &&
+    currentSetAffinityDescriptor.familyMarker ===
+      candidateSetAffinityDescriptor.familyMarker
+  ) {
+    return 24;
+  }
+
+  const candidateTokenSet = new Set(candidateSetAffinityDescriptor.tokens);
+  const sharedTokens = currentSetAffinityDescriptor.tokens.filter((token) =>
+    candidateTokenSet.has(token),
+  );
+
+  if (sharedTokens.length >= 2) {
+    return 16;
+  }
+
+  const [sharedToken] = sharedTokens;
+
+  return sharedToken && sharedToken.length >= 7 ? 8 : 0;
+}
+
+function sortCatalogDiscoverySetCards({
+  getCatalogDiscoverySignalFn,
+  scoreCatalogDiscoverySignal,
+  setCards,
+}: {
+  getCatalogDiscoverySignalFn: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  scoreCatalogDiscoverySignal: (
+    catalogDiscoverySignal: CatalogDiscoverySignal,
+  ) => number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return [...setCards]
+    .flatMap((setCard) => {
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
+
+      if (!catalogDiscoverySignal) {
+        return [];
+      }
+
+      return [
+        {
+          catalogDiscoverySignal,
+          score: scoreCatalogDiscoverySignal(catalogDiscoverySignal),
+          setCard,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.catalogDiscoverySignal.merchantCount -
+          left.catalogDiscoverySignal.merchantCount ||
+        right.catalogDiscoverySignal.priceSpreadMinor -
+          left.catalogDiscoverySignal.priceSpreadMinor ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
+        right.setCard.pieces - left.setCard.pieces ||
+        left.setCard.name.localeCompare(right.setCard.name) ||
+        left.setCard.id.localeCompare(right.setCard.id),
+    )
+    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
+}
+
+export function rankCatalogComparisonDiscoverySetCards({
+  excludedSetIds = [],
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  setCards,
+}: {
+  excludedSetIds?: readonly string[];
+  getCatalogDiscoverySignalFn: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return sortCatalogDiscoverySetCards({
+    getCatalogDiscoverySignalFn: (setId) => {
+      if (excludedSetIdSet.has(setId)) {
+        return undefined;
+      }
+
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setId);
+
+      if (!catalogDiscoverySignal || catalogDiscoverySignal.merchantCount < 2) {
+        return undefined;
+      }
+
+      return catalogDiscoverySignal;
+    },
+    scoreCatalogDiscoverySignal: getCatalogComparisonDiscoveryScore,
+    setCards,
+  }).slice(0, limit);
+}
+
+export function rankCatalogPremiumDiscoverySetCards({
+  excludedSetIds = [],
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  setCards,
+}: {
+  excludedSetIds?: readonly string[];
+  getCatalogDiscoverySignalFn: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return sortCatalogDiscoverySetCards({
+    getCatalogDiscoverySignalFn: (setId) => {
+      if (excludedSetIdSet.has(setId)) {
+        return undefined;
+      }
+
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setId);
+
+      if (
+        !catalogDiscoverySignal ||
+        catalogDiscoverySignal.merchantCount < 2 ||
+        catalogDiscoverySignal.bestPriceMinor < 15000
+      ) {
+        return undefined;
+      }
+
+      return catalogDiscoverySignal;
+    },
+    scoreCatalogDiscoverySignal: getCatalogPremiumDiscoveryScore,
+    setCards,
+  }).slice(0, limit);
+}
+
+export function rankCatalogSimilarSetCards({
+  currentSetCard,
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  referenceBestPriceMinor,
+  setCards,
+}: {
+  currentSetCard: Pick<
+    CatalogHomepageSetCard,
+    'id' | 'name' | 'pieces' | 'releaseYear' | 'theme'
+  >;
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  referenceBestPriceMinor?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const currentSetAffinityDescriptor = getCatalogSimilarSetAffinityDescriptor(
+    currentSetCard.name,
+  );
+
+  return [...setCards]
+    .flatMap((setCard) => {
+      if (
+        setCard.id === currentSetCard.id ||
+        setCard.theme !== currentSetCard.theme
+      ) {
+        return [];
+      }
+
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn?.(setCard.id);
+      const priceProximityScore = getCatalogSimilarSetPriceProximityScore({
+        candidateBestPriceMinor: catalogDiscoverySignal?.bestPriceMinor,
+        referenceBestPriceMinor,
+      });
+      const pieceProximityScore = getCatalogSimilarSetPieceProximityScore({
+        candidatePieces: setCard.pieces,
+        currentPieces: currentSetCard.pieces,
+      });
+      const releaseYearScore = getCatalogSimilarSetReleaseYearScore({
+        candidateReleaseYear: setCard.releaseYear,
+        currentReleaseYear: currentSetCard.releaseYear,
+      });
+      const titleAffinityScore = getCatalogSimilarSetAffinityScore({
+        candidateName: setCard.name,
+        currentSetAffinityDescriptor,
+      });
+      const comparisonReadinessScore =
+        getCatalogSimilarSetComparisonReadinessScore(catalogDiscoverySignal);
+      const pieceGap = Math.abs(setCard.pieces - currentSetCard.pieces);
+      const totalScore =
+        priceProximityScore +
+        pieceProximityScore +
+        releaseYearScore +
+        titleAffinityScore +
+        comparisonReadinessScore;
+
+      return [
+        {
+          comparisonReadinessScore,
+          pieceGap,
+          pieceProximityScore,
+          priceProximityScore,
+          releaseYearGap: Math.abs(
+            setCard.releaseYear - currentSetCard.releaseYear,
+          ),
+          score: totalScore,
+          setCard,
+          titleAffinityScore,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.priceProximityScore - left.priceProximityScore ||
+        right.pieceProximityScore - left.pieceProximityScore ||
+        right.titleAffinityScore - left.titleAffinityScore ||
+        right.comparisonReadinessScore - left.comparisonReadinessScore ||
+        left.pieceGap - right.pieceGap ||
+        left.releaseYearGap - right.releaseYearGap ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
+        right.setCard.pieces - left.setCard.pieces ||
+        left.setCard.name.localeCompare(right.setCard.name) ||
+        left.setCard.id.localeCompare(right.setCard.id),
+    )
+    .slice(0, limit)
+    .map((catalogSimilarCandidate) => catalogSimilarCandidate.setCard);
+}
+
 function getExplicitBrowseRank(
   canonicalId: string,
   rankedIds: readonly string[],
@@ -1075,6 +1596,80 @@ export async function listCatalogSetLiveOffersBySetId({
   }
 }
 
+export async function listCatalogDiscoverySignalsBySetId({
+  apiBaseUrl,
+  cacheOptions,
+  fetchImpl,
+}: {
+  apiBaseUrl?: string;
+  cacheOptions?: CatalogApiReadCacheOptions;
+  fetchImpl?: typeof fetch;
+} = {}): Promise<Map<string, CatalogDiscoverySignal>> {
+  try {
+    const response = await (fetchImpl ?? fetch)(
+      `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogDiscoverySignalsApiPath()}`,
+      {
+        headers: {
+          accept: 'application/json',
+        },
+        ...(typeof cacheOptions?.revalidateSeconds === 'number'
+          ? {
+              next: {
+                revalidate: cacheOptions.revalidateSeconds,
+              },
+            }
+          : {
+              cache: 'no-store' as const,
+            }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error('Unable to load catalog discovery signals.');
+    }
+
+    const payload = await response.json();
+
+    if (!Array.isArray(payload)) {
+      return new Map();
+    }
+
+    return new Map(
+      payload.flatMap((catalogDiscoverySignalRecord) => {
+        if (!isCatalogDiscoverySignalRecord(catalogDiscoverySignalRecord)) {
+          return [];
+        }
+
+        const {
+          setId,
+          bestPriceMinor,
+          merchantCount,
+          nextBestPriceMinor,
+          observedAt,
+          priceSpreadMinor,
+          referenceDeltaMinor,
+        } = catalogDiscoverySignalRecord;
+
+        return [
+          [
+            setId,
+            {
+              bestPriceMinor,
+              merchantCount,
+              nextBestPriceMinor,
+              observedAt,
+              priceSpreadMinor,
+              referenceDeltaMinor,
+            } satisfies CatalogDiscoverySignal,
+          ],
+        ];
+      }),
+    );
+  } catch {
+    return new Map();
+  }
+}
+
 export async function getCatalogPrimaryOfferAvailabilityStateBySetId({
   setId,
   supabaseClient,
@@ -1258,24 +1853,90 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
 }
 
 export async function listHomepageSetCards({
+  excludedSetIds = [],
+  getCatalogDiscoverySignalFn,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  limit = 6,
 }: {
+  excludedSetIds?: readonly string[];
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  limit?: number;
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  return listCatalogSetCardsByIds({
-    canonicalIds: catalogHomepageFeaturedSetIds,
-    listCanonicalCatalogSetsFn,
+  if (!getCatalogDiscoverySignalFn) {
+    return listCatalogSetCardsByIds({
+      canonicalIds: catalogHomepageFeaturedSetIds.filter(
+        (canonicalId) => !excludedSetIds.includes(canonicalId),
+      ),
+      listCanonicalCatalogSetsFn,
+    });
+  }
+
+  return rankCatalogPremiumDiscoverySetCards({
+    excludedSetIds,
+    getCatalogDiscoverySignalFn,
+    limit,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
   });
 }
 
 export async function listHomepageDealCandidateSetCards({
+  getCatalogDiscoverySignalFn,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  limit = 3,
 }: {
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  limit?: number;
 } = {}): Promise<CatalogHomepageSetCard[]> {
-  return listCatalogSetCardsByIds({
-    canonicalIds: catalogHomepageDealCandidateIds,
-    listCanonicalCatalogSetsFn,
+  if (!getCatalogDiscoverySignalFn) {
+    return listCatalogSetCardsByIds({
+      canonicalIds: catalogHomepageDealCandidateIds,
+      listCanonicalCatalogSetsFn,
+    });
+  }
+
+  return rankCatalogComparisonDiscoverySetCards({
+    getCatalogDiscoverySignalFn,
+    limit,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
+  });
+}
+
+export async function listCatalogSimilarSetCards({
+  currentSetCard,
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  referenceBestPriceMinor,
+}: {
+  currentSetCard: Pick<
+    CatalogHomepageSetCard,
+    'id' | 'name' | 'pieces' | 'releaseYear' | 'theme'
+  >;
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  referenceBestPriceMinor?: number;
+}): Promise<CatalogHomepageSetCard[]> {
+  return rankCatalogSimilarSetCards({
+    currentSetCard,
+    getCatalogDiscoverySignalFn,
+    limit,
+    referenceBestPriceMinor,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
   });
 }
 

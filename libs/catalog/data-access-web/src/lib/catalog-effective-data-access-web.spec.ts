@@ -15,6 +15,7 @@ import * as supabaseSdk from '@supabase/supabase-js';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import {
+  type CatalogDiscoverySignal,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   type CatalogResolvedOffer,
   getCanonicalCatalogSetById,
@@ -22,8 +23,10 @@ import {
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlug,
   listCanonicalCatalogSets,
+  listCatalogDiscoverySignalsBySetId,
   listCatalogSearchMatches,
   listCatalogSearchSuggestionSetCards,
+  listCatalogSimilarSetCards,
   listCatalogSetCardsByIds,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
@@ -32,9 +35,12 @@ import {
   listCatalogThemePageSlugs,
   listDiscoverBrowseThemeGroups,
   listDiscoverHighlightSetCards,
+  listHomepageDealCandidateSetCards,
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
+  rankCatalogComparisonDiscoverySetCards,
+  rankCatalogSimilarSetCards,
   resetWebCatalogSupabaseClientsForTests,
   resolveCatalogCurrentOffers,
   resolveCatalogSetDetailOffers,
@@ -90,6 +96,20 @@ function createCatalogOffer(
     priceCents: 7999,
     setId: '72037',
     url: 'https://www.intertoys.nl/mario-kart',
+    ...overrides,
+  };
+}
+
+function createCatalogDiscoverySignal(
+  overrides: Partial<CatalogDiscoverySignal> = {},
+): CatalogDiscoverySignal {
+  return {
+    bestPriceMinor: 29999,
+    merchantCount: 4,
+    nextBestPriceMinor: 32999,
+    observedAt: '2026-04-20T08:30:00.000Z',
+    priceSpreadMinor: 3000,
+    referenceDeltaMinor: -2000,
     ...overrides,
   };
 }
@@ -661,39 +681,255 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
-  test('keeps homepage featured cards on the curated id order when canonical sets exist', async () => {
-    const result = await listHomepageSetCards({
-      listCanonicalCatalogSetsFn: async () => [
-        createCanonicalCatalogSet({
-          name: 'Rivendell',
-          setId: '10316',
-          slug: 'rivendell-10316',
-          sourceSetNumber: '10316-1',
-          primaryTheme: 'Icons',
-        }),
-        createCanonicalCatalogSet({
-          name: 'The Lord of the Rings: Barad-dur',
-          setId: '10333',
-          slug: 'the-lord-of-the-rings-barad-dur-10333',
-          sourceSetNumber: '10333-1',
-          primaryTheme: 'Icons',
-        }),
-        createCanonicalCatalogSet({
-          name: 'Vincent van Gogh - The Starry Night',
-          pieceCount: 2316,
-          releaseYear: 2022,
-          setId: '21333',
-          slug: 'vincent-van-gogh-the-starry-night-21333',
-          sourceSetNumber: '21333-1',
-          primaryTheme: 'Ideas',
-        }),
-      ],
+  test('selects homepage comparison discovery cards from explicit coverage, spread, and freshness signals', async () => {
+    const listCanonicalCatalogSetsFn = async () => [
+      createCanonicalCatalogSet({
+        name: 'Technic Hypercar',
+        setId: '42143',
+        slug: 'technic-hypercar-42143',
+        sourceSetNumber: '42143-1',
+        primaryTheme: 'Technic',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Marvel Tower',
+        pieceCount: 5201,
+        releaseYear: 2023,
+        setId: '76269',
+        slug: 'marvel-tower-76269',
+        sourceSetNumber: '76269-1',
+        primaryTheme: 'Marvel',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Botanical Bouquet',
+        pieceCount: 822,
+        releaseYear: 2024,
+        setId: '10313',
+        slug: 'botanical-bouquet-10313',
+        sourceSetNumber: '10313-1',
+        primaryTheme: 'Botanicals',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Thin Coverage Set',
+        setId: '10314',
+        slug: 'thin-coverage-set-10314',
+        sourceSetNumber: '10314-1',
+        primaryTheme: 'Botanicals',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Ideas Showcase',
+        pieceCount: 2600,
+        releaseYear: 2024,
+        setId: '21355',
+        slug: 'ideas-showcase-21355',
+        sourceSetNumber: '21355-1',
+        primaryTheme: 'Ideas',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Star Wars Transport',
+        pieceCount: 1400,
+        releaseYear: 2025,
+        setId: '75412',
+        slug: 'star-wars-transport-75412',
+        sourceSetNumber: '75412-1',
+        primaryTheme: 'Star Wars',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Castle Expansion',
+        pieceCount: 3300,
+        releaseYear: 2025,
+        setId: '10352',
+        slug: 'castle-expansion-10352',
+        sourceSetNumber: '10352-1',
+        primaryTheme: 'Icons',
+      }),
+    ];
+
+    const result = await listHomepageDealCandidateSetCards({
+      limit: 6,
+      listCanonicalCatalogSetsFn,
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '42143') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 38999,
+            merchantCount: 5,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 14000,
+            referenceDeltaMinor: -9000,
+          });
+        }
+
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 40999,
+            merchantCount: 4,
+            observedAt: '2026-04-20T09:00:00.000Z',
+            priceSpreadMinor: 8000,
+            referenceDeltaMinor: -5000,
+          });
+        }
+
+        if (setId === '10313') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 4499,
+            merchantCount: 3,
+            observedAt: '2026-04-20T11:00:00.000Z',
+            priceSpreadMinor: 1800,
+            referenceDeltaMinor: -500,
+          });
+        }
+
+        if (setId === '10314') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 6799,
+            merchantCount: 1,
+            observedAt: '2026-04-20T11:30:00.000Z',
+            priceSpreadMinor: 0,
+          });
+        }
+
+        if (setId === '21355') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 21999,
+            merchantCount: 3,
+            observedAt: '2026-04-19T09:00:00.000Z',
+            priceSpreadMinor: 3200,
+            referenceDeltaMinor: -1200,
+          });
+        }
+
+        if (setId === '75412') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 15999,
+            merchantCount: 4,
+            observedAt: '2026-04-18T11:00:00.000Z',
+            priceSpreadMinor: 2100,
+            referenceDeltaMinor: -800,
+          });
+        }
+
+        if (setId === '10352') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 28999,
+            merchantCount: 2,
+            observedAt: '2026-04-20T07:00:00.000Z',
+            priceSpreadMinor: 2600,
+            referenceDeltaMinor: -600,
+          });
+        }
+
+        return undefined;
+      },
     });
 
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '42143',
+      '76269',
+      '75412',
+      '21355',
+      '10313',
+      '10352',
+    ]);
+  });
+
+  test('selects homepage premium discovery cards by price level, spread, and coverage', async () => {
+    const listCanonicalCatalogSetsFn = async () => [
+      createCanonicalCatalogSet({
+        name: 'Technic Hypercar',
+        setId: '42143',
+        slug: 'technic-hypercar-42143',
+        sourceSetNumber: '42143-1',
+        primaryTheme: 'Technic',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Rivendell',
+        pieceCount: 6167,
+        releaseYear: 2023,
+        setId: '10316',
+        slug: 'rivendell-10316',
+        sourceSetNumber: '10316-1',
+        primaryTheme: 'Icons',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Avengers Tower',
+        pieceCount: 5201,
+        releaseYear: 2023,
+        setId: '76269',
+        slug: 'avengers-tower-76269',
+        sourceSetNumber: '76269-1',
+        primaryTheme: 'Marvel',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Art Print',
+        pieceCount: 1200,
+        releaseYear: 2024,
+        setId: '31208',
+        slug: 'art-print-31208',
+        sourceSetNumber: '31208-1',
+        primaryTheme: 'Art',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Cheap Set',
+        pieceCount: 900,
+        releaseYear: 2024,
+        setId: '10311',
+        slug: 'cheap-set-10311',
+        sourceSetNumber: '10311-1',
+        primaryTheme: 'Botanicals',
+      }),
+    ];
+
+    const result = await listHomepageSetCards({
+      excludedSetIds: ['42143'],
+      limit: 3,
+      listCanonicalCatalogSetsFn,
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '42143') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 38999,
+            merchantCount: 5,
+            priceSpreadMinor: 14000,
+          });
+        }
+
+        if (setId === '10316') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 48246,
+            merchantCount: 4,
+            priceSpreadMinor: 5000,
+          });
+        }
+
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 40999,
+            merchantCount: 4,
+            priceSpreadMinor: 12000,
+          });
+        }
+
+        if (setId === '31208') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 8299,
+            merchantCount: 5,
+            priceSpreadMinor: 2200,
+          });
+        }
+
+        if (setId === '10311') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 3799,
+            merchantCount: 5,
+            priceSpreadMinor: 1600,
+          });
+        }
+
+        return undefined;
+      },
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '76269',
       '10316',
-      '10333',
-      '21333',
     ]);
   });
 
@@ -868,6 +1104,436 @@ describe('catalog effective data access web', () => {
     expect(
       themePage?.setCards.map((catalogSetCard) => catalogSetCard.id),
     ).toEqual(['75313', '75399']);
+  });
+
+  test('ranks theme-local discovery rails with the same comparison scoring', () => {
+    const result = rankCatalogComparisonDiscoverySetCards({
+      limit: 6,
+      setCards: [
+        {
+          ...createCanonicalCatalogSet({
+            name: 'Technic Hypercar',
+            setId: '42143',
+            slug: 'technic-hypercar-42143',
+            sourceSetNumber: '42143-1',
+            primaryTheme: 'Technic',
+          }),
+        },
+        {
+          ...createCanonicalCatalogSet({
+            name: 'Mercedes-AMG F1 W14',
+            setId: '42171',
+            slug: 'mercedes-amg-f1-w14-42171',
+            sourceSetNumber: '42171-1',
+            primaryTheme: 'Technic',
+          }),
+        },
+        {
+          ...createCanonicalCatalogSet({
+            name: 'Backhoe Loader',
+            setId: '42197',
+            slug: 'backhoe-loader-42197',
+            sourceSetNumber: '42197-1',
+            primaryTheme: 'Technic',
+          }),
+        },
+      ].map((canonicalCatalogSet) => ({
+        id: canonicalCatalogSet.setId,
+        slug: canonicalCatalogSet.slug,
+        name: canonicalCatalogSet.name,
+        theme: canonicalCatalogSet.primaryTheme,
+        releaseYear: canonicalCatalogSet.releaseYear,
+        pieces: canonicalCatalogSet.pieceCount,
+        imageUrl: canonicalCatalogSet.imageUrl,
+      })),
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '42143') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 38999,
+            merchantCount: 5,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 11000,
+            referenceDeltaMinor: -8000,
+          });
+        }
+
+        if (setId === '42171') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 17999,
+            merchantCount: 4,
+            observedAt: '2026-04-20T11:00:00.000Z',
+            priceSpreadMinor: 5000,
+            referenceDeltaMinor: -3000,
+          });
+        }
+
+        if (setId === '42197') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 9499,
+            merchantCount: 2,
+            observedAt: '2026-04-10T11:00:00.000Z',
+            priceSpreadMinor: 900,
+          });
+        }
+
+        return undefined;
+      },
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '42143',
+      '42171',
+      '42197',
+    ]);
+  });
+
+  test('keeps discovery ranking deterministic when signals tie', () => {
+    const result = rankCatalogComparisonDiscoverySetCards({
+      limit: 3,
+      setCards: [
+        {
+          id: 'A',
+          imageUrl: undefined,
+          name: 'Alpha',
+          pieces: 1200,
+          releaseYear: 2024,
+          slug: 'alpha',
+          theme: 'Icons',
+        },
+        {
+          id: 'B',
+          imageUrl: undefined,
+          name: 'Beta',
+          pieces: 1600,
+          releaseYear: 2024,
+          slug: 'beta',
+          theme: 'Icons',
+        },
+        {
+          id: 'C',
+          imageUrl: undefined,
+          name: 'Gamma',
+          pieces: 900,
+          releaseYear: 2023,
+          slug: 'gamma',
+          theme: 'Icons',
+        },
+      ],
+      getCatalogDiscoverySignalFn: () =>
+        createCatalogDiscoverySignal({
+          bestPriceMinor: 24999,
+          merchantCount: 4,
+          observedAt: '2026-04-20T10:00:00.000Z',
+          priceSpreadMinor: 4000,
+          referenceDeltaMinor: -1500,
+        }),
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      'B',
+      'A',
+      'C',
+    ]);
+  });
+
+  test('ranks similar sets within the same theme and excludes the current set', () => {
+    const result = rankCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '10330',
+        name: 'McLaren MP4/4 & Ayrton Senna',
+        pieces: 693,
+        releaseYear: 2024,
+        theme: 'Icons',
+      },
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '10331') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 3999,
+            merchantCount: 4,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 900,
+          });
+        }
+
+        if (setId === '31208') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 8299,
+            merchantCount: 5,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 2200,
+          });
+        }
+
+        if (setId === '10311') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 3799,
+            merchantCount: 5,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 1200,
+          });
+        }
+
+        return undefined;
+      },
+      limit: 6,
+      referenceBestPriceMinor: 4799,
+      setCards: [
+        createCanonicalCatalogSet({
+          name: 'McLaren MP4/4 & Ayrton Senna',
+          pieceCount: 693,
+          primaryTheme: 'Icons',
+          setId: '10330',
+          slug: 'mclaren-mp4-4-ayrton-senna-10330',
+          sourceSetNumber: '10330-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Kingfisher Bird',
+          pieceCount: 834,
+          primaryTheme: 'Icons',
+          setId: '10331',
+          slug: 'kingfisher-bird-10331',
+          sourceSetNumber: '10331-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Hokusai - The Great Wave',
+          pieceCount: 1810,
+          primaryTheme: 'Art',
+          setId: '31208',
+          slug: 'hokusai-the-great-wave-31208',
+          sourceSetNumber: '31208-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Orchid',
+          pieceCount: 608,
+          primaryTheme: 'Botanicals',
+          setId: '10311',
+          slug: 'orchid-10311',
+          sourceSetNumber: '10311-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Tiny Plants',
+          pieceCount: 758,
+          primaryTheme: 'Icons',
+          setId: '10329',
+          slug: 'tiny-plants-10329',
+          sourceSetNumber: '10329-1',
+        }),
+      ].map((canonicalCatalogSet) => ({
+        id: canonicalCatalogSet.setId,
+        imageUrl: canonicalCatalogSet.imageUrl,
+        name: canonicalCatalogSet.name,
+        pieces: canonicalCatalogSet.pieceCount,
+        releaseYear: canonicalCatalogSet.releaseYear,
+        slug: canonicalCatalogSet.slug,
+        theme: canonicalCatalogSet.primaryTheme,
+      })),
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10331',
+      '10329',
+    ]);
+  });
+
+  test('boosts franchise-adjacent sets above generic same-theme sets when the rest is roughly competitive', () => {
+    const result = rankCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '10333',
+        name: 'The Lord of the Rings: Barad-dur',
+        pieces: 5471,
+        releaseYear: 2024,
+        theme: 'Icons',
+      },
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '10316') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 42999,
+            merchantCount: 5,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 5000,
+          });
+        }
+
+        if (setId === '10354') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 31999,
+            merchantCount: 4,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 2400,
+          });
+        }
+
+        if (setId === '10331') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 38999,
+            merchantCount: 4,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 2100,
+          });
+        }
+
+        if (setId === '10335') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 34999,
+            merchantCount: 4,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 2600,
+          });
+        }
+
+        return undefined;
+      },
+      limit: 6,
+      referenceBestPriceMinor: 45999,
+      setCards: [
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: Barad-dur',
+          pieceCount: 5471,
+          primaryTheme: 'Icons',
+          releaseYear: 2024,
+          setId: '10333',
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          sourceSetNumber: '10333-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: Rivendell',
+          pieceCount: 6167,
+          primaryTheme: 'Icons',
+          releaseYear: 2023,
+          setId: '10316',
+          slug: 'the-lord-of-the-rings-rivendell-10316',
+          sourceSetNumber: '10316-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: The Shire',
+          pieceCount: 2017,
+          primaryTheme: 'Icons',
+          releaseYear: 2025,
+          setId: '10354',
+          slug: 'the-lord-of-the-rings-the-shire-10354',
+          sourceSetNumber: '10354-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Kingfisher Bird',
+          pieceCount: 834,
+          primaryTheme: 'Icons',
+          releaseYear: 2024,
+          setId: '10331',
+          slug: 'kingfisher-bird-10331',
+          sourceSetNumber: '10331-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Endurance',
+          pieceCount: 3011,
+          primaryTheme: 'Icons',
+          releaseYear: 2024,
+          setId: '10335',
+          slug: 'the-endurance-10335',
+          sourceSetNumber: '10335-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: Book Nook',
+          pieceCount: 1200,
+          primaryTheme: 'Books',
+          releaseYear: 2025,
+          setId: '40699',
+          slug: 'the-lord-of-the-rings-book-nook-40699',
+          sourceSetNumber: '40699-1',
+        }),
+      ].map((canonicalCatalogSet) => ({
+        id: canonicalCatalogSet.setId,
+        imageUrl: canonicalCatalogSet.imageUrl,
+        name: canonicalCatalogSet.name,
+        pieces: canonicalCatalogSet.pieceCount,
+        releaseYear: canonicalCatalogSet.releaseYear,
+        slug: canonicalCatalogSet.slug,
+        theme: canonicalCatalogSet.primaryTheme,
+      })),
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10316',
+      '10354',
+      '10331',
+      '10335',
+    ]);
+  });
+
+  test('returns up to six similar sets and stays deterministic when scores tie', () => {
+    const result = rankCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '42172',
+        name: 'McLaren P1',
+        pieces: 3893,
+        releaseYear: 2024,
+        theme: 'Technic',
+      },
+      limit: 6,
+      referenceBestPriceMinor: 34999,
+      setCards: ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((setId, index) => ({
+        id: setId,
+        imageUrl: undefined,
+        name: `Technic ${setId}`,
+        pieces: 3893,
+        releaseYear: 2024 - (index % 2),
+        slug: `technic-${setId.toLowerCase()}`,
+        theme: 'Technic',
+      })),
+    });
+
+    expect(result).toHaveLength(6);
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      'A',
+      'C',
+      'E',
+      'G',
+      'B',
+      'D',
+    ]);
+  });
+
+  test('falls back to the available same-theme set count when a theme is shallow', async () => {
+    const result = await listCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '10330',
+        name: 'McLaren MP4/4 & Ayrton Senna',
+        pieces: 693,
+        releaseYear: 2024,
+        theme: 'Icons',
+      },
+      limit: 6,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'McLaren MP4/4 & Ayrton Senna',
+          pieceCount: 693,
+          primaryTheme: 'Icons',
+          setId: '10330',
+          slug: 'mclaren-mp4-4-ayrton-senna-10330',
+          sourceSetNumber: '10330-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Kingfisher Bird',
+          pieceCount: 834,
+          primaryTheme: 'Icons',
+          setId: '10331',
+          slug: 'kingfisher-bird-10331',
+          sourceSetNumber: '10331-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Wildflower Bouquet',
+          pieceCount: 939,
+          primaryTheme: 'Botanicals',
+          setId: '10313',
+          slug: 'wildflower-bouquet-10313',
+          sourceSetNumber: '10313-1',
+        }),
+      ],
+      referenceBestPriceMinor: 4799,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10331',
+    ]);
   });
 
   test('builds discover browse theme groups from canonical theme data', async () => {
@@ -1183,6 +1849,191 @@ describe('catalog effective data access web', () => {
         },
       }),
     );
+  });
+
+  test('reads runtime catalog discovery signals through the public API with ISR-friendly caching', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            setId: '42172',
+            bestPriceMinor: 32999,
+            merchantCount: 4,
+            nextBestPriceMinor: 35999,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 4000,
+            referenceDeltaMinor: -2000,
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    const result = await listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: 300,
+      },
+      fetchImpl,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:3333/api/v1/catalog/discovery-signals',
+      expect.objectContaining({
+        headers: {
+          accept: 'application/json',
+        },
+        next: {
+          revalidate: 300,
+        },
+      }),
+    );
+    expect(result.get('42172')).toEqual({
+      bestPriceMinor: 32999,
+      merchantCount: 4,
+      nextBestPriceMinor: 35999,
+      observedAt: '2026-04-20T10:00:00.000Z',
+      priceSpreadMinor: 4000,
+      referenceDeltaMinor: -2000,
+    });
+  });
+
+  test('keeps runtime discovery signal API reads dynamic by default when no cache options are provided', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+
+    await listCatalogDiscoverySignalsBySetId({
+      fetchImpl,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:3333/api/v1/catalog/discovery-signals',
+      expect.objectContaining({
+        cache: 'no-store',
+        headers: {
+          accept: 'application/json',
+        },
+      }),
+    );
+  });
+
+  test('can rerank discovery rails from runtime signal inputs without artifact-backed helpers', async () => {
+    const firstFetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            setId: '42172',
+            bestPriceMinor: 32999,
+            merchantCount: 4,
+            nextBestPriceMinor: 35999,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 4000,
+            referenceDeltaMinor: -2000,
+          },
+          {
+            setId: '10330',
+            bestPriceMinor: 74999,
+            merchantCount: 5,
+            nextBestPriceMinor: 75999,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 1000,
+            referenceDeltaMinor: -500,
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+    const secondFetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            setId: '42172',
+            bestPriceMinor: 34999,
+            merchantCount: 2,
+            nextBestPriceMinor: 35999,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 1000,
+            referenceDeltaMinor: 0,
+          },
+          {
+            setId: '10330',
+            bestPriceMinor: 71999,
+            merchantCount: 5,
+            nextBestPriceMinor: 78999,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 7000,
+            referenceDeltaMinor: -3000,
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+    const setCards = [
+      {
+        id: '42172',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/42172-1/1000.jpg',
+        name: 'McLaren P1',
+        pieces: 3893,
+        releaseYear: 2024,
+        slug: 'mclaren-p1-42172',
+        theme: 'Technic',
+      },
+      {
+        id: '10330',
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10330-1/1000.jpg',
+        name: 'McLaren MP4/4 & Ayrton Senna',
+        pieces: 693,
+        releaseYear: 2024,
+        slug: 'mclaren-mp4-4-ayrton-senna-10330',
+        theme: 'Icons',
+      },
+    ];
+    const firstSignalMap = await listCatalogDiscoverySignalsBySetId({
+      fetchImpl: firstFetchImpl,
+    });
+    const secondSignalMap = await listCatalogDiscoverySignalsBySetId({
+      fetchImpl: secondFetchImpl,
+    });
+
+    const firstResult = rankCatalogComparisonDiscoverySetCards({
+      getCatalogDiscoverySignalFn: (setId) => firstSignalMap.get(setId),
+      limit: 2,
+      setCards,
+    });
+    const secondResult = rankCatalogComparisonDiscoverySetCards({
+      getCatalogDiscoverySignalFn: (setId) => secondSignalMap.get(setId),
+      limit: 2,
+      setCards,
+    });
+
+    expect(firstResult.map((setCard) => setCard.id)).toEqual([
+      '42172',
+      '10330',
+    ]);
+    expect(secondResult.map((setCard) => setCard.id)).toEqual([
+      '10330',
+      '42172',
+    ]);
   });
 
   test('generated fallback pricing does not masquerade as a live current best deal when no live offers exist', () => {

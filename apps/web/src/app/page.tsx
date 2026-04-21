@@ -12,7 +12,7 @@ import {
 } from '@lego-platform/catalog/feature-theme-list';
 import {
   listCatalogCurrentOfferSummariesBySetIds,
-  listDiscoverHighlightSetCards,
+  listCatalogDiscoverySignalsBySetId,
   listHomepageDealCandidateSetCards,
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
@@ -22,10 +22,7 @@ import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { getHomepagePage } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
 import { getHeroSection } from '@lego-platform/content/util';
-import {
-  getFeaturedSetPriceContext,
-  listDealSpotlightPriceContexts,
-} from '@lego-platform/pricing/data-access';
+import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import { ActionLink, Panel } from '@lego-platform/shared/ui';
 import {
   buildBrickhuntAnalyticsAttributes,
@@ -37,8 +34,8 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import type { Metadata } from 'next';
 
 export const revalidate = 300;
-const HOMEPAGE_FEATURED_RAIL_LIMIT = 6;
-const HOMEPAGE_FEATURED_RAIL_FILL_LIMIT = HOMEPAGE_FEATURED_RAIL_LIMIT * 3;
+const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 6;
+const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 6;
 const homepageValueSignals = [
   {
     id: 'price-context',
@@ -151,67 +148,6 @@ function toFeatureSetListItems(
   });
 }
 
-function selectSetCardsByIds({
-  setCards,
-  setIds,
-}: {
-  setCards: readonly CatalogHomepageSetCard[];
-  setIds: readonly string[];
-}): CatalogHomepageSetCard[] {
-  const setCardById = new Map(
-    setCards.map((catalogSetCard) => [catalogSetCard.id, catalogSetCard]),
-  );
-
-  return setIds.flatMap((setId) => {
-    const setCard = setCardById.get(setId);
-
-    return setCard ? [setCard] : [];
-  });
-}
-
-function createHomepageFeaturedRailItems({
-  additionalHighlightSetCards,
-  excludedSetIds = [],
-  currentOfferSummaryBySetId,
-  featuredSetCards,
-}: {
-  additionalHighlightSetCards: readonly CatalogHomepageSetCard[];
-  currentOfferSummaryBySetId: Awaited<
-    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
-  >;
-  excludedSetIds?: readonly string[];
-  featuredSetCards: readonly CatalogHomepageSetCard[];
-}): CatalogFeatureSetListItem[] {
-  const excludedSetIdSet = new Set(excludedSetIds);
-  const filteredFeaturedSetCards = featuredSetCards.filter(
-    (featuredSetCard) => !excludedSetIdSet.has(featuredSetCard.id),
-  );
-  const mergedSetCards = [...filteredFeaturedSetCards];
-
-  for (const additionalHighlightSetCard of additionalHighlightSetCards) {
-    if (
-      excludedSetIdSet.has(additionalHighlightSetCard.id) ||
-      mergedSetCards.some(
-        (featuredSetCard) =>
-          featuredSetCard.id === additionalHighlightSetCard.id,
-      )
-    ) {
-      continue;
-    }
-
-    mergedSetCards.push(additionalHighlightSetCard);
-
-    if (mergedSetCards.length === HOMEPAGE_FEATURED_RAIL_LIMIT) {
-      break;
-    }
-  }
-
-  return toFeatureSetListItems(mergedSetCards, currentOfferSummaryBySetId, {
-    cardSurface: 'featured',
-    sectionId: 'featured-sets',
-  });
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const queryMode = await getEditorialQueryMode();
   const homepagePage = await getHomepagePage({
@@ -225,67 +161,67 @@ export default async function HomePage() {
   const queryMode = await getEditorialQueryMode();
   const [
     homepagePage,
+    catalogDiscoverySignalBySetId,
     homepageThemeDirectoryItems,
     homepageThemeSpotlightItems,
-    homepageDealCandidateSetCards,
-    homepageFeaturedCandidateSetCards,
-    homepageFeaturedFillSetCards,
   ] = await Promise.all([
     getHomepagePage({
       mode: queryMode,
     }),
+    listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+      },
+    }),
     listHomepageThemeDirectoryItems(),
     listHomepageThemeSpotlightItems(),
-    listHomepageDealCandidateSetCards(),
-    listHomepageSetCards(),
-    listDiscoverHighlightSetCards({
-      limit: HOMEPAGE_FEATURED_RAIL_FILL_LIMIT,
-    }),
   ]);
-  const homepageDealSetIds = listDealSpotlightPriceContexts({
-    candidateSetIds: homepageDealCandidateSetCards.map(
+  const getCatalogDiscoverySignalFn =
+    catalogDiscoverySignalBySetId.size > 0
+      ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
+      : undefined;
+  const homepageDealCandidateSetCards = await listHomepageDealCandidateSetCards(
+    {
+      getCatalogDiscoverySignalFn,
+      limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
+    },
+  );
+  const homepageFeaturedSetCards = await listHomepageSetCards({
+    excludedSetIds: homepageDealCandidateSetCards.map(
       (catalogSetCard) => catalogSetCard.id,
     ),
-    limit: 3,
-  }).map((priceContext) => priceContext.setId);
-  const homepageFeaturedCandidateSetIds = homepageFeaturedCandidateSetCards.map(
-    (featuredSetCard) => featuredSetCard.id,
-  );
-  const homepageFeaturedFillSetIds = homepageFeaturedFillSetCards.map(
-    (highlightSetCard) => highlightSetCard.id,
-  );
+    getCatalogDiscoverySignalFn,
+    limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
+  });
   const currentOfferSummaryBySetId =
     await listCatalogCurrentOfferSummariesBySetIds({
       cacheOptions: {
         revalidateSeconds: revalidate,
       },
       setIds: [
-        ...homepageDealSetIds,
-        ...homepageFeaturedCandidateSetIds,
-        ...homepageFeaturedFillSetIds,
+        ...homepageDealCandidateSetCards.map(
+          (catalogSetCard) => catalogSetCard.id,
+        ),
+        ...homepageFeaturedSetCards.map((catalogSetCard) => catalogSetCard.id),
       ],
     });
   const homepageHeroSection = getHeroSection(homepagePage.sections);
   const homepageDealSetCards = toFeatureSetListItems(
-    selectSetCardsByIds({
-      setCards: homepageDealCandidateSetCards,
-      setIds: homepageDealSetIds,
-    }),
+    homepageDealCandidateSetCards,
     currentOfferSummaryBySetId,
     {
       cardSurface: 'deal',
       sectionId: 'best-current-deals',
     },
   );
-  const homepageDealSetCardIds = homepageDealSetCards.map(
-    (homepageDealSetCard) => homepageDealSetCard.id,
-  );
-  const homepageSetCards = createHomepageFeaturedRailItems({
-    additionalHighlightSetCards: homepageFeaturedFillSetCards,
+  const homepageSetCards = toFeatureSetListItems(
+    homepageFeaturedSetCards,
     currentOfferSummaryBySetId,
-    excludedSetIds: homepageDealSetCardIds,
-    featuredSetCards: homepageFeaturedCandidateSetCards,
-  });
+    {
+      cardSurface: 'featured',
+      sectionId: 'featured-sets',
+    },
+  );
   const homepageHeroPage = homepageHeroSection
     ? {
         ...homepagePage,

@@ -1,6 +1,7 @@
 import { createRebrickableClient } from '@lego-platform/catalog/data-access-sync';
 import {
   type CatalogCanonicalSet,
+  type CatalogDiscoverySignal,
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSetConfidence,
   type CatalogSuggestedSet,
@@ -29,6 +30,8 @@ const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
+const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
+const EURO_CURRENCY_CODE = 'EUR';
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -94,6 +97,12 @@ interface CatalogCommerceOfferSeedRow {
   validation_status: string;
 }
 
+interface CatalogPriceHistoryRow {
+  recorded_on: string;
+  reference_price_minor: number | null;
+  set_id: string;
+}
+
 export interface CatalogLiveOffer {
   availability: 'in_stock' | 'out_of_stock' | 'unknown';
   checkedAt: string;
@@ -106,6 +115,10 @@ export interface CatalogLiveOffer {
   priceCents: number;
   setId: string;
   url: string;
+}
+
+export interface CatalogDiscoverySignalRecord extends CatalogDiscoverySignal {
+  setId: string;
 }
 
 interface ValidatedRebrickableSearchSet {
@@ -245,6 +258,55 @@ function normalizeRuntimeOfferAvailability(
   }
 
   return 'unknown';
+}
+
+function normalizeCatalogDiscoveryOfferAvailability(
+  availability: string | null,
+): 'in_stock' | 'limited' | 'out_of_stock' | 'unknown' {
+  if (!availability) {
+    return 'unknown';
+  }
+
+  const normalizedAvailability = availability.trim().toLowerCase();
+
+  if (
+    normalizedAvailability === 'limited' ||
+    normalizedAvailability.includes('limited')
+  ) {
+    return 'limited';
+  }
+
+  if (
+    normalizedAvailability === 'in_stock' ||
+    normalizedAvailability === 'instock' ||
+    normalizedAvailability === 'available' ||
+    normalizedAvailability === 'op voorraad'
+  ) {
+    return 'in_stock';
+  }
+
+  if (
+    normalizedAvailability === 'out_of_stock' ||
+    normalizedAvailability === 'outofstock' ||
+    normalizedAvailability === 'unavailable' ||
+    normalizedAvailability === 'uitverkocht'
+  ) {
+    return 'out_of_stock';
+  }
+
+  return 'unknown';
+}
+
+function isEligibleCatalogDiscoveryOfferAvailability(
+  availability: string | null,
+): boolean {
+  const normalizedAvailability =
+    normalizeCatalogDiscoveryOfferAvailability(availability);
+
+  return (
+    normalizedAvailability === 'in_stock' ||
+    normalizedAvailability === 'limited'
+  );
 }
 
 function getCatalogOfferMerchantFromMerchantSlug(
@@ -1583,6 +1645,237 @@ export async function findCatalogSetSummaryByIdWithOverlay({
   }
 
   return toCatalogSummaryFromCanonicalSet(canonicalCatalogSet);
+}
+
+export async function listCatalogDiscoverySignals({
+  setIds,
+  supabaseClient,
+}: {
+  setIds?: readonly string[];
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogDiscoverySignalRecord[]> {
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return [];
+  }
+
+  try {
+    const activeSupabaseClient =
+      supabaseClient ?? getServerSupabaseAdminClient();
+    const uniqueSetIds = [...new Set((setIds ?? []).filter(Boolean))];
+    let seedQuery = activeSupabaseClient
+      .from(COMMERCE_OFFER_SEEDS_TABLE)
+      .select(
+        'id, set_id, merchant_id, product_url, is_active, validation_status',
+      )
+      .eq('is_active', true)
+      .eq('validation_status', 'valid');
+
+    if (uniqueSetIds.length) {
+      seedQuery = seedQuery.in('set_id', uniqueSetIds);
+    }
+
+    const { data: seedData, error: seedError } = await seedQuery;
+
+    if (seedError) {
+      throw new Error('Unable to load catalog discovery signals.');
+    }
+
+    const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
+
+    if (!offerSeeds.length) {
+      return [];
+    }
+
+    const merchantIds = [
+      ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
+    ];
+    const offerSeedIds = offerSeeds.map((offerSeed) => offerSeed.id);
+    const [
+      { data: merchantData, error: merchantError },
+      { data: latestOfferData, error: latestOfferError },
+    ] = await Promise.all([
+      activeSupabaseClient
+        .from(COMMERCE_MERCHANTS_TABLE)
+        .select('id, slug, name, is_active')
+        .in('id', merchantIds)
+        .eq('is_active', true),
+      activeSupabaseClient
+        .from(COMMERCE_OFFER_LATEST_TABLE)
+        .select(
+          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+        )
+        .in('offer_seed_id', offerSeedIds)
+        .order('updated_at', {
+          ascending: false,
+        }),
+    ]);
+
+    if (merchantError || latestOfferError) {
+      throw new Error('Unable to load catalog discovery signals.');
+    }
+
+    const merchantById = new Map(
+      ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
+        (merchantRow) => [merchantRow.id, merchantRow],
+      ),
+    );
+    const latestOfferBySeedId = new Map<
+      string,
+      CatalogCommerceOfferLatestRow
+    >();
+
+    for (const latestOfferRow of (latestOfferData as
+      | CatalogCommerceOfferLatestRow[]
+      | null) ?? []) {
+      if (!latestOfferBySeedId.has(latestOfferRow.offer_seed_id)) {
+        latestOfferBySeedId.set(latestOfferRow.offer_seed_id, latestOfferRow);
+      }
+    }
+
+    const currentOfferBySetAndMerchantSlug = new Map<
+      string,
+      {
+        merchantSlug: string;
+        observedAt: string;
+        priceMinor: number;
+        setId: string;
+      }
+    >();
+
+    for (const offerSeed of offerSeeds) {
+      const merchant = merchantById.get(offerSeed.merchant_id);
+      const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+
+      if (
+        !merchant ||
+        !latestOffer ||
+        latestOffer.fetch_status !== 'success' ||
+        latestOffer.currency_code !== EURO_CURRENCY_CODE ||
+        !isInteger(latestOffer.price_minor) ||
+        latestOffer.price_minor <= 0 ||
+        !latestOffer.observed_at ||
+        !isEligibleCatalogDiscoveryOfferAvailability(latestOffer.availability)
+      ) {
+        continue;
+      }
+
+      const observationKey = `${offerSeed.set_id}:${merchant.slug}`;
+      const existingObservation =
+        currentOfferBySetAndMerchantSlug.get(observationKey);
+
+      if (
+        !existingObservation ||
+        latestOffer.observed_at > existingObservation.observedAt
+      ) {
+        currentOfferBySetAndMerchantSlug.set(observationKey, {
+          merchantSlug: merchant.slug,
+          observedAt: latestOffer.observed_at,
+          priceMinor: latestOffer.price_minor,
+          setId: offerSeed.set_id,
+        });
+      }
+    }
+
+    const currentOfferGroupsBySetId = new Map<
+      string,
+      Array<{
+        merchantSlug: string;
+        observedAt: string;
+        priceMinor: number;
+      }>
+    >();
+
+    for (const currentOffer of currentOfferBySetAndMerchantSlug.values()) {
+      const currentOfferGroup =
+        currentOfferGroupsBySetId.get(currentOffer.setId) ?? [];
+
+      currentOfferGroup.push({
+        merchantSlug: currentOffer.merchantSlug,
+        observedAt: currentOffer.observedAt,
+        priceMinor: currentOffer.priceMinor,
+      });
+      currentOfferGroupsBySetId.set(currentOffer.setId, currentOfferGroup);
+    }
+
+    const discoverySignalSetIds = [...currentOfferGroupsBySetId.keys()];
+    const referencePriceMinorBySetId = new Map<string, number>();
+
+    if (discoverySignalSetIds.length) {
+      const { data: priceHistoryData, error: priceHistoryError } =
+        await activeSupabaseClient
+          .from(PRICING_DAILY_SET_HISTORY_TABLE)
+          .select('set_id, reference_price_minor, recorded_on')
+          .in('set_id', discoverySignalSetIds)
+          .order('recorded_on', {
+            ascending: false,
+          });
+
+      if (priceHistoryError) {
+        throw new Error('Unable to load catalog discovery signals.');
+      }
+
+      for (const priceHistoryRow of (priceHistoryData as
+        | CatalogPriceHistoryRow[]
+        | null) ?? []) {
+        if (
+          !referencePriceMinorBySetId.has(priceHistoryRow.set_id) &&
+          isInteger(priceHistoryRow.reference_price_minor)
+        ) {
+          referencePriceMinorBySetId.set(
+            priceHistoryRow.set_id,
+            priceHistoryRow.reference_price_minor,
+          );
+        }
+      }
+    }
+
+    const catalogDiscoverySignalRecords: CatalogDiscoverySignalRecord[] = [];
+
+    for (const [setId, currentOffers] of currentOfferGroupsBySetId.entries()) {
+      const sortedPriceMinorValues = currentOffers
+        .map((currentOffer) => currentOffer.priceMinor)
+        .sort((left, right) => left - right);
+      const bestPriceMinor = sortedPriceMinorValues[0];
+
+      if (typeof bestPriceMinor !== 'number') {
+        continue;
+      }
+
+      const highestPriceMinor =
+        sortedPriceMinorValues[sortedPriceMinorValues.length - 1] ??
+        bestPriceMinor;
+      const referencePriceMinor = referencePriceMinorBySetId.get(setId);
+
+      catalogDiscoverySignalRecords.push({
+        bestPriceMinor,
+        merchantCount: currentOffers.length,
+        nextBestPriceMinor: sortedPriceMinorValues[1],
+        observedAt: currentOffers.reduce(
+          (latestObservedAt, currentOffer) =>
+            currentOffer.observedAt > latestObservedAt
+              ? currentOffer.observedAt
+              : latestObservedAt,
+          currentOffers[0]?.observedAt ?? '',
+        ),
+        priceSpreadMinor: Math.max(0, highestPriceMinor - bestPriceMinor),
+        referenceDeltaMinor:
+          typeof referencePriceMinor === 'number'
+            ? bestPriceMinor - referencePriceMinor
+            : undefined,
+        setId,
+      });
+    }
+
+    return catalogDiscoverySignalRecords.sort((left, right) =>
+      left.setId.localeCompare(right.setId),
+    );
+  } catch (error) {
+    if (!supabaseClient) {
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 export async function listCatalogSetLiveOffersBySetId({

@@ -1,5 +1,11 @@
-import { listCatalogSetLiveOffersBySetId as listCatalogSetLiveOffersBySetIdServer } from '@lego-platform/catalog/data-access-server';
-import { apiPaths } from '@lego-platform/shared/config';
+import {
+  listCatalogDiscoverySignals as listCatalogDiscoverySignalsServer,
+  listCatalogSetLiveOffersBySetId as listCatalogSetLiveOffersBySetIdServer,
+} from '@lego-platform/catalog/data-access-server';
+import {
+  apiPaths,
+  buildCatalogDiscoverySignalsApiPath,
+} from '@lego-platform/shared/config';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
 import {
   CollectorHandleConflictError,
@@ -17,6 +23,9 @@ import {
 import type { FastifyInstance } from 'fastify';
 
 export interface ApiV1RouteDependencies {
+  listCatalogDiscoverySignals?: () => Promise<
+    Awaited<ReturnType<typeof listCatalogDiscoverySignalsServer>>
+  >;
   listCatalogSetLiveOffersBySetId?: (
     setId: string,
   ) => Promise<
@@ -64,6 +73,8 @@ function toCollectorProfile({
 }
 
 export function createApiV1Routes({
+  listCatalogDiscoverySignals: listCatalogDiscoverySignalsDependency = () =>
+    listCatalogDiscoverySignalsServer(),
   listCatalogSetLiveOffersBySetId: listCatalogSetLiveOffersBySetIdDependency = (
     setId,
   ) => listCatalogSetLiveOffersBySetIdServer({ setId }),
@@ -75,6 +86,10 @@ export function createApiV1Routes({
   }),
 }: ApiV1RouteDependencies = {}) {
   return async function (fastify: FastifyInstance) {
+    fastify.get(buildCatalogDiscoverySignalsApiPath(), async function () {
+      return listCatalogDiscoverySignalsDependency();
+    });
+
     fastify.get<{ Params: { setId: string } }>(
       `${apiPaths.catalogSets}/:setId/live-offers`,
       async function (request) {

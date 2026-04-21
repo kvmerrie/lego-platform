@@ -34,6 +34,15 @@ export interface CatalogHomepageSetCard extends CatalogSetSummary {
   minifigureHighlights?: readonly string[];
 }
 
+export interface CatalogDiscoverySignal {
+  bestPriceMinor: number;
+  merchantCount: number;
+  nextBestPriceMinor?: number;
+  observedAt: string;
+  priceSpreadMinor: number;
+  referenceDeltaMinor?: number;
+}
+
 export interface CatalogSetCardSearchMatch<
   T extends Pick<
     CatalogHomepageSetCard,
