@@ -1094,7 +1094,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T11:07:21.647Z"
+    "observedAt": "2026-04-20T20:36:45.405Z"
   },
   {
     "setId": "43249",

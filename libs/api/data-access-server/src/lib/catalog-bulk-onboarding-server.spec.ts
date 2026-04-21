@@ -274,7 +274,10 @@ describe('catalog bulk onboarding server', () => {
         theme: createdCatalogSet.primaryTheme,
       },
     ]);
-    const createCatalogSetFn = vi.fn().mockResolvedValue(createdCatalogSet);
+    const createCatalogSetFn = vi.fn().mockResolvedValue({
+      ...createdCatalogSet,
+      theme: createdCatalogSet.primaryTheme,
+    });
     const generateCommerceOfferSeedCandidatesFn = vi.fn().mockResolvedValue({
       candidateCount: 8,
       insertedCount: 4,
@@ -294,6 +297,12 @@ describe('catalog bulk onboarding server', () => {
     const runCommerceSyncFn = vi
       .fn()
       .mockResolvedValue(createSyncSummary(['10316', '21061']));
+    const revalidatePublicCatalogPathsFn = vi.fn().mockResolvedValue({
+      attempted: true,
+      pathCount: 3,
+      paths: ['/themes', '/sets/rivendell-10316', '/themes/icons'],
+      skipped: false,
+    });
     const listCommercePrimaryCoverageReportFn = vi.fn().mockResolvedValue(
       createCoverageReport({
         rows: [
@@ -336,6 +345,7 @@ describe('catalog bulk onboarding server', () => {
         listCanonicalCatalogSetsFn,
         listCommercePrimaryCoverageGapAuditFn,
         listCommercePrimaryCoverageReportFn,
+        revalidatePublicCatalogPathsFn,
         runCommerceSyncFn,
         searchCatalogMissingSetsFn,
         validateGeneratedCommerceOfferSeedCandidatesFn,
@@ -367,6 +377,21 @@ describe('catalog bulk onboarding server', () => {
       mode: 'write',
       setIds: ['10316', '21061'],
       workspaceRoot,
+    });
+    expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
+      reason: 'catalog_bulk_onboarding',
+      targets: expect.arrayContaining([
+        {
+          setId: '10316',
+          slug: createdCatalogSet.slug,
+          theme: createdCatalogSet.primaryTheme,
+        },
+        {
+          setId: '21061',
+          slug: existingCatalogSet.slug,
+          theme: existingCatalogSet.primaryTheme,
+        },
+      ]),
     });
     expect(result.run.status).toBe('completed');
     expect(result.run.setProgressById['10316']).toEqual(

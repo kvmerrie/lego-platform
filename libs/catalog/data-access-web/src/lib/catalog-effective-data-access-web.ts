@@ -141,6 +141,10 @@ export interface CatalogPrimaryOfferAvailabilityState {
   validPrimaryOfferCount: number;
 }
 
+export interface CatalogApiReadCacheOptions {
+  revalidateSeconds?: number;
+}
+
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
 let webCatalogSupabasePublicClient: SupabaseClient | undefined;
 
@@ -922,11 +926,13 @@ export async function listCatalogSetCardsByIds({
 
 export async function listCatalogSetLiveOffersBySetId({
   apiBaseUrl,
+  cacheOptions,
   fetchImpl,
   setId,
   supabaseClient,
 }: {
   apiBaseUrl?: string;
+  cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
   setId: string;
   supabaseClient?: CatalogSupabaseClient;
@@ -936,10 +942,18 @@ export async function listCatalogSetLiveOffersBySetId({
       const response = await (fetchImpl ?? fetch)(
         `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogSetLiveOffersApiPath(setId)}`,
         {
-          cache: 'no-store',
           headers: {
             accept: 'application/json',
           },
+          ...(typeof cacheOptions?.revalidateSeconds === 'number'
+            ? {
+                next: {
+                  revalidate: cacheOptions.revalidateSeconds,
+                },
+              }
+            : {
+                cache: 'no-store' as const,
+              }),
         },
       );
 
@@ -1183,17 +1197,20 @@ export async function getCatalogPrimaryOfferAvailabilityStateBySetId({
 
 export async function getCatalogCurrentOfferSummaryBySetId({
   apiBaseUrl,
+  cacheOptions,
   fetchImpl,
   setId,
   supabaseClient,
 }: {
   apiBaseUrl?: string;
+  cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
   setId: string;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCurrentOfferSummary> {
   const liveOffers = await listCatalogSetLiveOffersBySetId({
     apiBaseUrl,
+    cacheOptions,
     fetchImpl,
     setId,
     supabaseClient,
@@ -1208,11 +1225,13 @@ export async function getCatalogCurrentOfferSummaryBySetId({
 
 export async function listCatalogCurrentOfferSummariesBySetIds({
   apiBaseUrl,
+  cacheOptions,
   fetchImpl,
   setIds,
   supabaseClient,
 }: {
   apiBaseUrl?: string;
+  cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
   setIds: readonly string[];
   supabaseClient?: CatalogSupabaseClient;
@@ -1222,6 +1241,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
     uniqueSetIds.map((setId) =>
       getCatalogCurrentOfferSummaryBySetId({
         apiBaseUrl,
+        cacheOptions,
         fetchImpl,
         setId,
         supabaseClient,

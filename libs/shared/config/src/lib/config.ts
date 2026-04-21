@@ -155,6 +155,10 @@ export const productEmailEnvKeys = {
   webBaseUrl: 'WEB_BASE_URL',
 } as const;
 
+export const publicWebRevalidationEnvKeys = {
+  secret: 'WEB_REVALIDATE_SECRET',
+} as const;
+
 export const rebrickableEnvKeys = {
   apiKey: 'REBRICKABLE_API_KEY',
   baseUrl: 'REBRICKABLE_BASE_URL',
@@ -174,6 +178,11 @@ export interface ProductEmailConfig {
   apiKey: string;
   fromEmail: string;
   fromName: string;
+  webBaseUrl: string;
+}
+
+export interface PublicWebRevalidationConfig {
+  secret: string;
   webBaseUrl: string;
 }
 
@@ -646,6 +655,32 @@ export function getServerWebBaseUrl(
   return (
     environment[productEmailEnvKeys.webBaseUrl] ?? getRuntimeBaseUrl('web')
   );
+}
+
+export function getPublicWebRevalidationConfig(
+  environment: Record<string, string | undefined> = process.env,
+): PublicWebRevalidationConfig {
+  return {
+    secret: requireEnvValue({
+      environment,
+      key: publicWebRevalidationEnvKeys.secret,
+    }),
+    webBaseUrl: getServerWebBaseUrl(environment),
+  };
+}
+
+export function hasPublicWebRevalidationConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[publicWebRevalidationEnvKeys.secret]);
+}
+
+export function getMissingPublicWebRevalidationEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[publicWebRevalidationEnvKeys.secret]
+    ? []
+    : [publicWebRevalidationEnvKeys.secret];
 }
 
 export function getProductEmailConfig(

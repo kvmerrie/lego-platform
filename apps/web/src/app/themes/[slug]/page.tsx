@@ -22,6 +22,7 @@ import { notFound } from 'next/navigation';
 import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
 
 export const dynamicParams = true;
+export const revalidate = 300;
 
 function toThemeDealSetCards({
   currentOfferSummaryBySetId,
@@ -106,6 +107,9 @@ export default async function ThemePage({
   }).map((priceContext) => priceContext.setId);
   const currentOfferSummaryBySetId =
     await listCatalogCurrentOfferSummariesBySetIds({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+      },
       setIds: dealSetIds,
     });
   const dealSetCards = toThemeDealSetCards({

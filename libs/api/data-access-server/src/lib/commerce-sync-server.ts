@@ -16,6 +16,7 @@ import {
   refreshCommerceOfferSeeds,
   type CommerceSyncInputs,
 } from './commerce-refresh-server';
+import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export interface CommerceGeneratedArtifactCheckResult {
   isClean: boolean;
@@ -46,6 +47,7 @@ export interface CommerceSyncDependencies {
   checkPricingGeneratedArtifactsFn?: typeof checkPricingGeneratedArtifacts;
   listCatalogSetSummariesFn?: typeof listCatalogSetSummariesWithOverlay;
   loadCommerceSyncInputsFn?: typeof loadCommerceSyncInputs;
+  revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   refreshCommerceOfferSeedsFn?: typeof refreshCommerceOfferSeeds;
   upsertDailyPriceHistoryPointsFn?: typeof upsertDailyPriceHistoryPoints;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
@@ -168,6 +170,7 @@ export async function runCommerceSync({
     checkPricingGeneratedArtifactsFn = checkPricingGeneratedArtifacts,
     listCatalogSetSummariesFn = listCatalogSetSummariesWithOverlay,
     loadCommerceSyncInputsFn = loadCommerceSyncInputs,
+    revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     refreshCommerceOfferSeedsFn = refreshCommerceOfferSeeds,
     upsertDailyPriceHistoryPointsFn = upsertDailyPriceHistoryPoints,
     writeAffiliateGeneratedArtifactsFn = writeAffiliateGeneratedArtifacts,
@@ -182,12 +185,26 @@ export async function runCommerceSync({
     merchantSlugs: requestedMerchantSlugs,
     setIds: scopedSetIds,
   });
+  const refreshSeedSetIds = [
+    ...new Set(
+      initialCommerceSyncInputs.refreshSeeds.map(
+        (refreshSeed) => refreshSeed.offerSeed.setId,
+      ),
+    ),
+  ];
+  const revalidationSetIds =
+    scopedSetIds.length > 0 ? scopedSetIds : refreshSeedSetIds;
+  const revalidationCatalogSetSummaries =
+    revalidationSetIds.length > 0
+      ? await resolveCommerceCatalogSetSummaries({
+          listCatalogSetSummariesFn,
+          setIds: revalidationSetIds,
+        })
+      : [];
 
   await resolveCommerceCatalogSetSummaries({
     listCatalogSetSummariesFn,
-    setIds: initialCommerceSyncInputs.refreshSeeds.map(
-      (refreshSeed) => refreshSeed.offerSeed.setId,
-    ),
+    setIds: refreshSeedSetIds,
   });
 
   const refreshSummary =
@@ -278,6 +295,25 @@ export async function runCommerceSync({
       affiliateSyncManifest: fullAffiliateArtifacts.affiliateSyncManifest,
       workspaceRoot,
     });
+  }
+
+  if (mode === 'write' && revalidationCatalogSetSummaries.length > 0) {
+    try {
+      await revalidatePublicCatalogPathsFn({
+        reason: scoped ? 'commerce_sync_scoped' : 'commerce_sync',
+        targets: revalidationCatalogSetSummaries.map((catalogSetSummary) => ({
+          setId: catalogSetSummary.id,
+          slug: catalogSetSummary.slug,
+          theme: catalogSetSummary.theme,
+        })),
+      });
+    } catch (error) {
+      console.warn(
+        error instanceof Error
+          ? error.message
+          : 'Public web revalidation failed after commerce sync.',
+      );
+    }
   }
 
   return {

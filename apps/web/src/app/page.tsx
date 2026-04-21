@@ -256,6 +256,9 @@ export default async function HomePage() {
   );
   const currentOfferSummaryBySetId =
     await listCatalogCurrentOfferSummariesBySetIds({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+      },
       setIds: [
         ...homepageDealSetIds,
         ...homepageFeaturedCandidateSetIds,

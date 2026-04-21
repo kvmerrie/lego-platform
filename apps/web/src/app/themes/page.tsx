@@ -3,6 +3,8 @@ import { listCatalogThemeDirectoryItems } from '@lego-platform/catalog/data-acce
 import { ShellWeb } from '@lego-platform/shell/web';
 import type { Metadata } from 'next';
 
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: 'Brickhunt – LEGO thema’s ontdekken',
   description:

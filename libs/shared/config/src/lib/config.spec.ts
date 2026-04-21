@@ -9,11 +9,14 @@ import {
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
   getMissingBrowserSupabaseEnvKeys,
+  getMissingPublicWebRevalidationEnvKeys,
   getMissingProductEmailEnvKeys,
+  getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
   getServerWebBaseUrl,
   hasBrowserSupabaseConfig,
+  hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
   publicSiteRobotsPolicy,
 } from './config';
@@ -172,6 +175,35 @@ describe('shared config product email helpers', () => {
     expect(getMissingProductEmailEnvKeys()).toEqual([
       'RESEND_API_KEY',
       'RESEND_FROM_EMAIL',
+    ]);
+  });
+});
+
+describe('shared config public web revalidation helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads revalidation config from server env with the shared web base url', () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    process.env.WEB_BASE_URL = 'https://staging.brickhunt.nl';
+
+    expect(hasPublicWebRevalidationConfig()).toBe(true);
+    expect(getMissingPublicWebRevalidationEnvKeys()).toEqual([]);
+    expect(getPublicWebRevalidationConfig()).toEqual({
+      secret: 'revalidate-secret',
+      webBaseUrl: 'https://staging.brickhunt.nl',
+    });
+  });
+
+  test('reports the missing revalidation secret when public revalidation is not configured', () => {
+    delete process.env.WEB_REVALIDATE_SECRET;
+
+    expect(hasPublicWebRevalidationConfig()).toBe(false);
+    expect(getMissingPublicWebRevalidationEnvKeys()).toEqual([
+      'WEB_REVALIDATE_SECRET',
     ]);
   });
 });

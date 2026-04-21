@@ -24,6 +24,7 @@ import {
   runCommerceSync,
   type CommerceSyncRunResult,
 } from './commerce-sync-server';
+import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export const catalogBulkOnboardingRunStatuses = [
   'running',
@@ -202,6 +203,7 @@ export interface CatalogBulkOnboardingDependencies {
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   listCommercePrimaryCoverageGapAuditFn?: typeof listCommercePrimaryCoverageGapAudit;
   listCommercePrimaryCoverageReportFn?: typeof listCommercePrimaryCoverageReport;
+  revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   runCommerceSyncFn?: typeof runCommerceSync;
   searchCatalogMissingSetsFn?: typeof searchCatalogMissingSets;
   validateGeneratedCommerceOfferSeedCandidatesFn?: typeof validateGeneratedCommerceOfferSeedCandidates;
@@ -643,6 +645,30 @@ function updateSnapshotStateForSet({
   }
 }
 
+function buildBulkOnboardingRevalidationTargets(
+  run: CatalogBulkOnboardingRunState,
+): Array<{
+  setId: string;
+  slug: string;
+  theme: string;
+}> {
+  return run.requestedSetIds.flatMap((setId) => {
+    const setProgress = run.setProgressById[setId];
+
+    if (!setProgress?.catalogSetSlug || !setProgress.catalogSetTheme) {
+      return [];
+    }
+
+    return [
+      {
+        setId,
+        slug: setProgress.catalogSetSlug,
+        theme: setProgress.catalogSetTheme,
+      },
+    ];
+  });
+}
+
 async function ensureCatalogSetPresent({
   createCatalogSetFn,
   existingCatalogSetsBySourceSetNumber,
@@ -764,6 +790,7 @@ export async function runCatalogBulkOnboarding({
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
     listCommercePrimaryCoverageGapAuditFn = listCommercePrimaryCoverageGapAudit,
     listCommercePrimaryCoverageReportFn = listCommercePrimaryCoverageReport,
+    revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     runCommerceSyncFn = runCommerceSync,
     searchCatalogMissingSetsFn = searchCatalogMissingSets,
     validateGeneratedCommerceOfferSeedCandidatesFn = validateGeneratedCommerceOfferSeedCandidates,
@@ -1150,6 +1177,23 @@ export async function runCatalogBulkOnboarding({
         ? 'completed_with_errors'
         : 'completed';
     await updateRun();
+
+    const revalidationTargets = buildBulkOnboardingRevalidationTargets(run);
+
+    if (revalidationTargets.length > 0) {
+      try {
+        await revalidatePublicCatalogPathsFn({
+          reason: 'catalog_bulk_onboarding',
+          targets: revalidationTargets,
+        });
+      } catch (error) {
+        console.warn(
+          error instanceof Error
+            ? error.message
+            : 'Public web revalidation failed after bulk onboarding.',
+        );
+      }
+    }
 
     return {
       run,

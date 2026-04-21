@@ -43,7 +43,7 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import { notFound } from 'next/navigation';
 
 export const dynamicParams = true;
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 
@@ -507,6 +507,9 @@ export default async function SetDetailPage({
   }
 
   const liveSetDetailOffers = await listCatalogSetLiveOffersBySetId({
+    cacheOptions: {
+      revalidateSeconds: revalidate,
+    },
     setId: catalogSetDetail.id,
   });
   const primaryOfferAvailability =

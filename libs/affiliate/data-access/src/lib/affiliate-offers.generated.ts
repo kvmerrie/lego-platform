@@ -4441,7 +4441,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.bol.com/nl/nl/p/lego-disney-jonge-simba-de-leeuwenkoning-43247/9300000173010354/",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-20T11:07:21.647Z",
+    "observedAt": "2026-04-20T20:36:45.405Z",
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
@@ -4457,7 +4457,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://misterbricks.nl/lego-disney-43247-jonge-simba-de-leeuwenkoning.html",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-20T11:07:25.736Z",
+    "observedAt": "2026-04-20T20:36:48.759Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
@@ -4472,7 +4472,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.intertoys.nl/lego-disney-jonge-simba-de-leeuwenkoning-43247",
     "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-20T11:07:23.639Z",
+    "observedAt": "2026-04-20T20:36:46.208Z",
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
@@ -4488,7 +4488,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.lego.com/nl-nl/product/young-simba-the-lion-king-43247",
     "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-20T11:07:24.558Z",
+    "observedAt": "2026-04-20T20:36:47.108Z",
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"

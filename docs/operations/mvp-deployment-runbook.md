@@ -68,6 +68,7 @@ Production guardrails:
 
 - only browser-safe `NEXT_PUBLIC_*` Supabase values belong in Vercel
 - do not copy `SUPABASE_SERVICE_ROLE_KEY` into Vercel
+- set `WEB_REVALIDATE_SECRET` in Vercel if the public web app should accept on-demand catalog revalidation
 - keep production Contentful unset entirely if launch is still using mock editorial posture
 
 ### Render For `apps/api`
@@ -85,6 +86,8 @@ Recommended service settings:
 
 - set `HOST=0.0.0.0`
 - let Render provide `PORT`
+- set `WEB_BASE_URL` to the deployed public web host when API or operator jobs should trigger on-demand catalog revalidation
+- set the same `WEB_REVALIDATE_SECRET` as the Vercel web app when on-demand catalog revalidation is enabled
 - enable automatic deploys from the protected release branch only after staging rehearsal is trusted
 - set the Render health check path to `/health`
 - keep service notifications enabled at `Only failure notifications`
@@ -188,6 +191,8 @@ These are only needed for sync or validation jobs:
 - optional `REBRICKABLE_BASE_URL`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- optional `WEB_BASE_URL`
+- optional `WEB_REVALIDATE_SECRET`
 
 ### Local Development
 
@@ -196,6 +201,7 @@ These are only needed for sync or validation jobs:
 - `API_PROXY_TARGET=http://localhost:3333`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- optional `WEB_REVALIDATE_SECRET`
 - `CONTENTFUL_SPACE_ID`
 - `CONTENTFUL_DELIVERY_ACCESS_TOKEN`
 - optional `CONTENTFUL_ENVIRONMENT`
@@ -206,6 +212,8 @@ These are only needed for sync or validation jobs:
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- optional `WEB_BASE_URL`
+- optional `WEB_REVALIDATE_SECRET`
 - optional `HOST`
 - optional `PORT`
 
@@ -223,6 +231,7 @@ Vercel web:
 - `API_PROXY_TARGET=https://<staging-api-host>`
 - `NEXT_PUBLIC_SUPABASE_URL=<staging-supabase-url>`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY=<staging-supabase-anon-key>`
+- optional `WEB_REVALIDATE_SECRET=<shared-staging-revalidate-secret>`
 - `CONTENTFUL_SPACE_ID=<contentful-space-id>`
 - `CONTENTFUL_DELIVERY_ACCESS_TOKEN=<staging-or-shared-delivery-token>`
 - `CONTENTFUL_ENVIRONMENT=staging`
@@ -234,6 +243,8 @@ Render API:
 
 - `SUPABASE_URL=<staging-supabase-url>`
 - `SUPABASE_SERVICE_ROLE_KEY=<staging-service-role-key>`
+- optional `WEB_BASE_URL=https://staging.brickhunt.nl`
+- optional `WEB_REVALIDATE_SECRET=<shared-staging-revalidate-secret>`
 - `HOST=0.0.0.0`
 - `PORT=<render-provided>`
 
@@ -255,6 +266,7 @@ Vercel web:
 - `API_PROXY_TARGET=https://<production-api-host>`
 - `NEXT_PUBLIC_SUPABASE_URL=<production-supabase-url>`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY=<production-supabase-anon-key>`
+- optional `WEB_REVALIDATE_SECRET=<shared-production-revalidate-secret>`
 - `CONTENTFUL_SPACE_ID=<contentful-space-id>`
 - `CONTENTFUL_DELIVERY_ACCESS_TOKEN=<production-delivery-token>`
 - optional `CONTENTFUL_ENVIRONMENT=master`
@@ -266,6 +278,8 @@ Render API:
 
 - `SUPABASE_URL=<production-supabase-url>`
 - `SUPABASE_SERVICE_ROLE_KEY=<production-service-role-key>`
+- optional `WEB_BASE_URL=https://brickhunt.nl`
+- optional `WEB_REVALIDATE_SECRET=<shared-production-revalidate-secret>`
 - `HOST=0.0.0.0`
 - `PORT=<render-provided>`
 
