@@ -1,23 +1,29 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import {
+  getAdminPromotionConfig,
   buildPublicSetDetailUrl,
   buildThemePath,
   buildWebPath,
   createLocaleCode,
   getBrowserSupabaseConfig,
+  getMissingAdminPromotionEnvKeys,
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
   getMissingBrowserSupabaseEnvKeys,
   getMissingPublicWebRevalidationEnvKeys,
   getMissingProductEmailEnvKeys,
+  getMissingStagingSupabaseEnvKeys,
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
   getServerWebBaseUrl,
+  getStagingSupabaseConfig,
+  hasAdminPromotionConfig,
   hasBrowserSupabaseConfig,
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
+  hasStagingSupabaseConfig,
   publicSiteRobotsPolicy,
 } from './config';
 
@@ -205,5 +211,53 @@ describe('shared config public web revalidation helpers', () => {
     expect(getMissingPublicWebRevalidationEnvKeys()).toEqual([
       'WEB_REVALIDATE_SECRET',
     ]);
+  });
+});
+
+describe('shared config catalog promotion helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads staging Supabase promotion config from dedicated env vars', () => {
+    process.env.SUPABASE_URL_STAGING = 'https://staging.supabase.co';
+    process.env.SUPABASE_SERVICE_ROLE_KEY_STAGING = 'staging-service-role';
+
+    expect(hasStagingSupabaseConfig()).toBe(true);
+    expect(getMissingStagingSupabaseEnvKeys()).toEqual([]);
+    expect(getStagingSupabaseConfig()).toEqual({
+      serviceRoleKey: 'staging-service-role',
+      url: 'https://staging.supabase.co',
+    });
+  });
+
+  test('reports missing staging promotion env vars when staging access is not configured', () => {
+    delete process.env.SUPABASE_URL_STAGING;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY_STAGING;
+
+    expect(hasStagingSupabaseConfig()).toBe(false);
+    expect(getMissingStagingSupabaseEnvKeys()).toEqual([
+      'SUPABASE_URL_STAGING',
+      'SUPABASE_SERVICE_ROLE_KEY_STAGING',
+    ]);
+  });
+
+  test('reads the admin promotion secret from server env', () => {
+    process.env.ADMIN_PROMOTE_SECRET = 'promote-secret';
+
+    expect(hasAdminPromotionConfig()).toBe(true);
+    expect(getMissingAdminPromotionEnvKeys()).toEqual([]);
+    expect(getAdminPromotionConfig()).toEqual({
+      secret: 'promote-secret',
+    });
+  });
+
+  test('reports the missing admin promotion secret when promotion is not configured', () => {
+    delete process.env.ADMIN_PROMOTE_SECRET;
+
+    expect(hasAdminPromotionConfig()).toBe(false);
+    expect(getMissingAdminPromotionEnvKeys()).toEqual(['ADMIN_PROMOTE_SECRET']);
   });
 });

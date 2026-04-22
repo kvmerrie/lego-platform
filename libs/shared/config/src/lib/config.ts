@@ -136,6 +136,7 @@ export const apiPaths = {
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
   adminCommerceCoverageQueue: '/api/v1/admin/commerce/coverage-queue',
   adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
+  adminCatalogPromotion: '/api/admin/promote/catalog',
 } as const;
 
 export function buildCatalogSetLiveOffersApiPath(setId: string): string {
@@ -151,6 +152,15 @@ export const supabaseEnvKeys = {
   browserAnonKey: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   serverUrl: 'SUPABASE_URL',
   serverServiceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY',
+} as const;
+
+export const stagingSupabaseEnvKeys = {
+  url: 'SUPABASE_URL_STAGING',
+  serviceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY_STAGING',
+} as const;
+
+export const adminPromotionEnvKeys = {
+  secret: 'ADMIN_PROMOTE_SECRET',
 } as const;
 
 export const productEmailEnvKeys = {
@@ -177,6 +187,15 @@ export interface BrowserSupabaseConfig {
 export interface ServerSupabaseConfig {
   serviceRoleKey: string;
   url: string;
+}
+
+export interface StagingSupabaseConfig {
+  serviceRoleKey: string;
+  url: string;
+}
+
+export interface AdminPromotionConfig {
+  secret: string;
 }
 
 export interface ProductEmailConfig {
@@ -652,6 +671,71 @@ export function getMissingServerSupabaseEnvKeys(
   }
 
   return missingKeys;
+}
+
+export function getStagingSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): StagingSupabaseConfig {
+  return {
+    url: requireEnvValue({
+      environment,
+      key: stagingSupabaseEnvKeys.url,
+    }),
+    serviceRoleKey: requireEnvValue({
+      environment,
+      key: stagingSupabaseEnvKeys.serviceRoleKey,
+    }),
+  };
+}
+
+export function hasStagingSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(
+    environment[stagingSupabaseEnvKeys.url] &&
+      environment[stagingSupabaseEnvKeys.serviceRoleKey],
+  );
+}
+
+export function getMissingStagingSupabaseEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const missingKeys: string[] = [];
+
+  if (!environment[stagingSupabaseEnvKeys.url]) {
+    missingKeys.push(stagingSupabaseEnvKeys.url);
+  }
+
+  if (!environment[stagingSupabaseEnvKeys.serviceRoleKey]) {
+    missingKeys.push(stagingSupabaseEnvKeys.serviceRoleKey);
+  }
+
+  return missingKeys;
+}
+
+export function getAdminPromotionConfig(
+  environment: Record<string, string | undefined> = process.env,
+): AdminPromotionConfig {
+  return {
+    secret: requireEnvValue({
+      environment,
+      key: adminPromotionEnvKeys.secret,
+    }),
+  };
+}
+
+export function hasAdminPromotionConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[adminPromotionEnvKeys.secret]);
+}
+
+export function getMissingAdminPromotionEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[adminPromotionEnvKeys.secret]
+    ? []
+    : [adminPromotionEnvKeys.secret];
 }
 
 export function getServerWebBaseUrl(

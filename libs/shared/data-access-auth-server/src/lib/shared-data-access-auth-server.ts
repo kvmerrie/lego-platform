@@ -6,6 +6,7 @@ import {
 import {
   getServerSupabaseConfig,
   hasServerSupabaseConfig,
+  type ServerSupabaseConfig,
 } from '@lego-platform/shared/config';
 
 export interface AnonymousRequestPrincipal {
@@ -41,18 +42,19 @@ function toAuthenticatedRequestPrincipal(
 }
 
 export function createServerSupabaseAdminClient(): SupabaseClient {
-  const serverSupabaseConfig = getServerSupabaseConfig();
+  return createSupabaseAdminClient(getServerSupabaseConfig());
+}
 
-  return createClient(
-    serverSupabaseConfig.url,
-    serverSupabaseConfig.serviceRoleKey,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+export function createSupabaseAdminClient({
+  serviceRoleKey,
+  url,
+}: ServerSupabaseConfig): SupabaseClient {
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     },
-  );
+  });
 }
 
 export function getServerSupabaseAdminClient(): SupabaseClient {
