@@ -36,6 +36,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10280",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanical-Collection-Bloemenboeket-Constructiespeelgoed%2Fhtml%2Fproduct%2F1702600%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKREJ",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10280",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -46,7 +61,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10280-bloemen-boeket.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:30.449Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -60,8 +75,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-creator-expert-10280-bloemenboeket-411-3767",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:46:29.282Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:26.410Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -140,7 +155,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10300-back-to-the-future-tijdmachine.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:55.331Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -209,6 +224,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10311",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3799,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanical-Collection-Orchidee-Constructiespeelgoed%2Fhtml%2Fproduct%2F1818749%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKREZ",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10311",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -225,6 +255,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10311",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-botanical-collection-orchidee-decoratie-planten-bouwpakket-voor-volwassenen-10311-bloemen-16856410/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T08:37:40.161Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
+  },
+  {
+    "setId": "10311",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -235,7 +280,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10311-orchidee.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:35.925Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -249,8 +294,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-icons-10311-orchidee-411-4336",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:46:34.583Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:27.382Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -303,6 +348,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10313",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanical-Collection-Boeket-met-wilde-bloemen-Constructiespeelgoed%2Fhtml%2Fproduct%2F1871762%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQA3",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10313",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -313,7 +373,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-botanicals-10313-boeket-met-wilde-bloemen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:23.851Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -365,6 +425,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Wide Dutch retail reach"
   },
   {
+    "setId": "10315",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8190,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Rustgevende-tuin-Constructiespeelgoed%2Fhtml%2Fproduct%2F1904710%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQA6",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "10316",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -392,7 +467,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-the-lord-of-the-rings-rivendell-10316.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:04.048Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -423,7 +498,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10317-land-rover-classic-defender-90.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:12.917Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -491,6 +566,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Wide Dutch retail reach"
   },
   {
+    "setId": "10323",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-PAC-MAN-arcade-Constructiespeelgoed%2Fhtml%2Fproduct%2F100015505%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAD",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10326",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 29990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Natuurhistorisch-museum-Constructiespeelgoed%2Fhtml%2Fproduct%2F100060954%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAP",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "10327",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -508,6 +613,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10327",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Dune-Atreides-Royal-Ornithopter-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012679%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAA",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10327",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -518,7 +638,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-10327-dune-atreides-royal-ornithopter.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:12.437Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -548,8 +668,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10327-icons-dune-atreides-royal-ornithopter-411-0327",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:15.828Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:20.171Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -602,6 +722,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10328",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanical-Collection-Rozenboeket-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012681%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAB",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10328",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-botanical-collection-rozenboeket-decoratief-bloemen-bouwpakket-uit-de-botanical-collection-10328-17213435/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T08:37:39.777Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
+  },
+  {
+    "setId": "10328",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -612,7 +762,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-botanicals-10328-rozenboeket.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:39.532Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -626,8 +776,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10328-icons-rozenboeket-411-1038",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:24.915Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:21.558Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -664,6 +814,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10329",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3899,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanical-Collection-Miniplantjes-Constructiespeelgoed%2Fhtml%2Fproduct%2F100015547%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAC",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10329",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -690,7 +855,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-botanicals-10329-miniplantjes.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:17.763Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -737,7 +902,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-10330-mclaren-mp4-4-en-ayrton-senna.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:52.762Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -774,6 +939,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "10331",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3649,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-IJsvogel-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012687%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQA8",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10331",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -784,7 +964,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-10331-ijsvogel.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:48.250Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -818,6 +998,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "10332",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19599,
+    "availabilityLabel": "Out of stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Middeleeuws-stadsplein-Constructiespeelgoed%2Fhtml%2Fproduct%2F1943330%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKRFQ",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "10332",
@@ -916,6 +1111,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Wide Dutch retail reach"
   },
   {
+    "setId": "10338",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6790,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Bumblebee-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044216%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAF",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10340",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Herfstkrans-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044321%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAI",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "10342",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -930,6 +1155,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
+  },
+  {
+    "setId": "10342",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4399,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanical-Collection-Roze-boeket-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076320%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQB0",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "10342",
@@ -959,7 +1199,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10342-roze-boeket.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:39.104Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -989,8 +1229,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10342-botanicals-roze-boeket",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:23.820Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:21.288Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1005,7 +1245,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-the-lord-of-the-rings-de-gouw-10354.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:54.908Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1035,8 +1275,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10354-iconen-the-lord-of-the-rings-de-gouw",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:10.054Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:19.899Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1054,6 +1294,111 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "10358",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Transformers-Soundwave-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123533%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQB4",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10359",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Tuin-met-fontein-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076912%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAT",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10360",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Shuttle-Carrier-Aircraft-Constructiespeelgoed%2Fhtml%2Fproduct%2F1943331%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKRFR",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "10414",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2099,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDUPLO-Dagelijkse-gewoontes-Eten-en-slapen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100011243%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKD77",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "11025",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 699,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FClassic-Blauwe-bouwplaat-Constructiespeelgoed%2Fhtml%2Fproduct%2F1787630%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKC1A",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "11036",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4099,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FClassic-Creatieve-voertuigen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100011700%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKC1T",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "11208",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMarvel-Team-Spidey-piratenschip-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151168%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLK415",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "11370",
@@ -1163,7 +1508,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-11372-herfsttuin-met-cottage.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:15.016Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1226,7 +1571,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-11373-the-lord-of-the-rings-de-helm-van-sauron.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:11.967Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1295,6 +1640,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "11375",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7195,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Ferrari-F2004-en-Michael-Schumacher-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151449%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQC2",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "11375",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -1305,7 +1665,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-11375-ferrari-f2004-en-michael-schumacher.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:05.735Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1336,8 +1696,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-11376-ford-model-t.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:03.227Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "11376",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10999,
+    "availabilityLabel": "Out of stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIcons-Ford-Model-T-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151402%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQA",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "11376",
@@ -1399,7 +1774,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-11384-golden-retriever-puppy.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:57.460Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1468,6 +1843,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "11501",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FThe-Botanical-Collection-Boeket-met-tulpen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151257%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQBH",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "11501",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -1478,7 +1868,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-11501-boeket-met-tulpen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:31.815Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1541,7 +1931,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-botanicals-11502-boeket-met-zonnebloemen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:28.406Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1604,7 +1994,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-11509-bloeiende-cactus.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:22.610Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1622,6 +2012,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
+  },
+  {
+    "setId": "11509",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanicals-Bloeiende-cactus-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151274%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQBC",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "11509",
@@ -1667,8 +2072,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-architecture-21061-notre-dame-van-parijs.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:39.819Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "21061",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 18790,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FArchitecture-Notre-Dame-van-Parijs-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044257%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKV15",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "21061",
@@ -1713,9 +2133,24 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-21061-architecture-notre-dame-van-parijs-411-1061",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:39.075Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:23.688Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
+  },
+  {
+    "setId": "21063",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 22900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FArchitecture-Slot-Neuschwanstein-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123531%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKV17",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "21064",
@@ -1745,7 +2180,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-architecture-21064-parijs-stad-van-de-liefde.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:17.575Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1779,6 +2214,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "21266",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 899,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMinecraft-De-lavastrijd-in-de-Nether-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076670%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKA2Q",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "21274",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1699,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMinecraft-De-ontmoeting-met-de-Opzichter-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123611%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKA2W",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "21333",
@@ -1888,8 +2353,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-dungeons-dragons-het-verhaal-van-de-rode-draak-21348.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:32.723Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "21348",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 32900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIdeas-Dungeons-Dragons-het-verhaal-van-de-rode-draak-Constructiespeelgoed%2Fhtml%2Fproduct%2F100053369%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQAO",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "21348",
@@ -1934,8 +2414,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-ideas-dungeons-dragons-the-legend-of-the-red-dragon-21348",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:05.837Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:19.753Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -2084,6 +2564,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "21366",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9190,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FIdeas-Drijvende-zeeotters-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151345%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQD3",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "21366",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -2094,7 +2589,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-ideas-21366-drijvende-zeeotters.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:23.369Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2178,6 +2673,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "21584",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1199,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMinecraft-Reis-naar-de-Nether-en-het-End-portaal-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151882%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKA33",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "21586",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1599,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMinecraft-The-Pale-Garden-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151884%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKA39",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "21588",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
@@ -2221,7 +2746,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-minecraft-21588-de-vos.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:14.512Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2274,6 +2799,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "21589",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMinecraft-Mini-Biomes-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151887%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKA36",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "21589",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -2284,7 +2824,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-minecraft-21589-minibiomen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:06.218Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2347,7 +2887,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-minecraft-21590-de-wither-strijd.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:09.825Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2384,6 +2924,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "31208",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7390,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FArt-Hokusai-De-grote-golf-Constructiespeelgoed%2Fhtml%2Fproduct%2F1871756%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKB4A",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "31208",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -2409,8 +2964,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-31208-art-hokusai-de-grote-golf-411-1208",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:46:26.839Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:25.687Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -2425,7 +2980,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-art-31208-hokusai-de-grote-golf.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:26.483Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2472,7 +3027,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-art-31209-de-geweldige-spider-man.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:35.386Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2492,6 +3047,66 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "31212",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16190,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FArt-Het-Melkwegstelsel-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044222%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKB4E",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "31213",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FArt-Mona-Lisa-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044249%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKB4F",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "31214",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FArt-LOVE-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076922%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKB4G",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "31218",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FArt-Landschap-met-Japanse-kersenbloesems-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151391%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKB4",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "31218",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
@@ -2503,7 +3118,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-art-31218-landschap-met-japanse-kersenbloesems.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:50.480Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2550,7 +3165,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-art-31220-claude-monet-brug-over-een-vijver-met-waterlelies.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:48.474Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2603,6 +3218,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "31385",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FCreator-3-in-1-Zeedieren-prachtige-dolfijnen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151253%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKRFO",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "31385",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -2613,7 +3243,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-creator-31385-zeedieren-prachtige-dolfijnen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:49.231Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2631,6 +3261,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "40460",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1049,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBotanical-Collection-Rozen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012112%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKR3R",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "40507",
@@ -2852,8 +3497,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42115-lamborghini-sian-fkp-37.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:28.171Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "42141",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-McLaren-Formule-1-Racewagen-Constructiespeelgoed%2Fhtml%2Fproduct%2F1787930%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT3B",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42143",
@@ -2899,7 +3559,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42143-ferrari-daytona-sp3.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:51.348Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2913,8 +3573,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42143-technic-ferrari-daytona-sp3-411-2143",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:46:51.806Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:27.652Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -2932,6 +3592,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "42154",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8399,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-technic-2022-ford-gt-auto-supercar-model-bouwpakket-voor-volwassenen-42154-17050232/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T17:02:59.348Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
   },
   {
     "setId": "42154",
@@ -2967,6 +3642,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42154",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9390,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-2022-Ford-GT-Constructiespeelgoed%2Fhtml%2Fproduct%2F1871726%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT3M",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42154",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -2977,7 +3667,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42154-2022-ford-gt.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:43.728Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3077,6 +3767,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Wide Dutch retail reach"
   },
   {
+    "setId": "42160",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13690,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Audi-RS-Q-e-tron-Constructiespeelgoed%2Fhtml%2Fproduct%2F1906297%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT3T",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "42161",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -3120,7 +3825,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42161-lamborghini-huracan-tecnica.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:37.935Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3172,6 +3877,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Wide Dutch retail reach"
   },
   {
+    "setId": "42170",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6590,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Kawasaki-Ninja-H2R-motor-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012661%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT44",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42171",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15399,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-technic-mercedes-amg-f1-w14-e-performance-raceauto-bouwpakket-en-woonaccessoire-42171-17213596/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T17:02:58.543Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
+  },
+  {
     "setId": "42171",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -3215,8 +3950,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42171-mercedes-amg-f1-w14-e-performance.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:33.050Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "42171",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Mercedes-AMG-F1-W14-E-Performance-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012662%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT41",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42171",
@@ -3229,8 +3979,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-4217-technic-mercedes-amg-f1-w14-e-performance-411-2171",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:44:42.263Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:16.774Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -3267,6 +4017,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42172",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 31499,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-technic-mclaren-p1-hypercar-bouwpakket-voor-volwassenen-modelauto-decoratie-set-42172-17270032/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T17:02:58.825Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
+  },
+  {
+    "setId": "42172",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -3293,7 +4058,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42172-mclaren-p1-hypercar.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:33.361Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3307,8 +4072,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42172-technic-mclaren-p1-411-2172",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:44:46.932Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:16.987Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -3345,6 +4110,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42173",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3974,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-technic-koenigsegg-jesko-absolut-grijze-hypercar-auto-bouwpakket-voor-kinderen-42173-17295076/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T17:02:57.482Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
+  },
+  {
+    "setId": "42173",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Koenigsegg-Jesko-Absolut-grijze-hypercar-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044198%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4E",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42173",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -3371,7 +4166,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42173-koenigsegg-jesko-absolut-grijze-hypercar.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:12.833Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3389,6 +4184,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "42174",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9390,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Emirates-Team-New-Zealand-AC75-jacht-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044202%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT49",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42174",
@@ -3418,7 +4228,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42174-emirates-team-new-zealand-ac75-jacht.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:09.017Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3455,6 +4265,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42175",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-technic-volvo-fmx-truck-ec230-elektrische-graafmachine-speelgoed-voor-kinderen-42175-17295061/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T17:02:57.811Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
+  },
+  {
+    "setId": "42175",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -3465,7 +4290,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42175-volvo-fmx-truck-ec230-elektrische-graafmachine.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:06.672Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3518,6 +4343,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42176",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11899,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-technic-porsche-gt4-e-performance-racewagen-op-afstand-bestuurbaar-auto-speelgoed-42176-17295064/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T17:02:58.142Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
+  },
+  {
+    "setId": "42176",
     "merchantId": "bol",
     "merchantName": "bol",
     "regionCode": "NL",
@@ -3560,8 +4400,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42176-porsche-gt4-e-performance-racewagen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:02.327Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "42176",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Porsche-GT4-e-Performance-racewagen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044210%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT48",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42176",
@@ -3578,6 +4433,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "42177",
+    "merchantId": "wehkamp",
+    "merchantName": "Wehkamp",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17499,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.wehkamp.nl/lego-technic-mercedes-benz-g-500-professional-line-auto-bouwpakket-voor-volwassenen-42177-17295071/",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-21T17:02:59.095Z",
+    "displayRank": 9,
+    "ctaLabel": "Bekijk bij Wehkamp"
   },
   {
     "setId": "42177",
@@ -3613,6 +4483,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42177",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Mercedes-Benz-G-500-PROFESSIONAL-Line-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044211%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4A",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42177",
     "merchantId": "top1toys",
     "merchantName": "Top1Toys",
     "regionCode": "NL",
@@ -3622,8 +4507,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42177-technic-mercedes-benz-g-500-professional-line-411-2177",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:44:40.185Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:16.620Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -3638,7 +4523,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42177-mercedes-benz-g-500-professional-line.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:33.762Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3656,6 +4541,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "42182",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-NASA-Apollo-maanwagen-LRV-Constructiespeelgoed%2Fhtml%2Fproduct%2F100044213%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4D",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42203",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3899,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Vrachtwagen-met-kiepfunctie-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076900%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4J",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42206",
@@ -3691,6 +4606,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42206",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Oracle-Red-Bull-Racing-RB20-F1-auto-Constructiespeelgoed%2Fhtml%2Fproduct%2F100091844%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4O",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42206",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -3701,7 +4631,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42206-oracle-red-bull-racing-rb20-f1-auto-max-verstappen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:51.616Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3721,6 +4651,111 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "42208",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4699,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Aston-Martin-Valkyrie-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123480%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4Q",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42209",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7690,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Volvo-L120-Electric-wiellader-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123482%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4R",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42210",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-2-Fast-2-Furious-Nissan-Skyline-GT-R-%28R34%29-auto-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123484%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4S",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42212",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Ferrari-FXX-K-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123540%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4U",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42213",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Ford-Bronco-SUV-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123542%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4V",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42214",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Lamborghini-Revuelto-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123545%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4W",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42215",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 31800,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Volvo-EC500-Hybrid-graafmachine-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123547%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT4X",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "42221",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
@@ -3732,8 +4767,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42221-nasa-artemis-ruimteraket.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:44.251Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "42221",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-NASA-Artemis-ruimteraket-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151517%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT51",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42221",
@@ -3785,6 +4835,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42222",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Bugatti-Chiron-Pur-Sport-hyperca-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151515%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT52",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42222",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -3795,7 +4860,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42222-bugatti-chiron-pur-sport-hypercar.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:40.935Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3848,6 +4913,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42223",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-1966-Ford-GT40-MKII-racewagen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151513%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT53",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42223",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -3858,7 +4938,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42223-1966-ford-gt40-mkii-racewagen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:35.846Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3911,6 +4991,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42224",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11690,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Porsche-911-GT3-R-REXY-AO-Racing-auto-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151469%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT54",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42224",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -3921,7 +5016,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42224-porsche-911-gt3-r-rexy-ao-racing-auto.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:31.117Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3958,6 +5053,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42226",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5190,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-BMW-M4-GT3-EVO-racewagen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151467%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT56",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42226",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -3984,7 +5094,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42226-bmw-m4-gt3-evo-racewagen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:25.778Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4002,6 +5112,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "42227",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5190,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FTechnic-Jeep-Wrangler-Rubicon-terreinwagen-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151465%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKT57",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42227",
@@ -4047,7 +5172,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42227-jeep-wrangler-rubicon-terreinwagen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:22.396Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4078,7 +5203,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42228-mclaren-mcl39-f1-auto.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:18.503Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4141,7 +5266,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-friends-42684-eenhoorn-droomcafe.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:05.034Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4220,7 +5345,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-friends-42686-binnenspeeltuin.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:01.367Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4254,6 +5379,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
+  },
+  {
+    "setId": "42687",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FFriends-Lianns-huis-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151343%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKFJ",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "42687",
@@ -4299,7 +5439,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-friends-42687-lianns-huis.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:01.321Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4352,6 +5492,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "42688",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6295,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FFriends-Paardenstal-en-manege-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151344%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKFI",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "42688",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -4362,7 +5517,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-friends-42688-paardenstal-en-manege.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:36:57.591Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4409,7 +5564,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-friends-42689-heartlake-city-clubhuis.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:36:55.323Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4478,6 +5633,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "43019",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FEditions-Voetbal-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151319%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQC6",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "43019",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -4504,7 +5674,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-editions-43019-voetbal.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:10.770Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4541,6 +5711,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "43020",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 14990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FEditions-Offici%C3%ABle-FIFA-World-Cup-trofee-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151315%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQC7",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "43020",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
     "regionCode": "NL",
@@ -4567,7 +5752,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-editions-43020-officiele-fifa-world-cup-trofee.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:06.582Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4620,6 +5805,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "43222",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 59900,
+    "availabilityLabel": "Out of stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Disney-kasteel-Constructiespeelgoed%2Fhtml%2Fproduct%2F1946514%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKQ0V",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "43222",
     "merchantId": "bol",
     "merchantName": "bol",
     "regionCode": "NL",
@@ -4662,8 +5862,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-wish-43224-kasteel-van-koning-magnifico.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:32.606Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "43224",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7090,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Kasteel-van-koning-Magnifico-Constructiespeelgoed%2Fhtml%2Fproduct%2F1905596%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKP2E",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "43224",
@@ -4762,6 +5977,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Wide Dutch retail reach"
   },
   {
+    "setId": "43231",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4690,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Ashas-huisje-Constructiespeelgoed%2Fhtml%2Fproduct%2F1905616%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKP2F",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "43244",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Princess-Elsas-ijspaleis-Constructiespeelgoed%2Fhtml%2Fproduct%2F100043675%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKP2N",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "43244",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
@@ -4773,7 +6018,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43244-elsa-s-ijspaleis.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:59.097Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4842,6 +6087,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "43247",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10390,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Jonge-Simba-de-Leeuwenkoning-Constructiespeelgoed%2Fhtml%2Fproduct%2F100043666%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKE1J",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "43247",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -4852,7 +6112,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43247-jonge-simba-de-leeuwenkoning.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:17.390Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4915,7 +6175,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43249-stitch.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:41:56.120Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4968,6 +6228,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "43269",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11190,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-101-Dalmati%C3%ABrs-puppy-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123478%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKE1R",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "43269",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -4978,7 +6253,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43269-101-dalmatiers-puppy.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:57.446Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5008,8 +6283,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-disney-classic-43269-101-dalmatiers-puppy",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:43:55.811Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:14.553Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -5029,6 +6304,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "43279",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5499,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-WALL-E-en-EVE-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123541%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKE1U",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "43287",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -5046,6 +6336,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "43287",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Olaf-en-Brunis-picknickplezier-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151447%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKE7",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "43287",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -5056,7 +6361,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43287-olaf-en-bruni-s-picknickplezier.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:40:03.373Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5119,7 +6424,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43290-kevin-en-dug.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:59.765Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5198,7 +6503,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43300-winnie-de-poeh.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:53.126Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5298,6 +6603,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "60488",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1499,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FCity-Snackbartruck-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151548%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKYC7",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "60493",
     "merchantId": "intertoys",
     "merchantName": "Intertoys",
@@ -5341,7 +6661,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-city-60493-f1-displaytruck-met-audi-f1-racewagen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:39.690Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5378,6 +6698,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "60499",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FCity-Luchthaven-brandweertruck-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151508%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKYB6",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "60499",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -5388,7 +6723,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-city-60499-luchthaven-brandweertruck.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:36.954Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5451,8 +6786,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-city-60502-luchthaven-met-vliegtuig.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:55.187Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "60502",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FCity-Luchthaven-met-vliegtuig-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151503%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKYB7",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "60502",
@@ -5488,6 +6838,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "60503",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FCity-Kustwacht-helikopter-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151579%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKYB4",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "60503",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -5498,7 +6863,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-city-60503-kustwacht-helikopter.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:32.478Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5577,7 +6942,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-city-60504-kustwacht-reddingsboot-met-helikopter.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:29.609Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5630,6 +6995,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "60505",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FCity-Vliegtuig-servicewagen-en-hovercraft-remix-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151573%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKYC1",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "60505",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -5640,7 +7020,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-city-60505-vliegtuig-servicewagen-en-hovercraft-remix.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:52.244Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5693,6 +7073,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "60508",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16295,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FCity-Overval-op-politietrein-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151577%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKYB8",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "60508",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -5703,7 +7098,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-city-60508-overval-op-politietrein.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:47.337Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5721,6 +7116,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "71508",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6195,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDREAMZzz-Vossenmecha-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151848%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKK55",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "71508",
@@ -5766,7 +7176,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-dreamzzz-71508-vossenmecha.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:36:52.157Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5813,7 +7223,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-dreamzzz-71512-krokodilonderzeeer.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:44.158Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5876,7 +7286,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-dreamzzz-71513-nachtmerrie-schorpioengraver.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:36:49.050Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5910,6 +7320,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
+  },
+  {
+    "setId": "71514",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDREAMZzz-Dinoruimteschip-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151856%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKK52",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "71514",
@@ -5955,7 +7380,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-dreamzzz-71514-dinoruimteschip.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:40.594Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6008,6 +7433,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "71515",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11295,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDREAMZzz-Tijgerhaaitank-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151860%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKK51",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "71515",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -6018,7 +7458,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-dreamzzz-71515-tijgerhaaitank.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:48.116Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6071,6 +7511,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "71857",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FNinjago-Ninjavoertuigen-bij-de-boomhut-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151788%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKN82",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "71857",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -6081,7 +7536,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-ninjago-71857-ninjavoertuigen-bij-de-boomhut.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:36:45.162Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6144,8 +7599,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-ninjago-71858-15-jarig-jubileum-smederij-de-vier-wapens.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:36.722Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "71858",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FNinjago-15-jarig-jubileum-Smederij-De-Vier-Wapens-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151825%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKN86",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "71858",
@@ -6162,6 +7632,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "71859",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7790,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FNinjago-De-Draak-van-het-Leven-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151832%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKN85",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "71859",
@@ -6207,7 +7692,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-ninjago-71859-de-draak-van-het-leven.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:31.837Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6270,8 +7755,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-ninjago-71860-15-jarig-jubileum-lloyds-reusachtige-mecha.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:28.872Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "71860",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FNinjago-15-jarig-jubileum-Lloyds-reusachtige-mecha-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151836%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKN84",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "71860",
@@ -6365,8 +7865,23 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-mario-72037-mario-kart-mario-en-standaardkart.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:12.055Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
+  },
+  {
+    "setId": "72037",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FSuper-Mario-Mario-Kart-Mario-en-standaardkart-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123463%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKM77",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "72037",
@@ -6379,8 +7894,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-72037-super-mario-kart-mario-en-standaardkart",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:44:37.237Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:16.398Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -6411,7 +7926,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-mario-72050-mario-kart-luigi-en-mach-8.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:12.511Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6442,7 +7957,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-pokemon-72152-pikachu-en-pokeball.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:43.628Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6537,7 +8052,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-millennium-falcon-75192.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:14.077Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6696,7 +8211,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75328-the-mandalorian-helm.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:43.428Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6727,7 +8242,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-de-razor-crest-75331.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:20.749Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6838,7 +8353,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75349-captain-rex-helm.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:39.382Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -6888,6 +8403,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 2,
     "ctaLabel": "Shop at bol",
     "perks": "Wide Dutch retail reach"
+  },
+  {
+    "setId": "75351",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-Prinses-Leia-%28Boushh%29-Helm-Constructiespeelgoed%2Fhtml%2Fproduct%2F1871761%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKS8R",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "75351",
@@ -6997,7 +8527,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75355-x-wing-starfighter.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:31.768Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7027,8 +8557,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-75355-star-wars-x-wing-starfighter",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:46:24.718Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:25.472Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -7097,6 +8627,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75358",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3199,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-Tenoo-Jedi-tempel-Constructiespeelgoed%2Fhtml%2Fproduct%2F1905035%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKS8S",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "75358",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -7107,7 +8652,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75358-tenoo-jedi-tempel.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:42:52.722Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7320,6 +8865,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75367",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 56900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-Venator-class-Republic-Attack-Cruiser-Constructiespeelgoed%2Fhtml%2Fproduct%2F100015498%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKSA5",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "75367",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -7330,7 +8890,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-venator-class-republic-attack-cruiser-75367.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:19.353Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7360,8 +8920,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-star-wars-75367-venator-class-republic-attack-cruiser",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:46:22.293Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:25.254Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -7392,7 +8952,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75371-chewbacca.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:16.406Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7445,6 +9005,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75375",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6590,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-Millennium-Falcon-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012605%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKSA2",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "75375",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -7455,7 +9030,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75375-millennium-falcon.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:11.559Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7518,7 +9093,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75397-jabba-s-sail-barge.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:58.166Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7581,7 +9156,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75398-c-3po.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:57.763Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7634,6 +9209,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75408",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6090,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-Jango-Fett-helm-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076778%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKSAR",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "75408",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -7644,7 +9234,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75408-jango-fett-helm.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:27.956Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7664,6 +9254,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "75417",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16099,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-AT-ST-Walker-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123506%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKSAX",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "75423",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
@@ -7675,7 +9280,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75423-smart-play-luke-s-red-five-x-wing.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:27.638Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7722,7 +9327,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75440-at-at.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:13.335Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7775,6 +9380,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75441",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6295,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-Venator-Class-Attack-Cruiser-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151894%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKSB4",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "75441",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -7785,7 +9405,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75441-venator-class-attack-cruiser.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:20.045Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7838,6 +9458,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75452",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FStar-Wars-BB-8-Astromech-Droid-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151637%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKSB3",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "75452",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -7848,7 +9483,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75452-bb-8-astromech-droid.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:15.064Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -7932,6 +9567,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Wide Dutch retail reach"
   },
   {
+    "setId": "76193",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15399,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMarvel-Het-schip-van-de-Guardians-Constructiespeelgoed%2Fhtml%2Fproduct%2F1736354%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKH6B",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "76261",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -8013,6 +9663,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76269",
+    "merchantId": "top1toys",
+    "merchantName": "Top1Toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49900,
+    "availabilityLabel": "Out of stock",
+    "outboundUrl": "https://www.top1toys.nl/lego-super-heros-avengers-tower-76269",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-04-22T18:24:19.446Z",
+    "displayRank": 5,
+    "ctaLabel": "Bekijk bij Top1Toys"
+  },
+  {
+    "setId": "76269",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -8023,23 +9688,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-marvel-76269-avengers-toren.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:32.270Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
-  },
-  {
-    "setId": "76269",
-    "merchantId": "top1toys",
-    "merchantName": "Top1Toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 49900,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.top1toys.nl/lego-super-heros-avengers-tower-76269",
-    "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:44:59.031Z",
-    "displayRank": 6,
-    "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
     "setId": "76269",
@@ -8123,6 +9773,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76313",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMarvel-Super-Heroes-MARVEL-logo-en-minifiguren-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076568%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKHAA",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76313",
     "merchantId": "bol",
     "merchantName": "bol",
     "regionCode": "NL",
@@ -8149,7 +9814,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-heroes-76313-marvel-logo-en-minifiguren.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:57.423Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8179,8 +9844,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76313-super-heroes-marvel-marvel-logo-en-minifiguren",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:44:56.005Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:18.734Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -8233,6 +9898,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76330",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6595,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FBatman%E2%84%A2-logo-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151611%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKHU",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76330",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -8243,7 +9923,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-heroes-76330-batman-logo.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:01.094Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8290,7 +9970,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-marvel-76341-groot-in-ravager-jumpsuit.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:23.805Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8308,6 +9988,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 3,
     "ctaLabel": "Shop at Intertoys",
     "perks": "Strong toy-specialist relevance"
+  },
+  {
+    "setId": "76341",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMarvel-Super-Heroes-Groot-in-Ravager-jumpsuit-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151640%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKHBD",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "76341",
@@ -8343,6 +10038,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76342",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FMarvel-Super-Heroes-Spider-Man-vs-Mysterio-de-Daily-Bugle-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151644%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKHBC",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76342",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -8353,7 +10063,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-marvel-76342-spider-man-vs-mysterio-de-daily-bugle.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:11.176Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8400,7 +10110,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-marvel-76344-iron-man-mark-3-verzameleditie.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:07.897Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8450,6 +10160,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "76405",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 64900,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FHarry-Potter-Zweinstein-Express%E2%84%A2-Verzameleditie-Constructiespeelgoed%2Fhtml%2Fproduct%2F1905961%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKX26",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "76405",
@@ -8517,6 +10242,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76419",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 13690,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FHarry-Potter-Kasteel-Zweinstein-en-terrein-Constructiespeelgoed%2Fhtml%2Fproduct%2F1906200%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKX2A",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76419",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -8527,7 +10267,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76419-kasteel-zweinstein-en-terrein.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:38.656Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8573,8 +10313,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76419-harry-potter-kasteel-zweinstein-en-ter-terrein-411-6419",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:27.296Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:21.819Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -8595,6 +10335,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76429",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7490,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FHarry-Potter-Pratende-Sorteerhoed-Constructiespeelgoed%2Fhtml%2Fproduct%2F100012571%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKX2I",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76429",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -8605,7 +10360,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76429-pratende-sorteerhoed.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:12.016Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8619,8 +10374,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76429-harry-potter-pratende-sorteerhoed-411-6429",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:20.700Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:20.367Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -8683,7 +10438,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76435-kasteel-zweinstein-de-grote-zaal.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:10.853Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8729,8 +10484,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76435-harry-potter-kasteel-zweinstein-de-grote-zaal-411-6435",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:29.440Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:22.037Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -8761,7 +10516,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76437-het-nest-verzameleditie.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:36.181Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8797,6 +10552,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
+    "setId": "76451",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6890,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FHarry-Potter-Ligusterlaan-bezoek-van-tante-Margot-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123608%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKX30",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76453",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 11990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FHarry-Potter-Villa-Malfidus-Constructiespeelgoed%2Fhtml%2Fproduct%2F100076668%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKX2V",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
     "setId": "76453",
     "merchantId": "bol",
     "merchantName": "bol",
@@ -8824,7 +10609,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76453-villa-malfidus.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:11.624Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8854,8 +10639,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76453-harry-potter-villa-malfidus",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:45:32.332Z",
-    "displayRank": 6,
+    "observedAt": "2026-04-22T18:24:22.532Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -8908,6 +10693,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76463",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7990,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FHarry-Potter-Kasteel-Zweinstein-Ziekenzaal-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151871%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLKX3G",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76463",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -8918,7 +10718,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76463-kasteel-zweinstein-ziekenzaal.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:04.848Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -8981,7 +10781,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76464-ketel-met-geheim-toverdrankenklaslokaal.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:38:01.800Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -9028,7 +10828,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76466-steen-der-wijzen-verzameleditie.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:39:37.784Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -9107,7 +10907,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76467-het-huis-van-loena-leeflang.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:59.456Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -9170,7 +10970,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76470-betoverde-vliegende-ford-anglia.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:37:55.659Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -9188,6 +10988,36 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
+  },
+  {
+    "setId": "76784",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FWednesday-Zwarte-dahlia-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123503%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLK007",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
+  },
+  {
+    "setId": "76785",
+    "merchantId": "alternate",
+    "merchantName": "Alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6290,
+    "availabilityLabel": "In stock",
+    "outboundUrl": "https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FWednesday-Appartement-van-Thing-Constructiespeelgoed%2Fhtml%2Fproduct%2F100123555%3Futm_source%3Dtradetracker%26utm_medium%3Dcpc%26utm_campaign%3Dtradetracker_Constructiespeelgoed%26utm_term%3D1SSLK006",
+    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
+    "observedAt": "2026-04-22T18:04:05.898Z",
+    "displayRank": 6,
+    "ctaLabel": "Bekijk bij Alternate"
   },
   {
     "setId": "77093",
@@ -9217,7 +11047,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-speed-champions-77243-oracle-red-bull-racing-rb20-f1-racewagen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:48.007Z",
-    "displayRank": 5,
+    "displayRank": 7,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {

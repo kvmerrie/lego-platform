@@ -21,6 +21,7 @@ import {
 } from '@lego-platform/pricing/util';
 import {
   listActiveCommerceRefreshSeeds,
+  listActiveCommerceSyncSeeds,
   type CommerceOfferSeedValidationUpdateInput,
   type CommerceRefreshSeed,
   updateCommerceOfferSeedValidationState,
@@ -1977,11 +1978,13 @@ export async function refreshCommerceOfferSeeds({
 
 function createFallbackAffiliateMerchantConfig({
   displayRank,
+  isAffiliate,
   merchantName,
   merchantSlug,
   urlHost,
 }: {
   displayRank: number;
+  isAffiliate: boolean;
   merchantName: string;
   merchantSlug: string;
   urlHost: string;
@@ -1994,7 +1997,9 @@ function createFallbackAffiliateMerchantConfig({
     enabled: true,
     displayRank,
     urlHost,
-    disclosureCopy: 'Direct merchant link.',
+    disclosureCopy: isAffiliate
+      ? 'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.'
+      : 'Direct merchant link.',
     ctaLabel: `Bekijk bij ${merchantName}`,
   };
 }
@@ -2049,6 +2054,7 @@ export function buildCommerceSyncInputs({
         merchantName: merchant.name,
         urlHost: hostByMerchantSlug.get(merchant.slug) ?? '',
         displayRank: dynamicDisplayRank++,
+        isAffiliate: merchant.sourceType === 'affiliate',
       });
     })
     .sort(
@@ -2165,11 +2171,22 @@ function filterCommerceRefreshSeeds({
 
 export async function loadCommerceSyncInputs({
   listActiveCommerceRefreshSeedsFn = listActiveCommerceRefreshSeeds,
+  listActiveCommerceSyncSeedsFn,
   merchantSlugs,
   setIds,
 }: CommerceSyncInputFilters & {
   listActiveCommerceRefreshSeedsFn?: typeof listActiveCommerceRefreshSeeds;
+  listActiveCommerceSyncSeedsFn?: typeof listActiveCommerceSyncSeeds;
 } = {}) {
+  const resolvedListActiveCommerceSyncSeedsFn =
+    listActiveCommerceSyncSeedsFn ??
+    (listActiveCommerceRefreshSeedsFn === listActiveCommerceRefreshSeeds
+      ? listActiveCommerceSyncSeeds
+      : async ({
+          merchantSlugs,
+        }: {
+          merchantSlugs?: readonly string[];
+        } = {}) => listActiveCommerceRefreshSeedsFn({ merchantSlugs }));
   const refreshSeeds = filterCommerceRefreshSeeds({
     filters: {
       merchantSlugs,
@@ -2179,11 +2196,20 @@ export async function loadCommerceSyncInputs({
       merchantSlugs,
     }),
   });
+  const syncSeeds = filterCommerceRefreshSeeds({
+    filters: {
+      merchantSlugs,
+      setIds,
+    },
+    refreshSeeds: await resolvedListActiveCommerceSyncSeedsFn({
+      merchantSlugs,
+    }),
+  });
 
   return {
     refreshSeeds,
     syncInputs: buildCommerceSyncInputs({
-      refreshSeeds,
+      refreshSeeds: syncSeeds,
     }),
   };
 }

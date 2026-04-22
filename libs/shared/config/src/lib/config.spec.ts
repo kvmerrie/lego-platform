@@ -14,9 +14,11 @@ import {
   getMissingPublicWebRevalidationEnvKeys,
   getMissingProductEmailEnvKeys,
   getMissingStagingSupabaseEnvKeys,
+  getMissingTradeTrackerEnvKeys,
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
+  getTradeTrackerAffiliateConfig,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
   hasAdminPromotionConfig,
@@ -24,6 +26,7 @@ import {
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
   hasStagingSupabaseConfig,
+  hasTradeTrackerAffiliateConfig,
   publicSiteRobotsPolicy,
 } from './config';
 
@@ -259,5 +262,42 @@ describe('shared config catalog promotion helpers', () => {
 
     expect(hasAdminPromotionConfig()).toBe(false);
     expect(getMissingAdminPromotionEnvKeys()).toEqual(['ADMIN_PROMOTE_SECRET']);
+  });
+});
+
+describe('shared config TradeTracker helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads TradeTracker SOAP config with optional Alternate overrides', () => {
+    process.env.TRADETRACKER_CUSTOMER_ID = '12345';
+    process.env.TRADETRACKER_PASSPHRASE = 'tt-passphrase';
+    process.env.TRADETRACKER_AFFILIATE_SITE_ID = '67890';
+    process.env.TRADETRACKER_ALTERNATE_FEED_ID = '111';
+    process.env.TRADETRACKER_ALTERNATE_CAMPAIGN_ID = '222';
+
+    expect(hasTradeTrackerAffiliateConfig()).toBe(true);
+    expect(getMissingTradeTrackerEnvKeys()).toEqual([]);
+    expect(getTradeTrackerAffiliateConfig()).toEqual({
+      affiliateSiteId: 67890,
+      alternateCampaignId: 222,
+      alternateFeedId: 111,
+      customerId: 12345,
+      passphrase: 'tt-passphrase',
+    });
+  });
+
+  test('reports missing required TradeTracker env vars', () => {
+    delete process.env.TRADETRACKER_CUSTOMER_ID;
+    delete process.env.TRADETRACKER_PASSPHRASE;
+
+    expect(hasTradeTrackerAffiliateConfig()).toBe(false);
+    expect(getMissingTradeTrackerEnvKeys()).toEqual([
+      'TRADETRACKER_CUSTOMER_ID',
+      'TRADETRACKER_PASSPHRASE',
+    ]);
   });
 });

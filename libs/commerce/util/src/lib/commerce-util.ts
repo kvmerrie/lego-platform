@@ -82,6 +82,12 @@ const commerceMerchantSupportProfiles = {
     defaultRefresh: false,
     operatorLabel: 'Secondary',
   },
+  alternate: {
+    tier: 'secondary',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Secondary',
+  },
   top1toys: {
     tier: 'secondary',
     defaultSeedGeneration: false,
@@ -424,6 +430,7 @@ export interface CommerceCoverageQueueFilters {
 
 export const commerceMerchantSearchableSlugs = [
   'amazon-nl',
+  'alternate',
   'bol',
   'intertoys',
   'kruidvat',

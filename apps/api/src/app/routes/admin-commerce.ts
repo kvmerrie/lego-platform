@@ -1,4 +1,9 @@
-import { refreshCommerceSetOfferSeeds } from '@lego-platform/api/data-access-server';
+import {
+  importAlternateAffiliateFeedRows,
+  refreshCommerceSetOfferSeeds,
+  type AlternateAffiliateFeedRow,
+  type AlternateAffiliateFeedImportResult,
+} from '@lego-platform/api/data-access-server';
 import {
   findCatalogSetSummaryByIdWithOverlay,
   listCanonicalCatalogSets,
@@ -32,6 +37,9 @@ import { apiPaths } from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminCommerceService {
+  importAlternateFeed(
+    rows: readonly AlternateAffiliateFeedRow[],
+  ): Promise<AlternateAffiliateFeedImportResult>;
   createBenchmarkSet(
     input: CommerceBenchmarkSetInput,
   ): Promise<CommerceBenchmarkSet>;
@@ -55,6 +63,10 @@ export interface AdminCommerceService {
 
 function createAdminCommerceService(): AdminCommerceService {
   return {
+    importAlternateFeed: (rows) =>
+      importAlternateAffiliateFeedRows({
+        rows,
+      }),
     listBenchmarkSets: () => listCommerceBenchmarkSets(),
     createBenchmarkSet: (input) => createCommerceBenchmarkSet({ input }),
     deleteBenchmarkSet: (setId) => deleteCommerceBenchmarkSet({ setId }),
@@ -112,6 +124,73 @@ function readRequiredSetId(value: unknown): string {
   }
 
   return setId.trim();
+}
+
+function readAlternateAffiliateFeedRows(
+  value: unknown,
+): AlternateAffiliateFeedRow[] {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Alternate feed input mist een rows-lijst.');
+  }
+
+  const rows = (value as { rows?: unknown }).rows;
+
+  if (!Array.isArray(rows)) {
+    throw new Error('Alternate feed input mist een rows-lijst.');
+  }
+
+  return rows.map((row, index) => {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) {
+      throw new Error(`Alternate feed row ${index + 1} is ongeldig.`);
+    }
+
+    const record = row as Record<string, unknown>;
+
+    return {
+      affiliateDeeplink:
+        typeof record['affiliateDeeplink'] === 'string'
+          ? record['affiliateDeeplink']
+          : '',
+      availabilityText:
+        typeof record['availabilityText'] === 'string'
+          ? record['availabilityText']
+          : undefined,
+      brand: typeof record['brand'] === 'string' ? record['brand'] : undefined,
+      category:
+        typeof record['category'] === 'string' ? record['category'] : undefined,
+      condition:
+        typeof record['condition'] === 'string'
+          ? record['condition']
+          : undefined,
+      currency:
+        typeof record['currency'] === 'string' ? record['currency'] : undefined,
+      description:
+        typeof record['description'] === 'string'
+          ? record['description']
+          : undefined,
+      ean: typeof record['ean'] === 'string' ? record['ean'] : undefined,
+      imageUrl:
+        typeof record['imageUrl'] === 'string' ? record['imageUrl'] : undefined,
+      legoSetNumber:
+        typeof record['legoSetNumber'] === 'string'
+          ? record['legoSetNumber']
+          : undefined,
+      price:
+        typeof record['price'] === 'number' ||
+        typeof record['price'] === 'string'
+          ? record['price']
+          : undefined,
+      productTitle:
+        typeof record['productTitle'] === 'string'
+          ? record['productTitle']
+          : undefined,
+      shippingCost:
+        typeof record['shippingCost'] === 'number' ||
+        typeof record['shippingCost'] === 'string'
+          ? record['shippingCost']
+          : undefined,
+    };
+  });
 }
 
 async function ensureCatalogSetExists(setId: string): Promise<void> {
@@ -225,6 +304,24 @@ export function createAdminCommerceRoutes({
     fastify.get(apiPaths.adminCommerceOfferSeeds, async function () {
       return commerceService.listOfferSeeds();
     });
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminCommerceAlternateFeedImports,
+      async function (request, reply) {
+        try {
+          const rows = readAlternateAffiliateFeedRows(request.body);
+
+          return await commerceService.importAlternateFeed(rows);
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Alternate feed input is invalid.',
+            ),
+          });
+        }
+      },
+    );
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceSetRefreshes,

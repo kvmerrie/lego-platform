@@ -137,6 +137,8 @@ export const apiPaths = {
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
   adminCommerceCoverageQueue: '/api/v1/admin/commerce/coverage-queue',
   adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
+  adminCommerceAlternateFeedImports:
+    '/api/v1/admin/commerce/alternate-feed/import',
   adminCatalogPromotion: '/api/admin/promote/catalog',
 } as const;
 
@@ -194,6 +196,14 @@ export const rebrickableEnvKeys = {
   baseUrl: 'REBRICKABLE_BASE_URL',
 } as const;
 
+export const tradeTrackerEnvKeys = {
+  customerId: 'TRADETRACKER_CUSTOMER_ID',
+  passphrase: 'TRADETRACKER_PASSPHRASE',
+  affiliateSiteId: 'TRADETRACKER_AFFILIATE_SITE_ID',
+  alternateFeedId: 'TRADETRACKER_ALTERNATE_FEED_ID',
+  alternateCampaignId: 'TRADETRACKER_ALTERNATE_CAMPAIGN_ID',
+} as const;
+
 export interface BrowserSupabaseConfig {
   anonKey: string;
   url: string;
@@ -228,6 +238,14 @@ export interface PublicWebRevalidationConfig {
 export interface RebrickableApiConfig {
   apiKey: string;
   baseUrl?: string;
+}
+
+export interface TradeTrackerAffiliateConfig {
+  affiliateSiteId?: number;
+  alternateCampaignId?: number;
+  alternateFeedId?: number;
+  customerId: number;
+  passphrase: string;
 }
 
 function normalizePathname(pathname: string): string {
@@ -586,6 +604,49 @@ function requireEnvValue({
   return value;
 }
 
+function readOptionalPositiveIntegerEnvValue({
+  environment,
+  key,
+}: {
+  environment: Record<string, string | undefined>;
+  key: string;
+}): number | undefined {
+  const rawValue = environment[key]?.trim();
+
+  if (!rawValue) {
+    return undefined;
+  }
+
+  const parsedValue = Number(rawValue);
+
+  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+    throw new Error(
+      `Invalid environment variable: ${key} must be a positive integer.`,
+    );
+  }
+
+  return parsedValue;
+}
+
+function requirePositiveIntegerEnvValue({
+  environment,
+  key,
+}: {
+  environment: Record<string, string | undefined>;
+  key: string;
+}): number {
+  const parsedValue = readOptionalPositiveIntegerEnvValue({
+    environment,
+    key,
+  });
+
+  if (parsedValue === undefined) {
+    throw new Error(`Missing required environment variable: ${key}.`);
+  }
+
+  return parsedValue;
+}
+
 export function getBrowserSupabaseConfig(
   environment: Record<string, string | undefined> = process.env,
 ): BrowserSupabaseConfig {
@@ -855,6 +916,58 @@ export function getMissingRebrickableEnvKeys(
   return environment[rebrickableEnvKeys.apiKey]
     ? []
     : [rebrickableEnvKeys.apiKey];
+}
+
+export function getTradeTrackerAffiliateConfig(
+  environment: Record<string, string | undefined> = process.env,
+): TradeTrackerAffiliateConfig {
+  return {
+    customerId: requirePositiveIntegerEnvValue({
+      environment,
+      key: tradeTrackerEnvKeys.customerId,
+    }),
+    passphrase: requireEnvValue({
+      environment,
+      key: tradeTrackerEnvKeys.passphrase,
+    }),
+    affiliateSiteId: readOptionalPositiveIntegerEnvValue({
+      environment,
+      key: tradeTrackerEnvKeys.affiliateSiteId,
+    }),
+    alternateFeedId: readOptionalPositiveIntegerEnvValue({
+      environment,
+      key: tradeTrackerEnvKeys.alternateFeedId,
+    }),
+    alternateCampaignId: readOptionalPositiveIntegerEnvValue({
+      environment,
+      key: tradeTrackerEnvKeys.alternateCampaignId,
+    }),
+  };
+}
+
+export function hasTradeTrackerAffiliateConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(
+    environment[tradeTrackerEnvKeys.customerId] &&
+      environment[tradeTrackerEnvKeys.passphrase],
+  );
+}
+
+export function getMissingTradeTrackerEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const missingKeys: string[] = [];
+
+  if (!environment[tradeTrackerEnvKeys.customerId]) {
+    missingKeys.push(tradeTrackerEnvKeys.customerId);
+  }
+
+  if (!environment[tradeTrackerEnvKeys.passphrase]) {
+    missingKeys.push(tradeTrackerEnvKeys.passphrase);
+  }
+
+  return missingKeys;
 }
 
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {

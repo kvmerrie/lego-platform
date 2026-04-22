@@ -135,6 +135,7 @@ describe('commerce util', () => {
     expect(includeCommerceMerchantInDefaultRefresh('smyths-toys')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('kruidvat')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('wehkamp')).toBe(false);
+    expect(includeCommerceMerchantInDefaultRefresh('alternate')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('amazon-nl')).toBe(false);
   });
 

@@ -1,0 +1,38 @@
+{
+  "name": "alternate-feed-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/alternate-feed-sync/src",
+  "projectType": "application",
+  "tags": ["scope:api", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/alternate-feed-sync",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/alternate-feed-sync/src/main.ts",
+        "tsConfig": "apps/alternate-feed-sync/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/alternate-feed-sync/main.cjs"
+      }
+    }
+  }
+}

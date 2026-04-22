@@ -2,10 +2,12 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   createCommerceBenchmarkSet,
   createCommerceMerchant,
+  listActiveCommerceSyncSeeds,
   deleteCommerceBenchmarkSet,
   listActiveCommerceRefreshSeeds,
   listCommerceBenchmarkSets,
   listCommerceOfferSeeds,
+  upsertCommerceOfferSeedByCompositeKey,
   updateCommerceOfferSeedValidationState,
   upsertCommerceOfferLatestRecord,
 } from './commerce-data-access-server';
@@ -316,9 +318,8 @@ describe('commerce data access server', () => {
       supabaseClient: { from } as never,
     });
 
-    expect(result).toHaveLength(2);
-    expect(result[0].offerSeed.id).toBe('seed-1');
-    expect(result[1].offerSeed.id).toBe('seed-3');
+    expect(result).toHaveLength(1);
+    expect(result[0].offerSeed.id).toBe('seed-3');
   });
 
   test('can include blocked merchants when refresh consumers explicitly ask for the full set', async () => {
@@ -455,6 +456,69 @@ describe('commerce data access server', () => {
     expect(result[0].offerSeed.setId).toBe('21366');
   });
 
+  test('lists active sync seeds without default refresh gating', async () => {
+    const merchantOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'merchant-1',
+          slug: 'alternate',
+          name: 'Alternate',
+          is_active: true,
+          source_type: 'affiliate',
+          affiliate_network: 'TradeTracker',
+          notes: null,
+          created_at: '2026-04-22T09:00:00.000Z',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const latestSelect = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    const seedOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'seed-1',
+          set_id: '76784',
+          merchant_id: 'merchant-1',
+          product_url: 'https://clk.tradedoubler.test/alternate/76784',
+          is_active: true,
+          validation_status: 'valid',
+          last_verified_at: '2026-04-22T09:00:00.000Z',
+          notes: null,
+          created_at: '2026-04-22T09:00:00.000Z',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_merchants') {
+        return { select: vi.fn(() => ({ order: merchantOrder })) };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return { select: latestSelect };
+      }
+
+      if (table === 'commerce_offer_seeds') {
+        return { select: vi.fn(() => ({ order: seedOrder })) };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    const result = await listActiveCommerceSyncSeeds({
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.merchant.slug).toBe('alternate');
+    expect(result[0]?.offerSeed.setId).toBe('76784');
+  });
+
   test('upserts latest offer records by offer seed id for future refresh jobs', async () => {
     const upsert = vi.fn().mockResolvedValue({ error: null });
     const from = vi.fn(() => ({ upsert }));
@@ -488,6 +552,92 @@ describe('commerce data access server', () => {
         onConflict: 'offer_seed_id',
       },
     );
+  });
+
+  test('upserts offer seeds by set and merchant for feed-driven merchants', async () => {
+    const merchantOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'merchant-1',
+          slug: 'alternate',
+          name: 'Alternate',
+          is_active: true,
+          source_type: 'affiliate',
+          affiliate_network: 'TradeTracker',
+          notes: null,
+          created_at: '2026-04-22T09:00:00.000Z',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const latestSelect = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    const single = vi.fn().mockResolvedValue({
+      data: {
+        id: 'seed-1',
+        set_id: '76784',
+        merchant_id: 'merchant-1',
+        product_url: 'https://clk.tradedoubler.test/alternate/76784',
+        is_active: true,
+        validation_status: 'valid',
+        last_verified_at: '2026-04-22T09:00:00.000Z',
+        notes: 'Feed-driven Alternate import.',
+        created_at: '2026-04-22T09:00:00.000Z',
+        updated_at: '2026-04-22T09:00:00.000Z',
+      },
+      error: null,
+    });
+    const select = vi.fn(() => ({ single }));
+    const upsert = vi.fn(() => ({ select }));
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_offer_seeds') {
+        return { upsert };
+      }
+
+      if (table === 'commerce_merchants') {
+        return { select: vi.fn(() => ({ order: merchantOrder })) };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return { select: latestSelect };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    const result = await upsertCommerceOfferSeedByCompositeKey({
+      input: {
+        setId: '76784',
+        merchantId: 'merchant-1',
+        productUrl: 'https://clk.tradedoubler.test/alternate/76784',
+        isActive: true,
+        validationStatus: 'valid',
+        lastVerifiedAt: '2026-04-22T09:00:00.000Z',
+        notes: 'Feed-driven Alternate import.',
+      },
+      supabaseClient: { from } as never,
+    });
+
+    expect(from).toHaveBeenCalledWith('commerce_offer_seeds');
+    expect(upsert).toHaveBeenCalledWith(
+      {
+        set_id: '76784',
+        merchant_id: 'merchant-1',
+        product_url: 'https://clk.tradedoubler.test/alternate/76784',
+        is_active: true,
+        validation_status: 'valid',
+        last_verified_at: '2026-04-22T09:00:00.000Z',
+        notes: 'Feed-driven Alternate import.',
+      },
+      {
+        onConflict: 'set_id,merchant_id',
+      },
+    );
+    expect(result.id).toBe('seed-1');
+    expect(result.merchant?.slug).toBe('alternate');
   });
 
   test('updates validation status and verification timestamp for refreshed seeds', async () => {

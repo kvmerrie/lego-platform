@@ -488,6 +488,36 @@ export async function listActiveCommerceRefreshSeeds({
     }));
 }
 
+export async function listActiveCommerceSyncSeeds({
+  merchantSlugs,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  merchantSlugs?: readonly string[];
+  supabaseClient?: CommerceSupabaseClient;
+} = {}): Promise<CommerceRefreshSeed[]> {
+  const offerSeeds = await listCommerceOfferSeeds({ supabaseClient });
+  const requestedMerchantSlugs = new Set(
+    (merchantSlugs ?? [])
+      .map((merchantSlug) => merchantSlug.trim())
+      .filter(Boolean),
+  );
+
+  return offerSeeds
+    .filter(
+      (offerSeed) =>
+        offerSeed.isActive && offerSeed.merchant?.isActive === true,
+    )
+    .filter(
+      (offerSeed) =>
+        requestedMerchantSlugs.size === 0 ||
+        requestedMerchantSlugs.has(offerSeed.merchant?.slug ?? ''),
+    )
+    .map((offerSeed) => ({
+      merchant: offerSeed.merchant as CommerceMerchant,
+      offerSeed,
+    }));
+}
+
 export async function deleteCommerceBenchmarkSet({
   setId,
   supabaseClient = getServerSupabaseAdminClient(),
@@ -533,6 +563,57 @@ export async function upsertCommerceOfferLatestRecord({
   if (error) {
     throw new Error('Unable to persist the commerce latest offer record.');
   }
+}
+
+export async function upsertCommerceOfferSeedByCompositeKey({
+  input,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  input: CommerceOfferSeedInput;
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<CommerceOfferSeed> {
+  const { data, error } = await supabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .upsert(
+      {
+        set_id: input.setId,
+        merchant_id: input.merchantId,
+        product_url: input.productUrl,
+        is_active: input.isActive,
+        validation_status: input.validationStatus,
+        last_verified_at: input.lastVerifiedAt ?? null,
+        notes: input.notes ?? '',
+      },
+      {
+        onConflict: 'set_id,merchant_id',
+      },
+    )
+    .select(
+      'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+    )
+    .single();
+
+  if (error || !data) {
+    throw new Error('Unable to upsert the commerce offer seed.');
+  }
+
+  const [merchants, latestOfferRows] = await Promise.all([
+    listCommerceMerchants({ supabaseClient }),
+    listCommerceOfferLatestRows({ supabaseClient }),
+  ]);
+
+  return toCommerceOfferSeed({
+    row: data as CommerceOfferSeedRow,
+    merchantById: new Map(
+      merchants.map((merchant) => [merchant.id, merchant] as const),
+    ),
+    latestOfferBySeedId: new Map(
+      latestOfferRows.map((latestOfferRow) => [
+        latestOfferRow.offer_seed_id,
+        latestOfferRow,
+      ]),
+    ),
+  });
 }
 
 export async function updateCommerceOfferSeedValidationState({

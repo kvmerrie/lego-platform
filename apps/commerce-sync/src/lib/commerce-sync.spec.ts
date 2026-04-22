@@ -370,6 +370,66 @@ describe('commerce sync scoped runs', () => {
     expect(result.syncInputs.enabledSetIds).toEqual(['21366']);
   });
 
+  test('builds sync inputs from active sync seeds even when a feed merchant has no refresh lane', async () => {
+    const result = await loadCommerceSyncInputs({
+      listActiveCommerceRefreshSeedsFn: vi.fn().mockResolvedValue([]),
+      listActiveCommerceSyncSeedsFn: vi.fn().mockResolvedValue([
+        {
+          merchant: {
+            id: 'merchant-alternate',
+            slug: 'alternate',
+            name: 'Alternate',
+            isActive: true,
+            sourceType: 'affiliate',
+            affiliateNetwork: 'TradeTracker',
+            notes: '',
+            createdAt: '2026-04-22T10:00:00.000Z',
+            updatedAt: '2026-04-22T10:00:00.000Z',
+          },
+          offerSeed: {
+            id: 'seed-31214-alternate',
+            setId: '31214',
+            merchantId: 'merchant-alternate',
+            productUrl: 'https://clk.tradetracker.example/alternate/31214',
+            isActive: true,
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-22T10:00:00.000Z',
+            notes: 'Feed-driven Alternate import.',
+            createdAt: '2026-04-22T10:00:00.000Z',
+            updatedAt: '2026-04-22T10:00:00.000Z',
+            latestOffer: {
+              id: 'offer-31214-alternate',
+              offerSeedId: 'seed-31214-alternate',
+              setId: '31214',
+              merchantId: 'merchant-alternate',
+              productUrl: 'https://clk.tradetracker.example/alternate/31214',
+              fetchStatus: 'success',
+              availability: 'in_stock',
+              currencyCode: 'EUR',
+              fetchedAt: '2026-04-22T10:00:00.000Z',
+              observedAt: '2026-04-22T10:00:00.000Z',
+              priceMinor: 11999,
+              createdAt: '2026-04-22T10:00:00.000Z',
+              updatedAt: '2026-04-22T10:00:00.000Z',
+            },
+          },
+        },
+      ]),
+      merchantSlugs: ['alternate'],
+      setIds: ['31214'],
+    });
+
+    expect(result.refreshSeeds).toHaveLength(0);
+    expect(result.syncInputs.enabledSetIds).toEqual(['31214']);
+    expect(result.syncInputs.pricingObservationSeeds).toEqual([
+      expect.objectContaining({
+        setId: '31214',
+        merchantId: 'alternate',
+        totalPriceMinor: 11999,
+      }),
+    ]);
+  });
+
   test('combines requested set ids and merchant slugs when loading sync inputs', async () => {
     const result = await loadCommerceSyncInputs({
       listActiveCommerceRefreshSeedsFn: vi.fn().mockResolvedValue([

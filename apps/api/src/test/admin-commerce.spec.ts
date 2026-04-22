@@ -37,6 +37,22 @@ async function createAdminCommerceServer({
   commerceService?: AdminCommerceService;
 } = {}) {
   const nextCommerceService: AdminCommerceService = commerceService ?? {
+    importAlternateFeed: vi.fn(async () => ({
+      importedOfferCount: 1,
+      matchedCatalogSetCount: 1,
+      merchantCreated: true,
+      merchantSlug: 'alternate',
+      skippedInvalidCurrencyCount: 0,
+      skippedInvalidDeeplinkCount: 0,
+      skippedInvalidPriceCount: 0,
+      skippedMissingSetNumberCount: 0,
+      skippedNonLegoCount: 0,
+      skippedNonNewCount: 0,
+      skippedUnmatchedSetCount: 0,
+      totalRowCount: 1,
+      upsertedLatestCount: 1,
+      upsertedSeedCount: 1,
+    })),
     listBenchmarkSets: vi.fn(async () => []),
     createBenchmarkSet: vi.fn(
       async () =>
@@ -172,6 +188,7 @@ describe('admin commerce routes', () => {
     const { commerceService, server } = await createAdminCommerceServer({
       commerceService: {
         listBenchmarkSets: vi.fn(async () => []),
+        importAlternateFeed: vi.fn(),
         createBenchmarkSet: vi.fn(),
         deleteBenchmarkSet: vi.fn(),
         listCoverageQueue: vi.fn(async () => []),
@@ -213,6 +230,46 @@ describe('admin commerce routes', () => {
         recommendedNextAction: 'add_seed_manually',
       }),
     ]);
+
+    await server.close();
+  });
+
+  test('imports Alternate feed rows through the admin route', async () => {
+    const { commerceService, server } = await createAdminCommerceServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/alternate-feed/import',
+      payload: {
+        rows: [
+          {
+            affiliateDeeplink:
+              'https://clk.tradetracker.example/alternate/76784',
+            availabilityText: 'Op voorraad',
+            brand: 'LEGO',
+            currency: 'EUR',
+            legoSetNumber: '76784',
+            price: '159,99',
+            productTitle: 'LEGO Wednesday Nevermore Academy',
+          },
+        ],
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(commerceService.importAlternateFeed).toHaveBeenCalledWith([
+      expect.objectContaining({
+        affiliateDeeplink: 'https://clk.tradetracker.example/alternate/76784',
+        brand: 'LEGO',
+        legoSetNumber: '76784',
+      }),
+    ]);
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        importedOfferCount: 1,
+        merchantSlug: 'alternate',
+      }),
+    );
 
     await server.close();
   });
