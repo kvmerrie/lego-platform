@@ -28,6 +28,7 @@ import {
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import {
+  buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
   getBrowserSupabaseConfig,
@@ -133,6 +134,11 @@ export interface CatalogCurrentOfferSummary {
   bestOffer?: CatalogResolvedOffer;
   offers: readonly CatalogResolvedOffer[];
   setId: string;
+}
+
+interface CatalogCurrentOfferSummaryRecord extends CatalogCurrentOfferSummary {
+  bestOffer?: CatalogRuntimeOffer;
+  offers: readonly CatalogRuntimeOffer[];
 }
 
 export interface CatalogPrimaryOfferAvailabilityState {
@@ -244,6 +250,42 @@ function isCatalogDiscoverySignalRecord(
       typeof value['recentReferencePriceChangedAt'] === 'string') &&
     (typeof value['referenceDeltaMinor'] === 'undefined' ||
       typeof value['referenceDeltaMinor'] === 'number')
+  );
+}
+
+function isCatalogResolvedOfferRecord(
+  value: unknown,
+): value is CatalogResolvedOffer {
+  return (
+    isObjectRecord(value) &&
+    (value['availability'] === 'in_stock' ||
+      value['availability'] === 'out_of_stock' ||
+      value['availability'] === 'unknown') &&
+    typeof value['checkedAt'] === 'string' &&
+    value['condition'] === 'new' &&
+    value['currency'] === 'EUR' &&
+    value['market'] === 'NL' &&
+    (value['merchant'] === 'amazon' ||
+      value['merchant'] === 'bol' ||
+      value['merchant'] === 'lego' ||
+      value['merchant'] === 'other') &&
+    typeof value['merchantName'] === 'string' &&
+    typeof value['priceCents'] === 'number' &&
+    typeof value['setId'] === 'string' &&
+    typeof value['url'] === 'string'
+  );
+}
+
+function isCatalogCurrentOfferSummaryRecord(
+  value: unknown,
+): value is CatalogCurrentOfferSummaryRecord {
+  return (
+    isObjectRecord(value) &&
+    typeof value['setId'] === 'string' &&
+    Array.isArray(value['offers']) &&
+    value['offers'].every(isCatalogResolvedOfferRecord) &&
+    (typeof value['bestOffer'] === 'undefined' ||
+      isCatalogResolvedOfferRecord(value['bestOffer']))
   );
 }
 
@@ -780,6 +822,16 @@ async function listAllCatalogSetCards({
   return (await listCanonicalCatalogSetsFn()).map(
     toCatalogSetCardFromCanonicalSet,
   );
+}
+
+export async function listCatalogSetCards({
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+}: {
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  return listAllCatalogSetCards({
+    listCanonicalCatalogSetsFn,
+  });
 }
 
 function selectCatalogSetCardsByIds({
@@ -1619,6 +1671,121 @@ export async function listCatalogSetCardsByIds({
   });
 }
 
+async function listCatalogRuntimeOffersBySetIdsFromSupabase({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, CatalogRuntimeOffer[]>> {
+  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
+  const liveOffersBySetId = new Map(
+    uniqueSetIds.map((setId) => [setId, [] as CatalogRuntimeOffer[]]),
+  );
+
+  if (!uniqueSetIds.length) {
+    return liveOffersBySetId;
+  }
+
+  const { data: seedData, error: seedError } = await supabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .select(
+      'id, set_id, merchant_id, product_url, is_active, validation_status',
+    )
+    .in('set_id', uniqueSetIds)
+    .eq('is_active', true)
+    .eq('validation_status', 'valid');
+
+  if (seedError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
+
+  if (!offerSeeds.length) {
+    return liveOffersBySetId;
+  }
+
+  const merchantIds = [
+    ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
+  ];
+  const offerSeedIds = [
+    ...new Set(offerSeeds.map((offerSeed) => offerSeed.id)),
+  ];
+  const [
+    { data: merchantData, error: merchantError },
+    { data: latestOfferData, error: latestOfferError },
+  ] = await Promise.all([
+    supabaseClient
+      .from(COMMERCE_MERCHANTS_TABLE)
+      .select('id, slug, name, is_active')
+      .in('id', merchantIds)
+      .eq('is_active', true),
+    supabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .select(
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+      )
+      .in('offer_seed_id', offerSeedIds)
+      .order('updated_at', {
+        ascending: false,
+      }),
+  ]);
+
+  if (merchantError || latestOfferError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const merchantById = new Map(
+    ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
+      (merchantRow) => [merchantRow.id, merchantRow],
+    ),
+  );
+  const latestOfferBySeedId = new Map<string, CatalogCommerceOfferLatestRow>();
+
+  for (const latestOfferRow of (latestOfferData as
+    | CatalogCommerceOfferLatestRow[]
+    | null) ?? []) {
+    if (!latestOfferBySeedId.has(latestOfferRow.offer_seed_id)) {
+      latestOfferBySeedId.set(latestOfferRow.offer_seed_id, latestOfferRow);
+    }
+  }
+
+  for (const offerSeed of offerSeeds) {
+    const merchant = merchantById.get(offerSeed.merchant_id);
+    const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+
+    if (!merchant || !latestOffer) {
+      continue;
+    }
+
+    const catalogRuntimeOffer = toCatalogRuntimeOffer({
+      latestOffer,
+      merchant,
+      offerSeed,
+    });
+
+    if (!catalogRuntimeOffer) {
+      continue;
+    }
+
+    const existingOffers = liveOffersBySetId.get(offerSeed.set_id);
+
+    if (!existingOffers) {
+      continue;
+    }
+
+    existingOffers.push(catalogRuntimeOffer);
+  }
+
+  return new Map(
+    [...liveOffersBySetId.entries()].map(([setId, offers]) => [
+      setId,
+      sortResolvedCatalogOffers(offers) as CatalogRuntimeOffer[],
+    ]),
+  );
+}
+
 export async function listCatalogSetLiveOffersBySetId({
   apiBaseUrl,
   cacheOptions,
@@ -1671,95 +1838,22 @@ export async function listCatalogSetLiveOffersBySetId({
 
     const activeSupabaseClient =
       supabaseClient ?? getWebCatalogSupabaseAdminClient();
-    const { data: seedData, error: seedError } = await activeSupabaseClient
-      .from(COMMERCE_OFFER_SEEDS_TABLE)
-      .select(
-        'id, set_id, merchant_id, product_url, is_active, validation_status',
-      )
-      .eq('set_id', setId)
-      .eq('is_active', true)
-      .eq('validation_status', 'valid');
+    const liveOffersBySetId =
+      await listCatalogRuntimeOffersBySetIdsFromSupabase({
+        setIds: [setId],
+        supabaseClient: activeSupabaseClient,
+      });
 
-    if (seedError) {
-      throw new Error('Unable to load live catalog offers.');
-    }
-
-    const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
-
-    if (!offerSeeds.length) {
-      return [];
-    }
-
-    const merchantIds = [
-      ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
-    ];
-    const offerSeedIds = offerSeeds.map((offerSeed) => offerSeed.id);
-    const [
-      { data: merchantData, error: merchantError },
-      { data: latestOfferData, error: latestOfferError },
-    ] = await Promise.all([
-      activeSupabaseClient
-        .from(COMMERCE_MERCHANTS_TABLE)
-        .select('id, slug, name, is_active')
-        .in('id', merchantIds)
-        .eq('is_active', true),
-      activeSupabaseClient
-        .from(COMMERCE_OFFER_LATEST_TABLE)
-        .select(
-          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
-        )
-        .in('offer_seed_id', offerSeedIds)
-        .order('updated_at', {
-          ascending: false,
-        }),
-    ]);
-
-    if (merchantError || latestOfferError) {
-      throw new Error('Unable to load live catalog offers.');
-    }
-
-    const merchantById = new Map(
-      ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
-        (merchantRow) => [merchantRow.id, merchantRow],
-      ),
-    );
-    const latestOfferBySeedId = new Map<
-      string,
-      CatalogCommerceOfferLatestRow
-    >();
-
-    for (const latestOfferRow of (latestOfferData as
-      | CatalogCommerceOfferLatestRow[]
-      | null) ?? []) {
-      if (!latestOfferBySeedId.has(latestOfferRow.offer_seed_id)) {
-        latestOfferBySeedId.set(latestOfferRow.offer_seed_id, latestOfferRow);
-      }
-    }
-
-    return sortResolvedCatalogOffers(
-      offerSeeds.flatMap((offerSeed) => {
-        const merchant = merchantById.get(offerSeed.merchant_id);
-        const latestOffer = latestOfferBySeedId.get(offerSeed.id);
-
-        if (!merchant || !latestOffer) {
-          return [];
-        }
-
-        const catalogRuntimeOffer = toCatalogRuntimeOffer({
-          latestOffer,
-          merchant,
-          offerSeed,
-        });
-
-        return catalogRuntimeOffer ? [catalogRuntimeOffer] : [];
-      }),
-    ) as CatalogRuntimeOffer[];
+    return liveOffersBySetId.get(setId) ?? [];
   } catch (error) {
     if (!supabaseClient && hasServerSupabaseConfig()) {
-      return listCatalogSetLiveOffersBySetId({
-        setId,
-        supabaseClient: getWebCatalogSupabaseAdminClient(),
-      });
+      const liveOffersBySetId =
+        await listCatalogRuntimeOffersBySetIdsFromSupabase({
+          setIds: [setId],
+          supabaseClient: getWebCatalogSupabaseAdminClient(),
+        });
+
+      return liveOffersBySetId.get(setId) ?? [];
     }
 
     if (!supabaseClient) {
@@ -2009,25 +2103,114 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   setIds: readonly string[];
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<Map<string, CatalogCurrentOfferSummary>> {
-  const uniqueSetIds = [...new Set(setIds)];
-  const summaries = await Promise.all(
-    uniqueSetIds.map((setId) =>
-      getCatalogCurrentOfferSummaryBySetId({
-        apiBaseUrl,
-        cacheOptions,
-        fetchImpl,
-        setId,
-        supabaseClient,
-      }),
-    ),
-  );
+  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
 
-  return new Map(
-    summaries.map((catalogCurrentOfferSummary) => [
-      catalogCurrentOfferSummary.setId,
-      catalogCurrentOfferSummary,
-    ]),
-  );
+  if (!uniqueSetIds.length) {
+    return new Map();
+  }
+
+  const createEmptySummary = (
+    setId: string,
+  ): CatalogCurrentOfferSummaryRecord => ({
+    offers: [],
+    setId,
+  });
+
+  try {
+    if (!supabaseClient) {
+      const response = await (fetchImpl ?? fetch)(
+        `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogCurrentOfferSummariesApiPath(uniqueSetIds)}`,
+        {
+          headers: {
+            accept: 'application/json',
+          },
+          ...(typeof cacheOptions?.revalidateSeconds === 'number'
+            ? {
+                next: {
+                  revalidate: cacheOptions.revalidateSeconds,
+                },
+              }
+            : {
+                cache: 'no-store' as const,
+              }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Unable to load current catalog offer summaries.');
+      }
+
+      const payload = await response.json();
+      const summaryBySetId = new Map(
+        (Array.isArray(payload) ? payload : []).flatMap((summaryRecord) => {
+          if (!isCatalogCurrentOfferSummaryRecord(summaryRecord)) {
+            return [];
+          }
+
+          return [[summaryRecord.setId, summaryRecord] as const];
+        }),
+      );
+
+      return new Map(
+        uniqueSetIds.map((setId) => [
+          setId,
+          summaryBySetId.get(setId) ?? createEmptySummary(setId),
+        ]),
+      );
+    }
+
+    const liveOffersBySetId =
+      await listCatalogRuntimeOffersBySetIdsFromSupabase({
+        setIds: uniqueSetIds,
+        supabaseClient,
+      });
+
+    return new Map(
+      uniqueSetIds.map((setId) => {
+        const offers = liveOffersBySetId.get(setId) ?? [];
+
+        return [
+          setId,
+          summarizeCatalogCurrentOffers({
+            generatedOffers: [],
+            liveOffers: offers,
+            setId,
+          }),
+        ] as const;
+      }),
+    );
+  } catch (error) {
+    if (!supabaseClient && hasServerSupabaseConfig()) {
+      const liveOffersBySetId =
+        await listCatalogRuntimeOffersBySetIdsFromSupabase({
+          setIds: uniqueSetIds,
+          supabaseClient: getWebCatalogSupabaseAdminClient(),
+        });
+
+      return new Map(
+        uniqueSetIds.map((setId) => {
+          const offers = liveOffersBySetId.get(setId) ?? [];
+
+          return [
+            setId,
+            summarizeCatalogCurrentOffers({
+              generatedOffers: [],
+              liveOffers: offers,
+              setId,
+            }),
+          ] as const;
+        }),
+      );
+    }
+
+    if (!supabaseClient) {
+      return new Map(
+        uniqueSetIds.map((setId) => [setId, createEmptySummary(setId)]),
+      );
+    }
+
+    throw error;
+  }
 }
 
 export async function listHomepageSetCards({
@@ -2066,26 +2249,35 @@ export async function listHomepageDealCandidateSetCards({
   getCatalogDiscoverySignalFn,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   limit = 3,
+  setCards,
 }: {
   getCatalogDiscoverySignalFn?: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   limit?: number;
+  setCards?: readonly CatalogHomepageSetCard[];
 } = {}): Promise<CatalogHomepageSetCard[]> {
   if (!getCatalogDiscoverySignalFn) {
-    return listCatalogSetCardsByIds({
-      canonicalIds: catalogHomepageDealCandidateIds,
-      listCanonicalCatalogSetsFn,
-    });
+    return setCards
+      ? selectCatalogSetCardsByIds({
+          canonicalIds: catalogHomepageDealCandidateIds,
+          setCards,
+        })
+      : listCatalogSetCardsByIds({
+          canonicalIds: catalogHomepageDealCandidateIds,
+          listCanonicalCatalogSetsFn,
+        });
   }
 
   return rankCatalogComparisonDiscoverySetCards({
     getCatalogDiscoverySignalFn,
     limit,
-    setCards: await listAllCatalogSetCards({
-      listCanonicalCatalogSetsFn,
-    }),
+    setCards:
+      setCards ??
+      (await listAllCatalogSetCards({
+        listCanonicalCatalogSetsFn,
+      })),
   });
 }
 
@@ -2133,17 +2325,20 @@ export async function listDiscoverBestDealSetCards({
   getCatalogDiscoverySignalFn,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  setCards,
 }: {
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
   return listHomepageDealCandidateSetCards({
     getCatalogDiscoverySignalFn,
     limit,
     listCanonicalCatalogSetsFn,
+    setCards,
   });
 }
 
@@ -2151,19 +2346,23 @@ export async function listDiscoverRecentPriceChangeSetCards({
   getCatalogDiscoverySignalFn,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  setCards,
 }: {
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
   return rankCatalogRecentPriceChangeSetCards({
     getCatalogDiscoverySignalFn,
     limit,
-    setCards: await listAllCatalogSetCards({
-      listCanonicalCatalogSetsFn,
-    }),
+    setCards:
+      setCards ??
+      (await listAllCatalogSetCards({
+        listCanonicalCatalogSetsFn,
+      })),
   });
 }
 
@@ -2172,6 +2371,7 @@ export async function listDiscoverRecentlyReleasedSetCards({
   getCatalogDiscoverySignalFn,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  setCards,
 }: {
   currentYear?: number;
   getCatalogDiscoverySignalFn?: (
@@ -2179,14 +2379,17 @@ export async function listDiscoverRecentlyReleasedSetCards({
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
   return rankCatalogRecentlyReleasedSetCards({
     currentYear,
     getCatalogDiscoverySignalFn,
     limit,
-    setCards: await listAllCatalogSetCards({
-      listCanonicalCatalogSetsFn,
-    }),
+    setCards:
+      setCards ??
+      (await listAllCatalogSetCards({
+        listCanonicalCatalogSetsFn,
+      })),
   });
 }
 

@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
 import {
+  buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
 } from '@lego-platform/shared/config';
@@ -22,6 +23,11 @@ import {
 import { createRequestPrincipalPlugin } from '../app/plugins/request-principal';
 
 async function createApiServer({
+  listCatalogCurrentOfferSummariesBySetIds = vi
+    .fn()
+    .mockResolvedValue([]) as NonNullable<
+    ApiV1RouteDependencies['listCatalogCurrentOfferSummariesBySetIds']
+  >,
   listCatalogDiscoverySignals = vi.fn().mockResolvedValue([]) as NonNullable<
     ApiV1RouteDependencies['listCatalogDiscoverySignals']
   >,
@@ -36,6 +42,9 @@ async function createApiServer({
   userProfileRepository,
   userSession = createAnonymousUserSession(),
 }: {
+  listCatalogCurrentOfferSummariesBySetIds?: NonNullable<
+    ApiV1RouteDependencies['listCatalogCurrentOfferSummariesBySetIds']
+  >;
   listCatalogDiscoverySignals?: NonNullable<
     ApiV1RouteDependencies['listCatalogDiscoverySignals']
   >;
@@ -107,6 +116,7 @@ async function createApiServer({
   );
   await server.register(
     createApiV1Routes({
+      listCatalogCurrentOfferSummariesBySetIds,
       listCatalogDiscoverySignals,
       listCatalogSetLiveOffersBySetId,
       userProfileRepository: nextUserProfileRepository,
@@ -116,6 +126,7 @@ async function createApiServer({
   );
 
   return {
+    listCatalogCurrentOfferSummariesBySetIds,
     listCatalogDiscoverySignals,
     server,
     resolveRequestPrincipal,
@@ -127,6 +138,66 @@ async function createApiServer({
 }
 
 describe('api v1 auth and set-status routes', () => {
+  test('returns public current offer summaries for many sets', async () => {
+    const currentOfferSummaries = [
+      {
+        bestOffer: {
+          availability: 'in_stock',
+          checkedAt: '2026-04-20T10:00:00.000Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'bol',
+          merchantName: 'bol',
+          merchantSlug: 'bol',
+          priceCents: 32999,
+          setId: '42172',
+          url: 'https://www.bol.com/nl/nl/p/technic',
+        },
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-04-20T10:00:00.000Z',
+            condition: 'new',
+            currency: 'EUR',
+            market: 'NL',
+            merchant: 'bol',
+            merchantName: 'bol',
+            merchantSlug: 'bol',
+            priceCents: 32999,
+            setId: '42172',
+            url: 'https://www.bol.com/nl/nl/p/technic',
+          },
+        ],
+        setId: '42172',
+      },
+      {
+        offers: [],
+        setId: '75398',
+      },
+    ];
+    const { listCatalogCurrentOfferSummariesBySetIds, server } =
+      await createApiServer({
+        listCatalogCurrentOfferSummariesBySetIds: vi
+          .fn()
+          .mockResolvedValue(currentOfferSummaries),
+      });
+
+    const response = await server.inject({
+      method: 'GET',
+      url: buildCatalogCurrentOfferSummariesApiPath(['42172', '75398']),
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(listCatalogCurrentOfferSummariesBySetIds).toHaveBeenCalledWith([
+      '42172',
+      '75398',
+    ]);
+    expect(response.json()).toEqual(currentOfferSummaries);
+
+    await server.close();
+  });
+
   test('returns public catalog discovery signals', async () => {
     const discoverySignals = [
       {

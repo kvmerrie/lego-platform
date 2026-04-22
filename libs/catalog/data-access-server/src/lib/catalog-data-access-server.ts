@@ -117,6 +117,12 @@ export interface CatalogLiveOffer {
   url: string;
 }
 
+export interface CatalogCurrentOfferSummaryRecord {
+  bestOffer?: CatalogLiveOffer;
+  offers: readonly CatalogLiveOffer[];
+  setId: string;
+}
+
 export interface CatalogDiscoverySignalRecord extends CatalogDiscoverySignal {
   setId: string;
 }
@@ -402,6 +408,121 @@ function toCatalogLiveOffer({
     setId: offerSeed.set_id,
     url: offerSeed.product_url,
   };
+}
+
+async function listCatalogLiveOffersBySetIdsInternal({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, CatalogLiveOffer[]>> {
+  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
+  const liveOffersBySetId = new Map(
+    uniqueSetIds.map((setId) => [setId, [] as CatalogLiveOffer[]]),
+  );
+
+  if (!uniqueSetIds.length) {
+    return liveOffersBySetId;
+  }
+
+  const { data: seedData, error: seedError } = await supabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .select(
+      'id, set_id, merchant_id, product_url, is_active, validation_status',
+    )
+    .in('set_id', uniqueSetIds)
+    .eq('is_active', true)
+    .eq('validation_status', 'valid');
+
+  if (seedError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
+
+  if (!offerSeeds.length) {
+    return liveOffersBySetId;
+  }
+
+  const merchantIds = [
+    ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
+  ];
+  const offerSeedIds = [
+    ...new Set(offerSeeds.map((offerSeed) => offerSeed.id)),
+  ];
+  const [
+    { data: merchantData, error: merchantError },
+    { data: latestOfferData, error: latestOfferError },
+  ] = await Promise.all([
+    supabaseClient
+      .from(COMMERCE_MERCHANTS_TABLE)
+      .select('id, slug, name, is_active')
+      .in('id', merchantIds)
+      .eq('is_active', true),
+    supabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .select(
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+      )
+      .in('offer_seed_id', offerSeedIds)
+      .order('updated_at', {
+        ascending: false,
+      }),
+  ]);
+
+  if (merchantError || latestOfferError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const merchantById = new Map(
+    ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
+      (merchantRow) => [merchantRow.id, merchantRow],
+    ),
+  );
+  const latestOfferBySeedId = new Map<string, CatalogCommerceOfferLatestRow>();
+
+  for (const latestOfferRow of (latestOfferData as
+    | CatalogCommerceOfferLatestRow[]
+    | null) ?? []) {
+    if (!latestOfferBySeedId.has(latestOfferRow.offer_seed_id)) {
+      latestOfferBySeedId.set(latestOfferRow.offer_seed_id, latestOfferRow);
+    }
+  }
+
+  for (const offerSeed of offerSeeds) {
+    const merchant = merchantById.get(offerSeed.merchant_id);
+    const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+
+    if (!merchant || !latestOffer) {
+      continue;
+    }
+
+    const catalogLiveOffer = toCatalogLiveOffer({
+      latestOffer,
+      merchant,
+      offerSeed,
+    });
+
+    if (!catalogLiveOffer) {
+      continue;
+    }
+
+    const existingOffers = liveOffersBySetId.get(offerSeed.set_id);
+
+    if (!existingOffers) {
+      continue;
+    }
+
+    existingOffers.push(catalogLiveOffer);
+  }
+
+  return new Map(
+    [...liveOffersBySetId.entries()].map(([setId, offers]) => [
+      setId,
+      sortLiveCatalogOffers(offers),
+    ]),
+  );
 }
 
 function toCatalogSet({
@@ -1938,92 +2059,64 @@ export async function listCatalogSetLiveOffersBySetId({
   try {
     const activeSupabaseClient =
       supabaseClient ?? getServerSupabaseAdminClient();
-    const { data: seedData, error: seedError } = await activeSupabaseClient
-      .from(COMMERCE_OFFER_SEEDS_TABLE)
-      .select(
-        'id, set_id, merchant_id, product_url, is_active, validation_status',
-      )
-      .eq('set_id', setId)
-      .eq('is_active', true)
-      .eq('validation_status', 'valid');
+    const liveOffersBySetId = await listCatalogLiveOffersBySetIdsInternal({
+      setIds: [setId],
+      supabaseClient: activeSupabaseClient,
+    });
 
-    if (seedError) {
-      throw new Error('Unable to load live catalog offers.');
-    }
-
-    const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
-
-    if (!offerSeeds.length) {
-      return [];
-    }
-
-    const merchantIds = [
-      ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
-    ];
-    const offerSeedIds = offerSeeds.map((offerSeed) => offerSeed.id);
-    const [
-      { data: merchantData, error: merchantError },
-      { data: latestOfferData, error: latestOfferError },
-    ] = await Promise.all([
-      activeSupabaseClient
-        .from(COMMERCE_MERCHANTS_TABLE)
-        .select('id, slug, name, is_active')
-        .in('id', merchantIds)
-        .eq('is_active', true),
-      activeSupabaseClient
-        .from(COMMERCE_OFFER_LATEST_TABLE)
-        .select(
-          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
-        )
-        .in('offer_seed_id', offerSeedIds)
-        .order('updated_at', {
-          ascending: false,
-        }),
-    ]);
-
-    if (merchantError || latestOfferError) {
-      throw new Error('Unable to load live catalog offers.');
-    }
-
-    const merchantById = new Map(
-      ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
-        (merchantRow) => [merchantRow.id, merchantRow],
-      ),
-    );
-    const latestOfferBySeedId = new Map<
-      string,
-      CatalogCommerceOfferLatestRow
-    >();
-
-    for (const latestOfferRow of (latestOfferData as
-      | CatalogCommerceOfferLatestRow[]
-      | null) ?? []) {
-      if (!latestOfferBySeedId.has(latestOfferRow.offer_seed_id)) {
-        latestOfferBySeedId.set(latestOfferRow.offer_seed_id, latestOfferRow);
-      }
-    }
-
-    return sortLiveCatalogOffers(
-      offerSeeds.flatMap((offerSeed) => {
-        const merchant = merchantById.get(offerSeed.merchant_id);
-        const latestOffer = latestOfferBySeedId.get(offerSeed.id);
-
-        if (!merchant || !latestOffer) {
-          return [];
-        }
-
-        const catalogLiveOffer = toCatalogLiveOffer({
-          latestOffer,
-          merchant,
-          offerSeed,
-        });
-
-        return catalogLiveOffer ? [catalogLiveOffer] : [];
-      }),
-    );
+    return liveOffersBySetId.get(setId) ?? [];
   } catch (error) {
     if (!supabaseClient) {
       return [];
+    }
+
+    throw error;
+  }
+}
+
+export async function listCatalogCurrentOfferSummariesBySetIds({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogCurrentOfferSummaryRecord[]> {
+  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
+
+  if (!uniqueSetIds.length) {
+    return [];
+  }
+
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return uniqueSetIds.map((setId) => ({
+      offers: [],
+      setId,
+    }));
+  }
+
+  try {
+    const activeSupabaseClient =
+      supabaseClient ?? getServerSupabaseAdminClient();
+    const liveOffersBySetId = await listCatalogLiveOffersBySetIdsInternal({
+      setIds: uniqueSetIds,
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return uniqueSetIds.map((setId) => {
+      const offers = liveOffersBySetId.get(setId) ?? [];
+
+      return {
+        bestOffer: offers[0],
+        offers,
+        setId,
+      };
+    });
+  } catch (error) {
+    if (!supabaseClient) {
+      return uniqueSetIds.map((setId) => ({
+        offers: [],
+        setId,
+      }));
     }
 
     throw error;

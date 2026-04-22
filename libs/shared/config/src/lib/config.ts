@@ -124,6 +124,7 @@ export const apiPaths = {
   profile: '/api/v1/me/profile',
   catalogSets: '/api/v1/catalog/sets',
   catalogDiscoverySignals: '/api/v1/catalog/discovery-signals',
+  catalogCurrentOfferSummaries: '/api/v1/catalog/current-offer-summaries',
   wishlistAlertsViewed: '/api/v1/me/profile/wishlist-alerts/viewed',
   ownedSets: '/api/v1/me/owned-sets',
   wantedSets: '/api/v1/me/wanted-sets',
@@ -145,6 +146,20 @@ export function buildCatalogSetLiveOffersApiPath(setId: string): string {
 
 export function buildCatalogDiscoverySignalsApiPath(): string {
   return apiPaths.catalogDiscoverySignals;
+}
+
+export function buildCatalogCurrentOfferSummariesApiPath(
+  setIds: readonly string[] = [],
+): string {
+  if (!setIds.length) {
+    return apiPaths.catalogCurrentOfferSummaries;
+  }
+
+  const queryParams = new URLSearchParams({
+    setIds: [...new Set(setIds)].join(','),
+  });
+
+  return `${apiPaths.catalogCurrentOfferSummaries}?${queryParams.toString()}`;
 }
 
 export const supabaseEnvKeys = {

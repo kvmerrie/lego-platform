@@ -23,9 +23,11 @@ import {
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlug,
   listCanonicalCatalogSets,
+  listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSearchMatches,
   listCatalogSearchSuggestionSetCards,
+  listCatalogSetCards,
   listCatalogSimilarSetCards,
   listCatalogSetCardsByIds,
   listCatalogSetLiveOffersBySetId,
@@ -36,6 +38,7 @@ import {
   listDiscoverBestDealSetCards,
   listDiscoverBrowseThemeGroups,
   listDiscoverHighlightSetCards,
+  listDiscoverRecentPriceChangeSetCards,
   listDiscoverRecentlyReleasedSetCards,
   listHomepageDealCandidateSetCards,
   listHomepageSetCards,
@@ -1506,6 +1509,115 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
+  test('reuses a shared set-card dataset across discover rail loaders', async () => {
+    const sharedSetCards = await listCatalogSetCards({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Technic Hypercar',
+          pieceCount: 3778,
+          primaryTheme: 'Technic',
+          releaseYear: 2022,
+          setId: '42143',
+          slug: 'technic-hypercar-42143',
+          sourceSetNumber: '42143-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: The Shire',
+          pieceCount: 2017,
+          primaryTheme: 'Icons',
+          releaseYear: 2026,
+          setId: '10354',
+          slug: 'the-lord-of-the-rings-the-shire-10354',
+          sourceSetNumber: '10354-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Botanical Bouquet',
+          pieceCount: 749,
+          primaryTheme: 'Botanicals',
+          releaseYear: 2024,
+          setId: '10313',
+          slug: 'botanical-bouquet-10313',
+          sourceSetNumber: '10313-1',
+        }),
+      ],
+    });
+    const listCanonicalCatalogSetsFn = vi
+      .fn<typeof listCanonicalCatalogSets>()
+      .mockRejectedValue(
+        new Error('Discover should reuse the shared set cards.'),
+      );
+    const getCatalogDiscoverySignalFn = (setId: string) => {
+      if (setId === '42143') {
+        return createCatalogDiscoverySignal({
+          bestPriceMinor: 38999,
+          merchantCount: 5,
+          observedAt: '2026-04-20T10:00:00.000Z',
+          priceSpreadMinor: 14000,
+          recentReferencePriceChangeMinor: -3000,
+          recentReferencePriceChangedAt: '2026-04-20',
+          referenceDeltaMinor: -9000,
+        });
+      }
+
+      if (setId === '10354') {
+        return createCatalogDiscoverySignal({
+          bestPriceMinor: 22999,
+          merchantCount: 4,
+          observedAt: '2026-04-20T11:00:00.000Z',
+          priceSpreadMinor: 5000,
+        });
+      }
+
+      if (setId === '10313') {
+        return createCatalogDiscoverySignal({
+          bestPriceMinor: 4499,
+          merchantCount: 3,
+          observedAt: '2026-04-20T12:00:00.000Z',
+          priceSpreadMinor: 1800,
+          recentReferencePriceChangeMinor: -500,
+          recentReferencePriceChangedAt: '2026-04-19',
+          referenceDeltaMinor: -500,
+        });
+      }
+
+      return undefined;
+    };
+
+    const [recentPriceChanges, bestDeals, recentlyReleased] = await Promise.all(
+      [
+        listDiscoverRecentPriceChangeSetCards({
+          getCatalogDiscoverySignalFn,
+          listCanonicalCatalogSetsFn,
+          setCards: sharedSetCards,
+        }),
+        listDiscoverBestDealSetCards({
+          getCatalogDiscoverySignalFn,
+          listCanonicalCatalogSetsFn,
+          setCards: sharedSetCards,
+        }),
+        listDiscoverRecentlyReleasedSetCards({
+          currentYear: 2026,
+          getCatalogDiscoverySignalFn,
+          listCanonicalCatalogSetsFn,
+          setCards: sharedSetCards,
+        }),
+      ],
+    );
+
+    expect(listCanonicalCatalogSetsFn).not.toHaveBeenCalled();
+    expect(
+      recentPriceChanges.map((catalogSetCard) => catalogSetCard.id),
+    ).toEqual(['42143', '10313']);
+    expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '42143',
+      '10354',
+      '10313',
+    ]);
+    expect(recentlyReleased.map((catalogSetCard) => catalogSetCard.id)).toEqual(
+      ['10354'],
+    );
+  });
+
   test('ranks similar sets within the same theme and excludes the current set', () => {
     const result = rankCatalogSimilarSetCards({
       currentSetCard: {
@@ -2062,6 +2174,80 @@ describe('catalog effective data access web', () => {
 
     expect(summary.bestOffer).toBeUndefined();
     expect(summary.offers).toEqual([]);
+  });
+
+  test('batches current offer summary API reads into one request', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-04-20T10:00:00.000Z',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchant: 'bol',
+              merchantName: 'bol',
+              merchantSlug: 'bol',
+              priceCents: 32999,
+              setId: '42172',
+              url: 'https://www.bol.com/nl/nl/p/technic',
+            },
+            offers: [
+              {
+                availability: 'in_stock',
+                checkedAt: '2026-04-20T10:00:00.000Z',
+                condition: 'new',
+                currency: 'EUR',
+                market: 'NL',
+                merchant: 'bol',
+                merchantName: 'bol',
+                merchantSlug: 'bol',
+                priceCents: 32999,
+                setId: '42172',
+                url: 'https://www.bol.com/nl/nl/p/technic',
+              },
+            ],
+            setId: '42172',
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      fetchImpl,
+      setIds: ['42172', '75398', '42172'],
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'http://localhost:3333/api/v1/catalog/current-offer-summaries?setIds=42172%2C75398',
+      expect.objectContaining({
+        cache: 'no-store',
+        headers: {
+          accept: 'application/json',
+        },
+      }),
+    );
+    expect(summaries.get('42172')).toMatchObject({
+      bestOffer: {
+        merchantName: 'bol',
+        priceCents: 32999,
+      },
+      setId: '42172',
+    });
+    expect(summaries.get('75398')).toEqual({
+      bestOffer: undefined,
+      offers: [],
+      setId: '75398',
+    });
   });
 
   test('uses ISR-friendly API fetch caching when a public catalog route passes revalidateSeconds', async () => {

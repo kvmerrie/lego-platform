@@ -49,25 +49,25 @@ const commerceMerchantSupportProfiles = {
   'lego-nl': {
     tier: 'primary',
     defaultSeedGeneration: true,
-    defaultRefresh: true,
+    defaultRefresh: false,
     operatorLabel: 'Primary',
   },
   intertoys: {
     tier: 'primary',
     defaultSeedGeneration: true,
-    defaultRefresh: true,
+    defaultRefresh: false,
     operatorLabel: 'Primary',
   },
   bol: {
     tier: 'primary',
     defaultSeedGeneration: true,
-    defaultRefresh: true,
+    defaultRefresh: false,
     operatorLabel: 'Primary',
   },
   misterbricks: {
     tier: 'primary',
     defaultSeedGeneration: true,
-    defaultRefresh: true,
+    defaultRefresh: false,
     operatorLabel: 'Primary',
   },
   kruidvat: {
@@ -91,7 +91,7 @@ const commerceMerchantSupportProfiles = {
   'smyths-toys': {
     tier: 'secondary',
     defaultSeedGeneration: false,
-    defaultRefresh: true,
+    defaultRefresh: false,
     operatorLabel: 'Secondary',
   },
   'amazon-nl': {

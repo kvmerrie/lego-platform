@@ -1,9 +1,11 @@
 import {
+  listCatalogCurrentOfferSummariesBySetIds as listCatalogCurrentOfferSummariesBySetIdsServer,
   listCatalogDiscoverySignals as listCatalogDiscoverySignalsServer,
   listCatalogSetLiveOffersBySetId as listCatalogSetLiveOffersBySetIdServer,
 } from '@lego-platform/catalog/data-access-server';
 import {
   apiPaths,
+  buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
 } from '@lego-platform/shared/config';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
@@ -23,6 +25,11 @@ import {
 import type { FastifyInstance } from 'fastify';
 
 export interface ApiV1RouteDependencies {
+  listCatalogCurrentOfferSummariesBySetIds?: (
+    setIds: readonly string[],
+  ) => Promise<
+    Awaited<ReturnType<typeof listCatalogCurrentOfferSummariesBySetIdsServer>>
+  >;
   listCatalogDiscoverySignals?: () => Promise<
     Awaited<ReturnType<typeof listCatalogDiscoverySignalsServer>>
   >;
@@ -73,6 +80,9 @@ function toCollectorProfile({
 }
 
 export function createApiV1Routes({
+  listCatalogCurrentOfferSummariesBySetIds:
+    listCatalogCurrentOfferSummariesBySetIdsDependency = (setIds) =>
+      listCatalogCurrentOfferSummariesBySetIdsServer({ setIds }),
   listCatalogDiscoverySignals: listCatalogDiscoverySignalsDependency = () =>
     listCatalogDiscoverySignalsServer(),
   listCatalogSetLiveOffersBySetId: listCatalogSetLiveOffersBySetIdDependency = (
@@ -85,10 +95,29 @@ export function createApiV1Routes({
     userSetStatusRepository,
   }),
 }: ApiV1RouteDependencies = {}) {
+  function parseCatalogSetIds(value?: string): string[] {
+    if (!value) {
+      return [];
+    }
+
+    return [...new Set(value.split(',').map((setId) => setId.trim()))].filter(
+      (setId) => setId.length > 0,
+    );
+  }
+
   return async function (fastify: FastifyInstance) {
     fastify.get(buildCatalogDiscoverySignalsApiPath(), async function () {
       return listCatalogDiscoverySignalsDependency();
     });
+
+    fastify.get<{ Querystring: { setIds?: string } }>(
+      buildCatalogCurrentOfferSummariesApiPath(),
+      async function (request) {
+        return listCatalogCurrentOfferSummariesBySetIdsDependency(
+          parseCatalogSetIds(request.query.setIds),
+        );
+      },
+    );
 
     fastify.get<{ Params: { setId: string } }>(
       `${apiPaths.catalogSets}/:setId/live-offers`,

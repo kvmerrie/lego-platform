@@ -5,8 +5,7 @@ import {
 import {
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
-  listCatalogSetSlugs,
-  listCatalogThemeDirectoryItems,
+  listCatalogSetCards,
   listDiscoverBestDealSetCards,
   listDiscoverRecentPriceChangeSetCards,
   listDiscoverRecentlyReleasedSetCards,
@@ -57,31 +56,39 @@ function toDealSetCards(
   });
 }
 
+function countDiscoverThemes(
+  setCards: readonly Pick<CatalogHomepageSetCard, 'theme'>[],
+): number {
+  return new Set(setCards.map((setCard) => setCard.theme)).size;
+}
+
 export default async function DiscoverPage() {
-  const catalogDiscoverySignalBySetId =
-    await listCatalogDiscoverySignalsBySetId();
+  const [catalogDiscoverySignalBySetId, allCatalogSetCards] = await Promise.all(
+    [listCatalogDiscoverySignalsBySetId(), listCatalogSetCards()],
+  );
   const [
     recentPriceChangeSetCards,
     bestDealCandidateSetCards,
     recentlyReleasedSetCards,
-    totalSetSlugs,
-    themeDirectoryItems,
   ] = await Promise.all([
     listDiscoverRecentPriceChangeSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         catalogDiscoverySignalBySetId.get(setId),
+      setCards: allCatalogSetCards,
     }),
     listDiscoverBestDealSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         catalogDiscoverySignalBySetId.get(setId),
+      setCards: allCatalogSetCards,
     }),
     listDiscoverRecentlyReleasedSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         catalogDiscoverySignalBySetId.get(setId),
+      setCards: allCatalogSetCards,
     }),
-    listCatalogSetSlugs(),
-    listCatalogThemeDirectoryItems(),
   ]);
+  const totalSetCount = allCatalogSetCards.length;
+  const totalThemeCount = countDiscoverThemes(allCatalogSetCards);
   const bestDealCandidateSetIds = bestDealCandidateSetCards.map(
     (catalogSetCard) => catalogSetCard.id,
   );
@@ -183,8 +190,8 @@ export default async function DiscoverPage() {
         bestDealSetCards={featuredDealSetCards}
         recentPriceChangeSetCards={recentPriceChangeRailSetCards}
         recentlyReleasedSetCards={recentlyReleasedRailSetCards}
-        totalSetCount={totalSetSlugs.length}
-        totalThemeCount={themeDirectoryItems.length}
+        totalSetCount={totalSetCount}
+        totalThemeCount={totalThemeCount}
       />
     </ShellWeb>
   );

@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   backfillCatalogOverlayThemeIdentity,
   createCatalogSet,
+  listCatalogCurrentOfferSummariesBySetIds,
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
   getCatalogSetBySlugWithOverlay,
@@ -487,6 +488,168 @@ describe('catalog data access server', () => {
         recentReferencePriceChangeMinor: -1000,
         recentReferencePriceChangedAt: '2026-04-20',
         referenceDeltaMinor: -12000,
+      },
+    ]);
+  });
+
+  test('builds current offer summaries for many set ids in one batch selector', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          offer_seed_id: 'seed-2',
+          price_minor: 32999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T09:30:00.000Z',
+          updated_at: '2026-04-20T09:35:00.000Z',
+        },
+        {
+          offer_seed_id: 'seed-1',
+          price_minor: 34999,
+          currency_code: 'EUR',
+          availability: 'limited',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T08:30:00.000Z',
+          updated_at: '2026-04-20T08:35:00.000Z',
+        },
+        {
+          offer_seed_id: 'seed-3',
+          price_minor: 19999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T07:30:00.000Z',
+          updated_at: '2026-04-20T07:35:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-bol',
+          is_active: true,
+          name: 'bol',
+          slug: 'bol',
+        },
+        {
+          id: 'merchant-intertoys',
+          is_active: true,
+          name: 'Intertoys',
+          slug: 'intertoys',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-1',
+          is_active: true,
+          merchant_id: 'merchant-intertoys',
+          product_url: 'https://www.intertoys.nl/technic',
+          set_id: '42172',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-2',
+          is_active: true,
+          merchant_id: 'merchant-bol',
+          product_url: 'https://www.bol.com/nl/nl/p/technic',
+          set_id: '42172',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-3',
+          is_active: true,
+          merchant_id: 'merchant-bol',
+          product_url: 'https://www.bol.com/nl/nl/p/star-wars',
+          set_id: '75398',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['42172', '75398', '71411'],
+      supabaseClient,
+    });
+
+    expect(result).toEqual([
+      {
+        bestOffer: {
+          availability: 'in_stock',
+          checkedAt: '2026-04-20T09:30:00.000Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'bol',
+          merchantName: 'bol',
+          merchantSlug: 'bol',
+          priceCents: 32999,
+          setId: '42172',
+          url: 'https://www.bol.com/nl/nl/p/technic',
+        },
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-04-20T09:30:00.000Z',
+            condition: 'new',
+            currency: 'EUR',
+            market: 'NL',
+            merchant: 'bol',
+            merchantName: 'bol',
+            merchantSlug: 'bol',
+            priceCents: 32999,
+            setId: '42172',
+            url: 'https://www.bol.com/nl/nl/p/technic',
+          },
+          {
+            availability: 'unknown',
+            checkedAt: '2026-04-20T08:30:00.000Z',
+            condition: 'new',
+            currency: 'EUR',
+            market: 'NL',
+            merchant: 'other',
+            merchantName: 'Intertoys',
+            merchantSlug: 'intertoys',
+            priceCents: 34999,
+            setId: '42172',
+            url: 'https://www.intertoys.nl/technic',
+          },
+        ],
+        setId: '42172',
+      },
+      {
+        bestOffer: {
+          availability: 'in_stock',
+          checkedAt: '2026-04-20T07:30:00.000Z',
+          condition: 'new',
+          currency: 'EUR',
+          market: 'NL',
+          merchant: 'bol',
+          merchantName: 'bol',
+          merchantSlug: 'bol',
+          priceCents: 19999,
+          setId: '75398',
+          url: 'https://www.bol.com/nl/nl/p/star-wars',
+        },
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-04-20T07:30:00.000Z',
+            condition: 'new',
+            currency: 'EUR',
+            market: 'NL',
+            merchant: 'bol',
+            merchantName: 'bol',
+            merchantSlug: 'bol',
+            priceCents: 19999,
+            setId: '75398',
+            url: 'https://www.bol.com/nl/nl/p/star-wars',
+          },
+        ],
+        setId: '75398',
+      },
+      {
+        bestOffer: undefined,
+        offers: [],
+        setId: '71411',
       },
     ]);
   });

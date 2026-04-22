@@ -127,7 +127,12 @@ describe('commerce util', () => {
     expect(includeCommerceMerchantInDefaultSeedGeneration('proshop')).toBe(
       false,
     );
-    expect(includeCommerceMerchantInDefaultRefresh('smyths-toys')).toBe(true);
+    expect(includeCommerceMerchantInDefaultRefresh('lego-nl')).toBe(false);
+    expect(includeCommerceMerchantInDefaultRefresh('intertoys')).toBe(false);
+    expect(includeCommerceMerchantInDefaultRefresh('bol')).toBe(false);
+    expect(includeCommerceMerchantInDefaultRefresh('misterbricks')).toBe(false);
+    expect(includeCommerceMerchantInDefaultRefresh('top1toys')).toBe(true);
+    expect(includeCommerceMerchantInDefaultRefresh('smyths-toys')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('kruidvat')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('wehkamp')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('amazon-nl')).toBe(false);
