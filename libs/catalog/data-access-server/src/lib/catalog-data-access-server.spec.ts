@@ -464,6 +464,11 @@ describe('catalog data access server', () => {
           reference_price_minor: 44999,
           set_id: '42172',
         },
+        {
+          recorded_on: '2026-04-19',
+          reference_price_minor: 45999,
+          set_id: '42172',
+        },
       ],
     });
 
@@ -479,6 +484,8 @@ describe('catalog data access server', () => {
         nextBestPriceMinor: 34999,
         observedAt: '2026-04-20T09:30:00.000Z',
         priceSpreadMinor: 2000,
+        recentReferencePriceChangeMinor: -1000,
+        recentReferencePriceChangedAt: '2026-04-20',
         referenceDeltaMinor: -12000,
       },
     ]);

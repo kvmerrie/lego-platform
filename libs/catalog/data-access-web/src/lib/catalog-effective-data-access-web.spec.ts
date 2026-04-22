@@ -33,13 +33,17 @@ import {
   listCatalogSetSummaries,
   listCatalogThemeDirectoryItems,
   listCatalogThemePageSlugs,
+  listDiscoverBestDealSetCards,
   listDiscoverBrowseThemeGroups,
   listDiscoverHighlightSetCards,
+  listDiscoverRecentlyReleasedSetCards,
   listHomepageDealCandidateSetCards,
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   rankCatalogComparisonDiscoverySetCards,
+  rankCatalogRecentPriceChangeSetCards,
+  rankCatalogRecentlyReleasedSetCards,
   rankCatalogSimilarSetCards,
   resetWebCatalogSupabaseClientsForTests,
   resolveCatalogCurrentOffers,
@@ -1236,6 +1240,272 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
+  test('ranks recent price-change rails from runtime history movement and comparison context', () => {
+    const result = rankCatalogRecentPriceChangeSetCards({
+      limit: 6,
+      setCards: [
+        {
+          id: '10316',
+          imageUrl: undefined,
+          name: 'Rivendell',
+          pieces: 6167,
+          releaseYear: 2023,
+          slug: 'rivendell-10316',
+          theme: 'Icons',
+        },
+        {
+          id: '10333',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: Barad-dur',
+          pieces: 5471,
+          releaseYear: 2024,
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          theme: 'Icons',
+        },
+        {
+          id: '42172',
+          imageUrl: undefined,
+          name: 'McLaren P1',
+          pieces: 3893,
+          releaseYear: 2024,
+          slug: 'mclaren-p1-42172',
+          theme: 'Technic',
+        },
+        {
+          id: '31208',
+          imageUrl: undefined,
+          name: 'Hokusai - The Great Wave',
+          pieces: 1810,
+          releaseYear: 2023,
+          slug: 'hokusai-the-great-wave-31208',
+          theme: 'Art',
+        },
+      ],
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '10316') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 4,
+            priceSpreadMinor: 7000,
+            recentReferencePriceChangeMinor: -2800,
+            recentReferencePriceChangedAt: '2026-04-20',
+          });
+        }
+
+        if (setId === '10333') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 5,
+            priceSpreadMinor: 9000,
+            recentReferencePriceChangeMinor: -1200,
+            recentReferencePriceChangedAt: '2026-04-22',
+          });
+        }
+
+        if (setId === '42172') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 3,
+            priceSpreadMinor: 6000,
+            recentReferencePriceChangeMinor: 0,
+            recentReferencePriceChangedAt: '2026-04-22',
+          });
+        }
+
+        if (setId === '31208') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 1,
+            priceSpreadMinor: 2000,
+            recentReferencePriceChangeMinor: -2500,
+            recentReferencePriceChangedAt: '2026-04-22',
+          });
+        }
+
+        return undefined;
+      },
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10333',
+      '10316',
+    ]);
+  });
+
+  test('ranks newly released rails from release year first and then comparison readiness', () => {
+    const result = rankCatalogRecentlyReleasedSetCards({
+      currentYear: 2026,
+      limit: 6,
+      setCards: [
+        {
+          id: '10354',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: The Shire',
+          pieces: 2017,
+          releaseYear: 2026,
+          slug: 'the-lord-of-the-rings-the-shire-10354',
+          theme: 'Icons',
+        },
+        {
+          id: '75403',
+          imageUrl: undefined,
+          name: 'Grogu met zweefkinderwagen',
+          pieces: 1048,
+          releaseYear: 2026,
+          slug: 'grogu-met-zweefkinderwagen-75403',
+          theme: 'Star Wars',
+        },
+        {
+          id: '10313',
+          imageUrl: undefined,
+          name: 'Wildflower Bouquet',
+          pieces: 939,
+          releaseYear: 2025,
+          slug: 'wildflower-bouquet-10313',
+          theme: 'Botanicals',
+        },
+        {
+          id: '31208',
+          imageUrl: undefined,
+          name: 'Hokusai - The Great Wave',
+          pieces: 1810,
+          releaseYear: 2023,
+          slug: 'hokusai-the-great-wave-31208',
+          theme: 'Art',
+        },
+      ],
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '10354') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 4,
+            priceSpreadMinor: 4000,
+          });
+        }
+
+        if (setId === '75403') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 2,
+            priceSpreadMinor: 1500,
+          });
+        }
+
+        if (setId === '10313') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 5,
+            priceSpreadMinor: 1200,
+          });
+        }
+
+        return undefined;
+      },
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10354',
+      '75403',
+      '10313',
+    ]);
+  });
+
+  test('returns fewer newly released sets when the eligible pool is small', async () => {
+    const result = await listDiscoverRecentlyReleasedSetCards({
+      currentYear: 2026,
+      limit: 6,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: The Shire',
+          pieceCount: 2017,
+          primaryTheme: 'Icons',
+          releaseYear: 2026,
+          setId: '10354',
+          slug: 'the-lord-of-the-rings-the-shire-10354',
+          sourceSetNumber: '10354-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Hokusai - The Great Wave',
+          pieceCount: 1810,
+          primaryTheme: 'Art',
+          releaseYear: 2023,
+          setId: '31208',
+          slug: 'hokusai-the-great-wave-31208',
+          sourceSetNumber: '31208-1',
+        }),
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10354',
+    ]);
+  });
+
+  test('reuses comparison discovery logic for the discover best-deals rail', async () => {
+    const result = await listDiscoverBestDealSetCards({
+      limit: 3,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Technic Hypercar',
+          primaryTheme: 'Technic',
+          setId: '42143',
+          slug: 'technic-hypercar-42143',
+          sourceSetNumber: '42143-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Avengers Tower',
+          pieceCount: 5201,
+          primaryTheme: 'Marvel',
+          releaseYear: 2023,
+          setId: '76269',
+          slug: 'avengers-tower-76269',
+          sourceSetNumber: '76269-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Botanical Bouquet',
+          pieceCount: 822,
+          primaryTheme: 'Botanicals',
+          releaseYear: 2024,
+          setId: '10313',
+          slug: 'botanical-bouquet-10313',
+          sourceSetNumber: '10313-1',
+        }),
+      ],
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '42143') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 38999,
+            merchantCount: 5,
+            observedAt: '2026-04-20T10:00:00.000Z',
+            priceSpreadMinor: 14000,
+            referenceDeltaMinor: -9000,
+          });
+        }
+
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 40999,
+            merchantCount: 4,
+            observedAt: '2026-04-20T09:00:00.000Z',
+            priceSpreadMinor: 8000,
+            referenceDeltaMinor: -5000,
+          });
+        }
+
+        if (setId === '10313') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 4499,
+            merchantCount: 3,
+            observedAt: '2026-04-20T11:00:00.000Z',
+            priceSpreadMinor: 1800,
+            referenceDeltaMinor: -500,
+          });
+        }
+
+        return undefined;
+      },
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '42143',
+      '76269',
+      '10313',
+    ]);
+  });
+
   test('ranks similar sets within the same theme and excludes the current set', () => {
     const result = rankCatalogSimilarSetCards({
       currentSetCard: {
@@ -1862,6 +2132,8 @@ describe('catalog effective data access web', () => {
             nextBestPriceMinor: 35999,
             observedAt: '2026-04-20T10:00:00.000Z',
             priceSpreadMinor: 4000,
+            recentReferencePriceChangeMinor: -1200,
+            recentReferencePriceChangedAt: '2026-04-20',
             referenceDeltaMinor: -2000,
           },
         ]),
@@ -1898,6 +2170,8 @@ describe('catalog effective data access web', () => {
       nextBestPriceMinor: 35999,
       observedAt: '2026-04-20T10:00:00.000Z',
       priceSpreadMinor: 4000,
+      recentReferencePriceChangeMinor: -1200,
+      recentReferencePriceChangedAt: '2026-04-20',
       referenceDeltaMinor: -2000,
     });
   });

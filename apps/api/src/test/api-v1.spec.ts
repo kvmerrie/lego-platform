@@ -136,6 +136,8 @@ describe('api v1 auth and set-status routes', () => {
         nextBestPriceMinor: 35999,
         observedAt: '2026-04-20T10:00:00.000Z',
         priceSpreadMinor: 4000,
+        recentReferencePriceChangeMinor: -1200,
+        recentReferencePriceChangedAt: '2026-04-20',
         referenceDeltaMinor: -2000,
       },
     ];

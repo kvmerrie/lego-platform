@@ -10,7 +10,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4598,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:11.030Z"
+    "observedAt": "2026-04-22T07:46:33.824Z"
+  },
+  {
+    "setId": "10280",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:46:32.734Z"
   },
   {
     "setId": "10280",
@@ -20,7 +30,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:14.314Z"
+    "observedAt": "2026-04-22T07:46:30.449Z"
   },
   {
     "setId": "10280",
@@ -30,17 +40,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:15.010Z"
-  },
-  {
-    "setId": "10280",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5199,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:11.938Z"
+    "observedAt": "2026-04-22T07:46:29.282Z"
   },
   {
     "setId": "10280",
@@ -50,7 +50,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:12.788Z"
+    "observedAt": "2026-04-22T07:46:30.835Z"
   },
   {
     "setId": "10294",
@@ -60,7 +60,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 67999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:51.036Z"
+    "observedAt": "2026-04-22T07:46:01.544Z"
   },
   {
     "setId": "10294",
@@ -68,9 +68,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 79125,
+    "totalPriceMinor": 80650,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:48.440Z"
+    "observedAt": "2026-04-22T07:45:07.839Z"
   },
   {
     "setId": "10300",
@@ -80,7 +80,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:06.348Z"
+    "observedAt": "2026-04-22T07:46:39.392Z"
   },
   {
     "setId": "10300",
@@ -90,7 +90,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:53.468Z"
+    "observedAt": "2026-04-22T07:46:55.331Z"
   },
   {
     "setId": "10300",
@@ -100,7 +100,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:52.474Z"
+    "observedAt": "2026-04-22T07:46:55.802Z"
   },
   {
     "setId": "10305",
@@ -110,7 +110,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 39999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:24:53.041Z"
+    "observedAt": "2026-04-22T07:44:21.168Z"
   },
   {
     "setId": "10305",
@@ -120,7 +120,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 48900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:41.253Z"
+    "observedAt": "2026-04-22T07:45:13.679Z"
   },
   {
     "setId": "10311",
@@ -130,7 +130,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3799,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:07.108Z"
+    "observedAt": "2026-04-22T07:46:38.247Z"
+  },
+  {
+    "setId": "10311",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:46:37.219Z"
   },
   {
     "setId": "10311",
@@ -140,7 +150,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4195,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:10.110Z"
+    "observedAt": "2026-04-22T07:46:35.925Z"
   },
   {
     "setId": "10311",
@@ -150,17 +160,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4199,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:10.780Z"
-  },
-  {
-    "setId": "10311",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4499,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:07.923Z"
+    "observedAt": "2026-04-22T07:46:34.583Z"
   },
   {
     "setId": "10311",
@@ -170,7 +170,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:08.716Z"
+    "observedAt": "2026-04-22T07:46:36.307Z"
   },
   {
     "setId": "10313",
@@ -180,7 +180,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:06:52.950Z"
+    "observedAt": "2026-04-22T07:42:26.135Z"
   },
   {
     "setId": "10313",
@@ -190,7 +190,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:06:53.915Z"
+    "observedAt": "2026-04-22T07:42:25.027Z"
   },
   {
     "setId": "10313",
@@ -200,7 +200,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:00.623Z"
+    "observedAt": "2026-04-22T07:42:23.851Z"
   },
   {
     "setId": "10313",
@@ -210,7 +210,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:06:54.677Z"
+    "observedAt": "2026-04-22T07:42:24.274Z"
   },
   {
     "setId": "10314",
@@ -220,7 +220,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T11:07:02.399Z"
+    "observedAt": "2026-04-22T07:42:21.257Z"
   },
   {
     "setId": "10314",
@@ -230,7 +230,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:01.142Z"
+    "observedAt": "2026-04-22T07:42:23.065Z"
   },
   {
     "setId": "10316",
@@ -240,7 +240,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 48246,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:43.829Z"
+    "observedAt": "2026-04-22T07:45:11.805Z"
   },
   {
     "setId": "10316",
@@ -250,7 +250,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49995,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T18:54:37.194Z"
+    "observedAt": "2026-04-22T07:44:04.048Z"
   },
   {
     "setId": "10316",
@@ -260,7 +260,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:44.834Z"
+    "observedAt": "2026-04-22T07:46:04.258Z"
   },
   {
     "setId": "10317",
@@ -270,7 +270,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:35.275Z"
+    "observedAt": "2026-04-22T07:46:12.917Z"
   },
   {
     "setId": "10317",
@@ -280,7 +280,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:25:02.312Z"
+    "observedAt": "2026-04-22T07:44:17.854Z"
   },
   {
     "setId": "10317",
@@ -288,9 +288,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 27995,
+    "totalPriceMinor": 26999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:40.252Z"
+    "observedAt": "2026-04-22T07:45:14.790Z"
   },
   {
     "setId": "10320",
@@ -300,7 +300,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 21499,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:24:49.334Z"
+    "observedAt": "2026-04-22T07:44:23.891Z"
   },
   {
     "setId": "10320",
@@ -308,9 +308,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 24500,
+    "totalPriceMinor": 24499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:05.391Z"
+    "observedAt": "2026-04-22T07:46:40.451Z"
   },
   {
     "setId": "10327",
@@ -320,7 +320,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:37.897Z"
+    "observedAt": "2026-04-22T07:45:18.125Z"
   },
   {
     "setId": "10327",
@@ -330,7 +330,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13500,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:35.789Z"
+    "observedAt": "2026-04-22T07:46:12.437Z"
   },
   {
     "setId": "10327",
@@ -340,7 +340,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:39.279Z"
+    "observedAt": "2026-04-22T07:45:17.280Z"
   },
   {
     "setId": "10327",
@@ -350,7 +350,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:40.044Z"
+    "observedAt": "2026-04-22T07:45:15.828Z"
   },
   {
     "setId": "10327",
@@ -360,7 +360,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:08.337Z"
+    "observedAt": "2026-04-22T07:45:48.844Z"
   },
   {
     "setId": "10328",
@@ -370,7 +370,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:21.694Z"
+    "observedAt": "2026-04-22T07:45:35.992Z"
+  },
+  {
+    "setId": "10328",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:45:26.268Z"
   },
   {
     "setId": "10328",
@@ -380,7 +390,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:12.364Z"
+    "observedAt": "2026-04-22T07:44:39.532Z"
   },
   {
     "setId": "10328",
@@ -390,17 +400,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:32.578Z"
-  },
-  {
-    "setId": "10328",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5199,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:31.092Z"
+    "observedAt": "2026-04-22T07:45:24.915Z"
   },
   {
     "setId": "10328",
@@ -410,7 +410,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:12.148Z"
+    "observedAt": "2026-04-22T07:45:44.643Z"
   },
   {
     "setId": "10329",
@@ -420,7 +420,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3899,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:03.363Z"
+    "observedAt": "2026-04-22T07:42:20.434Z"
   },
   {
     "setId": "10329",
@@ -430,7 +430,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:04.240Z"
+    "observedAt": "2026-04-22T07:42:19.201Z"
   },
   {
     "setId": "10329",
@@ -440,7 +440,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4195,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:07.006Z"
+    "observedAt": "2026-04-22T07:42:17.763Z"
   },
   {
     "setId": "10329",
@@ -450,7 +450,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:05.331Z"
+    "observedAt": "2026-04-22T07:42:18.124Z"
   },
   {
     "setId": "10330",
@@ -458,9 +458,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 5499,
+    "totalPriceMinor": 5815,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:48.376Z"
+    "observedAt": "2026-04-22T07:41:54.379Z"
   },
   {
     "setId": "10330",
@@ -470,7 +470,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:50.362Z"
+    "observedAt": "2026-04-22T07:41:52.762Z"
   },
   {
     "setId": "10330",
@@ -480,7 +480,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:48.977Z"
+    "observedAt": "2026-04-22T07:41:53.119Z"
   },
   {
     "setId": "10331",
@@ -490,7 +490,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3199,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:51.056Z"
+    "observedAt": "2026-04-22T07:41:52.060Z"
   },
   {
     "setId": "10331",
@@ -500,7 +500,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4095,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T12:49:54.425Z"
+    "observedAt": "2026-04-22T07:41:48.250Z"
   },
   {
     "setId": "10331",
@@ -510,7 +510,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:51.989Z"
+    "observedAt": "2026-04-22T07:41:49.801Z"
   },
   {
     "setId": "10331",
@@ -520,7 +520,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:52.901Z"
+    "observedAt": "2026-04-22T07:41:48.681Z"
   },
   {
     "setId": "10332",
@@ -530,7 +530,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:24:59.689Z"
+    "observedAt": "2026-04-22T07:44:19.882Z"
   },
   {
     "setId": "10332",
@@ -540,7 +540,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 25499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:42.445Z"
+    "observedAt": "2026-04-22T07:45:12.712Z"
   },
   {
     "setId": "10333",
@@ -550,7 +550,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 45999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:50.213Z"
+    "observedAt": "2026-04-22T07:46:02.642Z"
   },
   {
     "setId": "10333",
@@ -558,9 +558,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 50600,
+    "totalPriceMinor": 48000,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:46.205Z"
+    "observedAt": "2026-04-22T07:45:10.235Z"
   },
   {
     "setId": "10335",
@@ -570,7 +570,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 26999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:07.507Z"
+    "observedAt": "2026-04-22T07:45:50.074Z"
   },
   {
     "setId": "10335",
@@ -580,7 +580,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 29700,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:45.054Z"
+    "observedAt": "2026-04-22T07:45:11.092Z"
   },
   {
     "setId": "10342",
@@ -590,7 +590,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4399,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:22.951Z"
+    "observedAt": "2026-04-22T07:45:35.222Z"
+  },
+  {
+    "setId": "10342",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4599,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:45:23.932Z"
   },
   {
     "setId": "10342",
@@ -600,17 +610,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:12.812Z"
-  },
-  {
-    "setId": "10342",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5199,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:32.695Z"
+    "observedAt": "2026-04-22T07:44:39.104Z"
   },
   {
     "setId": "10342",
@@ -620,7 +620,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:42.841Z"
+    "observedAt": "2026-04-22T07:46:05.287Z"
   },
   {
     "setId": "10342",
@@ -630,7 +630,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:33.501Z"
+    "observedAt": "2026-04-22T07:45:23.820Z"
   },
   {
     "setId": "10354",
@@ -640,7 +640,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 24900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:54.254Z"
+    "observedAt": "2026-04-22T07:46:54.908Z"
   },
   {
     "setId": "10354",
@@ -648,9 +648,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 25899,
+    "totalPriceMinor": 25999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:47.717Z"
+    "observedAt": "2026-04-22T07:45:09.148Z"
   },
   {
     "setId": "10354",
@@ -660,7 +660,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 25999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:47.539Z"
+    "observedAt": "2026-04-22T07:45:10.054Z"
   },
   {
     "setId": "10354",
@@ -670,7 +670,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 26999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:37.142Z"
+    "observedAt": "2026-04-22T07:46:09.179Z"
   },
   {
     "setId": "11370",
@@ -680,7 +680,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:24.146Z"
+    "observedAt": "2026-04-22T07:41:22.552Z"
   },
   {
     "setId": "11370",
@@ -690,7 +690,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 27999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:24.873Z"
+    "observedAt": "2026-04-22T07:41:20.902Z"
   },
   {
     "setId": "11371",
@@ -700,7 +700,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23899,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:26.242Z"
+    "observedAt": "2026-04-22T07:41:20.077Z"
   },
   {
     "setId": "11371",
@@ -710,7 +710,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:27.290Z"
+    "observedAt": "2026-04-22T07:41:19.420Z"
   },
   {
     "setId": "11371",
@@ -720,7 +720,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 24999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:28.339Z"
+    "observedAt": "2026-04-22T07:41:17.918Z"
   },
   {
     "setId": "11372",
@@ -730,7 +730,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:30.677Z"
+    "observedAt": "2026-04-22T07:41:17.210Z"
   },
   {
     "setId": "11372",
@@ -740,7 +740,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:33.200Z"
+    "observedAt": "2026-04-22T07:41:15.016Z"
   },
   {
     "setId": "11372",
@@ -750,7 +750,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9699,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:31.496Z"
+    "observedAt": "2026-04-22T07:41:16.287Z"
   },
   {
     "setId": "11372",
@@ -760,7 +760,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:32.271Z"
+    "observedAt": "2026-04-22T07:41:15.335Z"
   },
   {
     "setId": "11373",
@@ -770,7 +770,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:33.712Z"
+    "observedAt": "2026-04-22T07:41:14.344Z"
   },
   {
     "setId": "11373",
@@ -780,7 +780,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6295,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:36.205Z"
+    "observedAt": "2026-04-22T07:41:11.967Z"
   },
   {
     "setId": "11373",
@@ -790,7 +790,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6399,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:34.465Z"
+    "observedAt": "2026-04-22T07:41:13.629Z"
   },
   {
     "setId": "11373",
@@ -800,7 +800,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:35.300Z"
+    "observedAt": "2026-04-22T07:41:12.445Z"
   },
   {
     "setId": "11375",
@@ -810,7 +810,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:37.135Z"
+    "observedAt": "2026-04-22T07:41:06.771Z"
   },
   {
     "setId": "11375",
@@ -820,7 +820,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7100,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:36.513Z"
+    "observedAt": "2026-04-22T07:41:10.529Z"
   },
   {
     "setId": "11375",
@@ -830,7 +830,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:45.973Z"
+    "observedAt": "2026-04-22T07:41:05.735Z"
   },
   {
     "setId": "11375",
@@ -840,7 +840,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:38.503Z"
+    "observedAt": "2026-04-22T07:41:06.102Z"
   },
   {
     "setId": "11376",
@@ -850,7 +850,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:49.164Z"
+    "observedAt": "2026-04-22T07:41:03.227Z"
   },
   {
     "setId": "11376",
@@ -860,7 +860,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:46.398Z"
+    "observedAt": "2026-04-22T07:41:04.666Z"
   },
   {
     "setId": "11378",
@@ -870,7 +870,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 21999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:49.501Z"
+    "observedAt": "2026-04-22T07:41:01.265Z"
   },
   {
     "setId": "11384",
@@ -878,9 +878,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 11600,
+    "totalPriceMinor": 11500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:51.655Z"
+    "observedAt": "2026-04-22T07:41:00.619Z"
   },
   {
     "setId": "11384",
@@ -890,7 +890,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11800,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:57.829Z"
+    "observedAt": "2026-04-22T07:40:57.460Z"
   },
   {
     "setId": "11384",
@@ -900,7 +900,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:52.508Z"
+    "observedAt": "2026-04-22T07:40:59.622Z"
   },
   {
     "setId": "11384",
@@ -910,7 +910,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:17:53.391Z"
+    "observedAt": "2026-04-22T07:40:57.849Z"
   },
   {
     "setId": "11501",
@@ -920,7 +920,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:25.798Z"
+    "observedAt": "2026-04-22T07:39:34.466Z"
   },
   {
     "setId": "11501",
@@ -930,7 +930,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:26.831Z"
+    "observedAt": "2026-04-22T07:39:33.435Z"
   },
   {
     "setId": "11501",
@@ -940,7 +940,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:28.542Z"
+    "observedAt": "2026-04-22T07:39:31.815Z"
   },
   {
     "setId": "11501",
@@ -950,7 +950,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:27.543Z"
+    "observedAt": "2026-04-22T07:39:32.112Z"
   },
   {
     "setId": "11502",
@@ -960,7 +960,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:28.899Z"
+    "observedAt": "2026-04-22T07:39:30.738Z"
   },
   {
     "setId": "11502",
@@ -970,7 +970,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:30.262Z"
+    "observedAt": "2026-04-22T07:39:29.762Z"
   },
   {
     "setId": "11502",
@@ -980,7 +980,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:33.031Z"
+    "observedAt": "2026-04-22T07:39:28.406Z"
   },
   {
     "setId": "11502",
@@ -990,7 +990,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:32.047Z"
+    "observedAt": "2026-04-22T07:39:28.812Z"
   },
   {
     "setId": "11503",
@@ -1000,7 +1000,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:34.597Z"
+    "observedAt": "2026-04-22T07:39:26.105Z"
   },
   {
     "setId": "11509",
@@ -1010,7 +1010,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2395,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:35.737Z"
+    "observedAt": "2026-04-22T07:39:25.563Z"
   },
   {
     "setId": "11509",
@@ -1020,7 +1020,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2395,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:38.525Z"
+    "observedAt": "2026-04-22T07:39:22.610Z"
   },
   {
     "setId": "11509",
@@ -1030,7 +1030,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:36.858Z"
+    "observedAt": "2026-04-22T07:39:24.072Z"
   },
   {
     "setId": "11509",
@@ -1040,7 +1040,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:37.695Z"
+    "observedAt": "2026-04-22T07:39:22.919Z"
   },
   {
     "setId": "21061",
@@ -1048,9 +1048,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 17240,
+    "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:19.825Z"
+    "observedAt": "2026-04-22T07:45:36.887Z"
   },
   {
     "setId": "21061",
@@ -1060,7 +1060,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 18400,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:11.924Z"
+    "observedAt": "2026-04-22T07:44:39.819Z"
   },
   {
     "setId": "21061",
@@ -1070,7 +1070,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:36.206Z"
+    "observedAt": "2026-04-22T07:45:19.651Z"
   },
   {
     "setId": "21061",
@@ -1080,7 +1080,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:17.002Z"
+    "observedAt": "2026-04-22T07:45:40.156Z"
   },
   {
     "setId": "21061",
@@ -1090,7 +1090,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:18.003Z"
+    "observedAt": "2026-04-22T07:45:39.075Z"
   },
   {
     "setId": "21064",
@@ -1100,7 +1100,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5199,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:38.856Z"
+    "observedAt": "2026-04-22T07:39:21.881Z"
   },
   {
     "setId": "21064",
@@ -1110,7 +1110,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6695,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:42.267Z"
+    "observedAt": "2026-04-22T07:39:17.575Z"
   },
   {
     "setId": "21064",
@@ -1120,7 +1120,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:39.934Z"
+    "observedAt": "2026-04-22T07:39:20.419Z"
   },
   {
     "setId": "21064",
@@ -1130,7 +1130,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:40.880Z"
+    "observedAt": "2026-04-22T07:39:18.746Z"
   },
   {
     "setId": "21333",
@@ -1138,9 +1138,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 15990,
+    "totalPriceMinor": 16899,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:54.157Z"
+    "observedAt": "2026-04-22T07:45:01.162Z"
   },
   {
     "setId": "21333",
@@ -1150,7 +1150,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:52.865Z"
+    "observedAt": "2026-04-22T07:45:59.565Z"
   },
   {
     "setId": "21338",
@@ -1160,7 +1160,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:24:48.161Z"
+    "observedAt": "2026-04-22T07:44:25.458Z"
   },
   {
     "setId": "21338",
@@ -1170,7 +1170,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22600,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:59.147Z"
+    "observedAt": "2026-04-22T07:46:52.922Z"
   },
   {
     "setId": "21339",
@@ -1178,9 +1178,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 9900,
+    "totalPriceMinor": 9699,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T10:04:35.713Z"
+    "observedAt": "2026-04-22T07:42:41.736Z"
   },
   {
     "setId": "21339",
@@ -1190,17 +1190,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T10:04:36.415Z"
-  },
-  {
-    "setId": "21348",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 30299,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:49.366Z"
+    "observedAt": "2026-04-22T07:42:40.600Z"
   },
   {
     "setId": "21348",
@@ -1210,7 +1200,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 32500,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:21.345Z"
+    "observedAt": "2026-04-22T07:44:32.723Z"
+  },
+  {
+    "setId": "21348",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 35999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:45:06.045Z"
   },
   {
     "setId": "21348",
@@ -1220,7 +1220,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 35999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:46.312Z"
+    "observedAt": "2026-04-22T07:46:03.474Z"
   },
   {
     "setId": "21348",
@@ -1230,7 +1230,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 35999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:50.353Z"
+    "observedAt": "2026-04-22T07:45:05.837Z"
   },
   {
     "setId": "21349",
@@ -1240,7 +1240,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:52.953Z"
+    "observedAt": "2026-04-22T07:45:02.167Z"
   },
   {
     "setId": "21349",
@@ -1250,7 +1250,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:53.878Z"
+    "observedAt": "2026-04-22T07:45:58.543Z"
   },
   {
     "setId": "21350",
@@ -1260,7 +1260,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:51.268Z"
+    "observedAt": "2026-04-22T07:45:03.212Z"
   },
   {
     "setId": "21350",
@@ -1270,7 +1270,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:56.278Z"
+    "observedAt": "2026-04-22T07:45:55.779Z"
   },
   {
     "setId": "21350",
@@ -1280,7 +1280,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15000,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:50.478Z"
+    "observedAt": "2026-04-22T07:45:04.699Z"
   },
   {
     "setId": "21365",
@@ -1290,7 +1290,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:43.516Z"
+    "observedAt": "2026-04-22T07:39:14.789Z"
   },
   {
     "setId": "21365",
@@ -1300,7 +1300,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:44.301Z"
+    "observedAt": "2026-04-22T07:39:14.628Z"
   },
   {
     "setId": "21365",
@@ -1308,9 +1308,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 5687,
+    "totalPriceMinor": 6200,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:42.635Z"
+    "observedAt": "2026-04-22T07:39:16.144Z"
   },
   {
     "setId": "21366",
@@ -1320,7 +1320,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:25:29.022Z"
+    "observedAt": "2026-04-22T07:37:20.518Z"
   },
   {
     "setId": "21366",
@@ -1330,7 +1330,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:25:26.487Z"
+    "observedAt": "2026-04-22T07:37:23.369Z"
   },
   {
     "setId": "21366",
@@ -1340,7 +1340,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9699,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:25:27.924Z"
+    "observedAt": "2026-04-22T07:37:21.294Z"
   },
   {
     "setId": "21366",
@@ -1350,7 +1350,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:25:26.988Z"
+    "observedAt": "2026-04-22T07:37:22.105Z"
   },
   {
     "setId": "21376",
@@ -1360,7 +1360,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:00.432Z"
+    "observedAt": "2026-04-22T07:40:55.499Z"
   },
   {
     "setId": "21376",
@@ -1370,7 +1370,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:01.268Z"
+    "observedAt": "2026-04-22T07:40:53.904Z"
   },
   {
     "setId": "21376",
@@ -1380,7 +1380,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:02.419Z"
+    "observedAt": "2026-04-22T07:40:53.042Z"
+  },
+  {
+    "setId": "21588",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3199,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:15.778Z"
+  },
+  {
+    "setId": "21588",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3599,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:16.683Z"
+  },
+  {
+    "setId": "21588",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3795,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:14.512Z"
+  },
+  {
+    "setId": "21588",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:14.797Z"
   },
   {
     "setId": "21589",
@@ -1390,7 +1430,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4798,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:52.777Z"
+    "observedAt": "2026-04-22T07:39:09.090Z"
   },
   {
     "setId": "21589",
@@ -1400,7 +1440,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4800,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:53.642Z"
+    "observedAt": "2026-04-22T07:39:08.335Z"
   },
   {
     "setId": "21589",
@@ -1410,7 +1450,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:55.698Z"
+    "observedAt": "2026-04-22T07:39:06.218Z"
   },
   {
     "setId": "21589",
@@ -1420,7 +1460,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:54.473Z"
+    "observedAt": "2026-04-22T07:39:07.326Z"
+  },
+  {
+    "setId": "21590",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4799,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:13.845Z"
+  },
+  {
+    "setId": "21590",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5200,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:13.039Z"
+  },
+  {
+    "setId": "21590",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5495,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:09.825Z"
+  },
+  {
+    "setId": "21590",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:10.966Z"
   },
   {
     "setId": "31208",
@@ -1428,9 +1508,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 7999,
+    "totalPriceMinor": 6799,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:21.741Z"
+    "observedAt": "2026-04-22T07:46:24.940Z"
   },
   {
     "setId": "31208",
@@ -1440,7 +1520,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T18:23:01.759Z"
+    "observedAt": "2026-04-22T07:44:05.747Z"
   },
   {
     "setId": "31208",
@@ -1450,7 +1530,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:18.235Z"
+    "observedAt": "2026-04-22T07:46:26.839Z"
   },
   {
     "setId": "31208",
@@ -1460,7 +1540,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8295,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:18.409Z"
+    "observedAt": "2026-04-22T07:46:26.483Z"
   },
   {
     "setId": "31208",
@@ -1470,7 +1550,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:19.255Z"
+    "observedAt": "2026-04-22T07:46:25.659Z"
   },
   {
     "setId": "31209",
@@ -1480,7 +1560,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17400,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T10:04:38.813Z"
+    "observedAt": "2026-04-22T07:42:37.373Z"
   },
   {
     "setId": "31209",
@@ -1490,7 +1570,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T10:04:40.729Z"
+    "observedAt": "2026-04-22T07:42:35.386Z"
   },
   {
     "setId": "31209",
@@ -1500,7 +1580,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T10:04:39.913Z"
+    "observedAt": "2026-04-22T07:42:35.852Z"
   },
   {
     "setId": "31218",
@@ -1510,7 +1590,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:05.565Z"
+    "observedAt": "2026-04-22T07:40:50.480Z"
   },
   {
     "setId": "31218",
@@ -1520,7 +1600,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:03.654Z"
+    "observedAt": "2026-04-22T07:40:52.105Z"
   },
   {
     "setId": "31218",
@@ -1530,7 +1610,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:04.514Z"
+    "observedAt": "2026-04-22T07:40:50.894Z"
   },
   {
     "setId": "31220",
@@ -1540,7 +1620,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16900,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T14:18:07.312Z"
+    "observedAt": "2026-04-22T07:40:48.474Z"
   },
   {
     "setId": "31220",
@@ -1550,7 +1630,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:05.984Z"
+    "observedAt": "2026-04-22T07:40:48.921Z"
   },
   {
     "setId": "31385",
@@ -1560,7 +1640,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3704,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:39.346Z"
+    "observedAt": "2026-04-22T07:37:52.486Z"
   },
   {
     "setId": "31385",
@@ -1570,7 +1650,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:39.986Z"
+    "observedAt": "2026-04-22T07:37:51.787Z"
   },
   {
     "setId": "31385",
@@ -1580,7 +1660,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4195,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:41.501Z"
+    "observedAt": "2026-04-22T07:37:49.231Z"
   },
   {
     "setId": "31385",
@@ -1590,7 +1670,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:40.740Z"
+    "observedAt": "2026-04-22T07:37:49.625Z"
   },
   {
     "setId": "40507",
@@ -1600,7 +1680,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:56.045Z"
+    "observedAt": "2026-04-22T07:39:04.741Z"
   },
   {
     "setId": "40878",
@@ -1610,7 +1690,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:42.945Z"
+    "observedAt": "2026-04-22T07:37:47.398Z"
   },
   {
     "setId": "40878",
@@ -1620,7 +1700,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:41.930Z"
+    "observedAt": "2026-04-22T07:37:48.633Z"
   },
   {
     "setId": "40879",
@@ -1630,7 +1710,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:44.271Z"
+    "observedAt": "2026-04-22T07:37:46.009Z"
   },
   {
     "setId": "40879",
@@ -1640,7 +1720,27 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:43.634Z"
+    "observedAt": "2026-04-22T07:37:46.741Z"
+  },
+  {
+    "setId": "40915",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:08.319Z"
+  },
+  {
+    "setId": "40915",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:09.172Z"
   },
   {
     "setId": "40952",
@@ -1650,7 +1750,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:45.077Z"
+    "observedAt": "2026-04-22T07:37:45.450Z"
   },
   {
     "setId": "40955",
@@ -1660,7 +1760,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:07.661Z"
+    "observedAt": "2026-04-22T07:40:47.592Z"
   },
   {
     "setId": "40957",
@@ -1670,7 +1770,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:46.334Z"
+    "observedAt": "2026-04-22T07:37:43.985Z"
   },
   {
     "setId": "40957",
@@ -1680,7 +1780,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:45.647Z"
+    "observedAt": "2026-04-22T07:37:44.897Z"
   },
   {
     "setId": "42115",
@@ -1690,7 +1790,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 31499,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T13:51:43.382Z"
+    "observedAt": "2026-04-22T07:41:28.646Z"
   },
   {
     "setId": "42115",
@@ -1700,7 +1800,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 40595,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T13:51:42.507Z"
+    "observedAt": "2026-04-22T07:41:29.848Z"
   },
   {
     "setId": "42115",
@@ -1710,7 +1810,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 42900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T13:51:44.697Z"
+    "observedAt": "2026-04-22T07:41:28.171Z"
   },
   {
     "setId": "42143",
@@ -1720,7 +1820,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 32499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:03.034Z"
+    "observedAt": "2026-04-22T07:46:41.749Z"
   },
   {
     "setId": "42143",
@@ -1730,7 +1830,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 32499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:01.990Z"
+    "observedAt": "2026-04-22T07:46:42.423Z"
   },
   {
     "setId": "42143",
@@ -1740,7 +1840,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 35900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:00.367Z"
+    "observedAt": "2026-04-22T07:46:51.348Z"
   },
   {
     "setId": "42143",
@@ -1750,7 +1850,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 37999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T09:32:00.059Z"
+    "observedAt": "2026-04-22T07:46:51.806Z"
   },
   {
     "setId": "42143",
@@ -1764,23 +1864,23 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42154",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 8400,
-    "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:55.209Z"
-  },
-  {
-    "setId": "42154",
     "merchantId": "intertoys",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 9299,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:55.899Z"
+    "observedAt": "2026-04-22T07:41:46.192Z"
+  },
+  {
+    "setId": "42154",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 9390,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:41:47.398Z"
   },
   {
     "setId": "42154",
@@ -1790,7 +1890,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:57.571Z"
+    "observedAt": "2026-04-22T07:41:43.728Z"
   },
   {
     "setId": "42154",
@@ -1800,7 +1900,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:56.657Z"
+    "observedAt": "2026-04-22T07:41:44.190Z"
   },
   {
     "setId": "42155",
@@ -1810,7 +1910,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5499,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T12:49:58.815Z"
+    "observedAt": "2026-04-22T07:41:41.429Z"
   },
   {
     "setId": "42155",
@@ -1820,7 +1920,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:49:57.871Z"
+    "observedAt": "2026-04-22T07:41:42.481Z"
   },
   {
     "setId": "42156",
@@ -1830,7 +1930,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T13:51:46.933Z"
+    "observedAt": "2026-04-22T07:41:23.267Z"
   },
   {
     "setId": "42156",
@@ -1840,7 +1940,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16598,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T13:51:45.930Z"
+    "observedAt": "2026-04-22T07:41:24.226Z"
   },
   {
     "setId": "42156",
@@ -1848,9 +1948,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 17494,
+    "totalPriceMinor": 18656,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T13:51:45.170Z"
+    "observedAt": "2026-04-22T07:41:27.209Z"
   },
   {
     "setId": "42161",
@@ -1870,7 +1970,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3899,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:00.193Z"
+    "observedAt": "2026-04-22T07:41:39.337Z"
   },
   {
     "setId": "42161",
@@ -1880,7 +1980,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:01.929Z"
+    "observedAt": "2026-04-22T07:41:37.935Z"
   },
   {
     "setId": "42161",
@@ -1890,7 +1990,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5299,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:00.934Z"
+    "observedAt": "2026-04-22T07:41:38.487Z"
   },
   {
     "setId": "42162",
@@ -1900,7 +2000,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T12:50:04.211Z"
+    "observedAt": "2026-04-22T07:41:36.125Z"
   },
   {
     "setId": "42162",
@@ -1908,9 +2008,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 7700,
+    "totalPriceMinor": 9399,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:03.386Z"
+    "observedAt": "2026-04-22T07:41:37.102Z"
   },
   {
     "setId": "42171",
@@ -1918,9 +2018,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 15999,
+    "totalPriceMinor": 15400,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:07.985Z"
+    "observedAt": "2026-04-22T07:44:44.823Z"
   },
   {
     "setId": "42171",
@@ -1930,7 +2030,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:08.864Z"
+    "observedAt": "2026-04-22T07:44:43.680Z"
   },
   {
     "setId": "42171",
@@ -1940,7 +2040,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:21.055Z"
+    "observedAt": "2026-04-22T07:44:33.050Z"
   },
   {
     "setId": "42171",
@@ -1950,7 +2050,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:09.750Z"
+    "observedAt": "2026-04-22T07:44:42.263Z"
   },
   {
     "setId": "42171",
@@ -1960,7 +2060,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 21999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:09.577Z"
+    "observedAt": "2026-04-22T07:45:47.120Z"
   },
   {
     "setId": "42172",
@@ -1968,9 +2068,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 31999,
+    "totalPriceMinor": 31499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:05.754Z"
+    "observedAt": "2026-04-22T07:44:49.175Z"
   },
   {
     "setId": "42172",
@@ -1980,7 +2080,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 32499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:06.592Z"
+    "observedAt": "2026-04-22T07:44:48.144Z"
   },
   {
     "setId": "42172",
@@ -1990,7 +2090,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 35900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:20.664Z"
+    "observedAt": "2026-04-22T07:44:33.361Z"
   },
   {
     "setId": "42172",
@@ -2000,7 +2100,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 37999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:07.751Z"
+    "observedAt": "2026-04-22T07:44:46.932Z"
   },
   {
     "setId": "42172",
@@ -2010,7 +2110,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 44999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:10.697Z"
+    "observedAt": "2026-04-22T07:45:45.586Z"
   },
   {
     "setId": "42173",
@@ -2020,7 +2120,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3974,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:07.523Z"
+    "observedAt": "2026-04-22T07:42:16.414Z"
   },
   {
     "setId": "42173",
@@ -2030,7 +2130,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4199,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:08.673Z"
+    "observedAt": "2026-04-22T07:42:15.573Z"
   },
   {
     "setId": "42173",
@@ -2040,7 +2140,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:10.303Z"
+    "observedAt": "2026-04-22T07:42:12.833Z"
   },
   {
     "setId": "42173",
@@ -2050,7 +2150,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5299,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:09.525Z"
+    "observedAt": "2026-04-22T07:42:13.209Z"
   },
   {
     "setId": "42174",
@@ -2060,7 +2160,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:10.651Z"
+    "observedAt": "2026-04-22T07:42:12.287Z"
   },
   {
     "setId": "42174",
@@ -2070,7 +2170,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:13.152Z"
+    "observedAt": "2026-04-22T07:42:09.017Z"
   },
   {
     "setId": "42174",
@@ -2080,7 +2180,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9998,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:11.360Z"
+    "observedAt": "2026-04-22T07:42:11.347Z"
   },
   {
     "setId": "42174",
@@ -2090,7 +2190,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T11:07:12.280Z"
+    "observedAt": "2026-04-22T07:42:09.325Z"
   },
   {
     "setId": "42175",
@@ -2100,7 +2200,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16700,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:16.658Z"
+    "observedAt": "2026-04-22T07:42:06.672Z"
   },
   {
     "setId": "42175",
@@ -2110,7 +2210,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T11:18:32.480Z"
+    "observedAt": "2026-04-22T07:41:55.014Z"
   },
   {
     "setId": "42175",
@@ -2118,9 +2218,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 19399,
+    "totalPriceMinor": 17495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:13.468Z"
+    "observedAt": "2026-04-22T07:42:08.066Z"
   },
   {
     "setId": "42175",
@@ -2130,7 +2230,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:15.497Z"
+    "observedAt": "2026-04-22T07:42:07.041Z"
   },
   {
     "setId": "42176",
@@ -2138,9 +2238,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 11599,
+    "totalPriceMinor": 12899,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:17.989Z"
+    "observedAt": "2026-04-22T07:42:06.077Z"
   },
   {
     "setId": "42176",
@@ -2150,7 +2250,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12899,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:19.024Z"
+    "observedAt": "2026-04-22T07:42:04.650Z"
   },
   {
     "setId": "42176",
@@ -2160,7 +2260,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:20.872Z"
+    "observedAt": "2026-04-22T07:42:02.327Z"
   },
   {
     "setId": "42176",
@@ -2170,7 +2270,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:07:19.762Z"
+    "observedAt": "2026-04-22T07:42:02.766Z"
+  },
+  {
+    "setId": "42177",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17500,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:44:41.216Z"
   },
   {
     "setId": "42177",
@@ -2180,17 +2290,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 18499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:10.792Z"
-  },
-  {
-    "setId": "42177",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 18900,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:09.874Z"
+    "observedAt": "2026-04-22T07:44:40.311Z"
   },
   {
     "setId": "42177",
@@ -2200,7 +2300,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:11.801Z"
+    "observedAt": "2026-04-22T07:44:40.185Z"
   },
   {
     "setId": "42177",
@@ -2210,7 +2310,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 20900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:20.214Z"
+    "observedAt": "2026-04-22T07:44:33.762Z"
   },
   {
     "setId": "42177",
@@ -2220,7 +2320,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 24999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:41.505Z"
+    "observedAt": "2026-04-22T07:46:07.177Z"
   },
   {
     "setId": "42206",
@@ -2230,7 +2330,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:18.796Z"
+    "observedAt": "2026-04-22T07:43:54.004Z"
   },
   {
     "setId": "42206",
@@ -2240,7 +2340,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17400,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:17.465Z"
+    "observedAt": "2026-04-22T07:43:55.045Z"
   },
   {
     "setId": "42206",
@@ -2250,7 +2350,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 18900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:22.396Z"
+    "observedAt": "2026-04-22T07:43:51.616Z"
   },
   {
     "setId": "42206",
@@ -2260,7 +2360,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:19.589Z"
+    "observedAt": "2026-04-22T07:43:51.907Z"
   },
   {
     "setId": "42221",
@@ -2270,7 +2370,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:10.095Z"
+    "observedAt": "2026-04-22T07:40:44.251Z"
   },
   {
     "setId": "42221",
@@ -2280,7 +2380,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:08.418Z"
+    "observedAt": "2026-04-22T07:40:46.817Z"
   },
   {
     "setId": "42222",
@@ -2290,7 +2390,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:11.393Z"
+    "observedAt": "2026-04-22T07:40:42.592Z"
   },
   {
     "setId": "42222",
@@ -2300,7 +2400,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4874,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:10.404Z"
+    "observedAt": "2026-04-22T07:40:43.692Z"
   },
   {
     "setId": "42222",
@@ -2310,7 +2410,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:14.527Z"
+    "observedAt": "2026-04-22T07:40:40.935Z"
   },
   {
     "setId": "42222",
@@ -2320,7 +2420,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:12.189Z"
+    "observedAt": "2026-04-22T07:40:41.284Z"
   },
   {
     "setId": "42223",
@@ -2330,7 +2430,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:15.005Z"
+    "observedAt": "2026-04-22T07:40:40.028Z"
   },
   {
     "setId": "42223",
@@ -2340,7 +2440,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:15.773Z"
+    "observedAt": "2026-04-22T07:40:38.117Z"
   },
   {
     "setId": "42223",
@@ -2350,7 +2450,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6295,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:17.764Z"
+    "observedAt": "2026-04-22T07:40:35.846Z"
   },
   {
     "setId": "42223",
@@ -2360,7 +2460,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:16.574Z"
+    "observedAt": "2026-04-22T07:40:36.255Z"
   },
   {
     "setId": "42224",
@@ -2368,9 +2468,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 10000,
+    "totalPriceMinor": 10499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:18.305Z"
+    "observedAt": "2026-04-22T07:40:35.044Z"
   },
   {
     "setId": "42224",
@@ -2380,7 +2480,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:19.372Z"
+    "observedAt": "2026-04-22T07:40:33.110Z"
   },
   {
     "setId": "42224",
@@ -2390,7 +2490,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11895,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:21.816Z"
+    "observedAt": "2026-04-22T07:40:31.117Z"
   },
   {
     "setId": "42224",
@@ -2400,7 +2500,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:20.003Z"
+    "observedAt": "2026-04-22T07:40:31.626Z"
   },
   {
     "setId": "42226",
@@ -2410,7 +2510,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5190,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:22.126Z"
+    "observedAt": "2026-04-22T07:40:30.334Z"
   },
   {
     "setId": "42226",
@@ -2420,7 +2520,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5300,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:22.865Z"
+    "observedAt": "2026-04-22T07:40:29.011Z"
   },
   {
     "setId": "42226",
@@ -2430,7 +2530,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:26.539Z"
+    "observedAt": "2026-04-22T07:40:25.778Z"
   },
   {
     "setId": "42226",
@@ -2440,7 +2540,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:24.787Z"
+    "observedAt": "2026-04-22T07:40:26.143Z"
   },
   {
     "setId": "42227",
@@ -2450,7 +2550,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5199,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:26.917Z"
+    "observedAt": "2026-04-22T07:40:25.021Z"
   },
   {
     "setId": "42227",
@@ -2460,7 +2560,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5300,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:27.737Z"
+    "observedAt": "2026-04-22T07:40:23.726Z"
   },
   {
     "setId": "42227",
@@ -2470,7 +2570,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:31.471Z"
+    "observedAt": "2026-04-22T07:40:22.396Z"
   },
   {
     "setId": "42227",
@@ -2480,7 +2580,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:28.511Z"
+    "observedAt": "2026-04-22T07:40:22.711Z"
   },
   {
     "setId": "42228",
@@ -2490,7 +2590,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:34.554Z"
+    "observedAt": "2026-04-22T07:40:18.503Z"
   },
   {
     "setId": "42228",
@@ -2500,7 +2600,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:32.559Z"
+    "observedAt": "2026-04-22T07:40:20.790Z"
   },
   {
     "setId": "42228",
@@ -2510,7 +2610,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:33.480Z"
+    "observedAt": "2026-04-22T07:40:19.056Z"
   },
   {
     "setId": "42228",
@@ -2518,9 +2618,89 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 25099,
+    "totalPriceMinor": 24900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:31.911Z"
+    "observedAt": "2026-04-22T07:40:21.719Z"
+  },
+  {
+    "setId": "42684",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3295,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:05.034Z"
+  },
+  {
+    "setId": "42684",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:07.677Z"
+  },
+  {
+    "setId": "42684",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:06.922Z"
+  },
+  {
+    "setId": "42684",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:05.322Z"
+  },
+  {
+    "setId": "42686",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4498,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:04.194Z"
+  },
+  {
+    "setId": "42686",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4995,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:01.367Z"
+  },
+  {
+    "setId": "42686",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:02.649Z"
+  },
+  {
+    "setId": "42686",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:01.685Z"
   },
   {
     "setId": "42687",
@@ -2530,7 +2710,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:58.360Z"
+    "observedAt": "2026-04-22T07:39:02.759Z"
+  },
+  {
+    "setId": "42687",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5599,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:39:04.066Z"
   },
   {
     "setId": "42687",
@@ -2540,17 +2730,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5795,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:00.899Z"
-  },
-  {
-    "setId": "42687",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5899,
-    "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:57.093Z"
+    "observedAt": "2026-04-22T07:39:01.321Z"
   },
   {
     "setId": "42687",
@@ -2560,7 +2740,77 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:11:59.522Z"
+    "observedAt": "2026-04-22T07:39:01.889Z"
+  },
+  {
+    "setId": "42688",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6200,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:37:00.556Z"
+  },
+  {
+    "setId": "42688",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6200,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:59.437Z"
+  },
+  {
+    "setId": "42688",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6595,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:57.591Z"
+  },
+  {
+    "setId": "42688",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:57.899Z"
+  },
+  {
+    "setId": "42689",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6365,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:56.845Z"
+  },
+  {
+    "setId": "42689",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7395,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:55.323Z"
+  },
+  {
+    "setId": "42689",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:55.721Z"
   },
   {
     "setId": "42691",
@@ -2570,7 +2820,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:36.290Z"
+    "observedAt": "2026-04-22T07:40:15.479Z"
   },
   {
     "setId": "42691",
@@ -2580,7 +2830,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14300,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:34.972Z"
+    "observedAt": "2026-04-22T07:40:17.575Z"
   },
   {
     "setId": "43019",
@@ -2590,7 +2840,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:37.583Z"
+    "observedAt": "2026-04-22T07:40:14.069Z"
   },
   {
     "setId": "43019",
@@ -2600,7 +2850,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:38.386Z"
+    "observedAt": "2026-04-22T07:40:12.524Z"
   },
   {
     "setId": "43019",
@@ -2610,7 +2860,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:40.311Z"
+    "observedAt": "2026-04-22T07:40:10.770Z"
   },
   {
     "setId": "43019",
@@ -2620,7 +2870,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:39.256Z"
+    "observedAt": "2026-04-22T07:40:11.700Z"
   },
   {
     "setId": "43020",
@@ -2630,7 +2880,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13800,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:40.738Z"
+    "observedAt": "2026-04-22T07:40:10.155Z"
   },
   {
     "setId": "43020",
@@ -2640,7 +2890,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:41.446Z"
+    "observedAt": "2026-04-22T07:40:07.790Z"
   },
   {
     "setId": "43020",
@@ -2650,7 +2900,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:44.713Z"
+    "observedAt": "2026-04-22T07:40:06.582Z"
   },
   {
     "setId": "43020",
@@ -2660,7 +2910,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:42.165Z"
+    "observedAt": "2026-04-22T07:40:07.040Z"
   },
   {
     "setId": "43025",
@@ -2670,7 +2920,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:02.041Z"
+    "observedAt": "2026-04-22T07:39:00.104Z"
   },
   {
     "setId": "43222",
@@ -2680,7 +2930,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 39999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:24:51.259Z"
+    "observedAt": "2026-04-22T07:44:22.314Z"
   },
   {
     "setId": "43222",
@@ -2690,7 +2940,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 71899,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:17.537Z"
+    "observedAt": "2026-04-22T07:46:28.160Z"
   },
   {
     "setId": "43224",
@@ -2700,7 +2950,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6450,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:05.251Z"
+    "observedAt": "2026-04-22T07:41:35.255Z"
   },
   {
     "setId": "43224",
@@ -2710,7 +2960,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:08.162Z"
+    "observedAt": "2026-04-22T07:41:32.606Z"
   },
   {
     "setId": "43224",
@@ -2720,7 +2970,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7498,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:06.116Z"
+    "observedAt": "2026-04-22T07:41:34.454Z"
   },
   {
     "setId": "43224",
@@ -2730,7 +2980,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9499,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T12:50:07.118Z"
+    "observedAt": "2026-04-22T07:41:32.965Z"
   },
   {
     "setId": "43226",
@@ -2740,7 +2990,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4799,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T12:50:09.411Z"
+    "observedAt": "2026-04-22T07:41:31.153Z"
   },
   {
     "setId": "43226",
@@ -2750,7 +3000,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7399,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T12:50:08.708Z"
+    "observedAt": "2026-04-22T07:41:31.959Z"
   },
   {
     "setId": "43230",
@@ -2760,7 +3010,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T10:04:42.064Z"
+    "observedAt": "2026-04-22T07:42:33.441Z"
   },
   {
     "setId": "43230",
@@ -2768,9 +3018,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 11495,
+    "totalPriceMinor": 11499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T10:04:41.173Z"
+    "observedAt": "2026-04-22T07:42:34.547Z"
   },
   {
     "setId": "43244",
@@ -2780,7 +3030,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8395,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:42.235Z"
+    "observedAt": "2026-04-22T07:41:59.097Z"
   },
   {
     "setId": "43244",
@@ -2790,7 +3040,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:39.743Z"
+    "observedAt": "2026-04-22T07:42:01.675Z"
   },
   {
     "setId": "43244",
@@ -2800,7 +3050,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:40.356Z"
+    "observedAt": "2026-04-22T07:42:00.663Z"
   },
   {
     "setId": "43244",
@@ -2810,7 +3060,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:41.384Z"
+    "observedAt": "2026-04-22T07:41:59.578Z"
   },
   {
     "setId": "43247",
@@ -2820,7 +3070,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9299,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:36:45.405Z"
+    "observedAt": "2026-04-22T07:37:19.936Z"
   },
   {
     "setId": "43247",
@@ -2830,7 +3080,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:36:48.759Z"
+    "observedAt": "2026-04-22T07:37:17.390Z"
   },
   {
     "setId": "43247",
@@ -2840,7 +3090,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:36:46.208Z"
+    "observedAt": "2026-04-22T07:37:18.979Z"
   },
   {
     "setId": "43247",
@@ -2850,7 +3100,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T20:36:47.108Z"
+    "observedAt": "2026-04-22T07:37:18.252Z"
   },
   {
     "setId": "43249",
@@ -2860,7 +3110,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4699,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:42.682Z"
+    "observedAt": "2026-04-22T07:41:58.529Z"
   },
   {
     "setId": "43249",
@@ -2870,7 +3120,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:45.831Z"
+    "observedAt": "2026-04-22T07:41:56.120Z"
   },
   {
     "setId": "43249",
@@ -2880,7 +3130,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:43.690Z"
+    "observedAt": "2026-04-22T07:41:57.814Z"
   },
   {
     "setId": "43249",
@@ -2890,7 +3140,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T11:11:44.534Z"
+    "observedAt": "2026-04-22T07:41:56.557Z"
   },
   {
     "setId": "43269",
@@ -2900,7 +3150,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:42:34.683Z"
+    "observedAt": "2026-04-22T07:44:00.416Z"
   },
   {
     "setId": "43269",
@@ -2910,7 +3160,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11500,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:42:37.730Z"
+    "observedAt": "2026-04-22T07:43:57.446Z"
   },
   {
     "setId": "43269",
@@ -2920,7 +3170,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:42:35.465Z"
+    "observedAt": "2026-04-22T07:43:59.375Z"
   },
   {
     "setId": "43269",
@@ -2930,7 +3180,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:42:38.331Z"
+    "observedAt": "2026-04-22T07:43:55.811Z"
   },
   {
     "setId": "43269",
@@ -2940,7 +3190,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:42:36.455Z"
+    "observedAt": "2026-04-22T07:43:57.912Z"
   },
   {
     "setId": "43287",
@@ -2948,9 +3198,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3699,
+    "totalPriceMinor": 3999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:45.075Z"
+    "observedAt": "2026-04-22T07:40:06.005Z"
   },
   {
     "setId": "43287",
@@ -2960,7 +3210,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4195,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:47.642Z"
+    "observedAt": "2026-04-22T07:40:03.373Z"
   },
   {
     "setId": "43287",
@@ -2970,7 +3220,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:45.840Z"
+    "observedAt": "2026-04-22T07:40:05.329Z"
   },
   {
     "setId": "43287",
@@ -2980,7 +3230,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:46.659Z"
+    "observedAt": "2026-04-22T07:40:03.896Z"
   },
   {
     "setId": "43290",
@@ -2990,7 +3240,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:48.033Z"
+    "observedAt": "2026-04-22T07:40:02.708Z"
   },
   {
     "setId": "43290",
@@ -3000,7 +3250,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:52.267Z"
+    "observedAt": "2026-04-22T07:39:59.765Z"
   },
   {
     "setId": "43290",
@@ -3010,7 +3260,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:48.710Z"
+    "observedAt": "2026-04-22T07:40:01.524Z"
   },
   {
     "setId": "43290",
@@ -3020,7 +3270,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:49.604Z"
+    "observedAt": "2026-04-22T07:40:00.167Z"
   },
   {
     "setId": "43300",
@@ -3030,7 +3280,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:53.480Z"
+    "observedAt": "2026-04-22T07:39:56.467Z"
   },
   {
     "setId": "43300",
@@ -3040,7 +3290,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:52.611Z"
+    "observedAt": "2026-04-22T07:39:58.472Z"
   },
   {
     "setId": "43300",
@@ -3050,7 +3300,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:57.304Z"
+    "observedAt": "2026-04-22T07:39:53.126Z"
   },
   {
     "setId": "43305",
@@ -3060,7 +3310,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:57.665Z"
+    "observedAt": "2026-04-22T07:39:51.382Z"
   },
   {
     "setId": "45200",
@@ -3070,7 +3320,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:48.380Z"
+    "observedAt": "2026-04-22T07:37:42.524Z"
   },
   {
     "setId": "45200",
@@ -3080,7 +3330,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:47.737Z"
+    "observedAt": "2026-04-22T07:37:43.330Z"
   },
   {
     "setId": "45202",
@@ -3090,7 +3340,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:04.217Z"
+    "observedAt": "2026-04-22T07:38:58.543Z"
   },
   {
     "setId": "45202",
@@ -3100,7 +3350,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:03.183Z"
+    "observedAt": "2026-04-22T07:38:59.356Z"
   },
   {
     "setId": "45203",
@@ -3110,7 +3360,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:05.315Z"
+    "observedAt": "2026-04-22T07:38:57.840Z"
   },
   {
     "setId": "60493",
@@ -3120,7 +3370,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:50.822Z"
+    "observedAt": "2026-04-22T07:37:41.244Z"
   },
   {
     "setId": "60493",
@@ -3130,7 +3380,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:50.180Z"
+    "observedAt": "2026-04-22T07:37:42.006Z"
   },
   {
     "setId": "60493",
@@ -3140,7 +3390,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3695,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:53.150Z"
+    "observedAt": "2026-04-22T07:37:39.690Z"
   },
   {
     "setId": "60493",
@@ -3150,7 +3400,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:51.886Z"
+    "observedAt": "2026-04-22T07:37:40.232Z"
   },
   {
     "setId": "60499",
@@ -3160,7 +3410,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4299,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:53.552Z"
+    "observedAt": "2026-04-22T07:37:38.885Z"
   },
   {
     "setId": "60499",
@@ -3170,7 +3420,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5795,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:55.322Z"
+    "observedAt": "2026-04-22T07:37:36.954Z"
   },
   {
     "setId": "60499",
@@ -3180,7 +3430,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:54.502Z"
+    "observedAt": "2026-04-22T07:37:37.575Z"
   },
   {
     "setId": "60502",
@@ -3190,7 +3440,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:06.296Z"
+    "observedAt": "2026-04-22T07:38:57.224Z"
   },
   {
     "setId": "60502",
@@ -3200,7 +3450,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6900,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T17:12:07.201Z"
+    "observedAt": "2026-04-22T07:38:56.423Z"
   },
   {
     "setId": "60502",
@@ -3210,7 +3460,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8200,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:08.950Z"
+    "observedAt": "2026-04-22T07:38:55.187Z"
   },
   {
     "setId": "60502",
@@ -3220,7 +3470,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:07.916Z"
+    "observedAt": "2026-04-22T07:38:55.457Z"
   },
   {
     "setId": "60503",
@@ -3228,9 +3478,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3999,
+    "totalPriceMinor": 4799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:55.676Z"
+    "observedAt": "2026-04-22T07:37:36.086Z"
   },
   {
     "setId": "60503",
@@ -3240,7 +3490,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:58.147Z"
+    "observedAt": "2026-04-22T07:37:32.478Z"
   },
   {
     "setId": "60503",
@@ -3250,7 +3500,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:56.243Z"
+    "observedAt": "2026-04-22T07:37:34.289Z"
   },
   {
     "setId": "60503",
@@ -3260,7 +3510,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:57.190Z"
+    "observedAt": "2026-04-22T07:37:32.836Z"
   },
   {
     "setId": "60504",
@@ -3270,7 +3520,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:58.876Z"
+    "observedAt": "2026-04-22T07:37:31.779Z"
   },
   {
     "setId": "60504",
@@ -3280,7 +3530,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:36:59.659Z"
+    "observedAt": "2026-04-22T07:37:30.923Z"
   },
   {
     "setId": "60504",
@@ -3290,7 +3540,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9295,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:37:01.444Z"
+    "observedAt": "2026-04-22T07:37:29.609Z"
   },
   {
     "setId": "60504",
@@ -3300,17 +3550,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:37:00.444Z"
-  },
-  {
-    "setId": "60505",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4600,
-    "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:09.311Z"
+    "observedAt": "2026-04-22T07:37:29.971Z"
   },
   {
     "setId": "60505",
@@ -3320,7 +3560,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:10.242Z"
+    "observedAt": "2026-04-22T07:38:53.852Z"
+  },
+  {
+    "setId": "60505",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:38:54.624Z"
   },
   {
     "setId": "60505",
@@ -3330,7 +3580,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5795,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:13.348Z"
+    "observedAt": "2026-04-22T07:38:52.244Z"
   },
   {
     "setId": "60505",
@@ -3340,7 +3590,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:10.927Z"
+    "observedAt": "2026-04-22T07:38:52.584Z"
   },
   {
     "setId": "60508",
@@ -3350,7 +3600,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15000,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:13.760Z"
+    "observedAt": "2026-04-22T07:38:51.516Z"
   },
   {
     "setId": "60508",
@@ -3360,7 +3610,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15000,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:14.584Z"
+    "observedAt": "2026-04-22T07:38:48.835Z"
   },
   {
     "setId": "60508",
@@ -3370,7 +3620,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:16.744Z"
+    "observedAt": "2026-04-22T07:38:47.337Z"
   },
   {
     "setId": "60508",
@@ -3380,7 +3630,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:15.510Z"
+    "observedAt": "2026-04-22T07:38:47.729Z"
+  },
+  {
+    "setId": "71508",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6399,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:54.708Z"
+  },
+  {
+    "setId": "71508",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6399,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:53.921Z"
+  },
+  {
+    "setId": "71508",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6595,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:52.157Z"
+  },
+  {
+    "setId": "71508",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:52.547Z"
   },
   {
     "setId": "71512",
@@ -3390,7 +3680,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:17.810Z"
+    "observedAt": "2026-04-22T07:38:46.551Z"
   },
   {
     "setId": "71512",
@@ -3400,7 +3690,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5795,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:20.554Z"
+    "observedAt": "2026-04-22T07:38:44.158Z"
   },
   {
     "setId": "71512",
@@ -3410,7 +3700,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:19.113Z"
+    "observedAt": "2026-04-22T07:38:45.708Z"
   },
   {
     "setId": "71512",
@@ -3420,7 +3710,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:19.828Z"
+    "observedAt": "2026-04-22T07:38:44.592Z"
+  },
+  {
+    "setId": "71513",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:51.445Z"
+  },
+  {
+    "setId": "71513",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4095,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:49.050Z"
+  },
+  {
+    "setId": "71513",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:50.562Z"
+  },
+  {
+    "setId": "71513",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:49.376Z"
   },
   {
     "setId": "71514",
@@ -3430,7 +3760,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:21.784Z"
+    "observedAt": "2026-04-22T07:38:42.327Z"
   },
   {
     "setId": "71514",
@@ -3440,7 +3770,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:20.926Z"
+    "observedAt": "2026-04-22T07:38:43.600Z"
   },
   {
     "setId": "71514",
@@ -3450,7 +3780,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8200,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:23.436Z"
+    "observedAt": "2026-04-22T07:38:40.594Z"
   },
   {
     "setId": "71514",
@@ -3460,7 +3790,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:22.600Z"
+    "observedAt": "2026-04-22T07:38:40.965Z"
   },
   {
     "setId": "71515",
@@ -3470,7 +3800,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:18:59.271Z"
+    "observedAt": "2026-04-22T07:39:50.703Z"
   },
   {
     "setId": "71515",
@@ -3480,7 +3810,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:00.657Z"
+    "observedAt": "2026-04-22T07:39:49.783Z"
   },
   {
     "setId": "71515",
@@ -3490,7 +3820,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:03.069Z"
+    "observedAt": "2026-04-22T07:39:48.116Z"
   },
   {
     "setId": "71515",
@@ -3500,7 +3830,47 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:01.423Z"
+    "observedAt": "2026-04-22T07:39:48.507Z"
+  },
+  {
+    "setId": "71857",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5699,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:48.276Z"
+  },
+  {
+    "setId": "71857",
+    "merchantId": "intertoys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6200,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:47.277Z"
+  },
+  {
+    "setId": "71857",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6595,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:45.162Z"
+  },
+  {
+    "setId": "71857",
+    "merchantId": "lego-nl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:36:45.671Z"
   },
   {
     "setId": "71858",
@@ -3510,7 +3880,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:23.832Z"
+    "observedAt": "2026-04-22T07:38:40.089Z"
   },
   {
     "setId": "71858",
@@ -3520,7 +3890,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:24.598Z"
+    "observedAt": "2026-04-22T07:38:39.438Z"
   },
   {
     "setId": "71858",
@@ -3530,7 +3900,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8195,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:26.336Z"
+    "observedAt": "2026-04-22T07:38:36.722Z"
   },
   {
     "setId": "71858",
@@ -3540,7 +3910,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:25.494Z"
+    "observedAt": "2026-04-22T07:38:37.324Z"
   },
   {
     "setId": "71859",
@@ -3550,7 +3920,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:27.503Z"
+    "observedAt": "2026-04-22T07:38:33.302Z"
   },
   {
     "setId": "71859",
@@ -3560,7 +3930,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:26.668Z"
+    "observedAt": "2026-04-22T07:38:36.046Z"
   },
   {
     "setId": "71859",
@@ -3570,7 +3940,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8200,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:31.173Z"
+    "observedAt": "2026-04-22T07:38:31.837Z"
   },
   {
     "setId": "71859",
@@ -3580,7 +3950,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:28.826Z"
+    "observedAt": "2026-04-22T07:38:32.138Z"
   },
   {
     "setId": "71860",
@@ -3588,9 +3958,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 10800,
+    "totalPriceMinor": 10399,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:31.534Z"
+    "observedAt": "2026-04-22T07:38:30.659Z"
   },
   {
     "setId": "71860",
@@ -3600,7 +3970,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10800,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:33.425Z"
+    "observedAt": "2026-04-22T07:38:29.904Z"
   },
   {
     "setId": "71860",
@@ -3610,7 +3980,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10895,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:35.936Z"
+    "observedAt": "2026-04-22T07:38:28.872Z"
   },
   {
     "setId": "71860",
@@ -3620,7 +3990,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:34.490Z"
+    "observedAt": "2026-04-22T07:38:29.151Z"
   },
   {
     "setId": "71861",
@@ -3630,7 +4000,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 29999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:04.434Z"
+    "observedAt": "2026-04-22T07:39:45.236Z"
   },
   {
     "setId": "71861",
@@ -3640,17 +4010,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 31900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:03.521Z"
-  },
-  {
-    "setId": "72037",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 11900,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T17:57:52.628Z"
+    "observedAt": "2026-04-22T07:39:47.335Z"
   },
   {
     "setId": "72037",
@@ -3660,7 +4020,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T17:57:54.688Z"
+    "observedAt": "2026-04-22T07:44:09.889Z"
+  },
+  {
+    "setId": "72037",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12500,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:44:11.293Z"
   },
   {
     "setId": "72037",
@@ -3670,7 +4040,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T17:57:52.339Z"
+    "observedAt": "2026-04-22T07:44:12.055Z"
   },
   {
     "setId": "72037",
@@ -3680,7 +4050,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:13.396Z"
+    "observedAt": "2026-04-22T07:44:37.237Z"
   },
   {
     "setId": "72037",
@@ -3690,7 +4060,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T17:57:49.089Z"
+    "observedAt": "2026-04-22T07:44:12.843Z"
   },
   {
     "setId": "72050",
@@ -3700,7 +4070,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15500,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:57:51.505Z"
+    "observedAt": "2026-04-22T07:44:12.511Z"
   },
   {
     "setId": "72050",
@@ -3710,7 +4080,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T17:57:55.638Z"
+    "observedAt": "2026-04-22T07:44:08.066Z"
   },
   {
     "setId": "72152",
@@ -3720,7 +4090,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16900,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T14:19:08.302Z"
+    "observedAt": "2026-04-22T07:39:43.628Z"
   },
   {
     "setId": "72152",
@@ -3730,7 +4100,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:07.301Z"
+    "observedAt": "2026-04-22T07:39:43.967Z"
   },
   {
     "setId": "72153",
@@ -3740,7 +4110,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 64999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:09.411Z"
+    "observedAt": "2026-04-22T07:39:41.787Z"
   },
   {
     "setId": "72153",
@@ -3750,7 +4120,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 64999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:10.576Z"
+    "observedAt": "2026-04-22T07:39:40.797Z"
   },
   {
     "setId": "75192",
@@ -3758,9 +4128,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 63799,
+    "totalPriceMinor": 59999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:28.710Z"
+    "observedAt": "2026-04-22T07:46:18.355Z"
   },
   {
     "setId": "75192",
@@ -3768,9 +4138,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 63799,
+    "totalPriceMinor": 59999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T17:15:18.782Z"
+    "observedAt": "2026-04-22T07:44:26.378Z"
   },
   {
     "setId": "75192",
@@ -3780,7 +4150,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 67500,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:32.871Z"
+    "observedAt": "2026-04-22T07:46:14.077Z"
   },
   {
     "setId": "75192",
@@ -3790,7 +4160,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 84999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T18:14:45.876Z"
+    "observedAt": "2026-04-22T07:44:06.608Z"
   },
   {
     "setId": "75309",
@@ -3800,7 +4170,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 39999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T08:53:56.716Z"
+    "observedAt": "2026-04-22T07:43:23.271Z"
   },
   {
     "setId": "75309",
@@ -3810,7 +4180,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49100,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:53:55.950Z"
+    "observedAt": "2026-04-22T07:43:24.672Z"
   },
   {
     "setId": "75313",
@@ -3820,7 +4190,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 84999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:25:04.734Z"
+    "observedAt": "2026-04-22T07:44:16.002Z"
   },
   {
     "setId": "75313",
@@ -3828,9 +4198,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 104995,
+    "totalPriceMinor": 109995,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:58.301Z"
+    "observedAt": "2026-04-22T07:44:55.360Z"
   },
   {
     "setId": "75327",
@@ -3840,7 +4210,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T08:41:35.475Z"
+    "observedAt": "2026-04-22T07:43:46.300Z"
   },
   {
     "setId": "75327",
@@ -3848,9 +4218,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 8999,
+    "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:34.747Z"
+    "observedAt": "2026-04-22T07:43:47.403Z"
   },
   {
     "setId": "75328",
@@ -3860,7 +4230,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4599,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:37.428Z"
+    "observedAt": "2026-04-22T07:43:45.620Z"
   },
   {
     "setId": "75328",
@@ -3870,7 +4240,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:38.045Z"
+    "observedAt": "2026-04-22T07:43:44.685Z"
   },
   {
     "setId": "75328",
@@ -3880,7 +4250,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5895,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:40.272Z"
+    "observedAt": "2026-04-22T07:43:43.428Z"
   },
   {
     "setId": "75328",
@@ -3890,7 +4260,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:38.816Z"
+    "observedAt": "2026-04-22T07:43:43.710Z"
   },
   {
     "setId": "75331",
@@ -3900,7 +4270,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 59995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:53:59.889Z"
+    "observedAt": "2026-04-22T07:43:20.749Z"
   },
   {
     "setId": "75331",
@@ -3910,7 +4280,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 59999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T08:53:59.011Z"
+    "observedAt": "2026-04-22T07:43:21.131Z"
   },
   {
     "setId": "75331",
@@ -3920,7 +4290,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 63800,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:53:58.478Z"
+    "observedAt": "2026-04-22T07:43:22.464Z"
   },
   {
     "setId": "75343",
@@ -3930,7 +4300,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T08:50:15.870Z"
+    "observedAt": "2026-04-22T07:43:25.348Z"
   },
   {
     "setId": "75343",
@@ -3938,9 +4308,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 11195,
+    "totalPriceMinor": 10115,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:50:14.986Z"
+    "observedAt": "2026-04-22T07:43:27.305Z"
   },
   {
     "setId": "75349",
@@ -3950,7 +4320,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4399,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:43.872Z"
+    "observedAt": "2026-04-22T07:43:41.905Z"
   },
   {
     "setId": "75349",
@@ -3960,7 +4330,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:44.447Z"
+    "observedAt": "2026-04-22T07:43:40.940Z"
   },
   {
     "setId": "75349",
@@ -3970,7 +4340,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5895,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:46.413Z"
+    "observedAt": "2026-04-22T07:43:39.382Z"
   },
   {
     "setId": "75349",
@@ -3990,7 +4360,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T08:41:47.586Z"
+    "observedAt": "2026-04-22T07:43:37.218Z"
   },
   {
     "setId": "75350",
@@ -4000,7 +4370,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8295,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:46.852Z"
+    "observedAt": "2026-04-22T07:43:38.768Z"
   },
   {
     "setId": "75351",
@@ -4010,7 +4380,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T08:41:49.706Z"
+    "observedAt": "2026-04-22T07:43:34.095Z"
   },
   {
     "setId": "75351",
@@ -4020,7 +4390,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7820,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:49.131Z"
+    "observedAt": "2026-04-22T07:43:36.158Z"
   },
   {
     "setId": "75352",
@@ -4028,9 +4398,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 9495,
+    "totalPriceMinor": 9000,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:45.615Z"
+    "observedAt": "2026-04-22T07:43:10.688Z"
   },
   {
     "setId": "75352",
@@ -4040,17 +4410,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:44:46.598Z"
-  },
-  {
-    "setId": "75353",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7899,
-    "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:48.172Z"
+    "observedAt": "2026-04-22T07:43:07.104Z"
   },
   {
     "setId": "75353",
@@ -4060,7 +4420,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:44:49.210Z"
+    "observedAt": "2026-04-22T07:43:05.215Z"
+  },
+  {
+    "setId": "75353",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8699,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:43:06.304Z"
   },
   {
     "setId": "75355",
@@ -4070,17 +4440,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 22900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T10:27:19.036Z"
-  },
-  {
-    "setId": "75355",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 23249,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:22.889Z"
+    "observedAt": "2026-04-22T07:44:31.768Z"
   },
   {
     "setId": "75355",
@@ -4090,7 +4450,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:25:06.934Z"
+    "observedAt": "2026-04-22T07:44:14.124Z"
   },
   {
     "setId": "75355",
@@ -4100,7 +4460,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 23999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:22.682Z"
+    "observedAt": "2026-04-22T07:46:24.718Z"
+  },
+  {
+    "setId": "75355",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 24798,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:46:23.436Z"
   },
   {
     "setId": "75357",
@@ -4110,7 +4480,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:44:52.356Z"
+    "observedAt": "2026-04-22T07:43:01.030Z"
   },
   {
     "setId": "75357",
@@ -4120,7 +4490,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:51.530Z"
+    "observedAt": "2026-04-22T07:43:03.860Z"
   },
   {
     "setId": "75358",
@@ -4130,7 +4500,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2598,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:54.905Z"
+    "observedAt": "2026-04-22T07:42:59.049Z"
   },
   {
     "setId": "75358",
@@ -4140,7 +4510,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:56.721Z"
+    "observedAt": "2026-04-22T07:42:52.722Z"
   },
   {
     "setId": "75358",
@@ -4150,7 +4520,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:53.484Z"
+    "observedAt": "2026-04-22T07:43:00.174Z"
   },
   {
     "setId": "75358",
@@ -4160,7 +4530,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4299,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:44:55.917Z"
+    "observedAt": "2026-04-22T07:42:53.192Z"
   },
   {
     "setId": "75360",
@@ -4170,7 +4540,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3499,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:44:58.288Z"
+    "observedAt": "2026-04-22T07:42:50.578Z"
   },
   {
     "setId": "75360",
@@ -4178,9 +4548,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4401,
+    "totalPriceMinor": 5109,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:57.283Z"
+    "observedAt": "2026-04-22T07:42:51.912Z"
   },
   {
     "setId": "75361",
@@ -4190,7 +4560,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5299,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:45:00.065Z"
+    "observedAt": "2026-04-22T07:42:48.493Z"
   },
   {
     "setId": "75361",
@@ -4198,9 +4568,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 7899,
+    "totalPriceMinor": 7898,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:44:59.160Z"
+    "observedAt": "2026-04-22T07:42:49.685Z"
   },
   {
     "setId": "75362",
@@ -4210,7 +4580,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5998,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:45:02.307Z"
+    "observedAt": "2026-04-22T07:42:46.900Z"
   },
   {
     "setId": "75362",
@@ -4218,9 +4588,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 7399,
+    "totalPriceMinor": 7450,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:45:01.755Z"
+    "observedAt": "2026-04-22T07:42:47.665Z"
   },
   {
     "setId": "75362",
@@ -4230,7 +4600,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7499,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:45:03.372Z"
+    "observedAt": "2026-04-22T07:42:45.063Z"
   },
   {
     "setId": "75363",
@@ -4240,7 +4610,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 1599,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T09:45:05.878Z"
+    "observedAt": "2026-04-22T07:42:42.460Z"
   },
   {
     "setId": "75363",
@@ -4250,7 +4620,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T09:45:05.181Z"
+    "observedAt": "2026-04-22T07:42:44.187Z"
+  },
+  {
+    "setId": "75367",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 44999,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:46:20.674Z"
   },
   {
     "setId": "75367",
@@ -4260,17 +4640,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 48999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:25.550Z"
-  },
-  {
-    "setId": "75367",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 54900,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:26.351Z"
+    "observedAt": "2026-04-22T07:46:21.468Z"
   },
   {
     "setId": "75367",
@@ -4280,7 +4650,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 59900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:28.331Z"
+    "observedAt": "2026-04-22T07:46:19.353Z"
   },
   {
     "setId": "75367",
@@ -4290,7 +4660,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 64999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:27.018Z"
+    "observedAt": "2026-04-22T07:46:19.740Z"
   },
   {
     "setId": "75367",
@@ -4300,7 +4670,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 64999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:25.423Z"
+    "observedAt": "2026-04-22T07:46:22.293Z"
   },
   {
     "setId": "75371",
@@ -4310,7 +4680,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:54:00.363Z"
+    "observedAt": "2026-04-22T07:43:19.501Z"
   },
   {
     "setId": "75371",
@@ -4320,7 +4690,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:54:02.755Z"
+    "observedAt": "2026-04-22T07:43:16.406Z"
   },
   {
     "setId": "75371",
@@ -4330,7 +4700,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 20999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T08:54:01.038Z"
+    "observedAt": "2026-04-22T07:43:17.568Z"
   },
   {
     "setId": "75375",
@@ -4340,7 +4710,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5899,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:54:03.111Z"
+    "observedAt": "2026-04-22T07:43:15.729Z"
   },
   {
     "setId": "75375",
@@ -4350,7 +4720,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6099,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:54:03.717Z"
+    "observedAt": "2026-04-22T07:43:14.751Z"
   },
   {
     "setId": "75375",
@@ -4360,7 +4730,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:54:06.676Z"
+    "observedAt": "2026-04-22T07:43:11.559Z"
   },
   {
     "setId": "75375",
@@ -4370,7 +4740,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:54:04.586Z"
+    "observedAt": "2026-04-22T07:43:13.410Z"
   },
   {
     "setId": "75397",
@@ -4378,9 +4748,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 37499,
+    "totalPriceMinor": 37999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:05.019Z"
+    "observedAt": "2026-04-22T07:44:50.119Z"
   },
   {
     "setId": "75397",
@@ -4390,7 +4760,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 42500,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:04.110Z"
+    "observedAt": "2026-04-22T07:44:50.920Z"
   },
   {
     "setId": "75397",
@@ -4400,7 +4770,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 46900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:51.242Z"
+    "observedAt": "2026-04-22T07:46:58.166Z"
   },
   {
     "setId": "75397",
@@ -4410,7 +4780,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:00.507Z"
+    "observedAt": "2026-04-22T07:45:54.067Z"
   },
   {
     "setId": "75398",
@@ -4418,9 +4788,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 10499,
+    "totalPriceMinor": 8919,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:59.131Z"
+    "observedAt": "2026-04-22T07:44:54.587Z"
   },
   {
     "setId": "75398",
@@ -4430,7 +4800,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:00.215Z"
+    "observedAt": "2026-04-22T07:44:53.848Z"
   },
   {
     "setId": "75398",
@@ -4440,7 +4810,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:51.523Z"
+    "observedAt": "2026-04-22T07:46:57.763Z"
   },
   {
     "setId": "75398",
@@ -4450,7 +4820,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:13.230Z"
+    "observedAt": "2026-04-22T07:45:43.615Z"
   },
   {
     "setId": "75408",
@@ -4460,7 +4830,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:51.885Z"
+    "observedAt": "2026-04-22T07:43:33.262Z"
   },
   {
     "setId": "75408",
@@ -4470,7 +4840,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:52.982Z"
+    "observedAt": "2026-04-22T07:43:32.209Z"
   },
   {
     "setId": "75408",
@@ -4480,7 +4850,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:57.194Z"
+    "observedAt": "2026-04-22T07:43:27.956Z"
   },
   {
     "setId": "75408",
@@ -4490,7 +4860,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:53.866Z"
+    "observedAt": "2026-04-22T07:43:28.336Z"
   },
   {
     "setId": "75423",
@@ -4500,7 +4870,17 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:37.745Z"
+    "observedAt": "2026-04-22T07:38:27.638Z"
+  },
+  {
+    "setId": "75440",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4199,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:46:14.908Z"
   },
   {
     "setId": "75440",
@@ -4510,17 +4890,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:31.149Z"
-  },
-  {
-    "setId": "75440",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5198,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:32.043Z"
+    "observedAt": "2026-04-22T07:46:16.064Z"
   },
   {
     "setId": "75440",
@@ -4530,7 +4900,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5495,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:34.668Z"
+    "observedAt": "2026-04-22T07:46:13.335Z"
   },
   {
     "setId": "75440",
@@ -4540,7 +4910,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:30.031Z"
+    "observedAt": "2026-04-22T07:46:16.856Z"
   },
   {
     "setId": "75441",
@@ -4550,7 +4920,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5399,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:40.728Z"
+    "observedAt": "2026-04-22T07:38:22.907Z"
   },
   {
     "setId": "75441",
@@ -4560,7 +4930,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:41.561Z"
+    "observedAt": "2026-04-22T07:38:21.585Z"
   },
   {
     "setId": "75441",
@@ -4570,7 +4940,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6695,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:43.988Z"
+    "observedAt": "2026-04-22T07:38:20.045Z"
   },
   {
     "setId": "75441",
@@ -4580,7 +4950,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:42.508Z"
+    "observedAt": "2026-04-22T07:38:20.478Z"
   },
   {
     "setId": "75452",
@@ -4590,7 +4960,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:44.397Z"
+    "observedAt": "2026-04-22T07:38:19.190Z"
   },
   {
     "setId": "75452",
@@ -4600,7 +4970,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:45.082Z"
+    "observedAt": "2026-04-22T07:38:18.129Z"
   },
   {
     "setId": "75452",
@@ -4610,7 +4980,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:48.570Z"
+    "observedAt": "2026-04-22T07:38:15.064Z"
   },
   {
     "setId": "75452",
@@ -4620,7 +4990,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:46.584Z"
+    "observedAt": "2026-04-22T07:38:15.361Z"
   },
   {
     "setId": "75460",
@@ -4630,7 +5000,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:49.048Z"
+    "observedAt": "2026-04-22T07:38:14.272Z"
   },
   {
     "setId": "75460",
@@ -4640,7 +5010,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:50.147Z"
+    "observedAt": "2026-04-22T07:38:13.384Z"
   },
   {
     "setId": "76178",
@@ -4650,7 +5020,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 34999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T17:25:03.683Z"
+    "observedAt": "2026-04-22T07:44:17.092Z"
   },
   {
     "setId": "76178",
@@ -4658,9 +5028,19 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 45095,
+    "totalPriceMinor": 43395,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:01.368Z"
+    "observedAt": "2026-04-22T07:44:52.449Z"
+  },
+  {
+    "setId": "76261",
+    "merchantId": "bol",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 10495,
+    "availability": "in_stock",
+    "observedAt": "2026-04-22T07:42:32.737Z"
   },
   {
     "setId": "76261",
@@ -4670,17 +5050,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10499,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T10:04:44.049Z"
-  },
-  {
-    "setId": "76261",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 11495,
-    "availability": "in_stock",
-    "observedAt": "2026-04-20T10:04:43.238Z"
+    "observedAt": "2026-04-22T07:42:31.707Z"
   },
   {
     "setId": "76262",
@@ -4690,7 +5060,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 20999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T10:04:45.731Z"
+    "observedAt": "2026-04-22T07:42:30.218Z"
   },
   {
     "setId": "76262",
@@ -4698,9 +5068,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 22495,
+    "totalPriceMinor": 23495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T10:04:45.098Z"
+    "observedAt": "2026-04-22T07:42:30.916Z"
   },
   {
     "setId": "76269",
@@ -4710,7 +5080,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 42999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-19T18:23:32.363Z"
+    "observedAt": "2026-04-22T07:44:04.478Z"
   },
   {
     "setId": "76269",
@@ -4720,7 +5090,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T10:27:18.497Z"
+    "observedAt": "2026-04-22T07:44:32.270Z"
   },
   {
     "setId": "76269",
@@ -4729,8 +5099,8 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 49900,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:56.451Z"
+    "availability": "out_of_stock",
+    "observedAt": "2026-04-22T07:44:59.031Z"
   },
   {
     "setId": "76269",
@@ -4740,7 +5110,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T10:28:56.377Z"
+    "observedAt": "2026-04-22T07:44:28.628Z"
   },
   {
     "setId": "76269",
@@ -4748,9 +5118,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 54975,
+    "totalPriceMinor": 55000,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:55.449Z"
+    "observedAt": "2026-04-22T07:45:00.141Z"
   },
   {
     "setId": "76294",
@@ -4760,7 +5130,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 27999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T10:28:07.062Z"
+    "observedAt": "2026-04-22T07:44:30.618Z"
   },
   {
     "setId": "76294",
@@ -4770,7 +5140,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 28000,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:02.367Z"
+    "observedAt": "2026-04-22T07:44:51.710Z"
   },
   {
     "setId": "76294",
@@ -4780,7 +5150,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 32999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T10:28:54.814Z"
+    "observedAt": "2026-04-22T07:44:29.664Z"
   },
   {
     "setId": "76313",
@@ -4788,9 +5158,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 7668,
+    "totalPriceMinor": 7699,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:56.634Z"
+    "observedAt": "2026-04-22T07:44:58.155Z"
   },
   {
     "setId": "76313",
@@ -4800,7 +5170,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8195,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:52.198Z"
+    "observedAt": "2026-04-22T07:46:57.423Z"
   },
   {
     "setId": "76313",
@@ -4810,7 +5180,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:57.260Z"
+    "observedAt": "2026-04-22T07:44:57.314Z"
   },
   {
     "setId": "76313",
@@ -4820,7 +5190,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:58.175Z"
+    "observedAt": "2026-04-22T07:44:56.005Z"
   },
   {
     "setId": "76313",
@@ -4830,7 +5200,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:16.291Z"
+    "observedAt": "2026-04-22T07:45:41.533Z"
   },
   {
     "setId": "76330",
@@ -4840,7 +5210,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6300,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:21:55.362Z"
+    "observedAt": "2026-04-22T07:44:03.464Z"
   },
   {
     "setId": "76330",
@@ -4850,7 +5220,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6500,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:21:55.821Z"
+    "observedAt": "2026-04-22T07:44:02.469Z"
   },
   {
     "setId": "76330",
@@ -4860,7 +5230,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6695,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:21:57.546Z"
+    "observedAt": "2026-04-22T07:44:01.094Z"
   },
   {
     "setId": "76330",
@@ -4870,7 +5240,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T20:21:56.528Z"
+    "observedAt": "2026-04-22T07:44:01.499Z"
   },
   {
     "setId": "76341",
@@ -4880,7 +5250,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:37:02.137Z"
+    "observedAt": "2026-04-22T07:37:28.526Z"
   },
   {
     "setId": "76341",
@@ -4890,7 +5260,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:37:06.787Z"
+    "observedAt": "2026-04-22T07:37:23.805Z"
   },
   {
     "setId": "76341",
@@ -4900,7 +5270,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5099,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:37:02.908Z"
+    "observedAt": "2026-04-22T07:37:25.273Z"
   },
   {
     "setId": "76341",
@@ -4910,7 +5280,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:37:04.114Z"
+    "observedAt": "2026-04-22T07:37:24.101Z"
   },
   {
     "setId": "76342",
@@ -4920,7 +5290,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:51.287Z"
+    "observedAt": "2026-04-22T07:38:12.608Z"
   },
   {
     "setId": "76342",
@@ -4930,7 +5300,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:53.194Z"
+    "observedAt": "2026-04-22T07:38:11.176Z"
   },
   {
     "setId": "76342",
@@ -4940,7 +5310,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:52.020Z"
+    "observedAt": "2026-04-22T07:38:11.562Z"
   },
   {
     "setId": "76344",
@@ -4950,7 +5320,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 10200,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:54.319Z"
+    "observedAt": "2026-04-22T07:38:10.516Z"
   },
   {
     "setId": "76344",
@@ -4960,7 +5330,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11295,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:57.237Z"
+    "observedAt": "2026-04-22T07:38:07.897Z"
   },
   {
     "setId": "76344",
@@ -4970,7 +5340,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:55.341Z"
+    "observedAt": "2026-04-22T07:38:09.311Z"
   },
   {
     "setId": "76344",
@@ -4980,7 +5350,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:56.582Z"
+    "observedAt": "2026-04-22T07:38:08.244Z"
   },
   {
     "setId": "76405",
@@ -4990,7 +5360,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 49999,
     "availability": "out_of_stock",
-    "observedAt": "2026-04-20T10:04:49.920Z"
+    "observedAt": "2026-04-22T07:42:26.967Z"
   },
   {
     "setId": "76405",
@@ -4998,9 +5368,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 72030,
+    "totalPriceMinor": 67500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T10:04:49.126Z"
+    "observedAt": "2026-04-22T07:42:29.592Z"
   },
   {
     "setId": "76417",
@@ -5018,9 +5388,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 48900,
+    "totalPriceMinor": 52999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:31:56.916Z"
+    "observedAt": "2026-04-22T07:46:54.051Z"
   },
   {
     "setId": "76419",
@@ -5030,7 +5400,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13129,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:24.327Z"
+    "observedAt": "2026-04-22T07:45:34.398Z"
   },
   {
     "setId": "76419",
@@ -5040,7 +5410,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:13.097Z"
+    "observedAt": "2026-04-22T07:44:38.656Z"
   },
   {
     "setId": "76419",
@@ -5050,7 +5420,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:30.016Z"
+    "observedAt": "2026-04-22T07:45:28.503Z"
   },
   {
     "setId": "76419",
@@ -5060,7 +5430,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:18.275Z"
+    "observedAt": "2026-04-22T07:45:38.314Z"
   },
   {
     "setId": "76419",
@@ -5070,7 +5440,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:30.894Z"
+    "observedAt": "2026-04-22T07:45:27.296Z"
   },
   {
     "setId": "76429",
@@ -5080,7 +5450,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7490,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:33.632Z"
+    "observedAt": "2026-04-22T07:45:23.114Z"
   },
   {
     "setId": "76429",
@@ -5090,7 +5460,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8295,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:36.073Z"
+    "observedAt": "2026-04-22T07:46:12.016Z"
   },
   {
     "setId": "76429",
@@ -5100,7 +5470,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8299,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:36.084Z"
+    "observedAt": "2026-04-22T07:45:20.700Z"
   },
   {
     "setId": "76429",
@@ -5110,7 +5480,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8499,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:34.536Z"
+    "observedAt": "2026-04-22T07:45:22.101Z"
   },
   {
     "setId": "76429",
@@ -5120,7 +5490,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:01.884Z"
+    "observedAt": "2026-04-22T07:45:52.543Z"
   },
   {
     "setId": "76435",
@@ -5128,9 +5498,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 15200,
+    "totalPriceMinor": 15300,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:25.520Z"
+    "observedAt": "2026-04-22T07:45:33.641Z"
   },
   {
     "setId": "76435",
@@ -5140,7 +5510,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 16900,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:36.822Z"
+    "observedAt": "2026-04-22T07:46:10.853Z"
   },
   {
     "setId": "76435",
@@ -5150,7 +5520,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 17999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:29.149Z"
+    "observedAt": "2026-04-22T07:45:29.555Z"
   },
   {
     "setId": "76435",
@@ -5170,7 +5540,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:29.881Z"
+    "observedAt": "2026-04-22T07:45:29.440Z"
   },
   {
     "setId": "76437",
@@ -5180,7 +5550,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 19999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:17.045Z"
+    "observedAt": "2026-04-22T07:44:35.064Z"
   },
   {
     "setId": "76437",
@@ -5189,8 +5559,8 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 23900,
-    "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:16.755Z"
+    "availability": "out_of_stock",
+    "observedAt": "2026-04-22T07:44:36.181Z"
   },
   {
     "setId": "76437",
@@ -5200,7 +5570,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 25000,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:15.915Z"
+    "observedAt": "2026-04-22T07:44:36.582Z"
   },
   {
     "setId": "76437",
@@ -5210,7 +5580,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 25999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:34:17.907Z"
+    "observedAt": "2026-04-22T07:44:34.042Z"
   },
   {
     "setId": "76453",
@@ -5220,7 +5590,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:28.261Z"
+    "observedAt": "2026-04-22T07:45:30.342Z"
   },
   {
     "setId": "76453",
@@ -5230,7 +5600,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12495,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:32:36.441Z"
+    "observedAt": "2026-04-22T07:46:11.624Z"
   },
   {
     "setId": "76453",
@@ -5240,7 +5610,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:27.152Z"
+    "observedAt": "2026-04-22T07:45:31.483Z"
   },
   {
     "setId": "76453",
@@ -5250,7 +5620,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:26.879Z"
+    "observedAt": "2026-04-22T07:45:32.332Z"
   },
   {
     "setId": "76453",
@@ -5260,7 +5630,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 14999,
     "availability": "in_stock",
-    "observedAt": "2026-04-19T09:33:15.210Z"
+    "observedAt": "2026-04-22T07:45:42.733Z"
   },
   {
     "setId": "76463",
@@ -5270,7 +5640,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7209,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:57.800Z"
+    "observedAt": "2026-04-22T07:38:07.179Z"
   },
   {
     "setId": "76463",
@@ -5280,7 +5650,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:12:59.066Z"
+    "observedAt": "2026-04-22T07:38:06.402Z"
   },
   {
     "setId": "76463",
@@ -5290,7 +5660,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8395,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:02.977Z"
+    "observedAt": "2026-04-22T07:38:04.848Z"
   },
   {
     "setId": "76463",
@@ -5300,7 +5670,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:02.228Z"
+    "observedAt": "2026-04-22T07:38:05.271Z"
   },
   {
     "setId": "76464",
@@ -5310,7 +5680,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4600,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:04.610Z"
+    "observedAt": "2026-04-22T07:38:03.258Z"
   },
   {
     "setId": "76464",
@@ -5320,7 +5690,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:03.730Z"
+    "observedAt": "2026-04-22T07:38:04.216Z"
   },
   {
     "setId": "76464",
@@ -5330,7 +5700,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 4995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:07.348Z"
+    "observedAt": "2026-04-22T07:38:01.800Z"
   },
   {
     "setId": "76464",
@@ -5340,7 +5710,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:06.398Z"
+    "observedAt": "2026-04-22T07:38:02.224Z"
   },
   {
     "setId": "76466",
@@ -5350,7 +5720,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 12400,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:12.341Z"
+    "observedAt": "2026-04-22T07:39:40.252Z"
   },
   {
     "setId": "76466",
@@ -5360,7 +5730,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13495,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:14.908Z"
+    "observedAt": "2026-04-22T07:39:37.784Z"
   },
   {
     "setId": "76466",
@@ -5370,7 +5740,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 13999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:13.015Z"
+    "observedAt": "2026-04-22T07:39:39.221Z"
   },
   {
     "setId": "76466",
@@ -5380,7 +5750,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 15999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:13.868Z"
+    "observedAt": "2026-04-22T07:39:38.210Z"
   },
   {
     "setId": "76467",
@@ -5390,7 +5760,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7700,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:07.630Z"
+    "observedAt": "2026-04-22T07:38:01.302Z"
   },
   {
     "setId": "76467",
@@ -5400,7 +5770,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:08.441Z"
+    "observedAt": "2026-04-22T07:38:00.551Z"
   },
   {
     "setId": "76467",
@@ -5410,7 +5780,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 8395,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:10.211Z"
+    "observedAt": "2026-04-22T07:37:59.456Z"
   },
   {
     "setId": "76467",
@@ -5420,7 +5790,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 9999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:09.192Z"
+    "observedAt": "2026-04-22T07:37:59.737Z"
   },
   {
     "setId": "76470",
@@ -5430,7 +5800,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5799,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:10.536Z"
+    "observedAt": "2026-04-22T07:37:58.494Z"
   },
   {
     "setId": "76470",
@@ -5440,7 +5810,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6000,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:11.668Z"
+    "observedAt": "2026-04-22T07:37:57.588Z"
   },
   {
     "setId": "76470",
@@ -5450,7 +5820,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 6695,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:15.909Z"
+    "observedAt": "2026-04-22T07:37:55.659Z"
   },
   {
     "setId": "76470",
@@ -5460,7 +5830,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 7999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:13.160Z"
+    "observedAt": "2026-04-22T07:37:56.353Z"
   },
   {
     "setId": "77093",
@@ -5470,7 +5840,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 11999,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T17:13:17.623Z"
+    "observedAt": "2026-04-22T07:37:53.291Z"
   },
   {
     "setId": "77243",
@@ -5480,7 +5850,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2195,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:26.121Z"
+    "observedAt": "2026-04-22T07:43:48.007Z"
   },
   {
     "setId": "77243",
@@ -5490,7 +5860,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2499,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:23.533Z"
+    "observedAt": "2026-04-22T07:43:49.822Z"
   },
   {
     "setId": "77243",
@@ -5500,7 +5870,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 2699,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:24.774Z"
+    "observedAt": "2026-04-22T07:43:48.499Z"
   },
   {
     "setId": "77243",
@@ -5510,7 +5880,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 3200,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T06:38:22.760Z"
+    "observedAt": "2026-04-22T07:43:50.884Z"
   },
   {
     "setId": "910054",
@@ -5520,7 +5890,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 37995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:15.337Z"
+    "observedAt": "2026-04-22T07:39:37.130Z"
   },
   {
     "setId": "910055",
@@ -5528,9 +5898,9 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 41999,
+    "totalPriceMinor": 44995,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:16.014Z"
+    "observedAt": "2026-04-22T07:39:36.587Z"
   },
   {
     "setId": "910057",
@@ -5540,7 +5910,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 34900,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:16.759Z"
+    "observedAt": "2026-04-22T07:39:35.922Z"
   },
   {
     "setId": "910058",
@@ -5550,7 +5920,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 37500,
     "availability": "in_stock",
-    "observedAt": "2026-04-20T14:19:17.549Z"
+    "observedAt": "2026-04-22T07:39:35.153Z"
   }
 ]`;
 

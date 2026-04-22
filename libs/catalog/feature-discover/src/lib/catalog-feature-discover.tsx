@@ -1,25 +1,14 @@
 import type { ReactNode } from 'react';
 import {
-  CatalogQuickFilterBar,
   CatalogSectionShell,
-  CatalogSetCard,
-  type CatalogSetCardCtaMode,
-  CatalogSetCardCollection,
   CatalogSetCardRailSection,
+  type CatalogSetCardCtaMode,
   type CatalogSetCardPriceContext,
 } from '@lego-platform/catalog/ui';
-import {
-  type CatalogBrowseThemeGroup,
-  type CatalogHomepageSetCard,
-  type CatalogQuickFilterKey,
-  listCatalogQuickFilterOptions,
-  matchesCatalogQuickFilter,
-  normalizeCatalogQuickFilterKey,
-} from '@lego-platform/catalog/util';
+import { type CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
   buildWebPath,
-  buildThemePath,
   webPathnames,
 } from '@lego-platform/shared/config';
 import { ActionLink, SectionHeading } from '@lego-platform/shared/ui';
@@ -33,20 +22,6 @@ function formatSetCount(count: number): string {
   return `${count} set${count === 1 ? '' : 's'}`;
 }
 
-function formatThemeLaneCount({
-  shownCount,
-  totalCount,
-}: {
-  shownCount: number;
-  totalCount: number;
-}): string {
-  if (shownCount >= totalCount) {
-    return formatSetCount(totalCount);
-  }
-
-  return `${shownCount} getoond · ${totalCount} totaal`;
-}
-
 function renderCanonicalNames(names: readonly string[]): ReactNode {
   return names.map((name, index) => (
     <span key={`${name}-${index}`}>
@@ -58,48 +33,10 @@ function renderCanonicalNames(names: readonly string[]): ReactNode {
   ));
 }
 
-export interface CatalogFeatureDiscoverDealItem extends CatalogHomepageSetCard {
+export interface CatalogFeatureDiscoverRailItem extends CatalogHomepageSetCard {
   actions?: ReactNode;
   ctaMode?: CatalogSetCardCtaMode;
   priceContext?: CatalogSetCardPriceContext;
-}
-
-function buildDiscoverFilterHref(filter: CatalogQuickFilterKey): string {
-  const discoverPath = buildWebPath(webPathnames.discover);
-
-  if (filter === 'all') {
-    return discoverPath;
-  }
-
-  const searchParams = new URLSearchParams({
-    filter,
-  });
-
-  return `${discoverPath}?${searchParams.toString()}`;
-}
-
-const primaryDiscoverQuickFilters = new Set<CatalogQuickFilterKey>([
-  'all',
-  'best-deals',
-  'with-minifigures',
-]);
-
-function filterDiscoverSetCards<T extends CatalogHomepageSetCard>({
-  filter,
-  setCards,
-  strongDealSetIds,
-}: {
-  filter: CatalogQuickFilterKey;
-  setCards: readonly T[];
-  strongDealSetIds: readonly string[];
-}): T[] {
-  return setCards.filter((setCard) =>
-    matchesCatalogQuickFilter({
-      filter,
-      setCard,
-      strongDealSetIds,
-    }),
-  );
 }
 
 function formatDiscoverFanContext(
@@ -112,108 +49,34 @@ function formatDiscoverFanContext(
 }
 
 export function CatalogFeatureDiscover({
-  activeFilter,
-  bestDealSetIds = [],
-  characterSetCards,
-  dealSetCards = [],
-  highlightSetCards,
-  reviewedSetIds = [],
-  themeGroups,
+  bestDealSetCards = [],
+  recentPriceChangeSetCards,
+  recentlyReleasedSetCards,
   totalSetCount,
   totalThemeCount,
 }: {
-  activeFilter?: string;
-  bestDealSetIds?: readonly string[];
-  characterSetCards?: readonly CatalogHomepageSetCard[];
-  dealSetCards?: readonly CatalogFeatureDiscoverDealItem[];
-  highlightSetCards?: readonly CatalogHomepageSetCard[];
-  reviewedSetIds?: readonly string[];
-  themeGroups?: readonly CatalogBrowseThemeGroup[];
+  bestDealSetCards?: readonly CatalogFeatureDiscoverRailItem[];
+  recentPriceChangeSetCards?: readonly CatalogFeatureDiscoverRailItem[];
+  recentlyReleasedSetCards?: readonly CatalogFeatureDiscoverRailItem[];
   totalSetCount?: number;
   totalThemeCount?: number;
 }) {
-  const normalizedFilter = normalizeCatalogQuickFilterKey(activeFilter);
-  const resolvedCharacterSetCards = characterSetCards ?? [];
-  const resolvedHighlightSetCards = highlightSetCards ?? [];
-  const resolvedThemeGroups = themeGroups ?? [];
+  const resolvedRecentPriceChangeSetCards = recentPriceChangeSetCards ?? [];
+  const resolvedRecentlyReleasedSetCards = recentlyReleasedSetCards ?? [];
   const resolvedTotalSetCount = totalSetCount ?? 0;
   const resolvedTotalThemeCount = totalThemeCount ?? 0;
-  const activeQuickFilterOption = listCatalogQuickFilterOptions().find(
-    (catalogQuickFilterOption) =>
-      catalogQuickFilterOption.key === normalizedFilter,
-  );
-  const quickFilterItems = listCatalogQuickFilterOptions().map(
-    (catalogQuickFilterOption) => ({
-      href: buildDiscoverFilterHref(catalogQuickFilterOption.key),
-      isActive: normalizedFilter === catalogQuickFilterOption.key,
-      key: catalogQuickFilterOption.key,
-      label: catalogQuickFilterOption.label,
-    }),
-  );
-  const primaryQuickFilterItems = quickFilterItems.filter((quickFilterItem) =>
-    primaryDiscoverQuickFilters.has(quickFilterItem.key),
-  );
-  const moreQuickFilterItems = quickFilterItems.filter(
-    (quickFilterItem) => !primaryDiscoverQuickFilters.has(quickFilterItem.key),
-  );
-  const hasActiveMoreFilter = moreQuickFilterItems.some(
-    (quickFilterItem) => quickFilterItem.isActive,
-  );
-  const activeMoreFilterLabel = moreQuickFilterItems.find(
-    (quickFilterItem) => quickFilterItem.isActive,
-  )?.label;
-  const filteredDealSetCards = filterDiscoverSetCards({
-    filter: normalizedFilter,
-    setCards: dealSetCards,
-    strongDealSetIds: bestDealSetIds,
-  });
-  const filteredCharacterSetCards = filterDiscoverSetCards({
-    filter: normalizedFilter,
-    setCards: resolvedCharacterSetCards,
-    strongDealSetIds: bestDealSetIds,
-  });
-  const filteredHighlightSetCards = filterDiscoverSetCards({
-    filter: normalizedFilter,
-    setCards: resolvedHighlightSetCards,
-    strongDealSetIds: bestDealSetIds,
-  });
-  const filteredThemeGroups = resolvedThemeGroups
-    .map((themeGroup) => ({
-      ...themeGroup,
-      setCards: filterDiscoverSetCards({
-        filter: normalizedFilter,
-        setCards: themeGroup.setCards,
-        strongDealSetIds: bestDealSetIds,
-      }),
-    }))
-    .filter((themeGroup) => themeGroup.setCards.length > 0);
   const hasFilteredContent =
-    filteredDealSetCards.length > 0 ||
-    filteredCharacterSetCards.length > 0 ||
-    filteredHighlightSetCards.length > 0 ||
-    filteredThemeGroups.length > 0;
-
-  if (!resolvedThemeGroups.length) {
-    return (
-      <CatalogSectionShell
-        as="section"
-        className={styles.emptyState}
-        description="We breiden de bladercatalogus nog verder uit."
-        eyebrow="Ontdekken"
-        padding="default"
-        title="Ontdekken wordt nog aangevuld"
-        tone="muted"
-      />
-    );
-  }
+    bestDealSetCards.length > 0 ||
+    resolvedRecentPriceChangeSetCards.length > 0 ||
+    resolvedRecentlyReleasedSetCards.length > 0;
 
   return (
     <div className={styles.page}>
       <section className={styles.intro}>
         <SectionHeading
-          description="Begin met de duidelijkste deals van nu en ga daarna verder naar de sterkste franchise-, vlaggenschip- en verzamelaarsvriendelijke themalijnen."
+          description="Begin waar prijzen echt bewegen, kijk daarna naar de sterkste deals van nu en eindig bij de sets die net nieuw genoeg zijn om te volgen."
           eyebrow="Ontdekken"
-          title="Open eerst de sterkste sets"
+          title="Ontdek waar het nu echt beweegt"
           titleAs="h1"
         />
         <p className={styles.introMeta}>
@@ -227,57 +90,14 @@ export function CatalogFeatureDiscover({
         </div>
       </section>
 
-      <CatalogSectionShell
-        as="section"
-        bodyClassName={styles.filterSectionBody}
-        bodySpacing="compact"
-        className={styles.filterSection}
-        description="Deze filters werken op de sets hieronder. Pak snelle filters voor deals of minifigs en open meer filters als je meteen een thema wilt uitlichten."
-        eyebrow="Filters"
-        padding="default"
-        spacing="compact"
-        title="Kijk eerst hoe je wilt bladeren"
-        titleAs="h2"
-        tone="muted"
-      >
-        <div className={styles.filterControls}>
-          <CatalogQuickFilterBar
-            ariaLabel="Snelle filters voor ontdekken"
-            className={styles.primaryFilterBar}
-            items={primaryQuickFilterItems}
-          />
-          <details
-            className={styles.moreFilters}
-            open={hasActiveMoreFilter ? true : undefined}
-          >
-            <summary className={styles.moreFiltersSummary}>
-              Meer filters
-              {activeMoreFilterLabel ? (
-                <span className={styles.moreFiltersActiveLabel}>
-                  {activeMoreFilterLabel}
-                </span>
-              ) : null}
-            </summary>
-            <div className={styles.moreFiltersPanel}>
-              <p className={styles.moreFiltersHeading}>Themafilters</p>
-              <CatalogQuickFilterBar
-                ariaLabel="Meer filters voor ontdekken"
-                className={styles.moreFiltersBar}
-                items={moreQuickFilterItems}
-              />
-            </div>
-          </details>
-        </div>
-      </CatalogSectionShell>
-
       {!hasFilteredContent ? (
         <CatalogSectionShell
           as="section"
           className={styles.emptyState}
-          description="Probeer een andere snelle filter of open een volledige themalijn om verder door de huidige publieke catalogus te bladeren."
+          description="Deze rails vullen zich zodra prijsbeweging, duidelijke deals en nieuwe releases breed genoeg in beeld zijn."
           eyebrow="Ontdekken"
           padding="default"
-          title={`Geen treffers in ${activeQuickFilterOption?.label ?? 'deze filter'}`}
+          title="Ontdekken wordt verder gevuld"
           titleAs="h2"
           tone="muted"
         >
@@ -292,15 +112,41 @@ export function CatalogFeatureDiscover({
         </CatalogSectionShell>
       ) : null}
 
-      {hasFilteredContent && filteredDealSetCards.length ? (
+      {hasFilteredContent && resolvedRecentPriceChangeSetCards.length ? (
         <CatalogSetCardRailSection
           as="section"
-          ariaLabel="Beste deals om eerst te bekijken"
+          ariaLabel="Waar prijzen recent zijn veranderd"
+          bodySpacing="relaxed"
+          className={styles.featuredSection}
+          description="Sets waar recent iets bewoog in prijs, zodat je sneller ziet waar het koopmoment verandert."
+          eyebrow="Prijsbeweging"
+          items={resolvedRecentPriceChangeSetCards.map((setCard) => ({
+            actions: setCard.actions,
+            ctaMode: setCard.ctaMode,
+            href: buildSetDetailPath(setCard.slug),
+            id: setCard.id,
+            priceContext: setCard.priceContext,
+            setSummary: setCard,
+            supportingNote: formatDiscoverFanContext(setCard),
+          }))}
+          padding="default"
+          signal={formatSetCount(resolvedRecentPriceChangeSetCards.length)}
+          title="Waar prijzen recent zijn veranderd"
+          titleAs="h2"
+          tone="muted"
+          variant="compact"
+        />
+      ) : null}
+
+      {hasFilteredContent && bestDealSetCards.length ? (
+        <CatalogSetCardRailSection
+          as="section"
+          ariaLabel="Beste deals nu"
           bodySpacing="relaxed"
           className={styles.dealSection}
-          description="De duidelijkste reviewed prijsverschillen tussen de sterkste vlaggenschepen en publieksmagneten die al in de catalogus staan."
+          description="Sets waar de huidige prijs nu duidelijk afsteekt tegen wat we meestal of elders zien."
           eyebrow="Deals"
-          items={filteredDealSetCards.map((dealSetCard) => ({
+          items={bestDealSetCards.map((dealSetCard) => ({
             actions: dealSetCard.actions,
             ctaMode: dealSetCard.ctaMode,
             href: buildSetDetailPath(dealSetCard.slug),
@@ -310,114 +156,38 @@ export function CatalogFeatureDiscover({
             supportingNote: formatDiscoverFanContext(dealSetCard),
           }))}
           padding="default"
-          signal={formatSetCount(filteredDealSetCards.length)}
-          title="Beste deals om eerst te bekijken"
+          signal={formatSetCount(bestDealSetCards.length)}
+          title="Beste deals nu"
           titleAs="h2"
           tone="default"
           variant="featured"
         />
       ) : null}
 
-      {hasFilteredContent && filteredCharacterSetCards.length ? (
+      {hasFilteredContent && resolvedRecentlyReleasedSetCards.length ? (
         <CatalogSetCardRailSection
           as="section"
-          ariaLabel="Iconische personages en castfavorieten"
+          ariaLabel="Net uitgebracht"
           bodySpacing="relaxed"
           className={styles.featuredSection}
-          description="Sets waarbij de cast deel van de aantrekkingskracht is, van grote franchise-ankers tot verhaalgedreven favorieten voor verzamelaars."
-          eyebrow="Personages"
-          items={filteredCharacterSetCards.map((characterSetCard) => ({
-            href: buildSetDetailPath(characterSetCard.slug),
-            id: characterSetCard.id,
-            setSummary: characterSetCard,
-            supportingNote: formatDiscoverFanContext(characterSetCard),
+          description="Nieuwe sets die net in de catalogus zitten en nu interessant worden om te volgen of vergelijken."
+          eyebrow="Nieuw"
+          items={resolvedRecentlyReleasedSetCards.map((setCard) => ({
+            actions: setCard.actions,
+            ctaMode: setCard.ctaMode,
+            href: buildSetDetailPath(setCard.slug),
+            id: setCard.id,
+            priceContext: setCard.priceContext,
+            setSummary: setCard,
+            supportingNote: formatDiscoverFanContext(setCard),
           }))}
           padding="default"
-          signal={formatSetCount(filteredCharacterSetCards.length)}
-          title="Iconische personages en castfavorieten"
+          signal={formatSetCount(resolvedRecentlyReleasedSetCards.length)}
+          title="Net uitgebracht"
           titleAs="h2"
           tone="muted"
           variant="compact"
         />
-      ) : null}
-
-      {hasFilteredContent && filteredHighlightSetCards.length ? (
-        <CatalogSetCardRailSection
-          as="section"
-          ariaLabel="Eerst het openen waard"
-          bodySpacing="relaxed"
-          className={styles.featuredSection}
-          description="Een strakkere mix van premium vlaggenschepen, iconische franchises en toegankelijkere sets die het waard zijn om eerst te openen."
-          eyebrow="Highlights"
-          items={filteredHighlightSetCards.map((highlightSetCard) => ({
-            href: buildSetDetailPath(highlightSetCard.slug),
-            id: highlightSetCard.id,
-            setSummary: highlightSetCard,
-            supportingNote: formatDiscoverFanContext(highlightSetCard),
-          }))}
-          padding="default"
-          signal={formatSetCount(filteredHighlightSetCards.length)}
-          title="Eerst het openen waard"
-          titleAs="h2"
-          tone="muted"
-          variant="compact"
-        />
-      ) : null}
-
-      {hasFilteredContent ? (
-        <div className={styles.themeSections}>
-          {filteredThemeGroups.map((themeGroup, index) => (
-            <CatalogSectionShell
-              as="section"
-              bodySpacing="default"
-              className={styles.themeSection}
-              eyebrow="Thema"
-              key={themeGroup.theme}
-              padding="default"
-              signal={formatThemeLaneCount({
-                shownCount: themeGroup.setCards.length,
-                totalCount:
-                  themeGroup.totalSetCount ?? themeGroup.setCards.length,
-              })}
-              title={
-                <span
-                  className={`${styles.themeTitle} notranslate`}
-                  translate="no"
-                >
-                  {themeGroup.theme}
-                </span>
-              }
-              titleAs="h2"
-              tone={index % 2 === 0 ? 'default' : 'muted'}
-              utility={
-                <ActionLink
-                  className={styles.themeAction}
-                  href={buildThemePath(themeGroup.slug)}
-                  tone="secondary"
-                >
-                  Open volledig thema
-                </ActionLink>
-              }
-              utilityPlacement="below-heading"
-            >
-              <CatalogSetCardCollection
-                className={styles.themeGrid}
-                gridMode="browse"
-                variant="compact"
-              >
-                {themeGroup.setCards.map((setCard) => (
-                  <CatalogSetCard
-                    href={buildSetDetailPath(setCard.slug)}
-                    key={setCard.id}
-                    setSummary={setCard}
-                    showThemeBadge={false}
-                    variant="compact"
-                  />
-                ))}
-              </CatalogSetCardCollection>
-            </CatalogSectionShell>
-          ))}
-        </div>
       ) : null}
     </div>
   );

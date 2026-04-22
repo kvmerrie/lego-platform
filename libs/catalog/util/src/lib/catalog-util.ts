@@ -40,6 +40,8 @@ export interface CatalogDiscoverySignal {
   nextBestPriceMinor?: number;
   observedAt: string;
   priceSpreadMinor: number;
+  recentReferencePriceChangeMinor?: number;
+  recentReferencePriceChangedAt?: string;
   referenceDeltaMinor?: number;
 }
 

@@ -12,7 +12,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:32:11.030Z"
+    "observedAt": "2026-04-22T07:46:33.824Z"
   },
   {
     "setId": "10294",
@@ -24,7 +24,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-19T09:32:51.036Z",
+    "observedAt": "2026-04-22T07:46:01.544Z",
     "referencePriceMinor": 67999,
     "deltaMinor": 0
   },
@@ -35,10 +35,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 16900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-04-19T09:32:06.348Z"
+    "observedAt": "2026-04-22T07:46:55.331Z"
   },
   {
     "setId": "10305",
@@ -50,7 +50,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:33:41.253Z",
+    "observedAt": "2026-04-22T07:45:13.679Z",
     "referencePriceMinor": 39999,
     "deltaMinor": 8901
   },
@@ -64,7 +64,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:32:07.108Z"
+    "observedAt": "2026-04-22T07:46:38.247Z"
   },
   {
     "setId": "10313",
@@ -76,7 +76,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T11:06:52.950Z"
+    "observedAt": "2026-04-22T07:42:26.135Z"
   },
   {
     "setId": "10314",
@@ -88,7 +88,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T11:07:01.142Z"
+    "observedAt": "2026-04-22T07:42:23.065Z"
   },
   {
     "setId": "10316",
@@ -100,7 +100,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-19T09:33:43.829Z",
+    "observedAt": "2026-04-22T07:45:11.805Z",
     "referencePriceMinor": 49999,
     "deltaMinor": -1753
   },
@@ -114,7 +114,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-04-19T09:32:35.275Z",
+    "observedAt": "2026-04-22T07:46:12.917Z",
     "referencePriceMinor": 23999,
     "deltaMinor": -99
   },
@@ -123,12 +123,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 24500,
+    "headlinePriceMinor": 24499,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:32:05.391Z"
+    "observedAt": "2026-04-22T07:46:40.451Z"
   },
   {
     "setId": "10327",
@@ -140,7 +140,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:37.897Z",
+    "observedAt": "2026-04-22T07:45:18.125Z",
     "referencePriceMinor": 16499,
     "deltaMinor": -4500
   },
@@ -154,7 +154,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:21.694Z",
+    "observedAt": "2026-04-22T07:45:35.992Z",
     "referencePriceMinor": 5999,
     "deltaMinor": -1400
   },
@@ -168,19 +168,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T11:07:03.363Z"
+    "observedAt": "2026-04-22T07:42:20.434Z"
   },
   {
     "setId": "10330",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5499,
+    "headlinePriceMinor": 5815,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T12:49:48.376Z"
+    "observedAt": "2026-04-22T07:41:54.379Z"
   },
   {
     "setId": "10331",
@@ -192,7 +192,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T12:49:51.056Z"
+    "observedAt": "2026-04-22T07:41:52.060Z"
   },
   {
     "setId": "10332",
@@ -204,7 +204,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:33:42.445Z",
+    "observedAt": "2026-04-22T07:45:12.712Z",
     "referencePriceMinor": 22999,
     "deltaMinor": 2500
   },
@@ -218,7 +218,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-19T09:32:50.213Z",
+    "observedAt": "2026-04-22T07:46:02.642Z",
     "referencePriceMinor": 45999,
     "deltaMinor": 0
   },
@@ -232,7 +232,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-19T09:33:07.507Z",
+    "observedAt": "2026-04-22T07:45:50.074Z",
     "referencePriceMinor": 26999,
     "deltaMinor": 0
   },
@@ -246,7 +246,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:22.951Z",
+    "observedAt": "2026-04-22T07:45:35.222Z",
     "referencePriceMinor": 5999,
     "deltaMinor": -1600
   },
@@ -260,7 +260,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:31:54.254Z",
+    "observedAt": "2026-04-22T07:46:54.908Z",
     "referencePriceMinor": 26999,
     "deltaMinor": -2099
   },
@@ -274,7 +274,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T14:17:24.146Z"
+    "observedAt": "2026-04-22T07:41:22.552Z"
   },
   {
     "setId": "11371",
@@ -286,7 +286,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T14:17:26.242Z"
+    "observedAt": "2026-04-22T07:41:20.077Z"
   },
   {
     "setId": "11372",
@@ -298,7 +298,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:17:30.677Z"
+    "observedAt": "2026-04-22T07:41:17.210Z"
   },
   {
     "setId": "11373",
@@ -310,7 +310,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:17:33.712Z"
+    "observedAt": "2026-04-22T07:41:14.344Z"
   },
   {
     "setId": "11375",
@@ -322,7 +322,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:17:37.135Z"
+    "observedAt": "2026-04-22T07:41:06.771Z"
   },
   {
     "setId": "11376",
@@ -334,7 +334,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T14:17:49.164Z"
+    "observedAt": "2026-04-22T07:41:03.227Z"
   },
   {
     "setId": "11378",
@@ -346,19 +346,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:17:49.501Z"
+    "observedAt": "2026-04-22T07:41:01.265Z"
   },
   {
     "setId": "11384",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11600,
+    "headlinePriceMinor": 11500,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:17:51.655Z"
+    "observedAt": "2026-04-22T07:41:00.619Z"
   },
   {
     "setId": "11501",
@@ -367,10 +367,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 4599,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:11:26.831Z"
+    "observedAt": "2026-04-22T07:39:34.466Z"
   },
   {
     "setId": "11502",
@@ -379,10 +379,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 4599,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:11:30.262Z"
+    "observedAt": "2026-04-22T07:39:30.738Z"
   },
   {
     "setId": "11503",
@@ -394,7 +394,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T17:11:34.597Z"
+    "observedAt": "2026-04-22T07:39:26.105Z"
   },
   {
     "setId": "11509",
@@ -403,24 +403,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 2395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:11:38.525Z"
+    "observedAt": "2026-04-22T07:39:25.563Z"
   },
   {
     "setId": "21061",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 17240,
+    "headlinePriceMinor": 14999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:19.825Z",
+    "observedAt": "2026-04-22T07:45:36.887Z",
     "referencePriceMinor": 22999,
-    "deltaMinor": -5759
+    "deltaMinor": -8000
   },
   {
     "setId": "21064",
@@ -432,21 +432,21 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:11:38.856Z"
+    "observedAt": "2026-04-22T07:39:21.881Z"
   },
   {
     "setId": "21333",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15990,
+    "headlinePriceMinor": 16899,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-19T09:33:54.157Z",
+    "observedAt": "2026-04-22T07:45:01.162Z",
     "referencePriceMinor": 16999,
-    "deltaMinor": -1009
+    "deltaMinor": -100
   },
   {
     "setId": "21338",
@@ -458,33 +458,33 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:31:59.147Z"
+    "observedAt": "2026-04-22T07:46:52.922Z"
   },
   {
     "setId": "21339",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9900,
+    "headlinePriceMinor": 9699,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T10:04:35.713Z"
+    "observedAt": "2026-04-22T07:42:41.736Z"
   },
   {
     "setId": "21348",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 30299,
+    "headlinePriceMinor": 32500,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:33:49.366Z",
+    "observedAt": "2026-04-22T07:44:32.723Z",
     "referencePriceMinor": 35999,
-    "deltaMinor": -5700
+    "deltaMinor": -3499
   },
   {
     "setId": "21349",
@@ -496,7 +496,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-19T09:33:52.953Z",
+    "observedAt": "2026-04-22T07:45:02.167Z",
     "referencePriceMinor": 10999,
     "deltaMinor": -2000
   },
@@ -510,7 +510,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-19T09:33:51.268Z",
+    "observedAt": "2026-04-22T07:45:03.212Z",
     "referencePriceMinor": 15999,
     "deltaMinor": -2500
   },
@@ -524,7 +524,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T17:11:43.516Z"
+    "observedAt": "2026-04-22T07:39:14.789Z"
   },
   {
     "setId": "21366",
@@ -536,7 +536,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T20:25:29.022Z"
+    "observedAt": "2026-04-22T07:37:20.518Z"
   },
   {
     "setId": "21376",
@@ -545,10 +545,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 8499,
     "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 3,
+    "observedAt": "2026-04-22T07:40:55.499Z"
+  },
+  {
+    "setId": "21588",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3199,
+    "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
-    "merchantCount": 3,
-    "observedAt": "2026-04-20T14:18:01.268Z"
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:37:15.778Z"
   },
   {
     "setId": "21589",
@@ -560,19 +572,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:11:52.777Z"
+    "observedAt": "2026-04-22T07:39:09.090Z"
+  },
+  {
+    "setId": "21590",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:37:13.845Z"
   },
   {
     "setId": "31208",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7999,
+    "headlinePriceMinor": 6799,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:32:21.741Z"
+    "observedAt": "2026-04-22T07:46:24.940Z"
   },
   {
     "setId": "31209",
@@ -584,7 +608,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T10:04:38.813Z"
+    "observedAt": "2026-04-22T07:42:37.373Z"
   },
   {
     "setId": "31218",
@@ -596,7 +620,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T14:18:05.565Z"
+    "observedAt": "2026-04-22T07:40:50.480Z"
   },
   {
     "setId": "31220",
@@ -608,7 +632,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:18:05.984Z"
+    "observedAt": "2026-04-22T07:40:48.921Z"
   },
   {
     "setId": "31385",
@@ -620,7 +644,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:36:39.346Z"
+    "observedAt": "2026-04-22T07:37:52.486Z"
   },
   {
     "setId": "40507",
@@ -632,7 +656,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T17:11:56.045Z"
+    "observedAt": "2026-04-22T07:39:04.741Z"
   },
   {
     "setId": "40878",
@@ -644,7 +668,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T17:36:42.945Z"
+    "observedAt": "2026-04-22T07:37:47.398Z"
   },
   {
     "setId": "40879",
@@ -656,7 +680,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T17:36:44.271Z"
+    "observedAt": "2026-04-22T07:37:46.009Z"
+  },
+  {
+    "setId": "40915",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lego-nl",
+    "lowestMerchantName": "LEGO",
+    "merchantCount": 2,
+    "observedAt": "2026-04-22T07:37:08.319Z"
   },
   {
     "setId": "40952",
@@ -668,7 +704,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T17:36:45.077Z"
+    "observedAt": "2026-04-22T07:37:45.450Z"
   },
   {
     "setId": "40955",
@@ -680,7 +716,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:18:07.661Z"
+    "observedAt": "2026-04-22T07:40:47.592Z"
   },
   {
     "setId": "40957",
@@ -692,7 +728,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T17:36:46.334Z"
+    "observedAt": "2026-04-22T07:37:43.985Z"
   },
   {
     "setId": "42115",
@@ -704,7 +740,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T13:51:42.507Z"
+    "observedAt": "2026-04-22T07:41:29.848Z"
   },
   {
     "setId": "42143",
@@ -713,22 +749,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 32499,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-19T09:32:03.034Z"
+    "observedAt": "2026-04-22T07:46:42.423Z"
   },
   {
     "setId": "42154",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 8400,
+    "headlinePriceMinor": 9299,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T12:49:55.209Z"
+    "observedAt": "2026-04-22T07:41:46.192Z"
   },
   {
     "setId": "42155",
@@ -740,7 +776,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T12:49:57.871Z"
+    "observedAt": "2026-04-22T07:41:42.481Z"
   },
   {
     "setId": "42156",
@@ -752,7 +788,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T13:51:45.930Z"
+    "observedAt": "2026-04-22T07:41:24.226Z"
   },
   {
     "setId": "42161",
@@ -764,47 +800,47 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T12:50:00.193Z"
+    "observedAt": "2026-04-22T07:41:39.337Z"
   },
   {
     "setId": "42162",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7700,
+    "headlinePriceMinor": 9399,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T12:50:03.386Z"
+    "observedAt": "2026-04-22T07:41:37.102Z"
   },
   {
     "setId": "42171",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15999,
+    "headlinePriceMinor": 15400,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:34:08.864Z",
+    "observedAt": "2026-04-22T07:44:44.823Z",
     "referencePriceMinor": 21999,
-    "deltaMinor": -6000
+    "deltaMinor": -6599
   },
   {
     "setId": "42172",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 31999,
+    "headlinePriceMinor": 31499,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:34:05.754Z",
+    "observedAt": "2026-04-22T07:44:49.175Z",
     "referencePriceMinor": 44999,
-    "deltaMinor": -13000
+    "deltaMinor": -13500
   },
   {
     "setId": "42173",
@@ -816,7 +852,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T11:07:07.523Z"
+    "observedAt": "2026-04-22T07:42:16.414Z"
   },
   {
     "setId": "42174",
@@ -828,7 +864,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T11:07:10.651Z"
+    "observedAt": "2026-04-22T07:42:12.287Z"
   },
   {
     "setId": "42175",
@@ -840,33 +876,33 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T11:07:16.658Z"
+    "observedAt": "2026-04-22T07:42:06.672Z"
   },
   {
     "setId": "42176",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11599,
+    "headlinePriceMinor": 12899,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T11:07:17.989Z"
+    "observedAt": "2026-04-22T07:42:06.077Z"
   },
   {
     "setId": "42177",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 18499,
+    "headlinePriceMinor": 17500,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:34:10.792Z",
+    "observedAt": "2026-04-22T07:44:41.216Z",
     "referencePriceMinor": 24999,
-    "deltaMinor": -6500
+    "deltaMinor": -7499
   },
   {
     "setId": "42206",
@@ -878,7 +914,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T06:38:18.796Z"
+    "observedAt": "2026-04-22T07:43:54.004Z"
   },
   {
     "setId": "42221",
@@ -890,7 +926,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T14:18:10.095Z"
+    "observedAt": "2026-04-22T07:40:44.251Z"
   },
   {
     "setId": "42222",
@@ -902,7 +938,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:11.393Z"
+    "observedAt": "2026-04-22T07:40:42.592Z"
   },
   {
     "setId": "42223",
@@ -911,22 +947,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 5499,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:15.773Z"
+    "observedAt": "2026-04-22T07:40:40.028Z"
   },
   {
     "setId": "42224",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10000,
+    "headlinePriceMinor": 10499,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:18.305Z"
+    "observedAt": "2026-04-22T07:40:35.044Z"
   },
   {
     "setId": "42226",
@@ -938,7 +974,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:22.126Z"
+    "observedAt": "2026-04-22T07:40:30.334Z"
   },
   {
     "setId": "42227",
@@ -950,7 +986,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:26.917Z"
+    "observedAt": "2026-04-22T07:40:25.021Z"
   },
   {
     "setId": "42228",
@@ -962,7 +998,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:34.554Z"
+    "observedAt": "2026-04-22T07:40:18.503Z"
+  },
+  {
+    "setId": "42684",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3295,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:37:05.034Z"
+  },
+  {
+    "setId": "42686",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4498,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:37:04.194Z"
   },
   {
     "setId": "42687",
@@ -974,7 +1034,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:11:58.360Z"
+    "observedAt": "2026-04-22T07:39:02.759Z"
+  },
+  {
+    "setId": "42688",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6200,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:37:00.556Z"
+  },
+  {
+    "setId": "42689",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6365,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 3,
+    "observedAt": "2026-04-22T07:36:56.845Z"
   },
   {
     "setId": "42691",
@@ -986,7 +1070,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T14:18:36.290Z"
+    "observedAt": "2026-04-22T07:40:15.479Z"
   },
   {
     "setId": "43019",
@@ -998,7 +1082,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:37.583Z"
+    "observedAt": "2026-04-22T07:40:14.069Z"
   },
   {
     "setId": "43020",
@@ -1010,7 +1094,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:40.738Z"
+    "observedAt": "2026-04-22T07:40:10.155Z"
   },
   {
     "setId": "43025",
@@ -1022,7 +1106,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T17:12:02.041Z"
+    "observedAt": "2026-04-22T07:39:00.104Z"
   },
   {
     "setId": "43222",
@@ -1034,7 +1118,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:32:17.537Z"
+    "observedAt": "2026-04-22T07:46:28.160Z"
   },
   {
     "setId": "43224",
@@ -1046,7 +1130,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T12:50:05.251Z"
+    "observedAt": "2026-04-22T07:41:35.255Z"
   },
   {
     "setId": "43226",
@@ -1058,19 +1142,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T12:50:08.708Z"
+    "observedAt": "2026-04-22T07:41:31.959Z"
   },
   {
     "setId": "43230",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11495,
+    "headlinePriceMinor": 11499,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T10:04:41.173Z"
+    "observedAt": "2026-04-22T07:42:34.547Z"
   },
   {
     "setId": "43244",
@@ -1082,7 +1166,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T11:11:42.235Z"
+    "observedAt": "2026-04-22T07:41:59.097Z"
   },
   {
     "setId": "43247",
@@ -1094,7 +1178,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T20:36:45.405Z"
+    "observedAt": "2026-04-22T07:37:19.936Z"
   },
   {
     "setId": "43249",
@@ -1106,7 +1190,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T11:11:42.682Z"
+    "observedAt": "2026-04-22T07:41:58.529Z"
   },
   {
     "setId": "43269",
@@ -1118,19 +1202,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T20:42:34.683Z"
+    "observedAt": "2026-04-22T07:44:00.416Z"
   },
   {
     "setId": "43287",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3699,
+    "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:45.075Z"
+    "observedAt": "2026-04-22T07:40:06.005Z"
   },
   {
     "setId": "43290",
@@ -1142,7 +1226,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:18:48.033Z"
+    "observedAt": "2026-04-22T07:40:02.708Z"
   },
   {
     "setId": "43300",
@@ -1154,7 +1238,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T14:18:53.480Z"
+    "observedAt": "2026-04-22T07:39:56.467Z"
   },
   {
     "setId": "43305",
@@ -1166,7 +1250,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:18:57.665Z"
+    "observedAt": "2026-04-22T07:39:51.382Z"
   },
   {
     "setId": "45200",
@@ -1178,7 +1262,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T17:36:48.380Z"
+    "observedAt": "2026-04-22T07:37:42.524Z"
   },
   {
     "setId": "45202",
@@ -1190,7 +1274,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T17:12:04.217Z"
+    "observedAt": "2026-04-22T07:38:58.543Z"
   },
   {
     "setId": "45203",
@@ -1202,7 +1286,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T17:12:05.315Z"
+    "observedAt": "2026-04-22T07:38:57.840Z"
   },
   {
     "setId": "60493",
@@ -1214,7 +1298,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:36:50.822Z"
+    "observedAt": "2026-04-22T07:37:41.244Z"
   },
   {
     "setId": "60499",
@@ -1226,7 +1310,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T17:36:53.552Z"
+    "observedAt": "2026-04-22T07:37:38.885Z"
   },
   {
     "setId": "60502",
@@ -1238,19 +1322,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T17:12:06.296Z"
+    "observedAt": "2026-04-22T07:38:57.224Z"
   },
   {
     "setId": "60503",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3999,
+    "headlinePriceMinor": 4799,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:36:55.676Z"
+    "observedAt": "2026-04-22T07:37:36.086Z"
   },
   {
     "setId": "60504",
@@ -1259,10 +1343,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 7900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:36:59.659Z"
+    "observedAt": "2026-04-22T07:37:31.779Z"
   },
   {
     "setId": "60505",
@@ -1274,7 +1358,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:10.242Z"
+    "observedAt": "2026-04-22T07:38:53.852Z"
   },
   {
     "setId": "60508",
@@ -1283,10 +1367,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 15000,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:14.584Z"
+    "observedAt": "2026-04-22T07:38:51.516Z"
+  },
+  {
+    "setId": "71508",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6399,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:36:54.708Z"
   },
   {
     "setId": "71512",
@@ -1298,7 +1394,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:17.810Z"
+    "observedAt": "2026-04-22T07:38:46.551Z"
+  },
+  {
+    "setId": "71513",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:36:51.445Z"
   },
   {
     "setId": "71514",
@@ -1310,7 +1418,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:21.784Z"
+    "observedAt": "2026-04-22T07:38:42.327Z"
   },
   {
     "setId": "71515",
@@ -1319,10 +1427,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 10600,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:19:00.657Z"
+    "observedAt": "2026-04-22T07:39:50.703Z"
+  },
+  {
+    "setId": "71857",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5699,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 4,
+    "observedAt": "2026-04-22T07:36:48.276Z"
   },
   {
     "setId": "71858",
@@ -1331,10 +1451,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 7900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:24.598Z"
+    "observedAt": "2026-04-22T07:38:40.089Z"
   },
   {
     "setId": "71859",
@@ -1346,19 +1466,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:27.503Z"
+    "observedAt": "2026-04-22T07:38:33.302Z"
   },
   {
     "setId": "71860",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10800,
+    "headlinePriceMinor": 10399,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:33.425Z"
+    "observedAt": "2026-04-22T07:38:30.659Z"
   },
   {
     "setId": "71861",
@@ -1370,19 +1490,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T14:19:04.434Z"
+    "observedAt": "2026-04-22T07:39:45.236Z"
   },
   {
     "setId": "72037",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11900,
+    "headlinePriceMinor": 11999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T17:57:52.628Z"
+    "observedAt": "2026-04-22T07:44:09.889Z"
   },
   {
     "setId": "72050",
@@ -1394,7 +1514,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T17:57:55.638Z"
+    "observedAt": "2026-04-22T07:44:08.066Z"
   },
   {
     "setId": "72152",
@@ -1406,7 +1526,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:19:07.301Z"
+    "observedAt": "2026-04-22T07:39:43.967Z"
   },
   {
     "setId": "72153",
@@ -1415,22 +1535,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 64999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "lego-nl",
-    "lowestMerchantName": "LEGO",
+    "lowestMerchantId": "intertoys",
+    "lowestMerchantName": "Intertoys",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T14:19:10.576Z"
+    "observedAt": "2026-04-22T07:39:41.787Z"
   },
   {
     "setId": "75192",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 63799,
+    "headlinePriceMinor": 59999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T17:15:18.782Z"
+    "observedAt": "2026-04-22T07:46:18.355Z"
   },
   {
     "setId": "75309",
@@ -1442,31 +1562,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T08:53:55.950Z"
+    "observedAt": "2026-04-22T07:43:24.672Z"
   },
   {
     "setId": "75313",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 104995,
+    "headlinePriceMinor": 109995,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:33:58.301Z"
+    "observedAt": "2026-04-22T07:44:55.360Z"
   },
   {
     "setId": "75327",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 8999,
+    "headlinePriceMinor": 9999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T08:41:34.747Z"
+    "observedAt": "2026-04-22T07:43:47.403Z"
   },
   {
     "setId": "75328",
@@ -1478,7 +1598,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T08:41:37.428Z"
+    "observedAt": "2026-04-22T07:43:45.620Z"
   },
   {
     "setId": "75331",
@@ -1490,19 +1610,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T08:53:59.889Z"
+    "observedAt": "2026-04-22T07:43:20.749Z"
   },
   {
     "setId": "75343",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11195,
+    "headlinePriceMinor": 10115,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T08:50:14.986Z"
+    "observedAt": "2026-04-22T07:43:27.305Z"
   },
   {
     "setId": "75349",
@@ -1514,7 +1634,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T08:41:43.872Z"
+    "observedAt": "2026-04-22T07:43:41.905Z"
   },
   {
     "setId": "75350",
@@ -1526,7 +1646,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T08:41:46.852Z"
+    "observedAt": "2026-04-22T07:43:38.768Z"
   },
   {
     "setId": "75351",
@@ -1538,31 +1658,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T08:41:49.131Z"
+    "observedAt": "2026-04-22T07:43:36.158Z"
   },
   {
     "setId": "75352",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9495,
+    "headlinePriceMinor": 9000,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T09:44:45.615Z"
+    "observedAt": "2026-04-22T07:43:10.688Z"
   },
   {
     "setId": "75353",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7899,
+    "headlinePriceMinor": 8699,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T09:44:48.172Z"
+    "observedAt": "2026-04-22T07:43:06.304Z"
   },
   {
     "setId": "75355",
@@ -1574,7 +1694,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-04-19T10:27:19.036Z",
+    "observedAt": "2026-04-22T07:44:31.768Z",
     "referencePriceMinor": 23999,
     "deltaMinor": -1099
   },
@@ -1588,7 +1708,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T09:44:51.530Z"
+    "observedAt": "2026-04-22T07:43:03.860Z"
   },
   {
     "setId": "75358",
@@ -1600,31 +1720,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T09:44:54.905Z"
+    "observedAt": "2026-04-22T07:42:59.049Z"
   },
   {
     "setId": "75360",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4401,
+    "headlinePriceMinor": 5109,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T09:44:57.283Z"
+    "observedAt": "2026-04-22T07:42:51.912Z"
   },
   {
     "setId": "75361",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7899,
+    "headlinePriceMinor": 7898,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T09:44:59.160Z"
+    "observedAt": "2026-04-22T07:42:49.685Z"
   },
   {
     "setId": "75362",
@@ -1636,7 +1756,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T09:45:02.307Z"
+    "observedAt": "2026-04-22T07:42:46.900Z"
   },
   {
     "setId": "75363",
@@ -1648,21 +1768,21 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T09:45:05.181Z"
+    "observedAt": "2026-04-22T07:42:44.187Z"
   },
   {
     "setId": "75367",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 48999,
+    "headlinePriceMinor": 44999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:32:25.550Z",
+    "observedAt": "2026-04-22T07:46:20.674Z",
     "referencePriceMinor": 64999,
-    "deltaMinor": -16000
+    "deltaMinor": -20000
   },
   {
     "setId": "75371",
@@ -1671,10 +1791,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 19900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T08:54:02.755Z"
+    "observedAt": "2026-04-22T07:43:19.501Z"
   },
   {
     "setId": "75375",
@@ -1686,35 +1806,35 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T08:54:03.111Z"
+    "observedAt": "2026-04-22T07:43:15.729Z"
   },
   {
     "setId": "75397",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 37499,
+    "headlinePriceMinor": 37999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:34:05.019Z",
+    "observedAt": "2026-04-22T07:44:50.119Z",
     "referencePriceMinor": 49999,
-    "deltaMinor": -12500
+    "deltaMinor": -12000
   },
   {
     "setId": "75398",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10499,
+    "headlinePriceMinor": 8919,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:34:00.215Z",
+    "observedAt": "2026-04-22T07:44:54.587Z",
     "referencePriceMinor": 13999,
-    "deltaMinor": -3500
+    "deltaMinor": -5080
   },
   {
     "setId": "75408",
@@ -1726,7 +1846,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T08:41:51.885Z"
+    "observedAt": "2026-04-22T07:43:33.262Z"
   },
   {
     "setId": "75423",
@@ -1738,19 +1858,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T17:12:37.745Z"
+    "observedAt": "2026-04-22T07:38:27.638Z"
   },
   {
     "setId": "75440",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4999,
+    "headlinePriceMinor": 4199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:32:31.149Z"
+    "observedAt": "2026-04-22T07:46:14.908Z"
   },
   {
     "setId": "75441",
@@ -1762,7 +1882,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:40.728Z"
+    "observedAt": "2026-04-22T07:38:22.907Z"
   },
   {
     "setId": "75452",
@@ -1774,7 +1894,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:44.397Z"
+    "observedAt": "2026-04-22T07:38:19.190Z"
   },
   {
     "setId": "75460",
@@ -1786,45 +1906,45 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 2,
-    "observedAt": "2026-04-20T17:12:49.048Z"
+    "observedAt": "2026-04-22T07:38:14.272Z"
   },
   {
     "setId": "76178",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 45095,
+    "headlinePriceMinor": 43395,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:34:01.368Z",
+    "observedAt": "2026-04-22T07:44:52.449Z",
     "referencePriceMinor": 33999,
-    "deltaMinor": 11096
+    "deltaMinor": 9396
   },
   {
     "setId": "76261",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11495,
+    "headlinePriceMinor": 10495,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T10:04:43.238Z"
+    "observedAt": "2026-04-22T07:42:32.737Z"
   },
   {
     "setId": "76262",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 22495,
+    "headlinePriceMinor": 23495,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T10:04:45.098Z"
+    "observedAt": "2026-04-22T07:42:30.916Z"
   },
   {
     "setId": "76269",
@@ -1835,8 +1955,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
-    "observedAt": "2026-04-19T10:27:18.497Z",
+    "merchantCount": 3,
+    "observedAt": "2026-04-22T07:44:32.270Z",
     "referencePriceMinor": 49999,
     "deltaMinor": -99
   },
@@ -1850,7 +1970,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-19T10:28:07.062Z",
+    "observedAt": "2026-04-22T07:44:30.618Z",
     "referencePriceMinor": 32999,
     "deltaMinor": -5000
   },
@@ -1859,14 +1979,14 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7668,
+    "headlinePriceMinor": 7699,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:56.634Z",
+    "observedAt": "2026-04-22T07:44:58.155Z",
     "referencePriceMinor": 9999,
-    "deltaMinor": -2331
+    "deltaMinor": -2300
   },
   {
     "setId": "76330",
@@ -1878,7 +1998,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T20:21:55.362Z"
+    "observedAt": "2026-04-22T07:44:03.464Z"
   },
   {
     "setId": "76341",
@@ -1890,7 +2010,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:37:02.137Z"
+    "observedAt": "2026-04-22T07:37:28.526Z"
   },
   {
     "setId": "76342",
@@ -1902,7 +2022,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 3,
-    "observedAt": "2026-04-20T17:12:51.287Z"
+    "observedAt": "2026-04-22T07:38:12.608Z"
   },
   {
     "setId": "76344",
@@ -1914,31 +2034,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:54.319Z"
+    "observedAt": "2026-04-22T07:38:10.516Z"
   },
   {
     "setId": "76405",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 72030,
+    "headlinePriceMinor": 67500,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T10:04:49.126Z"
+    "observedAt": "2026-04-22T07:42:29.592Z"
   },
   {
     "setId": "76417",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 48900,
+    "headlinePriceMinor": 52999,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-19T09:31:56.916Z"
+    "observedAt": "2026-04-22T07:46:54.051Z"
   },
   {
     "setId": "76419",
@@ -1950,7 +2070,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:24.327Z"
+    "observedAt": "2026-04-22T07:45:34.398Z"
   },
   {
     "setId": "76429",
@@ -1962,7 +2082,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:33.632Z",
+    "observedAt": "2026-04-22T07:45:23.114Z",
     "referencePriceMinor": 9999,
     "deltaMinor": -2509
   },
@@ -1971,14 +2091,14 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15200,
+    "headlinePriceMinor": 15300,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-19T09:33:25.520Z",
+    "observedAt": "2026-04-22T07:45:33.641Z",
     "referencePriceMinor": 19999,
-    "deltaMinor": -4799
+    "deltaMinor": -4699
   },
   {
     "setId": "76437",
@@ -1989,8 +2109,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
-    "merchantCount": 4,
-    "observedAt": "2026-04-19T09:34:17.045Z"
+    "merchantCount": 3,
+    "observedAt": "2026-04-22T07:44:35.064Z"
   },
   {
     "setId": "76453",
@@ -2002,7 +2122,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 5,
-    "observedAt": "2026-04-19T09:33:28.261Z",
+    "observedAt": "2026-04-22T07:45:30.342Z",
     "referencePriceMinor": 14999,
     "deltaMinor": -3000
   },
@@ -2016,7 +2136,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:12:57.800Z"
+    "observedAt": "2026-04-22T07:38:07.179Z"
   },
   {
     "setId": "76464",
@@ -2028,7 +2148,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "intertoys",
     "lowestMerchantName": "Intertoys",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:13:04.610Z"
+    "observedAt": "2026-04-22T07:38:03.258Z"
   },
   {
     "setId": "76466",
@@ -2040,7 +2160,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T14:19:12.341Z"
+    "observedAt": "2026-04-22T07:39:40.252Z"
   },
   {
     "setId": "76467",
@@ -2052,7 +2172,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:13:07.630Z"
+    "observedAt": "2026-04-22T07:38:01.302Z"
   },
   {
     "setId": "76470",
@@ -2064,7 +2184,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T17:13:10.536Z"
+    "observedAt": "2026-04-22T07:37:58.494Z"
   },
   {
     "setId": "77093",
@@ -2076,7 +2196,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lego-nl",
     "lowestMerchantName": "LEGO",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T17:13:17.623Z"
+    "observedAt": "2026-04-22T07:37:53.291Z"
   },
   {
     "setId": "77243",
@@ -2088,7 +2208,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-04-20T06:38:26.121Z"
+    "observedAt": "2026-04-22T07:43:48.007Z"
   },
   {
     "setId": "910054",
@@ -2100,19 +2220,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:19:15.337Z"
+    "observedAt": "2026-04-22T07:39:37.130Z"
   },
   {
     "setId": "910055",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 41999,
+    "headlinePriceMinor": 44995,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:19:16.014Z"
+    "observedAt": "2026-04-22T07:39:36.587Z"
   },
   {
     "setId": "910057",
@@ -2124,7 +2244,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:19:16.759Z"
+    "observedAt": "2026-04-22T07:39:35.922Z"
   },
   {
     "setId": "910058",
@@ -2136,7 +2256,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
     "merchantCount": 1,
-    "observedAt": "2026-04-20T14:19:17.549Z"
+    "observedAt": "2026-04-22T07:39:35.153Z"
   }
 ]`;
 

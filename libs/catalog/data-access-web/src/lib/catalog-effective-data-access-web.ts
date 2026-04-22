@@ -152,6 +152,8 @@ export interface CatalogDiscoverySignal {
   nextBestPriceMinor?: number;
   observedAt: string;
   priceSpreadMinor: number;
+  recentReferencePriceChangeMinor?: number;
+  recentReferencePriceChangedAt?: string;
   referenceDeltaMinor?: number;
 }
 
@@ -236,6 +238,10 @@ function isCatalogDiscoverySignalRecord(
     typeof value['priceSpreadMinor'] === 'number' &&
     (typeof value['nextBestPriceMinor'] === 'undefined' ||
       typeof value['nextBestPriceMinor'] === 'number') &&
+    (typeof value['recentReferencePriceChangeMinor'] === 'undefined' ||
+      typeof value['recentReferencePriceChangeMinor'] === 'number') &&
+    (typeof value['recentReferencePriceChangedAt'] === 'undefined' ||
+      typeof value['recentReferencePriceChangedAt'] === 'string') &&
     (typeof value['referenceDeltaMinor'] === 'undefined' ||
       typeof value['referenceDeltaMinor'] === 'number')
   );
@@ -919,6 +925,60 @@ function getCatalogSimilarSetComparisonReadinessScore(
   return coverageScore + spreadScore + freshnessScore;
 }
 
+function getCatalogRecentPriceChangeScore(
+  catalogDiscoverySignal: CatalogDiscoverySignal,
+): number {
+  if (
+    catalogDiscoverySignal.merchantCount < 2 ||
+    typeof catalogDiscoverySignal.recentReferencePriceChangeMinor !==
+      'number' ||
+    typeof catalogDiscoverySignal.recentReferencePriceChangedAt !== 'string'
+  ) {
+    return 0;
+  }
+
+  const changeMagnitudeScore = Math.min(
+    Math.abs(catalogDiscoverySignal.recentReferencePriceChangeMinor) / 150,
+    70,
+  );
+  const recencyScore =
+    getCatalogDiscoveryFreshnessScore(
+      catalogDiscoverySignal.recentReferencePriceChangedAt,
+    ) * 1.3;
+  const coverageScore = Math.min(catalogDiscoverySignal.merchantCount, 6) * 6;
+  const spreadScore = Math.min(
+    catalogDiscoverySignal.priceSpreadMinor / 600,
+    16,
+  );
+
+  return changeMagnitudeScore + recencyScore + coverageScore + spreadScore;
+}
+
+function getCatalogRecentlyReleasedScore({
+  catalogDiscoverySignal,
+  currentYear,
+  setCard,
+}: {
+  catalogDiscoverySignal?: CatalogDiscoverySignal;
+  currentYear: number;
+  setCard: CatalogHomepageSetCard;
+}): number {
+  const releaseYearGap = currentYear - setCard.releaseYear;
+
+  if (releaseYearGap < 0 || releaseYearGap > 1) {
+    return 0;
+  }
+
+  const releaseFreshnessScore = releaseYearGap === 0 ? 72 : 40;
+  const comparisonReadinessScore = getCatalogSimilarSetComparisonReadinessScore(
+    catalogDiscoverySignal,
+  );
+  const coverageScore =
+    Math.min(catalogDiscoverySignal?.merchantCount ?? 0, 6) * 3;
+
+  return releaseFreshnessScore + comparisonReadinessScore + coverageScore;
+}
+
 const catalogSimilarSetTitleAliases = [
   {
     pattern: /\blotr\b/g,
@@ -1187,6 +1247,120 @@ export function rankCatalogPremiumDiscoverySetCards({
     scoreCatalogDiscoverySignal: getCatalogPremiumDiscoveryScore,
     setCards,
   }).slice(0, limit);
+}
+
+export function rankCatalogRecentPriceChangeSetCards({
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  setCards,
+}: {
+  getCatalogDiscoverySignalFn: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return [...setCards]
+    .flatMap((setCard) => {
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
+
+      if (
+        !catalogDiscoverySignal ||
+        catalogDiscoverySignal.merchantCount < 2 ||
+        typeof catalogDiscoverySignal.recentReferencePriceChangeMinor !==
+          'number' ||
+        catalogDiscoverySignal.recentReferencePriceChangeMinor === 0 ||
+        typeof catalogDiscoverySignal.recentReferencePriceChangedAt !== 'string'
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          catalogDiscoverySignal,
+          score: getCatalogRecentPriceChangeScore(catalogDiscoverySignal),
+          setCard,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        Date.parse(
+          right.catalogDiscoverySignal.recentReferencePriceChangedAt ?? '',
+        ) -
+          Date.parse(
+            left.catalogDiscoverySignal.recentReferencePriceChangedAt ?? '',
+          ) ||
+        Math.abs(
+          right.catalogDiscoverySignal.recentReferencePriceChangeMinor ?? 0,
+        ) -
+          Math.abs(
+            left.catalogDiscoverySignal.recentReferencePriceChangeMinor ?? 0,
+          ) ||
+        right.catalogDiscoverySignal.merchantCount -
+          left.catalogDiscoverySignal.merchantCount ||
+        right.catalogDiscoverySignal.priceSpreadMinor -
+          left.catalogDiscoverySignal.priceSpreadMinor ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
+        right.setCard.pieces - left.setCard.pieces ||
+        left.setCard.name.localeCompare(right.setCard.name) ||
+        left.setCard.id.localeCompare(right.setCard.id),
+    )
+    .slice(0, limit)
+    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
+}
+
+export function rankCatalogRecentlyReleasedSetCards({
+  currentYear = new Date().getUTCFullYear(),
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  setCards,
+}: {
+  currentYear?: number;
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return [...setCards]
+    .flatMap((setCard) => {
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn?.(setCard.id);
+      const score = getCatalogRecentlyReleasedScore({
+        catalogDiscoverySignal,
+        currentYear,
+        setCard,
+      });
+
+      if (score <= 0) {
+        return [];
+      }
+
+      return [
+        {
+          comparisonReadinessScore:
+            getCatalogSimilarSetComparisonReadinessScore(
+              catalogDiscoverySignal,
+            ),
+          merchantCount: catalogDiscoverySignal?.merchantCount ?? 0,
+          score,
+          setCard,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
+        right.comparisonReadinessScore - left.comparisonReadinessScore ||
+        right.merchantCount - left.merchantCount ||
+        right.setCard.pieces - left.setCard.pieces ||
+        left.setCard.name.localeCompare(right.setCard.name) ||
+        left.setCard.id.localeCompare(right.setCard.id),
+    )
+    .slice(0, limit)
+    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
 }
 
 export function rankCatalogSimilarSetCards({
@@ -1647,6 +1821,8 @@ export async function listCatalogDiscoverySignalsBySetId({
           nextBestPriceMinor,
           observedAt,
           priceSpreadMinor,
+          recentReferencePriceChangeMinor,
+          recentReferencePriceChangedAt,
           referenceDeltaMinor,
         } = catalogDiscoverySignalRecord;
 
@@ -1659,6 +1835,8 @@ export async function listCatalogDiscoverySignalsBySetId({
               nextBestPriceMinor,
               observedAt,
               priceSpreadMinor,
+              recentReferencePriceChangeMinor,
+              recentReferencePriceChangedAt,
               referenceDeltaMinor,
             } satisfies CatalogDiscoverySignal,
           ],
@@ -1948,6 +2126,67 @@ export async function listDiscoverDealCandidateSetCards({
   return listCatalogSetCardsByIds({
     canonicalIds: catalogDiscoverDealCandidateIds,
     listCanonicalCatalogSetsFn,
+  });
+}
+
+export async function listDiscoverBestDealSetCards({
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+}: {
+  getCatalogDiscoverySignalFn: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+}): Promise<CatalogHomepageSetCard[]> {
+  return listHomepageDealCandidateSetCards({
+    getCatalogDiscoverySignalFn,
+    limit,
+    listCanonicalCatalogSetsFn,
+  });
+}
+
+export async function listDiscoverRecentPriceChangeSetCards({
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+}: {
+  getCatalogDiscoverySignalFn: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+}): Promise<CatalogHomepageSetCard[]> {
+  return rankCatalogRecentPriceChangeSetCards({
+    getCatalogDiscoverySignalFn,
+    limit,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
+  });
+}
+
+export async function listDiscoverRecentlyReleasedSetCards({
+  currentYear,
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+}: {
+  currentYear?: number;
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+}): Promise<CatalogHomepageSetCard[]> {
+  return rankCatalogRecentlyReleasedSetCards({
+    currentYear,
+    getCatalogDiscoverySignalFn,
+    limit,
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
   });
 }
 

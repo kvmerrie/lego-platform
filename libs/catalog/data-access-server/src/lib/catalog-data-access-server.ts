@@ -121,6 +121,11 @@ export interface CatalogDiscoverySignalRecord extends CatalogDiscoverySignal {
   setId: string;
 }
 
+interface CatalogReferencePriceSnapshot {
+  recordedOn: string;
+  referencePriceMinor: number;
+}
+
 interface ValidatedRebrickableSearchSet {
   imageUrl?: string;
   name: string;
@@ -1799,6 +1804,10 @@ export async function listCatalogDiscoverySignals({
 
     const discoverySignalSetIds = [...currentOfferGroupsBySetId.keys()];
     const referencePriceMinorBySetId = new Map<string, number>();
+    const recentReferencePriceSnapshotsBySetId = new Map<
+      string,
+      CatalogReferencePriceSnapshot[]
+    >();
 
     if (discoverySignalSetIds.length) {
       const { data: priceHistoryData, error: priceHistoryError } =
@@ -1817,15 +1826,33 @@ export async function listCatalogDiscoverySignals({
       for (const priceHistoryRow of (priceHistoryData as
         | CatalogPriceHistoryRow[]
         | null) ?? []) {
-        if (
-          !referencePriceMinorBySetId.has(priceHistoryRow.set_id) &&
-          isInteger(priceHistoryRow.reference_price_minor)
-        ) {
+        if (!isInteger(priceHistoryRow.reference_price_minor)) {
+          continue;
+        }
+
+        if (!referencePriceMinorBySetId.has(priceHistoryRow.set_id)) {
           referencePriceMinorBySetId.set(
             priceHistoryRow.set_id,
             priceHistoryRow.reference_price_minor,
           );
         }
+
+        const existingSnapshots =
+          recentReferencePriceSnapshotsBySetId.get(priceHistoryRow.set_id) ??
+          [];
+
+        if (existingSnapshots.length >= 2) {
+          continue;
+        }
+
+        existingSnapshots.push({
+          recordedOn: priceHistoryRow.recorded_on,
+          referencePriceMinor: priceHistoryRow.reference_price_minor,
+        });
+        recentReferencePriceSnapshotsBySetId.set(
+          priceHistoryRow.set_id,
+          existingSnapshots,
+        );
       }
     }
 
@@ -1845,6 +1872,15 @@ export async function listCatalogDiscoverySignals({
         sortedPriceMinorValues[sortedPriceMinorValues.length - 1] ??
         bestPriceMinor;
       const referencePriceMinor = referencePriceMinorBySetId.get(setId);
+      const recentReferencePriceSnapshots =
+        recentReferencePriceSnapshotsBySetId.get(setId) ?? [];
+      const latestReferencePriceSnapshot = recentReferencePriceSnapshots[0];
+      const previousReferencePriceSnapshot = recentReferencePriceSnapshots[1];
+      const recentReferencePriceChangeMinor =
+        latestReferencePriceSnapshot && previousReferencePriceSnapshot
+          ? latestReferencePriceSnapshot.referencePriceMinor -
+            previousReferencePriceSnapshot.referencePriceMinor
+          : undefined;
 
       catalogDiscoverySignalRecords.push({
         bestPriceMinor,
@@ -1858,6 +1894,16 @@ export async function listCatalogDiscoverySignals({
           currentOffers[0]?.observedAt ?? '',
         ),
         priceSpreadMinor: Math.max(0, highestPriceMinor - bestPriceMinor),
+        recentReferencePriceChangeMinor:
+          recentReferencePriceChangeMinor &&
+          recentReferencePriceChangeMinor !== 0
+            ? recentReferencePriceChangeMinor
+            : undefined,
+        recentReferencePriceChangedAt:
+          recentReferencePriceChangeMinor &&
+          recentReferencePriceChangeMinor !== 0
+            ? latestReferencePriceSnapshot?.recordedOn
+            : undefined,
         referenceDeltaMinor:
           typeof referencePriceMinor === 'number'
             ? bestPriceMinor - referencePriceMinor
