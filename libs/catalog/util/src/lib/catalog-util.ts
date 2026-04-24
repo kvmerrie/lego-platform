@@ -6,6 +6,7 @@ export interface CatalogSetSummary {
   slug: string;
   name: string;
   theme: string;
+  secondaryLabels?: readonly string[];
   releaseYear: number;
   pieces: number;
   // Transitional legacy copy field. New runtime reads should not depend on it.
@@ -351,11 +352,6 @@ export interface CatalogThemeDefinition {
   visual: CatalogThemeVisual;
 }
 
-const catalogPresentedThemeNamesByRawName = new Map<string, string>([
-  ['Super Heroes Marvel', 'Marvel'],
-  ['Super Heroes DC', 'DC'],
-]);
-
 const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
   [
     'Icons',
@@ -413,13 +409,6 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
     },
   ],
   [
-    'Modular Buildings',
-    {
-      backgroundColor: '#b88d6c',
-      textColor: '#171a22',
-    },
-  ],
-  [
     'Botanicals',
     {
       backgroundColor: '#7caf76',
@@ -468,6 +457,111 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
       textColor: '#ffffff',
     },
   ],
+  [
+    'Brickheadz',
+    {
+      backgroundColor: '#e88b57',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'BrickLink Designer Program',
+    {
+      backgroundColor: '#3b82b8',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'City',
+    {
+      backgroundColor: '#2f7fc0',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Classic',
+    {
+      backgroundColor: '#f2d35b',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Creator',
+    {
+      backgroundColor: '#7b8bb8',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'DC',
+    {
+      backgroundColor: '#345d9d',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Dreamzzz',
+    {
+      backgroundColor: '#7d6ad6',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Duplo',
+    {
+      backgroundColor: '#f26d4c',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Friends',
+    {
+      backgroundColor: '#ef8fc0',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Minecraft',
+    {
+      backgroundColor: '#5f8a4b',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Nike',
+    {
+      backgroundColor: '#171a22',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Pokémon',
+    {
+      backgroundColor: '#f0c63b',
+      textColor: '#1f4f9c',
+    },
+  ],
+  [
+    'Seasonal',
+    {
+      backgroundColor: '#c84f46',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'The Legend of Zelda',
+    {
+      backgroundColor: '#4d8b72',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Wednesday',
+    {
+      backgroundColor: '#5d6170',
+      textColor: '#ffffff',
+    },
+  ],
 ]);
 
 export function getCatalogThemeVisual(
@@ -483,14 +577,9 @@ export function getCatalogThemeDisplayName(
     return undefined;
   }
 
-  const normalizedThemeName = normalizeCatalogText(themeName);
-
-  return (
-    catalogPresentedThemeNamesByRawName.get(normalizedThemeName) ??
-    getCatalogPrimaryTheme({
-      rawTheme: normalizedThemeName,
-    })
-  );
+  return getCatalogPrimaryTheme({
+    rawTheme: themeName,
+  });
 }
 
 export interface CatalogSetRecord {
@@ -650,13 +739,6 @@ export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
     signatureSet: 'Avengers Tower',
   },
   {
-    name: 'Modular Buildings',
-    setCount: 1,
-    momentum:
-      'Gevels, etalages en verdiepingen vol leven. Hier begint een straat waar je naar blijft kijken.',
-    signatureSet: 'Natural History Museum',
-  },
-  {
     name: 'Botanicals',
     setCount: 4,
     momentum:
@@ -806,7 +888,6 @@ export const catalogDiscoverThemeOrder = [
   'Harry Potter',
   'Technic',
   'Speed Champions',
-  'Modular Buildings',
   'Botanicals',
   'Architecture',
   'Art',
@@ -839,25 +920,112 @@ function normalizeCatalogText(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
 }
 
+interface CatalogThemeNormalizationRule {
+  primaryTheme: string;
+  secondaryTheme?: string;
+}
+
 const catalogCanonicalThemeNames = new Map<string, string>([
   ['LEGO Art', 'Art'],
   ['LEGO Ideas and CUUSOO', 'Ideas'],
   ['Ninjago', 'NINJAGO'],
 ]);
 
-const catalogPrimaryThemeBySecondaryTheme = new Map<string, string>([
-  ['Avengers', 'Marvel'],
-  ['Spider-Man', 'Marvel'],
-  ['The Infinity Saga', 'Marvel'],
-  ['Ultimate Collector Series', 'Star Wars'],
-  ['X-Men', 'Marvel'],
+const catalogThemeNormalizationRulesByRawTheme = new Map<
+  string,
+  CatalogThemeNormalizationRule
+>([
+  ['Airport', { primaryTheme: 'City', secondaryTheme: 'Airport' }],
+  ['Arctic', { primaryTheme: 'City', secondaryTheme: 'Arctic' }],
+  ['Avengers', { primaryTheme: 'Marvel', secondaryTheme: 'Avengers' }],
+  ['Basic Set', { primaryTheme: 'Duplo', secondaryTheme: 'Basic Set' }],
+  ['Batman', { primaryTheme: 'DC', secondaryTheme: 'Batman' }],
+  ['Botanical Collection', { primaryTheme: 'Botanicals' }],
+  ['Chinese (Lunar) New Year', { primaryTheme: 'Seasonal' }],
+  ['Christmas', { primaryTheme: 'Seasonal', secondaryTheme: 'Christmas' }],
+  ['Coast Guard', { primaryTheme: 'City', secondaryTheme: 'Coast Guard' }],
+  [
+    'Creator 3-in-1',
+    { primaryTheme: 'Creator', secondaryTheme: 'Creator 3-in-1' },
+  ],
+  ['Easter', { primaryTheme: 'Seasonal', secondaryTheme: 'Easter' }],
+  ['Editions', { primaryTheme: 'Other', secondaryTheme: 'Editions' }],
+  [
+    'Educational and Dacta',
+    { primaryTheme: 'Other', secondaryTheme: 'Educational and Dacta' },
+  ],
+  ['Frozen', { primaryTheme: 'Disney', secondaryTheme: 'Frozen' }],
+  [
+    'LEGO Exclusive',
+    { primaryTheme: 'Other', secondaryTheme: 'LEGO Exclusive' },
+  ],
+  [
+    'Learning at Home',
+    { primaryTheme: 'Other', secondaryTheme: 'Learning at Home' },
+  ],
+  [
+    'Legoland Parks',
+    { primaryTheme: 'Other', secondaryTheme: 'Legoland Parks' },
+  ],
+  [
+    'Modular Buildings',
+    { primaryTheme: 'Icons', secondaryTheme: 'Modular Buildings' },
+  ],
+  ['Other', { primaryTheme: 'Other' }],
+  ['Police', { primaryTheme: 'City', secondaryTheme: 'Police' }],
+  ['Spider-Man', { primaryTheme: 'Marvel', secondaryTheme: 'Spider-Man' }],
+  [
+    'Spidey and His Amazing Friends',
+    {
+      primaryTheme: 'Marvel',
+      secondaryTheme: 'Spidey and His Amazing Friends',
+    },
+  ],
+  ['Super Heroes DC', { primaryTheme: 'DC' }],
+  ['Super Heroes Marvel', { primaryTheme: 'Marvel' }],
+  ['The Botanical Collection', { primaryTheme: 'Botanicals' }],
+  [
+    'The Infinity Saga',
+    { primaryTheme: 'Marvel', secondaryTheme: 'The Infinity Saga' },
+  ],
+  [
+    'Ultimate Collector Series',
+    {
+      primaryTheme: 'Star Wars',
+      secondaryTheme: 'Ultimate Collector Series',
+    },
+  ],
+  [
+    'Winnie the Pooh',
+    { primaryTheme: 'Disney', secondaryTheme: 'Winnie the Pooh' },
+  ],
+  ['X-Men', { primaryTheme: 'Marvel', secondaryTheme: 'X-Men' }],
 ]);
+
+const catalogParkedPrimaryThemes = new Set(['Other', 'Unknown']);
 
 function canonicalizeCatalogThemeName(themeName: string): string {
   const normalizedThemeName = normalizeCatalogText(themeName);
 
   return (
     catalogCanonicalThemeNames.get(normalizedThemeName) ?? normalizedThemeName
+  );
+}
+
+function getCatalogThemeNormalizationRule(
+  themeName: string,
+): CatalogThemeNormalizationRule | undefined {
+  return catalogThemeNormalizationRulesByRawTheme.get(
+    canonicalizeCatalogThemeName(themeName),
+  );
+}
+
+function getResolvedCatalogPrimaryThemeName(themeName: string): string {
+  const canonicalThemeName = canonicalizeCatalogThemeName(themeName);
+
+  return (
+    getCatalogThemeNormalizationRule(canonicalThemeName)?.primaryTheme ??
+    canonicalThemeName
   );
 }
 
@@ -899,8 +1067,30 @@ export function resolveCatalogThemeIdentity({
       ? rawThemeSegments[rawThemeSegments.length - 1]
       : canonicalizeCatalogThemeName(normalizedRawTheme);
   const canonicalParentTheme = parentTheme
-    ? canonicalizeCatalogThemeName(parentTheme)
+    ? getResolvedCatalogPrimaryThemeName(parentTheme)
     : undefined;
+  const directThemeRule = getCatalogThemeNormalizationRule(canonicalRawTheme);
+
+  if (!canonicalParentTheme && rawThemeSegments.length > 1) {
+    const [rootSegment, ...nestedSegments] = rawThemeSegments;
+
+    return resolveCatalogThemeIdentity({
+      parentTheme: rootSegment,
+      rawTheme: nestedSegments.join(' > '),
+    });
+  }
+
+  if (directThemeRule) {
+    return {
+      primaryTheme: directThemeRule.primaryTheme,
+      secondaryThemes: dedupeCatalogSecondaryThemes({
+        primaryTheme: directThemeRule.primaryTheme,
+        secondaryThemes: directThemeRule.secondaryTheme
+          ? [directThemeRule.secondaryTheme]
+          : [],
+      }),
+    };
+  }
 
   if (canonicalParentTheme) {
     const secondaryThemes =
@@ -930,16 +1120,6 @@ export function resolveCatalogThemeIdentity({
         primaryTheme,
         secondaryThemes: rawThemeSegments.slice(1),
       }),
-    };
-  }
-
-  const derivedPrimaryTheme =
-    catalogPrimaryThemeBySecondaryTheme.get(canonicalRawTheme);
-
-  if (derivedPrimaryTheme) {
-    return {
-      primaryTheme: derivedPrimaryTheme,
-      secondaryThemes: [canonicalRawTheme],
     };
   }
 
@@ -980,21 +1160,26 @@ export function resolveCatalogThemeIdentityFromPersistence({
     });
   }
 
-  const resolvedPrimaryTheme = getCatalogPrimaryTheme({
-    rawTheme: primaryThemeName,
-  });
-
   if (!sourceThemeName) {
-    return {
-      primaryTheme: resolvedPrimaryTheme,
-      secondaryThemes: [],
-    };
+    return resolveCatalogThemeIdentity({
+      rawTheme: primaryThemeName,
+    });
   }
 
   return resolveCatalogThemeIdentity({
-    parentTheme: resolvedPrimaryTheme,
+    parentTheme: primaryThemeName,
     rawTheme: sourceThemeName,
   });
+}
+
+export function isCatalogBrowsablePrimaryTheme(themeName?: string): boolean {
+  if (!themeName) {
+    return false;
+  }
+
+  return !catalogParkedPrimaryThemes.has(
+    getResolvedCatalogPrimaryThemeName(themeName),
+  );
 }
 
 export function getCatalogThemeDefinition(

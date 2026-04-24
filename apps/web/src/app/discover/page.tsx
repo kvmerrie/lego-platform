@@ -7,10 +7,16 @@ import {
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCards,
   listDiscoverBestDealSetCards,
+  listDiscoverForYouInterestingSetCards,
+  listDiscoverNowInterestingSetCards,
   listDiscoverRecentPriceChangeSetCards,
   listDiscoverRecentlyReleasedSetCards,
+  selectCatalogThemeOfWeekRail,
 } from '@lego-platform/catalog/data-access-web';
-import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
+import {
+  isCatalogBrowsablePrimaryTheme,
+  type CatalogHomepageSetCard,
+} from '@lego-platform/catalog/util';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import {
   type BrickhuntAnalyticsEventDescriptor,
@@ -35,7 +41,7 @@ function getDiscoverCandidateRank(
   return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
 }
 
-function toDealSetCards(
+function toRailSetCards(
   setCards: readonly CatalogHomepageSetCard[],
   currentOfferSummaryBySetId: Awaited<
     ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
@@ -59,7 +65,11 @@ function toDealSetCards(
 function countDiscoverThemes(
   setCards: readonly Pick<CatalogHomepageSetCard, 'theme'>[],
 ): number {
-  return new Set(setCards.map((setCard) => setCard.theme)).size;
+  return new Set(
+    setCards
+      .map((setCard) => setCard.theme)
+      .filter((theme) => isCatalogBrowsablePrimaryTheme(theme)),
+  ).size;
 }
 
 export default async function DiscoverPage() {
@@ -67,10 +77,16 @@ export default async function DiscoverPage() {
     [listCatalogDiscoverySignalsBySetId(), listCatalogSetCards()],
   );
   const [
+    nowInterestingSetCards,
     recentPriceChangeSetCards,
     bestDealCandidateSetCards,
     recentlyReleasedSetCards,
   ] = await Promise.all([
+    listDiscoverNowInterestingSetCards({
+      getCatalogDiscoverySignalFn: (setId) =>
+        catalogDiscoverySignalBySetId.get(setId),
+      setCards: allCatalogSetCards,
+    }),
     listDiscoverRecentPriceChangeSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         catalogDiscoverySignalBySetId.get(setId),
@@ -87,6 +103,36 @@ export default async function DiscoverPage() {
       setCards: allCatalogSetCards,
     }),
   ]);
+  const themeOfWeekRail = selectCatalogThemeOfWeekRail({
+    getCatalogDiscoverySignalFn: (setId) =>
+      catalogDiscoverySignalBySetId.get(setId),
+    setCards: allCatalogSetCards,
+  });
+  const excludedForForYouSetIds = [
+    ...new Set(
+      [
+        ...nowInterestingSetCards,
+        ...bestDealCandidateSetCards,
+        ...recentPriceChangeSetCards,
+        ...recentlyReleasedSetCards,
+        ...(themeOfWeekRail?.setCards ?? []),
+      ].map((catalogSetCard) => catalogSetCard.id),
+    ),
+  ];
+  const initialForYouSetCards = await listDiscoverForYouInterestingSetCards({
+    excludedSetIds: excludedForForYouSetIds,
+    getCatalogDiscoverySignalFn: (setId) =>
+      catalogDiscoverySignalBySetId.get(setId),
+    setCards: allCatalogSetCards,
+  });
+  const forYouSetCards =
+    initialForYouSetCards.length > 0
+      ? initialForYouSetCards
+      : await listDiscoverForYouInterestingSetCards({
+          getCatalogDiscoverySignalFn: (setId) =>
+            catalogDiscoverySignalBySetId.get(setId),
+          setCards: allCatalogSetCards,
+        });
   const totalSetCount = allCatalogSetCards.length;
   const totalThemeCount = countDiscoverThemes(allCatalogSetCards);
   const bestDealCandidateSetIds = bestDealCandidateSetCards.map(
@@ -95,9 +141,12 @@ export default async function DiscoverPage() {
   const selectedRailSetIds = [
     ...new Set(
       [
+        ...nowInterestingSetCards,
         ...recentPriceChangeSetCards,
         ...bestDealCandidateSetCards,
         ...recentlyReleasedSetCards,
+        ...(themeOfWeekRail?.setCards ?? []),
+        ...forYouSetCards,
       ].map((catalogSetCard) => catalogSetCard.id),
     ),
   ];
@@ -105,7 +154,11 @@ export default async function DiscoverPage() {
     await listCatalogCurrentOfferSummariesBySetIds({
       setIds: selectedRailSetIds,
     });
-  const dealSetCards = toDealSetCards(
+  const nowInterestingRailSetCards = toRailSetCards(
+    nowInterestingSetCards,
+    currentOfferSummaryBySetId,
+  );
+  const dealSetCards = toRailSetCards(
     bestDealCandidateSetCards,
     currentOfferSummaryBySetId,
   )
@@ -122,12 +175,19 @@ export default async function DiscoverPage() {
         left.name.localeCompare(right.name),
     )
     .slice(0, 6);
-  const recentPriceChangeRailSetCards = toDealSetCards(
+  const recentPriceChangeRailSetCards = toRailSetCards(
     recentPriceChangeSetCards,
     currentOfferSummaryBySetId,
   );
-  const recentlyReleasedRailSetCards = toDealSetCards(
+  const recentlyReleasedRailSetCards = toRailSetCards(
     recentlyReleasedSetCards,
+    currentOfferSummaryBySetId,
+  );
+  const themeOfWeekRailSetCards = themeOfWeekRail
+    ? toRailSetCards(themeOfWeekRail.setCards, currentOfferSummaryBySetId)
+    : [];
+  const forYouRailSetCards = toRailSetCards(
+    forYouSetCards,
     currentOfferSummaryBySetId,
   );
   const featuredDealSetCards = dealSetCards.map((dealSetCard, index) => {
@@ -188,8 +248,14 @@ export default async function DiscoverPage() {
     <ShellWeb>
       <CatalogFeatureDiscover
         bestDealSetCards={featuredDealSetCards}
+        forYouSetCards={forYouRailSetCards}
+        nowInterestingSetCards={nowInterestingRailSetCards}
         recentPriceChangeSetCards={recentPriceChangeRailSetCards}
         recentlyReleasedSetCards={recentlyReleasedRailSetCards}
+        themeOfWeek={{
+          setCards: themeOfWeekRailSetCards,
+          themeName: themeOfWeekRail?.theme,
+        }}
         totalSetCount={totalSetCount}
         totalThemeCount={totalThemeCount}
       />

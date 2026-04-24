@@ -24,6 +24,32 @@ describe('CatalogFeatureDiscover', () => {
             },
           },
         ]}
+        forYouSetCards={[
+          {
+            id: '21348',
+            slug: 'red-dragons-tale-21348',
+            name: "Dungeons & Dragons: Red Dragon's Tale",
+            theme: 'Ideas',
+            releaseYear: 2024,
+            pieces: 3745,
+          },
+        ]}
+        nowInterestingSetCards={[
+          {
+            id: '10333',
+            slug: 'the-lord-of-the-rings-barad-dur-10333',
+            name: 'The Lord of the Rings: Barad-dur',
+            theme: 'Icons',
+            releaseYear: 2024,
+            pieces: 5471,
+            priceContext: {
+              coverageLabel: 'In stock · 3 reviewed offers',
+              currentPrice: 'EUR 429.99',
+              merchantLabel: 'Lowest reviewed price at bol',
+              reviewedLabel: 'Checked 31 mrt',
+            },
+          },
+        ]}
         recentPriceChangeSetCards={[
           {
             id: '10316',
@@ -58,29 +84,56 @@ describe('CatalogFeatureDiscover', () => {
             },
           },
         ]}
+        themeOfWeek={{
+          setCards: [
+            {
+              id: '76419',
+              slug: 'hogwarts-castle-and-grounds-76419',
+              name: 'Hogwarts Castle and Grounds',
+              theme: 'Harry Potter',
+              releaseYear: 2023,
+              pieces: 2660,
+            },
+          ],
+          themeName: 'Harry Potter',
+        }}
         totalSetCount={180}
         totalThemeCount={12}
       />,
     );
 
     expect(markup).toContain('Ontdek waar het nu echt beweegt');
-    expect(markup).toContain('Waar prijzen recent zijn veranderd');
-    expect(markup).toContain('Beste deals nu');
-    expect(markup).toContain('Net uitgebracht');
-    expect(markup.indexOf('Waar prijzen recent zijn veranderd')).toBeLessThan(
-      markup.indexOf('Beste deals nu'),
+    expect(markup).toContain('Nu interessant');
+    expect(markup).toContain('Beste prijs nu');
+    expect(markup).toContain('Net in prijs veranderd');
+    expect(markup).toContain('Nieuwe releases');
+    expect(markup).toContain('Thema van de week');
+    expect(markup).toContain('Harry Potter');
+    expect(markup).toContain('Voor jou interessant');
+    expect(markup.indexOf('Nu interessant')).toBeLessThan(
+      markup.indexOf('Beste prijs nu'),
     );
-    expect(markup.indexOf('Beste deals nu')).toBeLessThan(
-      markup.indexOf('Net uitgebracht'),
+    expect(markup.indexOf('Beste prijs nu')).toBeLessThan(
+      markup.indexOf('Net in prijs veranderd'),
+    );
+    expect(markup.indexOf('Net in prijs veranderd')).toBeLessThan(
+      markup.indexOf('Nieuwe releases'),
+    );
+    expect(markup.indexOf('Nieuwe releases')).toBeLessThan(
+      markup.indexOf('Thema van de week'),
+    );
+    expect(markup.indexOf('Thema van de week')).toBeLessThan(
+      markup.indexOf('Voor jou interessant'),
     );
     expect(markup).toContain(
-      'Sets waar recent iets bewoog in prijs, zodat je sneller ziet waar het koopmoment verandert.',
+      'De scherpste prijzen die we nu zien bij winkels.',
+    );
+    expect(markup).toContain('Sets waarvan de prijs recent is aangepast.');
+    expect(markup).toContain(
+      'Nieuwe sets die net in de catalogus zitten en interessant worden.',
     );
     expect(markup).toContain(
-      'Sets waar de huidige prijs nu duidelijk afsteekt tegen wat we meestal of elders zien.',
-    );
-    expect(markup).toContain(
-      'Nieuwe sets die net in de catalogus zitten en nu interessant worden om te volgen of vergelijken.',
+      'Hier wil je nu als eerste kijken. Prijsbeweging, verse dekking en verschil tussen winkels komen hier samen.',
     );
     expect(markup).toContain('Bekijk alle thema');
     expect(markup).toContain('href="/themes"');
@@ -111,6 +164,16 @@ describe('CatalogFeatureDiscover', () => {
             ctaMode: 'commerce',
           },
         ]}
+        nowInterestingSetCards={[
+          {
+            id: '10333',
+            slug: 'the-lord-of-the-rings-barad-dur-10333',
+            name: 'The Lord of the Rings: Barad-dur',
+            theme: 'Icons',
+            releaseYear: 2024,
+            pieces: 5471,
+          },
+        ]}
         recentPriceChangeSetCards={[
           {
             id: '10316',
@@ -127,6 +190,7 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('Volg prijs');
     expect(markup).toContain('EUR 30.00 below reference');
     expect(markup).toContain('Rivendell');
+    expect(markup).toContain('The Lord of the Rings: Barad-dur');
   });
 
   it('drops the premature filter block and keeps a calm empty state', () => {

@@ -16,6 +16,7 @@ import {
   normalizeCatalogSetImages,
   normalizeCatalogQuickFilterKey,
   resolveCatalogThemeIdentity,
+  resolveCatalogThemeIdentityFromPersistence,
 } from './catalog-util';
 
 describe('catalog snapshot helpers', () => {
@@ -48,6 +49,7 @@ describe('catalog snapshot helpers', () => {
     expect(buildCatalogThemeSlug('Ultimate Collector Series')).toBe(
       'star-wars',
     );
+    expect(buildCatalogThemeSlug('Modular Buildings')).toBe('icons');
   });
 
   test('normalizes public theme display names from raw source labels', () => {
@@ -56,6 +58,8 @@ describe('catalog snapshot helpers', () => {
     expect(getCatalogThemeDisplayName('Ultimate Collector Series')).toBe(
       'Star Wars',
     );
+    expect(getCatalogThemeDisplayName('Modular Buildings')).toBe('Icons');
+    expect(getCatalogThemeDisplayName('LEGO Exclusive')).toBe('Other');
   });
 
   test('returns curated theme visuals for recognizable theme surfaces', () => {
@@ -67,6 +71,11 @@ describe('catalog snapshot helpers', () => {
     expect(getCatalogThemeVisual('Architecture')).toEqual({
       backgroundColor: '#6f8594',
       textColor: '#ffffff',
+    });
+    expect(getCatalogThemeVisual('Modular Buildings')).toEqual({
+      backgroundColor: '#f0c63b',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+      textColor: '#171a22',
     });
     expect(getCatalogThemeVisual('Ultimate Collector Series')).toEqual({
       backgroundColor: '#5573b5',
@@ -95,6 +104,37 @@ describe('catalog snapshot helpers', () => {
       backgroundColor: '#3c5f96',
       textColor: '#ffffff',
     });
+    expect(getCatalogThemeVisual('DC')).toEqual({
+      backgroundColor: '#345d9d',
+      textColor: '#ffffff',
+    });
+    expect(getCatalogThemeVisual('City')).toEqual({
+      backgroundColor: '#2f7fc0',
+      textColor: '#ffffff',
+    });
+    expect(getCatalogThemeVisual('The Legend of Zelda')).toEqual({
+      backgroundColor: '#4d8b72',
+      textColor: '#ffffff',
+    });
+    expect(getCatalogThemeVisual('Wednesday')).toEqual({
+      backgroundColor: '#5d6170',
+      textColor: '#ffffff',
+    });
+    expect(
+      [
+        'Brickheadz',
+        'BrickLink Designer Program',
+        'Classic',
+        'Creator',
+        'Dreamzzz',
+        'Duplo',
+        'Friends',
+        'Minecraft',
+        'Nike',
+        'Pokémon',
+        'Seasonal',
+      ].every((themeName) => Boolean(getCatalogThemeVisual(themeName))),
+    ).toBe(true);
     expect(getCatalogThemeSurfaceTone('Star Wars')).toBe('dark');
     expect(getCatalogThemeSurfaceTone('Icons')).toBe('light');
     expect(getCatalogThemeSurfaceTone('Speed Champions')).toBe('dark');
@@ -122,12 +162,45 @@ describe('catalog snapshot helpers', () => {
     });
     expect(
       resolveCatalogThemeIdentity({
+        rawTheme: 'Modular Buildings',
+      }),
+    ).toEqual({
+      primaryTheme: 'Icons',
+      secondaryThemes: ['Modular Buildings'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        rawTheme: 'LEGO Exclusive',
+      }),
+    ).toEqual({
+      primaryTheme: 'Other',
+      secondaryThemes: ['LEGO Exclusive'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
         parentTheme: 'Marvel',
         rawTheme: 'Spider-Man',
       }),
     ).toEqual({
       primaryTheme: 'Marvel',
       secondaryThemes: ['Spider-Man'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        parentTheme: 'Super Heroes Marvel',
+        rawTheme: 'Avengers',
+      }),
+    ).toEqual({
+      primaryTheme: 'Marvel',
+      secondaryThemes: ['Avengers'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        rawTheme: 'Batman',
+      }),
+    ).toEqual({
+      primaryTheme: 'DC',
+      secondaryThemes: ['Batman'],
     });
     expect(
       resolveCatalogThemeIdentity({
@@ -142,6 +215,44 @@ describe('catalog snapshot helpers', () => {
         rawTheme: 'Ninjago',
       }),
     ).toBe('NINJAGO');
+  });
+
+  test('normalizes persisted theme joins onto canonical browse themes', () => {
+    expect(
+      resolveCatalogThemeIdentityFromPersistence({
+        primaryThemeName: 'Modular Buildings',
+        sourceThemeName: 'Modular Buildings',
+      }),
+    ).toEqual({
+      primaryTheme: 'Icons',
+      secondaryThemes: ['Modular Buildings'],
+    });
+    expect(
+      resolveCatalogThemeIdentityFromPersistence({
+        primaryThemeName: 'Super Heroes Marvel',
+        sourceThemeName: 'Avengers',
+      }),
+    ).toEqual({
+      primaryTheme: 'Marvel',
+      secondaryThemes: ['Avengers'],
+    });
+    expect(
+      resolveCatalogThemeIdentityFromPersistence({
+        primaryThemeName: 'Super Heroes DC',
+        sourceThemeName: 'Batman',
+      }),
+    ).toEqual({
+      primaryTheme: 'DC',
+      secondaryThemes: ['Batman'],
+    });
+    expect(
+      resolveCatalogThemeIdentityFromPersistence({
+        primaryThemeName: 'LEGO Exclusive',
+      }),
+    ).toEqual({
+      primaryTheme: 'Other',
+      secondaryThemes: ['LEGO Exclusive'],
+    });
   });
 
   test('prefers product slug overrides when present', () => {

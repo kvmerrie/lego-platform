@@ -75,7 +75,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-creator-expert-10280-bloemenboeket-411-3767",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:26.410Z",
+    "observedAt": "2026-04-22T18:46:40.983Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -294,7 +294,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-icons-10311-orchidee-411-4336",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:27.382Z",
+    "observedAt": "2026-04-22T18:46:40.721Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -668,7 +668,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10327-icons-dune-atreides-royal-ornithopter-411-0327",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:20.171Z",
+    "observedAt": "2026-04-22T18:46:43.093Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -776,7 +776,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10328-icons-rozenboeket-411-1038",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:21.558Z",
+    "observedAt": "2026-04-22T18:46:42.600Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -1229,7 +1229,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10342-botanicals-roze-boeket",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:21.288Z",
+    "observedAt": "2026-04-22T18:46:42.742Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -1275,7 +1275,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10354-iconen-the-lord-of-the-rings-de-gouw",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:19.899Z",
+    "observedAt": "2026-04-22T18:46:43.240Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -2133,7 +2133,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-21061-architecture-notre-dame-van-parijs-411-1061",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:23.688Z",
+    "observedAt": "2026-04-22T18:46:41.988Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -2414,7 +2414,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-ideas-dungeons-dragons-the-legend-of-the-red-dragon-21348",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:19.753Z",
+    "observedAt": "2026-04-22T18:46:43.454Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -2964,7 +2964,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-31208-art-hokusai-de-grote-golf-411-1208",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:25.687Z",
+    "observedAt": "2026-04-22T18:46:41.309Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -3573,7 +3573,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42143-technic-ferrari-daytona-sp3-411-2143",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:27.652Z",
+    "observedAt": "2026-04-22T18:46:40.404Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -3979,7 +3979,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-4217-technic-mercedes-amg-f1-w14-e-performance-411-2171",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:16.774Z",
+    "observedAt": "2026-04-22T18:46:44.764Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -4072,7 +4072,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42172-technic-mclaren-p1-411-2172",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:16.987Z",
+    "observedAt": "2026-04-22T18:46:44.583Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -4507,7 +4507,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42177-technic-mercedes-benz-g-500-professional-line-411-2177",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:16.620Z",
+    "observedAt": "2026-04-22T18:46:44.899Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -6283,7 +6283,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-disney-classic-43269-101-dalmatiers-puppy",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:14.553Z",
+    "observedAt": "2026-04-22T18:46:45.346Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -7894,7 +7894,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-72037-super-mario-kart-mario-en-standaardkart",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:16.398Z",
+    "observedAt": "2026-04-22T18:46:45.208Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -8557,7 +8557,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-75355-star-wars-x-wing-starfighter",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:25.472Z",
+    "observedAt": "2026-04-22T18:46:41.481Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -8920,7 +8920,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-star-wars-75367-venator-class-republic-attack-cruiser",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:25.254Z",
+    "observedAt": "2026-04-22T18:46:41.701Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -9672,7 +9672,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.top1toys.nl/lego-super-heros-avengers-tower-76269",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:19.446Z",
+    "observedAt": "2026-04-22T18:46:43.649Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -9844,7 +9844,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76313-super-heroes-marvel-marvel-logo-en-minifiguren",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:18.734Z",
+    "observedAt": "2026-04-22T18:46:43.815Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -10313,7 +10313,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76419-harry-potter-kasteel-zweinstein-en-ter-terrein-411-6419",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:21.819Z",
+    "observedAt": "2026-04-22T18:46:42.442Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -10374,7 +10374,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76429-harry-potter-pratende-sorteerhoed-411-6429",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:20.367Z",
+    "observedAt": "2026-04-22T18:46:42.941Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -10484,7 +10484,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76435-harry-potter-kasteel-zweinstein-de-grote-zaal-411-6435",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:22.037Z",
+    "observedAt": "2026-04-22T18:46:42.304Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
@@ -10639,7 +10639,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76453-harry-potter-villa-malfidus",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T18:24:22.532Z",
+    "observedAt": "2026-04-22T18:46:42.142Z",
     "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },

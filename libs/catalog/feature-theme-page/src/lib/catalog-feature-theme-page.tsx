@@ -46,8 +46,6 @@ const themeEditorialIntroByName: Record<string, string> = {
     'Voor racewagens waar teamkleuren, livery en F1-herkenning de hele display dragen.',
   Botanicals:
     'Voor boeketten en planten die kleur geven zonder dat het als speelgoed voelt.',
-  'Modular Buildings':
-    'Voor straatbouwers die gevels, etalages en interieurs naast elkaar willen laten werken.',
   'Super Mario':
     'Voor Nintendo-herkenning die als displaystuk werkt en niet alleen als gimmick.',
   NINJAGO:

@@ -37,7 +37,9 @@ import {
   listCatalogThemePageSlugs,
   listDiscoverBestDealSetCards,
   listDiscoverBrowseThemeGroups,
+  listDiscoverForYouInterestingSetCards,
   listDiscoverHighlightSetCards,
+  listDiscoverNowInterestingSetCards,
   listDiscoverRecentPriceChangeSetCards,
   listDiscoverRecentlyReleasedSetCards,
   listHomepageDealCandidateSetCards,
@@ -45,11 +47,13 @@ import {
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   rankCatalogComparisonDiscoverySetCards,
+  rankCatalogNowInterestingSetCards,
   rankCatalogRecentPriceChangeSetCards,
   rankCatalogRecentlyReleasedSetCards,
   rankCatalogSimilarSetCards,
   resetWebCatalogSupabaseClientsForTests,
   resolveCatalogCurrentOffers,
+  selectCatalogThemeOfWeekRail,
   resolveCatalogSetDetailOffers,
   summarizeCatalogCurrentOffers,
 } from './catalog-effective-data-access-web';
@@ -1040,25 +1044,57 @@ describe('catalog effective data access web', () => {
     ]);
 
     expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Icons',
-      'Marvel',
-      'Ideas',
-      'Star Wars',
-      'Harry Potter',
-      'Technic',
       'Botanicals',
+      'Harry Potter',
+      'Icons',
+      'Ideas',
+      'Marvel',
+      'Star Wars',
+      'Technic',
     ]);
     expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Icons',
-      'Marvel',
-      'Ideas',
-      'Star Wars',
+      'Botanicals',
       'Harry Potter',
-      'Technic',
+      'Icons',
+      'Ideas',
+      'Marvel',
+      'Star Wars',
     ]);
     expect(spotlightItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Botanicals',
+      'Technic',
     ]);
+  });
+
+  test('gives directory items explicit visuals for canonical themes that previously fell back', async () => {
+    const [cityItem, zeldaItem] = await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          setId: '60488',
+          slug: 'snackbartruck-60488',
+          sourceSetNumber: '60488-1',
+          name: 'Snackbartruck',
+          primaryTheme: 'City',
+        }),
+        createCanonicalCatalogSet({
+          setId: '77092',
+          slug: 'great-deku-tree-2-in-1-77092',
+          sourceSetNumber: '77092-1',
+          name: 'Great Deku Tree 2-in-1',
+          primaryTheme: 'The Legend of Zelda',
+        }),
+      ],
+    });
+
+    expect(cityItem?.themeSnapshot.name).toBe('City');
+    expect(cityItem?.visual).toMatchObject({
+      backgroundColor: '#2f7fc0',
+      textColor: '#ffffff',
+    });
+    expect(zeldaItem?.themeSnapshot.name).toBe('The Legend of Zelda');
+    expect(zeldaItem?.visual).toMatchObject({
+      backgroundColor: '#4d8b72',
+      textColor: '#ffffff',
+    });
   });
 
   test('builds theme pages and theme slugs from canonical theme groups', async () => {
@@ -1111,6 +1147,65 @@ describe('catalog effective data access web', () => {
     expect(
       themePage?.setCards.map((catalogSetCard) => catalogSetCard.id),
     ).toEqual(['75313', '75399']);
+  });
+
+  test('folds legacy derived primary themes into canonical browse groups and hides parked themes', async () => {
+    const listCanonicalCatalogSetsFn = async () => [
+      createCanonicalCatalogSet({
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10326-1/1000.jpg',
+        name: 'Natural History Museum',
+        pieceCount: 4014,
+        primaryTheme: 'Modular Buildings',
+        releaseYear: 2023,
+        secondaryLabels: ['Modular Buildings'],
+        setId: '10326',
+        slug: 'natural-history-museum-10326',
+        sourceSetNumber: '10326-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+        name: 'Rivendell',
+        pieceCount: 6167,
+        primaryTheme: 'Icons',
+        releaseYear: 2023,
+        setId: '10316',
+        slug: 'rivendell-10316',
+        sourceSetNumber: '10316-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/40634-1/1000.jpg',
+        name: 'Official FIFA World Cup Trophy',
+        pieceCount: 605,
+        primaryTheme: 'Other',
+        releaseYear: 2022,
+        secondaryLabels: ['Editions'],
+        setId: '40634',
+        slug: 'official-fifa-world-cup-trophy-40634',
+        sourceSetNumber: '40634-1',
+      }),
+    ];
+
+    const [directoryItems, themePageSlugs, iconsThemePage] = await Promise.all([
+      listCatalogThemeDirectoryItems({
+        listCanonicalCatalogSetsFn,
+      }),
+      listCatalogThemePageSlugs({
+        listCanonicalCatalogSetsFn,
+      }),
+      getCatalogThemePageBySlug({
+        listCanonicalCatalogSetsFn,
+        slug: 'icons',
+      }),
+    ]);
+
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Icons',
+    ]);
+    expect(themePageSlugs).toEqual(['icons']);
+    expect(
+      iconsThemePage?.setCards.map((catalogSetCard) => catalogSetCard.id),
+    ).toEqual(['10316', '10326']);
+    expect(iconsThemePage?.setCards[1]?.theme).toBe('Icons');
   });
 
   test('ranks theme-local discovery rails with the same comparison scoring', () => {
@@ -1331,6 +1426,133 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
+  test('ranks the now-interesting rail from fresh movement, coverage and spread', () => {
+    const result = rankCatalogNowInterestingSetCards({
+      limit: 6,
+      setCards: [
+        {
+          id: '10333',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: Barad-dur',
+          pieces: 5471,
+          releaseYear: 2024,
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          theme: 'Icons',
+        },
+        {
+          id: '76269',
+          imageUrl: undefined,
+          name: 'Avengers Tower',
+          pieces: 5201,
+          releaseYear: 2023,
+          slug: 'avengers-tower-76269',
+          theme: 'Marvel',
+        },
+        {
+          id: '10354',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: The Shire',
+          pieces: 2017,
+          releaseYear: 2026,
+          slug: 'the-lord-of-the-rings-the-shire-10354',
+          theme: 'Icons',
+        },
+      ],
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '10333') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 4,
+            priceSpreadMinor: 6500,
+            recentReferencePriceChangeMinor: -1800,
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 6 * 60 * 60 * 1000,
+            ).toISOString(),
+          });
+        }
+
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 5,
+            priceSpreadMinor: 7000,
+            recentReferencePriceChangeMinor: -400,
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 20 * 60 * 60 * 1000,
+            ).toISOString(),
+          });
+        }
+
+        if (setId === '10354') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 2,
+            priceSpreadMinor: 1200,
+          });
+        }
+
+        return undefined;
+      },
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10333',
+      '76269',
+    ]);
+  });
+
+  test('builds the now-interesting rail through the shared discover helper', async () => {
+    const result = await listDiscoverNowInterestingSetCards({
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '10333') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 4,
+            priceSpreadMinor: 6500,
+            recentReferencePriceChangeMinor: -1800,
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 6 * 60 * 60 * 1000,
+            ).toISOString(),
+          });
+        }
+
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 5,
+            priceSpreadMinor: 7000,
+            recentReferencePriceChangeMinor: -400,
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 20 * 60 * 60 * 1000,
+            ).toISOString(),
+          });
+        }
+
+        return undefined;
+      },
+      setCards: [
+        {
+          id: '10333',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: Barad-dur',
+          pieces: 5471,
+          releaseYear: 2024,
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          theme: 'Icons',
+        },
+        {
+          id: '76269',
+          imageUrl: undefined,
+          name: 'Avengers Tower',
+          pieces: 5201,
+          releaseYear: 2023,
+          slug: 'avengers-tower-76269',
+          theme: 'Marvel',
+        },
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10333',
+      '76269',
+    ]);
+  });
+
   test('ranks newly released rails from release year first and then comparison readiness', () => {
     const result = rankCatalogRecentlyReleasedSetCards({
       currentYear: 2026,
@@ -1355,6 +1577,15 @@ describe('catalog effective data access web', () => {
           theme: 'Star Wars',
         },
         {
+          id: '43257',
+          imageUrl: undefined,
+          name: 'Angel',
+          pieces: 784,
+          releaseYear: 2026,
+          slug: 'angel-43257',
+          theme: 'Disney',
+        },
+        {
           id: '10313',
           imageUrl: undefined,
           name: 'Wildflower Bouquet',
@@ -1362,6 +1593,24 @@ describe('catalog effective data access web', () => {
           releaseYear: 2025,
           slug: 'wildflower-bouquet-10313',
           theme: 'Botanicals',
+        },
+        {
+          id: '30677',
+          imageUrl: undefined,
+          name: 'Mini Polybag',
+          pieces: 65,
+          releaseYear: 2026,
+          slug: 'mini-polybag-30677',
+          theme: 'City',
+        },
+        {
+          id: '10458',
+          imageUrl: undefined,
+          name: 'Peppa Pig Garden Trip',
+          pieces: 38,
+          releaseYear: 2026,
+          slug: 'peppa-pig-garden-trip-10458',
+          theme: 'Duplo',
         },
         {
           id: '31208',
@@ -1395,12 +1644,29 @@ describe('catalog effective data access web', () => {
           });
         }
 
+        if (setId === '43257') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 6499,
+            merchantCount: 3,
+            priceSpreadMinor: 2200,
+          });
+        }
+
+        if (setId === '30677') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 499,
+            merchantCount: 2,
+            priceSpreadMinor: 300,
+          });
+        }
+
         return undefined;
       },
     });
 
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '10354',
+      '43257',
       '75403',
       '10313',
     ]);
@@ -1506,6 +1772,186 @@ describe('catalog effective data access web', () => {
       '42143',
       '76269',
       '10313',
+    ]);
+  });
+
+  test('selects a theme of the week from current activity and enough depth', () => {
+    const result = selectCatalogThemeOfWeekRail({
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId.startsWith('hp-')) {
+          return createCatalogDiscoverySignal({
+            merchantCount: 4,
+            priceSpreadMinor: 5000,
+            recentReferencePriceChangeMinor: -1200,
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 8 * 60 * 60 * 1000,
+            ).toISOString(),
+          });
+        }
+
+        if (setId.startsWith('icons-')) {
+          return createCatalogDiscoverySignal({
+            merchantCount: 2,
+            priceSpreadMinor: 1200,
+          });
+        }
+
+        return undefined;
+      },
+      setCards: [
+        {
+          id: 'hp-1',
+          imageUrl: undefined,
+          name: 'Hogwarts Castle and Grounds',
+          pieces: 2660,
+          releaseYear: 2023,
+          slug: 'hogwarts-castle-and-grounds-76419',
+          theme: 'Harry Potter',
+        },
+        {
+          id: 'hp-2',
+          imageUrl: undefined,
+          name: 'The Burrow - Collectors Edition',
+          pieces: 2405,
+          releaseYear: 2024,
+          slug: 'the-burrow-collectors-edition',
+          theme: 'Harry Potter',
+        },
+        {
+          id: 'hp-3',
+          imageUrl: undefined,
+          name: "Gringotts Wizarding Bank – Collectors' Edition",
+          pieces: 4803,
+          releaseYear: 2023,
+          slug: 'gringotts-wizarding-bank',
+          theme: 'Harry Potter',
+        },
+        {
+          id: 'hp-4',
+          imageUrl: undefined,
+          name: 'Hogwarts Icons',
+          pieces: 3010,
+          releaseYear: 2022,
+          slug: 'hogwarts-icons',
+          theme: 'Harry Potter',
+        },
+        {
+          id: 'icons-1',
+          imageUrl: undefined,
+          name: 'Natural History Museum',
+          pieces: 4014,
+          releaseYear: 2023,
+          slug: 'natural-history-museum-10326',
+          theme: 'Icons',
+        },
+        {
+          id: 'icons-2',
+          imageUrl: undefined,
+          name: 'Concorde',
+          pieces: 2083,
+          releaseYear: 2023,
+          slug: 'concorde-10318',
+          theme: 'Icons',
+        },
+        {
+          id: 'icons-3',
+          imageUrl: undefined,
+          name: 'The Endurance',
+          pieces: 3011,
+          releaseYear: 2024,
+          slug: 'the-endurance-10335',
+          theme: 'Icons',
+        },
+        {
+          id: 'icons-4',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: Barad-dur',
+          pieces: 5471,
+          releaseYear: 2024,
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          theme: 'Icons',
+        },
+      ],
+    });
+
+    expect(result?.theme).toBe('Harry Potter');
+    expect(result?.setCards).toHaveLength(4);
+  });
+
+  test('builds a lightweight for-you rail from deals, movement and stronger themes', async () => {
+    const result = await listDiscoverForYouInterestingSetCards({
+      excludedSetIds: ['10333'],
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 5,
+            priceSpreadMinor: 7000,
+            referenceDeltaMinor: -2500,
+          });
+        }
+
+        if (setId === '76419') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 4,
+            priceSpreadMinor: 4200,
+            recentReferencePriceChangeMinor: -1400,
+            recentReferencePriceChangedAt: '2026-04-22T08:00:00.000Z',
+          });
+        }
+
+        if (setId === '43222') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 3,
+            priceSpreadMinor: 1800,
+          });
+        }
+
+        return undefined;
+      },
+      setCards: [
+        {
+          id: '10333',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: Barad-dur',
+          pieces: 5471,
+          releaseYear: 2024,
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          theme: 'Icons',
+        },
+        {
+          id: '76269',
+          imageUrl: undefined,
+          name: 'Avengers Tower',
+          pieces: 5201,
+          releaseYear: 2023,
+          slug: 'avengers-tower-76269',
+          theme: 'Marvel',
+        },
+        {
+          id: '76419',
+          imageUrl: undefined,
+          name: 'Hogwarts Castle and Grounds',
+          pieces: 2660,
+          releaseYear: 2023,
+          slug: 'hogwarts-castle-and-grounds-76419',
+          theme: 'Harry Potter',
+        },
+        {
+          id: '43222',
+          imageUrl: undefined,
+          name: 'Disney Castle',
+          pieces: 4837,
+          releaseYear: 2023,
+          slug: 'disney-castle-43222',
+          theme: 'Disney',
+        },
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '76419',
+      '76269',
+      '43222',
     ]);
   });
 
@@ -1841,6 +2287,243 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
+  test('boosts shared secondary themes above broader canonical theme matches', () => {
+    const result = rankCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '10326',
+        name: 'Natural History Museum',
+        pieces: 4014,
+        releaseYear: 2023,
+        secondaryLabels: ['Modular Buildings'],
+        theme: 'Icons',
+      },
+      limit: 6,
+      setCards: [
+        createCanonicalCatalogSet({
+          name: 'Natural History Museum',
+          pieceCount: 4014,
+          primaryTheme: 'Icons',
+          releaseYear: 2023,
+          secondaryLabels: ['Modular Buildings'],
+          setId: '10326',
+          slug: 'natural-history-museum-10326',
+          sourceSetNumber: '10326-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Shopping Street',
+          pieceCount: 2012,
+          primaryTheme: 'Icons',
+          releaseYear: 2025,
+          secondaryLabels: ['Modular Buildings'],
+          setId: '11371',
+          slug: 'shopping-street-11371',
+          sourceSetNumber: '11371-1',
+        }),
+        createCanonicalCatalogSet({
+          name: "Lion Knights' Castle",
+          pieceCount: 4514,
+          primaryTheme: 'Icons',
+          releaseYear: 2022,
+          setId: '10305',
+          slug: 'lion-knights-castle-10305',
+          sourceSetNumber: '10305-1',
+        }),
+      ].map((canonicalCatalogSet) => ({
+        id: canonicalCatalogSet.setId,
+        imageUrl: canonicalCatalogSet.imageUrl,
+        name: canonicalCatalogSet.name,
+        pieces: canonicalCatalogSet.pieceCount,
+        releaseYear: canonicalCatalogSet.releaseYear,
+        secondaryLabels: canonicalCatalogSet.secondaryLabels,
+        slug: canonicalCatalogSet.slug,
+        theme: canonicalCatalogSet.primaryTheme,
+      })),
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '11371',
+      '10305',
+    ]);
+  });
+
+  test('prefers shared Marvel subtheme adjacency before broader Marvel matches', () => {
+    const result = rankCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '76178',
+        name: 'Daily Bugle',
+        pieces: 3772,
+        releaseYear: 2021,
+        secondaryLabels: ['Spider-Man'],
+        theme: 'Marvel',
+      },
+      limit: 6,
+      setCards: [
+        createCanonicalCatalogSet({
+          name: 'Daily Bugle',
+          pieceCount: 3772,
+          primaryTheme: 'Marvel',
+          releaseYear: 2021,
+          secondaryLabels: ['Spider-Man'],
+          setId: '76178',
+          slug: 'daily-bugle-76178',
+          sourceSetNumber: '76178-1',
+        }),
+        createCanonicalCatalogSet({
+          name: "Captain America's Shield",
+          pieceCount: 3128,
+          primaryTheme: 'Marvel',
+          releaseYear: 2023,
+          secondaryLabels: ['The Infinity Saga'],
+          setId: '76262',
+          slug: 'captain-americas-shield-76262',
+          sourceSetNumber: '76262-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Spider-Man Final Battle',
+          pieceCount: 900,
+          primaryTheme: 'Marvel',
+          releaseYear: 2022,
+          secondaryLabels: ['Spider-Man'],
+          setId: '76261',
+          slug: 'spider-man-final-battle-76261',
+          sourceSetNumber: '76261-1',
+        }),
+      ].map((canonicalCatalogSet) => ({
+        id: canonicalCatalogSet.setId,
+        imageUrl: canonicalCatalogSet.imageUrl,
+        name: canonicalCatalogSet.name,
+        pieces: canonicalCatalogSet.pieceCount,
+        releaseYear: canonicalCatalogSet.releaseYear,
+        secondaryLabels: canonicalCatalogSet.secondaryLabels,
+        slug: canonicalCatalogSet.slug,
+        theme: canonicalCatalogSet.primaryTheme,
+      })),
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '76261',
+      '76262',
+    ]);
+  });
+
+  test('prefers Batman-adjacent DC sets before broader DC matches', () => {
+    const result = rankCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '76330',
+        name: 'Batman Logo',
+        pieces: 1822,
+        releaseYear: 2025,
+        secondaryLabels: ['Batman'],
+        theme: 'DC',
+      },
+      limit: 6,
+      setCards: [
+        createCanonicalCatalogSet({
+          name: 'Batman Logo',
+          pieceCount: 1822,
+          primaryTheme: 'DC',
+          releaseYear: 2025,
+          secondaryLabels: ['Batman'],
+          setId: '76330',
+          slug: 'batman-logo-76330',
+          sourceSetNumber: '76330-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Batman Cowl',
+          pieceCount: 410,
+          primaryTheme: 'DC',
+          releaseYear: 2021,
+          secondaryLabels: ['Batman'],
+          setId: '76182',
+          slug: 'batman-cowl-76182',
+          sourceSetNumber: '76182-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Hall of Justice',
+          pieceCount: 547,
+          primaryTheme: 'DC',
+          releaseYear: 2026,
+          setId: '76297',
+          slug: 'hall-of-justice-76297',
+          sourceSetNumber: '76297-1',
+        }),
+      ].map((canonicalCatalogSet) => ({
+        id: canonicalCatalogSet.setId,
+        imageUrl: canonicalCatalogSet.imageUrl,
+        name: canonicalCatalogSet.name,
+        pieces: canonicalCatalogSet.pieceCount,
+        releaseYear: canonicalCatalogSet.releaseYear,
+        secondaryLabels: canonicalCatalogSet.secondaryLabels,
+        slug: canonicalCatalogSet.slug,
+        theme: canonicalCatalogSet.primaryTheme,
+      })),
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '76182',
+      '76297',
+    ]);
+  });
+
+  test('keeps premium UCS-style Star Wars sets ahead of generic Star Wars matches', () => {
+    const result = rankCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '75192',
+        name: 'Millennium Falcon',
+        pieces: 7541,
+        releaseYear: 2017,
+        secondaryLabels: ['Ultimate Collector Series'],
+        theme: 'Star Wars',
+      },
+      limit: 6,
+      setCards: [
+        createCanonicalCatalogSet({
+          name: 'Millennium Falcon',
+          pieceCount: 7541,
+          primaryTheme: 'Star Wars',
+          releaseYear: 2017,
+          secondaryLabels: ['Ultimate Collector Series'],
+          setId: '75192',
+          slug: 'millennium-falcon-75192',
+          sourceSetNumber: '75192-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Millennium Falcon',
+          pieceCount: 921,
+          primaryTheme: 'Star Wars',
+          releaseYear: 2024,
+          setId: '75375',
+          slug: 'millennium-falcon-75375',
+          sourceSetNumber: '75375-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'AT-AT',
+          pieceCount: 6785,
+          primaryTheme: 'Star Wars',
+          releaseYear: 2021,
+          secondaryLabels: ['Ultimate Collector Series'],
+          setId: '75313',
+          slug: 'at-at-75313',
+          sourceSetNumber: '75313-1',
+        }),
+      ].map((canonicalCatalogSet) => ({
+        id: canonicalCatalogSet.setId,
+        imageUrl: canonicalCatalogSet.imageUrl,
+        name: canonicalCatalogSet.name,
+        pieces: canonicalCatalogSet.pieceCount,
+        releaseYear: canonicalCatalogSet.releaseYear,
+        secondaryLabels: canonicalCatalogSet.secondaryLabels,
+        slug: canonicalCatalogSet.slug,
+        theme: canonicalCatalogSet.primaryTheme,
+      })),
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '75313',
+      '75375',
+    ]);
+  });
+
   test('returns up to six similar sets and stays deterministic when scores tie', () => {
     const result = rankCatalogSimilarSetCards({
       currentSetCard: {
@@ -1918,6 +2601,55 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
+  test('reuses canonical secondary labels for the current set when the caller omits them', async () => {
+    const result = await listCatalogSimilarSetCards({
+      currentSetCard: {
+        id: '10326',
+        name: 'Natural History Museum',
+        pieces: 4014,
+        releaseYear: 2023,
+        theme: 'Icons',
+      },
+      limit: 6,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Natural History Museum',
+          pieceCount: 4014,
+          primaryTheme: 'Icons',
+          releaseYear: 2023,
+          secondaryLabels: ['Modular Buildings'],
+          setId: '10326',
+          slug: 'natural-history-museum-10326',
+          sourceSetNumber: '10326-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Shopping Street',
+          pieceCount: 2012,
+          primaryTheme: 'Icons',
+          releaseYear: 2025,
+          secondaryLabels: ['Modular Buildings'],
+          setId: '11371',
+          slug: 'shopping-street-11371',
+          sourceSetNumber: '11371-1',
+        }),
+        createCanonicalCatalogSet({
+          name: "Lion Knights' Castle",
+          pieceCount: 4514,
+          primaryTheme: 'Icons',
+          releaseYear: 2022,
+          setId: '10305',
+          slug: 'lion-knights-castle-10305',
+          sourceSetNumber: '10305-1',
+        }),
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '11371',
+      '10305',
+    ]);
+  });
+
   test('builds discover browse theme groups from canonical theme data', async () => {
     const result = await listDiscoverBrowseThemeGroups({
       listCanonicalCatalogSetsFn: async () => [
@@ -1941,6 +2673,13 @@ describe('catalog effective data access web', () => {
           sourceSetNumber: '76269-1',
           name: 'Avengers Tower',
           primaryTheme: 'Marvel',
+        }),
+        createCanonicalCatalogSet({
+          setId: '40634',
+          slug: 'official-fifa-world-cup-trophy-40634',
+          sourceSetNumber: '40634-1',
+          name: 'Official FIFA World Cup Trophy',
+          primaryTheme: 'Other',
         }),
       ],
       setLimit: 6,

@@ -1519,6 +1519,53 @@ async function listCatalogOverlaySetRows({
   }
 }
 
+async function updateCatalogThemeIdentityRow({
+  primaryThemeId,
+  setId,
+  sourceThemeId,
+  supabaseClient,
+}: {
+  primaryThemeId: string;
+  setId: string;
+  sourceThemeId: string;
+  supabaseClient: CatalogSupabaseClient;
+}) {
+  try {
+    const { error } = await supabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .update({
+        primary_theme_id: primaryThemeId,
+        source_theme_id: sourceThemeId,
+      })
+      .eq('set_id', setId);
+
+    if (error) {
+      throw error;
+    }
+
+    return;
+  } catch (error) {
+    if (
+      !isObjectRecord(error) ||
+      !isMissingSupabaseRelationError(error as DatabaseConflictLike)
+    ) {
+      throw new Error('Unable to backfill catalog theme identity.');
+    }
+  }
+
+  const { error } = await supabaseClient
+    .from(CATALOG_SETS_OVERLAY_TABLE)
+    .update({
+      primary_theme_id: primaryThemeId,
+      source_theme_id: sourceThemeId,
+    })
+    .eq('set_id', setId);
+
+  if (error) {
+    throw new Error('Unable to backfill catalog theme identity.');
+  }
+}
+
 async function insertCatalogSetRow({
   normalizedSet,
   supabaseClient,
@@ -1609,9 +1656,14 @@ export async function backfillCatalogOverlayThemeIdentity({
     includeInactive: true,
     supabaseClient: activeSupabaseClient,
   });
+  const hasScopedSetIds = Boolean(setIds?.length);
   const candidateRows = overlayRows.filter((overlayRow) => {
-    if (setIds?.length && !setIds.includes(overlayRow.set_id)) {
+    if (hasScopedSetIds && !setIds.includes(overlayRow.set_id)) {
       return false;
+    }
+
+    if (hasScopedSetIds) {
+      return true;
     }
 
     return !overlayRow.source_theme_id || !overlayRow.primary_theme_id;
@@ -1649,17 +1701,12 @@ export async function backfillCatalogOverlayThemeIdentity({
       themePersistence,
     });
 
-    const { error } = await activeSupabaseClient
-      .from(CATALOG_SETS_OVERLAY_TABLE)
-      .update({
-        primary_theme_id: themePersistence.primaryTheme.id,
-        source_theme_id: themePersistence.sourceTheme.id,
-      })
-      .eq('set_id', overlayRow.set_id);
-
-    if (error) {
-      throw new Error('Unable to backfill catalog theme identity.');
-    }
+    await updateCatalogThemeIdentityRow({
+      primaryThemeId: themePersistence.primaryTheme.id,
+      setId: overlayRow.set_id,
+      sourceThemeId: themePersistence.sourceTheme.id,
+      supabaseClient: activeSupabaseClient,
+    });
 
     updatedCount += 1;
   }

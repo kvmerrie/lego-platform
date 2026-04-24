@@ -206,6 +206,13 @@ function createCatalogOverlaySupabaseClient({
     data: null,
     error: null,
   });
+  const updateCanonicalEq = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  });
+  const updateCanonical = vi.fn(() => ({
+    eq: updateCanonicalEq,
+  }));
   const updateEq = vi.fn().mockResolvedValue({
     data: null,
     error: null,
@@ -246,6 +253,7 @@ function createCatalogOverlaySupabaseClient({
       return {
         insert: canonicalInsert,
         select: builder.select,
+        update: updateCanonical,
       };
     }
 
@@ -312,6 +320,8 @@ function createCatalogOverlaySupabaseClient({
     sourceThemeUpsert,
     supabaseClient: { from } as never,
     themeMappingUpsert,
+    updateCanonical,
+    updateCanonicalEq,
     update,
     updateEq,
   };
@@ -742,6 +752,94 @@ describe('catalog data access server', () => {
     });
   });
 
+  test('normalizes persisted derived primary themes like Modular Buildings back onto canonical browse themes', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          name: 'Natural History Museum',
+          primary_theme_id: 'theme:modular-buildings',
+          set_id: '10326',
+          slug: 'natural-history-museum-10326',
+          source_theme_id: 'rebrickable:155',
+          source_set_number: '10326-1',
+          theme: 'Modular Buildings',
+        }),
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Modular Buildings',
+          id: 'theme:modular-buildings',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:155',
+          source_theme_name: 'Modular Buildings',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:modular-buildings',
+          source_theme_id: 'rebrickable:155',
+        },
+      ],
+    });
+
+    const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      setId: '10326',
+      supabaseClient,
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      primaryTheme: 'Icons',
+      secondaryLabels: ['Modular Buildings'],
+    });
+  });
+
+  test('parks low-signal persisted theme joins out of the primary browse lane', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          name: 'Official FIFA World Cup Trophy',
+          primary_theme_id: 'theme:editions',
+          set_id: '40634',
+          slug: 'official-fifa-world-cup-trophy-40634',
+          source_theme_id: 'rebrickable:787',
+          source_set_number: '40634-1',
+          theme: 'Editions',
+        }),
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Editions',
+          id: 'theme:editions',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:787',
+          source_theme_name: 'Editions',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:editions',
+          source_theme_id: 'rebrickable:787',
+        },
+      ],
+    });
+
+    const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      setId: '40634',
+      supabaseClient,
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      primaryTheme: 'Other',
+      secondaryLabels: ['Editions'],
+    });
+  });
+
   test('falls back to the legacy theme string when normalized theme ids are absent', async () => {
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
       overlayRows: [
@@ -1089,7 +1187,7 @@ describe('catalog data access server', () => {
     });
   });
 
-  test('skips invalid Rebrickable search rows when a valid matching set is still present', async () => {
+  test('skips invalid Rebrickable search rows while normalizing botanical search hits onto Botanicals', async () => {
     process.env.REBRICKABLE_API_KEY = 'test-key';
 
     const order = vi.fn().mockResolvedValue({
@@ -1169,7 +1267,7 @@ describe('catalog data access server', () => {
       expect.objectContaining({
         setId: '10342',
         sourceSetNumber: '10342-1',
-        theme: 'Icons',
+        theme: 'Botanicals',
       }),
     ]);
   });
@@ -1419,7 +1517,8 @@ describe('catalog data access server', () => {
       supabaseClient,
       themeMappingUpsert,
       update,
-      updateEq,
+      updateCanonical,
+      updateCanonicalEq,
     } = createCatalogOverlaySupabaseClient({
       overlayRows: [
         createCatalogOverlayRow({
@@ -1490,25 +1589,27 @@ describe('catalog data access server', () => {
         onConflict: 'source_theme_id',
       },
     );
-    expect(update).toHaveBeenCalledWith({
+    expect(updateCanonical).toHaveBeenCalledWith({
       primary_theme_id: 'theme:star-wars',
       source_theme_id: 'rebrickable:592',
     });
-    expect(updateEq).toHaveBeenCalledWith('set_id', '75192');
+    expect(updateCanonicalEq).toHaveBeenCalledWith('set_id', '75192');
+    expect(update).not.toHaveBeenCalled();
   });
 
   test('backfills direct source themes without changing the legacy theme string', async () => {
     process.env.REBRICKABLE_API_KEY = 'test-key';
-    const { supabaseClient, update } = createCatalogOverlaySupabaseClient({
-      overlayRows: [
-        createCatalogOverlayRow({
-          set_id: '72037',
-          slug: 'mario-kart-mario-standard-kart-72037',
-          source_set_number: '72037-1',
-          theme: 'Super Mario',
-        }),
-      ],
-    });
+    const { supabaseClient, update, updateCanonical } =
+      createCatalogOverlaySupabaseClient({
+        overlayRows: [
+          createCatalogOverlayRow({
+            set_id: '72037',
+            slug: 'mario-kart-mario-standard-kart-72037',
+            source_set_number: '72037-1',
+            theme: 'Super Mario',
+          }),
+        ],
+      });
     const fetchImpl = createRebrickableFetchMock({
       setPayloads: {
         '72037-1': {
@@ -1529,15 +1630,96 @@ describe('catalog data access server', () => {
       supabaseClient,
     });
 
-    expect(update).toHaveBeenCalledWith({
+    expect(updateCanonical).toHaveBeenCalledWith({
       primary_theme_id: 'theme:super-mario',
       source_theme_id: 'rebrickable:696',
     });
-    expect(update).not.toHaveBeenCalledWith(
+    expect(update).not.toHaveBeenCalled();
+    expect(updateCanonical).not.toHaveBeenCalledWith(
       expect.objectContaining({
         theme: expect.anything(),
       }),
     );
+  });
+
+  test('reprocesses explicitly scoped rows so a legacy Spider-Man primary theme row is corrected to Marvel', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+    const {
+      primaryThemeUpsert,
+      supabaseClient,
+      themeMappingUpsert,
+      update,
+      updateCanonical,
+      updateCanonicalEq,
+    } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          name: 'Team Spidey Pirate Ship',
+          primary_theme_id: 'theme:marvel',
+          set_id: '11208',
+          slug: 'team-spidey-pirate-ship-11208',
+          source_theme_id: 'rebrickable:755',
+          source_set_number: '11208-1',
+          theme: 'Spider-Man',
+        }),
+      ],
+    });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '11208-1': {
+          set_num: '11208-1',
+          theme_id: 755,
+        },
+      },
+      themePayloads: {
+        '755': {
+          id: 755,
+          name: 'Spidey and His Amazing Friends',
+          parent_id: 706,
+        },
+        '706': {
+          id: 706,
+          name: 'Spider-Man',
+        },
+      },
+    });
+
+    const result = await backfillCatalogOverlayThemeIdentity({
+      fetchImpl,
+      setIds: ['11208'],
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      processedCount: 1,
+      skippedCount: 0,
+      updatedCount: 1,
+    });
+    expect(primaryThemeUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        display_name: 'Marvel',
+        id: 'theme:marvel',
+        slug: 'marvel',
+      }),
+      {
+        onConflict: 'id',
+      },
+    );
+    expect(themeMappingUpsert).toHaveBeenCalledWith(
+      {
+        primary_theme_id: 'theme:marvel',
+        source_theme_id: 'rebrickable:755',
+      },
+      {
+        onConflict: 'source_theme_id',
+      },
+    );
+    expect(updateCanonical).toHaveBeenCalledWith({
+      primary_theme_id: 'theme:marvel',
+      source_theme_id: 'rebrickable:755',
+    });
+    expect(updateCanonicalEq).toHaveBeenCalledWith('set_id', '11208');
+    expect(update).not.toHaveBeenCalled();
   });
 
   test('rejects adding a set when the set_id already exists in the canonical catalog', async () => {
