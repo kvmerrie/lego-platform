@@ -1,12 +1,15 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import {
+  getAwinCoolblueFeedConfig,
   getAdminPromotionConfig,
+  buildArticlePath,
   buildPublicSetDetailUrl,
   buildThemePath,
   buildWebPath,
   createLocaleCode,
   getBrowserSupabaseConfig,
   getMissingAdminPromotionEnvKeys,
+  getMissingAwinCoolblueEnvKeys,
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
@@ -22,6 +25,7 @@ import {
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
   hasAdminPromotionConfig,
+  hasAwinCoolblueFeedConfig,
   hasBrowserSupabaseConfig,
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
@@ -84,6 +88,9 @@ describe('shared config locale and market foundations', () => {
   test('builds unprefixed routes now while keeping locale-prefixed paths possible later', () => {
     expect(buildWebPath('/discover')).toBe('/discover');
     expect(buildWebPath('account')).toBe('/account');
+    expect(buildArticlePath('star-wars-day-2026')).toBe(
+      '/artikelen/star-wars-day-2026',
+    );
     expect(buildPublicSetDetailUrl({ slug: 'rivendell-10316' })).toBe(
       'http://localhost:3000/sets/rivendell-10316',
     );
@@ -299,5 +306,46 @@ describe('shared config TradeTracker helpers', () => {
       'TRADETRACKER_CUSTOMER_ID',
       'TRADETRACKER_PASSPHRASE',
     ]);
+  });
+});
+
+describe('shared config Awin Coolblue feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Awin Coolblue feed config with sensible merchant defaults', () => {
+    process.env.AWIN_COOLBLUE_FEED_URL =
+      'https://feeds.awin.example/coolblue.csv.gz';
+
+    expect(hasAwinCoolblueFeedConfig()).toBe(true);
+    expect(getMissingAwinCoolblueEnvKeys()).toEqual([]);
+    expect(getAwinCoolblueFeedConfig()).toEqual({
+      feedUrl: 'https://feeds.awin.example/coolblue.csv.gz',
+      merchantSlug: 'coolblue',
+      merchantName: 'Coolblue',
+    });
+  });
+
+  test('allows explicit Coolblue merchant overrides for the Awin feed config', () => {
+    process.env.AWIN_COOLBLUE_FEED_URL =
+      'https://feeds.awin.example/coolblue.csv.gz';
+    process.env.AWIN_COOLBLUE_MERCHANT_SLUG = 'coolblue-nl';
+    process.env.AWIN_COOLBLUE_MERCHANT_NAME = 'Coolblue Nederland';
+
+    expect(getAwinCoolblueFeedConfig()).toEqual({
+      feedUrl: 'https://feeds.awin.example/coolblue.csv.gz',
+      merchantSlug: 'coolblue-nl',
+      merchantName: 'Coolblue Nederland',
+    });
+  });
+
+  test('reports the missing Awin Coolblue feed URL', () => {
+    delete process.env.AWIN_COOLBLUE_FEED_URL;
+
+    expect(hasAwinCoolblueFeedConfig()).toBe(false);
+    expect(getMissingAwinCoolblueEnvKeys()).toEqual(['AWIN_COOLBLUE_FEED_URL']);
   });
 });

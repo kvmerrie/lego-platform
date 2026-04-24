@@ -98,6 +98,7 @@ export type RuntimeName = keyof typeof platformConfig.runtimes;
 
 export const webPathnames = {
   home: '/',
+  articles: '/artikelen',
   discover: '/discover',
   themes: '/themes',
   search: '/search',
@@ -204,6 +205,12 @@ export const tradeTrackerEnvKeys = {
   alternateCampaignId: 'TRADETRACKER_ALTERNATE_CAMPAIGN_ID',
 } as const;
 
+export const awinCoolblueEnvKeys = {
+  feedUrl: 'AWIN_COOLBLUE_FEED_URL',
+  merchantSlug: 'AWIN_COOLBLUE_MERCHANT_SLUG',
+  merchantName: 'AWIN_COOLBLUE_MERCHANT_NAME',
+} as const;
+
 export interface BrowserSupabaseConfig {
   anonKey: string;
   url: string;
@@ -246,6 +253,12 @@ export interface TradeTrackerAffiliateConfig {
   alternateFeedId?: number;
   customerId: number;
   passphrase: string;
+}
+
+export interface AwinCoolblueFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
 }
 
 function normalizePathname(pathname: string): string {
@@ -351,6 +364,10 @@ export function getDefaultMarketAdjective(): string {
 
 export function buildSetDetailPath(slug: string): string {
   return buildWebPath(`${webPathnames.sets}/${slug}`);
+}
+
+export function buildArticlePath(slug: string): string {
+  return buildWebPath(`${webPathnames.articles}/${slug}`);
 }
 
 export function buildThemePath(slug: string): string {
@@ -943,6 +960,35 @@ export function getTradeTrackerAffiliateConfig(
       key: tradeTrackerEnvKeys.alternateCampaignId,
     }),
   };
+}
+
+export function getAwinCoolblueFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): AwinCoolblueFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: awinCoolblueEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[awinCoolblueEnvKeys.merchantSlug]?.trim() || 'coolblue',
+    merchantName:
+      environment[awinCoolblueEnvKeys.merchantName]?.trim() || 'Coolblue',
+  };
+}
+
+export function hasAwinCoolblueFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[awinCoolblueEnvKeys.feedUrl]);
+}
+
+export function getMissingAwinCoolblueEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[awinCoolblueEnvKeys.feedUrl]
+    ? []
+    : [awinCoolblueEnvKeys.feedUrl];
 }
 
 export function hasTradeTrackerAffiliateConfig(

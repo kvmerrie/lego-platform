@@ -63,7 +63,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 6,
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
@@ -189,7 +189,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 7,
+    "merchantCount": 6,
     "observedAt": "2026-04-22T18:04:05.898Z",
     "referencePriceMinor": 5999,
     "deltaMinor": -1400
@@ -329,12 +329,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 14990,
+    "headlinePriceMinor": 14400,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T18:04:05.898Z"
+    "lowestMerchantId": "coolblue",
+    "lowestMerchantName": "Coolblue",
+    "merchantCount": 2,
+    "observedAt": "2026-04-24T16:25:42.220Z"
   },
   {
     "setId": "10359",
@@ -475,10 +475,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 10900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-04-22T07:41:03.227Z"
+    "lowestMerchantId": "coolblue",
+    "lowestMerchantName": "Coolblue",
+    "merchantCount": 3,
+    "observedAt": "2026-04-24T16:25:42.220Z"
   },
   {
     "setId": "11378",
@@ -497,12 +497,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11500,
+    "headlinePriceMinor": 11200,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 4,
-    "observedAt": "2026-04-22T07:41:00.619Z"
+    "lowestMerchantId": "coolblue",
+    "lowestMerchantName": "Coolblue",
+    "merchantCount": 5,
+    "observedAt": "2026-04-24T16:25:42.220Z"
   },
   {
     "setId": "11501",
@@ -751,7 +751,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
+    "merchantCount": 2,
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
@@ -1107,14 +1107,14 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15399,
+    "headlinePriceMinor": 15400,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "wehkamp",
-    "lowestMerchantName": "Wehkamp",
-    "merchantCount": 7,
-    "observedAt": "2026-04-21T17:02:58.543Z",
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 6,
+    "observedAt": "2026-04-22T07:44:44.823Z",
     "referencePriceMinor": 21999,
-    "deltaMinor": -6600
+    "deltaMinor": -6599
   },
   {
     "setId": "42172",
@@ -1139,7 +1139,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 6,
+    "merchantCount": 5,
     "observedAt": "2026-04-22T07:42:16.414Z"
   },
   {
@@ -1159,24 +1159,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13999,
+    "headlinePriceMinor": 16700,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "wehkamp",
-    "lowestMerchantName": "Wehkamp",
-    "merchantCount": 4,
-    "observedAt": "2026-04-21T17:02:57.811Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 3,
+    "observedAt": "2026-04-22T07:42:06.672Z"
   },
   {
     "setId": "42176",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11899,
+    "headlinePriceMinor": 12899,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "wehkamp",
-    "lowestMerchantName": "Wehkamp",
-    "merchantCount": 6,
-    "observedAt": "2026-04-21T17:02:58.142Z"
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 5,
+    "observedAt": "2026-04-22T07:42:06.077Z"
   },
   {
     "setId": "42177",
@@ -1489,7 +1489,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 5,
+    "merchantCount": 6,
     "observedAt": "2026-04-22T07:40:10.155Z"
   },
   {
@@ -2525,7 +2525,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 6,
+    "merchantCount": 7,
     "observedAt": "2026-04-22T07:45:34.398Z"
   },
   {

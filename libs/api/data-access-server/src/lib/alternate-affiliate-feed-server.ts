@@ -11,9 +11,20 @@ import type {
   CommerceMerchantInput,
 } from '@lego-platform/commerce/util';
 
-const ALTERNATE_MERCHANT_SLUG = 'alternate';
-const ALTERNATE_MERCHANT_NAME = 'Alternate';
-const ALTERNATE_AFFILIATE_NETWORK = 'TradeTracker';
+export interface AffiliateFeedMerchantConfig {
+  affiliateNetwork: string;
+  name: string;
+  notes: string;
+  slug: string;
+}
+
+const ALTERNATE_MERCHANT_CONFIG = {
+  slug: 'alternate',
+  name: 'Alternate',
+  affiliateNetwork: 'TradeTracker',
+  notes:
+    'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+} as const satisfies AffiliateFeedMerchantConfig;
 
 export interface AlternateAffiliateFeedRow {
   affiliateDeeplink: string;
@@ -360,29 +371,30 @@ function buildUnmatchedDebugInfo({
   };
 }
 
-async function ensureAlternateMerchant({
+async function ensureAffiliateMerchant({
   createCommerceMerchantFn,
   listCommerceMerchantsFn,
+  merchantConfig,
   updateCommerceMerchantFn,
 }: {
   createCommerceMerchantFn: typeof createCommerceMerchant;
   listCommerceMerchantsFn: typeof listCommerceMerchants;
+  merchantConfig: AffiliateFeedMerchantConfig;
   updateCommerceMerchantFn: typeof updateCommerceMerchant;
 }): Promise<{
   merchant: CommerceMerchant;
   merchantCreated: boolean;
 }> {
   const existingMerchant = (await listCommerceMerchantsFn()).find(
-    (merchant) => merchant.slug === ALTERNATE_MERCHANT_SLUG,
+    (merchant) => merchant.slug === merchantConfig.slug,
   );
   const merchantInput: CommerceMerchantInput = {
-    slug: ALTERNATE_MERCHANT_SLUG,
-    name: ALTERNATE_MERCHANT_NAME,
+    slug: merchantConfig.slug,
+    name: merchantConfig.name,
     isActive: true,
     sourceType: 'affiliate',
-    affiliateNetwork: ALTERNATE_AFFILIATE_NETWORK,
-    notes:
-      'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+    affiliateNetwork: merchantConfig.affiliateNetwork,
+    notes: merchantConfig.notes,
   };
 
   if (!existingMerchant) {
@@ -416,12 +428,14 @@ async function ensureAlternateMerchant({
   };
 }
 
-export async function importAlternateAffiliateFeedRows({
+export async function importAffiliateFeedRowsForMerchant({
   dependencies = {},
+  merchant,
   options,
   rows,
 }: {
   dependencies?: AlternateAffiliateFeedImportDependencies;
+  merchant: AffiliateFeedMerchantConfig;
   options?: AlternateAffiliateFeedImportOptions;
   rows: readonly AlternateAffiliateFeedRow[];
 }): Promise<AlternateAffiliateFeedImportResult> {
@@ -434,11 +448,13 @@ export async function importAlternateAffiliateFeedRows({
     upsertCommerceOfferSeedByCompositeKeyFn = upsertCommerceOfferSeedByCompositeKey,
     updateCommerceMerchantFn = updateCommerceMerchant,
   } = dependencies;
-  const { merchant, merchantCreated } = await ensureAlternateMerchant({
-    createCommerceMerchantFn,
-    listCommerceMerchantsFn,
-    updateCommerceMerchantFn,
-  });
+  const { merchant: resolvedMerchant, merchantCreated } =
+    await ensureAffiliateMerchant({
+      createCommerceMerchantFn,
+      listCommerceMerchantsFn,
+      merchantConfig: merchant,
+      updateCommerceMerchantFn,
+    });
   const catalogSetIdByIdentifier = buildCatalogSetIdLookup(
     await listCanonicalCatalogSetsFn(),
   );
@@ -545,13 +561,12 @@ export async function importAlternateAffiliateFeedRows({
     const offerSeed = await upsertCommerceOfferSeedByCompositeKeyFn({
       input: {
         setId: matchedCatalogSetId,
-        merchantId: merchant.id,
+        merchantId: resolvedMerchant.id,
         productUrl: deeplinkUrl.toString(),
         isActive: true,
         validationStatus: 'valid',
         lastVerifiedAt: observedAt,
-        notes:
-          'Feed-driven Alternate import via TradeTracker. Exact matched by LEGO set number.',
+        notes: `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number.`,
       },
     });
 
@@ -576,7 +591,7 @@ export async function importAlternateAffiliateFeedRows({
     importedOfferCount: upsertedLatestSeedIds.size,
     matchedCatalogSetCount: matchedCatalogSetIds.size,
     merchantCreated,
-    merchantSlug: merchant.slug,
+    merchantSlug: resolvedMerchant.slug,
     skippedInvalidCurrencyCount,
     skippedInvalidDeeplinkCount,
     skippedInvalidPriceCount,
@@ -595,4 +610,21 @@ export async function importAlternateAffiliateFeedRows({
     upsertedLatestCount: upsertedLatestSeedIds.size,
     upsertedSeedCount: upsertedSeedIds.size,
   };
+}
+
+export async function importAlternateAffiliateFeedRows({
+  dependencies = {},
+  options,
+  rows,
+}: {
+  dependencies?: AlternateAffiliateFeedImportDependencies;
+  options?: AlternateAffiliateFeedImportOptions;
+  rows: readonly AlternateAffiliateFeedRow[];
+}): Promise<AlternateAffiliateFeedImportResult> {
+  return importAffiliateFeedRowsForMerchant({
+    dependencies,
+    merchant: ALTERNATE_MERCHANT_CONFIG,
+    options,
+    rows,
+  });
 }

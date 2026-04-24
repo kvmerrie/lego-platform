@@ -1,5 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
-import { importAlternateAffiliateFeedRows } from './alternate-affiliate-feed-server';
+import {
+  importAffiliateFeedRowsForMerchant,
+  importAlternateAffiliateFeedRows,
+} from './alternate-affiliate-feed-server';
 
 describe('alternate affiliate feed server', () => {
   test('imports exact LEGO set matches into commerce seeds and latest offer state', async () => {
@@ -478,6 +481,100 @@ describe('alternate affiliate feed server', () => {
           productTitle: 'LEGO City testset',
         },
       ],
+    });
+  });
+
+  test('supports other affiliate feed merchants like Coolblue with the same strict importer flow', async () => {
+    const createCommerceMerchantFn = vi.fn().mockResolvedValue({
+      id: 'merchant-coolblue',
+      slug: 'coolblue',
+      name: 'Coolblue',
+      isActive: true,
+      sourceType: 'affiliate',
+      affiliateNetwork: 'Awin',
+      notes: 'Feed-driven merchant. Current offer state is imported from Awin.',
+      createdAt: '2026-04-24T09:00:00.000Z',
+      updatedAt: '2026-04-24T09:00:00.000Z',
+    });
+    const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn().mockResolvedValue({
+      id: 'seed-60368-coolblue',
+      setId: '60368',
+      merchantId: 'merchant-coolblue',
+    });
+    const upsertCommerceOfferLatestRecordFn = vi
+      .fn()
+      .mockResolvedValue(undefined);
+
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        createCommerceMerchantFn,
+        getNow: () => new Date('2026-04-24T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '60368',
+            sourceSetNumber: '60368-1',
+            status: 'active',
+          },
+        ]),
+        listCommerceMerchantsFn: vi.fn().mockResolvedValue([]),
+        upsertCommerceOfferLatestRecordFn,
+        upsertCommerceOfferSeedByCompositeKeyFn,
+        updateCommerceMerchantFn: vi.fn(),
+      },
+      merchant: {
+        affiliateNetwork: 'Awin',
+        name: 'Coolblue',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from Awin.',
+        slug: 'coolblue',
+      },
+      rows: [
+        {
+          affiliateDeeplink:
+            'https://www.awin1.com/cread.php?awinmid=1&awinaffid=2&ued=https%3A%2F%2Fwww.coolblue.nl%2Fproduct%2F60368',
+          availabilityText: 'Op voorraad',
+          brand: 'LEGO',
+          currency: 'EUR',
+          legoSetNumber: '60368',
+          price: '114.99',
+          productTitle: 'LEGO City Arctic Explorer Ship',
+        },
+      ],
+    });
+
+    expect(createCommerceMerchantFn).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        affiliateNetwork: 'Awin',
+        isActive: true,
+        name: 'Coolblue',
+        slug: 'coolblue',
+        sourceType: 'affiliate',
+      }),
+    });
+    expect(upsertCommerceOfferSeedByCompositeKeyFn).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        merchantId: 'merchant-coolblue',
+        productUrl:
+          'https://www.awin1.com/cread.php?awinmid=1&awinaffid=2&ued=https%3A%2F%2Fwww.coolblue.nl%2Fproduct%2F60368',
+        setId: '60368',
+      }),
+    });
+    expect(upsertCommerceOfferLatestRecordFn).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        availability: 'in_stock',
+        currencyCode: 'EUR',
+        offerSeedId: 'seed-60368-coolblue',
+        priceMinor: 11499,
+      }),
+    });
+    expect(result).toMatchObject({
+      importedOfferCount: 1,
+      matchedCatalogSetCount: 1,
+      merchantCreated: true,
+      merchantSlug: 'coolblue',
+      skippedUnmatchedSetCount: 0,
+      upsertedLatestCount: 1,
+      upsertedSeedCount: 1,
     });
   });
 });
