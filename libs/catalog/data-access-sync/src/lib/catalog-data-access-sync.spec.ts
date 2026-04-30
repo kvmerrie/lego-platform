@@ -947,6 +947,35 @@ export const catalogSnapshot: CatalogSnapshot = {
     });
   });
 
+  test('preserves exact release metadata instead of downgrading it to year-only data', async () => {
+    const artifacts = await buildCatalogSyncArtifacts({
+      scopedSetNumbers: ['10316-1', '10333-1', '21333-1'],
+      listCanonicalCatalogSetsFn: async () => [
+        {
+          ...requireMockCanonicalCatalogSet('10316'),
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+        },
+        requireMockCanonicalCatalogSet('10333'),
+        requireMockCanonicalCatalogSet('21333'),
+      ],
+      now: new Date('2026-03-28T00:00:00.000Z'),
+    });
+
+    expect(artifacts.catalogSnapshot.setRecords[0]).toEqual({
+      ...requireCurrentSnapshotRecord('10316'),
+      sourceSetNumber: '10316-1',
+      name: 'Lord of the Rings: Rivendell',
+      theme: 'Icons',
+      releaseDate: '2026-05-01',
+      releaseDatePrecision: 'day',
+      releaseYear: 2026,
+      pieces: 6181,
+      imageUrl: 'https://images.example/rivendell.jpg',
+    });
+  });
+
   test('falls back cleanly when the canonical source only provides snapshot-backed sets', async () => {
     const artifacts = await buildCatalogSyncArtifacts({
       scopedSetNumbers: ['10316-1', '10333-1', '21333-1'],

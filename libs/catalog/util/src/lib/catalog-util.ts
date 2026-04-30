@@ -1,13 +1,33 @@
 import { MetricCard } from '@lego-platform/shared/types';
 import { formatCompactNumber } from '@lego-platform/shared/util';
+import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
+
+export const catalogReleaseDatePrecisions = [
+  'day',
+  'month',
+  'year',
+  'unknown',
+] as const;
+
+export type CatalogReleaseDatePrecision =
+  (typeof catalogReleaseDatePrecisions)[number];
+
+export interface CatalogReleaseMetadata {
+  createdAt?: string;
+  releaseDate?: string;
+  releaseDatePrecision: CatalogReleaseDatePrecision;
+}
 
 export interface CatalogSetSummary {
+  createdAt?: string;
   id: string;
   slug: string;
   name: string;
   theme: string;
   secondaryLabels?: readonly string[];
   releaseYear: number;
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
   pieces: number;
   // Transitional legacy copy field. New runtime reads should not depend on it.
   collectorAngle?: string;
@@ -589,6 +609,8 @@ export interface CatalogSetRecord {
   name: string;
   theme: string;
   releaseYear: number;
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
   pieces: number;
   imageUrl?: string;
   images?: readonly CatalogSetImage[];
@@ -609,6 +631,8 @@ export interface CatalogAddableSetRecord {
   name: string;
   pieces: number;
   releaseYear: number;
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
   setId: string;
   slug: string;
   source: CatalogOverlaySetSource;
@@ -655,6 +679,8 @@ export interface CatalogCanonicalSet {
   pieceCount: number;
   primaryTheme: string;
   releaseYear: number;
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
   secondaryLabels: readonly string[];
   setId: string;
   slug: string;
@@ -910,10 +936,200 @@ export interface CatalogSetSeed {
   name: string;
   theme: string;
   releaseYear: number;
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
   pieces: number;
   imageUrl?: string;
   images?: readonly CatalogSetImageSeed[];
   primaryImage?: string;
+}
+
+function parseCatalogReleaseDate(releaseDate?: string): Date | undefined {
+  if (!releaseDate) {
+    return undefined;
+  }
+
+  const parsedDate = new Date(`${releaseDate}T00:00:00Z`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return undefined;
+  }
+
+  return parsedDate;
+}
+
+export function resolveCatalogReleaseDatePrecision({
+  releaseDate,
+  releaseDatePrecision,
+  releaseYear,
+}: {
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
+  releaseYear?: number;
+}): CatalogReleaseDatePrecision {
+  const parsedDate = parseCatalogReleaseDate(releaseDate);
+
+  if (
+    parsedDate &&
+    (releaseDatePrecision === 'day' || releaseDatePrecision === 'month')
+  ) {
+    return releaseDatePrecision;
+  }
+
+  if (typeof releaseYear === 'number') {
+    return 'year';
+  }
+
+  if (parsedDate) {
+    return 'day';
+  }
+
+  return 'unknown';
+}
+
+export function getCatalogReleaseYear({
+  releaseDate,
+  releaseYear,
+}: {
+  releaseDate?: string;
+  releaseYear?: number;
+}): number | undefined {
+  if (typeof releaseYear === 'number') {
+    return releaseYear;
+  }
+
+  return parseCatalogReleaseDate(releaseDate)?.getUTCFullYear();
+}
+
+function formatCatalogReleaseMonthYear(date: Date): string {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+    month: 'long',
+    timeZone: 'UTC',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatCatalogReleaseDay(date: Date): string {
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+    year: 'numeric',
+  }).format(date);
+}
+
+function getCatalogReleaseAgeDays({
+  now = new Date(),
+  releaseDate,
+}: {
+  now?: Date;
+  releaseDate: Date;
+}): number {
+  return Math.floor(
+    (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
+      Date.UTC(
+        releaseDate.getUTCFullYear(),
+        releaseDate.getUTCMonth(),
+        releaseDate.getUTCDate(),
+      )) /
+      86_400_000,
+  );
+}
+
+export function buildCatalogReleaseLabel({
+  now = new Date(),
+  releaseDate,
+  releaseDatePrecision,
+  releaseYear,
+  variant = 'detail',
+}: {
+  now?: Date;
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
+  releaseYear?: number;
+  variant?: 'compact' | 'detail';
+}):
+  | {
+      label: string;
+      value: string;
+    }
+  | undefined {
+  const resolvedPrecision = resolveCatalogReleaseDatePrecision({
+    releaseDate,
+    releaseDatePrecision,
+    releaseYear,
+  });
+  const resolvedReleaseYear = getCatalogReleaseYear({
+    releaseDate,
+    releaseYear,
+  });
+  const parsedReleaseDate = parseCatalogReleaseDate(releaseDate);
+
+  if (resolvedPrecision === 'unknown') {
+    return undefined;
+  }
+
+  if (variant === 'compact') {
+    if (
+      parsedReleaseDate &&
+      (resolvedPrecision === 'day' || resolvedPrecision === 'month')
+    ) {
+      const releaseAgeDays = getCatalogReleaseAgeDays({
+        now,
+        releaseDate: parsedReleaseDate,
+      });
+
+      if (releaseAgeDays >= 0 && releaseAgeDays <= 45) {
+        return {
+          label: 'Release',
+          value: 'Net uit',
+        };
+      }
+    }
+
+    if (
+      typeof resolvedReleaseYear === 'number' &&
+      resolvedReleaseYear >= now.getUTCFullYear()
+    ) {
+      return {
+        label: 'Release',
+        value: `Nieuw in ${resolvedReleaseYear}`,
+      };
+    }
+
+    return undefined;
+  }
+
+  if (resolvedPrecision === 'day' && parsedReleaseDate) {
+    return {
+      label: 'Release',
+      value: formatCatalogReleaseDay(parsedReleaseDate),
+    };
+  }
+
+  if (resolvedPrecision === 'month' && parsedReleaseDate) {
+    const monthYearLabel = formatCatalogReleaseMonthYear(parsedReleaseDate);
+
+    return {
+      label: 'Release',
+      value:
+        parsedReleaseDate.getTime() > now.getTime()
+          ? `Verwacht ${monthYearLabel}`
+          : `Uitgebracht ${monthYearLabel}`,
+    };
+  }
+
+  if (typeof resolvedReleaseYear === 'number') {
+    return {
+      label: 'Release',
+      value:
+        resolvedReleaseYear >= now.getUTCFullYear()
+          ? `Nieuw in ${resolvedReleaseYear}`
+          : `Uitgebracht in ${resolvedReleaseYear}`,
+    };
+  }
+
+  return undefined;
 }
 
 function normalizeCatalogText(value: string): string {
@@ -1499,6 +1715,20 @@ export function createCatalogSetRecord(
       rawTheme: catalogSetSeed.theme,
     }),
     releaseYear: catalogSetSeed.releaseYear,
+    ...(catalogSetSeed.releaseDate
+      ? {
+          releaseDate: catalogSetSeed.releaseDate,
+        }
+      : {}),
+    ...(catalogSetSeed.releaseDate || catalogSetSeed.releaseDatePrecision
+      ? {
+          releaseDatePrecision: resolveCatalogReleaseDatePrecision({
+            releaseDate: catalogSetSeed.releaseDate,
+            releaseDatePrecision: catalogSetSeed.releaseDatePrecision,
+            releaseYear: catalogSetSeed.releaseYear,
+          }),
+        }
+      : {}),
     pieces: catalogSetSeed.pieces,
     imageUrl: catalogSetImages.imageUrl,
     ...(hasExplicitGalleryImages && catalogSetImages.images
@@ -1563,8 +1793,14 @@ export function sortCatalogSetSummaries(
 ): CatalogSetSummary[] {
   return [...setSummaries].sort(
     (left, right) =>
-      right.releaseYear - left.releaseYear ||
-      left.name.localeCompare(right.name),
+      (getCatalogReleaseYear({
+        releaseDate: right.releaseDate,
+        releaseYear: right.releaseYear,
+      }) ?? 0) -
+        (getCatalogReleaseYear({
+          releaseDate: left.releaseDate,
+          releaseYear: left.releaseYear,
+        }) ?? 0) || left.name.localeCompare(right.name),
   );
 }
 
@@ -1573,8 +1809,14 @@ export function sortCanonicalCatalogSets(
 ): CatalogCanonicalSet[] {
   return [...canonicalCatalogSets].sort(
     (left, right) =>
-      right.releaseYear - left.releaseYear ||
-      left.name.localeCompare(right.name),
+      (getCatalogReleaseYear({
+        releaseDate: right.releaseDate,
+        releaseYear: right.releaseYear,
+      }) ?? 0) -
+        (getCatalogReleaseYear({
+          releaseDate: left.releaseDate,
+          releaseYear: left.releaseYear,
+        }) ?? 0) || left.name.localeCompare(right.name),
   );
 }
 
@@ -1624,7 +1866,15 @@ export function buildCatalogMetrics(
     {
       label: 'Nieuwste release',
       value: String(
-        Math.max(...setSummaries.map((setSummary) => setSummary.releaseYear)),
+        Math.max(
+          ...setSummaries.map(
+            (setSummary) =>
+              getCatalogReleaseYear({
+                releaseDate: setSummary.releaseDate,
+                releaseYear: setSummary.releaseYear,
+              }) ?? 0,
+          ),
+        ),
       ),
       detail: 'Laatste verzamelklare lancering',
       tone: 'accent',

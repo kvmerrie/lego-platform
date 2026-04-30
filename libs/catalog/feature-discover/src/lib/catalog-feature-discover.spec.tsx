@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CatalogFeatureDiscover } from './catalog-feature-discover';
 
 describe('CatalogFeatureDiscover', () => {
-  it('renders the three market-driven rails in the intended order', () => {
+  it('renders the discover rails in the intended order', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureDiscover
         bestDealSetCards={[
@@ -34,6 +34,30 @@ describe('CatalogFeatureDiscover', () => {
             pieces: 3745,
           },
         ]}
+        newInReleaseYear={{
+          releaseYear: 2026,
+          setCards: [
+            {
+              id: '10354',
+              slug: 'the-lord-of-the-rings-the-shire-10354',
+              name: 'The Lord of the Rings: The Shire',
+              theme: 'Icons',
+              releaseYear: 2026,
+              pieces: 2017,
+              minifigureHighlights: [
+                'Bilbo Baggins',
+                'Gandalf',
+                'Frodo Baggins',
+              ],
+              priceContext: {
+                coverageLabel: 'In stock · 2 reviewed offers',
+                currentPrice: 'EUR 229.99',
+                merchantLabel: 'Lowest reviewed price at bol',
+                reviewedLabel: 'Checked 31 mrt',
+              },
+            },
+          ],
+        }}
         nowInterestingSetCards={[
           {
             id: '10333',
@@ -69,19 +93,31 @@ describe('CatalogFeatureDiscover', () => {
         ]}
         recentlyReleasedSetCards={[
           {
-            id: '10354',
-            slug: 'the-lord-of-the-rings-the-shire-10354',
-            name: 'The Lord of the Rings: The Shire',
-            theme: 'Icons',
+            id: '75417',
+            slug: 'at-st-walker-75417',
+            name: 'AT-ST Walker',
+            theme: 'Star Wars',
             releaseYear: 2026,
-            pieces: 2017,
-            minifigureHighlights: ['Bilbo Baggins', 'Gandalf', 'Frodo Baggins'],
+            releaseDate: '2026-05-01',
+            releaseDatePrecision: 'day',
+            pieces: 1513,
+            minifigureHighlights: ['AT-ST Driver'],
             priceContext: {
               coverageLabel: 'In stock · 2 reviewed offers',
-              currentPrice: 'EUR 229.99',
+              currentPrice: 'EUR 199.99',
               merchantLabel: 'Lowest reviewed price at bol',
               reviewedLabel: 'Checked 31 mrt',
             },
+          },
+        ]}
+        newOnBrickhuntSetCards={[
+          {
+            id: '42209',
+            slug: 'volvo-l120-electric-wheel-loader-42209',
+            name: 'Volvo L120 Electric Wheel Loader',
+            theme: 'Technic',
+            releaseYear: 2026,
+            pieces: 973,
           },
         ]}
         themeOfWeek={{
@@ -105,8 +141,10 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain('Ontdek waar het nu echt beweegt');
     expect(markup).toContain('Nu interessant');
     expect(markup).toContain('Beste prijs nu');
-    expect(markup).toContain('Net in prijs veranderd');
     expect(markup).toContain('Nieuwe releases');
+    expect(markup).toContain('Nieuw in 2026');
+    expect(markup).toContain('Nieuw op Brickhunt');
+    expect(markup).toContain('Net in prijs veranderd');
     expect(markup).toContain('Thema van de week');
     expect(markup).toContain('Harry Potter');
     expect(markup).toContain('Voor jou interessant');
@@ -114,12 +152,18 @@ describe('CatalogFeatureDiscover', () => {
       markup.indexOf('Beste prijs nu'),
     );
     expect(markup.indexOf('Beste prijs nu')).toBeLessThan(
-      markup.indexOf('Net in prijs veranderd'),
-    );
-    expect(markup.indexOf('Net in prijs veranderd')).toBeLessThan(
       markup.indexOf('Nieuwe releases'),
     );
     expect(markup.indexOf('Nieuwe releases')).toBeLessThan(
+      markup.indexOf('Nieuw in 2026'),
+    );
+    expect(markup.indexOf('Nieuw in 2026')).toBeLessThan(
+      markup.indexOf('Nieuw op Brickhunt'),
+    );
+    expect(markup.indexOf('Nieuw op Brickhunt')).toBeLessThan(
+      markup.indexOf('Net in prijs veranderd'),
+    );
+    expect(markup.indexOf('Net in prijs veranderd')).toBeLessThan(
       markup.indexOf('Thema van de week'),
     );
     expect(markup.indexOf('Thema van de week')).toBeLessThan(
@@ -128,10 +172,14 @@ describe('CatalogFeatureDiscover', () => {
     expect(markup).toContain(
       'De scherpste prijzen die we nu zien bij winkels.',
     );
-    expect(markup).toContain('Sets waarvan de prijs recent is aangepast.');
+    expect(markup).toContain('Recent uitgebracht of bijna beschikbaar.');
     expect(markup).toContain(
-      'Nieuwe sets die net in de catalogus zitten en interessant worden.',
+      'Sets uit dit releasejaar. Exacte releasedatums vullen we aan zodra die bekend zijn.',
     );
+    expect(markup).toContain(
+      'Sets die Brickhunt net heeft toegevoegd. Handig als je wilt zien wat er hier net is bijgekomen.',
+    );
+    expect(markup).toContain('Sets waarvan de prijs recent is aangepast.');
     expect(markup).toContain(
       'Hier wil je nu als eerste kijken. Prijsbeweging, verse dekking en verschil tussen winkels komen hier samen.',
     );

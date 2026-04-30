@@ -10,6 +10,7 @@ import {
   type CatalogSetSummary,
   buildCatalogThemeSlug,
   createCatalogSetRecord,
+  resolveCatalogReleaseDatePrecision,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
@@ -23,7 +24,6 @@ import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const CATALOG_SETS_TABLE = 'catalog_sets';
-export const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
@@ -41,6 +41,8 @@ interface CatalogOverlaySetRow {
   name: string;
   piece_count: number;
   primary_theme_id?: string | null;
+  release_date?: string | null;
+  release_date_precision?: string | null;
   release_year: number;
   set_id: string;
   slug: string;
@@ -221,16 +223,6 @@ function formatSupabaseLikeError(error: {
         typeof value === 'string' && value.trim().length > 0,
     )
     .join(' | ');
-}
-
-function isMissingSupabaseRelationError(error: DatabaseConflictLike): boolean {
-  return (
-    error.code === 'PGRST205' ||
-    error.code === '42P01' ||
-    error.message?.toLowerCase().includes('could not find the table') ===
-      true ||
-    error.message?.toLowerCase().includes('does not exist') === true
-  );
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
@@ -540,6 +532,22 @@ function toCatalogSet({
     name: row.name,
     pieces: row.piece_count,
     primaryThemeId: row.primary_theme_id ?? undefined,
+    ...(row.release_date
+      ? {
+          releaseDate: row.release_date,
+        }
+      : {}),
+    releaseDatePrecision: resolveCatalogReleaseDatePrecision({
+      releaseDate: row.release_date ?? undefined,
+      releaseDatePrecision:
+        row.release_date_precision === 'day' ||
+        row.release_date_precision === 'month' ||
+        row.release_date_precision === 'year' ||
+        row.release_date_precision === 'unknown'
+          ? row.release_date_precision
+          : undefined,
+      releaseYear: row.release_year,
+    }),
     releaseYear: row.release_year,
     secondaryThemeLabels: themeIdentity.secondaryThemes,
     setId: row.set_id,
@@ -571,6 +579,12 @@ function toCanonicalCatalogSetFromOverlaySet(
     name: overlaySet.name,
     pieceCount: overlaySet.pieces,
     primaryTheme: themeIdentity.primaryTheme,
+    ...(overlaySet.releaseDate
+      ? {
+          releaseDate: overlaySet.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: overlaySet.releaseDatePrecision,
     releaseYear: overlaySet.releaseYear,
     secondaryLabels: themeIdentity.secondaryThemes,
     setId: overlaySet.setId,
@@ -586,10 +600,17 @@ function toCatalogSummaryFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetSummary {
   return {
+    createdAt: canonicalCatalogSet.createdAt,
     id: canonicalCatalogSet.setId,
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
     theme: canonicalCatalogSet.primaryTheme,
+    ...(canonicalCatalogSet.releaseDate
+      ? {
+          releaseDate: canonicalCatalogSet.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
@@ -600,10 +621,17 @@ function toCatalogSetDetailFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetDetail {
   return {
+    createdAt: canonicalCatalogSet.createdAt,
     id: canonicalCatalogSet.setId,
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
     theme: canonicalCatalogSet.primaryTheme,
+    ...(canonicalCatalogSet.releaseDate
+      ? {
+          releaseDate: canonicalCatalogSet.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
@@ -1456,21 +1484,17 @@ function sortCatalogSuggestedSets(
   });
 }
 
-async function listCatalogOverlaySetRowsFromTable({
+async function listCatalogOverlaySetRows({
   includeInactive = false,
-  table,
   supabaseClient,
 }: {
   includeInactive?: boolean;
-  table: string;
   supabaseClient: CatalogSupabaseClient;
 }): Promise<CatalogOverlaySetRow[]> {
   const query = supabaseClient
-    .from(table)
+    .from(CATALOG_SETS_TABLE)
     .select(
-      table === CATALOG_SETS_TABLE
-        ? 'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at'
-        : 'set_id, source_set_number, slug, name, theme, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
     );
 
   const { data, error } = includeInactive
@@ -1480,43 +1504,10 @@ async function listCatalogOverlaySetRowsFromTable({
       });
 
   if (error) {
-    throw error;
-  }
-
-  return (data as unknown as CatalogOverlaySetRow[] | null) ?? [];
-}
-
-async function listCatalogOverlaySetRows({
-  includeInactive = false,
-  supabaseClient,
-}: {
-  includeInactive?: boolean;
-  supabaseClient: CatalogSupabaseClient;
-}): Promise<CatalogOverlaySetRow[]> {
-  try {
-    return await listCatalogOverlaySetRowsFromTable({
-      includeInactive,
-      supabaseClient,
-      table: CATALOG_SETS_TABLE,
-    });
-  } catch (error) {
-    if (
-      !isObjectRecord(error) ||
-      !isMissingSupabaseRelationError(error as DatabaseConflictLike)
-    ) {
-      throw new Error('Unable to load catalog sets.');
-    }
-  }
-
-  try {
-    return await listCatalogOverlaySetRowsFromTable({
-      includeInactive,
-      supabaseClient,
-      table: CATALOG_SETS_OVERLAY_TABLE,
-    });
-  } catch {
     throw new Error('Unable to load catalog sets.');
   }
+
+  return (data as CatalogOverlaySetRow[] | null) ?? [];
 }
 
 async function updateCatalogThemeIdentityRow({
@@ -1530,31 +1521,8 @@ async function updateCatalogThemeIdentityRow({
   sourceThemeId: string;
   supabaseClient: CatalogSupabaseClient;
 }) {
-  try {
-    const { error } = await supabaseClient
-      .from(CATALOG_SETS_TABLE)
-      .update({
-        primary_theme_id: primaryThemeId,
-        source_theme_id: sourceThemeId,
-      })
-      .eq('set_id', setId);
-
-    if (error) {
-      throw error;
-    }
-
-    return;
-  } catch (error) {
-    if (
-      !isObjectRecord(error) ||
-      !isMissingSupabaseRelationError(error as DatabaseConflictLike)
-    ) {
-      throw new Error('Unable to backfill catalog theme identity.');
-    }
-  }
-
   const { error } = await supabaseClient
-    .from(CATALOG_SETS_OVERLAY_TABLE)
+    .from(CATALOG_SETS_TABLE)
     .update({
       primary_theme_id: primaryThemeId,
       source_theme_id: sourceThemeId,
@@ -1584,6 +1552,12 @@ async function insertCatalogSetRow({
       name: normalizedSet.name,
       piece_count: normalizedSet.pieces,
       primary_theme_id: themePersistence.primaryTheme.id,
+      release_date: normalizedSet.releaseDate ?? null,
+      release_date_precision: resolveCatalogReleaseDatePrecision({
+        releaseDate: normalizedSet.releaseDate,
+        releaseDatePrecision: normalizedSet.releaseDatePrecision,
+        releaseYear: normalizedSet.releaseYear,
+      }),
       release_year: normalizedSet.releaseYear,
       set_id: normalizedSet.setId,
       slug: normalizedSet.slug,
@@ -1593,7 +1567,7 @@ async function insertCatalogSetRow({
       status: 'active',
     })
     .select(
-      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
     )
     .single();
 

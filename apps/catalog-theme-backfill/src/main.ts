@@ -1,7 +1,6 @@
 import {
   backfillCatalogOverlayThemeIdentity,
   CATALOG_SETS_TABLE,
-  CATALOG_SETS_OVERLAY_TABLE,
 } from '@lego-platform/catalog/data-access-server';
 import {
   buildCatalogCleanBootstrapPayload,
@@ -68,16 +67,14 @@ function getSetIds(argv: readonly string[]): string[] | undefined {
   return normalizedSetIds.length ? normalizedSetIds : undefined;
 }
 
-async function listThemeBackfillCheckRowsFromTable({
+async function listThemeBackfillCheckRows({
   setIds,
-  table,
 }: {
   setIds?: readonly string[];
-  table: string;
 }) {
   const supabaseClient = getServerSupabaseAdminClient();
   const query = supabaseClient
-    .from(table)
+    .from(CATALOG_SETS_TABLE)
     .select('set_id, source_theme_id, primary_theme_id');
 
   const scopedQuery =
@@ -112,10 +109,7 @@ async function listSetsMissingNormalizedThemeIds({
   setIds?: readonly string[];
 } = {}) {
   try {
-    const rows = await listThemeBackfillCheckRowsFromTable({
-      setIds,
-      table: CATALOG_SETS_TABLE,
-    });
+    const rows = await listThemeBackfillCheckRows({ setIds });
 
     return rows.filter((row) => !row.source_theme_id || !row.primary_theme_id);
   } catch (error) {
@@ -128,16 +122,7 @@ async function listSetsMissingNormalizedThemeIds({
     ) {
       throw new Error('Unable to inspect catalog theme backfill state.');
     }
-  }
 
-  try {
-    const rows = await listThemeBackfillCheckRowsFromTable({
-      setIds,
-      table: CATALOG_SETS_OVERLAY_TABLE,
-    });
-
-    return rows.filter((row) => !row.source_theme_id || !row.primary_theme_id);
-  } catch {
     throw new Error('Unable to inspect catalog theme backfill state.');
   }
 }

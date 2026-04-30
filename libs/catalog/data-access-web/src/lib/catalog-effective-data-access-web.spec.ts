@@ -38,7 +38,9 @@ import {
   listDiscoverBestDealSetCards,
   listDiscoverBrowseThemeGroups,
   listDiscoverForYouInterestingSetCards,
+  listDiscoverNewInReleaseYearSetCards,
   listDiscoverHighlightSetCards,
+  listDiscoverNewOnBrickhuntSetCards,
   listDiscoverNowInterestingSetCards,
   listDiscoverRecentPriceChangeSetCards,
   listDiscoverRecentlyReleasedSetCards,
@@ -47,6 +49,7 @@ import {
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   rankCatalogComparisonDiscoverySetCards,
+  rankCatalogNewInReleaseYearSetCards,
   rankCatalogNowInterestingSetCards,
   rankCatalogRecentPriceChangeSetCards,
   rankCatalogRecentlyReleasedSetCards,
@@ -64,6 +67,8 @@ function createCanonicalCatalogSet(
     imageUrl?: string;
     name: string;
     pieceCount: number;
+    releaseDate?: string;
+    releaseDatePrecision?: 'day' | 'month' | 'year' | 'unknown';
     releaseYear: number;
     setId: string;
     slug: string;
@@ -81,6 +86,7 @@ function createCanonicalCatalogSet(
     name: 'Mario Kart - Mario & Standard Kart',
     pieceCount: 1972,
     primaryTheme: 'Super Mario',
+    releaseDatePrecision: 'year' as const,
     releaseYear: 2025,
     secondaryLabels: [],
     setId: '72037',
@@ -1553,16 +1559,18 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
-  test('ranks newly released rails from release year first and then comparison readiness', () => {
+  test('ranks newly released rails from actual release timing first and then comparison readiness', () => {
     const result = rankCatalogRecentlyReleasedSetCards({
-      currentYear: 2026,
       limit: 6,
+      now: new Date('2026-05-10T12:00:00.000Z'),
       setCards: [
         {
           id: '10354',
           imageUrl: undefined,
           name: 'The Lord of the Rings: The Shire',
           pieces: 2017,
+          releaseDate: '2026-06-01',
+          releaseDatePrecision: 'month',
           releaseYear: 2026,
           slug: 'the-lord-of-the-rings-the-shire-10354',
           theme: 'Icons',
@@ -1572,6 +1580,8 @@ describe('catalog effective data access web', () => {
           imageUrl: undefined,
           name: 'Grogu met zweefkinderwagen',
           pieces: 1048,
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
           releaseYear: 2026,
           slug: 'grogu-met-zweefkinderwagen-75403',
           theme: 'Star Wars',
@@ -1581,6 +1591,8 @@ describe('catalog effective data access web', () => {
           imageUrl: undefined,
           name: 'Angel',
           pieces: 784,
+          releaseDate: '2026-05-15',
+          releaseDatePrecision: 'day',
           releaseYear: 2026,
           slug: 'angel-43257',
           theme: 'Disney',
@@ -1590,7 +1602,9 @@ describe('catalog effective data access web', () => {
           imageUrl: undefined,
           name: 'Wildflower Bouquet',
           pieces: 939,
-          releaseYear: 2025,
+          releaseDate: '2026-04-01',
+          releaseDatePrecision: 'month',
+          releaseYear: 2026,
           slug: 'wildflower-bouquet-10313',
           theme: 'Botanicals',
         },
@@ -1674,13 +1688,15 @@ describe('catalog effective data access web', () => {
 
   test('returns fewer newly released sets when the eligible pool is small', async () => {
     const result = await listDiscoverRecentlyReleasedSetCards({
-      currentYear: 2026,
       limit: 6,
+      now: new Date('2026-05-10T12:00:00.000Z'),
       listCanonicalCatalogSetsFn: async () => [
         createCanonicalCatalogSet({
           name: 'The Lord of the Rings: The Shire',
           pieceCount: 2017,
           primaryTheme: 'Icons',
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
           releaseYear: 2026,
           setId: '10354',
           slug: 'the-lord-of-the-rings-the-shire-10354',
@@ -1701,6 +1717,216 @@ describe('catalog effective data access web', () => {
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '10354',
     ]);
+  });
+
+  test('keeps actual release timing ahead of Brickhunt import timing in nieuwe releases', () => {
+    const result = rankCatalogRecentlyReleasedSetCards({
+      now: new Date('2026-05-10T12:00:00.000Z'),
+      setCards: [
+        {
+          createdAt: '2026-04-30T09:00:00.000Z',
+          id: '60368',
+          imageUrl: undefined,
+          name: 'Arctic Explorer Ship',
+          pieces: 815,
+          releaseYear: 2026,
+          slug: 'arctic-explorer-ship-60368',
+          theme: 'City',
+        },
+        {
+          createdAt: '2026-01-10T09:00:00.000Z',
+          id: '75417',
+          imageUrl: undefined,
+          name: 'AT-ST Walker',
+          pieces: 1513,
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          slug: 'at-st-walker-75417',
+          theme: 'Star Wars',
+        },
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '75417',
+    ]);
+  });
+
+  test('includes only day or month precision releases inside the recent or upcoming window', () => {
+    const result = rankCatalogRecentlyReleasedSetCards({
+      now: new Date('2026-05-10T12:00:00.000Z'),
+      setCards: [
+        {
+          id: '75417',
+          imageUrl: undefined,
+          name: 'AT-ST Walker',
+          pieces: 1513,
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          slug: 'at-st-walker-75417',
+          theme: 'Star Wars',
+        },
+        {
+          id: '10354',
+          imageUrl: undefined,
+          name: 'The Lord of the Rings: The Shire',
+          pieces: 2017,
+          releaseDate: '2026-06-01',
+          releaseDatePrecision: 'month',
+          releaseYear: 2026,
+          slug: 'the-lord-of-the-rings-the-shire-10354',
+          theme: 'Icons',
+        },
+        {
+          id: '60368',
+          imageUrl: undefined,
+          name: 'Arctic Explorer Ship',
+          pieces: 815,
+          releaseYear: 2026,
+          slug: 'arctic-explorer-ship-60368',
+          theme: 'City',
+        },
+        {
+          id: '10326',
+          imageUrl: undefined,
+          name: 'Natural History Museum',
+          pieces: 4014,
+          releaseDate: '2025-12-01',
+          releaseDatePrecision: 'month',
+          releaseYear: 2025,
+          slug: 'natural-history-museum-10326',
+          theme: 'Icons',
+        },
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10354',
+      '75417',
+    ]);
+  });
+
+  test('can surface year-only release rows separately as nieuw in het releasejaar', () => {
+    const result = rankCatalogNewInReleaseYearSetCards({
+      currentYear: 2026,
+      setCards: [
+        {
+          createdAt: '2026-04-30T09:00:00.000Z',
+          id: '60368',
+          imageUrl: undefined,
+          name: 'Arctic Explorer Ship',
+          pieces: 815,
+          releaseYear: 2026,
+          slug: 'arctic-explorer-ship-60368',
+          theme: 'City',
+        },
+        {
+          id: '75417',
+          imageUrl: undefined,
+          name: 'AT-ST Walker',
+          pieces: 1513,
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          slug: 'at-st-walker-75417',
+          theme: 'Star Wars',
+        },
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '60368',
+    ]);
+  });
+
+  test('lists year-only release rows separately as nieuw in het releasejaar', async () => {
+    const result = await listDiscoverNewInReleaseYearSetCards({
+      currentYear: 2026,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Arctic Explorer Ship',
+          pieceCount: 815,
+          primaryTheme: 'City',
+          releaseYear: 2026,
+          setId: '60368',
+          slug: 'arctic-explorer-ship-60368',
+          sourceSetNumber: '60368-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'AT-ST Walker',
+          pieceCount: 1513,
+          primaryTheme: 'Star Wars',
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          setId: '75417',
+          slug: 'at-st-walker-75417',
+          sourceSetNumber: '75417-1',
+        }),
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '60368',
+    ]);
+  });
+
+  test('can surface newly imported sets separately as nieuw op Brickhunt', async () => {
+    const result = await listDiscoverNewOnBrickhuntSetCards({
+      currentYear: 2026,
+      now: new Date('2026-04-30T12:00:00.000Z'),
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          createdAt: '2026-04-30T09:00:00.000Z',
+          name: 'Arctic Explorer Ship',
+          pieceCount: 815,
+          primaryTheme: 'City',
+          releaseYear: 2026,
+          setId: '60368',
+          slug: 'arctic-explorer-ship-60368',
+          sourceSetNumber: '60368-1',
+        }),
+        createCanonicalCatalogSet({
+          createdAt: '2026-01-10T09:00:00.000Z',
+          name: 'AT-ST Walker',
+          pieceCount: 1513,
+          primaryTheme: 'Star Wars',
+          releaseDate: '2026-01-01',
+          releaseDatePrecision: 'month',
+          releaseYear: 2026,
+          setId: '75417',
+          slug: 'at-st-walker-75417',
+          sourceSetNumber: '75417-1',
+        }),
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '60368',
+      '75417',
+    ]);
+  });
+
+  test('does not treat an older release imported today as a nieuwe release', () => {
+    const result = rankCatalogRecentlyReleasedSetCards({
+      now: new Date('2026-05-10T12:00:00.000Z'),
+      setCards: [
+        {
+          createdAt: '2026-05-10T09:00:00.000Z',
+          id: '76218',
+          imageUrl: undefined,
+          name: 'Sanctum Sanctorum',
+          pieces: 2708,
+          releaseYear: 2024,
+          slug: 'sanctum-sanctorum-76218',
+          theme: 'Marvel',
+        },
+      ],
+    });
+
+    expect(result).toEqual([]);
   });
 
   test('reuses comparison discovery logic for the discover best-deals rail', async () => {
@@ -1971,6 +2197,8 @@ describe('catalog effective data access web', () => {
           name: 'The Lord of the Rings: The Shire',
           pieceCount: 2017,
           primaryTheme: 'Icons',
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
           releaseYear: 2026,
           setId: '10354',
           slug: 'the-lord-of-the-rings-the-shire-10354',
@@ -2042,9 +2270,9 @@ describe('catalog effective data access web', () => {
           setCards: sharedSetCards,
         }),
         listDiscoverRecentlyReleasedSetCards({
-          currentYear: 2026,
           getCatalogDiscoverySignalFn,
           listCanonicalCatalogSetsFn,
+          now: new Date('2026-05-10T12:00:00.000Z'),
           setCards: sharedSetCards,
         }),
       ],

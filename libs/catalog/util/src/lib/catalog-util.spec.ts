@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import {
+  buildCatalogReleaseLabel,
   buildCatalogThemeSlug,
   buildCatalogSetSlug,
   createCatalogSetRecord,
@@ -15,6 +16,7 @@ import {
   matchesCatalogQuickFilter,
   normalizeCatalogSetImages,
   normalizeCatalogQuickFilterKey,
+  resolveCatalogReleaseDatePrecision,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
 } from './catalog-util';
@@ -41,6 +43,63 @@ describe('catalog snapshot helpers', () => {
     expect(buildCatalogSetSlug('Hokusai - The Great Wave', '31208')).toBe(
       'hokusai-the-great-wave-31208',
     );
+  });
+
+  test('formats release labels without inventing fake day-level dates', () => {
+    expect(
+      buildCatalogReleaseLabel({
+        now: new Date('2026-04-30T00:00:00.000Z'),
+        releaseDate: '2026-05-01',
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+      }),
+    ).toEqual({
+      label: 'Release',
+      value: '1 mei 2026',
+    });
+
+    expect(
+      buildCatalogReleaseLabel({
+        now: new Date('2026-04-30T00:00:00.000Z'),
+        releaseYear: 2026,
+      }),
+    ).toEqual({
+      label: 'Release',
+      value: 'Nieuw in 2026',
+    });
+
+    expect(
+      buildCatalogReleaseLabel({
+        now: new Date('2026-04-30T00:00:00.000Z'),
+        releaseYear: 2025,
+      }),
+    ).toEqual({
+      label: 'Release',
+      value: 'Uitgebracht in 2025',
+    });
+  });
+
+  test('keeps explicit release precision when a set already has an exact date', () => {
+    const result = createCatalogSetRecord({
+      imageUrl: 'https://images.example/21062.jpg',
+      name: 'Trevifontein',
+      pieces: 1880,
+      releaseDate: '2026-05-01',
+      releaseDatePrecision: 'day',
+      releaseYear: 2026,
+      sourceSetNumber: '21062-1',
+      theme: 'Architecture',
+    });
+
+    expect(result.releaseDate).toBe('2026-05-01');
+    expect(result.releaseDatePrecision).toBe('day');
+    expect(
+      resolveCatalogReleaseDatePrecision({
+        releaseDate: result.releaseDate,
+        releaseDatePrecision: result.releaseDatePrecision,
+        releaseYear: result.releaseYear,
+      }),
+    ).toBe('day');
   });
 
   test('builds stable theme slugs for dedicated theme pages', () => {

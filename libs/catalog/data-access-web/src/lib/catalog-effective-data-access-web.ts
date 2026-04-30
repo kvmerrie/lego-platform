@@ -18,11 +18,13 @@ import {
   catalogHomepageDealCandidateIds,
   catalogHomepageFeaturedSetIds,
   catalogThemeOverlays,
+  getCatalogReleaseYear,
   getCatalogThemeDisplayName,
   getCatalogThemeVisual,
   isCatalogBrowsablePrimaryTheme,
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
+  resolveCatalogReleaseDatePrecision,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
@@ -63,6 +65,8 @@ interface CatalogSetRow {
   name: string;
   piece_count: number;
   primary_theme_id: string | null;
+  release_date: string | null;
+  release_date_precision: string | null;
   release_year: number;
   set_id: string;
   slug: string;
@@ -310,6 +314,22 @@ function toCanonicalCatalogSetFromRow({
     name: row.name,
     pieceCount: row.piece_count,
     primaryTheme: resolvedThemeIdentity.primaryTheme,
+    ...(row.release_date
+      ? {
+          releaseDate: row.release_date,
+        }
+      : {}),
+    releaseDatePrecision: resolveCatalogReleaseDatePrecision({
+      releaseDate: row.release_date ?? undefined,
+      releaseDatePrecision:
+        row.release_date_precision === 'day' ||
+        row.release_date_precision === 'month' ||
+        row.release_date_precision === 'year' ||
+        row.release_date_precision === 'unknown'
+          ? row.release_date_precision
+          : undefined,
+      releaseYear: row.release_year,
+    }),
     releaseYear: row.release_year,
     secondaryLabels: resolvedThemeIdentity.secondaryThemes,
     setId: row.set_id,
@@ -329,6 +349,7 @@ function toCatalogSummaryFromCanonicalSet(
     canonicalCatalogSet.primaryTheme;
 
   return {
+    createdAt: canonicalCatalogSet.createdAt,
     id: canonicalCatalogSet.setId,
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
@@ -338,6 +359,12 @@ function toCatalogSummaryFromCanonicalSet(
           secondaryLabels: canonicalCatalogSet.secondaryLabels,
         }
       : {}),
+    ...(canonicalCatalogSet.releaseDate
+      ? {
+          releaseDate: canonicalCatalogSet.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
@@ -352,10 +379,17 @@ function toCatalogSetDetailFromCanonicalSet(
     canonicalCatalogSet.primaryTheme;
 
   return {
+    createdAt: canonicalCatalogSet.createdAt,
     id: canonicalCatalogSet.setId,
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
     theme: displayTheme,
+    ...(canonicalCatalogSet.releaseDate
+      ? {
+          releaseDate: canonicalCatalogSet.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
@@ -722,7 +756,7 @@ export async function listCanonicalCatalogSets({
     const { data, error } = await activeSupabaseClient
       .from(CATALOG_SETS_TABLE)
       .select(
-        'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+        'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
       )
       .eq('status', 'active')
       .order('created_at', {
@@ -808,6 +842,7 @@ function toCatalogSetCardFromCanonicalSet(
     toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
 
   return {
+    createdAt: catalogSetDetail.createdAt,
     id: catalogSetDetail.id,
     slug: catalogSetDetail.slug,
     name: catalogSetDetail.name,
@@ -817,6 +852,12 @@ function toCatalogSetCardFromCanonicalSet(
           secondaryLabels: canonicalCatalogSet.secondaryLabels,
         }
       : {}),
+    ...(catalogSetDetail.releaseDate
+      ? {
+          releaseDate: catalogSetDetail.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: catalogSetDetail.releaseDatePrecision,
     releaseYear: catalogSetDetail.releaseYear,
     pieces: catalogSetDetail.pieces,
     imageUrl: catalogSetDetail.imageUrl,
@@ -1082,29 +1123,48 @@ function isCatalogInterestingNowCandidate(
   return hasRecentChange || hasMeaningfulSpread || hasBroadCoverage;
 }
 
-function getCatalogRecentlyReleasedScore({
-  catalogDiscoverySignal,
-  currentYear,
+const DISCOVER_RECENT_RELEASE_LOOKBACK_DAYS = 90;
+const DISCOVER_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
+
+function getCatalogReleaseTimestamp({
   setCard,
 }: {
-  catalogDiscoverySignal?: CatalogDiscoverySignal;
-  currentYear: number;
-  setCard: CatalogHomepageSetCard;
-}): number {
-  const releaseYearGap = currentYear - setCard.releaseYear;
+  setCard: Pick<
+    CatalogHomepageSetCard,
+    'releaseDate' | 'releaseDatePrecision' | 'releaseYear'
+  >;
+}): number | undefined {
+  const resolvedPrecision = resolveCatalogReleaseDatePrecision({
+    releaseDate: setCard.releaseDate,
+    releaseDatePrecision: setCard.releaseDatePrecision,
+    releaseYear: setCard.releaseYear,
+  });
+  const parsedReleaseDate = setCard.releaseDate
+    ? Date.parse(`${setCard.releaseDate}T00:00:00Z`)
+    : Number.NaN;
 
-  if (releaseYearGap < 0 || releaseYearGap > 1) {
-    return 0;
+  if (
+    (resolvedPrecision === 'day' || resolvedPrecision === 'month') &&
+    Number.isFinite(parsedReleaseDate)
+  ) {
+    return parsedReleaseDate;
   }
 
-  const releaseFreshnessScore = releaseYearGap === 0 ? 72 : 40;
-  const comparisonReadinessScore = getCatalogSimilarSetComparisonReadinessScore(
-    catalogDiscoverySignal,
-  );
-  const coverageScore =
-    Math.min(catalogDiscoverySignal?.merchantCount ?? 0, 6) * 3;
+  return undefined;
+}
 
-  return releaseFreshnessScore + comparisonReadinessScore + coverageScore;
+function getCatalogBrickhuntFirstSeenScore(
+  setCard: Pick<CatalogHomepageSetCard, 'createdAt' | 'releaseYear'>,
+): number {
+  const parsedCreatedAt = setCard.createdAt
+    ? Date.parse(setCard.createdAt)
+    : Number.NaN;
+
+  if (Number.isFinite(parsedCreatedAt)) {
+    return parsedCreatedAt;
+  }
+
+  return setCard.releaseYear * 1_000_000_000;
 }
 
 const catalogLowSignalRecentReleaseThemes = new Set(['Duplo']);
@@ -1128,6 +1188,94 @@ function isCatalogHighSignalRecentReleaseCandidate({
   }
 
   return setCard.pieces >= 100;
+}
+
+function isCatalogStrictRecentReleaseCandidate({
+  now = new Date(),
+  setCard,
+}: {
+  now?: Date;
+  setCard: Pick<
+    CatalogHomepageSetCard,
+    'releaseDate' | 'releaseDatePrecision' | 'releaseYear'
+  >;
+}): boolean {
+  const releaseTimestamp = getCatalogReleaseTimestamp({ setCard });
+
+  if (typeof releaseTimestamp !== 'number') {
+    return false;
+  }
+
+  const lowerBound =
+    now.getTime() - DISCOVER_RECENT_RELEASE_LOOKBACK_DAYS * 86_400_000;
+  const upperBound =
+    now.getTime() + DISCOVER_RECENT_RELEASE_LOOKAHEAD_DAYS * 86_400_000;
+
+  return releaseTimestamp >= lowerBound && releaseTimestamp <= upperBound;
+}
+
+function isCatalogReleaseYearFallbackCandidate({
+  currentYear,
+  setCard,
+}: {
+  currentYear: number;
+  setCard: Pick<
+    CatalogHomepageSetCard,
+    'releaseDate' | 'releaseDatePrecision' | 'releaseYear'
+  >;
+}): boolean {
+  const resolvedPrecision = resolveCatalogReleaseDatePrecision({
+    releaseDate: setCard.releaseDate,
+    releaseDatePrecision: setCard.releaseDatePrecision,
+    releaseYear: setCard.releaseYear,
+  });
+
+  return resolvedPrecision === 'year' && setCard.releaseYear === currentYear;
+}
+
+function isCatalogNewOnBrickhuntCandidate({
+  catalogDiscoverySignal,
+  currentYear = new Date().getUTCFullYear(),
+  now = new Date(),
+  setCard,
+}: {
+  catalogDiscoverySignal?: CatalogDiscoverySignal;
+  currentYear?: number;
+  now?: Date;
+  setCard: CatalogHomepageSetCard;
+}): boolean {
+  if (
+    !isCatalogHighSignalRecentReleaseCandidate({
+      catalogDiscoverySignal,
+      setCard,
+    })
+  ) {
+    return false;
+  }
+
+  if (!setCard.createdAt) {
+    return false;
+  }
+
+  const createdAt = Date.parse(setCard.createdAt);
+
+  if (!Number.isFinite(createdAt)) {
+    return false;
+  }
+
+  const ageDays = Math.floor((now.getTime() - createdAt) / 86_400_000);
+
+  if (ageDays > 120) {
+    return false;
+  }
+
+  const resolvedReleaseYear =
+    getCatalogReleaseYear({
+      releaseDate: setCard.releaseDate,
+      releaseYear: setCard.releaseYear,
+    }) ?? 0;
+
+  return resolvedReleaseYear >= currentYear - 3 || ageDays <= 45;
 }
 
 const catalogSimilarSetTitleAliases = [
@@ -1541,6 +1689,64 @@ export function rankCatalogNowInterestingSetCards({
 }
 
 export function rankCatalogRecentlyReleasedSetCards({
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  now = new Date(),
+  setCards,
+}: {
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  now?: Date;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return [...setCards]
+    .flatMap((setCard) => {
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn?.(setCard.id);
+
+      if (
+        !isCatalogHighSignalRecentReleaseCandidate({
+          catalogDiscoverySignal,
+          setCard,
+        }) ||
+        !isCatalogStrictRecentReleaseCandidate({
+          now,
+          setCard,
+        })
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          comparisonReadinessScore:
+            getCatalogSimilarSetComparisonReadinessScore(
+              catalogDiscoverySignal,
+            ),
+          merchantCount: catalogDiscoverySignal?.merchantCount ?? 0,
+          releaseTimestamp:
+            getCatalogReleaseTimestamp({
+              setCard,
+            }) ?? Number.NEGATIVE_INFINITY,
+          setCard,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.releaseTimestamp - left.releaseTimestamp ||
+        right.comparisonReadinessScore - left.comparisonReadinessScore ||
+        right.merchantCount - left.merchantCount ||
+        right.setCard.pieces - left.setCard.pieces ||
+        left.setCard.name.localeCompare(right.setCard.name) ||
+        left.setCard.id.localeCompare(right.setCard.id),
+    )
+    .slice(0, limit)
+    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
+}
+
+export function rankCatalogNewInReleaseYearSetCards({
   currentYear = new Date().getUTCFullYear(),
   getCatalogDiscoverySignalFn,
   limit = 6,
@@ -1561,18 +1767,12 @@ export function rankCatalogRecentlyReleasedSetCards({
         !isCatalogHighSignalRecentReleaseCandidate({
           catalogDiscoverySignal,
           setCard,
+        }) ||
+        !isCatalogReleaseYearFallbackCandidate({
+          currentYear,
+          setCard,
         })
       ) {
-        return [];
-      }
-
-      const score = getCatalogRecentlyReleasedScore({
-        catalogDiscoverySignal,
-        currentYear,
-        setCard,
-      });
-
-      if (score <= 0) {
         return [];
       }
 
@@ -1583,17 +1783,71 @@ export function rankCatalogRecentlyReleasedSetCards({
               catalogDiscoverySignal,
             ),
           merchantCount: catalogDiscoverySignal?.merchantCount ?? 0,
-          score,
           setCard,
         },
       ];
     })
     .sort(
       (left, right) =>
-        right.score - left.score ||
         right.setCard.releaseYear - left.setCard.releaseYear ||
         right.comparisonReadinessScore - left.comparisonReadinessScore ||
         right.merchantCount - left.merchantCount ||
+        right.setCard.pieces - left.setCard.pieces ||
+        left.setCard.name.localeCompare(right.setCard.name) ||
+        left.setCard.id.localeCompare(right.setCard.id),
+    )
+    .slice(0, limit)
+    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
+}
+
+export function rankCatalogNewOnBrickhuntSetCards({
+  currentYear = new Date().getUTCFullYear(),
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  now = new Date(),
+  setCards,
+}: {
+  currentYear?: number;
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  now?: Date;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  return [...setCards]
+    .flatMap((setCard) => {
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn?.(setCard.id);
+
+      if (
+        !isCatalogNewOnBrickhuntCandidate({
+          catalogDiscoverySignal,
+          currentYear,
+          now,
+          setCard,
+        })
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          brickhuntFirstSeenScore: getCatalogBrickhuntFirstSeenScore(setCard),
+          comparisonReadinessScore:
+            getCatalogSimilarSetComparisonReadinessScore(
+              catalogDiscoverySignal,
+            ),
+          merchantCount: catalogDiscoverySignal?.merchantCount ?? 0,
+          setCard,
+        },
+      ];
+    })
+    .sort(
+      (left, right) =>
+        right.brickhuntFirstSeenScore - left.brickhuntFirstSeenScore ||
+        right.comparisonReadinessScore - left.comparisonReadinessScore ||
+        right.merchantCount - left.merchantCount ||
+        right.setCard.releaseYear - left.setCard.releaseYear ||
         right.setCard.pieces - left.setCard.pieces ||
         left.setCard.name.localeCompare(right.setCard.name) ||
         left.setCard.id.localeCompare(right.setCard.id),
@@ -2803,6 +3057,33 @@ export async function listDiscoverRecentPriceChangeSetCards({
 }
 
 export async function listDiscoverRecentlyReleasedSetCards({
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  now,
+  setCards,
+}: {
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  now?: Date;
+  setCards?: readonly CatalogHomepageSetCard[];
+}): Promise<CatalogHomepageSetCard[]> {
+  return rankCatalogRecentlyReleasedSetCards({
+    getCatalogDiscoverySignalFn,
+    limit,
+    now,
+    setCards:
+      setCards ??
+      (await listAllCatalogSetCards({
+        listCanonicalCatalogSetsFn,
+      })),
+  });
+}
+
+export async function listDiscoverNewInReleaseYearSetCards({
   currentYear,
   getCatalogDiscoverySignalFn,
   limit = 6,
@@ -2817,10 +3098,40 @@ export async function listDiscoverRecentlyReleasedSetCards({
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
-  return rankCatalogRecentlyReleasedSetCards({
+  return rankCatalogNewInReleaseYearSetCards({
     currentYear,
     getCatalogDiscoverySignalFn,
     limit,
+    setCards:
+      setCards ??
+      (await listAllCatalogSetCards({
+        listCanonicalCatalogSetsFn,
+      })),
+  });
+}
+
+export async function listDiscoverNewOnBrickhuntSetCards({
+  currentYear,
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  now,
+  setCards,
+}: {
+  currentYear?: number;
+  getCatalogDiscoverySignalFn?: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  now?: Date;
+  setCards?: readonly CatalogHomepageSetCard[];
+}): Promise<CatalogHomepageSetCard[]> {
+  return rankCatalogNewOnBrickhuntSetCards({
+    currentYear,
+    getCatalogDiscoverySignalFn,
+    limit,
+    now,
     setCards:
       setCards ??
       (await listAllCatalogSetCards({

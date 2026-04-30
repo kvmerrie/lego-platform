@@ -67,6 +67,29 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Icons');
   });
 
+  it('renders release-aware compact copy for exact recent releases', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/at-st-walker-75417"
+        setSummary={{
+          id: '75417',
+          slug: 'at-st-walker-75417',
+          name: 'AT-ST Walker',
+          theme: 'Star Wars',
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          pieces: 1513,
+          imageUrl: 'https://images.example/atst.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(/Net uit|Nieuw in 2026|2026/.test(markup)).toBe(true);
+    expect(markup).not.toContain('2026-01-01');
+  });
+
   it('uses the shared theme color mapping for compact set cards', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
@@ -724,13 +747,95 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Volg deze prijs');
     expect(markup).toContain('Recent prijsverloop');
     expect(markup).toContain('Stenen');
-    expect(markup).toContain('Jaar');
-    expect(markup).toContain('2022');
+    expect(markup).toContain('Release');
+    expect(markup).toContain('Uitgebracht in 2022');
     expect(markup).not.toContain('Minifiguren');
     expect(markup).not.toContain('Nog niet bekend');
     expect(markup).toContain('<h1');
     expect(markup).not.toContain('$259 to $319');
     expect(markup).not.toContain('Back to shortlist');
+  });
+
+  it('renders exact release copy on set detail pages when a release date is known', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        dealVerdict={{
+          explanation: 'Prijsdata nog beperkt.',
+          label: 'Prijsdata nog beperkt',
+          tone: 'neutral',
+        }}
+        catalogSetDetail={{
+          id: '75417',
+          slug: 'at-st-walker-75417',
+          name: 'AT-ST Walker',
+          theme: 'Star Wars',
+          releaseDate: '2026-05-01',
+          releaseDatePrecision: 'day',
+          releaseYear: 2026,
+          pieces: 1513,
+          imageUrl: 'https://images.example/atst.jpg',
+        }}
+        priceAlertAction={<button type="button">Volg prijs</button>}
+        priceHistoryPanel={<div>Recent prijsverloop</div>}
+        themeDirectoryHref="/themes"
+        themeHref="/themes/star-wars"
+      />,
+    );
+
+    expect(markup).toContain('Release');
+    expect(markup).toContain('1 mei 2026');
+    expect(markup).not.toContain('2026-01-01');
+  });
+
+  it('renders a neutral no-current-price fallback without discontinued copy', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        bestDeal={{
+          checkedLabel: '30 apr om 09:00',
+          coverageLabel: '2 winkels nagekeken',
+          decisionHelper:
+            'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
+          decisionLabel: 'Nog geen actuele prijs',
+          decisionTone: 'neutral',
+          eyebrow: 'Beschikbaarheid nu',
+          merchantLabel: 'Nog geen actuele prijs',
+          price: 'Nog geen actuele prijs',
+          stockLabel: 'Nog geen actuele voorraad',
+        }}
+        catalogSetDetail={{
+          id: '75446',
+          slug: 'grogu-mandalorian-apprentice-75446',
+          name: 'Grogu (Mandalorian Apprentice)',
+          theme: 'Star Wars',
+          releaseYear: 2026,
+          pieces: 1048,
+          imageUrl: 'https://images.example/grogu.jpg',
+        }}
+        dealSupportItems={[
+          {
+            id: 'availability-primary-shops',
+            text: 'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
+          },
+        ]}
+        dealVerdict={{
+          explanation:
+            'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
+          label: 'Nog geen actuele prijs',
+          tone: 'neutral',
+        }}
+        followCopy="Zodra we actuele voorraad zien bij de winkels die Brickhunt controleert, zie je dat hier terug."
+        followEyebrow="Beschikbaarheid"
+        followTitle="We volgen deze set"
+      />,
+    );
+
+    expect(markup).toContain('Nog geen actuele prijs');
+    expect(markup).toContain('Nog geen actuele voorraad');
+    expect(markup).toContain(
+      'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
+    );
+    expect(markup).not.toContain('Uit productie');
+    expect(markup).not.toContain('Niet meer verkrijgbaar');
   });
 
   it('pushes price-following harder when waiting is the smarter call', () => {

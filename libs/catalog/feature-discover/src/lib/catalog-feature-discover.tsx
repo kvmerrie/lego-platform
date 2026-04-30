@@ -44,6 +44,11 @@ interface CatalogFeatureDiscoverThemeRail {
   themeName?: string;
 }
 
+interface CatalogFeatureDiscoverReleaseYearRail {
+  releaseYear?: number;
+  setCards?: readonly CatalogFeatureDiscoverRailItem[];
+}
+
 function formatDiscoverFanContext(
   setCard: Pick<CatalogHomepageSetCard, 'minifigureHighlights'>,
 ): ReactNode {
@@ -56,6 +61,8 @@ function formatDiscoverFanContext(
 export function CatalogFeatureDiscover({
   bestDealSetCards = [],
   forYouSetCards,
+  newInReleaseYear,
+  newOnBrickhuntSetCards,
   nowInterestingSetCards,
   recentPriceChangeSetCards,
   recentlyReleasedSetCards,
@@ -65,6 +72,8 @@ export function CatalogFeatureDiscover({
 }: {
   bestDealSetCards?: readonly CatalogFeatureDiscoverRailItem[];
   forYouSetCards?: readonly CatalogFeatureDiscoverRailItem[];
+  newInReleaseYear?: CatalogFeatureDiscoverReleaseYearRail;
+  newOnBrickhuntSetCards?: readonly CatalogFeatureDiscoverRailItem[];
   nowInterestingSetCards?: readonly CatalogFeatureDiscoverRailItem[];
   recentPriceChangeSetCards?: readonly CatalogFeatureDiscoverRailItem[];
   recentlyReleasedSetCards?: readonly CatalogFeatureDiscoverRailItem[];
@@ -74,6 +83,8 @@ export function CatalogFeatureDiscover({
 }) {
   const resolvedNowInterestingSetCards = nowInterestingSetCards ?? [];
   const resolvedForYouSetCards = forYouSetCards ?? [];
+  const resolvedNewInReleaseYearSetCards = newInReleaseYear?.setCards ?? [];
+  const resolvedNewOnBrickhuntSetCards = newOnBrickhuntSetCards ?? [];
   const resolvedRecentPriceChangeSetCards = recentPriceChangeSetCards ?? [];
   const resolvedRecentlyReleasedSetCards = recentlyReleasedSetCards ?? [];
   const resolvedThemeOfWeekSetCards = themeOfWeek?.setCards ?? [];
@@ -83,9 +94,11 @@ export function CatalogFeatureDiscover({
     resolvedNowInterestingSetCards.length > 0 ||
     bestDealSetCards.length > 0 ||
     resolvedForYouSetCards.length > 0 ||
+    resolvedRecentlyReleasedSetCards.length > 0 ||
+    resolvedNewInReleaseYearSetCards.length > 0 ||
+    resolvedNewOnBrickhuntSetCards.length > 0 ||
     resolvedRecentPriceChangeSetCards.length > 0 ||
-    resolvedThemeOfWeekSetCards.length > 0 ||
-    resolvedRecentlyReleasedSetCards.length > 0;
+    resolvedThemeOfWeekSetCards.length > 0;
 
   return (
     <div className={styles.page}>
@@ -181,6 +194,84 @@ export function CatalogFeatureDiscover({
         />
       ) : null}
 
+      {hasFilteredContent && resolvedRecentlyReleasedSetCards.length ? (
+        <CatalogSetCardRailSection
+          as="section"
+          ariaLabel="Nieuwe releases"
+          bodySpacing="relaxed"
+          className={styles.featuredSection}
+          description="Recent uitgebracht of bijna beschikbaar."
+          eyebrow="Release"
+          items={resolvedRecentlyReleasedSetCards.map((setCard) => ({
+            actions: setCard.actions,
+            ctaMode: setCard.ctaMode,
+            href: buildSetDetailPath(setCard.slug),
+            id: setCard.id,
+            priceContext: setCard.priceContext,
+            setSummary: setCard,
+            supportingNote: formatDiscoverFanContext(setCard),
+          }))}
+          padding="default"
+          signal={formatSetCount(resolvedRecentlyReleasedSetCards.length)}
+          title="Nieuwe releases"
+          titleAs="h2"
+          tone="muted"
+          variant="compact"
+        />
+      ) : null}
+
+      {hasFilteredContent && resolvedNewInReleaseYearSetCards.length ? (
+        <CatalogSetCardRailSection
+          as="section"
+          ariaLabel={`Nieuw in ${newInReleaseYear?.releaseYear ?? 'dit releasejaar'}`}
+          bodySpacing="relaxed"
+          className={styles.featuredSection}
+          description="Sets uit dit releasejaar. Exacte releasedatums vullen we aan zodra die bekend zijn."
+          eyebrow="Releasejaar"
+          items={resolvedNewInReleaseYearSetCards.map((setCard) => ({
+            actions: setCard.actions,
+            ctaMode: setCard.ctaMode,
+            href: buildSetDetailPath(setCard.slug),
+            id: setCard.id,
+            priceContext: setCard.priceContext,
+            setSummary: setCard,
+            supportingNote: formatDiscoverFanContext(setCard),
+          }))}
+          padding="default"
+          signal={formatSetCount(resolvedNewInReleaseYearSetCards.length)}
+          title={`Nieuw in ${newInReleaseYear?.releaseYear ?? 'dit releasejaar'}`}
+          titleAs="h2"
+          tone="muted"
+          variant="compact"
+        />
+      ) : null}
+
+      {hasFilteredContent && resolvedNewOnBrickhuntSetCards.length ? (
+        <CatalogSetCardRailSection
+          as="section"
+          ariaLabel="Nieuw op Brickhunt"
+          bodySpacing="relaxed"
+          className={styles.featuredSection}
+          description="Sets die Brickhunt net heeft toegevoegd. Handig als je wilt zien wat er hier net is bijgekomen."
+          eyebrow="Brickhunt"
+          items={resolvedNewOnBrickhuntSetCards.map((setCard) => ({
+            actions: setCard.actions,
+            ctaMode: setCard.ctaMode,
+            href: buildSetDetailPath(setCard.slug),
+            id: setCard.id,
+            priceContext: setCard.priceContext,
+            setSummary: setCard,
+            supportingNote: formatDiscoverFanContext(setCard),
+          }))}
+          padding="default"
+          signal={formatSetCount(resolvedNewOnBrickhuntSetCards.length)}
+          title="Nieuw op Brickhunt"
+          titleAs="h2"
+          tone="muted"
+          variant="compact"
+        />
+      ) : null}
+
       {hasFilteredContent && resolvedRecentPriceChangeSetCards.length ? (
         <CatalogSetCardRailSection
           as="section"
@@ -201,32 +292,6 @@ export function CatalogFeatureDiscover({
           padding="default"
           signal={formatSetCount(resolvedRecentPriceChangeSetCards.length)}
           title="Net in prijs veranderd"
-          titleAs="h2"
-          tone="muted"
-          variant="compact"
-        />
-      ) : null}
-
-      {hasFilteredContent && resolvedRecentlyReleasedSetCards.length ? (
-        <CatalogSetCardRailSection
-          as="section"
-          ariaLabel="Nieuwe releases"
-          bodySpacing="relaxed"
-          className={styles.featuredSection}
-          description="Nieuwe sets die net in de catalogus zitten en interessant worden."
-          eyebrow="Nieuw"
-          items={resolvedRecentlyReleasedSetCards.map((setCard) => ({
-            actions: setCard.actions,
-            ctaMode: setCard.ctaMode,
-            href: buildSetDetailPath(setCard.slug),
-            id: setCard.id,
-            priceContext: setCard.priceContext,
-            setSummary: setCard,
-            supportingNote: formatDiscoverFanContext(setCard),
-          }))}
-          padding="default"
-          signal={formatSetCount(resolvedRecentlyReleasedSetCards.length)}
-          title="Nieuwe releases"
           titleAs="h2"
           tone="muted"
           variant="compact"

@@ -8,6 +8,8 @@ import {
   listCatalogSetCards,
   listDiscoverBestDealSetCards,
   listDiscoverForYouInterestingSetCards,
+  listDiscoverNewInReleaseYearSetCards,
+  listDiscoverNewOnBrickhuntSetCards,
   listDiscoverNowInterestingSetCards,
   listDiscoverRecentPriceChangeSetCards,
   listDiscoverRecentlyReleasedSetCards,
@@ -73,21 +75,19 @@ function countDiscoverThemes(
 }
 
 export default async function DiscoverPage() {
+  const currentYear = new Date().getUTCFullYear();
   const [catalogDiscoverySignalBySetId, allCatalogSetCards] = await Promise.all(
     [listCatalogDiscoverySignalsBySetId(), listCatalogSetCards()],
   );
   const [
     nowInterestingSetCards,
-    recentPriceChangeSetCards,
     bestDealCandidateSetCards,
     recentlyReleasedSetCards,
+    newInReleaseYearSetCards,
+    newOnBrickhuntSetCards,
+    recentPriceChangeSetCards,
   ] = await Promise.all([
     listDiscoverNowInterestingSetCards({
-      getCatalogDiscoverySignalFn: (setId) =>
-        catalogDiscoverySignalBySetId.get(setId),
-      setCards: allCatalogSetCards,
-    }),
-    listDiscoverRecentPriceChangeSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         catalogDiscoverySignalBySetId.get(setId),
       setCards: allCatalogSetCards,
@@ -102,7 +102,26 @@ export default async function DiscoverPage() {
         catalogDiscoverySignalBySetId.get(setId),
       setCards: allCatalogSetCards,
     }),
+    listDiscoverNewInReleaseYearSetCards({
+      currentYear,
+      getCatalogDiscoverySignalFn: (setId) =>
+        catalogDiscoverySignalBySetId.get(setId),
+      setCards: allCatalogSetCards,
+    }),
+    listDiscoverNewOnBrickhuntSetCards({
+      getCatalogDiscoverySignalFn: (setId) =>
+        catalogDiscoverySignalBySetId.get(setId),
+      setCards: allCatalogSetCards,
+    }),
+    listDiscoverRecentPriceChangeSetCards({
+      getCatalogDiscoverySignalFn: (setId) =>
+        catalogDiscoverySignalBySetId.get(setId),
+      setCards: allCatalogSetCards,
+    }),
   ]);
+  const showStrictRecentlyReleasedRail =
+    recentlyReleasedSetCards.length >= 3 ||
+    newInReleaseYearSetCards.length === 0;
   const themeOfWeekRail = selectCatalogThemeOfWeekRail({
     getCatalogDiscoverySignalFn: (setId) =>
       catalogDiscoverySignalBySetId.get(setId),
@@ -113,8 +132,10 @@ export default async function DiscoverPage() {
       [
         ...nowInterestingSetCards,
         ...bestDealCandidateSetCards,
+        ...(showStrictRecentlyReleasedRail ? recentlyReleasedSetCards : []),
+        ...newInReleaseYearSetCards,
+        ...newOnBrickhuntSetCards,
         ...recentPriceChangeSetCards,
-        ...recentlyReleasedSetCards,
         ...(themeOfWeekRail?.setCards ?? []),
       ].map((catalogSetCard) => catalogSetCard.id),
     ),
@@ -142,9 +163,11 @@ export default async function DiscoverPage() {
     ...new Set(
       [
         ...nowInterestingSetCards,
-        ...recentPriceChangeSetCards,
         ...bestDealCandidateSetCards,
-        ...recentlyReleasedSetCards,
+        ...(showStrictRecentlyReleasedRail ? recentlyReleasedSetCards : []),
+        ...newInReleaseYearSetCards,
+        ...newOnBrickhuntSetCards,
+        ...recentPriceChangeSetCards,
         ...(themeOfWeekRail?.setCards ?? []),
         ...forYouSetCards,
       ].map((catalogSetCard) => catalogSetCard.id),
@@ -181,6 +204,14 @@ export default async function DiscoverPage() {
   );
   const recentlyReleasedRailSetCards = toRailSetCards(
     recentlyReleasedSetCards,
+    currentOfferSummaryBySetId,
+  );
+  const newInReleaseYearRailSetCards = toRailSetCards(
+    newInReleaseYearSetCards,
+    currentOfferSummaryBySetId,
+  );
+  const newOnBrickhuntRailSetCards = toRailSetCards(
+    newOnBrickhuntSetCards,
     currentOfferSummaryBySetId,
   );
   const themeOfWeekRailSetCards = themeOfWeekRail
@@ -249,9 +280,20 @@ export default async function DiscoverPage() {
       <CatalogFeatureDiscover
         bestDealSetCards={featuredDealSetCards}
         forYouSetCards={forYouRailSetCards}
+        newInReleaseYear={
+          newInReleaseYearRailSetCards.length
+            ? {
+                releaseYear: currentYear,
+                setCards: newInReleaseYearRailSetCards,
+              }
+            : undefined
+        }
         nowInterestingSetCards={nowInterestingRailSetCards}
+        newOnBrickhuntSetCards={newOnBrickhuntRailSetCards}
         recentPriceChangeSetCards={recentPriceChangeRailSetCards}
-        recentlyReleasedSetCards={recentlyReleasedRailSetCards}
+        recentlyReleasedSetCards={
+          showStrictRecentlyReleasedRail ? recentlyReleasedRailSetCards : []
+        }
         themeOfWeek={{
           setCards: themeOfWeekRailSetCards,
           themeName: themeOfWeekRail?.theme,

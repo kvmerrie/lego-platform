@@ -81,7 +81,11 @@ create table if not exists public.catalog_sets (
   name text not null,
   source_theme_id text not null references public.catalog_source_themes (id) on delete restrict,
   primary_theme_id text not null references public.catalog_themes (id) on delete restrict,
-  release_year integer not null check (release_year >= 1940),
+  release_year integer check (release_year >= 1940),
+  release_date date null,
+  release_date_precision text not null default 'unknown' check (
+    release_date_precision in ('day', 'month', 'year', 'unknown')
+  ),
   piece_count integer not null check (piece_count > 0),
   image_url text null,
   source text not null default 'rebrickable' check (

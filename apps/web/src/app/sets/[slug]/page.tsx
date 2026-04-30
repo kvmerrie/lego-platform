@@ -49,6 +49,12 @@ import {
 import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { notFound } from 'next/navigation';
+import {
+  getCatalogReleaseYear,
+  resolveCatalogReleaseDatePrecision,
+  type CatalogReleaseDatePrecision,
+  type CatalogSetStatus,
+} from '@lego-platform/catalog/util';
 import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
 import { buildSimilarSetsRailDescription } from '../../lib/similar-sets-rail-copy';
 
@@ -57,6 +63,14 @@ export const revalidate = 300;
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SIMILAR_SETS_RAIL_LIMIT = 6;
+const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
+const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
+
+export type SetDetailAvailabilityFallbackState =
+  | 'available'
+  | 'no_current_price'
+  | 'no_current_stock'
+  | 'retired';
 
 function getCalendarDayValue(date: Date): number {
   const dateParts = new Intl.DateTimeFormat('en-CA', {
@@ -134,6 +148,122 @@ function formatOfferCheckedAtCompact(checkedAt: string): string {
   }
 
   return `${formatOfferCheckedDate(checkedAt)} om ${timeLabel}`;
+}
+
+function getSetDetailReleaseTimestamp({
+  releaseDate,
+  releaseDatePrecision,
+  releaseYear,
+}: {
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
+  releaseYear?: number;
+}): number | undefined {
+  const resolvedPrecision = resolveCatalogReleaseDatePrecision({
+    releaseDate,
+    releaseDatePrecision,
+    releaseYear,
+  });
+  const parsedReleaseDate = releaseDate
+    ? Date.parse(`${releaseDate}T00:00:00Z`)
+    : Number.NaN;
+
+  if (
+    (resolvedPrecision === 'day' || resolvedPrecision === 'month') &&
+    Number.isFinite(parsedReleaseDate)
+  ) {
+    return parsedReleaseDate;
+  }
+
+  return undefined;
+}
+
+export function isCurrentOrRecentCatalogRelease({
+  now = new Date(),
+  releaseDate,
+  releaseDatePrecision,
+  releaseYear,
+}: {
+  now?: Date;
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
+  releaseYear?: number;
+}): boolean {
+  const currentYear = now.getUTCFullYear();
+  const resolvedReleaseYear = getCatalogReleaseYear({
+    releaseDate,
+    releaseYear,
+  });
+
+  if (resolvedReleaseYear === currentYear) {
+    return true;
+  }
+
+  const releaseTimestamp = getSetDetailReleaseTimestamp({
+    releaseDate,
+    releaseDatePrecision,
+    releaseYear,
+  });
+
+  if (typeof releaseTimestamp !== 'number') {
+    return false;
+  }
+
+  const lowerBound =
+    now.getTime() - SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS * 86_400_000;
+  const upperBound =
+    now.getTime() + SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS * 86_400_000;
+
+  return releaseTimestamp >= lowerBound && releaseTimestamp <= upperBound;
+}
+
+export function resolveSetDetailAvailabilityFallbackState({
+  hasInStockOffer,
+  now = new Date(),
+  primaryOfferAvailability,
+  releaseDate,
+  releaseDatePrecision,
+  releaseYear,
+  setStatus,
+}: {
+  hasInStockOffer: boolean;
+  now?: Date;
+  primaryOfferAvailability: {
+    primarySeedCount: number;
+    validPrimaryOfferCount: number;
+  };
+  releaseDate?: string;
+  releaseDatePrecision?: CatalogReleaseDatePrecision;
+  releaseYear?: number;
+  setStatus?: CatalogSetStatus;
+}): SetDetailAvailabilityFallbackState {
+  const hasExplicitRetiredLifecycle = setStatus === 'retired';
+
+  if (
+    hasExplicitRetiredLifecycle &&
+    !hasInStockOffer &&
+    primaryOfferAvailability.validPrimaryOfferCount === 0
+  ) {
+    return 'retired';
+  }
+
+  const hasTrackedOfferGap =
+    primaryOfferAvailability.primarySeedCount > 0 &&
+    primaryOfferAvailability.validPrimaryOfferCount === 0 &&
+    !hasInStockOffer;
+
+  if (!hasTrackedOfferGap) {
+    return 'available';
+  }
+
+  return isCurrentOrRecentCatalogRelease({
+    now,
+    releaseDate,
+    releaseDatePrecision,
+    releaseYear,
+  })
+    ? 'no_current_price'
+    : 'no_current_stock';
 }
 
 function getOfferStockLabel(
@@ -407,74 +537,144 @@ function buildTrustSignals({
   ];
 }
 
-function buildUnavailableBestDeal({
+function buildTrackedAvailabilityFallbackBestDeal({
   checkedAt,
   primarySeedCount,
+  state,
 }: {
   checkedAt?: string;
   primarySeedCount: number;
+  state: Exclude<SetDetailAvailabilityFallbackState, 'available'>;
 }): CatalogSetDetailBestDeal {
-  return {
+  const sharedFields = {
     checkedLabel: checkedAt
       ? formatOfferCheckedAtCompact(checkedAt)
       : 'Recent gecontroleerd',
     coverageLabel: buildMerchantCoverageLabel(primarySeedCount),
-    decisionHelper:
-      'Bij de vaste winkels die Brickhunt volgt zien we nu geen nieuwe voorraad meer.',
-    decisionLabel: 'Uit productie',
-    decisionTone: 'neutral',
+    decisionTone: 'neutral' as const,
     eyebrow: 'Beschikbaarheid nu',
-    merchantLabel: 'Niet meer verkrijgbaar',
-    price: 'Niet meer verkrijgbaar',
-    stockLabel: 'Soms nog tweedehands te vinden',
+  };
+
+  if (state === 'retired') {
+    return {
+      ...sharedFields,
+      decisionHelper:
+        'Bij de vaste winkels zien we nu geen nieuwe voorraad meer. Deze set lijkt uit productie en duikt vooral nog op via losse restvoorraad.',
+      decisionLabel: 'Uit productie',
+      merchantLabel: 'Niet meer verkrijgbaar',
+      price: 'Niet meer verkrijgbaar',
+      stockLabel: 'Soms nog tweedehands te vinden',
+    };
+  }
+
+  if (state === 'no_current_price') {
+    return {
+      ...sharedFields,
+      decisionHelper:
+        'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
+      decisionLabel: 'Nog geen actuele prijs',
+      merchantLabel: 'Nog geen actuele prijs',
+      price: 'Nog geen actuele prijs',
+      stockLabel: 'Nog geen actuele voorraad',
+    };
+  }
+
+  return {
+    ...sharedFields,
+    decisionHelper:
+      'Bij de winkels die Brickhunt volgt zien we nu geen nieuwe voorraad.',
+    decisionLabel: 'Geen actuele voorraad gevonden',
+    merchantLabel: 'Geen actuele voorraad gevonden',
+    price: 'Geen actuele voorraad gevonden',
+    stockLabel: 'Geen actuele voorraad',
   };
 }
 
-function buildUnavailableDealVerdict(): CatalogSetDetailVerdict {
+function buildTrackedAvailabilityFallbackDealVerdict({
+  state,
+}: {
+  state: Exclude<SetDetailAvailabilityFallbackState, 'available'>;
+}): CatalogSetDetailVerdict {
+  if (state === 'retired') {
+    return {
+      explanation:
+        'Bij de vaste winkels zien we nu geen nieuwe voorraad meer. Deze set lijkt uit productie en vooral nog incidenteel vindbaar.',
+      label: 'Niet meer verkrijgbaar',
+      tone: 'neutral' as const,
+    };
+  }
+
+  if (state === 'no_current_price') {
+    return {
+      explanation:
+        'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
+      label: 'Nog geen actuele prijs',
+      tone: 'neutral' as const,
+    };
+  }
+
   return {
     explanation:
-      'Bij de vaste winkels zien we nu geen nieuwe voorraad meer. Deze set lijkt vooral uit productie of alleen nog incidenteel vindbaar.',
-    label: 'Niet meer verkrijgbaar',
+      'Bij de winkels die Brickhunt volgt zien we nu geen nieuwe voorraad.',
+    label: 'Geen actuele voorraad gevonden',
     tone: 'neutral' as const,
   };
 }
 
-function buildUnavailableSupportItems({
+function buildTrackedAvailabilityFallbackSupportItems({
   primarySeedCount,
+  state,
 }: {
   primarySeedCount: number;
+  state: Exclude<SetDetailAvailabilityFallbackState, 'available'>;
 }): CatalogSetDetailSupportItem[] {
   return [
     {
-      id: 'unavailable-primary-shops',
-      text: 'Bij de vaste winkels zien we nu geen nieuwe voorraad meer.',
+      id: 'availability-primary-shops',
+      text:
+        state === 'no_current_price'
+          ? 'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.'
+          : state === 'retired'
+            ? 'Bij de vaste winkels zien we nu geen nieuwe voorraad meer.'
+            : 'Bij de winkels die Brickhunt volgt zien we nu geen nieuwe voorraad.',
     },
     ...(primarySeedCount > 0
       ? [
           {
-            id: 'unavailable-merchant-coverage',
+            id: 'availability-merchant-coverage',
             text: `${primarySeedCount} winkel${primarySeedCount === 1 ? '' : 's'} nagekeken.`,
           },
         ]
       : []),
-    {
-      id: 'unavailable-secondhand',
-      text: 'Soms duikt hij nog op via tweedehands of losse restvoorraad.',
-    },
+    ...(state === 'retired'
+      ? [
+          {
+            id: 'availability-secondhand',
+            text: 'Soms duikt hij nog op via tweedehands of losse restvoorraad.',
+          },
+        ]
+      : []),
   ];
 }
 
-function buildUnavailableTrustSignals({
+function buildTrackedAvailabilityFallbackTrustSignals({
   checkedAt,
   primarySeedCount,
+  state,
 }: {
   checkedAt?: string;
   primarySeedCount: number;
+  state: Exclude<SetDetailAvailabilityFallbackState, 'available'>;
 }): CatalogSetDetailTrustSignal[] {
   return [
     {
       label: 'Beschikbaarheid',
-      value: 'Niet meer verkrijgbaar',
+      value:
+        state === 'no_current_price'
+          ? 'Nog geen actuele voorraad'
+          : state === 'retired'
+            ? 'Niet meer verkrijgbaar'
+            : 'Geen actuele voorraad gevonden',
     },
     ...(checkedAt
       ? [
@@ -492,10 +692,14 @@ function buildUnavailableTrustSignals({
           },
         ]
       : []),
-    {
-      label: 'Alternatief',
-      value: 'Soms nog tweedehands te vinden',
-    },
+    ...(state === 'retired'
+      ? [
+          {
+            label: 'Alternatief',
+            value: 'Soms nog tweedehands te vinden',
+          },
+        ]
+      : []),
   ];
 }
 
@@ -564,13 +768,20 @@ export default async function SetDetailPage({
   const hasInStockOffer = localizedSetDetailOffers.some(
     (catalogOffer) => catalogOffer.availability === 'in_stock',
   );
-  const isUnavailableSet =
-    primaryOfferAvailability.primarySeedCount > 0 &&
-    primaryOfferAvailability.validPrimaryOfferCount === 0 &&
-    !hasInStockOffer;
+  const availabilityFallbackState = resolveSetDetailAvailabilityFallbackState({
+    hasInStockOffer,
+    primaryOfferAvailability,
+    releaseDate: catalogSetDetail.releaseDate,
+    releaseDatePrecision: catalogSetDetail.releaseDatePrecision,
+    releaseYear: catalogSetDetail.releaseYear,
+    setStatus: catalogSetDetail.setStatus,
+  });
+  const hasTrackedAvailabilityFallback =
+    availabilityFallbackState !== 'available';
   const bestOffer = getBestOffer(localizedSetDetailOffers);
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
-  const hasLiveCurrentOffer = Boolean(bestOffer) && !isUnavailableSet;
+  const hasLiveCurrentOffer =
+    Boolean(bestOffer) && !hasTrackedAvailabilityFallback;
   const defaultDecisionPresentation = buildSetDecisionPresentation({
     hasCurrentOffer: hasLiveCurrentOffer,
     pricePanelSnapshot,
@@ -580,15 +791,17 @@ export default async function SetDetailPage({
     hasCurrentOffer: hasLiveCurrentOffer,
     theme: catalogSetDetail.theme,
   });
-  const dealVerdict: CatalogSetDetailVerdict = isUnavailableSet
-    ? buildUnavailableDealVerdict()
+  const dealVerdict: CatalogSetDetailVerdict = hasTrackedAvailabilityFallback
+    ? buildTrackedAvailabilityFallbackDealVerdict({
+        state: availabilityFallbackState,
+      })
     : defaultDealVerdict;
   const trackedMerchantCount = localizedSetDetailOffers.length;
   const unavailableCheckedAt =
     primaryOfferAvailability.latestPrimaryOfferCheckedAt ??
     pricePanelSnapshot?.observedAt;
   const unavailablePrimarySeedCount = primaryOfferAvailability.primarySeedCount;
-  const analyticsPriceVerdict = isUnavailableSet
+  const analyticsPriceVerdict = hasTrackedAvailabilityFallback
     ? 'neutral'
     : getBrickhuntAnalyticsPriceVerdict(defaultDealVerdict.tone);
   const similarSetCards = await listCatalogSimilarSetCards({
@@ -623,10 +836,11 @@ export default async function SetDetailPage({
     <ShellWeb>
       <CatalogFeatureSetDetail
         bestDeal={
-          isUnavailableSet
-            ? buildUnavailableBestDeal({
+          hasTrackedAvailabilityFallback
+            ? buildTrackedAvailabilityFallbackBestDeal({
                 checkedAt: unavailableCheckedAt,
                 primarySeedCount: unavailablePrimarySeedCount,
+                state: availabilityFallbackState,
               })
             : buildBestDeal({
                 catalogOffer: bestOffer,
@@ -645,9 +859,10 @@ export default async function SetDetailPage({
         })}
         catalogSetDetail={catalogSetDetail}
         dealSupportItems={
-          isUnavailableSet
-            ? buildUnavailableSupportItems({
+          hasTrackedAvailabilityFallback
+            ? buildTrackedAvailabilityFallbackSupportItems({
                 primarySeedCount: unavailablePrimarySeedCount,
+                state: availabilityFallbackState,
               })
             : buildSetDecisionSupportItems({
                 hasCurrentOffer: hasLiveCurrentOffer,
@@ -658,7 +873,7 @@ export default async function SetDetailPage({
         }
         dealVerdict={dealVerdict}
         offerList={
-          isUnavailableSet
+          hasTrackedAvailabilityFallback
             ? []
             : buildOfferList(
                 localizedSetDetailOffers,
@@ -673,7 +888,7 @@ export default async function SetDetailPage({
               )
         }
         offerSummaryLabel={
-          isUnavailableSet
+          hasTrackedAvailabilityFallback
             ? undefined
             : buildOfferSummaryLabel({
                 merchantCount:
@@ -735,10 +950,11 @@ export default async function SetDetailPage({
           buildCatalogThemeSlug(catalogSetDetail.theme),
         )}
         trustSignals={
-          isUnavailableSet
-            ? buildUnavailableTrustSignals({
+          hasTrackedAvailabilityFallback
+            ? buildTrackedAvailabilityFallbackTrustSignals({
                 checkedAt: unavailableCheckedAt,
                 primarySeedCount: unavailablePrimarySeedCount,
+                state: availabilityFallbackState,
               })
             : buildTrustSignals({
                 bestOffer,
@@ -749,19 +965,27 @@ export default async function SetDetailPage({
               })
         }
         followCopy={
-          isUnavailableSet
+          availabilityFallbackState === 'retired'
             ? 'Hou deze set op je lijst als je hem later nog eens wilt spotten.'
-            : defaultDecisionPresentation.followCopy
+            : availabilityFallbackState === 'no_current_price'
+              ? 'Zodra we actuele voorraad zien bij de winkels die Brickhunt controleert, zie je dat hier terug.'
+              : availabilityFallbackState === 'no_current_stock'
+                ? 'Zodra er weer nieuwe voorraad opduikt bij de winkels die Brickhunt volgt, zie je dat hier terug.'
+                : defaultDecisionPresentation.followCopy
         }
         followEyebrow={
-          isUnavailableSet
+          hasTrackedAvailabilityFallback
             ? 'Beschikbaarheid'
             : defaultDecisionPresentation.followEyebrow
         }
         followTitle={
-          isUnavailableSet
+          availabilityFallbackState === 'retired'
             ? 'Soms nog tweedehands te vinden'
-            : defaultDecisionPresentation.followTitle
+            : availabilityFallbackState === 'no_current_price'
+              ? 'We volgen deze set'
+              : availabilityFallbackState === 'no_current_stock'
+                ? 'Volg deze set'
+                : defaultDecisionPresentation.followTitle
         }
       />
     </ShellWeb>

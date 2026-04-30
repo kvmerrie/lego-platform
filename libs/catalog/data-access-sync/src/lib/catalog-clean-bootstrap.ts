@@ -27,6 +27,8 @@ interface CatalogBootstrapSetRow {
   name: string;
   piece_count: number;
   primary_theme_id: string | null;
+  release_date: string | null;
+  release_date_precision: string | null;
   release_year: number;
   set_id: string;
   slug: string;
@@ -100,6 +102,8 @@ export interface CatalogBootstrapCatalogSet {
   name: string;
   pieceCount: number;
   primaryThemeId: string;
+  releaseDate?: string;
+  releaseDatePrecision?: 'day' | 'month' | 'year' | 'unknown';
   releaseYear: number;
   setId: string;
   slug: string;
@@ -269,6 +273,19 @@ function toBootstrapCatalogSet(
     name: row.name,
     pieceCount: row.piece_count,
     primaryThemeId: row.primary_theme_id,
+    ...(row.release_date
+      ? {
+          releaseDate: row.release_date,
+        }
+      : {}),
+    ...(row.release_date_precision === 'day' ||
+    row.release_date_precision === 'month' ||
+    row.release_date_precision === 'year' ||
+    row.release_date_precision === 'unknown'
+      ? {
+          releaseDatePrecision: row.release_date_precision,
+        }
+      : {}),
     releaseYear: row.release_year,
     setId: row.set_id,
     slug: row.slug,
@@ -635,6 +652,8 @@ function toTargetCatalogSetRow(catalogSet: CatalogBootstrapCatalogSet) {
     name: catalogSet.name,
     piece_count: catalogSet.pieceCount,
     primary_theme_id: catalogSet.primaryThemeId,
+    release_date: catalogSet.releaseDate ?? null,
+    release_date_precision: catalogSet.releaseDatePrecision ?? 'year',
     release_year: catalogSet.releaseYear,
     set_id: catalogSet.setId,
     slug: catalogSet.slug,
@@ -947,7 +966,7 @@ async function listCurrentCatalogSetRows({
   let query = supabaseClient
     .from(CURRENT_CATALOG_SETS_TABLE)
     .select(
-      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, piece_count, image_url, source, status, created_at, updated_at',
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
     )
     .order('created_at', { ascending: true });
 

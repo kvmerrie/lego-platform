@@ -9,6 +9,7 @@ import {
   getCanonicalCatalogSetId,
   getCatalogProductSlug,
   mergeCanonicalCatalogSets,
+  resolveCatalogReleaseDatePrecision,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
@@ -47,6 +48,8 @@ interface CatalogOverlaySetRow {
   name: string;
   piece_count: number;
   primary_theme_id: string | null;
+  release_date: string | null;
+  release_date_precision: string | null;
   release_year: number;
   set_id: string;
   slug: string;
@@ -127,6 +130,16 @@ function toCanonicalCatalogSetFromSnapshotRecord(
     name: catalogSetRecord.name,
     pieceCount: catalogSetRecord.pieces,
     primaryTheme: themeIdentity.primaryTheme,
+    ...(catalogSetRecord.releaseDate
+      ? {
+          releaseDate: catalogSetRecord.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: resolveCatalogReleaseDatePrecision({
+      releaseDate: catalogSetRecord.releaseDate,
+      releaseDatePrecision: catalogSetRecord.releaseDatePrecision,
+      releaseYear: catalogSetRecord.releaseYear,
+    }),
     releaseYear: catalogSetRecord.releaseYear,
     secondaryLabels: themeIdentity.secondaryThemes,
     setId: catalogSetRecord.canonicalId,
@@ -153,6 +166,22 @@ function toCanonicalCatalogSetFromOverlayRow({
     name: row.name,
     pieceCount: row.piece_count,
     primaryTheme: themeIdentity.primaryTheme,
+    ...(row.release_date
+      ? {
+          releaseDate: row.release_date,
+        }
+      : {}),
+    releaseDatePrecision: resolveCatalogReleaseDatePrecision({
+      releaseDate: row.release_date ?? undefined,
+      releaseDatePrecision:
+        row.release_date_precision === 'day' ||
+        row.release_date_precision === 'month' ||
+        row.release_date_precision === 'year' ||
+        row.release_date_precision === 'unknown'
+          ? row.release_date_precision
+          : undefined,
+      releaseYear: row.release_year,
+    }),
     releaseYear: row.release_year,
     secondaryLabels: themeIdentity.secondaryThemes,
     setId: row.set_id,
@@ -179,6 +208,12 @@ function toCatalogSetRecordFromCanonicalCatalogSet(
         snapshotCatalogSetRecord.sourceSetNumber,
       name: canonicalCatalogSet.name,
       theme: canonicalCatalogSet.primaryTheme,
+      ...(canonicalCatalogSet.releaseDate
+        ? {
+            releaseDate: canonicalCatalogSet.releaseDate,
+          }
+        : {}),
+      releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
       releaseYear: canonicalCatalogSet.releaseYear,
       pieces: canonicalCatalogSet.pieceCount,
       ...(canonicalCatalogSet.imageUrl
@@ -199,6 +234,12 @@ function toCatalogSetRecordFromCanonicalCatalogSet(
     sourceSetNumber: canonicalCatalogSet.sourceSetNumber,
     name: canonicalCatalogSet.name,
     theme: canonicalCatalogSet.primaryTheme,
+    ...(canonicalCatalogSet.releaseDate
+      ? {
+          releaseDate: canonicalCatalogSet.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
@@ -314,7 +355,7 @@ async function listCatalogSyncOverlayRows({
   let query = supabaseClient
     .from(CATALOG_SETS_OVERLAY_TABLE)
     .select(
-      'set_id, slug, name, theme, piece_count, release_year, image_url, source, source_set_number, source_theme_id, primary_theme_id, status, created_at, updated_at',
+      'set_id, slug, name, theme, piece_count, release_year, release_date, release_date_precision, image_url, source, source_set_number, source_theme_id, primary_theme_id, status, created_at, updated_at',
     )
     .order('created_at', { ascending: true });
 

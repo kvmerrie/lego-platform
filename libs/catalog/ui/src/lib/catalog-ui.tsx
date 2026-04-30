@@ -12,6 +12,7 @@ import type {
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import {
+  buildCatalogReleaseLabel,
   buildCatalogThemeSlug,
   getCatalogThemeMutedTextColor,
   getCatalogThemeVisual,
@@ -382,11 +383,19 @@ function formatCardSetFacts(setSummary: CatalogSetCardSummary): Array<{
   id: string;
   value: string;
 }> {
+  const releaseFactLabel =
+    buildCatalogReleaseLabel({
+      releaseDate: setSummary.releaseDate,
+      releaseDatePrecision: setSummary.releaseDatePrecision,
+      releaseYear: setSummary.releaseYear,
+      variant: 'compact',
+    })?.value ?? setSummary.releaseYear.toString();
+
   return [
     {
       icon: CalendarDays,
-      id: 'release-year',
-      value: setSummary.releaseYear.toString(),
+      id: 'release',
+      value: releaseFactLabel,
     },
     {
       icon: Blocks,
@@ -427,6 +436,39 @@ function CatalogSetFactRow({
       })}
     </div>
   );
+}
+
+function getCatalogSetCardReleaseMetaValue(
+  setSummary: CatalogSetCardSummary,
+): string {
+  return (
+    buildCatalogReleaseLabel({
+      releaseDate: setSummary.releaseDate,
+      releaseDatePrecision: setSummary.releaseDatePrecision,
+      releaseYear: setSummary.releaseYear,
+      variant: 'compact',
+    })?.value ?? setSummary.releaseYear.toString()
+  );
+}
+
+function getCatalogSetMetadataReleaseItem(setSummary: CatalogSetCardSummary): {
+  label: string;
+  value: string | number;
+} {
+  const detailedReleaseLabel = buildCatalogReleaseLabel({
+    releaseDate: setSummary.releaseDate,
+    releaseDatePrecision: setSummary.releaseDatePrecision,
+    releaseYear: setSummary.releaseYear,
+  });
+
+  if (detailedReleaseLabel) {
+    return detailedReleaseLabel;
+  }
+
+  return {
+    label: 'Jaar',
+    value: setSummary.releaseYear,
+  };
 }
 
 function CatalogSetCardVisualBadges({
@@ -568,12 +610,18 @@ function buildCatalogSetDetailHeroFacts({
     });
   }
 
+  const releaseFact = buildCatalogReleaseLabel({
+    releaseDate: catalogSetDetail.releaseDate,
+    releaseDatePrecision: catalogSetDetail.releaseDatePrecision,
+    releaseYear: catalogSetDetail.releaseYear,
+  });
+
   if (heroFacts.length < 5) {
     heroFacts.push({
-      id: 'release-year',
+      id: 'release',
       icon: <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: 'Jaar',
-      value: catalogSetDetail.releaseYear,
+      label: releaseFact?.label ?? 'Jaar',
+      value: releaseFact?.value ?? catalogSetDetail.releaseYear,
     });
   }
 
@@ -894,7 +942,7 @@ export function CatalogSetCard({
             </Badge>
           ) : null}
           <p className={styles.cardMetaText}>
-            {setSummary.releaseYear} ·{' '}
+            {getCatalogSetCardReleaseMetaValue(setSummary)} ·{' '}
             {setSummary.pieces.toLocaleString('nl-NL')} stenen
           </p>
         </div>
@@ -961,7 +1009,7 @@ export function CatalogSetCard({
       <CatalogSetMetadata
         items={[
           { label: 'Steentjes', value: setSummary.pieces.toLocaleString() },
-          { label: 'Jaar', value: setSummary.releaseYear },
+          getCatalogSetMetadataReleaseItem(setSummary),
         ]}
       />
       {actions ? <div className={styles.cardActions}>{actions}</div> : null}
