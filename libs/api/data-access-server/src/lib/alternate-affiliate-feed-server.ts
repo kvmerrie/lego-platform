@@ -38,6 +38,7 @@ export interface AlternateAffiliateFeedRow {
   imageUrl?: string;
   legoSetNumber?: string;
   price?: number | string;
+  productId?: string;
   productTitle?: string;
   shippingCost?: number | string;
 }
@@ -83,6 +84,7 @@ export interface AlternateAffiliateFeedUnmatchedSetSummary {
   highestPriceMinor?: number;
   legoSetNumber: string;
   lowestPriceMinor?: number;
+  productId?: string;
   productTitle?: string;
 }
 
@@ -503,9 +505,16 @@ export async function importAffiliateFeedRowsForMerchant({
       if (options?.collectUnmatchedDebug) {
         const existingUnmatchedSet = unmatchedRowsBySetId.get(setId);
         const observedPriceMinor = parsePriceMinor(row.price);
+        const normalizedProductId = normalizeOptionalText(row.productId);
 
         unmatchedRowsBySetId.set(setId, {
           legoSetNumber: setId,
+          ...(existingUnmatchedSet?.productId || normalizedProductId
+            ? {
+                productId:
+                  existingUnmatchedSet?.productId ?? normalizedProductId,
+              }
+            : {}),
           productTitle:
             existingUnmatchedSet?.productTitle ??
             normalizeOptionalText(row.productTitle),

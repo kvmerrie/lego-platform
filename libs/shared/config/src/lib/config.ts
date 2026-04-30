@@ -205,6 +205,12 @@ export const tradeTrackerEnvKeys = {
   alternateCampaignId: 'TRADETRACKER_ALTERNATE_CAMPAIGN_ID',
 } as const;
 
+export const tradeTrackerLidlEnvKeys = {
+  feedUrl: 'TRADETRACKER_LIDL_FEED_URL',
+  merchantSlug: 'TRADETRACKER_LIDL_MERCHANT_SLUG',
+  merchantName: 'TRADETRACKER_LIDL_MERCHANT_NAME',
+} as const;
+
 export const awinCoolblueEnvKeys = {
   feedUrl: 'AWIN_COOLBLUE_FEED_URL',
   merchantSlug: 'AWIN_COOLBLUE_MERCHANT_SLUG',
@@ -253,6 +259,12 @@ export interface TradeTrackerAffiliateConfig {
   alternateFeedId?: number;
   customerId: number;
   passphrase: string;
+}
+
+export interface TradeTrackerLidlFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
 }
 
 export interface AwinCoolblueFeedConfig {
@@ -962,6 +974,21 @@ export function getTradeTrackerAffiliateConfig(
   };
 }
 
+export function getTradeTrackerLidlFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): TradeTrackerLidlFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: tradeTrackerLidlEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[tradeTrackerLidlEnvKeys.merchantSlug]?.trim() || 'lidl',
+    merchantName:
+      environment[tradeTrackerLidlEnvKeys.merchantName]?.trim() || 'Lidl',
+  };
+}
+
 export function getAwinCoolblueFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): AwinCoolblueFeedConfig {
@@ -1014,6 +1041,20 @@ export function getMissingTradeTrackerEnvKeys(
   }
 
   return missingKeys;
+}
+
+export function hasTradeTrackerLidlFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[tradeTrackerLidlEnvKeys.feedUrl]);
+}
+
+export function getMissingTradeTrackerLidlEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[tradeTrackerLidlEnvKeys.feedUrl]
+    ? []
+    : [tradeTrackerLidlEnvKeys.feedUrl];
 }
 
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {

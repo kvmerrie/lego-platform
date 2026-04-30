@@ -13,6 +13,7 @@
     "sync:catalog:local:check": "pnpm nx run catalog-sync:run -- --local-check",
     "sync:commerce": "pnpm nx run commerce-sync:run",
     "sync:alternate-feed": "pnpm nx run alternate-feed-sync:run",
+    "sync:lidl-feed": "pnpm nx run lidl-feed-sync:run",
     "sync:awin-feed": "pnpm nx run awin-feed-sync:run",
     "sync:coolblue-feed": "pnpm nx run awin-feed-sync:run",
     "sync:commerce:check": "pnpm sync:commerce:local:check",

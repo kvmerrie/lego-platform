@@ -18,10 +18,12 @@ import {
   getMissingProductEmailEnvKeys,
   getMissingStagingSupabaseEnvKeys,
   getMissingTradeTrackerEnvKeys,
+  getMissingTradeTrackerLidlEnvKeys,
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
   getTradeTrackerAffiliateConfig,
+  getTradeTrackerLidlFeedConfig,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
   hasAdminPromotionConfig,
@@ -31,6 +33,7 @@ import {
   hasProductEmailConfig,
   hasStagingSupabaseConfig,
   hasTradeTrackerAffiliateConfig,
+  hasTradeTrackerLidlFeedConfig,
   publicSiteRobotsPolicy,
 } from './config';
 
@@ -347,5 +350,48 @@ describe('shared config Awin Coolblue feed helpers', () => {
 
     expect(hasAwinCoolblueFeedConfig()).toBe(false);
     expect(getMissingAwinCoolblueEnvKeys()).toEqual(['AWIN_COOLBLUE_FEED_URL']);
+  });
+});
+
+describe('shared config TradeTracker Lidl feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the TradeTracker Lidl feed config with sensible merchant defaults', () => {
+    process.env.TRADETRACKER_LIDL_FEED_URL =
+      'https://pf.tradetracker.net/example/lidl.xml';
+
+    expect(hasTradeTrackerLidlFeedConfig()).toBe(true);
+    expect(getMissingTradeTrackerLidlEnvKeys()).toEqual([]);
+    expect(getTradeTrackerLidlFeedConfig()).toEqual({
+      feedUrl: 'https://pf.tradetracker.net/example/lidl.xml',
+      merchantSlug: 'lidl',
+      merchantName: 'Lidl',
+    });
+  });
+
+  test('allows explicit Lidl merchant overrides for the TradeTracker feed config', () => {
+    process.env.TRADETRACKER_LIDL_FEED_URL =
+      'https://pf.tradetracker.net/example/lidl.xml';
+    process.env.TRADETRACKER_LIDL_MERCHANT_SLUG = 'lidl-nl';
+    process.env.TRADETRACKER_LIDL_MERCHANT_NAME = 'Lidl Nederland';
+
+    expect(getTradeTrackerLidlFeedConfig()).toEqual({
+      feedUrl: 'https://pf.tradetracker.net/example/lidl.xml',
+      merchantSlug: 'lidl-nl',
+      merchantName: 'Lidl Nederland',
+    });
+  });
+
+  test('reports the missing TradeTracker Lidl feed URL', () => {
+    delete process.env.TRADETRACKER_LIDL_FEED_URL;
+
+    expect(hasTradeTrackerLidlFeedConfig()).toBe(false);
+    expect(getMissingTradeTrackerLidlEnvKeys()).toEqual([
+      'TRADETRACKER_LIDL_FEED_URL',
+    ]);
   });
 });
