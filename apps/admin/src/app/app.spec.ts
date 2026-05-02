@@ -73,6 +73,7 @@ describe('App', () => {
     expect(text).toContain('Workbench');
     expect(text).toContain('New set');
     expect(text).toContain('Sets');
+    expect(text).toContain('Editorial agent');
     expect(text).not.toContain('Dashboard');
   });
 
@@ -92,11 +93,15 @@ describe('App', () => {
     const bulkOnboardingRoute = appRoutes[0]?.children?.find(
       (route) => route.path === 'bulk-onboarding',
     );
+    const editorialAgentRoute = appRoutes[0]?.children?.find(
+      (route) => route.path === 'editorial-agent',
+    );
 
     expect(rootRoute?.redirectTo).toBe('workbench');
     expect(dashboardRoute?.redirectTo).toBe('workbench');
     expect(workbenchRoute?.component).toBeTruthy();
     expect(addSetAliasRoute?.redirectTo).toBe('new-set');
     expect(bulkOnboardingRoute?.component).toBeTruthy();
+    expect(editorialAgentRoute?.component).toBeTruthy();
   });
 });

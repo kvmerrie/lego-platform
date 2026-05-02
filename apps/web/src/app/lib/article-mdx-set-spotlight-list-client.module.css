@@ -1,0 +1,143 @@
+.sectionGrid {
+  align-items: stretch;
+  display: grid;
+  gap: var(--lego-space-4);
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.cardSlot {
+  container-type: inline-size;
+  display: grid;
+  height: 100%;
+  min-width: 0;
+}
+
+.cardActions {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.lightboxButton {
+  align-items: center;
+  aspect-ratio: 1;
+  display: inline-flex;
+  justify-content: center;
+  min-width: 2.15rem;
+  padding-inline: 0;
+  --lego-button-secondary-background: #ffffff;
+  --lego-button-secondary-border-color: var(--lego-text);
+  --lego-button-secondary-color: var(--lego-text);
+  --lego-button-secondary-hover-background: color-mix(
+    in srgb,
+    #ffffff 82%,
+    var(--lego-surface-muted) 18%
+  );
+  --lego-button-secondary-hover-border-color: var(--lego-text);
+  --lego-button-secondary-hover-color: var(--lego-text);
+  --lego-button-secondary-active-background: color-mix(
+    in srgb,
+    #ffffff 74%,
+    var(--lego-surface-muted) 26%
+  );
+  --lego-button-secondary-active-border-color: var(--lego-text);
+  --lego-button-secondary-active-color: var(--lego-text);
+}
+
+.lightboxButton:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lightboxButton {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0.2rem);
+    transition:
+      opacity var(--lego-motion-duration-fast) var(--lego-motion-ease-standard),
+      transform var(--lego-motion-duration-fast)
+        var(--lego-motion-ease-standard);
+  }
+
+  [data-catalog-set-card-visual='true']:hover .lightboxButton,
+  [data-catalog-set-card-visual='true']:focus-within .lightboxButton {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .lightboxButton {
+    display: none;
+  }
+}
+
+@media (max-width: 47.999rem) {
+  .sectionGrid {
+    gap: 0;
+  }
+
+  .cardSlot {
+    border-top: 1px solid var(--lego-border-subtle);
+  }
+
+  .cardSlot:last-child {
+    border-bottom: 1px solid var(--lego-border-subtle);
+  }
+
+  .sectionGrid
+    [data-catalog-set-card='true'][data-catalog-set-card-variant='compact'] {
+    border-block: 0;
+    border-inline: 0;
+    border-radius: 0;
+  }
+
+  .sectionGrid [data-catalog-set-card-link='true'] {
+    padding-inline: var(--article-shell-padding-inline);
+  }
+
+  .cardActions {
+    padding-inline-end: 0;
+  }
+}
+
+@media (min-width: 48rem) {
+  .sectionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sectionGrid[data-set-spotlight-count='1'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sectionGrid[data-set-spotlight-count='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 72rem) {
+  .sectionGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sectionGrid[data-set-spotlight-count='1'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .sectionGrid[data-set-spotlight-count='2'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.lightboxButtonIcon {
+  flex: 0 0 auto;
+  height: 0.9rem;
+  width: 0.9rem;
+}

@@ -1,0 +1,75 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  type EditorialAgentDraftGenerationResult,
+  type EditorialAgentFactExtractionResult,
+} from '@lego-platform/content/util';
+import { apiPaths } from '@lego-platform/shared/config';
+import { firstValueFrom } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class ContentAdminEditorialAgentApiService {
+  private readonly http = inject(HttpClient);
+
+  async extractSourceFacts(
+    url: string,
+  ): Promise<EditorialAgentFactExtractionResult> {
+    try {
+      return await firstValueFrom(
+        this.http.post<EditorialAgentFactExtractionResult>(
+          apiPaths.adminEditorialAgentExtract,
+          {
+            url,
+          },
+        ),
+      );
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        const message =
+          typeof error.error?.message === 'string' && error.error.message.trim()
+            ? error.error.message.trim()
+            : '';
+
+        throw new Error(
+          message ||
+            'De extractiestap liep vast. Probeer het opnieuw met een publieke artikel-URL.',
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  async generateDraft(
+    extraction: EditorialAgentFactExtractionResult,
+    importMissingSets: boolean,
+    useAiRewrite: boolean,
+  ): Promise<EditorialAgentDraftGenerationResult> {
+    try {
+      return await firstValueFrom(
+        this.http.post<EditorialAgentDraftGenerationResult>(
+          apiPaths.adminEditorialAgentDraft,
+          {
+            extraction,
+            importMissingSets,
+            useAiRewrite,
+          },
+        ),
+      );
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        const message =
+          typeof error.error?.message === 'string' && error.error.message.trim()
+            ? error.error.message.trim()
+            : '';
+
+        throw new Error(
+          message ||
+            'De draft generatie liep vast. Gebruik voorlopig de deterministic draft.',
+        );
+      }
+
+      throw error;
+    }
+  }
+}

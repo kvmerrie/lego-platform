@@ -55,6 +55,7 @@ export interface ContentArticleListItem {
   description: string;
   heroImage?: string;
   heroImageAlt: string;
+  primarySetNumber?: string;
   slug: string;
   status: ContentArticleStatus;
   theme?: string;
@@ -64,6 +65,34 @@ export interface ContentArticleListItem {
 
 export interface ContentArticle extends ContentArticleListItem {
   bodySource: string;
+}
+
+export function normalizeContentArticleSetNumber(
+  setNumber?: string,
+): string | undefined {
+  if (typeof setNumber !== 'string') {
+    return undefined;
+  }
+
+  const normalizedSetNumber = setNumber.trim().replace(/-1$/u, '');
+
+  return normalizedSetNumber.length > 0 ? normalizedSetNumber : undefined;
+}
+
+export function extractPrimarySetNumberFromArticleBody(
+  bodySource: string,
+): string | undefined {
+  const featuredSetMatch = bodySource.match(
+    /<FeaturedSet\b[^>]*\bsetNumber\s*=\s*(?:"([^"]+)"|'([^']+)')/u,
+  );
+
+  if (!featuredSetMatch) {
+    return undefined;
+  }
+
+  return normalizeContentArticleSetNumber(
+    featuredSetMatch[1] ?? featuredSetMatch[2],
+  );
 }
 
 const contentArticleDateFormatter = new Intl.DateTimeFormat('nl-NL', {

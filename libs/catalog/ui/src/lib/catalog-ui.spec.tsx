@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import {
@@ -138,6 +140,92 @@ describe('CatalogSetCard', () => {
 
     expect(markup).toContain('Move to collection');
     expect(markup).toContain('Bekijk set');
+  });
+
+  it('renders compact-card secondary actions inside the shared footer action row when provided', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        actions={
+          <>
+            <button type="button">Bewaar</button>
+            <button type="button">Zoom</button>
+          </>
+        }
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+          collectorAngle: 'Prestige display anchor',
+          tagline:
+            'A flagship fantasy build that rewards both display space and patience.',
+          availability: 'Healthy but premium availability',
+        }}
+        variant="compact"
+      />,
+    );
+
+    expect(markup).toContain('Bewaar');
+    expect(markup).toContain('Zoom');
+    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('cardCompactDecisionZone');
+    expect(markup).toContain('cardCompactFooterActions');
+  });
+
+  it('keeps the compact primary action white-on-blue inside the shared footer row', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const source = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.tsx'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.cardCompactPrimaryAction,');
+    expect(css).toContain('.cardCompactPrimaryAction:visited {');
+    expect(css).toContain('color: var(--lego-accent-contrast, #ffffff);');
+    expect(css).toContain('.cardCompactActionBrowse,');
+    expect(css).toContain('.cardCompactActionBrowse:visited {');
+    expect(css).toContain('.cardCompactActionCommerce,');
+    expect(css).toContain('.cardCompactActionCommerce:visited {');
+    expect(css).toContain(
+      '.cardCompactPrimaryAction.cardCompactPrimaryAction:hover,',
+    );
+    expect(css).toContain(
+      '.cardCompactPrimaryAction.cardCompactPrimaryAction:focus-visible {',
+    );
+    expect(css).toContain('.cardCompactPrimaryAction .cardCompactActionIcon,');
+    expect(css).toContain('.cardCompactPrimaryAction .cardCompactActionLabel,');
+    expect(css).toContain('.cardCompactPrimaryAction .interactiveContent,');
+    expect(css).toContain('.cardCompactPrimaryAction svg,');
+    expect(css).toContain('.cardCompactPrimaryAction span {');
+    expect(css).toContain('stroke: currentColor;');
+    expect(css).toContain('text-decoration: none;');
+    expect(source).toContain('tone="card"');
+  });
+
+  it('anchors optional visual actions inside the image wrapper with bottom-right padding', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const source = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.tsx'),
+      'utf-8',
+    );
+
+    expect(source).toContain('overlayControls');
+    expect(source).toContain('data-catalog-set-card-visual-actions="true"');
+    expect(css).toContain('.visualActionSlot {');
+    expect(css).toContain('position: absolute;');
+    expect(css).toContain('inset-block-end: 0.82rem;');
+    expect(css).toContain('inset-inline-end: 0.82rem;');
+    expect(css).not.toContain('.visualActionSlot {\n  top:');
   });
 
   it('renders a compact featured-card variant for homepage browsing', () => {
@@ -590,6 +678,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Goede deal');
     expect(markup).toContain('The Lord of the Rings');
     expect(markup).toContain('>10316</span>');
+    expect(markup).toContain('aria-label="Afbeeldingen van Rivendell"');
+    expect(markup).toContain('Open Rivendell LEGO-set in volledig scherm');
     expect(markup).toContain('Bekijk bij bol');
     expect(markup).toContain(
       '€ 30,00 onder wat we meestal zien voor deze set.',
@@ -629,10 +719,7 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain(
       'Als je een grote Middle-earth-set wilt, pak je deze.',
     );
-    expect(markup).toContain('Kies foto 2 van 2');
-    expect(markup).toContain('Vorige foto');
-    expect(markup).toContain('Volgende foto');
-    expect(markup).not.toContain('Bekijk alle foto&#x27;s');
+    expect(markup).toContain('Bekijk afbeelding 2');
     expect(markup).toContain('In collectie zetten');
     expect(markup).not.toContain('Set 10316');
     expect(markup).toContain('10316');

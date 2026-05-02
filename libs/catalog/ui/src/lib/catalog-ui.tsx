@@ -51,21 +51,19 @@ import { CatalogPageIntro, CatalogSetDetailHero } from './catalog-composite-ui';
 import {
   ActionLink,
   Badge,
+  ImageGallery,
   LabelValue,
   LabelValueList,
   MarkerList,
   Panel,
   SectionHeading,
   Surface,
+  type CarouselImage,
 } from '@lego-platform/shared/ui';
 import {
   buildBrickhuntAnalyticsAttributes,
   type BrickhuntAnalyticsEventDescriptor,
 } from '@lego-platform/shared/util';
-import {
-  CatalogSetImageGalleryClient,
-  type CatalogSetGalleryImageItem,
-} from './catalog-set-image-gallery';
 import styles from './catalog-ui.module.css';
 
 export {
@@ -154,6 +152,10 @@ export const CatalogSetCardCollection = forwardRef<
       ]
         .filter(Boolean)
         .join(' ')}
+      data-catalog-set-card-collection="true"
+      data-catalog-set-card-collection-grid-mode={gridMode}
+      data-catalog-set-card-collection-layout={layout}
+      data-catalog-set-card-collection-variant={variant}
       ref={ref}
       {...rest}
     >
@@ -186,6 +188,7 @@ function CatalogSetVisual({
   imageLoading,
   name,
   overlayBadges,
+  overlayControls,
   setId,
   theme,
   variant,
@@ -195,6 +198,7 @@ function CatalogSetVisual({
   imageLoading?: 'eager' | 'lazy';
   name: string;
   overlayBadges?: ReactNode;
+  overlayControls?: ReactNode;
   setId: string;
   theme: string;
   variant: 'card' | 'hero';
@@ -206,9 +210,21 @@ function CatalogSetVisual({
 
   if (imageUrl) {
     return (
-      <div className={visualClassName}>
+      <div
+        className={visualClassName}
+        data-catalog-set-card-visual="true"
+        data-catalog-set-card-visual-variant={variant}
+      >
         {overlayBadges ? (
           <div className={styles.visualOverlay}>{overlayBadges}</div>
+        ) : null}
+        {overlayControls ? (
+          <div
+            className={styles.visualActionSlot}
+            data-catalog-set-card-visual-actions="true"
+          >
+            {overlayControls}
+          </div>
         ) : null}
         <div className={styles.visualMedia}>
           <img
@@ -224,9 +240,21 @@ function CatalogSetVisual({
   }
 
   return (
-    <div className={`${visualClassName} ${styles.visualFallback}`}>
+    <div
+      className={`${visualClassName} ${styles.visualFallback}`}
+      data-catalog-set-card-visual="true"
+      data-catalog-set-card-visual-variant={variant}
+    >
       {overlayBadges ? (
         <div className={styles.visualOverlay}>{overlayBadges}</div>
+      ) : null}
+      {overlayControls ? (
+        <div
+          className={styles.visualActionSlot}
+          data-catalog-set-card-visual-actions="true"
+        >
+          {overlayControls}
+        </div>
       ) : null}
       {!overlayBadges ? (
         <Badge tone="accent">
@@ -682,6 +710,7 @@ export function CatalogSetCard({
   supportingNote,
   trackingEvent,
   variant = 'default',
+  visualActions,
 }: {
   actions?: ReactNode;
   ctaMode?: CatalogSetCardCtaMode;
@@ -695,6 +724,7 @@ export function CatalogSetCard({
   supportingNote?: ReactNode;
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant?: CatalogSetCardVariant;
+  visualActions?: ReactNode;
 }) {
   const primaryAction = getCardPrimaryActionConfig({
     ctaMode,
@@ -713,6 +743,7 @@ export function CatalogSetCard({
   );
 
   if (variant === 'compact') {
+    const compactUsesDecisionZone = Boolean(actions);
     const overlayBadges = (
       <CatalogSetCardVisualBadges
         contextBadge={contextBadge}
@@ -728,6 +759,7 @@ export function CatalogSetCard({
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
           overlayBadges={overlayBadges}
+          overlayControls={visualActions}
           setId={setSummary.id}
           theme={setSummary.theme}
           variant="card"
@@ -740,22 +772,24 @@ export function CatalogSetCard({
             className={styles.cardCompactSupportingSlot}
             setSummary={setSummary}
           />
-          <div className={styles.cardCompactFooter}>
-            <CatalogSetNumberMeta setId={setSummary.id} />
-            {href ? (
-              <span
-                className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
-              >
-                <PrimaryActionIcon
-                  aria-hidden="true"
-                  className={styles.cardCompactActionIcon}
-                />
-                <span className={styles.cardCompactActionLabel}>
-                  {primaryAction.label}
+          {!compactUsesDecisionZone ? (
+            <div className={styles.cardCompactFooter}>
+              <CatalogSetNumberMeta setId={setSummary.id} />
+              {href ? (
+                <span
+                  className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
+                >
+                  <PrimaryActionIcon
+                    aria-hidden="true"
+                    className={styles.cardCompactActionIcon}
+                  />
+                  <span className={styles.cardCompactActionLabel}>
+                    {primaryAction.label}
+                  </span>
                 </span>
-              </span>
-            ) : null}
-          </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </>
     );
@@ -764,12 +798,15 @@ export function CatalogSetCard({
       <Surface
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
+        data-catalog-set-card="true"
+        data-catalog-set-card-variant={variant}
         data-theme={setThemeSlug}
         style={setThemeStyle}
       >
         {href ? (
           <ActionLink
             className={styles.setCardLink}
+            data-catalog-set-card-link="true"
             href={href}
             tone="card"
             {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
@@ -777,8 +814,43 @@ export function CatalogSetCard({
             {browseCardContent}
           </ActionLink>
         ) : (
-          browseCardContent
+          <div className={styles.setCardLink} data-catalog-set-card-link="true">
+            {browseCardContent}
+          </div>
         )}
+        {compactUsesDecisionZone ? (
+          <div className={styles.cardCompactDecisionZone}>
+            <CatalogSetNumberMeta setId={setSummary.id} />
+            <div className={styles.cardCompactFooterActions}>
+              {actions ? (
+                <div className={styles.cardCompactSecondaryAction}>
+                  {actions}
+                </div>
+              ) : null}
+              {primaryAction.href ? (
+                <ActionLink
+                  aria-label={primaryAction.label}
+                  className={`${styles.cardCompactAction} ${styles.cardCompactPrimaryAction} ${primaryAction.className}`}
+                  href={primaryAction.href}
+                  rel={primaryAction.rel}
+                  target={primaryAction.target}
+                  tone="card"
+                  {...buildBrickhuntAnalyticsAttributes(
+                    primaryAction.trackingEvent,
+                  )}
+                >
+                  <PrimaryActionIcon
+                    aria-hidden="true"
+                    className={styles.cardCompactActionIcon}
+                  />
+                  <span className={styles.cardCompactActionLabel}>
+                    {primaryAction.label}
+                  </span>
+                </ActionLink>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </Surface>
     );
   }
@@ -809,6 +881,7 @@ export function CatalogSetCard({
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
           overlayBadges={overlayBadges}
+          overlayControls={visualActions}
           setId={setSummary.id}
           theme={setSummary.theme}
           variant="card"
@@ -856,12 +929,15 @@ export function CatalogSetCard({
       <Surface
         as="article"
         className={`${styles.setCard} ${styles.setCardCompact}`}
+        data-catalog-set-card="true"
+        data-catalog-set-card-variant={variant}
         data-theme={setThemeSlug}
         style={setThemeStyle}
       >
         {href ? (
           <ActionLink
             className={styles.setCardLink}
+            data-catalog-set-card-link="true"
             href={href}
             tone="card"
             {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
@@ -869,7 +945,9 @@ export function CatalogSetCard({
             {featuredCardContent}
           </ActionLink>
         ) : (
-          <div className={styles.setCardLink}>{featuredCardContent}</div>
+          <div className={styles.setCardLink} data-catalog-set-card-link="true">
+            {featuredCardContent}
+          </div>
         )}
         {featuredFooterMeta || primaryAction.href || actions ? (
           <div className={styles.cardCompactDecisionZone}>
@@ -891,7 +969,7 @@ export function CatalogSetCard({
                   href={primaryAction.href}
                   rel={primaryAction.rel}
                   target={primaryAction.target}
-                  tone="inline"
+                  tone="card"
                   {...buildBrickhuntAnalyticsAttributes(
                     primaryAction.trackingEvent,
                   )}
@@ -916,12 +994,15 @@ export function CatalogSetCard({
     <Surface
       as="article"
       className={styles.setCard}
+      data-catalog-set-card="true"
+      data-catalog-set-card-variant={variant}
       data-theme={setThemeSlug}
       style={setThemeStyle}
     >
       <CatalogSetVisual
         imageUrl={setSummary.imageUrl}
         name={setSummary.name}
+        overlayControls={visualActions}
         setId={setSummary.id}
         theme={setSummary.theme}
         variant="card"
@@ -1047,14 +1128,14 @@ function createCatalogGalleryImageItems(
     CatalogSetDetail,
     'id' | 'imageUrl' | 'images' | 'name' | 'primaryImage'
   >,
-): readonly CatalogSetGalleryImageItem[] {
+): readonly CarouselImage[] {
   return getCatalogGalleryImages(catalogSetDetail).map(
     (catalogSetImage, index) => ({
-      altLabel:
+      alt:
         index === 0
           ? `${catalogSetDetail.name} LEGO-set`
           : `${catalogSetDetail.name} LEGO-set afbeelding ${index + 1}`,
-      url: catalogSetImage.url,
+      src: catalogSetImage.url,
     }),
   );
 }
@@ -1079,9 +1160,10 @@ function CatalogSetImageGallery({
   }
 
   return (
-    <CatalogSetImageGalleryClient
-      galleryImages={galleryImages}
-      name={catalogSetDetail.name}
+    <ImageGallery
+      ariaLabel={`Afbeeldingen van ${catalogSetDetail.name}`}
+      images={galleryImages}
+      variant="detail"
     />
   );
 }

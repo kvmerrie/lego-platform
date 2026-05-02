@@ -1,0 +1,532 @@
+<lego-admin-page
+  description="Analyseer eerst de bron-URL en werk vanuit facts. MDX blijft in deze fase bewust draft."
+  eyebrow="Editorial"
+  title="Editorial Agent"
+>
+  <div adminPageActions class="admin-page__actions">
+    <button
+      class="admin-button admin-button--primary"
+      [disabled]="isGenerating()"
+      (click)="analyzeSourceUrl()"
+      type="button"
+    >
+      {{ isGenerating() ? 'Analyse draait…' : 'Analyseer URL' }}
+    </button>
+    <button
+      class="admin-button admin-button--subtle"
+      [disabled]="!mdxOutput()"
+      (click)="copyMdx()"
+      type="button"
+    >
+      Copy MDX
+    </button>
+  </div>
+
+  <div adminPageMeta class="editorial-agent__meta">
+    <span class="editorial-agent__meta-pill">Output blijft draft</span>
+    <span class="editorial-agent__meta-pill">
+      {{ useAiRewrite() ? 'AI polish aan' : 'AI polish uit' }}
+    </span>
+    <span class="editorial-agent__meta-pill">
+      {{ importMissingSets() ? 'Missing sets import aan' : 'Missing sets import
+      uit' }}
+    </span>
+    <span class="editorial-agent__meta-pill">Facts eerst, MDX daarna</span>
+    <span class="editorial-agent__meta-pill">Nog geen publicatieflow</span>
+  </div>
+
+  <section class="admin-panel admin-stack">
+    <lego-admin-section-header
+      description="Plak een publieke nieuws-URL. We halen server-side de pagina op, trekken er leesbare tekst uit en bouwen daar een eerste factslaag van."
+      eyebrow="Input"
+      title="Bron en extractie"
+    />
+
+    <div class="admin-filterbar">
+      <label class="admin-filterbar__group admin-filterbar__group--wide">
+        <span class="admin-filterbar__label">Bron-URL</span>
+        <input
+          class="admin-input"
+          [value]="sourceUrl()"
+          (input)="sourceUrl.set($any($event.target).value)"
+          placeholder="https://example.com/example"
+          type="url"
+        />
+      </label>
+
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Missing sets import</span>
+        <span class="editorial-agent__toggle">
+          <input
+            [checked]="importMissingSets()"
+            (change)="onImportMissingSetsToggle($any($event.target).checked)"
+            type="checkbox"
+          />
+          <span>{{ importMissingSets() ? 'Aan' : 'Uit' }}</span>
+        </span>
+      </label>
+
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">AI polish</span>
+        <span class="editorial-agent__toggle">
+          <input
+            [checked]="useAiRewrite()"
+            (change)="onAiRewriteToggle($any($event.target).checked)"
+            type="checkbox"
+          />
+          <span>{{ useAiRewrite() ? 'Aan' : 'Uit' }}</span>
+        </span>
+      </label>
+
+      <div class="admin-filterbar__actions">
+        <button
+          class="admin-button admin-button--primary"
+          [disabled]="isGenerating()"
+          (click)="analyzeSourceUrl()"
+          type="button"
+        >
+          {{ isGenerating() ? 'Analyse draait…' : 'Analyseer URL' }}
+        </button>
+      </div>
+    </div>
+
+    @if (isGenerating()) {
+    <lego-admin-empty-state
+      description="We halen nu de bron op, trekken er leesbare tekst uit en bouwen er deterministische facts van. Er wordt nog niets gepubliceerd."
+      title="Analyse draait"
+      tone="loading"
+    />
+    } @if (errorMessage(); as errorMessage) {
+    <lego-admin-empty-state
+      [description]="errorMessage"
+      title="Analyse mislukt"
+      tone="danger"
+    />
+    }
+  </section>
+
+  @if (extraction(); as extraction) {
+  <div class="editorial-agent__grid">
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="De bronmetadata en de uiteindelijke URL na redirects."
+        eyebrow="Source"
+        title="Bron"
+      />
+
+      <dl class="editorial-agent__fact-list">
+        <div>
+          <dt>Input URL</dt>
+          <dd>{{ extraction.source.inputUrl }}</dd>
+        </div>
+        <div>
+          <dt>Final URL</dt>
+          <dd>{{ extraction.source.finalUrl }}</dd>
+        </div>
+        <div>
+          <dt>Domein</dt>
+          <dd>{{ extraction.source.domain }}</dd>
+        </div>
+        <div>
+          <dt>Titel</dt>
+          <dd>{{ extraction.source.title }}</dd>
+        </div>
+        <div>
+          <dt>Description</dt>
+          <dd>{{ extraction.source.description || 'Niet gevonden' }}</dd>
+        </div>
+        <div>
+          <dt>Site / byline</dt>
+          <dd>
+            {{ extraction.source.siteName || 'Onbekend' }} @if
+            (extraction.source.byline) { · {{ extraction.source.byline }} }
+          </dd>
+        </div>
+        <div>
+          <dt>Taal / lengte</dt>
+          <dd>
+            {{ extraction.source.language || 'Onbekend' }} · {{
+            extraction.source.textLength }} tekens
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Hier zien we meteen of de bron te dun, onduidelijk of technisch lastig was."
+        eyebrow="Waarschuwingen"
+        title="Warnings"
+      />
+
+      @if (extraction.warnings.length) {
+      <ul class="editorial-agent__list">
+        @for (warning of extraction.warnings; track warning) {
+        <li>{{ warning }}</li>
+        }
+      </ul>
+      } @else {
+      <p class="editorial-agent__muted">
+        Geen extraction-warnings voor deze bron.
+      </p>
+      }
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Dit is de eerste factslaag waar latere matching of AI op verder kan bouwen."
+        eyebrow="Facts"
+        title="Facts panel"
+      />
+
+      <dl class="editorial-agent__fact-list">
+        <div>
+          <dt>Titel</dt>
+          <dd>{{ extraction.facts.title }}</dd>
+        </div>
+        <div>
+          <dt>Thema</dt>
+          <dd>{{ extraction.facts.theme || 'Nog niet gedetecteerd' }}</dd>
+        </div>
+        <div>
+          <dt>Setnummers</dt>
+          <dd>{{ extraction.facts.setNumbers.join(', ') || 'Geen' }}</dd>
+        </div>
+        <div>
+          <dt>Prijs / rumor</dt>
+          <dd>
+            {{ extraction.facts.priceEUR || 'Geen prijs gedetecteerd' }} · {{
+            extraction.facts.isRumor ? 'Rumor-signalen gezien' : 'Geen
+            rumor-signalen' }}
+          </dd>
+        </div>
+        <div>
+          <dt>Samenvatting</dt>
+          <dd>{{ extraction.facts.summary }}</dd>
+        </div>
+        <div>
+          <dt>Uncertain claims</dt>
+          <dd>{{ extraction.facts.uncertainClaims.join(' | ') || 'Geen' }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="De ruwe signalen die we nu al deterministisch uit de bron halen."
+        eyebrow="Detected"
+        title="Detected signals"
+      />
+
+      <dl class="editorial-agent__fact-list">
+        <div>
+          <dt>Setnummers</dt>
+          <dd>{{ extraction.detected.setNumbers.join(', ') || 'Geen' }}</dd>
+        </div>
+        <div>
+          <dt>Thema’s</dt>
+          <dd>{{ extraction.detected.themes.join(', ') || 'Geen' }}</dd>
+        </div>
+        <div>
+          <dt>Keywords</dt>
+          <dd>{{ extraction.detected.keywords.join(', ') || 'Geen' }}</dd>
+        </div>
+        <div>
+          <dt>Prijzen</dt>
+          <dd>{{ extraction.detected.prices.join(', ') || 'Geen' }}</dd>
+        </div>
+        <div>
+          <dt>Rumor-signalen</dt>
+          <dd>{{ extraction.detected.rumorSignals.join(', ') || 'Geen' }}</dd>
+        </div>
+        <div>
+          <dt>Dates</dt>
+          <dd>{{ extraction.detected.dateSignals.join(', ') || 'Geen' }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Dit is de eerste deterministic laag bovenop de facts: wat voor artikel is dit, welke sets matchen exact en bestaat dit event al."
+        eyebrow="Matching"
+        title="Article type en setselectie"
+      />
+
+      <dl class="editorial-agent__fact-list">
+        <div>
+          <dt>Article type</dt>
+          <dd>{{ extraction.matching.articleType }}</dd>
+        </div>
+        <div>
+          <dt>Matched sets</dt>
+          <dd>{{ formatMatchedSets(extraction.matching.matchedSets) }}</dd>
+        </div>
+        <div>
+          <dt>Unmatched</dt>
+          <dd>
+            {{ extraction.matching.unmatchedSetNumbers.join(', ') || 'Geen' }}
+          </dd>
+        </div>
+        <div>
+          <dt>Primary set</dt>
+          <dd>
+            @if (extraction.primarySet) { {{ extraction.primarySet.setNumber }}
+            · {{ extraction.primarySet.name }} ({{ extraction.primarySet.reason
+            }}) } @else { Geen primary set gekozen }
+          </dd>
+        </div>
+        <div>
+          <dt>Related candidates</dt>
+          <dd>{{ formatRelatedCandidates(extraction.relatedCandidates) }}</dd>
+        </div>
+        <div>
+          <dt>Event</dt>
+          <dd>
+            {{ extraction.event.fingerprint.type }} · {{
+            extraction.event.fingerprint.key }} · {{ extraction.event.exists ?
+            'Bestaat al' : 'Nieuw event' }}
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Dit is de leesbare artikeltekst waar de facts nu op draaien."
+        eyebrow="Preview"
+        title="Extracted text preview"
+      />
+
+      <p class="editorial-agent__preview-text">
+        {{ extraction.extractedTextPreview || 'Geen preview beschikbaar.' }}
+      </p>
+    </section>
+  </div>
+  } @if (output(); as output) {
+  <div class="editorial-agent__grid">
+    @if (catalogImport(); as catalogImport) {
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Alleen ontbrekende gedetecteerde setnummers worden gericht geprobeerd te importeren. De draft gebruikt daarna alleen sets die echt in de catalogus staan."
+        eyebrow="Catalog import"
+        title="Importstatus"
+      />
+
+      <dl class="editorial-agent__fact-list">
+        <div>
+          <dt>Import</dt>
+          <dd>
+            {{ catalogImport.enabled ? 'Ingeschakeld' : 'Uitgeschakeld' }} · {{
+            catalogImport.attempted ? 'Gericht geprobeerd' : 'Niet nodig' }}
+          </dd>
+        </div>
+        <div>
+          <dt>Imported sets</dt>
+          <dd>{{ formatImportedSets(catalogImport.importedSets) }}</dd>
+        </div>
+        <div>
+          <dt>Still missing</dt>
+          <dd>
+            {{ catalogImport.stillMissingSetNumbers.join(', ') || 'Geen' }}
+          </dd>
+        </div>
+      </dl>
+
+      @if (catalogImport.warnings.length) {
+      <ul class="editorial-agent__list">
+        @for (warning of catalogImport.warnings; track warning) {
+        <li>{{ warning }}</li>
+        }
+      </ul>
+      } @else {
+      <p class="editorial-agent__muted">
+        Geen import-warnings voor deze analyse.
+      </p>
+      }
+    </section>
+    }
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="De set die vooraan in het draft hoort te landen als de matching daar sterk genoeg voor is."
+        eyebrow="Primary set"
+        title="PrimarySet preview"
+      />
+
+      @if (output.primarySet) {
+      <div class="editorial-agent__preview-card">
+        <strong>
+          {{ output.primarySet.name }} ({{ output.primarySet.setNumber }})
+        </strong>
+        <p>{{ output.primarySet.reason }}</p>
+      </div>
+      } @else {
+      <p class="editorial-agent__muted">
+        Geen primary set gekozen voor dit draft.
+      </p>
+      }
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Alleen exact gematchte sets mogen hier terechtkomen. Minder dan twee betrouwbare kandidaten betekent geen rail in het draft."
+        eyebrow="Related"
+        title="RelatedSets preview"
+      />
+
+      @if (output.relatedSets.length) {
+      <ul class="editorial-agent__list">
+        @for (relatedSet of output.relatedSets; track relatedSet.setNumber) {
+        <li>
+          <strong>{{ relatedSet.name }}</strong>
+          <span>{{ relatedSet.reason }}</span>
+        </li>
+        }
+      </ul>
+      } @else {
+      <p class="editorial-agent__muted">Nog geen related sets in deze mock.</p>
+      }
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Deze warnings gaan over het draft zelf, los van de extraction-waarschuwingen erboven."
+        eyebrow="Draft"
+        title="Generation warnings"
+      />
+
+      @if (output.warnings.length) {
+      <ul class="editorial-agent__list">
+        @for (warning of output.warnings; track warning) {
+        <li>{{ warning }}</li>
+        }
+      </ul>
+      } @else {
+      <p class="editorial-agent__muted">
+        Geen draft-warnings voor deze analyse.
+      </p>
+      }
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Hier zie je of AI polish actief was en of de rewrite echt is toegepast of veilig terugviel op het deterministic draft."
+        eyebrow="AI rewrite"
+        title="Rewrite status"
+      />
+
+      <dl class="editorial-agent__fact-list">
+        <div>
+          <dt>AI polish</dt>
+          <dd>
+            {{ aiRewriteEnabled() ? 'Ingeschakeld' : 'Uitgeschakeld' }} · {{
+            aiRewriteApplied() ? 'Rewrite toegepast' : 'Deterministic output
+            actief' }}
+          </dd>
+        </div>
+      </dl>
+
+      @if (rewriteWarnings().length) {
+      <ul class="editorial-agent__list">
+        @for (warning of rewriteWarnings(); track warning) {
+        <li>{{ warning }}</li>
+        }
+      </ul>
+      } @else {
+      <p class="editorial-agent__muted">
+        Geen rewrite-warnings voor deze analyse.
+      </p>
+      }
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Handig om exact te zien wat de extractiestap aan de UI teruggeeft."
+        eyebrow="Debug"
+        title="Facts JSON"
+      />
+
+      <pre class="editorial-agent__json-panel">{{ extractionJson() }}</pre>
+    </section>
+
+    <section class="admin-panel admin-stack editorial-agent__mdx-panel">
+      <lego-admin-section-header
+        description="Dit is de uiteindelijke output. De deterministic laag blijft leidend; AI mag alleen de tekst polijsten als de guardrails slagen."
+        eyebrow="Output"
+        title="MDX"
+      >
+        <div adminSectionMeta class="editorial-agent__meta-inline">
+          @if (copyState() === 'copied') {
+          <span class="editorial-agent__meta-pill">Gekopieerd</span>
+          } @else if (copyState() === 'error') {
+          <span
+            class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+          >
+            Kopiëren lukte niet
+          </span>
+          }
+        </div>
+        <button
+          adminSectionActions
+          class="admin-button admin-button--subtle"
+          [disabled]="!mdxOutput()"
+          (click)="copyMdx()"
+          type="button"
+        >
+          Copy MDX
+        </button>
+      </lego-admin-section-header>
+
+      <textarea
+        class="editorial-agent__textarea"
+        [value]="mdxOutput()"
+        readonly
+        spellcheck="false"
+      ></textarea>
+
+      @if (rewrittenMdxOutput()) {
+      <div class="editorial-agent__mdx-compare">
+        <section class="admin-stack">
+          <h3 class="editorial-agent__subheading">Deterministic origineel</h3>
+          <textarea
+            class="editorial-agent__textarea editorial-agent__textarea--compact"
+            [value]="deterministicMdxOutput()"
+            readonly
+            spellcheck="false"
+          ></textarea>
+        </section>
+
+        <section class="admin-stack">
+          <h3 class="editorial-agent__subheading">AI-polished versie</h3>
+          <textarea
+            class="editorial-agent__textarea editorial-agent__textarea--compact"
+            [value]="rewrittenMdxOutput()"
+            readonly
+            spellcheck="false"
+          ></textarea>
+        </section>
+      </div>
+      }
+    </section>
+
+    <section class="admin-panel admin-stack">
+      <lego-admin-section-header
+        description="Dit is de echte lijst waar een latere Editorial Agent uit mag kiezen."
+        eyebrow="Manifest"
+        title="Ondersteunde article components"
+      />
+
+      <ul class="editorial-agent__manifest">
+        @for (component of componentManifest; track component.name) {
+        <li class="editorial-agent__manifest-item">
+          <strong>{{ component.name }}</strong>
+          <code>{{ component.usage }}</code>
+          <p>{{ component.whenToUse }}</p>
+        </li>
+        }
+      </ul>
+    </section>
+  </div>
+  }
+</lego-admin-page>

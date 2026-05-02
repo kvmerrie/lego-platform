@@ -1,0 +1,646 @@
+'use client';
+
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import styles from './image-carousel.module.css';
+
+export interface GalleryImage {
+  alt: string;
+  caption?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
+  src: string;
+}
+
+export type CarouselImage = GalleryImage;
+
+type ImageGalleryVariant = 'article' | 'detail';
+type GalleryImageMediaKind = 'article' | 'detail' | 'lightbox' | 'thumbnail';
+
+function joinClasses(
+  ...classNames: Array<string | false | null | undefined>
+): string {
+  return classNames.filter(Boolean).join(' ');
+}
+
+function isLocalImageSource(src: string): boolean {
+  return (
+    src.startsWith('/') || src.startsWith('data:') || src.startsWith('blob:')
+  );
+}
+
+function clampIndex(index: number, imageCount: number): number {
+  return Math.min(Math.max(index, 0), imageCount - 1);
+}
+
+function getGalleryImageLabel(image: GalleryImage, imageIndex: number): string {
+  return image.alt.trim() || `Afbeelding ${imageIndex + 1}`;
+}
+
+function GalleryImageMedia({
+  image,
+  imageIndex,
+  kind,
+  isFallbackVisible,
+  onImageError,
+}: {
+  image: GalleryImage;
+  imageIndex: number;
+  kind: GalleryImageMediaKind;
+  isFallbackVisible: boolean;
+  onImageError: (imageIndex: number) => void;
+}) {
+  if (isFallbackVisible) {
+    return (
+      <div className={styles.imageFallback}>
+        <span className={styles.imageFallbackLabel}>Beeld volgt nog</span>
+        <p className={styles.imageFallbackCopy}>
+          Deze afbeelding staat al gepland voor dit artikel of deze set, maar is
+          nog niet toegevoegd.
+        </p>
+        {process.env.NODE_ENV === 'production' ? null : (
+          <p className={styles.imageFallbackCopy}>{image.src}</p>
+        )}
+      </div>
+    );
+  }
+
+  if (isLocalImageSource(image.src)) {
+    return (
+      <Image
+        alt={image.alt}
+        className={joinClasses(
+          styles.galleryImage,
+          kind === 'article'
+            ? styles.galleryImageArticle
+            : kind === 'thumbnail'
+              ? styles.galleryImageThumbnail
+              : styles.galleryImageDetail,
+        )}
+        fill
+        onError={() => onImageError(imageIndex)}
+        priority={imageIndex === 0}
+        sizes={
+          kind === 'detail'
+            ? '(max-width: 1024px) calc(100vw - 2rem), 900px'
+            : kind === 'lightbox'
+              ? '(max-width: 1280px) 100vw, 1400px'
+              : kind === 'thumbnail'
+                ? '96px'
+                : '(max-width: 768px) calc(100vw - 2rem), 1120px'
+        }
+        src={image.src}
+      />
+    );
+  }
+
+  return (
+    <img
+      alt={image.alt}
+      className={joinClasses(
+        styles.galleryImage,
+        kind === 'article'
+          ? styles.galleryImageArticle
+          : kind === 'thumbnail'
+            ? styles.galleryImageThumbnail
+            : styles.galleryImageDetail,
+      )}
+      decoding="async"
+      loading={imageIndex === 0 ? 'eager' : 'lazy'}
+      onError={() => onImageError(imageIndex)}
+      src={image.src}
+    />
+  );
+}
+
+export function ImageGallery({
+  ariaLabel = 'Afbeeldingen',
+  className,
+  images,
+  lightboxRequest,
+  presentation = 'full',
+  variant = 'detail',
+}: {
+  ariaLabel?: string;
+  className?: string;
+  images: readonly GalleryImage[];
+  lightboxRequest?: {
+    index: number;
+    key: number;
+  } | null;
+  presentation?: 'full' | 'lightbox-only';
+  variant?: ImageGalleryVariant;
+}) {
+  const resolvedImages = useMemo(
+    () =>
+      images.filter(
+        (image): image is GalleryImage =>
+          Boolean(image?.src?.trim()) && Boolean(image?.alt?.trim()),
+      ),
+    [images],
+  );
+  const [failedImageIndexes, setFailedImageIndexes] = useState<
+    Record<number, true>
+  >({});
+  const [detailImageIndex, setDetailImageIndex] = useState(0);
+  const [lightboxImageIndex, setLightboxImageIndex] = useState<number | null>(
+    null,
+  );
+  const lightboxPointerStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!resolvedImages.length) {
+      setDetailImageIndex(0);
+      setLightboxImageIndex(null);
+      return;
+    }
+
+    setDetailImageIndex((currentIndex) =>
+      clampIndex(currentIndex, resolvedImages.length),
+    );
+    setLightboxImageIndex((currentIndex) =>
+      typeof currentIndex === 'number'
+        ? clampIndex(currentIndex, resolvedImages.length)
+        : null,
+    );
+  }, [resolvedImages.length]);
+
+  useEffect(() => {
+    if (!lightboxRequest || !resolvedImages.length) {
+      return;
+    }
+
+    setLightboxImageIndex(
+      clampIndex(lightboxRequest.index, resolvedImages.length),
+    );
+  }, [lightboxRequest, resolvedImages.length]);
+
+  useEffect(() => {
+    if (lightboxImageIndex === null) {
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setLightboxImageIndex(null);
+      }
+
+      if (resolvedImages.length <= 1) {
+        return;
+      }
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setLightboxImageIndex((currentIndex) =>
+          currentIndex === null
+            ? 0
+            : clampIndex(currentIndex + 1, resolvedImages.length),
+        );
+      }
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setLightboxImageIndex((currentIndex) =>
+          currentIndex === null
+            ? 0
+            : clampIndex(currentIndex - 1, resolvedImages.length),
+        );
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [lightboxImageIndex, resolvedImages.length]);
+
+  if (!resolvedImages.length) {
+    return null;
+  }
+
+  const safeDetailImageIndex = clampIndex(
+    detailImageIndex,
+    resolvedImages.length,
+  );
+  const safeLightboxImageIndex =
+    lightboxImageIndex === null
+      ? null
+      : clampIndex(lightboxImageIndex, resolvedImages.length);
+  const lightboxImage =
+    safeLightboxImageIndex === null
+      ? null
+      : resolvedImages[safeLightboxImageIndex];
+  const hasMultipleImages = resolvedImages.length > 1;
+
+  function handleImageError(imageIndex: number) {
+    setFailedImageIndexes((currentIndexes) =>
+      currentIndexes[imageIndex]
+        ? currentIndexes
+        : {
+            ...currentIndexes,
+            [imageIndex]: true,
+          },
+    );
+  }
+
+  function openLightbox(imageIndex: number) {
+    setLightboxImageIndex(clampIndex(imageIndex, resolvedImages.length));
+  }
+
+  function closeLightbox() {
+    setLightboxImageIndex(null);
+  }
+
+  function goToLightboxImage(nextIndex: number) {
+    setLightboxImageIndex(clampIndex(nextIndex, resolvedImages.length));
+  }
+
+  function handleLightboxPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    lightboxPointerStartX.current = event.clientX;
+  }
+
+  function handleLightboxPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+    const startClientX = lightboxPointerStartX.current;
+
+    lightboxPointerStartX.current = null;
+
+    if (!hasMultipleImages || startClientX === null) {
+      return;
+    }
+
+    const pointerDelta = event.clientX - startClientX;
+
+    if (Math.abs(pointerDelta) < 42) {
+      return;
+    }
+
+    if (pointerDelta < 0) {
+      goToLightboxImage((safeLightboxImageIndex ?? 0) + 1);
+      return;
+    }
+
+    goToLightboxImage((safeLightboxImageIndex ?? 0) - 1);
+  }
+
+  function handleGalleryKeyDown(event: ReactKeyboardEvent<HTMLElement>) {
+    if (variant !== 'detail' || !hasMultipleImages) {
+      return;
+    }
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      setDetailImageIndex((currentIndex) =>
+        clampIndex(currentIndex + 1, resolvedImages.length),
+      );
+    }
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      setDetailImageIndex((currentIndex) =>
+        clampIndex(currentIndex - 1, resolvedImages.length),
+      );
+    }
+  }
+
+  return (
+    <>
+      {presentation === 'lightbox-only' ? null : (
+        <section
+          aria-label={ariaLabel}
+          className={joinClasses(styles.root, className)}
+          onKeyDown={handleGalleryKeyDown}
+          tabIndex={variant === 'detail' ? 0 : -1}
+        >
+          {variant === 'article' ? (
+            resolvedImages.length === 3 ? (
+              <div
+                className={`${styles.articleGrid} ${styles.articleGridThreeUp}`}
+                data-count="3"
+                data-layout="three-up"
+              >
+                <figure
+                  className={`${styles.articleFigure} ${styles.articleFigureFeature}`}
+                  key={`${resolvedImages[0].src}-0`}
+                >
+                  <button
+                    aria-label={`Open ${getGalleryImageLabel(resolvedImages[0], 0)} in volledig scherm`}
+                    className={styles.articleImageButton}
+                    data-gallery-tile-index={0}
+                    onClick={() => openLightbox(0)}
+                    type="button"
+                  >
+                    <div className={styles.articleMediaFrame}>
+                      <GalleryImageMedia
+                        image={resolvedImages[0]}
+                        imageIndex={0}
+                        kind="article"
+                        isFallbackVisible={Boolean(failedImageIndexes[0])}
+                        onImageError={handleImageError}
+                      />
+                    </div>
+                  </button>
+                  {resolvedImages[0].caption ? (
+                    <figcaption className={styles.articleCaption}>
+                      {resolvedImages[0].caption}
+                    </figcaption>
+                  ) : null}
+                </figure>
+                {resolvedImages.slice(1).map((image, index) => {
+                  const imageIndex = index + 1;
+
+                  return (
+                    <figure
+                      className={joinClasses(
+                        styles.articleFigure,
+                        index === 0
+                          ? styles.articleFigureStackTop
+                          : styles.articleFigureStackBottom,
+                      )}
+                      key={`${image.src}-${imageIndex}`}
+                    >
+                      <button
+                        aria-label={`Open ${getGalleryImageLabel(image, imageIndex)} in volledig scherm`}
+                        className={styles.articleImageButton}
+                        data-gallery-tile-index={imageIndex}
+                        onClick={() => openLightbox(imageIndex)}
+                        type="button"
+                      >
+                        <div className={styles.articleMediaFrame}>
+                          <GalleryImageMedia
+                            image={image}
+                            imageIndex={imageIndex}
+                            kind="article"
+                            isFallbackVisible={Boolean(
+                              failedImageIndexes[imageIndex],
+                            )}
+                            onImageError={handleImageError}
+                          />
+                        </div>
+                      </button>
+                      {image.caption ? (
+                        <figcaption className={styles.articleCaption}>
+                          {image.caption}
+                        </figcaption>
+                      ) : null}
+                    </figure>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className={styles.articleGrid}
+                data-count={
+                  resolvedImages.length >= 4
+                    ? '4-plus'
+                    : resolvedImages.length.toString()
+                }
+              >
+                {resolvedImages.map((image, imageIndex) => (
+                  <figure
+                    className={styles.articleFigure}
+                    key={`${image.src}-${imageIndex}`}
+                  >
+                    <button
+                      aria-label={`Open ${getGalleryImageLabel(image, imageIndex)} in volledig scherm`}
+                      className={styles.articleImageButton}
+                      data-gallery-tile-index={imageIndex}
+                      onClick={() => openLightbox(imageIndex)}
+                      type="button"
+                    >
+                      <div className={styles.articleMediaFrame}>
+                        <GalleryImageMedia
+                          image={image}
+                          imageIndex={imageIndex}
+                          kind="article"
+                          isFallbackVisible={Boolean(
+                            failedImageIndexes[imageIndex],
+                          )}
+                          onImageError={handleImageError}
+                        />
+                      </div>
+                    </button>
+                    {image.caption ? (
+                      <figcaption className={styles.articleCaption}>
+                        {image.caption}
+                      </figcaption>
+                    ) : null}
+                  </figure>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className={styles.detailGallery}>
+              <button
+                aria-label={`Open ${getGalleryImageLabel(
+                  resolvedImages[safeDetailImageIndex],
+                  safeDetailImageIndex,
+                )} in volledig scherm`}
+                className={styles.detailMainButton}
+                onClick={() => openLightbox(safeDetailImageIndex)}
+                type="button"
+              >
+                <div className={styles.detailMainFrame}>
+                  <GalleryImageMedia
+                    image={resolvedImages[safeDetailImageIndex]}
+                    imageIndex={safeDetailImageIndex}
+                    kind="detail"
+                    isFallbackVisible={Boolean(
+                      failedImageIndexes[safeDetailImageIndex],
+                    )}
+                    onImageError={handleImageError}
+                  />
+                </div>
+              </button>
+              {hasMultipleImages ? (
+                <div className={styles.detailThumbRow} role="tablist">
+                  {resolvedImages.map((image, imageIndex) => (
+                    <button
+                      aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
+                      className={styles.detailThumbButton}
+                      data-active={imageIndex === safeDetailImageIndex}
+                      key={`${image.src}-thumb-${imageIndex}`}
+                      onClick={() => setDetailImageIndex(imageIndex)}
+                      role="tab"
+                      type="button"
+                    >
+                      <div className={styles.detailThumbFrame}>
+                        <GalleryImageMedia
+                          image={image}
+                          imageIndex={imageIndex}
+                          kind="thumbnail"
+                          isFallbackVisible={Boolean(
+                            failedImageIndexes[imageIndex],
+                          )}
+                          onImageError={handleImageError}
+                        />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </section>
+      )}
+
+      {lightboxImage && safeLightboxImageIndex !== null ? (
+        <div
+          className={styles.lightboxBackdrop}
+          onClick={closeLightbox}
+          role="presentation"
+        >
+          <div
+            aria-label={ariaLabel}
+            aria-modal="true"
+            className={styles.lightboxDialog}
+            data-lightbox-active-index={safeLightboxImageIndex}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <div className={styles.lightboxHeader}>
+              {hasMultipleImages ? (
+                <p aria-live="polite" className={styles.lightboxIndicator}>
+                  {safeLightboxImageIndex + 1} / {resolvedImages.length}
+                </p>
+              ) : (
+                <span />
+              )}
+              <button
+                aria-label="Sluit galerij"
+                className={styles.lightboxCloseButton}
+                onClick={closeLightbox}
+                type="button"
+              >
+                <X aria-hidden="true" size={18} strokeWidth={2.2} />
+              </button>
+            </div>
+
+            <div className={styles.lightboxViewport}>
+              {hasMultipleImages ? (
+                <button
+                  aria-label="Vorige afbeelding"
+                  className={joinClasses(
+                    styles.lightboxNavButton,
+                    styles.lightboxNavButtonPrev,
+                  )}
+                  data-lightbox-control="previous"
+                  disabled={safeLightboxImageIndex === 0}
+                  onClick={() => goToLightboxImage(safeLightboxImageIndex - 1)}
+                  type="button"
+                >
+                  <ChevronLeft aria-hidden="true" size={18} strokeWidth={2.2} />
+                </button>
+              ) : null}
+
+              <div
+                className={styles.lightboxMediaFrame}
+                data-lightbox-media-surface="light"
+                onPointerDown={handleLightboxPointerDown}
+                onPointerUp={handleLightboxPointerUp}
+              >
+                <GalleryImageMedia
+                  image={lightboxImage}
+                  imageIndex={safeLightboxImageIndex}
+                  kind="lightbox"
+                  isFallbackVisible={Boolean(
+                    failedImageIndexes[safeLightboxImageIndex],
+                  )}
+                  onImageError={handleImageError}
+                />
+              </div>
+
+              {hasMultipleImages ? (
+                <button
+                  aria-label="Volgende afbeelding"
+                  className={joinClasses(
+                    styles.lightboxNavButton,
+                    styles.lightboxNavButtonNext,
+                  )}
+                  data-lightbox-control="next"
+                  disabled={
+                    safeLightboxImageIndex === resolvedImages.length - 1
+                  }
+                  onClick={() => goToLightboxImage(safeLightboxImageIndex + 1)}
+                  type="button"
+                >
+                  <ChevronRight
+                    aria-hidden="true"
+                    size={18}
+                    strokeWidth={2.2}
+                  />
+                </button>
+              ) : null}
+            </div>
+
+            {lightboxImage.caption ? (
+              <p className={styles.lightboxCaption}>{lightboxImage.caption}</p>
+            ) : null}
+
+            {lightboxImage.ctaHref ? (
+              <div className={styles.lightboxMetaActions}>
+                <a
+                  className={styles.lightboxMetaLink}
+                  href={lightboxImage.ctaHref}
+                >
+                  {lightboxImage.ctaLabel ?? 'Bekijk set'}
+                </a>
+              </div>
+            ) : null}
+
+            {hasMultipleImages ? (
+              <div className={styles.lightboxThumbStrip}>
+                {resolvedImages.map((image, imageIndex) => (
+                  <button
+                    aria-label={`Bekijk afbeelding ${imageIndex + 1}`}
+                    className={styles.lightboxThumbButton}
+                    data-active={imageIndex === safeLightboxImageIndex}
+                    data-lightbox-thumb-index={imageIndex}
+                    key={`${image.src}-lightbox-thumb-${imageIndex}`}
+                    onClick={() => goToLightboxImage(imageIndex)}
+                    type="button"
+                  >
+                    <div className={styles.lightboxThumbFrame}>
+                      <GalleryImageMedia
+                        image={image}
+                        imageIndex={imageIndex}
+                        kind="thumbnail"
+                        isFallbackVisible={Boolean(
+                          failedImageIndexes[imageIndex],
+                        )}
+                        onImageError={handleImageError}
+                      />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+export function ImageCarousel(props: {
+  ariaLabel?: string;
+  className?: string;
+  images: readonly GalleryImage[];
+  variant?: ImageGalleryVariant;
+}) {
+  return <ImageGallery {...props} />;
+}

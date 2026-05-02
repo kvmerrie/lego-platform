@@ -49,6 +49,11 @@ export class ShellAdminComponent {
       path: '/bulk-onboarding',
     },
     {
+      description: 'Mock een artikelflow voordat AI of scraping meekijkt',
+      label: 'Editorial agent',
+      path: '/editorial-agent',
+    },
+    {
       description: 'Handmatige seed-URL’s beheren',
       label: 'Offer seeds',
       path: '/offer-seeds',

@@ -108,7 +108,6 @@
   align-items: stretch;
   background: var(--lego-surface-default);
   display: grid;
-  overflow: hidden;
   min-height: 10.9rem;
   position: relative;
 }
@@ -170,6 +169,18 @@
   right: 0;
   top: 0;
   z-index: 1;
+}
+
+.visualActionSlot {
+  align-items: flex-end;
+  display: flex;
+  gap: 0.4rem;
+  inset-block-end: 0.82rem;
+  inset-inline-end: 0.82rem;
+  justify-content: flex-end;
+  pointer-events: auto;
+  position: absolute;
+  z-index: 2;
 }
 
 .cardVisualBadgeCluster {
@@ -506,11 +517,27 @@
   white-space: nowrap;
 }
 
-.cardCompactPrimaryAction {
+.cardCompactPrimaryAction,
+.cardCompactPrimaryAction:visited {
+  color: var(--lego-accent-contrast, #ffffff);
   gap: 0;
   inline-size: var(--catalog-card-action-height);
   min-width: var(--catalog-card-action-height);
   padding-inline: 0;
+  text-decoration: none;
+}
+
+.cardCompactPrimaryAction .cardCompactActionIcon,
+.cardCompactPrimaryAction .cardCompactActionLabel,
+.cardCompactPrimaryAction .interactiveContent,
+.cardCompactPrimaryAction svg,
+.cardCompactPrimaryAction span {
+  color: inherit;
+}
+
+.cardCompactPrimaryAction .cardCompactActionIcon,
+.cardCompactPrimaryAction svg {
+  stroke: currentColor;
 }
 
 .cardCompactActionLabel {
@@ -523,29 +550,38 @@
   width: var(--catalog-card-action-icon-size);
 }
 
-.cardCompactActionBrowse {
+.cardCompactActionBrowse,
+.cardCompactActionBrowse:visited {
   background: var(--lego-accent);
   border-color: transparent;
-  color: var(--lego-accent-contrast);
+  color: var(--lego-accent-contrast, #ffffff);
 }
 
-.cardCompactActionCommerce {
+.cardCompactActionCommerce,
+.cardCompactActionCommerce:visited {
   background: var(--lego-accent);
   border-color: transparent;
-  color: var(--lego-accent-contrast);
+  color: var(--lego-accent-contrast, #ffffff);
 }
 
 .cardCompactAction.cardCompactAction:focus-visible {
-  color: var(--lego-accent-contrast);
+  color: var(--lego-accent-contrast, #ffffff);
   text-decoration: none;
 }
 
 .cardCompactActionBrowse.cardCompactActionBrowse:focus-visible {
-  color: var(--lego-accent-contrast);
+  color: var(--lego-accent-contrast, #ffffff);
+}
+
+.cardCompactPrimaryAction.cardCompactPrimaryAction:hover,
+.cardCompactPrimaryAction.cardCompactPrimaryAction:active,
+.cardCompactPrimaryAction.cardCompactPrimaryAction:focus-visible {
+  color: var(--lego-accent-contrast, #ffffff);
+  text-decoration: none;
 }
 
 .cardCompactActionCommerce.cardCompactActionCommerce:focus-visible {
-  color: var(--lego-accent-contrast);
+  color: var(--lego-accent-contrast, #ffffff);
   text-decoration: none;
 }
 
@@ -2234,14 +2270,64 @@
 
 .setCardRail {
   --catalog-rail-card-gap: var(--lego-space-2);
+  --catalog-rail-inline-padding: var(
+    --catalog-section-inline-padding,
+    var(
+      --lego-surface-padding-md-inline,
+      var(--lego-section-inline-padding, var(--lego-space-3))
+    )
+  );
   --catalog-rail-scrollbar-gap: var(
     --catalog-section-padding-block,
     var(--lego-space-3)
   );
   --catalog-rail-scrollbar-height: 0.25rem;
-  --catalog-rail-scrollbar-width: 100%;
+  --catalog-rail-scrollbar-width: calc(
+    100% - (var(--catalog-rail-inline-padding) * 2)
+  );
   display: grid;
   gap: var(--catalog-rail-scrollbar-gap);
+  margin-inline: calc(-1 * var(--catalog-rail-inline-padding));
+}
+
+.setCardRailMobileBleed {
+  --catalog-rail-inline-bleed: var(
+    --catalog-rail-inline-padding,
+    var(
+      --catalog-section-inline-padding,
+      var(--lego-section-inline-padding, var(--lego-space-3))
+    )
+  );
+}
+
+.setCardRailTabletBleed {
+  --catalog-rail-inline-bleed: var(
+    --catalog-rail-inline-padding,
+    var(
+      --catalog-section-inline-padding,
+      var(--lego-section-inline-padding, var(--lego-space-3))
+    )
+  );
+}
+
+.setCardRailPageBleed {
+  --catalog-rail-inline-bleed: var(
+    --catalog-rail-inline-padding,
+    var(
+      --catalog-section-inline-padding,
+      var(--lego-section-inline-padding, var(--lego-space-3))
+    )
+  );
+}
+
+.setCardRailInline {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.setCardRailInlineControls {
+  display: grid;
+  justify-content: end;
 }
 
 .setCardRailHeadingControls {
@@ -2249,14 +2335,26 @@
 }
 
 .setCardRailHeadingButton {
+  --lego-button-secondary-active-background: transparent;
+  --lego-button-secondary-active-color: currentColor;
+  --lego-button-secondary-background: transparent;
+  --lego-button-secondary-border-color: currentColor;
+  --lego-button-secondary-color: currentColor;
+  --lego-button-secondary-hover-background: transparent;
+  --lego-button-secondary-hover-color: currentColor;
   border-radius: var(--lego-radius-pill);
+  color: inherit;
   min-height: 2.4rem;
   min-width: 2.4rem;
   padding: 0;
 }
 
 .setCardRailHeadingButton:disabled {
-  opacity: 1;
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+  cursor: default;
+  opacity: 0.4;
 }
 
 .setCardRailHeadingIcon {
@@ -2276,7 +2374,8 @@
   overflow-x: auto;
   overscroll-behavior-x: contain;
   padding-bottom: 0;
-  scroll-padding-inline: 0;
+  padding-inline: var(--catalog-rail-inline-padding);
+  scroll-padding-inline: var(--catalog-rail-inline-padding);
   scroll-snap-type: x proximity;
   scrollbar-color: auto;
   scrollbar-width: none;
@@ -2295,15 +2394,11 @@
   background: color-mix(
     in srgb,
     var(--lego-border-subtle) 88%,
-    var(--lego-surface-default) 12%
+    currentColor 12%
   );
   border-radius: 999px;
   box-shadow: inset 0 0 0 1px
-    color-mix(
-      in srgb,
-      var(--lego-border-subtle) 92%,
-      var(--lego-surface-default) 8%
-    );
+    color-mix(in srgb, var(--lego-border-subtle) 92%, currentColor 8%);
   cursor: pointer;
   display: block;
   height: var(--catalog-rail-scrollbar-height);
@@ -2320,11 +2415,7 @@
 }
 
 .setCardRailScrollbarThumb {
-  background: color-mix(
-    in srgb,
-    var(--lego-text-muted) 32%,
-    var(--lego-surface-default) 68%
-  );
+  background: color-mix(in srgb, currentColor 32%, transparent 68%);
   border-radius: 999px;
   cursor: grab;
   height: 100%;
@@ -2336,19 +2427,28 @@
 
 .setCardRailScrollbarThumb[data-dragging='true'] {
   cursor: grabbing;
-  background: color-mix(
-    in srgb,
-    var(--lego-text-muted) 44%,
-    var(--lego-surface-default) 56%
-  );
+  background: color-mix(in srgb, currentColor 44%, transparent 56%);
 }
 
 .setCardRailScrollbarThumb:hover {
-  background: color-mix(
+  background: color-mix(in srgb, currentColor 44%, transparent 56%);
+}
+
+.setCardRailSectionThemed {
+  --lego-text-muted: var(--article-theme-muted-text, var(--lego-text-muted));
+  background: var(--article-theme-surface, var(--lego-surface-default));
+  border-color: color-mix(
     in srgb,
-    var(--lego-text-muted) 44%,
-    var(--lego-surface-default) 56%
+    var(--article-theme-surface-text, currentColor) 18%,
+    var(--lego-border-subtle) 82%
   );
+  color: var(--article-theme-surface-text, inherit);
+}
+
+.setCardRailSectionThemed .setCard,
+.setCardRailSectionThemed .setCardLink {
+  --lego-text-muted: var(--catalog-card-muted-text, #5d677c);
+  color: var(--lego-text);
 }
 
 @supports (grid-template-rows: subgrid) {
@@ -2899,6 +2999,19 @@
 }
 
 @media (max-width: 47.999rem) {
+  .setCardRailMobileBleed {
+    margin-inline: calc(-1 * var(--catalog-rail-inline-bleed));
+  }
+
+  .setCardRailMobileBleed > .setCardRailTrack {
+    padding-inline: var(--catalog-rail-inline-bleed);
+    scroll-padding-inline: var(--catalog-rail-inline-bleed);
+  }
+
+  .setCardRailMobileBleed > .setCardRailScrollbar {
+    width: calc(100% - (var(--catalog-rail-inline-bleed) * 2));
+  }
+
   .galleryShell {
     border-bottom: var(--lego-border-width-1) solid var(--lego-border-subtle);
     border-top: var(--lego-border-width-1) solid var(--lego-border-subtle);
@@ -2924,6 +3037,48 @@
 
   .galleryMainVisual {
     border: 0;
+  }
+}
+
+@media (max-width: 71.999rem) {
+  .setCardRailSectionTabletBleed {
+    border-radius: 0;
+    margin-inline: calc(50% - 50vw);
+    width: 100vw;
+  }
+
+  .setCardRailTabletBleed {
+    margin-inline: calc(-1 * var(--catalog-rail-inline-bleed));
+  }
+
+  .setCardRailTabletBleed > .setCardRailTrack {
+    padding-inline: var(--catalog-rail-inline-bleed);
+    scroll-padding-inline: var(--catalog-rail-inline-bleed);
+  }
+
+  .setCardRailTabletBleed > .setCardRailScrollbar {
+    width: calc(100% - (var(--catalog-rail-inline-bleed) * 2));
+  }
+}
+
+@media (max-width: 99.999rem) {
+  .setCardRailSectionPageBleed {
+    border-radius: 0;
+    margin-inline: calc(50% - 50vw);
+    width: 100vw;
+  }
+
+  .setCardRailPageBleed {
+    margin-inline: calc(-1 * var(--catalog-rail-inline-bleed));
+  }
+
+  .setCardRailPageBleed > .setCardRailTrack {
+    padding-inline: var(--catalog-rail-inline-bleed);
+    scroll-padding-inline: var(--catalog-rail-inline-bleed);
+  }
+
+  .setCardRailPageBleed > .setCardRailScrollbar {
+    width: calc(100% - (var(--catalog-rail-inline-bleed) * 2));
   }
 }
 

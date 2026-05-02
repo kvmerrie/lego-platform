@@ -1,0 +1,20 @@
+{
+  "name": "content-data-access-server",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/content/data-access-server/src",
+  "projectType": "library",
+  "tags": ["scope:content", "type:data-access", "platform:server"],
+  "// targets": "to see all targets run: nx show project content-data-access-server --web",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/content/data-access-server",
+        "command": "vitest run src/lib/content-data-access-server.spec.ts --config ../../vitest.config.mts"
+      }
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import matter from 'gray-matter';
 import {
+  extractPrimarySetNumberFromArticleBody,
   sortContentArticlesByDateDesc,
   type ContentArticle,
   type ContentArticleListItem,
@@ -93,8 +94,8 @@ interface ParsedContentArticleFrontmatter {
   cardImageAlt?: string;
   date: string;
   description: string;
-  heroImage: string;
-  heroImageAlt: string;
+  heroImage?: string;
+  heroImageAlt?: string;
   slug: string;
   status: ContentArticleStatus;
   theme?: string;
@@ -153,12 +154,8 @@ function parseContentArticleFrontmatter({
     cardImageAlt: normalizeOptionalString(frontmatter['cardImageAlt']),
     date: readRequiredStringField(frontmatter, 'date', filename),
     description: readRequiredStringField(frontmatter, 'description', filename),
-    heroImage: readRequiredStringField(frontmatter, 'heroImage', filename),
-    heroImageAlt: readRequiredStringField(
-      frontmatter,
-      'heroImageAlt',
-      filename,
-    ),
+    heroImage: normalizeOptionalString(frontmatter['heroImage']),
+    heroImageAlt: normalizeOptionalString(frontmatter['heroImageAlt']),
     slug: readRequiredStringField(frontmatter, 'slug', filename),
     status: readStatusField(frontmatter, filename),
     theme: normalizeOptionalString(frontmatter['theme']),
@@ -240,6 +237,7 @@ async function parseContentArticleSourceFile({
   assetExistsFn: (absolutePath: string) => Promise<boolean>;
 }): Promise<ContentArticle> {
   const { content, data } = matter(articleFile.source);
+  const trimmedBodySource = content.trim();
   const parsedFrontmatter = parseContentArticleFrontmatter({
     filename: articleFile.filename,
     frontmatter:
@@ -257,14 +255,17 @@ async function parseContentArticleSourceFile({
   });
 
   return {
-    bodySource: content.trim(),
+    bodySource: trimmedBodySource,
     cardImage: resolvedCardImage ?? resolvedHeroImage,
     cardImageAlt:
-      parsedFrontmatter.cardImageAlt ?? parsedFrontmatter.heroImageAlt,
+      parsedFrontmatter.cardImageAlt ??
+      parsedFrontmatter.heroImageAlt ??
+      parsedFrontmatter.title,
     date: parsedFrontmatter.date,
     description: parsedFrontmatter.description,
     heroImage: resolvedHeroImage,
-    heroImageAlt: parsedFrontmatter.heroImageAlt,
+    heroImageAlt: parsedFrontmatter.heroImageAlt ?? parsedFrontmatter.title,
+    primarySetNumber: extractPrimarySetNumberFromArticleBody(trimmedBodySource),
     slug: parsedFrontmatter.slug,
     status: parsedFrontmatter.status,
     theme: parsedFrontmatter.theme,
@@ -304,6 +305,7 @@ function toContentArticleListItem(
     description: contentArticle.description,
     heroImage: contentArticle.heroImage,
     heroImageAlt: contentArticle.heroImageAlt,
+    primarySetNumber: contentArticle.primarySetNumber,
     slug: contentArticle.slug,
     status: contentArticle.status,
     theme: contentArticle.theme,

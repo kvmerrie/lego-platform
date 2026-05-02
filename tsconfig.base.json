@@ -87,6 +87,12 @@
       "@lego-platform/content/data-access": [
         "libs/content/data-access/src/index.ts"
       ],
+      "@lego-platform/content/data-access-server": [
+        "libs/content/data-access-server/src/index.ts"
+      ],
+      "@lego-platform/content/feature-admin": [
+        "libs/content/feature-admin/src/index.ts"
+      ],
       "@lego-platform/user/util": ["libs/user/util/src/index.ts"],
       "@lego-platform/user/data-access": ["libs/user/data-access/src/index.ts"],
       "@lego-platform/user/data-access-server": [

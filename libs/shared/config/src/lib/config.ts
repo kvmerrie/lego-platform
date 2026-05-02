@@ -133,6 +133,8 @@ export const apiPaths = {
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCatalogSuggestedSets: '/api/v1/admin/catalog/suggested-sets',
   adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
+  adminEditorialAgentExtract: '/api/v1/admin/editorial-agent/extract',
+  adminEditorialAgentDraft: '/api/v1/admin/editorial-agent/draft',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
@@ -195,6 +197,11 @@ export const publicWebRevalidationEnvKeys = {
 export const rebrickableEnvKeys = {
   apiKey: 'REBRICKABLE_API_KEY',
   baseUrl: 'REBRICKABLE_BASE_URL',
+} as const;
+
+export const editorialAgentAiEnvKeys = {
+  apiKey: 'OPENAI_API_KEY',
+  model: 'OPENAI_EDITORIAL_REWRITE_MODEL',
 } as const;
 
 export const tradeTrackerEnvKeys = {

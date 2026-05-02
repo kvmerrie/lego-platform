@@ -47,6 +47,23 @@ status: "draft"
 Nog niet publiceren.
 `,
   },
+  {
+    filename: 'featured-set-fallback.mdx',
+    source: `---
+title: "Spiny Shell terug"
+slug: "spiny-shell-terug"
+description: "Waarom deze reward nu telt."
+date: "2026-05-01"
+heroImage: ""
+heroImageAlt: "Mag leeg blijven als FeaturedSet het overneemt"
+status: "published"
+---
+
+LEGO 40787 is terug als reward.
+
+<FeaturedSet setNumber="40787" />
+`,
+  },
 ];
 
 const workspaceRoot = process.cwd();
@@ -64,8 +81,10 @@ describe('content article queries', () => {
         absolutePath.endsWith('star-wars-day-2026/hero.jpg'),
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toMatchObject({
+    expect(result).toHaveLength(2);
+    expect(
+      result.find((article) => article.slug === 'star-wars-day-2026'),
+    ).toMatchObject({
       cardImage: '/articles/star-wars-day-2026/hero.jpg',
       cardImageAlt: 'Star Wars hero',
       heroImage: '/articles/star-wars-day-2026/hero.jpg',
@@ -94,7 +113,7 @@ describe('content article queries', () => {
       assetExistsFn: async () => true,
     });
 
-    expect(slugs).toEqual(['star-wars-day-2026']);
+    expect(slugs).toEqual(['spiny-shell-terug', 'star-wars-day-2026']);
     expect(publishedArticle?.slug).toBe('star-wars-day-2026');
     expect(draftArticle).toBeNull();
   });
@@ -107,6 +126,23 @@ describe('content article queries', () => {
 
     expect(result?.heroImage).toBeUndefined();
     expect(result?.cardImage).toBeUndefined();
+  });
+
+  test('allows empty heroImage and extracts the primary set from FeaturedSet', async () => {
+    const publishedArticle = await getPublishedArticleBySlug(
+      'spiny-shell-terug',
+      {
+        articleFiles: sampleArticleFiles,
+        assetExistsFn: async () => false,
+      },
+    );
+
+    expect(publishedArticle).toMatchObject({
+      heroImage: undefined,
+      primarySetNumber: '40787',
+      slug: 'spiny-shell-terug',
+      title: 'Spiny Shell terug',
+    });
   });
 
   test('discovers the published star-wars-day article from the repo content directory', async () => {
@@ -124,7 +160,8 @@ describe('content article queries', () => {
     expect(publishedArticle).toMatchObject({
       slug: 'star-wars-day-2026',
       status: 'published',
-      title: 'Star Wars Day 2026 (May the 4th)',
+      title:
+        'Star Wars Day 2026: May the 4th deals, nieuwe sets en wat nu echt interessant is',
     });
   });
 

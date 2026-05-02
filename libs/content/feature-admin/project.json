@@ -1,0 +1,12 @@
+{
+  "name": "content-feature-admin",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/content/feature-admin/src",
+  "projectType": "library",
+  "tags": ["scope:commerce", "type:feature", "platform:admin"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

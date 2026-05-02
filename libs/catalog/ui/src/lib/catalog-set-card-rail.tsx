@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type {
   ComponentProps,
@@ -38,6 +38,8 @@ export interface CatalogSetCardRailItem {
 }
 
 interface CatalogSetCardRailMetrics {
+  canScrollNext: boolean;
+  canScrollPrevious: boolean;
   hasOverflow: boolean;
   progress: number;
   thumbWidthPercent: number;
@@ -54,8 +56,13 @@ interface CatalogSetCardRailScrollbarDragState {
 interface CatalogSetCardRailProps {
   ariaLabel: string;
   items: readonly CatalogSetCardRailItem[];
+  mobileOverflowBleed?: boolean;
+  mobileOverflowBleedUntil?: 'mobile' | 'page' | 'tablet';
+  showControls?: boolean;
   variant?: 'compact' | 'featured';
 }
+
+const RAIL_SCROLL_EPSILON = 1;
 
 function getRailMetrics(
   railElement: HTMLDivElement,
@@ -64,15 +71,22 @@ function getRailMetrics(
     railElement.scrollWidth - railElement.clientWidth,
     0,
   );
-  const hasOverflow = maxScrollLeft > 1;
+  const normalizedScrollLeft = clampRailValue(
+    railElement.scrollLeft,
+    0,
+    maxScrollLeft,
+  );
+  const hasOverflow = maxScrollLeft > RAIL_SCROLL_EPSILON;
   const thumbWidthPercent = railElement.scrollWidth
     ? Math.min((railElement.clientWidth / railElement.scrollWidth) * 100, 100)
     : 100;
   const progress = maxScrollLeft
-    ? Math.min(Math.max(railElement.scrollLeft / maxScrollLeft, 0), 1)
+    ? Math.min(Math.max(normalizedScrollLeft / maxScrollLeft, 0), 1)
     : 0;
 
   return {
+    canScrollNext: normalizedScrollLeft < maxScrollLeft - RAIL_SCROLL_EPSILON,
+    canScrollPrevious: normalizedScrollLeft > RAIL_SCROLL_EPSILON,
     hasOverflow,
     progress,
     thumbWidthPercent,
@@ -149,6 +163,8 @@ function CatalogSetCardRailHeadingControls({
 function CatalogSetCardRailViewport({
   ariaLabel,
   items,
+  mobileOverflowBleed = false,
+  mobileOverflowBleedUntil = 'mobile',
   render,
   variant = 'featured',
 }: CatalogSetCardRailProps & {
@@ -160,52 +176,56 @@ function CatalogSetCardRailViewport({
   const scrollbarDragStateRef =
     useRef<CatalogSetCardRailScrollbarDragState | null>(null);
   const [railMetrics, setRailMetrics] = useState<CatalogSetCardRailMetrics>({
+    canScrollNext: false,
+    canScrollPrevious: false,
     hasOverflow: false,
     progress: 0,
     thumbWidthPercent: 100,
   });
   const [isScrollbarDragging, setIsScrollbarDragging] = useState(false);
+  const metricAnimationFrameIdRef = useRef(0);
+  const metricFollowUpTimeoutIdRef = useRef(0);
+  const isMetricFrameQueuedRef = useRef(false);
+
+  const flushRailMetrics = useCallback(() => {
+    const railElement = railRef.current;
+
+    if (!railElement) {
+      return;
+    }
+
+    setRailMetrics(getRailMetrics(railElement));
+  }, []);
+
+  const queueRailMetricsFlush = useCallback(() => {
+    if (isMetricFrameQueuedRef.current) {
+      return;
+    }
+
+    isMetricFrameQueuedRef.current = true;
+    metricAnimationFrameIdRef.current = requestAnimationFrame(() => {
+      isMetricFrameQueuedRef.current = false;
+      flushRailMetrics();
+    });
+  }, [flushRailMetrics]);
+
+  const queueRailMetricsFollowUp = useCallback(() => {
+    queueRailMetricsFlush();
+    clearTimeout(metricFollowUpTimeoutIdRef.current);
+    metricFollowUpTimeoutIdRef.current = window.setTimeout(
+      flushRailMetrics,
+      160,
+    );
+  }, [flushRailMetrics, queueRailMetricsFlush]);
 
   useEffect(() => {
     const railElement = railRef.current;
+    const scrollbarElement = scrollbarRef.current;
 
     if (!railElement) {
       return undefined;
     }
-
-    let animationFrameId = 0;
-    let followUpAnimationFrameId = 0;
-    let isFrameQueued = false;
-    let syncTimeoutId = 0;
     const cleanupImageListeners: Array<() => void> = [];
-
-    function flushRailMetrics() {
-      const nextRailElement = railRef.current;
-
-      if (!nextRailElement) {
-        return;
-      }
-
-      setRailMetrics(getRailMetrics(nextRailElement));
-    }
-
-    function syncRailMetrics() {
-      if (isFrameQueued) {
-        return;
-      }
-
-      isFrameQueued = true;
-      animationFrameId = requestAnimationFrame(() => {
-        isFrameQueued = false;
-        flushRailMetrics();
-      });
-    }
-
-    function syncRailMetricsSoon() {
-      syncRailMetrics();
-      clearTimeout(syncTimeoutId);
-      syncTimeoutId = window.setTimeout(flushRailMetrics, 120);
-    }
 
     function bindRailImageListeners() {
       const nextRailElement = railRef.current;
@@ -219,39 +239,48 @@ function CatalogSetCardRailViewport({
       const railImages = nextRailElement.querySelectorAll('img');
 
       railImages.forEach((image) => {
-        image.addEventListener('load', syncRailMetricsSoon, { passive: true });
-        image.addEventListener('error', syncRailMetricsSoon, {
+        image.addEventListener('load', queueRailMetricsFollowUp, {
+          passive: true,
+        });
+        image.addEventListener('error', queueRailMetricsFollowUp, {
           passive: true,
         });
 
         cleanupImageListeners.push(() => {
-          image.removeEventListener('load', syncRailMetricsSoon);
-          image.removeEventListener('error', syncRailMetricsSoon);
+          image.removeEventListener('load', queueRailMetricsFollowUp);
+          image.removeEventListener('error', queueRailMetricsFollowUp);
         });
       });
     }
 
-    syncRailMetrics();
-    followUpAnimationFrameId = requestAnimationFrame(() => {
-      syncRailMetricsSoon();
+    queueRailMetricsFlush();
+    metricAnimationFrameIdRef.current = requestAnimationFrame(() => {
+      queueRailMetricsFollowUp();
     });
-    railElement.addEventListener('scroll', syncRailMetrics, { passive: true });
-    window.addEventListener('resize', syncRailMetricsSoon, { passive: true });
-    window.addEventListener('load', syncRailMetricsSoon, { passive: true });
+    railElement.addEventListener('scroll', flushRailMetrics, { passive: true });
+    window.addEventListener('resize', queueRailMetricsFollowUp, {
+      passive: true,
+    });
+    window.addEventListener('load', queueRailMetricsFollowUp, {
+      passive: true,
+    });
 
     const resizeObserver =
       typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(syncRailMetricsSoon)
+        ? new ResizeObserver(queueRailMetricsFollowUp)
         : null;
     const mutationObserver =
       typeof MutationObserver !== 'undefined'
         ? new MutationObserver(() => {
             bindRailImageListeners();
-            syncRailMetricsSoon();
+            queueRailMetricsFollowUp();
           })
         : null;
 
     resizeObserver?.observe(railElement);
+    if (scrollbarElement) {
+      resizeObserver?.observe(scrollbarElement);
+    }
     Array.from(railElement.children).forEach((child) => {
       resizeObserver?.observe(child);
     });
@@ -262,17 +291,22 @@ function CatalogSetCardRailViewport({
     bindRailImageListeners();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
-      cancelAnimationFrame(followUpAnimationFrameId);
-      clearTimeout(syncTimeoutId);
-      railElement.removeEventListener('scroll', syncRailMetrics);
-      window.removeEventListener('resize', syncRailMetricsSoon);
-      window.removeEventListener('load', syncRailMetricsSoon);
+      cancelAnimationFrame(metricAnimationFrameIdRef.current);
+      clearTimeout(metricFollowUpTimeoutIdRef.current);
+      isMetricFrameQueuedRef.current = false;
+      railElement.removeEventListener('scroll', flushRailMetrics);
+      window.removeEventListener('resize', queueRailMetricsFollowUp);
+      window.removeEventListener('load', queueRailMetricsFollowUp);
       cleanupImageListeners.splice(0).forEach((cleanup) => cleanup());
       resizeObserver?.disconnect();
       mutationObserver?.disconnect();
     };
-  }, [items.length]);
+  }, [
+    flushRailMetrics,
+    items.length,
+    queueRailMetricsFlush,
+    queueRailMetricsFollowUp,
+  ]);
 
   if (!items.length) {
     return null;
@@ -291,6 +325,7 @@ function CatalogSetCardRailViewport({
       behavior: 'smooth',
       left: direction === 'next' ? scrollAmount : -scrollAmount,
     });
+    queueRailMetricsFollowUp();
   }
 
   function getScrollbarLayout() {
@@ -331,7 +366,7 @@ function CatalogSetCardRailViewport({
       0,
     );
     railElement.scrollLeft = clampRailValue(nextScrollLeft, 0, maxScrollLeft);
-    setRailMetrics(getRailMetrics(railElement));
+    flushRailMetrics();
   }
 
   function handleScrollbarTrackPointerDown(
@@ -433,8 +468,8 @@ function CatalogSetCardRailViewport({
   const controls = hasDesktopControls ? (
     <CatalogSetCardRailHeadingControls
       ariaLabel={ariaLabel}
-      canScrollNext={railMetrics.progress < 0.99}
-      canScrollPrevious={railMetrics.progress > 0.01}
+      canScrollNext={railMetrics.canScrollNext}
+      canScrollPrevious={railMetrics.canScrollPrevious}
       hasOverflow={hasDesktopControls}
       onNext={() => scrollRail('next')}
       onPrevious={() => scrollRail('previous')}
@@ -442,7 +477,21 @@ function CatalogSetCardRailViewport({
     />
   ) : null;
   const rail = (
-    <div className={styles.setCardRail}>
+    <div
+      className={`${styles.setCardRail} ${
+        mobileOverflowBleed
+          ? mobileOverflowBleedUntil === 'page'
+            ? styles.setCardRailPageBleed
+            : mobileOverflowBleedUntil === 'tablet'
+              ? styles.setCardRailTabletBleed
+              : styles.setCardRailMobileBleed
+          : ''
+      }`.trim()}
+      data-rail-mobile-bleed={mobileOverflowBleed ? 'true' : undefined}
+      data-rail-mobile-bleed-until={
+        mobileOverflowBleed ? mobileOverflowBleedUntil : undefined
+      }
+    >
       <CatalogSetCardCollection
         className={styles.setCardRailTrack}
         id={railId}
@@ -501,13 +550,27 @@ function CatalogSetCardRailViewport({
 export function CatalogSetCardRail({
   ariaLabel,
   items,
+  mobileOverflowBleed = false,
+  mobileOverflowBleedUntil = 'mobile',
+  showControls = false,
   variant = 'featured',
 }: CatalogSetCardRailProps) {
   return (
     <CatalogSetCardRailViewport
       ariaLabel={ariaLabel}
       items={items}
-      render={({ rail }) => rail}
+      mobileOverflowBleed={mobileOverflowBleed}
+      mobileOverflowBleedUntil={mobileOverflowBleedUntil}
+      render={({ controls, rail }) =>
+        showControls && controls ? (
+          <div className={styles.setCardRailInline}>
+            <div className={styles.setCardRailInlineControls}>{controls}</div>
+            {rail}
+          </div>
+        ) : (
+          rail
+        )
+      }
       variant={variant}
     />
   );
@@ -515,25 +578,48 @@ export function CatalogSetCardRail({
 
 export function CatalogSetCardRailSection({
   ariaLabel,
+  className,
   items,
+  mobileOverflowBleed = false,
+  mobileOverflowBleedUntil = 'mobile',
+  railClassName,
+  surfaceVariant = 'default',
+  tone = surfaceVariant === 'themed' ? 'default' : 'plain',
   variant = 'featured',
   ...sectionProps
 }: Omit<
   ComponentProps<typeof CatalogSectionShell>,
   'children' | 'utility' | 'utilityPlacement'
 > &
-  CatalogSetCardRailProps) {
+  CatalogSetCardRailProps & {
+    railClassName?: string;
+    surfaceVariant?: 'default' | 'themed';
+  }) {
   return (
     <CatalogSetCardRailViewport
       ariaLabel={ariaLabel}
       items={items}
+      mobileOverflowBleed={mobileOverflowBleed}
+      mobileOverflowBleedUntil={mobileOverflowBleedUntil}
       render={({ controls, rail }) => (
         <CatalogSectionShell
+          className={[
+            className,
+            mobileOverflowBleed && mobileOverflowBleedUntil === 'tablet'
+              ? styles.setCardRailSectionTabletBleed
+              : mobileOverflowBleed && mobileOverflowBleedUntil === 'page'
+                ? styles.setCardRailSectionPageBleed
+                : '',
+            surfaceVariant === 'themed' ? styles.setCardRailSectionThemed : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          tone={tone}
           utility={controls}
           utilityPlacement="aside"
           {...sectionProps}
         >
-          {rail}
+          <div className={railClassName}>{rail}</div>
         </CatalogSectionShell>
       )}
       variant={variant}

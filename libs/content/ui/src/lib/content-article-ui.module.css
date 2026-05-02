@@ -1,17 +1,64 @@
 .page {
+  overflow-x: clip;
+  width: 100%;
+}
+
+.articleShell {
+  --article-shell-padding-inline: max(
+    var(--lego-section-inline-padding, 1.25rem),
+    1.25rem
+  );
+  /* Prose stays narrow, editorial media sits in the middle, commerce rails stay full page width. */
+  --article-prose-max-width: 48rem;
+  --article-media-max-width: 64rem;
+  --article-hero-max-width: 60rem;
+  --article-wide-max-width: var(--lego-max-width-page, 100rem);
   display: grid;
-  gap: var(--lego-space-8);
+  gap: var(--lego-space-7);
+  margin: 0 auto;
+  padding-bottom: var(--lego-space-12);
+  padding-inline: var(--article-shell-padding-inline);
+  width: 100%;
 }
 
 .hero {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-4);
+  width: 100%;
+}
+
+.heroMedia {
+  justify-self: center;
+  max-width: min(100%, var(--article-hero-max-width));
+  width: 100%;
+}
+
+.heroContentWrap,
+.articleBody {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+}
+
+.articleBody {
+  padding-top: var(--lego-space-4);
 }
 
 .heroContent {
   display: grid;
   gap: var(--lego-space-4);
-  max-width: var(--lego-max-width-reading);
+  max-width: var(--article-prose-max-width);
+  width: 100%;
+}
+
+.breadcrumbs {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-eyebrow-size);
+  line-height: var(--lego-text-role-eyebrow-line-height);
+}
+
+.breadcrumbs + .hero {
+  margin-top: var(--lego-space-3);
 }
 
 .backLink {
@@ -25,25 +72,82 @@
   text-decoration: underline;
 }
 
+.themeBadgeLink {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.themeBadgeShell {
+  --catalog-theme-badge-surface: var(--lego-accent);
+  --catalog-theme-badge-text: var(--lego-accent-contrast);
+  display: inline-flex;
+}
+
+.themeBadge {
+  background: var(--catalog-theme-badge-surface);
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--catalog-theme-badge-surface) 72%,
+      var(--lego-border-strong) 28%
+    );
+  color: var(--catalog-theme-badge-text);
+}
+
 .imageFrame {
-  aspect-ratio: 16 / 9;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(255, 214, 10, 0.22),
-      transparent 36%
-    ),
-    linear-gradient(145deg, #171717 0%, #111827 52%, #0b1325 100%);
+  background: var(--lego-surface-muted);
+  border: 1px solid var(--lego-border-subtle);
   border-radius: var(--lego-radius-xl);
   overflow: hidden;
   position: relative;
 }
 
+.cardImageFrame {
+  aspect-ratio: 25 / 11;
+}
+
+.featuredSetImageFrame {
+  aspect-ratio: 4 / 3;
+  max-height: 22rem;
+  width: 100%;
+}
+
+.spotlightSetImageFrame {
+  aspect-ratio: 5 / 4;
+  max-height: 18rem;
+  width: 100%;
+}
+
+.heroImageFrame {
+  aspect-ratio: 750 / 330;
+  width: 100%;
+}
+
 .image {
   display: block;
   height: 100%;
-  object-fit: cover;
   width: 100%;
+}
+
+.cardImage {
+  object-fit: cover;
+}
+
+.featuredSetImage {
+  object-fit: contain;
+  object-position: center;
+  padding: var(--lego-space-4);
+}
+
+.spotlightSetImage {
+  object-fit: contain;
+  object-position: center;
+  padding: var(--lego-space-4);
+}
+
+.heroImage {
+  object-fit: contain;
+  object-position: center;
 }
 
 .imageFallback {
@@ -87,15 +191,43 @@
   font-size: clamp(1rem, 1.5vw, 1.125rem);
   line-height: var(--lego-line-height-relaxed);
   margin: 0;
-  max-width: 52rem;
+  max-width: 46rem;
 }
 
 .prose {
   display: grid;
-  gap: var(--lego-space-5);
+  gap: var(--lego-space-6);
   line-height: var(--lego-line-height-relaxed);
-  margin: 0 auto;
-  max-width: var(--lego-max-width-reading);
+  width: 100%;
+}
+
+.prose > :is(h2, h3, h4, p, ul, ol, blockquote, hr) {
+  justify-self: center;
+  max-width: var(--article-prose-max-width);
+  width: 100%;
+}
+
+.prose > [data-article-layout='prose-block'] {
+  justify-self: center;
+  max-width: var(--article-prose-max-width);
+  width: 100%;
+}
+
+.prose > [data-article-layout='wide-block'] {
+  justify-self: stretch;
+  max-width: 100%;
+  width: 100%;
+}
+
+.prose > [data-article-layout='media-block'] {
+  justify-self: center;
+  max-width: min(var(--article-media-max-width), 100%);
+  width: 100%;
+}
+
+.prose > [data-article-layout='faq-block'] {
+  justify-self: center;
+  max-width: min(56rem, 100%);
   width: 100%;
 }
 
@@ -107,7 +239,7 @@
 
 .prose h2 {
   font-size: clamp(1.5rem, 2vw, 2rem);
-  margin-top: var(--lego-space-2);
+  margin-top: var(--lego-space-3);
 }
 
 .prose h3 {
@@ -125,7 +257,7 @@
   padding-left: 1.25rem;
 }
 
-.prose a {
+.prose :is(p, li, blockquote) a {
   color: var(--lego-link-color, var(--lego-accent-700));
   font-weight: 600;
 }
@@ -135,6 +267,7 @@
 }
 
 .callout {
+  background: var(--lego-accent-subtle);
   display: grid;
   gap: var(--lego-space-3);
 }
@@ -157,6 +290,307 @@
 .rail {
   display: grid;
   gap: var(--lego-space-5);
+}
+
+.wideBlock {
+  min-width: 0;
+}
+
+.mediaBlock {
+  min-width: 0;
+}
+
+.embeddedCarousel {
+  margin: var(--lego-space-8) 0;
+}
+
+.embeddedRail {
+  margin: var(--lego-space-10) 0;
+}
+
+.embeddedCarouselWidget {
+  width: 100%;
+}
+
+.embeddedRailSurface {
+  --lego-text-muted: var(--article-theme-muted-text, var(--lego-text-muted));
+  background: var(--article-theme-surface, var(--lego-surface-default));
+  border: 1px solid var(--lego-border-subtle);
+  color: var(--article-theme-surface-text, inherit);
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.embeddedRailBody {
+  display: grid;
+  gap: var(--lego-space-4);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.embeddedRailBody > * {
+  min-width: 0;
+}
+
+.embeddedRailDebug {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-label-size);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.embeddedRailEmpty {
+  color: var(--lego-text-muted);
+  font-size: 0.975rem;
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+  max-width: 38rem;
+}
+
+.featuredSetBlock {
+  margin: var(--lego-space-8) 0;
+}
+
+.featuredSet {
+  display: grid;
+  gap: var(--lego-space-5);
+  min-width: 0;
+  padding: var(--lego-space-5);
+}
+
+.featuredSetVisualLink {
+  color: inherit;
+  display: grid;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.featuredSetVisualLink .featuredSetImageFrame {
+  margin: 0 auto;
+}
+
+.featuredSetContent {
+  display: grid;
+  gap: var(--lego-space-4);
+  min-width: 0;
+}
+
+.featuredSetHeader {
+  display: grid;
+  gap: var(--lego-space-3);
+}
+
+.featuredSetBadges {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.featuredSetThemeLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.featuredSetTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.featuredSetFacts {
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  margin: 0;
+}
+
+.featuredSetFact {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.featuredSetFact dt {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-label-size);
+  font-weight: var(--lego-font-weight-semibold);
+  letter-spacing: 0.03em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.featuredSetFact dd {
+  margin: 0;
+}
+
+.featuredSetCommercePanel {
+  background: color-mix(in srgb, var(--lego-surface-default) 82%, white 18%);
+  border-radius: var(--lego-radius-lg);
+  display: grid;
+  gap: var(--lego-space-2);
+  padding: var(--lego-space-4);
+}
+
+.featuredSetPriceRow {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+  justify-content: space-between;
+}
+
+.featuredSetPriceLabel {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-label-size);
+  font-weight: var(--lego-font-weight-semibold);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.featuredSetPriceValue {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+  letter-spacing: -0.03em;
+}
+
+.featuredSetPriceSupportingCopy,
+.featuredSetAvailability {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+}
+
+.featuredSetActions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-3);
+}
+
+.setSpotlightListBlock {
+  margin: var(--lego-space-10) 0;
+}
+
+.setSpotlightList {
+  display: grid;
+  gap: var(--lego-space-10);
+}
+
+.setSpotlightSection {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.setSpotlightSectionHeader {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.setSpotlightSectionTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.setSpotlightSectionDescription {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+  max-width: 48rem;
+}
+
+.setSpotlightSectionItems {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.faqBlock {
+  margin: var(--lego-space-8) 0;
+  min-width: 0;
+}
+
+.faqSection {
+  display: grid;
+  gap: var(--lego-space-5);
+}
+
+.faqTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.faqList {
+  border-top: 1px solid var(--lego-border-subtle);
+  display: grid;
+}
+
+.faqItem {
+  border-bottom: 1px solid var(--lego-border-subtle);
+}
+
+.faqItemHeading {
+  margin: 0;
+}
+
+.faqButton {
+  align-items: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: var(--lego-space-4) 0;
+  text-align: left;
+  width: 100%;
+}
+
+.faqButton:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+}
+
+.faqQuestion {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.faqChevron {
+  color: var(--lego-text-muted);
+  transition: transform var(--lego-motion-duration-fast)
+    var(--lego-motion-ease-standard);
+}
+
+.faqChevron[data-open='true'] {
+  transform: rotate(180deg);
+}
+
+.faqPanel {
+  padding: 0 0 var(--lego-space-4);
+}
+
+.faqAnswer {
+  color: var(--lego-text-muted);
+  line-height: var(--lego-line-height-relaxed);
+  margin: 0;
+  max-width: 48rem;
+}
+
+.relatedArticlesBlock {
+  margin: var(--lego-space-12) 0 0;
+}
+
+.relatedArticlesRail {
+  margin: 0;
 }
 
 .cardGrid {
@@ -197,12 +631,59 @@
 }
 
 @media (min-width: 48rem) {
+  .breadcrumbs + .hero {
+    margin-top: var(--lego-space-4);
+  }
+
   .hero {
-    gap: var(--lego-space-6);
+    gap: var(--lego-space-5);
+  }
+
+  .heroMedia {
+    margin-inline: 0;
+    max-width: min(100%, var(--article-hero-max-width));
+    width: 100%;
+  }
+
+  .heroContent {
+    gap: var(--lego-space-5);
   }
 
   .cardGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featuredSet {
+    align-items: stretch;
+    grid-template-columns: minmax(18rem, 0.95fr) minmax(0, 1.05fr);
+  }
+
+  .featuredSetVisualLink {
+    height: 100%;
+  }
+
+  .featuredSetVisualLink .featuredSetImageFrame {
+    max-height: 24rem;
+  }
+}
+
+@media (max-width: 47.999rem) {
+  .setSpotlightSectionItems {
+    gap: 0;
+    margin-inline: calc(50% - 50vw);
+    max-width: 100vw;
+    overflow-x: clip;
+    width: 100vw;
+  }
+
+  .heroMedia {
+    margin-inline: calc(-1 * var(--article-shell-padding-inline));
+    max-width: none;
+    width: calc(100% + (var(--article-shell-padding-inline) * 2));
+  }
+
+  .heroImageFrame {
+    border-radius: 0;
   }
 }
 

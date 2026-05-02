@@ -1,9 +1,14 @@
 /** @vitest-environment jsdom */
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CatalogSetCardRail } from './catalog-set-card-rail';
+import {
+  CatalogSetCardRail,
+  CatalogSetCardRailSection,
+} from './catalog-set-card-rail';
 
 const requestAnimationFrameMock = vi
   .spyOn(window, 'requestAnimationFrame')
@@ -19,6 +24,7 @@ describe('CatalogSetCardRail', () => {
   let originalClientWidthDescriptor: PropertyDescriptor | undefined;
   let originalScrollWidthDescriptor: PropertyDescriptor | undefined;
   let originalScrollLeftDescriptor: PropertyDescriptor | undefined;
+  let originalScrollBy: typeof HTMLElement.prototype.scrollBy | undefined;
   let railClientWidth = 720;
   let railScrollWidth = 1440;
   let scrollLeftValue = 0;
@@ -45,6 +51,7 @@ describe('CatalogSetCardRail', () => {
       HTMLElement.prototype,
       'scrollLeft',
     );
+    originalScrollBy = HTMLElement.prototype.scrollBy;
 
     Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
       configurable: true,
@@ -77,6 +84,15 @@ describe('CatalogSetCardRail', () => {
         }
       },
     });
+
+    HTMLElement.prototype.scrollBy = function scrollBy({
+      left = 0,
+    }: ScrollToOptions) {
+      if (this.className.toString().includes('setCardRailTrack')) {
+        scrollLeftValue += left;
+        this.dispatchEvent(new Event('scroll'));
+      }
+    };
 
     class ResizeObserverMock {
       constructor(callback: ResizeObserverCallback) {
@@ -130,6 +146,10 @@ describe('CatalogSetCardRail', () => {
         'scrollLeft',
         originalScrollLeftDescriptor,
       );
+    }
+
+    if (originalScrollBy) {
+      HTMLElement.prototype.scrollBy = originalScrollBy;
     }
   });
 
@@ -236,5 +256,279 @@ describe('CatalogSetCardRail', () => {
     });
 
     expect(scrollbar?.dataset.visible).toBe('true');
+  });
+
+  it('updates next and previous control state after button scrolling', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Uitgelichte setrail"
+          items={[
+            {
+              id: '10316',
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6167,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+            {
+              id: '76269',
+              setSummary: {
+                id: '76269',
+                slug: 'avengers-tower-76269',
+                name: 'Avengers Tower',
+                theme: 'Marvel',
+                releaseYear: 2023,
+                pieces: 5202,
+                imageUrl: 'https://images.example/avengers-tower.jpg',
+              },
+            },
+          ]}
+          showControls
+          variant="featured"
+        />,
+      );
+    });
+
+    const thumb = container.querySelector(
+      '[class*="setCardRailScrollbarThumb"]',
+    ) as HTMLDivElement | null;
+    const previousButton = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+    const nextButton = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    expect(previousButton?.disabled).toBe(true);
+    expect(nextButton?.disabled).toBe(false);
+    expect(thumb?.style.left).toBe('0%');
+
+    act(() => {
+      nextButton?.click();
+    });
+
+    const previousButtonAfterFirstScroll = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+    const nextButtonAfterFirstScroll = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    expect(previousButtonAfterFirstScroll?.disabled).toBe(false);
+    expect(nextButtonAfterFirstScroll?.disabled).toBe(false);
+    expect(thumb?.style.left).not.toBe('0%');
+
+    act(() => {
+      nextButtonAfterFirstScroll?.click();
+    });
+
+    const previousButtonAtEnd = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+    const nextButtonAtEnd = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    expect(previousButtonAtEnd?.disabled).toBe(false);
+    expect(nextButtonAtEnd?.disabled).toBe(true);
+
+    act(() => {
+      previousButtonAtEnd?.click();
+    });
+
+    const previousButtonAfterBack = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+    const nextButtonAfterBack = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    expect(previousButtonAfterBack?.disabled).toBe(false);
+    expect(nextButtonAfterBack?.disabled).toBe(false);
+
+    act(() => {
+      previousButtonAfterBack?.click();
+    });
+
+    const previousButtonAtStart = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+    const nextButtonAtStart = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    expect(previousButtonAtStart?.disabled).toBe(true);
+    expect(nextButtonAtStart?.disabled).toBe(false);
+    expect(thumb?.style.left).toBe('0%');
+  });
+
+  it('uses the shared default section surface for themed rails so the rail shell keeps the standard radius', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRailSection
+          ariaLabel="Star Wars rail"
+          items={[
+            {
+              id: '75446',
+              setSummary: {
+                id: '75446',
+                slug: 'grogu-mandalorian-apprentice-75446',
+                name: 'Grogu (Mandalorian Apprentice)',
+                theme: 'Star Wars',
+                releaseYear: 2026,
+                pieces: 1200,
+                imageUrl: 'https://images.example/grogu.jpg',
+              },
+            },
+          ]}
+          surfaceVariant="themed"
+          title="Nieuwe Star Wars releases"
+          variant="compact"
+        />,
+      );
+    });
+
+    const railShell = container.querySelector(
+      '[class*="sectionShellDefault"]',
+    ) as HTMLElement | null;
+
+    expect(railShell).not.toBeNull();
+    expect(railShell?.className).toContain('setCardRailSectionThemed');
+  });
+
+  it('supports tablet-width overflow bleed for article-style rails', () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Artikel rail"
+          items={[
+            {
+              id: '75446',
+              setSummary: {
+                id: '75446',
+                slug: 'grogu-mandalorian-apprentice-75446',
+                name: 'Grogu (Mandalorian Apprentice)',
+                theme: 'Star Wars',
+                releaseYear: 2026,
+                pieces: 1200,
+                imageUrl: 'https://images.example/grogu.jpg',
+              },
+            },
+          ]}
+          mobileOverflowBleed
+          mobileOverflowBleedUntil="page"
+          variant="compact"
+        />,
+      );
+    });
+
+    const railRoot = container.querySelector(
+      '[data-rail-mobile-bleed="true"]',
+    ) as HTMLElement | null;
+
+    expect(railRoot?.getAttribute('data-rail-mobile-bleed-until')).toBe('page');
+    expect(railRoot?.className).toContain('setCardRailPageBleed');
+
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.setCardRailSectionPageBleed');
+    expect(css).toContain('width: 100vw;');
+    expect(css).toContain('margin-inline: calc(50% - 50vw);');
+  });
+
+  it('keeps themed rail header colors off the white cards themselves', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.setCardRailSectionThemed .setCard');
+    expect(css).toContain('.setCardRailSectionThemed .setCardLink');
+    expect(css).toContain('color: var(--lego-text);');
+    expect(css).toContain(
+      '--lego-text-muted: var(--catalog-card-muted-text, #5d677c);',
+    );
+  });
+
+  it('syncs scroll progress and button state after native horizontal scrolling', async () => {
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Uitgelichte setrail"
+          items={[
+            {
+              id: '10316',
+              setSummary: {
+                id: '10316',
+                slug: 'rivendell-10316',
+                name: 'Rivendell',
+                theme: 'Icons',
+                releaseYear: 2023,
+                pieces: 6167,
+                imageUrl: 'https://images.example/rivendell.jpg',
+              },
+            },
+            {
+              id: '76269',
+              setSummary: {
+                id: '76269',
+                slug: 'avengers-tower-76269',
+                name: 'Avengers Tower',
+                theme: 'Marvel',
+                releaseYear: 2023,
+                pieces: 5202,
+                imageUrl: 'https://images.example/avengers-tower.jpg',
+              },
+            },
+          ]}
+          showControls
+          variant="featured"
+        />,
+      );
+    });
+
+    const railTrack = container.querySelector(
+      '[class*="setCardRailTrack"]',
+    ) as HTMLDivElement | null;
+    await act(async () => {
+      railTrack?.scrollBy({ left: 360 });
+      await Promise.resolve();
+    });
+
+    const previousButtonMidRail = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+    const nextButtonMidRail = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    expect(previousButtonMidRail).not.toBeNull();
+    expect(nextButtonMidRail).not.toBeNull();
+
+    await act(async () => {
+      railTrack?.scrollBy({ left: 360 });
+      await Promise.resolve();
+    });
+
+    const previousButtonAtEnd = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+    const nextButtonAtEnd = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    await vi.waitFor(() => {
+      expect(previousButtonAtEnd?.disabled).toBe(false);
+      expect(nextButtonAtEnd?.disabled).toBe(true);
+    });
   });
 });

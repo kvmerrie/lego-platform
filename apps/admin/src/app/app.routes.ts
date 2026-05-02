@@ -11,6 +11,7 @@ import {
   CommerceAdminSetsPageComponent,
   CommerceFeatureAdminComponent,
 } from '@lego-platform/commerce/feature-admin';
+import { ContentAdminEditorialAgentPageComponent } from '@lego-platform/content/feature-admin';
 
 export const appRoutes: Route[] = [
   {
@@ -72,6 +73,10 @@ export const appRoutes: Route[] = [
       {
         path: 'coverage',
         component: CommerceAdminCoveragePageComponent,
+      },
+      {
+        path: 'editorial-agent',
+        component: ContentAdminEditorialAgentPageComponent,
       },
     ],
   },
