@@ -1409,18 +1409,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-22T07:46:18.355Z"
   },
   {
-    "setId": "75309",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 49100,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:43:24.672Z"
-  },
-  {
     "setId": "75313",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1455,30 +1443,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "bol",
     "merchantCount": 4,
     "observedAt": "2026-04-22T07:43:45.620Z"
-  },
-  {
-    "setId": "75331",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 59995,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-04-22T07:43:20.749Z"
-  },
-  {
-    "setId": "75343",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 10115,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:43:27.305Z"
   },
   {
     "setId": "75349",
@@ -1557,28 +1521,16 @@ const pricePanelSnapshotsPayload = String.raw`[
     "deltaMinor": -20000
   },
   {
-    "setId": "75371",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 19900,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 2,
-    "observedAt": "2026-04-22T07:43:19.501Z"
-  },
-  {
     "setId": "75375",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5899,
+    "headlinePriceMinor": 6590,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 2,
-    "observedAt": "2026-04-22T07:43:15.729Z"
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
     "setId": "75397",
@@ -1613,12 +1565,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4999,
+    "headlinePriceMinor": 6090,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 5,
-    "observedAt": "2026-04-22T07:43:33.262Z"
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
     "setId": "75417",

@@ -61,7 +61,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10280-bloemen-boeket.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:30.449Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -75,8 +75,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-creator-expert-10280-bloemenboeket-411-3767",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:16.493Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:57.674Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -155,7 +155,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10300-back-to-the-future-tijdmachine.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:55.331Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -265,7 +265,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10311-orchidee.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:35.925Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -279,8 +279,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-icons-10311-orchidee-411-4336",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:15.469Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:57.806Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -357,7 +357,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-the-lord-of-the-rings-rivendell-10316.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:04.048Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -388,7 +388,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10317-land-rover-classic-defender-90.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:12.917Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -528,7 +528,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-10327-dune-atreides-royal-ornithopter.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:12.437Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -558,8 +558,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10327-icons-dune-atreides-royal-ornithopter-411-0327",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:28.126Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:48.943Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -637,7 +637,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-botanicals-10328-rozenboeket.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:39.532Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -651,8 +651,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10328-icons-rozenboeket-411-1038",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:25.201Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:50.349Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -901,7 +901,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-10342-roze-boeket.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:39.104Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -931,8 +931,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10342-botanicals-roze-boeket",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:26.167Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:50.207Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -962,7 +962,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-icons-the-lord-of-the-rings-de-gouw-10354.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:54.908Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -992,8 +992,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-10354-iconen-the-lord-of-the-rings-de-gouw",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:29.176Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:47.771Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1280,7 +1280,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-architecture-21061-notre-dame-van-parijs.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:39.819Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1341,8 +1341,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-21061-architecture-notre-dame-van-parijs-411-1061",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:20.682Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:53.877Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1466,7 +1466,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-dungeons-dragons-het-verhaal-van-de-rode-draak-21348.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:32.723Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1527,8 +1527,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-ideas-dungeons-dragons-the-legend-of-the-red-dragon-21348",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:30.205Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:46.723Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1744,8 +1744,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-31208-art-hokusai-de-grote-golf-411-1208",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:17.486Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:57.547Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -1760,7 +1760,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-art-31208-hokusai-de-grote-golf.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:26.483Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1943,7 +1943,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42143-ferrari-daytona-sp3.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:51.348Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -1957,8 +1957,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "Out of stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42143-technic-ferrari-daytona-sp3-411-2143",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:14.338Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:57.956Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -2066,7 +2066,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42171-mercedes-amg-f1-w14-e-performance.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:33.050Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2095,8 +2095,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-4217-technic-mercedes-amg-f1-w14-e-performance-411-2171",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:34.662Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:42.402Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -2159,7 +2159,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42172-mclaren-p1-hypercar.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:33.361Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2173,8 +2173,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42172-technic-mclaren-p1-411-2172",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:33.602Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:43.641Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -2296,8 +2296,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-42177-technic-mercedes-benz-g-500-professional-line-411-2177",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:34.789Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:42.196Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -2312,7 +2312,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42177-mercedes-benz-g-500-professional-line.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:33.762Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2450,7 +2450,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-technic-42206-oracle-red-bull-racing-rb20-f1-auto-max-verstappen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:51.616Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2904,7 +2904,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-disney-43269-101-dalmatiers-puppy.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:57.446Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -2934,8 +2934,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-disney-classic-43269-101-dalmatiers-puppy",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:36.872Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:40.488Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -3223,7 +3223,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-mario-72037-mario-kart-mario-en-standaardkart.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:12.055Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3252,8 +3252,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-72037-super-mario-kart-mario-en-standaardkart",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:35.792Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:40.841Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -3284,7 +3284,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-mario-72050-mario-kart-luigi-en-mach-8.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:12.511Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3347,7 +3347,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-millennium-falcon-75192.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:14.077Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3365,38 +3365,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75309",
-    "merchantId": "lego-nl",
-    "merchantName": "LEGO",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 39999,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.lego.com/nl-nl/product/republic-gunship-75309",
-    "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-22T07:43:23.271Z",
-    "displayRank": 1,
-    "ctaLabel": "Shop at LEGO",
-    "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75309",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 49100,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-republic-gunship-75309/9300000050263766/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:24.672Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
   },
   {
     "setId": "75313",
@@ -3506,7 +3474,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75328-the-mandalorian-helm.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:43.428Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3524,85 +3492,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "displayRank": 1,
     "ctaLabel": "Shop at LEGO",
     "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75331",
-    "merchantId": "misterbricks",
-    "merchantName": "MisterBricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 59995,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://misterbricks.nl/lego-star-wars-de-razor-crest-75331.html",
-    "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:43:20.749Z",
-    "displayRank": 5,
-    "ctaLabel": "Bekijk bij MisterBricks"
-  },
-  {
-    "setId": "75331",
-    "merchantId": "lego-nl",
-    "merchantName": "LEGO",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 59999,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.lego.com/nl-nl/product/the-razor-crest-75331",
-    "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-22T07:43:21.131Z",
-    "displayRank": 1,
-    "ctaLabel": "Shop at LEGO",
-    "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75331",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 63800,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-de-razor-crest-75331/9300000131756657/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:22.464Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
-  },
-  {
-    "setId": "75343",
-    "merchantId": "lego-nl",
-    "merchantName": "LEGO",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6999,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.lego.com/nl-nl/product/dark-trooper-helmet-75343",
-    "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-22T07:43:25.348Z",
-    "displayRank": 1,
-    "ctaLabel": "Shop at LEGO",
-    "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75343",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 10115,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-dark-trooper-helm-75343/9300000069197063/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:27.305Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
   },
   {
     "setId": "75349",
@@ -3648,7 +3537,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75349-captain-rex-helm.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:39.382Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3716,22 +3605,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75351",
-    "merchantId": "lego-nl",
-    "merchantName": "LEGO",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6999,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.lego.com/nl-nl/product/princess-leia-boushh-helmet-75351",
-    "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-22T07:43:34.095Z",
-    "displayRank": 1,
-    "ctaLabel": "Shop at LEGO",
-    "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75351",
     "merchantId": "bol",
     "merchantName": "bol",
     "regionCode": "NL",
@@ -3758,7 +3631,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75355-x-wing-starfighter.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:31.768Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3788,8 +3661,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-75355-star-wars-x-wing-starfighter",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:18.493Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:56.230Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -3882,7 +3755,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-venator-class-republic-attack-cruiser-75367.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:19.353Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -3912,72 +3785,9 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-star-wars-75367-venator-class-republic-attack-cruiser",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:19.592Z",
-    "displayRank": 6,
-    "ctaLabel": "Bekijk bij Top1Toys"
-  },
-  {
-    "setId": "75371",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 19900,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-chewbacca-wookiee-set-voor-volwassenen-75371/9300000147185741/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:19.501Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
-  },
-  {
-    "setId": "75371",
-    "merchantId": "misterbricks",
-    "merchantName": "MisterBricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 19900,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://misterbricks.nl/lego-star-wars-75371-chewbacca.html",
-    "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:43:16.406Z",
+    "observedAt": "2026-05-03T11:11:55.092Z",
     "displayRank": 5,
-    "ctaLabel": "Bekijk bij MisterBricks"
-  },
-  {
-    "setId": "75371",
-    "merchantId": "lego-nl",
-    "merchantName": "LEGO",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 20999,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.lego.com/nl-nl/product/chewbacca-75371",
-    "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-22T07:43:17.568Z",
-    "displayRank": 1,
-    "ctaLabel": "Shop at LEGO",
-    "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75375",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5899,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-millennium-falcon-75375/9300000157956368/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:15.729Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
+    "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
     "setId": "75375",
@@ -4038,7 +3848,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75397-jabba-s-sail-barge.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:58.166Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4101,7 +3911,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75398-c-3po.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:57.763Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4122,38 +3932,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75408",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-jango-fett-helm-voor-volwassenen-75408/9300000198889980/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:33.262Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
-  },
-  {
-    "setId": "75408",
-    "merchantId": "intertoys",
-    "merchantName": "Intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5799,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.intertoys.nl/lego-star-wars-jango-fett-helm-75408",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:32.209Z",
-    "displayRank": 3,
-    "ctaLabel": "Shop at Intertoys",
-    "perks": "Strong toy-specialist relevance"
-  },
-  {
-    "setId": "75408",
     "merchantId": "alternate",
     "merchantName": "Alternate",
     "regionCode": "NL",
@@ -4166,37 +3944,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-22T18:04:05.898Z",
     "displayRank": 9,
     "ctaLabel": "Bekijk bij Alternate"
-  },
-  {
-    "setId": "75408",
-    "merchantId": "misterbricks",
-    "merchantName": "MisterBricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6500,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://misterbricks.nl/lego-star-wars-75408-jango-fett-helm.html",
-    "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:43:27.956Z",
-    "displayRank": 5,
-    "ctaLabel": "Bekijk bij MisterBricks"
-  },
-  {
-    "setId": "75408",
-    "merchantId": "lego-nl",
-    "merchantName": "LEGO",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7999,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.lego.com/nl-nl/product/jango-fett-helmet-75408",
-    "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-22T07:43:28.336Z",
-    "displayRank": 1,
-    "ctaLabel": "Shop at LEGO",
-    "perks": "Direct brand purchase and reference pricing"
   },
   {
     "setId": "75417",
@@ -4257,7 +4004,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-star-wars-75440-at-at.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:13.335Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4371,6 +4118,21 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "76269",
+    "merchantId": "top1toys",
+    "merchantName": "Top1Toys",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 49900,
+    "availabilityLabel": "Out of stock",
+    "outboundUrl": "https://www.top1toys.nl/lego-super-heros-avengers-tower-76269",
+    "disclosureCopy": "Direct merchant link.",
+    "observedAt": "2026-05-03T11:11:46.590Z",
+    "displayRank": 5,
+    "ctaLabel": "Bekijk bij Top1Toys"
+  },
+  {
+    "setId": "76269",
     "merchantId": "misterbricks",
     "merchantName": "MisterBricks",
     "regionCode": "NL",
@@ -4381,23 +4143,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-marvel-76269-avengers-toren.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:32.270Z",
-    "displayRank": 5,
-    "ctaLabel": "Bekijk bij MisterBricks"
-  },
-  {
-    "setId": "76269",
-    "merchantId": "top1toys",
-    "merchantName": "Top1Toys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 49900,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.top1toys.nl/lego-super-heros-avengers-tower-76269",
-    "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:31.146Z",
     "displayRank": 6,
-    "ctaLabel": "Bekijk bij Top1Toys"
+    "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
     "setId": "76269",
@@ -4522,7 +4269,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-heroes-76313-marvel-logo-en-minifiguren.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:57.423Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4552,8 +4299,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76313-super-heroes-marvel-marvel-logo-en-minifiguren",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:32.113Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:45.376Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -4631,7 +4378,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-super-heroes-76330-batman-logo.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:01.094Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4785,7 +4532,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76419-kasteel-zweinstein-en-terrein.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:38.656Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4831,8 +4578,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76419-harry-potter-kasteel-zweinstein-en-ter-terrein-411-6419",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:24.095Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:51.453Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -4878,7 +4625,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76429-pratende-sorteerhoed.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:12.016Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -4892,8 +4639,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76429-harry-potter-pratende-sorteerhoed-411-6429",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:27.143Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:50.034Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -4956,7 +4703,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76435-kasteel-zweinstein-de-grote-zaal.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:10.853Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5002,8 +4749,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76435-harry-potter-kasteel-zweinstein-de-grote-zaal-411-6435",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:22.914Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:52.534Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -5034,7 +4781,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76437-het-nest-verzameleditie.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:44:36.181Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5127,7 +4874,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-harry-potter-76453-villa-malfidus.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:46:11.624Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
@@ -5157,8 +4904,8 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "availabilityLabel": "In stock",
     "outboundUrl": "https://www.top1toys.nl/lego-76453-harry-potter-villa-malfidus",
     "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-30T08:29:21.707Z",
-    "displayRank": 6,
+    "observedAt": "2026-05-03T11:11:52.672Z",
+    "displayRank": 5,
     "ctaLabel": "Bekijk bij Top1Toys"
   },
   {
@@ -5234,7 +4981,7 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "outboundUrl": "https://misterbricks.nl/lego-speed-champions-77243-oracle-red-bull-racing-rb20-f1-racewagen.html",
     "disclosureCopy": "Direct merchant link.",
     "observedAt": "2026-04-22T07:43:48.007Z",
-    "displayRank": 5,
+    "displayRank": 6,
     "ctaLabel": "Bekijk bij MisterBricks"
   },
   {
