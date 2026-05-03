@@ -302,6 +302,112 @@ describe('editorial agent draft generation', () => {
     ).toBe('SEGA Genesis (Mega Drive)');
   });
 
+  it('localizes English Brickset article titles to natural Dutch', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: null,
+        relatedCandidates: [],
+        detected: createDetected({
+          keywords: ['Botanicals'],
+          setNumbers: [],
+          themes: ['Botanicals'],
+        }),
+        facts: createFacts({
+          keywords: ['Botanicals'],
+          setNames: [],
+          setNumbers: [],
+          summary: 'Three beautiful botanical sets revealed!',
+          theme: 'Botanicals',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+        source: createSource({
+          description: 'Three beautiful botanical sets revealed!',
+          domain: 'brickset.com',
+          language: 'en',
+          siteName: 'Brickset',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.title).toBe(
+      'Drie nieuwe Botanicals-sets onthuld',
+    );
+    expect(result.frontmatter.title).not.toContain('revealed');
+    expect(result.frontmatter.title).not.toContain('!');
+    expect(result.mdx).toContain(
+      'title: "Drie nieuwe Botanicals-sets onthuld"',
+    );
+  });
+
+  it('localizes common English article title patterns without literal translation', () => {
+    const summerResult = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: null,
+        facts: createFacts({
+          setNames: [],
+          setNumbers: [],
+          summary: 'Summer LEGO Harry Potter sets revealed',
+          theme: 'Harry Potter',
+          title: 'Summer LEGO Harry Potter sets revealed',
+        }),
+        source: createSource({
+          domain: 'brickset.com',
+          language: 'en',
+          title: 'Summer LEGO Harry Potter sets revealed',
+        }),
+      }),
+    );
+    const quickLookResult = generateEditorialMdxDraft(
+      createInput({
+        facts: createFacts({
+          title: 'Quick Look: 43022 Lewis Hamilton Helmet',
+        }),
+        source: createSource({
+          domain: 'brickset.com',
+          language: 'en',
+          title: 'Quick Look: 43022 Lewis Hamilton Helmet',
+        }),
+      }),
+    );
+
+    expect(summerResult.frontmatter.title).toBe(
+      'Nieuwe LEGO Harry Potter-sets voor de zomer onthuld',
+    );
+    expect(quickLookResult.frontmatter.title).toBe(
+      'Korte blik: 43022 Lewis Hamilton Helmet',
+    );
+  });
+
+  it('keeps Dutch BrickTastic titles unchanged', () => {
+    const title =
+      'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten';
+    const result = generateEditorialMdxDraft(
+      createInput({
+        facts: createFacts({
+          title,
+        }),
+        source: createSource({
+          domain: 'www.bricktastic.nl',
+          language: 'nl',
+          title,
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.title).toBe(title);
+  });
+
   it('cleans extracted set names and headline fallbacks before using them in a draft', () => {
     expect(
       getSetDisplayNameForDraft(

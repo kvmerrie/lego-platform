@@ -390,6 +390,109 @@ function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
   );
 }
 
+function isDutchSourceLanguage(language?: string): boolean {
+  return (
+    typeof language === 'string' && language.toLowerCase().startsWith('nl')
+  );
+}
+
+function stripEnglishTitlePunctuation(value: string): string {
+  return normalizeWhitespace(value)
+    .replace(/[!?]+$/gu, '')
+    .trim();
+}
+
+function localizeEnglishNumberWord(value: string): string {
+  const normalizedValue = value.toLowerCase();
+  const numberWords = new Map([
+    ['one', 'Een'],
+    ['two', 'Twee'],
+    ['three', 'Drie'],
+    ['four', 'Vier'],
+    ['five', 'Vijf'],
+    ['six', 'Zes'],
+    ['seven', 'Zeven'],
+    ['eight', 'Acht'],
+    ['nine', 'Negen'],
+    ['ten', 'Tien'],
+  ]);
+
+  return numberWords.get(normalizedValue) ?? value;
+}
+
+function localizeEnglishTitleSubject(value: string): string {
+  return stripEnglishTitlePunctuation(value)
+    .replace(/\bquick look\b/giu, 'Korte blik')
+    .replace(/\bfirst look\b/giu, 'Eerste blik')
+    .replace(/\bbeautiful botanical\b/giu, 'nieuwe Botanicals')
+    .replace(/\bbotanical\b/giu, 'Botanicals')
+    .replace(/\bhelmets\b/giu, 'helmen')
+    .replace(/\bhelmet\b/giu, 'helmet')
+    .replace(/\bsummer\b/giu, 'zomer')
+    .trim();
+}
+
+function localizeNonDutchArticleTitle(
+  title: string,
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  if (isDutchSourceLanguage(input.source.language)) {
+    return title;
+  }
+
+  const cleanTitle = stripEnglishTitlePunctuation(title);
+
+  if (!cleanTitle) {
+    return title;
+  }
+
+  if (/^summer lego harry potter sets revealed$/iu.test(cleanTitle)) {
+    return 'Nieuwe LEGO Harry Potter-sets voor de zomer onthuld';
+  }
+
+  const botanicalSetsMatch = cleanTitle.match(
+    /^(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+beautiful\s+botanical\s+sets\s+revealed$/iu,
+  );
+
+  if (botanicalSetsMatch) {
+    return `${localizeEnglishNumberWord(botanicalSetsMatch[1])} nieuwe Botanicals-sets onthuld`;
+  }
+
+  const setsRevealedMatch = cleanTitle.match(/^(.+?)\s+sets\s+revealed$/iu);
+
+  if (setsRevealedMatch) {
+    const subject = localizeEnglishTitleSubject(setsRevealedMatch[1]);
+
+    return `${capitalizeSentenceStart(subject)}-sets onthuld`;
+  }
+
+  const firstLookMatch = cleanTitle.match(/^first look[:\s-]+(.+)$/iu);
+
+  if (firstLookMatch) {
+    return `Eerste blik: ${stripEnglishTitlePunctuation(firstLookMatch[1])}`;
+  }
+
+  const quickLookMatch = cleanTitle.match(/^quick look[:\s-]+(.+)$/iu);
+
+  if (quickLookMatch) {
+    return `Korte blik: ${stripEnglishTitlePunctuation(quickLookMatch[1])}`;
+  }
+
+  const reviewMatch = cleanTitle.match(/^review[:\s-]+(.+)$/iu);
+
+  if (reviewMatch) {
+    return `Review: ${stripEnglishTitlePunctuation(reviewMatch[1])}`;
+  }
+
+  const revealedMatch = cleanTitle.match(/^(.+?)\s+revealed$/iu);
+
+  if (revealedMatch) {
+    return `${capitalizeSentenceStart(localizeEnglishTitleSubject(revealedMatch[1]))} onthuld`;
+  }
+
+  return cleanTitle;
+}
+
 function resolveTitle(input: EditorialAgentDraftGenerationInput): string {
   const sourceTitle = normalizeWhitespace(input.source.title);
   const factsTitle = normalizeWhitespace(input.facts.title);
@@ -397,7 +500,7 @@ function resolveTitle(input: EditorialAgentDraftGenerationInput): string {
 
   if (templateKind === 'single_set' || templateKind === 'deal') {
     if (factsTitle.length > 0) {
-      return factsTitle;
+      return localizeNonDutchArticleTitle(factsTitle, input);
     }
 
     if (input.primarySet) {
@@ -406,11 +509,11 @@ function resolveTitle(input: EditorialAgentDraftGenerationInput): string {
   }
 
   if (sourceTitle.length > 0) {
-    return sourceTitle;
+    return localizeNonDutchArticleTitle(sourceTitle, input);
   }
 
   if (factsTitle.length > 0) {
-    return factsTitle;
+    return localizeNonDutchArticleTitle(factsTitle, input);
   }
 
   if (input.primarySet) {
