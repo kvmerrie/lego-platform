@@ -2,6 +2,7 @@ export const editorialFeedItemStatuses = [
   'new',
   'drafted',
   'ignored',
+  'low_value',
   'published',
 ] as const;
 

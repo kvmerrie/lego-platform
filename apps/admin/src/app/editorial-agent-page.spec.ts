@@ -453,6 +453,50 @@ describe('Editorial agent admin page', () => {
     );
   });
 
+  it('shows low-value feed items without allowing automatic draft generation', async () => {
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brickset',
+        id: 'feed-item-low-value',
+        sourceUrl: 'https://brickset.com/article/random-figure',
+        status: 'low_value',
+        title: 'Random figure of the day: coltlnm17',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Random figure of the day: coltlnm17',
+      );
+    });
+
+    const draftButton = fixture.debugElement
+      .queryAll(By.css('button'))
+      .find((button) =>
+        (button.nativeElement.textContent as string).includes('Genereer draft'),
+      );
+
+    expect(fixture.nativeElement.textContent).toContain('Lage waarde');
+    expect(draftButton?.nativeElement.disabled).toBe(true);
+  });
+
   it('shows a clear publish error for low-confidence drafts', async () => {
     editorialAgentApi.publishArticle.mockRejectedValueOnce(
       new Error('Dit artikel is nog niet klaar voor publicatie.'),

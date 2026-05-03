@@ -131,6 +131,29 @@ const rssXml = `<?xml version="1.0"?>
   </channel>
 </rss>`;
 
+const mixedBricksetRssXml = `<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+    <title>Brickset</title>
+    <item>
+      <title>Random figure of the day: coltlnm17</title>
+      <link>https://brickset.com/article/random-figure-of-the-day-coltlnm17</link>
+    </item>
+    <item>
+      <title>This week's top news articles</title>
+      <link>https://brickset.com/article/this-weeks-top-news-articles</link>
+    </item>
+    <item>
+      <title>Three beautiful botanical sets revealed!</title>
+      <link>https://brickset.com/article/three-beautiful-botanical-sets-revealed</link>
+    </item>
+    <item>
+      <title>LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld</title>
+      <link>https://www.bricktastic.nl/lego/lego-marvel-76339-the-fantastic-four-h-e-r-b-i-e-onthuld/</link>
+    </item>
+  </channel>
+</rss>`;
+
 describe('editorial feed intake', () => {
   test('parses configured feeds without requiring code changes per source', () => {
     expect(
@@ -168,6 +191,97 @@ describe('editorial feed intake', () => {
       }),
     ]);
     expect(supabase.insertCalls[0]?.[0]).not.toHaveProperty('mdx');
+  });
+
+  test('marks low-value Brickset utility posts during feed sync', async () => {
+    const supabase = createSupabaseClientMock();
+    const result = await syncEditorialFeed({
+      feeds: [{ name: 'Brickset', url: 'https://brickset.com/feed' }],
+      fetchFn: vi.fn(async () => new Response(mixedBricksetRssXml)),
+      supabaseClient: supabase.client,
+    });
+
+    expect(result.inserted).toBe(4);
+    expect(
+      supabase.insertCalls[0]?.find(
+        (row) => row['title'] === 'Random figure of the day: coltlnm17',
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        status: 'low_value',
+      }),
+    );
+    expect(
+      supabase.insertCalls[0]?.find(
+        (row) => row['title'] === "This week's top news articles",
+      ),
+    ).toEqual(
+      expect.objectContaining({
+        status: 'low_value',
+      }),
+    );
+  });
+
+  test('keeps normal Brickset and BrickTastic articles draftable', async () => {
+    const entries = editorialFeedIntakeTestUtils.parseRssXml({
+      feedName: 'Brickset',
+      xml: mixedBricksetRssXml,
+    });
+
+    expect(
+      entries.find(
+        (entry) => entry.title === 'Three beautiful botanical sets revealed!',
+      )?.status,
+    ).toBe('new');
+    expect(
+      entries.find((entry) =>
+        entry.title.includes('The Fantastic Four H.E.R.B.I.E.'),
+      )?.status,
+    ).toBe('new');
+  });
+
+  test('marks recurring Brickset summary and community posts as low value', () => {
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus(
+        'Review: 42685 Heartlake City Fashion Show',
+      ),
+    ).toBe('low_value');
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus(
+        "What's hot this week",
+      ),
+    ).toBe('low_value');
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus(
+        'Vintage set of the week: 6399 Airport Shuttle',
+      ),
+    ).toBe('low_value');
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus(
+        'Throwback Thursday: classic space returns',
+      ),
+    ).toBe('low_value');
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus('Summer set summary'),
+    ).toBe('low_value');
+  });
+
+  test('keeps reveal and unveiled news articles draftable', () => {
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus(
+        'Three beautiful botanical sets revealed!',
+      ),
+    ).toBe('new');
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus(
+        'Summer LEGO Harry Potter sets unveiled',
+      ),
+    ).toBe('new');
+    expect(
+      editorialFeedIntakeTestUtils.classifyFeedItemStatus(
+        'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. revealed',
+      ),
+    ).toBe('new');
   });
 
   test('skips duplicates by sourceUrl and event fingerprint', async () => {

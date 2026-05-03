@@ -30,6 +30,7 @@ interface ParsedFeedEntry {
   feedName: string;
   sourcePublishedAt?: string;
   sourceUrl: string;
+  status: EditorialFeedItemStatus;
   title: string;
 }
 
@@ -94,6 +95,27 @@ function createEventFingerprint({
   const hostname = new URL(sourceUrl).hostname.replace(/^www\./u, '');
 
   return `${hostname}:${normalizedTitle || sourceUrl}`;
+}
+
+const LOW_VALUE_FEED_TITLE_PATTERNS = [
+  /^review:/iu,
+  /\brandom figure of the day\b/iu,
+  /\brandom set of the day\b/iu,
+  /\brandom minifig(?:ure)? of the day\b/iu,
+  /\bthis week'?s top news articles\b/iu,
+  /\bwhat'?s hot this week\b/iu,
+  /\bvintage set of the week\b/iu,
+  /\bthrowback thursday\b/iu,
+  /\bsummer set summary\b/iu,
+  /\bweekly (?:news )?(?:roundup|round-up|listing|list)\b/iu,
+  /\bsite updates?\b/iu,
+  /\bhousekeeping\b/iu,
+] as const;
+
+function classifyFeedItemStatus(title: string): EditorialFeedItemStatus {
+  return LOW_VALUE_FEED_TITLE_PATTERNS.some((pattern) => pattern.test(title))
+    ? 'low_value'
+    : 'new';
 }
 
 function parseFeedLink(value: unknown): string {
@@ -175,6 +197,7 @@ function parseRssXml({
           entry['pubDate'] ?? entry['published'] ?? entry['updated'],
         ),
         sourceUrl,
+        status: classifyFeedItemStatus(title),
         title,
       },
     ];
@@ -326,7 +349,7 @@ export async function syncEditorialFeed({
         feed_name: entry.feedName,
         source_published_at: entry.sourcePublishedAt ?? null,
         source_url: entry.sourceUrl,
-        status: 'new',
+        status: entry.status,
         title: entry.title,
       })),
     )
@@ -345,7 +368,7 @@ export async function syncEditorialFeed({
 }
 
 export async function listEditorialFeedItems({
-  statuses = ['new', 'drafted'],
+  statuses = ['new', 'drafted', 'low_value'],
   supabaseClient = getServerSupabaseAdminClient(),
 }: {
   statuses?: readonly EditorialFeedItemStatus[];
@@ -416,6 +439,7 @@ export async function updateEditorialFeedItemStatus({
 }
 
 export const editorialFeedIntakeTestUtils = {
+  classifyFeedItemStatus,
   createEventFingerprint,
   parseConfiguredEditorialFeeds,
   parseRssXml,

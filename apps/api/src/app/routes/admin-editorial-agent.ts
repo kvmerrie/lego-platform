@@ -393,6 +393,12 @@ export function createAdminEditorialAgentService({
         );
       }
 
+      if (feedItem.status === 'low_value' || feedItem.status === 'ignored') {
+        throw new EditorialAgentUrlValidationError(
+          'Dit feed-item is gemarkeerd als lage waarde en wordt niet automatisch gedraft.',
+        );
+      }
+
       const extraction = await extractFactsFromUrl({
         url: feedItem.sourceUrl,
       });

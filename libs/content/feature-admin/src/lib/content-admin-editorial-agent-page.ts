@@ -115,6 +115,26 @@ export class ContentAdminEditorialAgentPageComponent {
     );
   }
 
+  formatFeedItemStatus(status: EditorialFeedItem['status']): string {
+    switch (status) {
+      case 'drafted':
+        return 'Concept klaar';
+      case 'ignored':
+        return 'Genegeerd';
+      case 'low_value':
+        return 'Lage waarde';
+      case 'published':
+        return 'Gepubliceerd';
+      case 'new':
+      default:
+        return 'Nieuw';
+    }
+  }
+
+  canGenerateDraftForFeedItem(feedItem: EditorialFeedItem): boolean {
+    return feedItem.status === 'new' || feedItem.status === 'drafted';
+  }
+
   async onAiRewriteToggle(checked: boolean): Promise<void> {
     this.useAiRewrite.set(checked);
 
@@ -307,6 +327,13 @@ export class ContentAdminEditorialAgentPageComponent {
   }
 
   async generateDraftForFeedItem(feedItem: EditorialFeedItem): Promise<void> {
+    if (!this.canGenerateDraftForFeedItem(feedItem)) {
+      this.feedErrorMessage.set(
+        'Dit feed-item is gemarkeerd als lage waarde en wordt niet automatisch gedraft.',
+      );
+      return;
+    }
+
     this.errorMessage.set(null);
     this.publishErrorMessage.set(null);
     this.publishedArticleUrl.set(null);

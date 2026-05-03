@@ -73,8 +73,8 @@
         <div class="editorial-agent__feed-copy">
           <strong>{{ feedItem.title }}</strong>
           <span>
-            {{ feedItem.feedName }} · {{ feedItem.status }} · {{
-            feedItem.sourcePublishedAt || feedItem.createdAt }}
+            {{ feedItem.feedName }} · {{ formatFeedItemStatus(feedItem.status)
+            }} · {{ feedItem.sourcePublishedAt || feedItem.createdAt }}
           </span>
           <a [href]="feedItem.sourceUrl" target="_blank" rel="noreferrer">
             {{ feedItem.sourceUrl }}
@@ -83,7 +83,7 @@
         <div class="editorial-agent__feed-actions">
           <button
             class="admin-button admin-button--primary"
-            [disabled]="isGenerating()"
+            [disabled]="isGenerating() || !canGenerateDraftForFeedItem(feedItem)"
             (click)="generateDraftForFeedItem(feedItem)"
             type="button"
           >
