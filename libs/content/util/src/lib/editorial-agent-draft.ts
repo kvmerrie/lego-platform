@@ -493,7 +493,7 @@ export function getSetDisplayNameForDraft(
 function getMultiSetAnnouncementDisplayName(
   input: EditorialAgentDraftGenerationInput,
 ): string {
-  return input.primarySet?.name.trim() || 'deze sets';
+  return input.primarySet?.name.trim() || 'Deze sets';
 }
 
 function hasMultiSetAnnouncementPrimary(
@@ -521,6 +521,53 @@ function isIdeasApprovalDraft(
       context.includes('selected') ||
       context.includes('worden als set uitgebracht'))
   );
+}
+
+function isBricksetWeakMultiSetDraft(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  return (
+    input.matching.articleType === 'multi_set_announcement' &&
+    !input.primarySet &&
+    input.source.domain.toLowerCase().includes('brickset.com')
+  );
+}
+
+function buildThemeFollowSentence(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const theme = resolveTheme(input);
+
+  return theme === 'LEGO'
+    ? ''
+    : `Voor ${theme}-fans is dit leuk om rustig te volgen.`;
+}
+
+function sentenceCaseParagraphStarts(value: string): string {
+  return value
+    .split('\n\n')
+    .map((paragraph) => {
+      const trimmedStart = paragraph.trimStart();
+
+      if (
+        trimmedStart.startsWith('---') ||
+        trimmedStart.startsWith('<') ||
+        trimmedStart.startsWith('[')
+      ) {
+        return paragraph;
+      }
+
+      return capitalizeSentenceStart(paragraph);
+    })
+    .join('\n\n');
+}
+
+function cleanPublicDraftCopy(value: string): string {
+  return sentenceCaseParagraphStarts(value)
+    .replace(/\bdeze sets trekt\b/giu, 'Deze sets trekken')
+    .replace(/\bdeze sets laat\b/giu, 'Deze sets laten')
+    .replace(/\bdeze aankondiging trekt\b/giu, 'Deze aankondiging trekt')
+    .replace(/\bdeze aankondiging laat\b/giu, 'Deze aankondiging laat');
 }
 
 function sentenceMentionsMatchedCatalogSet(
@@ -574,12 +621,24 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
     case 'deal':
       return `${setName} is alleen interessant als de prijs nu echt scherp is. Hier zie je snel of dit een pak-moment is of niet.`;
     case 'multi_set_announcement':
+      if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
+        const themeSentence = buildThemeFollowSentence(input);
+
+        return themeSentence
+          ? `Meerdere nieuwe LEGO-sets zijn opgedoken. ${themeSentence}`
+          : 'Meerdere nieuwe LEGO-sets zijn opgedoken. Vooral handig om kort te zien welke richting LEGO op beweegt.';
+      }
+
       if (!input.primarySet && isIdeasApprovalDraft(input)) {
         const subjectLine = getIdeasApprovalSubjectLine(input);
 
         return subjectLine
           ? `${subjectLine} Vooral leuk om te volgen omdat deze fanideeën straks een officiële LEGO Ideas-uitwerking kunnen krijgen.`
           : 'Deze goedgekeurde LEGO Ideas-projecten zijn vooral leuk om te volgen omdat ze laten zien welke fanideeën straks officieel uitgewerkt kunnen worden.';
+      }
+
+      if (!input.primarySet) {
+        return 'Deze aankondiging laat een richting zien voor meerdere nieuwe LEGO-sets. Vooral leuk om te volgen welke set straks echt blijft hangen.';
       }
 
       return `${getMultiSetAnnouncementDisplayName(input)} laat een opvallende richting zien voor meerdere nieuwe LEGO-sets. Vooral leuk om te volgen welke set er straks echt uitspringt.`;
@@ -743,6 +802,12 @@ Zakt de prijs naar een niveau waar je ${shortName} al eerder voor wilde hebben, 
 
 Moet je jezelf nog overtuigen dat je deze set eigenlijk wilt? Dan is korting alleen niet genoeg. Laat hem lopen en wacht op een set waar je meteen ja tegen zegt.`;
     case 'multi_set_announcement':
+      if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
+        return `## Waarom volgen?
+
+${buildThemeFollowSentence(input) || 'Dit is vooral handig om rustig te volgen.'} Wacht op betere beelden voordat je hier een koopmoment van maakt.`;
+      }
+
       return `## Waarom volgen?
 
 Dit is vooral nieuws om rustig te volgen. Eerste beelden en aankondigingen zijn handig om te voelen welke richting LEGO op wil.
@@ -798,6 +863,12 @@ Heb je de punten al klaarstaan en zegt ${shortName} je meteen iets, dan is dit e
 
 Een deal is pas goed nieuws als hij op een set valt die je toch al wilde hebben. Gebruik deze daarom als koopmoment-check, niet als excuus om iets mee te pakken waar je morgen alweer over twijfelt.`;
     case 'multi_set_announcement':
+      if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
+        return `## Korte conclusie
+
+Kort volgen is genoeg. Zodra er betere beelden of prijzen zijn, zie je vanzelf welke set blijft hangen.`;
+      }
+
       if (!input.primarySet) {
         return `## Korte conclusie
 
@@ -854,6 +925,14 @@ function buildIntroParagraphs(
         `Wilde je deze set al en wordt de prijs of bonus nu sterk genoeg, dan moet je opletten. Was je nog niet overtuigd, dan verandert een deal daar meestal weinig aan.`,
       ];
     case 'multi_set_announcement':
+      if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
+        return [
+          'Er zijn meerdere nieuwe LEGO-sets opgedoken. Zie dit als korte eerste blik.',
+          buildThemeFollowSentence(input) ||
+            'Let vooral op welke richting LEGO kiest en welke set later de meeste aandacht verdient.',
+        ];
+      }
+
       if (!input.primarySet && isIdeasApprovalDraft(input)) {
         const subjectLine = getIdeasApprovalSubjectLine(input);
 
@@ -861,6 +940,13 @@ function buildIntroParagraphs(
           'Deze goedgekeurde LEGO Ideas-projecten trekken de aandacht omdat ze laten zien welke fanideeën LEGO nu serieus verder onderzoekt.',
           ...(subjectLine ? [subjectLine] : []),
           'Dit is vooral leuk om te volgen voor de richting: welke gebouwen, films of scènes krijgen straks genoeg karakter om op een plank te blijven hangen?',
+        ];
+      }
+
+      if (!input.primarySet) {
+        return [
+          'Deze aankondiging draait om meerdere nieuwe LEGO-sets. Het is vooral een eerste blik op een richting die leuk is om te volgen.',
+          'De vraag is nu welk idee eruit springt zodra er meer beelden zijn. Let op herkenbare scènes, sterke displayvormen en details die straks op een plank blijven hangen.',
         ];
       }
 
@@ -916,6 +1002,12 @@ Tussen de grotere blikvangers staan vaak ook kleinere sets die pas op een tweede
 Controleer eerst de setnummers, thema’s en claims die uit de bron kwamen. Als daar nog gaten in zitten, moet de draft eerst feitelijk strakker voordat je hem redactioneel gaat polijsten.`;
     case 'multi_set_announcement':
       if (!input.primarySet) {
+        if (isBricksetWeakMultiSetDraft(input)) {
+          return `## Wat valt op?
+
+Het belangrijkste is de richting: meerdere sets, zonder dat één set alles draagt. Kijk vooral naar kleuren, vormen en displaywaarde.`;
+        }
+
         if (isIdeasApprovalDraft(input)) {
           const subjectLine = getIdeasApprovalSubjectLine(input);
 
@@ -928,9 +1020,9 @@ Kijk vooral naar wat er aangekondigd is: welke ideeën hebben een sterke scène,
 
         return `## Wat is er aangekondigd?
 
-De bron wijst op meerdere nieuwe LEGO-sets, maar er is nog geen betrouwbare hoofdset die duidelijk genoeg uit titel of slug springt.
+Deze aankondiging draait om meerdere nieuwe LEGO-sets, zonder dat één set alles draagt.
 
-Daarom blijft het verhaal bewust breed: kijk vooral naar wat er aangekondigd is, welke richting LEGO kiest en welke sets straks opvallen zodra er betere beelden of officiële details zijn.`;
+Kijk vooral naar wat er aangekondigd is, welke richting LEGO kiest en welke sets straks opvallen zodra er betere beelden of officiële details zijn.`;
       }
 
       return `## Wat is er aangekondigd?
@@ -1019,6 +1111,10 @@ function buildSourceLine(input: EditorialAgentDraftGenerationInput): string {
   const sourceUrl = resolveSourceUrl(input);
   const sourceDomain = input.source.domain || 'bron';
 
+  if (isBricksetWeakMultiSetDraft(input)) {
+    return `Via: ${sourceDomain}`;
+  }
+
   return `Bron: [${sourceDomain}](${sourceUrl})`;
 }
 
@@ -1078,7 +1174,10 @@ export function generateEditorialMdxDraft(
     );
   }
 
-  const frontmatterBlock = `---\ntitle: "${escapeFrontmatterValue(frontmatter.title)}"\nslug: "${frontmatter.slug}"\ndescription: "${escapeFrontmatterValue(frontmatter.description)}"\ndate: "${frontmatter.date}"\ntheme: "${escapeFrontmatterValue(frontmatter.theme)}"\nheroImage: "${frontmatter.heroImage}"\nheroImageAlt: "${escapeFrontmatterValue(frontmatter.heroImageAlt)}"\nstatus: "${frontmatter.status}"\nsourceUrl: "${frontmatter.sourceUrl}"\n---`;
+  const cleanDescription = cleanPublicDraftCopy(
+    frontmatter.description,
+  ).replace(/\bheeft de LEGO\b/gu, 'heeft LEGO');
+  const frontmatterBlock = `---\ntitle: "${escapeFrontmatterValue(frontmatter.title)}"\nslug: "${frontmatter.slug}"\ndescription: "${escapeFrontmatterValue(cleanDescription)}"\ndate: "${frontmatter.date}"\ntheme: "${escapeFrontmatterValue(frontmatter.theme)}"\nheroImage: "${frontmatter.heroImage}"\nheroImageAlt: "${escapeFrontmatterValue(frontmatter.heroImageAlt)}"\nstatus: "${frontmatter.status}"\nsourceUrl: "${frontmatter.sourceUrl}"\n---`;
 
   let sections: string[];
 
@@ -1140,12 +1239,12 @@ export function generateEditorialMdxDraft(
       break;
   }
 
-  sections = sections.filter((section) => section.trim().length > 0);
+  sections = sections
+    .filter((section) => section.trim().length > 0)
+    .map((section, index) =>
+      index === 0 ? section : cleanPublicDraftCopy(section),
+    );
   const mdx = `${sections.join('\n\n')}\n`.replace(
-    /\bheeft de LEGO\b/gu,
-    'heeft LEGO',
-  );
-  const description = frontmatter.description.replace(
     /\bheeft de LEGO\b/gu,
     'heeft LEGO',
   );
@@ -1153,7 +1252,7 @@ export function generateEditorialMdxDraft(
   return {
     frontmatter: {
       ...frontmatter,
-      description,
+      description: cleanDescription,
     },
     mdx,
     primarySet: input.primarySet

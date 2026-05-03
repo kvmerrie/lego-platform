@@ -680,6 +680,74 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).not.toContain('theme: "Other"');
   });
 
+  it('keeps weak Brickset multi-set drafts compact, neutral and publish-safe', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: null,
+        relatedCandidates: [],
+        detected: createDetected({
+          keywords: ['Botanicals'],
+          setNumbers: [],
+          themes: ['Botanicals'],
+        }),
+        facts: createFacts({
+          keywords: ['Botanicals'],
+          setNames: [],
+          setNumbers: [],
+          summary: 'Three beautiful botanical sets revealed!',
+          theme: 'Botanicals',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+        source: createSource({
+          description: 'Three beautiful botanical sets revealed!',
+          domain: 'brickset.com',
+          finalUrl:
+            'https://brickset.com/article/123456/three-beautiful-botanical-sets-revealed',
+          inputUrl:
+            'https://brickset.com/article/123456/three-beautiful-botanical-sets-revealed',
+          siteName: 'Brickset',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+      }),
+    );
+    const publicBody = result.mdx.split('---\n\n').at(1) ?? result.mdx;
+
+    expect(result.frontmatter.description.charAt(0)).toMatch(/[A-Z]/u);
+    expect(result.frontmatter.description).toContain('Botanicals-fans');
+    expect(publicBody).toContain(
+      'Er zijn meerdere nieuwe LEGO-sets opgedoken.',
+    );
+    expect(publicBody).toContain('## Wat valt op?');
+    expect(publicBody).toContain('## Waarom volgen?');
+    expect(publicBody).toContain('## Korte conclusie');
+    expect(publicBody).toContain('Via: brickset.com');
+    expect(publicBody).not.toContain('deze sets trekt');
+    expect(publicBody).not.toContain('deze sets laat');
+    expect(publicBody).not.toContain('deze aankondiging trekt');
+    expect(publicBody).not.toContain('bron wijst');
+    expect(publicBody).not.toContain('betrouwbare hoofdset');
+    expect(publicBody).not.toContain('release-overzicht');
+    expect(publicBody).not.toContain('draft');
+    expect(publicBody).not.toContain('catalog');
+    expect(publicBody).not.toContain(
+      'Three beautiful botanical sets revealed!',
+    );
+    expect(publicBody.length).toBeLessThan(950);
+    publicBody
+      .split('\n\n')
+      .filter((paragraph) => paragraph.trim().length > 0)
+      .forEach((paragraph) => {
+        const firstCharacter = paragraph.trim().charAt(0);
+
+        expect(firstCharacter).not.toMatch(/[a-z]/u);
+      });
+  });
+
   it('omits FeaturedSet for multi-set announcements without a reliable primary new set', () => {
     const result = generateEditorialMdxDraft(
       createInput({
