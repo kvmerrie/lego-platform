@@ -20,6 +20,18 @@ interface PublishedArticleRow {
 export class ContentArticlePublishValidationError extends Error {}
 export class ContentArticlePublishConflictError extends Error {}
 
+const LOW_CONFIDENCE_PUBLISH_ERROR_MESSAGE =
+  'Dit artikel is nog niet klaar voor publicatie.';
+
+const PUBLICATION_UNSAFE_FALLBACK_PHRASES = [
+  'Conceptdraft',
+  'Controleer de bron',
+  'nog niet alles hangt strak genoeg',
+  'Gebruik deze draft',
+  'niet als af verhaal',
+  'catalog matches',
+] as const;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
@@ -32,6 +44,41 @@ function readNonEmptyString(value: unknown): string | undefined {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+}
+
+function collectStringValues(value: unknown): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectStringValues(item));
+  }
+
+  if (isRecord(value)) {
+    return Object.values(value).flatMap((item) => collectStringValues(item));
+  }
+
+  return [];
+}
+
+export function assertContentArticleReadyForPublication({
+  frontmatter,
+  mdx,
+}: ContentArticlePublishInput): void {
+  const searchableContent = [mdx, ...collectStringValues(frontmatter)]
+    .join('\n')
+    .toLowerCase();
+
+  const containsUnsafeFallbackPhrase = PUBLICATION_UNSAFE_FALLBACK_PHRASES.some(
+    (phrase) => searchableContent.includes(phrase.toLowerCase()),
+  );
+
+  if (containsUnsafeFallbackPhrase) {
+    throw new ContentArticlePublishValidationError(
+      LOW_CONFIDENCE_PUBLISH_ERROR_MESSAGE,
+    );
+  }
 }
 
 export function slugifyContentArticleTitle(value: string): string {
@@ -87,10 +134,15 @@ function readPublishInput(value: ContentArticlePublishInput): {
     throw new ContentArticlePublishValidationError('Artikel-MDX ontbreekt.');
   }
 
-  return {
-    frontmatter: normalizePublishFrontmatter(value.frontmatter),
+  const frontmatter = normalizePublishFrontmatter(value.frontmatter);
+  const publishInput = {
+    frontmatter,
     mdx,
   };
+
+  assertContentArticleReadyForPublication(publishInput);
+
+  return publishInput;
 }
 
 async function listExistingArticleSlugs({

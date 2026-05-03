@@ -140,6 +140,8 @@ export const apiPaths = {
   adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
   adminEditorialAgentExtract: '/api/v1/admin/editorial-agent/extract',
   adminEditorialAgentDraft: '/api/v1/admin/editorial-agent/draft',
+  adminEditorialAgentFeedItems: '/api/v1/admin/editorial-agent/feed-items',
+  adminEditorialAgentFeedSync: '/api/v1/admin/editorial-agent/feed-sync',
   adminEditorialAgentPublish: '/api/v1/admin/editorial-agent/publish',
   articles: '/articles',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
@@ -209,6 +211,10 @@ export const rebrickableEnvKeys = {
 export const editorialAgentAiEnvKeys = {
   apiKey: 'OPENAI_API_KEY',
   model: 'OPENAI_EDITORIAL_REWRITE_MODEL',
+} as const;
+
+export const editorialAgentFeedEnvKeys = {
+  feeds: 'EDITORIAL_AGENT_RSS_FEEDS',
 } as const;
 
 export const tradeTrackerEnvKeys = {

@@ -1345,6 +1345,16 @@ describe('catalog effective data access web', () => {
         slug: 'official-fifa-world-cup-trophy-40634',
         sourceSetNumber: '40634-1',
       }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/42244-1/1000.jpg',
+        name: 'Lewis Hamilton Helmet',
+        pieceCount: 650,
+        primaryTheme: 'Other',
+        releaseYear: 2026,
+        setId: '42244',
+        slug: 'lewis-hamilton-helmet-42244',
+        sourceSetNumber: '42244-1',
+      }),
     ];
 
     const [directoryItems, themePageSlugs, iconsThemePage] = await Promise.all([
@@ -1360,10 +1370,16 @@ describe('catalog effective data access web', () => {
       }),
     ]);
 
-    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'LEGO® Icons',
-    ]);
-    expect(themePageSlugs).toEqual(['icons']);
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual(
+      expect.arrayContaining(['LEGO® Icons', 'Speed Champions']),
+    );
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).not.toContain(
+      'Other',
+    );
+    expect(themePageSlugs).toEqual(
+      expect.arrayContaining(['icons', 'speed-champions']),
+    );
+    expect(themePageSlugs).not.toContain('other');
     expect(
       iconsThemePage?.setCards.map((catalogSetCard) => catalogSetCard.id),
     ).toEqual(['10316', '10326']);

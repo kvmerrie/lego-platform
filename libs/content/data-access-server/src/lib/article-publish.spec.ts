@@ -86,6 +86,37 @@ describe('content article publishing', () => {
     });
   });
 
+  test('blocks Bugatti fallback drafts with publication-unsafe copy', async () => {
+    const supabaseClient = createSupabaseClientMock();
+
+    await expect(
+      publishContentArticle({
+        input: {
+          frontmatter: {
+            date: '2026-05-03',
+            description:
+              'Conceptdraft op basis van extraction en exacte catalog matches.',
+            slug: 'lego-bugatti-tourbillon',
+            title: 'LEGO Technic Bugatti Tourbillon',
+          },
+          mdx: [
+            '---',
+            'title: "LEGO Technic Bugatti Tourbillon"',
+            '---',
+            '',
+            'Conceptdraft.',
+            '',
+            'Controleer de bron, want nog niet alles hangt strak genoeg.',
+            'Gebruik deze draft niet als af verhaal.',
+          ].join('\n'),
+        },
+        supabaseClient: toPublishSupabaseClient(supabaseClient),
+      }),
+    ).rejects.toThrow('Dit artikel is nog niet klaar voor publicatie.');
+
+    expect(supabaseClient.insertedRows).toHaveLength(0);
+  });
+
   test('appends -2 for a duplicate base slug', async () => {
     const supabaseClient = createSupabaseClientMock(['lego-star-wars-set']);
 

@@ -293,6 +293,31 @@ before update on public.pricing_daily_set_history
 for each row
 execute function public.set_updated_at();
 
+create table if not exists public.editorial_feed_items (
+  id uuid primary key default gen_random_uuid(),
+  source_url text not null unique,
+  title text not null,
+  feed_name text not null,
+  event_fingerprint text,
+  source_published_at timestamptz,
+  status text not null default 'new' check (status in ('new', 'drafted', 'ignored', 'published')),
+  article_slug text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists editorial_feed_items_event_fingerprint_idx
+on public.editorial_feed_items (event_fingerprint)
+where event_fingerprint is not null;
+
+create index if not exists editorial_feed_items_status_created_at_idx
+on public.editorial_feed_items (status, created_at desc);
+
+create trigger set_editorial_feed_items_updated_at
+before update on public.editorial_feed_items
+for each row
+execute function public.set_updated_at();
+
 alter table public.profiles enable row level security;
 alter table public.user_set_statuses enable row level security;
 alter table public.wishlist_alert_notification_states enable row level security;
@@ -305,6 +330,7 @@ alter table public.commerce_offer_seeds enable row level security;
 alter table public.commerce_offer_latest enable row level security;
 alter table public.commerce_benchmark_sets enable row level security;
 alter table public.pricing_daily_set_history enable row level security;
+alter table public.editorial_feed_items enable row level security;
 
 create policy "profiles_select_own"
 on public.profiles
@@ -408,3 +434,9 @@ using (
   currency_code = 'EUR' and
   condition = 'new'
 );
+
+create policy "editorial_feed_items_service_role_all"
+on public.editorial_feed_items
+for all
+using (auth.role() = 'service_role')
+with check (auth.role() = 'service_role');

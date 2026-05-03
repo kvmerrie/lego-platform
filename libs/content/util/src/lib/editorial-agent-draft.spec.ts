@@ -636,6 +636,50 @@ describe('editorial agent draft generation', () => {
     );
   });
 
+  it('does not use Other in frontmatter when Lewis Hamilton helmet metadata gives a better theme', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('42244', {
+              name: 'Lewis Hamilton Helmet',
+              theme: 'Other',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('42244', {
+            name: 'Lewis Hamilton Helmet',
+            theme: 'Other',
+          }),
+          reason: 'single_set',
+        },
+        detected: createDetected({
+          keywords: ['F1', 'Lewis Hamilton', 'helmet'],
+          setNumbers: ['42244'],
+          themes: ['Other'],
+        }),
+        facts: createFacts({
+          setNames: ['Lewis Hamilton Helmet'],
+          setNumbers: ['42244'],
+          summary: 'LEGO F1 Lewis Hamilton Helmet is onthuld.',
+          theme: 'Other',
+          title: 'LEGO Lewis Hamilton Helmet onthuld',
+        }),
+        source: createSource({
+          description: 'Eerste beelden van de LEGO F1 Lewis Hamilton Helmet.',
+          title: 'LEGO Lewis Hamilton Helmet onthuld',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.theme).toBe('Speed Champions');
+    expect(result.frontmatter.theme).not.toBe('Other');
+    expect(result.mdx).not.toContain('theme: "Other"');
+  });
+
   it('omits FeaturedSet for multi-set announcements without a reliable primary new set', () => {
     const result = generateEditorialMdxDraft(
       createInput({
@@ -773,6 +817,84 @@ describe('editorial agent draft generation', () => {
     );
     expect(result.mdx).not.toContain('Mei 2026');
     expect(result.mdx).not.toContain('## Wat is er aangekondigd?');
+  });
+
+  it('writes Star Trek double-points discount articles as deal copy, not reward copy', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['dubbele Insiders-punten', 'korting', 'actie'],
+          prices: ['€60 korting'],
+          setNumbers: ['10356'],
+          themes: ['LEGO® Icons'],
+        }),
+        facts: createFacts({
+          keywords: ['dubbele Insiders-punten', '€60 korting'],
+          priceEUR: '€60 korting',
+          setNames: ['Star Trek: U.S.S. Enterprise NCC-1701-D'],
+          setNumbers: ['10356'],
+          summary:
+            'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D is tijdelijk verkrijgbaar met dubbele Insiders-punten of €60 korting.',
+          theme: 'LEGO® Icons',
+          title:
+            'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D nu met dubbele Insiders-punten of €60 korting',
+        }),
+        matching: createMatching({
+          articleType: 'deal',
+          matchedSets: [
+            createMatchedSet('10356', {
+              name: 'Star Trek: U.S.S. Enterprise NCC-1701-D',
+              slug: 'star-trek-uss-enterprise-ncc-1701-d-10356',
+              theme: 'LEGO® Icons',
+            }),
+            createMatchedSet('21355', {
+              name: 'The Evolution of STEM',
+              theme: 'Ideas',
+            }),
+            createMatchedSet('42179', {
+              name: 'Planet Earth and Moon in Orbit',
+              theme: 'Technic',
+            }),
+          ],
+        }),
+        primarySet: createPrimarySet({
+          id: '10356',
+          name: 'Star Trek: U.S.S. Enterprise NCC-1701-D',
+          setNumber: '10356',
+          slug: 'star-trek-uss-enterprise-ncc-1701-d-10356',
+          theme: 'LEGO® Icons',
+        }),
+        relatedCandidates: [
+          createRelatedCandidate('21355', {
+            name: 'The Evolution of STEM',
+            theme: 'Ideas',
+          }),
+          createRelatedCandidate('42179', {
+            name: 'Planet Earth and Moon in Orbit',
+            theme: 'Technic',
+          }),
+        ],
+        source: createSource({
+          description:
+            'De set krijgt tijdelijk dubbele Insiders-punten of €60 korting.',
+          title:
+            'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D nu met dubbele Insiders-punten of €60 korting',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.theme).toBe('LEGO® Icons');
+    expect(result.frontmatter.description).toContain('prijs');
+    expect(result.mdx).toContain('<FeaturedSet setNumber="10356" />');
+    expect(result.mdx).toContain('dubbele Insiders-punten of €60 korting');
+    expect(result.mdx).not.toContain('<SetRail');
+    expect(result.mdx).not.toContain('The Evolution of STEM');
+    expect(result.mdx).not.toContain('Planet Earth and Moon in Orbit');
+    expect(result.mdx).not.toContain('vrijspelen');
+    expect(result.mdx).not.toContain('punten al hebt');
+    expect(result.mdx).not.toContain('Insiders reward');
+    expect(result.mdx).not.toContain('aankopen forceren');
+    expect(result.mdx).not.toContain('heeft de LEGO');
   });
 
   it('skips FeaturedSet for release roundups without a primary set', () => {

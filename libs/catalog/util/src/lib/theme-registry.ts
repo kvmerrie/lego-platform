@@ -129,6 +129,54 @@ function hasLordOfTheRingsSetContext(
   );
 }
 
+function inferThemeFromContext(
+  context?: ThemeNormalizationContext,
+): BrickhuntThemeRegistryEntry | undefined {
+  const values = [
+    context?.id,
+    context?.name,
+    context?.slug,
+    context?.setId,
+    context?.setNumber,
+    context?.sourceSetNumber,
+    context?.theme,
+    ...(context?.secondaryLabels ?? []),
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const normalizedContext = normalizeRegistryText(values);
+
+  if (!normalizedContext) {
+    return undefined;
+  }
+
+  if (
+    normalizedContext.includes('speed champions') ||
+    normalizedContext.includes('formula 1') ||
+    /\bf1\b/u.test(normalizedContext) ||
+    normalizedContext.includes('lewis hamilton') ||
+    normalizedContext.includes('piastri') ||
+    normalizedContext.includes('norris') ||
+    normalizedContext.includes('mclaren') ||
+    normalizedContext.includes('ferrari') ||
+    normalizedContext.includes('mercedes amg') ||
+    normalizedContext.includes('williams racing')
+  ) {
+    return normalizeTheme('Speed Champions');
+  }
+
+  if (
+    normalizedContext.includes('technic') ||
+    normalizedContext.includes('bugatti') ||
+    normalizedContext.includes('lamborghini') ||
+    normalizedContext.includes('koenigsegg')
+  ) {
+    return normalizeTheme('Technic');
+  }
+
+  return undefined;
+}
+
 function createThemeOverride({
   aliases = [],
   colorToken,
@@ -424,11 +472,20 @@ export function normalizeTheme(
   rawTheme?: string,
   context?: ThemeNormalizationContext,
 ): BrickhuntThemeRegistryEntry | undefined {
+  const contextTheme = inferThemeFromContext(context);
+
   if (!rawTheme) {
-    return undefined;
+    return contextTheme;
   }
 
   const normalizedRawTheme = normalizeRegistryText(rawTheme);
+
+  if (
+    (normalizedRawTheme === 'other' || normalizedRawTheme === 'unknown') &&
+    contextTheme
+  ) {
+    return contextTheme;
+  }
 
   if (normalizedRawTheme === 'advent' && hasCityAdventContext(context)) {
     return normalizeTheme('City');

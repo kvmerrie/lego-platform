@@ -68,6 +68,42 @@ describe('content article ui', () => {
     expect(markup).toContain('Star Wars');
   });
 
+  it('never renders Other as a public article theme badge', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleCard
+        contentArticle={{
+          cardImageAlt: 'Lewis Hamilton Helmet',
+          date: '2026-05-03',
+          description: 'Voor wie deze helm opvalt.',
+          heroImageAlt: 'Lewis Hamilton Helmet',
+          slug: 'lewis-hamilton-helmet',
+          status: 'published',
+          theme: 'Other',
+          title: 'LEGO Lewis Hamilton Helmet onthuld',
+        }}
+      />,
+    );
+
+    expect(markup).not.toContain('Other');
+    expect(markup).toContain('Artikel');
+  });
+
+  it('hides Other on FeaturedSet badges and facts', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleFeaturedSet
+        ctaHref="/sets/lewis-hamilton-helmet-42244"
+        imageAlt="Lewis Hamilton Helmet"
+        name="Lewis Hamilton Helmet"
+        setNumber="42244"
+        theme="Other"
+      />,
+    );
+
+    expect(markup).toContain('Set 42244');
+    expect(markup).not.toContain('Other');
+    expect(markup).not.toContain('Thema');
+  });
+
   it('renders a graceful fallback when an article image is missing', () => {
     const markup = renderToStaticMarkup(
       <ContentArticleCard

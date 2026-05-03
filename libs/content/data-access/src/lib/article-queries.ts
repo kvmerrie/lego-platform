@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import matter from 'gray-matter';
 import {
   extractPrimarySetNumberFromArticleBody,
+  normalizePublicContentArticleTheme,
   sortContentArticlesByDateDesc,
   type ContentArticle,
   type ContentArticleListItem,
@@ -185,7 +186,9 @@ function parseContentArticleFrontmatter({
     heroImageAlt: normalizeOptionalString(frontmatter['heroImageAlt']),
     slug: readRequiredStringField(frontmatter, 'slug', filename),
     status: readStatusField(frontmatter, filename),
-    theme: normalizeOptionalString(frontmatter['theme']),
+    theme: normalizePublicContentArticleTheme(
+      normalizeOptionalString(frontmatter['theme']),
+    ),
     title: readRequiredStringField(frontmatter, 'title', filename),
     updatedAt: normalizeOptionalString(frontmatter['updatedAt']),
   };

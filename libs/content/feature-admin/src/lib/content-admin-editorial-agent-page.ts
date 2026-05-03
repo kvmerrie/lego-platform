@@ -19,6 +19,7 @@ import {
   generateEditorialMdxDraft,
   type EditorialAgentDraftGenerationResult,
   type EditorialAgentDraftOutput,
+  type EditorialFeedItem,
   type EditorialAgentFactExtractionResult,
   type EditorialAgentRelatedSetCandidate,
 } from '@lego-platform/content/util';
@@ -47,6 +48,7 @@ export class ContentAdminEditorialAgentPageComponent {
 
   readonly sourceUrl = signal('https://example.com/example');
   readonly isGenerating = signal(false);
+  readonly isSyncingFeed = signal(false);
   readonly isPublishing = signal(false);
   readonly importMissingSets = signal(true);
   readonly useAiRewrite = signal(true);
@@ -54,6 +56,9 @@ export class ContentAdminEditorialAgentPageComponent {
   readonly copyState = signal<'copied' | 'error' | 'idle'>('idle');
   readonly publishErrorMessage = signal<string | null>(null);
   readonly publishedArticleUrl = signal<string | null>(null);
+  readonly feedErrorMessage = signal<string | null>(null);
+  readonly feedItems = signal<readonly EditorialFeedItem[]>([]);
+  readonly activeFeedItemId = signal<string | null>(null);
   readonly extraction = signal<EditorialAgentFactExtractionResult | null>(null);
   readonly draftResult = signal<EditorialAgentDraftGenerationResult | null>(
     null,
@@ -85,6 +90,10 @@ export class ContentAdminEditorialAgentPageComponent {
   readonly aiRewriteEnabled = computed(
     () => this.draftResult()?.rewrite.enabled ?? this.useAiRewrite(),
   );
+
+  constructor() {
+    void this.refreshFeedItems();
+  }
 
   formatMatchedSets(
     matchedSets: readonly EditorialAgentCatalogMatch[],
@@ -188,6 +197,7 @@ export class ContentAdminEditorialAgentPageComponent {
         this.sourceUrl().trim() || 'https://example.com/example',
       );
 
+      this.activeFeedItemId.set(null);
       this.extraction.set(extraction);
       await this.generateDraftFromExtraction(extraction);
     } catch (error) {
@@ -235,6 +245,7 @@ export class ContentAdminEditorialAgentPageComponent {
         status: 'published',
       };
       const result = await this.editorialAgentApi.publishArticle({
+        feedItemId: this.activeFeedItemId() ?? undefined,
         frontmatter,
         mdx,
       });
@@ -246,6 +257,8 @@ export class ContentAdminEditorialAgentPageComponent {
       this.publishedArticleUrl.set(
         `${publicWebBaseUrl}${buildArticlePath(result.slug)}`,
       );
+      this.activeFeedItemId.set(null);
+      await this.refreshFeedItems();
     } catch (error) {
       this.publishErrorMessage.set(
         error instanceof Error && error.message.trim().length > 0
@@ -261,5 +274,80 @@ export class ContentAdminEditorialAgentPageComponent {
     matchedSets: readonly EditorialAgentCatalogMatch[],
   ): string {
     return this.formatMatchedSets(matchedSets);
+  }
+
+  async refreshFeedItems(): Promise<void> {
+    try {
+      this.feedItems.set(await this.editorialAgentApi.listFeedItems());
+    } catch (error) {
+      this.feedErrorMessage.set(
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : 'Feed-items konden niet worden opgehaald.',
+      );
+    }
+  }
+
+  async syncFeed(): Promise<void> {
+    this.isSyncingFeed.set(true);
+    this.feedErrorMessage.set(null);
+
+    try {
+      await this.editorialAgentApi.syncFeed();
+      await this.refreshFeedItems();
+    } catch (error) {
+      this.feedErrorMessage.set(
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : 'RSS feed sync is mislukt.',
+      );
+    } finally {
+      this.isSyncingFeed.set(false);
+    }
+  }
+
+  async generateDraftForFeedItem(feedItem: EditorialFeedItem): Promise<void> {
+    this.errorMessage.set(null);
+    this.publishErrorMessage.set(null);
+    this.publishedArticleUrl.set(null);
+    this.copyState.set('idle');
+    this.isGenerating.set(true);
+
+    try {
+      const result = await this.editorialAgentApi.generateDraftForFeedItem(
+        feedItem.id,
+        this.importMissingSets(),
+        this.useAiRewrite(),
+      );
+
+      this.activeFeedItemId.set(result.feedItem.id);
+      this.sourceUrl.set(result.feedItem.sourceUrl);
+      this.extraction.set(result.draftResult.effectiveExtraction);
+      this.draftResult.set(result.draftResult);
+      await this.refreshFeedItems();
+    } catch (error) {
+      this.errorMessage.set(
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : 'Feed-item draft generatie is mislukt.',
+      );
+    } finally {
+      this.isGenerating.set(false);
+    }
+  }
+
+  async ignoreFeedItem(feedItem: EditorialFeedItem): Promise<void> {
+    this.feedErrorMessage.set(null);
+
+    try {
+      await this.editorialAgentApi.ignoreFeedItem(feedItem.id);
+      await this.refreshFeedItems();
+    } catch (error) {
+      this.feedErrorMessage.set(
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : 'Feed-item negeren is mislukt.',
+      );
+    }
   }
 }

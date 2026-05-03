@@ -11,14 +11,21 @@ import {
 
 const GWP_SIGNAL_TERMS = [
   'cadeau bij aankoop',
+  'gratis bij aankoop',
   'gwp',
-  'insiders',
-  'reward',
+  'insiders reward',
+  'inwisselen met punten',
+  'reward center',
+  'reward centre',
+  'rewardpagina',
 ] as const;
 const DEAL_SIGNAL_TERMS = [
   'aanbieding',
+  'actie',
   'deal',
   'discount',
+  'dubbele insiders-punten',
+  'dubbele insiders punten',
   'korting',
   'sale',
 ] as const;
@@ -413,15 +420,15 @@ export function detectArticleType(
     (headlineSetNumbers.length === 1 ||
       centralLegoHeadlineSetNumbers.length === 1);
 
-  if (
-    includesAnyTerm(context, GWP_SIGNAL_TERMS) &&
-    headlineSetNumbers.length === 1
-  ) {
-    return 'gwp_reward';
+  const hasDealSignal = includesAnyTerm(context, DEAL_SIGNAL_TERMS);
+  const hasExplicitGwpSignal = includesAnyTerm(context, GWP_SIGNAL_TERMS);
+
+  if (hasDealSignal && !hasExplicitGwpSignal) {
+    return 'deal';
   }
 
-  if (includesAnyTerm(context, DEAL_SIGNAL_TERMS)) {
-    return 'deal';
+  if (hasExplicitGwpSignal && headlineSetNumbers.length === 1) {
+    return 'gwp_reward';
   }
 
   if (hasSingleCentralHeadlineSet) {
@@ -439,7 +446,7 @@ export function detectArticleType(
     return 'release_roundup';
   }
 
-  if (includesAnyTerm(context, GWP_SIGNAL_TERMS)) {
+  if (hasExplicitGwpSignal) {
     return 'gwp_reward';
   }
 

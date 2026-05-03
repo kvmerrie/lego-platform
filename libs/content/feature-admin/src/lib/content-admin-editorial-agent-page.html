@@ -45,6 +45,72 @@
 
   <section class="admin-panel admin-stack">
     <lego-admin-section-header
+      description="Nieuwe RSS items worden alleen als bronmetadata opgeslagen. Draft en publish blijven handmatige acties."
+      eyebrow="Feed intake"
+      title="Nieuwe feed items"
+    >
+      <button
+        adminSectionActions
+        class="admin-button admin-button--subtle"
+        [disabled]="isSyncingFeed()"
+        (click)="syncFeed()"
+        type="button"
+      >
+        {{ isSyncingFeed() ? 'Feed sync…' : 'Feed sync' }}
+      </button>
+    </lego-admin-section-header>
+
+    @if (feedErrorMessage(); as feedErrorMessage) {
+    <lego-admin-empty-state
+      [description]="feedErrorMessage"
+      title="Feed fout"
+      tone="danger"
+    />
+    } @else if (feedItems().length) {
+    <ul class="editorial-agent__feed-list">
+      @for (feedItem of feedItems(); track feedItem.id) {
+      <li class="editorial-agent__feed-item">
+        <div class="editorial-agent__feed-copy">
+          <strong>{{ feedItem.title }}</strong>
+          <span>
+            {{ feedItem.feedName }} · {{ feedItem.status }} · {{
+            feedItem.sourcePublishedAt || feedItem.createdAt }}
+          </span>
+          <a [href]="feedItem.sourceUrl" target="_blank" rel="noreferrer">
+            {{ feedItem.sourceUrl }}
+          </a>
+        </div>
+        <div class="editorial-agent__feed-actions">
+          <button
+            class="admin-button admin-button--primary"
+            [disabled]="isGenerating()"
+            (click)="generateDraftForFeedItem(feedItem)"
+            type="button"
+          >
+            Genereer draft
+          </button>
+          <button
+            class="admin-button admin-button--subtle"
+            (click)="ignoreFeedItem(feedItem)"
+            type="button"
+          >
+            Negeer
+          </button>
+        </div>
+      </li>
+      }
+    </ul>
+    } @else {
+    <lego-admin-empty-state
+      description="Gebruik Feed sync om nieuwe bronartikelen op te halen. Er wordt niets automatisch gepubliceerd."
+      title="Geen nieuwe feed items"
+      tone="empty"
+    />
+    }
+  </section>
+
+  <section class="admin-panel admin-stack">
+    <lego-admin-section-header
       description="Plak een publieke nieuws-URL. We halen server-side de pagina op, trekken er leesbare tekst uit en bouwen daar een eerste factslaag van."
       eyebrow="Input"
       title="Bron en extractie"

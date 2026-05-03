@@ -5,6 +5,7 @@ import type {
 } from '@lego-platform/catalog/util';
 import type {
   EditorialAgentDraftGenerationResult,
+  EditorialFeedItem,
   EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
 import { describe, expect, test, vi } from 'vitest';
@@ -178,6 +179,23 @@ function createDraftResult(): EditorialAgentDraftGenerationResult {
   };
 }
 
+function createFeedItem(
+  overrides: Partial<EditorialFeedItem> = {},
+): EditorialFeedItem {
+  return {
+    createdAt: '2026-05-03T10:00:00.000Z',
+    eventFingerprint: 'example.com:lego-40787-mario-kart-spiny-shell-is-terug',
+    feedName: 'Brick Example',
+    id: 'feed-item-1',
+    sourcePublishedAt: '2026-05-01T08:00:00.000Z',
+    sourceUrl: 'https://example.com/spiny-shell',
+    status: 'new',
+    title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+    updatedAt: '2026-05-03T10:00:00.000Z',
+    ...overrides,
+  };
+}
+
 function createMarvelHerbieExtractionResult(): EditorialAgentFactExtractionResult {
   return {
     detected: {
@@ -335,8 +353,27 @@ async function createAdminEditorialAgentServer({
     editorialAgentService ?? {
       extractFacts: vi.fn(async () => createExtractionResult()),
       generateDraft: vi.fn(async () => createDraftResult()),
+      generateDraftForFeedItem: vi.fn(async () => ({
+        draftResult: createDraftResult(),
+        feedItem: createFeedItem({ status: 'drafted' }),
+      })),
+      ignoreFeedItem: vi.fn(async () =>
+        createFeedItem({
+          status: 'ignored',
+        }),
+      ),
+      listFeedItems: vi.fn(async () => [createFeedItem()]),
       publishArticle: vi.fn(async () => ({
         slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      })),
+      publishArticleFromFeedItem: vi.fn(async () => ({
+        slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      })),
+      syncFeed: vi.fn(async () => ({
+        inserted: 1,
+        items: [createFeedItem()],
+        skipped: 0,
+        total: 1,
       })),
     };
   const server = Fastify();
@@ -460,6 +497,202 @@ describe('admin editorial agent routes', () => {
       frontmatter: draftResult.output.frontmatter,
       mdx: draftResult.output.mdx,
     });
+    expect(response.json()).toEqual({
+      slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+    });
+
+    await server.close();
+  });
+
+  test('blocks Bugatti fallback drafts before publishing', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        frontmatter: {
+          date: '2026-05-03',
+          description:
+            'Conceptdraft op basis van extraction en exacte catalog matches.',
+          slug: 'lego-bugatti-tourbillon',
+          title: 'LEGO Technic Bugatti Tourbillon',
+        },
+        mdx: [
+          '---',
+          'title: "LEGO Technic Bugatti Tourbillon"',
+          '---',
+          '',
+          'Conceptdraft.',
+          '',
+          'Controleer de bron, want nog niet alles hangt strak genoeg.',
+          'Gebruik deze draft niet als af verhaal.',
+        ].join('\n'),
+      },
+      url: '/api/v1/admin/editorial-agent/publish',
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      message: 'Dit artikel is nog niet klaar voor publicatie.',
+    });
+    expect(editorialAgentService.publishArticle).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('syncs RSS feed items without generating or publishing drafts', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        feedName: 'BrickTastic',
+        rssUrl: 'https://www.bricktastic.nl/feed/',
+      },
+      url: '/api/v1/admin/editorial-agent/feed-sync',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.syncFeed).toHaveBeenCalledWith({
+      feedName: 'BrickTastic',
+      rssUrl: 'https://www.bricktastic.nl/feed/',
+    });
+    expect(editorialAgentService.generateDraft).not.toHaveBeenCalled();
+    expect(editorialAgentService.publishArticle).not.toHaveBeenCalled();
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        inserted: 1,
+        skipped: 0,
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('supports the non-versioned feed sync endpoint for cron triggers', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {},
+      url: '/admin/editorial-agent/feed-sync',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.syncFeed).toHaveBeenCalledWith({});
+
+    await server.close();
+  });
+
+  test('lists new editorial feed items for admin review', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/editorial-agent/feed-items',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.listFeedItems).toHaveBeenCalled();
+    expect(response.json()).toEqual([createFeedItem()]);
+
+    await server.close();
+  });
+
+  test('generates a draft for a feed item through the existing pipeline', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        feedItemId: 'feed-item-1',
+        importMissingSets: true,
+        useAiRewrite: false,
+      },
+      url: '/api/v1/admin/editorial-agent/feed-items/draft',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.generateDraftForFeedItem).toHaveBeenCalledWith(
+      {
+        feedItemId: 'feed-item-1',
+        importMissingSets: true,
+        useAiRewrite: false,
+      },
+    );
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        draftResult: expect.objectContaining({
+          output: expect.objectContaining({
+            mdx: expect.stringContaining('Pak hem als je de punten al hebt.'),
+          }),
+        }),
+        feedItem: expect.objectContaining({
+          status: 'drafted',
+        }),
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('marks feed items ignored without publishing', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        feedItemId: 'feed-item-1',
+      },
+      url: '/api/v1/admin/editorial-agent/feed-items/ignore',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.ignoreFeedItem).toHaveBeenCalledWith({
+      feedItemId: 'feed-item-1',
+    });
+    expect(editorialAgentService.publishArticle).not.toHaveBeenCalled();
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        status: 'ignored',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('links published feed items to the generated article slug', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+    const draftResult = createDraftResult();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        feedItemId: 'feed-item-1',
+        frontmatter: draftResult.output.frontmatter,
+        mdx: draftResult.output.mdx,
+      },
+      url: '/api/v1/admin/editorial-agent/publish',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(
+      editorialAgentService.publishArticleFromFeedItem,
+    ).toHaveBeenCalledWith({
+      feedItemId: 'feed-item-1',
+      publishInput: {
+        frontmatter: draftResult.output.frontmatter,
+        mdx: draftResult.output.mdx,
+      },
+    });
+    expect(editorialAgentService.publishArticle).not.toHaveBeenCalled();
     expect(response.json()).toEqual({
       slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
     });

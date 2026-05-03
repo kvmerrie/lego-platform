@@ -15,6 +15,7 @@ import {
 } from '@lego-platform/shared/ui';
 import {
   formatContentArticleDate,
+  normalizePublicContentArticleTheme,
   type ContentArticle,
   type ContentArticleListItem,
 } from '@lego-platform/content/util';
@@ -147,7 +148,9 @@ function ContentArticleMeta({
   contentArticle: Pick<ContentArticleListItem, 'date' | 'theme' | 'updatedAt'>;
   themePresentation?: ContentArticleThemePresentation;
 }) {
-  const resolvedThemeLabel = themePresentation?.label ?? contentArticle.theme;
+  const resolvedThemeLabel = normalizePublicContentArticleTheme(
+    themePresentation?.label ?? contentArticle.theme,
+  );
 
   return (
     <div className={styles.metaRow}>
@@ -201,7 +204,10 @@ export function ContentArticleCard({
       >
         <ContentArticleImage
           alt={contentArticle.cardImageAlt}
-          fallbackLabel={contentArticle.theme ?? 'Artikel'}
+          fallbackLabel={
+            normalizePublicContentArticleTheme(contentArticle.theme) ??
+            'Artikel'
+          }
           imageUrl={contentArticle.cardImage ?? contentArticle.heroImage}
         />
         <div className={styles.cardBody}>
@@ -229,7 +235,10 @@ export function ContentArticleFeaturedCard({
       >
         <ContentArticleImage
           alt={contentArticle.heroImageAlt ?? contentArticle.cardImageAlt}
-          fallbackLabel={contentArticle.theme ?? 'Artikel'}
+          fallbackLabel={
+            normalizePublicContentArticleTheme(contentArticle.theme) ??
+            'Artikel'
+          }
           imageUrl={contentArticle.heroImage ?? contentArticle.cardImage}
           kind="featured"
           priority
@@ -393,8 +402,11 @@ export function ContentArticleFeaturedSet({
   theme,
   themeHref,
 }: ContentArticleFeaturedSetProps) {
+  const visibleTheme = normalizePublicContentArticleTheme(theme);
   const hasMetaFacts =
-    Boolean(theme) || typeof pieces === 'number' || Boolean(releaseLabel);
+    Boolean(visibleTheme) ||
+    typeof pieces === 'number' ||
+    Boolean(releaseLabel);
   const hasCommercePanel =
     Boolean(priceValue) ||
     Boolean(priceSupportingCopy) ||
@@ -424,7 +436,7 @@ export function ContentArticleFeaturedSet({
         >
           <ContentArticleImage
             alt={imageAlt}
-            fallbackLabel={theme ?? 'Set'}
+            fallbackLabel={visibleTheme ?? 'Set'}
             imageUrl={imageUrl}
             kind="featured"
           />
@@ -434,13 +446,13 @@ export function ContentArticleFeaturedSet({
           <div className={styles.featuredSetHeader}>
             <div className={styles.featuredSetBadges}>
               <Badge tone="neutral">Set {setNumber}</Badge>
-              {theme ? (
+              {visibleTheme ? (
                 themeHref ? (
                   <a className={styles.featuredSetThemeLink} href={themeHref}>
-                    <Badge tone="accent">{theme}</Badge>
+                    <Badge tone="accent">{visibleTheme}</Badge>
                   </a>
                 ) : (
-                  <Badge tone="accent">{theme}</Badge>
+                  <Badge tone="accent">{visibleTheme}</Badge>
                 )
               ) : null}
             </div>
@@ -449,10 +461,10 @@ export function ContentArticleFeaturedSet({
 
           {hasMetaFacts ? (
             <dl className={styles.featuredSetFacts}>
-              {theme ? (
+              {visibleTheme ? (
                 <div className={styles.featuredSetFact}>
                   <dt>Thema</dt>
-                  <dd>{theme}</dd>
+                  <dd>{visibleTheme}</dd>
                 </div>
               ) : null}
               {typeof pieces === 'number' ? (
@@ -599,7 +611,9 @@ export function ContentArticlePage({
   relatedArticlesTitle?: string;
   themePresentation?: ContentArticleThemePresentation;
 }) {
-  const resolvedThemeLabel = themePresentation?.label ?? contentArticle.theme;
+  const resolvedThemeLabel = normalizePublicContentArticleTheme(
+    themePresentation?.label ?? contentArticle.theme,
+  );
 
   return (
     <article className={styles.page}>

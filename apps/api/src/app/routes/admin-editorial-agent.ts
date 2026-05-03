@@ -7,10 +7,16 @@ import {
   extractEditorialAgentFactsFromUrl,
   EditorialAgentFetchError,
   generateEditorialAgentDraftResult,
+  getConfiguredEditorialFeeds,
+  getEditorialFeedItemById,
+  listEditorialFeedItems,
   prepareEditorialAgentExtractionForDraft,
+  assertContentArticleReadyForPublication,
   EditorialAgentUrlValidationError,
   publishContentArticle,
   ContentArticlePublishValidationError,
+  syncEditorialFeed,
+  updateEditorialFeedItemStatus,
 } from '@lego-platform/content/data-access-server';
 import {
   normalizeContentArticleSetNumber,
@@ -19,6 +25,8 @@ import {
   type EditorialAgentCatalogImportStatus,
   type EditorialAgentCatalogMatch,
   type EditorialAgentDraftGenerationResult,
+  type EditorialFeedItem,
+  type EditorialFeedSyncResult,
   type EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
 import {
@@ -37,7 +45,25 @@ export interface AdminEditorialAgentService {
     importMissingSets: boolean;
     useAiRewrite: boolean;
   }): Promise<EditorialAgentDraftGenerationResult>;
+  generateDraftForFeedItem(input: {
+    feedItemId: string;
+    importMissingSets: boolean;
+    useAiRewrite: boolean;
+  }): Promise<{
+    draftResult: EditorialAgentDraftGenerationResult;
+    feedItem: EditorialFeedItem;
+  }>;
+  ignoreFeedItem(input: { feedItemId: string }): Promise<EditorialFeedItem>;
+  listFeedItems(): Promise<readonly EditorialFeedItem[]>;
   publishArticle(input: ContentArticlePublishInput): Promise<{ slug: string }>;
+  publishArticleFromFeedItem(input: {
+    feedItemId: string;
+    publishInput: ContentArticlePublishInput;
+  }): Promise<{ slug: string }>;
+  syncFeed(input?: {
+    feedName?: string;
+    rssUrl?: string;
+  }): Promise<EditorialFeedSyncResult>;
 }
 
 type EditorialAgentCatalogSummary = Pick<
@@ -270,77 +296,153 @@ export function createAdminEditorialAgentService({
     return undefined;
   }
 
-  return {
-    extractFacts: ({ url }) =>
-      extractEditorialAgentFactsFromUrl({
-        findCatalogSetSummaryById: async (setId: string) =>
-          (await getCatalogSetSummaryById()).get(setId),
-        inputUrl: url,
-      }),
-    generateDraft: async ({ extraction, importMissingSets, useAiRewrite }) => {
-      let preparedExtraction = await prepareEditorialAgentExtractionForDraft({
-        extraction,
-        findCatalogSetSummaryById: async (setId: string) =>
-          (await getCatalogSetSummaryById()).get(setId),
-        importMissingSets: false,
-      });
-      let effectiveExtraction = preparedExtraction.extraction;
-      let catalogImport: EditorialAgentCatalogImportStatus = {
-        attempted: false,
-        attemptedSetNumbers: [],
-        enabled: importMissingSets,
-        importedSets: [],
-        stillMissingSetNumbers:
-          effectiveExtraction.matching.unmatchedSetNumbers,
-        warnings: [],
-      };
+  async function extractFactsFromUrl({ url }: { url: string }) {
+    return extractEditorialAgentFactsFromUrl({
+      findCatalogSetSummaryById: async (setId: string) =>
+        (await getCatalogSetSummaryById()).get(setId),
+      inputUrl: url,
+    });
+  }
 
-      if (importMissingSets) {
-        const attemptedSetNumbers = [
-          ...effectiveExtraction.matching.unmatchedSetNumbers,
-        ];
+  async function generateDraftFromExtraction({
+    extraction,
+    importMissingSets,
+    useAiRewrite,
+  }: {
+    extraction: EditorialAgentFactExtractionResult;
+    importMissingSets: boolean;
+    useAiRewrite: boolean;
+  }) {
+    let preparedExtraction = await prepareEditorialAgentExtractionForDraft({
+      extraction,
+      findCatalogSetSummaryById: async (setId: string) =>
+        (await getCatalogSetSummaryById()).get(setId),
+      importMissingSets: false,
+    });
+    let effectiveExtraction = preparedExtraction.extraction;
+    let catalogImport: EditorialAgentCatalogImportStatus = {
+      attempted: false,
+      attemptedSetNumbers: [],
+      enabled: importMissingSets,
+      importedSets: [],
+      stillMissingSetNumbers: effectiveExtraction.matching.unmatchedSetNumbers,
+      warnings: [],
+    };
 
-        if (attemptedSetNumbers.length > 0) {
-          if (
-            !hasServerSupabaseConfigDependency() ||
-            !hasRebrickableApiConfigDependency()
-          ) {
-            catalogImport = {
-              attempted: true,
-              attemptedSetNumbers,
-              enabled: true,
-              importedSets: [],
-              stillMissingSetNumbers: attemptedSetNumbers,
-              warnings: [
-                'Gerichte catalog-import is niet beschikbaar omdat Rebrickable of Supabase-config ontbreekt.',
-                ...attemptedSetNumbers.map(
-                  (setNumber) =>
-                    `Set ${setNumber} is genoemd in de bron, maar staat nog niet in de catalogus.`,
-                ),
-              ],
-            };
-          } else {
-            preparedExtraction = await prepareEditorialAgentExtractionForDraft({
-              extraction,
-              findCatalogSetSummaryById: async (setId: string) =>
-                (await getCatalogSetSummaryById()).get(setId),
-              importCatalogSetByNumber,
-              importMissingSets: true,
-            });
+    if (importMissingSets) {
+      const attemptedSetNumbers = [
+        ...effectiveExtraction.matching.unmatchedSetNumbers,
+      ];
 
-            effectiveExtraction = preparedExtraction.extraction;
-            catalogImport = preparedExtraction.catalogImport;
-          }
+      if (attemptedSetNumbers.length > 0) {
+        if (
+          !hasServerSupabaseConfigDependency() ||
+          !hasRebrickableApiConfigDependency()
+        ) {
+          catalogImport = {
+            attempted: true,
+            attemptedSetNumbers,
+            enabled: true,
+            importedSets: [],
+            stillMissingSetNumbers: attemptedSetNumbers,
+            warnings: [
+              'Gerichte catalog-import is niet beschikbaar omdat Rebrickable of Supabase-config ontbreekt.',
+              ...attemptedSetNumbers.map(
+                (setNumber) =>
+                  `Set ${setNumber} is genoemd in de bron, maar staat nog niet in de catalogus.`,
+              ),
+            ],
+          };
+        } else {
+          preparedExtraction = await prepareEditorialAgentExtractionForDraft({
+            extraction,
+            findCatalogSetSummaryById: async (setId: string) =>
+              (await getCatalogSetSummaryById()).get(setId),
+            importCatalogSetByNumber,
+            importMissingSets: true,
+          });
+
+          effectiveExtraction = preparedExtraction.extraction;
+          catalogImport = preparedExtraction.catalogImport;
         }
       }
+    }
 
-      return generateEditorialAgentDraftResult({
-        catalogImport,
-        extraction: effectiveExtraction,
+    return generateEditorialAgentDraftResult({
+      catalogImport,
+      extraction: effectiveExtraction,
+      useAiRewrite,
+    });
+  }
+
+  return {
+    extractFacts: extractFactsFromUrl,
+    generateDraft: generateDraftFromExtraction,
+    generateDraftForFeedItem: async ({
+      feedItemId,
+      importMissingSets,
+      useAiRewrite,
+    }) => {
+      const feedItem = await getEditorialFeedItemById({
+        id: feedItemId,
+      });
+
+      if (!feedItem) {
+        throw new EditorialAgentUrlValidationError(
+          'Feed-item kon niet worden gevonden.',
+        );
+      }
+
+      const extraction = await extractFactsFromUrl({
+        url: feedItem.sourceUrl,
+      });
+      const draftResult = await generateDraftFromExtraction({
+        extraction,
+        importMissingSets,
         useAiRewrite,
       });
+      const nextFeedItem = await updateEditorialFeedItemStatus({
+        eventFingerprint: `${draftResult.effectiveExtraction.event.fingerprint.type}:${draftResult.effectiveExtraction.event.fingerprint.key}`,
+        id: feedItemId,
+        status: 'drafted',
+      });
+
+      return {
+        draftResult,
+        feedItem: nextFeedItem,
+      };
     },
+    ignoreFeedItem: ({ feedItemId }) =>
+      updateEditorialFeedItemStatus({
+        id: feedItemId,
+        status: 'ignored',
+      }),
+    listFeedItems: () => listEditorialFeedItems(),
     publishArticle: (input) => publishContentArticle({ input }),
+    publishArticleFromFeedItem: async ({ feedItemId, publishInput }) => {
+      const result = await publishContentArticle({
+        input: publishInput,
+      });
+
+      await updateEditorialFeedItemStatus({
+        articleSlug: result.slug,
+        id: feedItemId,
+        status: 'published',
+      });
+
+      return result;
+    },
+    syncFeed: ({ feedName, rssUrl } = {}) =>
+      syncEditorialFeed({
+        feeds: rssUrl
+          ? [
+              {
+                name: feedName?.trim() || 'Handmatige feed',
+                url: rssUrl,
+              },
+            ]
+          : getConfiguredEditorialFeeds(),
+      }),
   };
 }
 
@@ -430,9 +532,72 @@ function readPublishInput(value: unknown): ContentArticlePublishInput {
     );
   }
 
-  return {
+  const publishInput = {
     frontmatter: frontmatter as ContentArticleFrontmatterInput,
     mdx,
+  };
+
+  assertContentArticleReadyForPublication(publishInput);
+
+  return publishInput;
+}
+
+function readOptionalFeedItemId(value: unknown): string | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const feedItemId = (value as { feedItemId?: unknown }).feedItemId;
+
+  return typeof feedItemId === 'string' && feedItemId.trim()
+    ? feedItemId.trim()
+    : undefined;
+}
+
+function readFeedSyncInput(value: unknown): {
+  feedName?: string;
+  rssUrl?: string;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  const feedName = (value as { feedName?: unknown }).feedName;
+  const rssUrl = (value as { rssUrl?: unknown }).rssUrl;
+
+  return {
+    ...(typeof feedName === 'string' && feedName.trim()
+      ? { feedName: feedName.trim() }
+      : {}),
+    ...(typeof rssUrl === 'string' && rssUrl.trim()
+      ? { rssUrl: rssUrl.trim() }
+      : {}),
+  };
+}
+
+function readFeedItemActionInput(value: unknown): {
+  feedItemId: string;
+  importMissingSets: boolean;
+  useAiRewrite: boolean;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new EditorialAgentUrlValidationError('Feed-item input ontbreekt.');
+  }
+
+  const feedItemId = (value as { feedItemId?: unknown }).feedItemId;
+  const importMissingSets = (value as { importMissingSets?: unknown })
+    .importMissingSets;
+  const useAiRewrite = (value as { useAiRewrite?: unknown }).useAiRewrite;
+
+  if (typeof feedItemId !== 'string' || feedItemId.trim().length === 0) {
+    throw new EditorialAgentUrlValidationError('Feed-item id ontbreekt.');
+  }
+
+  return {
+    feedItemId: feedItemId.trim(),
+    importMissingSets:
+      typeof importMissingSets === 'boolean' ? importMissingSets : true,
+    useAiRewrite: typeof useAiRewrite === 'boolean' ? useAiRewrite : false,
   };
 }
 
@@ -525,14 +690,125 @@ export function createAdminEditorialAgentRoutes({
       },
     );
 
+    fastify.get(apiPaths.adminEditorialAgentFeedItems, async function () {
+      return editorialAgentService.listFeedItems();
+    });
+
+    async function feedSyncHandler(
+      request: FastifyRequest<{ Body: unknown }>,
+      reply: FastifyReply,
+    ) {
+      try {
+        return await editorialAgentService.syncFeed(
+          readFeedSyncInput(request.body),
+        );
+      } catch (error) {
+        request.log.error(
+          {
+            err: error,
+          },
+          'Editorial Agent feed sync failed',
+        );
+
+        return reply.status(500).send({
+          message: 'RSS feed sync is mislukt.',
+        });
+      }
+    }
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminEditorialAgentFeedSync,
+      feedSyncHandler,
+    );
+    fastify.post<{ Body: unknown }>(
+      '/admin/editorial-agent/feed-sync',
+      feedSyncHandler,
+    );
+
+    fastify.post<{ Body: unknown }>(
+      `${apiPaths.adminEditorialAgentFeedItems}/draft`,
+      async function (request, reply) {
+        try {
+          const result = await editorialAgentService.generateDraftForFeedItem(
+            readFeedItemActionInput(request.body),
+          );
+
+          return {
+            ...result,
+            draftResult: {
+              ...result.draftResult,
+              debug: buildEditorialAgentDebugPayload({
+                catalogImport: result.draftResult.catalogImport,
+                extraction: result.draftResult.effectiveExtraction,
+                mdx: result.draftResult.output.mdx,
+              }),
+            },
+          };
+        } catch (error) {
+          request.log.error(
+            {
+              err: error,
+            },
+            'Editorial Agent feed draft failed',
+          );
+
+          if (error instanceof EditorialAgentUrlValidationError) {
+            return reply.status(400).send({
+              message: error.message,
+            });
+          }
+
+          return reply.status(500).send({
+            message: 'Feed-item draft generatie is mislukt.',
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown }>(
+      `${apiPaths.adminEditorialAgentFeedItems}/ignore`,
+      async function (request, reply) {
+        try {
+          const input = readFeedItemActionInput(request.body);
+
+          return await editorialAgentService.ignoreFeedItem({
+            feedItemId: input.feedItemId,
+          });
+        } catch (error) {
+          request.log.error(
+            {
+              err: error,
+            },
+            'Editorial Agent feed item ignore failed',
+          );
+
+          if (error instanceof EditorialAgentUrlValidationError) {
+            return reply.status(400).send({
+              message: error.message,
+            });
+          }
+
+          return reply.status(500).send({
+            message: 'Feed-item negeren is mislukt.',
+          });
+        }
+      },
+    );
+
     async function publishArticleHandler(
       request: FastifyRequest<{ Body: unknown }>,
       reply: FastifyReply,
     ) {
       try {
-        return await editorialAgentService.publishArticle(
-          readPublishInput(request.body),
-        );
+        const publishInput = readPublishInput(request.body);
+        const feedItemId = readOptionalFeedItemId(request.body);
+
+        return feedItemId
+          ? await editorialAgentService.publishArticleFromFeedItem({
+              feedItemId,
+              publishInput,
+            })
+          : await editorialAgentService.publishArticle(publishInput);
       } catch (error) {
         request.log.error(
           {

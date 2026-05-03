@@ -3,6 +3,8 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   type ContentArticleFrontmatterInput,
   type EditorialAgentDraftGenerationResult,
+  type EditorialFeedItem,
+  type EditorialFeedSyncResult,
   type EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
 import { apiPaths } from '@lego-platform/shared/config';
@@ -75,15 +77,18 @@ export class ContentAdminEditorialAgentApiService {
   }
 
   async publishArticle({
+    feedItemId,
     frontmatter,
     mdx,
   }: {
+    feedItemId?: string;
     frontmatter: ContentArticleFrontmatterInput;
     mdx: string;
   }): Promise<{ slug: string }> {
     try {
       return await firstValueFrom(
         this.http.post<{ slug: string }>(apiPaths.adminEditorialAgentPublish, {
+          feedItemId,
           frontmatter,
           mdx,
         }),
@@ -102,5 +107,58 @@ export class ContentAdminEditorialAgentApiService {
 
       throw error;
     }
+  }
+
+  async listFeedItems(): Promise<readonly EditorialFeedItem[]> {
+    return firstValueFrom(
+      this.http.get<readonly EditorialFeedItem[]>(
+        apiPaths.adminEditorialAgentFeedItems,
+      ),
+    );
+  }
+
+  async syncFeed(
+    input: {
+      feedName?: string;
+      rssUrl?: string;
+    } = {},
+  ): Promise<EditorialFeedSyncResult> {
+    return firstValueFrom(
+      this.http.post<EditorialFeedSyncResult>(
+        apiPaths.adminEditorialAgentFeedSync,
+        input,
+      ),
+    );
+  }
+
+  async generateDraftForFeedItem(
+    feedItemId: string,
+    importMissingSets: boolean,
+    useAiRewrite: boolean,
+  ): Promise<{
+    draftResult: EditorialAgentDraftGenerationResult;
+    feedItem: EditorialFeedItem;
+  }> {
+    return firstValueFrom(
+      this.http.post<{
+        draftResult: EditorialAgentDraftGenerationResult;
+        feedItem: EditorialFeedItem;
+      }>(`${apiPaths.adminEditorialAgentFeedItems}/draft`, {
+        feedItemId,
+        importMissingSets,
+        useAiRewrite,
+      }),
+    );
+  }
+
+  async ignoreFeedItem(feedItemId: string): Promise<EditorialFeedItem> {
+    return firstValueFrom(
+      this.http.post<EditorialFeedItem>(
+        `${apiPaths.adminEditorialAgentFeedItems}/ignore`,
+        {
+          feedItemId,
+        },
+      ),
+    );
   }
 }

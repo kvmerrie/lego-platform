@@ -12,6 +12,7 @@ import {
   type EditorialAgentRelatedSetCandidate,
   type EditorialAgentSetPreview,
 } from './editorial-agent';
+import { normalizePublicContentArticleTheme } from './content-util';
 
 const DUTCH_MONTH_LABELS = new Map([
   ['01', 'januari'],
@@ -272,16 +273,21 @@ export function getEditorialToneForDraftInput(
 }
 
 function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
-  function resolveSingleSetKeywordTheme(): string | undefined {
+  function resolveKeywordTheme(): string | undefined {
     const context = normalizeWhitespace(
       [
         input.facts.title,
+        input.facts.summary,
         input.source.title,
         input.source.description,
         input.source.finalUrl,
         input.source.inputUrl,
+        input.primarySet?.name,
+        input.primarySet?.theme,
+        ...input.facts.setNames,
         ...input.facts.keywords,
         ...input.detected.keywords,
+        ...input.matching.matchedSets.map((matchedSet) => matchedSet.name),
       ]
         .filter(Boolean)
         .join(' '),
@@ -303,6 +309,39 @@ function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
       return 'Sonic The Hedgehog';
     }
 
+    if (
+      context.includes('lego icons') ||
+      context.includes('star trek') ||
+      context.includes('rivendell') ||
+      context.includes('barad')
+    ) {
+      return 'LEGO® Icons';
+    }
+
+    if (
+      context.includes('speed champions') ||
+      context.includes('formula 1') ||
+      /\bf1\b/u.test(context) ||
+      context.includes('lewis hamilton') ||
+      context.includes('piastri') ||
+      context.includes('norris') ||
+      context.includes('mclaren') ||
+      context.includes('ferrari') ||
+      context.includes('mercedes-amg') ||
+      context.includes('williams racing')
+    ) {
+      return 'Speed Champions';
+    }
+
+    if (
+      context.includes('technic') ||
+      context.includes('bugatti') ||
+      context.includes('lamborghini') ||
+      context.includes('koenigsegg')
+    ) {
+      return 'Technic';
+    }
+
     return undefined;
   }
 
@@ -320,28 +359,35 @@ function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
     }
   }
 
-  const catalogTheme =
-    input.primarySet?.theme || input.matching.matchedSets[0]?.theme;
+  const catalogTheme = normalizePublicContentArticleTheme(
+    input.primarySet?.theme || input.matching.matchedSets[0]?.theme,
+  );
 
   if (catalogTheme) {
     return catalogTheme;
   }
 
+  const keywordTheme = resolveKeywordTheme();
+
+  if (keywordTheme) {
+    return keywordTheme;
+  }
+
   if (input.matching.articleType === 'single_set_news') {
-    const keywordTheme = resolveSingleSetKeywordTheme();
-
-    if (keywordTheme) {
-      return keywordTheme;
-    }
-
     if (input.facts.theme === 'Multiple') {
       const uniqueThemes = [...new Set(input.detected.themes.filter(Boolean))];
 
-      return uniqueThemes.length === 1 ? uniqueThemes[0] : 'LEGO';
+      return uniqueThemes.length === 1
+        ? (normalizePublicContentArticleTheme(uniqueThemes[0]) ?? 'LEGO')
+        : 'LEGO';
     }
   }
 
-  return input.facts.theme || input.detected.themes[0] || 'LEGO';
+  return (
+    normalizePublicContentArticleTheme(input.facts.theme) ||
+    normalizePublicContentArticleTheme(input.detected.themes[0]) ||
+    'LEGO'
+  );
 }
 
 function resolveTitle(input: EditorialAgentDraftGenerationInput): string {
@@ -549,6 +595,48 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
     default:
       return 'Conceptdraft op basis van extraction en exacte catalog matches. Controleer de bron en de setkoppelingen voordat je dit verder uitwerkt.';
   }
+}
+
+function resolveDealHighlight(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const context = normalizeWhitespace(
+    [
+      input.facts.title,
+      input.facts.summary,
+      input.source.title,
+      input.source.description,
+      ...input.facts.keyPoints,
+      ...input.facts.keywords,
+      ...input.detected.keywords,
+      ...input.detected.prices,
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+  const lowerContext = context.toLowerCase();
+  const discountMatch = context.match(/€\s?\d+(?:[,.]\d{1,2})?\s+korting/iu);
+  const hasDoublePoints =
+    lowerContext.includes('dubbele insiders-punten') ||
+    lowerContext.includes('dubbele insiders punten');
+
+  if (hasDoublePoints && discountMatch) {
+    return `dubbele Insiders-punten of ${discountMatch[0]}`;
+  }
+
+  if (hasDoublePoints) {
+    return 'dubbele Insiders-punten';
+  }
+
+  if (discountMatch) {
+    return discountMatch[0];
+  }
+
+  if (lowerContext.includes('korting')) {
+    return 'korting';
+  }
+
+  return 'een tijdelijke deal';
 }
 
 function buildFrontmatter(
@@ -762,8 +850,8 @@ function buildIntroParagraphs(
       ];
     case 'deal':
       return [
-        `${setName} is alleen interessant als de prijs nu echt iets voor je oplost. Dit is geen artikel om een willekeurige korting te vieren, maar om te checken of het moment eindelijk klopt.`,
-        `Wilde je deze set al en zakt hij nu scherp genoeg, dan moet je opletten. Was je nog niet overtuigd, dan verandert een deal daar meestal weinig aan.`,
+        `${setName} is nu vooral interessant door ${resolveDealHighlight(input)}. Dit is geen artikel om een willekeurige korting te vieren, maar om te checken of het moment eindelijk klopt.`,
+        `Wilde je deze set al en wordt de prijs of bonus nu sterk genoeg, dan moet je opletten. Was je nog niet overtuigd, dan verandert een deal daar meestal weinig aan.`,
       ];
     case 'multi_set_announcement':
       if (!input.primarySet && isIdeasApprovalDraft(input)) {
@@ -955,7 +1043,7 @@ export function generateEditorialMdxDraft(
         )
       : '';
   const relatedSetRail =
-    templateKind === 'single_set' || templateKind === 'deal'
+    templateKind === 'single_set'
       ? input.relatedCandidates.length >= 2 &&
         (input.matching.articleType !== 'multi_set_announcement' ||
           hasMultiSetAnnouncementPrimary(input))
@@ -1053,10 +1141,21 @@ export function generateEditorialMdxDraft(
   }
 
   sections = sections.filter((section) => section.trim().length > 0);
+  const mdx = `${sections.join('\n\n')}\n`.replace(
+    /\bheeft de LEGO\b/gu,
+    'heeft LEGO',
+  );
+  const description = frontmatter.description.replace(
+    /\bheeft de LEGO\b/gu,
+    'heeft LEGO',
+  );
 
   return {
-    frontmatter,
-    mdx: `${sections.join('\n\n')}\n`,
+    frontmatter: {
+      ...frontmatter,
+      description,
+    },
+    mdx,
     primarySet: input.primarySet
       ? {
           name: input.primarySet.name,

@@ -77,6 +77,17 @@ describe('Brickhunt theme registry', () => {
     ).toBe('city');
   });
 
+  it('infers a better public theme for raw Other when set metadata is recognizable', () => {
+    expect(
+      normalizeTheme('Other', {
+        name: 'Lewis Hamilton Helmet',
+        setId: '42244',
+        slug: 'lewis-hamilton-helmet-42244',
+        theme: 'Other',
+      })?.displayName,
+    ).toBe('Speed Champions');
+  });
+
   it('hides source and utility themes by default', () => {
     expect(isThemeVisible('Gear')).toBe(false);
     expect(isThemeVisible('Books')).toBe(false);

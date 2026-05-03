@@ -391,6 +391,83 @@ describe('editorial agent analysis helpers', () => {
     expect(articleType).toBe('deal');
   });
 
+  it('detects Star Trek double points and discount articles as deals, not rewards', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['Star Trek', 'dubbele Insiders-punten', '€60 korting'],
+        setNames: ['Star Trek: U.S.S. Enterprise NCC-1701-D'],
+        setNumbers: ['10356'],
+        summary:
+          'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D is tijdelijk verkrijgbaar met dubbele Insiders-punten of €60 korting.',
+        theme: 'Icons',
+        title:
+          'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D nu met dubbele Insiders-punten of €60 korting',
+      }),
+      createDetected({
+        keywords: ['dubbele Insiders-punten', 'korting', 'actie'],
+        prices: ['€60 korting'],
+        setNumbers: ['10356'],
+        themes: ['Icons'],
+      }),
+      createSource({
+        description:
+          'De set krijgt tijdelijk dubbele Insiders-punten of €60 korting.',
+        title:
+          'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D nu met dubbele Insiders-punten of €60 korting',
+      }),
+    );
+
+    expect(articleType).toBe('deal');
+  });
+
+  it('keeps reward center articles on gwp_reward', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['Insiders reward', 'reward center'],
+        setNumbers: ['40787'],
+        summary:
+          'De Spiny Shell is opnieuw verkrijgbaar in het LEGO Insiders Reward Center en in te wisselen met punten.',
+        title:
+          'LEGO 40787 Mario Kart Spiny Shell opnieuw verkrijgbaar als Insiders reward',
+      }),
+      createDetected({
+        keywords: ['reward center', 'inwisselen met punten'],
+        setNumbers: ['40787'],
+      }),
+      createSource({
+        title:
+          'LEGO 40787 Mario Kart Spiny Shell opnieuw verkrijgbaar als Insiders reward',
+      }),
+    );
+
+    expect(articleType).toBe('gwp_reward');
+  });
+
+  it('keeps May the 4th gift-with-purchase articles on gwp_reward', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['May the 4th', 'GWP', 'cadeau bij aankoop'],
+        setNumbers: ['5009258'],
+        summary:
+          'LEGO Star Wars May the 4th heeft een gratis cadeau bij aankoop zolang de voorraad strekt.',
+        theme: 'Star Wars',
+        title:
+          'LEGO Star Wars May the 4th GWP nu beschikbaar als cadeau bij aankoop',
+      }),
+      createDetected({
+        keywords: ['GWP', 'cadeau bij aankoop'],
+        setNumbers: ['5009258'],
+        themes: ['Star Wars'],
+      }),
+      createSource({
+        title:
+          'LEGO Star Wars May the 4th GWP nu beschikbaar als cadeau bij aankoop',
+      }),
+    );
+
+    expect(articleType).toBe('gwp_reward');
+  });
+
   it('keeps release roundups without a primary set by default', () => {
     const primarySet = selectPrimarySet(
       'release_roundup',

@@ -93,6 +93,24 @@ export interface ContentArticlePublishResult {
   slug: string;
 }
 
+const PUBLIC_UNHELPFUL_THEME_LABELS = new Set(['other', 'unknown']);
+
+export function normalizePublicContentArticleTheme(
+  theme?: string | null,
+): string | undefined {
+  const normalizedTheme = typeof theme === 'string' ? theme.trim() : '';
+
+  if (!normalizedTheme) {
+    return undefined;
+  }
+
+  if (PUBLIC_UNHELPFUL_THEME_LABELS.has(normalizedTheme.toLowerCase())) {
+    return undefined;
+  }
+
+  return normalizedTheme;
+}
+
 export function normalizeContentArticleSetNumber(
   setNumber?: string,
 ): string | undefined {

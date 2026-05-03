@@ -64,6 +64,20 @@ LEGO 40787 is terug als reward.
 <FeaturedSet setNumber="40787" />
 `,
   },
+  {
+    filename: 'other-theme-article.mdx',
+    source: `---
+title: "LEGO Lewis Hamilton Helmet onthuld"
+slug: "lewis-hamilton-helmet"
+description: "Voor wie deze helm opvalt."
+date: "2026-05-03"
+theme: "Other"
+status: "published"
+---
+
+LEGO Lewis Hamilton Helmet is onthuld.
+`,
+  },
 ];
 
 const workspaceRoot = process.cwd();
@@ -81,7 +95,7 @@ describe('content article queries', () => {
         absolutePath.endsWith('star-wars-day-2026/hero.jpg'),
     });
 
-    expect(result).toHaveLength(2);
+    expect(result).toHaveLength(3);
     expect(
       result.find((article) => article.slug === 'star-wars-day-2026'),
     ).toMatchObject({
@@ -94,6 +108,17 @@ describe('content article queries', () => {
       title: 'Star Wars Day 2026',
       updatedAt: '2026-04-25',
     });
+  });
+
+  test('does not expose Other as a public article theme', async () => {
+    const result = await listPublishedArticles({
+      articleFiles: sampleArticleFiles,
+      assetExistsFn: async () => false,
+    });
+
+    expect(
+      result.find((article) => article.slug === 'lewis-hamilton-helmet')?.theme,
+    ).toBeUndefined();
   });
 
   test('hides draft slugs and draft detail pages from public queries', async () => {
@@ -113,7 +138,11 @@ describe('content article queries', () => {
       assetExistsFn: async () => true,
     });
 
-    expect(slugs).toEqual(['spiny-shell-terug', 'star-wars-day-2026']);
+    expect(slugs).toEqual([
+      'lewis-hamilton-helmet',
+      'spiny-shell-terug',
+      'star-wars-day-2026',
+    ]);
     expect(publishedArticle?.slug).toBe('star-wars-day-2026');
     expect(draftArticle).toBeNull();
   });
