@@ -1,8 +1,13 @@
 import { cache } from 'react';
-import type { ContentArticle } from '@lego-platform/content/util';
 import {
-  resolveArticleCatalogSetCard,
+  extractArticleHeroSetNumberCandidatesFromBody,
+  type ContentArticle,
+  type ContentArticleListItem,
+} from '@lego-platform/content/util';
+import { getThemeTileImage } from '@lego-platform/catalog/util';
+import {
   getArticleCatalogSetImageUrl,
+  resolveArticleCatalogSetCards,
 } from './article-catalog-set-resolver';
 
 export interface ResolvedArticleHeroPresentation {
@@ -12,9 +17,11 @@ export interface ResolvedArticleHeroPresentation {
 
 const resolveArticleHeroPresentationCached = cache(
   async (
+    bodySource: string | undefined,
     heroImage: string | undefined,
     heroImageAlt: string,
     primarySetNumber: string | undefined,
+    theme: string | undefined,
     title: string,
   ): Promise<ResolvedArticleHeroPresentation | undefined> => {
     if (heroImage) {
@@ -24,36 +31,58 @@ const resolveArticleHeroPresentationCached = cache(
       };
     }
 
-    if (!primarySetNumber) {
+    const setNumberCandidates = [
+      ...(bodySource
+        ? extractArticleHeroSetNumberCandidatesFromBody(bodySource)
+        : []),
+      ...(primarySetNumber ? [primarySetNumber] : []),
+      ...(theme
+        ? [getThemeTileImage(theme)].filter((setNumber): setNumber is string =>
+            Boolean(setNumber),
+          )
+        : []),
+    ];
+    const uniqueSetNumberCandidates = [...new Set(setNumberCandidates)];
+
+    if (!uniqueSetNumberCandidates.length) {
       return undefined;
     }
 
-    const primarySetCard = await resolveArticleCatalogSetCard({
-      canonicalId: primarySetNumber,
+    const [firstResolvableSetCard] = await resolveArticleCatalogSetCards({
+      canonicalIds: uniqueSetNumberCandidates,
     });
-    const primarySetImageUrl = getArticleCatalogSetImageUrl(primarySetCard);
+    const firstResolvableSetImageUrl = getArticleCatalogSetImageUrl(
+      firstResolvableSetCard,
+    );
 
-    if (!primarySetCard || !primarySetImageUrl) {
+    if (!firstResolvableSetCard || !firstResolvableSetImageUrl) {
       return undefined;
     }
 
     return {
-      imageAlt: `${primarySetCard.name} LEGO-set`,
-      imageUrl: primarySetImageUrl,
+      imageAlt: `${firstResolvableSetCard.name || theme || title} LEGO-set`,
+      imageUrl: firstResolvableSetImageUrl,
     };
   },
 );
 
 export function resolveArticleHeroPresentation(
   contentArticle: Pick<
-    ContentArticle,
-    'heroImage' | 'heroImageAlt' | 'primarySetNumber' | 'title'
+    ContentArticle | ContentArticleListItem,
+    | 'bodySource'
+    | 'heroImage'
+    | 'heroImageAlt'
+    | 'primarySetNumber'
+    | 'theme'
+    | 'title'
   >,
 ): Promise<ResolvedArticleHeroPresentation | undefined> {
   return resolveArticleHeroPresentationCached(
+    contentArticle.bodySource,
     contentArticle.heroImage,
     contentArticle.heroImageAlt,
     contentArticle.primarySetNumber,
+    contentArticle.theme,
     contentArticle.title,
   );
 }

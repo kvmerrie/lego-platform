@@ -1,4 +1,5 @@
 import { getMetadataFromSeoFields } from '../lib/editorial-metadata';
+import { resolveArticleHeroPresentation } from '../lib/article-hero-presentation';
 import { getCatalogThemeDisplayName } from '@lego-platform/catalog/util';
 import { listPublishedArticles } from '@lego-platform/content/data-access';
 import {
@@ -45,13 +46,43 @@ function normalizeArticleThemeDisplay(
   };
 }
 
+async function resolveArticleListItemImage(
+  contentArticle: ContentArticleListItem,
+): Promise<ContentArticleListItem> {
+  if (contentArticle.cardImage) {
+    return contentArticle;
+  }
+
+  const resolvedHeroPresentation =
+    await resolveArticleHeroPresentation(contentArticle);
+
+  return resolvedHeroPresentation
+    ? {
+        ...contentArticle,
+        cardImage: resolvedHeroPresentation.imageUrl,
+        cardImageAlt: resolvedHeroPresentation.imageAlt,
+        heroImage:
+          contentArticle.heroImage ?? resolvedHeroPresentation.imageUrl,
+        heroImageAlt: contentArticle.heroImage
+          ? contentArticle.heroImageAlt
+          : resolvedHeroPresentation.imageAlt,
+      }
+    : contentArticle;
+}
+
 export default async function ArticlesIndexPage() {
   const contentArticles = sortArticlesByArticleDateDesc(
     (await listPublishedArticles()).filter(
       (contentArticle) => contentArticle.status === 'published',
     ),
-  ).map(normalizeArticleThemeDisplay);
-  const [featuredArticle, ...remainingArticles] = contentArticles;
+  );
+  const resolvedContentArticles = await Promise.all(
+    contentArticles.map(resolveArticleListItemImage),
+  );
+  const normalizedContentArticles = resolvedContentArticles.map(
+    normalizeArticleThemeDisplay,
+  );
+  const [featuredArticle, ...remainingArticles] = normalizedContentArticles;
 
   return (
     <ShellWeb>

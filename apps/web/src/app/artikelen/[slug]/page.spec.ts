@@ -258,6 +258,50 @@ describe('article detail route', () => {
     );
   });
 
+  it('falls back to the first SetSpotlightList image when there is no FeaturedSet', async () => {
+    getArticleBySlug.mockResolvedValue({
+      bodySource: '<SetSpotlightList setIds="75446, 75447" />',
+      cardImageAlt: 'Star Wars roundup',
+      date: '2026-05-01',
+      description: 'Nieuwe Star Wars-sets.',
+      heroImage: undefined,
+      heroImageAlt: 'Wordt vervangen',
+      slug: 'star-wars-roundup',
+      status: 'published',
+      theme: 'Star Wars',
+      title: 'LEGO Star Wars juni onthuld',
+    });
+    listPublishedArticles.mockResolvedValue([]);
+    listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75446',
+        imageUrl: 'https://example.com/75446.jpg',
+        name: 'Up-Scaled Darth Vader',
+        pieces: 1040,
+        releaseYear: 2026,
+        slug: 'up-scaled-darth-vader-75446',
+        theme: 'Star Wars',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const renderedPage = await pageModule.default({
+      params: Promise.resolve({
+        slug: 'star-wars-roundup',
+      }),
+    });
+    renderToStaticMarkup(renderedPage);
+
+    expect(contentArticlePageSpy.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        contentArticle: expect.objectContaining({
+          heroImage: 'https://example.com/75446.jpg',
+          heroImageAlt: 'Up-Scaled Darth Vader LEGO-set',
+        }),
+      }),
+    );
+  });
+
   it('renders safely without a hero when neither frontmatter nor FeaturedSet image exists', async () => {
     getArticleBySlug.mockResolvedValue({
       bodySource: 'Geen hero, geen featured set.',

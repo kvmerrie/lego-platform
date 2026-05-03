@@ -205,6 +205,22 @@ export interface CatalogThemeBackfillResult {
   updatedCount: number;
 }
 
+export interface CatalogZeroPieceRefreshResult {
+  checkedCount: number;
+  failedCount: number;
+  stillUnknownCount: number;
+  updatedCount: number;
+  updatedSetIds: readonly string[];
+}
+
+export interface RefreshZeroPieceSetsOptions {
+  fetchImpl?: typeof fetch;
+  limit?: number;
+  setIds?: readonly string[];
+  sourceSetNumbers?: readonly string[];
+  supabaseClient?: CatalogSupabaseClient;
+}
+
 interface DatabaseConflictLike {
   code?: string;
   details?: string;
@@ -593,6 +609,32 @@ function toCanonicalCatalogSetFromOverlaySet(
     sourceSetNumber: overlaySet.sourceSetNumber,
     status: overlaySet.status,
     updatedAt: overlaySet.updatedAt,
+  };
+}
+
+function toCatalogSetFromCanonicalSet(
+  canonicalCatalogSet: CatalogCanonicalSet,
+): CatalogSet {
+  return {
+    createdAt: canonicalCatalogSet.createdAt,
+    imageUrl: canonicalCatalogSet.imageUrl,
+    name: canonicalCatalogSet.name,
+    pieces: canonicalCatalogSet.pieceCount,
+    ...(canonicalCatalogSet.releaseDate
+      ? {
+          releaseDate: canonicalCatalogSet.releaseDate,
+        }
+      : {}),
+    releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
+    releaseYear: canonicalCatalogSet.releaseYear,
+    secondaryThemeLabels: canonicalCatalogSet.secondaryLabels,
+    setId: canonicalCatalogSet.setId,
+    slug: canonicalCatalogSet.slug,
+    source: 'rebrickable',
+    sourceSetNumber: canonicalCatalogSet.sourceSetNumber ?? '',
+    status: canonicalCatalogSet.status,
+    theme: canonicalCatalogSet.primaryTheme,
+    updatedAt: canonicalCatalogSet.updatedAt,
   };
 }
 
@@ -1059,6 +1101,21 @@ function validateRebrickableSetThemePayload(
     setNumber: setNumber.trim(),
     themeId,
   };
+}
+
+function validateRebrickableSetPayload(
+  payload: unknown,
+  expectedSetNumber: string,
+): ValidatedRebrickableSearchSet {
+  const validatedSet = validateRebrickableSearchSetPayload(payload);
+
+  if (validatedSet.setNumber !== expectedSetNumber) {
+    throw new Error(
+      `Invalid Rebrickable set payload for ${expectedSetNumber}: set_num is missing or mismatched.`,
+    );
+  }
+
+  return validatedSet;
 }
 
 async function getValidatedRebrickableTheme({
@@ -1576,6 +1633,47 @@ async function updateCatalogThemeIdentityRow({
   }
 }
 
+async function updateCatalogSetPieceCountRow({
+  pieceCount,
+  setId,
+  supabaseClient,
+}: {
+  pieceCount: number;
+  setId: string;
+  supabaseClient: CatalogSupabaseClient;
+}) {
+  const { error } = await supabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .update({
+      piece_count: pieceCount,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('set_id', setId);
+
+  if (error) {
+    throw new Error('Unable to update the catalog set piece count.');
+  }
+}
+
+async function touchCatalogSetRow({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient: CatalogSupabaseClient;
+}) {
+  const { error } = await supabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .update({
+      updated_at: new Date().toISOString(),
+    })
+    .eq('set_id', setId);
+
+  if (error) {
+    throw new Error('Unable to update the catalog set refresh timestamp.');
+  }
+}
+
 async function insertCatalogSetRow({
   normalizedSet,
   supabaseClient,
@@ -1656,6 +1754,100 @@ export async function listCatalogOverlaySets({
 
     throw error;
   }
+}
+
+export async function refreshZeroPieceSets(
+  optionsOrLimit: RefreshZeroPieceSetsOptions | number = {},
+): Promise<CatalogZeroPieceRefreshResult> {
+  const options =
+    typeof optionsOrLimit === 'number'
+      ? {
+          limit: optionsOrLimit,
+        }
+      : optionsOrLimit;
+  const safeLimit =
+    options.limit === undefined
+      ? undefined
+      : Math.max(1, Math.min(500, Math.floor(options.limit)));
+  const activeSupabaseClient =
+    options.supabaseClient ?? getServerSupabaseAdminClient();
+  const rebrickableConfig = getRebrickableApiConfig();
+  const rebrickableClient = createRebrickableClient({
+    apiKey: rebrickableConfig.apiKey,
+    baseUrl: rebrickableConfig.baseUrl,
+    ...(options.fetchImpl ? { fetchImpl: options.fetchImpl } : {}),
+  });
+  let query = activeSupabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .select(
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
+    )
+    .eq('piece_count', 0)
+    .order('updated_at', {
+      ascending: true,
+    });
+
+  if (options.setIds?.length) {
+    query = query.in('set_id', [...new Set(options.setIds)]);
+  }
+
+  if (options.sourceSetNumbers?.length) {
+    query = query.in('source_set_number', [
+      ...new Set(options.sourceSetNumbers),
+    ]);
+  }
+
+  if (safeLimit !== undefined && 'limit' in query) {
+    query = query.limit(safeLimit);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error('Unable to load zero-piece catalog sets.');
+  }
+
+  const rows = ((data as CatalogOverlaySetRow[] | null) ?? []).slice(
+    0,
+    safeLimit,
+  );
+  const updatedSetIds: string[] = [];
+  let failedCount = 0;
+  let stillUnknownCount = 0;
+
+  for (const row of rows) {
+    try {
+      const sourceSet = validateRebrickableSetPayload(
+        await rebrickableClient.getSet(row.source_set_number),
+        row.source_set_number,
+      );
+
+      if (sourceSet.numParts > 0) {
+        await updateCatalogSetPieceCountRow({
+          pieceCount: sourceSet.numParts,
+          setId: row.set_id,
+          supabaseClient: activeSupabaseClient,
+        });
+        updatedSetIds.push(row.set_id);
+      } else {
+        await touchCatalogSetRow({
+          setId: row.set_id,
+          supabaseClient: activeSupabaseClient,
+        });
+        stillUnknownCount += 1;
+      }
+    } catch {
+      failedCount += 1;
+    }
+  }
+
+  return {
+    checkedCount: rows.length,
+    failedCount,
+    stillUnknownCount,
+    updatedCount: updatedSetIds.length,
+    updatedSetIds,
+  };
 }
 
 export async function backfillCatalogOverlayThemeIdentity({
@@ -2464,6 +2656,20 @@ export async function createCatalogSet({
   );
 
   if (setConflict) {
+    if (setConflict.pieceCount === 0 && normalizedSet.pieces > 0) {
+      await updateCatalogSetPieceCountRow({
+        pieceCount: normalizedSet.pieces,
+        setId: setConflict.setId,
+        supabaseClient: activeSupabaseClient,
+      });
+
+      return toCatalogSetFromCanonicalSet({
+        ...setConflict,
+        pieceCount: normalizedSet.pieces,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
     throw new Error(
       buildCatalogSetIdConflictMessage({
         conflictTarget: toCatalogConflictTarget(setConflict),

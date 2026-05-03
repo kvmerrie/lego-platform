@@ -27,7 +27,10 @@ import {
   buildArticlePath,
   getPublicWebBaseUrl,
 } from '@lego-platform/shared/config';
-import { ContentAdminEditorialAgentApiService } from './content-admin-editorial-agent-api.service';
+import {
+  ContentAdminArticlePublishError,
+  ContentAdminEditorialAgentApiService,
+} from './content-admin-editorial-agent-api.service';
 
 @Component({
   selector: 'lego-content-admin-editorial-agent-page',
@@ -285,6 +288,20 @@ export class ContentAdminEditorialAgentPageComponent {
           ? error.message
           : 'Artikel publiceren naar Supabase is mislukt.',
       );
+
+      if (
+        error instanceof ContentAdminArticlePublishError &&
+        error.existingSlug
+      ) {
+        const publicWebBaseUrl = getPublicWebBaseUrl({
+          currentOrigin:
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+        });
+
+        this.publishedArticleUrl.set(
+          `${publicWebBaseUrl}${buildArticlePath(error.existingSlug)}`,
+        );
+      }
     } finally {
       this.isPublishing.set(false);
     }

@@ -10,6 +10,7 @@ import {
   listCatalogSuggestedMissingSets,
   listCanonicalCatalogSets,
   listCatalogSetSummariesWithOverlay,
+  refreshZeroPieceSets,
   searchCatalogMissingSets,
 } from './catalog-data-access-server';
 
@@ -67,6 +68,10 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         column: keyof Row & string;
         ascending: boolean;
       }
+    | {
+        type: 'limit';
+        count: number;
+      }
   > = [];
 
   const builder = {
@@ -84,6 +89,14 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         column,
         type: 'in',
         values,
+      });
+
+      return builder;
+    },
+    limit(count: number) {
+      filters.push({
+        count,
+        type: 'limit',
       });
 
       return builder;
@@ -129,6 +142,10 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
             );
           }
 
+          if (filter.type === 'limit') {
+            return resultRows.slice(0, filter.count);
+          }
+
           const sortedRows = [...resultRows].sort((left, right) => {
             const leftValue = left[filter.column];
             const rightValue = right[filter.column];
@@ -155,6 +172,28 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
       return Promise.resolve({
         data: [...filteredRows],
+        error: null,
+      }).then(onFulfilled, onRejected ?? undefined);
+    },
+  };
+
+  return builder;
+}
+
+function createSupabaseUpdateBuilder() {
+  const builder = {
+    eq: vi.fn(() => builder),
+    then<TResult1 = { data: null; error: null }>(
+      onFulfilled?:
+        | ((value: {
+            data: null;
+            error: null;
+          }) => TResult1 | PromiseLike<TResult1>)
+        | null,
+      onRejected?: ((reason: unknown) => PromiseLike<never>) | null,
+    ) {
+      return Promise.resolve({
+        data: null,
         error: null,
       }).then(onFulfilled, onRejected ?? undefined);
     },
@@ -206,20 +245,12 @@ function createCatalogOverlaySupabaseClient({
     data: null,
     error: null,
   });
-  const updateCanonicalEq = vi.fn().mockResolvedValue({
-    data: null,
-    error: null,
-  });
-  const updateCanonical = vi.fn(() => ({
-    eq: updateCanonicalEq,
-  }));
-  const updateEq = vi.fn().mockResolvedValue({
-    data: null,
-    error: null,
-  });
-  const update = vi.fn(() => ({
-    eq: updateEq,
-  }));
+  const canonicalUpdateBuilder = createSupabaseUpdateBuilder();
+  const updateCanonicalEq = canonicalUpdateBuilder.eq;
+  const updateCanonical = vi.fn(() => canonicalUpdateBuilder);
+  const updateBuilder = createSupabaseUpdateBuilder();
+  const updateEq = updateBuilder.eq;
+  const update = vi.fn(() => updateBuilder);
   const canonicalInsertSingle = vi.fn().mockResolvedValue(
     canonicalInsertResult ?? {
       data: createCatalogOverlayRow({
@@ -1506,6 +1537,210 @@ describe('catalog data access server', () => {
       }),
     );
     expect(insert).not.toHaveBeenCalled();
+  });
+
+  test('creates a catalog set when Rebrickable still reports an unknown piece count', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+    const { canonicalInsert, supabaseClient } =
+      createCatalogOverlaySupabaseClient({
+        canonicalInsertResult: {
+          data: createCatalogOverlayRow({
+            image_url:
+              'https://cdn.rebrickable.com/media/sets/76339-1/171736.jpg',
+            name: 'The Fantastic Four H.E.R.B.I.E.',
+            piece_count: 0,
+            release_year: 2027,
+            set_id: '76339',
+            slug: 'the-fantastic-four-h-e-r-b-i-e-76339',
+            source_set_number: '76339-1',
+            theme: undefined,
+          }),
+          error: null,
+        },
+      });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '76339-1': {
+          set_num: '76339-1',
+          theme_id: 706,
+        },
+      },
+      themePayloads: {
+        '706': {
+          id: 706,
+          name: 'Marvel',
+        },
+      },
+    });
+
+    const result = await createCatalogSet({
+      fetchImpl,
+      input: {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76339-1/171736.jpg',
+        name: 'The Fantastic Four H.E.R.B.I.E.',
+        pieces: 0,
+        releaseYear: 2027,
+        setId: '76339',
+        slug: 'the-fantastic-four-h-e-r-b-i-e-76339',
+        source: 'rebrickable',
+        sourceSetNumber: '76339-1',
+        theme: 'Marvel',
+      },
+      supabaseClient,
+    });
+
+    expect(result.pieces).toBe(0);
+    expect(canonicalInsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        piece_count: 0,
+      }),
+    );
+  });
+
+  test('updates an existing zero-piece catalog set when an import now has a positive count', async () => {
+    const existingCatalogSet = createCatalogOverlayRow({
+      piece_count: 0,
+      set_id: '76339',
+      slug: 'the-fantastic-four-h-e-r-b-i-e-76339',
+      source_set_number: '76339-1',
+      theme: 'Marvel',
+    });
+    const { insert, supabaseClient, updateCanonical, updateCanonicalEq } =
+      createCatalogOverlaySupabaseClient({
+        overlayRows: [existingCatalogSet],
+      });
+
+    const result = await createCatalogSet({
+      input: {
+        imageUrl: existingCatalogSet.image_url ?? undefined,
+        name: existingCatalogSet.name,
+        pieces: 359,
+        releaseYear: existingCatalogSet.release_year,
+        setId: existingCatalogSet.set_id,
+        slug: existingCatalogSet.slug,
+        source: 'rebrickable',
+        sourceSetNumber: existingCatalogSet.source_set_number,
+        theme: existingCatalogSet.theme,
+      },
+      supabaseClient,
+    });
+
+    expect(result.pieces).toBe(359);
+    expect(updateCanonical).toHaveBeenCalledWith(
+      expect.objectContaining({
+        piece_count: 359,
+      }),
+    );
+    expect(updateCanonicalEq).toHaveBeenCalledWith('set_id', '76339');
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  test('does not overwrite an existing positive piece count with zero during import', async () => {
+    const existingCatalogSet = createCatalogOverlayRow({
+      piece_count: 359,
+      set_id: '76339',
+      slug: 'the-fantastic-four-h-e-r-b-i-e-76339',
+      source_set_number: '76339-1',
+      theme: 'Marvel',
+    });
+    const { insert, supabaseClient, updateCanonical } =
+      createCatalogOverlaySupabaseClient({
+        overlayRows: [existingCatalogSet],
+      });
+
+    await expect(
+      createCatalogSet({
+        input: {
+          imageUrl: existingCatalogSet.image_url ?? undefined,
+          name: existingCatalogSet.name,
+          pieces: 0,
+          releaseYear: existingCatalogSet.release_year,
+          setId: existingCatalogSet.set_id,
+          slug: existingCatalogSet.slug,
+          source: 'rebrickable',
+          sourceSetNumber: existingCatalogSet.source_set_number,
+          theme: existingCatalogSet.theme,
+        },
+        supabaseClient,
+      }),
+    ).rejects.toThrow(/Brickhunt-catalogus/);
+
+    expect(updateCanonical).not.toHaveBeenCalled();
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  test('refreshes zero-piece catalog sets only when Rebrickable has a positive count', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+    const { supabaseClient, updateCanonical } =
+      createCatalogOverlaySupabaseClient({
+        overlayRows: [
+          createCatalogOverlayRow({
+            piece_count: 0,
+            set_id: '76339',
+            source_set_number: '76339-1',
+          }),
+          createCatalogOverlayRow({
+            piece_count: 0,
+            set_id: '11208',
+            source_set_number: '11208-1',
+          }),
+          createCatalogOverlayRow({
+            piece_count: 359,
+            set_id: '30707',
+            source_set_number: '30707-1',
+          }),
+        ],
+      });
+    const fetchImpl = createRebrickableFetchMock({
+      setPayloads: {
+        '76339-1': {
+          set_num: '76339-1',
+          name: 'The Fantastic Four H.E.R.B.I.E.',
+          year: 2027,
+          num_parts: 359,
+          theme_id: 706,
+          set_img_url:
+            'https://cdn.rebrickable.com/media/sets/76339-1/171736.jpg',
+        },
+        '11208-1': {
+          set_num: '11208-1',
+          name: 'Team Spidey Pirate Ship',
+          year: 2026,
+          num_parts: 0,
+          theme_id: 755,
+          set_img_url:
+            'https://cdn.rebrickable.com/media/sets/11208-1/171736.jpg',
+        },
+      },
+      themePayloads: {},
+    });
+
+    const result = await refreshZeroPieceSets({
+      fetchImpl,
+      supabaseClient,
+    });
+
+    expect(result).toEqual({
+      checkedCount: 2,
+      failedCount: 0,
+      stillUnknownCount: 1,
+      updatedCount: 1,
+      updatedSetIds: ['76339'],
+    });
+    expect(updateCanonical).toHaveBeenCalledWith(
+      expect.objectContaining({
+        piece_count: 359,
+      }),
+    );
+    expect(updateCanonical).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        piece_count: expect.any(Number),
+      }),
+    );
+    expect(fetchImpl).not.toHaveBeenCalledWith(
+      expect.stringContaining('/lego/sets/30707-1/'),
+      expect.anything(),
+    );
   });
 
   test('normalizes raw external subthemes to the expected primary theme when creating a canonical catalog set', async () => {

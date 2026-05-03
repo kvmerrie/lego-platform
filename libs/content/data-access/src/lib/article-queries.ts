@@ -509,6 +509,7 @@ function toContentArticleListItem(
   contentArticle: ContentArticle,
 ): ContentArticleListItem {
   return {
+    bodySource: contentArticle.bodySource,
     cardImage: contentArticle.cardImage,
     cardImageAlt: contentArticle.cardImageAlt,
     date: contentArticle.date,

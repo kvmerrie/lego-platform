@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
+  ContentAdminArticlePublishError,
   ContentAdminEditorialAgentApiService,
   ContentAdminEditorialAgentPageComponent,
 } from '@lego-platform/content/feature-admin';
@@ -553,6 +554,44 @@ describe('Editorial agent admin page', () => {
     expect(fixture.nativeElement.textContent).toContain(
       'Dit artikel is nog niet klaar voor publicatie.',
     );
+  });
+
+  it('shows a useful duplicate source publish error with a link to the existing article', async () => {
+    editorialAgentApi.publishArticle.mockRejectedValueOnce(
+      new ContentAdminArticlePublishError(
+        'Dit bronartikel is al gepubliceerd.',
+        'bestaand-artikel',
+      ),
+    );
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+
+    component.draftResult.set(createDraftResult());
+    await component.publishArticle();
+    fixture.detectChanges();
+
+    const link = fixture.debugElement.query(
+      By.css('a[href$="/artikelen/bestaand-artikel"]'),
+    );
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Dit bronartikel is al gepubliceerd.',
+    );
+    expect(fixture.nativeElement.textContent).toContain('Bestaand artikel');
+    expect(link?.nativeElement.textContent).toContain('Open artikel');
   });
 
   it('copies the generated mdx to the clipboard', async () => {

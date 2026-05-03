@@ -540,9 +540,10 @@
             Kopiëren lukte niet
           </span>
           } @if (publishedArticleUrl(); as publishedArticleUrl) {
-          <span class="editorial-agent__meta-pill"
-            >Artikel gepubliceerd ✅</span
-          >
+          <span class="editorial-agent__meta-pill">
+            {{ publishErrorMessage() ? 'Bestaand artikel' : 'Artikel
+            gepubliceerd ✅' }}
+          </span>
           <a [href]="publishedArticleUrl" target="_blank" rel="noreferrer">
             Open artikel
           </a>

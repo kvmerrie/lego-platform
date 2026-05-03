@@ -4,9 +4,22 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const listPublishedArticles = vi.fn();
+const listCatalogSetCardsByIds = vi.fn();
 
 vi.mock('@lego-platform/content/data-access', () => ({
   listPublishedArticles,
+}));
+
+vi.mock('@lego-platform/catalog/data-access', () => ({
+  catalogSnapshot: {
+    generatedAt: '2026-05-01T12:00:00.000Z',
+    source: 'test',
+    setRecords: [],
+  },
+}));
+
+vi.mock('@lego-platform/catalog/data-access-web', () => ({
+  listCatalogSetCardsByIds,
 }));
 
 vi.mock('@lego-platform/shell/web', () => ({
@@ -16,6 +29,7 @@ vi.mock('@lego-platform/shell/web', () => ({
 describe('articles index route', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    listCatalogSetCardsByIds.mockResolvedValue([]);
   });
 
   it('stays server-rendered without client-side fetching', async () => {
@@ -148,5 +162,67 @@ describe('articles index route', () => {
 
     expect(markup).toContain('Nog geen artikelen beschikbaar');
     expect(markup).not.toContain('cardGrid');
+  });
+
+  it('uses the same resolved catalog image fallback for article cards', async () => {
+    listPublishedArticles.mockResolvedValue([
+      {
+        bodySource: '<SetSpotlightList setIds="75446, 75447" />',
+        cardImageAlt: 'Roundup',
+        date: '2026-05-03',
+        description: 'Nieuwe Star Wars-sets op een rij.',
+        heroImage: undefined,
+        heroImageAlt: 'Roundup',
+        slug: 'star-wars-roundup',
+        status: 'published',
+        theme: 'Star Wars',
+        title: 'LEGO Star Wars juni onthuld',
+      },
+    ]);
+    listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75446',
+        imageUrl: 'https://images.example/75446.jpg',
+        name: 'Up-Scaled Darth Vader',
+        pieces: 1040,
+        releaseYear: 2026,
+        slug: 'up-scaled-darth-vader-75446',
+        theme: 'Star Wars',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(listCatalogSetCardsByIds).toHaveBeenCalledWith({
+      canonicalIds: expect.arrayContaining(['75446']),
+    });
+    expect(markup).toContain('https://images.example/75446.jpg');
+    expect(markup).toContain('Up-Scaled Darth Vader LEGO-set');
+  });
+
+  it('keeps manual article card images before catalog fallbacks', async () => {
+    listPublishedArticles.mockResolvedValue([
+      {
+        bodySource: '<FeaturedSet setNumber="40787" />',
+        cardImage: '/articles/manual/card.jpg',
+        cardImageAlt: 'Handmatige kaartafbeelding',
+        date: '2026-05-03',
+        description: 'Handmatige afbeelding blijft leidend.',
+        heroImage: '/articles/manual/hero.jpg',
+        heroImageAlt: 'Handmatige hero',
+        slug: 'manual-image',
+        status: 'published',
+        theme: 'Super Mario',
+        title: 'Handmatige afbeelding',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(listCatalogSetCardsByIds).not.toHaveBeenCalled();
+    expect(markup).toContain('/articles/manual/hero.jpg');
+    expect(markup).not.toContain('images.example');
   });
 });

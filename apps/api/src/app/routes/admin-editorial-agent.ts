@@ -1,6 +1,7 @@
 import {
   createCatalogSet as createCatalogSetDataAccess,
   listCatalogSetSummariesWithOverlay as listCatalogSetSummariesWithOverlayDataAccess,
+  refreshZeroPieceSets as refreshZeroPieceSetsDataAccess,
   searchCatalogMissingSets as searchCatalogMissingSetsDataAccess,
 } from '@lego-platform/catalog/data-access-server';
 import {
@@ -12,6 +13,7 @@ import {
   listEditorialFeedItems,
   prepareEditorialAgentExtractionForDraft,
   assertContentArticleReadyForPublication,
+  ContentArticleDuplicateSourceError,
   EditorialAgentUrlValidationError,
   publishContentArticle,
   ContentArticlePublishValidationError,
@@ -90,6 +92,7 @@ export interface AdminEditorialAgentCatalogDependencies {
   hasRebrickableApiConfig?: typeof hasRebrickableApiConfig;
   hasServerSupabaseConfig?: typeof hasServerSupabaseConfig;
   listCatalogSetSummariesWithOverlay?: typeof listCatalogSetSummariesWithOverlayDataAccess;
+  refreshZeroPieceSets?: typeof refreshZeroPieceSetsDataAccess;
   searchCatalogMissingSets?: typeof searchCatalogMissingSetsDataAccess;
 }
 
@@ -216,6 +219,7 @@ export function createAdminEditorialAgentService({
   hasServerSupabaseConfig:
     hasServerSupabaseConfigDependency = hasServerSupabaseConfig,
   listCatalogSetSummariesWithOverlay = listCatalogSetSummariesWithOverlayDataAccess,
+  refreshZeroPieceSets = refreshZeroPieceSetsDataAccess,
   searchCatalogMissingSets = searchCatalogMissingSetsDataAccess,
 }: AdminEditorialAgentCatalogDependencies = {}): AdminEditorialAgentService {
   let catalogSetSummaryByIdPromise: Promise<
@@ -250,7 +254,16 @@ export function createAdminEditorialAgentService({
     ).get(normalizedSetNumber);
 
     if (freshSummary) {
-      return freshSummary;
+      await refreshZeroPieceSets({
+        limit: 1,
+        setIds: [normalizedSetNumber],
+      });
+
+      return (
+        await getCatalogSetSummaryById({
+          forceRefresh: true,
+        })
+      ).get(normalizedSetNumber);
     }
 
     for (const query of createCatalogImportQueries(setNumber)) {
@@ -313,6 +326,30 @@ export function createAdminEditorialAgentService({
     importMissingSets: boolean;
     useAiRewrite: boolean;
   }) {
+    if (
+      importMissingSets &&
+      hasServerSupabaseConfigDependency() &&
+      hasRebrickableApiConfigDependency()
+    ) {
+      const detectedSetIds = [
+        ...new Set(
+          extraction.detected.setNumbers
+            .map(normalizeCatalogSetNumberForArticleAgent)
+            .filter(Boolean),
+        ),
+      ];
+
+      if (detectedSetIds.length > 0) {
+        await refreshZeroPieceSets({
+          limit: detectedSetIds.length,
+          setIds: detectedSetIds,
+        });
+        await getCatalogSetSummaryById({
+          forceRefresh: true,
+        });
+      }
+    }
+
     let preparedExtraction = await prepareEditorialAgentExtractionForDraft({
       extraction,
       findCatalogSetSummaryById: async (setId: string) =>
@@ -826,6 +863,13 @@ export function createAdminEditorialAgentRoutes({
         if (error instanceof ContentArticlePublishValidationError) {
           return reply.status(400).send({
             message: error.message,
+          });
+        }
+
+        if (error instanceof ContentArticleDuplicateSourceError) {
+          return reply.status(409).send({
+            message: error.message,
+            slug: error.existingSlug,
           });
         }
 

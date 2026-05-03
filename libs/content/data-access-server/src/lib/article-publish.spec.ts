@@ -1,7 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { describe, expect, test, vi } from 'vitest';
-import { publishContentArticle } from './article-publish';
+import {
+  contentArticlePublishTestUtils,
+  publishContentArticle,
+} from './article-publish';
 
 function createPublishInput(slug = 'lego-star-wars-set') {
   return {
@@ -9,13 +12,23 @@ function createPublishInput(slug = 'lego-star-wars-set') {
       date: '2026-05-02',
       description: 'Waarom deze doos nu telt.',
       slug,
+      sourceUrl: 'https://example.com/lego/star-wars-set',
       title: 'LEGO Star Wars set',
     },
     mdx: '---\ntitle: "LEGO Star Wars set"\n---\n\n## Wanneer kopen?\n',
   };
 }
 
-function createSupabaseClientMock(existingSlugs: readonly string[] = []) {
+function createSupabaseClientMock({
+  existingPublishedArticles = [],
+  existingSlugs = [],
+}: {
+  existingPublishedArticles?: Array<{
+    frontmatter: Record<string, unknown>;
+    slug: string;
+  }>;
+  existingSlugs?: readonly string[];
+} = {}) {
   const slugs = [...existingSlugs];
   const insertedRows: Array<Record<string, unknown>> = [];
   const from = vi.fn(() => ({
@@ -48,6 +61,10 @@ function createSupabaseClientMock(existingSlugs: readonly string[] = []) {
       };
     }),
     select: vi.fn(() => ({
+      eq: vi.fn(async () => ({
+        data: existingPublishedArticles,
+        error: null,
+      })),
       like: vi.fn(async () => ({
         data: slugs.map((slug) => ({
           slug,
@@ -118,7 +135,9 @@ describe('content article publishing', () => {
   });
 
   test('appends -2 for a duplicate base slug', async () => {
-    const supabaseClient = createSupabaseClientMock(['lego-star-wars-set']);
+    const supabaseClient = createSupabaseClientMock({
+      existingSlugs: ['lego-star-wars-set'],
+    });
 
     await expect(
       publishContentArticle({
@@ -131,12 +150,14 @@ describe('content article publishing', () => {
   });
 
   test('skips gaps and appends the next highest suffix', async () => {
-    const supabaseClient = createSupabaseClientMock([
-      'lego-star-wars-set',
-      'lego-star-wars-set-2',
-      'lego-star-wars-set-4',
-      'lego-star-wars-set-extra',
-    ]);
+    const supabaseClient = createSupabaseClientMock({
+      existingSlugs: [
+        'lego-star-wars-set',
+        'lego-star-wars-set-2',
+        'lego-star-wars-set-4',
+        'lego-star-wars-set-extra',
+      ],
+    });
 
     await expect(
       publishContentArticle({
@@ -167,6 +188,86 @@ describe('content article publishing', () => {
     expect(frontmatter?.['date']).toBe('2026-05-02');
     expect(publishedAt).toBeGreaterThanOrEqual(beforePublish - 1000);
     expect(publishedAt).toBeLessThanOrEqual(afterPublish + 1000);
+  });
+
+  test('blocks publishing the same sourceUrl twice', async () => {
+    const supabaseClient = createSupabaseClientMock({
+      existingPublishedArticles: [
+        {
+          frontmatter: {
+            sourceUrl: 'https://example.com/lego/star-wars-set',
+          },
+          slug: 'bestaand-artikel',
+        },
+      ],
+    });
+
+    await expect(
+      publishContentArticle({
+        input: createPublishInput(),
+        supabaseClient: toPublishSupabaseClient(supabaseClient),
+      }),
+    ).rejects.toMatchObject({
+      existingSlug: 'bestaand-artikel',
+      message: 'Dit bronartikel is al gepubliceerd.',
+    });
+
+    expect(supabaseClient.insertedRows).toHaveLength(0);
+  });
+
+  test('blocks sourceUrl duplicates with trailing slash and tracking params', async () => {
+    const supabaseClient = createSupabaseClientMock({
+      existingPublishedArticles: [
+        {
+          frontmatter: {
+            sourceUrl:
+              'http://example.com/lego/star-wars-set/?utm_source=rss&fbclid=abc',
+          },
+          slug: 'bestaand-artikel',
+        },
+      ],
+    });
+
+    await expect(
+      publishContentArticle({
+        input: {
+          ...createPublishInput(),
+          frontmatter: {
+            ...createPublishInput().frontmatter,
+            sourceUrl: 'https://example.com/lego/star-wars-set',
+          },
+        },
+        supabaseClient: toPublishSupabaseClient(supabaseClient),
+      }),
+    ).rejects.toThrow('Dit bronartikel is al gepubliceerd.');
+
+    expect(
+      contentArticlePublishTestUtils.normalizeArticleSourceUrl(
+        'http://example.com/lego/star-wars-set/?utm_source=rss&fbclid=abc',
+      ),
+    ).toBe('https://example.com/lego/star-wars-set');
+  });
+
+  test('allows publishing a different sourceUrl', async () => {
+    const supabaseClient = createSupabaseClientMock({
+      existingPublishedArticles: [
+        {
+          frontmatter: {
+            sourceUrl: 'https://example.com/lego/ander-artikel',
+          },
+          slug: 'ander-artikel',
+        },
+      ],
+    });
+
+    await expect(
+      publishContentArticle({
+        input: createPublishInput(),
+        supabaseClient: toPublishSupabaseClient(supabaseClient),
+      }),
+    ).resolves.toEqual({
+      slug: 'lego-star-wars-set',
+    });
   });
 });
 

@@ -1,6 +1,7 @@
 import {
   createCatalogSet,
   listCanonicalCatalogSets,
+  refreshZeroPieceSets,
   searchCatalogMissingSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
@@ -73,8 +74,13 @@ async function main() {
   );
 
   if (existingCatalogSet) {
+    const refreshResult = await refreshZeroPieceSets({
+      limit: 1,
+      setIds: [existingCatalogSet.setId],
+    });
+
     console.log(
-      `[catalog-set-import] end status=already_present set_id=${existingCatalogSet.setId} slug=${existingCatalogSet.slug} duration_ms=${Date.now() - startedAt}`,
+      `[catalog-set-import] end status=already_present set_id=${existingCatalogSet.setId} slug=${existingCatalogSet.slug} zero_piece_checked=${refreshResult.checkedCount} zero_piece_updated=${refreshResult.updatedCount} duration_ms=${Date.now() - startedAt}`,
     );
     return;
   }

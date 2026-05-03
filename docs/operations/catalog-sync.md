@@ -92,6 +92,17 @@ Use this in git hooks and routine local validation when you want a fast determin
 ## Operator Notes
 
 - The current sync scope is intentionally small and curated.
+- `catalog_sets.piece_count = 0` means the source does not have a usable piece count yet. Treat it as unknown or not yet available from Rebrickable, not as a true zero-piece LEGO set.
+- Live catalog sync write mode refreshes zero-piece catalog rows from Rebrickable when `REBRICKABLE_API_KEY` is configured. If Rebrickable now returns `num_parts > 0`, the sync updates `piece_count`; if Rebrickable still returns `0`, the row stays at `0` and only its refresh timestamp is touched.
+- To inspect current unknown piece counts in Supabase:
+
+```sql
+select source_set_number as set_number, name, theme, piece_count, updated_at
+from public.catalog_sets
+where piece_count = 0
+order by updated_at desc;
+```
+
 - Only add sets to the curated sync scope when they are also ready to be product-presented.
 - When expanding coverage, first ensure the set exists in the canonical Supabase catalog source. Then update `libs/catalog/data-access-sync/src/lib/catalog-sync-curation.ts` only if that set should join the generated snapshot scope right now.
 - Homepage featured-set curation remains local and is written into the generated manifest.

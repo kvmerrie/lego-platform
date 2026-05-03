@@ -17,11 +17,42 @@ interface PublishedArticleRow {
   slug: string;
 }
 
+interface PublishedArticleSourceRow {
+  frontmatter?: unknown;
+  slug: string;
+}
+
 export class ContentArticlePublishValidationError extends Error {}
 export class ContentArticlePublishConflictError extends Error {}
+export class ContentArticleDuplicateSourceError extends Error {
+  constructor(
+    message: string,
+    readonly existingSlug?: string,
+  ) {
+    super(message);
+  }
+}
 
 const LOW_CONFIDENCE_PUBLISH_ERROR_MESSAGE =
   'Dit artikel is nog niet klaar voor publicatie.';
+const DUPLICATE_SOURCE_PUBLISH_ERROR_MESSAGE =
+  'Dit bronartikel is al gepubliceerd.';
+const TRACKING_SEARCH_PARAM_PATTERNS = [
+  /^utm_/iu,
+  /^pk_/iu,
+  /^sc_/iu,
+  /^ref$/iu,
+  /^ref_src$/iu,
+  /^source$/iu,
+  /^fbclid$/iu,
+  /^gclid$/iu,
+  /^gbraid$/iu,
+  /^wbraid$/iu,
+  /^msclkid$/iu,
+  /^mc_cid$/iu,
+  /^mc_eid$/iu,
+  /^igshid$/iu,
+] as const;
 
 const PUBLICATION_UNSAFE_FALLBACK_PHRASES = [
   'Conceptdraft',
@@ -40,6 +71,41 @@ function readNonEmptyString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim().length > 0
     ? value.trim()
     : undefined;
+}
+
+export function normalizeArticleSourceUrl(value: string): string {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return '';
+  }
+
+  try {
+    const url = new URL(trimmedValue);
+    url.protocol = 'https:';
+    url.hostname = url.hostname.toLowerCase();
+    url.hash = '';
+
+    for (const searchParamKey of [...url.searchParams.keys()]) {
+      if (
+        TRACKING_SEARCH_PARAM_PATTERNS.some((pattern) =>
+          pattern.test(searchParamKey),
+        )
+      ) {
+        url.searchParams.delete(searchParamKey);
+      }
+    }
+
+    url.searchParams.sort();
+
+    if (url.pathname !== '/') {
+      url.pathname = url.pathname.replace(/\/+$/gu, '');
+    }
+
+    return url.toString().replace(/\/$/u, '');
+  } catch {
+    return trimmedValue.replace(/\/+$/gu, '');
+  }
 }
 
 function escapeRegExp(value: string): string {
@@ -166,6 +232,72 @@ async function listExistingArticleSlugs({
     : [];
 }
 
+function readFrontmatterSourceUrl(frontmatter: unknown): string | undefined {
+  return isRecord(frontmatter)
+    ? readNonEmptyString(frontmatter['sourceUrl'])
+    : undefined;
+}
+
+async function findPublishedArticleBySourceUrl({
+  sourceUrl,
+  supabaseClient,
+}: {
+  sourceUrl?: string;
+  supabaseClient: ArticlePublishSupabaseClient;
+}): Promise<PublishedArticleSourceRow | null> {
+  const normalizedSourceUrl = sourceUrl
+    ? normalizeArticleSourceUrl(sourceUrl)
+    : '';
+
+  if (!normalizedSourceUrl) {
+    return null;
+  }
+
+  const { data, error } = await supabaseClient
+    .from(ARTICLES_TABLE_NAME)
+    .select('slug, frontmatter')
+    .eq('status', 'published');
+
+  if (error) {
+    throw new Error('Bestaande artikelbronnen konden niet worden opgehaald.');
+  }
+
+  if (!Array.isArray(data)) {
+    return null;
+  }
+
+  return (
+    (data as PublishedArticleSourceRow[]).find((row) => {
+      const existingSourceUrl = readFrontmatterSourceUrl(row.frontmatter);
+
+      return (
+        existingSourceUrl &&
+        normalizeArticleSourceUrl(existingSourceUrl) === normalizedSourceUrl
+      );
+    }) ?? null
+  );
+}
+
+async function assertPublishedSourceUrlIsUnique({
+  frontmatter,
+  supabaseClient,
+}: {
+  frontmatter: ContentArticleFrontmatterInput;
+  supabaseClient: ArticlePublishSupabaseClient;
+}): Promise<void> {
+  const existingArticle = await findPublishedArticleBySourceUrl({
+    sourceUrl: frontmatter.sourceUrl,
+    supabaseClient,
+  });
+
+  if (existingArticle) {
+    throw new ContentArticleDuplicateSourceError(
+      DUPLICATE_SOURCE_PUBLISH_ERROR_MESSAGE,
+      existingArticle.slug,
+    );
+  }
+}
+
 function getNextAvailableSlug({
   baseSlug,
   existingSlugs,
@@ -276,6 +408,11 @@ export async function publishContentArticle({
 }): Promise<{ slug: string }> {
   const { frontmatter, mdx } = readPublishInput(input);
 
+  await assertPublishedSourceUrlIsUnique({
+    frontmatter,
+    supabaseClient,
+  });
+
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const slug = await createUniqueContentArticleSlug({
       preferredSlug: frontmatter.slug,
@@ -304,4 +441,5 @@ export async function publishContentArticle({
 
 export const contentArticlePublishTestUtils = {
   getNextAvailableSlug,
+  normalizeArticleSourceUrl,
 };

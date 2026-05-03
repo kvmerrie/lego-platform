@@ -389,6 +389,49 @@ describe('editorial agent draft generation', () => {
     );
   });
 
+  it('localizes expanded English feed title patterns to Dutch', () => {
+    const createEnglishTitleDraft = (title: string) =>
+      generateEditorialMdxDraft(
+        createInput({
+          matching: createMatching({
+            articleType: 'multi_set_announcement',
+            matchedSets: [],
+            unmatchedSetNumbers: [],
+          }),
+          primarySet: null,
+          facts: createFacts({
+            setNames: [],
+            setNumbers: [],
+            summary: title,
+            theme: 'LEGO',
+            title,
+          }),
+          source: createSource({
+            domain: 'brickset.com',
+            language: 'en',
+            title,
+          }),
+        }),
+      );
+
+    expect(
+      createEnglishTitleDraft('New decorative LEGO Creator sets unveiled')
+        .frontmatter.title,
+    ).toBe('Nieuwe decoratieve LEGO Creator-sets onthuld');
+    expect(
+      createEnglishTitleDraft('Summer LEGO City sets unveiled').frontmatter
+        .title,
+    ).toBe('Nieuwe LEGO City-sets voor de zomer onthuld');
+    expect(
+      createEnglishTitleDraft('Summer LEGO Minecraft sets revealed').frontmatter
+        .title,
+    ).toBe('Nieuwe LEGO Minecraft-sets voor de zomer onthuld');
+    expect(
+      createEnglishTitleDraft('Six magical LEGO Disney sets revealed!')
+        .frontmatter.title,
+    ).toBe('Zes nieuwe LEGO Disney-sets onthuld');
+  });
+
   it('keeps Dutch BrickTastic titles unchanged', () => {
     const title =
       'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten';
@@ -727,8 +770,13 @@ describe('editorial agent draft generation', () => {
     expect(
       result.mdx.match(/LEGO F1 helmen van Piastri en Norris onthuld/gu),
     ).toHaveLength(1);
-    expect(result.mdx).toContain('F1 Piastri Helmet trekt de aandacht');
-    expect(result.mdx).toContain('leuk is om te volgen');
+    expect(result.frontmatter.description).toContain(
+      'Piastri en Norris-helmen',
+    );
+    expect(result.frontmatter.description).toContain('meer dan één set');
+    expect(result.mdx).toContain('Piastri en Norris-helmen');
+    expect(result.mdx).toContain('meerdere sets');
+    expect(result.mdx).toContain('leuk om te volgen');
     expect(result.mdx).toContain('welke set eruit springt');
     expect(result.mdx).toContain('## Wat is er aangekondigd?');
     expect(result.mdx).not.toContain('<SetSpotlightList');
@@ -740,6 +788,166 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).not.toContain(
       '[Bekijk meteen de nieuwe sets ↓](#nieuwe-sets-die-opvallen)',
     );
+  });
+
+  it('uses title subjects for no-primary F1 helmet announcements', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: null,
+        relatedCandidates: [],
+        detected: createDetected({
+          keywords: ['F1', 'Piastri', 'Norris'],
+          setNumbers: [],
+          themes: ['Technic'],
+        }),
+        facts: createFacts({
+          setNames: [],
+          setNumbers: [],
+          summary:
+            'Eerste foto’s van LEGO F1-helmen Piastri en Norris zijn opgedoken.',
+          theme: 'Technic',
+          title:
+            'Eerste foto’s LEGO F1-helmen Piastri en Norris verklappen mogelijk nieuwe sets',
+        }),
+        source: createSource({
+          title:
+            'Eerste foto’s LEGO F1-helmen Piastri en Norris verklappen mogelijk nieuwe sets',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.description).toContain(
+      'Piastri en Norris-helmen',
+    );
+    expect(result.mdx).toContain('Piastri en Norris-helmen');
+    expect(result.mdx).not.toContain('<FeaturedSet');
+    expect(result.mdx).not.toContain('meerdere nieuwe LEGO-sets');
+    expect(result.mdx).not.toContain('deze sets trekt');
+    expect(result.mdx).not.toContain('deze sets laat');
+  });
+
+  it('acknowledges both named sets when a multi-set announcement has a FeaturedSet', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [
+            createMatchedSet('80120', {
+              name: 'Prosperity Carp Leaping',
+              theme: 'Seasonal',
+            }),
+            createMatchedSet('80121', {
+              name: 'Ancient Moon-Gazing Inn',
+              theme: 'Seasonal',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('80120', {
+            name: 'Prosperity Carp Leaping',
+            theme: 'Seasonal',
+          }),
+          reason: 'title_match',
+        },
+        relatedCandidates: [
+          createRelatedCandidate('80121', {
+            name: 'Ancient Moon-Gazing Inn',
+            theme: 'Seasonal',
+          }),
+        ],
+        facts: createFacts({
+          setNames: ['Prosperity Carp Leaping', 'Ancient Moon-Gazing Inn'],
+          setNumbers: ['80120', '80121'],
+          summary:
+            'Prosperity Carp Leaping en Ancient Moon-Gazing Inn zijn onthuld.',
+          theme: 'Seasonal',
+          title:
+            'LEGO 80120 Prosperity Carp Leaping en 80121 Ancient Moon-Gazing Inn onthuld',
+        }),
+        source: createSource({
+          title:
+            'LEGO 80120 Prosperity Carp Leaping en 80121 Ancient Moon-Gazing Inn onthuld',
+        }),
+      }),
+    );
+
+    expect(result.mdx).toContain('<FeaturedSet setNumber="80120" />');
+    expect(result.frontmatter.description).toContain('Prosperity Carp Leaping');
+    expect(result.frontmatter.description).toContain('Ancient Moon-Gazing Inn');
+    expect(result.frontmatter.description).toContain('meer dan één set');
+    expect(result.mdx).toContain('Prosperity Carp Leaping');
+    expect(result.mdx).toContain('Ancient Moon-Gazing Inn');
+  });
+
+  it('acknowledges all title sets in Star Wars multi-set announcements', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [
+            createMatchedSet('75461', {
+              name: 'Up-Scaled Darth Vader',
+              theme: 'Star Wars',
+            }),
+            createMatchedSet('75462', {
+              name: 'AT-RT Driver',
+              theme: 'Star Wars',
+            }),
+            createMatchedSet('75463', {
+              name: 'Lambda-Class Shuttle',
+              theme: 'Star Wars',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('75461', {
+            name: 'Up-Scaled Darth Vader',
+            theme: 'Star Wars',
+          }),
+          reason: 'title_match',
+        },
+        relatedCandidates: [
+          createRelatedCandidate('75462', {
+            name: 'AT-RT Driver',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('75463', {
+            name: 'Lambda-Class Shuttle',
+            theme: 'Star Wars',
+          }),
+        ],
+        facts: createFacts({
+          setNames: [
+            'Up-Scaled Darth Vader',
+            'AT-RT Driver',
+            'Lambda-Class Shuttle',
+          ],
+          setNumbers: ['75461', '75462', '75463'],
+          summary:
+            'Up-Scaled Darth Vader, AT-RT Driver en Lambda-Class Shuttle zijn onthuld.',
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars juni: Up-Scaled Darth Vader, AT-RT Driver en Lambda-Class Shuttle onthuld',
+        }),
+        source: createSource({
+          title:
+            'LEGO Star Wars juni: Up-Scaled Darth Vader, AT-RT Driver en Lambda-Class Shuttle onthuld',
+        }),
+      }),
+    );
+
+    expect(result.mdx).toContain('<FeaturedSet setNumber="75461" />');
+    expect(result.frontmatter.description).toContain('Up-Scaled Darth Vader');
+    expect(result.frontmatter.description).toContain('AT-RT Driver');
+    expect(result.frontmatter.description).toContain('Lambda-Class Shuttle');
+    expect(result.frontmatter.description).toContain('meer dan één set');
   });
 
   it('does not use Other in frontmatter when Lewis Hamilton helmet metadata gives a better theme', () => {

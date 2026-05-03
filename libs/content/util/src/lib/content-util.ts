@@ -49,6 +49,7 @@ export interface PreviewPanel {
 export type ContentArticleStatus = 'draft' | 'published';
 
 export interface ContentArticleListItem {
+  bodySource?: string;
   cardImage?: string;
   cardImageAlt: string;
   date: string;
@@ -126,17 +127,69 @@ export function normalizeContentArticleSetNumber(
 export function extractPrimarySetNumberFromArticleBody(
   bodySource: string,
 ): string | undefined {
-  const featuredSetMatch = bodySource.match(
+  return readFirstMdxComponentSetIds({
+    bodySource,
+    componentName: 'FeaturedSet',
+  })[0];
+}
+
+function readFirstMdxComponentSetIds({
+  bodySource,
+  componentName,
+}: {
+  bodySource: string;
+  componentName: string;
+}): string[] {
+  const componentMatch = bodySource.match(
+    new RegExp(`<${componentName}\\b[^>]*>`, 'iu'),
+  );
+
+  if (!componentMatch) {
+    return [];
+  }
+
+  const componentSource = componentMatch[0];
+  const singleSetMatch = componentSource.match(
     /<FeaturedSet\b[^>]*\bsetNumber\s*=\s*(?:"([^"]+)"|'([^']+)')/u,
   );
 
-  if (!featuredSetMatch) {
-    return undefined;
+  if (singleSetMatch) {
+    const setNumber = normalizeContentArticleSetNumber(
+      singleSetMatch[1] ?? singleSetMatch[2],
+    );
+
+    return setNumber ? [setNumber] : [];
   }
 
-  return normalizeContentArticleSetNumber(
-    featuredSetMatch[1] ?? featuredSetMatch[2],
+  const setIdsMatch = componentSource.match(
+    /\bsetIds\s*=\s*(?:"([^"]+)"|'([^']+)')/u,
   );
+
+  return (setIdsMatch?.[1] ?? setIdsMatch?.[2] ?? '')
+    .split(',')
+    .map(normalizeContentArticleSetNumber)
+    .filter((setNumber): setNumber is string => Boolean(setNumber));
+}
+
+export function extractArticleHeroSetNumberCandidatesFromBody(
+  bodySource: string,
+): string[] {
+  const setNumbers = [
+    ...readFirstMdxComponentSetIds({
+      bodySource,
+      componentName: 'FeaturedSet',
+    }),
+    ...readFirstMdxComponentSetIds({
+      bodySource,
+      componentName: 'SetSpotlightList',
+    }),
+    ...readFirstMdxComponentSetIds({
+      bodySource,
+      componentName: 'SetRail',
+    }),
+  ];
+
+  return [...new Set(setNumbers)];
 }
 
 const contentArticleDateFormatter = new Intl.DateTimeFormat('nl-NL', {

@@ -2294,16 +2294,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75349",
-    "merchantId": "misterbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5895,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:39.382Z"
-  },
-  {
-    "setId": "75349",
     "merchantId": "lego-nl",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -2311,26 +2301,6 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 6999,
     "availability": "in_stock",
     "observedAt": "2026-04-20T08:41:45.623Z"
-  },
-  {
-    "setId": "75350",
-    "merchantId": "lego-nl",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6999,
-    "availability": "out_of_stock",
-    "observedAt": "2026-04-22T07:43:37.218Z"
-  },
-  {
-    "setId": "75350",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 8295,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:38.768Z"
   },
   {
     "setId": "75351",
@@ -2341,16 +2311,6 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 6990,
     "availability": "in_stock",
     "observedAt": "2026-04-22T18:04:05.898Z"
-  },
-  {
-    "setId": "75351",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7820,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:36.158Z"
   },
   {
     "setId": "75355",

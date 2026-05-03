@@ -3,7 +3,11 @@ import {
   runLocalCatalogSyncCheck,
   runCatalogSync,
 } from '@lego-platform/catalog/data-access-sync';
-import { hasServerSupabaseConfig } from '@lego-platform/shared/config';
+import { refreshZeroPieceSets } from '@lego-platform/catalog/data-access-server';
+import {
+  hasRebrickableApiConfig,
+  hasServerSupabaseConfig,
+} from '@lego-platform/shared/config';
 
 function getSyncMode(
   argv: readonly string[],
@@ -61,6 +65,14 @@ async function main() {
   if (!hasServerSupabaseConfig()) {
     throw new Error(
       'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to run the live catalog sync.',
+    );
+  }
+
+  if (mode === 'write' && hasRebrickableApiConfig()) {
+    const zeroPieceRefresh = await refreshZeroPieceSets();
+
+    console.log(
+      `[catalog-sync] zero_piece_refresh checked=${zeroPieceRefresh.checkedCount} updated=${zeroPieceRefresh.updatedCount} still_unknown=${zeroPieceRefresh.stillUnknownCount} failed=${zeroPieceRefresh.failedCount}`,
     );
   }
 

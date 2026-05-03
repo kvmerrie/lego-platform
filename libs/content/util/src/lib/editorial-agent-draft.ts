@@ -432,6 +432,10 @@ function localizeEnglishTitleSubject(value: string): string {
     .trim();
 }
 
+function localizeEnglishTitleVerb(value: string): string {
+  return value.toLowerCase() === 'announced' ? 'aangekondigd' : 'onthuld';
+}
+
 function localizeNonDutchArticleTitle(
   title: string,
   input: EditorialAgentDraftGenerationInput,
@@ -448,6 +452,38 @@ function localizeNonDutchArticleTitle(
 
   if (/^summer lego harry potter sets revealed$/iu.test(cleanTitle)) {
     return 'Nieuwe LEGO Harry Potter-sets voor de zomer onthuld';
+  }
+
+  const summerLegoThemeSetsMatch = cleanTitle.match(
+    /^summer\s+lego\s+(.+?)\s+sets\s+(revealed|unveiled|announced)$/iu,
+  );
+
+  if (summerLegoThemeSetsMatch) {
+    return `Nieuwe LEGO ${summerLegoThemeSetsMatch[1]}-sets voor de zomer ${localizeEnglishTitleVerb(summerLegoThemeSetsMatch[2])}`;
+  }
+
+  const newDecorativeLegoThemeSetsMatch = cleanTitle.match(
+    /^new\s+decorative\s+lego\s+(.+?)\s+sets\s+(revealed|unveiled|announced)$/iu,
+  );
+
+  if (newDecorativeLegoThemeSetsMatch) {
+    return `Nieuwe decoratieve LEGO ${newDecorativeLegoThemeSetsMatch[1]}-sets ${localizeEnglishTitleVerb(newDecorativeLegoThemeSetsMatch[2])}`;
+  }
+
+  const newLegoThemeSetsMatch = cleanTitle.match(
+    /^new\s+lego\s+(.+?)\s+sets\s+(revealed|unveiled|announced)$/iu,
+  );
+
+  if (newLegoThemeSetsMatch) {
+    return `Nieuwe LEGO ${newLegoThemeSetsMatch[1]}-sets ${localizeEnglishTitleVerb(newLegoThemeSetsMatch[2])}`;
+  }
+
+  const numberedAdjectiveLegoThemeSetsMatch = cleanTitle.match(
+    /^(one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+.+?\s+lego\s+(.+?)\s+sets\s+(revealed|unveiled|announced)$/iu,
+  );
+
+  if (numberedAdjectiveLegoThemeSetsMatch) {
+    return `${localizeEnglishNumberWord(numberedAdjectiveLegoThemeSetsMatch[1])} nieuwe LEGO ${numberedAdjectiveLegoThemeSetsMatch[2]}-sets ${localizeEnglishTitleVerb(numberedAdjectiveLegoThemeSetsMatch[3])}`;
   }
 
   const botanicalSetsMatch = cleanTitle.match(
@@ -599,6 +635,109 @@ function getMultiSetAnnouncementDisplayName(
   return input.primarySet?.name.trim() || 'Deze sets';
 }
 
+function formatDutchList(values: readonly string[]): string {
+  const uniqueValues = [...new Set(values.map(normalizeWhitespace))].filter(
+    Boolean,
+  );
+
+  if (uniqueValues.length <= 1) {
+    return uniqueValues[0] ?? '';
+  }
+
+  if (uniqueValues.length === 2) {
+    return `${uniqueValues[0]} en ${uniqueValues[1]}`;
+  }
+
+  return `${uniqueValues.slice(0, -1).join(', ')} en ${uniqueValues.at(-1)}`;
+}
+
+function cleanMultiSetSubjectName(value: string): string {
+  return cleanDraftSetDisplayName(value)
+    .replace(/^lego\s+/iu, '')
+    .replace(
+      /\s+(?:sets?|revealed|unveiled|announced|onthuld|aangekondigd)\s*$/iu,
+      '',
+    )
+    .replace(/\s+[|:]\s*.+$/u, '')
+    .trim();
+}
+
+function isFullHeadlineSubject(
+  subject: string,
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  const normalizedSubject = normalizeWhitespace(subject).toLowerCase();
+  const titles = [input.source.title, input.facts.title]
+    .map((title) => normalizeWhitespace(title).toLowerCase())
+    .filter(Boolean);
+
+  return titles.some((title) => normalizedSubject === title);
+}
+
+function summarizeF1HelmetSubjects(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const context = normalizeWhitespace(
+    [input.source.title, input.facts.title, input.facts.summary]
+      .filter(Boolean)
+      .join(' '),
+  );
+
+  if (!/\bf1[-\s]?helmen?\b|\bhelmets?\b/iu.test(context)) {
+    return '';
+  }
+
+  const driverNames = ['Piastri', 'Norris', 'Hamilton']
+    .filter((name) => new RegExp(`\\b${name}\\b`, 'iu').test(context))
+    .slice(0, 3);
+
+  return driverNames.length >= 2
+    ? `${formatDutchList(driverNames)}-helmen`
+    : '';
+}
+
+function getMultiSetTitleSubjects(
+  input: EditorialAgentDraftGenerationInput,
+): string[] {
+  if (isIdeasApprovalDraft(input)) {
+    return [];
+  }
+
+  const f1HelmetSubjects = summarizeF1HelmetSubjects(input);
+
+  if (f1HelmetSubjects) {
+    return [f1HelmetSubjects];
+  }
+
+  const titleContext = normalizeWhitespace(
+    [input.source.title, input.facts.title, input.facts.summary]
+      .filter(Boolean)
+      .join(' '),
+  ).toLowerCase();
+  const candidates = [
+    ...input.facts.setNames,
+    ...input.matching.matchedSets.map((set) => set.name),
+  ]
+    .map(cleanMultiSetSubjectName)
+    .filter(
+      (name) =>
+        name.length > 0 &&
+        !isFullHeadlineSubject(name, input) &&
+        (titleContext.includes(name.toLowerCase()) ||
+          input.facts.setNames.includes(name)),
+    );
+
+  return [...new Set(candidates)].slice(0, 4);
+}
+
+function getMultiSetAnnouncementSubjectPhrase(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const subjects = getMultiSetTitleSubjects(input);
+
+  return formatDutchList(subjects);
+}
+
 function hasMultiSetAnnouncementPrimary(
   input: EditorialAgentDraftGenerationInput,
 ): boolean {
@@ -724,6 +863,18 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
     case 'deal':
       return `${setName} is alleen interessant als de prijs nu echt scherp is. Hier zie je snel of dit een pak-moment is of niet.`;
     case 'multi_set_announcement':
+      {
+        const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);
+
+        if (subjectPhrase && !input.primarySet) {
+          return `${capitalizeSentenceStart(subjectPhrase)} staan centraal in deze LEGO-aankondiging. Vooral leuk om te volgen hoe deze sets zich straks onderscheiden.`;
+        }
+
+        if (subjectPhrase && input.primarySet) {
+          return `${capitalizeSentenceStart(subjectPhrase)} zetten samen de toon voor deze LEGO-aankondiging. ${input.primarySet.name} mag de blikvanger zijn, maar dit nieuws draait duidelijk om meer dan één set.`;
+        }
+      }
+
       if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
         const themeSentence = buildThemeFollowSentence(input);
 
@@ -1028,6 +1179,24 @@ function buildIntroParagraphs(
         `Wilde je deze set al en wordt de prijs of bonus nu sterk genoeg, dan moet je opletten. Was je nog niet overtuigd, dan verandert een deal daar meestal weinig aan.`,
       ];
     case 'multi_set_announcement':
+      {
+        const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);
+
+        if (subjectPhrase && !input.primarySet) {
+          return [
+            `${capitalizeSentenceStart(subjectPhrase)} staan centraal in deze LEGO-aankondiging. Dat is concreter dan een gewone lijst nieuwe sets: je ziet meteen welke namen de aandacht trekken.`,
+            'Let vooral op de eerste beelden, herkenbare vormen en details die straks op een plank blijven hangen.',
+          ];
+        }
+
+        if (subjectPhrase && input.primarySet) {
+          return [
+            `${capitalizeSentenceStart(subjectPhrase)} staan samen in de schijnwerpers. ${input.primarySet.name} mag de sterkste blikvanger zijn, maar deze aankondiging draait duidelijk om meerdere sets.`,
+            'De vraag is nu welke doos straks het meest blijft hangen door vorm, scène of personage. Eerste beelden zijn vooral handig om die richting te voelen.',
+          ];
+        }
+      }
+
       if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
         return [
           'Er zijn meerdere nieuwe LEGO-sets opgedoken. Zie dit als korte eerste blik.',
@@ -1104,6 +1273,18 @@ Tussen de grotere blikvangers staan vaak ook kleinere sets die pas op een tweede
 
 Controleer eerst de setnummers, thema’s en claims die uit de bron kwamen. Als daar nog gaten in zitten, moet de draft eerst feitelijk strakker voordat je hem redactioneel gaat polijsten.`;
     case 'multi_set_announcement':
+      {
+        const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);
+
+        if (subjectPhrase) {
+          return `## Wat is er aangekondigd?
+
+${capitalizeSentenceStart(subjectPhrase)} vormen de kern van dit nieuws. Daardoor draait de eerste indruk niet om één losse favoriet, maar om vergelijken: welke set heeft de sterkste vorm, het herkenbaarste detail of het beste displaymoment?
+
+Kijk vooral welke naam straks blijft hangen zodra er betere beelden, prijzen en officiële details zijn.`;
+        }
+      }
+
       if (!input.primarySet) {
         if (isBricksetWeakMultiSetDraft(input)) {
           return `## Wat valt op?

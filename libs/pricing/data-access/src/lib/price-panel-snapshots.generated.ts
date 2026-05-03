@@ -1453,20 +1453,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 4,
+    "merchantCount": 3,
     "observedAt": "2026-04-22T07:43:41.905Z"
-  },
-  {
-    "setId": "75350",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 8295,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:43:38.768Z"
   },
   {
     "setId": "75351",
@@ -1477,7 +1465,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 1,
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {

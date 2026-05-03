@@ -8,6 +8,7 @@ import type {
   EditorialFeedItem,
   EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
+import { ContentArticleDuplicateSourceError } from '@lego-platform/content/data-access-server';
 import { describe, expect, test, vi } from 'vitest';
 import {
   createAdminEditorialAgentService,
@@ -537,6 +538,58 @@ describe('admin editorial agent routes', () => {
       message: 'Dit artikel is nog niet klaar voor publicatie.',
     });
     expect(editorialAgentService.publishArticle).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('returns an existing slug when a source article was already published', async () => {
+    const duplicateSourceError = new ContentArticleDuplicateSourceError(
+      'Dit bronartikel is al gepubliceerd.',
+      'bestaand-artikel',
+    );
+    const publishArticle = vi.fn(async () => {
+      throw duplicateSourceError;
+    });
+    const { server } = await createAdminEditorialAgentServer({
+      editorialAgentService: {
+        extractFacts: vi.fn(async () => createExtractionResult()),
+        generateDraft: vi.fn(async () => createDraftResult()),
+        generateDraftForFeedItem: vi.fn(async () => ({
+          draftResult: createDraftResult(),
+          feedItem: createFeedItem({ status: 'drafted' }),
+        })),
+        ignoreFeedItem: vi.fn(async () =>
+          createFeedItem({ status: 'ignored' }),
+        ),
+        listFeedItems: vi.fn(async () => [createFeedItem()]),
+        publishArticle,
+        publishArticleFromFeedItem: vi.fn(async () => ({
+          slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+        })),
+        syncFeed: vi.fn(async () => ({
+          inserted: 1,
+          items: [createFeedItem()],
+          skipped: 0,
+          total: 1,
+        })),
+      },
+    });
+    const draftResult = createDraftResult();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        frontmatter: draftResult.output.frontmatter,
+        mdx: draftResult.output.mdx,
+      },
+      url: '/api/v1/admin/editorial-agent/publish',
+    });
+
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toEqual({
+      message: 'Dit bronartikel is al gepubliceerd.',
+      slug: 'bestaand-artikel',
+    });
 
     await server.close();
   });

@@ -3527,21 +3527,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
   },
   {
     "setId": "75349",
-    "merchantId": "misterbricks",
-    "merchantName": "MisterBricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5895,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://misterbricks.nl/lego-star-wars-75349-captain-rex-helm.html",
-    "disclosureCopy": "Direct merchant link.",
-    "observedAt": "2026-04-22T07:43:39.382Z",
-    "displayRank": 6,
-    "ctaLabel": "Bekijk bij MisterBricks"
-  },
-  {
-    "setId": "75349",
     "merchantId": "lego-nl",
     "merchantName": "LEGO",
     "regionCode": "NL",
@@ -3557,38 +3542,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "perks": "Direct brand purchase and reference pricing"
   },
   {
-    "setId": "75350",
-    "merchantId": "lego-nl",
-    "merchantName": "LEGO",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6999,
-    "availabilityLabel": "Out of stock",
-    "outboundUrl": "https://www.lego.com/nl-nl/product/clone-commander-cody-helmet-75350",
-    "disclosureCopy": "Direct official merchant link.",
-    "observedAt": "2026-04-22T07:43:37.218Z",
-    "displayRank": 1,
-    "ctaLabel": "Shop at LEGO",
-    "perks": "Direct brand purchase and reference pricing"
-  },
-  {
-    "setId": "75350",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 8295,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-star-wars-clone-commander-cody-helm-bouwset-75350/9300000132639068/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:38.768Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
-  },
-  {
     "setId": "75351",
     "merchantId": "alternate",
     "merchantName": "Alternate",
@@ -3602,22 +3555,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-22T18:04:05.898Z",
     "displayRank": 9,
     "ctaLabel": "Bekijk bij Alternate"
-  },
-  {
-    "setId": "75351",
-    "merchantId": "bol",
-    "merchantName": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7820,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://www.bol.com/nl/nl/p/lego-75351-star-wars-prinses-leia-helm-bouwset-voor-volwassenen-fantastisch-cadeau-ter-ere-van-het-40-jarige-jubileum-van-return-of-the-jedi-premiejager-collectie-set-2023/9300000141636732/",
-    "disclosureCopy": "Direct merchant link. Affiliate parameters may be added later.",
-    "observedAt": "2026-04-22T07:43:36.158Z",
-    "displayRank": 2,
-    "ctaLabel": "Shop at bol",
-    "perks": "Wide Dutch retail reach"
   },
   {
     "setId": "75355",

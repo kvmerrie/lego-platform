@@ -10,6 +10,15 @@ import {
 import { apiPaths } from '@lego-platform/shared/config';
 import { firstValueFrom } from 'rxjs';
 
+export class ContentAdminArticlePublishError extends Error {
+  constructor(
+    message: string,
+    readonly existingSlug?: string,
+  ) {
+    super(message);
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class ContentAdminEditorialAgentApiService {
   private readonly http = inject(HttpClient);
@@ -99,9 +108,14 @@ export class ContentAdminEditorialAgentApiService {
           typeof error.error?.message === 'string' && error.error.message.trim()
             ? error.error.message.trim()
             : '';
+        const existingSlug =
+          typeof error.error?.slug === 'string' && error.error.slug.trim()
+            ? error.error.slug.trim()
+            : undefined;
 
-        throw new Error(
+        throw new ContentAdminArticlePublishError(
           message || 'Artikel publiceren naar Supabase is mislukt.',
+          existingSlug,
         );
       }
 
