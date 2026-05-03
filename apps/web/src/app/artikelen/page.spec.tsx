@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const listPublishedArticles = vi.fn();
+const listCatalogSetCards = vi.fn();
 const listCatalogSetCardsByIds = vi.fn();
 
 vi.mock('@lego-platform/content/data-access', () => ({
@@ -19,6 +20,7 @@ vi.mock('@lego-platform/catalog/data-access', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
+  listCatalogSetCards,
   listCatalogSetCardsByIds,
 }));
 
@@ -29,6 +31,7 @@ vi.mock('@lego-platform/shell/web', () => ({
 describe('articles index route', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    listCatalogSetCards.mockResolvedValue([]);
     listCatalogSetCardsByIds.mockResolvedValue([]);
   });
 
@@ -199,6 +202,83 @@ describe('articles index route', () => {
     });
     expect(markup).toContain('https://images.example/75446.jpg');
     expect(markup).toContain('Up-Scaled Darth Vader LEGO-set');
+  });
+
+  it('uses a representative set image from the article theme before the theme tile', async () => {
+    listPublishedArticles.mockResolvedValue([
+      {
+        bodySource: 'Geen embeds.',
+        cardImageAlt: 'Artikel',
+        date: '2026-05-03',
+        description: 'Star Wars-artikel zonder concrete set embed.',
+        heroImage: undefined,
+        heroImageAlt: 'Artikel',
+        slug: 'star-wars-zonder-embed',
+        status: 'published',
+        theme: 'Star Wars',
+        title: 'LEGO Star Wars update',
+      },
+    ]);
+    listCatalogSetCards.mockResolvedValue([
+      {
+        id: '00001',
+        imageUrl: 'https://images.example/zero-piece.jpg',
+        name: 'Zero Piece Star Wars',
+        pieces: 0,
+        releaseYear: 2026,
+        slug: 'zero-piece-star-wars',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75446',
+        imageUrl: 'https://images.example/representative.jpg',
+        name: 'Up-Scaled Darth Vader',
+        pieces: 1040,
+        releaseYear: 2026,
+        slug: 'up-scaled-darth-vader-75446',
+        theme: 'Star Wars',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain('https://images.example/representative.jpg');
+    expect(markup).not.toContain('https://images.example/zero-piece.jpg');
+  });
+
+  it('does not pick a random representative set for Multiple theme articles', async () => {
+    listPublishedArticles.mockResolvedValue([
+      {
+        bodySource: 'Geen embeds.',
+        cardImageAlt: 'Artikel',
+        date: '2026-05-03',
+        description: 'Meerdere thema’s zonder concrete set embed.',
+        heroImage: undefined,
+        heroImageAlt: 'Artikel',
+        slug: 'multiple-zonder-embed',
+        status: 'published',
+        theme: 'Multiple',
+        title: 'LEGO overzicht',
+      },
+    ]);
+    listCatalogSetCards.mockResolvedValue([
+      {
+        id: '75313',
+        imageUrl: 'https://images.example/random.jpg',
+        name: 'AT-AT',
+        pieces: 6785,
+        releaseYear: 2021,
+        slug: 'at-at-75313',
+        theme: 'Star Wars',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(listCatalogSetCardsByIds).not.toHaveBeenCalled();
+    expect(markup).not.toContain('https://images.example/random.jpg');
   });
 
   it('keeps manual article card images before catalog fallbacks', async () => {

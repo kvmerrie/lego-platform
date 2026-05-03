@@ -4,15 +4,35 @@ import {
   type ContentArticle,
   type ContentArticleListItem,
 } from '@lego-platform/content/util';
-import { getThemeTileImage } from '@lego-platform/catalog/util';
+import {
+  getThemeTileImage,
+  isCatalogBrowsablePrimaryTheme,
+} from '@lego-platform/catalog/util';
 import {
   getArticleCatalogSetImageUrl,
+  resolveRepresentativeArticleCatalogSetCardByTheme,
   resolveArticleCatalogSetCards,
 } from './article-catalog-set-resolver';
 
 export interface ResolvedArticleHeroPresentation {
   imageAlt: string;
   imageUrl: string;
+}
+
+const NON_REPRESENTATIVE_THEME_LABELS = new Set([
+  'multiple',
+  'other',
+  'unknown',
+]);
+
+function canUseRepresentativeThemeFallback(theme?: string): theme is string {
+  const normalizedTheme = theme?.trim().toLowerCase();
+
+  return Boolean(
+    normalizedTheme &&
+      !NON_REPRESENTATIVE_THEME_LABELS.has(normalizedTheme) &&
+      isCatalogBrowsablePrimaryTheme(theme),
+  );
 }
 
 const resolveArticleHeroPresentationCached = cache(
@@ -31,38 +51,66 @@ const resolveArticleHeroPresentationCached = cache(
       };
     }
 
-    const setNumberCandidates = [
+    const embeddedSetNumberCandidates = [
       ...(bodySource
         ? extractArticleHeroSetNumberCandidatesFromBody(bodySource)
         : []),
       ...(primarySetNumber ? [primarySetNumber] : []),
-      ...(theme
-        ? [getThemeTileImage(theme)].filter((setNumber): setNumber is string =>
-            Boolean(setNumber),
-          )
-        : []),
     ];
-    const uniqueSetNumberCandidates = [...new Set(setNumberCandidates)];
+    const uniqueEmbeddedSetNumberCandidates = [
+      ...new Set(embeddedSetNumberCandidates),
+    ];
 
-    if (!uniqueSetNumberCandidates.length) {
+    if (uniqueEmbeddedSetNumberCandidates.length) {
+      const [firstResolvableSetCard] = await resolveArticleCatalogSetCards({
+        canonicalIds: uniqueEmbeddedSetNumberCandidates,
+      });
+      const firstResolvableSetImageUrl = getArticleCatalogSetImageUrl(
+        firstResolvableSetCard,
+      );
+
+      if (firstResolvableSetCard && firstResolvableSetImageUrl) {
+        return {
+          imageAlt: `${firstResolvableSetCard.name || theme || title} LEGO-set`,
+          imageUrl: firstResolvableSetImageUrl,
+        };
+      }
+    }
+
+    if (canUseRepresentativeThemeFallback(theme)) {
+      const representativeSetCard =
+        await resolveRepresentativeArticleCatalogSetCardByTheme({
+          theme,
+        });
+      const representativeSetImageUrl = getArticleCatalogSetImageUrl(
+        representativeSetCard,
+      );
+
+      if (representativeSetCard && representativeSetImageUrl) {
+        return {
+          imageAlt: `${representativeSetCard.name || theme || title} LEGO-set`,
+          imageUrl: representativeSetImageUrl,
+        };
+      }
+    }
+
+    const themeTileSetNumber = theme ? getThemeTileImage(theme) : undefined;
+
+    if (!themeTileSetNumber) {
       return undefined;
     }
 
-    const [firstResolvableSetCard] = await resolveArticleCatalogSetCards({
-      canonicalIds: uniqueSetNumberCandidates,
+    const [themeTileSetCard] = await resolveArticleCatalogSetCards({
+      canonicalIds: [themeTileSetNumber],
     });
-    const firstResolvableSetImageUrl = getArticleCatalogSetImageUrl(
-      firstResolvableSetCard,
-    );
+    const themeTileSetImageUrl = getArticleCatalogSetImageUrl(themeTileSetCard);
 
-    if (!firstResolvableSetCard || !firstResolvableSetImageUrl) {
-      return undefined;
-    }
-
-    return {
-      imageAlt: `${firstResolvableSetCard.name || theme || title} LEGO-set`,
-      imageUrl: firstResolvableSetImageUrl,
-    };
+    return themeTileSetCard && themeTileSetImageUrl
+      ? {
+          imageAlt: `${themeTileSetCard.name || theme || title} LEGO-set`,
+          imageUrl: themeTileSetImageUrl,
+        }
+      : undefined;
   },
 );
 

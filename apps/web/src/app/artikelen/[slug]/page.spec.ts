@@ -6,6 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 const listPublishedArticleSlugs = vi.fn();
 const listPublishedArticles = vi.fn();
 const getArticleBySlug = vi.fn();
+const listCatalogSetCards = vi.fn();
 const listCatalogSetCardsByIds = vi.fn();
 const contentArticlePageSpy = vi.fn(() => null);
 const mdxRemoteSpy = vi.fn(() => null);
@@ -36,6 +37,7 @@ vi.mock('@lego-platform/catalog/data-access', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
+  listCatalogSetCards,
   listCatalogSetCardsByIds,
 }));
 
@@ -72,6 +74,7 @@ vi.mock('@lego-platform/shell/web', () => ({
 describe('article detail route', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    listCatalogSetCards.mockResolvedValue([]);
     listCatalogSetCardsByIds.mockResolvedValue([]);
   });
 
@@ -288,6 +291,59 @@ describe('article detail route', () => {
     const renderedPage = await pageModule.default({
       params: Promise.resolve({
         slug: 'star-wars-roundup',
+      }),
+    });
+    renderToStaticMarkup(renderedPage);
+
+    expect(contentArticlePageSpy.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        contentArticle: expect.objectContaining({
+          heroImage: 'https://example.com/75446.jpg',
+          heroImageAlt: 'Up-Scaled Darth Vader LEGO-set',
+        }),
+      }),
+    );
+  });
+
+  it('uses the representative theme image on detail pages when no set embeds exist', async () => {
+    getArticleBySlug.mockResolvedValue({
+      bodySource: 'Geen embeds.',
+      cardImageAlt: 'Star Wars artikel',
+      date: '2026-05-01',
+      description: 'Een Star Wars-artikel zonder set embed.',
+      heroImage: undefined,
+      heroImageAlt: 'Wordt vervangen',
+      slug: 'star-wars-zonder-embed',
+      status: 'published',
+      theme: 'Star Wars',
+      title: 'LEGO Star Wars update',
+    });
+    listPublishedArticles.mockResolvedValue([]);
+    listCatalogSetCards.mockResolvedValue([
+      {
+        id: '00001',
+        imageUrl: 'https://example.com/zero-piece.jpg',
+        name: 'Zero Piece Star Wars',
+        pieces: 0,
+        releaseYear: 2026,
+        slug: 'zero-piece-star-wars',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75446',
+        imageUrl: 'https://example.com/75446.jpg',
+        name: 'Up-Scaled Darth Vader',
+        pieces: 1040,
+        releaseYear: 2026,
+        slug: 'up-scaled-darth-vader-75446',
+        theme: 'Star Wars',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const renderedPage = await pageModule.default({
+      params: Promise.resolve({
+        slug: 'star-wars-zonder-embed',
       }),
     });
     renderToStaticMarkup(renderedPage);
