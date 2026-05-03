@@ -67,6 +67,32 @@ export interface ContentArticle extends ContentArticleListItem {
   bodySource: string;
 }
 
+export interface ContentArticleFrontmatterInput {
+  date: string;
+  description: string;
+  heroImage?: string;
+  heroImageAlt?: string;
+  slug?: string;
+  sourceUrl?: string;
+  status?: ContentArticleStatus;
+  theme?: string;
+  title: string;
+  [key: string]: unknown;
+}
+
+export interface ContentArticlePublishInput {
+  frontmatter: ContentArticleFrontmatterInput;
+  mdx: string;
+  primarySetNumber?: string;
+}
+
+export interface ContentArticlePublishResult {
+  article: ContentArticle;
+  revalidated: boolean;
+  revalidationWarnings: readonly string[];
+  slug: string;
+}
+
 export function normalizeContentArticleSetNumber(
   setNumber?: string,
 ): string | undefined {

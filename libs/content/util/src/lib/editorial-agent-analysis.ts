@@ -23,14 +23,78 @@ const DEAL_SIGNAL_TERMS = [
   'sale',
 ] as const;
 const RELEASE_ROUNDUP_SIGNAL_TERMS = [
+  'alle nieuwe sets',
   'alle nieuwe lego-sets',
+  'alle sets',
   'deze nieuwe lego-sets',
-  'nieuwe lego-sets',
+  'nieuwe lego-sets voor',
   'overzicht',
   'release roundup',
   'releasegolf',
-  'releases',
 ] as const;
+const MONTH_CONTEXT_ROUNDUP_TERMS = [
+  'gepresenteerd',
+  'release',
+  'releases',
+  'verschijnen',
+] as const;
+const MULTI_SET_ANNOUNCEMENT_TERMS = [
+  'aangekondigd',
+  'aankondiging',
+  'beelden',
+  'eerste beelden',
+  'eerste foto',
+  'eerste fotos',
+  "eerste foto's",
+  'foto',
+  "foto's",
+  'gepresenteerd',
+  'goedgekeurd',
+  'onthuld',
+  'reveal',
+  'revealed',
+  'te zien',
+  'uitgebracht',
+] as const;
+const IDEAS_APPROVAL_TERMS = [
+  'approved',
+  'goedgekeurd',
+  'ideas projecten',
+  'ideas-projecten',
+  'reviewronde',
+  'selected',
+  'worden als set uitgebracht',
+] as const;
+const CONTEXT_REFERENCE_TERMS = [
+  'al uitgebracht',
+  'als voorbeeld',
+  'eerder',
+  'eerder verschenen',
+  'in het verleden',
+  'net als',
+  'referentie',
+  'vergelijkbaar met',
+  'voormalige',
+  'voorbeeld',
+  'zoals',
+] as const;
+const MATCHED_SET_TITLE_STOP_WORDS = new Set([
+  'a',
+  'aan',
+  'and',
+  'de',
+  'een',
+  'en',
+  'het',
+  'in',
+  'lego',
+  'of',
+  'set',
+  'sets',
+  'the',
+  'van',
+  'voor',
+]);
 
 const DUTCH_MONTHS = new Map([
   ['januari', '01'],
@@ -102,12 +166,7 @@ function buildHeadlineContextParts(
   facts: EditorialAgentExtractedFacts,
   source: EditorialAgentExtractedSource,
 ): string[] {
-  return [
-    facts.title,
-    source.title,
-    source.description,
-    extractSourceSlugContext(source),
-  ];
+  return [facts.title, source.title, extractSourceSlugContext(source)];
 }
 
 function findDominantHeadlineSetNumbers({
@@ -126,6 +185,30 @@ function findDominantHeadlineSetNumbers({
   return findMentionedSetNumbersInContext(headlineContext, detectedSetNumbers);
 }
 
+function findCentralLegoHeadlineSetNumbers({
+  detectedSetNumbers,
+  facts,
+  source,
+}: {
+  detectedSetNumbers: readonly string[];
+  facts: EditorialAgentExtractedFacts;
+  source: EditorialAgentExtractedSource;
+}): string[] {
+  const headlineContext = lowerCaseContext(
+    buildHeadlineContextParts(facts, source),
+  );
+  const centralSetMatches = [
+    ...headlineContext.matchAll(
+      /\blego(?:\s+[\p{L}0-9&.'-]+){0,4}\s+(\d{5})(?:-\d+)?\b/giu,
+    ),
+  ].map((match) => normalizeSetNumber(match[1]));
+  const centralSetNumbers = uniqueStrings(centralSetMatches);
+
+  return centralSetNumbers.filter((setNumber) =>
+    detectedSetNumbers.includes(setNumber),
+  );
+}
+
 function titleMentionsMatchedSet({
   matchedSet,
   title,
@@ -138,6 +221,97 @@ function titleMentionsMatchedSet({
   return (
     lowerTitle.includes(matchedSet.setNumber.toLowerCase()) ||
     lowerTitle.includes(matchedSet.name.toLowerCase())
+  );
+}
+
+function matchedSetIsCentralToHeadline({
+  headlineContext,
+  matchedSet,
+}: {
+  headlineContext: string;
+  matchedSet: EditorialAgentCatalogMatch;
+}): boolean {
+  if (
+    headlineContext.includes(matchedSet.setNumber.toLowerCase()) ||
+    headlineContext.includes(matchedSet.name.toLowerCase())
+  ) {
+    return true;
+  }
+
+  const significantNameTokens = uniqueStrings(
+    matchedSet.name
+      .toLowerCase()
+      .split(/[^a-z0-9]+/u)
+      .filter(
+        (token) =>
+          token.length >= 2 && !MATCHED_SET_TITLE_STOP_WORDS.has(token),
+      ),
+  );
+  const matchedTokenCount = significantNameTokens.filter((token) =>
+    headlineContext.includes(token),
+  ).length;
+
+  return matchedTokenCount >= 2;
+}
+
+function includesContextReferenceAroundMatchedSet({
+  context,
+  matchedSet,
+}: {
+  context: string;
+  matchedSet: EditorialAgentCatalogMatch;
+}): boolean {
+  const needles = [
+    matchedSet.setNumber.toLowerCase(),
+    matchedSet.name.toLowerCase(),
+  ].filter((needle) => needle.length > 0);
+
+  for (const needle of needles) {
+    let searchFrom = 0;
+
+    for (;;) {
+      const index = context.indexOf(needle, searchFrom);
+
+      if (index === -1) {
+        break;
+      }
+
+      const windowStart = Math.max(0, index - 90);
+      const windowEnd = Math.min(context.length, index + needle.length + 90);
+      const surroundingText = context.slice(windowStart, windowEnd);
+
+      if (includesAnyTerm(surroundingText, CONTEXT_REFERENCE_TERMS)) {
+        return true;
+      }
+
+      searchFrom = index + needle.length;
+    }
+  }
+
+  return false;
+}
+
+function isIdeasApprovalArticle({
+  context,
+  headlineContext,
+}: {
+  context: string;
+  headlineContext: string;
+}): boolean {
+  const hasIdeasContext =
+    context.includes('lego ideas') ||
+    context.includes('ideas-project') ||
+    context.includes('ideas project');
+
+  return (
+    hasIdeasContext &&
+    includesAnyTerm(context, IDEAS_APPROVAL_TERMS) &&
+    includesAnyTerm(headlineContext || context, [
+      'goedgekeurd',
+      'reviewronde',
+      'selected',
+      'worden als set uitgebracht',
+    ])
   );
 }
 
@@ -205,10 +379,39 @@ export function detectArticleType(
     facts,
     source,
   });
+  const centralLegoHeadlineSetNumbers = findCentralLegoHeadlineSetNumbers({
+    detectedSetNumbers,
+    facts,
+    source,
+  });
   const hasExplicitRoundupHeadline = includesAnyTerm(
     headlineContext,
     RELEASE_ROUNDUP_SIGNAL_TERMS,
   );
+  const hasDateGrouping = detected.dateSignals.length > 0;
+  const hasMonthContextRoundupHeadline =
+    hasDateGrouping &&
+    includesAnyTerm(headlineContext, MONTH_CONTEXT_ROUNDUP_TERMS) &&
+    (headlineContext.includes('maand') ||
+      headlineContext.includes('nieuwe sets') ||
+      headlineContext.includes('lego sets') ||
+      headlineContext.includes('lego-sets'));
+  const hasStrongRoundupHeadline =
+    hasExplicitRoundupHeadline || hasMonthContextRoundupHeadline;
+  const hasIdeasApprovalSignal = isIdeasApprovalArticle({
+    context,
+    headlineContext,
+  });
+  const hasManySetsWithStrongDateGrouping =
+    detectedSetNumbers.length > 6 && hasDateGrouping;
+  const hasMultiSetAnnouncementHeadline =
+    detectedSetNumbers.length <= 6 &&
+    (includesAnyTerm(headlineContext, MULTI_SET_ANNOUNCEMENT_TERMS) ||
+      hasIdeasApprovalSignal);
+  const hasSingleCentralHeadlineSet =
+    !hasStrongRoundupHeadline &&
+    (headlineSetNumbers.length === 1 ||
+      centralLegoHeadlineSetNumbers.length === 1);
 
   if (
     includesAnyTerm(context, GWP_SIGNAL_TERMS) &&
@@ -221,15 +424,17 @@ export function detectArticleType(
     return 'deal';
   }
 
-  if (headlineSetNumbers.length === 1 && !hasExplicitRoundupHeadline) {
+  if (hasSingleCentralHeadlineSet) {
     return 'single_set_news';
   }
 
+  if (hasMultiSetAnnouncementHeadline && !hasStrongRoundupHeadline) {
+    return 'multi_set_announcement';
+  }
+
   if (
-    hasExplicitRoundupHeadline ||
-    (detectedSetNumbers.length > 1 &&
-      detected.dateSignals.length > 0 &&
-      headlineSetNumbers.length !== 1)
+    hasStrongRoundupHeadline ||
+    (hasManySetsWithStrongDateGrouping && headlineSetNumbers.length !== 1)
   ) {
     return 'release_roundup';
   }
@@ -240,6 +445,10 @@ export function detectArticleType(
 
   if (detectedSetNumbers.length === 1) {
     return 'single_set_news';
+  }
+
+  if (detectedSetNumbers.length >= 2 && detectedSetNumbers.length <= 6) {
+    return 'multi_set_announcement';
   }
 
   return 'unknown';
@@ -270,6 +479,11 @@ export function selectPrimarySet(
     facts,
     source,
   });
+  const centralLegoHeadlineSetNumbers = findCentralLegoHeadlineSetNumbers({
+    detectedSetNumbers: normalizedDetectedSetNumbers,
+    facts,
+    source,
+  });
 
   if (articleType === 'release_roundup') {
     const titleMatches = matchedSets.filter((matchedSet) =>
@@ -289,9 +503,60 @@ export function selectPrimarySet(
     return null;
   }
 
-  if (dominantHeadlineSetNumbers.length === 1) {
+  if (articleType === 'multi_set_announcement') {
+    const bodyContext = lowerCaseContext([facts.summary, source.description]);
+    const multiSetHeadlineContext = lowerCaseContext([
+      titleContext,
+      extractSourceSlugContext(source),
+    ]);
+    const isIdeasApproval = isIdeasApprovalArticle({
+      context: lowerCaseContext([
+        facts.title,
+        facts.summary,
+        source.title,
+        source.description,
+        ...facts.keywords,
+        ...detected.keywords,
+      ]),
+      headlineContext: multiSetHeadlineContext,
+    });
+    const titleMatches = matchedSets.filter(
+      (matchedSet) =>
+        matchedSetIsCentralToHeadline({
+          headlineContext: multiSetHeadlineContext,
+          matchedSet,
+        }) &&
+        !includesContextReferenceAroundMatchedSet({
+          context: bodyContext,
+          matchedSet,
+        }) &&
+        (!isIdeasApproval ||
+          findMentionedSetNumbersInContext(multiSetHeadlineContext, [
+            matchedSet.setNumber,
+          ]).length > 0 ||
+          multiSetHeadlineContext.includes(matchedSet.name.toLowerCase())),
+    );
+
+    if (titleMatches.length > 0) {
+      return {
+        ...titleMatches[0],
+        reason: 'title_match',
+      };
+    }
+
+    return null;
+  }
+
+  if (
+    dominantHeadlineSetNumbers.length === 1 ||
+    centralLegoHeadlineSetNumbers.length === 1
+  ) {
+    const headlineSetNumber =
+      dominantHeadlineSetNumbers.length === 1
+        ? dominantHeadlineSetNumbers[0]
+        : centralLegoHeadlineSetNumbers[0];
     const headlineMatchedSet = matchedSets.find(
-      (matchedSet) => matchedSet.setNumber === dominantHeadlineSetNumbers[0],
+      (matchedSet) => matchedSet.setNumber === headlineSetNumber,
     );
 
     if (headlineMatchedSet) {
@@ -329,6 +594,10 @@ export function selectRelatedSetCandidates({
   primarySet: EditorialAgentPrimarySetSelection | null;
 }): EditorialAgentRelatedSetCandidate[] {
   if (articleType === 'deal' || articleType === 'unknown') {
+    return [];
+  }
+
+  if (articleType === 'multi_set_announcement' && !primarySet) {
     return [];
   }
 

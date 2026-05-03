@@ -162,7 +162,7 @@ vi.mock('@lego-platform/catalog/ui', () => ({
       </header>
       {items.map((item) => (
         <article data-href={item.href} key={item.id}>
-          {item.setSummary.name}
+          <a href={item.href}>{item.setSummary.name}</a>
         </article>
       ))}
     </section>
@@ -329,6 +329,22 @@ vi.mock('@lego-platform/content/ui', () => ({
       ))}
     </section>
   ),
+  trackArticleSetClick: ({
+    articleSlug,
+    setId,
+    setName,
+  }: {
+    articleSlug?: string;
+    setId: string;
+    setName: string;
+  }) => {
+    window.gtag?.('event', 'set_click', {
+      article_slug: articleSlug,
+      set_id: setId,
+      set_name: setName,
+      source: 'article',
+    });
+  },
 }));
 
 vi.mock('@lego-platform/pricing/data-access', () => ({
@@ -351,6 +367,7 @@ describe('article mdx components', () => {
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    listCatalogSetCardsByIdsForBrowser.mockResolvedValue([]);
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -363,6 +380,7 @@ describe('article mdx components', () => {
     document.body.innerHTML = '';
     globalThis.IS_REACT_ACT_ENVIRONMENT = false;
     process.env.NODE_ENV = originalNodeEnv;
+    delete window.gtag;
     vi.resetAllMocks();
   });
 
@@ -660,6 +678,86 @@ describe('article mdx components', () => {
     expect(markup).toContain('The Razor Crest');
     expect(markup).not.toContain('price');
     expect(markup).not.toContain('offer');
+  });
+
+  it('tracks SetRail set clicks from article context without blocking navigation', async () => {
+    const gtag = vi.fn();
+    window.gtag = gtag;
+
+    await act(async () => {
+      root.render(
+        <ArticleMdxSetRailClient
+          articleSlug="star-wars-day-2026"
+          canonicalIds={['75447']}
+          initialSetCards={[
+            {
+              id: '75447',
+              imageUrl: 'https://example.com/75447.jpg',
+              name: 'The Razor Crest',
+              pieces: 930,
+              releaseYear: 2026,
+              slug: 'the-razor-crest-75447',
+              theme: 'Star Wars',
+            },
+          ]}
+          title="Star Wars sets om te volgen"
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/sets/the-razor-crest-75447"]',
+    );
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    expect(link?.dispatchEvent(clickEvent)).toBe(true);
+    expect(clickEvent.defaultPrevented).toBe(false);
+    expect(gtag).toHaveBeenCalledWith('event', 'set_click', {
+      article_slug: 'star-wars-day-2026',
+      set_id: '75447',
+      set_name: 'The Razor Crest',
+      source: 'article',
+    });
+
+    delete window.gtag;
+  });
+
+  it('does not crash when SetRail set tracking runs without gtag', async () => {
+    delete window.gtag;
+
+    await act(async () => {
+      root.render(
+        <ArticleMdxSetRailClient
+          canonicalIds={['75446']}
+          initialSetCards={[
+            {
+              id: '75446',
+              imageUrl: 'https://example.com/75446.jpg',
+              name: 'Grogu (Mandalorian Apprentice)',
+              pieces: 1200,
+              releaseYear: 2026,
+              slug: 'grogu-mandalorian-apprentice-75446',
+              theme: 'Star Wars',
+            },
+          ]}
+          title="Star Wars sets om te volgen"
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/sets/grogu-mandalorian-apprentice-75446"]',
+    );
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    expect(() => link?.dispatchEvent(clickEvent)).not.toThrow();
+    expect(clickEvent.defaultPrevented).toBe(false);
   });
 
   it('accepts array props from MDX and keeps matching cards visible', async () => {
@@ -969,6 +1067,100 @@ describe('article mdx components', () => {
     expect(
       container.querySelector('a[href="/sets/rocking-plants-11506"]'),
     ).not.toBeNull();
+  });
+
+  it('tracks SetSpotlightList set links but not lightbox zoom clicks', async () => {
+    const gtag = vi.fn();
+    window.gtag = gtag;
+
+    await act(async () => {
+      root.render(
+        <ArticleMdxSetSpotlightListClient
+          articleSlug="mei-release-roundup"
+          articleTitle="Nieuwe LEGO-sets voor mei 2026"
+          items={[
+            {
+              ctaHref: '/sets/rocking-plants-11506',
+              setSummary: {
+                id: '11506',
+                imageUrl: 'https://example.com/11506.png',
+                name: 'Rocking Plants',
+                slug: 'rocking-plants-11506',
+                theme: 'Botanicals',
+              },
+            },
+          ]}
+        />,
+      );
+    });
+
+    const lightboxButton = container.querySelector(
+      'button[data-set-spotlight-lightbox-set-id="11506"]',
+    );
+    const lightboxClickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    act(() => {
+      lightboxButton?.dispatchEvent(lightboxClickEvent);
+    });
+
+    expect(gtag).not.toHaveBeenCalled();
+
+    const link = container.querySelector(
+      'a[href="/sets/rocking-plants-11506"]',
+    );
+    const linkClickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    expect(link?.dispatchEvent(linkClickEvent)).toBe(true);
+    expect(linkClickEvent.defaultPrevented).toBe(false);
+    expect(gtag).toHaveBeenCalledWith('event', 'set_click', {
+      article_slug: 'mei-release-roundup',
+      set_id: '11506',
+      set_name: 'Rocking Plants',
+      source: 'article',
+    });
+
+    delete window.gtag;
+  });
+
+  it('does not crash when SetSpotlightList set tracking runs without gtag', async () => {
+    delete window.gtag;
+
+    await act(async () => {
+      root.render(
+        <ArticleMdxSetSpotlightListClient
+          articleSlug="mei-release-roundup"
+          items={[
+            {
+              ctaHref: '/sets/rocking-plants-11506',
+              setSummary: {
+                id: '11506',
+                imageUrl: 'https://example.com/11506.png',
+                name: 'Rocking Plants',
+                slug: 'rocking-plants-11506',
+                theme: 'Botanicals',
+              },
+            },
+          ]}
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/sets/rocking-plants-11506"]',
+    );
+    const linkClickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    expect(() => link?.dispatchEvent(linkClickEvent)).not.toThrow();
+    expect(linkClickEvent.defaultPrevented).toBe(false);
   });
 
   it('keeps SetSpotlightList stable when some items have no image', async () => {

@@ -179,6 +179,7 @@ describe('content data access server', () => {
             <head>
               <title>LEGO 40787 Mario Kart – Spiny Shell is terug</title>
               <meta name="description" content="Korte samenvatting voor verzamelaars." />
+              <meta property="article:published_time" content="2026-04-30T08:15:00+02:00" />
               <meta property="og:site_name" content="Brick Example" />
             </head>
             <body>
@@ -199,6 +200,7 @@ describe('content data access server', () => {
       );
       expect(result.source.siteName).toBe('Brick Example');
       expect(result.source.language).toBe('nl');
+      expect(result.source.publishedAt).toBe('2026-04-30T08:15:00+02:00');
       expect(result.extractedText).toContain('De blauwe chaosbrenger is terug');
     });
 
@@ -221,6 +223,33 @@ describe('content data access server', () => {
       expect(result.source.title).toBe('Plain page');
       expect(result.source.description).toBe('Fallback description.');
       expect(result.extractedText).toContain('First fallback text.');
+    });
+
+    it('extracts source published date from JSON-LD when meta tags are missing', () => {
+      const result = extractEditorialAgentArticleSource({
+        finalUrl: 'https://example.com/json-ld-date',
+        html: `<!doctype html>
+          <html lang="nl">
+            <head>
+              <title>LEGO nieuws met JSON-LD datum</title>
+              <script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@type": "NewsArticle",
+                  "headline": "LEGO nieuws met JSON-LD datum",
+                  "datePublished": "2026-05-01T06:00:00.000Z"
+                }
+              </script>
+            </head>
+            <body>
+              <article>
+                <p>LEGO 40787 Mario Kart Spiny Shell is terug voor verzamelaars.</p>
+              </article>
+            </body>
+          </html>`,
+      });
+
+      expect(result.source.publishedAt).toBe('2026-05-01T06:00:00.000Z');
     });
 
     it('adds a warning for short text and caps extracted text length', () => {
@@ -420,6 +449,71 @@ describe('content data access server', () => {
       expect(facts.isRumor).toBe(true);
       expect(facts.uncertainClaims[0]).toContain('rumor');
     });
+
+    it('keeps dotted abbreviation set names intact when extracting facts', () => {
+      const facts = buildEditorialAgentFacts({
+        description:
+          'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. is onthuld. De robot verschijnt later.',
+        detected: {
+          dateSignals: [],
+          keywords: ['Marvel'],
+          prices: [],
+          rumorSignals: [],
+          setNumbers: ['76339'],
+          themes: ['Marvel'],
+        },
+        extractedText:
+          'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. is onthuld.',
+        title:
+          'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten',
+      });
+
+      expect(facts.setNames).toEqual(['The Fantastic Four H.E.R.B.I.E.']);
+      expect(facts.summary).toBe(
+        'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. is onthuld.',
+      );
+    });
+
+    it('keeps droid names with digits and hyphens intact when extracting facts', () => {
+      const facts = buildEditorialAgentFacts({
+        description:
+          'LEGO Star Wars 75379 R2-D2 verschijnt opnieuw. De set krijgt een displayplaatje.',
+        detected: {
+          dateSignals: [],
+          keywords: ['Star Wars'],
+          prices: [],
+          rumorSignals: [],
+          setNumbers: ['75379'],
+          themes: ['Star Wars'],
+        },
+        extractedText: 'LEGO Star Wars 75379 R2-D2 verschijnt opnieuw.',
+        title: 'LEGO Star Wars 75379 R2-D2 verschijnt opnieuw',
+      });
+
+      expect(facts.setNames).toEqual(['R2-D2']);
+      expect(facts.summary).toBe(
+        'LEGO Star Wars 75379 R2-D2 verschijnt opnieuw.',
+      );
+    });
+
+    it('still extracts the first regular sentence for normal copy', () => {
+      const facts = buildEditorialAgentFacts({
+        description:
+          'LEGO 40787 Mario Kart Spiny Shell is terug. Pak hem als je punten hebt.',
+        detected: {
+          dateSignals: [],
+          keywords: ['Mario Kart'],
+          prices: [],
+          rumorSignals: [],
+          setNumbers: ['40787'],
+          themes: ['Mario Kart'],
+        },
+        extractedText: 'LEGO 40787 Mario Kart Spiny Shell is terug.',
+        title: 'LEGO 40787 Mario Kart Spiny Shell is terug',
+      });
+
+      expect(facts.summary).toBe('LEGO 40787 Mario Kart Spiny Shell is terug.');
+    });
   });
 
   describe('AI rewrite draft generation', () => {
@@ -549,14 +643,19 @@ describe('content data access server', () => {
         slug: 'sega-genesis-mega-drive-40926',
         theme: 'Sonic The Hedgehog',
       };
-      const findCatalogSetSummaryById = vi.fn(
-        async () => importedCatalogSummary,
+      let imported = false;
+      const findCatalogSetSummaryById = vi.fn(async () =>
+        imported ? importedCatalogSummary : undefined,
       );
 
       const prepared = await prepareEditorialAgentExtractionForDraft({
         extraction,
         findCatalogSetSummaryById,
-        importCatalogSetByNumber: vi.fn(async () => importedCatalogSummary),
+        importCatalogSetByNumber: vi.fn(async () => {
+          imported = true;
+
+          return importedCatalogSummary;
+        }),
         importMissingSets: true,
       });
       const draftResult = await generateEditorialAgentDraftResult({
@@ -579,6 +678,87 @@ describe('content data access server', () => {
       expect(draftResult.deterministicDraft.mdx).toContain(
         '<FeaturedSet setNumber="40926" />',
       );
+    });
+
+    it('rebuilds stale multi-set analysis before drafting so context sets are not primary', async () => {
+      const extraction = {
+        ...createDraftExtractionResult(),
+        detected: {
+          ...createDraftExtractionResult().detected,
+          keywords: ['Ideas'],
+          setNumbers: ['21330', '99991', '99992'],
+          themes: ['Ideas'],
+        },
+        facts: {
+          ...createDraftExtractionResult().facts,
+          keywords: ['Ideas'],
+          setNames: ['Home Alone'],
+          setNumbers: ['21330', '99991', '99992'],
+          summary:
+            'LEGO Ideas heeft meerdere projecten goedgekeurd. Home Alone wordt alleen als eerdere Ideas-set genoemd.',
+          theme: 'Ideas',
+          title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+        },
+        matching: {
+          articleType: 'multi_set_announcement' as const,
+          matchedSets: [
+            {
+              id: '21330',
+              name: 'Home Alone',
+              setNumber: '21330',
+              slug: 'home-alone-21330',
+              theme: 'Ideas',
+            },
+          ],
+          unmatchedSetNumbers: [],
+        },
+        primarySet: {
+          id: '21330',
+          name: 'Home Alone',
+          reason: 'first_detected' as const,
+          setNumber: '21330',
+          slug: 'home-alone-21330',
+          theme: 'Ideas',
+        },
+        relatedCandidates: [],
+        source: {
+          ...createDraftExtractionResult().source,
+          description:
+            'Home Alone wordt genoemd als voorbeeld van een eerder verschenen LEGO Ideas-set.',
+          title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+        },
+      };
+
+      const prepared = await prepareEditorialAgentExtractionForDraft({
+        extraction,
+        findCatalogSetSummaryById: vi.fn(async (setId: string) =>
+          setId === '21330'
+            ? {
+                id: '21330',
+                name: 'Home Alone',
+                slug: 'home-alone-21330',
+                theme: 'Ideas',
+              }
+            : undefined,
+        ),
+        importMissingSets: true,
+      });
+      const draftResult = await generateEditorialAgentDraftResult({
+        catalogImport: prepared.catalogImport,
+        extraction: prepared.extraction,
+        useAiRewrite: false,
+      });
+
+      expect(prepared.extraction.matching.articleType).toBe(
+        'multi_set_announcement',
+      );
+      expect(prepared.extraction.primarySet).toBeNull();
+      expect(draftResult.output.frontmatter.theme).toBe('Ideas');
+      expect(draftResult.output.frontmatter.description).not.toContain(
+        'Home Alone',
+      );
+      expect(draftResult.output.mdx).not.toContain('Home Alone');
+      expect(draftResult.output.mdx).not.toContain('<FeaturedSet');
     });
 
     it('keeps a missing set out of the draft and returns a warning when import fails', async () => {

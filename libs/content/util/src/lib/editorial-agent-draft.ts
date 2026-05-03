@@ -29,6 +29,8 @@ const DUTCH_MONTH_LABELS = new Map([
 ]);
 
 const RELEASE_ROUNDUP_SETS_SECTION_ID = 'nieuwe-sets-die-opvallen';
+const ARTICLE_DATE_FALLBACK_WARNING =
+  'Geen bronpublicatiedatum of duidelijke artikeldatum gevonden; frontmatter.date is teruggevallen op vandaag.';
 const SET_NAME_RELEASE_SUFFIX_PATTERNS = [
   /\s+(?:verschijnt|komt)\s+op\b[\s\S]*$/iu,
   /\s+verkrijgbaar\s+vanaf\b[\s\S]*$/iu,
@@ -103,10 +105,68 @@ function slugify(value: string): string {
     .slice(0, 96);
 }
 
-function resolveDraftDate(extractedAt: string): string {
-  return /^\d{4}-\d{2}-\d{2}T/u.test(extractedAt)
-    ? extractedAt.slice(0, 10)
-    : new Date().toISOString().slice(0, 10);
+const DUTCH_MONTH_NUMBERS = new Map(
+  [...DUTCH_MONTH_LABELS.entries()].map(([monthNumber, monthLabel]) => [
+    monthLabel,
+    monthNumber,
+  ]),
+);
+
+function normalizeIsoDate(value: string): string | null {
+  const match = value.match(/\b(20\d{2})-(\d{2})-(\d{2})(?=\b|T)/u);
+
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
+}
+
+function normalizeDutchDateSignal(value: string): string | null {
+  const normalizedValue = normalizeWhitespace(value).toLowerCase();
+  const match = normalizedValue.match(
+    /\b(?:(\d{1,2})\s+)?(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+(20\d{2})\b/iu,
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  const day = String(Number(match[1] ?? '1')).padStart(2, '0');
+  const month = DUTCH_MONTH_NUMBERS.get(match[2].toLowerCase());
+  const year = match[3];
+
+  return month && year ? `${year}-${month}-${day}` : null;
+}
+
+function resolveDraftArticleDate(input: EditorialAgentDraftGenerationInput): {
+  date: string;
+  usedFallback: boolean;
+} {
+  const sourcePublishedDate = input.source.publishedAt
+    ? (normalizeIsoDate(input.source.publishedAt) ??
+      normalizeDutchDateSignal(input.source.publishedAt))
+    : null;
+
+  if (sourcePublishedDate) {
+    return {
+      date: sourcePublishedDate,
+      usedFallback: false,
+    };
+  }
+
+  for (const dateSignal of input.detected.dateSignals) {
+    const date =
+      normalizeIsoDate(dateSignal) ?? normalizeDutchDateSignal(dateSignal);
+
+    if (date) {
+      return {
+        date,
+        usedFallback: false,
+      };
+    }
+  }
+
+  return {
+    date: new Date().toISOString().slice(0, 10),
+    usedFallback: true,
+  };
 }
 
 function resolveSourceUrl(input: EditorialAgentDraftGenerationInput): string {
@@ -119,6 +179,7 @@ function resolveDraftTemplateKind(
   switch (articleType) {
     case 'release_roundup':
       return 'release_roundup';
+    case 'multi_set_announcement':
     case 'single_set_news':
     case 'gwp_reward':
       return 'single_set';
@@ -138,6 +199,7 @@ export function getEditorialToneForArticleType(
     case 'gwp_reward':
     case 'deal':
       return 'decision';
+    case 'multi_set_announcement':
     case 'release_roundup':
     case 'unknown':
     default:
@@ -164,6 +226,10 @@ function buildSingleSetDraftContext(
 export function getSingleSetDraftTone(
   input: EditorialAgentDraftGenerationInput,
 ): EditorialSingleSetDraftTone {
+  if (input.matching.articleType === 'multi_set_announcement') {
+    return 'announcement';
+  }
+
   if (input.matching.articleType !== 'single_set_news') {
     return 'decision';
   }
@@ -192,6 +258,10 @@ export function getSingleSetDraftTone(
 export function getEditorialToneForDraftInput(
   input: EditorialAgentDraftGenerationInput,
 ): EditorialArticleTone {
+  if (input.matching.articleType === 'multi_set_announcement') {
+    return 'discovery';
+  }
+
   if (input.matching.articleType === 'single_set_news') {
     return getSingleSetDraftTone(input) === 'announcement'
       ? 'discovery'
@@ -202,6 +272,40 @@ export function getEditorialToneForDraftInput(
 }
 
 function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
+  function resolveSingleSetKeywordTheme(): string | undefined {
+    const context = normalizeWhitespace(
+      [
+        input.facts.title,
+        input.source.title,
+        input.source.description,
+        input.source.finalUrl,
+        input.source.inputUrl,
+        ...input.facts.keywords,
+        ...input.detected.keywords,
+      ]
+        .filter(Boolean)
+        .join(' '),
+    ).toLowerCase();
+
+    if (context.includes('lego marvel')) {
+      return 'Marvel';
+    }
+
+    if (context.includes('star wars')) {
+      return 'Star Wars';
+    }
+
+    if (context.includes('super mario')) {
+      return 'Super Mario';
+    }
+
+    if (context.includes('sonic')) {
+      return 'Sonic The Hedgehog';
+    }
+
+    return undefined;
+  }
+
   if (
     resolveDraftTemplateKind(input.matching.articleType) === 'release_roundup'
   ) {
@@ -216,13 +320,28 @@ function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
     }
   }
 
-  return (
-    input.primarySet?.theme ||
-    input.matching.matchedSets[0]?.theme ||
-    input.facts.theme ||
-    input.detected.themes[0] ||
-    'LEGO'
-  );
+  const catalogTheme =
+    input.primarySet?.theme || input.matching.matchedSets[0]?.theme;
+
+  if (catalogTheme) {
+    return catalogTheme;
+  }
+
+  if (input.matching.articleType === 'single_set_news') {
+    const keywordTheme = resolveSingleSetKeywordTheme();
+
+    if (keywordTheme) {
+      return keywordTheme;
+    }
+
+    if (input.facts.theme === 'Multiple') {
+      const uniqueThemes = [...new Set(input.detected.themes.filter(Boolean))];
+
+      return uniqueThemes.length === 1 ? uniqueThemes[0] : 'LEGO';
+    }
+  }
+
+  return input.facts.theme || input.detected.themes[0] || 'LEGO';
 }
 
 function resolveTitle(input: EditorialAgentDraftGenerationInput): string {
@@ -325,6 +444,72 @@ export function getSetDisplayNameForDraft(
   return cleanedHeadline || 'deze set';
 }
 
+function getMultiSetAnnouncementDisplayName(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  return input.primarySet?.name.trim() || 'deze sets';
+}
+
+function hasMultiSetAnnouncementPrimary(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  return (
+    input.matching.articleType === 'multi_set_announcement' &&
+    Boolean(input.primarySet)
+  );
+}
+
+function isIdeasApprovalDraft(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  const context = buildSingleSetDraftContext(input);
+
+  return (
+    input.matching.articleType === 'multi_set_announcement' &&
+    (context.includes('lego ideas') ||
+      context.includes('ideas-project') ||
+      context.includes('ideas project')) &&
+    (context.includes('goedgekeurd') ||
+      context.includes('reviewronde') ||
+      context.includes('approved') ||
+      context.includes('selected') ||
+      context.includes('worden als set uitgebracht'))
+  );
+}
+
+function sentenceMentionsMatchedCatalogSet(
+  sentence: string,
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  const lowerSentence = sentence.toLowerCase();
+
+  return input.matching.matchedSets.some(
+    (matchedSet) =>
+      lowerSentence.includes(matchedSet.name.toLowerCase()) ||
+      lowerSentence.includes(matchedSet.setNumber.toLowerCase()),
+  );
+}
+
+function getIdeasApprovalSubjectLine(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const candidateSentences = normalizeWhitespace(
+    [input.source.description, input.facts.summary].filter(Boolean).join(' '),
+  )
+    .split(/(?<=[.!?])\s+/u)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 0);
+  const subjectSentence = candidateSentences.find(
+    (sentence) =>
+      !sentenceMentionsMatchedCatalogSet(sentence, input) &&
+      /\b(?:goedgekeurd|geselecteerd|selected|worden als set uitgebracht|zijn geselecteerd)\b/iu.test(
+        sentence,
+      ),
+  );
+
+  return subjectSentence ?? '';
+}
+
 function buildDescription(input: EditorialAgentDraftGenerationInput): string {
   const setName = getSetDisplayNameForDraft(
     input.primarySet,
@@ -342,6 +527,16 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
       return `Overzicht van de LEGO-sets uit ${resolveMonthLabel(input)} waar je vrolijk doorheen wilt bladeren. Van kleine blikvangers tot grotere thema-releases: dit is vooral een maand om te ontdekken wat jou echt aanspreekt.`;
     case 'deal':
       return `${setName} is alleen interessant als de prijs nu echt scherp is. Hier zie je snel of dit een pak-moment is of niet.`;
+    case 'multi_set_announcement':
+      if (!input.primarySet && isIdeasApprovalDraft(input)) {
+        const subjectLine = getIdeasApprovalSubjectLine(input);
+
+        return subjectLine
+          ? `${subjectLine} Vooral leuk om te volgen omdat deze fanideeën straks een officiële LEGO Ideas-uitwerking kunnen krijgen.`
+          : 'Deze goedgekeurde LEGO Ideas-projecten zijn vooral leuk om te volgen omdat ze laten zien welke fanideeën straks officieel uitgewerkt kunnen worden.';
+      }
+
+      return `${getMultiSetAnnouncementDisplayName(input)} laat een opvallende richting zien voor meerdere nieuwe LEGO-sets. Vooral leuk om te volgen welke set er straks echt uitspringt.`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
         return releaseLabel
@@ -358,11 +553,12 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
 
 function buildFrontmatter(
   input: EditorialAgentDraftGenerationInput,
+  articleDate: string,
 ): EditorialAgentArticleFrontmatter {
   const title = resolveTitle(input);
 
   return {
-    date: resolveDraftDate(input.source.extractedAt),
+    date: articleDate,
     description: buildDescription(input),
     heroImage: '',
     heroImageAlt: input.primarySet
@@ -458,6 +654,12 @@ Moet je eerst nog punten sparen of extra aankopen doen om hem te krijgen? Dan zo
 Zakt de prijs naar een niveau waar je ${shortName} al eerder voor wilde hebben, dan is dit je moment. Een deal werkt alleen als hij een set goedkoper maakt die je toch al serieus overwoog.
 
 Moet je jezelf nog overtuigen dat je deze set eigenlijk wilt? Dan is korting alleen niet genoeg. Laat hem lopen en wacht op een set waar je meteen ja tegen zegt.`;
+    case 'multi_set_announcement':
+      return `## Waarom volgen?
+
+Dit is vooral nieuws om rustig te volgen. Eerste beelden en aankondigingen zijn handig om te voelen welke richting LEGO op wil.
+
+Kijk ${input.primarySet ? 'welke set' : 'welk idee'} eruit springt door vorm, scène of personage. Daarna kun je rustig wachten op betere beelden, prijzen en de eerste winkelinformatie.`;
     case 'release_roundup':
       return `## Wanneer kopen?
 
@@ -507,6 +709,16 @@ Heb je de punten al klaarstaan en zegt ${shortName} je meteen iets, dan is dit e
       return `## Korte conclusie
 
 Een deal is pas goed nieuws als hij op een set valt die je toch al wilde hebben. Gebruik deze daarom als koopmoment-check, niet als excuus om iets mee te pakken waar je morgen alweer over twijfelt.`;
+    case 'multi_set_announcement':
+      if (!input.primarySet) {
+        return `## Korte conclusie
+
+Dit nieuws is vooral leuk om te volgen. De projecten geven alvast een eerste richting, maar de echte waarde zit in welk idee straks het sterkste beeld, personage of displaymoment krijgt.`;
+      }
+
+      return `## Korte conclusie
+
+Dit nieuws is vooral leuk om te volgen. ${capitalizeSentenceStart(getMultiSetAnnouncementDisplayName(input))} geeft alvast een eerste richting, maar de echte waarde zit in welk idee straks het sterkste beeld, personage of displaymoment krijgt.`;
     case 'release_roundup':
       return `## Korte conclusie
 
@@ -552,6 +764,21 @@ function buildIntroParagraphs(
       return [
         `${setName} is alleen interessant als de prijs nu echt iets voor je oplost. Dit is geen artikel om een willekeurige korting te vieren, maar om te checken of het moment eindelijk klopt.`,
         `Wilde je deze set al en zakt hij nu scherp genoeg, dan moet je opletten. Was je nog niet overtuigd, dan verandert een deal daar meestal weinig aan.`,
+      ];
+    case 'multi_set_announcement':
+      if (!input.primarySet && isIdeasApprovalDraft(input)) {
+        const subjectLine = getIdeasApprovalSubjectLine(input);
+
+        return [
+          'Deze goedgekeurde LEGO Ideas-projecten trekken de aandacht omdat ze laten zien welke fanideeën LEGO nu serieus verder onderzoekt.',
+          ...(subjectLine ? [subjectLine] : []),
+          'Dit is vooral leuk om te volgen voor de richting: welke gebouwen, films of scènes krijgen straks genoeg karakter om op een plank te blijven hangen?',
+        ];
+      }
+
+      return [
+        `${getMultiSetAnnouncementDisplayName(input)} trekt de aandacht in een nieuwe LEGO-aankondiging met meerdere sets. Dat maakt dit geen release-overzicht, maar een eerste blik op een richting die leuk is om te volgen.`,
+        `De vraag is nu vooral ${input.primarySet ? 'welke set' : 'welk idee'} eruit springt zodra er meer beelden zijn. Let op herkenbare scènes, sterke displayvormen en details die straks op een plank blijven hangen.`,
       ];
     case 'release_roundup':
       return [
@@ -599,6 +826,30 @@ Tussen de grotere blikvangers staan vaak ook kleinere sets die pas op een tweede
       return `## Waar moet je op letten?
 
 Controleer eerst de setnummers, thema’s en claims die uit de bron kwamen. Als daar nog gaten in zitten, moet de draft eerst feitelijk strakker voordat je hem redactioneel gaat polijsten.`;
+    case 'multi_set_announcement':
+      if (!input.primarySet) {
+        if (isIdeasApprovalDraft(input)) {
+          const subjectLine = getIdeasApprovalSubjectLine(input);
+
+          return `## Wat is er goedgekeurd?
+
+${subjectLine || 'De bron draait om LEGO Ideas-projecten die als officiële set mogen worden uitgewerkt.'} De projecten zitten nog vroeg in het proces, dus het draait nu vooral om de ideeën zelf.
+
+Kijk vooral naar wat er aangekondigd is: welke ideeën hebben een sterke scène, welk project voelt herkenbaar en welke richting maakt nieuwsgierig naar de uiteindelijke LEGO-uitwerking?`;
+        }
+
+        return `## Wat is er aangekondigd?
+
+De bron wijst op meerdere nieuwe LEGO-sets, maar er is nog geen betrouwbare hoofdset die duidelijk genoeg uit titel of slug springt.
+
+Daarom blijft het verhaal bewust breed: kijk vooral naar wat er aangekondigd is, welke richting LEGO kiest en welke sets straks opvallen zodra er betere beelden of officiële details zijn.`;
+      }
+
+      return `## Wat is er aangekondigd?
+
+${input.facts.summary || `${getMultiSetAnnouncementDisplayName(input)} voert deze nieuwe LEGO-aankondiging aan.`}
+
+Omdat het om meerdere sets gaat, draait het nu vooral om richting en eerste indruk. Welke set heeft het sterkste beeld, welke voelt het meest herkenbaar en welke blijft interessant als er straks meer details volgen?`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
         return `## Wat is er aangekondigd?
@@ -621,6 +872,19 @@ ${input.facts.summary || 'Dit verhaal is vooral interessant omdat er een concret
 function buildAnnouncementAudienceSection(
   input: EditorialAgentDraftGenerationInput,
 ): string {
+  if (
+    input.matching.articleType === 'multi_set_announcement' &&
+    !input.primarySet
+  ) {
+    const theme = resolveTheme(input);
+
+    return `## Voor wie is dit leuk?
+
+Dit nieuws is vooral leuk voor fans van ${theme === 'LEGO' ? 'dit soort projecten' : theme} en voor verzamelaars die graag vroeg zien welke richting LEGO op beweegt.
+
+Zonder duidelijke hoofdkeuze draait het nu vooral om vergelijken: welke ideeën blijven hangen, welke beelden maken nieuwsgierig en welke projecten wil je later nog eens terugzien?`;
+  }
+
   const setName = getSetDisplayNameForDraft(
     input.primarySet,
     input.facts,
@@ -675,7 +939,8 @@ export function generateEditorialMdxDraft(
 ): EditorialAgentDraftOutput {
   const templateKind = resolveDraftTemplateKind(input.matching.articleType);
   const singleSetTone = getSingleSetDraftTone(input);
-  const frontmatter = buildFrontmatter(input);
+  const articleDate = resolveDraftArticleDate(input);
+  const frontmatter = buildFrontmatter(input, articleDate.date);
   const introParagraphs = buildIntroParagraphs(input);
   const featuredSetBlock = buildFeaturedSetBlock(input);
   const generationWarnings: string[] = [];
@@ -691,7 +956,9 @@ export function generateEditorialMdxDraft(
       : '';
   const relatedSetRail =
     templateKind === 'single_set' || templateKind === 'deal'
-      ? input.relatedCandidates.length >= 2
+      ? input.relatedCandidates.length >= 2 &&
+        (input.matching.articleType !== 'multi_set_announcement' ||
+          hasMultiSetAnnouncementPrimary(input))
         ? buildSetRailBlock({
             intro: `Zoek je naast ${input.primarySet?.name || 'de hoofdset'} nog iets met meer bouw- of displaywaarde, dan zijn dit de sets die hier logisch naast hangen.`,
             relatedCandidates: input.relatedCandidates,
@@ -704,6 +971,9 @@ export function generateEditorialMdxDraft(
     generationWarnings.push(
       'Article type bleef onbekend; de draft houdt het daarom bewust voorzichtig.',
     );
+  }
+  if (articleDate.usedFallback) {
+    generationWarnings.push(ARTICLE_DATE_FALLBACK_WARNING);
   }
   if (
     (templateKind === 'single_set' || templateKind === 'deal') &&
@@ -741,7 +1011,8 @@ export function generateEditorialMdxDraft(
     case 'deal':
       if (
         templateKind === 'single_set' &&
-        input.matching.articleType === 'single_set_news' &&
+        (input.matching.articleType === 'single_set_news' ||
+          input.matching.articleType === 'multi_set_announcement') &&
         singleSetTone === 'announcement'
       ) {
         sections = [

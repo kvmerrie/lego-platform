@@ -270,6 +270,41 @@ describe('admin catalog routes', () => {
     await server.close();
   });
 
+  test('creates a catalog set when Rebrickable still reports an unknown piece count', async () => {
+    const { catalogService, server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/catalog/sets',
+      payload: {
+        imageUrl: 'https://cdn.rebrickable.com/media/sets/76339-1/171736.jpg',
+        name: 'The Fantastic Four H.E.R.B.I.E.',
+        pieces: 0,
+        releaseYear: 2027,
+        setId: '76339',
+        slug: 'the-fantastic-four-h-e-r-b-i-e-76339',
+        source: 'rebrickable',
+        sourceSetNumber: '76339-1',
+        theme: 'Marvel',
+      },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(catalogService.createSet).toHaveBeenCalledWith({
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/76339-1/171736.jpg',
+      name: 'The Fantastic Four H.E.R.B.I.E.',
+      pieces: 0,
+      releaseYear: 2027,
+      setId: '76339',
+      slug: 'the-fantastic-four-h-e-r-b-i-e-76339',
+      source: 'rebrickable',
+      sourceSetNumber: '76339-1',
+      theme: 'Marvel',
+    });
+
+    await server.close();
+  });
+
   test('starts a bulk onboarding run', async () => {
     const { catalogService, server } = await createAdminCatalogServer();
 

@@ -20,6 +20,14 @@
     >
       Copy MDX
     </button>
+    <button
+      class="admin-button admin-button--primary"
+      [disabled]="!mdxOutput() || isPublishing()"
+      (click)="publishArticle()"
+      type="button"
+    >
+      {{ isPublishing() ? 'Publiceren…' : 'Publish article' }}
+    </button>
   </div>
 
   <div adminPageMeta class="editorial-agent__meta">
@@ -32,7 +40,7 @@
       uit' }}
     </span>
     <span class="editorial-agent__meta-pill">Facts eerst, MDX daarna</span>
-    <span class="editorial-agent__meta-pill">Nog geen publicatieflow</span>
+    <span class="editorial-agent__meta-pill">Publiceert naar Supabase</span>
   </div>
 
   <section class="admin-panel admin-stack">
@@ -465,6 +473,19 @@
           >
             Kopiëren lukte niet
           </span>
+          } @if (publishedArticleUrl(); as publishedArticleUrl) {
+          <span class="editorial-agent__meta-pill"
+            >Artikel gepubliceerd ✅</span
+          >
+          <a [href]="publishedArticleUrl" target="_blank" rel="noreferrer">
+            Open artikel
+          </a>
+          } @if (publishErrorMessage(); as publishErrorMessage) {
+          <span
+            class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+          >
+            {{ publishErrorMessage }}
+          </span>
           }
         </div>
         <button
@@ -475,6 +496,15 @@
           type="button"
         >
           Copy MDX
+        </button>
+        <button
+          adminSectionActions
+          class="admin-button admin-button--primary"
+          [disabled]="!mdxOutput() || isPublishing()"
+          (click)="publishArticle()"
+          type="button"
+        >
+          {{ isPublishing() ? 'Publiceren…' : 'Publish article' }}
         </button>
       </lego-admin-section-header>
 

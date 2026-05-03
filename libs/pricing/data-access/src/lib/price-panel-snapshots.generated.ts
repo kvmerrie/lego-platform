@@ -71,24 +71,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4499,
+    "headlinePriceMinor": 4599,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 5,
-    "observedAt": "2026-04-22T07:42:26.135Z"
-  },
-  {
-    "setId": "10314",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 6799,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:23.065Z"
+    "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
     "setId": "10315",
@@ -203,7 +191,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
+    "merchantCount": 1,
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
@@ -545,18 +533,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-22T07:46:52.922Z"
   },
   {
-    "setId": "21339",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 9699,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:41.736Z"
-  },
-  {
     "setId": "21348",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -657,18 +633,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "bol",
     "merchantCount": 5,
     "observedAt": "2026-04-22T07:46:24.940Z"
-  },
-  {
-    "setId": "31209",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 17400,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 2,
-    "observedAt": "2026-04-22T07:42:37.373Z"
   },
   {
     "setId": "31212",
@@ -835,12 +799,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3974,
+    "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 5,
-    "observedAt": "2026-04-22T07:42:16.414Z"
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
     "setId": "42174",
@@ -851,7 +815,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 1,
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
@@ -1167,18 +1131,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
     "observedAt": "2026-04-22T18:04:05.898Z"
-  },
-  {
-    "setId": "43230",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 11499,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:34.547Z"
   },
   {
     "setId": "43231",
@@ -1565,30 +1517,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
-    "setId": "75352",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 9000,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:43:10.688Z"
-  },
-  {
-    "setId": "75353",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 8699,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:43:06.304Z"
-  },
-  {
     "setId": "75355",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1603,76 +1531,16 @@ const pricePanelSnapshotsPayload = String.raw`[
     "deltaMinor": -1099
   },
   {
-    "setId": "75357",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 19999,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:43:03.860Z"
-  },
-  {
     "setId": "75358",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2598,
+    "headlinePriceMinor": 3199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
-    "merchantCount": 4,
-    "observedAt": "2026-04-22T07:42:59.049Z"
-  },
-  {
-    "setId": "75360",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 5109,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:51.912Z"
-  },
-  {
-    "setId": "75361",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 7898,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:49.685Z"
-  },
-  {
-    "setId": "75362",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 5998,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "intertoys",
-    "lowestMerchantName": "Intertoys",
-    "merchantCount": 2,
-    "observedAt": "2026-04-22T07:42:46.900Z"
-  },
-  {
-    "setId": "75363",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 2499,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:44.187Z"
+    "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
     "setId": "75367",
@@ -1709,7 +1577,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "bol",
     "lowestMerchantName": "bol",
-    "merchantCount": 5,
+    "merchantCount": 2,
     "observedAt": "2026-04-22T07:43:15.729Z"
   },
   {
@@ -1827,30 +1695,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {
-    "setId": "76261",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 10495,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:32.737Z"
-  },
-  {
-    "setId": "76262",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 23495,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:42:30.916Z"
-  },
-  {
     "setId": "76269",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1937,7 +1781,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
+    "merchantCount": 1,
     "observedAt": "2026-04-22T18:04:05.898Z"
   },
   {

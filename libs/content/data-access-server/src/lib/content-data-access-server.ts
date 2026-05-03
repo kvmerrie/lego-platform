@@ -461,6 +461,7 @@ function buildFallbackArticleSourceFromHtml({
       domain: new URL(finalUrl).hostname,
       finalUrl,
       language: extractFallbackLanguageFromHtml(html),
+      publishedAt: readPublishedDateMetaContentFromHtml(html),
       siteName: readHtmlMetaContent(html, 'property', 'og:site_name'),
       title: extractFallbackTitleFromHtml(html),
       textLength: 0,
@@ -806,20 +807,25 @@ export async function refreshEditorialAgentExtractionMatching({
     );
   }
 
+  const articleType = detectArticleType(
+    extraction.facts,
+    extraction.detected,
+    extraction.source,
+  );
   const primarySet = selectPrimarySet(
-    extraction.matching.articleType,
+    articleType,
     catalogMatchResult.matched,
     extraction.facts,
     extraction.detected,
     extraction.source,
   );
   const relatedCandidates = selectRelatedSetCandidates({
-    articleType: extraction.matching.articleType,
+    articleType,
     matchedSets: catalogMatchResult.matched,
     primarySet,
   });
   const fingerprint = buildEventFingerprint(
-    extraction.matching.articleType,
+    articleType,
     primarySet,
     extraction.facts,
     extraction.source,
@@ -833,7 +839,7 @@ export async function refreshEditorialAgentExtractionMatching({
       fingerprint,
     },
     matching: {
-      articleType: extraction.matching.articleType,
+      articleType,
       matchedSets: catalogMatchResult.matched,
       unmatchedSetNumbers: catalogMatchResult.unmatched,
     },
@@ -873,18 +879,24 @@ export async function prepareEditorialAgentExtractionForDraft({
   catalogImport: EditorialAgentCatalogImportStatus;
   extraction: EditorialAgentFactExtractionResult;
 }> {
+  const preImportExtraction = await refreshEditorialAgentExtractionMatching({
+    extraction,
+    findCatalogSetSummaryById,
+  });
+
   if (!importMissingSets) {
     return {
       catalogImport: createDefaultEditorialAgentCatalogImportStatus({
         enabled: false,
-        stillMissingSetNumbers: extraction.matching.unmatchedSetNumbers,
+        stillMissingSetNumbers:
+          preImportExtraction.matching.unmatchedSetNumbers,
       }),
-      extraction,
+      extraction: preImportExtraction,
     };
   }
 
   const attemptedSetNumbers = normalizeDetectedSetNumbers(
-    extraction.matching.unmatchedSetNumbers,
+    preImportExtraction.matching.unmatchedSetNumbers,
   );
 
   if (attemptedSetNumbers.length === 0) {
@@ -893,7 +905,7 @@ export async function prepareEditorialAgentExtractionForDraft({
         enabled: true,
         stillMissingSetNumbers: [],
       }),
-      extraction,
+      extraction: preImportExtraction,
     };
   }
 
@@ -910,7 +922,7 @@ export async function prepareEditorialAgentExtractionForDraft({
   }
 
   const refreshedExtraction = await refreshEditorialAgentExtractionMatching({
-    extraction,
+    extraction: preImportExtraction,
     findCatalogSetSummaryById,
   });
   const importedSets = refreshedExtraction.matching.matchedSets.filter(
@@ -955,6 +967,111 @@ function readMetaContent(document: Document, name: string): string {
   return '';
 }
 
+function readPublishedDateMetaContent(document: Document): string {
+  const metaNames = [
+    'article:published_time',
+    'og:published_time',
+    'datePublished',
+    'datepublished',
+    'date',
+    'pubdate',
+    'publishdate',
+    'dc.date',
+    'dc.date.issued',
+  ];
+
+  for (const metaName of metaNames) {
+    const value = readMetaContent(document, metaName);
+
+    if (value) {
+      return value;
+    }
+  }
+
+  const jsonLdPublishedDate = readJsonLdPublishedDate(document);
+
+  if (jsonLdPublishedDate) {
+    return jsonLdPublishedDate;
+  }
+
+  const timeElement = document.querySelector(
+    'time[datetime], time[itemprop="datePublished"]',
+  );
+
+  return normalizeWhitespace(
+    timeElement?.getAttribute('datetime') ?? timeElement?.textContent ?? '',
+  );
+}
+
+function readJsonLdPublishedDate(document: Document): string {
+  const scripts = document.querySelectorAll(
+    'script[type="application/ld+json"]',
+  );
+
+  function findDatePublished(value: unknown): string {
+    if (!value || typeof value !== 'object') {
+      return '';
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const found = findDatePublished(item);
+
+        if (found) {
+          return found;
+        }
+      }
+
+      return '';
+    }
+
+    const record = value as Record<string, unknown>;
+    const directDate = record['datePublished'];
+
+    if (typeof directDate === 'string' && directDate.trim().length > 0) {
+      return normalizeWhitespace(directDate);
+    }
+
+    for (const nestedValue of Object.values(record)) {
+      const found = findDatePublished(nestedValue);
+
+      if (found) {
+        return found;
+      }
+    }
+
+    return '';
+  }
+
+  for (const script of Array.from(scripts)) {
+    try {
+      const found = findDatePublished(JSON.parse(script.textContent ?? ''));
+
+      if (found) {
+        return found;
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return '';
+}
+
+function readPublishedDateMetaContentFromHtml(html: string): string {
+  return (
+    readHtmlMetaContent(html, 'property', 'article:published_time') ||
+    readHtmlMetaContent(html, 'property', 'og:published_time') ||
+    readHtmlMetaContent(html, 'name', 'datePublished') ||
+    readHtmlMetaContent(html, 'name', 'datepublished') ||
+    readHtmlMetaContent(html, 'name', 'date') ||
+    readHtmlMetaContent(html, 'name', 'pubdate') ||
+    readHtmlMetaContent(html, 'name', 'publishdate') ||
+    readHtmlMetaContent(html, 'name', 'dc.date') ||
+    readHtmlMetaContent(html, 'name', 'dc.date.issued')
+  );
+}
+
 function extractFallbackBodyText(document: Document): string {
   return normalizeWhitespace(document.body?.textContent ?? '');
 }
@@ -966,9 +1083,37 @@ function extractFirstSentence(value: string): string {
     return '';
   }
 
-  const sentenceMatch = trimmedValue.match(/^[^.!?]+[.!?]?/u);
+  for (let index = 0; index < trimmedValue.length; index += 1) {
+    const character = trimmedValue[index];
 
-  return sentenceMatch ? sentenceMatch[0].trim() : trimmedValue;
+    if (character !== '.' && character !== '!' && character !== '?') {
+      continue;
+    }
+
+    if (character === '.' && isDotInsideAbbreviation(trimmedValue, index)) {
+      continue;
+    }
+
+    const nextCharacter = trimmedValue[index + 1];
+
+    if (nextCharacter && !/\s/u.test(nextCharacter)) {
+      continue;
+    }
+
+    return trimmedValue.slice(0, index + 1).trim();
+  }
+
+  return trimmedValue;
+}
+
+function isDotInsideAbbreviation(value: string, dotIndex: number): boolean {
+  const tokenStart =
+    value.slice(0, dotIndex).search(/[A-Za-z0-9](?:[A-Za-z0-9.-]*)$/u) ?? -1;
+  const previousTokenStart = tokenStart === -1 ? dotIndex : tokenStart;
+  const nextTokenMatch = value.slice(dotIndex + 1).match(/^[A-Za-z0-9.-]*/u);
+  const token = `${value.slice(previousTokenStart, dotIndex)}.${nextTokenMatch?.[0] ?? ''}`;
+
+  return /^(?:[A-Za-z]\.){2,}[A-Za-z]?\.?$/u.test(token);
 }
 
 function detectThemes(text: string): string[] {
@@ -1010,7 +1155,7 @@ function detectSetNumbers(text: string): string[] {
 function normalizeDetectedSetName(candidate: string): string {
   return candidate
     .replace(
-      /\s+(?:is|komt|keert|returnt|returns|available|beschikbaar|terug|back|opnieuw)\b.*$/iu,
+      /\s+(?:is|komt|keert|returnt|returns|available|beschikbaar|terug|back|opnieuw|onthuld|verschijnt|aangekondigd|gepresenteerd)\b.*$/iu,
       '',
     )
     .replace(/\s+(?:als|via)\b.*$/iu, '')
@@ -1030,7 +1175,7 @@ function detectSetNames({
 
   for (const setNumber of setNumbers) {
     const titlePattern = new RegExp(
-      `(?:LEGO\\s+)?${setNumber}\\s*[—–:-]?\\s*([^|.]{2,90})`,
+      `(?:LEGO\\s+)?${setNumber}\\s*[—–:-]?\\s*([^|]{2,120})`,
       'iu',
     );
     const titleMatch = title.match(titlePattern);
@@ -1206,6 +1351,7 @@ export function extractEditorialAgentArticleSource({
         domain: new URL(finalUrl).hostname,
         finalUrl,
         language: document.documentElement.getAttribute('lang')?.trim() ?? '',
+        publishedAt: readPublishedDateMetaContent(document),
         siteName:
           readMetaContent(document, 'og:site_name') ||
           normalizeWhitespace(readableArticle?.siteName ?? ''),

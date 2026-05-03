@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   generateEditorialMdxDraft,
   getEditorialToneForDraftInput,
@@ -210,6 +210,66 @@ describe('editorial agent draft generation', () => {
     );
   });
 
+  it('uses the source published date as article date when available', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          dateSignals: ['1 augustus 2026'],
+        }),
+        source: createSource({
+          publishedAt: '2026-05-01T07:30:00.000Z',
+          title: 'LEGO 40926 SEGA Genesis verschijnt op 1 augustus 2026',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.date).toBe('2026-05-01');
+  });
+
+  it('uses a clear title/body date when no source published date is available', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          dateSignals: ['1 augustus 2026'],
+        }),
+        source: createSource({
+          title: 'LEGO 40926 SEGA Genesis verschijnt op 1 augustus 2026',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.date).toBe('2026-08-01');
+  });
+
+  it('falls back to today and warns when no article date can be resolved', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-03T08:00:00.000Z'));
+
+    try {
+      const result = generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            dateSignals: [],
+          }),
+          facts: createFacts({
+            releaseDate: '',
+          }),
+          source: createSource({
+            publishedAt: undefined,
+            title: 'LEGO nieuws zonder datum',
+          }),
+        }),
+      );
+
+      expect(result.frontmatter.date).toBe('2026-05-03');
+      expect(result.warnings).toContain(
+        'Geen bronpublicatiedatum of duidelijke artikeldatum gevonden; frontmatter.date is teruggevallen op vandaag.',
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('uses FeaturedSet for single-set style drafts with a primary set', () => {
     const result = generateEditorialMdxDraft(
       createInput({
@@ -400,6 +460,256 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).not.toContain(
       'SEGA Genesis (Mega Drive) verschijnt op 1 juni 2026 is',
     );
+  });
+
+  it('keeps Marvel single-set announcements out of the roundup template', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('76339', {
+              name: 'The Fantastic Four H.E.R.B.I.E.',
+              theme: 'Marvel',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('76339', {
+            name: 'The Fantastic Four H.E.R.B.I.E.',
+            theme: 'Marvel',
+          }),
+          reason: 'title_match',
+        },
+        relatedCandidates: [],
+        detected: createDetected({
+          dateSignals: ['augustus 2026'],
+          keywords: ['LEGO Marvel', 'Fantastic Four', 'H.E.R.B.I.E.'],
+          setNumbers: ['76339', '76316'],
+          themes: ['Marvel'],
+        }),
+        facts: createFacts({
+          releaseDate: 'augustus 2026',
+          setNames: ['The Fantastic Four H.E.R.B.I.E.'],
+          setNumbers: ['76339', '76316'],
+          summary:
+            'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. is onthuld.',
+          theme: 'Multiple',
+          title:
+            'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten',
+        }),
+        source: createSource({
+          description:
+            'Alles wat je moet weten over LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E.',
+          finalUrl:
+            'https://www.bricktastic.nl/lego/lego-marvel-76339-the-fantastic-four-herbie-onthuld-alles-wat-je-moet-weten/',
+          inputUrl:
+            'https://www.bricktastic.nl/lego/lego-marvel-76339-the-fantastic-four-herbie-onthuld-alles-wat-je-moet-weten/',
+          title:
+            'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.theme).toBe('Marvel');
+    expect(result.frontmatter.theme).not.toBe('Multiple');
+    expect(result.frontmatter.description).not.toContain(
+      'Overzicht van de LEGO-sets uit augustus',
+    );
+    expect(result.mdx).toContain('<FeaturedSet setNumber="76339" />');
+    expect(result.mdx).not.toContain('<SetSpotlightList');
+    expect(result.mdx).not.toContain(
+      '[Bekijk meteen de nieuwe sets ↓](#nieuwe-sets-die-opvallen)',
+    );
+    expect(result.mdx).not.toContain(
+      'wordt zo’n maand waarin je ineens veel nieuwe LEGO-dozen ziet langskomen',
+    );
+  });
+
+  it('uses single-set Marvel copy without faking FeaturedSet when the set is unmatched', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [],
+          unmatchedSetNumbers: ['76339'],
+        }),
+        primarySet: null,
+        relatedCandidates: [],
+        detected: createDetected({
+          dateSignals: ['augustus 2026'],
+          keywords: ['LEGO Marvel', 'Fantastic Four', 'H.E.R.B.I.E.'],
+          setNumbers: ['76339'],
+          themes: [],
+        }),
+        facts: createFacts({
+          releaseDate: 'augustus 2026',
+          setNames: ['The Fantastic Four H.E.R.B.I.E.'],
+          setNumbers: ['76339'],
+          summary:
+            'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. is onthuld.',
+          theme: 'Multiple',
+          title:
+            'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten',
+        }),
+        source: createSource({
+          description:
+            'Alles wat je moet weten over LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E.',
+          title:
+            'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.theme).toBe('Marvel');
+    expect(result.frontmatter.theme).not.toBe('Multiple');
+    expect(result.mdx).not.toContain('<FeaturedSet');
+    expect(result.mdx).not.toContain('<SetSpotlightList');
+    expect(result.mdx).toContain('## Wat is er aangekondigd?');
+  });
+
+  it('renders multi-set announcements with FeaturedSet and without roundup blocks', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [
+            createMatchedSet('42241', {
+              name: 'F1 Piastri Helmet',
+              theme: 'Technic',
+            }),
+            createMatchedSet('42242', {
+              name: 'F1 Norris Helmet',
+              theme: 'Technic',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('42241', {
+            name: 'F1 Piastri Helmet',
+            theme: 'Technic',
+          }),
+          reason: 'first_detected',
+        },
+        relatedCandidates: [
+          createRelatedCandidate('42242', {
+            name: 'F1 Norris Helmet',
+            theme: 'Technic',
+          }),
+        ],
+        detected: createDetected({
+          keywords: ['F1', 'Piastri', 'Norris'],
+          setNumbers: ['42241', '42242'],
+          themes: ['Technic'],
+        }),
+        facts: createFacts({
+          setNames: ['F1 Piastri Helmet', 'F1 Norris Helmet'],
+          setNumbers: ['42241', '42242'],
+          summary: 'LEGO F1 helmen van Piastri en Norris zijn onthuld.',
+          theme: 'Technic',
+          title: 'LEGO F1 helmen van Piastri en Norris onthuld',
+        }),
+        source: createSource({
+          title: 'LEGO F1 helmen van Piastri en Norris onthuld',
+        }),
+      }),
+    );
+
+    expect(result.mdx).toContain('<FeaturedSet setNumber="42241" />');
+    expect(
+      result.mdx.match(/LEGO F1 helmen van Piastri en Norris onthuld/gu),
+    ).toHaveLength(1);
+    expect(result.mdx).toContain('F1 Piastri Helmet trekt de aandacht');
+    expect(result.mdx).toContain('leuk is om te volgen');
+    expect(result.mdx).toContain('welke set eruit springt');
+    expect(result.mdx).toContain('## Wat is er aangekondigd?');
+    expect(result.mdx).not.toContain('<SetSpotlightList');
+    expect(result.mdx).not.toContain('releasegolf');
+    expect(result.mdx).not.toContain('logische eerste keuze');
+    expect(result.mdx).not.toContain('krampachtig');
+    expect(result.mdx).not.toContain('moet je kopen');
+    expect(result.mdx).not.toContain('budget');
+    expect(result.mdx).not.toContain(
+      '[Bekijk meteen de nieuwe sets ↓](#nieuwe-sets-die-opvallen)',
+    );
+  });
+
+  it('omits FeaturedSet for multi-set announcements without a reliable primary new set', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [
+            createMatchedSet('21330', {
+              name: 'Home Alone',
+              theme: 'Ideas',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: null,
+        relatedCandidates: [
+          createRelatedCandidate('21330', {
+            name: 'Home Alone',
+            theme: 'Ideas',
+          }),
+          createRelatedCandidate('21331', {
+            name: 'Sonic the Hedgehog - Green Hill Zone',
+            theme: 'Ideas',
+          }),
+        ],
+        detected: createDetected({
+          keywords: ['Ideas'],
+          setNumbers: ['21330', '99991', '99992'],
+          themes: ['Ideas'],
+        }),
+        facts: createFacts({
+          setNames: ['Home Alone'],
+          setNumbers: ['21330', '99991', '99992'],
+          summary:
+            'National Lampoon’s Christmas Vacation Griswold House, Amsterdam Canal Houses en Edward Scissorhands zijn goedgekeurd. Home Alone wordt alleen als eerdere Ideas-set genoemd.',
+          theme: 'Ideas',
+          title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+        }),
+        source: createSource({
+          description:
+            'Amsterdam Canal Houses en Edward Scissorhands zijn geselecteerd in de LEGO Ideas reviewronde.',
+          title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+        }),
+      }),
+    );
+    const publicBody = result.mdx.split('---\n\n').at(1) ?? result.mdx;
+
+    expect(result.frontmatter.description).not.toContain('Home Alone');
+    expect(publicBody).not.toContain('<FeaturedSet');
+    expect(publicBody).not.toContain('<SetRail');
+    expect(publicBody).not.toContain('Home Alone');
+    expect(publicBody).not.toContain('Sonic the Hedgehog');
+    expect(publicBody).toContain('goedgekeurde LEGO Ideas-projecten');
+    expect(publicBody).toContain('wat er aangekondigd is');
+    expect(publicBody).toContain('Amsterdam Canal Houses');
+    expect(publicBody).toContain('Edward Scissorhands');
+    expect(publicBody).not.toContain('deze set');
+    expect(publicBody).not.toContain('koopbeslissing');
+    expect(publicBody).not.toContain('Wanneer kopen?');
+    expect(publicBody).not.toContain('budget');
+    expect(publicBody).not.toContain('draft');
+    expect(publicBody).not.toContain('FeaturedSet');
+    expect(publicBody).not.toContain('catalogusset');
+    expect(publicBody).not.toContain('component');
+    expect(publicBody).not.toContain('generator');
+    expect(publicBody).not.toContain('extraction');
+    expect(publicBody).not.toContain('deze aankondiging geeft');
+    publicBody
+      .split('\n\n')
+      .filter((paragraph) => paragraph.trim().length > 0)
+      .forEach((paragraph) => {
+        const firstCharacter = paragraph.trim().charAt(0);
+
+        expect(firstCharacter).not.toMatch(/[a-z]/u);
+      });
   });
 
   it('keeps single-set templates strictly separate from release roundup copy and structure', () => {

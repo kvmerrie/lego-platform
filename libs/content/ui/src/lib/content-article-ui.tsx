@@ -5,7 +5,6 @@ import {
   webPathnames,
 } from '@lego-platform/shared/config';
 import {
-  ActionLink,
   Badge,
   Breadcrumbs,
   type BreadcrumbItem,
@@ -19,6 +18,11 @@ import {
   type ContentArticle,
   type ContentArticleListItem,
 } from '@lego-platform/content/util';
+import {
+  ContentArticleLink,
+  ContentArticleSetActionLink,
+  ContentArticleSetLink,
+} from './content-article-link';
 import styles from './content-article-ui.module.css';
 
 function joinClasses(
@@ -46,6 +50,7 @@ export interface ContentArticleThemePresentation {
 }
 
 export interface ContentArticleFeaturedSetProps {
+  articleSlug?: string;
   availabilityLabel?: string;
   ctaHref: string;
   ctaLabel?: string;
@@ -188,21 +193,57 @@ export function ContentArticleCard({
 }) {
   return (
     <Surface as="article" className={styles.card} elevation="rested">
-      <a
+      <ContentArticleLink
         className={styles.cardLink}
         href={buildArticlePath(contentArticle.slug)}
+        slug={contentArticle.slug}
+        theme={contentArticle.theme}
       >
         <ContentArticleImage
           alt={contentArticle.cardImageAlt}
           fallbackLabel={contentArticle.theme ?? 'Artikel'}
-          imageUrl={contentArticle.cardImage}
+          imageUrl={contentArticle.cardImage ?? contentArticle.heroImage}
         />
         <div className={styles.cardBody}>
           <ContentArticleMeta contentArticle={contentArticle} />
           <h3 className={styles.cardTitle}>{contentArticle.title}</h3>
           <p className={styles.cardDescription}>{contentArticle.description}</p>
         </div>
-      </a>
+      </ContentArticleLink>
+    </Surface>
+  );
+}
+
+export function ContentArticleFeaturedCard({
+  contentArticle,
+}: {
+  contentArticle: ContentArticleListItem;
+}) {
+  return (
+    <Surface as="article" className={styles.featuredArticle} elevation="rested">
+      <ContentArticleLink
+        className={styles.featuredArticleLink}
+        href={buildArticlePath(contentArticle.slug)}
+        slug={contentArticle.slug}
+        theme={contentArticle.theme}
+      >
+        <ContentArticleImage
+          alt={contentArticle.heroImageAlt ?? contentArticle.cardImageAlt}
+          fallbackLabel={contentArticle.theme ?? 'Artikel'}
+          imageUrl={contentArticle.heroImage ?? contentArticle.cardImage}
+          kind="featured"
+          priority
+        />
+        <div className={styles.featuredArticleBody}>
+          <ContentArticleMeta contentArticle={contentArticle} />
+          <h2 className={styles.featuredArticleTitle}>
+            {contentArticle.title}
+          </h2>
+          <p className={styles.featuredArticleDescription}>
+            {contentArticle.description}
+          </p>
+        </div>
+      </ContentArticleLink>
     </Surface>
   );
 }
@@ -336,6 +377,7 @@ export function ContentArticleSetRail({
 }
 
 export function ContentArticleFeaturedSet({
+  articleSlug,
   availabilityLabel,
   ctaHref,
   ctaLabel = 'Bekijk set',
@@ -373,14 +415,20 @@ export function ContentArticleFeaturedSet({
         elevation="rested"
         tone="muted"
       >
-        <a className={styles.featuredSetVisualLink} href={ctaHref}>
+        <ContentArticleSetLink
+          articleSlug={articleSlug}
+          className={styles.featuredSetVisualLink}
+          href={ctaHref}
+          setId={setNumber}
+          setName={name}
+        >
           <ContentArticleImage
             alt={imageAlt}
             fallbackLabel={theme ?? 'Set'}
             imageUrl={imageUrl}
             kind="featured"
           />
-        </a>
+        </ContentArticleSetLink>
 
         <div className={styles.featuredSetContent}>
           <div className={styles.featuredSetHeader}>
@@ -448,9 +496,14 @@ export function ContentArticleFeaturedSet({
           ) : null}
 
           <div className={styles.featuredSetActions}>
-            <ActionLink href={ctaHref} tone="accent">
+            <ContentArticleSetActionLink
+              articleSlug={articleSlug}
+              href={ctaHref}
+              setId={setNumber}
+              setName={name}
+            >
               {ctaLabel}
-            </ActionLink>
+            </ContentArticleSetActionLink>
           </div>
         </div>
       </Surface>

@@ -111,7 +111,12 @@ export const webPathnames = {
 
 const webNavigationItems = [
   {
-    label: 'Ontdekken',
+    label: 'Nieuws',
+    pathname: webPathnames.articles,
+  },
+  {
+    href: `${buildWebPath(webPathnames.discover)}?filter=best-deals`,
+    label: 'Deals',
     pathname: webPathnames.discover,
   },
   {
@@ -135,6 +140,8 @@ export const apiPaths = {
   adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
   adminEditorialAgentExtract: '/api/v1/admin/editorial-agent/extract',
   adminEditorialAgentDraft: '/api/v1/admin/editorial-agent/draft',
+  adminEditorialAgentPublish: '/api/v1/admin/editorial-agent/publish',
+  articles: '/articles',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
   adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
@@ -442,7 +449,10 @@ export function buildPublicSetDetailUrl({
 
 export const webNavigation = webNavigationItems.map((navigationItem) => ({
   label: navigationItem.label,
-  href: buildWebPath(navigationItem.pathname),
+  href:
+    'href' in navigationItem
+      ? navigationItem.href
+      : buildWebPath(navigationItem.pathname),
 })) as ReadonlyArray<{ href: string; label: string }>;
 
 function getDefaultBrowserSupabaseUrl(): string | undefined {

@@ -120,7 +120,7 @@ Pas tone aan op articleType:
   - “je blijft hier en daar hangen”
   - “dit is zo’n maand waarin…”
 
-### single_set_news / deal / gwp_reward (decision)
+### single_set_news / multi_set_announcement / deal / gwp_reward (decision)
 - kritisch en duidelijk
 - concreet koopadvies
 - direct en eerlijk

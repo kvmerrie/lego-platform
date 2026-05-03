@@ -171,6 +171,17 @@ describe('CatalogFeatureThemeIndex', () => {
               signatureSet: 'Avengers Tower',
             },
           },
+          {
+            imageUrl: 'https://images.example/lotr.jpg',
+            themeSnapshot: {
+              name: 'Lord of the Rings™',
+              slug: 'lord-of-the-rings',
+              setCount: 3,
+              momentum:
+                'Middle-earth display builds with clear shelf presence.',
+              signatureSet: 'Rivendell',
+            },
+          },
         ]}
       />,
     );
@@ -178,7 +189,7 @@ describe('CatalogFeatureThemeIndex', () => {
     expect(markup).toContain('Alle thema');
     expect(markup).toContain('Paginapad');
     expect(markup).toContain('href="/"');
-    expect(markup).toContain('2 themapagina');
+    expect(markup).toContain('3 themapagina');
     expect(markup).toContain('Ontdekken blijft beter voor gemengd bladeren');
     expect(markup).toContain('Kies je thema');
     expect(markup).toContain(
@@ -186,6 +197,8 @@ describe('CatalogFeatureThemeIndex', () => {
     );
     expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('href="/themes/marvel"');
+    expect(markup).toContain('href="/themes/lord-of-the-rings"');
+    expect(markup).toContain('Lord of the Rings');
     expect(markup).toContain('src="https://images.example/icons.jpg"');
     expect(markup).not.toContain('href="/sets/');
   });

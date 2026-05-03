@@ -203,6 +203,10 @@
   outline: none;
 }
 
+.navLinkActive {
+  background: color-mix(in srgb, white 34%, transparent);
+}
+
 .navLink:focus-visible,
 .mobileNavLink:focus-visible,
 .mobileMenuSummary:focus-visible,
@@ -665,7 +669,7 @@
 .mobileTabList {
   display: grid;
   gap: var(--lego-space-1);
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   list-style: none;
   margin: 0;
   padding: 0;
@@ -816,7 +820,6 @@
 
 @media (min-width: 72rem) {
   .mainInner {
-    --lego-page-top-spacing: var(--lego-space-3);
     --lego-surface-padding-md-block: var(--lego-space-5);
     --lego-surface-padding-lg-block: var(--lego-space-6);
   }

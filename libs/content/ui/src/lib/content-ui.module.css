@@ -1,4 +1,5 @@
 .heroPanel {
+  --lego-surface-radius: 0;
   display: grid;
   gap: var(--lego-space-5);
 }
@@ -45,4 +46,13 @@
 .demo {
   display: grid;
   gap: var(--lego-space-4);
+}
+
+@media (min-width: 100rem) {
+  .heroPanel {
+    --lego-surface-radius: var(
+      --lego-section-surface-radius-lg,
+      var(--lego-radius-lg)
+    );
+  }
 }

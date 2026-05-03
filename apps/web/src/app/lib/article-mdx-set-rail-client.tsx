@@ -7,6 +7,7 @@ import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { ContentArticleSetRail } from '@lego-platform/content/ui';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { normalizeSetRailIds } from './article-mdx-embed-normalization';
+import { ArticleSetClickTrackingRegion } from './article-set-click-tracking-region';
 
 function orderSetCardsByRequestedIds({
   canonicalIds,
@@ -49,6 +50,7 @@ function getArticleMdxSetRailDebugMessage({
 }
 
 export function ArticleMdxSetRailClient({
+  articleSlug,
   canonicalIds,
   setIds,
   initialSetCards,
@@ -56,6 +58,7 @@ export function ArticleMdxSetRailClient({
   surfaceVariant = 'themed',
   title,
 }: {
+  articleSlug?: string;
   canonicalIds?: readonly string[];
   initialSetCards?: readonly CatalogHomepageSetCard[];
   setIds?:
@@ -155,23 +158,32 @@ export function ArticleMdxSetRailClient({
         data-article-module="set-rail"
         data-article-width="commerce-rail"
       >
-        <CatalogSetCardRailSection
-          ariaLabel={title}
-          description={subtitle}
-          eyebrow="Setselectie"
+        <ArticleSetClickTrackingRegion
+          articleSlug={articleSlug}
           items={resolvedSetCards.map((setCard) => ({
             href: buildSetDetailPath(setCard.slug),
-            id: setCard.id,
-            setSummary: setCard,
+            setId: setCard.id,
+            setName: setCard.name,
           }))}
-          mobileOverflowBleed
-          mobileOverflowBleedUntil="page"
-          spacing="compact"
-          surfaceVariant={surfaceVariant}
-          tone="default"
-          title={title}
-          variant="compact"
-        />
+        >
+          <CatalogSetCardRailSection
+            ariaLabel={title}
+            description={subtitle}
+            eyebrow="Setselectie"
+            items={resolvedSetCards.map((setCard) => ({
+              href: buildSetDetailPath(setCard.slug),
+              id: setCard.id,
+              setSummary: setCard,
+            }))}
+            mobileOverflowBleed
+            mobileOverflowBleedUntil="page"
+            spacing="compact"
+            surfaceVariant={surfaceVariant}
+            tone="default"
+            title={title}
+            variant="compact"
+          />
+        </ArticleSetClickTrackingRegion>
       </div>
       {debugMessage ? <p role="status">{debugMessage}</p> : null}
     </>

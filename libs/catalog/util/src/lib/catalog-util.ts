@@ -1,6 +1,12 @@
 import { MetricCard } from '@lego-platform/shared/types';
 import { formatCompactNumber } from '@lego-platform/shared/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
+import {
+  getThemeDisplayName,
+  isThemeVisible,
+  normalizeTheme,
+  shouldMapThemeToParent,
+} from './theme-registry';
 
 export const catalogReleaseDatePrecisions = [
   'day',
@@ -377,8 +383,16 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
     'Icons',
     {
       backgroundColor: '#f0c63b',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10326-1/129017.jpg',
       textColor: '#171a22',
+    },
+  ],
+  [
+    'Lord of the Rings',
+    {
+      backgroundColor: '#24362f',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
+      textColor: '#ffffff',
     },
   ],
   [
@@ -592,14 +606,17 @@ export function getCatalogThemeVisual(
 
 export function getCatalogThemeDisplayName(
   themeName?: string,
+  context?: Parameters<typeof normalizeTheme>[1],
 ): string | undefined {
   if (!themeName) {
     return undefined;
   }
 
-  return getCatalogPrimaryTheme({
+  const primaryTheme = getCatalogPrimaryTheme({
     rawTheme: themeName,
   });
+
+  return normalizeTheme(primaryTheme, context)?.displayName ?? primaryTheme;
 }
 
 export interface CatalogSetRecord {
@@ -1190,6 +1207,7 @@ const catalogThemeNormalizationRulesByRawTheme = new Map<
   ['Other', { primaryTheme: 'Other' }],
   ['Police', { primaryTheme: 'City', secondaryTheme: 'Police' }],
   ['Spider-Man', { primaryTheme: 'Marvel', secondaryTheme: 'Spider-Man' }],
+  ['Skylines', { primaryTheme: 'Architecture', secondaryTheme: 'Skylines' }],
   [
     'Spidey and His Amazing Friends',
     {
@@ -1204,6 +1222,7 @@ const catalogThemeNormalizationRulesByRawTheme = new Map<
     'The Infinity Saga',
     { primaryTheme: 'Marvel', secondaryTheme: 'The Infinity Saga' },
   ],
+  ['Toy Story', { primaryTheme: 'Disney', secondaryTheme: 'Toy Story' }],
   [
     'Ultimate Collector Series',
     {
@@ -1308,7 +1327,13 @@ export function resolveCatalogThemeIdentity({
     };
   }
 
-  if (canonicalParentTheme) {
+  if (
+    canonicalParentTheme &&
+    shouldMapThemeToParent({
+      parentTheme: canonicalParentTheme,
+      rawTheme: canonicalRawTheme,
+    })
+  ) {
     const secondaryThemes =
       rawThemeSegments.length > 1
         ? rawThemeSegments[0] === canonicalParentTheme
@@ -1393,8 +1418,11 @@ export function isCatalogBrowsablePrimaryTheme(themeName?: string): boolean {
     return false;
   }
 
-  return !catalogParkedPrimaryThemes.has(
-    getResolvedCatalogPrimaryThemeName(themeName),
+  const primaryThemeName = getResolvedCatalogPrimaryThemeName(themeName);
+
+  return (
+    !catalogParkedPrimaryThemes.has(primaryThemeName) &&
+    isThemeVisible(primaryThemeName)
   );
 }
 
@@ -1411,8 +1439,18 @@ export function getCatalogThemeDefinition(
     return undefined;
   }
 
-  const curatedThemeVisual =
-    curatedCatalogThemeVisualsByName.get(displayThemeName);
+  const registryTheme =
+    normalizeTheme(themeName) ?? normalizeTheme(displayThemeName);
+  const curatedThemeVisual = [
+    displayThemeName,
+    registryTheme?.displayName,
+    registryTheme?.legoDisplayName,
+    ...(registryTheme?.aliases ?? []),
+    themeName,
+  ]
+    .filter((visualName): visualName is string => Boolean(visualName))
+    .map((visualName) => curatedCatalogThemeVisualsByName.get(visualName))
+    .find(Boolean);
 
   if (!curatedThemeVisual) {
     return undefined;
@@ -1669,10 +1707,14 @@ export function buildCatalogSetSlug(name: string, canonicalId: string): string {
 }
 
 export function buildCatalogThemeSlug(themeName: string): string {
+  const registryTheme = normalizeTheme(themeName);
+
+  if (registryTheme) {
+    return registryTheme.key;
+  }
+
   return normalizeCatalogAsciiText(
-    getCatalogPrimaryTheme({
-      rawTheme: themeName,
-    }),
+    getCatalogPrimaryTheme({ rawTheme: themeName }),
   )
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

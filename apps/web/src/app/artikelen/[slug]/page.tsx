@@ -3,7 +3,7 @@ import { getArticleMdxComponents } from '../../lib/article-mdx-components';
 import { getMetadataFromSeoFields } from '../../lib/editorial-metadata';
 import { resolveArticleHeroPresentation } from '../../lib/article-hero-presentation';
 import {
-  getPublishedArticleBySlug,
+  getArticleBySlug,
   listPublishedArticles,
   listPublishedArticleSlugs,
 } from '@lego-platform/content/data-access';
@@ -23,7 +23,7 @@ import React, { type CSSProperties } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
 
 export async function generateStaticParams() {
@@ -38,7 +38,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const contentArticle = await getPublishedArticleBySlug(slug);
+  const contentArticle = await getArticleBySlug(slug);
 
   if (!contentArticle) {
     return {};
@@ -61,7 +61,7 @@ export default async function ArticleDetailPage({
 }) {
   const { slug } = await params;
   const [contentArticle, publishedArticles] = await Promise.all([
-    getPublishedArticleBySlug(slug),
+    getArticleBySlug(slug),
     listPublishedArticles(),
   ]);
 
@@ -172,6 +172,7 @@ export default async function ArticleDetailPage({
           <MDXRemote
             components={getArticleMdxComponents({
               articleDescription: articleWithResolvedHero.description,
+              articleSlug: articleWithResolvedHero.slug,
               articleTheme: articleWithResolvedHero.theme,
               articleTitle: articleWithResolvedHero.title,
             })}

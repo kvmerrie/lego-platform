@@ -115,10 +115,23 @@ describe('catalog snapshot helpers', () => {
     expect(getCatalogThemeDisplayName('Super Heroes Marvel')).toBe('Marvel');
     expect(getCatalogThemeDisplayName('Super Heroes DC')).toBe('DC');
     expect(getCatalogThemeDisplayName('Ultimate Collector Series')).toBe(
-      'Star Wars',
+      'Star Wars™',
     );
-    expect(getCatalogThemeDisplayName('Modular Buildings')).toBe('Icons');
+    expect(getCatalogThemeDisplayName('Modular Buildings')).toBe(
+      'LEGO® Icons',
+    );
     expect(getCatalogThemeDisplayName('LEGO Exclusive')).toBe('Other');
+    expect(getCatalogThemeDisplayName('Lord of the Rings')).toBe(
+      'Lord of the Rings™',
+    );
+    expect(getCatalogThemeDisplayName('Skylines')).toBe('Architecture');
+    expect(
+      getCatalogThemeDisplayName('Icons', {
+        name: 'The Lord of the Rings: Barad-dur',
+        setId: '10333',
+        theme: 'Icons',
+      }),
+    ).toBe('Lord of the Rings™');
   });
 
   test('returns curated theme visuals for recognizable theme surfaces', () => {
@@ -133,7 +146,7 @@ describe('catalog snapshot helpers', () => {
     });
     expect(getCatalogThemeVisual('Modular Buildings')).toEqual({
       backgroundColor: '#f0c63b',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/132394.jpg',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10326-1/129017.jpg',
       textColor: '#171a22',
     });
     expect(getCatalogThemeVisual('Ultimate Collector Series')).toEqual({
@@ -142,7 +155,7 @@ describe('catalog snapshot helpers', () => {
       textColor: '#ffffff',
     });
     expect(getCatalogThemeDefinition('Ultimate Collector Series')).toEqual({
-      name: 'Star Wars',
+      name: 'Star Wars™',
       slug: 'star-wars',
       visual: {
         backgroundColor: '#5573b5',
@@ -194,8 +207,16 @@ describe('catalog snapshot helpers', () => {
         'Seasonal',
       ].every((themeName) => Boolean(getCatalogThemeVisual(themeName))),
     ).toBe(true);
+    expect(getCatalogThemeVisual('Icons')?.imageUrl).toContain('10326-1');
+    expect(getCatalogThemeVisual('Icons')?.imageUrl).not.toContain('10316-1');
+    expect(getCatalogThemeVisual('Lord of the Rings')).toEqual({
+      backgroundColor: '#24362f',
+      imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
+      textColor: '#ffffff',
+    });
     expect(getCatalogThemeSurfaceTone('Star Wars')).toBe('dark');
     expect(getCatalogThemeSurfaceTone('Icons')).toBe('light');
+    expect(getCatalogThemeSurfaceTone('Lord of the Rings')).toBe('dark');
     expect(getCatalogThemeSurfaceTone('Speed Champions')).toBe('dark');
     expect(getCatalogThemeMutedTextColor('#ffffff')).toBe('#f4f7fb');
     expect(getCatalogThemeMutedTextColor('#171a22')).toBe('#425066');
@@ -203,6 +224,59 @@ describe('catalog snapshot helpers', () => {
   });
 
   test('resolves primary themes and secondary labels from external subthemes', () => {
+    expect(
+      resolveCatalogThemeIdentity({
+        parentTheme: 'Disney',
+        rawTheme: 'Toy Story',
+      }),
+    ).toEqual({
+      primaryTheme: 'Disney',
+      secondaryThemes: ['Toy Story'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        parentTheme: 'City',
+        rawTheme: 'Advent',
+      }),
+    ).toEqual({
+      primaryTheme: 'City',
+      secondaryThemes: ['Advent'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        parentTheme: 'Licensed',
+        rawTheme: 'Lord of the Rings',
+      }),
+    ).toEqual({
+      primaryTheme: 'Lord of the Rings',
+      secondaryThemes: [],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        parentTheme: 'Architecture',
+        rawTheme: 'Skylines',
+      }),
+    ).toEqual({
+      primaryTheme: 'Architecture',
+      secondaryThemes: ['Skylines'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        rawTheme: 'Skylines',
+      }),
+    ).toEqual({
+      primaryTheme: 'Architecture',
+      secondaryThemes: ['Skylines'],
+    });
+    expect(
+      resolveCatalogThemeIdentity({
+        parentTheme: 'Books',
+        rawTheme: 'Activity Books with LEGO Parts',
+      }),
+    ).toEqual({
+      primaryTheme: 'Books',
+      secondaryThemes: ['Activity Books with LEGO Parts'],
+    });
     expect(
       resolveCatalogThemeIdentity({
         rawTheme: 'Ultimate Collector Series',

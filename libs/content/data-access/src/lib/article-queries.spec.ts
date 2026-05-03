@@ -1,4 +1,4 @@
-import path from 'node:path';
+import * as path from 'node:path';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   getPublishedArticleBySlug,
@@ -191,5 +191,62 @@ describe('content article queries', () => {
         'Content articles directory not found at "/tmp/brickhunt-missing-articles-dir".',
       ),
     );
+  });
+
+  test('sorts Supabase articles by article date instead of publish timestamp', async () => {
+    const select = vi.fn(() => ({
+      eq: vi.fn(async () => ({
+        data: [
+          {
+            created_at: '2026-05-03T11:00:00.000Z',
+            frontmatter: {
+              date: '2026-04-15',
+              description: 'Eerder gepubliceerd, maar ouder nieuws.',
+            },
+            mdx: '---\ntitle: "April nieuws"\n---\n\nApril body.',
+            published_at: '2026-05-03T11:00:00.000Z',
+            slug: 'april-nieuws',
+            status: 'published',
+            title: 'April nieuws',
+            updated_at: '2026-05-03T11:00:00.000Z',
+          },
+          {
+            created_at: '2026-05-02T09:00:00.000Z',
+            frontmatter: {
+              date: '2026-05-01',
+              description: 'Historisch artikel met latere artikeldatum.',
+            },
+            mdx: '---\ntitle: "Mei nieuws"\n---\n\nMei body.',
+            published_at: '2026-05-02T09:00:00.000Z',
+            slug: 'mei-nieuws',
+            status: 'published',
+            title: 'Mei nieuws',
+            updated_at: '2026-05-02T09:00:00.000Z',
+          },
+        ],
+        error: null,
+      })),
+    }));
+    const supabaseClient = {
+      from: vi.fn(() => ({
+        select,
+      })),
+    };
+
+    const result = await listPublishedArticles({
+      articleFiles: [],
+      assetExistsFn: async () => false,
+      includeSupabase: true,
+      supabaseClient,
+    });
+
+    expect(select).toHaveBeenCalledWith(
+      'created_at, frontmatter, mdx, published_at, slug, status, title, updated_at',
+    );
+    expect(result.map((article) => article.slug)).toEqual([
+      'mei-nieuws',
+      'april-nieuws',
+    ]);
+    expect(result[0]?.date).toBe('2026-05-01');
   });
 });

@@ -15,6 +15,7 @@ import {
   type ArticleSetSpotlightHighlightContext,
 } from './article-mdx-set-spotlight-highlight';
 import type { ArticleSetSpotlightItem } from './article-mdx-set-spotlight-types';
+import { ArticleSetClickTrackingRegion } from './article-set-click-tracking-region';
 
 function buildGalleryImages(items: readonly ArticleSetSpotlightItem[]) {
   return items.flatMap((item) =>
@@ -49,10 +50,12 @@ function dedupeSpotlightItems(
 
 export function ArticleMdxSetSpotlightListClient({
   articleDescription,
+  articleSlug,
   articleTitle,
   items,
 }: {
   articleDescription?: string;
+  articleSlug?: string;
   articleTitle?: string;
   items: readonly ArticleSetSpotlightItem[];
 }) {
@@ -204,7 +207,16 @@ export function ArticleMdxSetSpotlightListClient({
 
   return (
     <>
-      <ContentArticleSetSpotlightList sections={spotlightSections} />
+      <ArticleSetClickTrackingRegion
+        articleSlug={articleSlug}
+        items={orderedSpotlightItems.map((item) => ({
+          href: item.ctaHref,
+          setId: item.setSummary.id,
+          setName: item.setSummary.name,
+        }))}
+      >
+        <ContentArticleSetSpotlightList sections={spotlightSections} />
+      </ArticleSetClickTrackingRegion>
       {galleryItems.length ? (
         <ImageGallery
           ariaLabel="Setgalerij"

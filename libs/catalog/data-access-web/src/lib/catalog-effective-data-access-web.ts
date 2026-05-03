@@ -21,6 +21,7 @@ import {
   getCatalogReleaseYear,
   getCatalogThemeDisplayName,
   getCatalogThemeVisual,
+  getThemeTileImage,
   isCatalogBrowsablePrimaryTheme,
   listCatalogSetCardSearchMatches,
   normalizeCatalogAsciiText,
@@ -29,6 +30,7 @@ import {
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
   sortCatalogSetSummaries,
+  sortThemesForHome,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogCurrentOfferSummariesApiPath,
@@ -345,8 +347,14 @@ function toCatalogSummaryFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetSummary {
   const displayTheme =
-    getCatalogThemeDisplayName(canonicalCatalogSet.primaryTheme) ??
-    canonicalCatalogSet.primaryTheme;
+    getCatalogThemeDisplayName(canonicalCatalogSet.primaryTheme, {
+      name: canonicalCatalogSet.name,
+      secondaryLabels: canonicalCatalogSet.secondaryLabels,
+      setId: canonicalCatalogSet.setId,
+      slug: canonicalCatalogSet.slug,
+      sourceSetNumber: canonicalCatalogSet.sourceSetNumber,
+      theme: canonicalCatalogSet.primaryTheme,
+    }) ?? canonicalCatalogSet.primaryTheme;
 
   return {
     createdAt: canonicalCatalogSet.createdAt,
@@ -375,8 +383,14 @@ function toCatalogSetDetailFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetDetail {
   const displayTheme =
-    getCatalogThemeDisplayName(canonicalCatalogSet.primaryTheme) ??
-    canonicalCatalogSet.primaryTheme;
+    getCatalogThemeDisplayName(canonicalCatalogSet.primaryTheme, {
+      name: canonicalCatalogSet.name,
+      secondaryLabels: canonicalCatalogSet.secondaryLabels,
+      setId: canonicalCatalogSet.setId,
+      slug: canonicalCatalogSet.slug,
+      sourceSetNumber: canonicalCatalogSet.sourceSetNumber,
+      theme: canonicalCatalogSet.primaryTheme,
+    }) ?? canonicalCatalogSet.primaryTheme;
 
   return {
     createdAt: canonicalCatalogSet.createdAt,
@@ -2089,7 +2103,8 @@ export function rankCatalogSimilarSetCards({
     .flatMap((setCard) => {
       if (
         setCard.id === currentSetCard.id ||
-        setCard.theme !== currentSetCard.theme
+        buildCatalogThemeSlug(setCard.theme) !==
+          buildCatalogThemeSlug(currentSetCard.theme)
       ) {
         return [];
       }
@@ -2221,8 +2236,10 @@ function sortDiscoverThemeSetCards({
 }
 
 function getCatalogThemeBrowseOrder(theme: string): number {
-  const curatedThemeOrderIndex = catalogDiscoverThemeOrder.indexOf(
-    theme as (typeof catalogDiscoverThemeOrder)[number],
+  const themeSlug = buildCatalogThemeSlug(theme);
+  const curatedThemeOrderIndex = catalogDiscoverThemeOrder.findIndex(
+    (catalogDiscoverTheme) =>
+      buildCatalogThemeSlug(catalogDiscoverTheme) === themeSlug,
   );
 
   if (curatedThemeOrderIndex !== -1) {
@@ -2232,7 +2249,10 @@ function getCatalogThemeBrowseOrder(theme: string): number {
   const fallbackThemeOrder = catalogThemeOverlays.map(
     (catalogThemeOverlay) => catalogThemeOverlay.name,
   );
-  const fallbackThemeOrderIndex = fallbackThemeOrder.indexOf(theme);
+  const fallbackThemeOrderIndex = fallbackThemeOrder.findIndex(
+    (fallbackThemeName) =>
+      buildCatalogThemeSlug(fallbackThemeName) === themeSlug,
+  );
 
   return fallbackThemeOrderIndex === -1
     ? Number.MAX_SAFE_INTEGER
@@ -2246,6 +2266,15 @@ function getCatalogThemeRepresentativeImageUrl({
   setCards: readonly CatalogHomepageSetCard[];
   themeSnapshot: CatalogThemeSnapshot;
 }): string | undefined {
+  const tileImageSetId = getThemeTileImage(themeSnapshot.name);
+  const tileImageSetCard = tileImageSetId
+    ? setCards.find((catalogSetCard) => catalogSetCard.id === tileImageSetId)
+    : undefined;
+
+  if (tileImageSetCard?.imageUrl) {
+    return tileImageSetCard.imageUrl;
+  }
+
   const signatureSetCard = setCards.find(
     (catalogSetCard) => catalogSetCard.name === themeSnapshot.signatureSet,
   );
@@ -2264,17 +2293,24 @@ function createThemeSnapshot({
   setCards: readonly CatalogHomepageSetCard[];
   theme: string;
 }): CatalogThemeSnapshot {
+  const displayThemeName = getCatalogThemeDisplayName(theme) ?? theme;
+  const themeSlug = buildCatalogThemeSlug(displayThemeName);
   const catalogThemeOverlay = catalogThemeOverlays.find(
-    (themeOverlay) => themeOverlay.name === theme,
+    (themeOverlay) =>
+      themeOverlay.name === theme ||
+      themeOverlay.name === displayThemeName ||
+      buildCatalogThemeSlug(themeOverlay.name) === themeSlug,
   );
 
   return {
-    name: theme,
-    slug: buildCatalogThemeSlug(theme),
+    name: displayThemeName,
+    slug: themeSlug,
     setCount: setCards.length,
     momentum: catalogThemeOverlay?.momentum ?? genericCatalogThemeMomentum,
     signatureSet:
-      catalogThemeOverlay?.signatureSet ?? setCards[0]?.name ?? theme,
+      catalogThemeOverlay?.signatureSet ??
+      setCards[0]?.name ??
+      displayThemeName,
   };
 }
 
@@ -2289,9 +2325,17 @@ async function listCatalogBrowseThemeGroupsInternal({
   const setCardsByTheme = new Map<string, CatalogHomepageSetCard[]>();
 
   for (const setCard of setCards) {
-    const existingSetCards = setCardsByTheme.get(setCard.theme) ?? [];
+    const theme =
+      getCatalogThemeDisplayName(setCard.theme, {
+        name: setCard.name,
+        secondaryLabels: setCard.secondaryLabels,
+        setId: setCard.id,
+        slug: setCard.slug,
+        theme: setCard.theme,
+      }) ?? setCard.theme;
+    const existingSetCards = setCardsByTheme.get(theme) ?? [];
     existingSetCards.push(setCard);
-    setCardsByTheme.set(setCard.theme, existingSetCards);
+    setCardsByTheme.set(theme, existingSetCards);
   }
 
   return [...setCardsByTheme.entries()]
@@ -3340,10 +3384,10 @@ export async function listHomepageThemeDirectoryItems({
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
-  return (
+  return sortThemesForHome(
     await listCatalogThemeDirectoryItems({
       listCanonicalCatalogSetsFn,
-    })
+    }),
   ).slice(0, limit);
 }
 
@@ -3365,10 +3409,10 @@ export async function listHomepageThemeSpotlightItems({
     ),
   );
 
-  return (
+  return sortThemesForHome(
     await listCatalogThemeDirectoryItems({
       listCanonicalCatalogSetsFn,
-    })
+    }),
   )
     .filter(
       (catalogThemeDirectoryItem) =>

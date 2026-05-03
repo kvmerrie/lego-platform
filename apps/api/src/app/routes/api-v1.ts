@@ -4,6 +4,10 @@ import {
   listCatalogSetLiveOffersBySetId as listCatalogSetLiveOffersBySetIdServer,
 } from '@lego-platform/catalog/data-access-server';
 import {
+  getPublishedArticleBySlug,
+  listPublishedArticles,
+} from '@lego-platform/content/data-access';
+import {
   apiPaths,
   buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
@@ -32,6 +36,12 @@ export interface ApiV1RouteDependencies {
   >;
   listCatalogDiscoverySignals?: () => Promise<
     Awaited<ReturnType<typeof listCatalogDiscoverySignalsServer>>
+  >;
+  getPublishedArticleBySlug?: (
+    slug: string,
+  ) => Promise<Awaited<ReturnType<typeof getPublishedArticleBySlug>>>;
+  listPublishedArticles?: () => Promise<
+    Awaited<ReturnType<typeof listPublishedArticles>>
   >;
   listCatalogSetLiveOffersBySetId?: (
     setId: string,
@@ -85,6 +95,10 @@ export function createApiV1Routes({
       listCatalogCurrentOfferSummariesBySetIdsServer({ setIds }),
   listCatalogDiscoverySignals: listCatalogDiscoverySignalsDependency = () =>
     listCatalogDiscoverySignalsServer(),
+  getPublishedArticleBySlug: getPublishedArticleBySlugDependency = (slug) =>
+    getPublishedArticleBySlug(slug),
+  listPublishedArticles: listPublishedArticlesDependency = () =>
+    listPublishedArticles(),
   listCatalogSetLiveOffersBySetId: listCatalogSetLiveOffersBySetIdDependency = (
     setId,
   ) => listCatalogSetLiveOffersBySetIdServer({ setId }),
@@ -109,6 +123,27 @@ export function createApiV1Routes({
     fastify.get(buildCatalogDiscoverySignalsApiPath(), async function () {
       return listCatalogDiscoverySignalsDependency();
     });
+
+    fastify.get(apiPaths.articles, async function () {
+      return listPublishedArticlesDependency();
+    });
+
+    fastify.get<{ Params: { slug: string } }>(
+      `${apiPaths.articles}/:slug`,
+      async function (request, reply) {
+        const article = await getPublishedArticleBySlugDependency(
+          request.params.slug,
+        );
+
+        if (!article) {
+          return reply.status(404).send({
+            message: 'Article not found.',
+          });
+        }
+
+        return article;
+      },
+    );
 
     fastify.get<{ Querystring: { setIds?: string } }>(
       buildCatalogCurrentOfferSummariesApiPath(),

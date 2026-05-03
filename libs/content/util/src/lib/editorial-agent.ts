@@ -101,6 +101,7 @@ export interface EditorialAgentExtractedSource {
   finalUrl: string;
   inputUrl: string;
   language: string;
+  publishedAt?: string;
   siteName: string;
   textLength: number;
   title: string;
@@ -132,6 +133,7 @@ export interface EditorialAgentExtractedFacts {
 export type EditorialAgentArticleType =
   | 'deal'
   | 'gwp_reward'
+  | 'multi_set_announcement'
   | 'release_roundup'
   | 'single_set_news'
   | 'unknown';

@@ -13,6 +13,7 @@ import {
 } from '@lego-platform/admin/ui';
 import {
   type EditorialAgentCatalogMatch,
+  type ContentArticleFrontmatterInput,
   createEditorialAgentMockOutput,
   editorialAgentArticleComponentManifest,
   generateEditorialMdxDraft,
@@ -21,6 +22,10 @@ import {
   type EditorialAgentFactExtractionResult,
   type EditorialAgentRelatedSetCandidate,
 } from '@lego-platform/content/util';
+import {
+  buildArticlePath,
+  getPublicWebBaseUrl,
+} from '@lego-platform/shared/config';
 import { ContentAdminEditorialAgentApiService } from './content-admin-editorial-agent-api.service';
 
 @Component({
@@ -42,10 +47,13 @@ export class ContentAdminEditorialAgentPageComponent {
 
   readonly sourceUrl = signal('https://example.com/example');
   readonly isGenerating = signal(false);
+  readonly isPublishing = signal(false);
   readonly importMissingSets = signal(true);
   readonly useAiRewrite = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly copyState = signal<'copied' | 'error' | 'idle'>('idle');
+  readonly publishErrorMessage = signal<string | null>(null);
+  readonly publishedArticleUrl = signal<string | null>(null);
   readonly extraction = signal<EditorialAgentFactExtractionResult | null>(null);
   readonly draftResult = signal<EditorialAgentDraftGenerationResult | null>(
     null,
@@ -170,6 +178,8 @@ export class ContentAdminEditorialAgentPageComponent {
 
   async analyzeSourceUrl(): Promise<void> {
     this.errorMessage.set(null);
+    this.publishErrorMessage.set(null);
+    this.publishedArticleUrl.set(null);
     this.copyState.set('idle');
     this.isGenerating.set(true);
 
@@ -204,6 +214,46 @@ export class ContentAdminEditorialAgentPageComponent {
       this.copyState.set('copied');
     } catch {
       this.copyState.set('error');
+    }
+  }
+
+  async publishArticle(): Promise<void> {
+    const mdx = this.mdxOutput();
+
+    if (!mdx) {
+      this.publishErrorMessage.set('Er is nog geen MDX om te publiceren.');
+      return;
+    }
+
+    this.isPublishing.set(true);
+    this.publishErrorMessage.set(null);
+    this.publishedArticleUrl.set(null);
+
+    try {
+      const frontmatter: ContentArticleFrontmatterInput = {
+        ...this.output().frontmatter,
+        status: 'published',
+      };
+      const result = await this.editorialAgentApi.publishArticle({
+        frontmatter,
+        mdx,
+      });
+      const publicWebBaseUrl = getPublicWebBaseUrl({
+        currentOrigin:
+          typeof window !== 'undefined' ? window.location.origin : undefined,
+      });
+
+      this.publishedArticleUrl.set(
+        `${publicWebBaseUrl}${buildArticlePath(result.slug)}`,
+      );
+    } catch (error) {
+      this.publishErrorMessage.set(
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : 'Artikel publiceren naar Supabase is mislukt.',
+      );
+    } finally {
+      this.isPublishing.set(false);
     }
   }
 

@@ -90,14 +90,14 @@ This baseline deliberately replaces replaying the whole transitional migration c
 
 Why:
 
-- it creates `catalog_sets`, not `catalog_sets_overlay`
+- it creates `catalog_sets` directly
 - it keeps normalized themes first-class from day one
 - it avoids carrying transitional catalog columns into the clean environment
 - it includes only the tables that still matter for current product behavior
 
 Recommended treatment of the old migration chain:
 
-- run the auth, wishlist, pricing-history, commerce backoffice, catalog overlay, and normalized-theme migrations only on the existing legacy environment
+- run the auth, wishlist, pricing-history, commerce backoffice, catalog, and normalized-theme migrations only on the existing legacy environment
 - do **not** replay them one by one on the clean environment unless you are deliberately rehearsing the old path
 
 ### Step C. Export A Clean Bootstrap Payload From The Current Source Environment
@@ -187,7 +187,7 @@ That gives the clean environment:
 
 ## What We Can Skip Completely In The Clean Environment
 
-- `catalog_sets_overlay` as the real persistence model
+- transitional catalog write paths
 - legacy free-text `theme` as required catalog storage
 - snapshot fallback for runtime set identity
 - local per-set prose fields like `tagline`, `collectorAngle`, and `collectorHighlights`
@@ -202,7 +202,7 @@ We no longer keep overlay-era write semantics around the admin add-set flow.
 The remaining cleanup work is read-side and naming cleanup only:
 
 - update canonical web reads that still carry overlay-oriented naming
-- update catalog sync source reads that still mention overlay-era tables
+- update catalog sync source reads that still carry overlay-era naming
 - remove any remaining read-only helpers that still assume snapshot or overlay fallback semantics
 
 Main repo locations:
@@ -284,7 +284,7 @@ That boundary is intentional. It keeps this step safe while still making the cle
 
 Do one narrow follow-up implementation pass:
 
-- rename runtime catalog table usage from `catalog_sets_overlay` to `catalog_sets`
+- verify runtime catalog table usage points at `catalog_sets`
 - then add a target-environment importer that reads the exported bootstrap payload and seeds the fresh environment
 
 That is the cleanest moment to stop carrying the old overlay naming without inventing another temporary compatibility layer.

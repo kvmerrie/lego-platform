@@ -12,6 +12,7 @@ import { ShellWebFollowLink } from './shell-web-follow-link';
 import { ShellWebHeaderReveal } from './shell-web-header-reveal';
 import { ShellWebMobileTabBar } from './shell-web-mobile-tab-bar';
 import { ShellWebMobileViewportOffset } from './shell-web-mobile-viewport-offset';
+import { ShellWebNavLink } from './shell-web-nav-link';
 import { ShellWebSamePageFragmentLinks } from './shell-web-same-page-fragment-links';
 import { ShellWebSearchOverlayScrollRestore } from './shell-web-search-overlay-scroll-restore';
 import { ShellWebSearchForm } from './shell-web-search-form';
@@ -19,13 +20,11 @@ import { ShellWebSearchForm } from './shell-web-search-form';
 function renderDesktopNavigationLinks() {
   return [
     ...webNavigation.map((navigationItem) => (
-      <a
-        className={styles.navLink}
+      <ShellWebNavLink
         href={navigationItem.href}
         key={navigationItem.href}
-      >
-        {navigationItem.label}
-      </a>
+        label={navigationItem.label}
+      />
     )),
     <ShellWebFollowLink key="following-desktop" variant="desktop" />,
   ];

@@ -10,6 +10,7 @@ import {
   getFollowLinkLabel,
   getFollowingNavPageSurface,
 } from './shell-web-follow-link';
+import { isShellWebNavLinkActive } from './shell-web-nav-link';
 import { ShellWeb } from './shell-web';
 
 vi.mock('next/navigation', () => ({
@@ -32,9 +33,17 @@ describe('ShellWeb', () => {
     );
 
     expect(markup).toContain('Brickhunt');
-    expect(markup).toContain('Ontdekken');
+    expect(markup).toContain('Deals');
+    expect(markup).toContain('Nieuws');
     expect(markup).toContain('Thema&#x27;s');
     expect(markup).toContain('Volgt');
+    expect(markup.indexOf('Nieuws')).toBeLessThan(markup.indexOf('Deals'));
+    expect(markup.indexOf('Deals')).toBeLessThan(
+      markup.indexOf('Thema&#x27;s'),
+    );
+    expect(markup.indexOf('Thema&#x27;s')).toBeLessThan(
+      markup.indexOf('Volgt'),
+    );
     expect(markup).toContain('Ga naar account');
     expect(markup).toContain('Ga naar lijsten');
     expect(markup).toContain('Account');
@@ -48,19 +57,49 @@ describe('ShellWeb', () => {
     expect(markup).toContain('Zoek op set of setnummer');
     expect(markup).toContain('href="/account"');
     expect(markup).toContain('href="/volgt"');
+    expect(markup).toContain('href="/artikelen"');
     expect(markup).toContain('href="/search?overlay=1"');
     expect(markup).toContain('href="/discover?filter=best-deals"');
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="/account/wishlist"');
     expect(markup).toContain('Mobiele tabnavigatie');
     expect(markup).toContain('Deals');
+    expect(markup).toContain('Nieuws');
     expect(markup).toContain('Zoeken');
     expect(markup).toContain('Thema&#x27;s');
+    const mobileTabbarMarkup = markup.slice(
+      markup.indexOf('Mobiele tabnavigatie'),
+    );
+    const mobileTabbarHrefs = [
+      ...mobileTabbarMarkup.matchAll(/href="([^"]+)"/g),
+    ].map((match) => match[1]);
+
+    expect(mobileTabbarHrefs.slice(0, 5)).toEqual([
+      '/artikelen',
+      '/discover?filter=best-deals',
+      '/search?overlay=1',
+      '/themes',
+      '/volgt',
+    ]);
+    expect(mobileTabbarHrefs.indexOf('/search?overlay=1')).toBe(2);
+    expect(mobileTabbarMarkup.indexOf('Nieuws')).toBeLessThan(
+      mobileTabbarMarkup.indexOf('Deals'),
+    );
+    expect(mobileTabbarMarkup.indexOf('Deals')).toBeLessThan(
+      mobileTabbarMarkup.indexOf('Zoeken'),
+    );
+    expect(mobileTabbarMarkup.indexOf('Zoeken')).toBeLessThan(
+      mobileTabbarMarkup.indexOf('Thema&#x27;s'),
+    );
+    expect(mobileTabbarMarkup.indexOf('Thema&#x27;s')).toBeLessThan(
+      mobileTabbarMarkup.indexOf('Volgt'),
+    );
     expect(markup).toContain(
       'Brickhunt laat snel zien welke doos je wilt hebben',
     );
     expect(markup).toContain('waar de prijs nu goed zit');
     expect(markup).not.toContain('Home');
+    expect(markup).not.toContain('Ontdekken');
     expect(markup).not.toContain('Featured shortlist');
     expect(markup).not.toContain('Checking');
     expect(markup).not.toContain('Sign in');
@@ -71,6 +110,10 @@ describe('ShellWeb', () => {
 describe('getActiveMobileTabId', () => {
   it('matches search, themes, following, and deals routes to the intended tabs', () => {
     expect(getActiveMobileTabId({ pathname: '/search' })).toBe('search');
+    expect(getActiveMobileTabId({ pathname: '/artikelen' })).toBe('articles');
+    expect(getActiveMobileTabId({ pathname: '/artikelen/lego-nieuws' })).toBe(
+      'articles',
+    );
     expect(getActiveMobileTabId({ pathname: '/themes' })).toBe('themes');
     expect(getActiveMobileTabId({ pathname: '/themes/icons' })).toBe('themes');
     expect(getActiveMobileTabId({ pathname: '/volgt' })).toBe('following');
@@ -95,6 +138,42 @@ describe('getActiveMobileTabId', () => {
     expect(
       getActiveMobileTabId({ pathname: '/hoe-werkt-het' }),
     ).toBeUndefined();
+  });
+});
+
+describe('isShellWebNavLinkActive', () => {
+  it('matches desktop navigation links on index and detail routes', () => {
+    expect(
+      isShellWebNavLinkActive({
+        href: '/discover?filter=best-deals',
+        pathname: '/discover',
+        searchFilter: 'best-deals',
+      }),
+    ).toBe(true);
+    expect(
+      isShellWebNavLinkActive({
+        href: '/discover?filter=best-deals',
+        pathname: '/discover',
+      }),
+    ).toBe(false);
+    expect(
+      isShellWebNavLinkActive({
+        href: '/artikelen',
+        pathname: '/artikelen',
+      }),
+    ).toBe(true);
+    expect(
+      isShellWebNavLinkActive({
+        href: '/artikelen',
+        pathname: '/artikelen/lego-nieuws',
+      }),
+    ).toBe(true);
+    expect(
+      isShellWebNavLinkActive({
+        href: '/artikelen',
+        pathname: '/themes',
+      }),
+    ).toBe(false);
   });
 });
 

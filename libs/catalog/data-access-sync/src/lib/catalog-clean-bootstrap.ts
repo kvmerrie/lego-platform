@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-const CURRENT_CATALOG_SETS_TABLE = 'catalog_sets_overlay';
+const CURRENT_CATALOG_SETS_TABLE = 'catalog_sets';
 const CURRENT_CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CURRENT_CATALOG_THEMES_TABLE = 'catalog_themes';
 const CURRENT_CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';

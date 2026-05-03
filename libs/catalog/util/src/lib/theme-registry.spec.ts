@@ -1,0 +1,121 @@
+import { describe, expect, it } from 'vitest';
+import {
+  getThemeDisplayName,
+  getThemeTileImage,
+  isThemeVisible,
+  normalizeTheme,
+  sortThemesForHome,
+} from './theme-registry';
+
+describe('Brickhunt theme registry', () => {
+  it('uses Rebrickable/catalog theme names as fallback entries', () => {
+    expect(normalizeTheme('Lord of the Rings')?.key).toBe('lord-of-the-rings');
+    expect(getThemeDisplayName('Lord of the Rings')).toBe(
+      'Lord of the Rings™',
+    );
+    expect(normalizeTheme('Unknown Product Line')?.displayName).toBe(
+      'Unknown Product Line',
+    );
+  });
+
+  it('maps child themes to a parent when hierarchy context says they belong there', () => {
+    expect(
+      normalizeTheme('Toy Story', {
+        parentTheme: 'Disney',
+        theme: 'Toy Story',
+      })?.key,
+    ).toBe('disney');
+  });
+
+  it('keeps Lord of the Rings as a visible product line even with root or utility parent context', () => {
+    expect(
+      normalizeTheme('Lord of the Rings', {
+        parentTheme: 'Licensed',
+        theme: 'Lord of the Rings',
+      })?.key,
+    ).toBe('lord-of-the-rings');
+    expect(
+      normalizeTheme('The Lord of the Rings', {
+        parentTheme: 'Books',
+        theme: 'The Lord of the Rings',
+      })?.displayName,
+    ).toBe('Lord of the Rings™');
+    expect(isThemeVisible('LOTR')).toBe(true);
+  });
+
+  it('recognizes Icons-backed Lord of the Rings catalog sets by context', () => {
+    expect(
+      normalizeTheme('Icons', {
+        name: 'The Lord of the Rings: Barad-dur',
+        setId: '10333',
+        theme: 'Icons',
+      })?.key,
+    ).toBe('lord-of-the-rings');
+    expect(
+      normalizeTheme('Icons', {
+        name: 'Rivendell',
+        setId: '10316',
+        slug: 'lord-of-the-rings-rivendell-10316',
+        theme: 'Icons',
+      })?.key,
+    ).toBe('lord-of-the-rings');
+  });
+
+  it('maps Skylines to Architecture instead of a standalone theme', () => {
+    expect(normalizeTheme('Skylines')?.key).toBe('architecture');
+    expect(getThemeDisplayName('Skylines')).toBe('Architecture');
+  });
+
+  it('normalizes Advent to City when the hierarchy or set context is a City advent calendar', () => {
+    expect(
+      normalizeTheme('Advent', {
+        name: 'LEGO City Advent Calendar 2026',
+        parentTheme: 'City',
+        setId: '60510',
+        theme: 'Advent',
+      })?.key,
+    ).toBe('city');
+  });
+
+  it('hides source and utility themes by default', () => {
+    expect(isThemeVisible('Gear')).toBe(false);
+    expect(isThemeVisible('Books')).toBe(false);
+    expect(isThemeVisible('Powered UP')).toBe(false);
+    expect(isThemeVisible('SERIOUS PLAY')).toBe(false);
+    expect(isThemeVisible('BrickLink Designer Program')).toBe(false);
+    expect(isThemeVisible('Lord of the Rings')).toBe(true);
+  });
+
+  it('uses display overrides for known branded themes', () => {
+    expect(getThemeDisplayName('Sonic The Hedgehog')).toBe(
+      'Sonic the Hedgehog™',
+    );
+    expect(getThemeDisplayName('Star Wars')).toBe('Star Wars™');
+    expect(getThemeDisplayName('Collectible Minifigures')).toBe('Minifiguren');
+  });
+
+  it('sorts featured homepage themes before popularity and alphabetical fallback themes', () => {
+    expect(
+      sortThemesForHome([
+        { themeSnapshot: { name: 'Unknown A', setCount: 2 } },
+        { themeSnapshot: { name: 'Unknown B', setCount: 8 } },
+        { themeSnapshot: { name: 'Marvel', setCount: 1 } },
+        { themeSnapshot: { name: 'Star Wars', setCount: 1 } },
+      ]).map((item) => item.themeSnapshot.name),
+    ).toEqual(['Star Wars', 'Marvel', 'Unknown B', 'Unknown A']);
+  });
+
+  it('returns tile image overrides without requiring every theme to be registered', () => {
+    expect(getThemeTileImage('Star Wars')).toBe('75313');
+    expect(getThemeTileImage('Lord of the Rings')).toBe('10333');
+    expect(getThemeTileImage('LEGO® Icons')).toBe('10326');
+    expect(getThemeTileImage('LEGO® Icons')).not.toBe('10316');
+    expect(getThemeTileImage('LEGO® Icons')).not.toBe('10333');
+    expect(getThemeTileImage('LEGO® Icons')).not.toBe('10354');
+    expect(getThemeTileImage('Lord of the Rings')).not.toBe(
+      getThemeTileImage('LEGO® Icons'),
+    );
+    expect(isThemeVisible('Lord of the Rings')).toBe(true);
+    expect(isThemeVisible('LEGO® Icons')).toBe(true);
+  });
+});

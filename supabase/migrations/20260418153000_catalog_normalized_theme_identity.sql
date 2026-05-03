@@ -66,14 +66,14 @@ execute function public.set_updated_at();
 
 alter table public.catalog_theme_mappings enable row level security;
 
-alter table public.catalog_sets_overlay
+alter table public.catalog_sets
 add column if not exists source_theme_id text null references public.catalog_source_themes (id) on delete set null;
 
-alter table public.catalog_sets_overlay
+alter table public.catalog_sets
 add column if not exists primary_theme_id text null references public.catalog_themes (id) on delete set null;
 
-create index if not exists catalog_sets_overlay_source_theme_id_idx
-on public.catalog_sets_overlay (source_theme_id);
+create index if not exists catalog_sets_source_theme_id_idx
+on public.catalog_sets (source_theme_id);
 
-create index if not exists catalog_sets_overlay_primary_theme_id_idx
-on public.catalog_sets_overlay (primary_theme_id);
+create index if not exists catalog_sets_primary_theme_id_idx
+on public.catalog_sets (primary_theme_id);

@@ -909,9 +909,9 @@ function validateRebrickableSearchSetPayload(
     throw new Error('Invalid Rebrickable search result: year is invalid.');
   }
 
-  if (!isInteger(numParts) || numParts <= 0) {
+  if (!isInteger(numParts) || numParts < 0) {
     throw new Error(
-      'Invalid Rebrickable search result: num_parts must be a positive integer.',
+      'Invalid Rebrickable search result: num_parts must be a non-negative integer.',
     );
   }
 
@@ -942,6 +942,48 @@ function validateRebrickableSearchSetPayload(
     themeId,
     year,
   };
+}
+
+function createExactRebrickableSetLookupQueries(query: string): string[] {
+  const normalizedQuery = query.trim();
+
+  if (!/^\d+(?:-[0-9A-Za-z]+)?$/u.test(normalizedQuery)) {
+    return [];
+  }
+
+  const queries = [normalizedQuery];
+
+  if (/^\d+$/u.test(normalizedQuery)) {
+    queries.push(`${normalizedQuery}-1`);
+  }
+
+  return [...new Set(queries)];
+}
+
+async function lookupExactRebrickableSearchSets({
+  query,
+  rebrickableClient,
+}: {
+  query: string;
+  rebrickableClient: ReturnType<typeof createRebrickableClient>;
+}): Promise<ValidatedRebrickableSearchSet[]> {
+  const exactLookupQueries = createExactRebrickableSetLookupQueries(query);
+  const exactLookupResults = await Promise.all(
+    exactLookupQueries.map(async (exactLookupQuery) => {
+      try {
+        return validateRebrickableSearchSetPayload(
+          await rebrickableClient.getSet(exactLookupQuery),
+        );
+      } catch {
+        return undefined;
+      }
+    }),
+  );
+
+  return exactLookupResults.filter(
+    (exactLookupResult): exactLookupResult is ValidatedRebrickableSearchSet =>
+      exactLookupResult !== undefined,
+  );
 }
 
 function validateRebrickableThemePayload(
@@ -2196,17 +2238,36 @@ export async function searchCatalogMissingSets({
   const existingSetIds = new Set(
     existingCatalogSets.map((catalogSet) => catalogSet.setId),
   );
-  const validatedSearchSets = validateRebrickableSearchPayload(payload).flatMap(
-    (searchSetPayload) => {
+  const validatedSearchSetsBySetNumber = new Map<
+    string,
+    ValidatedRebrickableSearchSet
+  >();
+  const validatedSearchSets = [
+    ...validateRebrickableSearchPayload(payload).flatMap((searchSetPayload) => {
       try {
         return [validateRebrickableSearchSetPayload(searchSetPayload)];
       } catch {
         return [];
       }
-    },
-  );
+    }),
+    ...(await lookupExactRebrickableSearchSets({
+      query: normalizedQuery,
+      rebrickableClient,
+    })),
+  ];
+
+  for (const validatedSearchSet of validatedSearchSets) {
+    validatedSearchSetsBySetNumber.set(
+      validatedSearchSet.setNumber,
+      validatedSearchSet,
+    );
+  }
+
+  const uniqueValidatedSearchSets = [
+    ...validatedSearchSetsBySetNumber.values(),
+  ];
   const uniqueThemeIds = [
-    ...new Set(validatedSearchSets.map((searchSet) => searchSet.themeId)),
+    ...new Set(uniqueValidatedSearchSets.map((searchSet) => searchSet.themeId)),
   ];
   const themeCache = new Map<number, ValidatedRebrickableTheme>();
   const resolvedThemeNameById = new Map<number, string>();
@@ -2224,7 +2285,7 @@ export async function searchCatalogMissingSets({
   );
   const themeNameById = new Map(themeEntries);
 
-  return validatedSearchSets
+  return uniqueValidatedSearchSets
     .map((validatedSearchSet) =>
       toSearchResult({
         ...validatedSearchSet,

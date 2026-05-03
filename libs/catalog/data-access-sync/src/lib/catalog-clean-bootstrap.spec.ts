@@ -277,7 +277,7 @@ describe('catalog clean bootstrap payload', () => {
       },
     ]);
     const from = vi.fn((table: string) => {
-      if (table === 'catalog_sets_overlay') {
+      if (table === 'catalog_sets') {
         return catalogSetsQuery;
       }
 
@@ -366,7 +366,7 @@ describe('catalog clean bootstrap payload', () => {
     const emptyQuery = createQueryBuilder([]);
     const supabaseClient = {
       from: vi.fn((table: string) => {
-        if (table === 'catalog_sets_overlay') {
+        if (table === 'catalog_sets') {
           return catalogSetsQuery;
         }
 

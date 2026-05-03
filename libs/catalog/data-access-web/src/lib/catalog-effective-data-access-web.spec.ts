@@ -661,7 +661,7 @@ describe('catalog effective data access web', () => {
         imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/override.jpg',
         name: 'Rivendell (Supabase)',
         slug: 'lord-of-the-rings-rivendell-10316',
-        theme: 'Icons',
+        theme: 'Lord of the Rings™',
       },
     ]);
     expect(slugs).toEqual(['lord-of-the-rings-rivendell-10316']);
@@ -960,7 +960,7 @@ describe('catalog effective data access web', () => {
     expect(results[0]?.setCard).toMatchObject({
       id: '72037',
       slug: 'mario-kart-mario-standard-kart-72037',
-      theme: 'Super Mario',
+      theme: 'LEGO® Super Mario™',
     });
   });
 
@@ -1051,20 +1051,20 @@ describe('catalog effective data access web', () => {
 
     expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
       'Botanicals',
-      'Harry Potter',
-      'Icons',
+      'Harry Potter™',
       'Ideas',
+      'LEGO® Icons',
       'Marvel',
-      'Star Wars',
+      'Star Wars™',
       'Technic',
     ]);
     expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Botanicals',
-      'Harry Potter',
-      'Icons',
-      'Ideas',
+      'Star Wars™',
       'Marvel',
-      'Star Wars',
+      'Harry Potter™',
+      'LEGO® Icons',
+      'Botanicals',
+      'Ideas',
     ]);
     expect(spotlightItems.map((item) => item.themeSnapshot.name)).toEqual([
       'Technic',
@@ -1096,11 +1096,167 @@ describe('catalog effective data access web', () => {
       backgroundColor: '#2f7fc0',
       textColor: '#ffffff',
     });
-    expect(zeldaItem?.themeSnapshot.name).toBe('The Legend of Zelda');
+    expect(zeldaItem?.themeSnapshot.name).toBe('LEGO® The Legend of Zelda™');
     expect(zeldaItem?.visual).toMatchObject({
       backgroundColor: '#4d8b72',
       textColor: '#ffffff',
     });
+  });
+
+  test('uses registry image set overrides for theme directory tiles', async () => {
+    const [starWarsItem] = await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          imageUrl: 'https://cdn.example.com/75399.jpg',
+          name: 'Rebel U-Wing Starfighter',
+          primaryTheme: 'Star Wars',
+          setId: '75399',
+          slug: 'rebel-u-wing-starfighter-75399',
+          sourceSetNumber: '75399-1',
+        }),
+        createCanonicalCatalogSet({
+          imageUrl: 'https://cdn.example.com/75313.jpg',
+          name: 'AT-AT',
+          primaryTheme: 'Star Wars',
+          setId: '75313',
+          slug: 'at-at-75313',
+          sourceSetNumber: '75313-1',
+        }),
+      ],
+    });
+
+    expect(starWarsItem?.themeSnapshot.name).toBe('Star Wars™');
+    expect(starWarsItem?.imageUrl).toBe('https://cdn.example.com/75313.jpg');
+  });
+
+  test('shows catalog product-line themes automatically and hides utility themes', async () => {
+    const directoryItems = await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: Barad-dur',
+          primaryTheme: 'Lord of the Rings',
+          setId: '10333',
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          sourceSetNumber: '10333-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'LEGO Gear Backpack',
+          primaryTheme: 'Gear',
+          setId: '5009999',
+          slug: 'lego-gear-backpack-5009999',
+          sourceSetNumber: '5009999-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'The Lord of the Rings: Book Nook',
+          primaryTheme: 'Books',
+          setId: '40699',
+          slug: 'the-lord-of-the-rings-book-nook-40699',
+          sourceSetNumber: '40699-1',
+        }),
+      ],
+    });
+
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Lord of the Rings™',
+    ]);
+    expect(directoryItems[0]?.themeSnapshot.setCount).toBe(1);
+  });
+
+  test('groups realistic Icons-backed Lord of the Rings catalog sets by context', async () => {
+    const directoryItems = await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          imageUrl: 'https://cdn.example.com/10316.jpg',
+          name: 'Rivendell',
+          primaryTheme: 'Icons',
+          setId: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          sourceSetNumber: '10316-1',
+        }),
+        createCanonicalCatalogSet({
+          imageUrl: 'https://cdn.example.com/10333.jpg',
+          name: 'The Lord of the Rings: Barad-dur',
+          primaryTheme: 'Icons',
+          setId: '10333',
+          slug: 'the-lord-of-the-rings-barad-dur-10333',
+          sourceSetNumber: '10333-1',
+        }),
+        createCanonicalCatalogSet({
+          imageUrl: 'https://cdn.example.com/10354.jpg',
+          name: 'The Lord of the Rings: The Shire',
+          primaryTheme: 'Icons',
+          setId: '10354',
+          slug: 'the-lord-of-the-rings-the-shire-10354',
+          sourceSetNumber: '10354-1',
+        }),
+        createCanonicalCatalogSet({
+          imageUrl: 'https://cdn.example.com/10326.jpg',
+          name: 'Natural History Museum',
+          primaryTheme: 'Icons',
+          setId: '10326',
+          slug: 'natural-history-museum-10326',
+          sourceSetNumber: '10326-1',
+        }),
+      ],
+    });
+
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'LEGO® Icons',
+      'Lord of the Rings™',
+    ]);
+    expect(
+      directoryItems.find(
+        (item) => item.themeSnapshot.slug === 'lord-of-the-rings',
+      )?.themeSnapshot.setCount,
+    ).toBe(3);
+    expect(
+      directoryItems.find((item) => item.themeSnapshot.slug === 'icons')
+        ?.themeSnapshot.setCount,
+    ).toBe(1);
+    expect(
+      directoryItems.find((item) => item.themeSnapshot.slug === 'icons')
+        ?.imageUrl,
+    ).toBe('https://cdn.example.com/10326.jpg');
+    expect(
+      directoryItems.find(
+        (item) => item.themeSnapshot.slug === 'lord-of-the-rings',
+      )?.imageUrl,
+    ).toBe('https://cdn.example.com/10333.jpg');
+    expect(
+      directoryItems.find((item) => item.themeSnapshot.slug === 'icons')
+        ?.imageUrl,
+    ).not.toBe(
+      directoryItems.find(
+        (item) => item.themeSnapshot.slug === 'lord-of-the-rings',
+      )?.imageUrl,
+    );
+  });
+
+  test('folds Skylines sets into Architecture theme directory items', async () => {
+    const directoryItems = await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'London',
+          primaryTheme: 'Skylines',
+          releaseYear: 2017,
+          setId: '21034',
+          slug: 'london-21034',
+          sourceSetNumber: '21034-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Trevifontein',
+          primaryTheme: 'Architecture',
+          setId: '21062',
+          slug: 'trevifontein-21062',
+          sourceSetNumber: '21062-1',
+        }),
+      ],
+    });
+
+    expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Architecture',
+    ]);
+    expect(directoryItems[0]?.themeSnapshot.setCount).toBe(2);
   });
 
   test('builds theme pages and theme slugs from canonical theme groups', async () => {
@@ -1149,7 +1305,7 @@ describe('catalog effective data access web', () => {
 
     expect(themePageSlugs).toEqual(['icons', 'star-wars']);
     expect(themePage).toBeDefined();
-    expect(themePage?.themeSnapshot.name).toBe('Star Wars');
+    expect(themePage?.themeSnapshot.name).toBe('Star Wars™');
     expect(
       themePage?.setCards.map((catalogSetCard) => catalogSetCard.id),
     ).toEqual(['75313', '75399']);
@@ -1205,13 +1361,13 @@ describe('catalog effective data access web', () => {
     ]);
 
     expect(directoryItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Icons',
+      'LEGO® Icons',
     ]);
     expect(themePageSlugs).toEqual(['icons']);
     expect(
       iconsThemePage?.setCards.map((catalogSetCard) => catalogSetCard.id),
     ).toEqual(['10316', '10326']);
-    expect(iconsThemePage?.setCards[1]?.theme).toBe('Icons');
+    expect(iconsThemePage?.setCards[1]?.theme).toBe('LEGO® Icons');
   });
 
   test('ranks theme-local discovery rails with the same comparison scoring', () => {
@@ -2915,10 +3071,11 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result.map((themeGroup) => themeGroup.theme)).toEqual([
-      'Icons',
+      'LEGO® Icons',
       'Marvel',
+      'Lord of the Rings™',
     ]);
-    expect(result[0]?.totalSetCount).toBe(2);
+    expect(result[0]?.totalSetCount).toBe(1);
   });
 
   test('normalizes public theme presentation from raw source theme labels', async () => {

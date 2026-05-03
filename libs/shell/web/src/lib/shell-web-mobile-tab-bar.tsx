@@ -5,6 +5,7 @@ import {
   BadgeEuro,
   Blocks,
   Heart,
+  Newspaper,
   Search,
   type LucideIcon,
 } from 'lucide-react';
@@ -13,7 +14,12 @@ import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import styles from './shell-web.module.css';
 import { dispatchOpenMobileSearchOverlayEvent } from './shell-web-search-overlay-events';
 
-export type ShellWebMobileTabId = 'deals' | 'following' | 'search' | 'themes';
+export type ShellWebMobileTabId =
+  | 'articles'
+  | 'deals'
+  | 'following'
+  | 'search'
+  | 'themes';
 
 interface ShellWebMobileTabItem {
   href: string;
@@ -28,10 +34,18 @@ const followingPath = buildWebPath(webPathnames.following);
 const wishlistPath = buildWebPath(webPathnames.wishlist);
 const dealsPath = `${discoverPath}?filter=best-deals`;
 const searchOverlayPath = `${searchPath}?overlay=1`;
+const articlesPath = buildWebPath(webPathnames.articles);
+const articlesPathPrefix = `${articlesPath}/`;
 const themesPath = buildWebPath(webPathnames.themes);
 const themesPathPrefix = `${themesPath}/`;
 
 const mobileTabItems: readonly ShellWebMobileTabItem[] = [
+  {
+    href: articlesPath,
+    icon: Newspaper,
+    id: 'articles',
+    label: 'Nieuws',
+  },
   {
     href: dealsPath,
     icon: BadgeEuro,
@@ -75,6 +89,10 @@ export function getActiveMobileTabId({
 
   if (pathname === followingPath || pathname === wishlistPath) {
     return 'following';
+  }
+
+  if (pathname === articlesPath || pathname.startsWith(articlesPathPrefix)) {
+    return 'articles';
   }
 
   if (pathname === themesPath || pathname.startsWith(themesPathPrefix)) {

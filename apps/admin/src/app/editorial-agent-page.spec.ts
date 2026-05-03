@@ -222,6 +222,9 @@ describe('Editorial agent admin page', () => {
   const editorialAgentApi = {
     extractSourceFacts: vi.fn(async () => createExtractionResult()),
     generateDraft: vi.fn(async () => createDraftResult()),
+    publishArticle: vi.fn(async () => ({
+      slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+    })),
   };
 
   beforeEach(() => {
@@ -229,6 +232,9 @@ describe('Editorial agent admin page', () => {
       createExtractionResult(),
     );
     editorialAgentApi.generateDraft.mockResolvedValue(createDraftResult());
+    editorialAgentApi.publishArticle.mockResolvedValue({
+      slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+    });
     vi.stubGlobal('navigator', {
       clipboard: {
         writeText: vi.fn().mockResolvedValue(undefined),

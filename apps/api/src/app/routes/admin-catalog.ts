@@ -170,6 +170,19 @@ function readCatalogSetInput(value: unknown): CatalogExternalSetSearchResult {
 
     return fieldValue;
   };
+  const readNonNegativeInteger = (key: string) => {
+    const fieldValue = record[key];
+
+    if (
+      typeof fieldValue !== 'number' ||
+      !Number.isInteger(fieldValue) ||
+      fieldValue < 0
+    ) {
+      throw new Error(`Set-input mist een geldige ${key}.`);
+    }
+
+    return fieldValue;
+  };
   const imageUrl = record['imageUrl'];
 
   return {
@@ -179,7 +192,7 @@ function readCatalogSetInput(value: unknown): CatalogExternalSetSearchResult {
         }
       : {}),
     name: readString('name'),
-    pieces: readPositiveInteger('pieces'),
+    pieces: readNonNegativeInteger('pieces'),
     releaseYear: readPositiveInteger('releaseYear'),
     setId: readString('setId'),
     slug: readString('slug'),

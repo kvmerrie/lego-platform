@@ -86,7 +86,7 @@ create table if not exists public.catalog_sets (
   release_date_precision text not null default 'unknown' check (
     release_date_precision in ('day', 'month', 'year', 'unknown')
   ),
-  piece_count integer not null check (piece_count > 0),
+  piece_count integer not null check (piece_count >= 0),
   image_url text null,
   source text not null default 'rebrickable' check (
     source in ('rebrickable')

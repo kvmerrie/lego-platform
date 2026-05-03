@@ -180,11 +180,11 @@ Does not own:
 
 ## Mapping From Current System To Target
 
-### Current overlay `theme`
+### Current catalog `theme`
 
 Current state:
 
-- `catalog_sets_overlay.theme` stores one already-normalized string
+- `catalog_sets.theme` stores one already-normalized string
 - for example `Star Wars` or `The Legend of Zelda`
 
 Target state:
@@ -307,7 +307,7 @@ Scope:
 - add `catalog_source_themes`
 - add `catalog_themes`
 - add `catalog_theme_mappings`
-- extend `catalog_sets_overlay` or the future `catalog_sets` table with:
+- extend `catalog_sets` with:
   - `source_theme_id`
   - `primary_theme_id`
 - backfill from current `theme` plus `resolveCatalogThemeIdentity(...)`

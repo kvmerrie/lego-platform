@@ -3,6 +3,7 @@ import type { MDXRemoteProps } from 'next-mdx-remote/rsc';
 import { listCatalogCurrentOfferSummariesBySetIds } from '@lego-platform/catalog/data-access-web';
 import {
   buildCatalogReleaseLabel,
+  getCatalogThemeDisplayName,
   buildCatalogThemeSlug,
 } from '@lego-platform/catalog/util';
 import {
@@ -50,9 +51,11 @@ function ThemeLink({
   children?: ReactNode;
   theme: string;
 }) {
+  const displayTheme = getCatalogThemeDisplayName(theme) ?? theme;
+
   return (
     <a href={buildThemePath(buildCatalogThemeSlug(theme))}>
-      {children ?? theme}
+      {children ?? displayTheme}
     </a>
   );
 }
@@ -166,12 +169,14 @@ function resolveArticleSetRailSurfaceVariant({
 }
 
 export async function renderArticleMdxSetRail({
+  articleSlug,
   excludedCanonicalIds = [],
   setIds = [],
   subtitle,
   surfaceVariant = 'themed',
   title = 'Sets om nu te volgen',
 }: {
+  articleSlug?: string;
   excludedCanonicalIds?: readonly string[];
   setIds?:
     | readonly string[]
@@ -196,6 +201,7 @@ export async function renderArticleMdxSetRail({
 
   return (
     <ArticleMdxSetRailClient
+      articleSlug={articleSlug}
       canonicalIds={canonicalIds}
       initialSetCards={setCards}
       subtitle={subtitle}
@@ -207,10 +213,12 @@ export async function renderArticleMdxSetRail({
 
 export async function renderArticleMdxSetSpotlightList({
   articleDescription,
+  articleSlug,
   articleTitle,
   setIds = [],
 }: {
   articleDescription?: string;
+  articleSlug?: string;
   articleTitle?: string;
   setIds?:
     | readonly string[]
@@ -234,6 +242,7 @@ export async function renderArticleMdxSetSpotlightList({
   return (
     <ArticleMdxSetSpotlightListClient
       articleDescription={articleDescription}
+      articleSlug={articleSlug}
       articleTitle={articleTitle}
       items={items}
     />
@@ -322,10 +331,12 @@ function ArticleCardMdx({
 
 export function getArticleMdxComponents({
   articleDescription,
+  articleSlug,
   articleTheme,
   articleTitle,
 }: {
   articleDescription?: string;
+  articleSlug?: string;
   articleTheme?: string;
   articleTitle?: string;
 } = {}): NonNullable<MDXRemoteProps['components']> {
@@ -363,6 +374,7 @@ export function getArticleMdxComponents({
       (canonicalId) => !usedCanonicalIds.has(canonicalId),
     );
     const railNode = await renderArticleMdxSetRail({
+      articleSlug,
       excludedCanonicalIds: [...usedCanonicalIds],
       setIds: uniqueCanonicalIds,
       subtitle: props.subtitle,
@@ -385,6 +397,7 @@ export function getArticleMdxComponents({
   }) {
     return renderArticleMdxSetSpotlightList({
       articleDescription,
+      articleSlug,
       articleTitle,
       setIds: props.setIds,
     });
@@ -439,6 +452,7 @@ export function getArticleMdxComponents({
           setCard.availability
         }
         ctaHref={buildSetDetailPath(setCard.slug)}
+        articleSlug={articleSlug}
         imageAlt={`${setCard.name} LEGO-set`}
         imageUrl={getArticleCatalogSetImageUrl(setCard)}
         name={setCard.name}

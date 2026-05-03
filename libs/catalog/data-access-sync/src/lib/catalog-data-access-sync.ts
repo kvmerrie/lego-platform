@@ -31,7 +31,7 @@ import {
   writeCatalogGeneratedArtifacts,
 } from './catalog-artifact-writer';
 
-const CATALOG_SETS_OVERLAY_TABLE = 'catalog_sets_overlay';
+const CATALOG_SETS_TABLE = 'catalog_sets';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
@@ -353,7 +353,7 @@ async function listCatalogSyncOverlayRows({
   supabaseClient: CatalogSyncSupabaseClient;
 }): Promise<CatalogOverlaySetRow[]> {
   let query = supabaseClient
-    .from(CATALOG_SETS_OVERLAY_TABLE)
+    .from(CATALOG_SETS_TABLE)
     .select(
       'set_id, slug, name, theme, piece_count, release_year, release_date, release_date_precision, image_url, source, source_set_number, source_theme_id, primary_theme_id, status, created_at, updated_at',
     )

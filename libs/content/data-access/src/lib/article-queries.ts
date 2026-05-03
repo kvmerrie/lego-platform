@@ -1,5 +1,6 @@
 import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import matter from 'gray-matter';
 import {
   extractPrimarySetNumberFromArticleBody,
@@ -8,10 +9,19 @@ import {
   type ContentArticleListItem,
   type ContentArticleStatus,
 } from '@lego-platform/content/util';
+import {
+  getBrowserSupabaseConfig,
+  getServerSupabaseConfig,
+  hasBrowserSupabaseConfig,
+  hasServerSupabaseConfig,
+} from '@lego-platform/shared/config';
 
 const WORKSPACE_ROOT_MARKERS = ['pnpm-workspace.yaml', 'nx.json'] as const;
+const ARTICLES_TABLE_NAME = 'articles';
 
 let hasWarnedMissingContentDirectory = false;
+let contentArticlesSupabaseAdminClient: SupabaseClient | undefined;
+let contentArticlesSupabasePublicClient: SupabaseClient | undefined;
 
 async function pathExists(absolutePath: string): Promise<boolean> {
   try {
@@ -76,6 +86,8 @@ function warnMissingContentDirectory(contentDirectory: string): void {
 
 export function resetContentArticleQueryStateForTests(): void {
   hasWarnedMissingContentDirectory = false;
+  contentArticlesSupabaseAdminClient = undefined;
+  contentArticlesSupabasePublicClient = undefined;
 }
 
 export interface ContentArticleSourceFile {
@@ -83,10 +95,25 @@ export interface ContentArticleSourceFile {
   source: string;
 }
 
+export interface ContentArticleSupabaseRow {
+  created_at: string;
+  frontmatter: Record<string, unknown> | null;
+  mdx: string;
+  published_at: string;
+  slug: string;
+  status: ContentArticleStatus;
+  title: string;
+  updated_at: string;
+}
+
+type ContentArticleSupabaseClient = Pick<SupabaseClient, 'from'>;
+
 export interface ContentArticleQueryOptions {
   articleFiles?: readonly ContentArticleSourceFile[];
   assetExistsFn?: (absolutePath: string) => Promise<boolean>;
   contentDirectory?: string;
+  includeSupabase?: boolean;
+  supabaseClient?: ContentArticleSupabaseClient;
 }
 
 interface ParsedContentArticleFrontmatter {
@@ -229,6 +256,64 @@ async function listContentArticleSourceFiles({
   }
 }
 
+function createContentArticlesSupabaseAdminClient(): SupabaseClient {
+  const serverSupabaseConfig = getServerSupabaseConfig();
+
+  return createClient(
+    serverSupabaseConfig.url,
+    serverSupabaseConfig.serviceRoleKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    },
+  );
+}
+
+function getContentArticlesSupabaseAdminClient(): SupabaseClient {
+  contentArticlesSupabaseAdminClient ??=
+    createContentArticlesSupabaseAdminClient();
+
+  return contentArticlesSupabaseAdminClient;
+}
+
+function createContentArticlesSupabasePublicClient(): SupabaseClient {
+  const browserSupabaseConfig = getBrowserSupabaseConfig();
+
+  return createClient(
+    browserSupabaseConfig.url,
+    browserSupabaseConfig.anonKey,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    },
+  );
+}
+
+function getContentArticlesSupabasePublicClient(): SupabaseClient {
+  contentArticlesSupabasePublicClient ??=
+    createContentArticlesSupabasePublicClient();
+
+  return contentArticlesSupabasePublicClient;
+}
+
+function getContentArticlesSupabaseReadClient():
+  | ContentArticleSupabaseClient
+  | undefined {
+  if (hasServerSupabaseConfig()) {
+    return getContentArticlesSupabaseAdminClient();
+  }
+
+  if (hasBrowserSupabaseConfig()) {
+    return getContentArticlesSupabasePublicClient();
+  }
+
+  return undefined;
+}
+
 async function parseContentArticleSourceFile({
   articleFile,
   assetExistsFn,
@@ -274,25 +359,147 @@ async function parseContentArticleSourceFile({
   };
 }
 
+async function parseContentArticleSupabaseRow({
+  assetExistsFn,
+  row,
+}: {
+  assetExistsFn: (absolutePath: string) => Promise<boolean>;
+  row: ContentArticleSupabaseRow;
+}): Promise<ContentArticle> {
+  const parsedMdx = matter(row.mdx);
+  const frontmatter =
+    row.frontmatter && typeof row.frontmatter === 'object'
+      ? row.frontmatter
+      : {};
+  const mergedFrontmatter: Record<string, unknown> = {
+    ...(typeof parsedMdx.data === 'object' && parsedMdx.data !== null
+      ? parsedMdx.data
+      : {}),
+    ...frontmatter,
+    slug: row.slug,
+    status: 'published',
+    title: row.title,
+  };
+  const parsedFrontmatter = parseContentArticleFrontmatter({
+    filename: `${row.slug}.mdx`,
+    frontmatter: {
+      cardImage: mergedFrontmatter['cardImage'],
+      cardImageAlt: mergedFrontmatter['cardImageAlt'],
+      date:
+        normalizeOptionalString(mergedFrontmatter['date']) ??
+        row.created_at.slice(0, 10),
+      description:
+        normalizeOptionalString(mergedFrontmatter['description']) ?? row.title,
+      heroImage: mergedFrontmatter['heroImage'],
+      heroImageAlt: mergedFrontmatter['heroImageAlt'],
+      slug: mergedFrontmatter['slug'],
+      status: mergedFrontmatter['status'],
+      theme: mergedFrontmatter['theme'],
+      title: mergedFrontmatter['title'],
+      updatedAt:
+        normalizeOptionalString(mergedFrontmatter['updatedAt']) ??
+        row.updated_at,
+    },
+  });
+  const trimmedBodySource = parsedMdx.content.trim();
+  const resolvedHeroImage = await resolvePublicAssetPath({
+    assetExistsFn,
+    publicPath: parsedFrontmatter.heroImage,
+  });
+  const resolvedCardImage = await resolvePublicAssetPath({
+    assetExistsFn,
+    publicPath: parsedFrontmatter.cardImage,
+  });
+
+  return {
+    bodySource: trimmedBodySource,
+    cardImage: resolvedCardImage ?? resolvedHeroImage,
+    cardImageAlt:
+      parsedFrontmatter.cardImageAlt ??
+      parsedFrontmatter.heroImageAlt ??
+      parsedFrontmatter.title,
+    date: parsedFrontmatter.date,
+    description: parsedFrontmatter.description,
+    heroImage: resolvedHeroImage,
+    heroImageAlt: parsedFrontmatter.heroImageAlt ?? parsedFrontmatter.title,
+    primarySetNumber: extractPrimarySetNumberFromArticleBody(trimmedBodySource),
+    slug: parsedFrontmatter.slug,
+    status: parsedFrontmatter.status,
+    theme: parsedFrontmatter.theme,
+    title: parsedFrontmatter.title,
+    updatedAt: parsedFrontmatter.updatedAt,
+  };
+}
+
+async function listPublishedContentArticleSupabaseRows({
+  supabaseClient,
+}: {
+  supabaseClient?: ContentArticleSupabaseClient;
+}): Promise<readonly ContentArticleSupabaseRow[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getContentArticlesSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  const { data, error } = await activeSupabaseClient
+    .from(ARTICLES_TABLE_NAME)
+    .select(
+      'created_at, frontmatter, mdx, published_at, slug, status, title, updated_at',
+    )
+    .eq('status', 'published');
+
+  if (error) {
+    return [];
+  }
+
+  return Array.isArray(data) ? (data as ContentArticleSupabaseRow[]) : [];
+}
+
 async function listAllContentArticles({
   articleFiles,
   assetExistsFn = defaultAssetExists,
   contentDirectory,
+  includeSupabase,
+  supabaseClient,
 }: ContentArticleQueryOptions = {}): Promise<readonly ContentArticle[]> {
   const contentArticleSourceFiles = await listContentArticleSourceFiles({
     articleFiles,
     contentDirectory,
   });
-  const contentArticles = await Promise.all(
-    contentArticleSourceFiles.map((articleFile) =>
-      parseContentArticleSourceFile({
-        articleFile,
+  const [fileArticles, supabaseRows] = await Promise.all([
+    Promise.all(
+      contentArticleSourceFiles.map((articleFile) =>
+        parseContentArticleSourceFile({
+          articleFile,
+          assetExistsFn,
+        }),
+      ),
+    ),
+    (includeSupabase ?? !articleFiles)
+      ? listPublishedContentArticleSupabaseRows({ supabaseClient })
+      : Promise.resolve([]),
+  ]);
+  const supabaseArticles = await Promise.all(
+    supabaseRows.map((row) =>
+      parseContentArticleSupabaseRow({
         assetExistsFn,
+        row,
       }),
     ),
   );
+  const contentArticleBySlug = new Map<string, ContentArticle>();
 
-  return sortContentArticlesByDateDesc(contentArticles);
+  for (const contentArticle of fileArticles) {
+    contentArticleBySlug.set(contentArticle.slug, contentArticle);
+  }
+
+  for (const contentArticle of supabaseArticles) {
+    contentArticleBySlug.set(contentArticle.slug, contentArticle);
+  }
+
+  return sortContentArticlesByDateDesc([...contentArticleBySlug.values()]);
 }
 
 function toContentArticleListItem(
@@ -318,7 +525,9 @@ export async function listPublishedArticles({
   articleFiles,
   assetExistsFn,
   contentDirectory,
+  includeSupabase,
   limit,
+  supabaseClient,
 }: ContentArticleQueryOptions & {
   limit?: number;
 } = {}): Promise<readonly ContentArticleListItem[]> {
@@ -327,6 +536,8 @@ export async function listPublishedArticles({
       articleFiles,
       assetExistsFn,
       contentDirectory,
+      includeSupabase,
+      supabaseClient,
     })
   )
     .filter((contentArticle) => contentArticle.status === 'published')
@@ -356,4 +567,11 @@ export async function getPublishedArticleBySlug(
   );
 
   return matchingArticle ?? null;
+}
+
+export async function getArticleBySlug(
+  slug: string,
+  options?: ContentArticleQueryOptions,
+): Promise<ContentArticle | null> {
+  return getPublishedArticleBySlug(slug, options);
 }

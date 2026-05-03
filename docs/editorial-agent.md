@@ -309,8 +309,9 @@ De agent onderscheidt nu deze simpele types:
 Regels zijn bewust klein:
 
 - één setnummer wijst meestal op `single_set_news`
+- één duidelijke set in titel, slug of brontitel blijft `single_set_news`, ook bij woorden als `onthuld`, `verschijnt`, `release` of `alles wat je moet weten`
+- `release_roundup` vraagt om echte roundup-taal zoals `alle nieuwe sets`, `deze nieuwe LEGO-sets`, `overzicht` of `releasegolf`, of meerdere setnummers met duidelijke datumsignalen zonder dominante titelset
 - termen als `Insiders`, `reward` of `GWP` maken er `gwp_reward` van
-- meerdere setnummers plus duidelijke datumsignalen maken er `release_roundup` van
 - termen als `korting`, `deal` of `sale` maken er `deal` van
 
 ## Catalog matching
@@ -556,7 +557,13 @@ Bij `release_roundup` kijkt de generator nu anders naar `theme`:
 
 - meerdere gedetecteerde thema’s => `theme: "Multiple"`
 - één duidelijk gedetecteerd thema => gebruik dat thema
-- andere articleTypes houden de bestaande logica
+- `theme: "Multiple"` is alleen bedoeld voor echte roundups
+- bij `single_set_news` wint de catalog theme van de `primarySet`
+- als er geen catalog theme is, mogen duidelijke title-keywords de fallback bepalen:
+  - `LEGO Marvel` => `Marvel`
+  - `Star Wars` => `Star Wars`
+  - `Super Mario` => `Super Mario`
+  - `Sonic` => `Sonic The Hedgehog`
 
 Voor `theme: "Multiple"` gebruiken article `SetRail`s bewust de neutrale Brickhunt rail-styling, niet één van de themakleuren.
 
@@ -618,3 +625,18 @@ Na `Analyseer URL` zie je nu:
 - generation warnings
 
 De copy-knop blijft gewoon bestaan.
+
+## Publiceren met historische artikeldatum
+
+Gepubliceerde artikelen bewaren twee datums:
+
+- `frontmatter.date` is de artikeldatum. Dit is de datum die lezers zien en waarop `/artikelen` sorteert.
+- `published_at` is de echte publicatietijd in Supabase. Die blijft bedoeld voor audit en beheer, niet voor publieke weergave.
+
+Daardoor kan een artikel over een gebeurtenis uit mei 2026 later worden gepubliceerd, terwijl de pagina voor gebruikers nog steeds de inhoudelijke datum toont.
+
+## Publieke artikelenpagina
+
+`/artikelen` is de publieke ontdekkingspagina voor gepubliceerde artikelen. De pagina rendert server-side, haalt de bestaande gepubliceerde artikelen op en sorteert op `frontmatter.date` aflopend.
+
+De eerste, meest recente publicatie krijgt een grote featured kaart met beeld, thema, datum, titel en beschrijving. De overige artikelen staan daaronder in een rustige grid: drie kolommen op desktop, twee op tablet en een op mobiel. Als er nog niets gepubliceerd is, toont de pagina alleen `Nog geen artikelen beschikbaar`.

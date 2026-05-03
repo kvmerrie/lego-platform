@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ContentArticleFaq } from './content-article-faq';
 import {
   ContentArticleCard,
+  ContentArticleFeaturedCard,
   ContentArticleFeaturedSet,
   ContentArticleImageGallery,
   ContentArticlePage,
@@ -85,6 +86,112 @@ describe('content article ui', () => {
 
     expect(markup).toContain('Beeld volgt nog. De inhoud staat al klaar.');
     expect(markup).not.toContain('<img');
+  });
+
+  it('tracks article card clicks with gtag without blocking navigation', () => {
+    const gtag = vi.fn();
+    window.gtag = gtag;
+
+    act(() => {
+      root.render(
+        <ContentArticleCard
+          contentArticle={{
+            cardImageAlt: 'Star Wars hero',
+            date: '2026-04-24',
+            description: 'Waar wil je nu op letten?',
+            heroImageAlt: 'Star Wars hero',
+            slug: 'star-wars-day-2026',
+            status: 'published',
+            theme: 'Star Wars',
+            title: 'Star Wars Day 2026',
+          }}
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/artikelen/star-wars-day-2026"]',
+    );
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: true,
+    });
+
+    expect(link?.dispatchEvent(clickEvent)).toBe(true);
+    expect(clickEvent.defaultPrevented).toBe(false);
+    expect(gtag).toHaveBeenCalledWith('event', 'article_click', {
+      slug: 'star-wars-day-2026',
+      theme: 'Star Wars',
+    });
+
+    delete window.gtag;
+  });
+
+  it('renders a featured article card as one large clickable article', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleFeaturedCard
+        contentArticle={{
+          cardImage: '/articles/marvel/card.jpg',
+          cardImageAlt: 'Marvel kaart',
+          date: '2026-05-03',
+          description: 'Waarom deze reveal blijft hangen.',
+          heroImage: '/articles/marvel/hero.jpg',
+          heroImageAlt: 'Marvel hero',
+          slug: 'lego-marvel-herbie',
+          status: 'published',
+          theme: 'Marvel',
+          title: 'LEGO Marvel H.E.R.B.I.E. onthuld',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('/artikelen/lego-marvel-herbie');
+    expect(markup).toContain('/articles/marvel/hero.jpg');
+    expect(markup).toContain('data-article-image-kind="featured"');
+    expect(markup).toContain('LEGO Marvel H.E.R.B.I.E. onthuld');
+    expect(markup).toContain('Waarom deze reveal blijft hangen.');
+    expect(markup).toContain('Marvel');
+  });
+
+  it('tracks featured article clicks with gtag', () => {
+    const gtag = vi.fn();
+    window.gtag = gtag;
+
+    act(() => {
+      root.render(
+        <ContentArticleFeaturedCard
+          contentArticle={{
+            cardImageAlt: 'Marvel kaart',
+            date: '2026-05-03',
+            description: 'Waarom deze reveal blijft hangen.',
+            heroImageAlt: 'Marvel hero',
+            slug: 'lego-marvel-herbie',
+            status: 'published',
+            theme: 'Marvel',
+            title: 'LEGO Marvel H.E.R.B.I.E. onthuld',
+          }}
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/artikelen/lego-marvel-herbie"]',
+    );
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      metaKey: true,
+    });
+
+    expect(link?.dispatchEvent(clickEvent)).toBe(true);
+    expect(clickEvent.defaultPrevented).toBe(false);
+    expect(gtag).toHaveBeenCalledWith('event', 'article_click', {
+      slug: 'lego-marvel-herbie',
+      theme: 'Marvel',
+    });
+
+    delete window.gtag;
   });
 
   it('renders an article rail with a max item cap and article page shell', () => {
@@ -258,6 +365,70 @@ describe('content article ui', () => {
     expect(markup).toContain('data-article-image-fit="contain"');
     expect(markup).not.toContain('data-article-image-fit="cover"');
     expect(markup).not.toContain('Beste prijs nu');
+  });
+
+  it('tracks FeaturedSet set clicks with gtag without blocking navigation', () => {
+    const gtag = vi.fn();
+    window.gtag = gtag;
+
+    act(() => {
+      root.render(
+        <ContentArticleFeaturedSet
+          articleSlug="lego-marvel-herbie"
+          ctaHref="/sets/the-fantastic-four-herbie-76339"
+          imageAlt="The Fantastic Four H.E.R.B.I.E."
+          name="The Fantastic Four H.E.R.B.I.E."
+          setNumber="76339"
+          theme="Marvel"
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/sets/the-fantastic-four-herbie-76339"]',
+    );
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    expect(link?.dispatchEvent(clickEvent)).toBe(true);
+    expect(clickEvent.defaultPrevented).toBe(false);
+    expect(gtag).toHaveBeenCalledWith('event', 'set_click', {
+      article_slug: 'lego-marvel-herbie',
+      set_id: '76339',
+      set_name: 'The Fantastic Four H.E.R.B.I.E.',
+      source: 'article',
+    });
+
+    delete window.gtag;
+  });
+
+  it('does not crash when FeaturedSet set tracking runs without gtag', () => {
+    delete window.gtag;
+
+    act(() => {
+      root.render(
+        <ContentArticleFeaturedSet
+          ctaHref="/sets/mario-kart-spiny-shell-40787"
+          imageAlt="Mario Kart Spiny Shell"
+          name="Mario Kart – Spiny Shell"
+          setNumber="40787"
+          theme="Super Mario"
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/sets/mario-kart-spiny-shell-40787"]',
+    );
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    expect(() => link?.dispatchEvent(clickEvent)).not.toThrow();
+    expect(clickEvent.defaultPrevented).toBe(false);
   });
 
   it('renders SetSpotlightList as a grouped editorial wrapper around set tiles', () => {
@@ -480,6 +651,22 @@ describe('content article ui', () => {
     expect(css).toContain('.callout {');
     expect(css).toContain('background: var(--lego-accent-subtle);');
     expect(css).not.toMatch(/\.callout\s*\{[^}]*border:/s);
+  });
+
+  it('keeps article index cards flat with bordered hover states and no hover elevation', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/content/ui/src/lib/content-article-ui.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain('.card:hover,');
+    expect(css).toContain('.featuredArticle:hover,');
+    expect(css).toContain('border: var(--lego-border-width-1) solid');
+    expect(css).not.toContain('--lego-shadow-raised');
+    expect(css).not.toContain('translateY(');
   });
 
   it('keeps SetSpotlightList CSS focused on section rhythm instead of duplicate card chrome', () => {

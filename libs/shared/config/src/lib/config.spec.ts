@@ -35,6 +35,7 @@ import {
   hasTradeTrackerAffiliateConfig,
   hasTradeTrackerLidlFeedConfig,
   publicSiteRobotsPolicy,
+  webNavigation,
 } from './config';
 
 describe('shared config browser Supabase helpers', () => {
@@ -108,6 +109,23 @@ describe('shared config locale and market foundations', () => {
         }),
       }),
     ).toBe('/nl-nl/discover');
+  });
+
+  test('exposes primary public navigation in Brickhunt order', () => {
+    expect(webNavigation).toEqual([
+      {
+        href: '/artikelen',
+        label: 'Nieuws',
+      },
+      {
+        href: '/discover?filter=best-deals',
+        label: 'Deals',
+      },
+      {
+        href: '/themes',
+        label: "Thema's",
+      },
+    ]);
   });
 
   test('resolves public web base urls from the current admin origin', () => {

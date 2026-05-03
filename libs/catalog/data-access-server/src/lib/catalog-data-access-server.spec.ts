@@ -257,16 +257,6 @@ function createCatalogOverlaySupabaseClient({
       };
     }
 
-    if (table === 'catalog_sets_overlay') {
-      const builder = createSupabaseTableBuilder(overlayRows);
-      return {
-        insert,
-        maybeSingle: builder.maybeSingle,
-        select: builder.select,
-        update,
-      };
-    }
-
     if (table === 'catalog_source_themes') {
       const builder = createSupabaseTableBuilder(sourceThemeRows);
       return {
@@ -1112,6 +1102,79 @@ describe('catalog data access server', () => {
     expect(results).toEqual([]);
   });
 
+  test('falls back to exact Rebrickable set lookup for set-number searches', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+
+    const order = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    const eq = vi.fn(() => ({
+      order,
+    }));
+    const select = vi.fn(() => ({
+      eq,
+      order,
+    }));
+    const from = vi.fn(() => ({
+      select,
+    }));
+    const fetchImpl = vi.fn(async (input: string | URL) => {
+      const url = String(input);
+
+      if (url.includes('/lego/sets/?')) {
+        return {
+          ok: true,
+          json: async () => ({
+            results: [],
+          }),
+        } as Response;
+      }
+
+      if (url.endsWith('/lego/sets/76339-1/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            set_num: '76339-1',
+            name: 'The Fantastic Four H.E.R.B.I.E.',
+            year: 2026,
+            num_parts: 0,
+            theme_id: 999,
+            set_img_url:
+              'https://cdn.rebrickable.com/media/sets/76339-1/154089.jpg',
+          }),
+        } as Response;
+      }
+
+      if (url.endsWith('/lego/themes/999/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 999,
+            name: 'Marvel',
+          }),
+        } as Response;
+      }
+
+      throw new Error(`Unexpected fetch ${url}`);
+    }) as typeof fetch;
+
+    const results = await searchCatalogMissingSets({
+      fetchImpl,
+      query: '76339-1',
+      supabaseClient: { from } as never,
+    });
+
+    expect(results).toEqual([
+      expect.objectContaining({
+        name: 'The Fantastic Four H.E.R.B.I.E.',
+        setId: '76339',
+        sourceSetNumber: '76339-1',
+        theme: 'Marvel',
+      }),
+    ]);
+  });
+
   test('uses the parent theme as the primary theme for search results', async () => {
     process.env.REBRICKABLE_API_KEY = 'test-key';
 
@@ -1216,7 +1279,7 @@ describe('catalog data access server', () => {
                 set_num: 'bad-1',
                 name: 'Broken search hit',
                 year: 2026,
-                num_parts: 0,
+                num_parts: -1,
                 theme_id: 171,
               },
               {

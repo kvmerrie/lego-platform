@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
+  type ContentArticleFrontmatterInput,
   type EditorialAgentDraftGenerationResult,
   type EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
@@ -66,6 +67,36 @@ export class ContentAdminEditorialAgentApiService {
         throw new Error(
           message ||
             'De draft generatie liep vast. Gebruik voorlopig de deterministic draft.',
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  async publishArticle({
+    frontmatter,
+    mdx,
+  }: {
+    frontmatter: ContentArticleFrontmatterInput;
+    mdx: string;
+  }): Promise<{ slug: string }> {
+    try {
+      return await firstValueFrom(
+        this.http.post<{ slug: string }>(apiPaths.adminEditorialAgentPublish, {
+          frontmatter,
+          mdx,
+        }),
+      );
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        const message =
+          typeof error.error?.message === 'string' && error.error.message.trim()
+            ? error.error.message.trim()
+            : '';
+
+        throw new Error(
+          message || 'Artikel publiceren naar Supabase is mislukt.',
         );
       }
 

@@ -1,7 +1,7 @@
 import {
-  createCatalogSet,
-  listCatalogSetSummariesWithOverlay,
-  searchCatalogMissingSets,
+  createCatalogSet as createCatalogSetDataAccess,
+  listCatalogSetSummariesWithOverlay as listCatalogSetSummariesWithOverlayDataAccess,
+  searchCatalogMissingSets as searchCatalogMissingSetsDataAccess,
 } from '@lego-platform/catalog/data-access-server';
 import {
   extractEditorialAgentFactsFromUrl,
@@ -9,19 +9,24 @@ import {
   generateEditorialAgentDraftResult,
   prepareEditorialAgentExtractionForDraft,
   EditorialAgentUrlValidationError,
+  publishContentArticle,
+  ContentArticlePublishValidationError,
 } from '@lego-platform/content/data-access-server';
-import type {
-  EditorialAgentDraftGenerationResult,
-  EditorialAgentFactExtractionResult,
-  EditorialAgentCatalogMatch,
-  EditorialAgentCatalogImportStatus,
+import {
+  normalizeContentArticleSetNumber,
+  type ContentArticleFrontmatterInput,
+  type ContentArticlePublishInput,
+  type EditorialAgentCatalogImportStatus,
+  type EditorialAgentCatalogMatch,
+  type EditorialAgentDraftGenerationResult,
+  type EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
 import {
   apiPaths,
   hasRebrickableApiConfig,
   hasServerSupabaseConfig,
 } from '@lego-platform/shared/config';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 export interface AdminEditorialAgentService {
   extractFacts(input: {
@@ -32,18 +37,163 @@ export interface AdminEditorialAgentService {
     importMissingSets: boolean;
     useAiRewrite: boolean;
   }): Promise<EditorialAgentDraftGenerationResult>;
+  publishArticle(input: ContentArticlePublishInput): Promise<{ slug: string }>;
 }
 
-function normalizeCatalogImportQuery(setNumber: string): string {
-  return /^\d+$/u.test(setNumber) ? `${setNumber}-1` : setNumber;
+type EditorialAgentCatalogSummary = Pick<
+  EditorialAgentCatalogMatch,
+  'id' | 'name' | 'slug' | 'theme'
+>;
+
+interface AdminEditorialAgentDebugPayload {
+  articleType: string;
+  detectedSetNumbers: readonly string[];
+  draftContainsFeaturedSet76339: boolean;
+  draftContainsSetSpotlightList: boolean;
+  importedSets: readonly EditorialAgentCatalogMatch[];
+  matchedSetNumbers: readonly string[];
+  pipelineVersion: 'debug-76339-rematch';
+  primarySetNumber: string | null;
+  stillMissingSetNumbers: readonly string[];
+  templateKind: string;
+  unmatchedSetNumbers: readonly string[];
 }
 
-function createAdminEditorialAgentService(): AdminEditorialAgentService {
+export interface AdminEditorialAgentCatalogDependencies {
+  createCatalogSet?: typeof createCatalogSetDataAccess;
+  hasRebrickableApiConfig?: typeof hasRebrickableApiConfig;
+  hasServerSupabaseConfig?: typeof hasServerSupabaseConfig;
+  listCatalogSetSummariesWithOverlay?: typeof listCatalogSetSummariesWithOverlayDataAccess;
+  searchCatalogMissingSets?: typeof searchCatalogMissingSetsDataAccess;
+}
+
+function normalizeCatalogSetNumberForArticleAgent(setNumber: string): string {
+  return normalizeContentArticleSetNumber(setNumber) ?? setNumber.trim();
+}
+
+function createCatalogImportQueries(setNumber: string): string[] {
+  const normalizedSetNumber = setNumber.trim();
+
+  if (!normalizedSetNumber) {
+    return [];
+  }
+
+  const articleSetNumber =
+    normalizeCatalogSetNumberForArticleAgent(normalizedSetNumber);
+  const queries = [normalizedSetNumber];
+
+  if (/^\d+$/u.test(articleSetNumber)) {
+    queries.push(`${articleSetNumber}-1`);
+  }
+
+  if (articleSetNumber !== normalizedSetNumber) {
+    queries.push(articleSetNumber);
+  }
+
+  return [...new Set(queries)];
+}
+
+function createCatalogSummaryByIdMap(
+  catalogSetSummaries: readonly EditorialAgentCatalogSummary[],
+): Map<string, EditorialAgentCatalogSummary> {
+  const catalogSetSummaryById = new Map<string, EditorialAgentCatalogSummary>();
+
+  for (const catalogSetSummary of catalogSetSummaries) {
+    const normalizedId = normalizeCatalogSetNumberForArticleAgent(
+      catalogSetSummary.id,
+    );
+    const normalizedSummary = {
+      id: normalizedId,
+      name: catalogSetSummary.name,
+      slug: catalogSetSummary.slug,
+      theme: catalogSetSummary.theme,
+    };
+
+    catalogSetSummaryById.set(catalogSetSummary.id, normalizedSummary);
+    catalogSetSummaryById.set(normalizedId, normalizedSummary);
+  }
+
+  return catalogSetSummaryById;
+}
+
+function matchesDetectedCatalogSetNumber({
+  detectedSetNumber,
+  sourceSetNumber,
+}: {
+  detectedSetNumber: string;
+  sourceSetNumber: string;
+}): boolean {
+  return (
+    normalizeCatalogSetNumberForArticleAgent(sourceSetNumber) ===
+    normalizeCatalogSetNumberForArticleAgent(detectedSetNumber)
+  );
+}
+
+function resolveDebugTemplateKind({
+  articleType,
+  mdx = '',
+  primarySetNumber,
+}: {
+  articleType: string;
+  mdx?: string;
+  primarySetNumber: string | null;
+}): string {
+  if (mdx.includes('<SetSpotlightList')) {
+    return 'release_roundup';
+  }
+
+  if (mdx.includes('<FeaturedSet') || primarySetNumber) {
+    return 'single_set';
+  }
+
+  return articleType;
+}
+
+function buildEditorialAgentDebugPayload({
+  catalogImport,
+  extraction,
+  mdx = '',
+}: {
+  catalogImport?: EditorialAgentCatalogImportStatus;
+  extraction: EditorialAgentFactExtractionResult;
+  mdx?: string;
+}): AdminEditorialAgentDebugPayload {
+  const primarySetNumber = extraction.primarySet?.setNumber ?? null;
+
+  return {
+    articleType: extraction.matching.articleType,
+    detectedSetNumbers: extraction.detected.setNumbers,
+    draftContainsFeaturedSet76339: mdx.includes(
+      '<FeaturedSet setNumber="76339"',
+    ),
+    draftContainsSetSpotlightList: mdx.includes('<SetSpotlightList'),
+    importedSets: catalogImport?.importedSets ?? [],
+    matchedSetNumbers: extraction.matching.matchedSets.map(
+      (matchedSet) => matchedSet.setNumber,
+    ),
+    pipelineVersion: 'debug-76339-rematch',
+    primarySetNumber,
+    stillMissingSetNumbers: catalogImport?.stillMissingSetNumbers ?? [],
+    templateKind: resolveDebugTemplateKind({
+      articleType: extraction.matching.articleType,
+      mdx,
+      primarySetNumber,
+    }),
+    unmatchedSetNumbers: extraction.matching.unmatchedSetNumbers,
+  };
+}
+
+export function createAdminEditorialAgentService({
+  createCatalogSet = createCatalogSetDataAccess,
+  hasRebrickableApiConfig:
+    hasRebrickableApiConfigDependency = hasRebrickableApiConfig,
+  hasServerSupabaseConfig:
+    hasServerSupabaseConfigDependency = hasServerSupabaseConfig,
+  listCatalogSetSummariesWithOverlay = listCatalogSetSummariesWithOverlayDataAccess,
+  searchCatalogMissingSets = searchCatalogMissingSetsDataAccess,
+}: AdminEditorialAgentCatalogDependencies = {}): AdminEditorialAgentService {
   let catalogSetSummaryByIdPromise: Promise<
-    Map<
-      string,
-      Pick<EditorialAgentCatalogMatch, 'id' | 'name' | 'slug' | 'theme'>
-    >
+    Map<string, EditorialAgentCatalogSummary>
   > | null = null;
 
   async function getCatalogSetSummaryById({
@@ -57,18 +207,7 @@ function createAdminEditorialAgentService(): AdminEditorialAgentService {
 
     if (!catalogSetSummaryByIdPromise) {
       catalogSetSummaryByIdPromise = listCatalogSetSummariesWithOverlay().then(
-        (catalogSetSummaries) =>
-          new Map(
-            catalogSetSummaries.map((catalogSetSummary) => [
-              catalogSetSummary.id,
-              {
-                id: catalogSetSummary.id,
-                name: catalogSetSummary.name,
-                slug: catalogSetSummary.slug,
-                theme: catalogSetSummary.theme,
-              },
-            ]),
-          ),
+        createCatalogSummaryByIdMap,
       );
     }
 
@@ -76,51 +215,59 @@ function createAdminEditorialAgentService(): AdminEditorialAgentService {
   }
 
   async function importCatalogSetByNumber(setNumber: string) {
-    const normalizedQuery = normalizeCatalogImportQuery(setNumber);
+    const normalizedSetNumber =
+      normalizeCatalogSetNumberForArticleAgent(setNumber);
     const freshSummary = (
       await getCatalogSetSummaryById({
         forceRefresh: true,
       })
-    ).get(setNumber);
+    ).get(normalizedSetNumber);
 
     if (freshSummary) {
       return freshSummary;
     }
 
-    const searchResults = await searchCatalogMissingSets({
-      query: normalizedQuery,
-    });
-    const matchingSearchResult = searchResults.find(
-      (searchResult) => searchResult.sourceSetNumber === normalizedQuery,
-    );
-
-    if (!matchingSearchResult) {
-      return undefined;
-    }
-
-    try {
-      await createCatalogSet({
-        input: matchingSearchResult,
+    for (const query of createCatalogImportQueries(setNumber)) {
+      const searchResults = await searchCatalogMissingSets({
+        query,
       });
-    } catch {
-      const concurrentSummary = (
+      const matchingSearchResult = searchResults.find((searchResult) =>
+        matchesDetectedCatalogSetNumber({
+          detectedSetNumber: normalizedSetNumber,
+          sourceSetNumber: searchResult.sourceSetNumber,
+        }),
+      );
+
+      if (!matchingSearchResult) {
+        continue;
+      }
+
+      try {
+        await createCatalogSet({
+          input: matchingSearchResult,
+        });
+      } catch {
+        const concurrentSummary = (
+          await getCatalogSetSummaryById({
+            forceRefresh: true,
+          })
+        ).get(normalizedSetNumber);
+
+        if (concurrentSummary) {
+          return concurrentSummary;
+        }
+
+        throw new Error(`Catalog import failed for ${setNumber}.`);
+      }
+
+      return (
         await getCatalogSetSummaryById({
           forceRefresh: true,
         })
-      ).get(setNumber);
-
-      if (concurrentSummary) {
-        return concurrentSummary;
-      }
-
-      throw new Error(`Catalog import failed for ${setNumber}.`);
+      ).get(normalizedSetNumber);
     }
 
-    return (
-      await getCatalogSetSummaryById({
-        forceRefresh: true,
-      })
-    ).get(setNumber);
+    return undefined;
   }
 
   return {
@@ -131,23 +278,33 @@ function createAdminEditorialAgentService(): AdminEditorialAgentService {
         inputUrl: url,
       }),
     generateDraft: async ({ extraction, importMissingSets, useAiRewrite }) => {
-      let effectiveExtraction = extraction;
+      let preparedExtraction = await prepareEditorialAgentExtractionForDraft({
+        extraction,
+        findCatalogSetSummaryById: async (setId: string) =>
+          (await getCatalogSetSummaryById()).get(setId),
+        importMissingSets: false,
+      });
+      let effectiveExtraction = preparedExtraction.extraction;
       let catalogImport: EditorialAgentCatalogImportStatus = {
         attempted: false,
         attemptedSetNumbers: [],
         enabled: importMissingSets,
         importedSets: [],
-        stillMissingSetNumbers: extraction.matching.unmatchedSetNumbers,
+        stillMissingSetNumbers:
+          effectiveExtraction.matching.unmatchedSetNumbers,
         warnings: [],
       };
 
       if (importMissingSets) {
         const attemptedSetNumbers = [
-          ...extraction.matching.unmatchedSetNumbers,
+          ...effectiveExtraction.matching.unmatchedSetNumbers,
         ];
 
         if (attemptedSetNumbers.length > 0) {
-          if (!hasServerSupabaseConfig() || !hasRebrickableApiConfig()) {
+          if (
+            !hasServerSupabaseConfigDependency() ||
+            !hasRebrickableApiConfigDependency()
+          ) {
             catalogImport = {
               attempted: true,
               attemptedSetNumbers,
@@ -163,14 +320,13 @@ function createAdminEditorialAgentService(): AdminEditorialAgentService {
               ],
             };
           } else {
-            const preparedExtraction =
-              await prepareEditorialAgentExtractionForDraft({
-                extraction,
-                findCatalogSetSummaryById: async (setId: string) =>
-                  (await getCatalogSetSummaryById()).get(setId),
-                importCatalogSetByNumber,
-                importMissingSets: true,
-              });
+            preparedExtraction = await prepareEditorialAgentExtractionForDraft({
+              extraction,
+              findCatalogSetSummaryById: async (setId: string) =>
+                (await getCatalogSetSummaryById()).get(setId),
+              importCatalogSetByNumber,
+              importMissingSets: true,
+            });
 
             effectiveExtraction = preparedExtraction.extraction;
             catalogImport = preparedExtraction.catalogImport;
@@ -184,6 +340,7 @@ function createAdminEditorialAgentService(): AdminEditorialAgentService {
         useAiRewrite,
       });
     },
+    publishArticle: (input) => publishContentArticle({ input }),
   };
 }
 
@@ -249,6 +406,36 @@ function readDraftInput(value: unknown): {
   };
 }
 
+function readPublishInput(value: unknown): ContentArticlePublishInput {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new ContentArticlePublishValidationError(
+      'Publicatie-input ontbreekt.',
+    );
+  }
+
+  const mdx = (value as { mdx?: unknown }).mdx;
+  const frontmatter = (value as { frontmatter?: unknown }).frontmatter;
+
+  if (typeof mdx !== 'string' || mdx.trim().length === 0) {
+    throw new ContentArticlePublishValidationError('Artikel-MDX ontbreekt.');
+  }
+
+  if (
+    !frontmatter ||
+    typeof frontmatter !== 'object' ||
+    Array.isArray(frontmatter)
+  ) {
+    throw new ContentArticlePublishValidationError(
+      'Artikel-frontmatter ontbreekt.',
+    );
+  }
+
+  return {
+    frontmatter: frontmatter as ContentArticleFrontmatterInput,
+    mdx,
+  };
+}
+
 export function createAdminEditorialAgentRoutes({
   editorialAgentService = createAdminEditorialAgentService(),
 }: {
@@ -263,8 +450,14 @@ export function createAdminEditorialAgentRoutes({
         try {
           const input = readExtractionInput(request.body);
           inputUrl = input.url;
+          const extraction = await editorialAgentService.extractFacts(input);
 
-          return editorialAgentService.extractFacts(input);
+          return {
+            ...extraction,
+            debug: buildEditorialAgentDebugPayload({
+              extraction,
+            }),
+          };
         } catch (error) {
           request.log.error(
             {
@@ -298,9 +491,18 @@ export function createAdminEditorialAgentRoutes({
       apiPaths.adminEditorialAgentDraft,
       async function (request, reply) {
         try {
-          return await editorialAgentService.generateDraft(
+          const draftResult = await editorialAgentService.generateDraft(
             readDraftInput(request.body),
           );
+
+          return {
+            ...draftResult,
+            debug: buildEditorialAgentDebugPayload({
+              catalogImport: draftResult.catalogImport,
+              extraction: draftResult.effectiveExtraction,
+              mdx: draftResult.output.mdx,
+            }),
+          };
         } catch (error) {
           request.log.error(
             {
@@ -321,6 +523,43 @@ export function createAdminEditorialAgentRoutes({
           });
         }
       },
+    );
+
+    async function publishArticleHandler(
+      request: FastifyRequest<{ Body: unknown }>,
+      reply: FastifyReply,
+    ) {
+      try {
+        return await editorialAgentService.publishArticle(
+          readPublishInput(request.body),
+        );
+      } catch (error) {
+        request.log.error(
+          {
+            err: error,
+          },
+          'Editorial Agent article publish failed',
+        );
+
+        if (error instanceof ContentArticlePublishValidationError) {
+          return reply.status(400).send({
+            message: error.message,
+          });
+        }
+
+        return reply.status(500).send({
+          message: 'Artikel publiceren naar Supabase is mislukt.',
+        });
+      }
+    }
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminEditorialAgentPublish,
+      publishArticleHandler,
+    );
+    fastify.post<{ Body: unknown }>(
+      '/admin/editorial-agent/publish',
+      publishArticleHandler,
     );
   };
 }

@@ -1,20 +1,30 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 const listPublishedArticleSlugs = vi.fn();
 const listPublishedArticles = vi.fn();
-const getPublishedArticleBySlug = vi.fn();
+const getArticleBySlug = vi.fn();
 const listCatalogSetCardsByIds = vi.fn();
 const contentArticlePageSpy = vi.fn(() => null);
+const mdxRemoteSpy = vi.fn(() => null);
+const notFound = vi.fn(() => {
+  throw new Error('NEXT_NOT_FOUND');
+});
 
 vi.mock('next-mdx-remote/rsc', () => ({
-  MDXRemote: () => null,
+  MDXRemote: mdxRemoteSpy,
 }));
 
 vi.mock('@lego-platform/content/data-access', () => ({
-  getPublishedArticleBySlug,
+  getArticleBySlug,
   listPublishedArticles,
   listPublishedArticleSlugs,
+}));
+
+vi.mock('next/navigation', () => ({
+  notFound,
 }));
 
 vi.mock('@lego-platform/catalog/data-access', () => ({
@@ -65,6 +75,30 @@ describe('article detail route', () => {
     listCatalogSetCardsByIds.mockResolvedValue([]);
   });
 
+  it('stays a server-rendered route without client-side data fetching', async () => {
+    const source = await readFile(
+      path.join(
+        process.cwd(),
+        'apps',
+        'web',
+        'src',
+        'app',
+        'artikelen',
+        '[slug]',
+        'page.tsx',
+      ),
+      'utf8',
+    );
+
+    expect(source).not.toContain("'use client'");
+    expect(source).not.toContain('"use client"');
+    expect(source).not.toContain('useEffect');
+    expect(source).not.toContain('useSWR');
+    expect(source).not.toContain('fetch(');
+    expect(source).toContain('await getArticleBySlug(slug)');
+    expect(source).toContain('<MDXRemote');
+  });
+
   it('builds static params from published article slugs', async () => {
     listPublishedArticleSlugs.mockResolvedValue([
       'star-wars-day-2026',
@@ -80,7 +114,7 @@ describe('article detail route', () => {
   });
 
   it('derives metadata from the published article frontmatter', async () => {
-    getPublishedArticleBySlug.mockResolvedValue({
+    getArticleBySlug.mockResolvedValue({
       description: 'Waar wil je nu op letten?',
       heroImage: '/articles/star-wars-day-2026/hero.jpg',
       title: 'Star Wars Day 2026 (May the 4th)',
@@ -106,7 +140,7 @@ describe('article detail route', () => {
   });
 
   it('falls back to the primary set image for article metadata when heroImage is missing', async () => {
-    getPublishedArticleBySlug.mockResolvedValue({
+    getArticleBySlug.mockResolvedValue({
       description: 'Waarom dit nu telt.',
       heroImage: undefined,
       heroImageAlt: 'Leeg',
@@ -141,7 +175,7 @@ describe('article detail route', () => {
   });
 
   it('keeps the frontmatter hero image when one exists', async () => {
-    getPublishedArticleBySlug.mockResolvedValue({
+    getArticleBySlug.mockResolvedValue({
       bodySource: 'Intro',
       cardImageAlt: 'Star Wars hero',
       date: '2026-05-01',
@@ -164,6 +198,11 @@ describe('article detail route', () => {
     renderToStaticMarkup(renderedPage);
 
     expect(contentArticlePageSpy).toHaveBeenCalled();
+    expect(contentArticlePageSpy.mock.calls[0]?.[0]?.body.props).toEqual(
+      expect.objectContaining({
+        source: 'Intro',
+      }),
+    );
     expect(contentArticlePageSpy.mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({
         contentArticle: expect.objectContaining({
@@ -174,7 +213,7 @@ describe('article detail route', () => {
   });
 
   it('falls back to the FeaturedSet image when heroImage is missing', async () => {
-    getPublishedArticleBySlug.mockResolvedValue({
+    getArticleBySlug.mockResolvedValue({
       bodySource: '<FeaturedSet setNumber="40787" />',
       cardImageAlt: 'Mario Kart',
       date: '2026-05-01',
@@ -220,7 +259,7 @@ describe('article detail route', () => {
   });
 
   it('renders safely without a hero when neither frontmatter nor FeaturedSet image exists', async () => {
-    getPublishedArticleBySlug.mockResolvedValue({
+    getArticleBySlug.mockResolvedValue({
       bodySource: 'Geen hero, geen featured set.',
       cardImageAlt: 'Artikel',
       date: '2026-05-01',
@@ -253,5 +292,20 @@ describe('article detail route', () => {
         }),
       }),
     );
+  });
+
+  it('calls notFound when the article slug is unknown', async () => {
+    getArticleBySlug.mockResolvedValue(null);
+
+    const pageModule = await import('./page');
+
+    await expect(
+      pageModule.default({
+        params: Promise.resolve({
+          slug: 'niet-gevonden',
+        }),
+      }),
+    ).rejects.toThrow('NEXT_NOT_FOUND');
+    expect(notFound).toHaveBeenCalled();
   });
 });

@@ -122,6 +122,38 @@ describe('editorial agent analysis helpers', () => {
     expect(articleType).toBe('single_set_news');
   });
 
+  it('keeps LEGO Marvel 76339 headlines on single_set_news instead of release_roundup', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['LEGO Marvel', 'Fantastic Four', 'H.E.R.B.I.E.'],
+        setNumbers: ['76339', '76316'],
+        summary:
+          'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. is onthuld.',
+        theme: 'Multiple',
+        title:
+          'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten',
+      }),
+      createDetected({
+        dateSignals: ['augustus 2026'],
+        keywords: ['LEGO Marvel', 'Fantastic Four', 'H.E.R.B.I.E.'],
+        setNumbers: ['76339', '76316'],
+        themes: ['Marvel'],
+      }),
+      createSource({
+        description:
+          'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. is onthuld. Reed Richards verscheen eerder al als minifiguur in LEGO Marvel 76316 Fantastic Four vs. Galactus.',
+        finalUrl:
+          'https://www.bricktastic.nl/lego/lego-marvel-76339-the-fantastic-four-h-e-r-b-i-e-onthuld-alles-wat-je-moet-weten/',
+        inputUrl:
+          'https://www.bricktastic.nl/lego/lego-marvel-76339-the-fantastic-four-h-e-r-b-i-e-onthuld-alles-wat-je-moet-weten/',
+        title:
+          'LEGO Marvel 76339 The Fantastic Four H.E.R.B.I.E. onthuld: alles wat je moet weten',
+      }),
+    );
+
+    expect(articleType).toBe('single_set_news');
+  });
+
   it('detects a gwp reward article before generic single-set logic', () => {
     const articleType = detectArticleType(
       createFacts({
@@ -168,19 +200,141 @@ describe('editorial agent analysis helpers', () => {
     expect(articleType).toBe('gwp_reward');
   });
 
-  it('detects a release roundup from multiple set numbers plus dates', () => {
+  it('detects a release roundup from many set numbers plus strong date grouping', () => {
     const articleType = detectArticleType(
       createFacts({
-        setNumbers: ['75446', '75447'],
+        setNumbers: [
+          '75446',
+          '75447',
+          '75448',
+          '75449',
+          '75450',
+          '75451',
+          '75452',
+        ],
       }),
       createDetected({
         dateSignals: ['mei 2026'],
-        setNumbers: ['75446', '75447'],
+        setNumbers: [
+          '75446',
+          '75447',
+          '75448',
+          '75449',
+          '75450',
+          '75451',
+          '75452',
+        ],
       }),
       createSource(),
     );
 
     expect(articleType).toBe('release_roundup');
+  });
+
+  it('detects Hogwarts first-images articles as multi_set_announcement', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['Harry Potter', 'Hogwarts'],
+        setNumbers: ['76450', '76451', '76452'],
+        title: 'Eerste beelden LEGO Hogwarts sets voor 2026 opgedoken',
+      }),
+      createDetected({
+        keywords: ['Harry Potter', 'Hogwarts'],
+        setNumbers: ['76450', '76451', '76452'],
+        themes: ['Harry Potter'],
+      }),
+      createSource({
+        title: 'Eerste beelden LEGO Hogwarts sets voor 2026 opgedoken',
+      }),
+    );
+
+    expect(articleType).toBe('multi_set_announcement');
+  });
+
+  it('detects F1 helmet reveal articles as multi_set_announcement', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['F1', 'Piastri', 'Norris'],
+        setNumbers: ['42241', '42242'],
+        title: 'LEGO F1 helmen van Piastri en Norris onthuld',
+      }),
+      createDetected({
+        keywords: ['F1', 'Piastri', 'Norris'],
+        setNumbers: ['42241', '42242'],
+        themes: ['Technic'],
+      }),
+      createSource({
+        title: 'LEGO F1 helmen van Piastri en Norris onthuld',
+      }),
+    );
+
+    expect(articleType).toBe('multi_set_announcement');
+  });
+
+  it('detects approved Ideas project articles as multi_set_announcement without a title set', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['Ideas'],
+        setNumbers: ['21330', '99991', '99992'],
+        summary:
+          'LEGO Ideas heeft meerdere projecten goedgekeurd. Home Alone wordt alleen als eerdere Ideas-set genoemd.',
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+      createDetected({
+        keywords: ['Ideas'],
+        setNumbers: ['21330', '99991', '99992'],
+        themes: ['Ideas'],
+      }),
+      createSource({
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+    );
+
+    expect(articleType).toBe('multi_set_announcement');
+  });
+
+  it('detects Ideas approval articles as multi_set_announcement even when only context sets have numbers', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['Ideas'],
+        setNumbers: ['21330'],
+        summary:
+          'Amsterdam Canal Houses en Edward Scissorhands zijn goedgekeurd. Dit ligt in lijn met het succes van LEGO Ideas 21330 Home Alone.',
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+      createDetected({
+        keywords: ['Ideas'],
+        setNumbers: ['21330'],
+        themes: ['Ideas'],
+      }),
+      createSource({
+        description:
+          'National Lampoon’s Christmas Vacation Griswold House, Amsterdam Canal Houses en Edward Scissorhands zijn geselecteerd.',
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+    );
+
+    expect(articleType).toBe('multi_set_announcement');
+  });
+
+  it('keeps normal single-set Ideas articles with a title set on single_set_news', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['Ideas'],
+        setNumbers: ['21330'],
+        title: 'LEGO Ideas 21330 Home Alone opnieuw verkrijgbaar',
+      }),
+      createDetected({
+        keywords: ['Ideas'],
+        setNumbers: ['21330'],
+        themes: ['Ideas'],
+      }),
+      createSource({
+        title: 'LEGO Ideas 21330 Home Alone opnieuw verkrijgbaar',
+      }),
+    );
+
+    expect(articleType).toBe('single_set_news');
   });
 
   it('keeps explicit roundup headlines on release_roundup', () => {
@@ -304,6 +458,112 @@ describe('editorial agent analysis helpers', () => {
       expect.objectContaining({
         reason: 'single_set',
         setNumber: '40787',
+      }),
+    );
+  });
+
+  it('does not promote an old body-mentioned Ideas set as primary for a multi-set announcement', () => {
+    const primarySet = selectPrimarySet(
+      'multi_set_announcement',
+      [
+        createMatchedSet('21330', {
+          name: 'Home Alone',
+          theme: 'Ideas',
+        }),
+      ],
+      createFacts({
+        keywords: ['Ideas'],
+        setNumbers: ['21330', '99991', '99992'],
+        summary:
+          'LEGO Ideas heeft meerdere nieuwe projecten goedgekeurd. Home Alone wordt alleen als eerdere Ideas-set genoemd.',
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+      createDetected({
+        keywords: ['Ideas'],
+        setNumbers: ['21330', '99991', '99992'],
+        themes: ['Ideas'],
+      }),
+      createSource({
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+    );
+    const relatedCandidates = selectRelatedSetCandidates({
+      articleType: 'multi_set_announcement',
+      matchedSets: [
+        createMatchedSet('21330', {
+          name: 'Home Alone',
+          theme: 'Ideas',
+        }),
+      ],
+      primarySet,
+    });
+
+    expect(primarySet).toBeNull();
+    expect(relatedCandidates).toEqual([]);
+  });
+
+  it('rejects context-mentioned Ideas catalog sets as primary in approval articles', () => {
+    const primarySet = selectPrimarySet(
+      'multi_set_announcement',
+      [
+        createMatchedSet('21330', {
+          name: 'Home Alone',
+          theme: 'Ideas',
+        }),
+      ],
+      createFacts({
+        keywords: ['Ideas'],
+        setNumbers: ['21330'],
+        summary:
+          'Amsterdam Canal Houses en Edward Scissorhands zijn goedgekeurd. Dit is in lijn met het succes van LEGO Ideas 21330 Home Alone.',
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+      createDetected({
+        keywords: ['Ideas'],
+        setNumbers: ['21330'],
+        themes: ['Ideas'],
+      }),
+      createSource({
+        description:
+          'National Lampoon’s Christmas Vacation Griswold House, Amsterdam Canal Houses en Edward Scissorhands zijn geselecteerd.',
+        title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
+      }),
+    );
+
+    expect(primarySet).toBeNull();
+  });
+
+  it('selects a title-mentioned set as primary for a multi-set announcement', () => {
+    const primarySet = selectPrimarySet(
+      'multi_set_announcement',
+      [
+        createMatchedSet('42241', {
+          name: 'F1 Piastri Helmet',
+          theme: 'Technic',
+        }),
+        createMatchedSet('42242', {
+          name: 'F1 Norris Helmet',
+          theme: 'Technic',
+        }),
+      ],
+      createFacts({
+        keywords: ['F1', 'Piastri', 'Norris'],
+        setNumbers: ['42241', '42242'],
+        title: 'LEGO F1 helmen van Piastri en Norris onthuld',
+      }),
+      createDetected({
+        keywords: ['F1', 'Piastri', 'Norris'],
+        setNumbers: ['42241', '42242'],
+      }),
+      createSource({
+        title: 'LEGO F1 helmen van Piastri en Norris onthuld',
+      }),
+    );
+
+    expect(primarySet).toEqual(
+      expect.objectContaining({
+        reason: 'title_match',
+        setNumber: '42241',
       }),
     );
   });
