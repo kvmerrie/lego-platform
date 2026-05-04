@@ -11,11 +11,6 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.articleGridThreeUp {
-  display: grid;
-  gap: var(--lego-space-3);
-}
-
 .articleFigure {
   align-content: start;
   display: grid;
@@ -74,7 +69,6 @@
 .detailThumbFrame,
 .lightboxMediaFrame {
   align-items: center;
-  background: color-mix(in srgb, var(--lego-surface-muted) 92%, white 8%);
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border-subtle) 86%, white 14%);
   border-radius: var(--lego-radius-xl);
@@ -83,6 +77,15 @@
   overflow: hidden;
   position: relative;
   width: 100%;
+}
+
+.articleMediaFrame {
+  background: #ffffff;
+}
+
+.detailMainFrame,
+.detailThumbFrame {
+  background: #ffffff;
 }
 
 .articleMediaFrame {
@@ -129,6 +132,53 @@
 .galleryImageThumbnail {
   object-fit: cover;
   object-position: center;
+}
+
+.articleMoreOverlay {
+  align-items: center;
+  background: rgba(12, 18, 32, 0.64);
+  color: var(--lego-contrast-white);
+  display: flex;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: var(--lego-font-weight-bold);
+  inset: 0;
+  justify-content: center;
+  letter-spacing: 0;
+  position: absolute;
+}
+
+.articleZoomOverlay {
+  align-items: end;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 18, 32, 0) 0%,
+    rgba(12, 18, 32, 0.28) 100%
+  );
+  border-radius: var(--lego-radius-xl);
+  display: flex;
+  inset: 0;
+  justify-content: end;
+  padding: var(--lego-space-3);
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.articleZoomIconShell {
+  align-items: center;
+  background: #ffffff;
+  border: var(--lego-border-width-1) solid var(--lego-text);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text);
+  display: inline-flex;
+  height: 2.15rem;
+  justify-content: center;
+  width: 2.15rem;
+}
+
+.articleZoomIcon {
+  height: 0.95rem;
+  width: 0.95rem;
 }
 
 .articleCaption,
@@ -359,73 +409,63 @@
 }
 
 @media (min-width: 48rem) {
+  .articleGrid[data-count='1'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .articleGrid[data-count='2'] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .articleGrid[data-count='4-plus'] {
+  .articleGrid[data-count='3'] {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .articleGridThreeUp {
-    align-items: stretch;
-    aspect-ratio: 16 / 7;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    grid-template-rows: repeat(2, minmax(0, 1fr));
+  .articleGrid[data-count='4'],
+  .articleGrid[data-count='5-plus'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .articleFigureFeature {
-    grid-column: 1;
-    grid-row: 1 / span 2;
+  .articleGrid[data-count='1'] .articleMediaFrame {
+    min-height: clamp(18rem, 38vw, 30rem);
   }
 
-  .articleFigureStackTop {
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-  .articleFigureStackBottom {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .articleGridThreeUp .articleFigure {
-    align-content: stretch;
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) auto;
-    min-height: 0;
-  }
-
-  .articleGridThreeUp .articleImageButton {
-    display: grid;
-    min-height: 0;
-    width: 100%;
-  }
-
-  .articleGridThreeUp .articleMediaFrame,
-  .articleGridThreeUp .articleImageButton,
-  .articleGridThreeUp .galleryImage {
-    height: 100%;
-    min-height: 0;
-    width: 100%;
-  }
-
-  .articleGridThreeUp .articleMediaFrame {
-    min-height: 100%;
-  }
-
-  .articleGridThreeUp .galleryImage {
-    display: block;
-    object-fit: cover;
-  }
-
-  .articleGrid[data-count='2'] .articleMediaFrame,
-  .articleGrid[data-count='4-plus'] .articleMediaFrame {
+  .articleGrid[data-count='2'] .articleMediaFrame {
     min-height: clamp(11rem, 18vw, 14rem);
+  }
+
+  .articleGrid[data-count='3'] .articleMediaFrame,
+  .articleGrid[data-count='4'] .articleMediaFrame,
+  .articleGrid[data-count='5-plus'] .articleMediaFrame {
+    min-height: clamp(11rem, 20vw, 16rem);
+  }
+
+  .detailMainFrame {
+    aspect-ratio: auto;
+    height: 508px;
   }
 
   .lightboxDialog {
     max-height: min(100%, calc(100vh - (var(--lego-space-6) * 2)));
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .articleZoomOverlay {
+    opacity: 0;
+    transition: opacity var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+  }
+
+  .articleImageButton:hover .articleZoomOverlay,
+  .articleImageButton:focus-visible .articleZoomOverlay {
+    opacity: 1;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .articleZoomOverlay {
+    display: none;
   }
 }
 

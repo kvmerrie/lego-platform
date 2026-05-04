@@ -1,4 +1,5 @@
 export * from './lib/api-data-access-server';
+export * from './lib/adtraction-goodbricks-sync-server';
 export * from './lib/alternate-affiliate-feed-server';
 export * from './lib/awin-coolblue-sync-server';
 export * from './lib/catalog-bulk-onboarding-server';

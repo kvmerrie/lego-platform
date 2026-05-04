@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ContentArticleFaq } from './content-article-faq';
 import {
   ContentArticleCard,
+  ContentArticleCompactRail,
   ContentArticleFeaturedCard,
   ContentArticleFeaturedSet,
   ContentArticleImageGallery,
@@ -47,12 +48,16 @@ describe('content article ui', () => {
     const markup = renderToStaticMarkup(
       <ContentArticleCard
         contentArticle={{
-          cardImage: '/articles/star-wars-day-2026/hero.jpg',
+          cardImage:
+            'https://storage.example/article-images/star-wars-day-2026/hero.webp',
           cardImageAlt: 'Star Wars hero',
+          cardImageSource: 'manual',
           date: '2026-04-24',
           description: 'Waar wil je nu op letten?',
-          heroImage: '/articles/star-wars-day-2026/hero.jpg',
+          heroImage:
+            'https://storage.example/article-images/star-wars-day-2026/hero.webp',
           heroImageAlt: 'Star Wars hero',
+          heroImageSource: 'manual',
           slug: 'star-wars-day-2026',
           status: 'published',
           theme: 'Star Wars',
@@ -61,11 +66,67 @@ describe('content article ui', () => {
       />,
     );
 
-    expect(markup).toContain('/artikelen/star-wars-day-2026');
-    expect(markup).toContain('/articles/star-wars-day-2026/hero.jpg');
+    expect(markup).toContain('/artikelen/star-wars/star-wars-day-2026');
+    expect(markup).toContain(
+      'https://storage.example/article-images/star-wars-day-2026/hero.webp',
+    );
     expect(markup).toContain('Star Wars Day 2026');
     expect(markup).toContain('Waar wil je nu op letten?');
     expect(markup).toContain('Star Wars');
+    expect(markup).toContain('data-article-image-source="manual"');
+    expect(markup).toContain('data-article-image-fit="cover"');
+  });
+
+  it('contains catalog fallback article images instead of cropping them', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleCard
+        contentArticle={{
+          cardImage: 'https://images.example/40787.jpg',
+          cardImageAlt: 'Mario Kart Spiny Shell',
+          cardImageSource: 'featuredSet',
+          date: '2026-05-03',
+          description: 'Waarom deze set nu opvalt.',
+          heroImageAlt: 'Mario Kart Spiny Shell',
+          slug: 'spiny-shell',
+          status: 'published',
+          theme: 'Super Mario',
+          title: 'Spiny Shell terug',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('data-article-image-source="featuredSet"');
+    expect(markup).toContain('data-article-image-fit="contain"');
+  });
+
+  it('renders subtle source attribution and LEGO image credit in the article footer', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticlePage
+        body={<p>Dit artikel gebruikt publieke setinformatie.</p>}
+        contentArticle={{
+          bodySource: 'Dit artikel gebruikt publieke setinformatie.',
+          cardImageAlt: 'Star Wars hero',
+          date: '2026-05-03',
+          description: 'Waarom deze release telt.',
+          heroImageAlt: 'Star Wars hero',
+          slug: 'star-wars-release',
+          sourceAttribution: {
+            imageCredit: 'Beeld: © The LEGO Group',
+            label: 'Via: Brickset',
+            signalSourceName: 'Brickset',
+            tone: 'subtle',
+          },
+          status: 'published',
+          theme: 'Star Wars',
+          title: 'Star Wars release',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('data-article-layout="source-attribution"');
+    expect(markup).toContain('data-source-attribution-tone="subtle"');
+    expect(markup).toContain('Via: Brickset');
+    expect(markup).toContain('Beeld: © The LEGO Group');
   });
 
   it('never renders Other as a public article theme badge', () => {
@@ -126,7 +187,9 @@ describe('content article ui', () => {
 
   it('tracks article card clicks with gtag without blocking navigation', () => {
     const gtag = vi.fn();
+    const fetch = vi.fn(async () => new Response(null, { status: 204 }));
     window.gtag = gtag;
+    window.fetch = fetch;
 
     act(() => {
       root.render(
@@ -146,7 +209,7 @@ describe('content article ui', () => {
     });
 
     const link = container.querySelector(
-      'a[href="/artikelen/star-wars-day-2026"]',
+      'a[href="/artikelen/star-wars/star-wars-day-2026"]',
     );
     const clickEvent = new MouseEvent('click', {
       bubbles: true,
@@ -160,19 +223,69 @@ describe('content article ui', () => {
       slug: 'star-wars-day-2026',
       theme: 'Star Wars',
     });
+    expect(fetch).toHaveBeenCalledWith('/api/events/article-click', {
+      body: JSON.stringify({
+        slug: 'star-wars-day-2026',
+      }),
+      headers: {
+        'content-type': 'application/json',
+      },
+      keepalive: true,
+      method: 'POST',
+    });
 
     delete window.gtag;
+  });
+
+  it('logs article clicks server-side even when gtag is unavailable', () => {
+    const fetch = vi.fn(async () => new Response(null, { status: 204 }));
+    window.fetch = fetch;
+
+    act(() => {
+      root.render(
+        <ContentArticleCard
+          contentArticle={{
+            cardImageAlt: 'Star Wars hero',
+            date: '2026-04-24',
+            description: 'Waar wil je nu op letten?',
+            heroImageAlt: 'Star Wars hero',
+            slug: 'star-wars-day-2026',
+            status: 'published',
+            theme: 'Star Wars',
+            title: 'Star Wars Day 2026',
+          }}
+        />,
+      );
+    });
+
+    const link = container.querySelector(
+      'a[href="/artikelen/star-wars/star-wars-day-2026"]',
+    );
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+
+    expect(link?.dispatchEvent(clickEvent)).toBe(true);
+    expect(clickEvent.defaultPrevented).toBe(false);
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/events/article-click',
+      expect.objectContaining({
+        keepalive: true,
+        method: 'POST',
+      }),
+    );
   });
 
   it('renders a featured article card as one large clickable article', () => {
     const markup = renderToStaticMarkup(
       <ContentArticleFeaturedCard
         contentArticle={{
-          cardImage: '/articles/marvel/card.jpg',
+          cardImage: 'https://storage.example/article-images/marvel/card.webp',
           cardImageAlt: 'Marvel kaart',
           date: '2026-05-03',
           description: 'Waarom deze reveal blijft hangen.',
-          heroImage: '/articles/marvel/hero.jpg',
+          heroImage: 'https://storage.example/article-images/marvel/hero.webp',
           heroImageAlt: 'Marvel hero',
           slug: 'lego-marvel-herbie',
           status: 'published',
@@ -182,8 +295,10 @@ describe('content article ui', () => {
       />,
     );
 
-    expect(markup).toContain('/artikelen/lego-marvel-herbie');
-    expect(markup).toContain('/articles/marvel/hero.jpg');
+    expect(markup).toContain('/artikelen/marvel/lego-marvel-herbie');
+    expect(markup).toContain(
+      'https://storage.example/article-images/marvel/hero.webp',
+    );
     expect(markup).toContain('data-article-image-kind="featured"');
     expect(markup).toContain('LEGO Marvel H.E.R.B.I.E. onthuld');
     expect(markup).toContain('Waarom deze reveal blijft hangen.');
@@ -192,7 +307,9 @@ describe('content article ui', () => {
 
   it('tracks featured article clicks with gtag', () => {
     const gtag = vi.fn();
+    const fetch = vi.fn(async () => new Response(null, { status: 204 }));
     window.gtag = gtag;
+    window.fetch = fetch;
 
     act(() => {
       root.render(
@@ -212,7 +329,7 @@ describe('content article ui', () => {
     });
 
     const link = container.querySelector(
-      'a[href="/artikelen/lego-marvel-herbie"]',
+      'a[href="/artikelen/marvel/lego-marvel-herbie"]',
     );
     const clickEvent = new MouseEvent('click', {
       bubbles: true,
@@ -226,6 +343,14 @@ describe('content article ui', () => {
       slug: 'lego-marvel-herbie',
       theme: 'Marvel',
     });
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/events/article-click',
+      expect.objectContaining({
+        body: JSON.stringify({
+          slug: 'lego-marvel-herbie',
+        }),
+      }),
+    );
 
     delete window.gtag;
   });
@@ -280,8 +405,10 @@ describe('content article ui', () => {
           cardImageAlt: 'Star Wars hero',
           date: '2026-04-24',
           description: 'Waar wil je nu op letten?',
-          heroImage: '/articles/star-wars-day-2026/hero.jpg',
+          heroImage:
+            'https://storage.example/article-images/star-wars-day-2026/hero.webp',
           heroImageAlt: 'Star Wars hero',
+          heroImageSource: 'manual',
           slug: 'star-wars-day-2026',
           status: 'published',
           theme: 'Star Wars',
@@ -333,7 +460,8 @@ describe('content article ui', () => {
     );
     expect(pageMarkup.indexOf('<h1')).toBeLessThan(pageMarkup.indexOf('<time'));
     expect(pageMarkup).toContain('data-article-image-kind="hero"');
-    expect(pageMarkup).toContain('data-article-image-fit="contain"');
+    expect(pageMarkup).toContain('data-article-image-source="manual"');
+    expect(pageMarkup).toContain('data-article-image-fit="cover"');
     expect(pageMarkup).not.toContain('>Home<');
     expect(pageMarkup).toContain('Artikelen');
     expect(pageMarkup).toContain('/themes/star-wars');
@@ -341,6 +469,94 @@ describe('content article ui', () => {
     expect(pageMarkup).toContain('Koopadvies');
     expect(pageMarkup).toContain('Meer in Star Wars');
     expect(pageMarkup).toContain('Star Wars collector guide');
+  });
+
+  it('renders compact article rail cards without descriptions', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleCompactRail
+        contentArticles={[
+          {
+            cardImage:
+              'https://storage.example/article-images/popular-one.webp',
+            cardImageAlt: 'Popular one',
+            date: '2026-05-03',
+            description: 'Deze beschrijving hoort niet in de compacte rail.',
+            heroImageAlt: 'Popular one',
+            slug: 'popular-one',
+            status: 'published',
+            theme: 'Star Wars',
+            title: 'Populair artikel',
+          },
+          {
+            cardImageAlt: 'Popular two',
+            date: '2026-05-02',
+            description: 'Tweede beschrijving.',
+            heroImageAlt: 'Popular two',
+            slug: 'popular-two',
+            status: 'published',
+            title: 'Tweede populair artikel',
+          },
+        ]}
+        maxItems={1}
+        title="Populair deze week"
+      />,
+    );
+
+    expect(markup).toContain('Populair deze week');
+    expect(markup).toContain('POPULAIR');
+    expect(markup).toContain('data-content-section-shell="inverse"');
+    expect(markup).toContain('/artikelen/star-wars/popular-one');
+    expect(markup).toContain(
+      'https://storage.example/article-images/popular-one.webp',
+    );
+    expect(markup).toContain('Populair artikel');
+    expect(markup).not.toContain('Tweede populair artikel');
+    expect(markup).not.toContain(
+      'Deze beschrijving hoort niet in de compacte rail.',
+    );
+  });
+
+  it('uses the shared section shell rhythm for compact article rails', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/content/ui/src/lib/content-article-ui.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain('.sectionShell {');
+    expect(css).toContain('.sectionShellInverse {');
+    expect(css).toContain('.sectionShellPaddingDefault {');
+    expect(css).toContain('.sectionShellEyebrow {');
+    expect(css).toContain('background: #242424;');
+    expect(css).toContain(
+      'margin-inline: calc(-1 * var(--content-section-inline-padding));',
+    );
+    expect(css).toContain('@media (min-width: 72rem)');
+    expect(css).toContain(
+      'border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));',
+    );
+    expect(css).toContain('.compactCard {');
+    expect(css).toContain('background: var(--lego-surface-default);');
+    expect(css).toContain('color: var(--lego-text);');
+  });
+
+  it('uses a white article image frame with explicit cover and contain modes', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/content/ui/src/lib/content-article-ui.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain('.imageFrame {');
+    expect(css).toContain('background: #fff;');
+    expect(css).toContain('.imageFitCover {');
+    expect(css).toContain('object-fit: cover;');
+    expect(css).toContain('.imageFitContain {');
+    expect(css).toContain('object-fit: contain;');
   });
 
   it('renders the article page cleanly when no hero image is available', () => {
@@ -401,6 +617,269 @@ describe('content article ui', () => {
     expect(markup).toContain('data-article-image-fit="contain"');
     expect(markup).not.toContain('data-article-image-fit="cover"');
     expect(markup).not.toContain('Beste prijs nu');
+  });
+
+  it('opens the shared lightbox from FeaturedSet images without firing set_click', () => {
+    const gtag = vi.fn();
+    window.gtag = gtag;
+
+    act(() => {
+      root.render(
+        <ContentArticleFeaturedSet
+          articleSlug="spiny-shell-terug"
+          ctaHref="/sets/mario-kart-spiny-shell-40787"
+          imageAlt="Mario Kart Spiny Shell"
+          imageUrl="https://example.com/40787.png"
+          name="Mario Kart – Spiny Shell"
+          setNumber="40787"
+          theme="Super Mario"
+        />,
+      );
+    });
+
+    const lightboxButton = container.querySelector(
+      'button[data-featured-set-lightbox-trigger="true"]',
+    ) as HTMLButtonElement | null;
+
+    expect(lightboxButton).not.toBeNull();
+    expect(
+      container.querySelector('[data-featured-set-zoom-overlay="true"]'),
+    ).not.toBeNull();
+
+    act(() => {
+      lightboxButton?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(gtag).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-lightbox-active-index="0"]'),
+    ).not.toBeNull();
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          key: 'Escape',
+        }),
+      );
+    });
+
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+
+    act(() => {
+      lightboxButton?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    const backdrop = container.querySelector(
+      '[class*="lightboxBackdrop"]',
+    ) as HTMLElement | null;
+
+    act(() => {
+      backdrop?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+
+    const ctaLink = container.querySelector(
+      'a[href="/sets/mario-kart-spiny-shell-40787"]',
+    );
+
+    act(() => {
+      ctaLink?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(gtag).toHaveBeenCalledWith('event', 'set_click', {
+      article_slug: 'spiny-shell-terug',
+      set_id: '40787',
+      set_name: 'Mario Kart – Spiny Shell',
+      source: 'article',
+    });
+
+    delete window.gtag;
+  });
+
+  it('groups FeaturedSet and article gallery images in one article lightbox', () => {
+    const gtag = vi.fn();
+    window.gtag = gtag;
+
+    act(() => {
+      root.render(
+        <ContentArticlePage
+          body={
+            <>
+              <ContentArticleFeaturedSet
+                articleSlug="at-rt-driver-helmet"
+                ctaHref="/sets/imperial-remnant-at-rt-driver-helmet-75458"
+                imageAlt="Imperial Remnant AT-RT Driver Helmet"
+                imageUrl="https://images.example/75458.webp"
+                name="Imperial Remnant AT-RT Driver Helmet"
+                setNumber="75458"
+                theme="Star Wars"
+              />
+              <ContentArticleImageGallery
+                images={[
+                  {
+                    alt: 'Up-Scaled Darth Vader Minifigure',
+                    src: 'https://storage.example/articles/star-wars/darth-vader.webp',
+                  },
+                  {
+                    alt: 'AT-RT Driver Helmet zijaanzicht',
+                    src: 'https://storage.example/articles/star-wars/at-rt-side.webp',
+                  },
+                ]}
+              />
+            </>
+          }
+          contentArticle={{
+            bodySource: 'Star Wars nieuws.',
+            cardImageAlt: 'Star Wars',
+            date: '2026-06-01',
+            description: 'Nieuwe displaysets voor Star Wars-fans.',
+            heroImageAlt: 'Star Wars',
+            slug: 'at-rt-driver-helmet',
+            status: 'published',
+            theme: 'Star Wars',
+            title: 'Imperial Remnant AT-RT Driver Helmet onthuld',
+          }}
+        />,
+      );
+    });
+
+    const featuredLightboxButton = container.querySelector(
+      'button[data-featured-set-lightbox-trigger="true"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      featuredLightboxButton?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(gtag).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('1 / 3');
+    expect(
+      container.querySelector('[data-lightbox-active-index="0"]'),
+    ).not.toBeNull();
+    expect(container.textContent).toContain(
+      'Imperial Remnant AT-RT Driver Helmet · LEGO-set',
+    );
+    expect(
+      container.querySelectorAll('[class*="lightboxThumbButton"]'),
+    ).toHaveLength(3);
+
+    const closeButton = container.querySelector(
+      'button[aria-label="Sluit galerij"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      closeButton?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    const firstGalleryTile = container.querySelector(
+      '[data-gallery-tile-index="0"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      firstGalleryTile?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(gtag).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('2 / 3');
+    expect(
+      container.querySelector('[data-lightbox-active-index="1"]'),
+    ).not.toBeNull();
+
+    const featuredThumbnail = container.querySelector(
+      '[data-lightbox-thumb-index="0"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      featuredThumbnail?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(container.textContent).toContain('1 / 3');
+    expect(
+      container.querySelector('[data-lightbox-active-index="0"]'),
+    ).not.toBeNull();
+
+    const ctaLink = container.querySelector(
+      'a[href="/sets/imperial-remnant-at-rt-driver-helmet-75458"]',
+    );
+
+    act(() => {
+      ctaLink?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(gtag).toHaveBeenCalledWith('event', 'set_click', {
+      article_slug: 'at-rt-driver-helmet',
+      set_id: '75458',
+      set_name: 'Imperial Remnant AT-RT Driver Helmet',
+      source: 'article',
+    });
+
+    delete window.gtag;
+  });
+
+  it('uses the same desktop hover and mobile tap styling for FeaturedSet zoom', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/content/ui/src/lib/content-article-ui.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain('.featuredSetZoomOverlay {');
+    expect(css).toContain('@media (hover: hover) and (pointer: fine)');
+    expect(css).toContain(
+      '.featuredSetVisualButton:hover .featuredSetZoomOverlay,',
+    );
+    expect(css).toContain('@media (hover: none), (pointer: coarse)');
+    expect(css).toContain('display: none;');
   });
 
   it('tracks FeaturedSet set clicks with gtag without blocking navigation', () => {
@@ -509,7 +988,8 @@ describe('content article ui', () => {
           cardImageAlt: 'Icons hero',
           date: '2026-04-24',
           description: 'Welke grote displayset springt eruit?',
-          heroImage: '/articles/lego-icons-guide/hero.jpg',
+          heroImage:
+            'https://storage.example/article-images/lego-icons-guide/hero.webp',
           heroImageAlt: 'Icons hero',
           slug: 'lego-icons-guide',
           status: 'published',
@@ -573,11 +1053,11 @@ describe('content article ui', () => {
             alt: 'LEGO Star Wars Grogu als leerling van de Mandalorian',
             caption:
               'Een character-set die meteen opvalt in de aanloop naar May the 4th.',
-            src: '/articles/star-wars-day-2026/grogu.jpg',
+            src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
           },
           {
             alt: 'LEGO Star Wars The Razor Crest',
-            src: '/articles/star-wars-day-2026/razor-crest.jpg',
+            src: 'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
           },
         ]}
       />,
@@ -587,7 +1067,9 @@ describe('content article ui', () => {
     expect(markup).toContain('data-article-module="image-gallery"');
     expect(markup).toContain('data-article-width="editorial-media"');
     expect(markup).toContain('Artikelgalerij');
-    expect(markup).toContain('/articles/star-wars-day-2026/grogu.jpg');
+    expect(markup).toContain(
+      'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
+    );
     expect(markup).toContain(
       'Een character-set die meteen opvalt in de aanloop naar May the 4th.',
     );

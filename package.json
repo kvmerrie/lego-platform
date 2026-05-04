@@ -16,6 +16,7 @@
     "sync:lidl-feed": "pnpm nx run lidl-feed-sync:run",
     "sync:awin-feed": "pnpm nx run awin-feed-sync:run",
     "sync:coolblue-feed": "pnpm nx run awin-feed-sync:run",
+    "sync:goodbricks-feed": "pnpm nx run goodbricks-feed-sync:run",
     "sync:commerce:check": "pnpm sync:commerce:local:check",
     "sync:commerce:local:check": "pnpm nx run commerce-sync:run -- --check",
     "alerts:wishlist:check": "pnpm nx run wishlist-alerts:run -- --check",
@@ -122,6 +123,7 @@
     "photoswipe": "^5.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "rxjs": "~7.8.0"
+    "rxjs": "~7.8.0",
+    "sharp": "^0.34.5"
   }
 }

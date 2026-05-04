@@ -48,18 +48,43 @@ export interface PreviewPanel {
 
 export type ContentArticleStatus = 'draft' | 'published';
 
+export type ContentArticleHeroImageSource =
+  | 'manual'
+  | 'featuredSet'
+  | 'spotlight'
+  | 'rail'
+  | 'representativeThemeSet'
+  | 'themeTile';
+
+export type ContentArticleSourceDisplayMode =
+  | 'auto'
+  | 'hideSignalSource'
+  | 'showExplicitSource'
+  | 'showViaSource';
+
+export interface ContentArticleSourceAttribution {
+  imageCredit?: string;
+  label: string;
+  signalSourceName?: string;
+  tone: 'explicit' | 'subtle';
+}
+
 export interface ContentArticleListItem {
   bodySource?: string;
   cardImage?: string;
   cardImageAlt: string;
+  cardImageSource?: ContentArticleHeroImageSource;
   date: string;
   description: string;
   heroImage?: string;
   heroImageAlt: string;
+  heroImageSource?: ContentArticleHeroImageSource;
   primarySetNumber?: string;
   slug: string;
+  sourceAttribution?: ContentArticleSourceAttribution;
   status: ContentArticleStatus;
   theme?: string;
+  themeSlug?: string;
   title: string;
   updatedAt?: string;
 }
@@ -73,7 +98,11 @@ export interface ContentArticleFrontmatterInput {
   description: string;
   heroImage?: string;
   heroImageAlt?: string;
+  heroImageCredit?: string;
   slug?: string;
+  sourceDisplayMode?: ContentArticleSourceDisplayMode;
+  signalSource?: string;
+  signalSourceName?: string;
   sourceUrl?: string;
   status?: ContentArticleStatus;
   theme?: string;
@@ -82,9 +111,16 @@ export interface ContentArticleFrontmatterInput {
 }
 
 export interface ContentArticlePublishInput {
+  force?: boolean;
   frontmatter: ContentArticleFrontmatterInput;
   mdx: string;
   primarySetNumber?: string;
+}
+
+export interface ContentArticleNearDuplicateMatch {
+  reason: string;
+  slug: string;
+  title: string;
 }
 
 export interface ContentArticlePublishResult {
@@ -92,6 +128,76 @@ export interface ContentArticlePublishResult {
   revalidated: boolean;
   revalidationWarnings: readonly string[];
   slug: string;
+}
+
+const TRACKING_QUERY_PARAMS = [
+  'fbclid',
+  'gclid',
+  'mc_cid',
+  'mc_eid',
+  'utm_campaign',
+  'utm_content',
+  'utm_medium',
+  'utm_source',
+  'utm_term',
+] as const;
+
+export function normalizeEditorialSourceUrlForComparison(
+  value?: string,
+): string {
+  const trimmedValue = (value ?? '').trim();
+
+  if (!trimmedValue) {
+    return '';
+  }
+
+  try {
+    const url = new URL(trimmedValue);
+    url.hash = '';
+    url.hostname = url.hostname.toLowerCase();
+    url.protocol = 'https:';
+
+    for (const trackingParam of TRACKING_QUERY_PARAMS) {
+      url.searchParams.delete(trackingParam);
+    }
+
+    url.searchParams.sort();
+
+    return url.toString().replace(/\/+$/u, '');
+  } catch {
+    return trimmedValue.replace(/\/+$/u, '');
+  }
+}
+
+export interface AdminContentArticleSummary {
+  date: string;
+  slug: string;
+  status: ContentArticleStatus;
+  theme?: string;
+  title: string;
+  updatedAt: string;
+}
+
+export interface AdminContentArticleDetail extends AdminContentArticleSummary {
+  description: string;
+  frontmatter: ContentArticleFrontmatterInput;
+  heroImage?: string;
+  mdx: string;
+  publishedAt?: string;
+  theme?: string;
+}
+
+export interface AdminContentArticleUpdateInput {
+  frontmatter: ContentArticleFrontmatterInput;
+  mdx: string;
+}
+
+export interface AdminContentArticleDeleteSummary {
+  clearedFeedItems: number;
+  deletedArticle: boolean;
+  deletedEvents: number;
+  deletedPreviews: number;
+  deletedStorageObjects: number;
 }
 
 const PUBLIC_UNHELPFUL_THEME_LABELS = new Set(['other', 'unknown']);

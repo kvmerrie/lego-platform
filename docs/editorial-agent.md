@@ -153,6 +153,16 @@ Dat betekent:
 - die `primarySet` leiden we af uit de eerste `<FeaturedSet ... />` in het artikel
 - als ook daar geen beeld beschikbaar is, rendert het artikel zonder hero in plaats van te crashen
 
+In de admin kan een editor vóór publicatie handmatig een hero-afbeelding uploaden.
+
+- er wordt niets gescrapet van Brickset, BrickTastic of andere bronsites
+- upload alleen beeld dat Brickhunt mag gebruiken, zoals eigen beeld, gelicentieerd beeld of officieel bruikbaar persmateriaal
+- jpg, png en webp uploads worden vóór opslag omgezet naar `webp`
+- de afbeelding wordt proportioneel verkleind naar maximaal 1600px breed; er wordt standaard niet gecropt
+- de upload gaat naar de Supabase Storage bucket `article-images`
+- de publieke URL van `articles/{slug}/hero.webp` wordt opgeslagen in `frontmatter.heroImage`
+- verwijderen van de handmatige hero zet `heroImage` leeg, waarna de bestaande catalogusfallback weer geldt
+
 ## URL extraction in fase 2a
 
 De adminflow kan nu een publieke nieuws-URL analyseren en server-side facts teruggeven.

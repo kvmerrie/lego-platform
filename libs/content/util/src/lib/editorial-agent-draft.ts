@@ -46,6 +46,11 @@ type EditorialDraftTemplateKind =
   | 'single_set'
   | 'deal'
   | 'unknown';
+type ThemeToneCopyContext =
+  | 'announcement_audience'
+  | 'announcement_conclusion'
+  | 'announcement_description'
+  | 'announcement_intro';
 
 const SINGLE_SET_ANNOUNCEMENT_TERMS = [
   'verschijnt',
@@ -68,6 +73,88 @@ const SINGLE_SET_DECISION_TERMS = [
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/gu, ' ').trim();
+}
+
+function normalizeThemeToneKey(
+  theme: string,
+  context = '',
+): 'harry_potter' | 'lord_of_the_rings' | 'star_wars' | null {
+  const normalizedValue = normalizeWhitespace(`${theme} ${context}`)
+    .toLowerCase()
+    .replace(/[™®]/gu, '');
+
+  if (normalizedValue.includes('star wars')) {
+    return 'star_wars';
+  }
+
+  if (normalizedValue.includes('harry potter')) {
+    return 'harry_potter';
+  }
+
+  if (
+    normalizedValue.includes('lord of the rings') ||
+    normalizedValue.includes('middle-earth') ||
+    normalizedValue.includes('rivendell') ||
+    normalizedValue.includes('barad') ||
+    normalizedValue.includes('shire')
+  ) {
+    return 'lord_of_the_rings';
+  }
+
+  return null;
+}
+
+function hasEnoughThemeToneConfidence(theme: string, context: string): boolean {
+  return Boolean(normalizeThemeToneKey(theme, context));
+}
+
+export function getThemeToneCopy(
+  theme: string,
+  context: ThemeToneCopyContext,
+): string | null {
+  const themeToneKey = normalizeThemeToneKey(theme);
+
+  if (!themeToneKey) {
+    return null;
+  }
+
+  const copyByThemeAndContext: Record<
+    NonNullable<ReturnType<typeof normalizeThemeToneKey>>,
+    Record<ThemeToneCopyContext, string>
+  > = {
+    harry_potter: {
+      announcement_audience:
+        'Voor Harry Potter-fans zit de lol vooral in Hogwarts, herkenbare scènes en dat displaygevoel van een klein diorama.',
+      announcement_conclusion:
+        'Zet hem vooral op je radar als Hogwarts, scènes en herkenbare momenten het deel van Harry Potter zijn waar je collectie sterker van wordt.',
+      announcement_description:
+        'Voor Harry Potter-fans is dit vooral interessant door de Hogwarts-sfeer, herkenbare scènes en het displaygevoel.',
+      announcement_intro:
+        'De haak zit hier in Hogwarts-herkenning: scènes, kleine details en dat diorama-gevoel dat meteen aan de films doet denken.',
+    },
+    lord_of_the_rings: {
+      announcement_audience:
+        'Voor Lord of the Rings-fans draait dit om Middle-earth, sterke locaties en epische scènes die als display blijven werken.',
+      announcement_conclusion:
+        'Volg hem vooral als Middle-earth-locaties en epische scènes precies zijn wat je op de plank wilt zien.',
+      announcement_description:
+        'Voor Lord of the Rings-fans is dit vooral interessant door Middle-earth, herkenbare locaties en epische displaywaarde.',
+      announcement_intro:
+        'De haak zit hier in Middle-earth: locaties, sfeer en epische scènes die als displaystuk kunnen blijven hangen.',
+    },
+    star_wars: {
+      announcement_audience:
+        'Voor Star Wars-fans is dit vooral leuk als je deze lijn spaart of iets hebt met Imperial, Rebel of trooper designs.',
+      announcement_conclusion:
+        'Zet hem vooral op je radar als je deze lijn spaart of graag Star Wars-designs met duidelijke displaywaarde neerzet.',
+      announcement_description:
+        'Voor Star Wars-fans is dit vooral interessant als je deze lijn spaart of iets hebt met displaysets, Imperial/Rebel-details of trooper designs.',
+      announcement_intro:
+        'De haak zit hier in displaywaarde: denk aan Helmet Collection-energie, strakke Star Wars-vormen en Imperial/Rebel vibes.',
+    },
+  };
+
+  return copyByThemeAndContext[themeToneKey][context];
 }
 
 export function capitalizeSentenceStart(value: string): string {
@@ -559,6 +646,87 @@ function resolveTitle(input: EditorialAgentDraftGenerationInput): string {
   return 'LEGO nieuwsartikel';
 }
 
+function cleanConciseSetTitleSubject(value: string): string {
+  return normalizeWhitespace(value)
+    .replace(/^lego\s+/iu, '')
+    .replace(
+      /^(?:star wars|icons|marvel|harry potter|super mario|sonic(?:\s+the\s+hedgehog)?|technic|city|ideas|creator(?:\s+3in1)?|disney)\s+/iu,
+      '',
+    )
+    .replace(/^\d{4,6}(?:-\d+)?\s+/u, '')
+    .replace(/\s*\((?:lego\s*)?\d{4,6}(?:-\d+)?\)\s*$/iu, '')
+    .replace(/^star trek:\s*/iu, 'Star Trek ')
+    .replace(/\s+NCC-\d+(?:-[A-Z])?\b/gu, '')
+    .replace(/\s+set\b/giu, '')
+    .replace(/\s{2,}/gu, ' ')
+    .trim();
+}
+
+function resolveConciseSingleSetTitleAction(
+  title: string,
+  articleType: EditorialAgentArticleType,
+): string {
+  const normalizedTitle = normalizeWhitespace(title);
+
+  if (articleType === 'deal') {
+    return 'deal';
+  }
+
+  if (/\bonthuld\b/iu.test(normalizedTitle)) {
+    return 'onthuld';
+  }
+
+  if (/\baangekondigd\b/iu.test(normalizedTitle)) {
+    return 'aangekondigd';
+  }
+
+  if (/\bverschijnt\b/iu.test(normalizedTitle)) {
+    return 'verschijnt';
+  }
+
+  if (/\buitverkocht\b/iu.test(normalizedTitle)) {
+    return 'uitverkocht';
+  }
+
+  if (/\b(?:terug|opnieuw beschikbaar)\b/iu.test(normalizedTitle)) {
+    return 'terug';
+  }
+
+  return 'aangekondigd';
+}
+
+function formatConciseArticleTitle({
+  input,
+  title,
+}: {
+  input: EditorialAgentDraftGenerationInput;
+  title: string;
+}): string {
+  if (
+    !input.primarySet ||
+    (input.matching.articleType !== 'single_set_news' &&
+      input.matching.articleType !== 'deal')
+  ) {
+    return title;
+  }
+
+  const subject =
+    cleanConciseSetTitleSubject(input.primarySet.name) ||
+    cleanConciseSetTitleSubject(
+      getSetDisplayNameForDraft(input.primarySet, input.facts, input.source),
+    );
+  const action = resolveConciseSingleSetTitleAction(
+    title,
+    input.matching.articleType,
+  );
+
+  if (!subject) {
+    return title;
+  }
+
+  return `${subject} ${action}`;
+}
+
 function resolveMonthLabel(input: EditorialAgentDraftGenerationInput): string {
   const signal = input.detected.dateSignals[0] ?? input.facts.releaseDate;
   const isoMatch = signal.match(/\b(20\d{2})-(\d{2})-\d{2}\b/u);
@@ -674,6 +842,39 @@ function isFullHeadlineSubject(
   return titles.some((title) => normalizedSubject === title);
 }
 
+function subjectMatchesTitleByTokens(
+  subject: string,
+  titleContext: string,
+): boolean {
+  const stopWords = new Set([
+    'and',
+    'de',
+    'driver',
+    'en',
+    'het',
+    'imperial',
+    'lego',
+    'minifigure',
+    'remnant',
+    'set',
+    'sets',
+    'the',
+    'van',
+  ]);
+  const tokens = normalizeWhitespace(subject)
+    .toLowerCase()
+    .split(/[^a-z0-9-]+/u)
+    .filter((token) => token.length >= 2 && !stopWords.has(token));
+
+  if (tokens.length === 0) {
+    return false;
+  }
+
+  const matchedTokens = tokens.filter((token) => titleContext.includes(token));
+
+  return matchedTokens.length >= Math.min(2, tokens.length);
+}
+
 function summarizeF1HelmetSubjects(
   input: EditorialAgentDraftGenerationInput,
 ): string {
@@ -714,10 +915,7 @@ function getMultiSetTitleSubjects(
       .filter(Boolean)
       .join(' '),
   ).toLowerCase();
-  const candidates = [
-    ...input.facts.setNames,
-    ...input.matching.matchedSets.map((set) => set.name),
-  ]
+  const factNameCandidates = input.facts.setNames
     .map(cleanMultiSetSubjectName)
     .filter(
       (name) =>
@@ -726,6 +924,16 @@ function getMultiSetTitleSubjects(
         (titleContext.includes(name.toLowerCase()) ||
           input.facts.setNames.includes(name)),
     );
+  const matchedSetCandidates = input.matching.matchedSets
+    .map((set) => cleanMultiSetSubjectName(set.name))
+    .filter(
+      (name) =>
+        name.length > 0 &&
+        !isFullHeadlineSubject(name, input) &&
+        (titleContext.includes(name.toLowerCase()) ||
+          subjectMatchesTitleByTokens(name, titleContext)),
+    );
+  const candidates = [...factNameCandidates, ...matchedSetCandidates];
 
   return [...new Set(candidates)].slice(0, 4);
 }
@@ -851,6 +1059,7 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
     input.facts,
     input.source,
   );
+  const themeToneContext = buildSingleSetDraftContext(input);
   const singleSetTone = getSingleSetDraftTone(input);
   const releaseLabel =
     input.facts.releaseDate || input.detected.dateSignals[0] || '';
@@ -898,6 +1107,22 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
       return `${getMultiSetAnnouncementDisplayName(input)} laat een opvallende richting zien voor meerdere nieuwe LEGO-sets. Vooral leuk om te volgen welke set er straks echt uitspringt.`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
+        const themeToneCopy = hasEnoughThemeToneConfidence(
+          resolveTheme(input),
+          themeToneContext,
+        )
+          ? getThemeToneCopy(
+              `${resolveTheme(input)} ${themeToneContext}`,
+              'announcement_description',
+            )
+          : null;
+
+        if (themeToneCopy) {
+          return releaseLabel
+            ? `${setName} is aangekondigd als LEGO-release voor ${releaseLabel}. ${themeToneCopy}`
+            : `${setName} is aangekondigd als nieuwe LEGO-set. ${themeToneCopy}`;
+        }
+
         return releaseLabel
           ? `${setName} is aangekondigd als LEGO-release voor ${releaseLabel}. Vooral iets om rustig te volgen als dit thema, object of deze wereld je meteen iets doet.`
           : `${setName} is aangekondigd als nieuwe LEGO-set. Vooral iets om rustig te volgen als dit thema, object of deze wereld je meteen iets doet.`;
@@ -956,7 +1181,10 @@ function buildFrontmatter(
   input: EditorialAgentDraftGenerationInput,
   articleDate: string,
 ): EditorialAgentArticleFrontmatter {
-  const title = resolveTitle(input);
+  const title = formatConciseArticleTitle({
+    input,
+    title: resolveTitle(input),
+  });
 
   return {
     date: articleDate,
@@ -966,11 +1194,27 @@ function buildFrontmatter(
       ? `LEGO ${input.primarySet.name} setbeeld`
       : title,
     slug: slugify(title),
+    signalSourceName: getSignalSourceName(input.source.domain),
+    sourceDisplayMode: 'auto',
     sourceUrl: resolveSourceUrl(input),
     status: 'draft',
     theme: resolveTheme(input),
     title,
   };
+}
+
+function getSignalSourceName(domain: string): string | undefined {
+  const normalizedDomain = domain.toLowerCase();
+
+  if (normalizedDomain.includes('brickset.com')) {
+    return 'Brickset';
+  }
+
+  if (normalizedDomain.includes('bricktastic.nl')) {
+    return 'BrickTastic';
+  }
+
+  return domain || undefined;
 }
 
 function toSetPreview(
@@ -1106,6 +1350,7 @@ function buildConclusionSection(
     input.source,
   );
   const singleSetTone = getSingleSetDraftTone(input);
+  const themeToneContext = buildSingleSetDraftContext(input);
 
   switch (input.matching.articleType) {
     case 'gwp_reward':
@@ -1138,6 +1383,22 @@ Dit nieuws is vooral leuk om te volgen. ${capitalizeSentenceStart(getMultiSetAnn
 ${capitalizeSentenceStart(resolveMonthLabel(input))} is vooral een leuke maand om door de nieuwe releases te bladeren. Niet alles hoeft meteen mee, maar er staan genoeg sets tussen waar je spontaan even voor wilt doorklikken.`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
+        const themeToneCopy = hasEnoughThemeToneConfidence(
+          resolveTheme(input),
+          themeToneContext,
+        )
+          ? getThemeToneCopy(
+              `${resolveTheme(input)} ${themeToneContext}`,
+              'announcement_conclusion',
+            )
+          : null;
+
+        if (themeToneCopy) {
+          return `## Korte conclusie
+
+${shortName} is vooral een leuke aankondiging om in de gaten te houden. ${themeToneCopy}`;
+        }
+
         return `## Korte conclusie
 
 ${shortName} is vooral een leuke aankondiging om in de gaten te houden. Nog geen set waar je nu al iets op hoeft te forceren, wel eentje om te onthouden als deze wereld of dit object je meteen iets doet.`;
@@ -1163,6 +1424,7 @@ function buildIntroParagraphs(
     input.source,
   );
   const theme = resolveTheme(input);
+  const themeToneContext = buildSingleSetDraftContext(input);
   const singleSetTone = getSingleSetDraftTone(input);
   const releaseLabel =
     input.facts.releaseDate || input.detected.dateSignals[0] || '';
@@ -1235,6 +1497,27 @@ function buildIntroParagraphs(
       ].map(capitalizeSentenceStart);
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
+        const themeToneCopy = hasEnoughThemeToneConfidence(
+          theme,
+          themeToneContext,
+        )
+          ? getThemeToneCopy(
+              `${theme} ${themeToneContext}`,
+              'announcement_intro',
+            )
+          : null;
+
+        if (themeToneCopy) {
+          return [
+            `${
+              releaseLabel
+                ? `${setName} krijgt een LEGO-release op ${releaseLabel}.`
+                : `${setName} is aangekondigd als nieuwe LEGO-set.`
+            } ${themeToneCopy}`,
+            `Dit is geen artikel waarbij je meteen hoeft te beslissen. Zie het vooral als iets om rustig te volgen als ${theme === 'LEGO' ? 'deze set' : `${theme}-sets`} je normaal gesproken toch al trekken.`,
+          ];
+        }
+
         return [
           `${
             releaseLabel
@@ -1355,10 +1638,14 @@ Zonder duidelijke hoofdkeuze draait het nu vooral om vergelijken: welke ideeën 
     input.source,
   );
   const theme = resolveTheme(input);
+  const themeToneContext = buildSingleSetDraftContext(input);
+  const themeToneCopy = hasEnoughThemeToneConfidence(theme, themeToneContext)
+    ? getThemeToneCopy(`${theme} ${themeToneContext}`, 'announcement_audience')
+    : null;
 
   return `## Voor wie is dit leuk?
 
-Deze aankondiging is vooral leuk voor fans van ${theme === 'LEGO' ? 'dit soort sets' : theme} en voor verzamelaars die graag vroeg zien welke nieuwe dozen eraan komen.
+${themeToneCopy || `Deze aankondiging is vooral leuk voor fans van ${theme === 'LEGO' ? 'dit soort sets' : theme} en voor verzamelaars die graag vroeg zien welke nieuwe dozen eraan komen.`}
 
 Zoek je vooral naar sets die meteen iets herkenbaars op de plank zetten, dan is ${setName} precies het soort release waar je even voor blijft hangen.`;
 }
@@ -1392,14 +1679,15 @@ function buildReleaseRoundupJumpLink(hasSpotlightBlock: boolean): string {
 }
 
 function buildSourceLine(input: EditorialAgentDraftGenerationInput): string {
-  const sourceUrl = resolveSourceUrl(input);
-  const sourceDomain = input.source.domain || 'bron';
+  const sourceName = getSignalSourceName(input.source.domain);
 
   if (isBricksetWeakMultiSetDraft(input)) {
-    return `Via: ${sourceDomain}`;
+    return sourceName
+      ? `Via: ${sourceName}`
+      : 'Bronnen: officiële setinformatie.';
   }
 
-  return `Bron: [${sourceDomain}](${sourceUrl})`;
+  return 'Bronnen: officiële setinformatie en openbare berichtgeving.';
 }
 
 export function generateEditorialMdxDraft(
@@ -1461,7 +1749,7 @@ export function generateEditorialMdxDraft(
   const cleanDescription = cleanPublicDraftCopy(
     frontmatter.description,
   ).replace(/\bheeft de LEGO\b/gu, 'heeft LEGO');
-  const frontmatterBlock = `---\ntitle: "${escapeFrontmatterValue(frontmatter.title)}"\nslug: "${frontmatter.slug}"\ndescription: "${escapeFrontmatterValue(cleanDescription)}"\ndate: "${frontmatter.date}"\ntheme: "${escapeFrontmatterValue(frontmatter.theme)}"\nheroImage: "${frontmatter.heroImage}"\nheroImageAlt: "${escapeFrontmatterValue(frontmatter.heroImageAlt)}"\nstatus: "${frontmatter.status}"\nsourceUrl: "${frontmatter.sourceUrl}"\n---`;
+  const frontmatterBlock = `---\ntitle: "${escapeFrontmatterValue(frontmatter.title)}"\nslug: "${frontmatter.slug}"\ndescription: "${escapeFrontmatterValue(cleanDescription)}"\ndate: "${frontmatter.date}"\ntheme: "${escapeFrontmatterValue(frontmatter.theme)}"\nheroImage: "${frontmatter.heroImage}"\nheroImageAlt: "${escapeFrontmatterValue(frontmatter.heroImageAlt)}"\nstatus: "${frontmatter.status}"\nsourceUrl: "${frontmatter.sourceUrl}"\nsourceDisplayMode: "${frontmatter.sourceDisplayMode}"\nsignalSourceName: "${escapeFrontmatterValue(frontmatter.signalSourceName ?? '')}"\n---`;
 
   let sections: string[];
 
@@ -1493,6 +1781,7 @@ export function generateEditorialMdxDraft(
           buildMidSection(input),
           buildWhenToBuySection(input),
           buildAnnouncementAudienceSection(input),
+          ...(relatedSetRail ? [relatedSetRail] : []),
           buildConclusionSection(input),
           buildSourceLine(input),
         ];
@@ -1505,6 +1794,7 @@ export function generateEditorialMdxDraft(
         featuredSetBlock,
         buildWhenToBuySection(input),
         buildMidSection(input),
+        ...(relatedSetRail ? [buildAnnouncementAudienceSection(input)] : []),
         ...(relatedSetRail ? [relatedSetRail] : []),
         buildConclusionSection(input),
         buildSourceLine(input),

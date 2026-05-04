@@ -1,5 +1,3 @@
-import { access, readFile, readdir } from 'node:fs/promises';
-import path from 'node:path';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import matter from 'gray-matter';
 import {
@@ -17,83 +15,21 @@ import {
   hasServerSupabaseConfig,
 } from '@lego-platform/shared/config';
 
-const WORKSPACE_ROOT_MARKERS = ['pnpm-workspace.yaml', 'nx.json'] as const;
 const ARTICLES_TABLE_NAME = 'articles';
+const ARTICLE_EVENTS_TABLE_NAME = 'article_events';
+const ARTICLE_PREVIEWS_TABLE_NAME = 'article_previews';
+const ARTICLE_EVENT_SELECT_FIELDS = 'slug';
+const ARTICLE_ROW_SELECT_FIELDS =
+  'created_at, frontmatter, mdx, published_at, slug, status, title, updated_at';
+const ARTICLE_PREVIEW_ROW_SELECT_FIELDS =
+  'created_at, expires_at, frontmatter, id, mdx';
 
-let hasWarnedMissingContentDirectory = false;
 let contentArticlesSupabaseAdminClient: SupabaseClient | undefined;
 let contentArticlesSupabasePublicClient: SupabaseClient | undefined;
 
-async function pathExists(absolutePath: string): Promise<boolean> {
-  try {
-    await access(absolutePath);
-
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function resolveWorkspaceRoot(
-  startDirectory = process.cwd(),
-): Promise<string> {
-  let currentDirectory = path.resolve(startDirectory);
-
-  for (;;) {
-    const hasWorkspaceMarker = await Promise.all(
-      WORKSPACE_ROOT_MARKERS.map((marker) =>
-        pathExists(path.join(currentDirectory, marker)),
-      ),
-    );
-
-    if (hasWorkspaceMarker.every(Boolean)) {
-      return currentDirectory;
-    }
-
-    const parentDirectory = path.dirname(currentDirectory);
-
-    if (parentDirectory === currentDirectory) {
-      return path.resolve(startDirectory);
-    }
-
-    currentDirectory = parentDirectory;
-  }
-}
-
-async function getContentArticlesDirectory(
-  contentDirectory?: string,
-): Promise<string> {
-  if (contentDirectory) {
-    return contentDirectory;
-  }
-
-  return path.join(await resolveWorkspaceRoot(), 'content', 'articles');
-}
-
-async function getWebPublicDirectory(): Promise<string> {
-  return path.join(await resolveWorkspaceRoot(), 'apps', 'web', 'public');
-}
-
-function warnMissingContentDirectory(contentDirectory: string): void {
-  if (hasWarnedMissingContentDirectory) {
-    return;
-  }
-
-  hasWarnedMissingContentDirectory = true;
-  console.warn(
-    `Content articles directory not found at "${contentDirectory}". Published article queries will return no results until the directory exists.`,
-  );
-}
-
 export function resetContentArticleQueryStateForTests(): void {
-  hasWarnedMissingContentDirectory = false;
   contentArticlesSupabaseAdminClient = undefined;
   contentArticlesSupabasePublicClient = undefined;
-}
-
-export interface ContentArticleSourceFile {
-  filename: string;
-  source: string;
 }
 
 export interface ContentArticleSupabaseRow {
@@ -107,13 +43,22 @@ export interface ContentArticleSupabaseRow {
   updated_at: string;
 }
 
+export interface ContentArticlePreviewSupabaseRow {
+  created_at: string;
+  expires_at: string;
+  frontmatter: Record<string, unknown> | null;
+  id: string;
+  mdx: string;
+}
+
 type ContentArticleSupabaseClient = Pick<SupabaseClient, 'from'>;
+type ArticleEventName = 'article_click' | 'set_click';
+
+interface ArticleEventRow {
+  slug: string;
+}
 
 export interface ContentArticleQueryOptions {
-  articleFiles?: readonly ContentArticleSourceFile[];
-  assetExistsFn?: (absolutePath: string) => Promise<boolean>;
-  contentDirectory?: string;
-  includeSupabase?: boolean;
   supabaseClient?: ContentArticleSupabaseClient;
 }
 
@@ -124,7 +69,15 @@ interface ParsedContentArticleFrontmatter {
   description: string;
   heroImage?: string;
   heroImageAlt?: string;
+  heroImageCredit?: string;
   slug: string;
+  sourceDisplayMode?:
+    | 'auto'
+    | 'hideSignalSource'
+    | 'showExplicitSource'
+    | 'showViaSource';
+  signalSourceName?: string;
+  sourceUrl?: string;
   status: ContentArticleStatus;
   theme?: string;
   title: string;
@@ -137,6 +90,91 @@ function isNonEmptyString(value: unknown): value is string {
 
 function normalizeOptionalString(value: unknown): string | undefined {
   return isNonEmptyString(value) ? value.trim() : undefined;
+}
+
+function normalizeArticleSourceDisplayMode(
+  value: unknown,
+): ParsedContentArticleFrontmatter['sourceDisplayMode'] {
+  return value === 'hideSignalSource' ||
+    value === 'showExplicitSource' ||
+    value === 'showViaSource'
+    ? value
+    : 'auto';
+}
+
+function getSourceNameFromUrl(sourceUrl?: string): string | undefined {
+  if (!sourceUrl) {
+    return undefined;
+  }
+
+  try {
+    const hostname = new URL(sourceUrl).hostname.replace(/^www\./u, '');
+
+    if (hostname.includes('brickset.com')) {
+      return 'Brickset';
+    }
+
+    if (hostname.includes('bricktastic.nl')) {
+      return 'BrickTastic';
+    }
+
+    return hostname;
+  } catch {
+    return undefined;
+  }
+}
+
+function stripLegacySourceAttribution(bodySource: string): string {
+  return bodySource
+    .replace(
+      /\n{0,2}(?:(?:Bron|Via):|Bronnen:)\s*(?:\[[^\]]+\]\([^)]+\)|[^\n]+)\s*$/iu,
+      '',
+    )
+    .trim();
+}
+
+function resolveContentArticleSourceAttribution(
+  frontmatter: ParsedContentArticleFrontmatter,
+) {
+  const signalSourceName =
+    frontmatter.signalSourceName ?? getSourceNameFromUrl(frontmatter.sourceUrl);
+
+  if (
+    frontmatter.sourceDisplayMode === 'showExplicitSource' &&
+    signalSourceName
+  ) {
+    return {
+      ...(frontmatter.heroImageCredit
+        ? { imageCredit: frontmatter.heroImageCredit }
+        : {}),
+      label: `Bronnen: officiële setinformatie en ${signalSourceName}.`,
+      signalSourceName,
+      tone: 'explicit' as const,
+    };
+  }
+
+  if (frontmatter.sourceDisplayMode === 'showViaSource' && signalSourceName) {
+    return {
+      ...(frontmatter.heroImageCredit
+        ? { imageCredit: frontmatter.heroImageCredit }
+        : {}),
+      label: `Via: ${signalSourceName}`,
+      signalSourceName,
+      tone: 'subtle' as const,
+    };
+  }
+
+  return {
+    ...(frontmatter.heroImageCredit
+      ? { imageCredit: frontmatter.heroImageCredit }
+      : {}),
+    label:
+      frontmatter.sourceDisplayMode === 'hideSignalSource'
+        ? 'Bronnen: officiële setinformatie.'
+        : 'Bronnen: officiële setinformatie en openbare berichtgeving.',
+    ...(signalSourceName ? { signalSourceName } : {}),
+    tone: 'subtle' as const,
+  };
 }
 
 function readRequiredStringField(
@@ -184,7 +222,15 @@ function parseContentArticleFrontmatter({
     description: readRequiredStringField(frontmatter, 'description', filename),
     heroImage: normalizeOptionalString(frontmatter['heroImage']),
     heroImageAlt: normalizeOptionalString(frontmatter['heroImageAlt']),
+    heroImageCredit: normalizeOptionalString(frontmatter['heroImageCredit']),
     slug: readRequiredStringField(frontmatter, 'slug', filename),
+    sourceDisplayMode: normalizeArticleSourceDisplayMode(
+      frontmatter['sourceDisplayMode'],
+    ),
+    signalSourceName:
+      normalizeOptionalString(frontmatter['signalSourceName']) ??
+      normalizeOptionalString(frontmatter['signalSource']),
+    sourceUrl: normalizeOptionalString(frontmatter['sourceUrl']),
     status: readStatusField(frontmatter, filename),
     theme: normalizePublicContentArticleTheme(
       normalizeOptionalString(frontmatter['theme']),
@@ -194,69 +240,12 @@ function parseContentArticleFrontmatter({
   };
 }
 
-async function defaultAssetExists(absolutePath: string): Promise<boolean> {
-  return pathExists(absolutePath);
-}
-
-async function resolvePublicAssetPath({
-  assetExistsFn,
-  publicPath,
-}: {
-  assetExistsFn: (absolutePath: string) => Promise<boolean>;
-  publicPath?: string;
-}): Promise<string | undefined> {
-  if (!publicPath?.startsWith('/')) {
-    return undefined;
-  }
-
-  const normalizedRelativePath = publicPath.replace(/^\/+/, '');
-  const absolutePath = path.join(
-    await getWebPublicDirectory(),
-    normalizedRelativePath,
-  );
-
-  return (await assetExistsFn(absolutePath)) ? publicPath : undefined;
-}
-
-async function listContentArticleSourceFiles({
-  articleFiles,
-  contentDirectory,
-}: ContentArticleQueryOptions): Promise<readonly ContentArticleSourceFile[]> {
-  if (articleFiles) {
-    return articleFiles;
-  }
-
-  const resolvedContentDirectory =
-    await getContentArticlesDirectory(contentDirectory);
-
-  try {
-    const entries = await readdir(resolvedContentDirectory, {
-      withFileTypes: true,
-    });
-    const filenames = entries
-      .filter(
-        (entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.mdx'),
-      )
-      .map((entry) => entry.name)
-      .sort((left, right) => left.localeCompare(right, 'nl-NL'));
-
-    return Promise.all(
-      filenames.map(async (filename) => ({
-        filename,
-        source: await readFile(
-          path.join(resolvedContentDirectory, filename),
-          'utf8',
-        ),
-      })),
-    );
-  } catch (error) {
-    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-      warnMissingContentDirectory(resolvedContentDirectory);
-      return [];
-    }
-
-    return [];
-  }
+function resolveStoredArticleImagePath(
+  publicPath?: string,
+): string | undefined {
+  return publicPath?.startsWith('https://') || publicPath?.startsWith('http://')
+    ? publicPath
+    : undefined;
 }
 
 function createContentArticlesSupabaseAdminClient(): SupabaseClient {
@@ -317,58 +306,11 @@ function getContentArticlesSupabaseReadClient():
   return undefined;
 }
 
-async function parseContentArticleSourceFile({
-  articleFile,
-  assetExistsFn,
-}: {
-  articleFile: ContentArticleSourceFile;
-  assetExistsFn: (absolutePath: string) => Promise<boolean>;
-}): Promise<ContentArticle> {
-  const { content, data } = matter(articleFile.source);
-  const trimmedBodySource = content.trim();
-  const parsedFrontmatter = parseContentArticleFrontmatter({
-    filename: articleFile.filename,
-    frontmatter:
-      typeof data === 'object' && data !== null
-        ? (data as Record<string, unknown>)
-        : {},
-  });
-  const resolvedHeroImage = await resolvePublicAssetPath({
-    assetExistsFn,
-    publicPath: parsedFrontmatter.heroImage,
-  });
-  const resolvedCardImage = await resolvePublicAssetPath({
-    assetExistsFn,
-    publicPath: parsedFrontmatter.cardImage,
-  });
-
-  return {
-    bodySource: trimmedBodySource,
-    cardImage: resolvedCardImage ?? resolvedHeroImage,
-    cardImageAlt:
-      parsedFrontmatter.cardImageAlt ??
-      parsedFrontmatter.heroImageAlt ??
-      parsedFrontmatter.title,
-    date: parsedFrontmatter.date,
-    description: parsedFrontmatter.description,
-    heroImage: resolvedHeroImage,
-    heroImageAlt: parsedFrontmatter.heroImageAlt ?? parsedFrontmatter.title,
-    primarySetNumber: extractPrimarySetNumberFromArticleBody(trimmedBodySource),
-    slug: parsedFrontmatter.slug,
-    status: parsedFrontmatter.status,
-    theme: parsedFrontmatter.theme,
-    title: parsedFrontmatter.title,
-    updatedAt: parsedFrontmatter.updatedAt,
-  };
-}
-
-async function parseContentArticleSupabaseRow({
-  assetExistsFn,
+function parseContentArticleSupabaseRow({
   row,
 }: {
-  assetExistsFn: (absolutePath: string) => Promise<boolean>;
   row: ContentArticleSupabaseRow;
-}): Promise<ContentArticle> {
+}): ContentArticle {
   const parsedMdx = matter(row.mdx);
   const frontmatter =
     row.frontmatter && typeof row.frontmatter === 'object'
@@ -395,7 +337,13 @@ async function parseContentArticleSupabaseRow({
         normalizeOptionalString(mergedFrontmatter['description']) ?? row.title,
       heroImage: mergedFrontmatter['heroImage'],
       heroImageAlt: mergedFrontmatter['heroImageAlt'],
+      heroImageCredit: mergedFrontmatter['heroImageCredit'],
       slug: mergedFrontmatter['slug'],
+      sourceDisplayMode: mergedFrontmatter['sourceDisplayMode'],
+      signalSourceName:
+        mergedFrontmatter['signalSourceName'] ??
+        mergedFrontmatter['signalSource'],
+      sourceUrl: mergedFrontmatter['sourceUrl'],
       status: mergedFrontmatter['status'],
       theme: mergedFrontmatter['theme'],
       title: mergedFrontmatter['title'],
@@ -404,15 +352,15 @@ async function parseContentArticleSupabaseRow({
         row.updated_at,
     },
   });
-  const trimmedBodySource = parsedMdx.content.trim();
-  const resolvedHeroImage = await resolvePublicAssetPath({
-    assetExistsFn,
-    publicPath: parsedFrontmatter.heroImage,
-  });
-  const resolvedCardImage = await resolvePublicAssetPath({
-    assetExistsFn,
-    publicPath: parsedFrontmatter.cardImage,
-  });
+  const trimmedBodySource = stripLegacySourceAttribution(
+    parsedMdx.content.trim(),
+  );
+  const resolvedHeroImage = resolveStoredArticleImagePath(
+    parsedFrontmatter.heroImage,
+  );
+  const resolvedCardImage = resolveStoredArticleImagePath(
+    parsedFrontmatter.cardImage,
+  );
 
   return {
     bodySource: trimmedBodySource,
@@ -421,12 +369,97 @@ async function parseContentArticleSupabaseRow({
       parsedFrontmatter.cardImageAlt ??
       parsedFrontmatter.heroImageAlt ??
       parsedFrontmatter.title,
+    cardImageSource:
+      resolvedCardImage || resolvedHeroImage ? 'manual' : undefined,
     date: parsedFrontmatter.date,
     description: parsedFrontmatter.description,
     heroImage: resolvedHeroImage,
     heroImageAlt: parsedFrontmatter.heroImageAlt ?? parsedFrontmatter.title,
+    heroImageSource: resolvedHeroImage ? 'manual' : undefined,
     primarySetNumber: extractPrimarySetNumberFromArticleBody(trimmedBodySource),
     slug: parsedFrontmatter.slug,
+    sourceAttribution:
+      resolveContentArticleSourceAttribution(parsedFrontmatter),
+    status: parsedFrontmatter.status,
+    theme: parsedFrontmatter.theme,
+    title: parsedFrontmatter.title,
+    updatedAt: parsedFrontmatter.updatedAt,
+  };
+}
+
+function parseContentArticlePreviewSupabaseRow({
+  row,
+}: {
+  row: ContentArticlePreviewSupabaseRow;
+}): ContentArticle {
+  const parsedMdx = matter(row.mdx);
+  const frontmatter =
+    row.frontmatter && typeof row.frontmatter === 'object'
+      ? row.frontmatter
+      : {};
+  const mergedFrontmatter: Record<string, unknown> = {
+    ...(typeof parsedMdx.data === 'object' && parsedMdx.data !== null
+      ? parsedMdx.data
+      : {}),
+    ...frontmatter,
+    slug: `preview-${row.id}`,
+    status: 'draft',
+  };
+  const title =
+    normalizeOptionalString(mergedFrontmatter['title']) ?? 'Artikel preview';
+  const parsedFrontmatter = parseContentArticleFrontmatter({
+    filename: `preview-${row.id}.mdx`,
+    frontmatter: {
+      cardImage: mergedFrontmatter['cardImage'],
+      cardImageAlt: mergedFrontmatter['cardImageAlt'],
+      date:
+        normalizeOptionalString(mergedFrontmatter['date']) ??
+        row.created_at.slice(0, 10),
+      description:
+        normalizeOptionalString(mergedFrontmatter['description']) ?? title,
+      heroImage: mergedFrontmatter['heroImage'],
+      heroImageAlt: mergedFrontmatter['heroImageAlt'],
+      heroImageCredit: mergedFrontmatter['heroImageCredit'],
+      slug: mergedFrontmatter['slug'],
+      sourceDisplayMode: mergedFrontmatter['sourceDisplayMode'],
+      signalSourceName:
+        mergedFrontmatter['signalSourceName'] ??
+        mergedFrontmatter['signalSource'],
+      sourceUrl: mergedFrontmatter['sourceUrl'],
+      status: mergedFrontmatter['status'],
+      theme: mergedFrontmatter['theme'],
+      title,
+      updatedAt: row.created_at,
+    },
+  });
+  const trimmedBodySource = stripLegacySourceAttribution(
+    parsedMdx.content.trim(),
+  );
+  const resolvedHeroImage = resolveStoredArticleImagePath(
+    parsedFrontmatter.heroImage,
+  );
+  const resolvedCardImage = resolveStoredArticleImagePath(
+    parsedFrontmatter.cardImage,
+  );
+
+  return {
+    bodySource: trimmedBodySource,
+    cardImage: resolvedCardImage ?? resolvedHeroImage,
+    cardImageAlt:
+      parsedFrontmatter.cardImageAlt ??
+      parsedFrontmatter.heroImageAlt ??
+      parsedFrontmatter.title,
+    cardImageSource:
+      resolvedCardImage || resolvedHeroImage ? 'manual' : undefined,
+    date: parsedFrontmatter.date,
+    description: parsedFrontmatter.description,
+    heroImage: resolvedHeroImage,
+    heroImageAlt: parsedFrontmatter.heroImageAlt ?? parsedFrontmatter.title,
+    heroImageSource: resolvedHeroImage ? 'manual' : undefined,
+    primarySetNumber: extractPrimarySetNumberFromArticleBody(trimmedBodySource),
+    slug: parsedFrontmatter.slug,
+    sourceAttribution:
+      resolveContentArticleSourceAttribution(parsedFrontmatter),
     status: parsedFrontmatter.status,
     theme: parsedFrontmatter.theme,
     title: parsedFrontmatter.title,
@@ -435,8 +468,10 @@ async function parseContentArticleSupabaseRow({
 }
 
 async function listPublishedContentArticleSupabaseRows({
+  slugs,
   supabaseClient,
 }: {
+  slugs?: readonly string[];
   supabaseClient?: ContentArticleSupabaseClient;
 }): Promise<readonly ContentArticleSupabaseRow[]> {
   const activeSupabaseClient =
@@ -446,63 +481,22 @@ async function listPublishedContentArticleSupabaseRows({
     return [];
   }
 
-  const { data, error } = await activeSupabaseClient
+  let query = activeSupabaseClient
     .from(ARTICLES_TABLE_NAME)
-    .select(
-      'created_at, frontmatter, mdx, published_at, slug, status, title, updated_at',
-    )
+    .select(ARTICLE_ROW_SELECT_FIELDS)
     .eq('status', 'published');
+
+  if (slugs?.length) {
+    query = query.in('slug', [...new Set(slugs)]);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return [];
   }
 
   return Array.isArray(data) ? (data as ContentArticleSupabaseRow[]) : [];
-}
-
-async function listAllContentArticles({
-  articleFiles,
-  assetExistsFn = defaultAssetExists,
-  contentDirectory,
-  includeSupabase,
-  supabaseClient,
-}: ContentArticleQueryOptions = {}): Promise<readonly ContentArticle[]> {
-  const contentArticleSourceFiles = await listContentArticleSourceFiles({
-    articleFiles,
-    contentDirectory,
-  });
-  const [fileArticles, supabaseRows] = await Promise.all([
-    Promise.all(
-      contentArticleSourceFiles.map((articleFile) =>
-        parseContentArticleSourceFile({
-          articleFile,
-          assetExistsFn,
-        }),
-      ),
-    ),
-    (includeSupabase ?? !articleFiles)
-      ? listPublishedContentArticleSupabaseRows({ supabaseClient })
-      : Promise.resolve([]),
-  ]);
-  const supabaseArticles = await Promise.all(
-    supabaseRows.map((row) =>
-      parseContentArticleSupabaseRow({
-        assetExistsFn,
-        row,
-      }),
-    ),
-  );
-  const contentArticleBySlug = new Map<string, ContentArticle>();
-
-  for (const contentArticle of fileArticles) {
-    contentArticleBySlug.set(contentArticle.slug, contentArticle);
-  }
-
-  for (const contentArticle of supabaseArticles) {
-    contentArticleBySlug.set(contentArticle.slug, contentArticle);
-  }
-
-  return sortContentArticlesByDateDesc([...contentArticleBySlug.values()]);
 }
 
 function toContentArticleListItem(
@@ -512,10 +506,12 @@ function toContentArticleListItem(
     bodySource: contentArticle.bodySource,
     cardImage: contentArticle.cardImage,
     cardImageAlt: contentArticle.cardImageAlt,
+    cardImageSource: contentArticle.cardImageSource,
     date: contentArticle.date,
     description: contentArticle.description,
     heroImage: contentArticle.heroImage,
     heroImageAlt: contentArticle.heroImageAlt,
+    heroImageSource: contentArticle.heroImageSource,
     primarySetNumber: contentArticle.primarySetNumber,
     slug: contentArticle.slug,
     status: contentArticle.status,
@@ -526,23 +522,16 @@ function toContentArticleListItem(
 }
 
 export async function listPublishedArticles({
-  articleFiles,
-  assetExistsFn,
-  contentDirectory,
-  includeSupabase,
   limit,
   supabaseClient,
 }: ContentArticleQueryOptions & {
   limit?: number;
 } = {}): Promise<readonly ContentArticleListItem[]> {
-  const publishedArticles = (
-    await listAllContentArticles({
-      articleFiles,
-      assetExistsFn,
-      contentDirectory,
-      includeSupabase,
-      supabaseClient,
-    })
+  const supabaseRows = await listPublishedContentArticleSupabaseRows({
+    supabaseClient,
+  });
+  const publishedArticles = sortContentArticlesByDateDesc(
+    supabaseRows.map((row) => parseContentArticleSupabaseRow({ row })),
   )
     .filter((contentArticle) => contentArticle.status === 'published')
     .map(toContentArticleListItem);
@@ -564,13 +553,24 @@ export async function getPublishedArticleBySlug(
   slug: string,
   options?: ContentArticleQueryOptions,
 ): Promise<ContentArticle | null> {
-  const contentArticles = await listAllContentArticles(options);
-  const matchingArticle = contentArticles.find(
-    (contentArticle) =>
-      contentArticle.slug === slug && contentArticle.status === 'published',
-  );
+  const trimmedSlug = slug.trim();
 
-  return matchingArticle ?? null;
+  if (!trimmedSlug) {
+    return null;
+  }
+
+  const [row] = await listPublishedContentArticleSupabaseRows({
+    slugs: [trimmedSlug],
+    supabaseClient: options?.supabaseClient,
+  });
+
+  if (!row) {
+    return null;
+  }
+
+  const contentArticle = parseContentArticleSupabaseRow({ row });
+
+  return contentArticle.status === 'published' ? contentArticle : null;
 }
 
 export async function getArticleBySlug(
@@ -578,4 +578,167 @@ export async function getArticleBySlug(
   options?: ContentArticleQueryOptions,
 ): Promise<ContentArticle | null> {
   return getPublishedArticleBySlug(slug, options);
+}
+
+export async function getArticlePreviewById({
+  now = new Date(),
+  previewId,
+  supabaseClient,
+}: {
+  now?: Date;
+  previewId: string;
+  supabaseClient?: ContentArticleSupabaseClient;
+}): Promise<ContentArticle | null> {
+  const normalizedPreviewId = previewId.trim();
+
+  if (!normalizedPreviewId) {
+    return null;
+  }
+
+  const activeSupabaseClient =
+    supabaseClient ?? getContentArticlesSupabaseAdminClient();
+  const { data, error } = await activeSupabaseClient
+    .from(ARTICLE_PREVIEWS_TABLE_NAME)
+    .select(ARTICLE_PREVIEW_ROW_SELECT_FIELDS)
+    .eq('id', normalizedPreviewId)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  const row = data as ContentArticlePreviewSupabaseRow;
+
+  if (Date.parse(row.expires_at) <= now.getTime()) {
+    return null;
+  }
+
+  return parseContentArticlePreviewSupabaseRow({ row });
+}
+
+function normalizePopularArticlesWindowDays(days: number): number {
+  return Number.isFinite(days) && days > 0 ? Math.min(days, 90) : 7;
+}
+
+function normalizePopularArticlesLimit(limit: number): number {
+  return Number.isFinite(limit) && limit > 0 ? Math.min(limit, 24) : 6;
+}
+
+export async function logArticleEvent({
+  eventName,
+  slug,
+  supabaseClient = getContentArticlesSupabaseAdminClient(),
+}: {
+  eventName: ArticleEventName;
+  slug: string;
+  supabaseClient?: ContentArticleSupabaseClient;
+}): Promise<void> {
+  const normalizedSlug = slug.trim();
+
+  if (!normalizedSlug) {
+    throw new Error('Artikel-slug ontbreekt.');
+  }
+
+  const { error } = await supabaseClient
+    .from(ARTICLE_EVENTS_TABLE_NAME)
+    .insert({
+      event_name: eventName,
+      slug: normalizedSlug,
+    });
+
+  if (error) {
+    throw new Error('Artikel-event opslaan is mislukt.');
+  }
+}
+
+export async function logArticleClickEvent({
+  slug,
+  supabaseClient,
+}: {
+  slug: string;
+  supabaseClient?: ContentArticleSupabaseClient;
+}): Promise<void> {
+  await logArticleEvent({
+    eventName: 'article_click',
+    slug,
+    supabaseClient,
+  });
+}
+
+export async function getPopularArticles({
+  days = 7,
+  limit = 6,
+  supabaseClient,
+}: {
+  days?: number;
+  limit?: number;
+  supabaseClient?: ContentArticleSupabaseClient;
+} = {}): Promise<readonly ContentArticleListItem[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getContentArticlesSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  const normalizedDays = normalizePopularArticlesWindowDays(days);
+  const normalizedLimit = normalizePopularArticlesLimit(limit);
+  const since = new Date(
+    Date.now() - normalizedDays * 24 * 60 * 60 * 1000,
+  ).toISOString();
+  const { data, error } = await activeSupabaseClient
+    .from(ARTICLE_EVENTS_TABLE_NAME)
+    .select(ARTICLE_EVENT_SELECT_FIELDS)
+    .eq('event_name', 'article_click')
+    .gte('created_at', since);
+
+  if (error || !Array.isArray(data)) {
+    return [];
+  }
+
+  const clickCountBySlug = new Map<string, number>();
+
+  for (const eventRow of data as ArticleEventRow[]) {
+    const slug = eventRow.slug?.trim();
+
+    if (slug) {
+      clickCountBySlug.set(slug, (clickCountBySlug.get(slug) ?? 0) + 1);
+    }
+  }
+
+  const popularSlugs = [...clickCountBySlug.entries()]
+    .sort(
+      ([leftSlug, leftCount], [rightSlug, rightCount]) =>
+        rightCount - leftCount || leftSlug.localeCompare(rightSlug, 'nl-NL'),
+    )
+    .slice(0, normalizedLimit)
+    .map(([slug]) => slug);
+
+  if (!popularSlugs.length) {
+    return [];
+  }
+
+  const articleRows = await listPublishedContentArticleSupabaseRows({
+    slugs: popularSlugs,
+    supabaseClient: activeSupabaseClient,
+  });
+  const articles = articleRows.map((row) =>
+    parseContentArticleSupabaseRow({
+      row,
+    }),
+  );
+  const articleBySlug = new Map(
+    articles
+      .filter((contentArticle) => contentArticle.status === 'published')
+      .map((contentArticle) => [
+        contentArticle.slug,
+        toContentArticleListItem(contentArticle),
+      ]),
+  );
+
+  return popularSlugs.flatMap((slug) => {
+    const article = articleBySlug.get(slug);
+
+    return article ? [article] : [];
+  });
 }

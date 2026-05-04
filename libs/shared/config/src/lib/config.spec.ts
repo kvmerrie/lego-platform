@@ -1,5 +1,8 @@
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
+  adtractionGoodbricksEnvKeys,
+  articlePreviewEnvKeys,
+  getAdtractionGoodbricksFeedConfig,
   getAwinCoolblueFeedConfig,
   getAdminPromotionConfig,
   buildArticlePath,
@@ -8,6 +11,7 @@ import {
   buildWebPath,
   createLocaleCode,
   getBrowserSupabaseConfig,
+  getMissingAdtractionGoodbricksEnvKeys,
   getMissingAdminPromotionEnvKeys,
   getMissingAwinCoolblueEnvKeys,
   getDefaultAppLocaleContext,
@@ -26,6 +30,7 @@ import {
   getTradeTrackerLidlFeedConfig,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
+  hasAdtractionGoodbricksFeedConfig,
   hasAdminPromotionConfig,
   hasAwinCoolblueFeedConfig,
   hasBrowserSupabaseConfig,
@@ -34,9 +39,40 @@ import {
   hasStagingSupabaseConfig,
   hasTradeTrackerAffiliateConfig,
   hasTradeTrackerLidlFeedConfig,
+  isArticlePreviewEnabled,
   publicSiteRobotsPolicy,
   webNavigation,
 } from './config';
+
+describe('shared config article preview helper', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('does not throw and returns false when process is unavailable', () => {
+    vi.stubGlobal('process', undefined);
+
+    expect(() => isArticlePreviewEnabled()).not.toThrow();
+    expect(isArticlePreviewEnabled()).toBe(false);
+  });
+
+  test('returns false by default', () => {
+    expect(isArticlePreviewEnabled({})).toBe(false);
+  });
+
+  test('returns true only when explicitly configured', () => {
+    expect(
+      isArticlePreviewEnabled({
+        [articlePreviewEnvKeys.enabled]: 'true',
+      }),
+    ).toBe(true);
+    expect(
+      isArticlePreviewEnabled({
+        [articlePreviewEnvKeys.enabled]: 'false',
+      }),
+    ).toBe(false);
+  });
+});
 
 describe('shared config browser Supabase helpers', () => {
   const originalEnv = { ...process.env };
@@ -92,8 +128,8 @@ describe('shared config locale and market foundations', () => {
   test('builds unprefixed routes now while keeping locale-prefixed paths possible later', () => {
     expect(buildWebPath('/discover')).toBe('/discover');
     expect(buildWebPath('account')).toBe('/account');
-    expect(buildArticlePath('star-wars-day-2026')).toBe(
-      '/artikelen/star-wars-day-2026',
+    expect(buildArticlePath('star-wars-day-2026', 'star-wars')).toBe(
+      '/artikelen/star-wars/star-wars-day-2026',
     );
     expect(buildPublicSetDetailUrl({ slug: 'rivendell-10316' })).toBe(
       'http://localhost:3000/sets/rivendell-10316',
@@ -368,6 +404,49 @@ describe('shared config Awin Coolblue feed helpers', () => {
 
     expect(hasAwinCoolblueFeedConfig()).toBe(false);
     expect(getMissingAwinCoolblueEnvKeys()).toEqual(['AWIN_COOLBLUE_FEED_URL']);
+  });
+});
+
+describe('shared config Adtraction Goodbricks feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the Adtraction Goodbricks feed config with sensible merchant defaults', () => {
+    process.env.ADTRACTION_GOODBRICKS_FEED_URL =
+      'https://adtraction.example/goodbricks.xml';
+
+    expect(hasAdtractionGoodbricksFeedConfig()).toBe(true);
+    expect(getMissingAdtractionGoodbricksEnvKeys()).toEqual([]);
+    expect(getAdtractionGoodbricksFeedConfig()).toEqual({
+      feedUrl: 'https://adtraction.example/goodbricks.xml',
+      merchantSlug: 'goodbricks',
+      merchantName: 'Goodbricks',
+    });
+  });
+
+  test('allows explicit Goodbricks merchant overrides for the Adtraction feed config', () => {
+    process.env.ADTRACTION_GOODBRICKS_FEED_URL =
+      'https://adtraction.example/goodbricks.xml';
+    process.env.ADTRACTION_GOODBRICKS_MERCHANT_SLUG = 'goodbricks-nl';
+    process.env.ADTRACTION_GOODBRICKS_MERCHANT_NAME = 'Goodbricks NL';
+
+    expect(getAdtractionGoodbricksFeedConfig()).toEqual({
+      feedUrl: 'https://adtraction.example/goodbricks.xml',
+      merchantSlug: 'goodbricks-nl',
+      merchantName: 'Goodbricks NL',
+    });
+  });
+
+  test('reports the missing Adtraction Goodbricks feed URL', () => {
+    delete process.env.ADTRACTION_GOODBRICKS_FEED_URL;
+
+    expect(hasAdtractionGoodbricksFeedConfig()).toBe(false);
+    expect(getMissingAdtractionGoodbricksEnvKeys()).toEqual([
+      adtractionGoodbricksEnvKeys.feedUrl,
+    ]);
   });
 });
 

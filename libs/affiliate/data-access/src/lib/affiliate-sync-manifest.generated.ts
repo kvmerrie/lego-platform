@@ -4,8 +4,8 @@ import type { AffiliateSyncManifest } from '@lego-platform/affiliate/util';
 const affiliateSyncManifestPayload = String.raw`{
   "source": "supabase-commerce-refresh",
   "generatedAt": "2026-05-03T11:11:57.956Z",
-  "offerCount": 322,
-  "setCount": 150,
+  "offerCount": 310,
+  "setCount": 147,
   "merchantCount": 9,
   "notes": "Generated from Supabase-managed commerce seeds and the latest verified merchant refresh state."
 }`;

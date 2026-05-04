@@ -1,8 +1,15 @@
 import { getMetadataFromSeoFields } from '../lib/editorial-metadata';
 import { resolveArticleHeroPresentation } from '../lib/article-hero-presentation';
-import { getCatalogThemeDisplayName } from '@lego-platform/catalog/util';
-import { listPublishedArticles } from '@lego-platform/content/data-access';
 import {
+  getCatalogThemeDisplayName,
+  normalizeTheme,
+} from '@lego-platform/catalog/util';
+import {
+  getPopularArticles,
+  listPublishedArticles,
+} from '@lego-platform/content/data-access';
+import {
+  ContentArticleCompactRail,
   ContentArticleFeaturedCard,
   ContentArticleGrid,
   EditorialHeroPanel,
@@ -28,6 +35,8 @@ export const metadata: Metadata = getMetadataFromSeoFields({
   title: 'LEGO nieuws & updates',
 });
 
+export const revalidate = 60;
+
 function sortArticlesByArticleDateDesc(
   contentArticles: readonly ContentArticleListItem[],
 ): ContentArticleListItem[] {
@@ -39,10 +48,15 @@ function sortArticlesByArticleDateDesc(
 function normalizeArticleThemeDisplay(
   contentArticle: ContentArticleListItem,
 ): ContentArticleListItem {
+  const normalizedTheme = normalizeTheme(contentArticle.theme);
+
   return {
     ...contentArticle,
     theme:
-      getCatalogThemeDisplayName(contentArticle.theme) ?? contentArticle.theme,
+      getCatalogThemeDisplayName(contentArticle.theme) ??
+      normalizedTheme?.displayName ??
+      contentArticle.theme,
+    themeSlug: normalizedTheme?.key ?? contentArticle.themeSlug,
   };
 }
 
@@ -61,28 +75,52 @@ async function resolveArticleListItemImage(
         ...contentArticle,
         cardImage: resolvedHeroPresentation.imageUrl,
         cardImageAlt: resolvedHeroPresentation.imageAlt,
+        cardImageSource: resolvedHeroPresentation.source,
         heroImage:
           contentArticle.heroImage ?? resolvedHeroPresentation.imageUrl,
         heroImageAlt: contentArticle.heroImage
           ? contentArticle.heroImageAlt
           : resolvedHeroPresentation.imageAlt,
+        heroImageSource: contentArticle.heroImage
+          ? contentArticle.heroImageSource
+          : resolvedHeroPresentation.source,
       }
     : contentArticle;
 }
 
 export default async function ArticlesIndexPage() {
+  const [publishedArticles, popularArticles] = await Promise.all([
+    listPublishedArticles(),
+    getPopularArticles({
+      days: 7,
+      limit: 6,
+    }),
+  ]);
   const contentArticles = sortArticlesByArticleDateDesc(
-    (await listPublishedArticles()).filter(
+    publishedArticles.filter(
       (contentArticle) => contentArticle.status === 'published',
     ),
   );
-  const resolvedContentArticles = await Promise.all(
-    contentArticles.map(resolveArticleListItemImage),
-  );
+  const [resolvedContentArticles, resolvedPopularArticles] = await Promise.all([
+    Promise.all(contentArticles.map(resolveArticleListItemImage)),
+    Promise.all(popularArticles.map(resolveArticleListItemImage)),
+  ]);
   const normalizedContentArticles = resolvedContentArticles.map(
     normalizeArticleThemeDisplay,
   );
-  const [featuredArticle, ...remainingArticles] = normalizedContentArticles;
+  const normalizedPopularArticles = resolvedPopularArticles.map(
+    normalizeArticleThemeDisplay,
+  );
+  const [featuredArticle, ...recentArticles] = normalizedContentArticles;
+  const topRecentArticles = recentArticles.slice(0, 3);
+  const remainingArticles = recentArticles.slice(3);
+  const topRecentSlugs = new Set([
+    featuredArticle?.slug,
+    ...topRecentArticles.map((article) => article.slug),
+  ]);
+  const filteredPopularArticles = normalizedPopularArticles.filter(
+    (article) => !topRecentSlugs.has(article.slug),
+  );
 
   return (
     <ShellWeb>
@@ -95,8 +133,21 @@ export default async function ArticlesIndexPage() {
               <h2 className={styles.sectionTitle} id="latest-title">
                 Net binnen
               </h2>
-              <ContentArticleFeaturedCard contentArticle={featuredArticle} />
+              <div className={styles.latestStack}>
+                <ContentArticleFeaturedCard contentArticle={featuredArticle} />
+                {topRecentArticles.length ? (
+                  <ContentArticleGrid contentArticles={topRecentArticles} />
+                ) : null}
+              </div>
             </section>
+
+            {filteredPopularArticles.length ? (
+              <ContentArticleCompactRail
+                contentArticles={filteredPopularArticles}
+                maxItems={6}
+                title="Populair deze week"
+              />
+            ) : null}
 
             {remainingArticles.length ? (
               <section

@@ -2,10 +2,11 @@ import { XMLParser } from 'fast-xml-parser';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { editorialAgentFeedEnvKeys } from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
-import type {
-  EditorialFeedItem,
-  EditorialFeedItemStatus,
-  EditorialFeedSyncResult,
+import {
+  type EditorialFeedItem,
+  type EditorialFeedItemStatus,
+  type EditorialFeedSyncResult,
+  normalizeEditorialSourceUrlForComparison,
 } from '@lego-platform/content/util';
 
 const EDITORIAL_FEED_ITEMS_TABLE_NAME = 'editorial_feed_items';
@@ -68,11 +69,12 @@ function readText(value: unknown): string {
 }
 
 function normalizeSourceUrl(value: string): string | undefined {
-  try {
-    const url = new URL(value);
-    url.hash = '';
+  const normalizedUrl = normalizeEditorialSourceUrlForComparison(value);
 
-    return url.toString();
+  try {
+    new URL(normalizedUrl);
+
+    return normalizedUrl;
   } catch {
     return undefined;
   }
@@ -378,6 +380,10 @@ export async function listEditorialFeedItems({
     .from(EDITORIAL_FEED_ITEMS_TABLE_NAME)
     .select('*')
     .in('status', statuses)
+    .order('source_published_at', {
+      ascending: false,
+      nullsFirst: false,
+    })
     .order('created_at', { ascending: false });
 
   if (error) {

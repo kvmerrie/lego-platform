@@ -115,6 +115,13 @@ describe('content data access server', () => {
       ).toBe('http://example.com/news');
     });
 
+    it('upgrades Brickset article URLs to https', () => {
+      expect(
+        validateEditorialAgentSourceUrl('http://brickset.com/article/131538')
+          .normalizedUrl,
+      ).toBe('https://brickset.com/article/131538');
+    });
+
     it('rejects empty URLs', () => {
       expect(() => validateEditorialAgentSourceUrl('   ')).toThrow(
         EditorialAgentUrlValidationError,
@@ -389,6 +396,107 @@ describe('content data access server', () => {
       expect(result.relatedCandidates).toEqual([]);
     });
 
+    it('extracts Brickset 131538 as a real Star Wars multi-set announcement', async () => {
+      const fetchImpl = vi.fn(
+        async () =>
+          new Response(
+            `<!doctype html>
+            <html lang="en">
+              <head>
+                <title>LEGO Star Wars Up-Scaled Darth Vader and AT-RT Driver Helmet revealed! | Brickset</title>
+                <meta name="description" content="A new up-scaled LEGO minifigure format debuted in 2021 and has since been applied to various characters, now including Darth Vader! 75461 Up-Scaled Darth Vader Minifigure feels overdue, but its execution looks excellent on the whole." />
+                <meta property="og:title" content="LEGO Star Wars Up-Scaled Darth Vader and AT-RT Driver Helmet revealed!" />
+                <meta property="og:description" content="A new up-scaled LEGO minifigure format debuted in 2021 and has since been applied to various characters, now including Darth Vader! 75461 Up-Scaled Darth Vader Minifigure feels overdue, but its execution looks excellent on the whole." />
+                <meta property="og:site_name" content="Brickset.com" />
+              </head>
+              <body>
+                <article>
+                  <header>
+                    <h1><a href="/article/131538/lego-star-wars-up-scaled-darth-vader-and-at-rt-driver-helmet-revealed!">LEGO Star Wars Up-Scaled Darth Vader and AT-RT Driver Helmet revealed!</a></h1>
+                    <small><time datetime="2026-05-03 09:00">03 May 2026 09:00</time></small>
+                  </header>
+                  <p>A new up-scaled LEGO minifigure format debuted in 2021 and has since been applied to various characters, now including Darth Vader! <a href="https://brickset.com/sets/75461-1/Up-Scaled-Darth-Vader-Minifigure">75461</a> Up-Scaled Darth Vader Minifigure feels overdue, but its execution looks excellent on the whole.</p>
+                  <p>In addition, the Helmet Collection endures with <a href="https://brickset.com/sets/75458-1/Imperial-Remnant-AT-RT-Driver-Helmet">75458</a> Imperial Remnant AT-RT Driver Helmet. I am surprised to see the series continue following the introduction of Star Wars busts.</p>
+                  <h3><a href="https://brickset.com/sets/75458-1/Imperial-Remnant-AT-RT-Driver-Helmet">75458</a> Imperial Remnant AT-RT Driver Helmet</h3>
+                  <h3><a href="https://brickset.com/sets/75461-1/Up-Scaled-Darth-Vader-Minifigure">75461</a> Up-Scaled Darth Vader Minifigure</h3>
+                  <section id="comments">
+                    <p>A commenter mentions <a href="https://brickset.com/sets/76393-1">76393</a>, but this is not part of the article subject.</p>
+                  </section>
+                </article>
+              </body>
+            </html>`,
+            {
+              headers: {
+                'content-type': 'text/html; charset=utf-8',
+              },
+              status: 200,
+            },
+          ),
+      );
+      const catalog = new Map([
+        [
+          '75461',
+          {
+            id: '75461',
+            name: 'Up-Scaled Darth Vader Minifigure',
+            slug: 'up-scaled-darth-vader-minifigure-75461',
+            theme: 'Star Wars',
+          },
+        ],
+        [
+          '75458',
+          {
+            id: '75458',
+            name: 'Imperial Remnant AT-RT Driver Helmet',
+            slug: 'imperial-remnant-at-rt-driver-helmet-75458',
+            theme: 'Star Wars',
+          },
+        ],
+      ]);
+
+      const result = await extractEditorialAgentFactsFromUrl({
+        fetchImpl: fetchImpl as typeof fetch,
+        findCatalogSetSummaryById: vi.fn(async (setId: string) =>
+          catalog.get(setId),
+        ),
+        inputUrl: 'http://brickset.com/article/131538',
+      });
+
+      expect(fetchImpl).toHaveBeenCalledWith(
+        'https://brickset.com/article/131538',
+        expect.any(Object),
+      );
+      expect(result.detected.setNumbers).toEqual(['75461', '75458']);
+      expect(result.matching.matchedSets.map((set) => set.setNumber)).toEqual([
+        '75461',
+        '75458',
+      ]);
+      expect(result.matching.articleType).toBe('multi_set_announcement');
+      expect(result.primarySet?.setNumber).toBe('75461');
+      expect(result.relatedCandidates.map((set) => set.setNumber)).toEqual([
+        '75458',
+      ]);
+
+      const draftResult = await generateEditorialAgentDraftResult({
+        extraction: result,
+        useAiRewrite: false,
+      });
+
+      expect(draftResult.output.mdx).not.toContain('Conceptdraft');
+      expect(draftResult.output.mdx).not.toContain('Gebruik deze draft');
+      expect(draftResult.output.mdx).toContain(
+        '<FeaturedSet setNumber="75461" />',
+      );
+      expect(draftResult.output.frontmatter.theme).toBe('Star Wars');
+      expect(draftResult.output.frontmatter.description).toContain(
+        'Up-Scaled Darth Vader Minifigure',
+      );
+      expect(draftResult.output.frontmatter.description).toContain(
+        'Imperial Remnant AT-RT Driver Helmet',
+      );
+      expect(draftResult.output.mdx).toContain('Imperial, Rebel of trooper');
+    });
+
     it('keeps extraction alive when catalog matching throws', async () => {
       const fetchImpl = vi.fn(
         async () =>
@@ -568,6 +676,57 @@ describe('content data access server', () => {
       expect(result.output.mdx).toContain(
         'waar je nu meteen even doorheen wilt scrollen',
       );
+    });
+
+    it('applies ai rewrite when only harmless frontmatter fields change', async () => {
+      const extraction = createDraftExtractionResult();
+      const deterministicDraft = generateEditorialMdxDraft(extraction);
+      const rewrittenMdx = deterministicDraft.mdx
+        .replace(
+          'title: "Deze nieuwe LEGO-sets worden in mei 2026 uitgebracht"',
+          'title: "AI probeerde een andere titel"',
+        )
+        .replace('theme: "Multiple"', 'theme: "Star Wars"')
+        .replace(
+          'Dit zijn de sets uit deze releasegolf die nu al leuk genoeg zijn om even rustig doorheen te klikken.',
+          'Dit zijn de sets uit deze releasegolf waar je als fan even voor blijft hangen.',
+        );
+      const fetchImpl = vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              output_text: rewrittenMdx,
+            }),
+            {
+              headers: {
+                'content-type': 'application/json',
+              },
+              status: 200,
+            },
+          ),
+      );
+
+      const result = await rewriteDraftWithAI({
+        apiKey: 'test-key',
+        deterministicDraft,
+        fetchImpl: fetchImpl as typeof fetch,
+        input: extraction,
+        useAiRewrite: true,
+      });
+
+      expect(result.rewrite.enabled).toBe(true);
+      expect(result.rewrite.applied).toBe(true);
+      expect(result.rewrittenDraft?.frontmatter).toEqual(
+        deterministicDraft.frontmatter,
+      );
+      expect(result.output.mdx).toContain(
+        'title: "Deze nieuwe LEGO-sets worden in mei 2026 uitgebracht"',
+      );
+      expect(result.output.mdx).toContain('theme: "Multiple"');
+      expect(result.output.mdx).toContain(
+        'waar je als fan even voor blijft hangen',
+      );
+      expect(result.output.mdx).not.toContain('AI probeerde een andere titel');
     });
 
     it('falls back to the deterministic draft when ai output changes component setIds', async () => {

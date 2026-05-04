@@ -52,6 +52,30 @@ function buildArticleSnapshotSetCardLookup() {
 
 const articleSnapshotSetCardById = buildArticleSnapshotSetCardLookup();
 
+const VEHICLE_RELATED_KEYWORDS = [
+  'car',
+  'fighter',
+  'kart',
+  'ship',
+  'shuttle',
+  'speeder',
+  'starfighter',
+  'train',
+  'truck',
+  'vehicle',
+] as const;
+const DISPLAY_RELATED_KEYWORDS = [
+  'architecture',
+  'botanical',
+  'display',
+  'diorama',
+  'helmet',
+  'icons',
+  'skyline',
+  'statue',
+  'tower',
+] as const;
+
 function sortRepresentativeCatalogSetCards(
   left: CatalogHomepageSetCard,
   right: CatalogHomepageSetCard,
@@ -75,6 +99,118 @@ function sortRepresentativeCatalogSetCards(
   );
 }
 
+function getNormalizedArticleCatalogTheme(setCard: CatalogHomepageSetCard) {
+  return getCatalogThemeDisplayName(setCard.theme) ?? setCard.theme;
+}
+
+function getComparableSetName(setCard: CatalogHomepageSetCard) {
+  return setCard.name.toLocaleLowerCase('nl-NL');
+}
+
+function getSharedKeywords({
+  left,
+  right,
+  keywords,
+}: {
+  left: CatalogHomepageSetCard;
+  right: CatalogHomepageSetCard;
+  keywords: readonly string[];
+}) {
+  const leftName = getComparableSetName(left);
+  const rightName = getComparableSetName(right);
+
+  return keywords.filter(
+    (keyword) => leftName.includes(keyword) && rightName.includes(keyword),
+  );
+}
+
+function isSameCatalogTheme(
+  left: CatalogHomepageSetCard,
+  right: CatalogHomepageSetCard,
+) {
+  return (
+    getNormalizedArticleCatalogTheme(left) ===
+    getNormalizedArticleCatalogTheme(right)
+  );
+}
+
+function isHelmetCollectionSet(setCard: CatalogHomepageSetCard) {
+  return /\bhelmet\b/iu.test(setCard.name);
+}
+
+function resolveCuratedRelatedSetContext(
+  featuredSetCard: CatalogHomepageSetCard,
+): { title: string; type: 'display' | 'helmet' | 'vehicle' } | undefined {
+  const featuredSetName = getComparableSetName(featuredSetCard);
+
+  if (isHelmetCollectionSet(featuredSetCard)) {
+    return {
+      title: 'Andere helmets in deze lijn',
+      type: 'helmet',
+    };
+  }
+
+  if (
+    VEHICLE_RELATED_KEYWORDS.some((keyword) =>
+      featuredSetName.includes(keyword),
+    )
+  ) {
+    return {
+      title: 'Vergelijkbare voertuigen',
+      type: 'vehicle',
+    };
+  }
+
+  if (
+    DISPLAY_RELATED_KEYWORDS.some((keyword) =>
+      featuredSetName.includes(keyword),
+    )
+  ) {
+    return {
+      title: 'Vergelijkbare displaysets',
+      type: 'display',
+    };
+  }
+
+  return undefined;
+}
+
+function isStrongRelatedCatalogSet({
+  candidateSetCard,
+  featuredSetCard,
+  type,
+}: {
+  candidateSetCard: CatalogHomepageSetCard;
+  featuredSetCard: CatalogHomepageSetCard;
+  type: 'display' | 'helmet' | 'vehicle';
+}) {
+  if (
+    candidateSetCard.id === featuredSetCard.id ||
+    !isSameCatalogTheme(featuredSetCard, candidateSetCard)
+  ) {
+    return false;
+  }
+
+  if (type === 'helmet') {
+    return isHelmetCollectionSet(candidateSetCard);
+  }
+
+  const keywordGroup =
+    type === 'vehicle' ? VEHICLE_RELATED_KEYWORDS : DISPLAY_RELATED_KEYWORDS;
+
+  return (
+    getSharedKeywords({
+      keywords: keywordGroup,
+      left: featuredSetCard,
+      right: candidateSetCard,
+    }).length > 0
+  );
+}
+
+function getSnapshotSetCards() {
+  return catalogSnapshot.setRecords.map(toCatalogSetCardFromSnapshotRecord);
+}
+
 function findRepresentativeSnapshotSetCardByTheme(
   theme: string,
 ): CatalogHomepageSetCard | undefined {
@@ -83,8 +219,8 @@ function findRepresentativeSnapshotSetCardByTheme(
     .map(toCatalogSetCardFromSnapshotRecord)
     .filter(
       (setCard) =>
-        (getCatalogThemeDisplayName(setCard.theme) ?? setCard.theme) ===
-          normalizedTheme && getArticleCatalogSetImageUrl(setCard),
+        getNormalizedArticleCatalogTheme(setCard) === normalizedTheme &&
+        getArticleCatalogSetImageUrl(setCard),
     )
     .sort(sortRepresentativeCatalogSetCards);
 
@@ -144,7 +280,10 @@ export async function resolveRepresentativeArticleCatalogSetCardByTheme({
   let liveSetCards: CatalogHomepageSetCard[] = [];
 
   try {
-    liveSetCards = await listCatalogSetCards();
+    const resolvedLiveSetCards = await listCatalogSetCards();
+    liveSetCards = Array.isArray(resolvedLiveSetCards)
+      ? resolvedLiveSetCards
+      : [];
   } catch {
     liveSetCards = [];
   }
@@ -152,8 +291,8 @@ export async function resolveRepresentativeArticleCatalogSetCardByTheme({
   const [liveRepresentativeSetCard] = liveSetCards
     .filter(
       (setCard) =>
-        (getCatalogThemeDisplayName(setCard.theme) ?? setCard.theme) ===
-          normalizedTheme && getArticleCatalogSetImageUrl(setCard),
+        getNormalizedArticleCatalogTheme(setCard) === normalizedTheme &&
+        getArticleCatalogSetImageUrl(setCard),
     )
     .sort(sortRepresentativeCatalogSetCards);
 
@@ -161,6 +300,60 @@ export async function resolveRepresentativeArticleCatalogSetCardByTheme({
     liveRepresentativeSetCard ??
     findRepresentativeSnapshotSetCardByTheme(normalizedTheme)
   );
+}
+
+export async function resolveCuratedRelatedArticleCatalogSetRail({
+  featuredSetCard,
+  limit = 6,
+}: {
+  featuredSetCard: CatalogHomepageSetCard;
+  limit?: number;
+}): Promise<
+  | {
+      setCards: CatalogHomepageSetCard[];
+      title: string;
+    }
+  | undefined
+> {
+  const context = resolveCuratedRelatedSetContext(featuredSetCard);
+
+  if (!context) {
+    return undefined;
+  }
+
+  let liveSetCards: CatalogHomepageSetCard[] = [];
+
+  try {
+    const resolvedLiveSetCards = await listCatalogSetCards();
+    liveSetCards = Array.isArray(resolvedLiveSetCards)
+      ? resolvedLiveSetCards
+      : [];
+  } catch {
+    liveSetCards = [];
+  }
+
+  const candidateSetCards = (
+    liveSetCards.length ? liveSetCards : getSnapshotSetCards()
+  )
+    .filter((candidateSetCard) =>
+      isStrongRelatedCatalogSet({
+        candidateSetCard,
+        featuredSetCard,
+        type: context.type,
+      }),
+    )
+    .filter((setCard) => getArticleCatalogSetImageUrl(setCard))
+    .sort(sortRepresentativeCatalogSetCards)
+    .slice(0, limit);
+
+  if (candidateSetCards.length < 2) {
+    return undefined;
+  }
+
+  return {
+    setCards: candidateSetCards,
+    title: context.title,
+  };
 }
 
 export function getArticleCatalogSetImageUrl(

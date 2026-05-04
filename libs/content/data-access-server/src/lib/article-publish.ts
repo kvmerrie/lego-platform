@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  type ContentArticleNearDuplicateMatch,
   type ContentArticleFrontmatterInput,
   type ContentArticlePublishInput,
 } from '@lego-platform/content/util';
@@ -19,7 +20,9 @@ interface PublishedArticleRow {
 
 interface PublishedArticleSourceRow {
   frontmatter?: unknown;
+  mdx?: string;
   slug: string;
+  title?: string;
 }
 
 export class ContentArticlePublishValidationError extends Error {}
@@ -32,11 +35,21 @@ export class ContentArticleDuplicateSourceError extends Error {
     super(message);
   }
 }
+export class ContentArticleNearDuplicateError extends Error {
+  constructor(
+    message: string,
+    readonly matches: readonly ContentArticleNearDuplicateMatch[],
+  ) {
+    super(message);
+  }
+}
 
 const LOW_CONFIDENCE_PUBLISH_ERROR_MESSAGE =
   'Dit artikel is nog niet klaar voor publicatie.';
 const DUPLICATE_SOURCE_PUBLISH_ERROR_MESSAGE =
   'Dit bronartikel is al gepubliceerd.';
+const NEAR_DUPLICATE_PUBLISH_ERROR_MESSAGE =
+  'Mogelijk overlappend artikel gevonden.';
 const TRACKING_SEARCH_PARAM_PATTERNS = [
   /^utm_/iu,
   /^pk_/iu,
@@ -238,6 +251,144 @@ function readFrontmatterSourceUrl(frontmatter: unknown): string | undefined {
     : undefined;
 }
 
+function readFrontmatterDate(frontmatter: unknown): string | undefined {
+  return isRecord(frontmatter)
+    ? readNonEmptyString(frontmatter['date'])
+    : undefined;
+}
+
+function readFrontmatterTheme(frontmatter: unknown): string | undefined {
+  return isRecord(frontmatter)
+    ? readNonEmptyString(frontmatter['theme'])
+    : undefined;
+}
+
+function readFrontmatterEventFingerprint(
+  frontmatter: unknown,
+): string | undefined {
+  if (!isRecord(frontmatter)) {
+    return undefined;
+  }
+
+  const eventFingerprint = frontmatter['eventFingerprint'];
+
+  if (typeof eventFingerprint === 'string') {
+    return readNonEmptyString(eventFingerprint);
+  }
+
+  if (isRecord(eventFingerprint)) {
+    const type = readNonEmptyString(eventFingerprint['type']);
+    const key = readNonEmptyString(eventFingerprint['key']);
+
+    return type && key ? `${type}:${key}` : undefined;
+  }
+
+  return undefined;
+}
+
+function readArticleTitle({
+  frontmatter,
+  title,
+}: {
+  frontmatter?: unknown;
+  title?: string;
+}): string {
+  return (
+    (isRecord(frontmatter) ? readNonEmptyString(frontmatter['title']) : '') ||
+    readNonEmptyString(title) ||
+    'Bestaand artikel'
+  );
+}
+
+function extractArticleSetNumbersFromMdx(mdx: string): Set<string> {
+  const setNumbers = new Set<string>();
+
+  for (const match of mdx.matchAll(
+    /\bsetNumber\s*=\s*(?:"([^"]+)"|'([^']+)')/giu,
+  )) {
+    const setNumber = readNonEmptyString(match[1] ?? match[2]);
+
+    if (setNumber) {
+      setNumbers.add(setNumber.replace(/-1$/u, ''));
+    }
+  }
+
+  for (const match of mdx.matchAll(
+    /\bsetIds\s*=\s*(?:"([^"]+)"|'([^']+)')/giu,
+  )) {
+    for (const setNumber of (match[1] ?? match[2] ?? '').split(',')) {
+      const trimmedSetNumber = readNonEmptyString(setNumber);
+
+      if (trimmedSetNumber) {
+        setNumbers.add(trimmedSetNumber.replace(/-1$/u, ''));
+      }
+    }
+  }
+
+  return setNumbers;
+}
+
+function extractPrimaryFeaturedSetNumber(mdx: string): string | undefined {
+  const match = mdx.match(
+    /<FeaturedSet\b[^>]*\bsetNumber\s*=\s*(?:"([^"]+)"|'([^']+)')/iu,
+  );
+
+  return readNonEmptyString(match?.[1] ?? match?.[2])?.replace(/-1$/u, '');
+}
+
+function normalizeComparableText(value?: string): string {
+  return (value ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/gu, '')
+    .toLowerCase();
+}
+
+function calculateTitleSimilarity(left?: string, right?: string): number {
+  const leftTokens = new Set(
+    normalizeComparableText(left)
+      .split(/[^a-z0-9]+/u)
+      .filter((token) => token.length >= 3),
+  );
+  const rightTokens = new Set(
+    normalizeComparableText(right)
+      .split(/[^a-z0-9]+/u)
+      .filter((token) => token.length >= 3),
+  );
+
+  if (!leftTokens.size || !rightTokens.size) {
+    return 0;
+  }
+
+  const overlap = [...leftTokens].filter((token) => rightTokens.has(token));
+  const union = new Set([...leftTokens, ...rightTokens]);
+
+  return overlap.length / union.size;
+}
+
+function isSameTheme(left?: string, right?: string): boolean {
+  const normalizedLeft = normalizeComparableText(left).trim();
+  const normalizedRight = normalizeComparableText(right).trim();
+
+  return Boolean(
+    normalizedLeft && normalizedRight && normalizedLeft === normalizedRight,
+  );
+}
+
+function isWithinArticleDateWindow(left?: string, right?: string): boolean {
+  const leftTimestamp = left
+    ? Date.parse(`${left.slice(0, 10)}T00:00:00Z`)
+    : NaN;
+  const rightTimestamp = right
+    ? Date.parse(`${right.slice(0, 10)}T00:00:00Z`)
+    : NaN;
+
+  if (!Number.isFinite(leftTimestamp) || !Number.isFinite(rightTimestamp)) {
+    return false;
+  }
+
+  return Math.abs(leftTimestamp - rightTimestamp) <= 14 * 24 * 60 * 60 * 1000;
+}
+
 async function findPublishedArticleBySourceUrl({
   sourceUrl,
   supabaseClient,
@@ -294,6 +445,128 @@ async function assertPublishedSourceUrlIsUnique({
     throw new ContentArticleDuplicateSourceError(
       DUPLICATE_SOURCE_PUBLISH_ERROR_MESSAGE,
       existingArticle.slug,
+    );
+  }
+}
+
+async function listPublishedArticleDuplicateCandidates({
+  supabaseClient,
+}: {
+  supabaseClient: ArticlePublishSupabaseClient;
+}): Promise<readonly PublishedArticleSourceRow[]> {
+  const { data, error } = await supabaseClient
+    .from(ARTICLES_TABLE_NAME)
+    .select('slug, title, frontmatter, mdx')
+    .eq('status', 'published');
+
+  if (error) {
+    throw new Error('Bestaande artikelen konden niet worden opgehaald.');
+  }
+
+  return Array.isArray(data) ? (data as PublishedArticleSourceRow[]) : [];
+}
+
+function findNearDuplicateMatches({
+  existingArticles,
+  frontmatter,
+  mdx,
+}: {
+  existingArticles: readonly PublishedArticleSourceRow[];
+  frontmatter: ContentArticleFrontmatterInput;
+  mdx: string;
+}): ContentArticleNearDuplicateMatch[] {
+  const articleDate = frontmatter.date;
+  const articleTheme = frontmatter.theme;
+  const articleTitle = frontmatter.title;
+  const eventFingerprint = readFrontmatterEventFingerprint(frontmatter);
+  const primarySetNumber = extractPrimaryFeaturedSetNumber(mdx);
+  const setNumbers = extractArticleSetNumbersFromMdx(mdx);
+  const matches: ContentArticleNearDuplicateMatch[] = [];
+
+  for (const existingArticle of existingArticles) {
+    const existingMdx = existingArticle.mdx ?? '';
+    const existingTitle = readArticleTitle(existingArticle);
+    const existingDate = readFrontmatterDate(existingArticle.frontmatter);
+    const existingTheme = readFrontmatterTheme(existingArticle.frontmatter);
+    const existingEventFingerprint = readFrontmatterEventFingerprint(
+      existingArticle.frontmatter,
+    );
+    const existingPrimarySetNumber =
+      extractPrimaryFeaturedSetNumber(existingMdx);
+    const existingSetNumbers = extractArticleSetNumbersFromMdx(existingMdx);
+    const sameTheme = isSameTheme(articleTheme, existingTheme);
+    const inDateWindow = isWithinArticleDateWindow(articleDate, existingDate);
+    const overlappingSetNumbers = [...setNumbers].filter((setNumber) =>
+      existingSetNumbers.has(setNumber),
+    );
+
+    if (
+      eventFingerprint &&
+      existingEventFingerprint &&
+      eventFingerprint === existingEventFingerprint
+    ) {
+      matches.push({
+        reason: 'Zelfde event fingerprint',
+        slug: existingArticle.slug,
+        title: existingTitle,
+      });
+      continue;
+    }
+
+    if (
+      primarySetNumber &&
+      primarySetNumber === existingPrimarySetNumber &&
+      sameTheme &&
+      inDateWindow &&
+      calculateTitleSimilarity(articleTitle, existingTitle) >= 0.15
+    ) {
+      matches.push({
+        reason: `Zelfde uitgelichte set ${primarySetNumber}`,
+        slug: existingArticle.slug,
+        title: existingTitle,
+      });
+      continue;
+    }
+
+    if (overlappingSetNumbers.length && sameTheme && inDateWindow) {
+      matches.push({
+        reason: `Overlappende set(s): ${overlappingSetNumbers.join(', ')}`,
+        slug: existingArticle.slug,
+        title: existingTitle,
+      });
+    }
+  }
+
+  return matches;
+}
+
+async function assertNoNearDuplicatePublishedArticle({
+  force,
+  frontmatter,
+  mdx,
+  supabaseClient,
+}: {
+  force?: boolean;
+  frontmatter: ContentArticleFrontmatterInput;
+  mdx: string;
+  supabaseClient: ArticlePublishSupabaseClient;
+}): Promise<void> {
+  if (force) {
+    return;
+  }
+
+  const matches = findNearDuplicateMatches({
+    existingArticles: await listPublishedArticleDuplicateCandidates({
+      supabaseClient,
+    }),
+    frontmatter,
+    mdx,
+  });
+
+  if (matches.length) {
+    throw new ContentArticleNearDuplicateError(
+      NEAR_DUPLICATE_PUBLISH_ERROR_MESSAGE,
+      matches,
     );
   }
 }
@@ -410,6 +683,12 @@ export async function publishContentArticle({
 
   await assertPublishedSourceUrlIsUnique({
     frontmatter,
+    supabaseClient,
+  });
+  await assertNoNearDuplicatePublishedArticle({
+    force: input.force,
+    frontmatter,
+    mdx,
     supabaseClient,
   });
 

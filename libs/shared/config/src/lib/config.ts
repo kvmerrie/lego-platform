@@ -138,10 +138,18 @@ export const apiPaths = {
   adminCatalogSetSearch: '/api/v1/admin/catalog/search',
   adminCatalogSuggestedSets: '/api/v1/admin/catalog/suggested-sets',
   adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
+  adminRuntimeConfig: '/api/v1/admin/runtime-config',
+  adminArticles: '/api/v1/admin/articles',
+  adminArticlesPreview: '/api/v1/admin/articles/preview',
   adminEditorialAgentExtract: '/api/v1/admin/editorial-agent/extract',
   adminEditorialAgentDraft: '/api/v1/admin/editorial-agent/draft',
   adminEditorialAgentFeedItems: '/api/v1/admin/editorial-agent/feed-items',
   adminEditorialAgentFeedSync: '/api/v1/admin/editorial-agent/feed-sync',
+  adminEditorialAgentHeroImage: '/api/v1/admin/editorial-agent/hero-image',
+  adminEditorialAgentArticleImage:
+    '/api/v1/admin/editorial-agent/article-image',
+  adminEditorialAgentHeroImageUrl:
+    '/api/v1/admin/editorial-agent/hero-image-url',
   adminEditorialAgentPublish: '/api/v1/admin/editorial-agent/publish',
   articles: '/articles',
   adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
@@ -217,6 +225,10 @@ export const editorialAgentFeedEnvKeys = {
   feeds: 'EDITORIAL_AGENT_RSS_FEEDS',
 } as const;
 
+export const articlePreviewEnvKeys = {
+  enabled: 'ARTICLE_PREVIEW_ENABLED',
+} as const;
+
 export const tradeTrackerEnvKeys = {
   customerId: 'TRADETRACKER_CUSTOMER_ID',
   passphrase: 'TRADETRACKER_PASSPHRASE',
@@ -235,6 +247,12 @@ export const awinCoolblueEnvKeys = {
   feedUrl: 'AWIN_COOLBLUE_FEED_URL',
   merchantSlug: 'AWIN_COOLBLUE_MERCHANT_SLUG',
   merchantName: 'AWIN_COOLBLUE_MERCHANT_NAME',
+} as const;
+
+export const adtractionGoodbricksEnvKeys = {
+  feedUrl: 'ADTRACTION_GOODBRICKS_FEED_URL',
+  merchantSlug: 'ADTRACTION_GOODBRICKS_MERCHANT_SLUG',
+  merchantName: 'ADTRACTION_GOODBRICKS_MERCHANT_NAME',
 } as const;
 
 export interface BrowserSupabaseConfig {
@@ -291,6 +309,24 @@ export interface AwinCoolblueFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
+}
+
+export interface AdtractionGoodbricksFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+function getRuntimeEnvironment(): Record<string, string | undefined> {
+  return typeof process === 'undefined' ? {} : process.env;
+}
+
+export function isArticlePreviewEnabled(
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
+): boolean {
+  return (
+    environment[articlePreviewEnvKeys.enabled]?.trim().toLowerCase() === 'true'
+  );
 }
 
 function normalizePathname(pathname: string): string {
@@ -398,8 +434,16 @@ export function buildSetDetailPath(slug: string): string {
   return buildWebPath(`${webPathnames.sets}/${slug}`);
 }
 
-export function buildArticlePath(slug: string): string {
-  return buildWebPath(`${webPathnames.articles}/${slug}`);
+export function buildArticleThemePath(themeSlug: string): string {
+  return buildWebPath(`${webPathnames.articles}/${themeSlug}`);
+}
+
+export function buildArticlePath(slug: string, themeSlug = 'lego'): string {
+  return buildWebPath(`${webPathnames.articles}/${themeSlug}/${slug}`);
+}
+
+export function buildArticlePreviewPath(previewId: string): string {
+  return buildWebPath(`${webPathnames.articles}/preview/${previewId}`);
 }
 
 export function buildThemePath(slug: string): string {
@@ -1027,6 +1071,23 @@ export function getAwinCoolblueFeedConfig(
   };
 }
 
+export function getAdtractionGoodbricksFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): AdtractionGoodbricksFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: adtractionGoodbricksEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[adtractionGoodbricksEnvKeys.merchantSlug]?.trim() ||
+      'goodbricks',
+    merchantName:
+      environment[adtractionGoodbricksEnvKeys.merchantName]?.trim() ||
+      'Goodbricks',
+  };
+}
+
 export function hasAwinCoolblueFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): boolean {
@@ -1039,6 +1100,20 @@ export function getMissingAwinCoolblueEnvKeys(
   return environment[awinCoolblueEnvKeys.feedUrl]
     ? []
     : [awinCoolblueEnvKeys.feedUrl];
+}
+
+export function hasAdtractionGoodbricksFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[adtractionGoodbricksEnvKeys.feedUrl]);
+}
+
+export function getMissingAdtractionGoodbricksEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[adtractionGoodbricksEnvKeys.feedUrl]
+    ? []
+    : [adtractionGoodbricksEnvKeys.feedUrl];
 }
 
 export function hasTradeTrackerAffiliateConfig(

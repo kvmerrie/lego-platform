@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -126,6 +126,7 @@ export function ImageGallery({
   className,
   images,
   lightboxRequest,
+  onImageClick,
   presentation = 'full',
   variant = 'detail',
 }: {
@@ -136,6 +137,7 @@ export function ImageGallery({
     index: number;
     key: number;
   } | null;
+  onImageClick?: (imageIndex: number) => void;
   presentation?: 'full' | 'lightbox-only';
   variant?: ImageGalleryVariant;
 }) {
@@ -246,6 +248,20 @@ export function ImageGallery({
       ? null
       : resolvedImages[safeLightboxImageIndex];
   const hasMultipleImages = resolvedImages.length > 1;
+  const visibleArticleImages =
+    variant === 'article' && resolvedImages.length > 4
+      ? resolvedImages.slice(0, 4)
+      : resolvedImages;
+  const hiddenArticleImageCount =
+    variant === 'article'
+      ? resolvedImages.length - visibleArticleImages.length
+      : 0;
+  const articleGridCount =
+    variant === 'article'
+      ? resolvedImages.length > 4
+        ? '5-plus'
+        : resolvedImages.length.toString()
+      : undefined;
 
   function handleImageError(imageIndex: number) {
     setFailedImageIndexes((currentIndexes) =>
@@ -259,6 +275,11 @@ export function ImageGallery({
   }
 
   function openLightbox(imageIndex: number) {
+    if (onImageClick) {
+      onImageClick(clampIndex(imageIndex, resolvedImages.length));
+      return;
+    }
+
     setLightboxImageIndex(clampIndex(imageIndex, resolvedImages.length));
   }
 
@@ -327,122 +348,61 @@ export function ImageGallery({
           tabIndex={variant === 'detail' ? 0 : -1}
         >
           {variant === 'article' ? (
-            resolvedImages.length === 3 ? (
-              <div
-                className={`${styles.articleGrid} ${styles.articleGridThreeUp}`}
-                data-count="3"
-                data-layout="three-up"
-              >
+            <div className={styles.articleGrid} data-count={articleGridCount}>
+              {visibleArticleImages.map((image, imageIndex) => (
                 <figure
-                  className={`${styles.articleFigure} ${styles.articleFigureFeature}`}
-                  key={`${resolvedImages[0].src}-0`}
+                  className={styles.articleFigure}
+                  key={`${image.src}-${imageIndex}`}
                 >
                   <button
-                    aria-label={`Open ${getGalleryImageLabel(resolvedImages[0], 0)} in volledig scherm`}
+                    aria-label={`Open ${getGalleryImageLabel(image, imageIndex)} in volledig scherm`}
                     className={styles.articleImageButton}
-                    data-gallery-tile-index={0}
-                    onClick={() => openLightbox(0)}
+                    data-gallery-tile-index={imageIndex}
+                    onClick={() => openLightbox(imageIndex)}
                     type="button"
                   >
                     <div className={styles.articleMediaFrame}>
                       <GalleryImageMedia
-                        image={resolvedImages[0]}
-                        imageIndex={0}
+                        image={image}
+                        imageIndex={imageIndex}
                         kind="article"
-                        isFallbackVisible={Boolean(failedImageIndexes[0])}
+                        isFallbackVisible={Boolean(
+                          failedImageIndexes[imageIndex],
+                        )}
                         onImageError={handleImageError}
                       />
+                      {hiddenArticleImageCount > 0 &&
+                      imageIndex === visibleArticleImages.length - 1 ? (
+                        <span
+                          aria-hidden="true"
+                          className={styles.articleMoreOverlay}
+                        >
+                          +{hiddenArticleImageCount}
+                        </span>
+                      ) : null}
+                      <span
+                        aria-hidden="true"
+                        className={styles.articleZoomOverlay}
+                        data-gallery-zoom-overlay="true"
+                      >
+                        <span className={styles.articleZoomIconShell}>
+                          <ZoomIn
+                            aria-hidden="true"
+                            className={styles.articleZoomIcon}
+                            strokeWidth={2.2}
+                          />
+                        </span>
+                      </span>
                     </div>
                   </button>
-                  {resolvedImages[0].caption ? (
+                  {image.caption ? (
                     <figcaption className={styles.articleCaption}>
-                      {resolvedImages[0].caption}
+                      {image.caption}
                     </figcaption>
                   ) : null}
                 </figure>
-                {resolvedImages.slice(1).map((image, index) => {
-                  const imageIndex = index + 1;
-
-                  return (
-                    <figure
-                      className={joinClasses(
-                        styles.articleFigure,
-                        index === 0
-                          ? styles.articleFigureStackTop
-                          : styles.articleFigureStackBottom,
-                      )}
-                      key={`${image.src}-${imageIndex}`}
-                    >
-                      <button
-                        aria-label={`Open ${getGalleryImageLabel(image, imageIndex)} in volledig scherm`}
-                        className={styles.articleImageButton}
-                        data-gallery-tile-index={imageIndex}
-                        onClick={() => openLightbox(imageIndex)}
-                        type="button"
-                      >
-                        <div className={styles.articleMediaFrame}>
-                          <GalleryImageMedia
-                            image={image}
-                            imageIndex={imageIndex}
-                            kind="article"
-                            isFallbackVisible={Boolean(
-                              failedImageIndexes[imageIndex],
-                            )}
-                            onImageError={handleImageError}
-                          />
-                        </div>
-                      </button>
-                      {image.caption ? (
-                        <figcaption className={styles.articleCaption}>
-                          {image.caption}
-                        </figcaption>
-                      ) : null}
-                    </figure>
-                  );
-                })}
-              </div>
-            ) : (
-              <div
-                className={styles.articleGrid}
-                data-count={
-                  resolvedImages.length >= 4
-                    ? '4-plus'
-                    : resolvedImages.length.toString()
-                }
-              >
-                {resolvedImages.map((image, imageIndex) => (
-                  <figure
-                    className={styles.articleFigure}
-                    key={`${image.src}-${imageIndex}`}
-                  >
-                    <button
-                      aria-label={`Open ${getGalleryImageLabel(image, imageIndex)} in volledig scherm`}
-                      className={styles.articleImageButton}
-                      data-gallery-tile-index={imageIndex}
-                      onClick={() => openLightbox(imageIndex)}
-                      type="button"
-                    >
-                      <div className={styles.articleMediaFrame}>
-                        <GalleryImageMedia
-                          image={image}
-                          imageIndex={imageIndex}
-                          kind="article"
-                          isFallbackVisible={Boolean(
-                            failedImageIndexes[imageIndex],
-                          )}
-                          onImageError={handleImageError}
-                        />
-                      </div>
-                    </button>
-                    {image.caption ? (
-                      <figcaption className={styles.articleCaption}>
-                        {image.caption}
-                      </figcaption>
-                    ) : null}
-                  </figure>
-                ))}
-              </div>
-            )
+              ))}
+            </div>
           ) : (
             <div className={styles.detailGallery}>
               <button

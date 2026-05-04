@@ -7,6 +7,10 @@ import {
   buildCatalogThemeSlug,
 } from '@lego-platform/catalog/util';
 import {
+  editorialAgentSetRailPropName,
+  formatSetRailSetIdsForMdx,
+} from '@lego-platform/content/util';
+import {
   ContentArticleCallout,
   ContentArticleFeaturedSet,
   ContentArticleFaq,
@@ -32,7 +36,9 @@ import {
 } from './article-mdx-embed-normalization';
 import {
   getArticleCatalogSetImageUrl,
+  resolveCuratedRelatedArticleCatalogSetRail,
   resolveArticleCatalogSetCards,
+  resolveArticleCatalogSetCard,
 } from './article-catalog-set-resolver';
 
 export {
@@ -102,6 +108,77 @@ async function resolveArticleMdxFeaturedSet({
     pricePanelSnapshot,
     setCard,
   };
+}
+
+function extractFirstFeaturedSetId(mdx: string): string | undefined {
+  const match = mdx.match(
+    /<FeaturedSet\b[^>]*\bsetNumber\s*=\s*(?:"([^"]+)"|'([^']+)')/iu,
+  );
+
+  return normalizeFeaturedSetId(match?.[1] ?? match?.[2]);
+}
+
+function hasAuthoredSetRail(mdx: string): boolean {
+  return /<SetRail\b/iu.test(mdx);
+}
+
+function insertBeforeConclusion({
+  block,
+  mdx,
+}: {
+  block: string;
+  mdx: string;
+}) {
+  const conclusionMatch = mdx.match(/\n## Korte conclusie\b/iu);
+
+  if (!conclusionMatch || typeof conclusionMatch.index !== 'number') {
+    return `${mdx.trimEnd()}\n\n${block}\n`;
+  }
+
+  return `${mdx.slice(0, conclusionMatch.index).trimEnd()}\n\n${block}\n${mdx.slice(conclusionMatch.index)}`;
+}
+
+export async function resolveArticleMdxSourceWithCuratedRelatedSetRail(
+  mdx: string,
+): Promise<string> {
+  if (hasAuthoredSetRail(mdx)) {
+    return mdx;
+  }
+
+  const featuredSetId = extractFirstFeaturedSetId(mdx);
+
+  if (!featuredSetId) {
+    return mdx;
+  }
+
+  const featuredSetCard = await resolveArticleCatalogSetCard({
+    canonicalId: featuredSetId,
+  });
+
+  if (!featuredSetCard) {
+    return mdx;
+  }
+
+  const curatedRelatedRail = await resolveCuratedRelatedArticleCatalogSetRail({
+    featuredSetCard,
+  });
+
+  if (!curatedRelatedRail) {
+    return mdx;
+  }
+
+  const formattedSetIds = formatSetRailSetIdsForMdx(
+    curatedRelatedRail.setCards.map((setCard) => setCard.id),
+  );
+
+  if (formattedSetIds.split(',').filter(Boolean).length < 2) {
+    return mdx;
+  }
+
+  return insertBeforeConclusion({
+    block: `<SetRail title="${curatedRelatedRail.title}" ${editorialAgentSetRailPropName}="${formattedSetIds}" />`,
+    mdx,
+  });
 }
 
 async function resolveArticleMdxSetSpotlightListItems({

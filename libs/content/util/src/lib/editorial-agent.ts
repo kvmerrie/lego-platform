@@ -31,7 +31,10 @@ export interface EditorialAgentArticleFrontmatter {
   description: string;
   heroImage: string;
   heroImageAlt: string;
+  heroImageCredit?: string;
   slug: string;
+  signalSourceName?: string;
+  sourceDisplayMode?: 'auto';
   sourceUrl: string;
   status: 'draft';
   theme: string;
@@ -265,12 +268,12 @@ export const editorialAgentWritingGuidelines: readonly EditorialAgentWritingGuid
     {
       id: 'related-set-rail',
       instruction:
-        'Gebruik een SetRail alleen wanneer er minimaal 2 betrouwbare related sets zijn. Leid die rail redactioneel in met fandom of koopcontext, gebruik maximaal 6 sets, zet direct genoemde sets eerst en vermijd saaie koppen zoals "Gerelateerde sets". Gebruik voor release roundups liever een SetSpotlightList als hoofdblok, en bewaar SetRail voor related of aanvullende keuzes.',
+        'Gebruik een SetRail alleen wanneer er minimaal 2 betrouwbare related sets zijn. Leid die rail redactioneel in met fandom of koopcontext, gebruik maximaal 6 sets, zet direct genoemde sets eerst en vermijd saaie koppen zoals "Gerelateerde sets". Plaats SetRail na "Voor wie is dit leuk?" en vóór "Korte conclusie". Gebruik voor release roundups liever een SetSpotlightList als hoofdblok, en bewaar SetRail voor related of aanvullende keuzes.',
     },
     {
       id: 'required-structure',
       instruction:
-        'Gebruik bij single-set nieuws, deals en rewards een FeaturedSet na de eerste twee alinea’s. Gebruik bij release roundups een SetSpotlightList als hoofdblok voor de gematchte sets. Houd altijd een sectie "Wanneer kopen?", een korte conclusie en een bronvermelding aan.',
+        'Gebruik bij single-set nieuws, deals en rewards een FeaturedSet direct na de intro. Zet eventuele SetRail na "Voor wie is dit leuk?" en vóór "Korte conclusie". Gebruik bij release roundups een SetSpotlightList als hoofdblok voor de gematchte sets. Houd altijd een sectie "Wanneer kopen?", een korte conclusie en een bronvermelding aan, met de bronvermelding als laatste blok.',
     },
   ] as const;
 
@@ -310,7 +313,7 @@ export const editorialAgentArticleComponentManifest: readonly EditorialAgentArti
     {
       name: 'ImageGallery',
       usage:
-        '<ImageGallery images="/articles/example/one.jpg::Alt tekst;;/articles/example/two.jpg::Nog een alt" />',
+        '<ImageGallery images="https://storage.example/article-images/example/one.webp::Alt tekst;;https://storage.example/article-images/example/two.webp::Nog een alt" />',
       whenToUse:
         'Voor meerdere beelden die je ook fullscreen wilt kunnen openen.',
     },
@@ -323,7 +326,7 @@ export const editorialAgentArticleComponentManifest: readonly EditorialAgentArti
     {
       name: 'ArticleCard',
       usage:
-        '<ArticleCard slug="star-wars-day-2026" title="..." description="..." date="2026-05-01" heroImage="/articles/example/hero.jpg" heroImageAlt="..." />',
+        '<ArticleCard slug="star-wars-day-2026" title="..." description="..." date="2026-05-01" heroImage="https://storage.example/article-images/example/hero.webp" heroImageAlt="..." />',
       whenToUse:
         'Als je in een artikel naar een ander Brickhunt-artikel wilt doorverwijzen.',
     },
@@ -380,6 +383,10 @@ Moet je eerst nog punten sparen of extra aankopen doen om hem te krijgen? Dan zo
 ## Waarom dit opvalt
 
 Je krijgt hier geen set die een hele kast overneemt, maar wel een trofee-achtig displaystuk dat meteen herkenbaar is. Juist dat compacte maakt hem sterker dan veel kleine rewards die na een week alweer in de achtergrond verdwijnen.
+
+## Voor wie is dit leuk?
+
+Deze reward is vooral leuk voor Mario Kart-fans die zo'n klein displayobject grappig vinden naast de grotere karts. Zoek je vooral veel bouwtijd, dan zijn de sets hieronder interessanter om te vergelijken.
 ${relatedSetRail}
 
 ## Korte conclusie

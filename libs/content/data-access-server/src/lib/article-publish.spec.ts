@@ -25,7 +25,9 @@ function createSupabaseClientMock({
 }: {
   existingPublishedArticles?: Array<{
     frontmatter: Record<string, unknown>;
+    mdx?: string;
     slug: string;
+    title?: string;
   }>;
   existingSlugs?: readonly string[];
 } = {}) {
@@ -268,6 +270,149 @@ describe('content article publishing', () => {
     ).resolves.toEqual({
       slug: 'lego-star-wars-set',
     });
+  });
+
+  test('returns a near duplicate for the same FeaturedSet in the date window', async () => {
+    const supabaseClient = createSupabaseClientMock({
+      existingPublishedArticles: [
+        {
+          frontmatter: {
+            date: '2026-06-01',
+            theme: 'Star Wars',
+            title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader onthuld',
+          },
+          mdx: '<FeaturedSet setNumber="75461" />',
+          slug: 'up-scaled-darth-vader',
+          title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader onthuld',
+        },
+      ],
+    });
+
+    await expect(
+      publishContentArticle({
+        input: {
+          frontmatter: {
+            date: '2026-06-05',
+            description: 'Nieuwe Star Wars-sets.',
+            sourceUrl: 'https://example.com/star-wars-juni',
+            theme: 'Star Wars',
+            title: 'LEGO Star Wars juni: Darth Vader en meer onthuld',
+          },
+          mdx: '<FeaturedSet setNumber="75461" />',
+        },
+        supabaseClient: toPublishSupabaseClient(supabaseClient),
+      }),
+    ).rejects.toMatchObject({
+      matches: [
+        {
+          reason: 'Zelfde uitgelichte set 75461',
+          slug: 'up-scaled-darth-vader',
+        },
+      ],
+      message: 'Mogelijk overlappend artikel gevonden.',
+    });
+
+    expect(supabaseClient.insertedRows).toHaveLength(0);
+  });
+
+  test('detects overlapping SetSpotlightList and FeaturedSet sets', async () => {
+    const supabaseClient = createSupabaseClientMock({
+      existingPublishedArticles: [
+        {
+          frontmatter: {
+            date: '2026-06-01',
+            theme: 'Star Wars',
+            title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader onthuld',
+          },
+          mdx: '<FeaturedSet setNumber="75461" />',
+          slug: 'up-scaled-darth-vader',
+        },
+      ],
+    });
+
+    await expect(
+      publishContentArticle({
+        input: {
+          frontmatter: {
+            date: '2026-06-08',
+            description: 'Nieuwe Star Wars-sets.',
+            sourceUrl: 'https://example.com/star-wars-juni',
+            theme: 'Star Wars',
+            title: 'LEGO Star Wars juni sets onthuld',
+          },
+          mdx: '<SetSpotlightList setIds="75461, 75462" />',
+        },
+        supabaseClient: toPublishSupabaseClient(supabaseClient),
+      }),
+    ).rejects.toMatchObject({
+      matches: [
+        {
+          reason: 'Overlappende set(s): 75461',
+          slug: 'up-scaled-darth-vader',
+        },
+      ],
+    });
+  });
+
+  test('force publish bypasses near duplicates but not exact sourceUrl duplicates', async () => {
+    const nearDuplicateSupabaseClient = createSupabaseClientMock({
+      existingPublishedArticles: [
+        {
+          frontmatter: {
+            date: '2026-06-01',
+            sourceUrl: 'https://example.com/ander-artikel',
+            theme: 'Star Wars',
+            title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader onthuld',
+          },
+          mdx: '<FeaturedSet setNumber="75461" />',
+          slug: 'up-scaled-darth-vader',
+        },
+      ],
+    });
+
+    await expect(
+      publishContentArticle({
+        input: {
+          force: true,
+          frontmatter: {
+            date: '2026-06-05',
+            description: 'Nieuwe Star Wars-sets.',
+            sourceUrl: 'https://example.com/star-wars-juni',
+            theme: 'Star Wars',
+            title: 'LEGO Star Wars juni: Darth Vader en meer onthuld',
+          },
+          mdx: '<FeaturedSet setNumber="75461" />',
+        },
+        supabaseClient: toPublishSupabaseClient(nearDuplicateSupabaseClient),
+      }),
+    ).resolves.toEqual({
+      slug: 'lego-star-wars-juni-darth-vader-en-meer-onthuld',
+    });
+
+    const duplicateSourceSupabaseClient = createSupabaseClientMock({
+      existingPublishedArticles: [
+        {
+          frontmatter: {
+            sourceUrl: 'https://example.com/star-wars-juni',
+          },
+          slug: 'bestaand-artikel',
+        },
+      ],
+    });
+
+    await expect(
+      publishContentArticle({
+        input: {
+          ...createPublishInput(),
+          force: true,
+          frontmatter: {
+            ...createPublishInput().frontmatter,
+            sourceUrl: 'https://example.com/star-wars-juni',
+          },
+        },
+        supabaseClient: toPublishSupabaseClient(duplicateSourceSupabaseClient),
+      }),
+    ).rejects.toThrow('Dit bronartikel is al gepubliceerd.');
   });
 });
 

@@ -3,33 +3,6 @@
   eyebrow="Editorial"
   title="Editorial Agent"
 >
-  <div adminPageActions class="admin-page__actions">
-    <button
-      class="admin-button admin-button--primary"
-      [disabled]="isGenerating()"
-      (click)="analyzeSourceUrl()"
-      type="button"
-    >
-      {{ isGenerating() ? 'Analyse draait…' : 'Analyseer URL' }}
-    </button>
-    <button
-      class="admin-button admin-button--subtle"
-      [disabled]="!mdxOutput()"
-      (click)="copyMdx()"
-      type="button"
-    >
-      Copy MDX
-    </button>
-    <button
-      class="admin-button admin-button--primary"
-      [disabled]="!mdxOutput() || isPublishing()"
-      (click)="publishArticle()"
-      type="button"
-    >
-      {{ isPublishing() ? 'Publiceren…' : 'Publish article' }}
-    </button>
-  </div>
-
   <div adminPageMeta class="editorial-agent__meta">
     <span class="editorial-agent__meta-pill">Output blijft draft</span>
     <span class="editorial-agent__meta-pill">
@@ -43,6 +16,44 @@
     <span class="editorial-agent__meta-pill">Publiceert naar Supabase</span>
   </div>
 
+  <nav
+    class="editorial-agent__tabs"
+    aria-label="Editorial Agent beheer"
+    role="tablist"
+  >
+    <button
+      class="editorial-agent__tab"
+      [class.editorial-agent__tab--active]="activeTab() === 'feed'"
+      [attr.aria-selected]="activeTab() === 'feed'"
+      (click)="setActiveTab('feed')"
+      role="tab"
+      type="button"
+    >
+      Nieuwe feed items
+    </button>
+    <button
+      class="editorial-agent__tab"
+      [class.editorial-agent__tab--active]="activeTab() === 'published'"
+      [attr.aria-selected]="activeTab() === 'published'"
+      (click)="setActiveTab('published')"
+      role="tab"
+      type="button"
+    >
+      Gepubliceerde artikelen
+    </button>
+    <button
+      class="editorial-agent__tab"
+      [class.editorial-agent__tab--active]="activeTab() === 'manual'"
+      [attr.aria-selected]="activeTab() === 'manual'"
+      (click)="setActiveTab('manual')"
+      role="tab"
+      type="button"
+    >
+      Handmatig artikel maken
+    </button>
+  </nav>
+
+  @if (activeTab() === 'feed') {
   <section class="admin-panel admin-stack">
     <lego-admin-section-header
       description="Nieuwe RSS items worden alleen als bronmetadata opgeslagen. Draft en publish blijven handmatige acties."
@@ -60,25 +71,145 @@
       </button>
     </lego-admin-section-header>
 
+    <div
+      class="editorial-agent__filter-tabs"
+      role="group"
+      aria-label="Feed filter"
+    >
+      <button
+        class="editorial-agent__filter-tab"
+        [class.editorial-agent__filter-tab--active]="feedFilter() === 'inbox'"
+        (click)="setFeedFilter('inbox')"
+        type="button"
+      >
+        Inbox
+      </button>
+      <button
+        class="editorial-agent__filter-tab"
+        [class.editorial-agent__filter-tab--active]="feedFilter() === 'all'"
+        (click)="setFeedFilter('all')"
+        type="button"
+      >
+        All
+      </button>
+      <button
+        class="editorial-agent__filter-tab"
+        [class.editorial-agent__filter-tab--active]="feedFilter() === 'ignored'"
+        (click)="setFeedFilter('ignored')"
+        type="button"
+      >
+        Ignored
+      </button>
+      <button
+        class="editorial-agent__filter-tab"
+        [class.editorial-agent__filter-tab--active]="feedFilter() === 'low_value'"
+        (click)="setFeedFilter('low_value')"
+        type="button"
+      >
+        Low value
+      </button>
+      <button
+        class="editorial-agent__filter-tab"
+        [class.editorial-agent__filter-tab--active]="feedFilter() === 'published'"
+        (click)="setFeedFilter('published')"
+        type="button"
+      >
+        Published
+      </button>
+    </div>
+
     @if (feedErrorMessage(); as feedErrorMessage) {
     <lego-admin-empty-state
       [description]="feedErrorMessage"
       title="Feed fout"
       tone="danger"
     />
-    } @else if (feedItems().length) {
+    } @else if (visibleFeedItems().length) {
     <ul class="editorial-agent__feed-list">
-      @for (feedItem of feedItems(); track feedItem.id) {
-      <li class="editorial-agent__feed-item">
+      @for (feedItem of visibleFeedItems(); track feedItem.id) {
+      <li
+        class="editorial-agent__feed-item"
+        [ngClass]="getFeedItemStateClass(feedItem)"
+      >
         <div class="editorial-agent__feed-copy">
-          <strong>{{ feedItem.title }}</strong>
+          <strong>
+            @if (feedItem.status === 'new') {
+            <span class="editorial-agent__feed-unread-indicator"></span>
+            } {{ feedItem.title }}
+          </strong>
           <span>
-            {{ feedItem.feedName }} · {{ formatFeedItemStatus(feedItem.status)
-            }} · {{ feedItem.sourcePublishedAt || feedItem.createdAt }}
+            {{ feedItem.feedName }} · {{ feedItem.sourcePublishedAt ||
+            feedItem.createdAt }}
+            <span class="editorial-agent__meta-pill">
+              {{ formatFeedItemStatus(feedItem.status) }}
+            </span>
           </span>
           <a [href]="feedItem.sourceUrl" target="_blank" rel="noreferrer">
             {{ feedItem.sourceUrl }}
           </a>
+          @if (getFeedOverlapSuggestions(feedItem); as overlapSuggestions) { @if
+          (overlapSuggestions.length) {
+          <div
+            class="editorial-agent__feed-overlap"
+            [class.editorial-agent__feed-overlap--published]="hasPublishedFeedOverlap(feedItem)"
+          >
+            <strong> {{ getFeedOverlapHeading(feedItem) }} </strong>
+            <ul class="editorial-agent__feed-overlap-list">
+              @for (suggestion of overlapSuggestions; track suggestion.id) { @if
+              (isFeedOverlapExpanded(feedItem) || $index === 0) {
+              <li>
+                <span>{{ suggestion.title }}</span>
+                <small>
+                  {{ suggestion.source }} · {{ suggestion.status }} · {{
+                  suggestion.reason }}
+                </small>
+                @if (canUseExistingOverlapSuggestion(suggestion)) {
+                <button
+                  class="admin-button admin-button--subtle"
+                  (click)="useExistingOverlapSuggestion(suggestion)"
+                  type="button"
+                >
+                  Gebruik bestaande
+                </button>
+                } @if (suggestion.feedItemId) {
+                <button
+                  class="admin-button admin-button--subtle"
+                  (click)="ignoreOtherOverlapSuggestion(suggestion)"
+                  type="button"
+                >
+                  Negeer andere
+                </button>
+                }
+              </li>
+              } }
+            </ul>
+            <div class="editorial-agent__feed-overlap-actions">
+              <button
+                class="admin-button admin-button--subtle"
+                (click)="toggleFeedOverlap(feedItem)"
+                type="button"
+              >
+                {{ isFeedOverlapExpanded(feedItem) ? 'Verberg overlap' : 'Bekijk
+                overlap' }}
+              </button>
+              <button
+                class="admin-button admin-button--subtle"
+                (click)="ignoreFeedItem(feedItem)"
+                type="button"
+              >
+                Negeer deze
+              </button>
+              <button
+                class="admin-button admin-button--primary"
+                [disabled]="isGenerating() || !canGenerateDraftForFeedItem(feedItem)"
+                (click)="generateDraftForFeedItem(feedItem)"
+                type="button"
+              >
+                Genereer toch draft
+              </button>
+            </div>
+          </div>
+          } }
         </div>
         <div class="editorial-agent__feed-actions">
           <button
@@ -102,13 +233,542 @@
     </ul>
     } @else {
     <lego-admin-empty-state
-      description="Gebruik Feed sync om nieuwe bronartikelen op te halen. Er wordt niets automatisch gepubliceerd."
-      title="Geen nieuwe feed items"
+      description="Deze filter bevat geen items. Gebruik Feed sync om nieuwe bronartikelen op te halen."
+      title="Geen feed items"
       tone="empty"
     />
     }
   </section>
+  } @if (activeTab() === 'published') {
+  <section class="admin-panel admin-stack">
+    <lego-admin-section-header
+      description="Bewerk gepubliceerde artikelen zonder slug of publish-tijd te veranderen."
+      eyebrow="Publicaties"
+      title="Published articles"
+    >
+      <button
+        adminSectionActions
+        class="admin-button admin-button--subtle"
+        [disabled]="isLoadingPublishedArticles()"
+        (click)="refreshPublishedArticles()"
+        type="button"
+      >
+        {{ isLoadingPublishedArticles() ? 'Laden…' : 'Ververs' }}
+      </button>
+    </lego-admin-section-header>
 
+    @if (publishedArticlesSuccessMessage(); as publishedArticlesSuccessMessage)
+    {
+    <div class="editorial-agent__modal-notice">
+      <span class="editorial-agent__meta-pill">
+        {{ publishedArticlesSuccessMessage }}
+      </span>
+    </div>
+    } @if (publishedArticlesErrorMessage(); as publishedArticlesErrorMessage) {
+    <lego-admin-empty-state
+      [description]="publishedArticlesErrorMessage"
+      title="Artikelen laden mislukt"
+      tone="danger"
+    />
+    } @else if (publishedArticles().length) {
+    <ul class="editorial-agent__feed-list">
+      @for (article of publishedArticles(); track article.slug) {
+      <li class="editorial-agent__feed-item">
+        <div class="editorial-agent__feed-copy">
+          <strong>{{ article.title }}</strong>
+          <span>
+            {{ article.date }} · {{ article.status }} · bijgewerkt {{
+            article.updatedAt }}
+          </span>
+          <span>{{ article.slug }}</span>
+        </div>
+        <div class="editorial-agent__feed-actions">
+          <button
+            class="admin-button admin-button--primary"
+            (click)="editPublishedArticle(article)"
+            type="button"
+          >
+            Bewerken
+          </button>
+          <a
+            class="admin-button admin-button--subtle"
+            [href]="buildPublishedArticleUrl(article.slug, article.theme)"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Bekijk artikel
+          </a>
+        </div>
+      </li>
+      }
+    </ul>
+    } @else {
+    <lego-admin-empty-state
+      description="Zodra er artikelen gepubliceerd zijn, kun je ze hier bijwerken."
+      title="Nog geen gepubliceerde artikelen"
+      tone="empty"
+    />
+    } @if (isArticleEditModalOpen() && articleEditSlug()) {
+    <div
+      class="editorial-agent__modal"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="editorial-agent-edit-title"
+    >
+      <section
+        class="admin-panel editorial-agent__modal-panel editorial-agent__article-editor-modal"
+      >
+        <header class="editorial-agent__modal-header">
+          <div class="editorial-agent__modal-heading">
+            <span>Bewerken</span>
+            <h2 id="editorial-agent-edit-title">Artikel aanpassen</h2>
+            <p>
+              DB frontmatter is leidend. De slug en publish-tijd blijven
+              behouden.
+            </p>
+          </div>
+          <div class="editorial-agent__modal-actions">
+            <button
+              class="admin-button admin-button--subtle"
+              [disabled]="!articlePreviewEnabled() || isCreatingArticlePreview()"
+              (click)="openArticleEditPreview()"
+              type="button"
+              [title]="
+              articlePreviewEnabled()
+                ? 'Open preview'
+                : 'Preview is alleen beschikbaar op staging/local.'
+            "
+            >
+              {{ isCreatingArticlePreview() ? 'Preview maken…' : 'Preview
+              openen' }}
+            </button>
+            <button
+              class="admin-button admin-button--primary"
+              [disabled]="isSavingArticleEdit()"
+              (click)="savePublishedArticleEdit()"
+              type="button"
+            >
+              {{ isSavingArticleEdit() ? 'Opslaan…' : 'Opslaan' }}
+            </button>
+            <button
+              class="admin-button admin-button--subtle editorial-agent__modal-close"
+              (click)="closeArticleEditModal()"
+              type="button"
+              aria-label="Sluit artikel bewerken"
+            >
+              ×
+            </button>
+          </div>
+        </header>
+
+        @if (articleEditSuccessMessage(); as articleEditSuccessMessage) {
+        <div class="editorial-agent__modal-notice">
+          <span class="editorial-agent__meta-pill">
+            {{ articleEditSuccessMessage }}
+          </span>
+        </div>
+        } @if (articleEditErrorMessage(); as articleEditErrorMessage) {
+        <div class="editorial-agent__modal-notice">
+          <span
+            class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+          >
+            {{ articleEditErrorMessage }}
+          </span>
+        </div>
+        }
+
+        <div class="editorial-agent__draft-editor">
+          <div class="editorial-agent__draft-tabs" role="tablist">
+            <button
+              class="editorial-agent__draft-tab"
+              [class.editorial-agent__draft-tab--active]="articleEditModalTab() === 'inhoud'"
+              (click)="setArticleEditModalTab('inhoud')"
+              type="button"
+            >
+              Inhoud
+            </button>
+            <button class="editorial-agent__draft-tab" disabled type="button">
+              Sets
+            </button>
+            <button
+              class="editorial-agent__draft-tab"
+              [class.editorial-agent__draft-tab--active]="articleEditModalTab() === 'beeld'"
+              (click)="setArticleEditModalTab('beeld')"
+              type="button"
+            >
+              Beeld
+            </button>
+            <button
+              class="editorial-agent__draft-tab"
+              [class.editorial-agent__draft-tab--active]="articleEditModalTab() === 'publicatie'"
+              (click)="setArticleEditModalTab('publicatie')"
+              type="button"
+            >
+              Publicatie
+            </button>
+            <button class="editorial-agent__draft-tab" disabled type="button">
+              Debug
+            </button>
+          </div>
+
+          <div class="editorial-agent__draft-content">
+            @if (articleEditModalTab() === 'inhoud') {
+            <section class="admin-panel admin-stack editorial-agent__mdx-panel">
+              <lego-admin-section-header
+                description="Werk de kernvelden en MDX bij. Opslaan gebeurt pas via de header."
+                eyebrow="Inhoud"
+                title="Artikelinhoud"
+              />
+
+              <div class="editorial-agent__content-top">
+                <button
+                  class="editorial-agent__hero-thumb"
+                  (click)="setArticleEditModalTab('beeld')"
+                  type="button"
+                  aria-label="Open beeld tab"
+                >
+                  @if (articleEditHeroImage()) {
+                  <img
+                    [alt]="articleEditTitle()"
+                    [src]="articleEditHeroImage()"
+                  />
+                  } @else {
+                  <span>Geen hero</span>
+                  }
+                  <strong>Hero afbeelding</strong>
+                  <small>Open Beeld</small>
+                </button>
+
+                <div class="editorial-agent__field-grid">
+                  <label
+                    class="admin-filterbar__group admin-filterbar__group--wide"
+                  >
+                    <span class="admin-filterbar__label">Titel</span>
+                    <input
+                      class="admin-input"
+                      [value]="articleEditTitle()"
+                      (input)="articleEditTitle.set($any($event.target).value)"
+                      type="text"
+                    />
+                  </label>
+                  <label
+                    class="admin-filterbar__group admin-filterbar__group--wide"
+                  >
+                    <span class="admin-filterbar__label">Description</span>
+                    <input
+                      class="admin-input"
+                      [value]="articleEditDescription()"
+                      (input)="articleEditDescription.set($any($event.target).value)"
+                      type="text"
+                    />
+                  </label>
+                  <label class="admin-filterbar__group">
+                    <span class="admin-filterbar__label">Theme</span>
+                    <input
+                      class="admin-input"
+                      [value]="articleEditTheme()"
+                      (input)="articleEditTheme.set($any($event.target).value)"
+                      type="text"
+                    />
+                  </label>
+                  <label class="admin-filterbar__group">
+                    <span class="admin-filterbar__label">Datum</span>
+                    <input
+                      class="admin-input"
+                      [value]="articleEditDate()"
+                      (input)="articleEditDate.set($any($event.target).value)"
+                      type="date"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <textarea
+                class="editorial-agent__textarea"
+                [value]="articleEditMdx()"
+                (input)="articleEditMdx.set($any($event.target).value)"
+                spellcheck="false"
+              ></textarea>
+            </section>
+            } @if (articleEditModalTab() === 'beeld') {
+            <div class="editorial-agent__image-section-stack">
+              <section
+                class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--hero"
+              >
+                <lego-admin-section-header
+                  description="Upload alleen beeld dat je mag gebruiken. Zonder handmatige hero blijft de catalogusfallback actief."
+                  eyebrow="Beeld"
+                  title="Hero"
+                />
+
+                <div class="editorial-agent__hero-row">
+                  <div class="editorial-agent__hero-preview">
+                    @if (articleEditHeroImage()) {
+                    <img
+                      [alt]="articleEditTitle()"
+                      [src]="articleEditHeroImage()"
+                    />
+                    } @else {
+                    <span>Geen handmatige hero ingesteld.</span>
+                    }
+                  </div>
+
+                  <div class="editorial-agent__image-actions">
+                    <label class="admin-button admin-button--subtle">
+                      <span>
+                        {{ isUploadingArticleEditHeroImage() ? 'Uploaden…' :
+                        'Upload bestand' }}
+                      </span>
+                      <input
+                        class="editorial-agent__file-input"
+                        accept="image/jpeg,image/png,image/webp"
+                        [disabled]="isUploadingArticleEditHeroImage()"
+                        (change)="uploadArticleEditHeroImageFromInput($event)"
+                        type="file"
+                      />
+                    </label>
+                    <button
+                      class="admin-button admin-button--subtle"
+                      [disabled]="isUploadingArticleEditHeroImage() || !articleEditHeroImage()"
+                      (click)="removeArticleEditHeroImage()"
+                      type="button"
+                    >
+                      Verwijder hero
+                    </button>
+                  </div>
+
+                  <div class="editorial-agent__image-import">
+                    <label
+                      class="admin-filterbar__group admin-filterbar__group--wide"
+                    >
+                      <span class="admin-filterbar__label"
+                        >Of plak afbeeldings-URL</span
+                      >
+                      <input
+                        class="admin-input"
+                        [value]="articleEditHeroImageUrlInput()"
+                        (input)="articleEditHeroImageUrlInput.set($any($event.target).value)"
+                        placeholder="https://www.lego.com/cdn/..."
+                        type="url"
+                      />
+                    </label>
+                    <button
+                      class="admin-button admin-button--subtle"
+                      [disabled]="isUploadingArticleEditHeroImage()"
+                      (click)="importArticleEditHeroImageFromUrl()"
+                      type="button"
+                    >
+                      Importeer afbeelding
+                    </button>
+                  </div>
+                </div>
+
+                <label
+                  class="admin-filterbar__group admin-filterbar__group--wide"
+                >
+                  <span class="admin-filterbar__label">Beeldcredit</span>
+                  <input
+                    class="admin-input"
+                    [value]="articleEditHeroImageCredit()"
+                    (input)="articleEditHeroImageCredit.set($any($event.target).value)"
+                    placeholder="Beeld: © The LEGO Group"
+                    type="text"
+                  />
+                </label>
+              </section>
+
+              <section
+                class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--gallery"
+              >
+                <lego-admin-section-header
+                  description="Gallery beelden worden pas publiek als je de snippet zelf in de MDX plakt."
+                  eyebrow="Gallery"
+                  title="Gallery afbeeldingen"
+                />
+
+                <div class="editorial-agent__hero-row">
+                  <div class="editorial-agent__image-actions">
+                    <label class="admin-button admin-button--subtle">
+                      <span>
+                        {{ isUploadingArticleEditHeroImage() ? 'Uploaden…' :
+                        'Upload gallerybeeld' }}
+                      </span>
+                      <input
+                        class="editorial-agent__file-input"
+                        accept="image/jpeg,image/png,image/webp"
+                        [disabled]="isUploadingArticleEditHeroImage()"
+                        (change)="uploadArticleEditGalleryImageFromInput($event)"
+                        type="file"
+                      />
+                    </label>
+                  </div>
+
+                  <div class="editorial-agent__image-import">
+                    <label
+                      class="admin-filterbar__group admin-filterbar__group--wide"
+                    >
+                      <span class="admin-filterbar__label"
+                        >LEGO afbeeldings-URL</span
+                      >
+                      <input
+                        class="admin-input"
+                        [value]="articleEditGalleryImageUrlInput()"
+                        (input)="articleEditGalleryImageUrlInput.set($any($event.target).value)"
+                        placeholder="https://www.lego.com/cdn/..."
+                        type="url"
+                      />
+                    </label>
+                    <button
+                      class="admin-button admin-button--subtle"
+                      [disabled]="isUploadingArticleEditHeroImage()"
+                      (click)="importArticleEditGalleryImageFromUrl()"
+                      type="button"
+                    >
+                      Importeer gallerybeeld
+                    </button>
+                  </div>
+                </div>
+
+                @if (articleEditGalleryImages().length) {
+                <ul class="editorial-agent__list">
+                  @for (galleryImage of articleEditGalleryImages(); track
+                  galleryImage.id) {
+                  <li>
+                    <img [alt]="galleryImage.alt" [src]="galleryImage.url" />
+                    <label
+                      class="admin-filterbar__group admin-filterbar__group--wide"
+                    >
+                      <span class="admin-filterbar__label">Alt tekst</span>
+                      <input
+                        class="admin-input"
+                        [value]="galleryImage.alt"
+                        (input)="updateArticleEditGalleryImageAlt(galleryImage.id, $any($event.target).value)"
+                        type="text"
+                      />
+                    </label>
+                    @if (galleryImage.credit) {
+                    <span>{{ galleryImage.credit }}</span>
+                    }
+                    <button
+                      class="admin-button admin-button--subtle"
+                      (click)="removeArticleEditGalleryImage(galleryImage.id)"
+                      type="button"
+                    >
+                      Verwijder
+                    </button>
+                  </li>
+                  }
+                </ul>
+
+                <textarea
+                  class="editorial-agent__textarea editorial-agent__textarea--compact"
+                  [value]="articleEditImageGallerySnippet()"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+                <button
+                  class="admin-button admin-button--subtle"
+                  (click)="copyArticleEditImageGallerySnippet()"
+                  type="button"
+                >
+                  Copy ImageGallery snippet
+                </button>
+                } @else {
+                <p class="editorial-agent__muted">
+                  Nog geen gallery-afbeeldingen toegevoegd.
+                </p>
+                }
+              </section>
+            </div>
+            } @if (articleEditModalTab() === 'publicatie') {
+            <section class="admin-panel admin-stack editorial-agent__mdx-panel">
+              <lego-admin-section-header
+                description="Controleer waar het artikel zichtbaar is en hoe bronnen worden getoond."
+                eyebrow="Publicatie"
+                title="Publicatie"
+              />
+
+              <div class="editorial-agent__field-grid">
+                <label class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Bronweergave</span>
+                  <select
+                    class="admin-input"
+                    [value]="articleEditSourceDisplayMode()"
+                    (change)="articleEditSourceDisplayMode.set($any($event.target).value)"
+                  >
+                    <option value="auto">Auto</option>
+                    <option value="hideSignalSource">
+                      Verberg signaalbron
+                    </option>
+                    <option value="showViaSource">Toon via-bron</option>
+                    <option value="showExplicitSource">
+                      Toon expliciete bron
+                    </option>
+                  </select>
+                </label>
+                @if (articleEditUrl(); as articleEditUrl) {
+                <a
+                  class="admin-button admin-button--subtle"
+                  [href]="articleEditUrl"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Bekijk artikel
+                </a>
+                } @if (!articlePreviewEnabled()) {
+                <span class="editorial-agent__muted">
+                  Preview is alleen beschikbaar op staging/local.
+                </span>
+                }
+              </div>
+            </section>
+            <section
+              class="admin-panel admin-stack editorial-agent__danger-zone"
+              data-testid="article-delete-danger-zone"
+            >
+              <lego-admin-section-header
+                description="Dit verwijdert artikel, hero en gallery afbeeldingen permanent."
+                eyebrow="Danger zone"
+                title="Artikel verwijderen"
+              />
+              <p class="editorial-agent__muted">
+                Feed-items die naar dit artikel verwijzen worden losgekoppeld en
+                weer op nieuw gezet, zodat je ze later bewust opnieuw kunt
+                verwerken.
+              </p>
+              <label
+                class="admin-filterbar__group admin-filterbar__group--wide"
+              >
+                <span class="admin-filterbar__label">
+                  Typ de slug om te bevestigen
+                </span>
+                <input
+                  class="admin-input"
+                  [value]="articleEditDeleteConfirmationSlug()"
+                  (input)="articleEditDeleteConfirmationSlug.set($any($event.target).value)"
+                  [placeholder]="articleEditSlug() ?? ''"
+                  type="text"
+                  autocomplete="off"
+                />
+              </label>
+              <button
+                class="admin-button admin-button--subtle editorial-agent__danger-button"
+                [disabled]="isDeletingArticleEdit() || !canDeleteArticleEdit()"
+                (click)="deletePublishedArticleEdit()"
+                type="button"
+              >
+                {{ isDeletingArticleEdit() ? 'Verwijderen…' : 'Artikel
+                verwijderen' }}
+              </button>
+            </section>
+            }
+          </div>
+        </div>
+      </section>
+    </div>
+    }
+  </section>
+  } @if (activeTab() === 'manual') {
   <section class="admin-panel admin-stack">
     <lego-admin-section-header
       description="Plak een publieke nieuws-URL. We halen server-side de pagina op, trekken er leesbare tekst uit en bouwen daar een eerste factslaag van."
@@ -123,7 +783,7 @@
           class="admin-input"
           [value]="sourceUrl()"
           (input)="sourceUrl.set($any($event.target).value)"
-          placeholder="https://example.com/example"
+          placeholder="https://brickset.com/article/131538"
           type="url"
         />
       </label>
@@ -377,252 +1037,759 @@
       </p>
     </section>
   </div>
-  } @if (output(); as output) {
-  <div class="editorial-agent__grid">
-    @if (catalogImport(); as catalogImport) {
-    <section class="admin-panel admin-stack">
-      <lego-admin-section-header
-        description="Alleen ontbrekende gedetecteerde setnummers worden gericht geprobeerd te importeren. De draft gebruikt daarna alleen sets die echt in de catalogus staan."
-        eyebrow="Catalog import"
-        title="Importstatus"
-      />
-
-      <dl class="editorial-agent__fact-list">
-        <div>
-          <dt>Import</dt>
-          <dd>
-            {{ catalogImport.enabled ? 'Ingeschakeld' : 'Uitgeschakeld' }} · {{
-            catalogImport.attempted ? 'Gericht geprobeerd' : 'Niet nodig' }}
-          </dd>
+  } } @if (isDraftModalOpen()) {
+  <div
+    class="editorial-agent__modal"
+    aria-modal="true"
+    role="dialog"
+    aria-labelledby="editorial-agent-draft-title"
+  >
+    <section class="admin-panel editorial-agent__modal-panel">
+      <header class="editorial-agent__modal-header">
+        <div class="editorial-agent__modal-heading">
+          <span>Draft</span>
+          <h2 id="editorial-agent-draft-title">Draft preview</h2>
+          <p>
+            Controleer de draft, voeg eventueel beeld toe en publiceer pas als
+            alles klopt.
+          </p>
         </div>
-        <div>
-          <dt>Imported sets</dt>
-          <dd>{{ formatImportedSets(catalogImport.importedSets) }}</dd>
-        </div>
-        <div>
-          <dt>Still missing</dt>
-          <dd>
-            {{ catalogImport.stillMissingSetNumbers.join(', ') || 'Geen' }}
-          </dd>
-        </div>
-      </dl>
-
-      @if (catalogImport.warnings.length) {
-      <ul class="editorial-agent__list">
-        @for (warning of catalogImport.warnings; track warning) {
-        <li>{{ warning }}</li>
-        }
-      </ul>
-      } @else {
-      <p class="editorial-agent__muted">
-        Geen import-warnings voor deze analyse.
-      </p>
-      }
-    </section>
-    }
-
-    <section class="admin-panel admin-stack">
-      <lego-admin-section-header
-        description="De set die vooraan in het draft hoort te landen als de matching daar sterk genoeg voor is."
-        eyebrow="Primary set"
-        title="PrimarySet preview"
-      />
-
-      @if (output.primarySet) {
-      <div class="editorial-agent__preview-card">
-        <strong>
-          {{ output.primarySet.name }} ({{ output.primarySet.setNumber }})
-        </strong>
-        <p>{{ output.primarySet.reason }}</p>
-      </div>
-      } @else {
-      <p class="editorial-agent__muted">
-        Geen primary set gekozen voor dit draft.
-      </p>
-      }
-    </section>
-
-    <section class="admin-panel admin-stack">
-      <lego-admin-section-header
-        description="Alleen exact gematchte sets mogen hier terechtkomen. Minder dan twee betrouwbare kandidaten betekent geen rail in het draft."
-        eyebrow="Related"
-        title="RelatedSets preview"
-      />
-
-      @if (output.relatedSets.length) {
-      <ul class="editorial-agent__list">
-        @for (relatedSet of output.relatedSets; track relatedSet.setNumber) {
-        <li>
-          <strong>{{ relatedSet.name }}</strong>
-          <span>{{ relatedSet.reason }}</span>
-        </li>
-        }
-      </ul>
-      } @else {
-      <p class="editorial-agent__muted">Nog geen related sets in deze mock.</p>
-      }
-    </section>
-
-    <section class="admin-panel admin-stack">
-      <lego-admin-section-header
-        description="Deze warnings gaan over het draft zelf, los van de extraction-waarschuwingen erboven."
-        eyebrow="Draft"
-        title="Generation warnings"
-      />
-
-      @if (output.warnings.length) {
-      <ul class="editorial-agent__list">
-        @for (warning of output.warnings; track warning) {
-        <li>{{ warning }}</li>
-        }
-      </ul>
-      } @else {
-      <p class="editorial-agent__muted">
-        Geen draft-warnings voor deze analyse.
-      </p>
-      }
-    </section>
-
-    <section class="admin-panel admin-stack">
-      <lego-admin-section-header
-        description="Hier zie je of AI polish actief was en of de rewrite echt is toegepast of veilig terugviel op het deterministic draft."
-        eyebrow="AI rewrite"
-        title="Rewrite status"
-      />
-
-      <dl class="editorial-agent__fact-list">
-        <div>
-          <dt>AI polish</dt>
-          <dd>
-            {{ aiRewriteEnabled() ? 'Ingeschakeld' : 'Uitgeschakeld' }} · {{
-            aiRewriteApplied() ? 'Rewrite toegepast' : 'Deterministic output
-            actief' }}
-          </dd>
-        </div>
-      </dl>
-
-      @if (rewriteWarnings().length) {
-      <ul class="editorial-agent__list">
-        @for (warning of rewriteWarnings(); track warning) {
-        <li>{{ warning }}</li>
-        }
-      </ul>
-      } @else {
-      <p class="editorial-agent__muted">
-        Geen rewrite-warnings voor deze analyse.
-      </p>
-      }
-    </section>
-
-    <section class="admin-panel admin-stack">
-      <lego-admin-section-header
-        description="Handig om exact te zien wat de extractiestap aan de UI teruggeeft."
-        eyebrow="Debug"
-        title="Facts JSON"
-      />
-
-      <pre class="editorial-agent__json-panel">{{ extractionJson() }}</pre>
-    </section>
-
-    <section class="admin-panel admin-stack editorial-agent__mdx-panel">
-      <lego-admin-section-header
-        description="Dit is de uiteindelijke output. De deterministic laag blijft leidend; AI mag alleen de tekst polijsten als de guardrails slagen."
-        eyebrow="Output"
-        title="MDX"
-      >
-        <div adminSectionMeta class="editorial-agent__meta-inline">
-          @if (copyState() === 'copied') {
-          <span class="editorial-agent__meta-pill">Gekopieerd</span>
-          } @else if (copyState() === 'error') {
-          <span
-            class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+        <div class="editorial-agent__modal-actions">
+          @if (output()) {
+          <button
+            class="admin-button admin-button--primary"
+            [disabled]="!mdxOutput() || isPublishing()"
+            (click)="publishArticle()"
+            type="button"
           >
-            Kopiëren lukte niet
-          </span>
-          } @if (publishedArticleUrl(); as publishedArticleUrl) {
-          <span class="editorial-agent__meta-pill">
-            {{ publishErrorMessage() ? 'Bestaand artikel' : 'Artikel
-            gepubliceerd ✅' }}
-          </span>
-          <a [href]="publishedArticleUrl" target="_blank" rel="noreferrer">
-            Open artikel
-          </a>
-          } @if (publishErrorMessage(); as publishErrorMessage) {
-          <span
-            class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+            {{ isPublishing() ? 'Publiceren…' : 'Publish article' }}
+          </button>
+          }
+          <button
+            class="admin-button admin-button--subtle editorial-agent__modal-close"
+            (click)="closeDraftModal()"
+            type="button"
+            aria-label="Sluit draft preview"
           >
-            {{ publishErrorMessage }}
-          </span>
+            ×
+          </button>
+        </div>
+      </header>
+      @if (isGenerating()) {
+      <lego-admin-empty-state
+        description="De draft wordt nu gegenereerd. Publiceren blijft handmatig."
+        title="Draft wordt gemaakt"
+        tone="loading"
+      />
+      } @else if (errorMessage(); as errorMessage) {
+      <lego-admin-empty-state
+        [description]="errorMessage"
+        title="Draft generatie mislukt"
+        tone="danger"
+      />
+      } @else if (output(); as output) {
+      <div class="editorial-agent__draft-editor">
+        <div class="editorial-agent__draft-tabs" role="tablist">
+          <button
+            class="editorial-agent__draft-tab"
+            [class.editorial-agent__draft-tab--active]="draftModalTab() === 'inhoud'"
+            (click)="setDraftModalTab('inhoud')"
+            type="button"
+          >
+            Inhoud
+          </button>
+          <button
+            class="editorial-agent__draft-tab"
+            [class.editorial-agent__draft-tab--active]="draftModalTab() === 'sets'"
+            (click)="setDraftModalTab('sets')"
+            type="button"
+          >
+            Sets
+          </button>
+          <button
+            class="editorial-agent__draft-tab"
+            [class.editorial-agent__draft-tab--active]="draftModalTab() === 'beeld'"
+            (click)="setDraftModalTab('beeld')"
+            type="button"
+          >
+            Beeld
+          </button>
+          <button
+            class="editorial-agent__draft-tab"
+            [class.editorial-agent__draft-tab--active]="draftModalTab() === 'publicatie'"
+            (click)="setDraftModalTab('publicatie')"
+            type="button"
+          >
+            Publicatie
+          </button>
+          <button
+            class="editorial-agent__draft-tab"
+            [class.editorial-agent__draft-tab--active]="draftModalTab() === 'debug'"
+            (click)="setDraftModalTab('debug')"
+            type="button"
+          >
+            Debug
+          </button>
+        </div>
+
+        <div class="editorial-agent__draft-content">
+          @if (draftModalTab() === 'inhoud') {
+          <section class="admin-panel admin-stack editorial-agent__mdx-panel">
+            <lego-admin-section-header
+              description="Werk de kernvelden en MDX bij voordat je previewt of publiceert."
+              eyebrow="Inhoud"
+              title="Artikelinhoud"
+            >
+              <div adminSectionMeta class="editorial-agent__meta-inline">
+                @if (copyState() === 'copied') {
+                <span class="editorial-agent__meta-pill">Gekopieerd</span>
+                } @else if (copyState() === 'error') {
+                <span
+                  class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+                >
+                  Kopiëren lukte niet
+                </span>
+                } @if (articlePreviewMessage(); as articlePreviewMessage) {
+                <span class="editorial-agent__meta-pill">
+                  {{ articlePreviewMessage }}
+                </span>
+                } @if (articlePreviewErrorMessage(); as
+                articlePreviewErrorMessage) {
+                <span
+                  class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+                >
+                  {{ articlePreviewErrorMessage }}
+                </span>
+                } @if (!articlePreviewEnabled()) {
+                <span
+                  class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+                >
+                  Preview is alleen beschikbaar op staging/local.
+                </span>
+                }
+              </div>
+              <button
+                adminSectionActions
+                class="admin-button admin-button--subtle"
+                [disabled]="
+                !articlePreviewEnabled() ||
+                !mdxOutput() ||
+                isCreatingArticlePreview()
+              "
+                (click)="openDraftPreview()"
+                type="button"
+                [title]="
+                articlePreviewEnabled()
+                  ? 'Open preview'
+                  : 'Preview is alleen beschikbaar op staging/local.'
+              "
+              >
+                {{ isCreatingArticlePreview() ? 'Preview maken…' : 'Preview
+                openen' }}
+              </button>
+              <button
+                adminSectionActions
+                class="admin-button admin-button--subtle"
+                [disabled]="!mdxOutput()"
+                (click)="copyMdx()"
+                type="button"
+              >
+                Copy MDX
+              </button>
+            </lego-admin-section-header>
+
+            <div class="editorial-agent__content-top">
+              <button
+                class="editorial-agent__hero-thumb"
+                (click)="setDraftModalTab('beeld')"
+                type="button"
+                aria-label="Open beeld tab"
+              >
+                @if (effectiveHeroImage(); as heroImage) {
+                <img
+                  [alt]="output.frontmatter.heroImageAlt || draftTitle()"
+                  [src]="heroImage"
+                />
+                } @else {
+                <span>Geen hero</span>
+                }
+                <strong>Hero afbeelding</strong>
+                <small>Open Beeld</small>
+              </button>
+
+              <div class="editorial-agent__field-grid">
+                <label
+                  class="admin-filterbar__group admin-filterbar__group--wide"
+                >
+                  <span class="admin-filterbar__label">Titel</span>
+                  <input
+                    class="admin-input"
+                    [value]="draftTitle()"
+                    (input)="draftTitle.set($any($event.target).value)"
+                    type="text"
+                  />
+                </label>
+                <label
+                  class="admin-filterbar__group admin-filterbar__group--wide"
+                >
+                  <span class="admin-filterbar__label">Beschrijving</span>
+                  <input
+                    class="admin-input"
+                    [value]="draftDescription()"
+                    (input)="draftDescription.set($any($event.target).value)"
+                    type="text"
+                  />
+                </label>
+                <label class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Thema</span>
+                  <input
+                    class="admin-input"
+                    [value]="draftTheme()"
+                    (input)="draftTheme.set($any($event.target).value)"
+                    type="text"
+                  />
+                </label>
+                <label class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Datum</span>
+                  <input
+                    class="admin-input"
+                    [value]="draftDate()"
+                    (input)="draftDate.set($any($event.target).value)"
+                    type="date"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <textarea
+              class="editorial-agent__textarea"
+              [value]="mdxOutput()"
+              (input)="draftMdx.set($any($event.target).value)"
+              spellcheck="false"
+            ></textarea>
+          </section>
+          } @if (draftModalTab() === 'sets') { @if (catalogImport(); as
+          catalogImport) {
+          <section class="admin-panel admin-stack">
+            <lego-admin-section-header
+              description="Alleen ontbrekende gedetecteerde setnummers worden gericht geprobeerd te importeren. De draft gebruikt daarna alleen sets die echt in de catalogus staan."
+              eyebrow="Catalog import"
+              title="Importstatus"
+            />
+
+            <dl class="editorial-agent__fact-list">
+              <div>
+                <dt>Import</dt>
+                <dd>
+                  {{ catalogImport.enabled ? 'Ingeschakeld' : 'Uitgeschakeld' }}
+                  · {{ catalogImport.attempted ? 'Gericht geprobeerd' : 'Niet
+                  nodig' }}
+                </dd>
+              </div>
+              <div>
+                <dt>Imported sets</dt>
+                <dd>{{ formatImportedSets(catalogImport.importedSets) }}</dd>
+              </div>
+              <div>
+                <dt>Still missing</dt>
+                <dd>
+                  {{ catalogImport.stillMissingSetNumbers.join(', ') || 'Geen'
+                  }}
+                </dd>
+              </div>
+            </dl>
+
+            @if (catalogImport.warnings.length) {
+            <ul class="editorial-agent__list">
+              @for (warning of catalogImport.warnings; track warning) {
+              <li>{{ warning }}</li>
+              }
+            </ul>
+            } @else {
+            <p class="editorial-agent__muted">
+              Geen import-warnings voor deze analyse.
+            </p>
+            }
+          </section>
+          }
+
+          <section class="admin-panel admin-stack">
+            <lego-admin-section-header
+              description="De set die vooraan in het draft hoort te landen als de matching daar sterk genoeg voor is."
+              eyebrow="Primary set"
+              title="PrimarySet preview"
+            />
+
+            @if (output.primarySet) {
+            <div class="editorial-agent__preview-card">
+              <strong>
+                {{ output.primarySet.name }} ({{ output.primarySet.setNumber }})
+              </strong>
+              <p>{{ output.primarySet.reason }}</p>
+            </div>
+            } @else {
+            <p class="editorial-agent__muted">
+              Geen primary set gekozen voor dit draft.
+            </p>
+            }
+          </section>
+
+          <section class="admin-panel admin-stack">
+            <lego-admin-section-header
+              description="Alleen exact gematchte sets mogen hier terechtkomen. Minder dan twee betrouwbare kandidaten betekent geen rail in het draft."
+              eyebrow="Related"
+              title="RelatedSets preview"
+            />
+
+            @if (output.relatedSets.length) {
+            <ul class="editorial-agent__list">
+              @for (relatedSet of output.relatedSets; track
+              relatedSet.setNumber) {
+              <li>
+                <strong>{{ relatedSet.name }}</strong>
+                <span>{{ relatedSet.reason }}</span>
+              </li>
+              }
+            </ul>
+            } @else {
+            <p class="editorial-agent__muted">
+              Nog geen related sets in deze mock.
+            </p>
+            }
+          </section>
+          } @if (draftModalTab() === 'debug') {
+          <section class="admin-panel admin-stack">
+            <lego-admin-section-header
+              description="Deze warnings gaan over het draft zelf, los van de extraction-waarschuwingen erboven."
+              eyebrow="Draft"
+              title="Generation warnings"
+            />
+
+            @if (output.warnings.length) {
+            <ul class="editorial-agent__list">
+              @for (warning of output.warnings; track warning) {
+              <li>{{ warning }}</li>
+              }
+            </ul>
+            } @else {
+            <p class="editorial-agent__muted">
+              Geen draft-warnings voor deze analyse.
+            </p>
+            }
+          </section>
+
+          <section class="admin-panel admin-stack">
+            <lego-admin-section-header
+              description="Hier zie je of AI polish actief was en of de rewrite echt is toegepast of veilig terugviel op het deterministic draft."
+              eyebrow="AI rewrite"
+              title="Rewrite status"
+            />
+
+            <dl class="editorial-agent__fact-list">
+              <div>
+                <dt>AI polish</dt>
+                <dd>
+                  {{ aiRewriteEnabled() ? 'Ingeschakeld' : 'Uitgeschakeld' }} ·
+                  {{ aiRewriteApplied() ? 'Rewrite toegepast' : 'Deterministic
+                  output actief' }}
+                </dd>
+              </div>
+            </dl>
+
+            @if (rewriteWarnings().length) {
+            <ul class="editorial-agent__list">
+              @for (warning of rewriteWarnings(); track warning) {
+              <li>{{ warning }}</li>
+              }
+            </ul>
+            } @else {
+            <p class="editorial-agent__muted">
+              Geen rewrite-warnings voor deze analyse.
+            </p>
+            }
+          </section>
+          } @if (draftModalTab() === 'beeld') { @if (draftResult()) {
+          <div class="editorial-agent__image-section-stack">
+            <section
+              class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--hero"
+            >
+              <lego-admin-section-header
+                description="Upload alleen beeld dat je mag gebruiken. Zonder handmatige hero blijft de catalogusfallback actief."
+                eyebrow="Beeld"
+                title="Hero"
+              />
+
+              <div class="editorial-agent__hero-row">
+                <div class="editorial-agent__hero-preview">
+                  @if (effectiveHeroImage(); as heroImage) {
+                  <img
+                    [alt]="output.frontmatter.heroImageAlt || draftTitle()"
+                    [src]="heroImage"
+                  />
+                  } @else {
+                  <span>Geen handmatige hero ingesteld.</span>
+                  }
+                </div>
+
+                <div class="editorial-agent__image-actions">
+                  <label class="admin-button admin-button--subtle">
+                    <span>
+                      {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload bestand'
+                      }}
+                    </span>
+                    <input
+                      class="editorial-agent__file-input"
+                      accept="image/jpeg,image/png,image/webp"
+                      [disabled]="isUploadingHeroImage()"
+                      (change)="uploadHeroImageFromInput($event)"
+                      type="file"
+                    />
+                  </label>
+                  <button
+                    class="admin-button admin-button--subtle"
+                    [disabled]="isUploadingHeroImage() || !effectiveHeroImage()"
+                    (click)="removeHeroImage()"
+                    type="button"
+                  >
+                    Verwijder hero
+                  </button>
+                </div>
+
+                <div class="editorial-agent__image-import">
+                  <label
+                    class="admin-filterbar__group admin-filterbar__group--wide"
+                  >
+                    <span class="admin-filterbar__label"
+                      >Of plak afbeeldings-URL</span
+                    >
+                    <input
+                      class="admin-input"
+                      [value]="heroImageUrlInput()"
+                      (input)="heroImageUrlInput.set($any($event.target).value)"
+                      placeholder="https://www.lego.com/cdn/..."
+                      type="url"
+                    />
+                  </label>
+                  <button
+                    class="admin-button admin-button--subtle"
+                    [disabled]="isImportingHeroImageUrl()"
+                    (click)="importHeroImageFromUrl()"
+                    type="button"
+                  >
+                    Importeer afbeelding
+                  </button>
+                </div>
+              </div>
+
+              @if (suggestedHeroImageLinks().length) {
+              <div class="editorial-agent__suggested-links">
+                <strong>Suggesties</strong>
+                <ul>
+                  @for (suggestedLink of suggestedHeroImageLinks(); track
+                  suggestedLink) {
+                  <li>
+                    <a [href]="suggestedLink" target="_blank" rel="noreferrer">
+                      {{ suggestedLink }}
+                    </a>
+                  </li>
+                  }
+                </ul>
+              </div>
+              }
+
+              <label
+                class="admin-filterbar__group admin-filterbar__group--wide"
+              >
+                <span class="admin-filterbar__label">Beeldcredit</span>
+                <input
+                  class="admin-input"
+                  [value]="effectiveHeroImageCredit()"
+                  (input)="heroImageCreditOverride.set($any($event.target).value)"
+                  placeholder="Beeld: © The LEGO Group"
+                  type="text"
+                />
+              </label>
+            </section>
+
+            <section
+              class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--gallery"
+            >
+              <lego-admin-section-header
+                description="Gallery beelden worden pas publiek als je de snippet zelf in de MDX plakt."
+                eyebrow="Gallery"
+                title="Gallery afbeeldingen"
+              />
+
+              <div class="editorial-agent__hero-row">
+                <div class="editorial-agent__image-actions">
+                  <label class="admin-button admin-button--subtle">
+                    <span>
+                      {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload
+                      gallerybeeld' }}
+                    </span>
+                    <input
+                      class="editorial-agent__file-input"
+                      accept="image/jpeg,image/png,image/webp"
+                      [disabled]="isUploadingHeroImage()"
+                      (change)="uploadGalleryImageFromInput($event)"
+                      type="file"
+                    />
+                  </label>
+                </div>
+
+                <div class="editorial-agent__image-import">
+                  <label
+                    class="admin-filterbar__group admin-filterbar__group--wide"
+                  >
+                    <span class="admin-filterbar__label"
+                      >LEGO afbeeldings-URL</span
+                    >
+                    <input
+                      class="admin-input"
+                      [value]="galleryImageUrlInput()"
+                      (input)="galleryImageUrlInput.set($any($event.target).value)"
+                      placeholder="https://www.lego.com/cdn/..."
+                      type="url"
+                    />
+                  </label>
+                  <button
+                    class="admin-button admin-button--subtle"
+                    [disabled]="isImportingHeroImageUrl()"
+                    (click)="importGalleryImageFromUrl()"
+                    type="button"
+                  >
+                    Importeer gallerybeeld
+                  </button>
+                </div>
+              </div>
+
+              @if (galleryImages().length) {
+              <ul class="editorial-agent__list">
+                @for (galleryImage of galleryImages(); track galleryImage.id) {
+                <li>
+                  <img [alt]="galleryImage.alt" [src]="galleryImage.url" />
+                  <label
+                    class="admin-filterbar__group admin-filterbar__group--wide"
+                  >
+                    <span class="admin-filterbar__label">Alt tekst</span>
+                    <input
+                      class="admin-input"
+                      [value]="galleryImage.alt"
+                      (input)="updateGalleryImageAlt(galleryImage.id, $any($event.target).value)"
+                      type="text"
+                    />
+                  </label>
+                  @if (galleryImage.credit) {
+                  <span>{{ galleryImage.credit }}</span>
+                  }
+                  <button
+                    class="admin-button admin-button--subtle"
+                    (click)="removeGalleryImage(galleryImage.id)"
+                    type="button"
+                  >
+                    Verwijder
+                  </button>
+                </li>
+                }
+              </ul>
+
+              <textarea
+                class="editorial-agent__textarea editorial-agent__textarea--compact"
+                [value]="imageGallerySnippet()"
+                readonly
+                spellcheck="false"
+              ></textarea>
+              <button
+                class="admin-button admin-button--subtle"
+                (click)="copyImageGallerySnippet()"
+                type="button"
+              >
+                Copy ImageGallery snippet
+              </button>
+              @if (gallerySnippetMessage(); as gallerySnippetMessage) {
+              <span class="editorial-agent__meta-pill">
+                {{ gallerySnippetMessage }}
+              </span>
+              } } @else {
+              <p class="editorial-agent__muted">
+                Nog geen gallery-afbeeldingen toegevoegd.
+              </p>
+              }
+            </section>
+
+            @if (heroImageUploadErrorMessage(); as heroImageUploadErrorMessage)
+            {
+            <span
+              class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+            >
+              {{ heroImageUploadErrorMessage }}
+            </span>
+            }
+          </div>
+          } } @if (draftModalTab() === 'debug') {
+          <section class="admin-panel admin-stack">
+            <lego-admin-section-header
+              description="Handig om exact te zien wat de extractiestap aan de UI teruggeeft."
+              eyebrow="Debug"
+              title="Facts JSON"
+            />
+
+            <pre class="editorial-agent__json-panel">
+{{ extractionJson() }}</pre
+            >
+          </section>
+          } @if (draftModalTab() === 'publicatie') {
+          <section class="admin-panel admin-stack editorial-agent__mdx-panel">
+            <lego-admin-section-header
+              description="Publiceren blijft handmatig. Controleer bronweergave en status voordat je live zet."
+              eyebrow="Publicatie"
+              title="Publiceren"
+            >
+              <div adminSectionMeta class="editorial-agent__meta-inline">
+                @if (publishedArticleUrl(); as publishedArticleUrl) {
+                <span class="editorial-agent__meta-pill">
+                  {{ publishErrorMessage() ? 'Bestaand artikel' : 'Artikel
+                  gepubliceerd ✅' }}
+                </span>
+                <a
+                  [href]="publishedArticleUrl"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open artikel
+                </a>
+                } @if (publishErrorMessage(); as publishErrorMessage) {
+                <span
+                  class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+                >
+                  {{ publishErrorMessage }}
+                </span>
+                }
+              </div>
+            </lego-admin-section-header>
+
+            <div class="editorial-agent__field-grid">
+              <label class="admin-filterbar__group">
+                <span class="admin-filterbar__label">Bronweergave</span>
+                <select
+                  class="admin-input"
+                  [value]="draftSourceDisplayMode()"
+                  (change)="draftSourceDisplayMode.set($any($event.target).value)"
+                >
+                  <option value="auto">Auto</option>
+                  <option value="hideSignalSource">Verberg signaalbron</option>
+                  <option value="showViaSource">Toon via-bron</option>
+                  <option value="showExplicitSource">
+                    Toon expliciete bron
+                  </option>
+                </select>
+              </label>
+              <label
+                class="admin-filterbar__group admin-filterbar__group--wide"
+              >
+                <span class="admin-filterbar__label">Signaalbron</span>
+                <input
+                  class="admin-input"
+                  [value]="output.frontmatter.sourceUrl || sourceUrl()"
+                  readonly
+                  type="text"
+                />
+              </label>
+              <label class="admin-filterbar__group">
+                <span class="admin-filterbar__label">Auteur</span>
+                <input
+                  class="admin-input"
+                  placeholder="Later"
+                  readonly
+                  type="text"
+                />
+              </label>
+            </div>
+
+            @if (publishNearDuplicateMatches().length) {
+            <div class="admin-panel admin-stack editorial-agent__warning-panel">
+              <h3 class="editorial-agent__subheading">
+                Mogelijk overlappend artikel gevonden
+              </h3>
+              <ul class="editorial-agent__simple-list">
+                @for (match of publishNearDuplicateMatches(); track match.slug)
+                {
+                <li>
+                  <a
+                    [href]="buildPublishedArticleUrl(match.slug, draftTheme())"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {{ match.title }}
+                  </a>
+                  <span>{{ match.reason }}</span>
+                </li>
+                }
+              </ul>
+              <button
+                class="admin-button admin-button--primary"
+                [disabled]="isPublishing()"
+                (click)="publishArticle({ force: true })"
+                type="button"
+              >
+                Toch publiceren
+              </button>
+            </div>
+            }
+          </section>
+          } @if (rewrittenMdxOutput()) { @if (draftModalTab() === 'debug') {
+          <section class="admin-panel admin-stack editorial-agent__mdx-panel">
+            <lego-admin-section-header
+              description="Vergelijk de deterministic output met de AI-polished versie."
+              eyebrow="Debug"
+              title="MDX compare"
+            />
+            <div class="editorial-agent__mdx-compare">
+              <section class="admin-stack">
+                <h3 class="editorial-agent__subheading">
+                  Deterministic origineel
+                </h3>
+                <textarea
+                  class="editorial-agent__textarea editorial-agent__textarea--compact"
+                  [value]="deterministicMdxOutput()"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+              </section>
+
+              <section class="admin-stack">
+                <h3 class="editorial-agent__subheading">AI-polished versie</h3>
+                <textarea
+                  class="editorial-agent__textarea editorial-agent__textarea--compact"
+                  [value]="rewrittenMdxOutput()"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+              </section>
+            </div>
+          </section>
+          } } @if (draftModalTab() === 'debug') {
+          <section class="admin-panel admin-stack">
+            <lego-admin-section-header
+              description="Dit is de echte lijst waar een latere Editorial Agent uit mag kiezen."
+              eyebrow="Manifest"
+              title="Ondersteunde article components"
+            />
+
+            <ul class="editorial-agent__manifest">
+              @for (component of componentManifest; track component.name) {
+              <li class="editorial-agent__manifest-item">
+                <strong>{{ component.name }}</strong>
+                <code>{{ component.usage }}</code>
+                <p>{{ component.whenToUse }}</p>
+              </li>
+              }
+            </ul>
+          </section>
           }
         </div>
-        <button
-          adminSectionActions
-          class="admin-button admin-button--subtle"
-          [disabled]="!mdxOutput()"
-          (click)="copyMdx()"
-          type="button"
-        >
-          Copy MDX
-        </button>
-        <button
-          adminSectionActions
-          class="admin-button admin-button--primary"
-          [disabled]="!mdxOutput() || isPublishing()"
-          (click)="publishArticle()"
-          type="button"
-        >
-          {{ isPublishing() ? 'Publiceren…' : 'Publish article' }}
-        </button>
-      </lego-admin-section-header>
-
-      <textarea
-        class="editorial-agent__textarea"
-        [value]="mdxOutput()"
-        readonly
-        spellcheck="false"
-      ></textarea>
-
-      @if (rewrittenMdxOutput()) {
-      <div class="editorial-agent__mdx-compare">
-        <section class="admin-stack">
-          <h3 class="editorial-agent__subheading">Deterministic origineel</h3>
-          <textarea
-            class="editorial-agent__textarea editorial-agent__textarea--compact"
-            [value]="deterministicMdxOutput()"
-            readonly
-            spellcheck="false"
-          ></textarea>
-        </section>
-
-        <section class="admin-stack">
-          <h3 class="editorial-agent__subheading">AI-polished versie</h3>
-          <textarea
-            class="editorial-agent__textarea editorial-agent__textarea--compact"
-            [value]="rewrittenMdxOutput()"
-            readonly
-            spellcheck="false"
-          ></textarea>
-        </section>
       </div>
       }
-    </section>
-
-    <section class="admin-panel admin-stack">
-      <lego-admin-section-header
-        description="Dit is de echte lijst waar een latere Editorial Agent uit mag kiezen."
-        eyebrow="Manifest"
-        title="Ondersteunde article components"
-      />
-
-      <ul class="editorial-agent__manifest">
-        @for (component of componentManifest; track component.name) {
-        <li class="editorial-agent__manifest-item">
-          <strong>{{ component.name }}</strong>
-          <code>{{ component.usage }}</code>
-          <p>{{ component.whenToUse }}</p>
-        </li>
-        }
-      </ul>
     </section>
   </div>
   }

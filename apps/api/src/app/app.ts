@@ -7,6 +7,7 @@ import adminPromoteRoutes from './routes/admin-promote';
 import apiV1Routes from './routes/api-v1';
 import healthRoutes from './routes/health';
 import rootRoutes from './routes/root';
+import adminArticlesRoutes from './routes/admin-articles';
 import adminEditorialAgentRoutes from './routes/admin-editorial-agent';
 
 export type AppOptions = Record<string, never>;
@@ -19,6 +20,7 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   await fastify.register(healthRoutes, { ...opts });
   await fastify.register(apiV1Routes, { ...opts });
   await fastify.register(adminCatalogRoutes, { ...opts });
+  await fastify.register(adminArticlesRoutes, { ...opts });
   await fastify.register(adminEditorialAgentRoutes, { ...opts });
   await fastify.register(adminCommerceRoutes, { ...opts });
   await fastify.register(adminPromoteRoutes, { ...opts });

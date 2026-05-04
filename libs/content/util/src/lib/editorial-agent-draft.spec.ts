@@ -5,6 +5,7 @@ import {
   getSetDisplayNameForDraft,
   getEditorialToneForArticleType,
   getSingleSetDraftTone,
+  getThemeToneCopy,
 } from './editorial-agent-draft';
 import type {
   EditorialAgentCatalogMatch,
@@ -143,6 +144,35 @@ function createInput(
   };
 }
 
+function expectFeaturedSetAtTop(mdx: string): void {
+  const featuredSetIndex = mdx.indexOf('<FeaturedSet');
+  const firstHeadingIndex = mdx.indexOf('\n## ');
+
+  expect(featuredSetIndex).toBeGreaterThan(-1);
+  expect(firstHeadingIndex).toBeGreaterThan(-1);
+  expect(featuredSetIndex).toBeLessThan(firstHeadingIndex);
+}
+
+function expectSetRailAfterMainContent(mdx: string): void {
+  const featuredSetIndex = mdx.indexOf('<FeaturedSet');
+  const setRailIndex = mdx.indexOf('<SetRail');
+  const audienceIndex = mdx.indexOf('## Voor wie is dit leuk?');
+  const conclusionIndex = mdx.indexOf('## Korte conclusie');
+  const sourceIndex = Math.max(
+    mdx.lastIndexOf('Bronnen:'),
+    mdx.lastIndexOf('Via:'),
+  );
+
+  expectFeaturedSetAtTop(mdx);
+  expect(setRailIndex).toBeGreaterThan(featuredSetIndex);
+  expect(audienceIndex).toBeGreaterThan(featuredSetIndex);
+  expect(setRailIndex).toBeGreaterThan(audienceIndex);
+  expect(setRailIndex).toBeLessThan(conclusionIndex);
+  expect(sourceIndex).toBeGreaterThan(setRailIndex);
+  expect(mdx.trim().endsWith(mdx.slice(sourceIndex).trim())).toBe(true);
+  expect(mdx.slice(featuredSetIndex, conclusionIndex)).toContain('## ');
+}
+
 describe('editorial agent draft generation', () => {
   it('maps release roundups and unknown articles to discovery tone', () => {
     expect(getEditorialToneForArticleType('release_roundup')).toBe('discovery');
@@ -201,6 +231,19 @@ describe('editorial agent draft generation', () => {
     ).toBe('decision');
   });
 
+  it('returns theme tone copy only for high-impact fan themes', () => {
+    expect(getThemeToneCopy('Star Wars', 'announcement_intro')).toContain(
+      'Helmet Collection',
+    );
+    expect(getThemeToneCopy('Harry Potter', 'announcement_intro')).toContain(
+      'Hogwarts',
+    );
+    expect(
+      getThemeToneCopy('Lord of the Rings™', 'announcement_intro'),
+    ).toContain('Middle-earth');
+    expect(getThemeToneCopy('Super Mario', 'announcement_intro')).toBeNull();
+  });
+
   it('always generates draft frontmatter and keeps the source url', () => {
     const result = generateEditorialMdxDraft(createInput());
 
@@ -208,6 +251,105 @@ describe('editorial agent draft generation', () => {
     expect(result.frontmatter.sourceUrl).toBe(
       'https://www.bricktastic.nl/lego/deze-nieuwe-lego-sets-worden-in-mei-2026-uitgebracht/',
     );
+  });
+
+  it('formats single-set Star Wars titles around the set name without catalog context', () => {
+    const primarySet = createPrimarySet({
+      name: 'Imperial Remnant AT-RT Driver Helmet',
+      setNumber: '75458',
+      theme: 'Star Wars',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          setNumbers: ['75458'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          setNames: ['Imperial Remnant AT-RT Driver Helmet'],
+          setNumbers: ['75458'],
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet onthuld',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        source: createSource({
+          title:
+            'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet onthuld',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.title).toBe(
+      'Imperial Remnant AT-RT Driver Helmet onthuld',
+    );
+    expect(result.frontmatter.title.startsWith('LEGO Star Wars')).toBe(false);
+    expect(result.frontmatter.title).not.toContain('75458');
+    expect(result.mdx).toContain(
+      'title: "Imperial Remnant AT-RT Driver Helmet onthuld"',
+    );
+  });
+
+  it('formats deal titles without repeating LEGO, theme or set number', () => {
+    const primarySet = createPrimarySet({
+      name: 'Star Trek: U.S.S. Enterprise NCC-1701-D',
+      setNumber: '10356',
+      theme: 'LEGO® Icons',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          setNumbers: ['10356'],
+          themes: ['LEGO® Icons'],
+        }),
+        facts: createFacts({
+          setNames: ['Star Trek: U.S.S. Enterprise NCC-1701-D'],
+          setNumbers: ['10356'],
+          theme: 'LEGO® Icons',
+          title:
+            'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D nu met dubbele Insiders-punten of €60 korting',
+        }),
+        matching: createMatching({
+          articleType: 'deal',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        source: createSource({
+          title:
+            'LEGO Icons 10356 Star Trek: U.S.S. Enterprise NCC-1701-D nu met dubbele Insiders-punten of €60 korting',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.title).toBe('Star Trek U.S.S. Enterprise deal');
+    expect(result.frontmatter.title).not.toContain('LEGO');
+    expect(result.frontmatter.title).not.toContain('Icons');
+    expect(result.frontmatter.title).not.toContain('10356');
+  });
+
+  it('keeps existing multi-set titles unchanged', () => {
+    const title = 'Nieuwe LEGO Star Wars-sets juni 2026';
+    const result = generateEditorialMdxDraft(
+      createInput({
+        facts: createFacts({
+          title,
+          theme: 'Star Wars',
+        }),
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+        }),
+        primarySet: null,
+        source: createSource({
+          title,
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.title).toBe(title);
   });
 
   it('uses the source published date as article date when available', () => {
@@ -280,6 +422,8 @@ describe('editorial agent draft generation', () => {
     );
 
     expect(result.mdx).toContain('<FeaturedSet setNumber="40787" />');
+    expectFeaturedSetAtTop(result.mdx);
+    expectSetRailAfterMainContent(result.mdx);
   });
 
   it('prefers the catalog set name as draft display name when a primary set exists', () => {
@@ -563,6 +707,7 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).toContain('## Wat is er aangekondigd?');
     expect(result.mdx).toContain('## Wanneer verschijnt hij?');
     expect(result.mdx).toContain('## Voor wie is dit leuk?');
+    expectFeaturedSetAtTop(result.mdx);
     expect(result.mdx).not.toContain('budget');
     expect(result.mdx).not.toContain('snel schakelen');
     expect(result.mdx).not.toContain('betere prijzen');
@@ -667,6 +812,7 @@ describe('editorial agent draft generation', () => {
       'Overzicht van de LEGO-sets uit augustus',
     );
     expect(result.mdx).toContain('<FeaturedSet setNumber="76339" />');
+    expectFeaturedSetAtTop(result.mdx);
     expect(result.mdx).not.toContain('<SetSpotlightList');
     expect(result.mdx).not.toContain(
       '[Bekijk meteen de nieuwe sets ↓](#nieuwe-sets-die-opvallen)',
@@ -779,6 +925,7 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).toContain('leuk om te volgen');
     expect(result.mdx).toContain('welke set eruit springt');
     expect(result.mdx).toContain('## Wat is er aangekondigd?');
+    expectFeaturedSetAtTop(result.mdx);
     expect(result.mdx).not.toContain('<SetSpotlightList');
     expect(result.mdx).not.toContain('releasegolf');
     expect(result.mdx).not.toContain('logische eerste keuze');
@@ -878,6 +1025,7 @@ describe('editorial agent draft generation', () => {
     );
 
     expect(result.mdx).toContain('<FeaturedSet setNumber="80120" />');
+    expectFeaturedSetAtTop(result.mdx);
     expect(result.frontmatter.description).toContain('Prosperity Carp Leaping');
     expect(result.frontmatter.description).toContain('Ancient Moon-Gazing Inn');
     expect(result.frontmatter.description).toContain('meer dan één set');
@@ -948,6 +1096,201 @@ describe('editorial agent draft generation', () => {
     expect(result.frontmatter.description).toContain('AT-RT Driver');
     expect(result.frontmatter.description).toContain('Lambda-Class Shuttle');
     expect(result.frontmatter.description).toContain('meer dan één set');
+  });
+
+  it('turns Brickset 131538 into a concrete Star Wars draft instead of fallback copy', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['Star Wars'],
+          setNumbers: ['75461', '75458'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          keywords: ['Star Wars'],
+          setNames: [],
+          setNumbers: ['75461', '75458'],
+          summary:
+            '75461 Up-Scaled Darth Vader Minifigure en 75458 Imperial Remnant AT-RT Driver Helmet zijn onthuld.',
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars Up-Scaled Darth Vader and AT-RT Driver Helmet revealed!',
+        }),
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [
+            createMatchedSet('75461', {
+              name: 'Up-Scaled Darth Vader Minifigure',
+              theme: 'Star Wars',
+            }),
+            createMatchedSet('75458', {
+              name: 'Imperial Remnant AT-RT Driver Helmet',
+              theme: 'Star Wars',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('75461', {
+            name: 'Up-Scaled Darth Vader Minifigure',
+            theme: 'Star Wars',
+          }),
+          reason: 'title_match',
+        },
+        relatedCandidates: [
+          createRelatedCandidate('75458', {
+            name: 'Imperial Remnant AT-RT Driver Helmet',
+            theme: 'Star Wars',
+          }),
+        ],
+        source: createSource({
+          description:
+            'A new up-scaled LEGO minifigure format debuted in 2021 and has since been applied to various characters, now including Darth Vader.',
+          domain: 'brickset.com',
+          finalUrl: 'https://brickset.com/article/131538',
+          inputUrl: 'https://brickset.com/article/131538',
+          language: 'en',
+          siteName: 'Brickset.com',
+          title:
+            'LEGO Star Wars Up-Scaled Darth Vader and AT-RT Driver Helmet revealed!',
+        }),
+      }),
+    );
+
+    expect(result.mdx).not.toContain('Conceptdraft');
+    expect(result.mdx).not.toContain('Gebruik deze draft');
+    expect(result.mdx).toContain('<FeaturedSet setNumber="75461" />');
+    expect(result.frontmatter.theme).toBe('Star Wars');
+    expect(result.frontmatter.description).toContain(
+      'Up-Scaled Darth Vader Minifigure',
+    );
+    expect(result.frontmatter.description).toContain(
+      'Imperial Remnant AT-RT Driver Helmet',
+    );
+    expect(result.mdx).toContain('Imperial, Rebel of trooper');
+  });
+
+  it('adds Star Wars fan tone to single-set announcements without generic object wording', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('75429', {
+              name: 'AT-AT Driver Helmet',
+              theme: 'Star Wars',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('75429', {
+            name: 'AT-AT Driver Helmet',
+            theme: 'Star Wars',
+          }),
+          reason: 'title_match',
+        },
+        detected: createDetected({
+          keywords: ['Star Wars', 'Helmet Collection', 'trooper'],
+          setNumbers: ['75429'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juni 2026',
+          setNames: ['AT-AT Driver Helmet'],
+          setNumbers: ['75429'],
+          summary:
+            'De AT-AT Driver Helmet is onthuld als nieuwe Star Wars displayset.',
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars 75429 AT-AT Driver Helmet onthuld voor juni 2026',
+        }),
+        source: createSource({
+          title:
+            'LEGO Star Wars 75429 AT-AT Driver Helmet onthuld voor juni 2026',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.description).not.toContain(
+      'object of deze wereld',
+    );
+    expect(result.mdx).not.toContain('object of deze wereld');
+    expect(result.frontmatter.description).toContain('Star Wars-fans');
+    expect(result.frontmatter.description).toContain('displaysets');
+    expect(result.mdx).toContain('Helmet Collection');
+    expect(result.mdx).toContain('Imperial/Rebel vibes');
+    expect(result.mdx).toContain('als je deze lijn spaart');
+  });
+
+  it('adds Harry Potter fan tone to announcement copy', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('76450', {
+              name: 'Hogwarts Castle Tower',
+              theme: 'Harry Potter',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('76450', {
+            name: 'Hogwarts Castle Tower',
+            theme: 'Harry Potter',
+          }),
+          reason: 'title_match',
+        },
+        detected: createDetected({
+          keywords: ['Harry Potter', 'Hogwarts'],
+          setNumbers: ['76450'],
+          themes: ['Harry Potter'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juni 2026',
+          setNames: ['Hogwarts Castle Tower'],
+          setNumbers: ['76450'],
+          summary:
+            'Hogwarts Castle Tower is aangekondigd als nieuwe LEGO Harry Potter-set.',
+          theme: 'Harry Potter',
+          title: 'LEGO Harry Potter 76450 Hogwarts Castle Tower aangekondigd',
+        }),
+        source: createSource({
+          title: 'LEGO Harry Potter 76450 Hogwarts Castle Tower aangekondigd',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.description).toContain('Hogwarts-sfeer');
+    expect(result.mdx).toContain('Hogwarts');
+    expect(result.mdx).toContain('scènes');
+    expect(result.mdx).toContain('diorama');
+  });
+
+  it('keeps non-target theme announcement copy unchanged', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+        }),
+        facts: createFacts({
+          title: 'LEGO Super Mario 72050 verschijnt op 1 juni 2026',
+        }),
+        source: createSource({
+          title: 'LEGO Super Mario 72050 verschijnt op 1 juni 2026',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.description).toBe(
+      'Mario Kart – Spiny Shell is aangekondigd als LEGO-release voor 2026-05-01. Vooral iets om rustig te volgen als dit thema, object of deze wereld je meteen iets doet.',
+    );
+    expect(result.mdx).toContain('werelden, objecten of licenties');
+    expect(result.mdx).not.toContain('Helmet Collection');
+    expect(result.mdx).not.toContain('Hogwarts');
+    expect(result.mdx).not.toContain('Middle-earth');
   });
 
   it('does not use Other in frontmatter when Lewis Hamilton helmet metadata gives a better theme', () => {
@@ -1039,7 +1382,7 @@ describe('editorial agent draft generation', () => {
     expect(publicBody).toContain('## Wat valt op?');
     expect(publicBody).toContain('## Waarom volgen?');
     expect(publicBody).toContain('## Korte conclusie');
-    expect(publicBody).toContain('Via: brickset.com');
+    expect(publicBody).toContain('Via: Brickset');
     expect(publicBody).not.toContain('deze sets trekt');
     expect(publicBody).not.toContain('deze sets laat');
     expect(publicBody).not.toContain('deze aankondiging trekt');
@@ -1150,9 +1493,7 @@ describe('editorial agent draft generation', () => {
       }),
     );
 
-    expect(result.frontmatter.title).toBe(
-      'LEGO 40787 Mario Kart – Spiny Shell is terug',
-    );
+    expect(result.frontmatter.title).toBe('Mario Kart – Spiny Shell terug');
     expect(result.frontmatter.description).not.toContain(
       'Overzicht van de LEGO-sets uit',
     );
@@ -1268,6 +1609,7 @@ describe('editorial agent draft generation', () => {
     expect(result.frontmatter.theme).toBe('LEGO® Icons');
     expect(result.frontmatter.description).toContain('prijs');
     expect(result.mdx).toContain('<FeaturedSet setNumber="10356" />');
+    expectFeaturedSetAtTop(result.mdx);
     expect(result.mdx).toContain('dubbele Insiders-punten of €60 korting');
     expect(result.mdx).not.toContain('<SetRail');
     expect(result.mdx).not.toContain('The Evolution of STEM');
@@ -1518,7 +1860,7 @@ describe('editorial agent draft generation', () => {
     );
   });
 
-  it('includes concrete buy advice, a conclusion, a source line and a stable slug', () => {
+  it('includes concrete buy advice, a conclusion, subtle sources and a stable slug', () => {
     const input = createInput();
     const first = generateEditorialMdxDraft(input);
     const second = generateEditorialMdxDraft(input);
@@ -1526,8 +1868,10 @@ describe('editorial agent draft generation', () => {
     expect(first.mdx).toContain('## Wanneer kopen?');
     expect(first.mdx).toContain('## Korte conclusie');
     expect(first.mdx).toContain(
-      'Bron: [www.bricktastic.nl](https://www.bricktastic.nl/lego/deze-nieuwe-lego-sets-worden-in-mei-2026-uitgebracht/)',
+      'Bronnen: officiële setinformatie en openbare berichtgeving.',
     );
+    expect(first.mdx).toContain('sourceDisplayMode: "auto"');
+    expect(first.mdx).toContain('signalSourceName: "BrickTastic"');
     expect(first.frontmatter.slug).toBe(second.frontmatter.slug);
   });
 });

@@ -1,13 +1,15 @@
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const listPublishedArticles = vi.fn();
+const getPopularArticles = vi.fn();
 const listCatalogSetCards = vi.fn();
 const listCatalogSetCardsByIds = vi.fn();
 
 vi.mock('@lego-platform/content/data-access', () => ({
+  getPopularArticles,
   listPublishedArticles,
 }));
 
@@ -31,6 +33,7 @@ vi.mock('@lego-platform/shell/web', () => ({
 describe('articles index route', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    getPopularArticles.mockResolvedValue([]);
     listCatalogSetCards.mockResolvedValue([]);
     listCatalogSetCardsByIds.mockResolvedValue([]);
   });
@@ -54,7 +57,9 @@ describe('articles index route', () => {
     expect(source).not.toContain('useEffect');
     expect(source).not.toContain('useSWR');
     expect(source).not.toContain('fetch(');
-    expect(source).toContain('await listPublishedArticles()');
+    expect(source).toContain('listPublishedArticles()');
+    expect(source).toContain('getPopularArticles({');
+    expect(source).toContain('revalidate = 60');
   });
 
   it('uses the shared editorial hero instead of duplicate page hero CSS', async () => {
@@ -89,6 +94,23 @@ describe('articles index route', () => {
     expect(css).not.toContain('.heroTitle');
   });
 
+  it('does not keep the old /artikelen/[slug] route file', async () => {
+    await expect(
+      access(
+        path.join(
+          process.cwd(),
+          'apps',
+          'web',
+          'src',
+          'app',
+          'artikelen',
+          '[slug]',
+          'page.tsx',
+        ),
+      ),
+    ).rejects.toThrow();
+  });
+
   it('renders published articles sorted by article date with the latest featured first', async () => {
     listPublishedArticles.mockResolvedValue([
       {
@@ -102,11 +124,11 @@ describe('articles index route', () => {
         title: 'Oudere update',
       },
       {
-        cardImage: '/articles/marvel/card.jpg',
+        cardImage: 'https://storage.example/article-images/marvel/card.webp',
         cardImageAlt: 'Marvel card',
         date: '2026-05-03',
         description: 'De nieuwste reveal voor Marvel-fans.',
-        heroImage: '/articles/marvel/hero.jpg',
+        heroImage: 'https://storage.example/article-images/marvel/hero.webp',
         heroImageAlt: 'Marvel hero',
         slug: 'lego-marvel-herbie',
         status: 'published',
@@ -143,17 +165,105 @@ describe('articles index route', () => {
     expect(markup).toContain(
       'Blijf op de hoogte van nieuwe LEGO-sets, deals en aankondigingen.',
     );
-    expect(markup).toContain('/artikelen/lego-marvel-herbie');
-    expect(markup).toContain('/artikelen/middle-update');
-    expect(markup).toContain('/artikelen/older-update');
+    expect(markup).toContain('/artikelen/marvel/lego-marvel-herbie');
+    expect(markup).toContain('/artikelen/star-wars/middle-update');
+    expect(markup).toContain('/artikelen/icons/older-update');
     expect(markup).not.toContain('Concept update');
     expect(markup).toContain('featuredArticle');
     expect(markup).toContain('cardGrid');
+    expect(markup).not.toContain('Populair deze week');
+    expect(markup).not.toContain('Meer LEGO nieuws');
     expect(markup.indexOf('LEGO Marvel H.E.R.B.I.E. onthuld')).toBeLessThan(
       markup.indexOf('Nog een update'),
     );
     expect(markup.indexOf('Nog een update')).toBeLessThan(
       markup.indexOf('Oudere update'),
+    );
+  });
+
+  it('renders popular articles only when server-side popular data exists', async () => {
+    listPublishedArticles.mockResolvedValue([
+      {
+        cardImageAlt: 'Latest',
+        date: '2026-05-03',
+        description: 'Laatste artikel.',
+        heroImageAlt: 'Latest',
+        slug: 'latest',
+        status: 'published',
+        theme: 'Marvel',
+        title: 'Laatste artikel',
+      },
+      {
+        cardImageAlt: 'Recent one',
+        date: '2026-05-02',
+        description: 'Eerste recente kaart.',
+        heroImageAlt: 'Recent one',
+        slug: 'recent-one',
+        status: 'published',
+        theme: 'Star Wars',
+        title: 'Recent artikel een',
+      },
+      {
+        cardImageAlt: 'Recent two',
+        date: '2026-05-01',
+        description: 'Tweede recente kaart.',
+        heroImageAlt: 'Recent two',
+        slug: 'recent-two',
+        status: 'published',
+        theme: 'Icons',
+        title: 'Recent artikel twee',
+      },
+      {
+        cardImageAlt: 'Recent three',
+        date: '2026-04-30',
+        description: 'Derde recente kaart.',
+        heroImageAlt: 'Recent three',
+        slug: 'recent-three',
+        status: 'published',
+        theme: 'City',
+        title: 'Recent artikel drie',
+      },
+      {
+        cardImageAlt: 'Older',
+        date: '2026-04-29',
+        description: 'Ouder artikel in de rest-grid.',
+        heroImageAlt: 'Older',
+        slug: 'older',
+        status: 'published',
+        theme: 'Ideas',
+        title: 'Ouder artikel',
+      },
+    ]);
+    getPopularArticles.mockResolvedValue([
+      {
+        cardImageAlt: 'Popular',
+        date: '2026-05-01',
+        description: 'Veel gelezen deze week.',
+        heroImageAlt: 'Popular',
+        slug: 'popular',
+        status: 'published',
+        theme: 'Star Wars',
+        title: 'Populair artikel',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(getPopularArticles).toHaveBeenCalledWith({
+      days: 7,
+      limit: 6,
+    });
+    expect(markup).toContain('Populair deze week');
+    expect(markup).toContain('POPULAIR');
+    expect(markup).toContain('data-content-section-shell="inverse"');
+    expect(markup).toContain('/artikelen/star-wars/popular');
+    expect(markup).not.toContain('Veel gelezen deze week.');
+    expect(markup.indexOf('Net binnen')).toBeLessThan(
+      markup.indexOf('Populair deze week'),
+    );
+    expect(markup.indexOf('Populair deze week')).toBeLessThan(
+      markup.indexOf('Meer LEGO nieuws'),
     );
   });
 
@@ -202,6 +312,8 @@ describe('articles index route', () => {
     });
     expect(markup).toContain('https://images.example/75446.jpg');
     expect(markup).toContain('Up-Scaled Darth Vader LEGO-set');
+    expect(markup).toContain('data-article-image-source="spotlight"');
+    expect(markup).toContain('data-article-image-fit="contain"');
   });
 
   it('uses a representative set image from the article theme before the theme tile', async () => {
@@ -285,12 +397,14 @@ describe('articles index route', () => {
     listPublishedArticles.mockResolvedValue([
       {
         bodySource: '<FeaturedSet setNumber="40787" />',
-        cardImage: '/articles/manual/card.jpg',
+        cardImage: 'https://storage.example/article-images/manual/card.webp',
         cardImageAlt: 'Handmatige kaartafbeelding',
+        cardImageSource: 'manual',
         date: '2026-05-03',
         description: 'Handmatige afbeelding blijft leidend.',
-        heroImage: '/articles/manual/hero.jpg',
+        heroImage: 'https://storage.example/article-images/manual/hero.webp',
         heroImageAlt: 'Handmatige hero',
+        heroImageSource: 'manual',
         slug: 'manual-image',
         status: 'published',
         theme: 'Super Mario',
@@ -302,7 +416,41 @@ describe('articles index route', () => {
     const markup = renderToStaticMarkup(await pageModule.default());
 
     expect(listCatalogSetCardsByIds).not.toHaveBeenCalled();
-    expect(markup).toContain('/articles/manual/hero.jpg');
+    expect(markup).toContain(
+      'https://storage.example/article-images/manual/hero.webp',
+    );
+    expect(markup).toContain('data-article-image-fit="cover"');
     expect(markup).not.toContain('images.example');
+  });
+
+  it('renders uploaded Supabase hero images on article cards before catalog fallbacks', async () => {
+    listPublishedArticles.mockResolvedValue([
+      {
+        bodySource: '<FeaturedSet setNumber="40787" />',
+        cardImage:
+          'https://project.supabase.co/storage/v1/object/public/article-images/articles/spiny-shell/hero.webp',
+        cardImageAlt: 'Geuploade Spiny Shell hero',
+        cardImageSource: 'manual',
+        date: '2026-05-03',
+        description: 'Handmatige hero moet winnen.',
+        heroImage:
+          'https://project.supabase.co/storage/v1/object/public/article-images/articles/spiny-shell/hero.webp',
+        heroImageAlt: 'Geuploade Spiny Shell hero',
+        heroImageSource: 'manual',
+        slug: 'spiny-shell',
+        status: 'published',
+        theme: 'Super Mario',
+        title: 'Spiny Shell terug',
+      },
+    ]);
+
+    const pageModule = await import('./page');
+    const markup = renderToStaticMarkup(await pageModule.default());
+
+    expect(markup).toContain(
+      'https://project.supabase.co/storage/v1/object/public/article-images/articles/spiny-shell/hero.webp',
+    );
+    expect(markup).toContain('data-article-image-fit="cover"');
+    expect(listCatalogSetCardsByIds).not.toHaveBeenCalled();
   });
 });

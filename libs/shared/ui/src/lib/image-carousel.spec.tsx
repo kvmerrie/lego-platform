@@ -92,25 +92,13 @@ describe('ImageGallery', () => {
       container.querySelector('.articleGrid, [class*="articleGrid"]'),
     ).not.toBeNull();
     expect(container.querySelectorAll('img')).toHaveLength(3);
-    expect(container.querySelector('[data-layout="three-up"]')).not.toBeNull();
+    expect(container.querySelector('[data-count="3"]')).not.toBeNull();
     expect(
-      container.querySelector('[class*="articleFigureFeature"]'),
-    ).not.toBeNull();
+      container.querySelectorAll('[data-gallery-tile-index]'),
+    ).toHaveLength(3);
     expect(
-      container.querySelector('[class*="articleFigureStackTop"]'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[class*="articleFigureStackBottom"]'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[class*="articleFigureFeature"] img'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[class*="articleFigureStackTop"] img'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[class*="articleFigureStackBottom"] img'),
-    ).not.toBeNull();
+      container.querySelectorAll('[data-gallery-zoom-overlay="true"]'),
+    ).toHaveLength(3);
 
     const firstOpenButton = container.querySelector(
       'button[aria-label^="Open LEGO Star Wars Grogu als leerling van de Mandalorian"]',
@@ -289,6 +277,56 @@ describe('ImageGallery', () => {
     ).not.toBeNull();
   });
 
+  it('keeps article gallery tiles accessible and opens without set_click tracking', () => {
+    const gtag = vi.fn();
+    (window as unknown as { gtag?: typeof gtag }).gtag = gtag;
+
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'LEGO Star Wars Helmet Collection detail',
+              src: '/articles/star-wars/helmet.webp',
+            },
+          ]}
+          variant="article"
+        />,
+      );
+    });
+
+    const imageButton = container.querySelector(
+      '[data-gallery-tile-index="0"]',
+    ) as HTMLButtonElement | null;
+
+    expect(imageButton).not.toBeNull();
+    expect(imageButton?.tagName).toBe('BUTTON');
+    expect(imageButton?.getAttribute('type')).toBe('button');
+    expect(imageButton?.getAttribute('aria-label')).toBe(
+      'Open LEGO Star Wars Helmet Collection detail in volledig scherm',
+    );
+    expect(
+      container.querySelector('[data-gallery-zoom-overlay="true"]'),
+    ).not.toBeNull();
+
+    act(() => {
+      imageButton?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(gtag).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(
+      container.querySelector('[data-lightbox-active-index="0"]'),
+    ).not.toBeNull();
+
+    delete (window as unknown as { gtag?: typeof gtag }).gtag;
+  });
+
   it('closes the fullscreen viewer with the close button and Escape', () => {
     act(() => {
       root.render(
@@ -423,6 +461,25 @@ describe('ImageGallery', () => {
     ).not.toBeNull();
   });
 
+  it('keeps set detail gallery images on a white contained product surface', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/shared/ui/src/lib/image-carousel.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain('.detailMainFrame {\n  aspect-ratio: 1 / 1;');
+    expect(css).toContain('.detailMainFrame,\n.detailThumbFrame {');
+    expect(css).toContain('background: #ffffff;');
+    expect(css).toContain('.galleryImageDetail {');
+    expect(css).toContain('object-fit: contain;');
+    expect(css).toContain('@media (min-width: 48rem)');
+    expect(css).toContain('.detailMainFrame {\n    aspect-ratio: auto;');
+    expect(css).toContain('height: 508px;');
+  });
+
   it('keeps ImageCarousel as a compatibility alias', () => {
     act(() => {
       root.render(
@@ -488,7 +545,7 @@ describe('ImageGallery', () => {
     ).not.toBeNull();
   });
 
-  it('uses an exact 3-image editorial grid with the parent grid owning height and the tiles stretching into it', () => {
+  it('uses balanced responsive article gallery layouts', () => {
     const css = readFileSync(
       resolve(
         process.cwd(),
@@ -497,20 +554,101 @@ describe('ImageGallery', () => {
       'utf-8',
     );
 
-    expect(css).toContain('.articleGridThreeUp');
+    expect(css).toContain(".articleGrid[data-count='1']");
+    expect(css).toContain(".articleGrid[data-count='2']");
+    expect(css).toContain(".articleGrid[data-count='3']");
+    expect(css).toContain(".articleGrid[data-count='4'],");
+    expect(css).toContain(".articleGrid[data-count='5-plus']");
+    expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
+    expect(css).toContain('.articleMoreOverlay');
+    expect(css).toContain('.articleZoomOverlay');
+    expect(css).toContain('.articleZoomIconShell');
+    expect(css).toContain('.articleZoomIcon');
+    expect(css).toContain('rgba(12, 18, 32, 0.28) 100%');
+    expect(css).toContain('border-radius: var(--lego-radius-pill);');
+    expect(css).toContain('.articleImageButton:hover .articleZoomOverlay,');
     expect(css).toContain(
-      'grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);',
+      '.articleImageButton:focus-visible .articleZoomOverlay',
     );
-    expect(css).toContain('grid-template-rows: repeat(2, minmax(0, 1fr));');
-    expect(css).toContain(
-      '.articleGridThreeUp .articleFigure {\n    align-content: stretch;',
-    );
-    expect(css).toContain(
-      '.articleGridThreeUp .articleMediaFrame,\n  .articleGridThreeUp .articleImageButton,\n  .articleGridThreeUp .galleryImage {',
-    );
-    expect(css).toContain('height: 100%;');
-    expect(css).toContain(
-      '.articleGridThreeUp .articleMediaFrame {\n    min-height: 100%;',
-    );
+    expect(css).toContain('@media (hover: none), (pointer: coarse)');
+    expect(css).toContain('.articleMediaFrame {\n  background: #ffffff;');
+    expect(css).toContain('.galleryImageArticle {');
+    expect(css).toContain('object-fit: cover;');
+  });
+
+  it('shows the first four article images with a remaining-count overlay', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Afbeelding 1',
+              src: '/articles/demo/1.webp',
+            },
+            {
+              alt: 'Afbeelding 2',
+              src: '/articles/demo/2.webp',
+            },
+            {
+              alt: 'Afbeelding 3',
+              src: '/articles/demo/3.webp',
+            },
+            {
+              alt: 'Afbeelding 4',
+              src: '/articles/demo/4.webp',
+            },
+            {
+              alt: 'Afbeelding 5',
+              src: '/articles/demo/5.webp',
+            },
+            {
+              alt: 'Afbeelding 6',
+              src: '/articles/demo/6.webp',
+            },
+          ]}
+          variant="article"
+        />,
+      );
+    });
+
+    expect(container.querySelector('[data-count="5-plus"]')).not.toBeNull();
+    expect(
+      container.querySelectorAll('[data-gallery-tile-index]'),
+    ).toHaveLength(4);
+    expect(container.textContent).toContain('+2');
+  });
+
+  it('renders four article images as a balanced four-tile layout', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Afbeelding 1',
+              src: '/articles/demo/1.webp',
+            },
+            {
+              alt: 'Afbeelding 2',
+              src: '/articles/demo/2.webp',
+            },
+            {
+              alt: 'Afbeelding 3',
+              src: '/articles/demo/3.webp',
+            },
+            {
+              alt: 'Afbeelding 4',
+              src: '/articles/demo/4.webp',
+            },
+          ]}
+          variant="article"
+        />,
+      );
+    });
+
+    expect(container.querySelector('[data-count="4"]')).not.toBeNull();
+    expect(
+      container.querySelectorAll('[data-gallery-tile-index]'),
+    ).toHaveLength(4);
+    expect(container.textContent).not.toContain('+');
   });
 });

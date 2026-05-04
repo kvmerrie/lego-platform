@@ -9,7 +9,6 @@ import {
   Breadcrumbs,
   type BreadcrumbItem,
   type CarouselImage,
-  ImageGallery,
   SectionHeading,
   Surface,
 } from '@lego-platform/shared/ui';
@@ -17,13 +16,18 @@ import {
   formatContentArticleDate,
   normalizePublicContentArticleTheme,
   type ContentArticle,
+  type ContentArticleHeroImageSource,
   type ContentArticleListItem,
 } from '@lego-platform/content/util';
 import {
   ContentArticleLink,
   ContentArticleSetActionLink,
-  ContentArticleSetLink,
 } from './content-article-link';
+import { ContentArticleFeaturedSetLightbox } from './content-article-featured-set-lightbox';
+import {
+  ContentArticleGalleryLightboxProvider,
+  ContentArticleGalleryLightboxWidget,
+} from './content-article-gallery-lightbox';
 import styles from './content-article-ui.module.css';
 
 function joinClasses(
@@ -41,6 +45,39 @@ function normalizeArticleThemeKey(theme?: string): string | undefined {
     .toLowerCase()
     .replaceAll(/[^a-z0-9]+/gu, '-')
     .replace(/^-|-$/gu, '');
+}
+
+function getArticleThemeSlugForLink(
+  contentArticle: Pick<ContentArticleListItem, 'theme' | 'themeSlug'>,
+): string {
+  return (
+    contentArticle.themeSlug ??
+    normalizeArticleThemeKey(contentArticle.theme) ??
+    'lego'
+  );
+}
+
+function getArticleImageFit({
+  kind,
+  source,
+}: {
+  kind: 'card' | 'featured' | 'hero' | 'spotlight';
+  source?: ContentArticleHeroImageSource;
+}): 'contain' | 'cover' {
+  if (source) {
+    return source === 'manual' ? 'cover' : 'contain';
+  }
+
+  return kind === 'card' ? 'cover' : 'contain';
+}
+
+function getArticleCardImageSource(
+  contentArticle: Pick<
+    ContentArticleListItem,
+    'cardImageSource' | 'heroImageSource'
+  >,
+): ContentArticleHeroImageSource | undefined {
+  return contentArticle.cardImageSource ?? contentArticle.heroImageSource;
 }
 
 export interface ContentArticleThemePresentation {
@@ -77,19 +114,62 @@ export interface ContentArticleSetSpotlightSection {
   title: string;
 }
 
+export function ContentArticleSectionShell({
+  bodyClassName,
+  children,
+  className,
+  eyebrow,
+  title,
+  tone = 'default',
+}: {
+  bodyClassName?: string;
+  children: ReactNode;
+  className?: string;
+  eyebrow?: string;
+  title: string;
+  tone?: 'default' | 'inverse';
+}) {
+  return (
+    <section
+      className={joinClasses(
+        styles.sectionShell,
+        tone === 'inverse'
+          ? styles.sectionShellInverse
+          : styles.sectionShellDefault,
+        styles.sectionShellPaddingDefault,
+        className,
+      )}
+      data-content-section-shell={tone}
+    >
+      <div className={styles.sectionShellHeader}>
+        {eyebrow ? (
+          <p className={styles.sectionShellEyebrow}>{eyebrow}</p>
+        ) : null}
+        <h2 className={styles.sectionShellTitle}>{title}</h2>
+      </div>
+      <div className={joinClasses(styles.sectionShellBody, bodyClassName)}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
 function ContentArticleImage({
   alt,
   fallbackLabel,
   imageUrl,
   kind = 'card',
   priority = false,
+  source,
 }: {
   alt: string;
   fallbackLabel: string;
   imageUrl?: string;
   kind?: 'card' | 'featured' | 'hero' | 'spotlight';
   priority?: boolean;
+  source?: ContentArticleHeroImageSource;
 }) {
+  const imageFit = getArticleImageFit({ kind, source });
   const imageFrameClassName = [
     styles.imageFrame,
     kind === 'hero'
@@ -109,6 +189,7 @@ function ContentArticleImage({
         : kind === 'featured'
           ? styles.featuredSetImage
           : styles.cardImage,
+    imageFit === 'cover' ? styles.imageFitCover : styles.imageFitContain,
   );
 
   if (imageUrl) {
@@ -117,12 +198,9 @@ function ContentArticleImage({
         <img
           alt={alt}
           className={imageClassName}
-          data-article-image-fit={
-            kind === 'hero' || kind === 'featured' || kind === 'spotlight'
-              ? 'contain'
-              : 'cover'
-          }
+          data-article-image-fit={imageFit}
           data-article-image-kind={kind}
+          data-article-image-source={source}
           decoding="async"
           loading={priority ? 'eager' : 'lazy'}
           src={imageUrl}
@@ -198,7 +276,10 @@ export function ContentArticleCard({
     <Surface as="article" className={styles.card} elevation="rested">
       <ContentArticleLink
         className={styles.cardLink}
-        href={buildArticlePath(contentArticle.slug)}
+        href={buildArticlePath(
+          contentArticle.slug,
+          getArticleThemeSlugForLink(contentArticle),
+        )}
         slug={contentArticle.slug}
         theme={contentArticle.theme}
       >
@@ -209,6 +290,7 @@ export function ContentArticleCard({
             'Artikel'
           }
           imageUrl={contentArticle.cardImage ?? contentArticle.heroImage}
+          source={getArticleCardImageSource(contentArticle)}
         />
         <div className={styles.cardBody}>
           <ContentArticleMeta contentArticle={contentArticle} />
@@ -229,7 +311,10 @@ export function ContentArticleFeaturedCard({
     <Surface as="article" className={styles.featuredArticle} elevation="rested">
       <ContentArticleLink
         className={styles.featuredArticleLink}
-        href={buildArticlePath(contentArticle.slug)}
+        href={buildArticlePath(
+          contentArticle.slug,
+          getArticleThemeSlugForLink(contentArticle),
+        )}
         slug={contentArticle.slug}
         theme={contentArticle.theme}
       >
@@ -242,6 +327,9 @@ export function ContentArticleFeaturedCard({
           imageUrl={contentArticle.heroImage ?? contentArticle.cardImage}
           kind="featured"
           priority
+          source={
+            contentArticle.heroImageSource ?? contentArticle.cardImageSource
+          }
         />
         <div className={styles.featuredArticleBody}>
           <ContentArticleMeta contentArticle={contentArticle} />
@@ -271,6 +359,67 @@ export function ContentArticleGrid({
         />
       ))}
     </div>
+  );
+}
+
+export function ContentArticleCompactRail({
+  contentArticles,
+  maxItems,
+  title,
+}: {
+  contentArticles: readonly ContentArticleListItem[];
+  maxItems?: number;
+  title: string;
+}) {
+  const visibleArticles =
+    typeof maxItems === 'number'
+      ? contentArticles.slice(0, maxItems)
+      : contentArticles;
+
+  if (!visibleArticles.length) {
+    return null;
+  }
+
+  return (
+    <ContentArticleSectionShell
+      bodyClassName={styles.compactRailBody}
+      className={styles.compactRail}
+      eyebrow="POPULAIR"
+      title={title}
+      tone="inverse"
+    >
+      <div className={styles.compactRailScroller}>
+        {visibleArticles.map((contentArticle) => (
+          <article className={styles.compactCard} key={contentArticle.slug}>
+            <ContentArticleLink
+              className={styles.compactCardLink}
+              href={buildArticlePath(
+                contentArticle.slug,
+                getArticleThemeSlugForLink(contentArticle),
+              )}
+              slug={contentArticle.slug}
+              theme={contentArticle.theme}
+            >
+              <ContentArticleImage
+                alt={contentArticle.cardImageAlt}
+                fallbackLabel={
+                  normalizePublicContentArticleTheme(contentArticle.theme) ??
+                  'Artikel'
+                }
+                imageUrl={contentArticle.cardImage ?? contentArticle.heroImage}
+                source={getArticleCardImageSource(contentArticle)}
+              />
+              <div className={styles.compactCardBody}>
+                <ContentArticleMeta contentArticle={contentArticle} />
+                <h3 className={styles.compactCardTitle}>
+                  {contentArticle.title}
+                </h3>
+              </div>
+            </ContentArticleLink>
+          </article>
+        ))}
+      </div>
+    </ContentArticleSectionShell>
   );
 }
 
@@ -427,20 +576,19 @@ export function ContentArticleFeaturedSet({
         elevation="rested"
         tone="muted"
       >
-        <ContentArticleSetLink
-          articleSlug={articleSlug}
-          className={styles.featuredSetVisualLink}
-          href={ctaHref}
-          setId={setNumber}
-          setName={name}
+        <ContentArticleFeaturedSetLightbox
+          imageAlt={imageAlt}
+          imageUrl={imageUrl}
+          name={name}
         >
           <ContentArticleImage
             alt={imageAlt}
             fallbackLabel={visibleTheme ?? 'Set'}
             imageUrl={imageUrl}
             kind="featured"
+            source="featuredSet"
           />
-        </ContentArticleSetLink>
+        </ContentArticleFeaturedSetLightbox>
 
         <div className={styles.featuredSetContent}>
           <div className={styles.featuredSetHeader}>
@@ -584,11 +732,10 @@ export function ContentArticleImageGallery({
       data-article-module="image-gallery"
       data-article-width="editorial-media"
     >
-      <ImageGallery
+      <ContentArticleGalleryLightboxWidget
         ariaLabel="Artikelgalerij"
         className={styles.embeddedCarouselWidget}
         images={images}
-        variant="article"
       />
     </div>
   );
@@ -640,6 +787,7 @@ export function ContentArticlePage({
                 imageUrl={contentArticle.heroImage}
                 kind="hero"
                 priority
+                source={contentArticle.heroImageSource}
               />
             </div>
           ) : null}
@@ -665,9 +813,25 @@ export function ContentArticlePage({
           </div>
         </header>
         <div className={styles.articleBody} data-article-layout="body">
-          <div className={styles.prose} data-article-layout="prose">
-            {body}
-          </div>
+          <ContentArticleGalleryLightboxProvider>
+            <div className={styles.prose} data-article-layout="prose">
+              {body}
+            </div>
+          </ContentArticleGalleryLightboxProvider>
+          {contentArticle.sourceAttribution ? (
+            <footer
+              className={styles.sourceAttribution}
+              data-article-layout="source-attribution"
+              data-source-attribution-tone={
+                contentArticle.sourceAttribution.tone
+              }
+            >
+              <p>{contentArticle.sourceAttribution.label}</p>
+              {contentArticle.sourceAttribution.imageCredit ? (
+                <p>{contentArticle.sourceAttribution.imageCredit}</p>
+              ) : null}
+            </footer>
+          ) : null}
         </div>
         {relatedArticles?.length ? (
           <div

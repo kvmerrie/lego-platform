@@ -23,18 +23,21 @@ import {
   normalizeSetRailIds,
   renderArticleMdxSetSpotlightList,
   renderArticleMdxSetRail,
+  resolveArticleMdxSourceWithCuratedRelatedSetRail,
 } from './article-mdx-components';
 
 const {
   buildCurrentSetCardPriceContext,
   getFeaturedSetPriceContext,
   listCatalogCurrentOfferSummariesBySetIds,
+  listCatalogSetCards,
   listCatalogSetCardsByIds,
   listCatalogSetCardsByIdsForBrowser,
 } = vi.hoisted(() => ({
   buildCurrentSetCardPriceContext: vi.fn(),
   getFeaturedSetPriceContext: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
+  listCatalogSetCards: vi.fn(),
   listCatalogSetCardsByIds: vi.fn(),
   listCatalogSetCardsByIdsForBrowser: vi.fn(),
 }));
@@ -70,6 +73,7 @@ vi.mock('@lego-platform/catalog/data-access', () => ({
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
   listCatalogCurrentOfferSummariesBySetIds,
+  listCatalogSetCards,
   listCatalogSetCardsByIds,
   listCatalogSetCardsByIdsForBrowser,
 }));
@@ -199,6 +203,8 @@ vi.mock('@lego-platform/catalog/util', () => ({
     theme.toLowerCase().replaceAll(' ', '-'),
   getCanonicalCatalogSetId: (sourceSetNumber: string) =>
     sourceSetNumber.trim().replace(/-1$/u, ''),
+  getCatalogThemeDisplayName: (theme: string) =>
+    theme === 'Star Wars' ? 'Star Wars™' : theme,
   normalizeCatalogSetImages: ({ imageUrl }: { imageUrl?: string }) => ({
     imageUrl,
     primaryImage: imageUrl,
@@ -367,6 +373,7 @@ describe('article mdx components', () => {
 
   beforeEach(() => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    listCatalogSetCards.mockResolvedValue([]);
     listCatalogSetCardsByIdsForBrowser.mockResolvedValue([]);
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -414,40 +421,40 @@ describe('article mdx components', () => {
       normalizeImageCarouselImages([
         {
           alt: 'LEGO Star Wars Grogu als leerling van de Mandalorian',
-          src: '/articles/star-wars-day-2026/grogu.jpg',
+          src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
         },
       ]),
     ).toHaveLength(1);
 
     expect(
       normalizeImageCarouselImages(
-        '/articles/star-wars-day-2026/grogu.jpg,/articles/star-wars-day-2026/razor-crest.png',
+        'https://storage.example/article-images/star-wars-day-2026/grogu.webp,https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
       ),
     ).toEqual([
       {
         alt: 'Artikelafbeelding 1',
-        src: '/articles/star-wars-day-2026/grogu.jpg',
+        src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
       },
       {
         alt: 'Artikelafbeelding 2',
-        src: '/articles/star-wars-day-2026/razor-crest.png',
+        src: 'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
       },
     ]);
 
     expect(
       normalizeImageCarouselImages(
-        '/articles/star-wars-day-2026/grogu.jpg::LEGO Star Wars Grogu als leerling van de Mandalorian;;/articles/star-wars-day-2026/razor-crest.png::LEGO Star Wars The Razor Crest',
+        'https://storage.example/article-images/star-wars-day-2026/grogu.webp::LEGO Star Wars Grogu als leerling van de Mandalorian;;https://storage.example/article-images/star-wars-day-2026/razor-crest.webp::LEGO Star Wars The Razor Crest',
       ),
     ).toEqual([
       {
         alt: 'LEGO Star Wars Grogu als leerling van de Mandalorian',
         caption: undefined,
-        src: '/articles/star-wars-day-2026/grogu.jpg',
+        src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
       },
       {
         alt: 'LEGO Star Wars The Razor Crest',
         caption: undefined,
-        src: '/articles/star-wars-day-2026/razor-crest.png',
+        src: 'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
       },
     ]);
   });
@@ -515,19 +522,23 @@ describe('article mdx components', () => {
         images={[
           {
             alt: 'LEGO Star Wars Grogu als leerling van de Mandalorian',
-            src: '/articles/star-wars-day-2026/grogu.jpg',
+            src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
           },
           {
             alt: 'LEGO Star Wars The Razor Crest',
-            src: '/articles/star-wars-day-2026/razor-crest.png',
+            src: 'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
           },
         ]}
       />,
     );
 
     expect(markup).toContain('data-gallery="true"');
-    expect(markup).toContain('/articles/star-wars-day-2026/grogu.jpg');
-    expect(markup).toContain('/articles/star-wars-day-2026/razor-crest.png');
+    expect(markup).toContain(
+      'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
+    );
+    expect(markup).toContain(
+      'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
+    );
   });
 
   it('renders ImageCarousel as a compatibility alias when MDX passes a structured string prop', () => {
@@ -536,14 +547,18 @@ describe('article mdx components', () => {
       images: string;
     }>;
     const markup = renderToStaticMarkup(
-      <ImageCarousel images="/articles/star-wars-day-2026/grogu.jpg::LEGO Star Wars Grogu als leerling van de Mandalorian;;/articles/star-wars-day-2026/razor-crest.png::LEGO Star Wars The Razor Crest;;/articles/star-wars-day-2026/anzellan-starship.png::LEGO Star Wars Anzellan Starship" />,
+      <ImageCarousel images="https://storage.example/article-images/star-wars-day-2026/grogu.webp::LEGO Star Wars Grogu als leerling van de Mandalorian;;https://storage.example/article-images/star-wars-day-2026/razor-crest.webp::LEGO Star Wars The Razor Crest;;https://storage.example/article-images/star-wars-day-2026/anzellan-starship.webp::LEGO Star Wars Anzellan Starship" />,
     );
 
     expect(markup).toContain('data-gallery="true"');
-    expect(markup).toContain('/articles/star-wars-day-2026/grogu.jpg');
-    expect(markup).toContain('/articles/star-wars-day-2026/razor-crest.png');
     expect(markup).toContain(
-      '/articles/star-wars-day-2026/anzellan-starship.png',
+      'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
+    );
+    expect(markup).toContain(
+      'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
+    );
+    expect(markup).toContain(
+      'https://storage.example/article-images/star-wars-day-2026/anzellan-starship.webp',
     );
   });
 
@@ -596,24 +611,193 @@ describe('article mdx components', () => {
     expect(markup).not.toContain('€');
   });
 
+  it('keeps FeaturedSet visually standalone and injects curated helmet sets before the conclusion', async () => {
+    listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75458',
+        imageUrl: 'https://example.com/75458.jpg',
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        pieces: 730,
+        releaseYear: 2026,
+        slug: 'imperial-remnant-at-rt-driver-helmet-75458',
+        theme: 'Star Wars',
+      },
+    ]);
+    listCatalogSetCards.mockResolvedValue([
+      {
+        id: '75458',
+        imageUrl: 'https://example.com/75458.jpg',
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        pieces: 730,
+        releaseYear: 2026,
+        slug: 'imperial-remnant-at-rt-driver-helmet-75458',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75327',
+        imageUrl: 'https://example.com/75327.jpg',
+        name: 'Luke Skywalker Red Five Helmet',
+        pieces: 675,
+        releaseYear: 2022,
+        slug: 'luke-skywalker-red-five-helmet-75327',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75328',
+        imageUrl: 'https://example.com/75328.jpg',
+        name: 'The Mandalorian Helmet',
+        pieces: 584,
+        releaseYear: 2022,
+        slug: 'the-mandalorian-helmet-75328',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75382',
+        imageUrl: 'https://example.com/75382.jpg',
+        name: 'TIE Interceptor',
+        pieces: 1931,
+        releaseYear: 2024,
+        slug: 'tie-interceptor-75382',
+        theme: 'Star Wars',
+      },
+    ]);
+    const mdx = `Intro.
+
+Nog intro.
+
+<FeaturedSet setNumber="75458" />
+
+## Wat is er aangekondigd?
+
+Helmet nieuws.
+
+## Korte conclusie
+
+Klaar.`;
+    const resolvedMdx =
+      await resolveArticleMdxSourceWithCuratedRelatedSetRail(mdx);
+
+    expect(resolvedMdx.indexOf('<FeaturedSet')).toBeLessThan(
+      resolvedMdx.indexOf('## Wat is er aangekondigd?'),
+    );
+    expect(resolvedMdx).toContain(
+      '<SetRail title="Andere helmets in deze lijn" setIds="75327, 75328" />',
+    );
+    expect(resolvedMdx.indexOf('<SetRail')).toBeGreaterThan(
+      resolvedMdx.indexOf('## Wat is er aangekondigd?'),
+    );
+    expect(resolvedMdx.indexOf('<SetRail')).toBeLessThan(
+      resolvedMdx.indexOf('## Korte conclusie'),
+    );
+    expect(
+      resolvedMdx.slice(
+        resolvedMdx.indexOf('<FeaturedSet'),
+        resolvedMdx.indexOf('<SetRail'),
+      ),
+    ).toContain('## Wat is er aangekondigd?');
+    expect(resolvedMdx).not.toContain('75382');
+  });
+
+  it('does not inject random same-theme sets for non-collection FeaturedSet cards', async () => {
+    listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75461',
+        imageUrl: 'https://example.com/75461.jpg',
+        name: 'Up-Scaled Darth Vader Minifigure',
+        pieces: 584,
+        releaseYear: 2026,
+        slug: 'up-scaled-darth-vader-minifigure-75461',
+        theme: 'Star Wars',
+      },
+    ]);
+    listCatalogSetCards.mockResolvedValue([
+      {
+        id: '75458',
+        imageUrl: 'https://example.com/75458.jpg',
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        pieces: 730,
+        releaseYear: 2026,
+        slug: 'imperial-remnant-at-rt-driver-helmet-75458',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75382',
+        imageUrl: 'https://example.com/75382.jpg',
+        name: 'TIE Interceptor',
+        pieces: 1931,
+        releaseYear: 2024,
+        slug: 'tie-interceptor-75382',
+        theme: 'Star Wars',
+      },
+    ]);
+    const resolvedMdx = await resolveArticleMdxSourceWithCuratedRelatedSetRail(
+      `<FeaturedSet setNumber="75461" />
+
+## Korte conclusie
+
+Klaar.`,
+    );
+
+    expect(resolvedMdx).toContain('<FeaturedSet setNumber="75461" />');
+    expect(resolvedMdx).not.toContain('<SetRail');
+    expect(resolvedMdx).not.toContain('75458');
+    expect(resolvedMdx).not.toContain('75382');
+  });
+
+  it('hides curated related rails when fewer than two strong matches exist', async () => {
+    listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75458',
+        imageUrl: 'https://example.com/75458.jpg',
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        pieces: 730,
+        releaseYear: 2026,
+        slug: 'imperial-remnant-at-rt-driver-helmet-75458',
+        theme: 'Star Wars',
+      },
+    ]);
+    listCatalogSetCards.mockResolvedValue([
+      {
+        id: '75327',
+        imageUrl: 'https://example.com/75327.jpg',
+        name: 'Luke Skywalker Red Five Helmet',
+        pieces: 675,
+        releaseYear: 2022,
+        slug: 'luke-skywalker-red-five-helmet-75327',
+        theme: 'Star Wars',
+      },
+    ]);
+    const resolvedMdx = await resolveArticleMdxSourceWithCuratedRelatedSetRail(
+      `<FeaturedSet setNumber="75458" />
+
+## Korte conclusie
+
+Klaar.`,
+    );
+
+    expect(resolvedMdx).toContain('<FeaturedSet setNumber="75458" />');
+    expect(resolvedMdx).not.toContain('<SetRail');
+    expect(resolvedMdx).not.toContain('75327');
+  });
+
   it('repairs a single malformed image entry when MDX collapses multiple images into one src string', () => {
     expect(
       normalizeImageCarouselImages([
         {
           alt: 'Artikelafbeelding 1',
-          src: '/articles/star-wars-day-2026/grogu.jpg::LEGO Star Wars Grogu als leerling van de Mandalorian;;/articles/star-wars-day-2026/razor-crest.png::LEGO Star Wars The Razor Crest',
+          src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp::LEGO Star Wars Grogu als leerling van de Mandalorian;;https://storage.example/article-images/star-wars-day-2026/razor-crest.webp::LEGO Star Wars The Razor Crest',
         },
       ]),
     ).toEqual([
       {
         alt: 'LEGO Star Wars Grogu als leerling van de Mandalorian',
         caption: undefined,
-        src: '/articles/star-wars-day-2026/grogu.jpg',
+        src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
       },
       {
         alt: 'LEGO Star Wars The Razor Crest',
         caption: undefined,
-        src: '/articles/star-wars-day-2026/razor-crest.png',
+        src: 'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
       },
     ]);
   });
@@ -1630,11 +1814,11 @@ describe('article mdx components', () => {
           images={[
             {
               alt: 'LEGO Star Wars Grogu als leerling van de Mandalorian',
-              src: '/articles/star-wars-day-2026/grogu.jpg',
+              src: 'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
             },
             {
               alt: 'LEGO Star Wars The Razor Crest',
-              src: '/articles/star-wars-day-2026/razor-crest.png',
+              src: 'https://storage.example/article-images/star-wars-day-2026/razor-crest.webp',
             },
           ]}
         />
@@ -1643,7 +1827,9 @@ describe('article mdx components', () => {
     );
 
     expect(markup).toContain('Artikelgalerij');
-    expect(markup).toContain('/articles/star-wars-day-2026/grogu.jpg');
+    expect(markup).toContain(
+      'https://storage.example/article-images/star-wars-day-2026/grogu.webp',
+    );
     expect(markup).toContain('Nieuwe Star Wars sets');
     expect(markup).toContain('Grogu (Mandalorian Apprentice)');
   });

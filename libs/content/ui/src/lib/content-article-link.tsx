@@ -30,14 +30,33 @@ export function trackContentArticleClick({
   slug: string;
   theme?: string;
 }) {
-  if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
+  if (typeof window === 'undefined') {
     return;
   }
 
-  window.gtag('event', 'article_click', {
-    slug,
-    theme,
-  });
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', 'article_click', {
+      slug,
+      theme,
+    });
+  }
+
+  try {
+    void window
+      .fetch('/api/events/article-click', {
+        body: JSON.stringify({
+          slug,
+        }),
+        headers: {
+          'content-type': 'application/json',
+        },
+        keepalive: true,
+        method: 'POST',
+      })
+      .catch(() => undefined);
+  } catch {
+    // Tracking must never block navigation.
+  }
 }
 
 export function trackArticleSetClick({

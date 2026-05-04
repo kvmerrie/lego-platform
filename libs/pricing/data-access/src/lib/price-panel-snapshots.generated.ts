@@ -1421,42 +1421,6 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-04-22T07:44:55.360Z"
   },
   {
-    "setId": "75327",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 9999,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 1,
-    "observedAt": "2026-04-22T07:43:47.403Z"
-  },
-  {
-    "setId": "75328",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 4599,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 4,
-    "observedAt": "2026-04-22T07:43:45.620Z"
-  },
-  {
-    "setId": "75349",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 4399,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "bol",
-    "lowestMerchantName": "bol",
-    "merchantCount": 3,
-    "observedAt": "2026-04-22T07:43:41.905Z"
-  },
-  {
     "setId": "75351",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1855,12 +1819,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2195,
+    "headlinePriceMinor": 3200,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
-    "observedAt": "2026-04-22T07:43:48.007Z"
+    "lowestMerchantId": "bol",
+    "lowestMerchantName": "bol",
+    "merchantCount": 1,
+    "observedAt": "2026-04-22T07:43:50.884Z"
   }
 ]`;
 

@@ -8,7 +8,11 @@ import type {
   EditorialFeedItem,
   EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
-import { ContentArticleDuplicateSourceError } from '@lego-platform/content/data-access-server';
+import {
+  ContentArticleDuplicateSourceError,
+  EditorialAgentFetchError,
+  ContentArticleNearDuplicateError,
+} from '@lego-platform/content/data-access-server';
 import { describe, expect, test, vi } from 'vitest';
 import {
   createAdminEditorialAgentService,
@@ -376,6 +380,22 @@ async function createAdminEditorialAgentServer({
         skipped: 0,
         total: 1,
       })),
+      uploadHeroImage: vi.fn(async () => ({
+        publicUrl:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+      })),
+      uploadArticleImage: vi.fn(async () => ({
+        imageCredit: 'Beeld: © The LEGO Group',
+        imageUrl:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+        publicUrl:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+      })),
+      importHeroImageFromUrl: vi.fn(async () => ({
+        heroImage:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+        heroImageCredit: 'Beeld: © The LEGO Group',
+      })),
     };
   const server = Fastify();
 
@@ -572,6 +592,21 @@ describe('admin editorial agent routes', () => {
           skipped: 0,
           total: 1,
         })),
+        uploadHeroImage: vi.fn(async () => ({
+          publicUrl:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+        })),
+        uploadArticleImage: vi.fn(async () => ({
+          imageUrl:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+          publicUrl:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+        })),
+        importHeroImageFromUrl: vi.fn(async () => ({
+          heroImage:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+          heroImageCredit: 'Beeld: © The LEGO Group',
+        })),
       },
     });
     const draftResult = createDraftResult();
@@ -587,8 +622,107 @@ describe('admin editorial agent routes', () => {
 
     expect(response.statusCode).toBe(409);
     expect(response.json()).toEqual({
+      code: 'duplicate_source',
       message: 'Dit bronartikel is al gepubliceerd.',
       slug: 'bestaand-artikel',
+    });
+
+    await server.close();
+  });
+
+  test('returns near duplicate matches and accepts force publish', async () => {
+    const nearDuplicateError = new ContentArticleNearDuplicateError(
+      'Mogelijk overlappend artikel gevonden.',
+      [
+        {
+          reason: 'Zelfde uitgelichte set 75461',
+          slug: 'up-scaled-darth-vader',
+          title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader onthuld',
+        },
+      ],
+    );
+    const publishArticle = vi
+      .fn()
+      .mockRejectedValueOnce(nearDuplicateError)
+      .mockResolvedValueOnce({ slug: 'star-wars-juni' });
+    const { server } = await createAdminEditorialAgentServer({
+      editorialAgentService: {
+        extractFacts: vi.fn(async () => createExtractionResult()),
+        generateDraft: vi.fn(async () => createDraftResult()),
+        generateDraftForFeedItem: vi.fn(async () => ({
+          draftResult: createDraftResult(),
+          feedItem: createFeedItem({ status: 'drafted' }),
+        })),
+        ignoreFeedItem: vi.fn(async () =>
+          createFeedItem({ status: 'ignored' }),
+        ),
+        listFeedItems: vi.fn(async () => [createFeedItem()]),
+        publishArticle,
+        publishArticleFromFeedItem: vi.fn(async () => ({
+          slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+        })),
+        syncFeed: vi.fn(async () => ({
+          inserted: 1,
+          items: [createFeedItem()],
+          skipped: 0,
+          total: 1,
+        })),
+        uploadHeroImage: vi.fn(async () => ({
+          publicUrl:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+        })),
+        uploadArticleImage: vi.fn(async () => ({
+          imageUrl:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+          publicUrl:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+        })),
+        importHeroImageFromUrl: vi.fn(async () => ({
+          heroImage:
+            'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+          heroImageCredit: 'Beeld: © The LEGO Group',
+        })),
+      },
+    });
+    const draftResult = createDraftResult();
+
+    const warningResponse = await server.inject({
+      method: 'POST',
+      payload: {
+        frontmatter: draftResult.output.frontmatter,
+        mdx: draftResult.output.mdx,
+      },
+      url: '/api/v1/admin/editorial-agent/publish',
+    });
+
+    expect(warningResponse.statusCode).toBe(409);
+    expect(warningResponse.json()).toEqual({
+      code: 'near_duplicate',
+      matches: [
+        {
+          reason: 'Zelfde uitgelichte set 75461',
+          slug: 'up-scaled-darth-vader',
+          title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader onthuld',
+        },
+      ],
+      message: 'Mogelijk overlappend artikel gevonden.',
+    });
+
+    const forceResponse = await server.inject({
+      method: 'POST',
+      payload: {
+        force: true,
+        frontmatter: draftResult.output.frontmatter,
+        mdx: draftResult.output.mdx,
+      },
+      url: '/api/v1/admin/editorial-agent/publish',
+    });
+
+    expect(forceResponse.statusCode).toBe(200);
+    expect(publishArticle).toHaveBeenLastCalledWith({
+      force: true,
+      frontmatter: draftResult.output.frontmatter,
+      mdx: draftResult.output.mdx,
     });
 
     await server.close();
@@ -694,6 +828,70 @@ describe('admin editorial agent routes', () => {
     await server.close();
   });
 
+  test('returns the real feed draft backend error for failed Brickset fetches', async () => {
+    const editorialAgentService: AdminEditorialAgentService = {
+      extractFacts: vi.fn(async () => createExtractionResult()),
+      generateDraft: vi.fn(async () => createDraftResult()),
+      generateDraftForFeedItem: vi.fn(async () => {
+        throw new EditorialAgentFetchError('De bron reageerde met status 403.');
+      }),
+      ignoreFeedItem: vi.fn(async () =>
+        createFeedItem({
+          status: 'ignored',
+        }),
+      ),
+      listFeedItems: vi.fn(async () => [createFeedItem()]),
+      publishArticle: vi.fn(async () => ({
+        slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      })),
+      publishArticleFromFeedItem: vi.fn(async () => ({
+        slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      })),
+      syncFeed: vi.fn(async () => ({
+        inserted: 1,
+        items: [createFeedItem()],
+        skipped: 0,
+        total: 1,
+      })),
+      uploadHeroImage: vi.fn(async () => ({
+        publicUrl:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+      })),
+      uploadArticleImage: vi.fn(async () => ({
+        imageCredit: 'Beeld: © The LEGO Group',
+        imageUrl:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+        publicUrl:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+      })),
+      importHeroImageFromUrl: vi.fn(async () => ({
+        heroImage:
+          'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+        heroImageCredit: 'Beeld: © The LEGO Group',
+      })),
+    };
+    const { server } = await createAdminEditorialAgentServer({
+      editorialAgentService,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        feedItemId: 'feed-item-brickset-131538',
+        importMissingSets: true,
+        useAiRewrite: false,
+      },
+      url: '/api/v1/admin/editorial-agent/feed-items/draft',
+    });
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json()).toEqual({
+      message: 'De bron reageerde met status 403.',
+    });
+
+    await server.close();
+  });
+
   test('marks feed items ignored without publishing', async () => {
     const { editorialAgentService, server } =
       await createAdminEditorialAgentServer();
@@ -748,6 +946,126 @@ describe('admin editorial agent routes', () => {
     expect(editorialAgentService.publishArticle).not.toHaveBeenCalled();
     expect(response.json()).toEqual({
       slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+    });
+
+    await server.close();
+  });
+
+  test('uploads a manual article hero image before publish', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        base64Data: Buffer.from('fake-image').toString('base64'),
+        contentType: 'image/webp',
+        fileName: 'hero.webp',
+        slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      },
+      url: '/api/v1/admin/editorial-agent/hero-image',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.uploadHeroImage).toHaveBeenCalledWith({
+      base64Data: Buffer.from('fake-image').toString('base64'),
+      contentType: 'image/webp',
+      fileName: 'hero.webp',
+      slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+    });
+    expect(response.json()).toEqual({
+      publicUrl:
+        'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+    });
+
+    await server.close();
+  });
+
+  test('imports an official hero image URL before publish', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        imageUrl: 'https://www.lego.com/cdn/product-assets/hero.jpg',
+        slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      },
+      url: '/api/v1/admin/editorial-agent/hero-image-url',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.importHeroImageFromUrl).toHaveBeenCalledWith({
+      imageUrl: 'https://www.lego.com/cdn/product-assets/hero.jpg',
+      slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+    });
+    expect(response.json()).toEqual({
+      heroImage:
+        'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/hero.webp',
+      heroImageCredit: 'Beeld: © The LEGO Group',
+    });
+
+    await server.close();
+  });
+
+  test('uploads a gallery article image', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        base64Data: Buffer.from('fake-image').toString('base64'),
+        contentType: 'image/webp',
+        fileName: 'gallery.webp',
+        imageId: 'gallery-one',
+        slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+        type: 'gallery',
+      },
+      url: '/api/v1/admin/editorial-agent/article-image',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.uploadArticleImage).toHaveBeenCalledWith({
+      base64Data: Buffer.from('fake-image').toString('base64'),
+      contentType: 'image/webp',
+      fileName: 'gallery.webp',
+      imageId: 'gallery-one',
+      slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      type: 'gallery',
+    });
+    expect(response.json()).toEqual({
+      imageCredit: 'Beeld: © The LEGO Group',
+      imageUrl:
+        'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+      publicUrl:
+        'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
+    });
+
+    await server.close();
+  });
+
+  test('imports a LEGO gallery image URL', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        imageId: 'gallery-two',
+        imageUrl: 'https://www.lego.com/cdn/product-assets/gallery.jpg',
+        slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+        type: 'gallery',
+      },
+      url: '/api/v1/admin/editorial-agent/article-image',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.uploadArticleImage).toHaveBeenCalledWith({
+      imageId: 'gallery-two',
+      imageUrl: 'https://www.lego.com/cdn/product-assets/gallery.jpg',
+      slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      type: 'gallery',
     });
 
     await server.close();

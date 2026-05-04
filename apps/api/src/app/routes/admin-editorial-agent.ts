@@ -14,13 +14,20 @@ import {
   prepareEditorialAgentExtractionForDraft,
   assertContentArticleReadyForPublication,
   ContentArticleDuplicateSourceError,
+  ContentArticleNearDuplicateError,
   EditorialAgentUrlValidationError,
   publishContentArticle,
   ContentArticlePublishValidationError,
   syncEditorialFeed,
   updateEditorialFeedItemStatus,
+  importContentArticleHeroImageFromUrl,
+  importContentArticleImageFromUrl,
+  uploadContentArticleImage,
+  uploadContentArticleHeroImage,
+  ContentArticleImageUploadValidationError,
 } from '@lego-platform/content/data-access-server';
 import {
+  editorialFeedItemStatuses,
   normalizeContentArticleSetNumber,
   type ContentArticleFrontmatterInput,
   type ContentArticlePublishInput,
@@ -66,6 +73,25 @@ export interface AdminEditorialAgentService {
     feedName?: string;
     rssUrl?: string;
   }): Promise<EditorialFeedSyncResult>;
+  uploadHeroImage(input: {
+    base64Data: string;
+    contentType: string;
+    fileName: string;
+    slug: string;
+  }): Promise<{ publicUrl: string }>;
+  importHeroImageFromUrl(input: {
+    imageUrl: string;
+    slug: string;
+  }): Promise<{ heroImage: string; heroImageCredit: string }>;
+  uploadArticleImage(input: {
+    base64Data?: string;
+    contentType?: string;
+    fileName?: string;
+    imageId?: string;
+    imageUrl?: string;
+    slug: string;
+    type: 'gallery' | 'hero';
+  }): Promise<{ imageCredit?: string; imageUrl: string; publicUrl: string }>;
 }
 
 type EditorialAgentCatalogSummary = Pick<
@@ -460,7 +486,10 @@ export function createAdminEditorialAgentService({
         id: feedItemId,
         status: 'ignored',
       }),
-    listFeedItems: () => listEditorialFeedItems(),
+    listFeedItems: () =>
+      listEditorialFeedItems({
+        statuses: editorialFeedItemStatuses,
+      }),
     publishArticle: (input) => publishContentArticle({ input }),
     publishArticleFromFeedItem: async ({ feedItemId, publishInput }) => {
       const result = await publishContentArticle({
@@ -486,6 +515,59 @@ export function createAdminEditorialAgentService({
             ]
           : getConfiguredEditorialFeeds(),
       }),
+    uploadHeroImage: async (input) => {
+      const result = await uploadContentArticleHeroImage({
+        input,
+      });
+
+      return {
+        publicUrl: result.publicUrl,
+      };
+    },
+    importHeroImageFromUrl: async (input) => {
+      const result = await importContentArticleHeroImageFromUrl({
+        input,
+      });
+
+      return {
+        heroImage: result.heroImage,
+        heroImageCredit: result.heroImageCredit,
+      };
+    },
+    uploadArticleImage: async (input) => {
+      if (input.imageUrl) {
+        const result = await importContentArticleImageFromUrl({
+          input: {
+            imageId: input.imageId,
+            imageUrl: input.imageUrl,
+            slug: input.slug,
+            type: input.type,
+          },
+        });
+
+        return {
+          imageCredit: result.imageCredit,
+          imageUrl: result.imageUrl,
+          publicUrl: result.imageUrl,
+        };
+      }
+
+      const result = await uploadContentArticleImage({
+        input: {
+          base64Data: input.base64Data ?? '',
+          contentType: input.contentType ?? '',
+          fileName: input.fileName ?? '',
+          imageId: input.imageId,
+          slug: input.slug,
+          type: input.type,
+        },
+      });
+
+      return {
+        imageUrl: result.publicUrl,
+        publicUrl: result.publicUrl,
+      };
+    },
   };
 }
 
@@ -560,6 +642,7 @@ function readPublishInput(value: unknown): ContentArticlePublishInput {
 
   const mdx = (value as { mdx?: unknown }).mdx;
   const frontmatter = (value as { frontmatter?: unknown }).frontmatter;
+  const force = (value as { force?: unknown }).force;
 
   if (typeof mdx !== 'string' || mdx.trim().length === 0) {
     throw new ContentArticlePublishValidationError('Artikel-MDX ontbreekt.');
@@ -578,6 +661,7 @@ function readPublishInput(value: unknown): ContentArticlePublishInput {
   const publishInput = {
     frontmatter: frontmatter as ContentArticleFrontmatterInput,
     mdx,
+    ...(force === true ? { force: true } : {}),
   };
 
   assertContentArticleReadyForPublication(publishInput);
@@ -615,6 +699,123 @@ function readFeedSyncInput(value: unknown): {
     ...(typeof rssUrl === 'string' && rssUrl.trim()
       ? { rssUrl: rssUrl.trim() }
       : {}),
+  };
+}
+
+function readHeroImageUploadInput(value: unknown): {
+  base64Data: string;
+  contentType: string;
+  fileName: string;
+  slug: string;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new ContentArticleImageUploadValidationError(
+      'Hero afbeelding upload ontbreekt.',
+    );
+  }
+
+  const { base64Data, contentType, fileName, slug } = value as {
+    base64Data?: unknown;
+    contentType?: unknown;
+    fileName?: unknown;
+    slug?: unknown;
+  };
+
+  if (
+    typeof base64Data !== 'string' ||
+    typeof contentType !== 'string' ||
+    typeof fileName !== 'string' ||
+    typeof slug !== 'string'
+  ) {
+    throw new ContentArticleImageUploadValidationError(
+      'Hero afbeelding upload is ongeldig.',
+    );
+  }
+
+  return {
+    base64Data,
+    contentType,
+    fileName,
+    slug,
+  };
+}
+
+function readHeroImageUrlImportInput(value: unknown): {
+  imageUrl: string;
+  slug: string;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new ContentArticleImageUploadValidationError(
+      'Afbeeldings-URL ontbreekt.',
+    );
+  }
+
+  const { imageUrl, slug } = value as {
+    imageUrl?: unknown;
+    slug?: unknown;
+  };
+
+  if (typeof imageUrl !== 'string' || typeof slug !== 'string') {
+    throw new ContentArticleImageUploadValidationError(
+      'Afbeeldings-URL import is ongeldig.',
+    );
+  }
+
+  return {
+    imageUrl,
+    slug,
+  };
+}
+
+function readArticleImageInput(value: unknown): {
+  base64Data?: string;
+  contentType?: string;
+  fileName?: string;
+  imageId?: string;
+  imageUrl?: string;
+  slug: string;
+  type: 'gallery' | 'hero';
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new ContentArticleImageUploadValidationError(
+      'Artikelafbeelding ontbreekt.',
+    );
+  }
+
+  const { base64Data, contentType, fileName, imageId, imageUrl, slug, type } =
+    value as {
+      base64Data?: unknown;
+      contentType?: unknown;
+      fileName?: unknown;
+      imageId?: unknown;
+      imageUrl?: unknown;
+      slug?: unknown;
+      type?: unknown;
+    };
+
+  if (
+    typeof slug !== 'string' ||
+    (type !== 'hero' && type !== 'gallery') ||
+    (typeof imageUrl !== 'string' &&
+      (typeof base64Data !== 'string' ||
+        typeof contentType !== 'string' ||
+        typeof fileName !== 'string'))
+  ) {
+    throw new ContentArticleImageUploadValidationError(
+      'Artikelafbeelding upload is ongeldig.',
+    );
+  }
+
+  return {
+    ...(typeof base64Data === 'string' ? { base64Data } : {}),
+    ...(typeof contentType === 'string' ? { contentType } : {}),
+    ...(typeof fileName === 'string' ? { fileName } : {}),
+    ...(typeof imageId === 'string' && imageId.trim()
+      ? { imageId: imageId.trim() }
+      : {}),
+    ...(typeof imageUrl === 'string' ? { imageUrl } : {}),
+    slug,
+    type,
   };
 }
 
@@ -801,8 +1002,17 @@ export function createAdminEditorialAgentRoutes({
             });
           }
 
+          if (error instanceof EditorialAgentFetchError) {
+            return reply.status(502).send({
+              message: error.message,
+            });
+          }
+
           return reply.status(500).send({
-            message: 'Feed-item draft generatie is mislukt.',
+            message:
+              error instanceof Error && error.message.trim()
+                ? error.message
+                : 'Feed-item draft generatie is mislukt.',
           });
         }
       },
@@ -838,6 +1048,96 @@ export function createAdminEditorialAgentRoutes({
       },
     );
 
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminEditorialAgentHeroImage,
+      {
+        bodyLimit: 7 * 1024 * 1024,
+      },
+      async function (request, reply) {
+        try {
+          return await editorialAgentService.uploadHeroImage(
+            readHeroImageUploadInput(request.body),
+          );
+        } catch (error) {
+          request.log.error(
+            {
+              err: error,
+            },
+            'Editorial Agent hero image upload failed',
+          );
+
+          if (error instanceof ContentArticleImageUploadValidationError) {
+            return reply.status(400).send({
+              message: error.message,
+            });
+          }
+
+          return reply.status(500).send({
+            message: 'Hero afbeelding uploaden is mislukt.',
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminEditorialAgentArticleImage,
+      {
+        bodyLimit: 7 * 1024 * 1024,
+      },
+      async function (request, reply) {
+        try {
+          return await editorialAgentService.uploadArticleImage(
+            readArticleImageInput(request.body),
+          );
+        } catch (error) {
+          request.log.error(
+            {
+              err: error,
+            },
+            'Editorial Agent article image upload failed',
+          );
+
+          if (error instanceof ContentArticleImageUploadValidationError) {
+            return reply.status(400).send({
+              message: error.message,
+            });
+          }
+
+          return reply.status(500).send({
+            message: 'Artikelafbeelding uploaden is mislukt.',
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown }>(
+      apiPaths.adminEditorialAgentHeroImageUrl,
+      async function (request, reply) {
+        try {
+          return await editorialAgentService.importHeroImageFromUrl(
+            readHeroImageUrlImportInput(request.body),
+          );
+        } catch (error) {
+          request.log.error(
+            {
+              err: error,
+            },
+            'Editorial Agent hero image URL import failed',
+          );
+
+          if (error instanceof ContentArticleImageUploadValidationError) {
+            return reply.status(400).send({
+              message: error.message,
+            });
+          }
+
+          return reply.status(500).send({
+            message: 'Hero afbeelding importeren is mislukt.',
+          });
+        }
+      },
+    );
+
     async function publishArticleHandler(
       request: FastifyRequest<{ Body: unknown }>,
       reply: FastifyReply,
@@ -868,8 +1168,17 @@ export function createAdminEditorialAgentRoutes({
 
         if (error instanceof ContentArticleDuplicateSourceError) {
           return reply.status(409).send({
+            code: 'duplicate_source',
             message: error.message,
             slug: error.existingSlug,
+          });
+        }
+
+        if (error instanceof ContentArticleNearDuplicateError) {
+          return reply.status(409).send({
+            code: 'near_duplicate',
+            matches: error.matches,
+            message: error.message,
           });
         }
 

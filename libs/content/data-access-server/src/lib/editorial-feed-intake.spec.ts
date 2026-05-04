@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
   editorialFeedIntakeTestUtils,
+  listEditorialFeedItems,
   syncEditorialFeed,
   updateEditorialFeedItemStatus,
 } from './editorial-feed-intake';
@@ -62,10 +63,18 @@ function createSupabaseClientMock(initialRows: readonly FeedRow[] = []) {
         });
       },
       order() {
+        return this;
+      },
+      then(
+        onFulfilled: (value: {
+          data: readonly FeedRow[];
+          error: null;
+        }) => unknown,
+      ) {
         return Promise.resolve({
           data: rows,
           error: null,
-        });
+        }).then(onFulfilled);
       },
       select(column = '*') {
         selectedColumn = column;
@@ -191,6 +200,33 @@ describe('editorial feed intake', () => {
       }),
     ]);
     expect(supabase.insertCalls[0]?.[0]).not.toHaveProperty('mdx');
+  });
+
+  test('normalizes Brickset http feed URLs to https source metadata', async () => {
+    const supabase = createSupabaseClientMock();
+    await syncEditorialFeed({
+      feeds: [{ name: 'Brickset', url: 'https://brickset.com/feed' }],
+      fetchFn: vi.fn(
+        async () =>
+          new Response(`<?xml version="1.0"?>
+<rss version="2.0">
+  <channel>
+    <item>
+      <title>LEGO Star Wars Up-Scaled Darth Vader and AT-RT Driver Helmet revealed!</title>
+      <link>http://brickset.com/article/131538/</link>
+    </item>
+  </channel>
+</rss>`),
+      ),
+      supabaseClient: supabase.client,
+    });
+
+    expect(supabase.insertCalls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        source_url: 'https://brickset.com/article/131538',
+        status: 'new',
+      }),
+    );
   });
 
   test('marks low-value Brickset utility posts during feed sync', async () => {
@@ -347,5 +383,53 @@ describe('editorial feed intake', () => {
       'lego-40787-mario-kart-spiny-shell-is-terug',
     );
     expect(updatedItem.status).toBe('published');
+  });
+
+  test('lists feed items ordered by source published date descending', async () => {
+    const supabase = createSupabaseClientMock([]);
+    const orderCalls: Array<{
+      column: string;
+      options?: Record<string, unknown>;
+    }> = [];
+    const query = {
+      in: vi.fn(() => query),
+      order: vi.fn((column: string, options?: Record<string, unknown>) => {
+        orderCalls.push({ column, options });
+        return query;
+      }),
+      select: vi.fn(() => query),
+      then: vi.fn(
+        (
+          onFulfilled: (value: {
+            data: readonly FeedRow[];
+            error: null;
+          }) => unknown,
+        ) =>
+          Promise.resolve({
+            data: [],
+            error: null,
+          }).then(onFulfilled),
+      ),
+    };
+    const client = {
+      from: vi.fn(() => query),
+    };
+
+    await listEditorialFeedItems({
+      supabaseClient: client,
+    });
+
+    expect(query.order).toHaveBeenCalledWith('source_published_at', {
+      ascending: false,
+      nullsFirst: false,
+    });
+    expect(query.order).toHaveBeenCalledWith('created_at', {
+      ascending: false,
+    });
+    expect(orderCalls.map((call) => call.column)).toEqual([
+      'source_published_at',
+      'created_at',
+    ]);
+    expect(supabase.client).toBeDefined();
   });
 });

@@ -95,7 +95,7 @@
 }
 
 .imageFrame {
-  background: var(--lego-surface-muted);
+  background: #fff;
   border: 1px solid var(--lego-border-subtle);
   border-radius: var(--lego-radius-xl);
   overflow: hidden;
@@ -124,6 +124,7 @@
 }
 
 .image {
+  background: #fff;
   display: block;
   height: 100%;
   width: 100%;
@@ -150,9 +151,30 @@
   object-position: center;
 }
 
+.imageFitCover {
+  object-fit: cover;
+  object-position: center;
+  padding: 0;
+}
+
+.imageFitContain {
+  object-fit: contain;
+  object-position: center;
+  padding: var(--lego-space-4);
+}
+
+.cardImage.imageFitContain {
+  padding: var(--lego-space-3);
+}
+
+.heroImage.imageFitCover {
+  padding: 0;
+}
+
 .imageFallback {
   align-items: flex-start;
-  color: white;
+  background: var(--lego-surface-muted);
+  color: var(--lego-text);
   display: grid;
   gap: var(--lego-space-3);
   padding: var(--lego-space-5);
@@ -266,6 +288,27 @@
   font-weight: 700;
 }
 
+.sourceAttribution {
+  border-top: 1px solid var(--lego-border-subtle);
+  color: var(--lego-text-muted);
+  display: grid;
+  font-size: var(--lego-text-role-label-size);
+  gap: var(--lego-space-1);
+  line-height: var(--lego-line-height-relaxed);
+  margin-top: var(--lego-space-8);
+  max-width: var(--article-prose-max-width);
+  padding-top: var(--lego-space-4);
+  width: 100%;
+}
+
+.sourceAttribution p {
+  margin: 0;
+}
+
+.sourceAttribution[data-source-attribution-tone='explicit'] {
+  color: var(--lego-text-secondary);
+}
+
 .callout {
   background: var(--lego-accent-subtle);
   display: grid;
@@ -358,15 +401,65 @@
   padding: var(--lego-space-5);
 }
 
-.featuredSetVisualLink {
+.featuredSetVisualLightbox,
+.featuredSetVisualButton {
   color: inherit;
   display: grid;
   min-width: 0;
-  text-decoration: none;
 }
 
-.featuredSetVisualLink .featuredSetImageFrame {
+.featuredSetVisualButton {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: zoom-in;
+  padding: 0;
+  position: relative;
+  text-decoration: none;
+  width: 100%;
+}
+
+.featuredSetVisualButton:focus-visible {
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+}
+
+.featuredSetVisualLightbox .featuredSetImageFrame,
+.featuredSetVisualButton .featuredSetImageFrame {
   margin: 0 auto;
+}
+
+.featuredSetZoomOverlay {
+  align-items: end;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 18, 32, 0) 0%,
+    rgba(12, 18, 32, 0.28) 100%
+  );
+  border-radius: var(--lego-radius-xl);
+  display: flex;
+  inset: 0;
+  justify-content: end;
+  padding: var(--lego-space-3);
+  pointer-events: none;
+  position: absolute;
+}
+
+.featuredSetZoomIconShell {
+  align-items: center;
+  background: #ffffff;
+  border: var(--lego-border-width-1) solid var(--lego-text);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text);
+  display: inline-flex;
+  height: 2.15rem;
+  justify-content: center;
+  width: 2.15rem;
+}
+
+.featuredSetZoomIcon {
+  height: 0.95rem;
+  width: 0.95rem;
 }
 
 .featuredSetContent {
@@ -598,6 +691,162 @@
   gap: var(--lego-space-4);
 }
 
+.sectionShell {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sectionShellDefault {
+  background: var(--lego-surface-default);
+}
+
+.sectionShellInverse {
+  background: #242424;
+  color: white;
+}
+
+.sectionShellPaddingDefault {
+  --content-section-inline-padding: var(
+    --lego-section-inline-padding,
+    var(--lego-space-3)
+  );
+  --content-section-padding-block: var(--lego-space-4);
+  margin-inline: calc(-1 * var(--content-section-inline-padding));
+  padding-block: var(--content-section-padding-block);
+  padding-inline: var(--content-section-inline-padding);
+}
+
+.sectionShellHeader {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.sectionShellEyebrow {
+  color: color-mix(in srgb, currentColor 74%, transparent);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: var(--lego-text-role-label-tracking);
+  line-height: var(--lego-text-role-eyebrow-line-height);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.sectionShellTitle {
+  font-family: var(--lego-font-family-heading);
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.sectionShellBody {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.compactRail {
+  overflow: hidden;
+}
+
+.compactRailBody {
+  gap: 0;
+}
+
+.compactRailScroller {
+  display: flex;
+  gap: var(--lego-space-3);
+  margin-inline: calc(-1 * var(--content-section-inline-padding));
+  overflow-x: auto;
+  padding: 0 var(--content-section-inline-padding) var(--lego-space-1);
+  scroll-padding-inline: var(--content-section-inline-padding);
+  scrollbar-color: color-mix(in srgb, white 42%, transparent) transparent;
+  scroll-snap-type: x proximity;
+}
+
+.compactCard {
+  background: var(--lego-surface-default);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-sm);
+  color: var(--lego-text);
+  flex: 0 0 min(15rem, calc(100% - var(--lego-space-6)));
+  min-width: 0;
+  overflow: hidden;
+  scroll-snap-align: start;
+  transition:
+    background-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard),
+    border-color var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+}
+
+.compactCard:hover,
+.compactCard:focus-within {
+  background: color-mix(
+    in srgb,
+    var(--lego-surface-default) 88%,
+    var(--lego-surface-muted) 12%
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--lego-border-subtle) 70%,
+    var(--lego-border) 30%
+  );
+}
+
+.compactCardLink {
+  color: inherit;
+  display: grid;
+  gap: var(--lego-space-3);
+  height: 100%;
+  text-decoration: none;
+}
+
+.compactCardLink:focus-visible {
+  border-radius: var(--lego-radius-sm);
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  outline: none;
+}
+
+.compactCardBody {
+  display: grid;
+  gap: var(--lego-space-2);
+  padding: 0 var(--lego-space-3) var(--lego-space-3);
+}
+
+.compactCard .metaText {
+  color: var(--lego-text-muted);
+}
+
+.compactCardTitle {
+  display: -webkit-box;
+  font-family: var(--lego-font-family-heading);
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+@media (min-width: 48rem) {
+  .sectionShellPaddingDefault {
+    --content-section-padding-block: var(--lego-space-5);
+  }
+}
+
+@media (min-width: 72rem) {
+  .sectionShell {
+    border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
+  }
+
+  .sectionShellPaddingDefault {
+    --content-section-padding-block: var(--lego-space-6);
+    margin-inline: 0;
+  }
+}
+
 .card {
   --lego-surface-radius: var(--lego-radius-sm);
   background: var(--lego-surface-default);
@@ -749,12 +998,33 @@
     grid-template-columns: minmax(18rem, 0.95fr) minmax(0, 1.05fr);
   }
 
-  .featuredSetVisualLink {
+  .featuredSetVisualLightbox,
+  .featuredSetVisualButton {
     height: 100%;
   }
 
-  .featuredSetVisualLink .featuredSetImageFrame {
+  .featuredSetVisualLightbox .featuredSetImageFrame,
+  .featuredSetVisualButton .featuredSetImageFrame {
     max-height: 24rem;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .featuredSetZoomOverlay {
+    opacity: 0;
+    transition: opacity var(--lego-motion-duration-fast)
+      var(--lego-motion-ease-standard);
+  }
+
+  .featuredSetVisualButton:hover .featuredSetZoomOverlay,
+  .featuredSetVisualButton:focus-visible .featuredSetZoomOverlay {
+    opacity: 1;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .featuredSetZoomOverlay {
+    display: none;
   }
 }
 

@@ -111,9 +111,9 @@ describe('getActiveMobileTabId', () => {
   it('matches search, themes, following, and deals routes to the intended tabs', () => {
     expect(getActiveMobileTabId({ pathname: '/search' })).toBe('search');
     expect(getActiveMobileTabId({ pathname: '/artikelen' })).toBe('articles');
-    expect(getActiveMobileTabId({ pathname: '/artikelen/lego-nieuws' })).toBe(
-      'articles',
-    );
+    expect(
+      getActiveMobileTabId({ pathname: '/artikelen/star-wars/lego-nieuws' }),
+    ).toBe('articles');
     expect(getActiveMobileTabId({ pathname: '/themes' })).toBe('themes');
     expect(getActiveMobileTabId({ pathname: '/themes/icons' })).toBe('themes');
     expect(getActiveMobileTabId({ pathname: '/volgt' })).toBe('following');
@@ -165,7 +165,7 @@ describe('isShellWebNavLinkActive', () => {
     expect(
       isShellWebNavLinkActive({
         href: '/artikelen',
-        pathname: '/artikelen/lego-nieuws',
+        pathname: '/artikelen/star-wars/lego-nieuws',
       }),
     ).toBe(true);
     expect(

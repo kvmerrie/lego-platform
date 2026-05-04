@@ -13,13 +13,99 @@
   display: inline-flex;
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
   padding: 0.25rem 0.55rem;
-  text-transform: uppercase;
 }
 
 .editorial-agent__meta-pill--danger {
   color: var(--lego-danger);
+}
+
+.editorial-agent__tabs {
+  align-items: center;
+  border-bottom: 1px solid var(--lego-border-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.editorial-agent__tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--lego-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0.55rem 0.65rem;
+}
+
+.editorial-agent__tab--active {
+  border-bottom-color: var(--lego-accent);
+  color: var(--lego-text);
+}
+
+.editorial-agent__filter-tabs {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.editorial-agent__filter-tab {
+  background: var(--lego-surface);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 999px;
+  color: var(--lego-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 0.35rem 0.65rem;
+}
+
+.editorial-agent__filter-tab--active {
+  border-color: var(--lego-accent);
+  color: var(--lego-text);
+}
+
+.editorial-agent__modal {
+  background: color-mix(in srgb, var(--lego-surface) 72%, transparent);
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 1rem;
+  position: fixed;
+  z-index: 50;
+}
+
+.editorial-agent__modal-panel {
+  margin-inline: auto;
+  max-width: min(72rem, 100%);
+  overflow: clip;
+  padding: 0;
+}
+
+.editorial-agent__modal-header {
+  align-items: center;
+  background: var(--lego-surface);
+  border-bottom: 1px solid var(--lego-border-subtle);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.editorial-agent__modal-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
 }
 
 .editorial-agent__grid {
@@ -38,10 +124,26 @@
 .editorial-agent__feed-item {
   align-items: start;
   background: color-mix(in srgb, var(--lego-surface-muted) 62%, transparent);
+  border: 1px solid transparent;
   border-radius: 0.55rem;
   display: grid;
   gap: 0.65rem;
   padding: 0.65rem;
+}
+
+.editorial-agent__feed-item--new {
+  background: color-mix(in srgb, var(--lego-accent) 9%, var(--lego-surface));
+  border-color: color-mix(in srgb, var(--lego-accent) 34%, transparent);
+}
+
+.editorial-agent__feed-item--drafted {
+  background: color-mix(in srgb, var(--lego-surface-muted) 46%, transparent);
+}
+
+.editorial-agent__feed-item--ignored,
+.editorial-agent__feed-item--low_value,
+.editorial-agent__feed-item--published {
+  opacity: 0.78;
 }
 
 .editorial-agent__feed-copy {
@@ -51,8 +153,23 @@
 }
 
 .editorial-agent__feed-copy strong {
+  align-items: center;
   color: var(--lego-text);
+  display: inline-flex;
   font-size: 0.82rem;
+  gap: 0.4rem;
+}
+
+.editorial-agent__feed-item--new .editorial-agent__feed-copy strong {
+  font-weight: 900;
+}
+
+.editorial-agent__feed-unread-indicator {
+  background: var(--lego-accent);
+  border-radius: 999px;
+  block-size: 0.5rem;
+  flex: 0 0 auto;
+  inline-size: 0.5rem;
 }
 
 .editorial-agent__feed-copy span,
@@ -68,8 +185,159 @@
   gap: 0.45rem;
 }
 
-.editorial-agent__mdx-panel {
+.editorial-agent__feed-overlap-list {
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.editorial-agent__feed-overlap-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.editorial-agent__draft-tabs {
+  align-items: center;
+  background: var(--lego-surface);
+  border-bottom: 1px solid var(--lego-border-subtle);
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0 0.85rem;
+  position: sticky;
+  top: 3.45rem;
+  z-index: 2;
+}
+
+.editorial-agent__draft-tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--lego-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  padding: 0.45rem 0.55rem;
+  white-space: nowrap;
+}
+
+.editorial-agent__draft-tab--active {
+  border-bottom-color: var(--lego-accent);
+  color: var(--lego-text);
+}
+
+.editorial-agent__field-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.editorial-agent__draft-content {
+  display: grid;
+  gap: 0.75rem;
+  overflow-x: hidden;
+  padding: 1rem;
+}
+
+.editorial-agent__mdx-panel,
+.editorial-agent__image-section,
+.editorial-agent__image-import,
+.editorial-agent__image-panel {
   min-width: 0;
+}
+
+.editorial-agent__hero-preview {
+  background: var(--lego-surface);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  display: grid;
+  min-height: 12rem;
+  overflow: hidden;
+  place-items: center;
+}
+
+.editorial-agent__hero-preview span {
+  color: var(--lego-text-muted);
+  font-size: 0.78rem;
+}
+
+.editorial-agent__hero-preview img {
+  display: block;
+  max-height: 18rem;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.editorial-agent__image-actions {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.editorial-agent__modal .admin-button,
+.editorial-agent__image-actions .admin-button,
+.editorial-agent__image-import .admin-button {
+  flex: 0 0 auto;
+  inline-size: auto;
+}
+
+.editorial-agent__hero-thumb {
+  background: color-mix(in srgb, var(--lego-surface-muted) 46%, transparent);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  inline-size: 100%;
+  padding: 0.55rem;
+  text-align: start;
+}
+
+.editorial-agent__hero-thumb img,
+.editorial-agent__hero-thumb > span {
+  block-size: 3.4rem;
+  inline-size: 4.5rem;
+  object-fit: cover;
+}
+
+.editorial-agent__hero-thumb strong,
+.editorial-agent__hero-thumb small {
+  grid-column: 2;
+}
+
+.editorial-agent__content-top,
+.editorial-agent__hero-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.editorial-agent__image-section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.editorial-agent__image-import {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.editorial-agent__file-input {
+  block-size: 1px;
+  inline-size: 1px;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
 }
 
 .editorial-agent__mdx-compare {
@@ -110,13 +378,13 @@
 }
 
 .editorial-agent__json-panel,
-.editorial-agent__preview-text {
+.editorial-agent__preview-text,
+.editorial-agent__fact-list div,
+.editorial-agent__preview-card,
+.editorial-agent__manifest-item,
+.editorial-agent__list li {
   background: color-mix(in srgb, var(--lego-surface-muted) 62%, transparent);
   border-radius: 0.55rem;
-  color: var(--lego-text);
-  font-size: 0.8rem;
-  line-height: 1.55;
-  margin: 0;
   padding: 0.75rem;
 }
 
@@ -128,6 +396,13 @@
   word-break: break-word;
 }
 
+.editorial-agent__preview-text {
+  color: var(--lego-text);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
 .editorial-agent__fact-list,
 .editorial-agent__manifest,
 .editorial-agent__list {
@@ -135,17 +410,6 @@
   gap: 0.45rem;
   margin: 0;
   padding: 0;
-}
-
-.editorial-agent__fact-list div,
-.editorial-agent__preview-card,
-.editorial-agent__manifest-item,
-.editorial-agent__list li {
-  background: color-mix(in srgb, var(--lego-surface-muted) 62%, transparent);
-  border-radius: 0.55rem;
-  display: grid;
-  gap: 0.2rem;
-  padding: 0.55rem 0.65rem;
 }
 
 .editorial-agent__fact-list dt,
@@ -171,17 +435,6 @@
   list-style: none;
 }
 
-.editorial-agent__manifest-item code {
-  background: var(--lego-surface-default);
-  border-radius: 0.45rem;
-  color: var(--lego-text);
-  display: block;
-  font-size: 0.74rem;
-  overflow-x: auto;
-  padding: 0.45rem 0.55rem;
-  white-space: nowrap;
-}
-
 @media (min-width: 72rem) {
   .editorial-agent__grid {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
@@ -197,5 +450,14 @@
 
   .editorial-agent__feed-item {
     grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .editorial-agent__content-top {
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+
+  .editorial-agent__hero-row {
+    align-items: start;
+    grid-template-columns: minmax(0, 0.8fr) auto minmax(0, 1fr);
   }
 }

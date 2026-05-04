@@ -557,6 +557,13 @@ export function validateEditorialAgentSourceUrl(
 
   assertSafeHostname(parsedUrl.hostname);
 
+  if (
+    parsedUrl.protocol === 'http:' &&
+    parsedUrl.hostname.replace(/^www\./u, '').toLowerCase() === 'brickset.com'
+  ) {
+    parsedUrl.protocol = 'https:';
+  }
+
   parsedUrl.hash = '';
 
   return {
@@ -1076,6 +1083,21 @@ function extractFallbackBodyText(document: Document): string {
   return normalizeWhitespace(document.body?.textContent ?? '');
 }
 
+function removeNonArticleChrome(document: Document): void {
+  const selectors = [
+    '#comments',
+    '.comments',
+    '.sharethis-inline-share-buttons',
+    'aside',
+    'footer',
+    'nav',
+  ];
+
+  for (const selector of selectors) {
+    document.querySelectorAll(selector).forEach((element) => element.remove());
+  }
+}
+
 function extractFirstSentence(value: string): string {
   const trimmedValue = normalizeWhitespace(value);
 
@@ -1322,6 +1344,7 @@ export function extractEditorialAgentArticleSource({
     });
     const { document } = dom.window;
     const warnings: string[] = [];
+    removeNonArticleChrome(document);
     const readabilityDocument = document.cloneNode(true) as Document;
     const readableArticle = new Readability(readabilityDocument).parse();
 

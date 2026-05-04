@@ -9,6 +9,11 @@
   gap: var(--lego-space-3);
 }
 
+.latestStack {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
 .sectionTitle {
   font-family: var(--lego-font-family-heading);
   font-size: clamp(1.35rem, 2.2vw, 1.8rem);

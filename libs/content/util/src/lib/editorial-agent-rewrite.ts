@@ -28,6 +28,27 @@ function extractFrontmatterBlock(mdx: string): string {
   return match?.[0] ?? '';
 }
 
+function extractBodyWithoutFrontmatter(mdx: string): string {
+  return mdx.replace(/^---\n[\s\S]*?\n---\s*/u, '').trim();
+}
+
+export function restoreOriginalFrontmatterForRewrite({
+  originalMdx,
+  rewrittenMdx,
+}: {
+  originalMdx: string;
+  rewrittenMdx: string;
+}): string {
+  const originalFrontmatter = extractFrontmatterBlock(originalMdx);
+  const rewrittenBody = extractBodyWithoutFrontmatter(rewrittenMdx);
+
+  if (!originalFrontmatter) {
+    return rewrittenBody.endsWith('\n') ? rewrittenBody : `${rewrittenBody}\n`;
+  }
+
+  return `${originalFrontmatter}\n\n${rewrittenBody}\n`;
+}
+
 function extractHeadingLines(mdx: string): string[] {
   return mdx
     .split('\n')
@@ -58,6 +79,169 @@ function extractOrderedUniqueSetNumbers(mdx: string): string[] {
     });
 }
 
+function extractOrderedUniqueSourceUrls(mdx: string): string[] {
+  const seenSourceUrls = new Set<string>();
+
+  return [...mdx.matchAll(/\bhttps?:\/\/[^\s"'<>)]*/giu)]
+    .map((match) => match[0].replace(/[.,;:]+$/gu, ''))
+    .filter((sourceUrl) => {
+      if (seenSourceUrls.has(sourceUrl)) {
+        return false;
+      }
+
+      seenSourceUrls.add(sourceUrl);
+      return true;
+    });
+}
+
+function findSourceAttributionIndex(mdx: string): number {
+  const sourceMatches = [
+    ...mdx.matchAll(/(?:^|\n)(?:Bronnen:|Bron:|Via:)\s+/gu),
+  ];
+  const lastSourceMatch = sourceMatches.at(-1);
+
+  return typeof lastSourceMatch?.index === 'number'
+    ? lastSourceMatch.index
+    : -1;
+}
+
+function getLastBodyBlock(mdx: string): string {
+  const body = extractBodyWithoutFrontmatter(mdx);
+  const blocks = body
+    .split(/\n{2,}/u)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.at(-1) ?? '';
+}
+
+function hasSourceAttributionLast(mdx: string): boolean {
+  return /^(?:Bronnen:|Bron:|Via:)\s+/u.test(getLastBodyBlock(mdx));
+}
+
+function validateSetRailAndSourcePlacement({
+  originalMdx,
+  rewrittenMdx,
+}: {
+  originalMdx: string;
+  rewrittenMdx: string;
+}): EditorialAgentRewriteValidationResult {
+  const originalSetRailIndex = originalMdx.indexOf('<SetRail');
+  const rewrittenSetRailIndex = rewrittenMdx.indexOf('<SetRail');
+  const rewrittenConclusionIndex = rewrittenMdx.indexOf('## Korte conclusie');
+  const rewrittenSourceIndex = findSourceAttributionIndex(rewrittenMdx);
+
+  if (originalSetRailIndex >= 0) {
+    if (rewrittenConclusionIndex < 0) {
+      return {
+        reason: 'De conclusie ontbreekt na de rewrite.',
+        valid: false,
+      };
+    }
+
+    const rewrittenAudienceIndex = rewrittenMdx.indexOf(
+      '## Voor wie is dit leuk?',
+    );
+
+    if (rewrittenAudienceIndex < 0) {
+      return {
+        reason: 'De SetRail mist de sectie "Voor wie is dit leuk?" ervoor.',
+        valid: false,
+      };
+    }
+
+    if (rewrittenSetRailIndex < rewrittenAudienceIndex) {
+      return {
+        reason: 'SetRail werd vóór "Voor wie is dit leuk?" geplaatst.',
+        valid: false,
+      };
+    }
+
+    if (rewrittenSetRailIndex > rewrittenConclusionIndex) {
+      return {
+        reason: 'SetRail werd na de conclusie geplaatst.',
+        valid: false,
+      };
+    }
+
+    if (
+      rewrittenSourceIndex >= 0 &&
+      rewrittenSetRailIndex > rewrittenSourceIndex
+    ) {
+      return {
+        reason: 'SetRail werd na de bronvermelding geplaatst.',
+        valid: false,
+      };
+    }
+  }
+
+  if (
+    hasSourceAttributionLast(originalMdx) &&
+    !hasSourceAttributionLast(rewrittenMdx)
+  ) {
+    return {
+      reason: 'De bronvermelding staat niet meer als laatste blok.',
+      valid: false,
+    };
+  }
+
+  return {
+    valid: true,
+  };
+}
+
+function hasStarWarsRewriteContext({
+  detected,
+  facts,
+}: Pick<EditorialAgentRewritePromptInput, 'detected' | 'facts'>): boolean {
+  const context = [
+    facts.theme,
+    facts.title,
+    ...facts.keywords,
+    ...facts.setNames,
+    ...detected.themes,
+    ...detected.keywords,
+  ]
+    .join(' ')
+    .toLowerCase();
+
+  return (
+    context.includes('star wars') ||
+    context.includes('darth vader') ||
+    context.includes('helmet collection') ||
+    context.includes('imperial') ||
+    context.includes('rebel')
+  );
+}
+
+function buildFandomToneInstructions({
+  detected,
+  facts,
+}: Pick<EditorialAgentRewritePromptInput, 'detected' | 'facts'>): string {
+  if (!hasStarWarsRewriteContext({ detected, facts })) {
+    return [
+      '7. SUBTIELE FANDOM',
+      '- voeg alleen fandom toe als het natuurlijk uit de facts komt',
+      '- geen jokes, geen geforceerde fanservice, geen extra claims',
+      '- als er geen herkenbaar fanmoment is: doe niets',
+    ].join('\n');
+  }
+
+  return [
+    '7. SUBTIELE FANDOM',
+    '- voeg alleen subtiele fandom toe in intro, 1-2 bodyzinnen en conclusie',
+    '- mik op maximaal 1 kleine fanzin per sectie, niet in elke zin',
+    '- gebruik concrete, visuele Star Wars-referenties waar ze natuurlijk passen:',
+    '  - Darth Vader',
+    '  - Helmet Collection',
+    '  - display shelf / plank',
+    '  - Imperial/Rebel feel',
+    '- voorbeeldrichting: “past deze in jouw Helmet Collection rijtje?” of “staat deze straks naast Darth Vader op jouw plank?”',
+    '- verzin geen canon, scènes, personages of claims die niet in de facts zitten',
+    '- geen grappen, geen luide fanservice, geen hype',
+  ].join('\n');
+}
+
 export function buildEditorialRewritePrompt({
   articleType,
   detected,
@@ -76,6 +260,10 @@ export function buildEditorialRewritePrompt({
     `- keywords: ${facts.keywords.join(', ') || 'Geen'}`,
     `- detectedThemes: ${detected.themes.join(', ') || 'Geen'}`,
   ].join('\n');
+  const fandomToneInstructions = buildFandomToneInstructions({
+    detected,
+    facts,
+  });
 
   return `Je bent een LEGO-fan die schrijft voor Brickhunt.
 
@@ -97,6 +285,9 @@ Regels:
   - <SetSpotlightList />
   - <SetRail />
 - Verander GEEN setIds
+- Laat FeaturedSet bovenin staan, direct na de intro
+- Laat SetRail na "Voor wie is dit leuk?" staan en vóór "Korte conclusie"
+- De bronvermelding blijft het laatste blok
 
 2. FEITEN
 - Verander GEEN feiten
@@ -141,6 +332,8 @@ Pas tone aan op articleType:
 - geen markdown code fences
 - geen extra uitleg
 
+${fandomToneInstructions}
+
 Bestaande Brickhunt writing guidelines:
 ${writingGuidelines}
 
@@ -162,21 +355,14 @@ export function validateEditorialRewriteOutput({
   rewrittenMdx: string;
 }): EditorialAgentRewriteValidationResult {
   const normalizedOriginalMdx = originalMdx.trim();
-  const normalizedRewrittenMdx = rewrittenMdx.trim();
+  const normalizedRewrittenMdx = restoreOriginalFrontmatterForRewrite({
+    originalMdx,
+    rewrittenMdx,
+  }).trim();
 
-  if (!normalizedRewrittenMdx) {
+  if (!extractBodyWithoutFrontmatter(rewrittenMdx)) {
     return {
       reason: 'AI output was leeg.',
-      valid: false,
-    };
-  }
-
-  if (
-    extractFrontmatterBlock(normalizedOriginalMdx) !==
-    extractFrontmatterBlock(normalizedRewrittenMdx)
-  ) {
-    return {
-      reason: 'De frontmatter veranderde tijdens de rewrite.',
       valid: false,
     };
   }
@@ -212,6 +398,25 @@ export function validateEditorialRewriteOutput({
     };
   }
 
+  if (
+    JSON.stringify(extractOrderedUniqueSourceUrls(normalizedOriginalMdx)) !==
+    JSON.stringify(extractOrderedUniqueSourceUrls(normalizedRewrittenMdx))
+  ) {
+    return {
+      reason: 'SourceUrl veranderde tijdens de rewrite.',
+      valid: false,
+    };
+  }
+
+  const placementValidation = validateSetRailAndSourcePlacement({
+    originalMdx: normalizedOriginalMdx,
+    rewrittenMdx: normalizedRewrittenMdx,
+  });
+
+  if (!placementValidation.valid) {
+    return placementValidation;
+  }
+
   return {
     valid: true,
   };
@@ -224,8 +429,13 @@ export function createRewrittenDraftOutput({
   deterministicDraft: EditorialAgentDraftOutput;
   rewrittenMdx: string;
 }): EditorialAgentDraftOutput {
+  const mdx = restoreOriginalFrontmatterForRewrite({
+    originalMdx: deterministicDraft.mdx,
+    rewrittenMdx,
+  });
+
   return {
     ...deterministicDraft,
-    mdx: rewrittenMdx.endsWith('\n') ? rewrittenMdx : `${rewrittenMdx}\n`,
+    mdx,
   };
 }

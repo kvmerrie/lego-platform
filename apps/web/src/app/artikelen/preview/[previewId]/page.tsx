@@ -1,12 +1,10 @@
 import { MDXRemote } from 'next-mdx-remote/rsc';
-import { getArticleMdxComponents } from '../../lib/article-mdx-components';
-import { getMetadataFromSeoFields } from '../../lib/editorial-metadata';
-import { resolveArticleHeroPresentation } from '../../lib/article-hero-presentation';
 import {
-  getArticleBySlug,
-  listPublishedArticles,
-  listPublishedArticleSlugs,
-} from '@lego-platform/content/data-access';
+  getArticleMdxComponents,
+  resolveArticleMdxSourceWithCuratedRelatedSetRail,
+} from '../../../lib/article-mdx-components';
+import { resolveArticleHeroPresentation } from '../../../lib/article-hero-presentation';
+import { getArticlePreviewById } from '@lego-platform/content/data-access';
 import {
   getCatalogThemeDefinition,
   getCatalogThemeMutedTextColor,
@@ -17,53 +15,53 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import {
   buildThemePath,
   buildWebPath,
+  isArticlePreviewEnabled,
   webPathnames,
 } from '@lego-platform/shared/config';
 import React, { type CSSProperties } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
-
-export async function generateStaticParams() {
-  const slugs = await listPublishedArticleSlugs();
-
-  return slugs.map((slug) => ({ slug }));
-}
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ previewId: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  const contentArticle = await getArticleBySlug(slug);
-
-  if (!contentArticle) {
-    return {};
+  if (!isArticlePreviewEnabled()) {
+    return {
+      robots: {
+        follow: false,
+        index: false,
+      },
+    };
   }
 
-  const resolvedHeroPresentation =
-    await resolveArticleHeroPresentation(contentArticle);
+  const { previewId } = await params;
+  const contentArticle = await getArticlePreviewById({ previewId });
 
-  return getMetadataFromSeoFields({
-    description: contentArticle.description,
-    openGraphImageUrl: resolvedHeroPresentation?.imageUrl,
-    title: contentArticle.title,
-  });
+  return {
+    robots: {
+      follow: false,
+      index: false,
+    },
+    title: contentArticle ? `Preview: ${contentArticle.title}` : 'Preview',
+  };
 }
 
-export default async function ArticleDetailPage({
+export default async function ArticlePreviewPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ previewId: string }>;
 }) {
-  const { slug } = await params;
-  const [contentArticle, publishedArticles] = await Promise.all([
-    getArticleBySlug(slug),
-    listPublishedArticles(),
-  ]);
+  if (!isArticlePreviewEnabled()) {
+    notFound();
+  }
+
+  const { previewId } = await params;
+  const contentArticle = await getArticlePreviewById({ previewId });
 
   if (!contentArticle) {
     notFound();
@@ -76,12 +74,12 @@ export default async function ArticleDetailPage({
         ...contentArticle,
         heroImage: resolvedHeroPresentation.imageUrl,
         heroImageAlt: resolvedHeroPresentation.imageAlt,
+        heroImageSource: resolvedHeroPresentation.source,
       }
     : {
         ...contentArticle,
         heroImage: undefined,
       };
-
   const themeDefinition = getCatalogThemeDefinition(
     articleWithResolvedHero.theme,
   );
@@ -134,35 +132,15 @@ export default async function ArticleDetailPage({
       id: 'articles',
       label: 'Artikelen',
     },
-    ...(resolvedThemeLabel && themeHref
-      ? [
-          {
-            href: themeHref,
-            id: `theme-${themeDefinition?.slug ?? resolvedThemeLabel}`,
-            label: resolvedThemeLabel,
-          },
-        ]
-      : []),
     {
-      id: `article-${contentArticle.slug}`,
-      label: contentArticle.title,
+      id: `article-preview-${previewId}`,
+      label: `Preview: ${articleWithResolvedHero.title}`,
     },
   ];
-  const relatedArticles =
-    resolvedThemeLabel && publishedArticles.length
-      ? publishedArticles
-          .filter((publishedArticle) => {
-            const relatedThemeLabel =
-              getCatalogThemeDefinition(publishedArticle.theme)?.name ??
-              publishedArticle.theme;
-
-            return (
-              publishedArticle.slug !== articleWithResolvedHero.slug &&
-              relatedThemeLabel === resolvedThemeLabel
-            );
-          })
-          .slice(0, 3)
-      : [];
+  const articleBodySource =
+    await resolveArticleMdxSourceWithCuratedRelatedSetRail(
+      articleWithResolvedHero.bodySource,
+    );
 
   return (
     <ShellWeb>
@@ -176,11 +154,11 @@ export default async function ArticleDetailPage({
               articleTheme: articleWithResolvedHero.theme,
               articleTitle: articleWithResolvedHero.title,
             })}
-            source={articleWithResolvedHero.bodySource}
+            source={articleBodySource}
           />
         }
         contentArticle={articleWithResolvedHero}
-        relatedArticles={relatedArticles}
+        relatedArticles={[]}
         themePresentation={themePresentation}
       />
     </ShellWeb>

@@ -2213,96 +2213,6 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-04-22T07:44:55.360Z"
   },
   {
-    "setId": "75327",
-    "merchantId": "lego-nl",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6999,
-    "availability": "out_of_stock",
-    "observedAt": "2026-04-22T07:43:46.300Z"
-  },
-  {
-    "setId": "75327",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 9999,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:47.403Z"
-  },
-  {
-    "setId": "75328",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4599,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:45.620Z"
-  },
-  {
-    "setId": "75328",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4799,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:44.685Z"
-  },
-  {
-    "setId": "75328",
-    "merchantId": "misterbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5895,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:43.428Z"
-  },
-  {
-    "setId": "75328",
-    "merchantId": "lego-nl",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6999,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:43.710Z"
-  },
-  {
-    "setId": "75349",
-    "merchantId": "bol",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4399,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:41.905Z"
-  },
-  {
-    "setId": "75349",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:40.940Z"
-  },
-  {
-    "setId": "75349",
-    "merchantId": "lego-nl",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6999,
-    "availability": "in_stock",
-    "observedAt": "2026-04-20T08:41:45.623Z"
-  },
-  {
     "setId": "75351",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -3181,36 +3091,6 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 6290,
     "availability": "in_stock",
     "observedAt": "2026-04-22T18:04:05.898Z"
-  },
-  {
-    "setId": "77243",
-    "merchantId": "misterbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2195,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:48.007Z"
-  },
-  {
-    "setId": "77243",
-    "merchantId": "intertoys",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2499,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:49.822Z"
-  },
-  {
-    "setId": "77243",
-    "merchantId": "lego-nl",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2699,
-    "availability": "in_stock",
-    "observedAt": "2026-04-22T07:43:48.499Z"
   },
   {
     "setId": "77243",

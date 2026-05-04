@@ -164,7 +164,19 @@ describe('editorial agent utilities', () => {
     expect(output.mdx).not.toContain('<SetRail title="Gerelateerde sets"');
     expect(
       output.mdx.indexOf('<FeaturedSet setNumber="40787" />'),
-    ).toBeLessThan(output.mdx.indexOf('<SetRail title='));
+    ).toBeLessThan(output.mdx.indexOf('## Wanneer kopen?'));
+    expect(output.mdx.indexOf('## Waarom dit opvalt')).toBeLessThan(
+      output.mdx.indexOf('## Korte conclusie'),
+    );
+    expect(output.mdx.indexOf('## Voor wie is dit leuk?')).toBeLessThan(
+      output.mdx.indexOf('<SetRail title='),
+    );
+    expect(output.mdx.indexOf('<SetRail title=')).toBeLessThan(
+      output.mdx.indexOf('## Korte conclusie'),
+    );
+    expect(output.mdx.indexOf('Bron:')).toBeGreaterThan(
+      output.mdx.indexOf('<SetRail title='),
+    );
     expect(output.relatedSets).toHaveLength(2);
     expect(output.relatedSets.length).toBeLessThanOrEqual(6);
     const setRailSetIdMatches = output.mdx.match(/\b\d{5}\b/gu) ?? [];
