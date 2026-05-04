@@ -52,6 +52,7 @@ function getArticleMdxSetRailDebugMessage({
 export function ArticleMdxSetRailClient({
   articleSlug,
   canonicalIds,
+  eyebrow,
   setIds,
   initialSetCards,
   subtitle,
@@ -60,6 +61,7 @@ export function ArticleMdxSetRailClient({
 }: {
   articleSlug?: string;
   canonicalIds?: readonly string[];
+  eyebrow?: string;
   initialSetCards?: readonly CatalogHomepageSetCard[];
   setIds?:
     | readonly string[]
@@ -169,7 +171,7 @@ export function ArticleMdxSetRailClient({
           <CatalogSetCardRailSection
             ariaLabel={title}
             description={subtitle}
-            eyebrow="Setselectie"
+            eyebrow={eyebrow}
             items={resolvedSetCards.map((setCard) => ({
               href: buildSetDetailPath(setCard.slug),
               id: setCard.id,
@@ -191,6 +193,7 @@ export function ArticleMdxSetRailClient({
     <ContentArticleSetRail
       debugMessage={debugMessage}
       emptyMessage={emptyMessage}
+      eyebrow={eyebrow}
       subtitle={subtitle}
       title={title}
     />

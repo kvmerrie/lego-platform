@@ -188,8 +188,32 @@ describe('content article publishing', () => {
     const publishedAt = Date.parse(String(insertedRow?.['published_at']));
 
     expect(frontmatter?.['date']).toBe('2026-05-02');
+    expect(frontmatter?.['authorName']).toBe('Kasper van Merrienboer');
+    expect(insertedRow?.['created_at']).toBe(insertedRow?.['published_at']);
+    expect(insertedRow?.['updated_at']).toBe(insertedRow?.['published_at']);
     expect(publishedAt).toBeGreaterThanOrEqual(beforePublish - 1000);
     expect(publishedAt).toBeLessThanOrEqual(afterPublish + 1000);
+  });
+
+  test('preserves a custom author name on publish', async () => {
+    const supabaseClient = createSupabaseClientMock();
+
+    await publishContentArticle({
+      input: {
+        ...createPublishInput('custom-author'),
+        frontmatter: {
+          ...createPublishInput('custom-author').frontmatter,
+          authorName: 'Brickhunt Redactie',
+        },
+      },
+      supabaseClient: toPublishSupabaseClient(supabaseClient),
+    });
+
+    const frontmatter = supabaseClient.insertedRows[0]?.['frontmatter'] as
+      | Record<string, unknown>
+      | undefined;
+
+    expect(frontmatter?.['authorName']).toBe('Brickhunt Redactie');
   });
 
   test('blocks publishing the same sourceUrl twice', async () => {

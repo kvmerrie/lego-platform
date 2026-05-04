@@ -12,7 +12,10 @@ import {
   type EditorialAgentRelatedSetCandidate,
   type EditorialAgentSetPreview,
 } from './editorial-agent';
-import { normalizePublicContentArticleTheme } from './content-util';
+import {
+  DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
+  normalizePublicContentArticleTheme,
+} from './content-util';
 
 const DUTCH_MONTH_LABELS = new Map([
   ['01', 'januari'],
@@ -1187,6 +1190,7 @@ function buildFrontmatter(
   });
 
   return {
+    authorName: DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
     date: articleDate,
     description: buildDescription(input),
     heroImage: '',

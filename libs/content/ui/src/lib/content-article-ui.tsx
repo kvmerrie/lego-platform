@@ -221,20 +221,29 @@ function ContentArticleImage({
 
 function ContentArticleMeta({
   contentArticle,
+  showAuthor = false,
   themePresentation,
 }: {
-  contentArticle: Pick<ContentArticleListItem, 'date' | 'theme' | 'updatedAt'>;
+  contentArticle: Pick<
+    ContentArticleListItem,
+    'authorName' | 'date' | 'theme' | 'updatedAt'
+  >;
+  showAuthor?: boolean;
   themePresentation?: ContentArticleThemePresentation;
 }) {
   const resolvedThemeLabel = normalizePublicContentArticleTheme(
     themePresentation?.label ?? contentArticle.theme,
   );
+  const authorName = contentArticle.authorName?.trim();
 
   return (
     <div className={styles.metaRow}>
       <time className={styles.metaText} dateTime={contentArticle.date}>
         {formatContentArticleDate(contentArticle.date)}
       </time>
+      {showAuthor && authorName ? (
+        <span className={styles.metaText}>Door {authorName}</span>
+      ) : null}
       {contentArticle.updatedAt ? (
         <time className={styles.metaText} dateTime={contentArticle.updatedAt}>
           Bijgewerkt {formatContentArticleDate(contentArticle.updatedAt)}
@@ -486,12 +495,14 @@ export function ContentArticleSetRail({
   children,
   debugMessage,
   emptyMessage,
+  eyebrow,
   subtitle,
   title,
 }: {
   children?: ReactNode;
   debugMessage?: string;
   emptyMessage?: string;
+  eyebrow?: string;
   subtitle?: string;
   title: string;
 }) {
@@ -514,7 +525,7 @@ export function ContentArticleSetRail({
       >
         <SectionHeading
           description={subtitle}
-          eyebrow="Setselectie"
+          eyebrow={eyebrow}
           title={title}
           titleAs="h2"
         />
@@ -804,6 +815,7 @@ export function ContentArticlePage({
               <h1 className={styles.pageTitle}>{contentArticle.title}</h1>
               <ContentArticleMeta
                 contentArticle={contentArticle}
+                showAuthor
                 themePresentation={themePresentation}
               />
               <p className={styles.pageDescription}>

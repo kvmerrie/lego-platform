@@ -396,6 +396,37 @@ export class ContentAdminEditorialAgentApiService {
     }
   }
 
+  async saveFeedItemDraft(
+    feedItemId: string,
+    input: {
+      frontmatter: ContentArticleFrontmatterInput;
+      mdx: string;
+    },
+  ): Promise<EditorialFeedItem> {
+    try {
+      return await firstValueFrom(
+        this.http.post<EditorialFeedItem>(
+          `${apiPaths.adminEditorialAgentFeedItems}/save-draft`,
+          {
+            feedItemId,
+            ...input,
+          },
+        ),
+      );
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        const message =
+          typeof error.error?.message === 'string' && error.error.message.trim()
+            ? error.error.message.trim()
+            : '';
+
+        throw new Error(message || 'Concept opslaan is mislukt.');
+      }
+
+      throw error;
+    }
+  }
+
   async ignoreFeedItem(feedItemId: string): Promise<EditorialFeedItem> {
     return firstValueFrom(
       this.http.post<EditorialFeedItem>(

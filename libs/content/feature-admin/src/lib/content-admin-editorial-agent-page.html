@@ -171,8 +171,50 @@
           <a [href]="feedItem.sourceUrl" target="_blank" rel="noreferrer">
             {{ feedItem.sourceUrl }}
           </a>
-          @if (getFeedOverlapSuggestions(feedItem); as overlapSuggestions) { @if
-          (overlapSuggestions.length) {
+          @if (getBestSourceSuggestion(feedItem); as bestSource) {
+          <div class="editorial-agent__feed-overlap">
+            <strong>Er is een concretere bron voor hetzelfde nieuws</strong>
+            <small>
+              {{ bestSource.matchReason }} · beter door {{
+              bestSource.reasons.join(', ') }}
+            </small>
+            <dl class="editorial-agent__source-comparison">
+              <div>
+                <dt>Current source</dt>
+                <dd>
+                  {{ feedItem.feedName }} · score {{ bestSource.currentScore }}
+                  · {{ bestSource.currentSummary.join(', ') }}
+                </dd>
+              </div>
+              <div>
+                <dt>Suggested source</dt>
+                <dd>
+                  {{ bestSource.feedItem.feedName }} · score {{ bestSource.score
+                  }} · {{ bestSource.suggestedSummary.join(', ') }}
+                </dd>
+              </div>
+            </dl>
+            <div class="editorial-agent__feed-overlap-actions">
+              <button
+                class="admin-button admin-button--primary"
+                [disabled]="isGenerating() || !canGenerateDraftForFeedItem(bestSource.feedItem)"
+                (click)="useBestSourceSuggestion(bestSource)"
+                type="button"
+              >
+                Gebruik beste bron
+              </button>
+              <button
+                class="admin-button admin-button--subtle"
+                [disabled]="isGenerating() || !canGenerateDraftForFeedItem(feedItem)"
+                (click)="generateDraftForFeedItem(feedItem)"
+                type="button"
+              >
+                Toch deze bron gebruiken
+              </button>
+            </div>
+          </div>
+          } @if (getFeedOverlapSuggestions(feedItem); as overlapSuggestions) {
+          @if (overlapSuggestions.length) {
           <div
             class="editorial-agent__feed-overlap"
             [class.editorial-agent__feed-overlap--published]="hasPublishedFeedOverlap(feedItem)"
@@ -639,29 +681,125 @@
                 class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--gallery"
               >
                 <lego-admin-section-header
-                  description="Gallery beelden worden pas publiek als je de snippet zelf in de MDX plakt."
-                  eyebrow="Gallery"
-                  title="Gallery afbeeldingen"
+                  description="Maak losse galleries en plak de gewenste snippet handmatig in de MDX."
+                  eyebrow="Galleries"
+                  title="Galleries"
                 />
+                <button
+                  class="admin-button admin-button--subtle"
+                  (click)="addArticleEditGalleryGroup()"
+                  type="button"
+                >
+                  Nieuwe gallery
+                </button>
+                <p class="editorial-agent__muted">
+                  Deze gallery wordt pas zichtbaar als je de snippet in de MDX
+                  plakt.
+                </p>
 
-                <div class="editorial-agent__hero-row">
-                  <div class="editorial-agent__image-actions">
+                @for (galleryGroup of articleEditGalleryGroups(); track
+                galleryGroup.id) {
+                <article class="editorial-agent__preview-card admin-stack">
+                  <div class="editorial-agent__hero-row">
+                    <label
+                      class="admin-filterbar__group admin-filterbar__group--wide"
+                    >
+                      <span class="admin-filterbar__label">Gallery naam</span>
+                      <input
+                        class="admin-input"
+                        [value]="galleryGroup.title"
+                        (input)="updateArticleEditGalleryGroupTitle(galleryGroup.id, $any($event.target).value)"
+                        placeholder="Productbeelden"
+                        type="text"
+                      />
+                    </label>
+                    <label
+                      class="admin-filterbar__group admin-filterbar__group--wide"
+                    >
+                      <span class="admin-filterbar__label"
+                        >Beeldcredit groep</span
+                      >
+                      <input
+                        class="admin-input"
+                        [value]="galleryGroup.credit"
+                        (input)="updateArticleEditGalleryGroupCredit(galleryGroup.id, $any($event.target).value)"
+                        placeholder="Beeld: © The LEGO Group"
+                        type="text"
+                      />
+                    </label>
+                    <button
+                      class="admin-button admin-button--subtle"
+                      (click)="removeArticleEditGalleryGroup(galleryGroup.id)"
+                      type="button"
+                    >
+                      Verwijder gallery
+                    </button>
+                  </div>
+
+                  @if (galleryGroup.images.length) {
+                  <ul class="editorial-agent__gallery-table">
+                    @for (galleryImage of galleryGroup.images; track
+                    galleryImage.id) {
+                    <li>
+                      <button
+                        class="editorial-agent__gallery-thumb"
+                        [attr.aria-label]="'Open afbeelding: ' + galleryImage.alt"
+                        (click)="openGalleryLightbox(galleryImage)"
+                        type="button"
+                      >
+                        <img
+                          [alt]="galleryImage.alt"
+                          [src]="galleryImage.url"
+                        />
+                        <span aria-hidden="true">⌕</span>
+                      </button>
+                      <label
+                        class="admin-filterbar__group admin-filterbar__group--wide"
+                      >
+                        <span class="admin-filterbar__label">Alt tekst</span>
+                        <input
+                          class="admin-input"
+                          [value]="galleryImage.alt"
+                          (input)="updateArticleEditGalleryImageAlt(galleryImage.id, $any($event.target).value, galleryGroup.id)"
+                          type="text"
+                        />
+                      </label>
+                      @if (galleryImage.credit || galleryGroup.credit) {
+                      <span
+                        >{{ galleryImage.credit || galleryGroup.credit }}</span
+                      >
+                      }
+                      <button
+                        class="admin-button admin-button--subtle"
+                        (click)="removeArticleEditGalleryImage(galleryImage.id, galleryGroup.id)"
+                        type="button"
+                      >
+                        Verwijder afbeelding
+                      </button>
+                    </li>
+                    }
+                  </ul>
+                  } @else {
+                  <p class="editorial-agent__muted">
+                    Nog geen afbeeldingen in deze gallery.
+                  </p>
+                  }
+
+                  <div class="editorial-agent__gallery-controls">
                     <label class="admin-button admin-button--subtle">
                       <span>
                         {{ isUploadingArticleEditHeroImage() ? 'Uploaden…' :
-                        'Upload gallerybeeld' }}
+                        'Upload image' }}
                       </span>
                       <input
                         class="editorial-agent__file-input"
                         accept="image/jpeg,image/png,image/webp"
                         [disabled]="isUploadingArticleEditHeroImage()"
-                        (change)="uploadArticleEditGalleryImageFromInput($event)"
+                        (change)="uploadArticleEditGalleryImageFromInput($event, galleryGroup.id)"
                         type="file"
                       />
                     </label>
-                  </div>
 
-                  <div class="editorial-agent__image-import">
                     <label
                       class="admin-filterbar__group admin-filterbar__group--wide"
                     >
@@ -670,8 +808,8 @@
                       >
                       <input
                         class="admin-input"
-                        [value]="articleEditGalleryImageUrlInput()"
-                        (input)="articleEditGalleryImageUrlInput.set($any($event.target).value)"
+                        [value]="galleryGroup.imageUrlInput"
+                        (input)="updateArticleEditGalleryImageUrlInput(galleryGroup.id, $any($event.target).value)"
                         placeholder="https://www.lego.com/cdn/..."
                         type="url"
                       />
@@ -679,62 +817,24 @@
                     <button
                       class="admin-button admin-button--subtle"
                       [disabled]="isUploadingArticleEditHeroImage()"
-                      (click)="importArticleEditGalleryImageFromUrl()"
+                      (click)="importArticleEditGalleryImageFromUrl(galleryGroup.id)"
                       type="button"
                     >
-                      Importeer gallerybeeld
+                      Importeer afbeelding
                     </button>
-                  </div>
-                </div>
-
-                @if (articleEditGalleryImages().length) {
-                <ul class="editorial-agent__list">
-                  @for (galleryImage of articleEditGalleryImages(); track
-                  galleryImage.id) {
-                  <li>
-                    <img [alt]="galleryImage.alt" [src]="galleryImage.url" />
-                    <label
-                      class="admin-filterbar__group admin-filterbar__group--wide"
-                    >
-                      <span class="admin-filterbar__label">Alt tekst</span>
-                      <input
-                        class="admin-input"
-                        [value]="galleryImage.alt"
-                        (input)="updateArticleEditGalleryImageAlt(galleryImage.id, $any($event.target).value)"
-                        type="text"
-                      />
-                    </label>
-                    @if (galleryImage.credit) {
-                    <span>{{ galleryImage.credit }}</span>
-                    }
                     <button
                       class="admin-button admin-button--subtle"
-                      (click)="removeArticleEditGalleryImage(galleryImage.id)"
+                      (click)="copyArticleEditImageGallerySnippet(galleryGroup.id)"
                       type="button"
                     >
-                      Verwijder
+                      Copy snippet
                     </button>
-                  </li>
-                  }
-                </ul>
+                  </div>
 
-                <textarea
-                  class="editorial-agent__textarea editorial-agent__textarea--compact"
-                  [value]="articleEditImageGallerySnippet()"
-                  readonly
-                  spellcheck="false"
-                ></textarea>
-                <button
-                  class="admin-button admin-button--subtle"
-                  (click)="copyArticleEditImageGallerySnippet()"
-                  type="button"
-                >
-                  Copy ImageGallery snippet
-                </button>
-                } @else {
-                <p class="editorial-agent__muted">
-                  Nog geen gallery-afbeeldingen toegevoegd.
-                </p>
+                  <code class="editorial-agent__snippet">
+                    {{ getImageGallerySnippetForGroup(galleryGroup) }}
+                  </code>
+                </article>
                 }
               </section>
             </div>
@@ -763,6 +863,15 @@
                       Toon expliciete bron
                     </option>
                   </select>
+                </label>
+                <label class="admin-filterbar__group">
+                  <span class="admin-filterbar__label">Auteur</span>
+                  <input
+                    class="admin-input"
+                    [value]="articleEditAuthorName()"
+                    (input)="articleEditAuthorName.set($any($event.target).value)"
+                    type="text"
+                  />
                 </label>
                 @if (articleEditUrl(); as articleEditUrl) {
                 <a
@@ -1111,6 +1220,22 @@
             Controleer de draft, voeg eventueel beeld toe en publiceer pas als
             alles klopt.
           </p>
+          @if (hasUnsavedDraftChanges()) {
+          <span class="editorial-agent__meta-pill">
+            Niet-opgeslagen wijzigingen
+          </span>
+          } @if (draftConceptSaveMessage(); as draftConceptSaveMessage) {
+          <span class="editorial-agent__meta-pill">
+            {{ draftConceptSaveMessage }}
+          </span>
+          } @if (draftConceptSaveErrorMessage(); as
+          draftConceptSaveErrorMessage) {
+          <span
+            class="editorial-agent__meta-pill editorial-agent__meta-pill--danger"
+          >
+            {{ draftConceptSaveErrorMessage }}
+          </span>
+          }
         </div>
         <div class="editorial-agent__modal-actions">
           @if (output()) { @if (isStoredFeedDraftOpen() && activeFeedItem(); as
@@ -1125,12 +1250,52 @@
           </button>
           }
           <button
+            class="admin-button admin-button--subtle"
+            [disabled]="
+              !mdxOutput() ||
+              !articlePreviewEnabled() ||
+              isGenerating() ||
+              isPublishing() ||
+              isSavingDraftConcept()
+            "
+            (click)="openDraftPreview()"
+            [title]="
+              articlePreviewEnabled()
+                ? 'Preview openen'
+                : 'Preview is alleen beschikbaar op staging/local.'
+            "
+            type="button"
+          >
+            Preview openen
+          </button>
+          <button
+            class="admin-button admin-button--subtle"
+            [disabled]="
+              !activeFeedItemId() ||
+              !mdxOutput() ||
+              isGenerating() ||
+              isPublishing() ||
+              isSavingDraftConcept()
+            "
+            (click)="saveDraftConcept()"
+            [title]="
+              activeFeedItemId()
+                ? 'Concept opslaan'
+                : 'Concept opslaan is alleen beschikbaar voor feed-items.'
+            "
+            type="button"
+          >
+            {{ isSavingDraftConcept() ? 'Opslaan…' : 'Concept opslaan' }}
+          </button>
+          <button
             class="admin-button admin-button--primary"
-            [disabled]="!mdxOutput() || isPublishing()"
+            [disabled]="
+              !mdxOutput() || isPublishing() || isSavingDraftConcept()
+            "
             (click)="publishArticle()"
             type="button"
           >
-            {{ isPublishing() ? 'Publiceren…' : 'Publish article' }}
+            {{ isPublishing() ? 'Publiceren…' : 'Publiceren' }}
           </button>
           }
           <button
@@ -1609,29 +1774,121 @@
               class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--gallery"
             >
               <lego-admin-section-header
-                description="Gallery beelden worden pas publiek als je de snippet zelf in de MDX plakt."
-                eyebrow="Gallery"
-                title="Gallery afbeeldingen"
+                description="Maak losse galleries en plak de gewenste snippet handmatig in de MDX."
+                eyebrow="Galleries"
+                title="Galleries"
               />
+              <button
+                class="admin-button admin-button--subtle"
+                (click)="addGalleryGroup()"
+                type="button"
+              >
+                Nieuwe gallery
+              </button>
+              <p class="editorial-agent__muted">
+                Deze gallery wordt pas zichtbaar als je de snippet in de MDX
+                plakt.
+              </p>
 
-              <div class="editorial-agent__hero-row">
-                <div class="editorial-agent__image-actions">
+              @for (galleryGroup of galleryGroups(); track galleryGroup.id) {
+              <article class="editorial-agent__preview-card admin-stack">
+                <div class="editorial-agent__hero-row">
+                  <label
+                    class="admin-filterbar__group admin-filterbar__group--wide"
+                  >
+                    <span class="admin-filterbar__label">Gallery naam</span>
+                    <input
+                      class="admin-input"
+                      [value]="galleryGroup.title"
+                      (input)="updateGalleryGroupTitle(galleryGroup.id, $any($event.target).value)"
+                      placeholder="Productbeelden"
+                      type="text"
+                    />
+                  </label>
+                  <label
+                    class="admin-filterbar__group admin-filterbar__group--wide"
+                  >
+                    <span class="admin-filterbar__label"
+                      >Beeldcredit groep</span
+                    >
+                    <input
+                      class="admin-input"
+                      [value]="galleryGroup.credit"
+                      (input)="updateGalleryGroupCredit(galleryGroup.id, $any($event.target).value)"
+                      placeholder="Beeld: © The LEGO Group"
+                      type="text"
+                    />
+                  </label>
+                  <button
+                    class="admin-button admin-button--subtle"
+                    (click)="removeGalleryGroup(galleryGroup.id)"
+                    type="button"
+                  >
+                    Verwijder gallery
+                  </button>
+                </div>
+
+                @if (galleryGroup.images.length) {
+                <ul class="editorial-agent__gallery-table">
+                  @for (galleryImage of galleryGroup.images; track
+                  galleryImage.id) {
+                  <li>
+                    <button
+                      class="editorial-agent__gallery-thumb"
+                      [attr.aria-label]="'Open afbeelding: ' + galleryImage.alt"
+                      (click)="openGalleryLightbox(galleryImage)"
+                      type="button"
+                    >
+                      <img [alt]="galleryImage.alt" [src]="galleryImage.url" />
+                      <span aria-hidden="true">⌕</span>
+                    </button>
+                    <label
+                      class="admin-filterbar__group admin-filterbar__group--wide"
+                    >
+                      <span class="admin-filterbar__label">Alt tekst</span>
+                      <input
+                        class="admin-input"
+                        [value]="galleryImage.alt"
+                        (input)="updateGalleryImageAlt(galleryImage.id, $any($event.target).value, galleryGroup.id)"
+                        type="text"
+                      />
+                    </label>
+                    @if (galleryImage.credit || galleryGroup.credit) {
+                    <span
+                      >{{ galleryImage.credit || galleryGroup.credit }}</span
+                    >
+                    }
+                    <button
+                      class="admin-button admin-button--subtle"
+                      (click)="removeGalleryImage(galleryImage.id, galleryGroup.id)"
+                      type="button"
+                    >
+                      Verwijder afbeelding
+                    </button>
+                  </li>
+                  }
+                </ul>
+                } @else {
+                <p class="editorial-agent__muted">
+                  Nog geen afbeeldingen in deze gallery.
+                </p>
+                }
+
+                <div class="editorial-agent__gallery-controls">
                   <label class="admin-button admin-button--subtle">
                     <span>
-                      {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload
-                      gallerybeeld' }}
+                      {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload image'
+                      }}
                     </span>
                     <input
                       class="editorial-agent__file-input"
                       accept="image/jpeg,image/png,image/webp"
                       [disabled]="isUploadingHeroImage()"
-                      (change)="uploadGalleryImageFromInput($event)"
+                      (change)="uploadGalleryImageFromInput($event, galleryGroup.id)"
                       type="file"
                     />
                   </label>
-                </div>
 
-                <div class="editorial-agent__image-import">
                   <label
                     class="admin-filterbar__group admin-filterbar__group--wide"
                   >
@@ -1640,8 +1897,8 @@
                     >
                     <input
                       class="admin-input"
-                      [value]="galleryImageUrlInput()"
-                      (input)="galleryImageUrlInput.set($any($event.target).value)"
+                      [value]="galleryGroup.imageUrlInput"
+                      (input)="updateGalleryImageUrlInput(galleryGroup.id, $any($event.target).value)"
                       placeholder="https://www.lego.com/cdn/..."
                       type="url"
                     />
@@ -1649,65 +1906,28 @@
                   <button
                     class="admin-button admin-button--subtle"
                     [disabled]="isImportingHeroImageUrl()"
-                    (click)="importGalleryImageFromUrl()"
+                    (click)="importGalleryImageFromUrl(galleryGroup.id)"
                     type="button"
                   >
-                    Importeer gallerybeeld
+                    Importeer afbeelding
                   </button>
-                </div>
-              </div>
-
-              @if (galleryImages().length) {
-              <ul class="editorial-agent__list">
-                @for (galleryImage of galleryImages(); track galleryImage.id) {
-                <li>
-                  <img [alt]="galleryImage.alt" [src]="galleryImage.url" />
-                  <label
-                    class="admin-filterbar__group admin-filterbar__group--wide"
-                  >
-                    <span class="admin-filterbar__label">Alt tekst</span>
-                    <input
-                      class="admin-input"
-                      [value]="galleryImage.alt"
-                      (input)="updateGalleryImageAlt(galleryImage.id, $any($event.target).value)"
-                      type="text"
-                    />
-                  </label>
-                  @if (galleryImage.credit) {
-                  <span>{{ galleryImage.credit }}</span>
-                  }
                   <button
                     class="admin-button admin-button--subtle"
-                    (click)="removeGalleryImage(galleryImage.id)"
+                    (click)="copyImageGallerySnippet(galleryGroup.id)"
                     type="button"
                   >
-                    Verwijder
+                    Copy snippet
                   </button>
-                </li>
-                }
-              </ul>
+                </div>
 
-              <textarea
-                class="editorial-agent__textarea editorial-agent__textarea--compact"
-                [value]="imageGallerySnippet()"
-                readonly
-                spellcheck="false"
-              ></textarea>
-              <button
-                class="admin-button admin-button--subtle"
-                (click)="copyImageGallerySnippet()"
-                type="button"
-              >
-                Copy ImageGallery snippet
-              </button>
-              @if (gallerySnippetMessage(); as gallerySnippetMessage) {
+                <code class="editorial-agent__snippet">
+                  {{ getImageGallerySnippetForGroup(galleryGroup) }}
+                </code>
+              </article>
+              } @if (gallerySnippetMessage(); as gallerySnippetMessage) {
               <span class="editorial-agent__meta-pill">
                 {{ gallerySnippetMessage }}
               </span>
-              } } @else {
-              <p class="editorial-agent__muted">
-                Nog geen gallery-afbeeldingen toegevoegd.
-              </p>
               }
             </section>
 
@@ -1793,8 +2013,8 @@
                 <span class="admin-filterbar__label">Auteur</span>
                 <input
                   class="admin-input"
-                  placeholder="Later"
-                  readonly
+                  [value]="draftAuthorName()"
+                  (input)="draftAuthorName.set($any($event.target).value)"
                   type="text"
                 />
               </label>
@@ -1885,6 +2105,25 @@
       </div>
       }
     </section>
+  </div>
+  } @if (galleryLightboxImage(); as lightboxImage) {
+  <div
+    class="editorial-agent__lightbox"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="'Afbeelding bekijken: ' + lightboxImage.alt"
+  >
+    <div class="editorial-agent__lightbox-panel">
+      <button
+        class="admin-button admin-button--subtle"
+        (click)="closeGalleryLightbox()"
+        type="button"
+      >
+        ×
+      </button>
+      <img [alt]="lightboxImage.alt" [src]="lightboxImage.url" />
+      <strong>{{ lightboxImage.alt }}</strong>
+    </div>
   </div>
   }
 </lego-admin-page>

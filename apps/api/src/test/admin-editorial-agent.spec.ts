@@ -114,6 +114,7 @@ function createDraftResult(): EditorialAgentDraftGenerationResult {
     },
     deterministicDraft: {
       frontmatter: {
+        authorName: 'Kasper van Merrienboer',
         date: '2026-05-01',
         description: 'Korte description.',
         heroImage: '',
@@ -136,6 +137,7 @@ function createDraftResult(): EditorialAgentDraftGenerationResult {
     effectiveExtraction: createExtractionResult(),
     output: {
       frontmatter: {
+        authorName: 'Kasper van Merrienboer',
         date: '2026-05-01',
         description: 'Korte description.',
         heroImage: '',
@@ -162,6 +164,7 @@ function createDraftResult(): EditorialAgentDraftGenerationResult {
     },
     rewrittenDraft: {
       frontmatter: {
+        authorName: 'Kasper van Merrienboer',
         date: '2026-05-01',
         description: 'Korte description.',
         heroImage: '',
@@ -374,6 +377,9 @@ async function createAdminEditorialAgentServer({
       publishArticleFromFeedItem: vi.fn(async () => ({
         slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
       })),
+      saveFeedItemDraft: vi.fn(async () =>
+        createFeedItem({ status: 'drafted' }),
+      ),
       syncFeed: vi.fn(async () => ({
         inserted: 1,
         items: [createFeedItem()],
@@ -586,6 +592,9 @@ describe('admin editorial agent routes', () => {
         publishArticleFromFeedItem: vi.fn(async () => ({
           slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
         })),
+        saveFeedItemDraft: vi.fn(async () =>
+          createFeedItem({ status: 'drafted' }),
+        ),
         syncFeed: vi.fn(async () => ({
           inserted: 1,
           items: [createFeedItem()],
@@ -661,6 +670,9 @@ describe('admin editorial agent routes', () => {
         publishArticleFromFeedItem: vi.fn(async () => ({
           slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
         })),
+        saveFeedItemDraft: vi.fn(async () =>
+          createFeedItem({ status: 'drafted' }),
+        ),
         syncFeed: vi.fn(async () => ({
           inserted: 1,
           items: [createFeedItem()],
@@ -828,6 +840,48 @@ describe('admin editorial agent routes', () => {
     await server.close();
   });
 
+  test('saves edited feed draft state without publishing', async () => {
+    const { editorialAgentService, server } =
+      await createAdminEditorialAgentServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      payload: {
+        feedItemId: 'feed-item-1',
+        frontmatter: {
+          date: '2026-05-04',
+          description: 'Bewaarde beschrijving.',
+          heroImage: 'https://storage.example/articles/feed-item-1/hero.webp',
+          heroImageCredit: 'Beeld: © The LEGO Group',
+          sourceDisplayMode: 'showViaSource',
+          sourceUrl: 'https://example.com/spiny-shell',
+          status: 'draft',
+          theme: 'Super Mario',
+          title: 'Bewaarde titel',
+        },
+        mdx: '## Bewaarde heading\n\nBewaarde copy.',
+      },
+      url: '/api/v1/admin/editorial-agent/feed-items/save-draft',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(editorialAgentService.saveFeedItemDraft).toHaveBeenCalledWith({
+      feedItemId: 'feed-item-1',
+      frontmatter: expect.objectContaining({
+        heroImage: 'https://storage.example/articles/feed-item-1/hero.webp',
+        sourceDisplayMode: 'showViaSource',
+        title: 'Bewaarde titel',
+      }),
+      mdx: '## Bewaarde heading\n\nBewaarde copy.',
+    });
+    expect(editorialAgentService.publishArticle).not.toHaveBeenCalled();
+    expect(
+      editorialAgentService.publishArticleFromFeedItem,
+    ).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
   test('returns the real feed draft backend error for failed Brickset fetches', async () => {
     const editorialAgentService: AdminEditorialAgentService = {
       extractFacts: vi.fn(async () => createExtractionResult()),
@@ -847,6 +901,9 @@ describe('admin editorial agent routes', () => {
       publishArticleFromFeedItem: vi.fn(async () => ({
         slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
       })),
+      saveFeedItemDraft: vi.fn(async () =>
+        createFeedItem({ status: 'drafted' }),
+      ),
       syncFeed: vi.fn(async () => ({
         inserted: 1,
         items: [createFeedItem()],

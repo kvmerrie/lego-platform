@@ -48,6 +48,8 @@ export interface PreviewPanel {
 
 export type ContentArticleStatus = 'draft' | 'published';
 
+export const DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME = 'Kasper van Merrienboer';
+
 export type ContentArticleHeroImageSource =
   | 'manual'
   | 'featuredSet'
@@ -70,6 +72,7 @@ export interface ContentArticleSourceAttribution {
 }
 
 export interface ContentArticleListItem {
+  authorName?: string;
   bodySource?: string;
   cardImage?: string;
   cardImageAlt: string;
@@ -94,6 +97,7 @@ export interface ContentArticle extends ContentArticleListItem {
 }
 
 export interface ContentArticleFrontmatterInput {
+  authorName?: string;
   date: string;
   description: string;
   heroImage?: string;

@@ -27,6 +27,7 @@ export interface EditorialAgentWritingGuideline {
 }
 
 export interface EditorialAgentArticleFrontmatter {
+  authorName: string;
   date: string;
   description: string;
   heroImage: string;
@@ -293,7 +294,7 @@ export const editorialAgentArticleComponentManifest: readonly EditorialAgentArti
     },
     {
       name: 'SetRail',
-      usage: `<SetRail title="Sets om nu te volgen" subtitle="..." ${editorialAgentSetRailPropName}="75375, 75376" />`,
+      usage: `<SetRail eyebrow="Kun je niet wachten?" title="Sets om nu te volgen" subtitle="..." ${editorialAgentSetRailPropName}="75375, 75376" />`,
       whenToUse:
         'Als je meerdere genoemde of gerelateerde sets naast elkaar wilt tonen.',
       goal: 'Gebruik hem voor related sets, alternatieven en commerciële doorstroom.',
@@ -403,6 +404,7 @@ export function createEditorialAgentMockOutput({
   sourceUrl?: string;
 } = {}): EditorialAgentMockOutput {
   const frontmatter: EditorialAgentArticleFrontmatter = {
+    authorName: 'Kasper van Merrienboer',
     date: '2026-05-01',
     description:
       'Compacte Insiders reward voor Mario Kart-fans die vooral een herkenbaar displaystuk willen, niet per se de meeste bouw voor hun punten.',

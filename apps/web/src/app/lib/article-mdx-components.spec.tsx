@@ -292,16 +292,19 @@ vi.mock('@lego-platform/content/ui', () => ({
     children,
     debugMessage,
     emptyMessage,
+    eyebrow,
     subtitle,
     title,
   }: {
     children?: ReactNode;
     debugMessage?: string;
     emptyMessage?: string;
+    eyebrow?: string;
     subtitle?: string;
     title: string;
   }) => (
     <section aria-label={title}>
+      {eyebrow ? <p>{eyebrow}</p> : null}
       <h2>{title}</h2>
       {subtitle ? <p>{subtitle}</p> : null}
       {debugMessage ? <p>{debugMessage}</p> : null}
@@ -837,6 +840,38 @@ Klaar.`,
     expect(markup).toContain('data-article-width="commerce-rail"');
     expect(markup).toContain('Grogu (Mandalorian Apprentice)');
     expect(markup).toContain('/sets/grogu-mandalorian-apprentice-75446');
+    expect(markup).not.toContain('Setselectie');
+  });
+
+  it('passes a custom SetRail eyebrow from MDX props', async () => {
+    listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75446',
+        imageUrl: 'https://example.com/75446.jpg',
+        name: 'Grogu (Mandalorian Apprentice)',
+        pieces: 1200,
+        releaseYear: 2026,
+        slug: 'grogu-mandalorian-apprentice-75446',
+        theme: 'Star Wars',
+      },
+    ]);
+
+    const SetRail = getArticleMdxComponents().SetRail as (props: {
+      eyebrow?: string;
+      setIds?: readonly string[] | string;
+      title?: string;
+    }) => Promise<React.ReactNode>;
+    const markup = renderToStaticMarkup(
+      await SetRail({
+        eyebrow: 'Kun je niet wachten?',
+        setIds: '75446',
+        title: 'Andere helmets om nu te bouwen',
+      }),
+    );
+
+    expect(markup).toContain('Kun je niet wachten?');
+    expect(markup).toContain('Andere helmets om nu te bouwen');
+    expect(markup).not.toContain('Setselectie');
   });
 
   it('renders cards without requiring prices or offer summaries', async () => {

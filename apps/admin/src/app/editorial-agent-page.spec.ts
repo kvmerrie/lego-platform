@@ -6,6 +6,7 @@ import {
   ContentAdminEditorialAgentPageComponent,
 } from '@lego-platform/content/feature-admin';
 import type {
+  ContentArticleFrontmatterInput,
   EditorialAgentDraftGenerationResult,
   EditorialFeedItem,
   EditorialAgentFactExtractionResult,
@@ -125,6 +126,7 @@ function createDraftResult(): EditorialAgentDraftGenerationResult {
     },
     deterministicDraft: {
       frontmatter: {
+        authorName: 'Kasper van Merrienboer',
         date: '2026-05-01',
         description: 'Korte samenvatting.',
         heroImage: '',
@@ -160,6 +162,7 @@ function createDraftResult(): EditorialAgentDraftGenerationResult {
     },
     output: {
       frontmatter: {
+        authorName: 'Kasper van Merrienboer',
         date: '2026-05-01',
         description: 'Korte samenvatting.',
         heroImage: '',
@@ -192,6 +195,7 @@ function createDraftResult(): EditorialAgentDraftGenerationResult {
     },
     rewrittenDraft: {
       frontmatter: {
+        authorName: 'Kasper van Merrienboer',
         date: '2026-05-01',
         description: 'Korte samenvatting.',
         heroImage: '',
@@ -393,6 +397,26 @@ describe('Editorial agent admin page', () => {
     publishArticle: vi.fn(async () => ({
       slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
     })),
+    saveFeedItemDraft: vi.fn(
+      async (
+        _feedItemId: string,
+        input: {
+          frontmatter: ContentArticleFrontmatterInput;
+          mdx: string;
+        },
+      ) => ({
+        createdAt: '2026-05-03T10:00:00.000Z',
+        draftFrontmatter: input.frontmatter,
+        draftMdx: input.mdx,
+        draftedAt: '2026-05-03T11:00:00.000Z',
+        feedName: 'Brick Example',
+        id: 'feed-item-1',
+        sourceUrl: 'https://example.com/example',
+        status: 'drafted',
+        title: input.frontmatter.title,
+        updatedAt: '2026-05-03T11:00:00.000Z',
+      }),
+    ),
     syncFeed: vi.fn(async () => ({
       inserted: 0,
       items: [],
@@ -1006,6 +1030,217 @@ describe('Editorial agent admin page', () => {
     expect(fixture.nativeElement.textContent).toContain('Opnieuw genereren');
   });
 
+  it('saves current feed draft edits without publishing or regenerating', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+    const draftResult = createDraftResult();
+
+    component.feedItems.set([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brick Example',
+        id: 'feed-item-1',
+        sourceUrl: 'https://example.com/example',
+        status: 'new',
+        title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+    component.activeFeedItemId.set('feed-item-1');
+    component.sourceUrl.set('https://example.com/example');
+    component.draftResult.set(draftResult);
+    component.draftTitle.set('Bewaarde titel');
+    component.draftDescription.set('Bewaarde beschrijving.');
+    component.draftTheme.set('Super Mario');
+    component.draftDate.set('2026-05-04');
+    component.draftMdx.set('## Bewaarde heading\n\nBewaarde copy.');
+    component.draftAuthorName.set('Brickhunt Redactie');
+    component.heroImageOverride.set(
+      'https://storage.example/article-images/articles/bewaarde-titel/hero.webp',
+    );
+    component.heroImageCreditOverride.set('Beeld: © The LEGO Group');
+    component.draftSourceDisplayMode.set('showViaSource');
+
+    await component.saveDraftConcept();
+
+    expect(editorialAgentApi.saveFeedItemDraft).toHaveBeenCalledWith(
+      'feed-item-1',
+      {
+        frontmatter: expect.objectContaining({
+          authorName: 'Brickhunt Redactie',
+          date: '2026-05-04',
+          description: 'Bewaarde beschrijving.',
+          heroImage:
+            'https://storage.example/article-images/articles/bewaarde-titel/hero.webp',
+          heroImageCredit: 'Beeld: © The LEGO Group',
+          sourceDisplayMode: 'showViaSource',
+          status: 'draft',
+          theme: 'Super Mario',
+          title: 'Bewaarde titel',
+        }),
+        mdx: '## Bewaarde heading\n\nBewaarde copy.',
+      },
+    );
+    expect(editorialAgentApi.publishArticle).not.toHaveBeenCalled();
+    expect(editorialAgentApi.generateDraftForFeedItem).not.toHaveBeenCalled();
+    expect(editorialAgentApi.generateDraft).not.toHaveBeenCalled();
+    expect(component.draftConceptSaveMessage()).toBe('Concept opgeslagen');
+  });
+
+  it('reopens a saved concept with the last saved edits', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+
+    component.feedItems.set([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brick Example',
+        id: 'feed-item-1',
+        sourceUrl: 'https://example.com/example',
+        status: 'new',
+        title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+    component.activeFeedItemId.set('feed-item-1');
+    component.sourceUrl.set('https://example.com/example');
+    component.draftResult.set(createDraftResult());
+    component.draftTitle.set('Titel na edit');
+    component.draftMdx.set('## Laatste versie\n\nNiet opnieuw genereren.');
+
+    await component.saveDraftConcept();
+    component.closeDraftModal();
+
+    const savedFeedItem =
+      await editorialAgentApi.saveFeedItemDraft.mock.results[0].value;
+
+    component.openStoredDraftForFeedItem(savedFeedItem);
+
+    expect(editorialAgentApi.generateDraftForFeedItem).not.toHaveBeenCalled();
+    expect(component.mdxOutput()).toBe(
+      '## Laatste versie\n\nNiet opnieuw genereren.',
+    );
+    expect(component.draftTitle()).toBe('Titel na edit');
+  });
+
+  it('publishes after saving a concept', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+
+    component.feedItems.set([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brick Example',
+        id: 'feed-item-1',
+        sourceUrl: 'https://example.com/example',
+        status: 'new',
+        title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+    component.activeFeedItemId.set('feed-item-1');
+    component.sourceUrl.set('https://example.com/example');
+    component.draftResult.set(createDraftResult());
+    component.draftMdx.set('## Klaar voor live\n\nBewaarde copy.');
+
+    await component.saveDraftConcept();
+    await component.publishArticle();
+
+    expect(editorialAgentApi.saveFeedItemDraft).toHaveBeenCalled();
+    expect(editorialAgentApi.publishArticle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        feedItemId: 'feed-item-1',
+        mdx: '## Klaar voor live\n\nBewaarde copy.',
+      }),
+    );
+  });
+
+  it('confirms before closing a draft with unsaved changes', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+
+    component.feedItems.set([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brick Example',
+        id: 'feed-item-1',
+        sourceUrl: 'https://example.com/example',
+        status: 'new',
+        title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+    component.activeFeedItemId.set('feed-item-1');
+    component.sourceUrl.set('https://example.com/example');
+    component.draftResult.set(createDraftResult());
+    component.draftMdx.set('## Bewaard\n\nCopy.');
+    component.isDraftModalOpen.set(true);
+
+    await component.saveDraftConcept();
+    component.draftMdx.set('## Nog niet opgeslagen\n\nCopy.');
+    component.closeDraftModal();
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Je hebt niet-opgeslagen wijzigingen. Sluiten?',
+    );
+    expect(component.isDraftModalOpen()).toBe(true);
+
+    confirmSpy.mockReturnValue(true);
+    component.closeDraftModal();
+
+    expect(component.isDraftModalOpen()).toBe(false);
+  });
+
   it('confirms before regenerating a saved drafted feed item', async () => {
     const draftResult = createDraftResult();
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
@@ -1189,6 +1424,8 @@ describe('Editorial agent admin page', () => {
     const bricksetFeedItem = {
       ...createBricksetFeedItem(),
       sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+      title:
+        'LEGO Star Wars 75461 Up-Scaled Darth Vader and 75458 AT-RT Driver Helmet revealed!',
     };
     const bricktasticFeedItem: EditorialFeedItem = {
       createdAt: '2026-05-03T09:00:00.000Z',
@@ -1240,9 +1477,158 @@ describe('Editorial agent admin page', () => {
       expect(fixture.nativeElement.textContent).toContain(
         bricktasticFeedItem.title,
       );
+      expect(fixture.nativeElement.textContent).toContain(
+        'Match: zelfde set 75461',
+      );
     });
 
     clickButtonContaining(fixture, 'Genereer toch draft');
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(editorialAgentApi.generateDraftForFeedItem).toHaveBeenCalledWith(
+        bricksetFeedItem.id,
+        true,
+        true,
+      );
+    });
+  });
+
+  it('suggests a more concrete overlapping source without auto-switching', async () => {
+    const bricksetFeedItem = {
+      ...createBricksetFeedItem(),
+      sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+      title:
+        'LEGO Star Wars 75461 Up-Scaled Darth Vader and 75458 AT-RT Driver Helmet revealed!',
+    };
+    const bricktasticFeedItem: EditorialFeedItem = {
+      createdAt: '2026-05-03T09:00:00.000Z',
+      feedName: 'BrickTastic',
+      id: 'feed-item-bricktastic-star-wars',
+      sourcePublishedAt: '2026-05-03T09:00:00.000Z',
+      sourceUrl:
+        'https://www.bricktastic.nl/lego/lego-star-wars-75461-up-scaled-darth-vader-75458-at-rt-driver-helmet-verschijnt-1-juni-2026/',
+      status: 'new',
+      title:
+        'LEGO Star Wars 75461 Up-Scaled Darth Vader en 75458 AT-RT Driver Helmet verschijnen op 1 juni 2026 voor €59,99',
+      updatedAt: '2026-05-03T09:00:00.000Z',
+    };
+
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      bricksetFeedItem,
+      bricktasticFeedItem,
+    ]);
+    editorialAgentApi.generateDraftForFeedItem.mockResolvedValueOnce({
+      draftResult: createDraftResultForSource({
+        sourceUrl: bricktasticFeedItem.sourceUrl,
+        title: bricktasticFeedItem.title,
+      }),
+      feedItem: {
+        ...bricktasticFeedItem,
+        status: 'drafted',
+      },
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Er is een concretere bron voor hetzelfde nieuws',
+      );
+      expect(fixture.nativeElement.textContent).toContain('Gebruik beste bron');
+      expect(fixture.nativeElement.textContent).toContain(
+        'Toch deze bron gebruiken',
+      );
+      expect(fixture.nativeElement.textContent).toContain('Current source');
+      expect(fixture.nativeElement.textContent).toContain('Suggested source');
+      expect(fixture.nativeElement.textContent).toContain('prijs');
+      expect(fixture.nativeElement.textContent).toContain('releasedatum');
+    });
+
+    expect(editorialAgentApi.generateDraftForFeedItem).not.toHaveBeenCalled();
+
+    clickButtonContaining(fixture, 'Gebruik beste bron');
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(editorialAgentApi.generateDraftForFeedItem).toHaveBeenCalledWith(
+        bricktasticFeedItem.id,
+        true,
+        true,
+      );
+    });
+  });
+
+  it('allows the editor to override the best source suggestion', async () => {
+    const bricksetFeedItem = {
+      ...createBricksetFeedItem(),
+      sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+      title:
+        'LEGO Star Wars 75461 Up-Scaled Darth Vader and 75458 AT-RT Driver Helmet revealed!',
+    };
+    const bricktasticFeedItem: EditorialFeedItem = {
+      createdAt: '2026-05-03T09:00:00.000Z',
+      feedName: 'BrickTastic',
+      id: 'feed-item-bricktastic-star-wars',
+      sourcePublishedAt: '2026-05-03T09:00:00.000Z',
+      sourceUrl:
+        'https://www.bricktastic.nl/lego/lego-star-wars-75461-up-scaled-darth-vader-75458-at-rt-driver-helmet-verschijnt-1-juni-2026/',
+      status: 'new',
+      title:
+        'LEGO Star Wars 75461 Up-Scaled Darth Vader en 75458 AT-RT Driver Helmet verschijnen op 1 juni 2026 voor €59,99',
+      updatedAt: '2026-05-03T09:00:00.000Z',
+    };
+
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      bricksetFeedItem,
+      bricktasticFeedItem,
+    ]);
+    editorialAgentApi.generateDraftForFeedItem.mockResolvedValueOnce({
+      draftResult: createDraftResultForSource({
+        sourceUrl: bricksetFeedItem.sourceUrl,
+        title: bricksetFeedItem.title,
+      }),
+      feedItem: {
+        ...bricksetFeedItem,
+        status: 'drafted',
+      },
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Er is een concretere bron voor hetzelfde nieuws',
+      );
+    });
+
+    clickButtonContaining(fixture, 'Toch deze bron gebruiken');
 
     await vi.waitFor(() => {
       fixture.detectChanges();
@@ -1317,6 +1703,8 @@ describe('Editorial agent admin page', () => {
       ...createBricksetFeedItem(),
       id: 'feed-item-current-star-wars',
       sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+      title:
+        'LEGO Star Wars 75461 Up-Scaled Darth Vader and 75458 AT-RT Driver Helmet revealed!',
     };
     const draftedFeedItem: EditorialFeedItem = {
       createdAt: '2026-05-03T09:00:00.000Z',
@@ -1383,6 +1771,8 @@ describe('Editorial agent admin page', () => {
       ...createBricksetFeedItem(),
       id: 'feed-item-current-star-wars',
       sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+      title:
+        'LEGO Star Wars 75461 Up-Scaled Darth Vader and 75458 AT-RT Driver Helmet revealed!',
     };
     const overlapFeedItem: EditorialFeedItem = {
       createdAt: '2026-05-03T09:00:00.000Z',
@@ -1493,6 +1883,159 @@ describe('Editorial agent admin page', () => {
     );
     expect(fixture.nativeElement.textContent).not.toContain(
       'Er bestaat al een artikel over dit nieuws',
+    );
+  });
+
+  it('does not match Botanicals and Harry Potter items through broad year tokens', async () => {
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brickset',
+        id: 'feed-item-botanicals',
+        sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+        sourceUrl: 'https://brickset.com/article/131701',
+        status: 'new',
+        title: 'Three beautiful LEGO Botanicals sets revealed for summer 2026',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+      {
+        createdAt: '2026-05-03T09:00:00.000Z',
+        feedName: 'Brickset',
+        id: 'feed-item-harry-potter',
+        sourcePublishedAt: '2026-05-03T09:00:00.000Z',
+        sourceUrl: 'https://brickset.com/article/131702',
+        status: 'new',
+        title: 'Summer LEGO Harry Potter sets revealed for 2026',
+        updatedAt: '2026-05-03T09:00:00.000Z',
+      },
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Three beautiful LEGO Botanicals sets revealed for summer 2026',
+      );
+      expect(fixture.nativeElement.textContent).toContain(
+        'Summer LEGO Harry Potter sets revealed for 2026',
+      );
+    });
+
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Mogelijk hetzelfde nieuws als',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Er is een concretere bron voor hetzelfde nieuws',
+    );
+  });
+
+  it('matches same-theme highly similar titles without broad token noise', async () => {
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brickset',
+        id: 'feed-item-star-wars-vader',
+        sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+        sourceUrl: 'https://brickset.com/article/131703',
+        status: 'new',
+        title: 'LEGO Star Wars Darth Vader Helmet revealed',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+      {
+        createdAt: '2026-05-03T09:00:00.000Z',
+        feedName: 'BrickTastic',
+        id: 'feed-item-star-wars-vader-2',
+        sourcePublishedAt: '2026-05-03T09:00:00.000Z',
+        sourceUrl:
+          'https://www.bricktastic.nl/lego/star-wars-darth-vader-helmet/',
+        status: 'new',
+        title: 'Nieuwe LEGO Star Wars Darth Vader Helmet officieel onthuld',
+        updatedAt: '2026-05-03T09:00:00.000Z',
+      },
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Match: zelfde thema + vergelijkbare titel',
+      );
+    });
+  });
+
+  it('does not match multi-set roundups without shared set numbers', async () => {
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brickset',
+        id: 'feed-item-star-wars-june',
+        sourcePublishedAt: '2026-05-03T10:00:00.000Z',
+        sourceUrl: 'https://brickset.com/article/131704',
+        status: 'new',
+        title: 'Summer LEGO Star Wars sets revealed for June 2026',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+      {
+        createdAt: '2026-05-03T09:00:00.000Z',
+        feedName: 'BrickTastic',
+        id: 'feed-item-star-wars-august',
+        sourcePublishedAt: '2026-05-03T09:00:00.000Z',
+        sourceUrl: 'https://www.bricktastic.nl/lego/star-wars-zomer-sets/',
+        status: 'new',
+        title: 'Nieuwe LEGO Star Wars sets voor augustus 2026 onthuld',
+        updatedAt: '2026-05-03T09:00:00.000Z',
+      },
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Summer LEGO Star Wars sets revealed for June 2026',
+      );
+    });
+
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Mogelijk hetzelfde nieuws als',
     );
   });
 
@@ -1613,7 +2156,7 @@ describe('Editorial agent admin page', () => {
     expect(fixture.nativeElement.textContent).toContain('Debug');
     expect(component.draftModalTab()).toBe('inhoud');
     expect(fixture.nativeElement.textContent).toContain('Artikelinhoud');
-    expect(fixture.nativeElement.textContent).toContain('Publish article');
+    expect(fixture.nativeElement.textContent).toContain('Publiceren');
     expect(fixture.nativeElement.textContent).toContain('Hero afbeelding');
     expect(
       fixture.nativeElement.querySelector('.editorial-agent__modal-header'),
@@ -1661,7 +2204,7 @@ describe('Editorial agent admin page', () => {
     expect(fixture.nativeElement.textContent).toContain('Upload bestand');
     expect(fixture.nativeElement.textContent).toContain('Importeer afbeelding');
     expect(fixture.nativeElement.textContent).toContain('Beeldcredit');
-    expect(fixture.nativeElement.textContent).toContain('Publish article');
+    expect(fixture.nativeElement.textContent).toContain('Publiceren');
     expect(
       fixture.nativeElement.querySelector('.editorial-agent__hero-row'),
     ).not.toBeNull();
@@ -2352,6 +2895,7 @@ describe('Editorial agent admin page', () => {
     component.articleEditDescription.set('Nieuwe beschrijving.');
     component.articleEditDate.set('2026-05-02');
     component.articleEditTheme.set('Super Mario');
+    component.articleEditAuthorName.set('Kasper van Merrienboer');
     component.articleEditHeroImage.set('');
     component.articleEditMdx.set('## Nieuwe heading\n\nNieuwe copy.');
 
@@ -2362,6 +2906,7 @@ describe('Editorial agent admin page', () => {
       'lego-40787-mario-kart-spiny-shell-is-terug',
       {
         frontmatter: {
+          authorName: 'Kasper van Merrienboer',
           date: '2026-05-02',
           description: 'Nieuwe beschrijving.',
           heroImage: '',
@@ -2815,6 +3360,7 @@ describe('Editorial agent admin page', () => {
       expect.objectContaining({
         base64Data: 'data:image/webp;base64,b3B0aW1pemVk',
         contentType: 'image/webp',
+        imageId: expect.stringMatching(/^gallery-default\//u),
         slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
         type: 'gallery',
       }),
@@ -2826,14 +3372,23 @@ describe('Editorial agent admin page', () => {
       component.imageGallerySnippet(),
     );
 
-    component.galleryImages.update((images) => [
-      ...images,
-      {
-        alt: 'Tweede gallerybeeld',
-        id: 'gallery-two',
-        url: 'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-two.webp',
-      },
-    ]);
+    component.galleryGroups.update((groups) =>
+      groups.map((group) =>
+        group.id === 'gallery-default'
+          ? {
+              ...group,
+              images: [
+                ...group.images,
+                {
+                  alt: 'Tweede gallerybeeld',
+                  id: 'gallery-two',
+                  url: 'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-two.webp',
+                },
+              ],
+            }
+          : group,
+      ),
+    );
     component.isDraftModalOpen.set(true);
     component.setDraftModalTab('beeld');
     fixture.detectChanges();
@@ -2842,12 +3397,109 @@ describe('Editorial agent admin page', () => {
       '.editorial-agent__image-section--gallery',
     ) as HTMLElement | null;
 
-    expect(gallerySection?.textContent).toContain('Gallery afbeeldingen');
+    expect(gallerySection?.textContent).toContain('Galleries');
     expect(gallerySection?.querySelectorAll('img').length).toBe(2);
+    expect(
+      gallerySection?.querySelectorAll('.editorial-agent__gallery-table li')
+        .length,
+    ).toBe(2);
+    expect(
+      gallerySection?.querySelector('.editorial-agent__gallery-thumb'),
+    ).not.toBeNull();
+    expect(
+      gallerySection?.querySelector('textarea.editorial-agent__textarea'),
+    ).toBeNull();
+
+    const thumbnail = gallerySection?.querySelector(
+      '.editorial-agent__gallery-thumb',
+    ) as HTMLButtonElement | null;
+
+    thumbnail?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Spiny Shell gallerybeeld',
+    );
+    expect(
+      fixture.nativeElement.querySelector('.editorial-agent__lightbox'),
+    ).not.toBeNull();
 
     component.removeGalleryImage(component.galleryImages()[0]?.id ?? '');
 
     expect(component.imageGallerySnippet()).toContain('Tweede gallerybeeld');
+  });
+
+  it('creates two independent galleries with separate snippets', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+
+    component.galleryGroups.set([
+      {
+        credit: '',
+        id: 'productbeelden',
+        imageUrlInput: '',
+        images: [
+          {
+            alt: 'Productbeeld',
+            id: 'product-one',
+            url: 'https://storage.example/article-images/articles/demo/gallery/productbeelden/product-one.webp',
+          },
+        ],
+        title: 'Productbeelden',
+      },
+      {
+        credit: '',
+        id: 'details',
+        imageUrlInput: '',
+        images: [
+          {
+            alt: 'Detailbeeld',
+            id: 'detail-one',
+            url: 'https://storage.example/article-images/articles/demo/gallery/details/detail-one.webp',
+          },
+        ],
+        title: 'Details',
+      },
+    ]);
+
+    const productSnippet = component.getImageGallerySnippetForGroup(
+      component.galleryGroups()[0],
+    );
+    const detailSnippet = component.getImageGallerySnippetForGroup(
+      component.galleryGroups()[1],
+    );
+
+    expect(productSnippet).toContain('Productbeeld');
+    expect(productSnippet).not.toContain('Detailbeeld');
+    expect(detailSnippet).toContain('Detailbeeld');
+    expect(detailSnippet).not.toContain('Productbeeld');
+
+    component.removeGalleryImage('product-one', 'productbeelden');
+
+    expect(
+      component.getImageGallerySnippetForGroup(component.galleryGroups()[0]),
+    ).toBe('');
+    expect(
+      component.getImageGallerySnippetForGroup(component.galleryGroups()[1]),
+    ).toContain('Detailbeeld');
+
+    component.removeGalleryGroup('details');
+
+    expect(component.galleryGroups().length).toBe(1);
+    expect(component.effectiveHeroImage()).toBeNull();
+    fixture.detectChanges();
   });
 
   it('imports a LEGO gallery image URL with image credit', async () => {
@@ -2867,7 +3519,8 @@ describe('Editorial agent admin page', () => {
     const component = fixture.componentInstance;
 
     component.draftResult.set(createDraftResult());
-    component.galleryImageUrlInput.set(
+    component.updateGalleryImageUrlInput(
+      'gallery-default',
       'https://www.lego.com/cdn/product-assets/gallery.jpg',
     );
 
@@ -2875,6 +3528,7 @@ describe('Editorial agent admin page', () => {
 
     expect(editorialAgentApi.uploadArticleImage).toHaveBeenCalledWith(
       expect.objectContaining({
+        imageId: expect.stringMatching(/^gallery-default\//u),
         imageUrl: 'https://www.lego.com/cdn/product-assets/gallery.jpg',
         slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
         type: 'gallery',
@@ -2911,7 +3565,9 @@ describe('Editorial agent admin page', () => {
     component.draftDescription.set('Aangepaste preview beschrijving.');
     component.draftTheme.set('Star Wars');
     component.draftDate.set('2026-05-04');
-    component.draftMdx.set('## Preview heading\n\nPreview copy.');
+    component.draftMdx.set(
+      '## Preview heading\n\n<ImageGallery images="https://storage.example/product.webp::Productbeeld" />\n\n<ImageGallery images="https://storage.example/detail.webp::Detailbeeld" />',
+    );
     component.heroImageOverride.set('https://storage.example/hero.webp');
     component.isDraftModalOpen.set(true);
 
@@ -2926,7 +3582,7 @@ describe('Editorial agent admin page', () => {
         theme: 'Star Wars',
         title: 'Aangepaste preview titel',
       },
-      mdx: '## Preview heading\n\nPreview copy.',
+      mdx: '## Preview heading\n\n<ImageGallery images="https://storage.example/product.webp::Productbeeld" />\n\n<ImageGallery images="https://storage.example/detail.webp::Detailbeeld" />',
     });
     expect(openSpy).toHaveBeenCalledWith(
       'http://localhost:3000/artikelen/preview/00000000-0000-4000-8000-000000000001',

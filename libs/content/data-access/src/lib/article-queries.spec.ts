@@ -65,15 +65,18 @@ const uploadedHeroImage =
 
 const sampleRows: readonly ContentArticleSupabaseRow[] = [
   createArticleRow({
+    created_at: '2026-04-24T09:00:00.000Z',
     frontmatter: {
+      authorName: 'Kasper van Merrienboer',
       date: '2026-04-24',
       description: 'Waar wil je nu op letten?',
       heroImage: uploadedHeroImage,
       heroImageAlt: 'Star Wars hero',
       theme: 'Star Wars',
-      updatedAt: '2026-04-25',
+      updatedAt: '2026-04-25T12:00:00.000Z',
     },
     mdx: '---\ntitle: "Star Wars Day 2026"\n---\n\n## Intro\n\nDit is een gepubliceerd artikel.',
+    published_at: '2026-04-24T09:00:00.000Z',
     slug: 'star-wars-day-2026',
     title: 'Star Wars Day 2026',
     updated_at: '2026-04-25T12:00:00.000Z',
@@ -138,13 +141,14 @@ describe('content article queries', () => {
       cardImage: uploadedHeroImage,
       cardImageAlt: 'Star Wars hero',
       cardImageSource: 'manual',
+      authorName: 'Kasper van Merrienboer',
       heroImage: uploadedHeroImage,
       heroImageSource: 'manual',
       slug: 'star-wars-day-2026',
       status: 'published',
       theme: 'Star Wars',
       title: 'Star Wars Day 2026',
-      updatedAt: '2026-04-25',
+      updatedAt: '2026-04-25T12:00:00.000Z',
     });
   });
 
@@ -156,6 +160,66 @@ describe('content article queries', () => {
     expect(
       result.find((article) => article.slug === 'lewis-hamilton-helmet')?.theme,
     ).toBeUndefined();
+  });
+
+  test('defaults article author when frontmatter does not provide one', async () => {
+    const result = await listPublishedArticles({
+      supabaseClient: createArticlesSupabaseClient([
+        createArticleRow({
+          frontmatter: {
+            date: '2026-05-03',
+            description: 'Beschrijving.',
+            title: 'Artikel zonder auteur',
+          },
+          slug: 'artikel-zonder-auteur',
+          title: 'Artikel zonder auteur',
+        }),
+      ]),
+    });
+
+    expect(result[0]?.authorName).toBe('Kasper van Merrienboer');
+  });
+
+  test('hides updatedAt for first-publish timestamps within tolerance', async () => {
+    const result = await listPublishedArticles({
+      supabaseClient: createArticlesSupabaseClient([
+        createArticleRow({
+          created_at: '2026-05-03T11:00:00.000Z',
+          frontmatter: {
+            date: '2026-05-03',
+            description: 'Net gepubliceerd.',
+            title: 'Net gepubliceerd',
+          },
+          published_at: '2026-05-03T11:00:00.000Z',
+          slug: 'net-gepubliceerd',
+          title: 'Net gepubliceerd',
+          updated_at: '2026-05-03T11:00:30.000Z',
+        }),
+      ]),
+    });
+
+    expect(result[0]?.updatedAt).toBeUndefined();
+  });
+
+  test('shows updatedAt after a real post-publication edit', async () => {
+    const result = await listPublishedArticles({
+      supabaseClient: createArticlesSupabaseClient([
+        createArticleRow({
+          created_at: '2026-05-03T11:00:00.000Z',
+          frontmatter: {
+            date: '2026-05-03',
+            description: 'Later bijgewerkt.',
+            title: 'Later bijgewerkt',
+          },
+          published_at: '2026-05-03T11:00:00.000Z',
+          slug: 'later-bijgewerkt',
+          title: 'Later bijgewerkt',
+          updated_at: '2026-05-03T11:02:01.000Z',
+        }),
+      ]),
+    });
+
+    expect(result[0]?.updatedAt).toBe('2026-05-03T11:02:01.000Z');
   });
 
   test('hides draft slugs and draft detail pages from public queries', async () => {
@@ -358,6 +422,7 @@ describe('content article queries', () => {
       status: 'draft',
       theme: 'Star Wars',
       title: 'Preview artikel',
+      updatedAt: undefined,
     });
   });
 

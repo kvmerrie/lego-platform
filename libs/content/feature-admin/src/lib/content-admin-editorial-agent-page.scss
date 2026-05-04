@@ -332,6 +332,104 @@
   overflow-wrap: anywhere;
 }
 
+.editorial-agent__gallery-table {
+  display: grid;
+  gap: 0.45rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.editorial-agent__gallery-table li {
+  align-items: center;
+  background: color-mix(in srgb, var(--lego-surface-muted) 62%, transparent);
+  border-radius: 0.55rem;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 5rem minmax(0, 1fr) auto;
+  min-height: 5.5rem;
+  padding: 0.55rem;
+}
+
+.editorial-agent__gallery-thumb {
+  background: var(--lego-surface);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.45rem;
+  cursor: zoom-in;
+  display: grid;
+  inline-size: 5rem;
+  overflow: hidden;
+  padding: 0;
+  place-items: center;
+  position: relative;
+}
+
+.editorial-agent__gallery-thumb img {
+  aspect-ratio: 1;
+  display: block;
+  inline-size: 100%;
+  object-fit: cover;
+}
+
+.editorial-agent__gallery-thumb span {
+  background: linear-gradient(180deg, transparent, rgb(0 0 0 / 0.55));
+  color: white;
+  display: grid;
+  font-size: 1.2rem;
+  inset: 0;
+  opacity: 0;
+  place-items: center;
+  position: absolute;
+  transition: opacity 140ms ease;
+}
+
+.editorial-agent__gallery-thumb:hover span,
+.editorial-agent__gallery-thumb:focus-visible span {
+  opacity: 1;
+}
+
+.editorial-agent__gallery-controls {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.editorial-agent__snippet {
+  background: var(--lego-surface);
+  border: 1px solid var(--lego-border-subtle);
+  border-radius: 0.55rem;
+  display: block;
+  font: 0.76rem/1.45 var(--lego-font-family-mono, 'SFMono-Regular', monospace);
+  overflow-wrap: anywhere;
+  padding: 0.65rem;
+}
+
+.editorial-agent__lightbox {
+  background: rgb(15 23 42 / 0.72);
+  display: grid;
+  inset: 0;
+  padding: 1rem;
+  place-items: center;
+  position: fixed;
+  z-index: 80;
+}
+
+.editorial-agent__lightbox-panel {
+  background: var(--lego-surface);
+  border-radius: 0.75rem;
+  display: grid;
+  gap: 0.65rem;
+  max-width: min(62rem, 100%);
+  padding: 0.75rem;
+}
+
+.editorial-agent__lightbox-panel img {
+  max-height: 78vh;
+  max-width: 100%;
+  object-fit: contain;
+}
+
 .editorial-agent__file-input {
   block-size: 1px;
   inline-size: 1px;

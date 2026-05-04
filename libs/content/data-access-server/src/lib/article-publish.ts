@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
+  DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
   type ContentArticleNearDuplicateMatch,
   type ContentArticleFrontmatterInput,
   type ContentArticlePublishInput,
@@ -187,6 +188,9 @@ function normalizePublishFrontmatter(
 
   return {
     ...frontmatter,
+    authorName:
+      readNonEmptyString(frontmatter.authorName) ??
+      DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
     date:
       readNonEmptyString(frontmatter.date) ??
       new Date().toISOString().slice(0, 10),
@@ -649,12 +653,14 @@ async function insertPublishedArticle({
   const { data, error } = await supabaseClient
     .from(ARTICLES_TABLE_NAME)
     .insert({
+      created_at: publishedAt,
       frontmatter: publishedFrontmatter,
       mdx,
       published_at: publishedAt,
       slug,
       status: 'published',
       title: publishedFrontmatter.title,
+      updated_at: publishedAt,
     })
     .select('slug')
     .single();

@@ -582,6 +582,65 @@ describe('content article ui', () => {
     expect(markup).not.toContain('data-article-image-kind="hero"');
   });
 
+  it('only renders Bijgewerkt when updatedAt is provided by article queries', () => {
+    const firstPublishMarkup = renderToStaticMarkup(
+      <ContentArticlePage
+        body={<p>Net live.</p>}
+        contentArticle={{
+          bodySource: 'Net live.',
+          cardImageAlt: 'Net live',
+          date: '2026-05-01',
+          description: 'Eerste publicatie.',
+          heroImageAlt: 'Net live',
+          slug: 'net-live',
+          status: 'published',
+          title: 'Net live',
+        }}
+      />,
+    );
+    const updatedMarkup = renderToStaticMarkup(
+      <ContentArticlePage
+        body={<p>Later bijgewerkt.</p>}
+        contentArticle={{
+          bodySource: 'Later bijgewerkt.',
+          cardImageAlt: 'Bijgewerkt',
+          date: '2026-05-01',
+          description: 'Later bewerkt.',
+          heroImageAlt: 'Artikel',
+          slug: 'bijgewerkt',
+          status: 'published',
+          title: 'Artikel',
+          updatedAt: '2026-05-03T11:02:01.000Z',
+        }}
+      />,
+    );
+
+    expect(firstPublishMarkup).not.toContain('Bijgewerkt');
+    expect(updatedMarkup).toContain('Bijgewerkt 3 mei 2026');
+  });
+
+  it('renders the author by the article date on the article page', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticlePage
+        body={<p>Door een fan geschreven.</p>}
+        contentArticle={{
+          authorName: 'Kasper van Merrienboer',
+          bodySource: 'Door een fan geschreven.',
+          cardImageAlt: 'Artikel',
+          date: '2026-05-03',
+          description: 'Waarom deze set telt.',
+          heroImageAlt: 'Artikel',
+          slug: 'met-auteur',
+          status: 'published',
+          title: 'Met auteur',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('3 mei 2026');
+    expect(markup).toContain('Door Kasper van Merrienboer');
+  });
+
   it('keeps prose link styling scoped to running text links instead of component ctas', () => {
     const css = readFileSync(
       resolve(
@@ -1026,6 +1085,7 @@ describe('content article ui', () => {
       <ContentArticleSetRail
         debugMessage="SetRail: geen sets gevonden voor 10358"
         emptyMessage="Deze selectie vullen we aan zodra de sets live staan in Brickhunt."
+        eyebrow="Kun je niet wachten?"
         subtitle="Display, UCS en sets die echt iets doen op je plank."
         title="Star Wars sets om te volgen"
       >
@@ -1036,6 +1096,7 @@ describe('content article ui', () => {
     expect(markup).toContain('data-article-layout="wide-block"');
     expect(markup).toContain('data-article-module="set-rail"');
     expect(markup).toContain('data-article-width="commerce-rail"');
+    expect(markup).toContain('Kun je niet wachten?');
     expect(markup).toContain('Star Wars sets om te volgen');
     expect(markup).toContain(
       'Display, UCS en sets die echt iets doen op je plank.',
@@ -1043,6 +1104,17 @@ describe('content article ui', () => {
     expect(markup).toContain('SetRail: geen sets gevonden voor 10358');
     expect(markup).toContain('Set cards');
     expect(markup).not.toContain('themedSectionHeading');
+  });
+
+  it('does not render a SetRail eyebrow when it is omitted', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleSetRail title="Star Wars sets om te volgen">
+        <div>Set cards</div>
+      </ContentArticleSetRail>,
+    );
+
+    expect(markup).not.toContain('Setselectie');
+    expect(markup).toContain('Star Wars sets om te volgen');
   });
 
   it('renders an article image gallery wrapper that can break wider than prose', () => {

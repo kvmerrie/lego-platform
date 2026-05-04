@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import matter from 'gray-matter';
 import {
   extractPrimarySetNumberFromArticleBody,
+  DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
   normalizePublicContentArticleTheme,
   sortContentArticlesByDateDesc,
   type ContentArticle,
@@ -23,6 +24,7 @@ const ARTICLE_ROW_SELECT_FIELDS =
   'created_at, frontmatter, mdx, published_at, slug, status, title, updated_at';
 const ARTICLE_PREVIEW_ROW_SELECT_FIELDS =
   'created_at, expires_at, frontmatter, id, mdx';
+const ARTICLE_UPDATED_AT_DISPLAY_TOLERANCE_MS = 60_000;
 
 let contentArticlesSupabaseAdminClient: SupabaseClient | undefined;
 let contentArticlesSupabasePublicClient: SupabaseClient | undefined;
@@ -63,6 +65,7 @@ export interface ContentArticleQueryOptions {
 }
 
 interface ParsedContentArticleFrontmatter {
+  authorName?: string;
   cardImage?: string;
   cardImageAlt?: string;
   date: string;
@@ -90,6 +93,28 @@ function isNonEmptyString(value: unknown): value is string {
 
 function normalizeOptionalString(value: unknown): string | undefined {
   return isNonEmptyString(value) ? value.trim() : undefined;
+}
+
+function resolveMeaningfulArticleUpdatedAt({
+  createdAt,
+  publishedAt,
+  updatedAt,
+}: {
+  createdAt: string;
+  publishedAt?: string;
+  updatedAt?: string;
+}): string | undefined {
+  const updatedTimestamp = Date.parse(updatedAt ?? '');
+  const baseTimestamp = Date.parse(publishedAt ?? createdAt);
+
+  if (!Number.isFinite(updatedTimestamp) || !Number.isFinite(baseTimestamp)) {
+    return undefined;
+  }
+
+  return updatedTimestamp >
+    baseTimestamp + ARTICLE_UPDATED_AT_DISPLAY_TOLERANCE_MS
+    ? updatedAt
+    : undefined;
 }
 
 function normalizeArticleSourceDisplayMode(
@@ -217,6 +242,9 @@ function parseContentArticleFrontmatter({
 }): ParsedContentArticleFrontmatter {
   return {
     cardImage: normalizeOptionalString(frontmatter['cardImage']),
+    authorName:
+      normalizeOptionalString(frontmatter['authorName']) ??
+      DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
     cardImageAlt: normalizeOptionalString(frontmatter['cardImageAlt']),
     date: readRequiredStringField(frontmatter, 'date', filename),
     description: readRequiredStringField(frontmatter, 'description', filename),
@@ -329,6 +357,7 @@ function parseContentArticleSupabaseRow({
     filename: `${row.slug}.mdx`,
     frontmatter: {
       cardImage: mergedFrontmatter['cardImage'],
+      authorName: mergedFrontmatter['authorName'],
       cardImageAlt: mergedFrontmatter['cardImageAlt'],
       date:
         normalizeOptionalString(mergedFrontmatter['date']) ??
@@ -347,9 +376,11 @@ function parseContentArticleSupabaseRow({
       status: mergedFrontmatter['status'],
       theme: mergedFrontmatter['theme'],
       title: mergedFrontmatter['title'],
-      updatedAt:
-        normalizeOptionalString(mergedFrontmatter['updatedAt']) ??
-        row.updated_at,
+      updatedAt: resolveMeaningfulArticleUpdatedAt({
+        createdAt: row.created_at,
+        publishedAt: row.published_at,
+        updatedAt: row.updated_at,
+      }),
     },
   });
   const trimmedBodySource = stripLegacySourceAttribution(
@@ -364,6 +395,7 @@ function parseContentArticleSupabaseRow({
 
   return {
     bodySource: trimmedBodySource,
+    authorName: parsedFrontmatter.authorName,
     cardImage: resolvedCardImage ?? resolvedHeroImage,
     cardImageAlt:
       parsedFrontmatter.cardImageAlt ??
@@ -411,6 +443,7 @@ function parseContentArticlePreviewSupabaseRow({
     filename: `preview-${row.id}.mdx`,
     frontmatter: {
       cardImage: mergedFrontmatter['cardImage'],
+      authorName: mergedFrontmatter['authorName'],
       cardImageAlt: mergedFrontmatter['cardImageAlt'],
       date:
         normalizeOptionalString(mergedFrontmatter['date']) ??
@@ -429,7 +462,7 @@ function parseContentArticlePreviewSupabaseRow({
       status: mergedFrontmatter['status'],
       theme: mergedFrontmatter['theme'],
       title,
-      updatedAt: row.created_at,
+      updatedAt: undefined,
     },
   });
   const trimmedBodySource = stripLegacySourceAttribution(
@@ -444,6 +477,7 @@ function parseContentArticlePreviewSupabaseRow({
 
   return {
     bodySource: trimmedBodySource,
+    authorName: parsedFrontmatter.authorName,
     cardImage: resolvedCardImage ?? resolvedHeroImage,
     cardImageAlt:
       parsedFrontmatter.cardImageAlt ??
@@ -504,6 +538,7 @@ function toContentArticleListItem(
 ): ContentArticleListItem {
   return {
     bodySource: contentArticle.bodySource,
+    authorName: contentArticle.authorName,
     cardImage: contentArticle.cardImage,
     cardImageAlt: contentArticle.cardImageAlt,
     cardImageSource: contentArticle.cardImageSource,

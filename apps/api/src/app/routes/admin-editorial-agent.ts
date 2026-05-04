@@ -70,6 +70,11 @@ export interface AdminEditorialAgentService {
     feedItemId: string;
     publishInput: ContentArticlePublishInput;
   }): Promise<{ slug: string }>;
+  saveFeedItemDraft(input: {
+    feedItemId: string;
+    frontmatter: ContentArticleFrontmatterInput;
+    mdx: string;
+  }): Promise<EditorialFeedItem>;
   syncFeed(input?: {
     feedName?: string;
     rssUrl?: string;
@@ -511,6 +516,13 @@ export function createAdminEditorialAgentService({
 
       return result;
     },
+    saveFeedItemDraft: ({ feedItemId, frontmatter, mdx }) =>
+      updateEditorialFeedItemStatus({
+        draftFrontmatter: frontmatter,
+        draftMdx: mdx,
+        id: feedItemId,
+        status: 'drafted',
+      }),
     syncFeed: ({ feedName, rssUrl } = {}) =>
       syncEditorialFeed({
         feeds: rssUrl
@@ -852,6 +864,44 @@ function readFeedItemActionInput(value: unknown): {
   };
 }
 
+function readFeedItemDraftSaveInput(value: unknown): {
+  feedItemId: string;
+  frontmatter: ContentArticleFrontmatterInput;
+  mdx: string;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new EditorialAgentUrlValidationError('Conceptinput ontbreekt.');
+  }
+
+  const feedItemId = (value as { feedItemId?: unknown }).feedItemId;
+  const frontmatter = (value as { frontmatter?: unknown }).frontmatter;
+  const mdx = (value as { mdx?: unknown }).mdx;
+
+  if (typeof feedItemId !== 'string' || feedItemId.trim().length === 0) {
+    throw new EditorialAgentUrlValidationError('Feed-item id ontbreekt.');
+  }
+
+  if (typeof mdx !== 'string' || mdx.trim().length === 0) {
+    throw new EditorialAgentUrlValidationError('Concept-MDX ontbreekt.');
+  }
+
+  if (
+    !frontmatter ||
+    typeof frontmatter !== 'object' ||
+    Array.isArray(frontmatter)
+  ) {
+    throw new EditorialAgentUrlValidationError(
+      'Concept-frontmatter ontbreekt.',
+    );
+  }
+
+  return {
+    feedItemId: feedItemId.trim(),
+    frontmatter: frontmatter as ContentArticleFrontmatterInput,
+    mdx,
+  };
+}
+
 export function createAdminEditorialAgentRoutes({
   editorialAgentService = createAdminEditorialAgentService(),
 }: {
@@ -1050,6 +1100,34 @@ export function createAdminEditorialAgentRoutes({
 
           return reply.status(500).send({
             message: 'Feed-item negeren is mislukt.',
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown }>(
+      `${apiPaths.adminEditorialAgentFeedItems}/save-draft`,
+      async function (request, reply) {
+        try {
+          return await editorialAgentService.saveFeedItemDraft(
+            readFeedItemDraftSaveInput(request.body),
+          );
+        } catch (error) {
+          request.log.error(
+            {
+              err: error,
+            },
+            'Editorial Agent feed draft save failed',
+          );
+
+          if (error instanceof EditorialAgentUrlValidationError) {
+            return reply.status(400).send({
+              message: error.message,
+            });
+          }
+
+          return reply.status(500).send({
+            message: 'Concept opslaan is mislukt.',
           });
         }
       },

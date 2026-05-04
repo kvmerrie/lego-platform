@@ -20,6 +20,7 @@ import {
   type EditorialAgentCatalogMatch,
   type ContentArticleFrontmatterInput,
   type ContentArticleSourceDisplayMode,
+  DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
   editorialAgentArticleComponentManifest,
   type EditorialAgentDraftGenerationResult,
   type EditorialAgentDraftOutput,
@@ -57,6 +58,7 @@ type EditorialAgentFeedFilter =
 
 interface EditorialAgentFeedOverlapSuggestion {
   articleSlug?: string;
+  confidence: 'high' | 'medium';
   feedItemId?: string;
   feedItemStatus?: EditorialFeedItem['status'];
   id: string;
@@ -92,6 +94,14 @@ interface EditorialAgentGalleryImage {
   url: string;
 }
 
+interface EditorialAgentGalleryGroup {
+  credit: string;
+  id: string;
+  imageUrlInput: string;
+  images: readonly EditorialAgentGalleryImage[];
+  title: string;
+}
+
 interface EditorialAgentLegoProductPageLink {
   setNumber: string;
   url: string;
@@ -104,8 +114,30 @@ interface EditorialAgentFitScore {
   tone: 'good' | 'maybe' | 'weak';
 }
 
+interface EditorialAgentBestSourceSuggestion {
+  currentScore: number;
+  currentSummary: readonly string[];
+  feedItem: EditorialFeedItem;
+  matchReason: string;
+  reasons: readonly string[];
+  score: number;
+  suggestedSummary: readonly string[];
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function createDefaultGalleryGroups(): readonly EditorialAgentGalleryGroup[] {
+  return [
+    {
+      credit: '',
+      id: 'gallery-default',
+      images: [],
+      imageUrlInput: '',
+      title: 'Productbeelden',
+    },
+  ];
 }
 
 @Component({
@@ -144,8 +176,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     undefined,
   );
   readonly heroImageUrlInput = signal('');
-  readonly galleryImageUrlInput = signal('');
-  readonly galleryImages = signal<readonly EditorialAgentGalleryImage[]>([]);
+  readonly galleryGroups = signal<readonly EditorialAgentGalleryGroup[]>(
+    createDefaultGalleryGroups(),
+  );
   readonly gallerySnippetMessage = signal<string | null>(null);
   readonly isDraftModalOpen = signal(false);
   readonly draftModalTab = signal<EditorialAgentDraftModalTab>('inhoud');
@@ -167,6 +200,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   readonly articlePreviewMessage = signal<string | null>(null);
   readonly articlePreviewErrorMessage = signal<string | null>(null);
   readonly articlePreviewEnabled = signal(false);
+  readonly galleryLightboxImage = signal<EditorialAgentGalleryImage | null>(
+    null,
+  );
   readonly publishedArticles = signal<readonly AdminContentArticleSummary[]>(
     [],
   );
@@ -178,14 +214,15 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   readonly articleEditHeroImage = signal('');
   readonly articleEditHeroImageCredit = signal('');
   readonly articleEditHeroImageUrlInput = signal('');
-  readonly articleEditGalleryImageUrlInput = signal('');
-  readonly articleEditGalleryImages = signal<
-    readonly EditorialAgentGalleryImage[]
-  >([]);
+  readonly articleEditGalleryGroups = signal<
+    readonly EditorialAgentGalleryGroup[]
+  >(createDefaultGalleryGroups());
   readonly articleEditSourceDisplayMode =
     signal<ContentArticleSourceDisplayMode>('auto');
+  readonly articleEditAuthorName = signal(DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME);
   readonly articleEditMdx = signal('');
   readonly articleEditDeleteConfirmationSlug = signal('');
+  readonly draftAuthorName = signal(DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME);
   readonly draftTitle = signal('');
   readonly draftDescription = signal('');
   readonly draftTheme = signal('');
@@ -193,6 +230,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   readonly draftMdx = signal<string | null>(null);
   readonly draftSourceDisplayMode =
     signal<ContentArticleSourceDisplayMode>('auto');
+  readonly isSavingDraftConcept = signal(false);
+  readonly draftConceptSaveMessage = signal<string | null>(null);
+  readonly draftConceptSaveErrorMessage = signal<string | null>(null);
+  readonly draftEditorSavedFingerprint = signal<string | null>(null);
   readonly feedErrorMessage = signal<string | null>(null);
   readonly feedItems = signal<readonly EditorialFeedItem[]>([]);
   readonly feedFilter = signal<EditorialAgentFeedFilter>('inbox');
@@ -233,12 +274,27 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
       return {
         ...output.frontmatter,
+        authorName:
+          this.draftAuthorName().trim() ||
+          (typeof output.frontmatter.authorName === 'string'
+            ? output.frontmatter.authorName
+            : DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME),
         date: this.draftDate() || output.frontmatter.date,
         description: this.draftDescription() || output.frontmatter.description,
         theme: this.draftTheme() || output.frontmatter.theme,
         title: this.draftTitle() || output.frontmatter.title,
       };
     });
+  readonly hasUnsavedDraftChanges = computed(() => {
+    const savedFingerprint = this.draftEditorSavedFingerprint();
+
+    return (
+      this.isDraftModalOpen() &&
+      !this.isGenerating() &&
+      savedFingerprint !== null &&
+      savedFingerprint !== this.createDraftEditorFingerprint()
+    );
+  });
   readonly mdxOutput = computed(
     () => this.draftMdx() ?? this.output()?.mdx ?? '',
   );
@@ -336,6 +392,18 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       ...this.extractSetNumbersFromText(this.articleEditTitle()),
     ]),
   );
+  readonly galleryImages = computed(
+    () => this.galleryGroups()[0]?.images ?? [],
+  );
+  readonly articleEditGalleryImages = computed(
+    () => this.articleEditGalleryGroups()[0]?.images ?? [],
+  );
+  readonly galleryImageUrlInput = computed(
+    () => this.galleryGroups()[0]?.imageUrlInput ?? '',
+  );
+  readonly articleEditGalleryImageUrlInput = computed(
+    () => this.articleEditGalleryGroups()[0]?.imageUrlInput ?? '',
+  );
   readonly imageGallerySnippet = computed(() =>
     this.buildImageGallerySnippet(this.galleryImages()),
   );
@@ -397,6 +465,11 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
+    if (this.galleryLightboxImage()) {
+      this.closeGalleryLightbox();
+      return;
+    }
+
     this.closeDraftModal();
     this.closeArticleEditModal();
   }
@@ -606,6 +679,78 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     return 'Mogelijk hetzelfde nieuws als';
   }
 
+  getBestSourceSuggestion(
+    feedItem: EditorialFeedItem,
+  ): EditorialAgentBestSourceSuggestion | null {
+    if (feedItem.status === 'ignored' || feedItem.status === 'low_value') {
+      return null;
+    }
+
+    const currentScore = this.scoreFeedItemBestSource(feedItem).score;
+    const overlapFeedItems = this.getFeedOverlapSuggestions(feedItem)
+      .flatMap((suggestion) =>
+        suggestion.feedItemId
+          ? ([
+              this.feedItems().find(
+                (candidate) => candidate.id === suggestion.feedItemId,
+              ),
+            ].filter(Boolean) as EditorialFeedItem[])
+          : [],
+      )
+      .filter(
+        (candidate) =>
+          candidate.status !== 'ignored' && candidate.status !== 'low_value',
+      );
+
+    const bestCandidate = overlapFeedItems
+      .map((candidate) => ({
+        candidate,
+        score: this.scoreFeedItemBestSource(candidate),
+      }))
+      .sort((left, right) => {
+        if (left.score.score !== right.score.score) {
+          return right.score.score - left.score.score;
+        }
+
+        return (
+          this.getFeedItemSortTime(right.candidate) -
+            this.getFeedItemSortTime(left.candidate) ||
+          left.candidate.title.localeCompare(right.candidate.title)
+        );
+      })[0];
+
+    if (!bestCandidate || bestCandidate.score.score < currentScore + 15) {
+      return null;
+    }
+
+    return {
+      currentScore,
+      currentSummary: this.summarizeBestSourceFacts(feedItem),
+      feedItem: bestCandidate.candidate,
+      matchReason:
+        this.getFeedOverlapSuggestions(feedItem).find(
+          (suggestion) => suggestion.feedItemId === bestCandidate.candidate.id,
+        )?.reason ?? 'sterke overlap',
+      reasons: bestCandidate.score.reasons,
+      score: bestCandidate.score.score,
+      suggestedSummary: this.summarizeBestSourceFacts(bestCandidate.candidate),
+    };
+  }
+
+  async useBestSourceSuggestion(
+    suggestion: EditorialAgentBestSourceSuggestion,
+  ): Promise<void> {
+    await this.openOrGenerateDraftForFeedItem(suggestion.feedItem);
+  }
+
+  openGalleryLightbox(image: EditorialAgentGalleryImage): void {
+    this.galleryLightboxImage.set(image);
+  }
+
+  closeGalleryLightbox(): void {
+    this.galleryLightboxImage.set(null);
+  }
+
   canUseExistingOverlapSuggestion(
     suggestion: EditorialAgentFeedOverlapSuggestion,
   ): boolean {
@@ -633,6 +778,14 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   }
 
   closeDraftModal(): void {
+    if (
+      this.hasUnsavedDraftChanges() &&
+      typeof window !== 'undefined' &&
+      !window.confirm('Je hebt niet-opgeslagen wijzigingen. Sluiten?')
+    ) {
+      return;
+    }
+
     this.isDraftModalOpen.set(false);
   }
 
@@ -757,10 +910,12 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.heroImageOverride.set(undefined);
     this.heroImageCreditOverride.set(undefined);
     this.heroImageUrlInput.set('');
-    this.galleryImageUrlInput.set('');
-    this.galleryImages.set([]);
+    this.galleryGroups.set(createDefaultGalleryGroups());
     this.gallerySnippetMessage.set(null);
     this.heroImageUploadErrorMessage.set(null);
+    this.draftConceptSaveMessage.set(null);
+    this.draftConceptSaveErrorMessage.set(null);
+    this.markDraftEditorSaved();
   }
 
   private clearDraftState(): void {
@@ -771,8 +926,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.heroImageOverride.set(undefined);
     this.heroImageCreditOverride.set(undefined);
     this.heroImageUrlInput.set('');
-    this.galleryImageUrlInput.set('');
-    this.galleryImages.set([]);
+    this.galleryGroups.set(createDefaultGalleryGroups());
     this.gallerySnippetMessage.set(null);
     this.heroImageUploadErrorMessage.set(null);
     this.copyState.set('idle');
@@ -781,12 +935,16 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.publishNearDuplicateMatches.set([]);
     this.articlePreviewMessage.set(null);
     this.articlePreviewErrorMessage.set(null);
+    this.draftConceptSaveMessage.set(null);
+    this.draftConceptSaveErrorMessage.set(null);
+    this.draftEditorSavedFingerprint.set(null);
     this.draftSourceDisplayMode.set('auto');
     this.draftModalTab.set('inhoud');
     this.draftTitle.set('');
     this.draftDescription.set('');
     this.draftTheme.set('');
     this.draftDate.set('');
+    this.draftAuthorName.set(DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME);
     this.draftMdx.set(null);
   }
 
@@ -806,6 +964,11 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
           typeof frontmatter['date'] === 'string'
             ? frontmatter['date']
             : new Date().toISOString().slice(0, 10),
+        authorName:
+          typeof frontmatter['authorName'] === 'string' &&
+          frontmatter['authorName'].trim()
+            ? frontmatter['authorName']
+            : DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
         description:
           typeof frontmatter['description'] === 'string'
             ? frontmatter['description']
@@ -848,6 +1011,57 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     };
   }
 
+  private createDraftOutputFromSavedEditorState({
+    frontmatter,
+    mdx,
+  }: {
+    frontmatter: ContentArticleFrontmatterInput;
+    mdx: string;
+  }): EditorialAgentDraftOutput {
+    const output = this.output();
+
+    return {
+      frontmatter: {
+        date: frontmatter.date,
+        authorName:
+          typeof frontmatter.authorName === 'string' &&
+          frontmatter.authorName.trim()
+            ? frontmatter.authorName
+            : DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
+        description: frontmatter.description,
+        heroImage:
+          typeof frontmatter.heroImage === 'string'
+            ? frontmatter.heroImage
+            : '',
+        heroImageAlt:
+          typeof frontmatter.heroImageAlt === 'string'
+            ? frontmatter.heroImageAlt
+            : frontmatter.title,
+        ...(typeof frontmatter.heroImageCredit === 'string'
+          ? { heroImageCredit: frontmatter.heroImageCredit }
+          : {}),
+        slug: typeof frontmatter.slug === 'string' ? frontmatter.slug : '',
+        ...(typeof frontmatter.signalSourceName === 'string'
+          ? { signalSourceName: frontmatter.signalSourceName }
+          : {}),
+        ...(frontmatter.sourceDisplayMode === 'auto'
+          ? { sourceDisplayMode: 'auto' as const }
+          : {}),
+        sourceUrl:
+          typeof frontmatter.sourceUrl === 'string'
+            ? frontmatter.sourceUrl
+            : this.sourceUrl(),
+        status: 'draft',
+        theme: frontmatter.theme ?? '',
+        title: frontmatter.title,
+      },
+      mdx,
+      primarySet: output?.primarySet ?? null,
+      relatedSets: output?.relatedSets ?? [],
+      warnings: output?.warnings ?? [],
+    };
+  }
+
   openStoredDraftForFeedItem(feedItem: EditorialFeedItem): void {
     const storedDraftOutput = this.createStoredDraftOutput(feedItem);
 
@@ -865,12 +1079,14 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.storedDraftOutput.set(storedDraftOutput);
     this.isStoredFeedDraftOpen.set(true);
     this.setDraftEditorFromOutput(storedDraftOutput);
+    const storedFrontmatter = isRecord(feedItem.draftFrontmatter)
+      ? feedItem.draftFrontmatter
+      : storedDraftOutput.frontmatter;
     this.draftSourceDisplayMode.set(
-      this.normalizeSourceDisplayMode(
-        storedDraftOutput.frontmatter.sourceDisplayMode,
-      ),
+      this.normalizeSourceDisplayMode(storedFrontmatter['sourceDisplayMode']),
     );
     this.isDraftModalOpen.set(true);
+    this.markDraftEditorSaved();
   }
 
   async openOrGenerateDraftForFeedItem(
@@ -889,6 +1105,12 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.draftDescription.set(output.frontmatter.description ?? '');
     this.draftTheme.set(output.frontmatter.theme ?? '');
     this.draftDate.set(output.frontmatter.date ?? '');
+    this.draftAuthorName.set(
+      typeof output.frontmatter.authorName === 'string' &&
+        output.frontmatter.authorName.trim()
+        ? output.frontmatter.authorName
+        : DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
+    );
     this.draftMdx.set(output.mdx);
   }
 
@@ -1025,9 +1247,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       const suggestions = candidates
         .filter((candidate) => candidate.id !== currentCandidate.id)
         .flatMap((candidate) => {
-          const reason = this.getOverlapReason(currentCandidate, candidate);
+          const match = this.getOverlapMatch(currentCandidate, candidate);
 
-          return reason
+          return match
             ? [
                 {
                   ...(candidate.articleSlug
@@ -1039,9 +1261,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
                   ...(candidate.feedItemStatus
                     ? { feedItemStatus: candidate.feedItemStatus }
                     : {}),
+                  confidence: match.confidence,
                   id: candidate.id,
                   isPublishedArticle: candidate.isPublishedArticle,
-                  reason,
+                  reason: match.reason,
                   source: candidate.source,
                   status: candidate.status,
                   ...(candidate.theme ? { theme: candidate.theme } : {}),
@@ -1114,10 +1337,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     };
   }
 
-  private getOverlapReason(
+  private getOverlapMatch(
     currentCandidate: EditorialAgentFeedOverlapCandidate,
     otherCandidate: EditorialAgentFeedOverlapCandidate,
-  ): string | null {
+  ): { confidence: 'high' | 'medium'; reason: string } | null {
     if (!this.isWithinOverlapWindow(currentCandidate, otherCandidate)) {
       return null;
     }
@@ -1127,7 +1350,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       otherCandidate.eventFingerprint &&
       currentCandidate.eventFingerprint === otherCandidate.eventFingerprint
     ) {
-      return 'zelfde event-fingerprint';
+      return { confidence: 'high', reason: 'Match: zelfde event-fingerprint' };
     }
 
     const overlappingSetNumbers = currentCandidate.setNumbers.filter(
@@ -1135,27 +1358,39 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     );
 
     if (overlappingSetNumbers.length) {
-      return `zelfde set ${overlappingSetNumbers[0]}`;
+      return {
+        confidence: 'high',
+        reason: `Match: zelfde set ${overlappingSetNumbers[0]}`,
+      };
+    }
+
+    if (
+      this.isRoundupLikeCandidate(currentCandidate) ||
+      this.isRoundupLikeCandidate(otherCandidate)
+    ) {
+      return null;
+    }
+
+    if (
+      currentCandidate.theme &&
+      otherCandidate.theme &&
+      currentCandidate.theme !== otherCandidate.theme
+    ) {
+      return null;
     }
 
     if (
       currentCandidate.theme &&
       currentCandidate.theme === otherCandidate.theme &&
-      this.countOverlappingTokens(
+      this.hasHighTitleSimilarity(
         currentCandidate.tokens,
         otherCandidate.tokens,
-      ) >= 2
+      )
     ) {
-      return 'zelfde thema en titelcontext';
-    }
-
-    if (
-      this.countOverlappingTokens(
-        currentCandidate.tokens,
-        otherCandidate.tokens,
-      ) >= 3
-    ) {
-      return 'vergelijkbare titelcontext';
+      return {
+        confidence: 'medium',
+        reason: 'Match: zelfde thema + vergelijkbare titel',
+      };
     }
 
     return null;
@@ -1178,7 +1413,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   private extractSetNumbersFromTitle(title: string): readonly string[] {
     return [
       ...new Set(
-        [...title.matchAll(/\b\d{4,6}\b/gu)]
+        [...title.matchAll(/(?<!\d)(\d{5,6})(?:-\d+)?(?!\d)/gu)]
           .map((match) => normalizeContentArticleSetNumber(match[0]))
           .filter((setNumber): setNumber is string => Boolean(setNumber)),
       ),
@@ -1231,6 +1466,115 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     );
   }
 
+  private scoreFeedItemBestSource(feedItem: EditorialFeedItem): {
+    reasons: readonly string[];
+    score: number;
+  } {
+    const title = feedItem.title.toLowerCase();
+    const setNumbers = this.extractSetNumbersFromTitle(feedItem.title);
+    const reasons: string[] = [];
+    let score = 0;
+
+    if (setNumbers.length > 0) {
+      score += 20;
+      reasons.push('exact setnummer');
+    } else {
+      score -= 10;
+      reasons.push('mist exact setnummer');
+    }
+
+    if (this.hasReleaseDateSignal(feedItem.title)) {
+      score += 25;
+      reasons.push('releasedatum');
+    }
+
+    if (this.hasPriceSignal(feedItem.title)) {
+      score += 25;
+      reasons.push('prijsinformatie');
+    }
+
+    if (this.hasPreOrderSignal(title)) {
+      score += 20;
+      reasons.push('pre-order of beschikbaarheid');
+    }
+
+    if (this.isSingleSetEditorialSignal(title, setNumbers.length)) {
+      score += 15;
+      reasons.push('single-set focus');
+    }
+
+    if (this.isReliableEditorialSignalSource(feedItem.feedName)) {
+      score += 5;
+      reasons.push('betrouwbare signaalbron');
+    }
+
+    if (this.isVagueRoundup(title, setNumbers.length)) {
+      score -= 20;
+      reasons.push('vager overzicht');
+    }
+
+    if (
+      this.isRecurringOrCommunityPost(title) ||
+      this.isReviewOrOpinionPost(title)
+    ) {
+      score -= 20;
+      reasons.push('minder geschikt format');
+    }
+
+    if (feedItem.status === 'low_value') {
+      score -= 50;
+      reasons.push('lage waarde');
+    }
+
+    return {
+      reasons,
+      score: Math.max(0, score),
+    };
+  }
+
+  private summarizeBestSourceFacts(
+    feedItem: EditorialFeedItem,
+  ): readonly string[] {
+    const facts: string[] = [];
+    const setNumbers = this.extractSetNumbersFromTitle(feedItem.title);
+
+    if (setNumbers.length) {
+      facts.push(`set ${setNumbers.slice(0, 2).join(', ')}`);
+    }
+
+    if (this.hasPriceSignal(feedItem.title)) {
+      facts.push('prijs');
+    }
+
+    if (this.hasReleaseDateSignal(feedItem.title)) {
+      facts.push('releasedatum');
+    }
+
+    if (this.hasPreOrderSignal(feedItem.title.toLowerCase())) {
+      facts.push('pre-order/beschikbaarheid');
+    }
+
+    return facts.length ? facts : ['geen harde feiten in titel'];
+  }
+
+  private hasReleaseDateSignal(title: string): boolean {
+    return /\b(?:\d{1,2}\s+(?:januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)|20\d{2}|release date|releasedatum|verschijnt|vanaf)\b/iu.test(
+      title,
+    );
+  }
+
+  private hasPriceSignal(title: string): boolean {
+    return /(?:€\s?\d|\b\d+(?:,\d{2})?\s?euro\b|\b(?:prijs|price)\b)/iu.test(
+      title,
+    );
+  }
+
+  private hasPreOrderSignal(title: string): boolean {
+    return /\b(?:pre-?order|voorbestel|vooruitbestel|bestelbaar|beschikbaar|verkrijgbaar)\b/iu.test(
+      title,
+    );
+  }
+
   private normalizeLegoProductPageSetNumber(
     setNumber?: string,
   ): string | undefined {
@@ -1268,21 +1612,42 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
   private extractComparableTitleTokens(title: string): readonly string[] {
     const stopWords = new Set([
+      '2024',
+      '2025',
+      '2026',
+      '2027',
       'and',
+      'announced',
+      'aangekondigd',
       'als',
       'een',
+      'beschikbaar',
+      'januari',
+      'februari',
       'for',
       'het',
+      'juni',
+      'juli',
       'lego',
+      'maart',
+      'mei',
       'met',
       'new',
       'nieuwe',
       'onthuld',
+      'oktober',
+      'pre',
+      'prijs',
       'revealed',
       'sets',
+      'september',
+      'summer',
       'the',
+      'unveiled',
       'van',
       'voor',
+      'verschijnt',
+      'zomer',
     ]);
 
     return [
@@ -1298,10 +1663,27 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
             (token) =>
               token.length >= 3 &&
               !stopWords.has(token) &&
-              !/^\d{1,3}$/u.test(token),
+              !/^\d+$/u.test(token),
           ),
       ),
     ];
+  }
+
+  private hasHighTitleSimilarity(
+    leftTokens: readonly string[],
+    rightTokens: readonly string[],
+  ): boolean {
+    const overlapCount = this.countOverlappingTokens(leftTokens, rightTokens);
+    const smallestTokenSetSize = Math.min(
+      leftTokens.length,
+      rightTokens.length,
+    );
+
+    if (smallestTokenSetSize === 0) {
+      return false;
+    }
+
+    return overlapCount >= 3 && overlapCount / smallestTokenSetSize >= 0.5;
   }
 
   private countOverlappingTokens(
@@ -1311,6 +1693,18 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     const rightTokenSet = new Set(rightTokens);
 
     return leftTokens.filter((token) => rightTokenSet.has(token)).length;
+  }
+
+  private isRoundupLikeCandidate(
+    candidate: EditorialAgentFeedOverlapCandidate,
+  ): boolean {
+    return (
+      candidate.setNumbers.length > 1 ||
+      this.isVagueRoundup(
+        candidate.title.toLowerCase(),
+        candidate.setNumbers.length,
+      )
+    );
   }
 
   private inferThemeFromTitle(title: string): string | undefined {
@@ -1338,6 +1732,21 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
     if (normalizedTitle.includes('city')) {
       return this.resolveArticleThemeSlug('City');
+    }
+
+    if (
+      normalizedTitle.includes('botanical') ||
+      normalizedTitle.includes('botanicals')
+    ) {
+      return this.resolveArticleThemeSlug('Botanicals');
+    }
+
+    if (normalizedTitle.includes('minecraft')) {
+      return this.resolveArticleThemeSlug('Minecraft');
+    }
+
+    if (normalizedTitle.includes('disney')) {
+      return this.resolveArticleThemeSlug('Disney');
     }
 
     if (normalizedTitle.includes('icons')) {
@@ -1497,6 +1906,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
+  private createGalleryGroupId(): string {
+    return `gallery-${this.createGalleryImageId()}`;
+  }
+
   private createImageGalleryAlt(): string {
     return this.draftTitle() || this.articleEditTitle() || 'Artikelbeeld';
   }
@@ -1513,6 +1926,125 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       .join(';;');
 
     return `<ImageGallery images="${encodedImages}" />`;
+  }
+
+  getImageGallerySnippetForGroup(group: EditorialAgentGalleryGroup): string {
+    return this.buildImageGallerySnippet(group.images);
+  }
+
+  addGalleryGroup(): void {
+    this.galleryGroups.update((groups) => [
+      ...groups,
+      {
+        credit: '',
+        id: this.createGalleryGroupId(),
+        images: [],
+        imageUrlInput: '',
+        title: `Gallery ${groups.length + 1}`,
+      },
+    ]);
+  }
+
+  addArticleEditGalleryGroup(): void {
+    this.articleEditGalleryGroups.update((groups) => [
+      ...groups,
+      {
+        credit: '',
+        id: this.createGalleryGroupId(),
+        images: [],
+        imageUrlInput: '',
+        title: `Gallery ${groups.length + 1}`,
+      },
+    ]);
+  }
+
+  removeGalleryGroup(groupId: string): void {
+    this.galleryGroups.update((groups) => {
+      const nextGroups = groups.filter((group) => group.id !== groupId);
+
+      return nextGroups.length ? nextGroups : createDefaultGalleryGroups();
+    });
+  }
+
+  removeArticleEditGalleryGroup(groupId: string): void {
+    this.articleEditGalleryGroups.update((groups) => {
+      const nextGroups = groups.filter((group) => group.id !== groupId);
+
+      return nextGroups.length ? nextGroups : createDefaultGalleryGroups();
+    });
+  }
+
+  updateGalleryGroupTitle(groupId: string, title: string): void {
+    this.galleryGroups.update((groups) =>
+      groups.map((group) =>
+        group.id === groupId ? { ...group, title } : group,
+      ),
+    );
+  }
+
+  updateArticleEditGalleryGroupTitle(groupId: string, title: string): void {
+    this.articleEditGalleryGroups.update((groups) =>
+      groups.map((group) =>
+        group.id === groupId ? { ...group, title } : group,
+      ),
+    );
+  }
+
+  updateGalleryGroupCredit(groupId: string, credit: string): void {
+    this.galleryGroups.update((groups) =>
+      groups.map((group) =>
+        group.id === groupId ? { ...group, credit } : group,
+      ),
+    );
+  }
+
+  updateArticleEditGalleryGroupCredit(groupId: string, credit: string): void {
+    this.articleEditGalleryGroups.update((groups) =>
+      groups.map((group) =>
+        group.id === groupId ? { ...group, credit } : group,
+      ),
+    );
+  }
+
+  updateGalleryImageUrlInput(groupId: string, imageUrlInput: string): void {
+    this.galleryGroups.update((groups) =>
+      groups.map((group) =>
+        group.id === groupId ? { ...group, imageUrlInput } : group,
+      ),
+    );
+  }
+
+  updateArticleEditGalleryImageUrlInput(
+    groupId: string,
+    imageUrlInput: string,
+  ): void {
+    this.articleEditGalleryGroups.update((groups) =>
+      groups.map((group) =>
+        group.id === groupId ? { ...group, imageUrlInput } : group,
+      ),
+    );
+  }
+
+  private getGalleryStorageImageId(groupId: string, imageId: string): string {
+    return `${groupId}/${imageId}`;
+  }
+
+  private getDraftGalleryGroup(groupId?: string): EditorialAgentGalleryGroup {
+    return (
+      this.galleryGroups().find((group) => group.id === groupId) ??
+      this.galleryGroups()[0] ??
+      createDefaultGalleryGroups()[0]
+    );
+  }
+
+  private getArticleEditGalleryGroup(
+    groupId?: string,
+  ): EditorialAgentGalleryGroup {
+    return (
+      this.articleEditGalleryGroups().find((group) => group.id === groupId) ??
+      this.articleEditGalleryGroups()[0] ??
+      createDefaultGalleryGroups()[0]
+    );
   }
 
   private async copyText(value: string): Promise<void> {
@@ -1560,7 +2092,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     }
   }
 
-  async uploadGalleryImageFromInput(event: Event): Promise<void> {
+  async uploadGalleryImageFromInput(
+    event: Event,
+    groupId?: string,
+  ): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
@@ -1581,23 +2116,33 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.isUploadingHeroImage.set(true);
 
     try {
+      const group = this.getDraftGalleryGroup(groupId);
       const imageId = this.createGalleryImageId();
       const optimizedImage = await this.optimizeHeroImageFile(file);
       const result = await this.editorialAgentApi.uploadArticleImage({
         ...optimizedImage,
-        imageId,
+        imageId: this.getGalleryStorageImageId(group.id, imageId),
         slug: this.draftArticleSlug(),
         type: 'gallery',
       });
 
-      this.galleryImages.update((images) => [
-        ...images,
-        {
-          alt: this.createImageGalleryAlt(),
-          id: imageId,
-          url: result.publicUrl,
-        },
-      ]);
+      this.galleryGroups.update((groups) =>
+        groups.map((nextGroup) =>
+          nextGroup.id === group.id
+            ? {
+                ...nextGroup,
+                images: [
+                  ...nextGroup.images,
+                  {
+                    alt: this.createImageGalleryAlt(),
+                    id: imageId,
+                    url: result.publicUrl,
+                  },
+                ],
+              }
+            : nextGroup,
+        ),
+      );
       this.gallerySnippetMessage.set('Gallery-afbeelding toegevoegd.');
     } catch (error) {
       this.heroImageUploadErrorMessage.set(
@@ -1611,8 +2156,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     }
   }
 
-  async importGalleryImageFromUrl(): Promise<void> {
-    const imageUrl = this.galleryImageUrlInput().trim();
+  async importGalleryImageFromUrl(groupId?: string): Promise<void> {
+    const group = this.getDraftGalleryGroup(groupId);
+    const imageUrl = group.imageUrlInput.trim();
 
     if (!imageUrl) {
       this.heroImageUploadErrorMessage.set('Plak eerst een afbeeldings-URL.');
@@ -1625,22 +2171,31 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     try {
       const imageId = this.createGalleryImageId();
       const result = await this.editorialAgentApi.uploadArticleImage({
-        imageId,
+        imageId: this.getGalleryStorageImageId(group.id, imageId),
         imageUrl,
         slug: this.draftArticleSlug(),
         type: 'gallery',
       });
 
-      this.galleryImages.update((images) => [
-        ...images,
-        {
-          alt: this.createImageGalleryAlt(),
-          credit: result.imageCredit,
-          id: imageId,
-          url: result.imageUrl,
-        },
-      ]);
-      this.galleryImageUrlInput.set('');
+      this.galleryGroups.update((groups) =>
+        groups.map((nextGroup) =>
+          nextGroup.id === group.id
+            ? {
+                ...nextGroup,
+                imageUrlInput: '',
+                images: [
+                  ...nextGroup.images,
+                  {
+                    alt: this.createImageGalleryAlt(),
+                    credit: result.imageCredit,
+                    id: imageId,
+                    url: result.imageUrl,
+                  },
+                ],
+              }
+            : nextGroup,
+        ),
+      );
       this.gallerySnippetMessage.set('Gallery-afbeelding toegevoegd.');
     } catch (error) {
       this.heroImageUploadErrorMessage.set(
@@ -1653,20 +2208,41 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     }
   }
 
-  updateGalleryImageAlt(imageId: string, alt: string): void {
-    this.galleryImages.update((images) =>
-      images.map((image) => (image.id === imageId ? { ...image, alt } : image)),
+  updateGalleryImageAlt(imageId: string, alt: string, groupId?: string): void {
+    const group = this.getDraftGalleryGroup(groupId);
+
+    this.galleryGroups.update((groups) =>
+      groups.map((nextGroup) =>
+        nextGroup.id === group.id
+          ? {
+              ...nextGroup,
+              images: nextGroup.images.map((image) =>
+                image.id === imageId ? { ...image, alt } : image,
+              ),
+            }
+          : nextGroup,
+      ),
     );
   }
 
-  removeGalleryImage(imageId: string): void {
-    this.galleryImages.update((images) =>
-      images.filter((image) => image.id !== imageId),
+  removeGalleryImage(imageId: string, groupId?: string): void {
+    const group = this.getDraftGalleryGroup(groupId);
+
+    this.galleryGroups.update((groups) =>
+      groups.map((nextGroup) =>
+        nextGroup.id === group.id
+          ? {
+              ...nextGroup,
+              images: nextGroup.images.filter((image) => image.id !== imageId),
+            }
+          : nextGroup,
+      ),
     );
   }
 
-  async copyImageGallerySnippet(): Promise<void> {
-    const snippet = this.imageGallerySnippet();
+  async copyImageGallerySnippet(groupId?: string): Promise<void> {
+    const group = this.getDraftGalleryGroup(groupId);
+    const snippet = this.buildImageGallerySnippet(group.images);
 
     if (!snippet) {
       this.gallerySnippetMessage.set('Voeg eerst gallery-afbeeldingen toe.');
@@ -1760,13 +2336,69 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     }
   }
 
+  async saveDraftConcept(): Promise<void> {
+    const feedItemId = this.activeFeedItemId();
+    const mdx = this.mdxOutput();
+    const frontmatter = this.buildDraftEditorFrontmatter('draft');
+
+    this.draftConceptSaveMessage.set(null);
+    this.draftConceptSaveErrorMessage.set(null);
+
+    if (!feedItemId) {
+      this.draftConceptSaveErrorMessage.set(
+        'Concept opslaan is alleen beschikbaar voor feed-items.',
+      );
+      return;
+    }
+
+    if (!frontmatter || !mdx.trim()) {
+      this.draftConceptSaveErrorMessage.set(
+        'Er is nog geen concept om op te slaan.',
+      );
+      return;
+    }
+
+    this.isSavingDraftConcept.set(true);
+
+    try {
+      const feedItem = await this.editorialAgentApi.saveFeedItemDraft(
+        feedItemId,
+        {
+          frontmatter,
+          mdx,
+        },
+      );
+
+      this.feedItems.update((items) =>
+        items.map((item) => (item.id === feedItem.id ? feedItem : item)),
+      );
+      this.activeFeedItemId.set(feedItem.id);
+      this.sourceUrl.set(feedItem.sourceUrl);
+      this.storedDraftOutput.set(
+        this.createStoredDraftOutput(feedItem) ??
+          this.createDraftOutputFromSavedEditorState({ frontmatter, mdx }),
+      );
+      this.isStoredFeedDraftOpen.set(true);
+      this.draftConceptSaveMessage.set('Concept opgeslagen');
+      this.markDraftEditorSaved();
+    } catch (error) {
+      this.draftConceptSaveErrorMessage.set(
+        error instanceof Error && error.message.trim().length > 0
+          ? error.message
+          : 'Concept opslaan is mislukt.',
+      );
+    } finally {
+      this.isSavingDraftConcept.set(false);
+    }
+  }
+
   async publishArticle({
     force = false,
   }: { force?: boolean } = {}): Promise<void> {
     const mdx = this.mdxOutput();
-    const draftFrontmatter = this.effectiveDraftFrontmatter();
+    const frontmatter = this.buildDraftEditorFrontmatter('published');
 
-    if (!mdx || !draftFrontmatter) {
+    if (!mdx || !frontmatter) {
       this.publishErrorMessage.set('Er is nog geen MDX om te publiceren.');
       this.draftModalTab.set('publicatie');
       return;
@@ -1777,17 +2409,6 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.publishErrorMessage.set(null);
     this.publishedArticleUrl.set(null);
     this.publishNearDuplicateMatches.set([]);
-    const frontmatter = this.applySourceDisplayMode(
-      {
-        ...draftFrontmatter,
-        heroImage: this.effectiveHeroImage() ?? '',
-        ...(this.effectiveHeroImageCredit().trim()
-          ? { heroImageCredit: this.effectiveHeroImageCredit().trim() }
-          : {}),
-        status: 'published',
-      },
-      this.draftSourceDisplayMode(),
-    );
 
     try {
       const result = await this.editorialAgentApi.publishArticle({
@@ -1851,7 +2472,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   }
 
   async openDraftPreview(): Promise<void> {
-    const draftFrontmatter = this.effectiveDraftFrontmatter();
+    const frontmatter = this.buildDraftEditorFrontmatter('draft');
     const mdx = this.mdxOutput();
 
     if (!this.articlePreviewEnabled()) {
@@ -1861,7 +2482,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       return;
     }
 
-    if (!draftFrontmatter || !mdx) {
+    if (!frontmatter || !mdx) {
       this.articlePreviewErrorMessage.set(
         'Er is nog geen MDX om te previewen.',
       );
@@ -1874,16 +2495,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
     try {
       const result = await this.editorialAgentApi.createArticlePreview({
-        frontmatter: this.applySourceDisplayMode(
-          {
-            ...draftFrontmatter,
-            heroImage: this.effectiveHeroImage() ?? '',
-            ...(this.effectiveHeroImageCredit().trim()
-              ? { heroImageCredit: this.effectiveHeroImageCredit().trim() }
-              : {}),
-          },
-          this.draftSourceDisplayMode(),
-        ),
+        frontmatter,
         mdx,
       });
 
@@ -1995,8 +2607,13 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
         : '',
     );
     this.articleEditHeroImageUrlInput.set('');
-    this.articleEditGalleryImageUrlInput.set('');
-    this.articleEditGalleryImages.set([]);
+    this.articleEditGalleryGroups.set(createDefaultGalleryGroups());
+    this.articleEditAuthorName.set(
+      typeof article.frontmatter.authorName === 'string' &&
+        article.frontmatter.authorName.trim()
+        ? article.frontmatter.authorName
+        : DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
+    );
     this.articleEditSourceDisplayMode.set(
       this.normalizeSourceDisplayMode(article.frontmatter.sourceDisplayMode),
     );
@@ -2028,6 +2645,48 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
           ...baseFrontmatter,
           sourceDisplayMode: mode,
         };
+  }
+
+  private buildDraftEditorFrontmatter(
+    status: ContentArticleFrontmatterInput['status'] = 'draft',
+  ): ContentArticleFrontmatterInput | null {
+    const draftFrontmatter = this.effectiveDraftFrontmatter();
+
+    if (!draftFrontmatter) {
+      return null;
+    }
+
+    const nextFrontmatter: ContentArticleFrontmatterInput = {
+      ...draftFrontmatter,
+      authorName:
+        draftFrontmatter.authorName?.trim() ||
+        DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
+      heroImage: this.effectiveHeroImage() ?? '',
+      status,
+    };
+    const heroImageCredit = this.effectiveHeroImageCredit().trim();
+
+    if (heroImageCredit) {
+      nextFrontmatter.heroImageCredit = heroImageCredit;
+    } else {
+      delete nextFrontmatter.heroImageCredit;
+    }
+
+    return this.applySourceDisplayMode(
+      nextFrontmatter,
+      this.draftSourceDisplayMode(),
+    );
+  }
+
+  private createDraftEditorFingerprint(): string {
+    return JSON.stringify({
+      frontmatter: this.buildDraftEditorFrontmatter(),
+      mdx: this.mdxOutput(),
+    });
+  }
+
+  private markDraftEditorSaved(): void {
+    this.draftEditorSavedFingerprint.set(this.createDraftEditorFingerprint());
   }
 
   async editPublishedArticle(
@@ -2071,6 +2730,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
           frontmatter: this.applySourceDisplayMode(
             {
               date: this.articleEditDate(),
+              authorName:
+                this.articleEditAuthorName().trim() ||
+                DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
               description: this.articleEditDescription(),
               heroImage: this.articleEditHeroImage(),
               ...(this.articleEditHeroImageCredit().trim()
@@ -2187,7 +2849,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     }
   }
 
-  async uploadArticleEditGalleryImageFromInput(event: Event): Promise<void> {
+  async uploadArticleEditGalleryImageFromInput(
+    event: Event,
+    groupId?: string,
+  ): Promise<void> {
     const slug = this.articleEditSlug();
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -2209,23 +2874,33 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.isUploadingArticleEditHeroImage.set(true);
 
     try {
+      const group = this.getArticleEditGalleryGroup(groupId);
       const imageId = this.createGalleryImageId();
       const optimizedImage = await this.optimizeHeroImageFile(file);
       const result = await this.editorialAgentApi.uploadArticleImage({
         ...optimizedImage,
-        imageId,
+        imageId: this.getGalleryStorageImageId(group.id, imageId),
         slug,
         type: 'gallery',
       });
 
-      this.articleEditGalleryImages.update((images) => [
-        ...images,
-        {
-          alt: this.createImageGalleryAlt(),
-          id: imageId,
-          url: result.publicUrl,
-        },
-      ]);
+      this.articleEditGalleryGroups.update((groups) =>
+        groups.map((nextGroup) =>
+          nextGroup.id === group.id
+            ? {
+                ...nextGroup,
+                images: [
+                  ...nextGroup.images,
+                  {
+                    alt: this.createImageGalleryAlt(),
+                    id: imageId,
+                    url: result.publicUrl,
+                  },
+                ],
+              }
+            : nextGroup,
+        ),
+      );
       this.articleEditSuccessMessage.set('Gallery-afbeelding toegevoegd.');
     } catch (error) {
       this.articleEditErrorMessage.set(
@@ -2239,9 +2914,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     }
   }
 
-  async importArticleEditGalleryImageFromUrl(): Promise<void> {
+  async importArticleEditGalleryImageFromUrl(groupId?: string): Promise<void> {
     const slug = this.articleEditSlug();
-    const imageUrl = this.articleEditGalleryImageUrlInput().trim();
+    const group = this.getArticleEditGalleryGroup(groupId);
+    const imageUrl = group.imageUrlInput.trim();
 
     if (!slug) {
       this.articleEditErrorMessage.set(
@@ -2261,22 +2937,31 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     try {
       const imageId = this.createGalleryImageId();
       const result = await this.editorialAgentApi.uploadArticleImage({
-        imageId,
+        imageId: this.getGalleryStorageImageId(group.id, imageId),
         imageUrl,
         slug,
         type: 'gallery',
       });
 
-      this.articleEditGalleryImages.update((images) => [
-        ...images,
-        {
-          alt: this.createImageGalleryAlt(),
-          credit: result.imageCredit,
-          id: imageId,
-          url: result.imageUrl,
-        },
-      ]);
-      this.articleEditGalleryImageUrlInput.set('');
+      this.articleEditGalleryGroups.update((groups) =>
+        groups.map((nextGroup) =>
+          nextGroup.id === group.id
+            ? {
+                ...nextGroup,
+                imageUrlInput: '',
+                images: [
+                  ...nextGroup.images,
+                  {
+                    alt: this.createImageGalleryAlt(),
+                    credit: result.imageCredit,
+                    id: imageId,
+                    url: result.imageUrl,
+                  },
+                ],
+              }
+            : nextGroup,
+        ),
+      );
       this.articleEditSuccessMessage.set('Gallery-afbeelding toegevoegd.');
     } catch (error) {
       this.articleEditErrorMessage.set(
@@ -2289,20 +2974,45 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     }
   }
 
-  updateArticleEditGalleryImageAlt(imageId: string, alt: string): void {
-    this.articleEditGalleryImages.update((images) =>
-      images.map((image) => (image.id === imageId ? { ...image, alt } : image)),
+  updateArticleEditGalleryImageAlt(
+    imageId: string,
+    alt: string,
+    groupId?: string,
+  ): void {
+    const group = this.getArticleEditGalleryGroup(groupId);
+
+    this.articleEditGalleryGroups.update((groups) =>
+      groups.map((nextGroup) =>
+        nextGroup.id === group.id
+          ? {
+              ...nextGroup,
+              images: nextGroup.images.map((image) =>
+                image.id === imageId ? { ...image, alt } : image,
+              ),
+            }
+          : nextGroup,
+      ),
     );
   }
 
-  removeArticleEditGalleryImage(imageId: string): void {
-    this.articleEditGalleryImages.update((images) =>
-      images.filter((image) => image.id !== imageId),
+  removeArticleEditGalleryImage(imageId: string, groupId?: string): void {
+    const group = this.getArticleEditGalleryGroup(groupId);
+
+    this.articleEditGalleryGroups.update((groups) =>
+      groups.map((nextGroup) =>
+        nextGroup.id === group.id
+          ? {
+              ...nextGroup,
+              images: nextGroup.images.filter((image) => image.id !== imageId),
+            }
+          : nextGroup,
+      ),
     );
   }
 
-  async copyArticleEditImageGallerySnippet(): Promise<void> {
-    const snippet = this.articleEditImageGallerySnippet();
+  async copyArticleEditImageGallerySnippet(groupId?: string): Promise<void> {
+    const group = this.getArticleEditGalleryGroup(groupId);
+    const snippet = this.buildImageGallerySnippet(group.images);
 
     if (!snippet) {
       this.articleEditErrorMessage.set('Voeg eerst gallery-afbeeldingen toe.');
@@ -2434,6 +3144,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       );
       this.heroImageOverride.set(undefined);
       this.heroImageUploadErrorMessage.set(null);
+      this.draftConceptSaveMessage.set(null);
+      this.draftConceptSaveErrorMessage.set(null);
+      this.markDraftEditorSaved();
       await this.refreshFeedItems();
     } catch (error) {
       this.errorMessage.set(

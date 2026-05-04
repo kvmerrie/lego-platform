@@ -247,6 +247,7 @@ describe('editorial agent draft generation', () => {
   it('always generates draft frontmatter and keeps the source url', () => {
     const result = generateEditorialMdxDraft(createInput());
 
+    expect(result.frontmatter.authorName).toBe('Kasper van Merrienboer');
     expect(result.frontmatter.status).toBe('draft');
     expect(result.frontmatter.sourceUrl).toBe(
       'https://www.bricktastic.nl/lego/deze-nieuwe-lego-sets-worden-in-mei-2026-uitgebracht/',
