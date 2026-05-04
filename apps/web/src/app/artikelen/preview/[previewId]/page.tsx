@@ -4,12 +4,9 @@ import {
   resolveArticleMdxSourceWithCuratedRelatedSetRail,
 } from '../../../lib/article-mdx-components';
 import { resolveArticleHeroPresentation } from '../../../lib/article-hero-presentation';
+import { buildArticleThemePresentation } from '../../../lib/article-theme-presentation';
 import { getArticlePreviewById } from '@lego-platform/content/data-access';
-import {
-  getCatalogThemeDefinition,
-  getCatalogThemeMutedTextColor,
-  getCatalogThemeSurfaceTone,
-} from '@lego-platform/catalog/util';
+import { normalizeTheme } from '@lego-platform/catalog/util';
 import { ContentArticlePage } from '@lego-platform/content/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 import {
@@ -18,7 +15,7 @@ import {
   isArticlePreviewEnabled,
   webPathnames,
 } from '@lego-platform/shared/config';
-import React, { type CSSProperties } from 'react';
+import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -80,52 +77,11 @@ export default async function ArticlePreviewPage({
         ...contentArticle,
         heroImage: undefined,
       };
-  const themeDefinition = getCatalogThemeDefinition(
-    articleWithResolvedHero.theme,
-  );
-  const resolvedThemeLabel =
-    themeDefinition?.name ?? articleWithResolvedHero.theme;
-  const themeHref = themeDefinition
-    ? buildThemePath(themeDefinition.slug)
-    : undefined;
-  const themePresentation =
-    resolvedThemeLabel || themeHref || themeDefinition?.visual
-      ? {
-          href: themeHref,
-          label: resolvedThemeLabel,
-          style:
-            themeDefinition?.visual.backgroundColor ||
-            themeDefinition?.visual.textColor
-              ? ({
-                  ...(themeDefinition.visual.backgroundColor
-                    ? {
-                        '--article-theme-accent':
-                          themeDefinition.visual.backgroundColor,
-                        '--article-theme-surface':
-                          themeDefinition.visual.backgroundColor,
-                        '--catalog-theme-badge-surface':
-                          themeDefinition.visual.backgroundColor,
-                      }
-                    : {}),
-                  ...(themeDefinition.visual.textColor
-                    ? {
-                        '--article-theme-accent-text':
-                          themeDefinition.visual.textColor,
-                        '--article-theme-surface-text':
-                          themeDefinition.visual.textColor,
-                        '--article-theme-muted-text':
-                          getCatalogThemeMutedTextColor(
-                            themeDefinition.visual.textColor,
-                          ),
-                        '--catalog-theme-badge-text':
-                          themeDefinition.visual.textColor,
-                      }
-                    : {}),
-                } as CSSProperties)
-              : undefined,
-          tone: getCatalogThemeSurfaceTone(resolvedThemeLabel),
-        }
-      : undefined;
+  const normalizedTheme = normalizeTheme(articleWithResolvedHero.theme);
+  const themePresentation = buildArticleThemePresentation({
+    href: normalizedTheme ? buildThemePath(normalizedTheme.key) : undefined,
+    theme: articleWithResolvedHero.theme,
+  });
   const breadcrumbs = [
     {
       href: buildWebPath(webPathnames.articles),

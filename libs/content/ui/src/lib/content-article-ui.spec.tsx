@@ -165,6 +165,63 @@ describe('content article ui', () => {
     expect(markup).not.toContain('Thema');
   });
 
+  it('uses theme presentation styles for article card badges', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleCard
+        contentArticle={{
+          cardImageAlt: 'Star Wars hero',
+          date: '2026-05-03',
+          description: 'Waarom deze set telt.',
+          heroImageAlt: 'Star Wars hero',
+          slug: 'star-wars-artikel',
+          status: 'published',
+          theme: 'Star Wars',
+          themePresentation: {
+            href: '/artikelen/star-wars',
+            label: 'Star Wars™',
+            style: {
+              '--catalog-theme-badge-surface': '#5573b5',
+              '--catalog-theme-badge-text': '#ffffff',
+            },
+            tone: 'dark',
+          },
+          title: 'Star Wars artikel',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('--catalog-theme-badge-surface:#5573b5');
+    expect(markup).toContain('--catalog-theme-badge-text:#ffffff');
+    expect(markup).toContain('/artikelen/star-wars');
+    expect(markup).toContain('Star Wars™');
+  });
+
+  it('uses the same theme presentation styles for FeaturedSet badges', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticleFeaturedSet
+        ctaHref="/sets/imperial-remnant-at-rt-driver-helmet-75458"
+        imageAlt="Imperial Remnant AT-RT Driver Helmet"
+        name="Imperial Remnant AT-RT Driver Helmet"
+        setNumber="75458"
+        theme="Star Wars"
+        themePresentation={{
+          href: '/themes/star-wars',
+          label: 'Star Wars™',
+          style: {
+            '--catalog-theme-badge-surface': '#5573b5',
+            '--catalog-theme-badge-text': '#ffffff',
+          },
+          tone: 'dark',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('--catalog-theme-badge-surface:#5573b5');
+    expect(markup).toContain('--catalog-theme-badge-text:#ffffff');
+    expect(markup).toContain('/themes/star-wars');
+    expect(markup).toContain('Star Wars™');
+  });
+
   it('renders a graceful fallback when an article image is missing', () => {
     const markup = renderToStaticMarkup(
       <ContentArticleCard
@@ -389,6 +446,12 @@ describe('content article ui', () => {
           <div>
             <h2>Koopadvies</h2>
             <p>Pak de set die je plank verandert.</p>
+            <ContentArticleSetRail
+              eyebrow="Kun je niet wachten?"
+              title="Alternatieven om nu te bouwen"
+            >
+              <div>Star Wars rail</div>
+            </ContentArticleSetRail>
           </div>
         }
         breadcrumbs={[
@@ -455,6 +518,8 @@ describe('content article ui', () => {
     expect(pageMarkup).toContain('--article-theme-surface-text:#ffffff');
     expect(pageMarkup).toContain('--catalog-theme-badge-surface:#5573b5');
     expect(pageMarkup).toContain('--catalog-theme-badge-text:#ffffff');
+    expect(pageMarkup).toContain('data-article-module="set-rail"');
+    expect(pageMarkup).toContain('Star Wars rail');
     expect(pageMarkup.indexOf('Artikelen')).toBeLessThan(
       pageMarkup.indexOf('data-article-image-kind="hero"'),
     );
@@ -559,6 +624,26 @@ describe('content article ui', () => {
     expect(css).toContain('object-fit: contain;');
   });
 
+  it('renders article hero images rounded on desktop and edge-to-edge on mobile', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/content/ui/src/lib/content-article-ui.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain('.imageFrame {');
+    expect(css).toContain('border-radius: var(--lego-radius-lg);');
+    expect(css).toContain('.heroImageFrame {');
+    expect(css).toContain('@media (max-width: 47.999rem)');
+    expect(css).toContain(
+      'width: calc(100% + (var(--article-shell-padding-inline) * 2));',
+    );
+    expect(css).toContain('.heroImageFrame {\n    border-inline: 0;');
+    expect(css).toContain('border-radius: 0;');
+  });
+
   it('renders the article page cleanly when no hero image is available', () => {
     const markup = renderToStaticMarkup(
       <ContentArticlePage
@@ -641,6 +726,57 @@ describe('content article ui', () => {
     expect(markup).toContain('Door Kasper van Merrienboer');
   });
 
+  it('renders article header metadata as theme badge, date and author', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticlePage
+        body={<p>Door een fan geschreven.</p>}
+        contentArticle={{
+          authorName: 'Kasper van Merrienboer',
+          bodySource: 'Door een fan geschreven.',
+          cardImageAlt: 'Star Wars artikel',
+          date: '2026-05-03',
+          description: 'Waarom deze set telt.',
+          heroImageAlt: 'Star Wars artikel',
+          slug: 'star-wars-artikel',
+          status: 'published',
+          theme: 'Star Wars',
+          title: 'Artikel met meta',
+        }}
+      />,
+    );
+
+    const themeIndex = markup.indexOf('Star Wars');
+    const dateIndex = markup.indexOf('3 mei 2026');
+    const authorIndex = markup.indexOf('Door Kasper van Merrienboer');
+
+    expect(themeIndex).toBeGreaterThanOrEqual(0);
+    expect(dateIndex).toBeGreaterThan(themeIndex);
+    expect(authorIndex).toBeGreaterThan(dateIndex);
+  });
+
+  it('does not render empty author text in article metadata', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticlePage
+        body={<p>Geen auteur in frontmatter.</p>}
+        contentArticle={{
+          authorName: '   ',
+          bodySource: 'Geen auteur in frontmatter.',
+          cardImageAlt: 'Artikel',
+          date: '2026-05-03',
+          description: 'Waarom deze set telt.',
+          heroImageAlt: 'Artikel',
+          slug: 'zonder-auteur',
+          status: 'published',
+          theme: 'Ideas',
+          title: 'Zonder auteur',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('3 mei 2026');
+    expect(markup).not.toContain('Door');
+  });
+
   it('keeps prose link styling scoped to running text links instead of component ctas', () => {
     const css = readFileSync(
       resolve(
@@ -651,10 +787,26 @@ describe('content article ui', () => {
     );
 
     expect(css).toContain('.prose :is(p, li, blockquote) a {');
-    expect(css).toContain(
-      'color: var(--lego-link-color, var(--lego-accent-700));',
-    );
+    expect(css).toContain('color: var(--lego-accent);');
     expect(css).not.toContain('.prose a {');
+  });
+
+  it('uses a neutral fallback for unknown theme badge styles', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/content/ui/src/lib/content-article-ui.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain(
+      '--catalog-theme-badge-surface: var(--lego-surface-muted);',
+    );
+    expect(css).toContain('--catalog-theme-badge-text: var(--lego-text);');
+    expect(css).not.toContain(
+      '--catalog-theme-badge-surface: var(--lego-accent);',
+    );
   });
 
   it('renders FeaturedSet gracefully when price and availability are missing', () => {
@@ -715,9 +867,9 @@ describe('content article ui', () => {
     });
 
     expect(gtag).not.toHaveBeenCalled();
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-active-index="0"]'),
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
 
     act(() => {
@@ -729,7 +881,7 @@ describe('content article ui', () => {
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     act(() => {
       lightboxButton?.dispatchEvent(
@@ -740,7 +892,7 @@ describe('content article ui', () => {
       );
     });
 
-    const backdrop = container.querySelector(
+    const backdrop = document.body.querySelector(
       '[class*="lightboxBackdrop"]',
     ) as HTMLElement | null;
 
@@ -753,7 +905,7 @@ describe('content article ui', () => {
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     const ctaLink = container.querySelector(
       'a[href="/sets/mario-kart-spiny-shell-40787"]',
@@ -839,18 +991,18 @@ describe('content article ui', () => {
     });
 
     expect(gtag).not.toHaveBeenCalled();
-    expect(container.textContent).toContain('1 / 3');
+    expect(document.body.textContent).toContain('1 / 3');
     expect(
-      container.querySelector('[data-lightbox-active-index="0"]'),
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
-    expect(container.textContent).toContain(
+    expect(document.body.textContent).toContain(
       'Imperial Remnant AT-RT Driver Helmet · LEGO-set',
     );
     expect(
-      container.querySelectorAll('[class*="lightboxThumbButton"]'),
+      document.body.querySelectorAll('[class*="lightboxThumbButton"]'),
     ).toHaveLength(3);
 
-    const closeButton = container.querySelector(
+    const closeButton = document.body.querySelector(
       'button[aria-label="Sluit galerij"]',
     ) as HTMLButtonElement | null;
 
@@ -877,12 +1029,12 @@ describe('content article ui', () => {
     });
 
     expect(gtag).not.toHaveBeenCalled();
-    expect(container.textContent).toContain('2 / 3');
+    expect(document.body.textContent).toContain('2 / 3');
     expect(
-      container.querySelector('[data-lightbox-active-index="1"]'),
+      document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
 
-    const featuredThumbnail = container.querySelector(
+    const featuredThumbnail = document.body.querySelector(
       '[data-lightbox-thumb-index="0"]',
     ) as HTMLButtonElement | null;
 
@@ -895,9 +1047,9 @@ describe('content article ui', () => {
       );
     });
 
-    expect(container.textContent).toContain('1 / 3');
+    expect(document.body.textContent).toContain('1 / 3');
     expect(
-      container.querySelector('[data-lightbox-active-index="0"]'),
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
 
     const ctaLink = container.querySelector(

@@ -3,6 +3,7 @@ import {
   getArticlePreviewById,
   getPublishedArticleBySlug,
   getPopularArticles,
+  listPublishedArticlesByPrimarySetNumber,
   listPublishedArticles,
   listPublishedArticleSlugs,
   logArticleClickEvent,
@@ -274,6 +275,45 @@ describe('content article queries', () => {
       slug: 'spiny-shell-terug',
       title: 'Spiny Shell terug',
     });
+  });
+
+  test('lists articles for an exact primary set number only', async () => {
+    const result = await listPublishedArticlesByPrimarySetNumber({
+      setNumber: '40787-1',
+      supabaseClient: createArticlesSupabaseClient([
+        createArticleRow({
+          frontmatter: {
+            date: '2026-05-04',
+            description: 'Deze hoort bij de Spiny Shell.',
+          },
+          mdx: '<FeaturedSet setNumber="40787" />',
+          slug: 'spiny-shell-update',
+          title: 'Spiny Shell update',
+        }),
+        createArticleRow({
+          frontmatter: {
+            date: '2026-05-03',
+            description: 'Zelfde thema, andere set.',
+          },
+          mdx: '<FeaturedSet setNumber="72037" />',
+          slug: 'mario-kart-andere-set',
+          title: 'Andere Mario Kart set',
+        }),
+        createArticleRow({
+          frontmatter: {
+            date: '2026-05-02',
+            description: 'Roundup mag niet meetellen.',
+          },
+          mdx: '<SetSpotlightList setIds="40787, 72037" />',
+          slug: 'mario-kart-roundup',
+          title: 'Mario Kart roundup',
+        }),
+      ]),
+    });
+
+    expect(result.map((article) => article.slug)).toEqual([
+      'spiny-shell-update',
+    ]);
   });
 
   test('keeps sourceUrl internal and resolves a subtle public source attribution', async () => {

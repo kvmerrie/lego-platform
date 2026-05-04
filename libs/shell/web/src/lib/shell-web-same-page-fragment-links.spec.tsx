@@ -188,4 +188,36 @@ describe('ShellWebSamePageFragmentLinks', () => {
 
     pushStateSpy.mockRestore();
   });
+
+  it('focuses the main content target when the skip link is activated', () => {
+    window.history.replaceState({}, '', '/');
+
+    const target = document.createElement('main');
+    target.id = 'main-content';
+    target.tabIndex = -1;
+    target.scrollIntoView = vi.fn();
+    document.body.appendChild(target);
+
+    const skipLink = document.createElement('a');
+    skipLink.href = '#main-content';
+    skipLink.textContent = 'Ga direct naar de hoofdinhoud';
+    document.body.appendChild(skipLink);
+
+    act(() => {
+      root.render(<ShellWebSamePageFragmentLinks />);
+    });
+
+    act(() => {
+      skipLink.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    expect(window.location.hash).toBe('#main-content');
+    expect(target.scrollIntoView).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(target);
+  });
 });

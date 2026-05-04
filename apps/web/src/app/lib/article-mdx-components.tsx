@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { Fragment, type ReactElement, type ReactNode } from 'react';
 import type { MDXRemoteProps } from 'next-mdx-remote/rsc';
 import { listCatalogCurrentOfferSummariesBySetIds } from '@lego-platform/catalog/data-access-web';
 import {
@@ -40,6 +40,7 @@ import {
   resolveArticleCatalogSetCards,
   resolveArticleCatalogSetCard,
 } from './article-catalog-set-resolver';
+import { buildArticleThemePresentation } from './article-theme-presentation';
 
 export {
   normalizeFeaturedSetId,
@@ -402,11 +403,72 @@ function ArticleCardMdx({
         slug,
         status: 'published',
         theme,
+        themePresentation: buildArticleThemePresentation({
+          href: theme
+            ? buildThemePath(buildCatalogThemeSlug(theme))
+            : undefined,
+          theme,
+        }),
         title,
         updatedAt,
       }}
     />
   );
+}
+
+function hasRenderableParagraphChildren(children: readonly ReactNode[]) {
+  return children.some((child) => {
+    if (typeof child === 'string') {
+      return child.trim().length > 0;
+    }
+
+    return child !== null && child !== undefined && typeof child !== 'boolean';
+  });
+}
+
+function createArticleMdxParagraph(blockComponents: ReadonlySet<unknown>) {
+  function isBlockComponentElement(child: ReactNode): child is ReactElement {
+    return React.isValidElement(child) && blockComponents.has(child.type);
+  }
+
+  return function ArticleMdxParagraph({ children }: { children?: ReactNode }) {
+    const childArray = React.Children.toArray(children);
+
+    if (!childArray.some(isBlockComponentElement)) {
+      return <p>{children}</p>;
+    }
+
+    const renderedChildren: ReactNode[] = [];
+    let inlineChildren: ReactNode[] = [];
+
+    const flushInlineParagraph = () => {
+      if (!hasRenderableParagraphChildren(inlineChildren)) {
+        inlineChildren = [];
+        return;
+      }
+
+      renderedChildren.push(
+        <p key={`paragraph-${renderedChildren.length}`}>{inlineChildren}</p>,
+      );
+      inlineChildren = [];
+    };
+
+    for (const child of childArray) {
+      if (isBlockComponentElement(child)) {
+        flushInlineParagraph();
+        renderedChildren.push(
+          <Fragment key={`block-${renderedChildren.length}`}>{child}</Fragment>,
+        );
+        continue;
+      }
+
+      inlineChildren.push(child);
+    }
+
+    flushInlineParagraph();
+
+    return <>{renderedChildren}</>;
+  };
 }
 
 export function getArticleMdxComponents({
@@ -551,9 +613,25 @@ export function getArticleMdxComponents({
         setNumber={setCard.id}
         theme={setCard.theme}
         themeHref={buildThemePath(buildCatalogThemeSlug(setCard.theme))}
+        themePresentation={buildArticleThemePresentation({
+          href: buildThemePath(buildCatalogThemeSlug(setCard.theme)),
+          theme: setCard.theme,
+        })}
       />
     );
   }
+
+  const ArticleMdxParagraph = createArticleMdxParagraph(
+    new Set<unknown>([
+      ArticleCardMdx,
+      Faq,
+      FeaturedSet,
+      ImageGallery,
+      SetRail,
+      SetSpotlightList,
+      ThemedCallout,
+    ]),
+  );
 
   return {
     ArticleCard: ArticleCardMdx,
@@ -563,6 +641,7 @@ export function getArticleMdxComponents({
     FeaturedSet,
     ImageCarousel: ImageGallery,
     ImageGallery,
+    p: ArticleMdxParagraph,
     SetSpotlightList,
     SetRail,
     ThemeLink,

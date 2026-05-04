@@ -38,6 +38,14 @@ describe('ImageGallery', () => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = false;
   });
 
+  async function flushAnimationFrame() {
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
+    });
+  }
+
   it('renders one article image without lightbox navigation until opened', () => {
     act(() => {
       root.render(
@@ -119,37 +127,37 @@ describe('ImageGallery', () => {
       );
     });
 
-    const nextButton = container.querySelector(
+    const nextButton = document.body.querySelector(
       'button[aria-label="Volgende afbeelding"]',
     ) as HTMLButtonElement | null;
-    const dots = container.querySelectorAll(
+    const dots = document.body.querySelectorAll(
       'button[aria-label^="Bekijk afbeelding"]',
     );
 
     expect(nextButton).not.toBeNull();
     expect(
-      container.querySelector('button[aria-label="Sluit galerij"]'),
+      document.body.querySelector('button[aria-label="Sluit galerij"]'),
     ).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-control="previous"]'),
+      document.body.querySelector('[data-lightbox-control="previous"]'),
     ).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-control="next"]'),
+      document.body.querySelector('[data-lightbox-control="next"]'),
     ).not.toBeNull();
     expect(dots).toHaveLength(3);
     expect(
-      container.querySelectorAll('[class*="lightboxThumbButton"]'),
+      document.body.querySelectorAll('[class*="lightboxThumbButton"]'),
     ).toHaveLength(3);
     expect(
-      container.querySelectorAll('[class*="lightboxThumbFrame"] img'),
+      document.body.querySelectorAll('[class*="lightboxThumbFrame"] img'),
     ).toHaveLength(3);
     expect(
-      container.querySelector('[data-lightbox-media-surface="light"]'),
+      document.body.querySelector('[data-lightbox-media-surface="light"]'),
     ).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-active-index="0"]'),
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
-    expect(container.textContent).toContain('1 / 3');
+    expect(document.body.textContent).toContain('1 / 3');
 
     act(() => {
       nextButton?.dispatchEvent(
@@ -160,12 +168,12 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.textContent).toContain('2 / 3');
+    expect(document.body.textContent).toContain('2 / 3');
     expect(
-      container.querySelector('[data-lightbox-active-index="1"]'),
+      document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
 
-    const previousButton = container.querySelector(
+    const previousButton = document.body.querySelector(
       'button[aria-label="Vorige afbeelding"]',
     ) as HTMLButtonElement | null;
 
@@ -178,12 +186,12 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.textContent).toContain('1 / 3');
+    expect(document.body.textContent).toContain('1 / 3');
     expect(
-      container.querySelector('[data-lightbox-active-index="0"]'),
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
 
-    const firstThumbnail = container.querySelector(
+    const firstThumbnail = document.body.querySelector(
       'button[aria-label="Bekijk afbeelding 1"][data-active="false"]',
     ) as HTMLButtonElement | null;
 
@@ -196,12 +204,12 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.textContent).toContain('1 / 3');
+    expect(document.body.textContent).toContain('1 / 3');
     expect(
-      container.querySelector('[data-lightbox-active-index="0"]'),
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
 
-    const thirdThumbnail = container.querySelector(
+    const thirdThumbnail = document.body.querySelector(
       'button[aria-label="Bekijk afbeelding 3"]',
     ) as HTMLButtonElement | null;
 
@@ -214,17 +222,17 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.textContent).toContain('3 / 3');
+    expect(document.body.textContent).toContain('3 / 3');
     expect(
-      container.querySelector('[data-lightbox-active-index="2"]'),
+      document.body.querySelector('[data-lightbox-active-index="2"]'),
     ).not.toBeNull();
     expect(
-      container.querySelector(
+      document.body.querySelector(
         '[data-lightbox-thumb-index="2"][data-active="true"]',
       ),
     ).not.toBeNull();
 
-    const closeButton = container.querySelector(
+    const closeButton = document.body.querySelector(
       'button[aria-label="Sluit galerij"]',
     ) as HTMLButtonElement | null;
 
@@ -247,10 +255,10 @@ describe('ImageGallery', () => {
     });
 
     expect(
-      container.querySelector('[data-lightbox-active-index="1"]'),
+      document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
 
-    const secondCloseButton = container.querySelector(
+    const secondCloseButton = document.body.querySelector(
       'button[aria-label="Sluit galerij"]',
     ) as HTMLButtonElement | null;
 
@@ -273,7 +281,7 @@ describe('ImageGallery', () => {
     });
 
     expect(
-      container.querySelector('[data-lightbox-active-index="2"]'),
+      document.body.querySelector('[data-lightbox-active-index="2"]'),
     ).not.toBeNull();
   });
 
@@ -319,9 +327,9 @@ describe('ImageGallery', () => {
     });
 
     expect(gtag).not.toHaveBeenCalled();
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-active-index="0"]'),
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
     ).not.toBeNull();
 
     delete (window as unknown as { gtag?: typeof gtag }).gtag;
@@ -359,9 +367,9 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
 
-    const closeButton = container.querySelector(
+    const closeButton = document.body.querySelector(
       'button[aria-label="Sluit galerij"]',
     ) as HTMLButtonElement | null;
 
@@ -374,7 +382,7 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 
     act(() => {
       openButton?.dispatchEvent(
@@ -385,7 +393,7 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
 
     act(() => {
       window.dispatchEvent(
@@ -396,7 +404,110 @@ describe('ImageGallery', () => {
       );
     });
 
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('renders the fullscreen viewer in a portal, locks scroll, traps focus, and restores focus to the trigger', async () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Rivendell LEGO-set',
+              src: 'https://images.example/rivendell-1.jpg',
+            },
+            {
+              alt: 'Rivendell LEGO-set afbeelding 2',
+              src: 'https://images.example/rivendell-2.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    const openButton = container.querySelector(
+      'button[aria-label^="Open Rivendell LEGO-set"]',
+    ) as HTMLButtonElement | null;
+
+    expect(openButton).not.toBeNull();
+
+    act(() => {
+      openButton?.focus();
+      openButton?.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    });
+
+    await flushAnimationFrame();
+
+    const backdrop = document.body.querySelector(
+      '[data-lightbox-backdrop="true"]',
+    ) as HTMLDivElement | null;
+    const dialog = document.body.querySelector(
+      '[role="dialog"]',
+    ) as HTMLDivElement | null;
+    const closeButton = document.body.querySelector(
+      'button[aria-label="Sluit galerij"]',
+    ) as HTMLButtonElement | null;
+
+    expect(backdrop).not.toBeNull();
+    expect(backdrop?.parentElement).toBe(document.body);
     expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(dialog?.getAttribute('aria-modal')).toBe('true');
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    expect(document.activeElement).toBe(closeButton);
+
+    const lastThumbnail = document.body.querySelector(
+      '[data-lightbox-thumb-index="1"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      lastThumbnail?.focus();
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Tab',
+        }),
+      );
+    });
+
+    expect(document.activeElement).toBe(closeButton);
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Tab',
+          shiftKey: true,
+        }),
+      );
+    });
+
+    expect(document.activeElement).toBe(lastThumbnail);
+
+    act(() => {
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Escape',
+        }),
+      );
+    });
+
+    await flushAnimationFrame();
+
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.style.overflow).toBe('');
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(document.activeElement).toBe(openButton);
   });
 
   it('supports keyboard navigation for the detail gallery and opens fullscreen from the main image', () => {
@@ -452,12 +563,12 @@ describe('ImageGallery', () => {
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-media-surface="light"]'),
+      document.body.querySelector('[data-lightbox-media-surface="light"]'),
     ).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-active-index="1"]'),
+      document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
   });
 
@@ -478,6 +589,13 @@ describe('ImageGallery', () => {
     expect(css).toContain('@media (min-width: 48rem)');
     expect(css).toContain('.detailMainFrame {\n    aspect-ratio: auto;');
     expect(css).toContain('height: 508px;');
+    expect(css).toContain('@media (max-width: 47.99rem)');
+    expect(css).toContain('.detailMainFrame {\n    border-inline: 0;');
+    expect(css).toContain('border-radius: 0;');
+    expect(css).toContain('.lightboxBackdrop {');
+    expect(css).toContain('position: fixed;');
+    expect(css).toContain('inset: 0;');
+    expect(css).toContain('z-index: 1400;');
   });
 
   it('keeps ImageCarousel as a compatibility alias', () => {
@@ -531,15 +649,15 @@ describe('ImageGallery', () => {
     expect(
       container.querySelector('section[aria-label="Afbeeldingen"]'),
     ).toBeNull();
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-active-index="1"]'),
+      document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
-    expect(container.textContent).toContain(
+    expect(document.body.textContent).toContain(
       "The Mandalorian's N-1 Starfighter · Set 75442",
     );
     expect(
-      container.querySelector(
+      document.body.querySelector(
         'a[href="/sets/the-mandalorians-n-1-starfighter-75442"]',
       ),
     ).not.toBeNull();
@@ -559,6 +677,14 @@ describe('ImageGallery', () => {
     expect(css).toContain(".articleGrid[data-count='3']");
     expect(css).toContain(".articleGrid[data-count='4'],");
     expect(css).toContain(".articleGrid[data-count='5-plus']");
+    expect(css).toContain('grid-auto-flow: row;');
+    expect(css).toContain('grid-auto-rows: auto;');
+    expect(css).toContain('grid-template-rows: auto min-content;');
+    expect(css).toContain('.articleImageButton {\n  border-radius:');
+    expect(css).toContain('height: auto;');
+    expect(css).toContain('overflow: hidden;');
+    expect(css).toContain('.articleMediaFrame,');
+    expect(css).toContain('border-radius: var(--lego-radius-lg);');
     expect(css).toContain('grid-template-columns: repeat(2, minmax(0, 1fr));');
     expect(css).toContain('.articleMoreOverlay');
     expect(css).toContain('.articleZoomOverlay');
@@ -574,6 +700,32 @@ describe('ImageGallery', () => {
     expect(css).toContain('.articleMediaFrame {\n  background: #ffffff;');
     expect(css).toContain('.galleryImageArticle {');
     expect(css).toContain('object-fit: cover;');
+  });
+
+  it('renders two article images as a two-tile gallery', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Afbeelding 1',
+              src: '/articles/demo/1.webp',
+            },
+            {
+              alt: 'Afbeelding 2',
+              src: '/articles/demo/2.webp',
+            },
+          ]}
+          variant="article"
+        />,
+      );
+    });
+
+    expect(container.querySelector('[data-count="2"]')).not.toBeNull();
+    expect(
+      container.querySelectorAll('[data-gallery-tile-index]'),
+    ).toHaveLength(2);
+    expect(container.textContent).not.toContain('+');
   });
 
   it('shows the first four article images with a remaining-count overlay', () => {

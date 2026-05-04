@@ -17,6 +17,8 @@ import { ShellWebSamePageFragmentLinks } from './shell-web-same-page-fragment-li
 import { ShellWebSearchOverlayScrollRestore } from './shell-web-search-overlay-scroll-restore';
 import { ShellWebSearchForm } from './shell-web-search-form';
 
+const shellDesktopAccountActionId = 'shell-desktop-account-action';
+
 function renderDesktopNavigationLinks() {
   return [
     ...webNavigation.map((navigationItem) => (
@@ -51,6 +53,11 @@ function renderDesktopActionLinks() {
       aria-label={actionLink.ariaLabel}
       className={styles.iconActionLink}
       href={actionLink.href}
+      id={
+        actionLink.href === buildWebPath(webPathnames.account)
+          ? shellDesktopAccountActionId
+          : undefined
+      }
       key={actionLink.href}
     >
       <Icon name={actionLink.iconName} size={17} />
@@ -101,6 +108,7 @@ export function ShellWeb({
                 className={styles.desktopSearch}
                 inputId="site-search-desktop"
                 query={searchQuery}
+                restoreFocusTargetId={shellDesktopAccountActionId}
               />
               <nav aria-label="Snelle acties" className={styles.desktopActions}>
                 {renderDesktopActionLinks()}

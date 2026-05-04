@@ -139,6 +139,7 @@ export function ShellWebSamePageFragmentLinks() {
         block: 'start',
         inline: 'nearest',
       });
+      target.focus({ preventScroll: true });
     }
 
     document.addEventListener('click', handleDocumentClick, {

@@ -8,3 +8,75 @@
   gap: var(--lego-space-1);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
+.setNewsRail {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.setNewsHeader {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.setNewsEyebrow {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.setNewsTitle {
+  color: var(--lego-text);
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.setNewsGrid {
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.setNewsCard {
+  background: var(--lego-surface-default);
+  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  border-radius: var(--lego-radius-sm);
+  color: inherit;
+  display: grid;
+  gap: var(--lego-space-2);
+  min-width: 0;
+  padding: var(--lego-space-4);
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.setNewsCard:hover,
+.setNewsCard:focus-visible {
+  background: var(--lego-surface-subtle);
+  border-color: var(--lego-border);
+}
+
+.setNewsDate {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-label-size);
+}
+
+.setNewsCardTitle {
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-card-title-size);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.setNewsDescription {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-support-size);
+  line-height: 1.5;
+  margin: 0;
+}

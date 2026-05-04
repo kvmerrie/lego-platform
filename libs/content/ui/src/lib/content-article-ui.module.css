@@ -4,6 +4,9 @@
 }
 
 .articleShell {
+  --article-theme-muted-text: var(--lego-text-muted);
+  --article-theme-surface: var(--lego-surface-default);
+  --article-theme-surface-text: inherit;
   --article-shell-padding-inline: max(
     var(--lego-section-inline-padding, 1.25rem),
     1.25rem
@@ -14,7 +17,7 @@
   --article-hero-max-width: 60rem;
   --article-wide-max-width: var(--lego-max-width-page, 100rem);
   display: grid;
-  gap: var(--lego-space-7);
+  gap: var(--lego-space-8);
   margin: 0 auto;
   padding-bottom: var(--lego-space-12);
   padding-inline: var(--article-shell-padding-inline);
@@ -78,8 +81,8 @@
 }
 
 .themeBadgeShell {
-  --catalog-theme-badge-surface: var(--lego-accent);
-  --catalog-theme-badge-text: var(--lego-accent-contrast);
+  --catalog-theme-badge-surface: var(--lego-surface-muted);
+  --catalog-theme-badge-text: var(--lego-text);
   display: inline-flex;
 }
 
@@ -97,7 +100,7 @@
 .imageFrame {
   background: #fff;
   border: 1px solid var(--lego-border-subtle);
-  border-radius: var(--lego-radius-xl);
+  border-radius: var(--lego-radius-lg);
   overflow: hidden;
   position: relative;
 }
@@ -280,7 +283,7 @@
 }
 
 .prose :is(p, li, blockquote) a {
-  color: var(--lego-link-color, var(--lego-accent-700));
+  color: var(--lego-accent);
   font-weight: 600;
 }
 
@@ -306,7 +309,7 @@
 }
 
 .sourceAttribution[data-source-attribution-tone='explicit'] {
-  color: var(--lego-text-secondary);
+  color: var(--lego-text-muted);
 }
 
 .callout {
@@ -436,7 +439,7 @@
     rgba(12, 18, 32, 0) 0%,
     rgba(12, 18, 32, 0.28) 100%
   );
-  border-radius: var(--lego-radius-xl);
+  border-radius: var(--lego-radius-lg);
   display: flex;
   inset: 0;
   justify-content: end;
@@ -1044,6 +1047,7 @@
   }
 
   .heroImageFrame {
+    border-inline: 0;
     border-radius: 0;
   }
 }

@@ -4,17 +4,21 @@ import {
   type FocusEvent,
   type FormEvent,
   type KeyboardEvent,
+  useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
-import { flushSync } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import {
   listCatalogSetCardSearchMatches,
   type CatalogHomepageSetCard,
+  type CatalogThemeDirectoryItem,
 } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
+  buildThemePath,
   buildWebPath,
   webPathnames,
 } from '@lego-platform/shared/config';
@@ -51,8 +55,30 @@ function buildSearchHref(query: string): string {
 }
 
 const searchSuggestionsApiPath = '/api/catalog/search-suggestions';
+const focusableElementSelector = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+type InlineSearchCloseReason =
+  | 'backdrop'
+  | 'blur'
+  | 'escape'
+  | 'result-select'
+  | 'tab-backward'
+  | 'tab-forward';
+
+interface ShellWebSearchSuggestionPayload {
+  sets: CatalogHomepageSetCard[];
+  themes: CatalogThemeDirectoryItem[];
+}
+
 let overlaySearchSuggestionSetCardsRequest:
-  | Promise<CatalogHomepageSetCard[]>
+  | Promise<ShellWebSearchSuggestionPayload>
   | undefined;
 
 export function clearShellWebSearchSuggestionOverlaySetCardsCache() {
@@ -78,26 +104,74 @@ function isCatalogHomepageSetCard(
   );
 }
 
-async function loadOverlaySearchSuggestionSetCards(): Promise<
-  CatalogHomepageSetCard[]
-> {
+async function loadOverlaySearchSuggestionSetCards(): Promise<ShellWebSearchSuggestionPayload> {
   overlaySearchSuggestionSetCardsRequest ??= fetch(searchSuggestionsApiPath, {
     cache: 'no-store',
   })
     .then(async (response) => {
       if (!response.ok) {
-        return [];
+        return {
+          sets: [],
+          themes: [],
+        };
       }
 
       const payload = (await response.json()) as unknown;
 
-      return Array.isArray(payload)
-        ? payload.filter(isCatalogHomepageSetCard)
-        : [];
+      if (Array.isArray(payload)) {
+        return {
+          sets: payload.filter(isCatalogHomepageSetCard),
+          themes: [],
+        };
+      }
+
+      if (!payload || typeof payload !== 'object') {
+        return {
+          sets: [],
+          themes: [],
+        };
+      }
+
+      const candidate = payload as Partial<{
+        sets: unknown;
+        themes: unknown;
+      }>;
+
+      return {
+        sets: Array.isArray(candidate.sets)
+          ? candidate.sets.filter(isCatalogHomepageSetCard)
+          : [],
+        themes: Array.isArray(candidate.themes)
+          ? candidate.themes.filter(isCatalogThemeDirectoryItem)
+          : [],
+      };
     })
-    .catch(() => []);
+    .catch(() => ({
+      sets: [],
+      themes: [],
+    }));
 
   return overlaySearchSuggestionSetCardsRequest;
+}
+
+function isCatalogThemeDirectoryItem(
+  value: unknown,
+): value is CatalogThemeDirectoryItem {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const candidate = value as Partial<CatalogThemeDirectoryItem>;
+  const themeSnapshot = candidate.themeSnapshot as
+    | Partial<CatalogThemeDirectoryItem['themeSnapshot']>
+    | undefined;
+
+  return (
+    Boolean(themeSnapshot) &&
+    typeof themeSnapshot?.name === 'string' &&
+    typeof themeSnapshot?.slug === 'string' &&
+    typeof themeSnapshot?.setCount === 'number'
+  );
 }
 
 function listShellWebSearchSuggestions({
@@ -107,6 +181,8 @@ function listShellWebSearchSuggestions({
   suggestionSetCards: readonly CatalogHomepageSetCard[];
   query: string;
 }): CatalogHomepageSetCard[] {
+  const seenSetIds = new Set<string>();
+
   return listCatalogSetCardSearchMatches({
     limit: 6,
     query,
@@ -118,7 +194,111 @@ function listShellWebSearchSuggestions({
         right.setCard.releaseYear - left.setCard.releaseYear ||
         left.setCard.name.localeCompare(right.setCard.name),
     )
-    .map((catalogSearchMatch) => catalogSearchMatch.setCard);
+    .flatMap((catalogSearchMatch) => {
+      if (seenSetIds.has(catalogSearchMatch.setCard.id)) {
+        return [];
+      }
+
+      seenSetIds.add(catalogSearchMatch.setCard.id);
+
+      return [catalogSearchMatch.setCard];
+    });
+}
+
+function normalizeSearchSuggestionText(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gu, ' ')
+    .trim();
+}
+
+function normalizeSearchSuggestionToken(value: string): string {
+  return normalizeSearchSuggestionText(value).replace(/\s+/gu, '');
+}
+
+function getThemeSuggestionScore({
+  query,
+  theme,
+}: {
+  query: string;
+  theme: CatalogThemeDirectoryItem;
+}): number | undefined {
+  const normalizedQuery = normalizeSearchSuggestionText(query);
+  const normalizedQueryToken = normalizeSearchSuggestionToken(query);
+  const normalizedThemeName = normalizeSearchSuggestionText(
+    theme.themeSnapshot.name,
+  );
+  const normalizedThemeSlug = normalizeSearchSuggestionText(
+    theme.themeSnapshot.slug.replace(/-/gu, ' '),
+  );
+  const normalizedThemeToken = normalizeSearchSuggestionToken(
+    theme.themeSnapshot.name,
+  );
+
+  if (!normalizedQuery || !normalizedQueryToken) {
+    return undefined;
+  }
+
+  if (
+    normalizedThemeName === normalizedQuery ||
+    normalizedThemeSlug === normalizedQuery ||
+    normalizedThemeToken === normalizedQueryToken
+  ) {
+    return 0;
+  }
+
+  if (
+    normalizedThemeName.startsWith(normalizedQuery) ||
+    normalizedThemeSlug.startsWith(normalizedQuery) ||
+    normalizedThemeToken.startsWith(normalizedQueryToken)
+  ) {
+    return 1;
+  }
+
+  if (
+    normalizedThemeName.includes(normalizedQuery) ||
+    normalizedThemeSlug.includes(normalizedQuery)
+  ) {
+    return 2;
+  }
+
+  return undefined;
+}
+
+function listShellWebThemeSearchSuggestions({
+  query,
+  themes,
+}: {
+  query: string;
+  themes: readonly CatalogThemeDirectoryItem[];
+}): CatalogThemeDirectoryItem[] {
+  return themes
+    .flatMap((theme) => {
+      const score = getThemeSuggestionScore({ query, theme });
+
+      return typeof score === 'number'
+        ? [
+            {
+              score,
+              theme,
+            },
+          ]
+        : [];
+    })
+    .sort(
+      (left, right) =>
+        left.score - right.score ||
+        right.theme.themeSnapshot.setCount -
+          left.theme.themeSnapshot.setCount ||
+        left.theme.themeSnapshot.name.localeCompare(
+          right.theme.themeSnapshot.name,
+          'nl',
+        ),
+    )
+    .slice(0, 4)
+    .map((match) => match.theme);
 }
 
 export function ShellWebSearchForm({
@@ -129,6 +309,7 @@ export function ShellWebSearchForm({
   inputId,
   openOnMount = false,
   query,
+  restoreFocusTargetId,
   variant = 'inline',
 }: {
   autoFocus?: boolean;
@@ -138,6 +319,7 @@ export function ShellWebSearchForm({
   inputId: string;
   openOnMount?: boolean;
   query?: string;
+  restoreFocusTargetId?: string;
   variant?: 'inline' | 'mobile-overlay';
 }) {
   const router = useRouter();
@@ -149,11 +331,95 @@ export function ShellWebSearchForm({
   const [searchValue, setSearchValue] = useState(query ?? '');
   const [overlaySearchSuggestionSetCards, setOverlaySearchSuggestionSetCards] =
     useState<CatalogHomepageSetCard[]>([]);
+  const [overlaySearchSuggestionThemes, setOverlaySearchSuggestionThemes] =
+    useState<CatalogThemeDirectoryItem[]>([]);
+  const [inlineSearchOverlayRect, setInlineSearchOverlayRect] = useState<{
+    left: number;
+    top: number;
+    width: number;
+  }>();
+  const searchShellRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const shouldDeferInlineRestoreFocusRef = useRef(false);
   const wasMobileOverlayOpenRef = useRef(false);
 
   const isMobileOverlay = variant === 'mobile-overlay';
+
+  const focusInlineRestoreTarget = useCallback(() => {
+    if (!restoreFocusTargetId || typeof document === 'undefined') {
+      return false;
+    }
+
+    const focusRestoreTarget = () => {
+      const restoreTarget = document.getElementById(restoreFocusTargetId);
+
+      if (restoreTarget instanceof HTMLElement) {
+        restoreTarget.focus({ preventScroll: true });
+        return true;
+      }
+
+      return false;
+    };
+
+    requestAnimationFrame(focusRestoreTarget);
+    return true;
+  }, [restoreFocusTargetId]);
+
+  function listDocumentFocusableElements() {
+    if (typeof document === 'undefined') {
+      return [];
+    }
+
+    return Array.from(
+      document.querySelectorAll<HTMLElement>(focusableElementSelector),
+    ).filter(
+      (focusableElement) =>
+        !focusableElement.hasAttribute('disabled') &&
+        focusableElement.getAttribute('aria-hidden') !== 'true' &&
+        !focusableElement.closest('[data-search-overlay-layer="true"]') &&
+        !focusableElement.closest('[data-search-backdrop="true"]'),
+    );
+  }
+
+  function getPreviousInlineSearchControl() {
+    const searchShell = searchShellRef.current;
+
+    if (!searchShell) {
+      return undefined;
+    }
+
+    return listDocumentFocusableElements()
+      .filter(
+        (focusableElement) =>
+          focusableElement.compareDocumentPosition(searchShell) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      )
+      .at(-1);
+  }
+
+  function closeInlineSearch(
+    reason: InlineSearchCloseReason = 'blur',
+    focusTarget?: HTMLElement,
+  ) {
+    setActiveItemIndex(-1);
+    setIsOpen(false);
+    searchInputRef.current?.blur();
+
+    shouldDeferInlineRestoreFocusRef.current =
+      reason === 'backdrop' || reason === 'escape';
+
+    if (reason === 'tab-forward') {
+      focusInlineRestoreTarget();
+      return;
+    }
+
+    if (reason === 'tab-backward' && focusTarget) {
+      requestAnimationFrame(() => {
+        focusTarget.focus({ preventScroll: true });
+      });
+    }
+  }
 
   useEffect(() => {
     setSearchValue(query ?? '');
@@ -202,6 +468,109 @@ export function ShellWebSearchForm({
     };
   }, [hideTrigger, isMobileOverlay]);
 
+  useLayoutEffect(() => {
+    if (isMobileOverlay || !isOpen || typeof window === 'undefined') {
+      return;
+    }
+
+    document.documentElement.setAttribute('data-shell-search-open', 'true');
+
+    function updateInlineSearchOverlayRect() {
+      const searchShellRect = searchShellRef.current?.getBoundingClientRect();
+
+      if (!searchShellRect) {
+        return;
+      }
+
+      setInlineSearchOverlayRect({
+        left: searchShellRect.left,
+        top: searchShellRect.top,
+        width: searchShellRect.width,
+      });
+    }
+
+    updateInlineSearchOverlayRect();
+    window.addEventListener('resize', updateInlineSearchOverlayRect);
+
+    return () => {
+      window.removeEventListener('resize', updateInlineSearchOverlayRect);
+      document.documentElement.removeAttribute('data-shell-search-open');
+    };
+  }, [isMobileOverlay, isOpen]);
+
+  useEffect(() => {
+    if (isMobileOverlay || !isOpen || typeof document === 'undefined') {
+      return;
+    }
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalBodyPaddingRight = document.body.style.paddingRight;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const scrollbarWidth = document.documentElement.clientWidth
+      ? Math.max(0, window.innerWidth - document.documentElement.clientWidth)
+      : 0;
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.body.style.paddingRight = originalBodyPaddingRight;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, [isMobileOverlay, isOpen]);
+
+  useEffect(() => {
+    if (isMobileOverlay || typeof document === 'undefined') {
+      return undefined;
+    }
+
+    function handleDeferredInlineFocus(event: globalThis.KeyboardEvent) {
+      if (!shouldDeferInlineRestoreFocusRef.current) {
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        if (event.key !== 'Shift') {
+          shouldDeferInlineRestoreFocusRef.current = false;
+        }
+
+        return;
+      }
+
+      if (event.shiftKey) {
+        shouldDeferInlineRestoreFocusRef.current = false;
+        return;
+      }
+
+      if (focusInlineRestoreTarget()) {
+        event.preventDefault();
+      }
+
+      shouldDeferInlineRestoreFocusRef.current = false;
+    }
+
+    document.addEventListener('keydown', handleDeferredInlineFocus, true);
+
+    return () => {
+      document.removeEventListener('keydown', handleDeferredInlineFocus, true);
+    };
+  }, [focusInlineRestoreTarget, isMobileOverlay]);
+
+  useEffect(() => {
+    if (isMobileOverlay || !isOpen || !inlineSearchOverlayRect) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+  }, [inlineSearchOverlayRect, isMobileOverlay, isOpen]);
+
   useEffect(() => {
     try {
       setRecentSearches(readRecentSearches(window.localStorage));
@@ -213,9 +582,10 @@ export function ShellWebSearchForm({
   useEffect(() => {
     let isCancelled = false;
 
-    void loadOverlaySearchSuggestionSetCards().then((setCards) => {
+    void loadOverlaySearchSuggestionSetCards().then((payload) => {
       if (!isCancelled) {
-        setOverlaySearchSuggestionSetCards(setCards);
+        setOverlaySearchSuggestionSetCards(payload.sets);
+        setOverlaySearchSuggestionThemes(payload.themes);
       }
     });
 
@@ -229,6 +599,12 @@ export function ShellWebSearchForm({
     ? listShellWebSearchSuggestions({
         suggestionSetCards: overlaySearchSuggestionSetCards,
         query: normalizedSearchValue,
+      })
+    : [];
+  const themeSuggestions = normalizedSearchValue
+    ? listShellWebThemeSearchSuggestions({
+        query: normalizedSearchValue,
+        themes: overlaySearchSuggestionThemes,
       })
     : [];
   const searchResultsHref = normalizedSearchValue
@@ -253,6 +629,16 @@ export function ShellWebSearchForm({
         return recentSearchEntry ? [{ href, recentSearchEntry }] : [];
       })
     : [];
+  const themeSuggestionPanelItems = showSuggestionPanel
+    ? themeSuggestions.flatMap((themeSuggestion) => {
+        const href = buildThemePath(themeSuggestion.themeSnapshot.slug);
+        const recentSearchEntry = createRecentSearchQueryEntry(
+          themeSuggestion.themeSnapshot.name,
+        );
+
+        return recentSearchEntry ? [{ href, recentSearchEntry }] : [];
+      })
+    : [];
   const panelItems = [
     ...(showRecentSearches
       ? recentSearches.map((recentSearchEntry) => ({
@@ -264,6 +650,7 @@ export function ShellWebSearchForm({
         }))
       : []),
     ...searchSuggestionPanelItems,
+    ...themeSuggestionPanelItems,
     ...(showSuggestionPanel && searchResultsHref && searchResultEntry
       ? [
           {
@@ -367,13 +754,32 @@ export function ShellWebSearchForm({
       return;
     }
 
+    if (
+      event.relatedTarget instanceof HTMLElement &&
+      event.relatedTarget.closest('[data-search-overlay-layer="true"]')
+    ) {
+      return;
+    }
+
     if (!event.currentTarget.contains(event.relatedTarget)) {
       setActiveItemIndex(-1);
       setIsOpen(false);
+      shouldDeferInlineRestoreFocusRef.current = false;
     }
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (!isMobileOverlay && isOpen && event.key === 'Tab' && event.shiftKey) {
+      const previousInlineSearchControl = getPreviousInlineSearchControl();
+
+      if (previousInlineSearchControl) {
+        event.preventDefault();
+        closeInlineSearch('tab-backward', previousInlineSearchControl);
+      }
+
+      return;
+    }
+
     const navigationKey: 'ArrowDown' | 'ArrowUp' | 'Escape' | undefined =
       event.key === 'ArrowDown'
         ? 'ArrowDown'
@@ -385,7 +791,18 @@ export function ShellWebSearchForm({
 
     if (navigationKey) {
       event.preventDefault();
-      setIsOpen(navigationKey === 'Escape' ? false : true);
+
+      if (navigationKey === 'Escape') {
+        if (isMobileOverlay) {
+          closeMobileOverlay();
+        } else {
+          closeInlineSearch('escape');
+        }
+
+        return;
+      }
+
+      setIsOpen(true);
       setActiveItemIndex((currentActiveItemIndex) =>
         getNextSearchActiveIndex({
           activeIndex: currentActiveItemIndex,
@@ -413,8 +830,49 @@ export function ShellWebSearchForm({
 
     if (isMobileOverlay && event.key === 'Escape') {
       event.preventDefault();
-      setIsOpen(false);
+      closeMobileOverlay();
     }
+  }
+
+  function handleInlineOverlayKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== 'Tab') {
+      return;
+    }
+
+    const focusableItems = Array.from(
+      event.currentTarget.querySelectorAll<HTMLElement>(
+        'input, a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter(
+      (focusableItem) =>
+        !focusableItem.hasAttribute('disabled') &&
+        focusableItem.getAttribute('aria-hidden') !== 'true',
+    );
+
+    if (event.shiftKey) {
+      const firstPanelFocusableItem = focusableItems.find(
+        (focusableItem) => focusableItem !== searchInputRef.current,
+      );
+
+      if (
+        firstPanelFocusableItem &&
+        document.activeElement === firstPanelFocusableItem
+      ) {
+        event.preventDefault();
+        searchInputRef.current?.focus({ preventScroll: true });
+      }
+
+      return;
+    }
+
+    const lastFocusableItem = focusableItems.at(-1);
+
+    if (!lastFocusableItem || document.activeElement !== lastFocusableItem) {
+      return;
+    }
+
+    event.preventDefault();
+    closeInlineSearch('tab-forward');
   }
 
   function closeMobileOverlay() {
@@ -451,6 +909,9 @@ export function ShellWebSearchForm({
     }
 
     setIsOpen(false);
+    requestAnimationFrame(() => {
+      mobileTriggerRef.current?.focus();
+    });
   }
 
   function openMobileOverlay() {
@@ -478,7 +939,6 @@ export function ShellWebSearchForm({
       </span>
       <input
         autoComplete="off"
-        autoFocus={autoFocus && !isMobileOverlay}
         className={styles.searchInput}
         enterKeyHint="search"
         id={inputId}
@@ -569,54 +1029,106 @@ export function ShellWebSearchForm({
           aria-label="Passende sets"
           className={styles.searchPanelSection}
         >
+          <p className={styles.searchPanelHeading}>Passende sets</p>
           {searchSuggestions.length ? (
+            <ul className={styles.searchList}>
+              {searchSuggestions.map((searchSuggestion, index) => {
+                const panelItemIndex = showRecentSearches
+                  ? recentSearches.length + index
+                  : index;
+                const suggestionPanelItem = searchSuggestionPanelItems[index];
+
+                return (
+                  <li key={searchSuggestion.id}>
+                    <a
+                      className={styles.searchSuggestionLink}
+                      data-active={
+                        panelItemIndex === activeItemIndex ? 'true' : undefined
+                      }
+                      href={buildSetDetailPath(searchSuggestion.slug)}
+                      onClick={() => {
+                        persistRecentSearch(
+                          suggestionPanelItem?.recentSearchEntry,
+                        );
+                        clearOverlayReturnState();
+                      }}
+                      onMouseEnter={() => setActiveItemIndex(panelItemIndex)}
+                    >
+                      {searchSuggestion.imageUrl ? (
+                        <img
+                          alt=""
+                          className={styles.searchSuggestionImage}
+                          loading="lazy"
+                          src={searchSuggestion.imageUrl}
+                        />
+                      ) : null}
+                      <span className={styles.searchSuggestionContent}>
+                        <span
+                          className={`${styles.searchSuggestionName} notranslate`}
+                          translate="no"
+                        >
+                          {searchSuggestion.name}
+                        </span>
+                        <span
+                          className={`${styles.searchSuggestionMeta} notranslate`}
+                          translate="no"
+                        >
+                          Set {searchSuggestion.id} · {searchSuggestion.theme}
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className={styles.searchPanelHint}>
+              Nog geen passende sets. Open de volledige resultatenpagina om
+              verder te zoeken.
+            </p>
+          )}
+          {themeSuggestions.length ? (
             <>
-              <p className={styles.searchPanelHeading}>Passende sets</p>
+              <p className={styles.searchPanelHeading}>Thema&apos;s</p>
               <ul className={styles.searchList}>
-                {searchSuggestions.map((searchSuggestion, index) => {
-                  const panelItemIndex = showRecentSearches
-                    ? recentSearches.length + index
-                    : index;
-                  const suggestionPanelItem = searchSuggestionPanelItems[index];
+                {themeSuggestions.map((themeSuggestion, index) => {
+                  const panelItemIndex =
+                    (showRecentSearches ? recentSearches.length : 0) +
+                    searchSuggestionPanelItems.length +
+                    index;
+                  const themePanelItem = themeSuggestionPanelItems[index];
 
                   return (
-                    <li key={searchSuggestion.id}>
+                    <li key={themeSuggestion.themeSnapshot.slug}>
                       <a
-                        className={styles.searchSuggestionLink}
+                        className={styles.searchThemeLink}
                         data-active={
                           panelItemIndex === activeItemIndex
                             ? 'true'
                             : undefined
                         }
-                        href={buildSetDetailPath(searchSuggestion.slug)}
+                        href={buildThemePath(
+                          themeSuggestion.themeSnapshot.slug,
+                        )}
                         onClick={() => {
                           persistRecentSearch(
-                            suggestionPanelItem?.recentSearchEntry,
+                            themePanelItem?.recentSearchEntry,
                           );
                           clearOverlayReturnState();
                         }}
                         onMouseEnter={() => setActiveItemIndex(panelItemIndex)}
                       >
-                        {searchSuggestion.imageUrl ? (
-                          <img
-                            alt=""
-                            className={styles.searchSuggestionImage}
-                            loading="lazy"
-                            src={searchSuggestion.imageUrl}
-                          />
-                        ) : null}
+                        <span className={styles.searchThemeIcon}>T</span>
                         <span className={styles.searchSuggestionContent}>
                           <span
                             className={`${styles.searchSuggestionName} notranslate`}
                             translate="no"
                           >
-                            {searchSuggestion.name}
+                            {themeSuggestion.themeSnapshot.name}
                           </span>
-                          <span
-                            className={`${styles.searchSuggestionMeta} notranslate`}
-                            translate="no"
-                          >
-                            Set {searchSuggestion.id} · {searchSuggestion.theme}
+                          <span className={styles.searchSuggestionMeta}>
+                            Thema · {themeSuggestion.themeSnapshot.setCount}{' '}
+                            sets
                           </span>
                         </span>
                       </a>
@@ -625,12 +1137,7 @@ export function ShellWebSearchForm({
                 })}
               </ul>
             </>
-          ) : (
-            <p className={styles.searchPanelHint}>
-              Nog geen passende sets. Open de volledige resultatenpagina om
-              verder te zoeken.
-            </p>
-          )}
+          ) : null}
           {searchResultsHref ? (
             <a
               className={styles.searchResultsLink}
@@ -703,16 +1210,69 @@ export function ShellWebSearchForm({
     );
   }
 
+  const searchBackdrop =
+    isOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <button
+            aria-label="Zoeken sluiten"
+            className={styles.searchBackdrop}
+            data-search-backdrop="true"
+            onClick={() => closeInlineSearch('backdrop')}
+            onMouseDown={(event) => {
+              event.preventDefault();
+            }}
+            type="button"
+          />,
+          document.body,
+        )
+      : null;
+  const shouldPortalInlineSearch =
+    isOpen && !isMobileOverlay && Boolean(inlineSearchOverlayRect);
+  const inlineSearchOverlay =
+    shouldPortalInlineSearch &&
+    inlineSearchOverlayRect &&
+    typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className={styles.searchOverlayLayer}
+            data-search-overlay-layer="true"
+            onKeyDown={handleInlineOverlayKeyDown}
+            style={{
+              left: inlineSearchOverlayRect.left,
+              top: inlineSearchOverlayRect.top,
+              width: inlineSearchOverlayRect.width,
+            }}
+          >
+            {searchForm}
+            {searchPanel}
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <div
-      className={
-        className ? `${styles.searchShell} ${className}` : styles.searchShell
-      }
+      ref={searchShellRef}
+      className={[
+        styles.searchShell,
+        isOpen ? styles.searchShellActive : '',
+        className ?? '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       onBlur={handleBlur}
       onFocus={() => setIsOpen(true)}
     >
-      {searchForm}
-      {searchPanel}
+      {searchBackdrop}
+      {inlineSearchOverlay}
+      {shouldPortalInlineSearch ? (
+        <div aria-hidden="true" className={styles.searchPlaceholder} />
+      ) : (
+        <>
+          {searchForm}
+          {searchPanel}
+        </>
+      )}
     </div>
   );
 }

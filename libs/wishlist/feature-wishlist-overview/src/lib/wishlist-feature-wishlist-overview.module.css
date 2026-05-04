@@ -61,5 +61,5 @@
 }
 
 .errorText {
-  color: var(--lego-status-error-strong);
+  color: var(--lego-error);
 }

@@ -8,12 +8,14 @@ import {
 import {
   type CatalogQuickFilterKey,
   type CatalogSearchMatch,
+  type CatalogThemeSearchMatch,
   listCatalogQuickFilterOptions,
   matchesCatalogQuickFilter,
   normalizeCatalogQuickFilterKey,
 } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
+  buildThemePath,
   buildWebPath,
   getDefaultFormattingLocale,
   webPathnames,
@@ -140,12 +142,14 @@ export function CatalogFeatureSearchResults({
   reviewedPriceContexts = [],
   searchMatches,
   searchEntry,
+  themeMatches = [],
 }: {
   activeFilter?: string;
   query?: string;
   reviewedPriceContexts?: readonly CatalogFeatureSearchReviewedPriceContext[];
   searchMatches?: readonly CatalogSearchMatch[];
   searchEntry?: ReactNode;
+  themeMatches?: readonly CatalogThemeSearchMatch[];
 }) {
   const searchQuery = readSearchQuery(query);
   const normalizedFilter = normalizeCatalogQuickFilterKey(activeFilter);
@@ -191,6 +195,15 @@ export function CatalogFeatureSearchResults({
   }
 
   const resolvedSearchMatches = searchMatches ?? [];
+  const resolvedThemeMatches = [...themeMatches].sort(
+    (left, right) =>
+      left.score - right.score ||
+      right.theme.themeSnapshot.setCount - left.theme.themeSnapshot.setCount ||
+      left.theme.themeSnapshot.name.localeCompare(
+        right.theme.themeSnapshot.name,
+        'nl',
+      ),
+  );
   const searchResults = resolvedSearchMatches
     .map((searchMatch) => ({
       ...searchMatch,
@@ -241,7 +254,7 @@ export function CatalogFeatureSearchResults({
     }),
   );
 
-  if (!searchResults.length) {
+  if (!searchResults.length && !resolvedThemeMatches.length) {
     return (
       <CatalogSectionShell
         as="section"
@@ -276,6 +289,12 @@ export function CatalogFeatureSearchResults({
       signal={`${filteredSearchResults.length} passende set${
         filteredSearchResults.length === 1 ? '' : 's'
       }${
+        resolvedThemeMatches.length
+          ? ` · ${resolvedThemeMatches.length} thema${
+              resolvedThemeMatches.length === 1 ? '' : "'s"
+            }`
+          : ''
+      }${
         normalizedFilter !== 'all'
           ? ` · ${activeQuickFilterOption?.label ?? 'Gefilterd'}`
           : reviewedResultCount
@@ -291,6 +310,42 @@ export function CatalogFeatureSearchResults({
         ariaLabel="Verfijn zoekresultaten"
         items={quickFilterItems}
       />
+      {resolvedThemeMatches.length ? (
+        <section
+          aria-labelledby="search-theme-results-title"
+          className={styles.themeResults}
+        >
+          <div className={styles.themeResultsHeader}>
+            <p className={styles.themeResultsEyebrow}>Thema&apos;s</p>
+            <h2
+              className={styles.themeResultsTitle}
+              id="search-theme-results-title"
+            >
+              Thema&apos;s
+            </h2>
+          </div>
+          <div className={styles.themeResultGrid}>
+            {resolvedThemeMatches.map((themeMatch) => (
+              <ActionLink
+                className={styles.themeResultCard}
+                href={buildThemePath(themeMatch.theme.themeSnapshot.slug)}
+                key={themeMatch.theme.themeSnapshot.slug}
+                tone="secondary"
+              >
+                <span
+                  className={`${styles.themeResultName} notranslate`}
+                  translate="no"
+                >
+                  {themeMatch.theme.themeSnapshot.name}
+                </span>
+                <span className={styles.themeResultMeta}>
+                  {themeMatch.theme.themeSnapshot.setCount} sets
+                </span>
+              </ActionLink>
+            ))}
+          </div>
+        </section>
+      ) : null}
       {filteredSearchResults.length ? (
         <CatalogSetCardCollection
           className={styles.resultsGrid}

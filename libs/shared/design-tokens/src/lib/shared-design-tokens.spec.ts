@@ -19,6 +19,7 @@ describe('shared design tokens', () => {
     expect(themeStyles).toContain(
       '--lego-button-surface-default-primary-background: var(--lego-accent);',
     );
+    expect(themeStyles).toContain('--lego-border-strong:');
     expect(themeStyles).toContain(
       '--lego-button-surface-light-primary-background: var(--lego-contrast-ink);',
     );

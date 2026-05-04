@@ -787,7 +787,7 @@
   }
 
   .sectionShellPaddingRelaxed {
-    --catalog-section-padding-block: var(--lego-space-7);
+    --catalog-section-padding-block: var(--lego-space-8);
   }
 }
 
@@ -2435,6 +2435,7 @@
 }
 
 .setCardRailSectionThemed {
+  --catalog-card-muted-text: var(--lego-text-muted);
   --lego-text-muted: var(--article-theme-muted-text, var(--lego-text-muted));
   background: var(--article-theme-surface, var(--lego-surface-default));
   border-color: color-mix(
@@ -3027,6 +3028,16 @@
     padding-inline: var(
       --catalog-section-inline-padding,
       var(--lego-section-inline-padding, var(--lego-space-3))
+    );
+  }
+
+  .galleryMain {
+    margin-inline: calc(
+      -1 *
+        var(
+          --catalog-section-inline-padding,
+          var(--lego-section-inline-padding, var(--lego-space-3))
+        )
     );
   }
 

@@ -5,6 +5,46 @@ import {
   CatalogFeatureSearchResultsLoading,
 } from './catalog-feature-search-results';
 
+const avengersSearchMatch = {
+  discoverRank: 1,
+  score: 0,
+  setCard: {
+    id: '76269',
+    slug: 'avengers-tower-76269',
+    name: 'Avengers Tower',
+    theme: 'Marvel',
+    releaseYear: 2023,
+    pieces: 5201,
+  },
+} as const;
+
+const atAtSearchMatch = {
+  discoverRank: 1,
+  score: 0,
+  setCard: {
+    id: '75313',
+    slug: 'at-at-75313',
+    name: 'AT-AT',
+    theme: 'Star Wars',
+    releaseYear: 2021,
+    pieces: 6785,
+  },
+} as const;
+
+const razorCrestSearchMatch = {
+  discoverRank: 1,
+  score: 0,
+  setCard: {
+    id: '75331',
+    slug: 'the-razor-crest-75331',
+    name: 'The Razor Crest',
+    theme: 'Star Wars',
+    releaseYear: 2022,
+    pieces: 6187,
+    minifigureHighlights: ['Grogu'],
+  },
+} as const;
+
 describe('CatalogFeatureSearchResults', () => {
   it('renders an empty-query state', () => {
     const markup = renderToStaticMarkup(<CatalogFeatureSearchResults />);
@@ -33,6 +73,7 @@ describe('CatalogFeatureSearchResults', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureSearchResults
         query="avengers"
+        searchMatches={[avengersSearchMatch]}
         reviewedPriceContexts={[
           {
             currencyCode: 'EUR',
@@ -53,9 +94,43 @@ describe('CatalogFeatureSearchResults', () => {
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 
+  it('renders theme results separately from set cards', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSearchResults
+        query="Star War"
+        searchMatches={[]}
+        themeMatches={[
+          {
+            score: 1,
+            theme: {
+              themeSnapshot: {
+                momentum: 'Ships, helmets and display sets.',
+                name: 'Star Wars™',
+                setCount: 42,
+                signatureSet: 'AT-AT',
+                slug: 'star-wars',
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('Resultaten voor &quot;Star War&quot;');
+    expect(markup).toContain('0 passende sets · 1 thema');
+    expect(markup).toContain('Thema&#x27;s');
+    expect(markup).toContain('Star Wars™');
+    expect(markup).toContain('42 sets');
+    expect(markup).toContain('href="/themes/star-wars"');
+    expect(markup).not.toContain('CatalogSetCard');
+  });
+
   it('still returns the right set when no reviewed price context is available', () => {
     const markup = renderToStaticMarkup(
-      <CatalogFeatureSearchResults query="at-at" />,
+      <CatalogFeatureSearchResults
+        query="at-at"
+        searchMatches={[atAtSearchMatch]}
+      />,
     );
 
     expect(markup).toContain('AT-AT');
@@ -64,7 +139,10 @@ describe('CatalogFeatureSearchResults', () => {
 
   it('renders character-name matches when a query hits curated minifigure highlights', () => {
     const markup = renderToStaticMarkup(
-      <CatalogFeatureSearchResults query="grogu" />,
+      <CatalogFeatureSearchResults
+        query="grogu"
+        searchMatches={[razorCrestSearchMatch]}
+      />,
     );
 
     expect(markup).toContain('Resultaten voor &quot;grogu&quot;');
@@ -108,6 +186,7 @@ describe('CatalogFeatureSearchResults', () => {
       <CatalogFeatureSearchResults
         activeFilter="best-deals"
         query="avengers"
+        searchMatches={[avengersSearchMatch]}
         reviewedPriceContexts={[
           {
             currencyCode: 'EUR',
@@ -132,6 +211,7 @@ describe('CatalogFeatureSearchResults', () => {
       <CatalogFeatureSearchResults
         activeFilter="star-wars"
         query="avengers"
+        searchMatches={[avengersSearchMatch]}
         reviewedPriceContexts={[
           {
             currencyCode: 'EUR',

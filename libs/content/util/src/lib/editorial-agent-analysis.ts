@@ -29,6 +29,17 @@ const DEAL_SIGNAL_TERMS = [
   'korting',
   'sale',
 ] as const;
+const AVAILABILITY_SIGNAL_TERMS = [
+  'beperkte voorraad',
+  'back in stock',
+  'beschikbaar',
+  'leverbaar',
+  'niet meer te bestellen',
+  'nu te bestellen',
+  'op voorraad',
+  'weer beschikbaar',
+  'weer op voorraad',
+] as const;
 const RELEASE_ROUNDUP_SIGNAL_TERMS = [
   'alle nieuwe sets',
   'alle nieuwe lego-sets',
@@ -420,7 +431,9 @@ export function detectArticleType(
     (headlineSetNumbers.length === 1 ||
       centralLegoHeadlineSetNumbers.length === 1);
 
-  const hasDealSignal = includesAnyTerm(context, DEAL_SIGNAL_TERMS);
+  const hasDealSignal =
+    includesAnyTerm(context, DEAL_SIGNAL_TERMS) ||
+    includesAnyTerm(context, AVAILABILITY_SIGNAL_TERMS);
   const hasExplicitGwpSignal = includesAnyTerm(context, GWP_SIGNAL_TERMS);
 
   if (hasDealSignal && !hasExplicitGwpSignal) {

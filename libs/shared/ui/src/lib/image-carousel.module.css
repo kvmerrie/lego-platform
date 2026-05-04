@@ -5,19 +5,24 @@
 }
 
 .articleGrid {
-  align-items: stretch;
+  align-items: start;
   display: grid;
   gap: var(--lego-space-3);
+  grid-auto-flow: row;
+  grid-auto-rows: auto;
   grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
 }
 
 .articleFigure {
   align-content: start;
   display: grid;
   gap: var(--lego-space-2);
+  grid-template-rows: auto min-content;
   margin: 0;
   min-height: 0;
   min-width: 0;
+  overflow: visible;
   position: relative;
   z-index: 0;
 }
@@ -48,10 +53,20 @@
 .articleImageButton,
 .detailMainButton {
   display: block;
-  height: 100%;
   position: relative;
   width: 100%;
   z-index: 1;
+}
+
+.articleImageButton {
+  border-radius: var(--lego-radius-lg);
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.detailMainButton {
+  height: 100%;
 }
 
 .articleImageButton:focus-visible,
@@ -71,9 +86,11 @@
   align-items: center;
   border: var(--lego-border-width-1) solid
     color-mix(in srgb, var(--lego-border-subtle) 86%, white 14%);
-  border-radius: var(--lego-radius-xl);
+  border-radius: var(--lego-radius-lg);
   display: flex;
   justify-content: center;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   position: relative;
   width: 100%;
@@ -116,6 +133,8 @@
 .galleryImage {
   display: block;
   height: 100%;
+  max-width: 100%;
+  min-width: 0;
   width: 100%;
 }
 
@@ -154,7 +173,7 @@
     rgba(12, 18, 32, 0) 0%,
     rgba(12, 18, 32, 0.28) 100%
   );
-  border-radius: var(--lego-radius-xl);
+  border-radius: var(--lego-radius-lg);
   display: flex;
   inset: 0;
   justify-content: end;
@@ -274,7 +293,7 @@
   justify-content: center;
   padding: var(--lego-space-4);
   position: fixed;
-  z-index: 1200;
+  z-index: 1400;
 }
 
 .lightboxDialog {
@@ -470,6 +489,15 @@
 }
 
 @media (max-width: 47.99rem) {
+  .detailMainButton,
+  .detailMainFrame {
+    border-radius: 0;
+  }
+
+  .detailMainFrame {
+    border-inline: 0;
+  }
+
   .lightboxThumbStrip {
     --lightbox-thumb-size: 3.5rem;
   }

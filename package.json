@@ -27,6 +27,7 @@
     "test": "pnpm nx run-many -t test --all",
     "format:check": "pnpm nx format:check --all",
     "format:write": "pnpm nx format:write --all",
+    "tokens:audit": "node scripts/audit-css-custom-properties.mjs",
     "hooks:pre-commit": "node scripts/hooks/pre-commit.mjs",
     "hooks:pre-push": "node scripts/hooks/pre-push.mjs",
     "graph": "pnpm nx graph",

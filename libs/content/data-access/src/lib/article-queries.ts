@@ -3,6 +3,7 @@ import matter from 'gray-matter';
 import {
   extractPrimarySetNumberFromArticleBody,
   DEFAULT_CONTENT_ARTICLE_AUTHOR_NAME,
+  normalizeContentArticleSetNumber,
   normalizePublicContentArticleTheme,
   sortContentArticlesByDateDesc,
   type ContentArticle,
@@ -582,6 +583,35 @@ export async function listPublishedArticleSlugs(
   return (await listPublishedArticles(options)).map(
     (contentArticle) => contentArticle.slug,
   );
+}
+
+export async function listPublishedArticlesByPrimarySetNumber({
+  limit = 4,
+  setNumber,
+  supabaseClient,
+}: ContentArticleQueryOptions & {
+  limit?: number;
+  setNumber: string;
+}): Promise<readonly ContentArticleListItem[]> {
+  const normalizedSetNumber = normalizeContentArticleSetNumber(setNumber);
+
+  if (!normalizedSetNumber) {
+    return [];
+  }
+
+  const articles = await listPublishedArticles({
+    supabaseClient,
+  });
+
+  const matchingArticles = articles.filter(
+    (contentArticle) =>
+      normalizeContentArticleSetNumber(contentArticle.primarySetNumber) ===
+      normalizedSetNumber,
+  );
+
+  return typeof limit === 'number'
+    ? matchingArticles.slice(0, Math.max(0, limit))
+    : matchingArticles;
 }
 
 export async function getPublishedArticleBySlug(

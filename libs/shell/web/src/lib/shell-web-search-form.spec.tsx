@@ -73,6 +73,8 @@ describe('ShellWebSearchForm', () => {
     container.remove();
     document.body.innerHTML = '';
     document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    document.documentElement.style.overflow = '';
     window.localStorage.clear();
     window.sessionStorage.clear();
   });
@@ -105,7 +107,7 @@ describe('ShellWebSearchForm', () => {
       );
     });
 
-    const openButton = container.querySelector(
+    const openButton = document.body.querySelector(
       'button[aria-label="Open zoeken"]',
     ) as HTMLButtonElement | null;
 
@@ -115,15 +117,15 @@ describe('ShellWebSearchForm', () => {
       openButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
 
-    const searchInput = container.querySelector(
+    const searchInput = document.body.querySelector(
       '#site-search-mobile',
     ) as HTMLInputElement | null;
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.activeElement).toBe(searchInput);
-    expect(container.textContent).toContain('Recente zoekopdrachten');
-    expect(container.textContent).toContain('The Razor Crest');
+    expect(document.body.textContent).toContain('Recente zoekopdrachten');
+    expect(document.body.textContent).toContain('The Razor Crest');
 
     act(() => {
       if (searchInput) {
@@ -138,8 +140,8 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
-    expect(container.textContent).toContain('Passende sets');
-    expect(container.textContent).toContain(
+    expect(document.body.textContent).toContain('Passende sets');
+    expect(document.body.textContent).toContain(
       'Bekijk alle resultaten voor "grogu"',
     );
 
@@ -149,7 +151,7 @@ describe('ShellWebSearchForm', () => {
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).toBeNull();
     expect(document.body.style.overflow).toBe('');
     expect(document.activeElement).toBe(openButton);
   });
@@ -187,8 +189,8 @@ describe('ShellWebSearchForm', () => {
       await Promise.resolve();
     });
 
-    const searchInput = container.querySelector(
-      '#site-search-inline-overlay',
+    const searchInput = document.getElementById(
+      'site-search-inline-overlay',
     ) as HTMLInputElement | null;
 
     act(() => {
@@ -204,14 +206,420 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
-    expect(container.textContent).toContain(
+    expect(document.body.textContent).toContain(
       'Mario Kart - Mario & Standard Kart',
     );
     expect(
-      container.querySelector(
+      document.body.querySelector(
         'a[href="/sets/mario-kart-mario-standard-kart-72037"]',
       ),
     ).not.toBeNull();
+  });
+
+  it('shows theme suggestions and closes inline search from the backdrop', async () => {
+    const restoreTarget = document.createElement('button');
+    restoreTarget.id = 'search-restore-target';
+    restoreTarget.textContent = 'Account';
+    document.body.appendChild(restoreTarget);
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          sets: [],
+          themes: [
+            {
+              themeSnapshot: {
+                momentum: 'Ships, helmets and display sets.',
+                name: 'Star Wars™',
+                setCount: 42,
+                signatureSet: 'AT-AT',
+                slug: 'star-wars',
+              },
+            },
+          ],
+        }),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          autoFocus
+          inputId="site-search-theme-suggestion"
+          restoreFocusTargetId="search-restore-target"
+        />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = document.getElementById(
+      'site-search-theme-suggestion',
+    ) as HTMLInputElement | null;
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(searchInput, 'Star War');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    expect(document.body.textContent).toContain("Thema's");
+    expect(document.body.textContent).toContain('Star Wars™');
+    expect(document.body.textContent).toContain('Thema · 42 sets');
+    expect(
+      document.body.querySelector('a[href="/themes/star-wars"]'),
+    ).not.toBeNull();
+    const backdrop = document.body.querySelector(
+      'button[data-search-backdrop="true"]',
+    ) as HTMLButtonElement | null;
+    const overlayLayer = document.body.querySelector(
+      '[data-search-overlay-layer="true"]',
+    );
+
+    expect(backdrop).not.toBeNull();
+    expect(backdrop?.parentElement).toBe(document.body);
+    expect(overlayLayer?.parentElement).toBe(document.body);
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    expect(document.documentElement.dataset['shellSearchOpen']).toBe('true');
+    expect(document.activeElement).toBe(searchInput);
+
+    await act(async () => {
+      backdrop?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(document.body.textContent).not.toContain('Star Wars™');
+    await act(async () => {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+    expect(document.activeElement).not.toBe(restoreTarget);
+    expect(document.activeElement).not.toBe(searchInput);
+
+    await act(async () => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Tab',
+        }),
+      );
+      await Promise.resolve();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+
+    expect(document.activeElement).toBe(restoreTarget);
+    expect(document.body.style.overflow).toBe('');
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(document.documentElement.dataset['shellSearchOpen']).toBeUndefined();
+    expect(
+      document.body.querySelector('button[data-search-backdrop="true"]'),
+    ).toBeNull();
+  });
+
+  it('closes inline search and defers account focus until Tab after Escape', async () => {
+    const restoreTarget = document.createElement('button');
+    restoreTarget.id = 'escape-restore-target';
+    restoreTarget.textContent = 'Account';
+    document.body.appendChild(restoreTarget);
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          autoFocus
+          inputId="site-search-inline-escape"
+          restoreFocusTargetId="escape-restore-target"
+        />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = document.getElementById(
+      'site-search-inline-escape',
+    ) as HTMLInputElement | null;
+
+    expect(searchInput).not.toBeNull();
+    expect(document.activeElement).toBe(searchInput);
+    expect(
+      document.body.querySelector('button[data-search-backdrop="true"]'),
+    ).not.toBeNull();
+
+    await act(async () => {
+      searchInput?.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }),
+      );
+      await Promise.resolve();
+    });
+
+    expect(
+      document.body.querySelector('button[data-search-backdrop="true"]'),
+    ).toBeNull();
+    await act(async () => {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+    expect(document.activeElement).not.toBe(restoreTarget);
+    expect(document.activeElement).not.toBe(searchInput);
+
+    await act(async () => {
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Tab',
+        }),
+      );
+      await Promise.resolve();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+
+    expect(document.activeElement).toBe(restoreTarget);
+  });
+
+  it('continues to the account control after tabbing past the last suggestion', async () => {
+    const restoreTarget = document.createElement('button');
+    restoreTarget.id = 'tab-restore-target';
+    restoreTarget.textContent = 'Account';
+    document.body.appendChild(restoreTarget);
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          sets: [
+            {
+              id: '10316',
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+              name: 'Rivendell',
+              pieces: 6167,
+              releaseYear: 2023,
+              slug: 'rivendell-10316',
+              theme: 'LEGO® Icons',
+            },
+          ],
+          themes: [],
+        }),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          autoFocus
+          inputId="site-search-inline-tab"
+          restoreFocusTargetId="tab-restore-target"
+        />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = document.getElementById(
+      'site-search-inline-tab',
+    ) as HTMLInputElement | null;
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(searchInput, 'Rivendell');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    const searchResultsLink = document.body.querySelector(
+      'a[href="/search?q=Rivendell"]',
+    ) as HTMLAnchorElement | null;
+
+    expect(searchResultsLink).not.toBeNull();
+    searchResultsLink?.focus();
+    expect(document.activeElement).toBe(searchResultsLink);
+
+    await act(async () => {
+      searchResultsLink?.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Tab',
+        }),
+      );
+      await Promise.resolve();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+
+    expect(
+      document.body.querySelector('button[data-search-backdrop="true"]'),
+    ).toBeNull();
+    expect(document.activeElement).toBe(restoreTarget);
+  });
+
+  it('moves focus back to the search input when shift-tabbing from the first suggestion', async () => {
+    const restoreTarget = document.createElement('button');
+    restoreTarget.id = 'shift-tab-restore-target';
+    restoreTarget.textContent = 'Account';
+    document.body.appendChild(restoreTarget);
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          sets: [
+            {
+              id: '10316',
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+              name: 'Rivendell',
+              pieces: 6167,
+              releaseYear: 2023,
+              slug: 'rivendell-10316',
+              theme: 'LEGO® Icons',
+            },
+          ],
+          themes: [],
+        }),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          autoFocus
+          inputId="site-search-inline-shift-tab"
+          restoreFocusTargetId="shift-tab-restore-target"
+        />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = document.getElementById(
+      'site-search-inline-shift-tab',
+    ) as HTMLInputElement | null;
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(searchInput, 'Rivendell');
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    const firstSuggestion = document.body.querySelector(
+      'a[href="/sets/rivendell-10316"]',
+    ) as HTMLAnchorElement | null;
+
+    expect(firstSuggestion).not.toBeNull();
+    firstSuggestion?.focus();
+
+    await act(async () => {
+      firstSuggestion?.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Tab',
+          shiftKey: true,
+        }),
+      );
+      await Promise.resolve();
+    });
+
+    expect(
+      document.body.querySelector('button[data-search-backdrop="true"]'),
+    ).not.toBeNull();
+    expect(document.activeElement).toBe(searchInput);
+  });
+
+  it('moves focus to the previous navbar control when shift-tabbing from the active search input', async () => {
+    const previousNavControl = document.createElement('a');
+    previousNavControl.href = '/volgt';
+    previousNavControl.textContent = 'Volgt';
+    document.body.insertBefore(previousNavControl, container);
+
+    const restoreTarget = document.createElement('button');
+    restoreTarget.id = 'shift-tab-input-restore-target';
+    restoreTarget.textContent = 'Account';
+    document.body.appendChild(restoreTarget);
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm
+          autoFocus
+          inputId="site-search-inline-input-shift-tab"
+          restoreFocusTargetId="shift-tab-input-restore-target"
+        />,
+      );
+    });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = document.getElementById(
+      'site-search-inline-input-shift-tab',
+    ) as HTMLInputElement | null;
+
+    expect(searchInput).not.toBeNull();
+    expect(document.activeElement).toBe(searchInput);
+
+    await act(async () => {
+      searchInput?.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          key: 'Tab',
+          shiftKey: true,
+        }),
+      );
+      await Promise.resolve();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+
+    expect(
+      document.body.querySelector('button[data-search-backdrop="true"]'),
+    ).toBeNull();
+    expect(document.activeElement).toBe(previousNavControl);
+    expect(document.activeElement).not.toBe(restoreTarget);
   });
 
   it('keeps snapshot-backed suggestions available while deduping overlay duplicates', async () => {
@@ -236,6 +644,15 @@ describe('ShellWebSearchForm', () => {
             slug: 'mario-kart-mario-standard-kart-72037',
             theme: 'Super Mario',
           },
+          {
+            id: '10316',
+            imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+            name: 'Rivendell',
+            pieces: 6167,
+            releaseYear: 2023,
+            slug: 'rivendell-10316',
+            theme: 'LEGO® Icons',
+          },
         ]),
         {
           headers: {
@@ -256,8 +673,8 @@ describe('ShellWebSearchForm', () => {
       await Promise.resolve();
     });
 
-    const searchInput = container.querySelector(
-      '#site-search-inline-snapshot',
+    const searchInput = document.getElementById(
+      'site-search-inline-snapshot',
     ) as HTMLInputElement | null;
 
     act(() => {
@@ -273,7 +690,7 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
-    expect(container.textContent).toContain('Rivendell');
+    expect(document.body.textContent).toContain('Rivendell');
 
     act(() => {
       if (searchInput) {
@@ -289,21 +706,25 @@ describe('ShellWebSearchForm', () => {
     });
 
     expect(
-      container.querySelectorAll(
+      document.body.querySelectorAll(
         'a[href="/sets/mario-kart-mario-standard-kart-72037"]',
       ),
     ).toHaveLength(1);
   });
 
-  it('can autofocus the inline search field for a direct search page entry', () => {
+  it('can autofocus the inline search field for a direct search page entry', async () => {
     act(() => {
       root.render(
         <ShellWebSearchForm autoFocus inputId="site-search-inline-entry" />,
       );
     });
 
-    const searchInput = container.querySelector(
-      '#site-search-inline-entry',
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const searchInput = document.getElementById(
+      'site-search-inline-entry',
     ) as HTMLInputElement | null;
 
     expect(document.activeElement).toBe(searchInput);
@@ -321,13 +742,13 @@ describe('ShellWebSearchForm', () => {
       );
     });
 
-    const searchInput = container.querySelector(
+    const searchInput = document.body.querySelector(
       '#site-search-overlay-entry',
     ) as HTMLInputElement | null;
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(
-      container.querySelector('button[aria-label="Open zoeken"]'),
+      document.body.querySelector('button[aria-label="Open zoeken"]'),
     ).toBeNull();
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.activeElement).toBe(searchInput);
@@ -348,11 +769,11 @@ describe('ShellWebSearchForm', () => {
       window.dispatchEvent(new Event(openMobileSearchOverlayEventName));
     });
 
-    const searchInput = container.querySelector(
+    const searchInput = document.body.querySelector(
       '#site-search-shell-overlay',
     ) as HTMLInputElement | null;
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.activeElement).toBe(searchInput);
   });
@@ -376,7 +797,7 @@ describe('ShellWebSearchForm', () => {
       );
     });
 
-    const closeButton = container.querySelector(
+    const closeButton = document.body.querySelector(
       'button[aria-label="Zoeken sluiten"]',
     ) as HTMLButtonElement | null;
 
@@ -401,10 +822,10 @@ describe('ShellWebSearchForm', () => {
       );
     });
 
-    const searchInput = container.querySelector(
+    const searchInput = document.body.querySelector(
       '#site-search-overlay-submit',
     ) as HTMLInputElement | null;
-    const searchForm = container.querySelector('form[role="search"]');
+    const searchForm = document.body.querySelector('form[role="search"]');
 
     act(() => {
       if (searchInput) {
@@ -443,10 +864,10 @@ describe('ShellWebSearchForm', () => {
       );
     });
 
-    const searchInput = container.querySelector(
+    const searchInput = document.body.querySelector(
       '#site-search-overlay-reopen',
     ) as HTMLInputElement | null;
-    const closeButton = container.querySelector(
+    const closeButton = document.body.querySelector(
       'button[aria-label="Zoeken sluiten"]',
     ) as HTMLButtonElement | null;
 

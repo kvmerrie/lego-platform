@@ -201,6 +201,29 @@ function getSourceLine(mdx: string): string {
   );
 }
 
+function getIntroAndConclusionText(mdx: string): string {
+  const publicBody = getPublicMdxBody(mdx);
+  const firstHeadingIndex = publicBody.indexOf('\n## ');
+  const intro =
+    firstHeadingIndex >= 0
+      ? publicBody.slice(0, firstHeadingIndex)
+      : publicBody;
+  const conclusionIndex = publicBody.indexOf('## Korte conclusie');
+  const sourceIndex = Math.max(
+    publicBody.lastIndexOf('Bronnen:'),
+    publicBody.lastIndexOf('Via:'),
+  );
+  const conclusion =
+    conclusionIndex >= 0
+      ? publicBody.slice(
+          conclusionIndex,
+          sourceIndex > conclusionIndex ? sourceIndex : undefined,
+        )
+      : '';
+
+  return `${intro}\n${conclusion}`;
+}
+
 function expectSourceLineLast(mdx: string): void {
   const sourceLine = getSourceLine(mdx);
 
@@ -228,12 +251,33 @@ function summarizeGeneratedArticle(
   };
 }
 
+function expectNoEnglishSentencesInFinalMdx(mdx: string): void {
+  expect(mdx).not.toMatch(
+    /\b(?:This set|These sets|The model|The source says|According to|We have|You can|has been revealed|have been revealed|will be available|with official images|display stand|sets revealed|includes two minifigures)\b/iu,
+  );
+}
+
 function expectEditorialQualityGuards(
   result: ReturnType<typeof generateEditorialMdxDraft>,
 ): void {
   const publicBody = getPublicMdxBody(result.mdx);
+  const introAndConclusion = getIntroAndConclusionText(result.mdx);
+  const publicCopy = `${publicBody}\n${result.frontmatter.description}`;
 
   expect(publicBody).not.toMatch(/\b(?:draft|concept)\b/iu);
+  expect(introAndConclusion).not.toMatch(/\b(?:onrustig|misschien)\b/iu);
+  expect(publicCopy).not.toMatch(/\bhoek\b/iu);
+  expect(publicCopy).not.toMatch(/\b(?:dat|dit) gevoel\b/iu);
+  expect(publicCopy).not.toMatch(
+    /\b(?:op je radar zetten|op je radar moet|rustig volgen|rustig te volgen)\b/iu,
+  );
+  expect(publicCopy).not.toMatch(
+    /\b(?:voor gaat zitten|je gaat hier voor zitten|trekt de aandacht|schijnwerpers|spontaan even|meteen energie|moet je zien|mis dit niet|niet missen)\b/iu,
+  );
+  expect(
+    publicCopy.match(/\bdit is vooral\b/giu)?.length ?? 0,
+  ).toBeLessThanOrEqual(1);
+  expectNoEnglishSentencesInFinalMdx(result.mdx);
   expectConcisePublicDescription(result.frontmatter.description);
   expectSourceLineLast(result.mdx);
 }
@@ -510,8 +554,8 @@ describe('editorial agent draft generation', () => {
       ),
     );
     const introPatterns = drafts.map((draft) =>
-      draft.mdx.includes('Geen release om meteen zenuwachtig')
-        ? 'zenuwachtig'
+      draft.mdx.includes('Gewoon een release om even te onthouden')
+        ? 'onthouden'
         : draft.mdx.includes('Wachten op betere beelden')
           ? 'beelden'
           : draft.mdx.includes('De echte keuze')
@@ -548,7 +592,7 @@ describe('editorial agent draft generation', () => {
         `<FeaturedSet setNumber="${sets[index].setNumber}" />`,
       );
       expect(draft.mdx).toContain(sets[index].name);
-      expect(draft.mdx).toContain('Star Wars-fans');
+      expect(draft.mdx).toContain('Star Wars');
       expect(draft.mdx).not.toContain(
         'Dit is geen artikel waarbij je meteen hoeft te beslissen',
       );
@@ -609,7 +653,8 @@ describe('editorial agent draft generation', () => {
     expect(new Set(cases).size).toBe(cases.length);
     expect(cases.join(' ')).toContain('Helmet Collection');
     expect(cases.join(' ')).toContain('displayfiguur');
-    expect(cases.join(' ')).toContain('Imperial ship');
+    expect(cases.join(' ')).toContain('display');
+    expect(cases.join(' ')).toContain('silhouet');
   });
 
   it('uses availability and rumor wording when those signals are present', () => {
@@ -666,6 +711,71 @@ describe('editorial agent draft generation', () => {
     expect(rumorTitle).toMatch(
       /^Imperial Lambda-Class Shuttle (?:gelekt|mogelijk onthuld|eerste info opgedoken)$/u,
     );
+  });
+
+  it('formats vague release dates as natural Dutch timing', () => {
+    const yearOnlySet = createPrimarySet({
+      name: 'Tintin Moon Rocket',
+      setNumber: '21360',
+      theme: 'Ideas',
+    });
+    const yearOnlyResult = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          dateSignals: ['2026'],
+          setNumbers: [yearOnlySet.setNumber],
+          themes: ['Ideas'],
+        }),
+        facts: createFacts({
+          releaseDate: '2026',
+          setNames: [yearOnlySet.name],
+          setNumbers: [yearOnlySet.setNumber],
+          summary: 'Tintin Moon Rocket verschijnt in 2026.',
+          theme: 'Ideas',
+          title: 'LEGO Ideas 21360 Tintin Moon Rocket verschijnt in 2026',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [yearOnlySet],
+        }),
+        primarySet: yearOnlySet,
+        source: createSource({
+          title: 'LEGO Ideas 21360 Tintin Moon Rocket verschijnt in 2026',
+        }),
+      }),
+    );
+    const monthResult = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          dateSignals: ['juni 2026'],
+          setNumbers: [yearOnlySet.setNumber],
+          themes: ['Ideas'],
+        }),
+        facts: createFacts({
+          releaseDate: '',
+          setNames: [yearOnlySet.name],
+          setNumbers: [yearOnlySet.setNumber],
+          summary: 'Tintin Moon Rocket verschijnt in juni 2026.',
+          theme: 'Ideas',
+          title: 'LEGO Ideas 21360 Tintin Moon Rocket verschijnt in juni 2026',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [yearOnlySet],
+        }),
+        primarySet: yearOnlySet,
+        source: createSource({
+          title: 'LEGO Ideas 21360 Tintin Moon Rocket verschijnt in juni 2026',
+        }),
+      }),
+    );
+
+    expect(yearOnlyResult.mdx).not.toContain('op 2026');
+    expect(yearOnlyResult.frontmatter.description).not.toContain('op 2026');
+    expect(yearOnlyResult.mdx).toContain('later in 2026');
+    expect(yearOnlyResult.frontmatter.description).toContain('later in 2026');
+    expect(monthResult.mdx).not.toContain('op juni 2026');
+    expect(monthResult.frontmatter.description).toContain('in juni 2026');
   });
 
   it('keeps existing multi-set titles unchanged', () => {
@@ -763,6 +873,87 @@ describe('editorial agent draft generation', () => {
     expectSetRailAfterMainContent(result.mdx);
   });
 
+  it('matches the gold-standard calm single-set announcement structure', () => {
+    const shuttle = createPrimarySet({
+      name: 'Imperial Lambda-Class Shuttle',
+      setNumber: '75459',
+      theme: 'Star Wars',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          dateSignals: ['1 juli 2026'],
+          keywords: ['Star Wars', 'Imperial', 'Shuttle', 'pre-order'],
+          prices: ['€149,99'],
+          setNumbers: ['75459'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          priceEUR: '€149,99',
+          releaseDate: '1 juli 2026',
+          setNames: ['Imperial Lambda-Class Shuttle'],
+          setNumbers: ['75459'],
+          summary:
+            'LEGO Star Wars 75459 Imperial Lambda-Class Shuttle verschijnt op 1 juli 2026 voor €149,99 en is nu te pre-orderen.',
+          theme: 'Star Wars',
+          title: 'Imperial Lambda-Class Shuttle nu te pre-orderen',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [shuttle],
+        }),
+        primarySet: shuttle,
+        relatedCandidates: [
+          createRelatedCandidate('75406', {
+            name: 'Kylo Ren Command Shuttle',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('75447', {
+            name: 'TIE Fighter',
+            theme: 'Star Wars',
+          }),
+        ],
+        source: createSource({
+          title:
+            'LEGO Star Wars 75459 Imperial Lambda-Class Shuttle officieel onthuld',
+          description:
+            'De set verschijnt op 1 juli 2026 voor €149,99 en is nu te pre-orderen.',
+        }),
+      }),
+    );
+    const publicBody = getPublicMdxBody(result.mdx);
+
+    expect(result.frontmatter.title).toBe(
+      'Imperial Lambda-Class Shuttle nu te pre-orderen',
+    );
+    expect(result.frontmatter.description).toBe(
+      'Imperial Lambda-Class Shuttle verschijnt op 1 juli 2026 en draait om dat herkenbare Star Wars-silhouet waar je je display op bouwt.',
+    );
+    expect(publicBody).toContain(
+      'Imperial Lambda-Class Shuttle komt op 1 juli 2026 als LEGO-set.',
+    );
+    expect(publicBody).toContain(
+      'Het draait hier om één ding: dat herkenbare silhouet.',
+    );
+    expect(publicBody).toContain('<FeaturedSet setNumber="75459" />');
+    expect(publicBody).toContain('## Wat is er aangekondigd?');
+    expect(publicBody).toContain(
+      'LEGO Star Wars 75459 Imperial Lambda-Class Shuttle verschijnt op 1 juli 2026 voor €149,99 en is nu te pre-orderen.',
+    );
+    expect(publicBody).toContain('## Wanneer verschijnt hij?');
+    expect(publicBody).toContain(
+      'Volgens de huidige info verschijnt de set op 1 juli 2026.',
+    );
+    expect(publicBody).toContain('## Voor wie is dit leuk?');
+    expect(publicBody).toContain(
+      'Voor Star Wars-fans die iets hebben met Imperial ships, sterke vormen en duidelijke displaymodellen.',
+    );
+    expectSetRailAfterMainContent(result.mdx);
+    expectSourceLineLast(result.mdx);
+    expectEditorialQualityGuards(result);
+    expect(publicBody).not.toMatch(/\b(?:hoek|onrustig|misschien)\b/iu);
+  });
+
   it('keeps single-set public copy free of internal draft wording', () => {
     const result = generateEditorialMdxDraft(
       createInput({
@@ -787,10 +978,10 @@ describe('editorial agent draft generation', () => {
     expect(result.frontmatter.description).not.toMatch(forbiddenPublicWording);
     expect(publicBody).not.toMatch(forbiddenPublicWording);
     expect(result.frontmatter.description).toContain(
-      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+      'Je ziet snel of je moet opletten of kunt afwachten.',
     );
     expect(publicBody).toContain(
-      'Stond hij al op je lijst, dan wil je nu vooral weten',
+      'Stond hij al op je lijst, dan wil je nu weten',
     );
   });
 
@@ -815,8 +1006,86 @@ describe('editorial agent draft generation', () => {
       /\b(?:draft|concept|artikel helpt|deze draft)\b/iu,
     );
     expect(publicBody).toContain(
-      'Handig om te bepalen of deze set op je radar moet.',
+      'Handig om te bepalen of deze set het onthouden waard is.',
     );
+  });
+
+  it('keeps natural specific wording while reducing repetitive generic phrases', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+        }),
+        facts: createFacts({
+          summary:
+            'Dat herkenbare Imperial gevoel zit hier in de helm, de kleur en de details.',
+        }),
+        source: createSource({
+          description:
+            'Dit is vooral een set met gevoel. Dit is vooral leuk voor fans. Dit is vooral handig om even te checken.',
+          title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        }),
+      }),
+    );
+    const publicCopy = `${getPublicMdxBody(result.mdx)}\n${result.frontmatter.description}`;
+
+    expect(publicCopy).toContain('Dat herkenbare Imperial gevoel');
+    expect(publicCopy).not.toContain('Dit is vooral een set met gevoel');
+    expect(
+      publicCopy.match(/\bdit is vooral\b/giu)?.length ?? 0,
+    ).toBeLessThanOrEqual(1);
+  });
+
+  it('replaces banned hoek wording and vague feeling while keeping specific feeling', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+        }),
+        facts: createFacts({
+          summary:
+            'Dat herkenbare Imperial gevoel blijft overeind. Dit gevoel past niet in de collectie-hoek. Als dit normaal jouw Star Wars-hoek is, kijk dan naar de kleur en details.',
+        }),
+        source: createSource({
+          description: 'Dit is extra context.',
+          title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        }),
+      }),
+    );
+    const publicCopy = `${getPublicMdxBody(result.mdx)}\n${result.frontmatter.description}`;
+
+    expect(publicCopy).toContain('Dat herkenbare Imperial gevoel');
+    expect(publicCopy).toContain(
+      'als Star Wars bij jou standaard tussen je sets staat',
+    );
+    expect(publicCopy).toContain('in je collectie');
+    expect(publicCopy).not.toMatch(/\bhoek\b/iu);
+    expect(publicCopy).not.toContain('Dit gevoel');
+  });
+
+  it('removes hype phrasing from final public copy', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+        }),
+        facts: createFacts({
+          summary:
+            'Dit is zo’n update waar je even voor gaat zitten. Deze set trekt de aandacht en moet je zien.',
+        }),
+        source: createSource({
+          description:
+            'Je gaat hier voor zitten, want deze aankondiging staat in de schijnwerpers.',
+          title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        }),
+      }),
+    );
+    const publicCopy = `${getPublicMdxBody(result.mdx)}\n${result.frontmatter.description}`;
+
+    expect(publicCopy).not.toMatch(
+      /\b(?:voor gaat zitten|je gaat hier voor zitten|trekt de aandacht|schijnwerpers|moet je zien)\b/iu,
+    );
+    expect(publicCopy).toContain('kort te bekijken');
   });
 
   it('prefers the catalog set name as draft display name when a primary set exists', () => {
@@ -1096,7 +1365,7 @@ describe('editorial agent draft generation', () => {
     );
     expectConcisePublicDescription(result.frontmatter.description);
     expect(result.mdx).toContain(
-      'SEGA Genesis Console krijgt een LEGO-release op 1 juni 2026.',
+      'SEGA Genesis Console komt op 1 juni 2026 als LEGO-set.',
     );
     expect(result.mdx).toContain('## Wat is er aangekondigd?');
     expect(result.mdx).toContain('## Wanneer verschijnt hij?');
@@ -1144,7 +1413,7 @@ describe('editorial agent draft generation', () => {
     );
     expectConcisePublicDescription(result.frontmatter.description);
     expect(result.mdx).toContain(
-      'SEGA Genesis (Mega Drive) krijgt een LEGO-release op 1 juni 2026.',
+      'SEGA Genesis (Mega Drive) komt op 1 juni 2026 als LEGO-set.',
     );
     expect(result.mdx).not.toContain(
       'SEGA Genesis (Mega Drive) verschijnt op 1 juni 2026 is',
@@ -1317,7 +1586,7 @@ describe('editorial agent draft generation', () => {
     expect(result.frontmatter.description).toContain('meer dan één set');
     expect(result.mdx).toContain('Piastri en Norris-helmen');
     expect(result.mdx).toContain('meerdere sets');
-    expect(result.mdx).toContain('leuk om te volgen');
+    expect(result.mdx).toContain('in de gaten te houden');
     expect(result.mdx).toContain('welke set eruit springt');
     expect(result.mdx).toContain('## Wat is er aangekondigd?');
     expectFeaturedSetAtTop(result.mdx);
@@ -1615,7 +1884,7 @@ describe('editorial agent draft generation', () => {
     expect(result.frontmatter.description).toContain('Star Wars-fans');
     expect(result.frontmatter.description).toContain('Helmet Collection');
     expect(result.mdx).toContain('Helmet Collection');
-    expect(result.mdx).toContain('Imperial/Rebel vibes');
+    expect(result.mdx).toContain('Imperial/Rebel details');
     expect(result.mdx).toContain('als je de Helmet Collection spaart');
   });
 
@@ -1649,12 +1918,14 @@ describe('editorial agent draft generation', () => {
           setNames: ['Imperial Lambda-Class Shuttle'],
           setNumbers: ['75460'],
           summary:
-            'Imperial Lambda-Class Shuttle is aangekondigd als nieuwe LEGO Star Wars-set.',
+            'Imperial Lambda-Class Shuttle is aangekondigd als nieuwe LEGO Star Wars-set voor fans van de Helmet Collection.',
           theme: 'Star Wars',
           title:
             'LEGO Star Wars 75460 Imperial Lambda-Class Shuttle aangekondigd',
         }),
         source: createSource({
+          description:
+            'De shuttle wordt soms naast de Helmet Collection genoemd, maar is geen helm.',
           title:
             'LEGO Star Wars 75460 Imperial Lambda-Class Shuttle aangekondigd',
         }),
@@ -1663,10 +1934,11 @@ describe('editorial agent draft generation', () => {
 
     expect(result.mdx).not.toContain('Helmet Collection');
     expect(result.frontmatter.description).not.toContain('Helmet Collection');
+    expect(result.mdx).not.toContain('fans van de Helmet Collection');
     expectConcisePublicDescription(result.frontmatter.description);
-    expect(result.mdx).toContain('Imperial ships');
-    expect(result.mdx).toContain('fleet-gevoel');
-    expect(result.mdx).toContain('display shelf');
+    expect(result.mdx).toContain('voertuig');
+    expect(result.mdx).toContain('silhouet');
+    expect(result.mdx).toContain('vorm');
   });
 
   it('uses buildable figure Star Wars tone without Helmet Collection wording', () => {
@@ -1718,6 +1990,55 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).toContain('character shelf');
   });
 
+  it('uses Botanicals vocabulary without scene or character language', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'multi_set_announcement',
+          matchedSets: [],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: null,
+        relatedCandidates: [],
+        detected: createDetected({
+          keywords: ['Botanicals', 'plant', 'bloem'],
+          setNumbers: [],
+          themes: ['Botanicals'],
+        }),
+        facts: createFacts({
+          keywords: ['Botanicals'],
+          releaseDate: '',
+          setNames: [],
+          setNumbers: [],
+          summary:
+            'Deze Botanicals-set heeft een scène met een personage tussen de bloemen.',
+          theme: 'Botanicals',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+        source: createSource({
+          description:
+            'Deze Botanicals-release noemt een scène en een personage, maar het artikel moet over plant, bloem, vorm en kleur gaan.',
+          domain: 'brickset.com',
+          finalUrl:
+            'https://brickset.com/article/123456/three-beautiful-botanical-sets-revealed',
+          inputUrl:
+            'https://brickset.com/article/123456/three-beautiful-botanical-sets-revealed',
+          siteName: 'Brickset',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+      }),
+    );
+    const publicBody = getPublicMdxBody(result.mdx);
+
+    expect(publicBody).toContain('plant');
+    expect(publicBody).toContain('bloem');
+    expect(publicBody).toContain('vorm');
+    expect(publicBody).toContain('kleur');
+    expect(`${publicBody}\n${result.frontmatter.description}`).not.toMatch(
+      /\b(?:sc[eè]ne|sc[eè]nes|personage|personages)\b/iu,
+    );
+  });
+
   it('adds Harry Potter fan tone to announcement copy', () => {
     const result = generateEditorialMdxDraft(
       createInput({
@@ -1758,7 +2079,7 @@ describe('editorial agent draft generation', () => {
       }),
     );
 
-    expect(result.frontmatter.description).toContain('Hogwarts-sfeer');
+    expect(result.frontmatter.description).toContain('Hogwarts-uitstraling');
     expect(result.mdx).toContain('Hogwarts');
     expect(result.mdx).toContain('scènes');
     expect(result.mdx).toContain('diorama');
@@ -1780,10 +2101,12 @@ describe('editorial agent draft generation', () => {
     );
 
     expect(result.frontmatter.description).toBe(
-      'Mario Kart – Spiny Shell verschijnt op 2026-05-01 en is vooral interessant als deze set al in je verzamelhoek past.',
+      'Mario Kart – Spiny Shell verschijnt in mei 2026 en is vooral interessant als deze set al tussen je andere bouwwerken past.',
     );
     expectConcisePublicDescription(result.frontmatter.description);
-    expect(result.mdx).toContain('werelden, objecten of licenties');
+    expect(result.mdx).toContain(
+      'Het draait om vorm, detail en de plek die hij straks op de plank krijgt.',
+    );
     expect(result.mdx).not.toContain('Helmet Collection');
     expect(result.mdx).not.toContain('Hogwarts');
     expect(result.mdx).not.toContain('Middle-earth');
@@ -1899,6 +2222,190 @@ describe('editorial agent draft generation', () => {
 
         expect(firstCharacter).not.toMatch(/[a-z]/u);
       });
+  });
+
+  it('removes English sentences from the public MDX body', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('75458', {
+              name: 'Imperial Remnant AT-RT Driver Helmet',
+              theme: 'Star Wars',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('75458', {
+            name: 'Imperial Remnant AT-RT Driver Helmet',
+            theme: 'Star Wars',
+          }),
+          reason: 'title_match',
+        },
+        detected: createDetected({
+          keywords: ['Star Wars', 'Helmet'],
+          setNumbers: ['75458'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          setNames: ['Imperial Remnant AT-RT Driver Helmet'],
+          setNumbers: ['75458'],
+          summary:
+            'This set has been revealed with official images. The model includes a display stand.',
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet revealed',
+        }),
+        source: createSource({
+          description:
+            'This set has been revealed with official images. The model includes a display stand.',
+          domain: 'brickset.com',
+          finalUrl: 'https://brickset.com/article/131538',
+          inputUrl: 'https://brickset.com/article/131538',
+          language: 'en',
+          siteName: 'Brickset',
+          title:
+            'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet revealed',
+        }),
+      }),
+    );
+    const publicBody = getPublicMdxBody(result.mdx);
+
+    expect(publicBody).not.toMatch(
+      /\b(?:This set|The model|has been revealed|with official images|display stand)\b/iu,
+    );
+    expect(publicBody).toContain('Imperial Remnant AT-RT Driver Helmet');
+    expect(publicBody).toContain('## Waarom dit opvalt');
+  });
+
+  it('cleans English sentences from the final MDX for every article type', () => {
+    const articleTypes = [
+      'deal',
+      'gwp_reward',
+      'multi_set_announcement',
+      'release_roundup',
+      'single_set_news',
+      'unknown',
+    ] as const;
+
+    articleTypes.forEach((articleType) => {
+      const hasPrimarySet =
+        articleType !== 'release_roundup' && articleType !== 'unknown';
+      const primarySet = hasPrimarySet
+        ? {
+            ...createMatchedSet('75458', {
+              name: 'Imperial Remnant AT-RT Driver Helmet',
+              theme: 'Star Wars',
+            }),
+            reason: 'title_match' as const,
+          }
+        : null;
+      const result = generateEditorialMdxDraft(
+        createInput({
+          matching: createMatching({
+            articleType,
+            matchedSets: primarySet
+              ? [primarySet]
+              : [
+                  createMatchedSet('75458', {
+                    name: 'Imperial Remnant AT-RT Driver Helmet',
+                    theme: 'Star Wars',
+                  }),
+                ],
+            unmatchedSetNumbers: [],
+          }),
+          primarySet,
+          detected: createDetected({
+            keywords: ['Star Wars', 'Helmet'],
+            setNumbers: ['75458'],
+            themes: ['Star Wars'],
+          }),
+          facts: createFacts({
+            keyPoints: [
+              'These sets have been revealed with official images.',
+              'The source says the model includes two minifigures and will be available from June.',
+            ],
+            setNames: ['Imperial Remnant AT-RT Driver Helmet'],
+            setNumbers: ['75458'],
+            summary:
+              'This set has been revealed with official images. The source says the model includes two minifigures and will be available from June.',
+            theme: 'Star Wars',
+            title:
+              'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet revealed',
+          }),
+          source: createSource({
+            description:
+              'According to the article, the set features a display stand and will be available from June.',
+            domain: 'brickset.com',
+            finalUrl: 'https://brickset.com/article/131538',
+            inputUrl: 'https://brickset.com/article/131538',
+            language: 'en',
+            siteName: 'Brickset',
+            title:
+              'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet revealed',
+          }),
+        }),
+      );
+
+      expectNoEnglishSentencesInFinalMdx(result.mdx);
+      expect(result.mdx).not.toContain(
+        'The source says the model includes two minifigures',
+      );
+      expect(result.mdx).not.toContain('According to the article');
+    });
+  });
+
+  it('translates known English reveal sentences instead of keeping English paragraphs', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('10345', {
+              name: 'Flower Arrangement',
+              theme: 'Botanicals',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('10345', {
+            name: 'Flower Arrangement',
+            theme: 'Botanicals',
+          }),
+          reason: 'title_match',
+        },
+        detected: createDetected({
+          keywords: ['Botanicals', 'plant', 'bloem'],
+          setNumbers: ['10345'],
+          themes: ['Botanicals'],
+        }),
+        facts: createFacts({
+          setNames: ['Flower Arrangement'],
+          setNumbers: ['10345'],
+          summary: 'Three beautiful botanical sets revealed!',
+          theme: 'Botanicals',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+        source: createSource({
+          description: 'Three beautiful botanical sets revealed!',
+          domain: 'brickset.com',
+          finalUrl:
+            'https://brickset.com/article/123456/three-beautiful-botanical-sets-revealed',
+          inputUrl:
+            'https://brickset.com/article/123456/three-beautiful-botanical-sets-revealed',
+          language: 'en',
+          siteName: 'Brickset',
+          title: 'Three beautiful botanical sets revealed!',
+        }),
+      }),
+    );
+    const publicBody = getPublicMdxBody(result.mdx);
+
+    expect(publicBody).toContain('Nieuwe Botanicals-sets zijn onthuld.');
+    expect(publicBody).not.toContain('Three beautiful botanical sets revealed');
   });
 
   it('omits FeaturedSet for multi-set announcements without a reliable primary new set', () => {
@@ -2027,7 +2534,7 @@ describe('editorial agent draft generation', () => {
 
     expect(result.frontmatter.theme).toBe('Super Mario');
     expect(result.frontmatter.description).toContain(
-      'is vooral leuk als je de punten al hebt.',
+      'werkt het best als je de punten al hebt.',
     );
     expect(result.mdx).toContain('<FeaturedSet setNumber="40787" />');
     expect(result.mdx).not.toContain('<SetSpotlightList');
@@ -2115,6 +2622,56 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).not.toContain('Insiders reward');
     expect(result.mdx).not.toContain('aankopen forceren');
     expect(result.mdx).not.toContain('heeft de LEGO');
+  });
+
+  it('writes restock availability articles with decision copy instead of announcement copy', () => {
+    const tintinSet = createPrimarySet({
+      id: '21360',
+      name: 'Tintin Moon Rocket',
+      setNumber: '21360',
+      slug: 'tintin-moon-rocket-21360',
+      theme: 'Ideas',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['weer op voorraad', 'nu te bestellen'],
+          setNumbers: ['21360'],
+          themes: ['Ideas'],
+        }),
+        facts: createFacts({
+          keywords: ['op voorraad', 'beschikbaar'],
+          setNames: ['Tintin Moon Rocket'],
+          setNumbers: ['21360'],
+          summary:
+            'LEGO Ideas 21360 Tintin Moon Rocket is weer op voorraad en nu te bestellen.',
+          theme: 'Ideas',
+          title: 'LEGO Ideas 21360 Tintin Moon Rocket weer op voorraad',
+        }),
+        matching: createMatching({
+          articleType: 'deal',
+          matchedSets: [tintinSet],
+        }),
+        primarySet: tintinSet,
+        relatedCandidates: [],
+        source: createSource({
+          description:
+            'De Tintin Moon Rocket is weer beschikbaar met beperkte voorraad.',
+          title: 'LEGO Ideas 21360 Tintin Moon Rocket weer op voorraad',
+        }),
+      }),
+    );
+
+    expect(result.frontmatter.title).toBe(
+      'Tintin Moon Rocket weer op voorraad',
+    );
+    expect(result.frontmatter.description).toContain('beschikbaarheid');
+    expect(result.mdx).toContain('nu kopen');
+    expect(result.mdx).toContain('nu op voorraad');
+    expect(result.mdx).toContain('waar je hem veilig kunt kopen');
+    expect(result.mdx).not.toContain('eerste aankondiging');
+    expect(result.mdx).not.toContain('## Wat is er aangekondigd?');
+    expect(result.mdx).not.toContain('Wacht op betere beelden');
   });
 
   it('skips FeaturedSet for release roundups without a primary set', () => {
@@ -2220,7 +2777,7 @@ describe('editorial agent draft generation', () => {
       'Niet alles hoeft meteen op je wishlist, maar er is genoeg om vrolijk doorheen te bladeren.',
     );
     expect(result.mdx).toContain(
-      'Dit overzicht is vooral handig om te zien wat eraan komt en waar je aandacht direct naartoe gaat.',
+      'Dit overzicht laat zien wat eraan komt en waar je aandacht direct naartoe gaat.',
     );
     expect(result.mdx.match(/er zit van alles tussen/gu) ?? []).toHaveLength(0);
     expect(result.mdx.match(/blijft hangen/gu) ?? []).toHaveLength(0);
@@ -2323,6 +2880,190 @@ describe('editorial agent draft generation', () => {
     expect(withoutRail.mdx).not.toContain('<SetRail');
   });
 
+  it('selects only vehicle related sets for vehicle articles', () => {
+    const primarySet = createPrimarySet({
+      name: 'Imperial Lambda-Class Shuttle',
+      setNumber: '75459',
+      theme: 'Star Wars',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['Star Wars', 'Shuttle'],
+          setNumbers: ['75459'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juli 2026',
+          setNames: ['Imperial Lambda-Class Shuttle'],
+          setNumbers: ['75459'],
+          theme: 'Star Wars',
+          title: 'Imperial Lambda-Class Shuttle nu te pre-orderen',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        relatedCandidates: [
+          createRelatedCandidate('75406', {
+            name: 'Kylo Ren Command Shuttle',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('75376', {
+            name: 'Tantive IV',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('40483', {
+            name: 'Luke Skywalker Lightsaber',
+            theme: 'Star Wars',
+          }),
+        ],
+      }),
+    );
+
+    expect(result.mdx).toContain('setIds="75406, 75376"');
+    expect(result.mdx).not.toContain('40483');
+  });
+
+  it('selects only helmet related sets for helmet articles', () => {
+    const primarySet = createPrimarySet({
+      name: 'Imperial Remnant AT-RT Driver Helmet',
+      setNumber: '75458',
+      theme: 'Star Wars',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['Star Wars', 'Helmet Collection'],
+          setNumbers: ['75458'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juni 2026',
+          setNames: ['Imperial Remnant AT-RT Driver Helmet'],
+          setNumbers: ['75458'],
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet onthuld',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        relatedCandidates: [
+          createRelatedCandidate('75349', {
+            name: 'Captain Rex Helmet',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('75350', {
+            name: 'Clone Commander Cody Helmet',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('75376', {
+            name: 'Tantive IV',
+            theme: 'Star Wars',
+          }),
+        ],
+      }),
+    );
+
+    expect(result.mdx).toContain('setIds="75349, 75350"');
+    expect(result.mdx).not.toContain('75376');
+  });
+
+  it('selects only plant and flower related sets for Botanicals articles', () => {
+    const primarySet = createPrimarySet({
+      name: 'Pretty Pink Flower Bouquet',
+      setNumber: '10342',
+      theme: 'Botanicals',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['Botanicals', 'bloem', 'plant'],
+          setNumbers: ['10342'],
+          themes: ['Botanicals'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juni 2026',
+          setNames: ['Pretty Pink Flower Bouquet'],
+          setNumbers: ['10342'],
+          theme: 'Botanicals',
+          title: 'Pretty Pink Flower Bouquet onthuld',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        relatedCandidates: [
+          createRelatedCandidate('10311', {
+            name: 'Orchid',
+            theme: 'Botanicals',
+          }),
+          createRelatedCandidate('10280', {
+            name: 'Flower Bouquet',
+            theme: 'Botanicals',
+          }),
+          createRelatedCandidate('10305', {
+            name: 'Lion Knights Castle',
+            theme: 'Icons',
+          }),
+        ],
+      }),
+    );
+
+    expect(result.mdx).toContain('setIds="10311, 10280"');
+    expect(result.mdx).not.toContain('10305');
+  });
+
+  it('hides SetRail when related candidates mix categories without enough matches', () => {
+    const primarySet = createPrimarySet({
+      name: 'Imperial Lambda-Class Shuttle',
+      setNumber: '75459',
+      theme: 'Star Wars',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['Star Wars', 'Shuttle'],
+          setNumbers: ['75459'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juli 2026',
+          setNames: ['Imperial Lambda-Class Shuttle'],
+          setNumbers: ['75459'],
+          theme: 'Star Wars',
+          title: 'Imperial Lambda-Class Shuttle nu te pre-orderen',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        relatedCandidates: [
+          createRelatedCandidate('75406', {
+            name: 'Kylo Ren Command Shuttle',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('40483', {
+            name: 'Luke Skywalker Lightsaber',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('75349', {
+            name: 'Captain Rex Helmet',
+            theme: 'Star Wars',
+          }),
+        ],
+      }),
+    );
+
+    expect(result.mdx).not.toContain('<SetRail');
+  });
+
   it('uses wait-friendly SetRail copy for future Star Wars helmet releases', () => {
     const primarySet = createPrimarySet({
       name: 'Imperial Remnant AT-RT Driver Helmet',
@@ -2409,11 +3150,11 @@ describe('editorial agent draft generation', () => {
         primarySet,
         relatedCandidates: [
           createRelatedCandidate('10307', {
-            name: 'Eiffel Tower',
+            name: 'NASA Space Shuttle Discovery',
             theme: 'LEGO® Icons',
           }),
           createRelatedCandidate('10316', {
-            name: 'The Lord of the Rings: Rivendell',
+            name: 'Concorde',
             theme: 'LEGO® Icons',
           }),
         ],
@@ -2554,11 +3295,11 @@ describe('editorial agent draft generation', () => {
           primarySet: starTrekDeal,
           relatedCandidates: [
             createRelatedCandidate('10307', {
-              name: 'Eiffel Tower',
+              name: 'NASA Space Shuttle Discovery',
               theme: 'LEGO® Icons',
             }),
             createRelatedCandidate('10316', {
-              name: 'The Lord of the Rings: Rivendell',
+              name: 'Concorde',
               theme: 'LEGO® Icons',
             }),
           ],
@@ -2680,7 +3421,7 @@ describe('editorial agent draft generation', () => {
           "components": [
             "<SetSpotlightList setIds="75458, 75460, 72050" />",
           ],
-          "description": "Overzicht van de LEGO-sets uit juni 2026 waar je vrolijk doorheen wilt bladeren. Van kleine blikvangers tot grotere thema-releases: dit is vooral een maand om te ontdekken wat jou echt aanspreekt.",
+          "description": "Overzicht van de LEGO-sets uit juni 2026 waar je vrolijk doorheen wilt bladeren. Van kleine blikvangers tot grotere thema-releases: genoeg om later terug te zien wat jou echt aanspreekt.",
           "sourceLine": "Bronnen: officiële setinformatie en openbare berichtgeving.",
           "title": "Deze nieuwe LEGO-sets verschijnen in juni 2026",
         },
@@ -2716,7 +3457,7 @@ describe('editorial agent draft generation', () => {
             "<FeaturedSet setNumber="75460" />",
             "<SetRail eyebrow="Kun je niet wachten?" title="Alternatieven om nu te bouwen" setIds="75376, 75375" />",
           ],
-          "description": "Imperial Lambda-Class Shuttle verschijnt op 1 juni 2026 en leunt op dat Imperial ship-silhouet en het fleet-gevoel voor op de plank.",
+          "description": "Imperial Lambda-Class Shuttle verschijnt op 1 juni 2026 en draait om dat herkenbare Star Wars-silhouet waar je je display op bouwt.",
           "sourceLine": "Bronnen: officiële setinformatie en openbare berichtgeving.",
           "title": "Imperial Lambda-Class Shuttle nu zichtbaar",
         },

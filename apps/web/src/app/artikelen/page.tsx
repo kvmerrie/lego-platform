@@ -1,5 +1,6 @@
 import { getMetadataFromSeoFields } from '../lib/editorial-metadata';
 import { resolveArticleHeroPresentation } from '../lib/article-hero-presentation';
+import { buildArticleThemePresentation } from '../lib/article-theme-presentation';
 import {
   getCatalogThemeDisplayName,
   normalizeTheme,
@@ -13,9 +14,11 @@ import {
   ContentArticleFeaturedCard,
   ContentArticleGrid,
   EditorialHeroPanel,
+  type ContentArticleThemePresentation,
 } from '@lego-platform/content/ui';
 import type { ContentArticleListItem } from '@lego-platform/content/util';
 import { ShellWeb } from '@lego-platform/shell/web';
+import { buildArticleThemePath } from '@lego-platform/shared/config';
 import { Surface } from '@lego-platform/shared/ui';
 import React from 'react';
 import type { Metadata } from 'next';
@@ -29,6 +32,10 @@ const articlesHero = {
   type: 'hero',
 } as const;
 
+type ArticleListItemWithThemePresentation = ContentArticleListItem & {
+  themePresentation?: ContentArticleThemePresentation;
+};
+
 export const metadata: Metadata = getMetadataFromSeoFields({
   description:
     'Blijf op de hoogte van nieuwe LEGO-sets, deals en aankondigingen.',
@@ -39,7 +46,7 @@ export const revalidate = 60;
 
 function sortArticlesByArticleDateDesc(
   contentArticles: readonly ContentArticleListItem[],
-): ContentArticleListItem[] {
+): ArticleListItemWithThemePresentation[] {
   return [...contentArticles].sort((left, right) =>
     right.date.localeCompare(left.date),
   );
@@ -47,22 +54,29 @@ function sortArticlesByArticleDateDesc(
 
 function normalizeArticleThemeDisplay(
   contentArticle: ContentArticleListItem,
-): ContentArticleListItem {
+): ArticleListItemWithThemePresentation {
   const normalizedTheme = normalizeTheme(contentArticle.theme);
+  const displayTheme =
+    getCatalogThemeDisplayName(contentArticle.theme) ??
+    normalizedTheme?.displayName ??
+    contentArticle.theme;
 
   return {
     ...contentArticle,
-    theme:
-      getCatalogThemeDisplayName(contentArticle.theme) ??
-      normalizedTheme?.displayName ??
-      contentArticle.theme,
+    theme: displayTheme,
     themeSlug: normalizedTheme?.key ?? contentArticle.themeSlug,
+    themePresentation: buildArticleThemePresentation({
+      href: normalizedTheme
+        ? buildArticleThemePath(normalizedTheme.key)
+        : undefined,
+      theme: contentArticle.theme,
+    }),
   };
 }
 
 async function resolveArticleListItemImage(
-  contentArticle: ContentArticleListItem,
-): Promise<ContentArticleListItem> {
+  contentArticle: ArticleListItemWithThemePresentation,
+): Promise<ArticleListItemWithThemePresentation> {
   if (contentArticle.cardImage) {
     return contentArticle;
   }

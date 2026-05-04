@@ -78,6 +78,10 @@ function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/gu, ' ').trim();
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 function normalizeThemeToneKey(
   theme: string,
   context = '',
@@ -133,13 +137,13 @@ export function getThemeToneCopy(
   > = {
     harry_potter: {
       announcement_audience:
-        'Voor Harry Potter-fans zit de lol vooral in Hogwarts, herkenbare scènes en dat displaygevoel van een klein diorama.',
+        'Voor Harry Potter-fans draait het om Hogwarts, scènes en kleine details voor op de plank.',
       announcement_conclusion:
-        'Onthoud hem als Hogwarts, scènes en herkenbare momenten het deel van Harry Potter zijn waar je collectie sterker van wordt.',
+        'Onthoud hem als Hogwarts, scènes en filmische details je collectie sterker maken.',
       announcement_description:
-        'Voor Harry Potter-fans is dit vooral interessant door de Hogwarts-sfeer, herkenbare scènes en het displaygevoel.',
+        'Voor Harry Potter-fans draait het om Hogwarts-uitstraling, scènes en een compact display.',
       announcement_intro:
-        'De haak zit hier in Hogwarts-herkenning: scènes, kleine details en dat diorama-gevoel dat meteen aan de films doet denken.',
+        'Het draait om Hogwarts-uitstraling: scènes, kleine details en een diorama dat meteen aan de films doet denken.',
     },
     lord_of_the_rings: {
       announcement_audience:
@@ -147,9 +151,9 @@ export function getThemeToneCopy(
       announcement_conclusion:
         'Volg hem vooral als Middle-earth-locaties en epische scènes precies zijn wat je op de plank wilt zien.',
       announcement_description:
-        'Voor Lord of the Rings-fans is dit vooral interessant door Middle-earth, herkenbare locaties en epische displaywaarde.',
+        'Voor Lord of the Rings-fans is dit vooral interessant door Middle-earth, sterke locaties en epische displaywaarde.',
       announcement_intro:
-        'De haak zit hier in Middle-earth: locaties, sfeer en epische scènes die als displaystuk kunnen blijven hangen.',
+        'Het draait om Middle-earth: locaties, sfeer en epische scènes die als displaystuk werken.',
     },
   };
 
@@ -164,8 +168,11 @@ type StarWarsToneSubtype =
 
 function getStarWarsToneSubtype(value: string): StarWarsToneSubtype {
   const normalizedValue = value.toLowerCase();
+  const normalizedValueWithoutCollectionLabel = normalizedValue
+    .replace(/\bhelmet collection\b/gu, '')
+    .replace(/\bgeen\s+helm(?:en)?\b/gu, '');
 
-  if (/\b(?:helmet|helm)\b/u.test(normalizedValue)) {
+  if (/\b(?:helmet|helm)\b/u.test(normalizedValueWithoutCollectionLabel)) {
     return 'helmet';
   }
 
@@ -198,23 +205,23 @@ function getStarWarsToneCopy(
   > = {
     buildable_figure: {
       announcement_audience:
-        'Voor Star Wars-fans is dit vooral leuk als je graag displayfiguren of herkenbare personages op een character shelf zet.',
+        'Voor Star Wars-fans is dit vooral leuk als je graag displayfiguren of duidelijke personages op een character shelf zet.',
       announcement_conclusion:
         'Onthoud hem als een displayfiguur van dit personage precies is wat je Star Wars-plank nog mist.',
       announcement_description:
-        'Voor Star Wars-fans zit de haak in het displayfiguur-gevoel en de herkenning van het personage.',
+        'Voor Star Wars-fans draait het om een displayfiguur en de uitstraling van het personage.',
       announcement_intro:
-        'De haak zit hier in personageherkenning: een bouwbare displayfiguur die meteen duidelijk maakt wie er op de plank staat.',
+        'Het draait om personage-uitstraling: een bouwbare displayfiguur die meteen duidelijk maakt wie er op de plank staat.',
     },
     generic_display: {
       announcement_audience:
-        'Voor Star Wars-fans is dit vooral leuk als je iets zoekt met duidelijke displaywaarde en herkenbare Imperial of Rebel details.',
+        'Voor Star Wars-fans is dit vooral leuk als je iets zoekt met duidelijke displaywaarde en Imperial of Rebel details.',
       announcement_conclusion:
         'Onthoud hem als Star Wars-vormen en displaywaarde precies zijn wat je collectie sterker maakt.',
       announcement_description:
-        'Voor Star Wars-fans is dit vooral interessant door de herkenbare details en het displaygevoel.',
+        'Voor Star Wars-fans draait het om duidelijke details en stevige displaywaarde.',
       announcement_intro:
-        'De haak zit hier in herkenbare Star Wars-vormen en displaywaarde, zonder dat het alleen om formaat of prijs draait.',
+        'Het draait om strakke Star Wars-vormen en displaywaarde, zonder dat formaat of prijs alles bepalen.',
     },
     helmet: {
       announcement_audience:
@@ -224,17 +231,17 @@ function getStarWarsToneCopy(
       announcement_description:
         'Voor Star Wars-fans is dit vooral interessant als je de Helmet Collection spaart of iets hebt met displaysets, Imperial/Rebel-details of trooper designs.',
       announcement_intro:
-        'De haak zit hier in displaywaarde: denk aan Helmet Collection-energie, strakke Star Wars-vormen en Imperial/Rebel vibes.',
+        'Het draait om displaywaarde: Helmet Collection, strakke Star Wars-vormen en Imperial/Rebel details.',
     },
     vehicle: {
       announcement_audience:
-        'Voor Star Wars-fans is dit vooral leuk als je iets hebt met Imperial ships, herkenbare silhouetten en dat fleet-gevoel op de plank.',
+        'Voor Star Wars-fans die iets hebben met Imperial ships, sterke vormen en duidelijke displaymodellen.',
       announcement_conclusion:
-        'Onthoud hem als Imperial ships, strakke silhouetten en een volle display shelf precies jouw Star Wars-hoek zijn.',
+        'Onthoud hem als Star Wars-voertuigen en strakke silhouetten standaard tussen je sets staan.',
       announcement_description:
-        'Voor Star Wars-fans zit de haak in Imperial ships, herkenbare silhouetten en display shelf-waarde.',
+        'draait om dat herkenbare Star Wars-silhouet waar je je display op bouwt',
       announcement_intro:
-        'De haak zit hier in het schipgevoel: een herkenbaar silhouet, duidelijke Star Wars-vormen en dat fleet-gevoel op je display shelf.',
+        'Het draait hier om één ding: dat herkenbare silhouet. Strak, duidelijk en meteen Star Wars.',
     },
   };
 
@@ -253,21 +260,25 @@ function getSingleSetDescriptionHook(
       case 'helmet':
         return 'richt zich duidelijk op Star Wars-fans die hun Helmet Collection willen uitbreiden';
       case 'vehicle':
-        return 'leunt op dat Imperial ship-silhouet en het fleet-gevoel voor op de plank';
+        return 'draait om dat herkenbare Star Wars-silhouet waar je je display op bouwt';
       case 'buildable_figure':
         return 'draait om een bouwbare displayfiguur voor je Star Wars-character shelf';
       case 'generic_display':
       default:
-        return 'leunt op herkenbare Star Wars-vormen en duidelijke displaywaarde';
+        return 'leunt op strakke Star Wars-vormen en duidelijke displaywaarde';
     }
   }
 
   if (themeToneKey === 'harry_potter') {
-    return 'haakt in op Hogwarts-sfeer, herkenbare scènes en dat kleine diorama-gevoel';
+    return 'draait om Hogwarts-uitstraling, scènes en een compact diorama';
   }
 
   if (themeToneKey === 'lord_of_the_rings') {
-    return 'draait om Middle-earth, herkenbare locaties en epische displaywaarde';
+    return 'draait om Middle-earth, sterke locaties en epische displaywaarde';
+  }
+
+  if (isBotanicalsContext(input)) {
+    return 'draait om plant, bloem, vorm en kleur voor op de plank';
   }
 
   const setType = [
@@ -276,12 +287,12 @@ function getSingleSetDescriptionHook(
     input.source.title,
     ...input.facts.keywords,
   ]
-    .filter(Boolean)
+    .filter(isNonEmptyString)
     .join(' ')
     .toLowerCase();
 
   if (/\b(?:helmet|helm)\b/u.test(setType)) {
-    return 'draait om een displayhelm die meteen herkenbaar op de plank staat';
+    return 'draait om een displayhelm met duidelijke vorm op de plank';
   }
 
   if (
@@ -289,10 +300,10 @@ function getSingleSetDescriptionHook(
       setType,
     )
   ) {
-    return 'zet vooral in op een herkenbaar voertuig met displaywaarde';
+    return 'zet vooral in op een voertuig met strak silhouet en displaywaarde';
   }
 
-  return 'is vooral interessant als deze set al in je verzamelhoek past';
+  return 'is vooral interessant als deze set al tussen je andere bouwwerken past';
 }
 
 function buildSingleSetAnnouncementDescription(
@@ -301,16 +312,135 @@ function buildSingleSetAnnouncementDescription(
   releaseLabel: string,
 ): string {
   const hook = getSingleSetDescriptionHook(input);
+  const formattedReleaseLabel = formatReleaseTimingLabel(releaseLabel);
 
-  if (releaseLabel) {
-    return `${setName} verschijnt op ${releaseLabel} en ${hook}.`;
+  if (formattedReleaseLabel) {
+    return `${setName} verschijnt ${formattedReleaseLabel} en ${hook}.`;
   }
 
   return `${setName} is aangekondigd en ${hook}.`;
 }
 
 function buildSingleSetDecisionDescription(setName: string): string {
-  return `${setName} is relevant als je hem al volgde. Je ziet snel of je moet opletten of rustig kunt wachten.`;
+  return `${setName} is relevant als je hem al volgde. Je ziet snel of je moet opletten of kunt afwachten.`;
+}
+
+function isBotanicalsContext(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  const context = normalizeWhitespace(
+    [
+      resolveTheme(input),
+      input.primarySet?.name,
+      input.facts.title,
+      input.facts.summary,
+      input.source.title,
+      input.source.description,
+      ...input.facts.keywords,
+      ...input.detected.keywords,
+      ...input.detected.themes,
+    ]
+      .filter(isNonEmptyString)
+      .join(' '),
+  ).toLowerCase();
+
+  return /\b(?:botanicals?|botanical|plant|planten|bloem|bloemen)\b/u.test(
+    context,
+  );
+}
+
+function isVehicleContext(input: EditorialAgentDraftGenerationInput): boolean {
+  const context = normalizeWhitespace(
+    [
+      input.primarySet?.name,
+      input.facts.title,
+      input.facts.summary,
+      input.source.title,
+      input.source.description,
+      ...input.facts.keywords,
+      ...input.detected.keywords,
+    ]
+      .filter(isNonEmptyString)
+      .join(' '),
+  ).toLowerCase();
+
+  return /\b(?:shuttle|starfighter|fighter|ship|vehicle|voertuig|speeder|x-wing|tie fighter|lambda-class|falcon|transport|interceptor|cruiser|auto|car)\b/u.test(
+    context,
+  );
+}
+
+function getDomainAwareFocusPhrase(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  if (isBotanicalsContext(input)) {
+    return 'plant, bloem, vorm of kleur';
+  }
+
+  if (isVehicleContext(input)) {
+    return 'voertuig, silhouet of vorm';
+  }
+
+  return 'vorm, scène of personage';
+}
+
+function getDomainAwareVisualPhrase(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  if (isBotanicalsContext(input)) {
+    return 'plantvormen, bloemen en kleuren';
+  }
+
+  if (isVehicleContext(input)) {
+    return 'voertuigen, silhouetten en vormen';
+  }
+
+  return 'sterke scènes, displayvormen en details';
+}
+
+function replaceBotanicalsForbiddenVocabulary(
+  input: EditorialAgentDraftGenerationInput,
+  value: string,
+): string {
+  if (!isBotanicalsContext(input)) {
+    return value;
+  }
+
+  return value
+    .replace(/\bpersonages\b/giu, 'vormen')
+    .replace(/\bpersonage\b/giu, 'vorm')
+    .replace(/\bscènes\b/giu, 'bloemen')
+    .replace(/\bscène\b/giu, 'bloem')
+    .replace(/\bscene\b/giu, 'bloem')
+    .replace(/\bscenes\b/giu, 'bloemen');
+}
+
+function replaceControlledVocabulary(
+  input: EditorialAgentDraftGenerationInput,
+  value: string,
+): string {
+  const theme = resolveTheme(input);
+  const starWarsSubtype =
+    normalizeThemeToneKey(theme) === 'star_wars'
+      ? getStarWarsToneSubtype(
+          `${theme} ${buildSingleSetDraftContext(input)} ${input.primarySet?.name ?? ''}`,
+        )
+      : null;
+
+  return value
+    .replace(
+      /\bStar Wars-hoek\b/giu,
+      'als Star Wars bij jou standaard tussen je sets staat',
+    )
+    .replace(/\bin de collectie-hoek\b/giu, 'in je collectie')
+    .replace(/\bcollectie-hoek\b/giu, 'in je collectie')
+    .replace(/\bDat gevoel\b/gu, 'Die uitstraling')
+    .replace(/\bdat gevoel\b/gu, 'die uitstraling')
+    .replace(/\bDit gevoel\b/gu, 'Deze uitstraling')
+    .replace(/\bdit gevoel\b/gu, 'deze uitstraling')
+    .replace(
+      /\bHelmet Collection\b/gu,
+      starWarsSubtype === 'helmet' ? 'Helmet Collection' : 'displaylijn',
+    );
 }
 
 export function capitalizeSentenceStart(value: string): string {
@@ -377,6 +507,49 @@ function normalizeDutchDateSignal(value: string): string | null {
   const year = match[3];
 
   return month && year ? `${year}-${month}-${day}` : null;
+}
+
+function formatReleaseTimingLabel(value: string): string {
+  const signal = normalizeWhitespace(value);
+
+  if (!signal) {
+    return '';
+  }
+
+  const yearOnlyMatch = signal.match(/^20\d{2}$/u);
+
+  if (yearOnlyMatch) {
+    return `later in ${yearOnlyMatch[0]}`;
+  }
+
+  const isoMatch = signal.match(/\b(20\d{2})-(\d{2})(?:-(\d{2}))?\b/u);
+
+  if (isoMatch) {
+    const monthLabel = DUTCH_MONTH_LABELS.get(isoMatch[2]);
+    const day = isoMatch[3] ? Number(isoMatch[3]) : 0;
+
+    if (monthLabel && day > 1) {
+      return `op ${day} ${monthLabel} ${isoMatch[1]}`;
+    }
+
+    if (monthLabel) {
+      return `in ${monthLabel} ${isoMatch[1]}`;
+    }
+  }
+
+  const dutchDateMatch = signal.match(
+    /\b(?:(\d{1,2})\s+)?(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+(20\d{2})\b/iu,
+  );
+
+  if (dutchDateMatch) {
+    const day = dutchDateMatch[1] ? Number(dutchDateMatch[1]) : 0;
+    const month = dutchDateMatch[2].toLowerCase();
+    const year = dutchDateMatch[3];
+
+    return day > 0 ? `op ${day} ${month} ${year}` : `in ${month} ${year}`;
+  }
+
+  return signal.replace(/\bop\s+(20\d{2})\b/giu, 'later in $1');
 }
 
 function resolveDraftArticleDate(input: EditorialAgentDraftGenerationInput): {
@@ -462,7 +635,7 @@ function buildSingleSetDraftContext(
       input.source.finalUrl,
       input.source.inputUrl,
     ]
-      .filter(Boolean)
+      .filter(isNonEmptyString)
       .join(' '),
   ).toLowerCase();
 }
@@ -532,7 +705,7 @@ function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
         ...input.detected.keywords,
         ...input.matching.matchedSets.map((matchedSet) => matchedSet.name),
       ]
-        .filter(Boolean)
+        .filter(isNonEmptyString)
         .join(' '),
     ).toLowerCase();
 
@@ -591,7 +764,9 @@ function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
   if (
     resolveDraftTemplateKind(input.matching.articleType) === 'release_roundup'
   ) {
-    const uniqueThemes = [...new Set(input.detected.themes.filter(Boolean))];
+    const uniqueThemes = [
+      ...new Set(input.detected.themes.filter(isNonEmptyString)),
+    ];
 
     if (uniqueThemes.length > 1) {
       return 'Multiple';
@@ -618,7 +793,9 @@ function resolveTheme(input: EditorialAgentDraftGenerationInput): string {
 
   if (input.matching.articleType === 'single_set_news') {
     if (input.facts.theme === 'Multiple') {
-      const uniqueThemes = [...new Set(input.detected.themes.filter(Boolean))];
+      const uniqueThemes = [
+        ...new Set(input.detected.themes.filter(isNonEmptyString)),
+      ];
 
       return uniqueThemes.length === 1
         ? (normalizePublicContentArticleTheme(uniqueThemes[0]) ?? 'LEGO')
@@ -838,6 +1015,34 @@ function resolveConciseSingleSetTitleAction(
     ].join(' '),
   );
 
+  if (/\bniet meer te bestellen\b/iu.test(normalizedTitle)) {
+    return 'niet meer te bestellen';
+  }
+
+  if (
+    /\b(?:pre-?order|voorbestel|voorbestellen|pre-orderen)\b/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return 'nu te pre-orderen';
+  }
+
+  if (
+    /\b(?:weer op voorraad|back in stock|weer beschikbaar)\b/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return 'weer op voorraad';
+  }
+
+  if (
+    /\b(?:available|beschikbaar|verkrijgbaar|nu te koop|nu te bestellen|leverbaar|op voorraad|beperkte voorraad)\b/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return 'nu beschikbaar';
+  }
+
   if (
     input.matching.articleType === 'deal' ||
     /\b(?:deal|korting|actie|aanbieding|discount|temporarily cheaper|cheaper|sale|dubbele\s+insiders-punten|€\s*\d+)/iu.test(
@@ -863,22 +1068,6 @@ function resolveConciseSingleSetTitleAction(
       subject,
       input,
     );
-  }
-
-  if (
-    /\b(?:pre-?order|voorbestel|voorbestellen|pre-orderen)\b/iu.test(
-      normalizedTitle,
-    )
-  ) {
-    return 'nu te pre-orderen';
-  }
-
-  if (
-    /\b(?:available|beschikbaar|verkrijgbaar|nu te koop|back in stock|op voorraad)\b/iu.test(
-      normalizedTitle,
-    )
-  ) {
-    return 'nu beschikbaar';
   }
 
   if (/\buitverkocht\b/iu.test(normalizedTitle)) {
@@ -1090,7 +1279,7 @@ function isFullHeadlineSubject(
   const normalizedSubject = normalizeWhitespace(subject).toLowerCase();
   const titles = [input.source.title, input.facts.title]
     .map((title) => normalizeWhitespace(title).toLowerCase())
-    .filter(Boolean);
+    .filter(isNonEmptyString);
 
   return titles.some((title) => normalizedSubject === title);
 }
@@ -1133,7 +1322,7 @@ function summarizeF1HelmetSubjects(
 ): string {
   const context = normalizeWhitespace(
     [input.source.title, input.facts.title, input.facts.summary]
-      .filter(Boolean)
+      .filter(isNonEmptyString)
       .join(' '),
   );
 
@@ -1165,7 +1354,7 @@ function getMultiSetTitleSubjects(
 
   const titleContext = normalizeWhitespace(
     [input.source.title, input.facts.title, input.facts.summary]
-      .filter(Boolean)
+      .filter(isNonEmptyString)
       .join(' '),
   ).toLowerCase();
   const factNameCandidates = input.facts.setNames
@@ -1241,9 +1430,13 @@ function buildThemeFollowSentence(
 ): string {
   const theme = resolveTheme(input);
 
+  if (isBotanicalsContext(input)) {
+    return 'Voor Botanicals-fans draait het om plant, bloem, vorm en kleur.';
+  }
+
   return theme === 'LEGO'
     ? ''
-    : `Voor ${theme}-fans is dit leuk om rustig te volgen.`;
+    : `Voor ${theme}-fans is dit iets om in de gaten te houden.`;
 }
 
 function sentenceCaseParagraphStarts(value: string): string {
@@ -1266,41 +1459,288 @@ function sentenceCaseParagraphStarts(value: string): string {
 }
 
 function cleanPublicDraftCopy(value: string): string {
-  return sentenceCaseParagraphStarts(value)
-    .replace(/\bdeze sets trekt\b/giu, 'Deze sets trekken')
-    .replace(/\bdeze sets laat\b/giu, 'Deze sets laten')
-    .replace(/\bdeze aankondiging trekt\b/giu, 'Deze aankondiging trekt')
-    .replace(/\bdeze aankondiging laat\b/giu, 'Deze aankondiging laat')
+  return replaceAwkwardDatePhrases(
+    replaceHypePublicPhrases(
+      replaceRepetitivePublicPhrases(
+        replaceVaguePublicWording(
+          sentenceCaseParagraphStarts(value)
+            .replace(/\bdeze sets trekt\b/giu, 'Deze sets trekken')
+            .replace(/\bdeze sets laat\b/giu, 'Deze sets laten')
+            .replace(
+              /\bdeze aankondiging trekt\b/giu,
+              'Deze aankondiging trekt',
+            )
+            .replace(/\bdeze aankondiging laat\b/giu, 'Deze aankondiging laat')
+            .replace(
+              /\bdit draft helpt je snel kiezen of je nu moet opletten of rustig kunt wachten\.?/giu,
+              'Je ziet snel of je moet opletten of kunt afwachten.',
+            )
+            .replace(
+              /\bdit artikel helpt je(?:\s+[^.!?\n]*)?[.!?]?/giu,
+              'Je ziet snel of je moet opletten of kunt afwachten.',
+            )
+            .replace(
+              /\bartikel helpt je(?:\s+[^.!?\n]*)?[.!?]?/giu,
+              'Je ziet snel of je moet opletten of kunt afwachten.',
+            )
+            .replace(
+              /\bgebruik deze draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+              'Handig om te bepalen of deze set het onthouden waard is.',
+            )
+            .replace(
+              /\bdeze draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+              'Handig om te bepalen of deze set het onthouden waard is.',
+            )
+            .replace(
+              /\bdit draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+              'Je ziet snel of je moet opletten of kunt afwachten.',
+            )
+            .replace(
+              /\bconceptdraft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+              'Handig om te bepalen of deze set het onthouden waard is.',
+            )
+            .replace(/\bconcept\b/giu, 'nieuws')
+            .replace(/\bdraft\b/giu, 'nieuws'),
+        ),
+      ),
+    ),
+  );
+}
+
+function replaceVaguePublicWording(value: string): string {
+  return value
+    .replace(/\bde aantrekkingskracht zit in\b/giu, 'het draait om')
+    .replace(/\bgeneric(?:e)? aantrekkingskracht\b/giu, 'uitstraling')
+    .replace(/\btaferelen\b/giu, 'details')
+    .replace(/\bgeneriek tafereel\b/giu, 'detail')
+    .replace(/\bherkenbaarste detail\b/giu, 'sterkste detail')
+    .replace(/\bmeest herkenbaar\b/giu, 'sterkste uitstraling')
+    .replace(/\bvaag herkenbare details\b/giu, 'duidelijke details')
+    .replace(/\bvaag herkenbare vormen\b/giu, 'duidelijke vormen')
     .replace(
-      /\bdit draft helpt je snel kiezen of je nu moet opletten of rustig kunt wachten\.?/giu,
-      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+      /\biets herkenbaars op de plank\b/giu,
+      'vorm en detail op de plank',
     )
     .replace(
-      /\bdit artikel helpt je(?:\s+[^.!?\n]*)?[.!?]?/giu,
-      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+      /\bvoelt herkenbaar maar vaag\b/giu,
+      'heeft duidelijke uitstraling',
+    );
+}
+
+function replaceRepetitivePublicPhrases(value: string): string {
+  const reducedGenericPhrases = value
+    .replace(/\bop je radar zetten\b/giu, 'onthouden')
+    .replace(/\bop je radar moet\b/giu, 'het onthouden waard is')
+    .replace(/\brustig te volgen\b/giu, 'in de gaten te houden')
+    .replace(/\brustig volgen\b/giu, 'in de gaten houden')
+    .replace(/\bDit is vooral handig om\b/gu, 'Dit kun je gebruiken om')
+    .replace(/\bdit is vooral handig om\b/gu, 'dit kun je gebruiken om')
+    .replace(/\bDit is vooral nieuws om\b/gu, 'Dit is nieuws om')
+    .replace(/\bdit is vooral nieuws om\b/gu, 'dit is nieuws om')
+    .replace(
+      /\bDit is vooral leuk om te volgen\b/gu,
+      'Dit kun je later terugzien',
     )
     .replace(
-      /\bartikel helpt je(?:\s+[^.!?\n]*)?[.!?]?/giu,
-      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+      /\bdit is vooral leuk om te volgen\b/gu,
+      'dit kun je later terugzien',
+    )
+    .replace(/\bDit is vooral leuk voor\b/gu, 'Dit past bij')
+    .replace(/\bdit is vooral leuk voor\b/gu, 'dit past bij')
+    .replace(
+      /\bDit is vooral een set met gevoel\b/gu,
+      'Deze set valt op door vorm en detail',
     )
     .replace(
-      /\bgebruik deze draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
-      'Handig om te bepalen of deze set op je radar moet.',
+      /\bdit is vooral een set met gevoel\b/gu,
+      'deze set valt op door vorm en detail',
+    );
+
+  const matches = reducedGenericPhrases.match(/\bdit is vooral\b/giu) ?? [];
+
+  if (matches.length <= 1) {
+    return reducedGenericPhrases;
+  }
+
+  let seenCount = 0;
+
+  return reducedGenericPhrases.replace(/\bdit is vooral\b/giu, (match) => {
+    seenCount += 1;
+
+    return seenCount === 1
+      ? match
+      : match.startsWith('D')
+        ? 'Dit blijft'
+        : 'dit blijft';
+  });
+}
+
+function replaceHypePublicPhrases(value: string): string {
+  return value
+    .replace(
+      /\bzo[’']?n\s+(?:update|nieuwtje|aankondiging)\s+waar\s+je\s+even\s+voor\s+gaat\s+zitten\b/giu,
+      'een update om kort te bekijken',
+    )
+    .replace(/\bwaar je even voor gaat zitten\b/giu, 'om kort te bekijken')
+    .replace(/\bje gaat hier voor zitten\b/giu, 'je kunt dit kort bekijken')
+    .replace(/\btrekt de aandacht\b/giu, 'is relevant')
+    .replace(/\bstaan samen in de schijnwerpers\b/giu, 'staan samen centraal')
+    .replace(
+      /\bwaar je even voor blijft hangen\b/giu,
+      'waar je kort naar kijkt',
+    )
+    .replace(/\bblijft hangen\b/giu, 'relevant blijft')
+    .replace(/\bblijven hangen\b/giu, 'relevant blijven')
+    .replace(
+      /\bwaar je spontaan even voor wilt doorklikken\b/giu,
+      'die je later kunt bekijken',
     )
     .replace(
-      /\bdeze draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
-      'Handig om te bepalen of deze set op je radar moet.',
+      /\bwaar je meteen energie van krijgt\b/giu,
+      'die direct bij je collectie passen',
+    )
+    .replace(/\bmoet je zien\b/giu, 'kun je bekijken')
+    .replace(/\bmis dit niet\b/giu, 'bekijk de details')
+    .replace(/\bniet missen\b/giu, 'bekijken');
+}
+
+function replaceAwkwardDatePhrases(value: string): string {
+  return value
+    .replace(/\bverschijnt\s+op\s+(20\d{2})\b/giu, 'verschijnt later in $1')
+    .replace(/\brelease\s+op\s+(20\d{2})\b/giu, 'release later in $1')
+    .replace(/\bkomt\s+op\s+(20\d{2})\b/giu, 'komt later in $1')
+    .replace(
+      /\bverschijnt\s+op\s+(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+(20\d{2})\b/giu,
+      'verschijnt in $1 $2',
     )
     .replace(
-      /\bdit draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
-      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+      /\brelease\s+op\s+(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+(20\d{2})\b/giu,
+      'release in $1 $2',
+    );
+}
+
+function translateKnownEnglishSentence(sentence: string): string {
+  const trimmedSentence = sentence.trim();
+
+  if (
+    /^(?:three|two|four|five|six|\d+)\s+beautiful\s+botanical\s+sets\s+revealed!?$/iu.test(
+      trimmedSentence,
     )
-    .replace(
-      /\bconceptdraft(?:\s+[^.!?\n]*)?[.!?]?/giu,
-      'Handig om te bepalen of deze set op je radar moet.',
+  ) {
+    return 'Nieuwe Botanicals-sets zijn onthuld.';
+  }
+
+  if (
+    /^summer\s+lego\s+(.+?)\s+sets\s+(?:revealed|unveiled)!?$/iu.test(
+      trimmedSentence,
     )
-    .replace(/\bconcept\b/giu, 'nieuws')
-    .replace(/\bdraft\b/giu, 'nieuws');
+  ) {
+    const theme =
+      trimmedSentence.match(/^summer\s+lego\s+(.+?)\s+sets/iu)?.[1] ?? '';
+
+    return `Nieuwe LEGO ${theme}-sets voor de zomer zijn onthuld.`;
+  }
+
+  if (/^(.+?)\s+sets\s+(?:revealed|unveiled)!?$/iu.test(trimmedSentence)) {
+    const subject =
+      trimmedSentence.match(
+        /^(.+?)\s+sets\s+(?:revealed|unveiled)!?$/iu,
+      )?.[1] ?? 'Nieuwe LEGO';
+
+    return `${capitalizeSentenceStart(localizeEnglishTitleSubject(subject))}-sets zijn onthuld.`;
+  }
+
+  if (/^(.+?)\s+(?:revealed|unveiled|announced)!?$/iu.test(trimmedSentence)) {
+    const subject =
+      trimmedSentence.match(
+        /^(.+?)\s+(?:revealed|unveiled|announced)!?$/iu,
+      )?.[1] ?? 'Deze set';
+
+    return `${capitalizeSentenceStart(localizeEnglishTitleSubject(subject))} is aangekondigd.`;
+  }
+
+  if (/^this set\b/iu.test(trimmedSentence)) {
+    if (/\bofficial images\b/iu.test(trimmedSentence)) {
+      return 'Deze set is met officiële beelden getoond.';
+    }
+
+    if (/\bnew images\b/iu.test(trimmedSentence)) {
+      return 'Deze set is met nieuwe beelden getoond.';
+    }
+
+    if (/\brevealed\b/iu.test(trimmedSentence)) {
+      return 'Deze set is onthuld.';
+    }
+
+    return 'Deze set staat centraal in dit nieuws.';
+  }
+
+  return '';
+}
+
+function looksLikeEnglishSentence(sentence: string): boolean {
+  const normalizedSentence = normalizeWhitespace(sentence).toLowerCase();
+
+  if (!/\p{L}/u.test(normalizedSentence)) {
+    return false;
+  }
+
+  const englishSignals = [
+    /\b(?:this|these|those)\s+(?:set|sets|model|models|release|releases)\b/iu,
+    /\b(?:the set|the model)\s+(?:is|was|will|has|comes|includes)\b/iu,
+    /\b(?:the source says|the article says|according to|we have|you can|will be|has been|have been)\b/iu,
+    /\b(?:first look|quick look)\b/iu,
+    /\bsets?\s+(?:revealed|unveiled|announced)\b/iu,
+    /\b(?:revealed|unveiled|announced)\s+(?:today|with|for|as)\b/iu,
+    /\b(?:includes|contains|features|comes with|priced at|costs)\b/iu,
+    /\bwill\s+be\s+available\b/iu,
+    /\bavailable\s+(?:now|from|on)\b/iu,
+  ];
+
+  if (englishSignals.some((signal) => signal.test(sentence))) {
+    return true;
+  }
+
+  const englishWordCount =
+    normalizedSentence.match(
+      /\b(?:according|and|announced|article|available|can|contains|features|from|has|have|includes|model|revealed|says|set|sets|source|the|these|this|those|unveiled|was|were|will|with|you)\b/gu,
+    )?.length ?? 0;
+  const dutchWordCount =
+    normalizedSentence.match(
+      /\b(?:aangekondigd|beschikbaar|de|deze|dit|een|en|heeft|het|is|krijgt|met|niet|op|set|sets|van|voor|wordt|zijn)\b/gu,
+    )?.length ?? 0;
+
+  return englishWordCount >= 4 && englishWordCount > dutchWordCount;
+}
+
+function removeEnglishSentencesFromPublicCopy(value: string): string {
+  return value
+    .split('\n\n')
+    .map((paragraph) => {
+      if (
+        paragraph.trimStart().startsWith('---') ||
+        paragraph.trimStart().startsWith('<') ||
+        paragraph.trimStart().startsWith('[') ||
+        /^Bronnen:|^Via:/u.test(paragraph.trimStart())
+      ) {
+        return paragraph;
+      }
+
+      const sentenceParts = paragraph.match(/[^.!?]+[.!?]?/gu) ?? [paragraph];
+      const translatedSentences = sentenceParts
+        .map((sentence) => {
+          if (!looksLikeEnglishSentence(sentence)) {
+            return sentence.trim();
+          }
+
+          return translateKnownEnglishSentence(sentence);
+        })
+        .filter(isNonEmptyString);
+
+      return translatedSentences.join(' ');
+    })
+    .filter(isNonEmptyString)
+    .join('\n\n');
 }
 
 function sentenceMentionsMatchedCatalogSet(
@@ -1320,7 +1760,9 @@ function getIdeasApprovalSubjectLine(
   input: EditorialAgentDraftGenerationInput,
 ): string {
   const candidateSentences = normalizeWhitespace(
-    [input.source.description, input.facts.summary].filter(Boolean).join(' '),
+    [input.source.description, input.facts.summary]
+      .filter(isNonEmptyString)
+      .join(' '),
   )
     .split(/(?<=[.!?])\s+/u)
     .map((sentence) => sentence.trim())
@@ -1348,17 +1790,21 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
 
   switch (input.matching.articleType) {
     case 'gwp_reward':
-      return `${setName} is vooral leuk als je de punten al hebt. Moet je extra aankopen doen om hem vrij te spelen, dan kun je hem beter laten lopen.`;
+      return `${setName} werkt het best als je de punten al hebt. Moet je extra aankopen doen om hem vrij te spelen, dan kun je hem beter laten lopen.`;
     case 'release_roundup':
-      return `Overzicht van de LEGO-sets uit ${resolveMonthLabel(input)} waar je vrolijk doorheen wilt bladeren. Van kleine blikvangers tot grotere thema-releases: dit is vooral een maand om te ontdekken wat jou echt aanspreekt.`;
+      return `Overzicht van de LEGO-sets uit ${resolveMonthLabel(input)} waar je vrolijk doorheen wilt bladeren. Van kleine blikvangers tot grotere thema-releases: genoeg om later terug te zien wat jou echt aanspreekt.`;
     case 'deal':
+      if (hasAvailabilityDealSignal(input)) {
+        return `${setName} draait nu om beschikbaarheid. Check waar hij leverbaar is en of dit het moment is om hem te pakken.`;
+      }
+
       return `${setName} valt op door ${resolveDealHighlight(input)}. Check vooral of de prijs nu echt klopt voor jouw collectie.`;
     case 'multi_set_announcement':
       {
         const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);
 
         if (subjectPhrase && !input.primarySet) {
-          return `${capitalizeSentenceStart(subjectPhrase)} staan centraal in deze LEGO-aankondiging. Vooral leuk om te volgen hoe deze sets zich straks onderscheiden.`;
+          return `${capitalizeSentenceStart(subjectPhrase)} staan centraal in deze LEGO-aankondiging. Houd vooral in de gaten hoe deze sets zich straks onderscheiden.`;
         }
 
         if (subjectPhrase && input.primarySet) {
@@ -1371,22 +1817,22 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
 
         return themeSentence
           ? `Meerdere nieuwe LEGO-sets zijn opgedoken. ${themeSentence}`
-          : 'Meerdere nieuwe LEGO-sets zijn opgedoken. Vooral handig om kort te zien welke richting LEGO op beweegt.';
+          : 'Meerdere nieuwe LEGO-sets zijn opgedoken. Handig om kort te zien welke richting LEGO op beweegt.';
       }
 
       if (!input.primarySet && isIdeasApprovalDraft(input)) {
         const subjectLine = getIdeasApprovalSubjectLine(input);
 
         return subjectLine
-          ? `${subjectLine} Vooral leuk om te volgen omdat deze fanideeën straks een officiële LEGO Ideas-uitwerking kunnen krijgen.`
-          : 'Deze goedgekeurde LEGO Ideas-projecten zijn vooral leuk om te volgen omdat ze laten zien welke fanideeën straks officieel uitgewerkt kunnen worden.';
+          ? `${subjectLine} Houd ze in de gaten, want deze fanideeën kunnen straks een officiële LEGO Ideas-uitwerking krijgen.`
+          : 'Deze goedgekeurde LEGO Ideas-projecten laten zien welke fanideeën straks officieel uitgewerkt kunnen worden.';
       }
 
       if (!input.primarySet) {
-        return 'Deze aankondiging laat een richting zien voor meerdere nieuwe LEGO-sets. Vooral leuk om te volgen welke set straks echt blijft hangen.';
+        return 'Deze aankondiging laat een richting zien voor meerdere nieuwe LEGO-sets. Houd in de gaten welke set straks echt blijft hangen.';
       }
 
-      return `${getMultiSetAnnouncementDisplayName(input)} laat een opvallende richting zien voor meerdere nieuwe LEGO-sets. Vooral leuk om te volgen welke set er straks echt uitspringt.`;
+      return `${getMultiSetAnnouncementDisplayName(input)} laat een opvallende richting zien voor meerdere nieuwe LEGO-sets. Houd in de gaten welke set er straks echt uitspringt.`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
         return buildSingleSetAnnouncementDescription(
@@ -1399,27 +1845,14 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
       return buildSingleSetDecisionDescription(setName);
     case 'unknown':
     default:
-      return 'Handig om te bepalen of deze set op je radar moet. Let vooral op de details die straks echt het verschil maken.';
+      return 'Handig om te bepalen of deze set het onthouden waard is. Let op de details die straks echt het verschil maken.';
   }
 }
 
 function resolveDealHighlight(
   input: EditorialAgentDraftGenerationInput,
 ): string {
-  const context = normalizeWhitespace(
-    [
-      input.facts.title,
-      input.facts.summary,
-      input.source.title,
-      input.source.description,
-      ...input.facts.keyPoints,
-      ...input.facts.keywords,
-      ...input.detected.keywords,
-      ...input.detected.prices,
-    ]
-      .filter(Boolean)
-      .join(' '),
-  );
+  const context = buildDealContext(input);
   const lowerContext = context.toLowerCase();
   const discountMatch = context.match(/€\s?\d+(?:[,.]\d{1,2})?\s+korting/iu);
   const hasDoublePoints =
@@ -1442,7 +1875,102 @@ function resolveDealHighlight(
     return 'korting';
   }
 
+  if (/\bniet meer te bestellen\b/iu.test(context)) {
+    return 'niet meer te bestellen';
+  }
+
+  if (
+    /\b(?:weer op voorraad|back in stock|weer beschikbaar)\b/iu.test(context)
+  ) {
+    return 'weer op voorraad';
+  }
+
+  if (/\bbeperkte voorraad\b/iu.test(context)) {
+    return 'beperkte voorraad';
+  }
+
+  if (
+    /\b(?:op voorraad|beschikbaar|leverbaar|nu te bestellen|nu te koop|verkrijgbaar)\b/iu.test(
+      context,
+    )
+  ) {
+    return 'beschikbaarheid';
+  }
+
   return 'een tijdelijke deal';
+}
+
+function buildDealContext(input: EditorialAgentDraftGenerationInput): string {
+  return normalizeWhitespace(
+    [
+      input.facts.title,
+      input.facts.summary,
+      input.source.title,
+      input.source.description,
+      ...input.facts.keyPoints,
+      ...input.facts.keywords,
+      ...input.detected.keywords,
+      ...input.detected.prices,
+    ]
+      .filter(isNonEmptyString)
+      .join(' '),
+  );
+}
+
+function hasDiscountDealSignal(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  return /\b(?:deal|korting|actie|aanbieding|discount|temporarily cheaper|cheaper|sale|dubbele\s+insiders-punten|dubbele\s+insiders punten|€\s*\d+)/iu.test(
+    buildDealContext(input),
+  );
+}
+
+function hasAvailabilityDealSignal(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  if (hasDiscountDealSignal(input)) {
+    return false;
+  }
+
+  return /\b(?:back in stock|beperkte voorraad|beschikbaar|leverbaar|niet meer te bestellen|nu te bestellen|nu te koop|op voorraad|verkrijgbaar|weer beschikbaar|weer op voorraad)\b/iu.test(
+    buildDealContext(input),
+  );
+}
+
+function hasPreorderSignal(input: EditorialAgentDraftGenerationInput): boolean {
+  return /\b(?:pre-?order|voorbestel|voorbestellen|nu te pre-orderen|nu te reserveren)\b/iu.test(
+    buildDealContext(input),
+  );
+}
+
+function buildSingleSetAnnouncementFactLine(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const setName = getSetDisplayNameForDraft(
+    input.primarySet,
+    input.facts,
+    input.source,
+  );
+  const setNumber = input.primarySet?.setNumber || input.facts.setNumbers[0];
+  const theme = resolveTheme(input);
+  const releaseLabel = formatReleaseTimingLabel(
+    input.facts.releaseDate || input.detected.dateSignals[0] || '',
+  );
+  const priceLabel = input.facts.priceEUR || input.detected.prices[0] || '';
+  const identity = normalizeWhitespace(
+    [theme !== 'LEGO' ? `LEGO ${theme}` : 'LEGO', setNumber, setName]
+      .filter(isNonEmptyString)
+      .join(' '),
+  );
+  const releasePart = releaseLabel
+    ? ` verschijnt ${releaseLabel}`
+    : ' is aangekondigd';
+  const pricePart = priceLabel ? ` voor ${priceLabel}` : '';
+  const preorderPart = hasPreorderSignal(input)
+    ? ' en is nu te pre-orderen'
+    : '';
+
+  return `${identity}${releasePart}${pricePart}${preorderPart}.`;
 }
 
 function buildFrontmatter(
@@ -1534,7 +2062,7 @@ function buildSetRailBlock({
     relatedCandidates.map((candidate) => candidate.setNumber),
   );
 
-  if (formattedSetIds.split(',').filter(Boolean).length < 2) {
+  if (formattedSetIds.split(',').filter(isNonEmptyString).length < 2) {
     return '';
   }
 
@@ -1558,7 +2086,7 @@ function hasHelmetContext(input: EditorialAgentDraftGenerationInput): boolean {
     ...input.facts.keywords,
     ...input.detected.keywords,
   ]
-    .filter(Boolean)
+    .filter(isNonEmptyString)
     .some((value) => /\bhelmet(?:s)?\b/iu.test(value));
 }
 
@@ -1572,7 +2100,7 @@ function hasDisplayContext(input: EditorialAgentDraftGenerationInput): boolean {
     ...input.facts.keywords,
     ...input.detected.keywords,
   ]
-    .filter(Boolean)
+    .filter(isNonEmptyString)
     .some((value) =>
       /\b(?:display|diorama|standbeeld|shelf|plank)\b/iu.test(value),
     );
@@ -1591,11 +2119,79 @@ function hasCollectionLineContext(
       ...input.facts.keywords,
       ...input.detected.keywords,
     ]
-      .filter(Boolean)
+      .filter(isNonEmptyString)
       .some((value) =>
         /\b(?:collection|collectie|lijn|serie|line)\b/iu.test(value),
       )
   );
+}
+
+type RelatedSetUseCase =
+  | 'botanicals'
+  | 'buildable_figure'
+  | 'helmet'
+  | 'unknown'
+  | 'vehicle';
+
+function classifyRelatedSetUseCase(value: string): RelatedSetUseCase {
+  const normalizedValue = value.toLowerCase();
+
+  if (
+    /\b(?:botanical|botanicals|plant|plants|flower|flowers|bloem|bloemen|boeket|bouquet|orchid|roos|rose|succulent|bonsai|garden)\b/u.test(
+      normalizedValue,
+    )
+  ) {
+    return 'botanicals';
+  }
+
+  if (/\b(?:helmet|helm)\b/u.test(normalizedValue)) {
+    return 'helmet';
+  }
+
+  if (
+    /\b(?:minifigure|figure|figuur|beeldfiguur|buildable figure|darth vader|c-3po|r2-d2|chewbacca|grogu)\b/u.test(
+      normalizedValue,
+    )
+  ) {
+    return 'buildable_figure';
+  }
+
+  if (
+    /\b(?:shuttle|starfighter|fighter|ship|vehicle|voertuig|speeder|x-wing|tie fighter|lambda-class|at-rt|falcon|tantive|enterprise|transport|interceptor|cruiser|concorde|space shuttle|spaceship|starship|vessel|kart|racer|car|auto|bolide|viper|ferrari|batmobile|tumbler|plane|vliegtuig|train|trein)\b/u.test(
+      normalizedValue,
+    )
+  ) {
+    return 'vehicle';
+  }
+
+  return 'unknown';
+}
+
+function getPrimaryRelatedSetUseCase(
+  input: EditorialAgentDraftGenerationInput,
+): RelatedSetUseCase {
+  return classifyRelatedSetUseCase(
+    normalizeWhitespace(
+      [
+        input.primarySet?.name,
+        input.primarySet?.theme,
+        resolveTheme(input),
+        input.facts.title,
+        input.source.title,
+        ...input.facts.keywords,
+        ...input.detected.keywords,
+        ...input.detected.themes,
+      ]
+        .filter(isNonEmptyString)
+        .join(' '),
+    ),
+  );
+}
+
+function getCandidateRelatedSetUseCase(
+  candidate: EditorialAgentRelatedSetCandidate,
+): RelatedSetUseCase {
+  return classifyRelatedSetUseCase(`${candidate.theme} ${candidate.name}`);
 }
 
 function hasFutureReleaseContext(
@@ -1610,7 +2206,7 @@ function hasFutureReleaseContext(
       input.facts.releaseDate,
       ...input.detected.dateSignals,
     ]
-      .filter(Boolean)
+      .filter(isNonEmptyString)
       .join(' '),
   );
 
@@ -1673,13 +2269,27 @@ function buildRelatedSetRailCopy(input: EditorialAgentDraftGenerationInput): {
 function getMeaningfulRelatedSetRailCandidates(
   input: EditorialAgentDraftGenerationInput,
 ): readonly EditorialAgentRelatedSetCandidate[] {
-  if (!input.primarySet || input.matching.articleType !== 'deal') {
-    return input.relatedCandidates;
+  if (!input.primarySet) {
+    return [];
+  }
+
+  const primaryUseCase = getPrimaryRelatedSetUseCase(input);
+
+  if (primaryUseCase === 'unknown') {
+    return [];
+  }
+
+  const sameUseCaseCandidates = input.relatedCandidates.filter(
+    (candidate) => getCandidateRelatedSetUseCase(candidate) === primaryUseCase,
+  );
+
+  if (input.matching.articleType !== 'deal') {
+    return sameUseCaseCandidates;
   }
 
   const primaryTheme = input.primarySet.theme.toLowerCase();
 
-  return input.relatedCandidates.filter(
+  return sameUseCaseCandidates.filter(
     (candidate) => candidate.theme.toLowerCase() === primaryTheme,
   );
 }
@@ -1695,15 +2305,6 @@ function buildWhenToBuySection(
   const singleSetTone = getSingleSetDraftTone(input);
   const releaseLabel =
     input.facts.releaseDate || input.detected.dateSignals[0] || '';
-  const announcementFollowLine = pickCuratedCopyVariant(
-    [
-      'Geen release om meteen zenuwachtig van te worden, wel eentje om even te onthouden.',
-      'Wachten op betere beelden is hier geen slecht idee.',
-      'De echte keuze komt pas zodra prijs en beelden duidelijker zijn.',
-    ],
-    input,
-    'single_set_announcement_when_to_buy',
-  );
 
   switch (input.matching.articleType) {
     case 'gwp_reward':
@@ -1713,6 +2314,14 @@ Heb je genoeg Insiders-punten en wil je ${shortName} echt hebben, pak hem dan nu
 
 Moet je eerst nog punten sparen of extra aankopen doen om hem te krijgen? Dan zou ik hem laten lopen. ${shortName} is leuk voor fans, maar niet sterk genoeg om speciaal voor te gaan bijbestellen.`;
     case 'deal':
+      if (hasAvailabilityDealSignal(input)) {
+        return `## Wanneer kopen?
+
+Is ${shortName} nu op voorraad bij een winkel die je vertrouwt, dan is nu kopen logisch. Bij restocks kan wachten betekenen dat je opnieuw achter het net vist.
+
+Twijfel je nog over de set zelf? Check dan eerst prijs, levertijd en retourvoorwaarden. Beschikbaar zijn is handig, maar geen reden om een set te pakken die niet echt op je lijst stond.`;
+      }
+
       return `## Wanneer kopen?
 
 Zakt de prijs naar een niveau waar je ${shortName} al eerder voor wilde hebben, dan is dit je moment. Een deal werkt alleen als hij een set goedkoper maakt die je toch al serieus overwoog.
@@ -1722,27 +2331,29 @@ Moet je jezelf nog overtuigen dat je deze set eigenlijk wilt? Dan is korting all
       if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
         return `## Waarom volgen?
 
-${buildThemeFollowSentence(input) || 'Dit is vooral handig om rustig te volgen.'} Wacht op betere beelden voordat je hier een koopmoment van maakt.`;
+${buildThemeFollowSentence(input) || 'Dit kun je gebruiken om de richting in de gaten te houden.'} Wacht op betere beelden voordat je hier een koopmoment van maakt.`;
       }
 
       return `## Waarom volgen?
 
-Dit is vooral nieuws om rustig te volgen. Eerste beelden en aankondigingen zijn handig om te voelen welke richting LEGO op wil.
+Dit is nieuws om in de gaten te houden. Eerste beelden en aankondigingen laten zien welke richting LEGO op wil.
 
-Kijk ${input.primarySet ? 'welke set' : 'welk idee'} eruit springt door vorm, scène of personage. Daarna kun je rustig wachten op betere beelden, prijzen en de eerste winkelinformatie.`;
+Kijk ${input.primarySet ? 'welke set' : 'welk idee'} eruit springt door ${getDomainAwareFocusPhrase(input)}. Daarna kun je betere beelden, prijzen en de eerste winkelinformatie afwachten.`;
     case 'release_roundup':
       return `## Wanneer kopen?
 
-Bij zo’n releasemaand hoef je niet alles meteen op dag één te kopen. Kijk vooral welke sets je echt blij maken en welke je later nog eens rustig terugpakt.
+Bij zo’n releasemaand hoef je niet alles meteen op dag één te kopen. Kijk welke sets je echt blij maken en welke je later nog eens terugpakt.
 
 Zie je nu al één of twee dozen waar je meteen energie van krijgt, dan zijn dat de logische eerste keuzes. De rest mag best even blijven liggen tot je later voelt welke sets je alsnog naar je wishlist trekken.`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
+        const formattedReleaseLabel = formatReleaseTimingLabel(releaseLabel);
+
         return `## Wanneer verschijnt hij?
 
-${releaseLabel ? `Als de huidige info klopt, verschijnt ${shortName} op ${releaseLabel}.` : `${shortName} heeft nu vooral de status van een aangekondigde release.`} Dat is vooral handig om te onthouden, niet om nu al zenuwachtig van te worden.
+${formattedReleaseLabel ? `Volgens de huidige info verschijnt de set ${formattedReleaseLabel}.` : `${shortName} heeft nu vooral de status van een aangekondigde release.`} Gewoon een datum om te onthouden.
 
-${announcementFollowLine} Tot die tijd kijk je vooral naar extra beelden, bevestigde details en de eerste winkelvermeldingen.`;
+Tot die tijd is het vooral wachten op betere beelden en bevestigde details. Dan zie je pas echt hoe hij op je plank staat.`;
       }
 
       return `## Wanneer kopen?
@@ -1754,7 +2365,7 @@ Twijfel je nog of deze set echt iets toevoegt aan je collectie? Wacht dan rustig
     default:
       return `## Wanneer kopen?
 
-Handig om te bepalen of deze set op je radar moet. Kijk eerst naar de details die voor jouw collectie echt tellen.
+Handig om te bepalen of deze set het onthouden waard is. Kijk eerst naar de details die voor jouw collectie echt tellen.
 
 Pas daarna kun je bepalen of dit een nu-pakken, volgen of laten-lopen moment is.`;
   }
@@ -1772,9 +2383,9 @@ function buildConclusionSection(
   const themeToneContext = buildSingleSetDraftContext(input);
   const announcementConclusionLine = pickCuratedCopyVariant(
     [
+      `Geen set om vandaag al achteraan te gaan, maar wel eentje om te onthouden. De echte keuze komt zodra prijs en beelden duidelijker zijn.`,
       `${shortName} hoeft nog geen directe keuze te zijn. De echte afweging komt zodra prijs en beelden duidelijker zijn.`,
-      `Geen set om vandaag al op te jagen, wel eentje om te onthouden als deze bouwstijl je aanspreekt.`,
-      `Wachten op betere beelden is hier prima; dan zie je pas of ${shortName} echt blijft hangen.`,
+      `Wachten op betere beelden is prima. Dan zie je snel of ${shortName} op je plank past.`,
     ],
     input,
     'single_set_announcement_conclusion',
@@ -1783,7 +2394,7 @@ function buildConclusionSection(
     [
       `Als ${shortName} al op je lijst stond, heb je nu genoeg om te bepalen of je alert wilt blijven.`,
       `Volgde je ${shortName} al, dan weet je nu beter of dit een snelle ja of een rustige wacht is.`,
-      `Voor verzamelaars die ${shortName} al wilden, is dit vooral een check op timing, prijs en plaats in de collectie.`,
+      `Voor verzamelaars die ${shortName} al wilden, draait dit om timing, prijs en plaats in de collectie.`,
     ],
     input,
     'single_set_decision_conclusion',
@@ -1795,6 +2406,12 @@ function buildConclusionSection(
 
 Heb je de punten al klaarstaan en zegt ${shortName} je meteen iets, dan is dit een makkelijke ja. Moet je er moeite voor doen, spaar je punten dan liever voor iets waar je langer naar blijft kijken.`;
     case 'deal':
+      if (hasAvailabilityDealSignal(input)) {
+        return `## Korte conclusie
+
+Dit is een beschikbaarheidscheck. Wilde je ${shortName} al hebben en is hij nu leverbaar, dan wil je vooral snel kijken waar je hem veilig kunt kopen.`;
+      }
+
       return `## Korte conclusie
 
 Een deal is pas goed nieuws als hij op een set valt die je toch al wilde hebben. Gebruik deze daarom als koopmoment-check, niet als excuus om iets mee te pakken waar je morgen alweer over twijfelt.`;
@@ -1802,22 +2419,22 @@ Een deal is pas goed nieuws als hij op een set valt die je toch al wilde hebben.
       if (!input.primarySet && isBricksetWeakMultiSetDraft(input)) {
         return `## Korte conclusie
 
-Kort volgen is genoeg. Zodra er betere beelden of prijzen zijn, zie je vanzelf welke set blijft hangen.`;
+Kort afwachten is genoeg. Zodra er betere beelden of prijzen zijn, zie je vanzelf welke set blijft hangen.`;
       }
 
       if (!input.primarySet) {
         return `## Korte conclusie
 
-Dit nieuws is vooral leuk om te volgen. De projecten geven alvast een eerste richting, maar de echte waarde zit in welk idee straks het sterkste beeld, personage of displaymoment krijgt.`;
+Dit nieuws kun je later terugzien. De projecten geven alvast een eerste richting, maar de echte waarde zit in welk idee straks het sterkste displaymoment krijgt.`;
       }
 
       return `## Korte conclusie
 
-Dit nieuws is vooral leuk om te volgen. ${capitalizeSentenceStart(getMultiSetAnnouncementDisplayName(input))} geeft alvast een eerste richting, maar de echte waarde zit in welk idee straks het sterkste beeld, personage of displaymoment krijgt.`;
+Dit nieuws kun je later terugzien. ${capitalizeSentenceStart(getMultiSetAnnouncementDisplayName(input))} geeft alvast een eerste richting, maar de echte waarde zit in welk idee straks het sterkste displaymoment krijgt.`;
     case 'release_roundup':
       return `## Korte conclusie
 
-${capitalizeSentenceStart(resolveMonthLabel(input))} is vooral een leuke maand om door de nieuwe releases te bladeren. Niet alles hoeft meteen mee, maar er staan genoeg sets tussen waar je spontaan even voor wilt doorklikken.`;
+${capitalizeSentenceStart(resolveMonthLabel(input))} is een leuke maand om door de nieuwe releases te bladeren. Niet alles hoeft meteen mee, maar er staan genoeg sets tussen waar je spontaan even voor wilt doorklikken.`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
         const themeToneCopy = hasEnoughThemeToneConfidence(
@@ -1848,7 +2465,7 @@ ${decisionConclusionLine} Zo niet, dan mag deze rustig langs je heen gaan zonder
     default:
       return `## Korte conclusie
 
-Je ziet snel of je moet opletten of rustig kunt wachten. Vooral relevant als je deze set al volgde.`;
+Je ziet snel of je moet opletten of kunt afwachten. Relevant als je deze set al volgde.`;
   }
 }
 
@@ -1867,7 +2484,7 @@ function buildIntroParagraphs(
     input.facts.releaseDate || input.detected.dateSignals[0] || '';
   const announcementDecisionLine = pickCuratedCopyVariant(
     [
-      'Geen release om meteen zenuwachtig van te worden, wel eentje om even te onthouden.',
+      'Gewoon een release om even te onthouden.',
       'Wachten op betere beelden is hier geen slecht idee.',
       'De echte keuze komt pas zodra prijs en beelden duidelijker zijn.',
     ],
@@ -1878,7 +2495,7 @@ function buildIntroParagraphs(
     [
       `Als je precies op ${setName} zat te wachten, is dit het moment om op te letten.`,
       `${setName} is nieuws voor verzamelaars die deze doos al in het vizier hadden.`,
-      `Volgde je ${setName} al, dan wil je nu vooral prijs, beelden en beschikbaarheid scherp krijgen.`,
+      `Volgde je ${setName} al, dan wil je nu prijs, beelden en beschikbaarheid scherp krijgen.`,
     ],
     input,
     'single_set_decision_intro',
@@ -1891,8 +2508,15 @@ function buildIntroParagraphs(
         `Heb je de punten al klaarstaan en wilde je deze reward toch al, dan is dit een snelle ja. Moet je eerst aankopen forceren om hem vrij te spelen, dan kun je hem beter laten schieten.`,
       ];
     case 'deal':
+      if (hasAvailabilityDealSignal(input)) {
+        return [
+          `${setName} is nu beschikbaar of weer op voorraad. Dat maakt dit vooral relevant als je deze set al wilde hebben en eerder misgreep.`,
+          'Check prijs, levertijd en winkelvoorwaarden voordat je klikt. Dit draait om beschikbaarheid en het juiste koopmoment.',
+        ];
+      }
+
       return [
-        `${setName} is nu vooral interessant door ${resolveDealHighlight(input)}. Dit is geen artikel om een willekeurige korting te vieren, maar om te checken of het moment eindelijk klopt.`,
+        `${setName} valt nu op door ${resolveDealHighlight(input)}. Dit is geen artikel om een willekeurige korting te vieren, maar om te checken of het moment eindelijk klopt.`,
         `Wilde je deze set al en wordt de prijs of bonus nu sterk genoeg, dan moet je opletten. Was je nog niet overtuigd, dan verandert een deal daar meestal weinig aan.`,
       ];
     case 'multi_set_announcement':
@@ -1902,14 +2526,14 @@ function buildIntroParagraphs(
         if (subjectPhrase && !input.primarySet) {
           return [
             `${capitalizeSentenceStart(subjectPhrase)} staan centraal in deze LEGO-aankondiging. Dat is concreter dan een gewone lijst nieuwe sets: je ziet meteen welke namen de aandacht trekken.`,
-            'Let vooral op de eerste beelden, herkenbare vormen en details die straks op een plank blijven hangen.',
+            'Let op de eerste beelden, duidelijke vormen en details die straks op een plank blijven hangen.',
           ];
         }
 
         if (subjectPhrase && input.primarySet) {
           return [
             `${capitalizeSentenceStart(subjectPhrase)} staan samen in de schijnwerpers. ${input.primarySet.name} mag de sterkste blikvanger zijn, maar deze aankondiging draait duidelijk om meerdere sets.`,
-            'De vraag is nu welke doos straks het meest blijft hangen door vorm, scène of personage. Eerste beelden zijn vooral handig om die richting te voelen.',
+            `De vraag is nu welke doos straks het meest blijft hangen door ${getDomainAwareFocusPhrase(input)}. Eerste beelden maken die richting concreet.`,
           ];
         }
       }
@@ -1918,7 +2542,7 @@ function buildIntroParagraphs(
         return [
           'Er zijn meerdere nieuwe LEGO-sets opgedoken. Zie dit als korte eerste blik.',
           buildThemeFollowSentence(input) ||
-            'Let vooral op welke richting LEGO kiest en welke set later de meeste aandacht verdient.',
+            'Let op welke richting LEGO kiest en welke set later de meeste aandacht verdient.',
         ];
       }
 
@@ -1928,30 +2552,31 @@ function buildIntroParagraphs(
         return [
           'Deze goedgekeurde LEGO Ideas-projecten trekken de aandacht omdat ze laten zien welke fanideeën LEGO nu serieus verder onderzoekt.',
           ...(subjectLine ? [subjectLine] : []),
-          'Dit is vooral leuk om te volgen voor de richting: welke gebouwen, films of scènes krijgen straks genoeg karakter om op een plank te blijven hangen?',
+          'Houd vooral de richting in de gaten: welke gebouwen, films of ideeën krijgen straks genoeg karakter om op een plank te blijven hangen?',
         ];
       }
 
       if (!input.primarySet) {
         return [
-          'Deze aankondiging draait om meerdere nieuwe LEGO-sets. Het is vooral een eerste blik op een richting die leuk is om te volgen.',
-          'De vraag is nu welk idee eruit springt zodra er meer beelden zijn. Let op herkenbare scènes, sterke displayvormen en details die straks op een plank blijven hangen.',
+          'Deze aankondiging draait om meerdere nieuwe LEGO-sets. Het is een eerste blik op een richting om te onthouden.',
+          `De vraag is nu welk idee eruit springt zodra er meer beelden zijn. Let op ${getDomainAwareVisualPhrase(input)} die straks op een plank blijven hangen.`,
         ];
       }
 
       return [
         `${getMultiSetAnnouncementDisplayName(input)} trekt de aandacht in een nieuwe LEGO-aankondiging met meerdere sets. Dat maakt dit geen release-overzicht, maar een eerste blik op een richting die leuk is om te volgen.`,
-        `De vraag is nu vooral ${input.primarySet ? 'welke set' : 'welk idee'} eruit springt zodra er meer beelden zijn. Let op herkenbare scènes, sterke displayvormen en details die straks op een plank blijven hangen.`,
+        `De vraag is nu ${input.primarySet ? 'welke set' : 'welk idee'} eruit springt zodra er meer beelden zijn. Let op ${getDomainAwareVisualPhrase(input)} die straks op een plank blijven hangen.`,
       ];
     case 'release_roundup':
       return [
         capitalizeSentenceStart(
           `${resolveMonthLabel(input)} wordt zo’n maand waarin je ineens veel nieuwe LEGO-dozen ziet langskomen: van kleine planten tot Disney, Jurassic World en Star Wars. Niet alles hoeft meteen op je wishlist, maar er is genoeg om vrolijk doorheen te bladeren.`,
         ),
-        `Dit overzicht is vooral handig om te zien wat eraan komt en waar je aandacht direct naartoe gaat. Sommige sets springen meteen naar voren, andere zijn vooral leuk om later nog eens rustig terug te pakken.`,
+        `Dit overzicht laat zien wat eraan komt en waar je aandacht direct naartoe gaat. Sommige sets springen meteen naar voren, andere kun je later nog eens terugpakken.`,
       ].map(capitalizeSentenceStart);
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
+        const formattedReleaseLabel = formatReleaseTimingLabel(releaseLabel);
         const themeToneCopy = hasEnoughThemeToneConfidence(
           theme,
           themeToneContext,
@@ -1965,27 +2590,27 @@ function buildIntroParagraphs(
         if (themeToneCopy) {
           return [
             `${
-              releaseLabel
-                ? `${setName} krijgt een LEGO-release op ${releaseLabel}.`
+              formattedReleaseLabel
+                ? `${setName} komt ${formattedReleaseLabel} als LEGO-set.`
                 : `${setName} is aangekondigd als nieuwe LEGO-set.`
             } ${themeToneCopy}`,
-            `${announcementDecisionLine} ${theme === 'LEGO' ? 'Deze set' : `${theme}-sets`} trekken je waarschijnlijk vanzelf als dit normaal jouw hoek van LEGO is.`,
+            `Dit is geen set waar je nu al iets mee hoeft. ${announcementDecisionLine} Zeker als ${theme === 'LEGO' ? 'deze bouwstijl' : theme} standaard tussen je sets staat.`,
           ];
         }
 
         return [
           `${
-            releaseLabel
-              ? `${setName} krijgt een LEGO-release op ${releaseLabel}.`
+            formattedReleaseLabel
+              ? `${setName} komt ${formattedReleaseLabel} als LEGO-set.`
               : `${setName} is aangekondigd als nieuwe LEGO-set.`
-          } Alleen dat idee is al leuk voor fans die precies dit soort werelden, objecten of licenties graag als bouwset op de plank zien.`,
-          `${announcementDecisionLine} ${theme === 'LEGO' ? 'Deze set' : `${theme}-sets`} trekken je waarschijnlijk vanzelf als dit normaal jouw hoek van LEGO is.`,
+          } Het draait om vorm, detail en de plek die hij straks op de plank krijgt.`,
+          `Dit is geen set waar je nu al iets mee hoeft. ${announcementDecisionLine} Zeker als ${theme === 'LEGO' ? 'deze bouwstijl' : theme} standaard tussen je sets staat.`,
         ];
       }
 
       return [
         `${setName} is opgedoken als nieuwe LEGO-set. ${decisionIntroLine} Niet iedere nieuwe doos hoeft meteen budget te claimen.`,
-        `Stond hij al op je lijst, dan wil je nu vooral weten of je hem moet volgen of meteen moet pakken zodra hij live gaat. Twijfel je nog, dan is dit juist het moment om kritisch te blijven.`,
+        `Stond hij al op je lijst, dan wil je nu weten of je hem in de gaten houdt of meteen pakt zodra hij live gaat. Twijfel je nog, dan is dit juist het moment om kritisch te blijven.`,
       ];
     case 'unknown':
     default:
@@ -2005,11 +2630,11 @@ function buildMidSection(input: EditorialAgentDraftGenerationInput): string {
 
 Bij een volle releasemaand hoeft niet alles meteen raak te zijn. Juist dan merk je snel welke sets je meteen wilt openen en welke dozen vooral leuk zijn om nog even in je achterhoofd te houden.
 
-Tussen de grotere blikvangers staan vaak ook kleinere sets die pas op een tweede blik charmant worden. Dat maakt dit soort overzichten vooral fijn om even rustig doorheen te scrollen.`;
+Tussen de grotere blikvangers staan vaak ook kleinere sets die pas op een tweede blik charmant worden. Dat maakt dit soort overzichten fijn om later nog eens terug te zien.`;
     case 'unknown':
       return `## Waar moet je op letten?
 
-Kijk vooral naar de herkenbare details, de bouwvorm en de plek die deze set in je collectie zou krijgen. Als dat niet meteen iets doet, kun je rustig wachten op meer informatie.`;
+Kijk naar de details, de bouwvorm en de plek die deze set in je collectie zou krijgen. Als dat niet meteen iets doet, kun je meer informatie afwachten.`;
     case 'multi_set_announcement':
       {
         const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);
@@ -2017,9 +2642,9 @@ Kijk vooral naar de herkenbare details, de bouwvorm en de plek die deze set in j
         if (subjectPhrase) {
           return `## Wat is er aangekondigd?
 
-${capitalizeSentenceStart(subjectPhrase)} vormen de kern van dit nieuws. Daardoor draait de eerste indruk niet om één losse favoriet, maar om vergelijken: welke set heeft de sterkste vorm, het herkenbaarste detail of het beste displaymoment?
+${capitalizeSentenceStart(subjectPhrase)} vormen de kern van dit nieuws. Daardoor draait de eerste indruk niet om één losse favoriet, maar om vergelijken: welke set heeft de sterkste vorm, het scherpste detail of het beste displaymoment?
 
-Kijk vooral welke naam straks blijft hangen zodra er betere beelden, prijzen en officiële details zijn.`;
+Kijk welke naam straks blijft hangen zodra er betere beelden, prijzen en officiële details zijn.`;
         }
       }
 
@@ -2027,7 +2652,7 @@ Kijk vooral welke naam straks blijft hangen zodra er betere beelden, prijzen en 
         if (isBricksetWeakMultiSetDraft(input)) {
           return `## Wat valt op?
 
-Het belangrijkste is de richting: meerdere sets, zonder dat één set alles draagt. Kijk vooral naar kleuren, vormen en displaywaarde.`;
+Het belangrijkste is de richting: meerdere sets, zonder dat één set alles draagt. Kijk naar kleuren, vormen en displaywaarde.`;
         }
 
         if (isIdeasApprovalDraft(input)) {
@@ -2035,39 +2660,41 @@ Het belangrijkste is de richting: meerdere sets, zonder dat één set alles draa
 
           return `## Wat is er goedgekeurd?
 
-${subjectLine || 'De bron draait om LEGO Ideas-projecten die als officiële set mogen worden uitgewerkt.'} De projecten zitten nog vroeg in het proces, dus het draait nu vooral om de ideeën zelf.
+${subjectLine || 'De bron draait om LEGO Ideas-projecten die als officiële set mogen worden uitgewerkt.'} De projecten zitten nog vroeg in het proces, dus het draait nu om de ideeën zelf.
 
-Kijk vooral naar wat er aangekondigd is: welke ideeën hebben een sterke scène, welk project voelt herkenbaar en welke richting maakt nieuwsgierig naar de uiteindelijke LEGO-uitwerking?`;
+Kijk naar wat er aangekondigd is: welke ideeën hebben een sterke scène, welk project heeft de duidelijkste uitstraling en welke richting maakt nieuwsgierig naar de uiteindelijke LEGO-uitwerking?`;
         }
 
         return `## Wat is er aangekondigd?
 
 Deze aankondiging draait om meerdere nieuwe LEGO-sets, zonder dat één set alles draagt.
 
-Kijk vooral naar wat er aangekondigd is, welke richting LEGO kiest en welke sets straks opvallen zodra er betere beelden of officiële details zijn.`;
+Kijk naar wat er aangekondigd is, welke richting LEGO kiest en welke sets straks opvallen zodra er betere beelden of officiële details zijn.`;
       }
 
       return `## Wat is er aangekondigd?
 
 ${input.facts.summary || `${getMultiSetAnnouncementDisplayName(input)} voert deze nieuwe LEGO-aankondiging aan.`}
 
-Omdat het om meerdere sets gaat, draait het nu vooral om richting en eerste indruk. Welke set heeft het sterkste beeld, welke voelt het meest herkenbaar en welke blijft interessant als er straks meer details volgen?`;
+Omdat het om meerdere sets gaat, draait het nu om richting en eerste indruk. Welke set heeft het sterkste beeld, welke heeft de beste uitstraling en welke blijft interessant als er straks meer details volgen?`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
+        const factLine = buildSingleSetAnnouncementFactLine(input);
+
         return `## Wat is er aangekondigd?
 
-${input.facts.summary || `${getSetDisplayNameForDraft(input.primarySet, input.facts, input.source)} is genoemd als nieuwe LEGO-release.`}
+${factLine}
 
-Voor nu is dit vooral een eerste aankondiging om op je radar te zetten. De waarde zit hier dus meer in herkenning en nieuwsgierigheid dan in direct koopadvies.`;
+Op dit moment zegt dat vooral: hij komt eraan. De echte beoordeling volgt pas zodra beelden en details duidelijker zijn.`;
       }
 
       return `## Waarom dit opvalt
 
-${input.facts.summary || 'Dit verhaal is vooral interessant omdat er een concrete setkoppeling en een duidelijk koopmoment in zit.'}`;
+${input.facts.summary || 'Dit verhaal is interessant door de concrete setkoppeling en het duidelijke koopmoment.'}`;
     default:
       return `## Waarom dit opvalt
 
-${input.facts.summary || 'Dit verhaal is vooral interessant omdat er een concrete setkoppeling en een duidelijk koopmoment in zit.'}`;
+${input.facts.summary || 'Dit verhaal is interessant door de concrete setkoppeling en het duidelijke koopmoment.'}`;
   }
 }
 
@@ -2082,9 +2709,9 @@ function buildAnnouncementAudienceSection(
 
     return `## Voor wie is dit leuk?
 
-Dit nieuws is vooral leuk voor fans van ${theme === 'LEGO' ? 'dit soort projecten' : theme} en voor verzamelaars die graag vroeg zien welke richting LEGO op beweegt.
+Dit nieuws past bij fans van ${theme === 'LEGO' ? 'dit soort projecten' : theme} en verzamelaars die graag vroeg zien welke richting LEGO op beweegt.
 
-Zonder duidelijke hoofdkeuze draait het nu vooral om vergelijken: welke ideeën blijven hangen, welke beelden maken nieuwsgierig en welke projecten wil je later nog eens terugzien?`;
+Zonder duidelijke hoofdkeuze draait het nu om vergelijken: welke ideeën blijven hangen, welke beelden maken nieuwsgierig en welke projecten wil je later nog eens terugzien?`;
   }
 
   const setName = getSetDisplayNameForDraft(
@@ -2100,9 +2727,9 @@ Zonder duidelijke hoofdkeuze draait het nu vooral om vergelijken: welke ideeën 
 
   return `## Voor wie is dit leuk?
 
-${themeToneCopy || `Deze aankondiging is vooral leuk voor fans van ${theme === 'LEGO' ? 'dit soort sets' : theme} en voor verzamelaars die graag vroeg zien welke nieuwe dozen eraan komen.`}
+${themeToneCopy || `Deze aankondiging past bij fans van ${theme === 'LEGO' ? 'dit soort sets' : theme} en verzamelaars die graag vroeg zien welke nieuwe dozen eraan komen.`}
 
-Zoek je vooral naar sets die meteen iets herkenbaars op de plank zetten, dan is ${setName} precies het soort release waar je even voor blijft hangen.`;
+Zoek je sets die meteen vorm en detail op de plank zetten, dan is ${setName} precies het soort release waar je even voor blijft hangen.`;
 }
 
 function buildReleaseRoundupSetSpotlightListBlock(
@@ -2202,8 +2829,12 @@ export function generateEditorialMdxDraft(
     );
   }
 
-  const cleanDescription = cleanPublicDraftCopy(
-    frontmatter.description,
+  const cleanDescription = replaceBotanicalsForbiddenVocabulary(
+    input,
+    replaceControlledVocabulary(
+      input,
+      cleanPublicDraftCopy(frontmatter.description),
+    ),
   ).replace(/\bheeft de LEGO\b/gu, 'heeft LEGO');
   const frontmatterBlock = `---\ntitle: "${escapeFrontmatterValue(frontmatter.title)}"\nslug: "${frontmatter.slug}"\ndescription: "${escapeFrontmatterValue(cleanDescription)}"\ndate: "${frontmatter.date}"\ntheme: "${escapeFrontmatterValue(frontmatter.theme)}"\nheroImage: "${frontmatter.heroImage}"\nheroImageAlt: "${escapeFrontmatterValue(frontmatter.heroImageAlt)}"\nstatus: "${frontmatter.status}"\nsourceUrl: "${frontmatter.sourceUrl}"\nsourceDisplayMode: "${frontmatter.sourceDisplayMode}"\nsignalSourceName: "${escapeFrontmatterValue(frontmatter.signalSourceName ?? '')}"\n---`;
 
@@ -2276,9 +2907,15 @@ export function generateEditorialMdxDraft(
     .map((section, index) =>
       index === 0 ? section : cleanPublicDraftCopy(section),
     );
-  const mdx = `${sections.join('\n\n')}\n`.replace(
+  const assembledMdx = `${sections.join('\n\n')}\n`.replace(
     /\bheeft de LEGO\b/gu,
     'heeft LEGO',
+  );
+  const mdx = removeEnglishSentencesFromPublicCopy(
+    replaceBotanicalsForbiddenVocabulary(
+      input,
+      replaceControlledVocabulary(input, cleanPublicDraftCopy(assembledMdx)),
+    ),
   );
 
   return {

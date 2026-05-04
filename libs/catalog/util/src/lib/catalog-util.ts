@@ -2,7 +2,6 @@ import { MetricCard } from '@lego-platform/shared/types';
 import { formatCompactNumber } from '@lego-platform/shared/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import {
-  getThemeDisplayName,
   isThemeVisible,
   normalizeTheme,
   shouldMapThemeToParent,
@@ -86,6 +85,11 @@ export interface CatalogSearchMatch {
   discoverRank: number;
   score: number;
   setCard: CatalogHomepageSetCard;
+}
+
+export interface CatalogThemeSearchMatch {
+  score: number;
+  theme: CatalogThemeDirectoryItem;
 }
 
 export interface CatalogSetDisplaySize {

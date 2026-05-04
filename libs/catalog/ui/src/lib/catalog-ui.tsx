@@ -1236,6 +1236,7 @@ export function CatalogSetDetailPanel({
   priceAlertAction,
   priceHistoryPanel,
   similarSetsRail,
+  setNewsRail,
   themeDirectoryHref,
   themeHref,
   trustSignals = [],
@@ -1254,6 +1255,7 @@ export function CatalogSetDetailPanel({
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
   similarSetsRail?: ReactNode;
+  setNewsRail?: ReactNode;
   themeDirectoryHref?: string;
   themeHref?: string;
   trustSignals?: readonly CatalogSetDetailTrustSignal[];
@@ -1419,6 +1421,10 @@ export function CatalogSetDetailPanel({
         />
         <CatalogTrustPanel trustSignals={trustSignals} />
       </section>
+
+      {setNewsRail ? (
+        <div className={styles.detailSimilarRail}>{setNewsRail}</div>
+      ) : null}
     </section>
   );
 }

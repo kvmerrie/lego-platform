@@ -203,8 +203,29 @@ vi.mock('@lego-platform/catalog/util', () => ({
     theme.toLowerCase().replaceAll(' ', '-'),
   getCanonicalCatalogSetId: (sourceSetNumber: string) =>
     sourceSetNumber.trim().replace(/-1$/u, ''),
+  getCatalogThemeDefinition: (theme: string) =>
+    theme === 'Star Wars'
+      ? {
+          name: 'Star Wars™',
+          slug: 'star-wars',
+          visual: {
+            backgroundColor: '#5573b5',
+            textColor: '#ffffff',
+          },
+        }
+      : undefined,
   getCatalogThemeDisplayName: (theme: string) =>
     theme === 'Star Wars' ? 'Star Wars™' : theme,
+  getCatalogThemeMutedTextColor: () => '#f4f7fb',
+  getCatalogThemeSurfaceTone: (theme: string) =>
+    theme === 'Star Wars™' ? 'dark' : 'light',
+  normalizeTheme: (theme?: string) =>
+    theme
+      ? {
+          displayName: theme === 'Star Wars' ? 'Star Wars™' : theme,
+          key: theme.toLowerCase().replaceAll(' ', '-'),
+        }
+      : undefined,
   normalizeCatalogSetImages: ({ imageUrl }: { imageUrl?: string }) => ({
     imageUrl,
     primaryImage: imageUrl,
@@ -509,6 +530,50 @@ describe('article mdx components', () => {
 
   it('registers ImageGallery in the MDX components map', () => {
     expect(getArticleMdxComponents().ImageGallery).toBeTypeOf('function');
+  });
+
+  it('keeps regular MDX paragraphs wrapped as paragraphs', () => {
+    const Paragraph = getArticleMdxComponents().p as React.ComponentType<{
+      children?: ReactNode;
+    }>;
+    const markup = renderToStaticMarkup(
+      <Paragraph>
+        Een gewone alinea met <strong>nadruk</strong>.
+      </Paragraph>,
+    );
+
+    expect(markup).toBe(
+      '<p>Een gewone alinea met <strong>nadruk</strong>.</p>',
+    );
+  });
+
+  it('unwraps MDX block components from paragraphs to keep article HTML valid', () => {
+    const components = getArticleMdxComponents();
+    const Paragraph = components.p as React.ComponentType<{
+      children?: ReactNode;
+    }>;
+    const ImageGallery = components.ImageGallery as React.ComponentType<{
+      images?: string;
+    }>;
+    const Callout = components.Callout as React.ComponentType<{
+      children?: ReactNode;
+      title?: string;
+    }>;
+    const markup = renderToStaticMarkup(
+      <Paragraph>
+        Eerst context.
+        <ImageGallery images="https://storage.example/article-images/star-wars-day-2026/grogu.webp::Grogu" />
+        <Callout title="Let op">Nog een blok.</Callout>
+        Daarna verder.
+      </Paragraph>,
+    );
+
+    expect(markup).not.toContain('<p><section');
+    expect(markup).not.toContain('<p><aside');
+    expect(markup).toContain('<p>Eerst context.</p>');
+    expect(markup).toContain('data-gallery="true"');
+    expect(markup).toContain('<aside>Nog een blok.</aside>');
+    expect(markup).toContain('<p>Daarna verder.</p>');
   });
 
   it('registers Faq in the MDX components map', () => {

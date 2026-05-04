@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -25,6 +27,88 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('ShellWeb', () => {
+  it('keeps desktop search wide while layering focused search above the backdrop', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/shell/web/src/lib/shell-web.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('inline-size: clamp(18rem, 32vw, 25rem);');
+    expect(css).toContain('max-inline-size: 25rem;');
+    expect(css).toContain('.searchBackdrop {');
+    expect(css).toContain('background: rgba(12, 18, 32, 0.82);');
+    expect(css).toContain('inset: 0;');
+    expect(css).toContain('position: fixed;');
+    expect(css).toContain('z-index: 1200;');
+    expect(css).toContain(
+      ":global(html[data-shell-search-open='true']) .header {",
+    );
+    expect(css).not.toContain('z-index: 1250;');
+    expect(css).toContain('.searchOverlayLayer {');
+    expect(css).toContain('--shell-navbar-control-height: 2.5rem;');
+    expect(css).toContain('.searchShellActive {\n  z-index: 1302;');
+    expect(css).toContain('--shell-navbar-control-height: 2.5rem;');
+    expect(css).toContain(
+      'block-size: var(--shell-navbar-control-height, 2.5rem);',
+    );
+    expect(css).toContain('.searchPlaceholder {');
+    expect(css).toContain('.mobileSearchOverlay {');
+    expect(css).toContain('z-index: 1300;');
+  });
+
+  it('keeps navbar interactive controls on the same 40px rhythm', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/shell/web/src/lib/shell-web.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('--shell-navbar-control-height: 2.5rem;');
+    expect(css).toContain('.brandLink {');
+    expect(css).toContain('min-height: var(--shell-navbar-control-height);');
+    expect(css).toContain('.brandMark {');
+    expect(css).toContain('height: 2.3rem;');
+    expect(css).toContain('.navLink {\n  align-items: center;');
+    expect(css).toContain('block-size: var(--shell-navbar-control-height);');
+    expect(css).toContain('min-height: var(--shell-navbar-control-height);');
+    expect(css).toContain('.searchInput {\n  appearance: none;');
+    expect(css).toContain(
+      'block-size: var(--shell-navbar-control-height, 2.5rem);',
+    );
+    expect(css).toContain('box-sizing: border-box;');
+    expect(css).toContain(
+      'max-block-size: var(--shell-navbar-control-height, 2.5rem);',
+    );
+    expect(css).toContain(
+      'min-block-size: var(--shell-navbar-control-height, 2.5rem);',
+    );
+    expect(css).toContain('.searchInput:focus-visible {');
+    expect(css).toContain(
+      '.searchInput:focus-visible {\n  block-size: var(--shell-navbar-control-height, 2.5rem);',
+    );
+    expect(css).toContain('padding: 0 0.92rem 0 2.45rem;');
+    expect(css).toContain('.iconActionLink {\n  align-items: center;');
+    expect(css).toContain('height: var(--shell-navbar-control-height);');
+    expect(css).toContain('width: var(--shell-navbar-control-height);');
+  });
+
+  it('aligns icon action hover and focus treatment with desktop nav links', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/shell/web/src/lib/shell-web.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.navLink:hover,');
+    expect(css).toContain(
+      '.iconActionLink:hover,\n.iconActionLink:focus-visible {\n  background: color-mix(in srgb, white 34%, transparent);',
+    );
+    expect(css).toContain(
+      '.iconActionLink:focus-visible {\n  box-shadow: 0 0 0 4px var(--lego-focus-ring);',
+    );
+    expect(css).not.toContain(
+      '.iconActionLink:hover,\n.iconActionLink:focus-visible {\n  background: color-mix(in srgb, white 28%, transparent);\n  box-shadow:',
+    );
+  });
+
   it('renders a compact retail-style shell header with calm mobile chrome and a shared bottom tab bar', () => {
     const markup = renderToStaticMarkup(
       <ShellWeb>
@@ -53,6 +137,7 @@ describe('ShellWeb', () => {
     expect(markup).toContain('action="/search"');
     expect(markup).toContain('for="site-search-desktop"');
     expect(markup).toContain('id="site-search-desktop"');
+    expect(markup).toContain('id="shell-desktop-account-action"');
     expect(markup).toContain('name="q"');
     expect(markup).toContain('Zoek op set of setnummer');
     expect(markup).toContain('href="/account"');

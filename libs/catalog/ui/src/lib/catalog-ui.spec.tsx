@@ -11,6 +11,21 @@ import {
 } from './catalog-ui';
 
 describe('CatalogSetCard', () => {
+  it('renders set detail gallery rounded on desktop and edge-to-edge on mobile', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.galleryMainButton {');
+    expect(css).toContain('border-radius: var(--lego-radius-md);');
+    expect(css).toContain('@media (max-width: 47.999rem)');
+    expect(css).toContain('.galleryMain {\n    margin-inline: calc(');
+    expect(css).toContain('.galleryMainButton,\n  .galleryMainVisual {');
+    expect(css).toContain('border-radius: 0;');
+    expect(css).toContain('.galleryMainVisual {\n    border: 0;');
+  });
+
   it('renders a lighter compact-card variant for dense catalog exploration', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard

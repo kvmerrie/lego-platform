@@ -13,6 +13,56 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 }
 
+.themeResults {
+  display: grid;
+  gap: var(--lego-space-3);
+  padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
+}
+
+.themeResultsHeader {
+  display: grid;
+  gap: var(--lego-space-1);
+}
+
+.themeResultsEyebrow {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-eyebrow-size);
+  font-weight: var(--lego-font-weight-bold);
+  letter-spacing: 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.themeResultsTitle {
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-card-title-size);
+  line-height: var(--lego-text-role-card-title-line-height);
+  margin: 0;
+}
+
+.themeResultGrid {
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+.themeResultCard {
+  align-items: start;
+  display: grid;
+  gap: var(--lego-space-1);
+  justify-items: start;
+}
+
+.themeResultName {
+  color: var(--lego-text);
+  font-weight: var(--lego-font-weight-semibold);
+}
+
+.themeResultMeta {
+  color: var(--lego-text-muted);
+  font-size: var(--lego-text-role-meta-size);
+}
+
 @media (min-width: 32rem) {
   .resultsGrid {
     --catalog-browse-grid-inline-border-size: var(

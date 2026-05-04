@@ -451,6 +451,16 @@ describe('CatalogSetCardRail', () => {
       'utf-8',
     );
 
+    expect(css).toContain(
+      'background: var(--article-theme-surface, var(--lego-surface-default));',
+    );
+    expect(css).not.toContain(
+      '--article-theme-surface: var(--lego-surface-default);',
+    );
+    expect(css).not.toContain(
+      '--article-theme-muted-text: var(--lego-text-muted);',
+    );
+    expect(css).not.toContain('--article-theme-surface-text: inherit;');
     expect(css).toContain('.setCardRailSectionThemed .setCard');
     expect(css).toContain('.setCardRailSectionThemed .setCardLink');
     expect(css).toContain('color: var(--lego-text);');

@@ -168,6 +168,8 @@ describe('articles index route', () => {
     expect(markup).toContain('/artikelen/marvel/lego-marvel-herbie');
     expect(markup).toContain('/artikelen/star-wars/middle-update');
     expect(markup).toContain('/artikelen/icons/older-update');
+    expect(markup).toContain('--catalog-theme-badge-surface:#5573b5');
+    expect(markup).toContain('--catalog-theme-badge-text:#ffffff');
     expect(markup).not.toContain('Concept update');
     expect(markup).toContain('featuredArticle');
     expect(markup).toContain('cardGrid');

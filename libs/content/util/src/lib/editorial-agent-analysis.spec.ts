@@ -391,6 +391,32 @@ describe('editorial agent analysis helpers', () => {
     expect(articleType).toBe('deal');
   });
 
+  it('detects restock and availability articles as deals instead of single-set news', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['weer op voorraad', 'nu te bestellen'],
+        setNames: ['Tintin Moon Rocket'],
+        setNumbers: ['21360'],
+        summary:
+          'LEGO Ideas 21360 Tintin Moon Rocket is weer op voorraad en nu te bestellen.',
+        theme: 'Ideas',
+        title: 'LEGO Ideas 21360 Tintin Moon Rocket weer op voorraad',
+      }),
+      createDetected({
+        keywords: ['op voorraad', 'beschikbaar'],
+        setNumbers: ['21360'],
+        themes: ['Ideas'],
+      }),
+      createSource({
+        description:
+          'De Tintin Moon Rocket is weer beschikbaar met beperkte voorraad.',
+        title: 'LEGO Ideas 21360 Tintin Moon Rocket weer op voorraad',
+      }),
+    );
+
+    expect(articleType).toBe('deal');
+  });
+
   it('detects Star Trek double points and discount articles as deals, not rewards', () => {
     const articleType = detectArticleType(
       createFacts({

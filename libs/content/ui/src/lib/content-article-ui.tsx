@@ -87,6 +87,10 @@ export interface ContentArticleThemePresentation {
   tone?: 'dark' | 'light';
 }
 
+type ContentArticleThemeAwareListItem = ContentArticleListItem & {
+  themePresentation?: ContentArticleThemePresentation;
+};
+
 export interface ContentArticleFeaturedSetProps {
   articleSlug?: string;
   availabilityLabel?: string;
@@ -103,6 +107,7 @@ export interface ContentArticleFeaturedSetProps {
   setNumber: string;
   theme?: string;
   themeHref?: string;
+  themePresentation?: ContentArticleThemePresentation;
 }
 
 export interface ContentArticleSetSpotlightSection {
@@ -238,17 +243,6 @@ function ContentArticleMeta({
 
   return (
     <div className={styles.metaRow}>
-      <time className={styles.metaText} dateTime={contentArticle.date}>
-        {formatContentArticleDate(contentArticle.date)}
-      </time>
-      {showAuthor && authorName ? (
-        <span className={styles.metaText}>Door {authorName}</span>
-      ) : null}
-      {contentArticle.updatedAt ? (
-        <time className={styles.metaText} dateTime={contentArticle.updatedAt}>
-          Bijgewerkt {formatContentArticleDate(contentArticle.updatedAt)}
-        </time>
-      ) : null}
       {resolvedThemeLabel ? (
         themePresentation?.href ? (
           <a className={styles.themeBadgeLink} href={themePresentation.href}>
@@ -272,6 +266,17 @@ function ContentArticleMeta({
           </span>
         )
       ) : null}
+      <time className={styles.metaText} dateTime={contentArticle.date}>
+        {formatContentArticleDate(contentArticle.date)}
+      </time>
+      {showAuthor && authorName ? (
+        <span className={styles.metaText}>Door {authorName}</span>
+      ) : null}
+      {contentArticle.updatedAt ? (
+        <time className={styles.metaText} dateTime={contentArticle.updatedAt}>
+          Bijgewerkt {formatContentArticleDate(contentArticle.updatedAt)}
+        </time>
+      ) : null}
     </div>
   );
 }
@@ -279,7 +284,7 @@ function ContentArticleMeta({
 export function ContentArticleCard({
   contentArticle,
 }: {
-  contentArticle: ContentArticleListItem;
+  contentArticle: ContentArticleThemeAwareListItem;
 }) {
   return (
     <Surface as="article" className={styles.card} elevation="rested">
@@ -302,7 +307,10 @@ export function ContentArticleCard({
           source={getArticleCardImageSource(contentArticle)}
         />
         <div className={styles.cardBody}>
-          <ContentArticleMeta contentArticle={contentArticle} />
+          <ContentArticleMeta
+            contentArticle={contentArticle}
+            themePresentation={contentArticle.themePresentation}
+          />
           <h3 className={styles.cardTitle}>{contentArticle.title}</h3>
           <p className={styles.cardDescription}>{contentArticle.description}</p>
         </div>
@@ -314,7 +322,7 @@ export function ContentArticleCard({
 export function ContentArticleFeaturedCard({
   contentArticle,
 }: {
-  contentArticle: ContentArticleListItem;
+  contentArticle: ContentArticleThemeAwareListItem;
 }) {
   return (
     <Surface as="article" className={styles.featuredArticle} elevation="rested">
@@ -341,7 +349,10 @@ export function ContentArticleFeaturedCard({
           }
         />
         <div className={styles.featuredArticleBody}>
-          <ContentArticleMeta contentArticle={contentArticle} />
+          <ContentArticleMeta
+            contentArticle={contentArticle}
+            themePresentation={contentArticle.themePresentation}
+          />
           <h2 className={styles.featuredArticleTitle}>
             {contentArticle.title}
           </h2>
@@ -357,7 +368,7 @@ export function ContentArticleFeaturedCard({
 export function ContentArticleGrid({
   contentArticles,
 }: {
-  contentArticles: readonly ContentArticleListItem[];
+  contentArticles: readonly ContentArticleThemeAwareListItem[];
 }) {
   return (
     <div className={styles.cardGrid}>
@@ -376,7 +387,7 @@ export function ContentArticleCompactRail({
   maxItems,
   title,
 }: {
-  contentArticles: readonly ContentArticleListItem[];
+  contentArticles: readonly ContentArticleThemeAwareListItem[];
   maxItems?: number;
   title: string;
 }) {
@@ -419,7 +430,10 @@ export function ContentArticleCompactRail({
                 source={getArticleCardImageSource(contentArticle)}
               />
               <div className={styles.compactCardBody}>
-                <ContentArticleMeta contentArticle={contentArticle} />
+                <ContentArticleMeta
+                  contentArticle={contentArticle}
+                  themePresentation={contentArticle.themePresentation}
+                />
                 <h3 className={styles.compactCardTitle}>
                   {contentArticle.title}
                 </h3>
@@ -440,7 +454,7 @@ export function ContentArticleRail({
   title,
 }: {
   className?: string;
-  contentArticles: readonly ContentArticleListItem[];
+  contentArticles: readonly ContentArticleThemeAwareListItem[];
   maxItems?: number;
   subtitle?: string;
   title: string;
@@ -561,8 +575,12 @@ export function ContentArticleFeaturedSet({
   setNumber,
   theme,
   themeHref,
+  themePresentation,
 }: ContentArticleFeaturedSetProps) {
-  const visibleTheme = normalizePublicContentArticleTheme(theme);
+  const visibleTheme = normalizePublicContentArticleTheme(
+    themePresentation?.label ?? theme,
+  );
+  const visibleThemeHref = themePresentation?.href ?? themeHref;
   const hasMetaFacts =
     Boolean(visibleTheme) ||
     typeof pieces === 'number' ||
@@ -606,12 +624,29 @@ export function ContentArticleFeaturedSet({
             <div className={styles.featuredSetBadges}>
               <Badge tone="neutral">Set {setNumber}</Badge>
               {visibleTheme ? (
-                themeHref ? (
-                  <a className={styles.featuredSetThemeLink} href={themeHref}>
-                    <Badge tone="accent">{visibleTheme}</Badge>
+                visibleThemeHref ? (
+                  <a
+                    className={styles.featuredSetThemeLink}
+                    href={visibleThemeHref}
+                  >
+                    <span
+                      className={styles.themeBadgeShell}
+                      style={themePresentation?.style}
+                    >
+                      <Badge className={styles.themeBadge} tone="neutral">
+                        {visibleTheme}
+                      </Badge>
+                    </span>
                   </a>
                 ) : (
-                  <Badge tone="accent">{visibleTheme}</Badge>
+                  <span
+                    className={styles.themeBadgeShell}
+                    style={themePresentation?.style}
+                  >
+                    <Badge className={styles.themeBadge} tone="neutral">
+                      {visibleTheme}
+                    </Badge>
+                  </span>
                 )
               ) : null}
             </div>

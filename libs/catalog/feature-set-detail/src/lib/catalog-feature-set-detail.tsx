@@ -24,6 +24,7 @@ export function CatalogFeatureSetDetail({
   priceAlertAction,
   priceHistoryPanel,
   similarSetsRail,
+  setNewsRail,
   themeDirectoryHref,
   themeHref,
   trustSignals = [],
@@ -42,6 +43,7 @@ export function CatalogFeatureSetDetail({
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
   similarSetsRail?: ReactNode;
+  setNewsRail?: ReactNode;
   themeDirectoryHref?: string;
   themeHref?: string;
   trustSignals?: readonly CatalogSetDetailTrustSignal[];
@@ -62,6 +64,7 @@ export function CatalogFeatureSetDetail({
       priceAlertAction={priceAlertAction}
       priceHistoryPanel={priceHistoryPanel}
       similarSetsRail={similarSetsRail}
+      setNewsRail={setNewsRail}
       themeDirectoryHref={themeDirectoryHref}
       themeHref={themeHref}
       trustSignals={[...trustSignals]}

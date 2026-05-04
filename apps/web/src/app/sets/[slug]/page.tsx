@@ -3,6 +3,7 @@ import {
   sortCatalogOffers,
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
+import React from 'react';
 import {
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   listCatalogCurrentOfferSummariesBySetIds,
@@ -24,8 +25,13 @@ import type {
   CatalogSetDetailTrustSignal,
   CatalogSetDetailVerdict,
 } from '@lego-platform/catalog/ui';
-import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
+import {
+  buildCatalogThemeSlug,
+  normalizeTheme,
+} from '@lego-platform/catalog/util';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
+import { listPublishedArticlesByPrimarySetNumber } from '@lego-platform/content/data-access';
+import type { ContentArticleListItem } from '@lego-platform/content/util';
 import {
   buildSetDecisionPresentation,
   buildBrickhuntValueItems,
@@ -43,6 +49,7 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import {
   buildThemePath,
   buildWebPath,
+  buildArticlePath,
   getDefaultFormattingLocale,
   webPathnames,
 } from '@lego-platform/shared/config';
@@ -57,12 +64,14 @@ import {
 } from '@lego-platform/catalog/util';
 import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
 import { buildSimilarSetsRailDescription } from '../../lib/similar-sets-rail-copy';
+import styles from './page.module.css';
 
 export const dynamicParams = true;
 export const revalidate = 300;
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SIMILAR_SETS_RAIL_LIMIT = 6;
+const SET_NEWS_RAIL_LIMIT = 4;
 const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
 const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
 
@@ -728,6 +737,63 @@ function toSimilarSetRailItems({
   });
 }
 
+function formatSetNewsArticleDate(date: string): string {
+  const parsedDate = Date.parse(`${date}T00:00:00Z`);
+
+  if (!Number.isFinite(parsedDate)) {
+    return date;
+  }
+
+  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+    day: 'numeric',
+    month: 'long',
+    timeZone: BRICKHUNT_TIME_ZONE,
+    year: 'numeric',
+  }).format(new Date(parsedDate));
+}
+
+function getArticleThemeSlug(
+  article: Pick<ContentArticleListItem, 'theme' | 'themeSlug'>,
+): string {
+  return article.themeSlug ?? normalizeTheme(article.theme)?.key ?? 'lego';
+}
+
+export function SetNewsRail({
+  articles,
+}: {
+  articles: readonly ContentArticleListItem[];
+}) {
+  if (!articles.length) {
+    return null;
+  }
+
+  return (
+    <section aria-labelledby="set-news-title" className={styles.setNewsRail}>
+      <div className={styles.setNewsHeader}>
+        <p className={styles.setNewsEyebrow}>Updates</p>
+        <h2 className={styles.setNewsTitle} id="set-news-title">
+          Laatste updates
+        </h2>
+      </div>
+      <div className={styles.setNewsGrid}>
+        {articles.slice(0, SET_NEWS_RAIL_LIMIT).map((article) => (
+          <a
+            className={styles.setNewsCard}
+            href={buildArticlePath(article.slug, getArticleThemeSlug(article))}
+            key={article.slug}
+          >
+            <time className={styles.setNewsDate} dateTime={article.date}>
+              {formatSetNewsArticleDate(article.date)}
+            </time>
+            <h3 className={styles.setNewsCardTitle}>{article.title}</h3>
+            <p className={styles.setNewsDescription}>{article.description}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export async function generateStaticParams() {
   return (await listCatalogSetSlugs()).map((slug) => ({ slug }));
 }
@@ -830,6 +896,10 @@ export default async function SetDetailPage({
   const similarSetRailItems = toSimilarSetRailItems({
     currentOfferSummaryBySetId: similarSetCurrentOfferSummaryBySetId,
     setCards: similarSetCards,
+  });
+  const setNewsArticles = await listPublishedArticlesByPrimarySetNumber({
+    limit: SET_NEWS_RAIL_LIMIT,
+    setNumber: catalogSetDetail.id,
   });
 
   return (
@@ -943,6 +1013,11 @@ export default async function SetDetailPage({
               tone="muted"
               title="Vergelijkbare sets"
             />
+          ) : undefined
+        }
+        setNewsRail={
+          setNewsArticles.length > 0 ? (
+            <SetNewsRail articles={setNewsArticles} />
           ) : undefined
         }
         themeDirectoryHref={buildWebPath(webPathnames.themes)}

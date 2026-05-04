@@ -8,6 +8,7 @@ import type {
   CatalogSetSummary,
   CatalogThemeDirectoryItem,
   CatalogThemeLandingPage,
+  CatalogThemeSearchMatch,
   CatalogThemeSnapshot,
 } from '@lego-platform/catalog/util';
 import {
@@ -3330,6 +3331,94 @@ export async function listCatalogSearchMatches({
         left.discoverRank - right.discoverRank ||
         right.setCard.releaseYear - left.setCard.releaseYear ||
         left.setCard.name.localeCompare(right.setCard.name),
+    )
+    .slice(0, suggestionLimit);
+}
+
+function getCatalogThemeSearchScore({
+  query,
+  theme,
+}: {
+  query: string;
+  theme: CatalogThemeDirectoryItem;
+}): number | undefined {
+  const normalizedQuery = normalizeCatalogAsciiText(query).trim();
+  const normalizedQueryToken = normalizedQuery.replace(/[^a-z0-9]+/giu, '');
+  const normalizedThemeName = normalizeCatalogAsciiText(
+    theme.themeSnapshot.name,
+  ).trim();
+  const normalizedThemeToken = normalizedThemeName.replace(/[^a-z0-9]+/giu, '');
+  const normalizedThemeSlug = normalizeCatalogAsciiText(
+    theme.themeSnapshot.slug.replace(/-/gu, ' '),
+  ).trim();
+
+  if (!normalizedQuery || !normalizedQueryToken) {
+    return undefined;
+  }
+
+  if (
+    normalizedThemeName === normalizedQuery ||
+    normalizedThemeSlug === normalizedQuery ||
+    normalizedThemeToken === normalizedQueryToken
+  ) {
+    return 0;
+  }
+
+  if (
+    normalizedThemeName.startsWith(normalizedQuery) ||
+    normalizedThemeSlug.startsWith(normalizedQuery) ||
+    normalizedThemeToken.startsWith(normalizedQueryToken)
+  ) {
+    return 1;
+  }
+
+  if (
+    normalizedThemeName.includes(normalizedQuery) ||
+    normalizedThemeSlug.includes(normalizedQuery)
+  ) {
+    return 2;
+  }
+
+  return undefined;
+}
+
+export async function listCatalogThemeSearchMatches({
+  limit = 6,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  query,
+}: {
+  limit?: number;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  query: string;
+}): Promise<CatalogThemeSearchMatch[]> {
+  const suggestionLimit = Math.max(0, Math.floor(limit));
+
+  if (!normalizeCatalogAsciiText(query).trim() || suggestionLimit === 0) {
+    return [];
+  }
+
+  return (await listCatalogThemeDirectoryItems({ listCanonicalCatalogSetsFn }))
+    .flatMap((theme): CatalogThemeSearchMatch[] => {
+      const score = getCatalogThemeSearchScore({ query, theme });
+
+      return typeof score === 'number'
+        ? [
+            {
+              score,
+              theme,
+            },
+          ]
+        : [];
+    })
+    .sort(
+      (left, right) =>
+        left.score - right.score ||
+        right.theme.themeSnapshot.setCount -
+          left.theme.themeSnapshot.setCount ||
+        left.theme.themeSnapshot.name.localeCompare(
+          right.theme.themeSnapshot.name,
+          'nl',
+        ),
     )
     .slice(0, suggestionLimit);
 }

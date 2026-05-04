@@ -5,6 +5,7 @@ import {
 import {
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogSearchMatches,
+  listCatalogThemeSearchMatches,
 } from '@lego-platform/catalog/data-access-web';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
@@ -31,12 +32,18 @@ export default async function SearchPage({
   const overlay = readQueryParam(resolvedSearchParams.overlay);
   const query = readQueryParam(resolvedSearchParams.q);
   const shouldOpenMobileOverlay = overlay === '1' && !query;
-  const searchMatches = query
-    ? await listCatalogSearchMatches({
-        limit: Number.MAX_SAFE_INTEGER,
-        query,
-      })
-    : [];
+  const [searchMatches, themeMatches] = query
+    ? await Promise.all([
+        listCatalogSearchMatches({
+          limit: Number.MAX_SAFE_INTEGER,
+          query,
+        }),
+        listCatalogThemeSearchMatches({
+          limit: 6,
+          query,
+        }),
+      ])
+    : [[], []];
   const currentOfferSummaryBySetId =
     await listCatalogCurrentOfferSummariesBySetIds({
       setIds: searchMatches.map((searchMatch) => searchMatch.setCard.id),
@@ -69,6 +76,7 @@ export default async function SearchPage({
         query={query}
         reviewedPriceContexts={reviewedPriceContexts}
         searchMatches={searchMatches}
+        themeMatches={themeMatches}
         searchEntry={
           shouldOpenMobileOverlay ? (
             <ShellWebSearchForm

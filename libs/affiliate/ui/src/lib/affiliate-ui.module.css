@@ -126,7 +126,7 @@
 }
 
 .offerAvailabilityInStock {
-  color: var(--lego-success);
+  color: var(--lego-positive);
 }
 
 .offerAvailabilityOutOfStock {

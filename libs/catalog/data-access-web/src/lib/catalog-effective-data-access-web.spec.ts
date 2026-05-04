@@ -26,6 +26,7 @@ import {
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSearchMatches,
+  listCatalogThemeSearchMatches,
   listCatalogSearchSuggestionSetCards,
   listCatalogSetCards,
   listCatalogSimilarSetCards,
@@ -962,6 +963,37 @@ describe('catalog effective data access web', () => {
       slug: 'mario-kart-mario-standard-kart-72037',
       theme: 'LEGO® Super Mario™',
     });
+  });
+
+  test('searches theme directory items with prefix ranking', async () => {
+    const results = await listCatalogThemeSearchMatches({
+      limit: 6,
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'AT-AT',
+          primaryTheme: 'Star Wars',
+          setId: '75313',
+          slug: 'at-at-75313',
+          sourceSetNumber: '75313-1',
+        }),
+        createCanonicalCatalogSet({
+          name: 'Hogwarts Castle and Grounds',
+          primaryTheme: 'Harry Potter',
+          setId: '76419',
+          slug: 'hogwarts-castle-and-grounds-76419',
+          sourceSetNumber: '76419-1',
+        }),
+      ],
+      query: 'Star War',
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.theme.themeSnapshot).toMatchObject({
+      name: 'Star Wars™',
+      slug: 'star-wars',
+      setCount: 1,
+    });
+    expect(results[0]?.score).toBe(1);
   });
 
   test('returns canonical suggestion cards sorted by recency and name', async () => {
