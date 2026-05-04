@@ -73,6 +73,7 @@ export interface AlternateAffiliateFeedImportDependencies {
 
 export interface AlternateAffiliateFeedImportOptions {
   collectUnmatchedDebug?: boolean;
+  dryRun?: boolean;
   unmatchedSampleLimit?: number;
 }
 
@@ -375,11 +376,13 @@ function buildUnmatchedDebugInfo({
 
 async function ensureAffiliateMerchant({
   createCommerceMerchantFn,
+  dryRun,
   listCommerceMerchantsFn,
   merchantConfig,
   updateCommerceMerchantFn,
 }: {
   createCommerceMerchantFn: typeof createCommerceMerchant;
+  dryRun?: boolean;
   listCommerceMerchantsFn: typeof listCommerceMerchants;
   merchantConfig: AffiliateFeedMerchantConfig;
   updateCommerceMerchantFn: typeof updateCommerceMerchant;
@@ -398,6 +401,23 @@ async function ensureAffiliateMerchant({
     affiliateNetwork: merchantConfig.affiliateNetwork,
     notes: merchantConfig.notes,
   };
+
+  if (dryRun) {
+    return {
+      merchant: existingMerchant ?? {
+        affiliateNetwork: merchantInput.affiliateNetwork,
+        createdAt: '',
+        id: `dry-run-${merchantConfig.slug}`,
+        isActive: merchantInput.isActive,
+        name: merchantInput.name,
+        notes: merchantInput.notes ?? '',
+        slug: merchantInput.slug,
+        sourceType: merchantInput.sourceType,
+        updatedAt: '',
+      },
+      merchantCreated: false,
+    };
+  }
 
   if (!existingMerchant) {
     return {
@@ -453,6 +473,7 @@ export async function importAffiliateFeedRowsForMerchant({
   const { merchant: resolvedMerchant, merchantCreated } =
     await ensureAffiliateMerchant({
       createCommerceMerchantFn,
+      dryRun: options?.dryRun,
       listCommerceMerchantsFn,
       merchantConfig: merchant,
       updateCommerceMerchantFn,
@@ -564,6 +585,11 @@ export async function importAffiliateFeedRowsForMerchant({
       deeplinkUrl = new URL(row.affiliateDeeplink);
     } catch {
       skippedInvalidDeeplinkCount += 1;
+      continue;
+    }
+
+    if (options?.dryRun) {
+      matchedCatalogSetIds.add(matchedCatalogSetId);
       continue;
     }
 

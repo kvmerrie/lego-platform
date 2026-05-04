@@ -484,6 +484,88 @@ describe('alternate affiliate feed server', () => {
     });
   });
 
+  test('dry-run performs strict matching and reporting without DB writes', async () => {
+    const createCommerceMerchantFn = vi.fn();
+    const updateCommerceMerchantFn = vi.fn();
+    const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();
+    const upsertCommerceOfferLatestRecordFn = vi.fn();
+
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        createCommerceMerchantFn,
+        getNow: () => new Date('2026-04-24T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '75398',
+            sourceSetNumber: '75398-1',
+            status: 'active',
+          },
+        ]),
+        listCommerceMerchantsFn: vi.fn().mockResolvedValue([]),
+        updateCommerceMerchantFn,
+        upsertCommerceOfferLatestRecordFn,
+        upsertCommerceOfferSeedByCompositeKeyFn,
+      },
+      merchant: {
+        affiliateNetwork: 'Adtraction',
+        name: 'Goodbricks',
+        notes: 'Feed-driven Goodbricks import.',
+        slug: 'goodbricks',
+      },
+      options: {
+        collectUnmatchedDebug: true,
+        dryRun: true,
+        unmatchedSampleLimit: 5,
+      },
+      rows: [
+        {
+          affiliateDeeplink: 'https://id.goodbricks.nl/t/t?a=1&sku=75398',
+          brand: 'LEGO',
+          currency: 'EUR',
+          legoSetNumber: '75398',
+          price: '139,95',
+          productTitle: 'LEGO 75398 C-3PO',
+        },
+        {
+          affiliateDeeplink: 'https://id.goodbricks.nl/t/t?a=1&sku=75446',
+          brand: 'LEGO',
+          category: 'Star Wars',
+          currency: 'EUR',
+          legoSetNumber: '75446',
+          price: '54,95',
+          productTitle: 'LEGO Star Wars 75446 Grogu',
+        },
+        {
+          affiliateDeeplink: 'https://id.goodbricks.nl/t/t?a=1&sku=missing',
+          brand: 'LEGO',
+          currency: 'EUR',
+          price: '24,95',
+          productTitle: 'LEGO zonder setnummer',
+        },
+      ],
+    });
+
+    expect(createCommerceMerchantFn).not.toHaveBeenCalled();
+    expect(updateCommerceMerchantFn).not.toHaveBeenCalled();
+    expect(upsertCommerceOfferSeedByCompositeKeyFn).not.toHaveBeenCalled();
+    expect(upsertCommerceOfferLatestRecordFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      importedOfferCount: 0,
+      matchedCatalogSetCount: 1,
+      merchantCreated: false,
+      merchantSlug: 'goodbricks',
+      skippedMissingSetNumberCount: 1,
+      skippedUnmatchedSetCount: 1,
+      totalRowCount: 3,
+      unmatchedDebug: {
+        totalUnmatchedRows: 1,
+        uniqueUnmatchedSetCount: 1,
+      },
+      upsertedLatestCount: 0,
+      upsertedSeedCount: 0,
+    });
+  });
+
   test('supports other affiliate feed merchants like Coolblue with the same strict importer flow', async () => {
     const createCommerceMerchantFn = vi.fn().mockResolvedValue({
       id: 'merchant-coolblue',

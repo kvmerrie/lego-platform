@@ -323,6 +323,7 @@ describe('Adtraction Goodbricks sync server', () => {
       },
       options: {
         collectUnmatchedDebug: true,
+        dryRun: undefined,
         unmatchedSampleLimit: 20,
       },
       rows: expect.arrayContaining([
@@ -347,6 +348,73 @@ describe('Adtraction Goodbricks sync server', () => {
       normalizedRowCount: 3,
       upsertedLatestCount: 2,
       upsertedSeedCount: 2,
+    });
+  });
+
+  test('dry-run still delegates to the strict importer with dryRun enabled', async () => {
+    const fetchFn = vi.fn<typeof fetch>().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: async () => sampleGoodbricksFeedXml,
+    } as Response);
+    const importAffiliateFeedRowsForMerchantFn = vi.fn().mockResolvedValue({
+      importedOfferCount: 0,
+      matchedCatalogSetCount: 2,
+      merchantCreated: false,
+      merchantSlug: 'goodbricks',
+      skippedInvalidCurrencyCount: 0,
+      skippedInvalidDeeplinkCount: 0,
+      skippedInvalidPriceCount: 0,
+      skippedMissingSetNumberCount: 1,
+      skippedNonLegoCount: 0,
+      skippedNonNewCount: 0,
+      skippedUnmatchedSetCount: 1,
+      totalRowCount: 3,
+      unmatchedDebug: {
+        byCategory: [],
+        sampleRows: [],
+        totalUnmatchedRows: 1,
+        uniqueUnmatchedSetCount: 1,
+        unmatchedSets: [],
+      },
+      upsertedLatestCount: 0,
+      upsertedSeedCount: 0,
+    });
+
+    const result = await syncAdtractionGoodbricksFeed({
+      dependencies: {
+        fetchFn,
+        getAdtractionGoodbricksFeedConfigFn: () => ({
+          feedUrl: 'https://adtraction.example/goodbricks.xml',
+          merchantName: 'Goodbricks',
+          merchantSlug: 'goodbricks',
+        }),
+        importAffiliateFeedRowsForMerchantFn,
+      },
+      options: {
+        collectUnmatchedDebug: true,
+        dryRun: true,
+        unmatchedSampleLimit: 5,
+      },
+    });
+
+    expect(importAffiliateFeedRowsForMerchantFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        options: {
+          collectUnmatchedDebug: true,
+          dryRun: true,
+          unmatchedSampleLimit: 5,
+        },
+      }),
+    );
+    expect(result).toMatchObject({
+      importedOfferCount: 0,
+      matchedCatalogSetCount: 2,
+      skippedMissingSetNumberCount: 1,
+      skippedUnmatchedSetCount: 1,
+      upsertedLatestCount: 0,
+      upsertedSeedCount: 0,
     });
   });
 });

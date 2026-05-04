@@ -543,31 +543,6 @@ async function fetchAdtractionGoodbricksFeedProducts({
   return parseAdtractionGoodbricksProductFeedXml(await response.text());
 }
 
-function buildDryRunImportResult({
-  merchantSlug,
-  totalRowCount,
-}: {
-  merchantSlug: string;
-  totalRowCount: number;
-}): AlternateAffiliateFeedImportResult {
-  return {
-    importedOfferCount: 0,
-    matchedCatalogSetCount: 0,
-    merchantCreated: false,
-    merchantSlug,
-    skippedInvalidCurrencyCount: 0,
-    skippedInvalidDeeplinkCount: 0,
-    skippedInvalidPriceCount: 0,
-    skippedMissingSetNumberCount: 0,
-    skippedNonLegoCount: 0,
-    skippedNonNewCount: 0,
-    skippedUnmatchedSetCount: 0,
-    totalRowCount,
-    upsertedLatestCount: 0,
-    upsertedSeedCount: 0,
-  };
-}
-
 export async function syncAdtractionGoodbricksFeed({
   dependencies,
   options,
@@ -594,25 +569,21 @@ export async function syncAdtractionGoodbricksFeed({
     products: rawProducts,
     sampleLimit: options?.debugSamples,
   });
-  const importResult = options?.dryRun
-    ? buildDryRunImportResult({
-        merchantSlug: config.merchantSlug,
-        totalRowCount: rows.length,
-      })
-    : await importAffiliateFeedRowsForMerchantFn({
-        merchant: {
-          affiliateNetwork: 'Adtraction',
-          name: config.merchantName,
-          notes:
-            'Feed-driven merchant. Current offer state is imported from the Goodbricks Adtraction product feed.',
-          slug: config.merchantSlug,
-        },
-        options: {
-          collectUnmatchedDebug: options?.collectUnmatchedDebug,
-          unmatchedSampleLimit: options?.unmatchedSampleLimit,
-        } satisfies AlternateAffiliateFeedImportOptions,
-        rows,
-      });
+  const importResult = await importAffiliateFeedRowsForMerchantFn({
+    merchant: {
+      affiliateNetwork: 'Adtraction',
+      name: config.merchantName,
+      notes:
+        'Feed-driven merchant. Current offer state is imported from the Goodbricks Adtraction product feed.',
+      slug: config.merchantSlug,
+    },
+    options: {
+      collectUnmatchedDebug: options?.collectUnmatchedDebug,
+      dryRun: options?.dryRun,
+      unmatchedSampleLimit: options?.unmatchedSampleLimit,
+    } satisfies AlternateAffiliateFeedImportOptions,
+    rows,
+  });
 
   return {
     ...importResult,
