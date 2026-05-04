@@ -495,6 +495,9 @@ describe('content data access server', () => {
         'Imperial Remnant AT-RT Driver Helmet',
       );
       expect(draftResult.output.mdx).toContain('Imperial, Rebel of trooper');
+      expect(draftResult.output.mdx).not.toMatch(
+        /\b(?:We have|This set|The model|In addition|I am surprised)\b/u,
+      );
     });
 
     it('keeps extraction alive when catalog matching throws', async () => {
@@ -675,6 +678,73 @@ describe('content data access server', () => {
       );
       expect(result.output.mdx).toContain(
         'waar je nu meteen even doorheen wilt scrollen',
+      );
+    });
+
+    it('cleans English prose from deterministic fallback output', async () => {
+      const extraction = createDraftExtractionResult();
+      const deterministicDraft = {
+        ...generateEditorialMdxDraft(extraction),
+        mdx: generateEditorialMdxDraft(extraction).mdx.replace(
+          'Dit zijn de sets uit deze releasegolf die nu al leuk genoeg zijn om even rustig doorheen te klikken.',
+          'We have already seen Darth Vader and Imperial Lambda-Class Shuttle this week. This set features Darth Vader.',
+        ),
+      };
+
+      const result = await rewriteDraftWithAI({
+        deterministicDraft,
+        input: extraction,
+        useAiRewrite: false,
+      });
+
+      expect(result.output.mdx).toContain(
+        'We zagen de afgelopen dagen al meerdere interessante LEGO Star Wars-onthullingen langskomen.',
+      );
+      expect(result.output.mdx).not.toMatch(/\b(?:We have|This set)\b/u);
+      expect(result.output.mdx).not.toContain('Donkere Vader');
+      expect(result.output.warnings).toContain(
+        'Engelse bronzinnen zijn automatisch naar Nederlands opgeschoond.',
+      );
+    });
+
+    it('cleans English prose from accepted AI rewrite output', async () => {
+      const extraction = createDraftExtractionResult();
+      const deterministicDraft = generateEditorialMdxDraft(extraction);
+      const rewrittenMdx = deterministicDraft.mdx.replace(
+        'Dit zijn de sets uit deze releasegolf die nu al leuk genoeg zijn om even rustig doorheen te klikken.',
+        'We have already seen Darth Vader and Imperial Lambda-Class Shuttle this week. The model includes display value.',
+      );
+      const fetchImpl = vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              output_text: rewrittenMdx,
+            }),
+            {
+              headers: {
+                'content-type': 'application/json',
+              },
+              status: 200,
+            },
+          ),
+      );
+
+      const result = await rewriteDraftWithAI({
+        apiKey: 'test-key',
+        deterministicDraft,
+        fetchImpl: fetchImpl as typeof fetch,
+        input: extraction,
+        useAiRewrite: true,
+      });
+
+      expect(result.rewrite.applied).toBe(true);
+      expect(result.output.mdx).toContain(
+        'We zagen de afgelopen dagen al meerdere interessante LEGO Star Wars-onthullingen langskomen.',
+      );
+      expect(result.output.mdx).not.toMatch(/\b(?:We have|The model)\b/u);
+      expect(result.output.mdx).not.toContain('Donkere Vader');
+      expect(result.rewrite.warnings).toContain(
+        'Engelse AI-zinnen zijn automatisch naar Nederlands opgeschoond.',
       );
     });
 

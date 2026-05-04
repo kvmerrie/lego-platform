@@ -385,6 +385,202 @@ describe('editorial feed intake', () => {
     expect(updatedItem.status).toBe('published');
   });
 
+  test('stores generated draft content on drafted feed items', async () => {
+    const supabase = createSupabaseClientMock([
+      {
+        article_slug: null,
+        created_at: '2026-05-03T10:00:00.000Z',
+        event_fingerprint: 'example.com:spiny',
+        feed_name: 'Brick Example',
+        id: 'feed-1',
+        source_published_at: null,
+        source_url: 'https://example.com/spiny-shell',
+        status: 'new',
+        title: 'LEGO 40787 Mario Kart Spiny Shell is terug',
+        updated_at: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+
+    const updatedItem = await updateEditorialFeedItemStatus({
+      draftFrontmatter: {
+        sourceUrl: 'https://example.com/spiny-shell',
+        title: 'LEGO 40787 Mario Kart Spiny Shell is terug',
+      },
+      draftMdx: '## Concept\n\nDrafttekst.',
+      id: 'feed-1',
+      status: 'drafted',
+      supabaseClient: supabase.client,
+    });
+
+    expect(supabase.updateCalls[0]).toEqual(
+      expect.objectContaining({
+        draft_frontmatter: {
+          sourceUrl: 'https://example.com/spiny-shell',
+          title: 'LEGO 40787 Mario Kart Spiny Shell is terug',
+        },
+        draft_mdx: '## Concept\n\nDrafttekst.',
+        status: 'drafted',
+      }),
+    );
+    expect(supabase.updateCalls[0]?.['drafted_at']).toEqual(expect.any(String));
+    expect(updatedItem.draftMdx).toBe('## Concept\n\nDrafttekst.');
+    expect(updatedItem.draftFrontmatter).toEqual(
+      expect.objectContaining({
+        title: 'LEGO 40787 Mario Kart Spiny Shell is terug',
+      }),
+    );
+    expect(updatedItem.draftedAt).toEqual(expect.any(String));
+  });
+
+  test('clears saved draft content after publish', async () => {
+    const supabase = createSupabaseClientMock([
+      {
+        article_slug: null,
+        created_at: '2026-05-03T10:00:00.000Z',
+        draft_frontmatter: {
+          title: 'LEGO 40787 Mario Kart Spiny Shell is terug',
+        },
+        draft_mdx: '## Concept\n\nDrafttekst.',
+        drafted_at: '2026-05-03T11:00:00.000Z',
+        event_fingerprint: 'example.com:spiny',
+        feed_name: 'Brick Example',
+        id: 'feed-1',
+        source_published_at: null,
+        source_url: 'https://example.com/spiny-shell',
+        status: 'drafted',
+        title: 'LEGO 40787 Mario Kart Spiny Shell is terug',
+        updated_at: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+
+    const updatedItem = await updateEditorialFeedItemStatus({
+      articleSlug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      clearDraft: true,
+      id: 'feed-1',
+      status: 'published',
+      supabaseClient: supabase.client,
+    });
+
+    expect(supabase.updateCalls[0]).toEqual({
+      article_slug: 'lego-40787-mario-kart-spiny-shell-is-terug',
+      draft_frontmatter: null,
+      draft_mdx: null,
+      drafted_at: null,
+      status: 'published',
+    });
+    expect(updatedItem.draftMdx).toBeUndefined();
+    expect(updatedItem.draftFrontmatter).toBeUndefined();
+    expect(updatedItem.draftedAt).toBeUndefined();
+    expect(updatedItem.status).toBe('published');
+  });
+
+  test('stores separate drafts for overlapping feed items without changing fingerprints', async () => {
+    const overlappingRows = [
+      {
+        article_slug: null,
+        created_at: '2026-05-03T10:00:00.000Z',
+        event_fingerprint: 'brickset.com:lego-star-wars-75459',
+        feed_name: 'Brickset',
+        id: 'feed-brickset-75459',
+        source_published_at: null,
+        source_url: 'https://brickset.com/article/131598',
+        status: 'new',
+        title: 'LEGO Star Wars 75459 set revealed',
+        updated_at: '2026-05-03T10:00:00.000Z',
+      },
+      {
+        article_slug: null,
+        created_at: '2026-05-03T10:05:00.000Z',
+        event_fingerprint: 'bricktastic.nl:lego-star-wars-75459',
+        feed_name: 'BrickTastic',
+        id: 'feed-bricktastic-75459',
+        source_published_at: null,
+        source_url: 'https://www.bricktastic.nl/lego/star-wars-75459/',
+        status: 'new',
+        title: 'LEGO Star Wars 75459 onthuld',
+        updated_at: '2026-05-03T10:05:00.000Z',
+      },
+    ];
+    const supabase = createSupabaseClientMock(overlappingRows);
+
+    const bricksetDraft = await updateEditorialFeedItemStatus({
+      draftFrontmatter: {
+        sourceUrl: 'https://brickset.com/article/131598',
+        title: 'LEGO Star Wars 75459 set revealed',
+      },
+      draftMdx: '## Brickset concept\n\nDrafttekst.',
+      id: 'feed-brickset-75459',
+      status: 'drafted',
+      supabaseClient: supabase.client,
+    });
+    const bricktasticDraft = await updateEditorialFeedItemStatus({
+      draftFrontmatter: {
+        sourceUrl: 'https://www.bricktastic.nl/lego/star-wars-75459/',
+        title: 'LEGO Star Wars 75459 onthuld',
+      },
+      draftMdx: '## BrickTastic concept\n\nDrafttekst.',
+      id: 'feed-bricktastic-75459',
+      status: 'drafted',
+      supabaseClient: supabase.client,
+    });
+
+    expect(bricksetDraft.draftMdx).toBe('## Brickset concept\n\nDrafttekst.');
+    expect(bricktasticDraft.draftMdx).toBe(
+      '## BrickTastic concept\n\nDrafttekst.',
+    );
+    expect(bricksetDraft.eventFingerprint).toBe(
+      'brickset.com:lego-star-wars-75459',
+    );
+    expect(bricktasticDraft.eventFingerprint).toBe(
+      'bricktastic.nl:lego-star-wars-75459',
+    );
+    expect(supabase.updateCalls).toEqual([
+      expect.not.objectContaining({
+        event_fingerprint: expect.any(String),
+      }),
+      expect.not.objectContaining({
+        event_fingerprint: expect.any(String),
+      }),
+    ]);
+
+    const reverseSupabase = createSupabaseClientMock(overlappingRows);
+    const reverseFirstDraft = await updateEditorialFeedItemStatus({
+      draftFrontmatter: {
+        sourceUrl: 'https://www.bricktastic.nl/lego/star-wars-75459/',
+        title: 'LEGO Star Wars 75459 onthuld',
+      },
+      draftMdx: '## BrickTastic concept\n\nDrafttekst.',
+      id: 'feed-bricktastic-75459',
+      status: 'drafted',
+      supabaseClient: reverseSupabase.client,
+    });
+    const reverseSecondDraft = await updateEditorialFeedItemStatus({
+      draftFrontmatter: {
+        sourceUrl: 'https://brickset.com/article/131598',
+        title: 'LEGO Star Wars 75459 set revealed',
+      },
+      draftMdx: '## Brickset concept\n\nDrafttekst.',
+      id: 'feed-brickset-75459',
+      status: 'drafted',
+      supabaseClient: reverseSupabase.client,
+    });
+
+    expect(reverseFirstDraft.draftMdx).toBe(
+      '## BrickTastic concept\n\nDrafttekst.',
+    );
+    expect(reverseSecondDraft.draftMdx).toBe(
+      '## Brickset concept\n\nDrafttekst.',
+    );
+    expect(reverseSupabase.updateCalls).toEqual([
+      expect.not.objectContaining({
+        event_fingerprint: expect.any(String),
+      }),
+      expect.not.objectContaining({
+        event_fingerprint: expect.any(String),
+      }),
+    ]);
+  });
+
   test('lists feed items ordered by source published date descending', async () => {
     const supabase = createSupabaseClientMock([]);
     const orderCalls: Array<{

@@ -16,6 +16,9 @@ type EditorialFeedSupabaseClient = Pick<SupabaseClient, 'from'>;
 interface EditorialFeedItemRow {
   article_slug: string | null;
   created_at: string;
+  draft_frontmatter?: unknown;
+  draft_mdx?: string | null;
+  drafted_at?: string | null;
   event_fingerprint: string | null;
   feed_name: string;
   id: string;
@@ -210,6 +213,11 @@ function toEditorialFeedItem(row: EditorialFeedItemRow): EditorialFeedItem {
   return {
     ...(row.article_slug ? { articleSlug: row.article_slug } : {}),
     createdAt: row.created_at,
+    ...(isRecord(row.draft_frontmatter)
+      ? { draftFrontmatter: row.draft_frontmatter }
+      : {}),
+    ...(row.draft_mdx ? { draftMdx: row.draft_mdx } : {}),
+    ...(row.drafted_at ? { draftedAt: row.drafted_at } : {}),
     ...(row.event_fingerprint
       ? { eventFingerprint: row.event_fingerprint }
       : {}),
@@ -415,21 +423,39 @@ export async function getEditorialFeedItemById({
 
 export async function updateEditorialFeedItemStatus({
   articleSlug,
+  clearDraft = false,
+  draftFrontmatter,
+  draftMdx,
   eventFingerprint,
   id,
   status,
   supabaseClient = getServerSupabaseAdminClient(),
 }: {
   articleSlug?: string;
+  clearDraft?: boolean;
+  draftFrontmatter?: unknown;
+  draftMdx?: string;
   eventFingerprint?: string;
   id: string;
   status: EditorialFeedItemStatus;
   supabaseClient?: EditorialFeedSupabaseClient;
 }): Promise<EditorialFeedItem> {
+  const draftPayload =
+    clearDraft || draftMdx !== undefined || draftFrontmatter !== undefined
+      ? {
+          draft_frontmatter: clearDraft ? null : (draftFrontmatter ?? null),
+          draft_mdx: clearDraft ? null : (draftMdx ?? null),
+          drafted_at:
+            clearDraft || draftMdx === undefined
+              ? null
+              : new Date().toISOString(),
+        }
+      : {};
   const { data, error } = await supabaseClient
     .from(EDITORIAL_FEED_ITEMS_TABLE_NAME)
     .update({
       ...(articleSlug ? { article_slug: articleSlug } : {}),
+      ...draftPayload,
       ...(eventFingerprint ? { event_fingerprint: eventFingerprint } : {}),
       status,
     })

@@ -92,6 +92,22 @@ interface EditorialAgentGalleryImage {
   url: string;
 }
 
+interface EditorialAgentLegoProductPageLink {
+  setNumber: string;
+  url: string;
+}
+
+interface EditorialAgentFitScore {
+  negativeReasons: readonly string[];
+  positiveReasons: readonly string[];
+  score: number;
+  tone: 'good' | 'maybe' | 'weak';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
 @Component({
   selector: 'lego-content-admin-editorial-agent-page',
   imports: [
@@ -181,11 +197,22 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   readonly feedItems = signal<readonly EditorialFeedItem[]>([]);
   readonly feedFilter = signal<EditorialAgentFeedFilter>('inbox');
   readonly activeFeedItemId = signal<string | null>(null);
+  readonly activeFeedItem = computed(() => {
+    const activeFeedItemId = this.activeFeedItemId();
+
+    return activeFeedItemId
+      ? (this.feedItems().find(
+          (feedItem) => feedItem.id === activeFeedItemId,
+        ) ?? null)
+      : null;
+  });
   readonly expandedOverlapFeedItemIds = signal<readonly string[]>([]);
   readonly extraction = signal<EditorialAgentFactExtractionResult | null>(null);
   readonly draftResult = signal<EditorialAgentDraftGenerationResult | null>(
     null,
   );
+  readonly storedDraftOutput = signal<EditorialAgentDraftOutput | null>(null);
+  readonly isStoredFeedDraftOpen = signal(false);
   readonly componentManifest = editorialAgentArticleComponentManifest;
   readonly extractionJson = computed(() =>
     this.extraction() ? JSON.stringify(this.extraction(), null, 2) : '',
@@ -194,7 +221,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     () => this.draftResult()?.catalogImport ?? null,
   );
   readonly output = computed<EditorialAgentDraftOutput | null>(
-    () => this.draftResult()?.output ?? null,
+    () => this.draftResult()?.output ?? this.storedDraftOutput(),
   );
   readonly effectiveDraftFrontmatter =
     computed<ContentArticleFrontmatterInput | null>(() => {
@@ -288,6 +315,27 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
     return [...new Set(legoUrls)].slice(0, 3);
   });
+  readonly draftLegoProductPageLinks = computed(() =>
+    this.buildLegoProductPageLinks([
+      this.output()?.primarySet?.setNumber,
+      ...this.extractSetNumbersFromText(this.mdxOutput()),
+      ...(this.output()?.relatedSets.map(
+        (relatedSet) => relatedSet.setNumber,
+      ) ?? []),
+      this.extraction()?.primarySet?.setNumber,
+      ...(this.extraction()?.detected.setNumbers ?? []),
+      ...(this.extraction()?.facts.setNumbers ?? []),
+      ...(this.extraction()?.matching.matchedSets.map(
+        (matchedSet) => matchedSet.setNumber,
+      ) ?? []),
+    ]),
+  );
+  readonly articleEditLegoProductPageLinks = computed(() =>
+    this.buildLegoProductPageLinks([
+      ...this.extractSetNumbersFromText(this.articleEditMdx()),
+      ...this.extractSetNumbersFromText(this.articleEditTitle()),
+    ]),
+  );
   readonly imageGallerySnippet = computed(() =>
     this.buildImageGallerySnippet(this.galleryImages()),
   );
@@ -393,6 +441,24 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     return feedItem.status === 'new' || feedItem.status === 'drafted';
   }
 
+  hasStoredDraft(feedItem: EditorialFeedItem): boolean {
+    return Boolean(
+      feedItem.status === 'drafted' &&
+        feedItem.draftMdx?.trim() &&
+        feedItem.draftFrontmatter,
+    );
+  }
+
+  getFeedItemDraftActionLabel(feedItem: EditorialFeedItem): string {
+    if (this.hasStoredDraft(feedItem)) {
+      return 'Open concept';
+    }
+
+    return feedItem.status === 'drafted'
+      ? 'Genereer opnieuw'
+      : 'Genereer draft';
+  }
+
   setFeedFilter(filter: EditorialAgentFeedFilter): void {
     this.feedFilter.set(filter);
   }
@@ -413,6 +479,107 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     feedItem: EditorialFeedItem,
   ): readonly EditorialAgentFeedOverlapSuggestion[] {
     return this.feedOverlapSuggestionsByItemId().get(feedItem.id) ?? [];
+  }
+
+  getEditorialFitScore(feedItem: EditorialFeedItem): EditorialAgentFitScore {
+    const title = feedItem.title.toLowerCase();
+    const setNumbers = this.extractSetNumbersFromTitle(feedItem.title);
+    const hasTheme = Boolean(this.inferThemeFromTitle(feedItem.title));
+    const overlapSuggestions = this.getFeedOverlapSuggestions(feedItem);
+    const positiveReasons: string[] = [];
+    const negativeReasons: string[] = [];
+    let score = 45;
+
+    if (setNumbers.length > 0) {
+      score += 30;
+      positiveReasons.push('Exact setnummer gevonden');
+    } else {
+      score -= 10;
+      negativeReasons.push('Geen exact setnummer gevonden');
+    }
+
+    if (this.isSingleSetEditorialSignal(title, setNumbers.length)) {
+      score += 20;
+      positiveReasons.push('Sterke single-set aankondiging of deal');
+    }
+
+    if (hasTheme) {
+      score += 15;
+      positiveReasons.push('Duidelijke LEGO-themacontext');
+    }
+
+    if (this.isReliableEditorialSignalSource(feedItem.feedName)) {
+      score += 15;
+      positiveReasons.push('Betrouwbare signaalbron');
+    }
+
+    if (this.hasRevealOrImageSignal(title)) {
+      score += 10;
+      positiveReasons.push('Aankondiging of officiële beelden');
+    }
+
+    if (this.hasDealOrAvailabilitySignal(title)) {
+      score += 10;
+      positiveReasons.push('Deal-, beschikbaarheids- of pre-orderhoek');
+    }
+
+    if (this.isRecurringOrCommunityPost(title)) {
+      score -= 25;
+      negativeReasons.push('Terugkerende community- of overzichtspost');
+    }
+
+    if (this.isReviewOrOpinionPost(title)) {
+      score -= 20;
+      negativeReasons.push('Review, quick look of opiniepost');
+    }
+
+    if (overlapSuggestions.length > 0) {
+      score -= 20;
+      negativeReasons.push('Mogelijke overlap met bestaand nieuws');
+    }
+
+    if (this.isVagueRoundup(title, setNumbers.length)) {
+      score -= 15;
+      negativeReasons.push('Breed overzicht zonder duidelijke setfocus');
+    }
+
+    if (feedItem.status === 'low_value') {
+      score -= 10;
+      negativeReasons.push('Gemarkeerd als lage waarde');
+    }
+
+    const normalizedScoreBase =
+      feedItem.status === 'low_value'
+        ? Math.min(49, Math.max(0, score))
+        : Math.min(100, Math.max(0, score));
+    const normalizedScore =
+      overlapSuggestions.length > 0
+        ? Math.min(79, normalizedScoreBase)
+        : normalizedScoreBase;
+
+    return {
+      negativeReasons,
+      positiveReasons,
+      score: normalizedScore,
+      tone:
+        normalizedScore >= 80
+          ? 'good'
+          : normalizedScore >= 50
+            ? 'maybe'
+            : 'weak',
+    };
+  }
+
+  getEditorialFitColor(tone: EditorialAgentFitScore['tone']): string {
+    switch (tone) {
+      case 'good':
+        return '#047857';
+      case 'maybe':
+        return '#a16207';
+      case 'weak':
+      default:
+        return '#b91c1c';
+    }
   }
 
   hasPublishedFeedOverlap(feedItem: EditorialFeedItem): boolean {
@@ -523,7 +690,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
         return;
       }
 
-      await this.generateDraftForFeedItem(feedItem);
+      await this.openOrGenerateDraftForFeedItem(feedItem);
     }
   }
 
@@ -599,6 +766,8 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   private clearDraftState(): void {
     this.extraction.set(null);
     this.draftResult.set(null);
+    this.storedDraftOutput.set(null);
+    this.isStoredFeedDraftOpen.set(false);
     this.heroImageOverride.set(undefined);
     this.heroImageCreditOverride.set(undefined);
     this.heroImageUrlInput.set('');
@@ -619,6 +788,100 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     this.draftTheme.set('');
     this.draftDate.set('');
     this.draftMdx.set(null);
+  }
+
+  private createStoredDraftOutput(
+    feedItem: EditorialFeedItem,
+  ): EditorialAgentDraftOutput | null {
+    const frontmatter = feedItem.draftFrontmatter;
+    const mdx = feedItem.draftMdx?.trim();
+
+    if (!isRecord(frontmatter) || !mdx) {
+      return null;
+    }
+
+    return {
+      frontmatter: {
+        date:
+          typeof frontmatter['date'] === 'string'
+            ? frontmatter['date']
+            : new Date().toISOString().slice(0, 10),
+        description:
+          typeof frontmatter['description'] === 'string'
+            ? frontmatter['description']
+            : feedItem.title,
+        heroImage:
+          typeof frontmatter['heroImage'] === 'string'
+            ? frontmatter['heroImage']
+            : '',
+        heroImageAlt:
+          typeof frontmatter['heroImageAlt'] === 'string'
+            ? frontmatter['heroImageAlt']
+            : feedItem.title,
+        ...(typeof frontmatter['heroImageCredit'] === 'string'
+          ? { heroImageCredit: frontmatter['heroImageCredit'] }
+          : {}),
+        slug:
+          typeof frontmatter['slug'] === 'string' ? frontmatter['slug'] : '',
+        ...(typeof frontmatter['signalSourceName'] === 'string'
+          ? { signalSourceName: frontmatter['signalSourceName'] }
+          : {}),
+        ...(frontmatter['sourceDisplayMode'] === 'auto'
+          ? { sourceDisplayMode: 'auto' as const }
+          : {}),
+        sourceUrl:
+          typeof frontmatter['sourceUrl'] === 'string'
+            ? frontmatter['sourceUrl']
+            : feedItem.sourceUrl,
+        status: 'draft',
+        theme:
+          typeof frontmatter['theme'] === 'string' ? frontmatter['theme'] : '',
+        title:
+          typeof frontmatter['title'] === 'string'
+            ? frontmatter['title']
+            : feedItem.title,
+      },
+      mdx,
+      primarySet: null,
+      relatedSets: [],
+      warnings: [],
+    };
+  }
+
+  openStoredDraftForFeedItem(feedItem: EditorialFeedItem): void {
+    const storedDraftOutput = this.createStoredDraftOutput(feedItem);
+
+    if (!storedDraftOutput) {
+      this.feedErrorMessage.set(
+        'Dit concept is nog niet opgeslagen. Genereer opnieuw om het te openen.',
+      );
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.clearDraftState();
+    this.activeFeedItemId.set(feedItem.id);
+    this.sourceUrl.set(feedItem.sourceUrl);
+    this.storedDraftOutput.set(storedDraftOutput);
+    this.isStoredFeedDraftOpen.set(true);
+    this.setDraftEditorFromOutput(storedDraftOutput);
+    this.draftSourceDisplayMode.set(
+      this.normalizeSourceDisplayMode(
+        storedDraftOutput.frontmatter.sourceDisplayMode,
+      ),
+    );
+    this.isDraftModalOpen.set(true);
+  }
+
+  async openOrGenerateDraftForFeedItem(
+    feedItem: EditorialFeedItem,
+  ): Promise<void> {
+    if (this.hasStoredDraft(feedItem)) {
+      this.openStoredDraftForFeedItem(feedItem);
+      return;
+    }
+
+    await this.generateDraftForFeedItem(feedItem);
   }
 
   private setDraftEditorFromOutput(output: EditorialAgentDraftOutput): void {
@@ -920,6 +1183,87 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
           .filter((setNumber): setNumber is string => Boolean(setNumber)),
       ),
     ];
+  }
+
+  private hasRevealOrImageSignal(title: string): boolean {
+    return /\b(?:aangekondigd|announced|beelden|first look|foto'?s|onthuld|revealed|unveiled|official images?)\b/iu.test(
+      title,
+    );
+  }
+
+  private hasDealOrAvailabilitySignal(title: string): boolean {
+    return /\b(?:actie|aanbieding|beschikbaar|deal|dubbele insiders|korting|pre-?order|voorbestel)\b/iu.test(
+      title,
+    );
+  }
+
+  private isReliableEditorialSignalSource(feedName: string): boolean {
+    return /\b(?:brickset|bricktastic|lego)\b/iu.test(feedName);
+  }
+
+  private isSingleSetEditorialSignal(
+    title: string,
+    setNumberCount: number,
+  ): boolean {
+    return (
+      setNumberCount === 1 &&
+      (this.hasRevealOrImageSignal(title) ||
+        this.hasDealOrAvailabilitySignal(title))
+    );
+  }
+
+  private isRecurringOrCommunityPost(title: string): boolean {
+    return /\b(?:random (?:figure|set|minifig)|this week'?s top news|what'?s hot this week|vintage set of the week|throwback thursday|summer set summary|weekly (?:news )?(?:roundup|round-up|listing|list)|site updates?|housekeeping)\b/iu.test(
+      title,
+    );
+  }
+
+  private isReviewOrOpinionPost(title: string): boolean {
+    return /^(?:review|quick look)\b|(?:\bopinion\b|\breview:)/iu.test(title);
+  }
+
+  private isVagueRoundup(title: string, setNumberCount: number): boolean {
+    return (
+      setNumberCount === 0 &&
+      /\b(?:alle sets|all sets|deze nieuwe lego-sets|roundup|overzicht|summary|summer\b.*\bsets|nieuwe sets)\b/iu.test(
+        title,
+      )
+    );
+  }
+
+  private normalizeLegoProductPageSetNumber(
+    setNumber?: string,
+  ): string | undefined {
+    const match = setNumber?.trim().match(/^(\d{5,6})(?:-\d+)?$/u);
+
+    return match?.[1];
+  }
+
+  private extractSetNumbersFromText(text?: string): readonly string[] {
+    return [
+      ...new Set(
+        [...(text ?? '').matchAll(/(?<!\d)(\d{5,6})(?:-\d+)?(?!\d)/gu)]
+          .map((match) => this.normalizeLegoProductPageSetNumber(match[0]))
+          .filter((setNumber): setNumber is string => Boolean(setNumber)),
+      ),
+    ];
+  }
+
+  private buildLegoProductPageLinks(
+    setNumbers: readonly (string | undefined)[],
+  ): readonly EditorialAgentLegoProductPageLink[] {
+    return [
+      ...new Set(
+        setNumbers
+          .map((setNumber) => this.normalizeLegoProductPageSetNumber(setNumber))
+          .filter((setNumber): setNumber is string => Boolean(setNumber)),
+      ),
+    ]
+      .slice(0, 3)
+      .map((setNumber) => ({
+        setNumber,
+        url: `https://www.lego.com/nl-nl/product/${setNumber}`,
+      }));
   }
 
   private extractComparableTitleTokens(title: string): readonly string[] {
@@ -2080,6 +2424,8 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       this.sourceUrl.set(result.feedItem.sourceUrl);
       this.extraction.set(result.draftResult.effectiveExtraction);
       this.draftResult.set(result.draftResult);
+      this.storedDraftOutput.set(null);
+      this.isStoredFeedDraftOpen.set(false);
       this.setDraftEditorFromOutput(result.draftResult.output);
       this.draftSourceDisplayMode.set(
         this.normalizeSourceDisplayMode(
@@ -2100,6 +2446,20 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
     } finally {
       this.isGenerating.set(false);
     }
+  }
+
+  async regenerateDraftForFeedItem(feedItem: EditorialFeedItem): Promise<void> {
+    const confirmed =
+      typeof window === 'undefined' ||
+      window.confirm(
+        'Dit maakt een nieuwe draft en gebruikt opnieuw AI polish.',
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await this.generateDraftForFeedItem(feedItem);
   }
 
   async ignoreFeedItem(feedItem: EditorialFeedItem): Promise<void> {

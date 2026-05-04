@@ -20,6 +20,7 @@ import {
   ContentArticlePublishValidationError,
   syncEditorialFeed,
   updateEditorialFeedItemStatus,
+  deleteAdminArticlePreviewsForPublishedDraft,
   importContentArticleHeroImageFromUrl,
   importContentArticleImageFromUrl,
   uploadContentArticleImage,
@@ -471,7 +472,8 @@ export function createAdminEditorialAgentService({
         useAiRewrite,
       });
       const nextFeedItem = await updateEditorialFeedItemStatus({
-        eventFingerprint: `${draftResult.effectiveExtraction.event.fingerprint.type}:${draftResult.effectiveExtraction.event.fingerprint.key}`,
+        draftFrontmatter: draftResult.output.frontmatter,
+        draftMdx: draftResult.output.mdx,
         id: feedItemId,
         status: 'drafted',
       });
@@ -498,8 +500,13 @@ export function createAdminEditorialAgentService({
 
       await updateEditorialFeedItemStatus({
         articleSlug: result.slug,
+        clearDraft: true,
         id: feedItemId,
         status: 'published',
+      });
+      await deleteAdminArticlePreviewsForPublishedDraft({
+        slug: result.slug,
+        sourceUrl: publishInput.frontmatter.sourceUrl,
       });
 
       return result;

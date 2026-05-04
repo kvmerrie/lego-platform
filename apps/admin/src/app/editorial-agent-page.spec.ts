@@ -310,6 +310,23 @@ function clickButtonContaining(
   fixture.detectChanges();
 }
 
+function expectElementAfter(
+  laterElement: Element | null | undefined,
+  earlierElement: Element | null | undefined,
+): void {
+  expect(laterElement).not.toBeNull();
+  expect(earlierElement).not.toBeNull();
+  if (!laterElement || !earlierElement) {
+    return;
+  }
+  expect(
+    Boolean(
+      earlierElement.compareDocumentPosition(laterElement) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ),
+  ).toBe(true);
+}
+
 describe('Editorial agent admin page', () => {
   const editorialAgentApi = {
     extractSourceFacts: vi.fn(async () => createExtractionResult()),
@@ -753,6 +770,295 @@ describe('Editorial agent admin page', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('shows Editorial Fit scores in the feed inbox without generating drafts', async () => {
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        feedName: 'Brickset',
+        id: 'feed-item-star-wars',
+        sourceUrl: 'https://brickset.com/article/75458',
+        status: 'new',
+        title:
+          'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet revealed!',
+        updatedAt: '2026-05-03T10:00:00.000Z',
+      },
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('Fit');
+    });
+
+    const fitSummary = fixture.nativeElement.querySelector(
+      '.editorial-agent__fit-score--good summary',
+    ) as HTMLElement | null;
+
+    expect(fitSummary?.textContent).toContain('100');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Imperial Remnant AT-RT Driver Helmet',
+    );
+    expect(editorialAgentApi.generateDraftForFeedItem).not.toHaveBeenCalled();
+    expect(editorialAgentApi.generateDraft).not.toHaveBeenCalled();
+  });
+
+  it('scores a strong single-set Star Wars reveal high', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const score = fixture.componentInstance.getEditorialFitScore({
+      createdAt: '2026-05-03T10:00:00.000Z',
+      feedName: 'Brickset',
+      id: 'feed-item-star-wars',
+      sourceUrl: 'https://brickset.com/article/75458',
+      status: 'new',
+      title:
+        'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet revealed!',
+      updatedAt: '2026-05-03T10:00:00.000Z',
+    });
+
+    expect(score.score).toBeGreaterThanOrEqual(80);
+    expect(score.tone).toBe('good');
+    expect(score.positiveReasons).toContain('Exact setnummer gevonden');
+    expect(score.positiveReasons).toContain(
+      'Sterke single-set aankondiging of deal',
+    );
+  });
+
+  it('scores low-value recurring feed posts low', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const score = fixture.componentInstance.getEditorialFitScore({
+      createdAt: '2026-05-03T10:00:00.000Z',
+      feedName: 'Brickset',
+      id: 'feed-item-hot',
+      sourceUrl: 'https://brickset.com/article/hot',
+      status: 'low_value',
+      title: "What's hot this week",
+      updatedAt: '2026-05-03T10:00:00.000Z',
+    });
+
+    expect(score.score).toBeLessThan(50);
+    expect(score.tone).toBe('weak');
+    expect(score.negativeReasons).toContain(
+      'Terugkerende community- of overzichtspost',
+    );
+    expect(score.negativeReasons).toContain('Gemarkeerd als lage waarde');
+  });
+
+  it('applies an overlap penalty to duplicate-ish feed items', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+    const feedItem = {
+      createdAt: '2026-05-03T10:00:00.000Z',
+      feedName: 'Brickset',
+      id: 'feed-item-vader',
+      sourcePublishedAt: '2026-05-03T08:00:00.000Z',
+      sourceUrl: 'https://brickset.com/article/vader',
+      status: 'new' as const,
+      title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader revealed',
+      updatedAt: '2026-05-03T10:00:00.000Z',
+    };
+
+    component.feedItems.set([
+      feedItem,
+      {
+        ...feedItem,
+        id: 'feed-item-vader-other',
+        sourceUrl: 'https://bricktastic.nl/vader',
+        title: 'LEGO Star Wars 75461 Up-Scaled Darth Vader onthuld',
+      },
+    ]);
+
+    const score = component.getEditorialFitScore(feedItem);
+
+    expect(score.negativeReasons).toContain(
+      'Mogelijke overlap met bestaand nieuws',
+    );
+    expect(score.score).toBeLessThan(100);
+  });
+
+  it('scores broad roundups as medium fit', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const score = fixture.componentInstance.getEditorialFitScore({
+      createdAt: '2026-05-03T10:00:00.000Z',
+      feedName: 'Brickset',
+      id: 'feed-item-city-summer',
+      sourceUrl: 'https://brickset.com/article/city-summer',
+      status: 'new',
+      title: 'Summer LEGO City sets unveiled',
+      updatedAt: '2026-05-03T10:00:00.000Z',
+    });
+
+    expect(score.score).toBeGreaterThanOrEqual(50);
+    expect(score.score).toBeLessThan(80);
+    expect(score.tone).toBe('maybe');
+    expect(score.negativeReasons).toContain(
+      'Breed overzicht zonder duidelijke setfocus',
+    );
+  });
+
+  it('opens a saved drafted feed item without generating again', async () => {
+    const draftResult = createDraftResult();
+
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        draftFrontmatter: draftResult.output.frontmatter,
+        draftMdx: draftResult.output.mdx,
+        draftedAt: '2026-05-03T11:00:00.000Z',
+        feedName: 'Brick Example',
+        id: 'feed-item-1',
+        sourceUrl: 'https://example.com/example',
+        status: 'drafted',
+        title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        updatedAt: '2026-05-03T11:00:00.000Z',
+      },
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('Open concept');
+    });
+
+    clickButtonContaining(fixture, 'Open concept');
+
+    const textarea = fixture.nativeElement.querySelector(
+      '[role="dialog"] textarea',
+    ) as HTMLTextAreaElement | null;
+
+    expect(editorialAgentApi.generateDraftForFeedItem).not.toHaveBeenCalled();
+    expect(textarea?.value).toContain('Pak hem nu als je de punten al hebt.');
+    expect(fixture.nativeElement.textContent).toContain('Opnieuw genereren');
+  });
+
+  it('confirms before regenerating a saved drafted feed item', async () => {
+    const draftResult = createDraftResult();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    editorialAgentApi.listFeedItems.mockResolvedValueOnce([
+      {
+        createdAt: '2026-05-03T10:00:00.000Z',
+        draftFrontmatter: draftResult.output.frontmatter,
+        draftMdx: draftResult.output.mdx,
+        draftedAt: '2026-05-03T11:00:00.000Z',
+        feedName: 'Brick Example',
+        id: 'feed-item-1',
+        sourceUrl: 'https://example.com/example',
+        status: 'drafted',
+        title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        updatedAt: '2026-05-03T11:00:00.000Z',
+      },
+    ]);
+
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('Open concept');
+    });
+
+    clickButtonContaining(fixture, 'Opnieuw genereren');
+
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(editorialAgentApi.generateDraftForFeedItem).toHaveBeenCalledWith(
+        'feed-item-1',
+        true,
+        true,
+      );
+    });
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Dit maakt een nieuwe draft en gebruikt opnieuw AI polish.',
+    );
+
+    confirmSpy.mockRestore();
   });
 
   it('sorts feed inbox by source date and hides ignored items by default', async () => {
@@ -1405,6 +1711,184 @@ describe('Editorial agent admin page', () => {
     expect(component.draftTheme()).toBe('Star Wars');
     expect(component.draftDate()).toBe('2026-05-04');
     expect(textarea?.value).toContain('## Aangepaste MDX');
+  });
+
+  it('shows official LEGO product page shortcuts for a FeaturedSet in the Beeld tab', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+    const draftResult = createDraftResult();
+
+    draftResult.output.primarySet = {
+      name: 'Imperial Remnant AT-RT Driver Helmet',
+      reason: 'Primary set uit headline.',
+      setNumber: '75458-1',
+    };
+    draftResult.output.relatedSets = [];
+    component.draftResult.set(draftResult);
+    component.draftMdx.set('## Wat is er aangekondigd?\n\nHelmet nieuws.');
+    component.isDraftModalOpen.set(true);
+    component.draftModalTab.set('beeld');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Officiële LEGO beelden zoeken',
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      'Open LEGO productpagina voor 75458',
+    );
+    expect(
+      fixture.nativeElement.querySelector(
+        'a[href="https://www.lego.com/nl-nl/product/75458"]',
+      ),
+    ).not.toBeNull();
+
+    const helper = fixture.nativeElement.querySelector(
+      '.editorial-agent__suggested-links',
+    ) as HTMLElement | null;
+    const creditInput = fixture.nativeElement.querySelector(
+      'input[placeholder="Beeld: © The LEGO Group"]',
+    ) as HTMLInputElement | null;
+    const urlInput = fixture.nativeElement.querySelector(
+      'input[placeholder="https://www.lego.com/cdn/..."]',
+    ) as HTMLInputElement | null;
+
+    expect(helper?.closest('.editorial-agent__hero-row')).toBeNull();
+    expect(helper?.parentElement?.classList).toContain(
+      'editorial-agent__image-section--hero',
+    );
+    expectElementAfter(helper, urlInput);
+    expectElementAfter(helper, creditInput);
+  });
+
+  it('shows up to three official LEGO product page shortcuts from SetSpotlightList', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+    const draftResult = createDraftResult();
+
+    draftResult.output.primarySet = null;
+    draftResult.output.relatedSets = [];
+    component.draftResult.set(draftResult);
+    component.draftMdx.set(
+      '<SetSpotlightList setIds="75458, 75461, 75398, 10316" />',
+    );
+    component.isDraftModalOpen.set(true);
+    component.draftModalTab.set('beeld');
+    fixture.detectChanges();
+
+    const productLinks = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'a[href^="https://www.lego.com/nl-nl/product/"]',
+      ),
+    ) as HTMLAnchorElement[];
+
+    expect(productLinks.map((link) => link.href)).toEqual([
+      'https://www.lego.com/nl-nl/product/75458',
+      'https://www.lego.com/nl-nl/product/75461',
+      'https://www.lego.com/nl-nl/product/75398',
+    ]);
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Open LEGO productpagina voor 10316',
+    );
+  });
+
+  it('renders two official LEGO product shortcuts without horizontal hero-row nesting', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+    const draftResult = createDraftResult();
+
+    draftResult.output.primarySet = null;
+    draftResult.output.relatedSets = [];
+    component.draftResult.set(draftResult);
+    component.draftMdx.set('<SetSpotlightList setIds="75458,75461" />');
+    component.isDraftModalOpen.set(true);
+    component.draftModalTab.set('beeld');
+    fixture.detectChanges();
+
+    const helper = fixture.nativeElement.querySelector(
+      '.editorial-agent__suggested-links',
+    ) as HTMLElement | null;
+    const productLinks = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'a[href^="https://www.lego.com/nl-nl/product/"]',
+      ),
+    ) as HTMLAnchorElement[];
+
+    expect(productLinks).toHaveLength(2);
+    expect(helper?.closest('.editorial-agent__hero-row')).toBeNull();
+    expect(helper?.parentElement?.classList).toContain(
+      'editorial-agent__image-section--hero',
+    );
+  });
+
+  it('does not show official LEGO product shortcuts without set numbers', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+    const draftResult = createDraftResult();
+
+    draftResult.output.primarySet = null;
+    draftResult.output.relatedSets = [];
+    component.draftResult.set(draftResult);
+    component.draftMdx.set('## Wat is er aangekondigd?\n\nZonder setnummer.');
+    component.isDraftModalOpen.set(true);
+    component.draftModalTab.set('beeld');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Officiële LEGO beelden zoeken',
+    );
+    expect(
+      fixture.nativeElement.querySelector(
+        'a[href^="https://www.lego.com/nl-nl/product/"]',
+      ),
+    ).toBeNull();
   });
 
   it('closes the draft modal with the icon button and escape key', async () => {

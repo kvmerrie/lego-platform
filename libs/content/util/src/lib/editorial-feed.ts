@@ -12,6 +12,9 @@ export type EditorialFeedItemStatus =
 export interface EditorialFeedItem {
   articleSlug?: string;
   createdAt: string;
+  draftFrontmatter?: unknown;
+  draftMdx?: string;
+  draftedAt?: string;
   eventFingerprint?: string;
   feedName: string;
   id: string;

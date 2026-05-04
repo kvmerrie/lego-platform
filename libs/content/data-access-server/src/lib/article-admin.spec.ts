@@ -1,6 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
   createAdminArticlePreview,
+  deleteAdminArticlePreviewsForPublishedDraft,
   deleteAdminPublishedArticleBySlug,
   getAdminPublishedArticleBySlug,
   listAdminPublishedArticles,
@@ -624,6 +625,24 @@ describe('admin article editing', () => {
       },
       table: 'editorial_feed_items',
     });
+  });
+
+  test('cleans up draft previews by slug and source URL after publish', async () => {
+    const supabaseClient = createDeleteSupabaseClientMock();
+
+    await expect(
+      deleteAdminArticlePreviewsForPublishedDraft({
+        slug: 'spiny-shell',
+        sourceUrl: 'https://example.com/spiny-shell',
+        supabaseClient: toDeleteSupabaseClient(supabaseClient),
+      }),
+    ).resolves.toBe(2);
+
+    expect(supabaseClient.from).toHaveBeenCalledWith('article_previews');
+    expect(supabaseClient.filters).toEqual([
+      ['frontmatter->>slug', 'spiny-shell'],
+      ['frontmatter->>sourceUrl', 'https://example.com/spiny-shell'],
+    ]);
   });
 
   test('rejects invalid delete slugs without touching storage', async () => {

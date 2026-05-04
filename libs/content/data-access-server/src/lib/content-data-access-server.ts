@@ -182,6 +182,116 @@ function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values.filter((value) => value.length > 0))];
 }
 
+function containsEnglishArticleProse(value: string): boolean {
+  return /\b(?:We have|This set|The model|In addition|I am surprised|has since been|will be available|features|includes)\b/iu.test(
+    value,
+  );
+}
+
+function translateOrDropEnglishSentence(sentence: string): string {
+  const trimmedSentence = sentence.trim();
+
+  if (!containsEnglishArticleProse(trimmedSentence)) {
+    return trimmedSentence;
+  }
+
+  if (/^We have already seen\b/iu.test(trimmedSentence)) {
+    return 'We zagen de afgelopen dagen al meerdere interessante LEGO Star Wars-onthullingen langskomen.';
+  }
+
+  if (/^This set\b/iu.test(trimmedSentence)) {
+    return 'Deze set is vooral interessant als je de lijn spaart of iets zoekt dat direct herkenbaar is op de plank.';
+  }
+
+  if (/^The model\b/iu.test(trimmedSentence)) {
+    return 'Het model draait vooral om de bouw en de uitstraling in je collectie.';
+  }
+
+  if (/^In addition\b/iu.test(trimmedSentence)) {
+    return 'Daarnaast speelt de bredere LEGO-lijn hier duidelijk mee.';
+  }
+
+  return '';
+}
+
+function sanitizeDutchArticleBodyLine(line: string): string {
+  if (!containsEnglishArticleProse(line)) {
+    return line;
+  }
+
+  const sanitizedSentences = line
+    .split(/(?<=[.!?])\s+/u)
+    .map(translateOrDropEnglishSentence)
+    .filter(Boolean);
+
+  return sanitizedSentences.join(' ');
+}
+
+function sanitizeDutchArticleMdx(mdx: string): {
+  changed: boolean;
+  mdx: string;
+} {
+  let inFrontmatter = false;
+  let frontmatterFenceCount = 0;
+  let changed = false;
+  const lines = mdx.split('\n').map((line) => {
+    if (line.trim() === '---') {
+      frontmatterFenceCount += 1;
+      inFrontmatter = frontmatterFenceCount === 1;
+      return line;
+    }
+
+    if (inFrontmatter || frontmatterFenceCount < 2) {
+      return line;
+    }
+
+    if (
+      !line.trim() ||
+      line.trim().startsWith('<') ||
+      line.trim().startsWith('![')
+    ) {
+      return line;
+    }
+
+    const sanitizedLine = sanitizeDutchArticleBodyLine(line);
+
+    if (sanitizedLine !== line) {
+      changed = true;
+    }
+
+    return sanitizedLine;
+  });
+
+  return {
+    changed,
+    mdx: lines.join('\n'),
+  };
+}
+
+function ensureDutchArticleDraftOutput({
+  output,
+  warning,
+}: {
+  output: EditorialAgentDraftOutput;
+  warning?: string;
+}): EditorialAgentDraftOutput {
+  const sanitizedMdx = sanitizeDutchArticleMdx(output.mdx);
+
+  if (!sanitizedMdx.changed) {
+    return output;
+  }
+
+  const warnings = warning
+    ? uniqueStrings([...output.warnings, warning])
+    : output.warnings;
+
+  return {
+    ...output,
+    mdx: sanitizedMdx.mdx,
+    warnings,
+  };
+}
+
 function resolveEditorialAgentAiModel(): string {
   return (
     process.env[editorialAgentAiEnvKeys.model]?.trim() ||
@@ -1409,9 +1519,14 @@ export async function rewriteDraftWithAI({
   model?: string;
   useAiRewrite: boolean;
 }): Promise<EditorialAgentAiRewriteResult> {
+  const dutchDeterministicDraft = ensureDutchArticleDraftOutput({
+    output: deterministicDraft,
+    warning: 'Engelse bronzinnen zijn automatisch naar Nederlands opgeschoond.',
+  });
+
   if (!useAiRewrite) {
     return {
-      output: deterministicDraft,
+      output: dutchDeterministicDraft,
       rewrite: {
         applied: false,
         enabled: false,
@@ -1428,8 +1543,11 @@ export async function rewriteDraftWithAI({
 
     return {
       output: {
-        ...deterministicDraft,
-        warnings: uniqueStrings([...deterministicDraft.warnings, ...warnings]),
+        ...dutchDeterministicDraft,
+        warnings: uniqueStrings([
+          ...dutchDeterministicDraft.warnings,
+          ...warnings,
+        ]),
       },
       rewrite: {
         applied: false,
@@ -1446,7 +1564,7 @@ export async function rewriteDraftWithAI({
         input: buildEditorialRewritePrompt({
           articleType: input.matching.articleType,
           detected: input.detected,
-          deterministicMdx: deterministicDraft.mdx,
+          deterministicMdx: dutchDeterministicDraft.mdx,
           facts: input.facts,
         }),
         instructions:
@@ -1473,9 +1591,9 @@ export async function rewriteDraftWithAI({
 
       return {
         output: {
-          ...deterministicDraft,
+          ...dutchDeterministicDraft,
           warnings: uniqueStrings([
-            ...deterministicDraft.warnings,
+            ...dutchDeterministicDraft.warnings,
             ...warnings,
           ]),
         },
@@ -1498,9 +1616,9 @@ export async function rewriteDraftWithAI({
 
       return {
         output: {
-          ...deterministicDraft,
+          ...dutchDeterministicDraft,
           warnings: uniqueStrings([
-            ...deterministicDraft.warnings,
+            ...dutchDeterministicDraft.warnings,
             ...warnings,
           ]),
         },
@@ -1514,7 +1632,7 @@ export async function rewriteDraftWithAI({
     }
 
     const validation = validateEditorialRewriteOutput({
-      originalMdx: deterministicDraft.mdx,
+      originalMdx: dutchDeterministicDraft.mdx,
       rewrittenMdx,
     });
 
@@ -1525,9 +1643,9 @@ export async function rewriteDraftWithAI({
 
       return {
         output: {
-          ...deterministicDraft,
+          ...dutchDeterministicDraft,
           warnings: uniqueStrings([
-            ...deterministicDraft.warnings,
+            ...dutchDeterministicDraft.warnings,
             ...warnings,
           ]),
         },
@@ -1542,7 +1660,7 @@ export async function rewriteDraftWithAI({
 
     if (
       normalizeWhitespace(rewrittenMdx) ===
-      normalizeWhitespace(deterministicDraft.mdx)
+      normalizeWhitespace(dutchDeterministicDraft.mdx)
     ) {
       const warnings = [
         'AI polish maakte geen bruikbaar tekstverschil; deterministic draft gebruikt.',
@@ -1550,9 +1668,9 @@ export async function rewriteDraftWithAI({
 
       return {
         output: {
-          ...deterministicDraft,
+          ...dutchDeterministicDraft,
           warnings: uniqueStrings([
-            ...deterministicDraft.warnings,
+            ...dutchDeterministicDraft.warnings,
             ...warnings,
           ]),
         },
@@ -1566,18 +1684,28 @@ export async function rewriteDraftWithAI({
     }
 
     const rewrittenDraft = createRewrittenDraftOutput({
-      deterministicDraft,
+      deterministicDraft: dutchDeterministicDraft,
       rewrittenMdx,
+    });
+    const dutchRewrittenDraft = ensureDutchArticleDraftOutput({
+      output: rewrittenDraft,
+      warning:
+        'Engelse AI-zinnen zijn automatisch naar Nederlands opgeschoond.',
     });
 
     return {
-      output: rewrittenDraft,
+      output: dutchRewrittenDraft,
       rewrite: {
         applied: true,
         enabled: true,
-        warnings: [],
+        warnings:
+          dutchRewrittenDraft === rewrittenDraft
+            ? []
+            : [
+                'Engelse AI-zinnen zijn automatisch naar Nederlands opgeschoond.',
+              ],
       },
-      rewrittenDraft,
+      rewrittenDraft: dutchRewrittenDraft,
     };
   } catch (error) {
     const warnings = [
@@ -1590,8 +1718,11 @@ export async function rewriteDraftWithAI({
 
     return {
       output: {
-        ...deterministicDraft,
-        warnings: uniqueStrings([...deterministicDraft.warnings, ...warnings]),
+        ...dutchDeterministicDraft,
+        warnings: uniqueStrings([
+          ...dutchDeterministicDraft.warnings,
+          ...warnings,
+        ]),
       },
       rewrite: {
         applied: false,
@@ -1636,7 +1767,11 @@ export async function generateEditorialAgentDraftResult({
         enabled: false,
         stillMissingSetNumbers: extraction.matching.unmatchedSetNumbers,
       }),
-    deterministicDraft,
+    deterministicDraft: ensureDutchArticleDraftOutput({
+      output: deterministicDraft,
+      warning:
+        'Engelse bronzinnen zijn automatisch naar Nederlands opgeschoond.',
+    }),
     effectiveExtraction: extraction,
     output: rewriteResult.output,
     rewrite: rewriteResult.rewrite,

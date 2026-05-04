@@ -7,6 +7,9 @@ create table if not exists public.editorial_feed_items (
   source_published_at timestamptz,
   status text not null default 'new' check (status in ('new', 'drafted', 'ignored', 'low_value', 'published')),
   article_slug text,
+  draft_mdx text,
+  draft_frontmatter jsonb,
+  drafted_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

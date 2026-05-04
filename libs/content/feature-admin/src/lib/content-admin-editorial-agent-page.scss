@@ -183,6 +183,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+  grid-column: 2;
 }
 
 .editorial-agent__feed-overlap-list {
@@ -327,9 +328,8 @@
   overflow-x: hidden;
 }
 
-.editorial-agent__image-import {
-  display: grid;
-  gap: 0.45rem;
+.editorial-agent__suggested-links a {
+  overflow-wrap: anywhere;
 }
 
 .editorial-agent__file-input {

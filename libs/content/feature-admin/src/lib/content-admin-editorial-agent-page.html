@@ -144,6 +144,30 @@
               {{ formatFeedItemStatus(feedItem.status) }}
             </span>
           </span>
+          @if (getEditorialFitScore(feedItem); as fitScore) {
+          <details
+            class="editorial-agent__fit-score"
+            [ngClass]="'editorial-agent__fit-score--' + fitScore.tone"
+            [style.color]="getEditorialFitColor(fitScore.tone)"
+          >
+            <summary
+              class="editorial-agent__meta-pill"
+              [attr.aria-label]="'Editorial Fit score: ' + fitScore.score"
+            >
+              Fit <strong>{{ fitScore.score }}</strong>
+            </summary>
+            <div class="editorial-agent__preview-card">
+              <strong>Waarom deze score?</strong>
+              <ul class="admin-list">
+                @for (reason of fitScore.positiveReasons; track reason) {
+                <li>+ {{ reason }}</li>
+                } @for (reason of fitScore.negativeReasons; track reason) {
+                <li>− {{ reason }}</li>
+                }
+              </ul>
+            </div>
+          </details>
+          }
           <a [href]="feedItem.sourceUrl" target="_blank" rel="noreferrer">
             {{ feedItem.sourceUrl }}
           </a>
@@ -215,11 +239,21 @@
           <button
             class="admin-button admin-button--primary"
             [disabled]="isGenerating() || !canGenerateDraftForFeedItem(feedItem)"
-            (click)="generateDraftForFeedItem(feedItem)"
+            (click)="openOrGenerateDraftForFeedItem(feedItem)"
             type="button"
           >
-            Genereer draft
+            {{ getFeedItemDraftActionLabel(feedItem) }}
           </button>
+          @if (hasStoredDraft(feedItem)) {
+          <button
+            class="admin-button admin-button--subtle"
+            [disabled]="isGenerating()"
+            (click)="regenerateDraftForFeedItem(feedItem)"
+            type="button"
+          >
+            Opnieuw genereren
+          </button>
+          }
           <button
             class="admin-button admin-button--subtle"
             (click)="ignoreFeedItem(feedItem)"
@@ -575,6 +609,30 @@
                     type="text"
                   />
                 </label>
+
+                @if (articleEditLegoProductPageLinks().length) {
+                <div
+                  class="editorial-agent__suggested-links editorial-agent__preview-card"
+                >
+                  <strong class="editorial-agent__muted"
+                    >Officiële LEGO beelden zoeken</strong
+                  >
+                  <ul class="admin-list">
+                    @for (productLink of articleEditLegoProductPageLinks();
+                    track productLink.setNumber) {
+                    <li>
+                      <a
+                        [href]="productLink.url"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Open LEGO productpagina voor {{ productLink.setNumber }}
+                      </a>
+                    </li>
+                    }
+                  </ul>
+                </div>
+                }
               </section>
 
               <section
@@ -1055,7 +1113,17 @@
           </p>
         </div>
         <div class="editorial-agent__modal-actions">
-          @if (output()) {
+          @if (output()) { @if (isStoredFeedDraftOpen() && activeFeedItem(); as
+          currentFeedItem) {
+          <button
+            class="admin-button admin-button--subtle"
+            [disabled]="isGenerating() || isPublishing()"
+            (click)="regenerateDraftForFeedItem(currentFeedItem)"
+            type="button"
+          >
+            Opnieuw genereren
+          </button>
+          }
           <button
             class="admin-button admin-button--primary"
             [disabled]="!mdxOutput() || isPublishing()"
@@ -1482,9 +1550,11 @@
               </div>
 
               @if (suggestedHeroImageLinks().length) {
-              <div class="editorial-agent__suggested-links">
-                <strong>Suggesties</strong>
-                <ul>
+              <div
+                class="editorial-agent__suggested-links editorial-agent__preview-card"
+              >
+                <strong class="editorial-agent__muted">Suggesties</strong>
+                <ul class="admin-list">
                   @for (suggestedLink of suggestedHeroImageLinks(); track
                   suggestedLink) {
                   <li>
@@ -1509,6 +1579,30 @@
                   type="text"
                 />
               </label>
+
+              @if (draftLegoProductPageLinks().length) {
+              <div
+                class="editorial-agent__suggested-links editorial-agent__preview-card"
+              >
+                <strong class="editorial-agent__muted"
+                  >Officiële LEGO beelden zoeken</strong
+                >
+                <ul class="admin-list">
+                  @for (productLink of draftLegoProductPageLinks(); track
+                  productLink.setNumber) {
+                  <li>
+                    <a
+                      [href]="productLink.url"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open LEGO productpagina voor {{ productLink.setNumber }}
+                    </a>
+                  </li>
+                  }
+                </ul>
+              </div>
+              }
             </section>
 
             <section

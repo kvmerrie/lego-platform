@@ -547,6 +547,52 @@ export async function createAdminArticlePreview({
   };
 }
 
+export async function deleteAdminArticlePreviewsForPublishedDraft({
+  slug,
+  sourceUrl,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  slug?: string;
+  sourceUrl?: string;
+  supabaseClient?: AdminArticleSupabaseClient;
+}): Promise<number> {
+  let deletedPreviews = 0;
+  const normalizedSlug = readString(slug);
+  const normalizedSourceUrl = readString(sourceUrl);
+
+  if (normalizedSlug) {
+    const { count, error } = await supabaseClient
+      .from(ARTICLE_PREVIEWS_TABLE_NAME)
+      .delete({
+        count: 'exact',
+      })
+      .eq('frontmatter->>slug', normalizedSlug);
+
+    if (error) {
+      throw new Error('Artikel-previews opschonen is mislukt.');
+    }
+
+    deletedPreviews += readMutationCount(count);
+  }
+
+  if (normalizedSourceUrl) {
+    const { count, error } = await supabaseClient
+      .from(ARTICLE_PREVIEWS_TABLE_NAME)
+      .delete({
+        count: 'exact',
+      })
+      .eq('frontmatter->>sourceUrl', normalizedSourceUrl);
+
+    if (error) {
+      throw new Error('Artikel-previews opschonen is mislukt.');
+    }
+
+    deletedPreviews += readMutationCount(count);
+  }
+
+  return deletedPreviews;
+}
+
 export const contentArticleAdminTestUtils = {
   hasMarkdownHeading,
 };
