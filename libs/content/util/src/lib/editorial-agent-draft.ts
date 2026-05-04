@@ -121,15 +121,21 @@ export function getThemeToneCopy(
     return null;
   }
 
-  const copyByThemeAndContext: Record<
-    NonNullable<ReturnType<typeof normalizeThemeToneKey>>,
-    Record<ThemeToneCopyContext, string>
+  if (themeToneKey === 'star_wars') {
+    return getStarWarsToneCopy(theme, context);
+  }
+
+  const copyByThemeAndContext: Partial<
+    Record<
+      NonNullable<ReturnType<typeof normalizeThemeToneKey>>,
+      Record<ThemeToneCopyContext, string>
+    >
   > = {
     harry_potter: {
       announcement_audience:
         'Voor Harry Potter-fans zit de lol vooral in Hogwarts, herkenbare scènes en dat displaygevoel van een klein diorama.',
       announcement_conclusion:
-        'Zet hem vooral op je radar als Hogwarts, scènes en herkenbare momenten het deel van Harry Potter zijn waar je collectie sterker van wordt.',
+        'Onthoud hem als Hogwarts, scènes en herkenbare momenten het deel van Harry Potter zijn waar je collectie sterker van wordt.',
       announcement_description:
         'Voor Harry Potter-fans is dit vooral interessant door de Hogwarts-sfeer, herkenbare scènes en het displaygevoel.',
       announcement_intro:
@@ -145,19 +151,166 @@ export function getThemeToneCopy(
       announcement_intro:
         'De haak zit hier in Middle-earth: locaties, sfeer en epische scènes die als displaystuk kunnen blijven hangen.',
     },
-    star_wars: {
+  };
+
+  return copyByThemeAndContext[themeToneKey]?.[context] ?? null;
+}
+
+type StarWarsToneSubtype =
+  | 'buildable_figure'
+  | 'generic_display'
+  | 'helmet'
+  | 'vehicle';
+
+function getStarWarsToneSubtype(value: string): StarWarsToneSubtype {
+  const normalizedValue = value.toLowerCase();
+
+  if (/\b(?:helmet|helm)\b/u.test(normalizedValue)) {
+    return 'helmet';
+  }
+
+  if (
+    /\b(?:minifigure|figure|figuur|beeldfiguur|darth vader)\b/u.test(
+      normalizedValue,
+    )
+  ) {
+    return 'buildable_figure';
+  }
+
+  if (
+    /\b(?:shuttle|starfighter|fighter|ship|vehicle|voertuig|speeder|x-wing|tie fighter|lambda-class|at-rt|falcon|transport|interceptor|cruiser)\b/u.test(
+      normalizedValue,
+    )
+  ) {
+    return 'vehicle';
+  }
+
+  return 'generic_display';
+}
+
+function getStarWarsToneCopy(
+  themeAndContext: string,
+  context: ThemeToneCopyContext,
+): string {
+  const copyBySubtype: Record<
+    StarWarsToneSubtype,
+    Record<ThemeToneCopyContext, string>
+  > = {
+    buildable_figure: {
       announcement_audience:
-        'Voor Star Wars-fans is dit vooral leuk als je deze lijn spaart of iets hebt met Imperial, Rebel of trooper designs.',
+        'Voor Star Wars-fans is dit vooral leuk als je graag displayfiguren of herkenbare personages op een character shelf zet.',
       announcement_conclusion:
-        'Zet hem vooral op je radar als je deze lijn spaart of graag Star Wars-designs met duidelijke displaywaarde neerzet.',
+        'Onthoud hem als een displayfiguur van dit personage precies is wat je Star Wars-plank nog mist.',
       announcement_description:
-        'Voor Star Wars-fans is dit vooral interessant als je deze lijn spaart of iets hebt met displaysets, Imperial/Rebel-details of trooper designs.',
+        'Voor Star Wars-fans zit de haak in het displayfiguur-gevoel en de herkenning van het personage.',
+      announcement_intro:
+        'De haak zit hier in personageherkenning: een bouwbare displayfiguur die meteen duidelijk maakt wie er op de plank staat.',
+    },
+    generic_display: {
+      announcement_audience:
+        'Voor Star Wars-fans is dit vooral leuk als je iets zoekt met duidelijke displaywaarde en herkenbare Imperial of Rebel details.',
+      announcement_conclusion:
+        'Onthoud hem als Star Wars-vormen en displaywaarde precies zijn wat je collectie sterker maakt.',
+      announcement_description:
+        'Voor Star Wars-fans is dit vooral interessant door de herkenbare details en het displaygevoel.',
+      announcement_intro:
+        'De haak zit hier in herkenbare Star Wars-vormen en displaywaarde, zonder dat het alleen om formaat of prijs draait.',
+    },
+    helmet: {
+      announcement_audience:
+        'Voor Star Wars-fans is dit vooral leuk als je de Helmet Collection spaart of iets hebt met Imperial, Rebel of trooper designs.',
+      announcement_conclusion:
+        'Onthoud hem als je de Helmet Collection spaart of graag Star Wars-helmen met duidelijke displaywaarde neerzet.',
+      announcement_description:
+        'Voor Star Wars-fans is dit vooral interessant als je de Helmet Collection spaart of iets hebt met displaysets, Imperial/Rebel-details of trooper designs.',
       announcement_intro:
         'De haak zit hier in displaywaarde: denk aan Helmet Collection-energie, strakke Star Wars-vormen en Imperial/Rebel vibes.',
     },
+    vehicle: {
+      announcement_audience:
+        'Voor Star Wars-fans is dit vooral leuk als je iets hebt met Imperial ships, herkenbare silhouetten en dat fleet-gevoel op de plank.',
+      announcement_conclusion:
+        'Onthoud hem als Imperial ships, strakke silhouetten en een volle display shelf precies jouw Star Wars-hoek zijn.',
+      announcement_description:
+        'Voor Star Wars-fans zit de haak in Imperial ships, herkenbare silhouetten en display shelf-waarde.',
+      announcement_intro:
+        'De haak zit hier in het schipgevoel: een herkenbaar silhouet, duidelijke Star Wars-vormen en dat fleet-gevoel op je display shelf.',
+    },
   };
 
-  return copyByThemeAndContext[themeToneKey][context];
+  return copyBySubtype[getStarWarsToneSubtype(themeAndContext)][context];
+}
+
+function getSingleSetDescriptionHook(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const theme = resolveTheme(input);
+  const context = `${theme} ${buildSingleSetDraftContext(input)} ${input.primarySet?.name ?? ''}`;
+  const themeToneKey = normalizeThemeToneKey(theme, context);
+
+  if (themeToneKey === 'star_wars') {
+    switch (getStarWarsToneSubtype(context)) {
+      case 'helmet':
+        return 'richt zich duidelijk op Star Wars-fans die hun Helmet Collection willen uitbreiden';
+      case 'vehicle':
+        return 'leunt op dat Imperial ship-silhouet en het fleet-gevoel voor op de plank';
+      case 'buildable_figure':
+        return 'draait om een bouwbare displayfiguur voor je Star Wars-character shelf';
+      case 'generic_display':
+      default:
+        return 'leunt op herkenbare Star Wars-vormen en duidelijke displaywaarde';
+    }
+  }
+
+  if (themeToneKey === 'harry_potter') {
+    return 'haakt in op Hogwarts-sfeer, herkenbare scènes en dat kleine diorama-gevoel';
+  }
+
+  if (themeToneKey === 'lord_of_the_rings') {
+    return 'draait om Middle-earth, herkenbare locaties en epische displaywaarde';
+  }
+
+  const setType = [
+    input.primarySet?.name,
+    input.facts.title,
+    input.source.title,
+    ...input.facts.keywords,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (/\b(?:helmet|helm)\b/u.test(setType)) {
+    return 'draait om een displayhelm die meteen herkenbaar op de plank staat';
+  }
+
+  if (
+    /\b(?:shuttle|starfighter|vehicle|voertuig|ship|schip|auto|car)\b/u.test(
+      setType,
+    )
+  ) {
+    return 'zet vooral in op een herkenbaar voertuig met displaywaarde';
+  }
+
+  return 'is vooral interessant als deze set al in je verzamelhoek past';
+}
+
+function buildSingleSetAnnouncementDescription(
+  input: EditorialAgentDraftGenerationInput,
+  setName: string,
+  releaseLabel: string,
+): string {
+  const hook = getSingleSetDescriptionHook(input);
+
+  if (releaseLabel) {
+    return `${setName} verschijnt op ${releaseLabel} en ${hook}.`;
+  }
+
+  return `${setName} is aangekondigd en ${hook}.`;
+}
+
+function buildSingleSetDecisionDescription(setName: string): string {
+  return `${setName} is relevant als je hem al volgde. Je ziet snel of je moet opletten of rustig kunt wachten.`;
 }
 
 export function capitalizeSentenceStart(value: string): string {
@@ -769,6 +922,35 @@ function pickTitleVariant(
   return variants[hash % variants.length] ?? variants[0] ?? '';
 }
 
+function pickCuratedCopyVariant(
+  variants: readonly string[],
+  input: EditorialAgentDraftGenerationInput,
+  context: string,
+): string {
+  const numericSetNumber = input.primarySet?.setNumber.match(/\d+/u)?.[0];
+
+  if (numericSetNumber && variants.length > 0) {
+    const lastDigit = Number(numericSetNumber.at(-1));
+
+    return (
+      variants[
+        (Number.isFinite(lastDigit) ? lastDigit : Number(numericSetNumber)) %
+          variants.length
+      ] ??
+      variants[0] ??
+      ''
+    );
+  }
+
+  const seed = `${context}|${input.primarySet?.setNumber ?? ''}|${input.primarySet?.name ?? ''}|${input.source.canonicalUrl || input.source.finalUrl || input.source.inputUrl}`;
+  const hash = [...seed].reduce(
+    (currentHash, character) => currentHash + character.charCodeAt(0),
+    0,
+  );
+
+  return variants[hash % variants.length] ?? variants[0] ?? '';
+}
+
 function formatConciseArticleTitle({
   input,
   title,
@@ -1160,7 +1342,6 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
     input.facts,
     input.source,
   );
-  const themeToneContext = buildSingleSetDraftContext(input);
   const singleSetTone = getSingleSetDraftTone(input);
   const releaseLabel =
     input.facts.releaseDate || input.detected.dateSignals[0] || '';
@@ -1171,7 +1352,7 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
     case 'release_roundup':
       return `Overzicht van de LEGO-sets uit ${resolveMonthLabel(input)} waar je vrolijk doorheen wilt bladeren. Van kleine blikvangers tot grotere thema-releases: dit is vooral een maand om te ontdekken wat jou echt aanspreekt.`;
     case 'deal':
-      return `${setName} is alleen interessant als de prijs nu echt scherp is. Hier zie je snel of dit een pak-moment is of niet.`;
+      return `${setName} valt op door ${resolveDealHighlight(input)}. Check vooral of de prijs nu echt klopt voor jouw collectie.`;
     case 'multi_set_announcement':
       {
         const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);
@@ -1208,28 +1389,14 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
       return `${getMultiSetAnnouncementDisplayName(input)} laat een opvallende richting zien voor meerdere nieuwe LEGO-sets. Vooral leuk om te volgen welke set er straks echt uitspringt.`;
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
-        const themeToneCopy = hasEnoughThemeToneConfidence(
-          resolveTheme(input),
-          themeToneContext,
-        )
-          ? getThemeToneCopy(
-              `${resolveTheme(input)} ${themeToneContext}`,
-              'announcement_description',
-            )
-          : null;
-
-        if (themeToneCopy) {
-          return releaseLabel
-            ? `${setName} is aangekondigd als LEGO-release voor ${releaseLabel}. ${themeToneCopy}`
-            : `${setName} is aangekondigd als nieuwe LEGO-set. ${themeToneCopy}`;
-        }
-
-        return releaseLabel
-          ? `${setName} is aangekondigd als LEGO-release voor ${releaseLabel}. Vooral iets om rustig te volgen als dit thema, object of deze wereld je meteen iets doet.`
-          : `${setName} is aangekondigd als nieuwe LEGO-set. Vooral iets om rustig te volgen als dit thema, object of deze wereld je meteen iets doet.`;
+        return buildSingleSetAnnouncementDescription(
+          input,
+          setName,
+          releaseLabel,
+        );
       }
 
-      return `${setName} is vooral relevant als je hem al op je lijst had staan. Je ziet snel of je moet opletten of rustig kunt wachten.`;
+      return buildSingleSetDecisionDescription(setName);
     case 'unknown':
     default:
       return 'Handig om te bepalen of deze set op je radar moet. Let vooral op de details die straks echt het verschil maken.';
@@ -1353,10 +1520,12 @@ function buildFeaturedSetBlock(
 }
 
 function buildSetRailBlock({
+  eyebrow,
   intro,
   relatedCandidates,
   title,
 }: {
+  eyebrow?: string;
   intro: string;
   relatedCandidates: readonly EditorialAgentRelatedSetCandidate[];
   title: string;
@@ -1369,11 +1538,150 @@ function buildSetRailBlock({
     return '';
   }
 
+  const eyebrowProp = eyebrow
+    ? ` eyebrow="${escapeFrontmatterValue(eyebrow)}"`
+    : '';
+
   return `## Leuk voor erbij
 
 ${intro}
 
-<SetRail title="${title}" ${editorialAgentSetRailPropName}="${formattedSetIds}" />`;
+<SetRail${eyebrowProp} title="${escapeFrontmatterValue(title)}" ${editorialAgentSetRailPropName}="${formattedSetIds}" />`;
+}
+
+function hasHelmetContext(input: EditorialAgentDraftGenerationInput): boolean {
+  return [
+    input.primarySet?.name,
+    ...input.relatedCandidates.map((candidate) => candidate.name),
+    input.facts.title,
+    input.source.title,
+    ...input.facts.keywords,
+    ...input.detected.keywords,
+  ]
+    .filter(Boolean)
+    .some((value) => /\bhelmet(?:s)?\b/iu.test(value));
+}
+
+function hasDisplayContext(input: EditorialAgentDraftGenerationInput): boolean {
+  return [
+    input.primarySet?.name,
+    input.facts.title,
+    input.facts.summary,
+    input.source.title,
+    input.source.description,
+    ...input.facts.keywords,
+    ...input.detected.keywords,
+  ]
+    .filter(Boolean)
+    .some((value) =>
+      /\b(?:display|diorama|standbeeld|shelf|plank)\b/iu.test(value),
+    );
+}
+
+function hasCollectionLineContext(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  return (
+    hasHelmetContext(input) ||
+    [
+      input.facts.title,
+      input.facts.summary,
+      input.source.title,
+      input.source.description,
+      ...input.facts.keywords,
+      ...input.detected.keywords,
+    ]
+      .filter(Boolean)
+      .some((value) =>
+        /\b(?:collection|collectie|lijn|serie|line)\b/iu.test(value),
+      )
+  );
+}
+
+function hasFutureReleaseContext(
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  const context = normalizeWhitespace(
+    [
+      input.facts.title,
+      input.facts.summary,
+      input.source.title,
+      input.source.description,
+      input.facts.releaseDate,
+      ...input.detected.dateSignals,
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+
+  return (
+    getSingleSetDraftTone(input) === 'announcement' ||
+    /\b(?:verschijnt|pre-?order|voorbestel|release|aangekondigd|onthuld|revealed|unveiled|announced)\b/iu.test(
+      context,
+    )
+  );
+}
+
+function buildRelatedSetRailCopy(input: EditorialAgentDraftGenerationInput): {
+  eyebrow?: string;
+  intro: string;
+  title: string;
+} {
+  const setName = getSetDisplayNameForDraft(
+    input.primarySet,
+    input.facts,
+    input.source,
+  );
+
+  if (input.matching.articleType === 'deal') {
+    return {
+      eyebrow: 'Ook interessant',
+      intro:
+        'Twijfel je over deze deal? Vergelijk hem dan vooral met deze sets.',
+      title: 'Meer sets om te vergelijken',
+    };
+  }
+
+  if (hasFutureReleaseContext(input)) {
+    return {
+      eyebrow: 'Kun je niet wachten?',
+      intro: `Kun je niet wachten tot ${setName} verschijnt? Dan zijn dit sterke alternatieven die je nu al kunt bouwen en neerzetten.`,
+      title: hasHelmetContext(input)
+        ? 'Andere helmets om nu te bouwen'
+        : hasDisplayContext(input)
+          ? 'Vergelijkbare displaysets'
+          : 'Alternatieven om nu te bouwen',
+    };
+  }
+
+  if (hasCollectionLineContext(input)) {
+    return {
+      eyebrow: 'In dezelfde lijn',
+      intro:
+        'Spaar je deze collectie, dan zijn dit de sets die logisch in hetzelfde rijtje passen.',
+      title: 'Meer uit deze collectie',
+    };
+  }
+
+  return {
+    eyebrow: 'Ook interessant',
+    intro: 'Twijfel je nog? Vergelijk deze set dan met een paar sterke buren.',
+    title: 'Meer sets om te vergelijken',
+  };
+}
+
+function getMeaningfulRelatedSetRailCandidates(
+  input: EditorialAgentDraftGenerationInput,
+): readonly EditorialAgentRelatedSetCandidate[] {
+  if (!input.primarySet || input.matching.articleType !== 'deal') {
+    return input.relatedCandidates;
+  }
+
+  const primaryTheme = input.primarySet.theme.toLowerCase();
+
+  return input.relatedCandidates.filter(
+    (candidate) => candidate.theme.toLowerCase() === primaryTheme,
+  );
 }
 
 function buildWhenToBuySection(
@@ -1387,6 +1695,15 @@ function buildWhenToBuySection(
   const singleSetTone = getSingleSetDraftTone(input);
   const releaseLabel =
     input.facts.releaseDate || input.detected.dateSignals[0] || '';
+  const announcementFollowLine = pickCuratedCopyVariant(
+    [
+      'Geen release om meteen zenuwachtig van te worden, wel eentje om even te onthouden.',
+      'Wachten op betere beelden is hier geen slecht idee.',
+      'De echte keuze komt pas zodra prijs en beelden duidelijker zijn.',
+    ],
+    input,
+    'single_set_announcement_when_to_buy',
+  );
 
   switch (input.matching.articleType) {
     case 'gwp_reward':
@@ -1425,7 +1742,7 @@ Zie je nu al één of twee dozen waar je meteen energie van krijgt, dan zijn dat
 
 ${releaseLabel ? `Als de huidige info klopt, verschijnt ${shortName} op ${releaseLabel}.` : `${shortName} heeft nu vooral de status van een aangekondigde release.`} Dat is vooral handig om te onthouden, niet om nu al zenuwachtig van te worden.
 
-Tot die datum is dit vooral iets om rustig te volgen voor extra beelden, bevestigde details en de eerste winkelvermeldingen.`;
+${announcementFollowLine} Tot die tijd kijk je vooral naar extra beelden, bevestigde details en de eerste winkelvermeldingen.`;
       }
 
       return `## Wanneer kopen?
@@ -1453,6 +1770,24 @@ function buildConclusionSection(
   );
   const singleSetTone = getSingleSetDraftTone(input);
   const themeToneContext = buildSingleSetDraftContext(input);
+  const announcementConclusionLine = pickCuratedCopyVariant(
+    [
+      `${shortName} hoeft nog geen directe keuze te zijn. De echte afweging komt zodra prijs en beelden duidelijker zijn.`,
+      `Geen set om vandaag al op te jagen, wel eentje om te onthouden als deze bouwstijl je aanspreekt.`,
+      `Wachten op betere beelden is hier prima; dan zie je pas of ${shortName} echt blijft hangen.`,
+    ],
+    input,
+    'single_set_announcement_conclusion',
+  );
+  const decisionConclusionLine = pickCuratedCopyVariant(
+    [
+      `Als ${shortName} al op je lijst stond, heb je nu genoeg om te bepalen of je alert wilt blijven.`,
+      `Volgde je ${shortName} al, dan weet je nu beter of dit een snelle ja of een rustige wacht is.`,
+      `Voor verzamelaars die ${shortName} al wilden, is dit vooral een check op timing, prijs en plaats in de collectie.`,
+    ],
+    input,
+    'single_set_decision_conclusion',
+  );
 
   switch (input.matching.articleType) {
     case 'gwp_reward':
@@ -1498,17 +1833,17 @@ ${capitalizeSentenceStart(resolveMonthLabel(input))} is vooral een leuke maand o
         if (themeToneCopy) {
           return `## Korte conclusie
 
-${shortName} is vooral een leuke aankondiging om in de gaten te houden. ${themeToneCopy}`;
+${announcementConclusionLine} ${themeToneCopy}`;
         }
 
         return `## Korte conclusie
 
-${shortName} is vooral een leuke aankondiging om in de gaten te houden. Nog geen set waar je nu al iets op hoeft te forceren, wel eentje om te onthouden als deze wereld of dit object je meteen iets doet.`;
+${announcementConclusionLine}`;
       }
 
       return `## Korte conclusie
 
-Als ${shortName} al op je radar stond, heb je nu genoeg om te bepalen of je alert wilt blijven. Zo niet, dan mag deze rustig langs je heen gaan zonder dat je iets mist.`;
+${decisionConclusionLine} Zo niet, dan mag deze rustig langs je heen gaan zonder dat je iets mist.`;
     case 'unknown':
     default:
       return `## Korte conclusie
@@ -1530,6 +1865,24 @@ function buildIntroParagraphs(
   const singleSetTone = getSingleSetDraftTone(input);
   const releaseLabel =
     input.facts.releaseDate || input.detected.dateSignals[0] || '';
+  const announcementDecisionLine = pickCuratedCopyVariant(
+    [
+      'Geen release om meteen zenuwachtig van te worden, wel eentje om even te onthouden.',
+      'Wachten op betere beelden is hier geen slecht idee.',
+      'De echte keuze komt pas zodra prijs en beelden duidelijker zijn.',
+    ],
+    input,
+    'single_set_announcement_intro',
+  );
+  const decisionIntroLine = pickCuratedCopyVariant(
+    [
+      `Als je precies op ${setName} zat te wachten, is dit het moment om op te letten.`,
+      `${setName} is nieuws voor verzamelaars die deze doos al in het vizier hadden.`,
+      `Volgde je ${setName} al, dan wil je nu vooral prijs, beelden en beschikbaarheid scherp krijgen.`,
+    ],
+    input,
+    'single_set_decision_intro',
+  );
 
   switch (input.matching.articleType) {
     case 'gwp_reward':
@@ -1616,7 +1969,7 @@ function buildIntroParagraphs(
                 ? `${setName} krijgt een LEGO-release op ${releaseLabel}.`
                 : `${setName} is aangekondigd als nieuwe LEGO-set.`
             } ${themeToneCopy}`,
-            `Dit is geen artikel waarbij je meteen hoeft te beslissen. Zie het vooral als iets om rustig te volgen als ${theme === 'LEGO' ? 'deze set' : `${theme}-sets`} je normaal gesproken toch al trekken.`,
+            `${announcementDecisionLine} ${theme === 'LEGO' ? 'Deze set' : `${theme}-sets`} trekken je waarschijnlijk vanzelf als dit normaal jouw hoek van LEGO is.`,
           ];
         }
 
@@ -1626,12 +1979,12 @@ function buildIntroParagraphs(
               ? `${setName} krijgt een LEGO-release op ${releaseLabel}.`
               : `${setName} is aangekondigd als nieuwe LEGO-set.`
           } Alleen dat idee is al leuk voor fans die precies dit soort werelden, objecten of licenties graag als bouwset op de plank zien.`,
-          `Dit is geen artikel waarbij je meteen hoeft te beslissen. Zie het vooral als iets om rustig te volgen als ${theme === 'LEGO' ? 'deze set' : `${theme}-sets`} je normaal gesproken toch al trekken.`,
+          `${announcementDecisionLine} ${theme === 'LEGO' ? 'Deze set' : `${theme}-sets`} trekken je waarschijnlijk vanzelf als dit normaal jouw hoek van LEGO is.`,
         ];
       }
 
       return [
-        `${setName} is opgedoken als nieuwe LEGO-set. Dit is vooral nieuws voor verzamelaars die precies op deze doos zaten te wachten, niet voor iedereen die nog zoekt waar het budget heen moet.`,
+        `${setName} is opgedoken als nieuwe LEGO-set. ${decisionIntroLine} Niet iedere nieuwe doos hoeft meteen budget te claimen.`,
         `Stond hij al op je lijst, dan wil je nu vooral weten of je hem moet volgen of meteen moet pakken zodra hij live gaat. Twijfel je nog, dan is dit juist het moment om kritisch te blijven.`,
       ];
     case 'unknown':
@@ -1812,15 +2165,16 @@ export function generateEditorialMdxDraft(
           releaseRoundupSetSpotlightListBlock.trim().length > 0,
         )
       : '';
+  const meaningfulRelatedSetRailCandidates =
+    getMeaningfulRelatedSetRailCandidates(input);
   const relatedSetRail =
-    templateKind === 'single_set'
-      ? input.relatedCandidates.length >= 2 &&
+    templateKind === 'single_set' || templateKind === 'deal'
+      ? meaningfulRelatedSetRailCandidates.length >= 2 &&
         (input.matching.articleType !== 'multi_set_announcement' ||
           hasMultiSetAnnouncementPrimary(input))
         ? buildSetRailBlock({
-            intro: `Zoek je naast ${input.primarySet?.name || 'de hoofdset'} nog iets met meer bouw- of displaywaarde, dan zijn dit de sets die hier logisch naast hangen.`,
-            relatedCandidates: input.relatedCandidates,
-            title: `${resolveTheme(input)}-sets voor naast ${input.primarySet?.name || 'deze set'}`,
+            ...buildRelatedSetRailCopy(input),
+            relatedCandidates: meaningfulRelatedSetRailCandidates,
           })
         : ''
       : '';
@@ -1896,7 +2250,9 @@ export function generateEditorialMdxDraft(
         featuredSetBlock,
         buildWhenToBuySection(input),
         buildMidSection(input),
-        ...(relatedSetRail ? [buildAnnouncementAudienceSection(input)] : []),
+        ...(relatedSetRail && templateKind === 'single_set'
+          ? [buildAnnouncementAudienceSection(input)]
+          : []),
         ...(relatedSetRail ? [relatedSetRail] : []),
         buildConclusionSection(input),
         buildSourceLine(input),

@@ -173,6 +173,71 @@ function expectSetRailAfterMainContent(mdx: string): void {
   expect(mdx.slice(featuredSetIndex, conclusionIndex)).toContain('## ');
 }
 
+function expectConcisePublicDescription(description: string): void {
+  const sentenceCountValue = description.replace(
+    /\b(?:[A-Z]\.){2,}[A-Z]?/gu,
+    (match) => match.replace(/\./gu, ''),
+  );
+
+  expect(description).not.toMatch(/\b(?:draft|concept|artikel)\b/iu);
+  expect(
+    sentenceCountValue.split(/[.!?]+/u).filter((sentence) => sentence.trim())
+      .length,
+  ).toBeLessThanOrEqual(2);
+}
+
+function getPublicMdxBody(mdx: string): string {
+  return mdx.replace(/^---\n[\s\S]*?\n---\n\n/u, '');
+}
+
+function getSourceLine(mdx: string): string {
+  return (
+    mdx
+      .trim()
+      .split('\n')
+      .findLast(
+        (line) => line.startsWith('Bronnen:') || line.startsWith('Via:'),
+      ) ?? ''
+  );
+}
+
+function expectSourceLineLast(mdx: string): void {
+  const sourceLine = getSourceLine(mdx);
+
+  expect(sourceLine).not.toBe('');
+  expect(mdx.trim().endsWith(sourceLine)).toBe(true);
+}
+
+function summarizeGeneratedArticle(
+  result: ReturnType<typeof generateEditorialMdxDraft>,
+) {
+  const componentLines = result.mdx
+    .split('\n')
+    .filter(
+      (line) =>
+        line.startsWith('<FeaturedSet') ||
+        line.startsWith('<SetRail') ||
+        line.startsWith('<SetSpotlightList'),
+    );
+
+  return {
+    components: componentLines,
+    description: result.frontmatter.description,
+    sourceLine: getSourceLine(result.mdx),
+    title: result.frontmatter.title,
+  };
+}
+
+function expectEditorialQualityGuards(
+  result: ReturnType<typeof generateEditorialMdxDraft>,
+): void {
+  const publicBody = getPublicMdxBody(result.mdx);
+
+  expect(publicBody).not.toMatch(/\b(?:draft|concept)\b/iu);
+  expectConcisePublicDescription(result.frontmatter.description);
+  expectSourceLineLast(result.mdx);
+}
+
 describe('editorial agent draft generation', () => {
   it('maps release roundups and unknown articles to discovery tone', () => {
     expect(getEditorialToneForArticleType('release_roundup')).toBe('discovery');
@@ -232,8 +297,11 @@ describe('editorial agent draft generation', () => {
   });
 
   it('returns theme tone copy only for high-impact fan themes', () => {
+    expect(
+      getThemeToneCopy('Star Wars AT-AT Driver Helmet', 'announcement_intro'),
+    ).toContain('Helmet Collection');
     expect(getThemeToneCopy('Star Wars', 'announcement_intro')).toContain(
-      'Helmet Collection',
+      'Star Wars-vormen',
     );
     expect(getThemeToneCopy('Harry Potter', 'announcement_intro')).toContain(
       'Hogwarts',
@@ -391,6 +459,157 @@ describe('editorial agent draft generation', () => {
     expect(titles.every((title) => !title.endsWith('onthuld'))).toBe(true);
     expect(titles.every((title) => !/^LEGO Star Wars/u.test(title))).toBe(true);
     expect(titles.every((title) => !/\b754\d{2}\b/u.test(title))).toBe(true);
+  });
+
+  it('varies single-set intro and conclusion patterns without changing facts', () => {
+    const sets = [
+      createPrimarySet({
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        setNumber: '75458',
+        theme: 'Star Wars',
+      }),
+      createPrimarySet({
+        name: 'Up-Scaled Darth Vader Minifigure',
+        setNumber: '75461',
+        theme: 'Star Wars',
+      }),
+      createPrimarySet({
+        name: 'Imperial Lambda-Class Shuttle',
+        setNumber: '75460',
+        theme: 'Star Wars',
+      }),
+    ];
+    const drafts = sets.map((primarySet) =>
+      generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            keywords: ['Star Wars', 'Helmet Collection'],
+            setNumbers: [primarySet.setNumber],
+            themes: ['Star Wars'],
+          }),
+          facts: createFacts({
+            releaseDate: '1 juni 2026',
+            setNames: [primarySet.name],
+            setNumbers: [primarySet.setNumber],
+            summary: `${primarySet.name} is onthuld als nieuwe Star Wars displayset.`,
+            theme: 'Star Wars',
+            title: `LEGO Star Wars ${primarySet.setNumber} ${primarySet.name} revealed`,
+          }),
+          matching: createMatching({
+            articleType: 'single_set_news',
+            matchedSets: [primarySet],
+          }),
+          primarySet,
+          source: createSource({
+            canonicalUrl: `https://brickset.com/article/${primarySet.setNumber}`,
+            finalUrl: `https://brickset.com/article/${primarySet.setNumber}`,
+            inputUrl: `https://brickset.com/article/${primarySet.setNumber}`,
+            title: `LEGO Star Wars ${primarySet.setNumber} ${primarySet.name} revealed`,
+          }),
+        }),
+      ),
+    );
+    const introPatterns = drafts.map((draft) =>
+      draft.mdx.includes('Geen release om meteen zenuwachtig')
+        ? 'zenuwachtig'
+        : draft.mdx.includes('Wachten op betere beelden')
+          ? 'beelden'
+          : draft.mdx.includes('De echte keuze')
+            ? 'keuze'
+            : draft.mdx.includes('precies op')
+              ? 'precies-op'
+              : draft.mdx.includes('in het vizier')
+                ? 'vizier'
+                : 'prijs-beelden',
+    );
+    const conclusionSections = drafts.map((draft) =>
+      draft.mdx.slice(
+        draft.mdx.indexOf('## Korte conclusie'),
+        draft.mdx.indexOf('Bronnen:'),
+      ),
+    );
+    const conclusionPatterns = conclusionSections.map((conclusion) =>
+      conclusion.includes('hoeft nog geen directe keuze')
+        ? 'directe-keuze'
+        : conclusion.includes('Geen set om vandaag')
+          ? 'niet-jagen'
+          : conclusion.includes('Wachten op betere beelden')
+            ? 'betere-beelden'
+            : conclusion.includes('al op je lijst')
+              ? 'lijst'
+              : conclusion.includes('snelle ja of een rustige wacht')
+                ? 'snelle-ja'
+                : 'timing-prijs',
+    );
+    expect(new Set(introPatterns).size).toBeGreaterThan(1);
+    expect(new Set(conclusionPatterns).size).toBeGreaterThan(1);
+    drafts.forEach((draft, index) => {
+      expect(draft.mdx).toContain(
+        `<FeaturedSet setNumber="${sets[index].setNumber}" />`,
+      );
+      expect(draft.mdx).toContain(sets[index].name);
+      expect(draft.mdx).toContain('Star Wars-fans');
+      expect(draft.mdx).not.toContain(
+        'Dit is geen artikel waarbij je meteen hoeft te beslissen',
+      );
+      expect(draft.mdx).not.toContain('Zie het vooral');
+    });
+  });
+
+  it('writes concise varied descriptions with concrete hooks', () => {
+    const cases = [
+      createPrimarySet({
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        setNumber: '75458',
+        theme: 'Star Wars',
+      }),
+      createPrimarySet({
+        name: 'Up-Scaled Darth Vader Minifigure',
+        setNumber: '75461',
+        theme: 'Star Wars',
+      }),
+      createPrimarySet({
+        name: 'Imperial Lambda-Class Shuttle',
+        setNumber: '75460',
+        theme: 'Star Wars',
+      }),
+    ].map(
+      (primarySet) =>
+        generateEditorialMdxDraft(
+          createInput({
+            detected: createDetected({
+              setNumbers: [primarySet.setNumber],
+              themes: ['Star Wars'],
+            }),
+            facts: createFacts({
+              releaseDate: '1 juni 2026',
+              setNames: [primarySet.name],
+              setNumbers: [primarySet.setNumber],
+              summary: `${primarySet.name} is aangekondigd als nieuwe Star Wars-set.`,
+              theme: 'Star Wars',
+              title: `LEGO Star Wars ${primarySet.setNumber} ${primarySet.name} aangekondigd`,
+            }),
+            matching: createMatching({
+              articleType: 'single_set_news',
+              matchedSets: [primarySet],
+            }),
+            primarySet,
+            source: createSource({
+              title: `LEGO Star Wars ${primarySet.setNumber} ${primarySet.name} aangekondigd`,
+            }),
+          }),
+        ).frontmatter.description,
+    );
+
+    cases.forEach((description) => {
+      expectConcisePublicDescription(description);
+      expect(description).toContain('1 juni 2026');
+      expect(description).not.toContain('Voor Star Wars-fans is dit vooral');
+    });
+    expect(new Set(cases).size).toBe(cases.length);
+    expect(cases.join(' ')).toContain('Helmet Collection');
+    expect(cases.join(' ')).toContain('displayfiguur');
+    expect(cases.join(' ')).toContain('Imperial ship');
   });
 
   it('uses availability and rumor wording when those signals are present', () => {
@@ -873,8 +1092,9 @@ describe('editorial agent draft generation', () => {
       'wordt zo’n maand waarin je ineens veel nieuwe LEGO-dozen ziet langskomen',
     );
     expect(result.frontmatter.description).toContain(
-      'SEGA Genesis Console is aangekondigd als LEGO-release voor 1 juni 2026.',
+      'SEGA Genesis Console verschijnt op 1 juni 2026',
     );
+    expectConcisePublicDescription(result.frontmatter.description);
     expect(result.mdx).toContain(
       'SEGA Genesis Console krijgt een LEGO-release op 1 juni 2026.',
     );
@@ -920,8 +1140,9 @@ describe('editorial agent draft generation', () => {
     );
 
     expect(result.frontmatter.description).toContain(
-      'SEGA Genesis (Mega Drive) is aangekondigd als LEGO-release voor 1 juni 2026.',
+      'SEGA Genesis (Mega Drive) verschijnt op 1 juni 2026',
     );
+    expectConcisePublicDescription(result.frontmatter.description);
     expect(result.mdx).toContain(
       'SEGA Genesis (Mega Drive) krijgt een LEGO-release op 1 juni 2026.',
     );
@@ -1389,12 +1610,112 @@ describe('editorial agent draft generation', () => {
     expect(result.frontmatter.description).not.toContain(
       'object of deze wereld',
     );
+    expectConcisePublicDescription(result.frontmatter.description);
     expect(result.mdx).not.toContain('object of deze wereld');
     expect(result.frontmatter.description).toContain('Star Wars-fans');
-    expect(result.frontmatter.description).toContain('displaysets');
+    expect(result.frontmatter.description).toContain('Helmet Collection');
     expect(result.mdx).toContain('Helmet Collection');
     expect(result.mdx).toContain('Imperial/Rebel vibes');
-    expect(result.mdx).toContain('als je deze lijn spaart');
+    expect(result.mdx).toContain('als je de Helmet Collection spaart');
+  });
+
+  it('uses vehicle Star Wars tone for shuttles without Helmet Collection wording', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('75460', {
+              name: 'Imperial Lambda-Class Shuttle',
+              theme: 'Star Wars',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('75460', {
+            name: 'Imperial Lambda-Class Shuttle',
+            theme: 'Star Wars',
+          }),
+          reason: 'title_match',
+        },
+        detected: createDetected({
+          keywords: ['Star Wars', 'Imperial', 'Shuttle'],
+          setNumbers: ['75460'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juni 2026',
+          setNames: ['Imperial Lambda-Class Shuttle'],
+          setNumbers: ['75460'],
+          summary:
+            'Imperial Lambda-Class Shuttle is aangekondigd als nieuwe LEGO Star Wars-set.',
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars 75460 Imperial Lambda-Class Shuttle aangekondigd',
+        }),
+        source: createSource({
+          title:
+            'LEGO Star Wars 75460 Imperial Lambda-Class Shuttle aangekondigd',
+        }),
+      }),
+    );
+
+    expect(result.mdx).not.toContain('Helmet Collection');
+    expect(result.frontmatter.description).not.toContain('Helmet Collection');
+    expectConcisePublicDescription(result.frontmatter.description);
+    expect(result.mdx).toContain('Imperial ships');
+    expect(result.mdx).toContain('fleet-gevoel');
+    expect(result.mdx).toContain('display shelf');
+  });
+
+  it('uses buildable figure Star Wars tone without Helmet Collection wording', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [
+            createMatchedSet('75461', {
+              name: 'Up-Scaled Darth Vader Minifigure',
+              theme: 'Star Wars',
+            }),
+          ],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: {
+          ...createMatchedSet('75461', {
+            name: 'Up-Scaled Darth Vader Minifigure',
+            theme: 'Star Wars',
+          }),
+          reason: 'title_match',
+        },
+        detected: createDetected({
+          keywords: ['Star Wars', 'Darth Vader', 'Minifigure'],
+          setNumbers: ['75461'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juni 2026',
+          setNames: ['Up-Scaled Darth Vader Minifigure'],
+          setNumbers: ['75461'],
+          summary:
+            'Up-Scaled Darth Vader Minifigure is aangekondigd als nieuwe LEGO Star Wars-set.',
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars 75461 Up-Scaled Darth Vader Minifigure aangekondigd',
+        }),
+        source: createSource({
+          title:
+            'LEGO Star Wars 75461 Up-Scaled Darth Vader Minifigure aangekondigd',
+        }),
+      }),
+    );
+
+    expect(result.mdx).not.toContain('Helmet Collection');
+    expect(result.frontmatter.description).not.toContain('Helmet Collection');
+    expectConcisePublicDescription(result.frontmatter.description);
+    expect(result.mdx).toContain('displayfiguur');
+    expect(result.mdx).toContain('character shelf');
   });
 
   it('adds Harry Potter fan tone to announcement copy', () => {
@@ -1459,8 +1780,9 @@ describe('editorial agent draft generation', () => {
     );
 
     expect(result.frontmatter.description).toBe(
-      'Mario Kart – Spiny Shell is aangekondigd als LEGO-release voor 2026-05-01. Vooral iets om rustig te volgen als dit thema, object of deze wereld je meteen iets doet.',
+      'Mario Kart – Spiny Shell verschijnt op 2026-05-01 en is vooral interessant als deze set al in je verzamelhoek past.',
     );
+    expectConcisePublicDescription(result.frontmatter.description);
     expect(result.mdx).toContain('werelden, objecten of licenties');
     expect(result.mdx).not.toContain('Helmet Collection');
     expect(result.mdx).not.toContain('Hogwarts');
@@ -1995,10 +2317,411 @@ describe('editorial agent draft generation', () => {
       }),
     );
 
-    expect(withRail.mdx).toContain('<SetRail title=');
+    expect(withRail.mdx).toContain('<SetRail');
     expect(withRail.mdx).toContain('setIds="72050, 72037"');
     expect(withRail.mdx).not.toContain('setIds={[');
-    expect(withoutRail.mdx).not.toContain('<SetRail title=');
+    expect(withoutRail.mdx).not.toContain('<SetRail');
+  });
+
+  it('uses wait-friendly SetRail copy for future Star Wars helmet releases', () => {
+    const primarySet = createPrimarySet({
+      name: 'Imperial Remnant AT-RT Driver Helmet',
+      setNumber: '75458',
+      theme: 'Star Wars',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['Star Wars', 'Helmet Collection'],
+          setNumbers: ['75458'],
+          themes: ['Star Wars'],
+        }),
+        facts: createFacts({
+          releaseDate: '1 juni 2026',
+          setNames: ['Imperial Remnant AT-RT Driver Helmet'],
+          setNumbers: ['75458'],
+          summary:
+            'Imperial Remnant AT-RT Driver Helmet is onthuld als toekomstige Star Wars-release.',
+          theme: 'Star Wars',
+          title:
+            'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet onthuld',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        relatedCandidates: [
+          createRelatedCandidate('75349', {
+            name: 'Captain Rex Helmet',
+            theme: 'Star Wars',
+          }),
+          createRelatedCandidate('75350', {
+            name: 'Clone Commander Cody Helmet',
+            theme: 'Star Wars',
+          }),
+        ],
+        source: createSource({
+          title:
+            'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet onthuld',
+        }),
+      }),
+    );
+
+    expect(result.mdx).toContain('eyebrow="Kun je niet wachten?"');
+    expect(result.mdx).toContain('title="Andere helmets om nu te bouwen"');
+    expect(result.mdx).toContain(
+      'Dan zijn dit sterke alternatieven die je nu al kunt bouwen en neerzetten.',
+    );
+    expect(result.mdx).not.toContain(
+      'Star Wars-sets voor naast Imperial Remnant AT-RT Driver Helmet',
+    );
+    expect(result.mdx).not.toContain('Zoek je naast');
+  });
+
+  it('uses comparison SetRail copy for deal articles', () => {
+    const primarySet = createPrimarySet({
+      name: 'Star Trek U.S.S. Enterprise',
+      setNumber: '10356',
+      theme: 'LEGO® Icons',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          keywords: ['Star Trek', 'korting'],
+          prices: ['€60 korting'],
+          setNumbers: ['10356'],
+          themes: ['Icons'],
+        }),
+        facts: createFacts({
+          priceEUR: '€60 korting',
+          setNames: ['Star Trek U.S.S. Enterprise'],
+          setNumbers: ['10356'],
+          summary:
+            'Star Trek U.S.S. Enterprise is tijdelijk goedkoper met korting.',
+          theme: 'Icons',
+          title: 'LEGO Icons 10356 Star Trek U.S.S. Enterprise nu met korting',
+        }),
+        matching: createMatching({
+          articleType: 'deal',
+          matchedSets: [primarySet],
+        }),
+        primarySet,
+        relatedCandidates: [
+          createRelatedCandidate('10307', {
+            name: 'Eiffel Tower',
+            theme: 'LEGO® Icons',
+          }),
+          createRelatedCandidate('10316', {
+            name: 'The Lord of the Rings: Rivendell',
+            theme: 'LEGO® Icons',
+          }),
+        ],
+        source: createSource({
+          title: 'LEGO Icons 10356 Star Trek U.S.S. Enterprise nu met korting',
+        }),
+      }),
+    );
+
+    expect(result.mdx).toContain('eyebrow="Ook interessant"');
+    expect(result.mdx).toContain('title="Meer sets om te vergelijken"');
+    expect(result.mdx).toContain(
+      'Twijfel je over deze deal? Vergelijk hem dan vooral met deze sets.',
+    );
+    expect(result.mdx).not.toContain('sets voor naast');
+  });
+
+  it('keeps final generated MDX examples within editorial quality guards', () => {
+    const starWarsHelmet = createPrimarySet({
+      name: 'Imperial Remnant AT-RT Driver Helmet',
+      setNumber: '75458',
+      theme: 'Star Wars',
+    });
+    const starWarsShuttle = createPrimarySet({
+      name: 'Imperial Lambda-Class Shuttle',
+      setNumber: '75460',
+      theme: 'Star Wars',
+    });
+    const darthVaderFigure = createPrimarySet({
+      name: 'Up-Scaled Darth Vader Minifigure',
+      setNumber: '75461',
+      theme: 'Star Wars',
+    });
+    const starTrekDeal = createPrimarySet({
+      name: 'Star Trek U.S.S. Enterprise',
+      setNumber: '10356',
+      theme: 'LEGO® Icons',
+    });
+    const examples = {
+      buildableDarthVaderFigure: generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            keywords: ['Star Wars', 'Darth Vader', 'Minifigure'],
+            setNumbers: ['75461'],
+            themes: ['Star Wars'],
+          }),
+          facts: createFacts({
+            releaseDate: '1 juni 2026',
+            setNames: ['Up-Scaled Darth Vader Minifigure'],
+            setNumbers: ['75461'],
+            summary:
+              'Up-Scaled Darth Vader Minifigure is aangekondigd als nieuwe LEGO Star Wars-set.',
+            theme: 'Star Wars',
+            title:
+              'LEGO Star Wars 75461 Up-Scaled Darth Vader Minifigure aangekondigd',
+          }),
+          matching: createMatching({
+            articleType: 'single_set_news',
+            matchedSets: [darthVaderFigure],
+          }),
+          primarySet: darthVaderFigure,
+          relatedCandidates: [
+            createRelatedCandidate('75398', {
+              name: 'C-3PO',
+              theme: 'Star Wars',
+            }),
+            createRelatedCandidate('75371', {
+              name: 'Chewbacca',
+              theme: 'Star Wars',
+            }),
+          ],
+          source: createSource({
+            title:
+              'LEGO Star Wars 75461 Up-Scaled Darth Vader Minifigure aangekondigd',
+          }),
+        }),
+      ),
+      broadReleaseRoundup: generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            dateSignals: ['juni 2026'],
+            setNumbers: ['75458', '75460', '72050'],
+            themes: ['Star Wars', 'Super Mario'],
+          }),
+          facts: createFacts({
+            keywords: ['juni 2026', 'release'],
+            releaseDate: '',
+            setNames: [
+              'Imperial Remnant AT-RT Driver Helmet',
+              'Imperial Lambda-Class Shuttle',
+              'Mario Kart - Standard Kart',
+            ],
+            setNumbers: ['75458', '75460', '72050'],
+            summary: 'Meerdere nieuwe LEGO-sets verschijnen in juni 2026.',
+            theme: 'Multiple',
+            title: 'Deze nieuwe LEGO-sets verschijnen in juni 2026',
+          }),
+          matching: createMatching({
+            articleType: 'release_roundup',
+            matchedSets: [
+              starWarsHelmet,
+              starWarsShuttle,
+              createMatchedSet('72050', {
+                name: 'Mario Kart - Standard Kart',
+                theme: 'Super Mario',
+              }),
+            ],
+          }),
+          primarySet: null,
+          relatedCandidates: [],
+          source: createSource({
+            title: 'Deze nieuwe LEGO-sets verschijnen in juni 2026',
+          }),
+        }),
+      ),
+      dealArticle: generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            keywords: ['Star Trek', 'korting'],
+            prices: ['€60 korting'],
+            setNumbers: ['10356'],
+            themes: ['Icons'],
+          }),
+          facts: createFacts({
+            priceEUR: '€60 korting',
+            setNames: ['Star Trek U.S.S. Enterprise'],
+            setNumbers: ['10356'],
+            summary:
+              'Star Trek U.S.S. Enterprise is tijdelijk goedkoper met korting.',
+            theme: 'Icons',
+            title:
+              'LEGO Icons 10356 Star Trek U.S.S. Enterprise nu met korting',
+          }),
+          matching: createMatching({
+            articleType: 'deal',
+            matchedSets: [starTrekDeal],
+          }),
+          primarySet: starTrekDeal,
+          relatedCandidates: [
+            createRelatedCandidate('10307', {
+              name: 'Eiffel Tower',
+              theme: 'LEGO® Icons',
+            }),
+            createRelatedCandidate('10316', {
+              name: 'The Lord of the Rings: Rivendell',
+              theme: 'LEGO® Icons',
+            }),
+          ],
+          source: createSource({
+            title:
+              'LEGO Icons 10356 Star Trek U.S.S. Enterprise nu met korting',
+          }),
+        }),
+      ),
+      starWarsHelmetAnnouncement: generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            keywords: ['Star Wars', 'Helmet Collection'],
+            setNumbers: ['75458'],
+            themes: ['Star Wars'],
+          }),
+          facts: createFacts({
+            releaseDate: '1 juni 2026',
+            setNames: ['Imperial Remnant AT-RT Driver Helmet'],
+            setNumbers: ['75458'],
+            summary:
+              'Imperial Remnant AT-RT Driver Helmet is aangekondigd als nieuwe LEGO Star Wars-helmet.',
+            theme: 'Star Wars',
+            title:
+              'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet aangekondigd',
+          }),
+          matching: createMatching({
+            articleType: 'single_set_news',
+            matchedSets: [starWarsHelmet],
+          }),
+          primarySet: starWarsHelmet,
+          relatedCandidates: [
+            createRelatedCandidate('75349', {
+              name: 'Captain Rex Helmet',
+              theme: 'Star Wars',
+            }),
+            createRelatedCandidate('75350', {
+              name: 'Clone Commander Cody Helmet',
+              theme: 'Star Wars',
+            }),
+          ],
+          source: createSource({
+            title:
+              'LEGO Star Wars 75458 Imperial Remnant AT-RT Driver Helmet aangekondigd',
+          }),
+        }),
+      ),
+      starWarsShuttleAnnouncement: generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            keywords: ['Star Wars', 'Imperial', 'Shuttle'],
+            setNumbers: ['75460'],
+            themes: ['Star Wars'],
+          }),
+          facts: createFacts({
+            releaseDate: '1 juni 2026',
+            setNames: ['Imperial Lambda-Class Shuttle'],
+            setNumbers: ['75460'],
+            summary:
+              'Imperial Lambda-Class Shuttle is aangekondigd als nieuwe LEGO Star Wars-set.',
+            theme: 'Star Wars',
+            title:
+              'LEGO Star Wars 75460 Imperial Lambda-Class Shuttle aangekondigd',
+          }),
+          matching: createMatching({
+            articleType: 'single_set_news',
+            matchedSets: [starWarsShuttle],
+          }),
+          primarySet: starWarsShuttle,
+          relatedCandidates: [
+            createRelatedCandidate('75376', {
+              name: 'Tantive IV',
+              theme: 'Star Wars',
+            }),
+            createRelatedCandidate('75375', {
+              name: 'Millennium Falcon',
+              theme: 'Star Wars',
+            }),
+          ],
+          source: createSource({
+            title:
+              'LEGO Star Wars 75460 Imperial Lambda-Class Shuttle aangekondigd',
+          }),
+        }),
+      ),
+    };
+
+    Object.values(examples).forEach(expectEditorialQualityGuards);
+    expect(examples.starWarsHelmetAnnouncement.mdx).toContain(
+      'Helmet Collection',
+    );
+    expect(examples.starWarsShuttleAnnouncement.mdx).not.toContain(
+      'Helmet Collection',
+    );
+    expect(examples.buildableDarthVaderFigure.mdx).not.toContain(
+      'Helmet Collection',
+    );
+    expect(examples.starWarsHelmetAnnouncement.mdx).toContain(
+      'eyebrow="Kun je niet wachten?"',
+    );
+    expect(examples.dealArticle.mdx).toContain('eyebrow="Ook interessant"');
+    expect(examples.starWarsHelmetAnnouncement.mdx).not.toContain(
+      'title="Imperial Remnant AT-RT Driver Helmet',
+    );
+    expect(examples.starWarsShuttleAnnouncement.mdx).not.toContain(
+      'title="Imperial Lambda-Class Shuttle',
+    );
+
+    expect(
+      Object.fromEntries(
+        Object.entries(examples).map(([key, result]) => [
+          key,
+          summarizeGeneratedArticle(result),
+        ]),
+      ),
+    ).toMatchInlineSnapshot(`
+      {
+        "broadReleaseRoundup": {
+          "components": [
+            "<SetSpotlightList setIds="75458, 75460, 72050" />",
+          ],
+          "description": "Overzicht van de LEGO-sets uit juni 2026 waar je vrolijk doorheen wilt bladeren. Van kleine blikvangers tot grotere thema-releases: dit is vooral een maand om te ontdekken wat jou echt aanspreekt.",
+          "sourceLine": "Bronnen: officiële setinformatie en openbare berichtgeving.",
+          "title": "Deze nieuwe LEGO-sets verschijnen in juni 2026",
+        },
+        "buildableDarthVaderFigure": {
+          "components": [
+            "<FeaturedSet setNumber="75461" />",
+            "<SetRail eyebrow="Kun je niet wachten?" title="Alternatieven om nu te bouwen" setIds="75398, 75371" />",
+          ],
+          "description": "Up-Scaled Darth Vader Minifigure verschijnt op 1 juni 2026 en draait om een bouwbare displayfiguur voor je Star Wars-character shelf.",
+          "sourceLine": "Bronnen: officiële setinformatie en openbare berichtgeving.",
+          "title": "Up-Scaled Darth Vader Minifigure aangekondigd",
+        },
+        "dealArticle": {
+          "components": [
+            "<FeaturedSet setNumber="10356" />",
+            "<SetRail eyebrow="Ook interessant" title="Meer sets om te vergelijken" setIds="10307, 10316" />",
+          ],
+          "description": "Star Trek U.S.S. Enterprise valt op door €60 korting. Check vooral of de prijs nu echt klopt voor jouw collectie.",
+          "sourceLine": "Bronnen: officiële setinformatie en openbare berichtgeving.",
+          "title": "Star Trek U.S.S. Enterprise met korting",
+        },
+        "starWarsHelmetAnnouncement": {
+          "components": [
+            "<FeaturedSet setNumber="75458" />",
+            "<SetRail eyebrow="Kun je niet wachten?" title="Andere helmets om nu te bouwen" setIds="75349, 75350" />",
+          ],
+          "description": "Imperial Remnant AT-RT Driver Helmet verschijnt op 1 juni 2026 en richt zich duidelijk op Star Wars-fans die hun Helmet Collection willen uitbreiden.",
+          "sourceLine": "Bronnen: officiële setinformatie en openbare berichtgeving.",
+          "title": "Imperial Remnant AT-RT Driver Helmet aangekondigd",
+        },
+        "starWarsShuttleAnnouncement": {
+          "components": [
+            "<FeaturedSet setNumber="75460" />",
+            "<SetRail eyebrow="Kun je niet wachten?" title="Alternatieven om nu te bouwen" setIds="75376, 75375" />",
+          ],
+          "description": "Imperial Lambda-Class Shuttle verschijnt op 1 juni 2026 en leunt op dat Imperial ship-silhouet en het fleet-gevoel voor op de plank.",
+          "sourceLine": "Bronnen: officiële setinformatie en openbare berichtgeving.",
+          "title": "Imperial Lambda-Class Shuttle nu zichtbaar",
+        },
+      }
+    `);
   });
 
   it('never uses unmatched set numbers inside FeaturedSet, SetRail or SetSpotlightList', () => {
