@@ -667,24 +667,65 @@ function cleanConciseSetTitleSubject(value: string): string {
 
 function resolveConciseSingleSetTitleAction(
   title: string,
-  articleType: EditorialAgentArticleType,
+  input: EditorialAgentDraftGenerationInput,
+  subject: string,
 ): string {
-  const normalizedTitle = normalizeWhitespace(title);
+  const normalizedTitle = normalizeWhitespace(
+    [
+      title,
+      input.source.title,
+      input.source.description,
+      input.facts.title,
+      input.facts.summary,
+      input.facts.keyPoints.join(' '),
+      input.facts.keywords.join(' '),
+      input.detected.keywords.join(' '),
+      input.detected.rumorSignals.join(' '),
+      input.detected.prices.join(' '),
+    ].join(' '),
+  );
 
-  if (articleType === 'deal') {
-    return 'deal';
+  if (
+    input.matching.articleType === 'deal' ||
+    /\b(?:deal|korting|actie|aanbieding|discount|temporarily cheaper|cheaper|sale|dubbele\s+insiders-punten|€\s*\d+)/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return pickTitleVariant(
+      ['met korting', 'tijdelijk goedkoper', 'nu voordeliger'],
+      subject,
+      input,
+    );
   }
 
-  if (/\bonthuld\b/iu.test(normalizedTitle)) {
-    return 'onthuld';
+  if (
+    input.facts.isRumor ||
+    input.detected.rumorSignals.length > 0 ||
+    /\b(?:leak|leaked|gelekt|rumor|rumour|gerucht|geruchten)\b/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return pickTitleVariant(
+      ['gelekt', 'mogelijk onthuld', 'eerste info opgedoken'],
+      subject,
+      input,
+    );
   }
 
-  if (/\baangekondigd\b/iu.test(normalizedTitle)) {
-    return 'aangekondigd';
+  if (
+    /\b(?:pre-?order|voorbestel|voorbestellen|pre-orderen)\b/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return 'nu te pre-orderen';
   }
 
-  if (/\bverschijnt\b/iu.test(normalizedTitle)) {
-    return 'verschijnt';
+  if (
+    /\b(?:available|beschikbaar|verkrijgbaar|nu te koop|back in stock|op voorraad)\b/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return 'nu beschikbaar';
   }
 
   if (/\buitverkocht\b/iu.test(normalizedTitle)) {
@@ -695,7 +736,37 @@ function resolveConciseSingleSetTitleAction(
     return 'terug';
   }
 
-  return 'aangekondigd';
+  if (
+    /\b(?:revealed|unveiled|announced|aangekondigd|onthuld|gepresenteerd|eerste beelden|first look|first images|officially presented)\b/iu.test(
+      normalizedTitle,
+    )
+  ) {
+    return pickTitleVariant(
+      ['aangekondigd', 'officieel gepresenteerd', 'nu zichtbaar'],
+      subject,
+      input,
+    );
+  }
+
+  return pickTitleVariant(
+    ['aangekondigd', 'officieel gepresenteerd', 'nu zichtbaar'],
+    subject,
+    input,
+  );
+}
+
+function pickTitleVariant(
+  variants: readonly string[],
+  subject: string,
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const seed = `${subject}|${input.primarySet?.setNumber ?? ''}|${input.source.canonicalUrl || input.source.finalUrl || input.source.inputUrl}`;
+  const hash = [...seed].reduce(
+    (currentHash, character) => currentHash + character.charCodeAt(0),
+    0,
+  );
+
+  return variants[hash % variants.length] ?? variants[0] ?? '';
 }
 
 function formatConciseArticleTitle({
@@ -718,14 +789,11 @@ function formatConciseArticleTitle({
     cleanConciseSetTitleSubject(
       getSetDisplayNameForDraft(input.primarySet, input.facts, input.source),
     );
-  const action = resolveConciseSingleSetTitleAction(
-    title,
-    input.matching.articleType,
-  );
-
   if (!subject) {
     return title;
   }
+
+  const action = resolveConciseSingleSetTitleAction(title, input, subject);
 
   return `${subject} ${action}`;
 }
@@ -1020,7 +1088,37 @@ function cleanPublicDraftCopy(value: string): string {
     .replace(/\bdeze sets trekt\b/giu, 'Deze sets trekken')
     .replace(/\bdeze sets laat\b/giu, 'Deze sets laten')
     .replace(/\bdeze aankondiging trekt\b/giu, 'Deze aankondiging trekt')
-    .replace(/\bdeze aankondiging laat\b/giu, 'Deze aankondiging laat');
+    .replace(/\bdeze aankondiging laat\b/giu, 'Deze aankondiging laat')
+    .replace(
+      /\bdit draft helpt je snel kiezen of je nu moet opletten of rustig kunt wachten\.?/giu,
+      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+    )
+    .replace(
+      /\bdit artikel helpt je(?:\s+[^.!?\n]*)?[.!?]?/giu,
+      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+    )
+    .replace(
+      /\bartikel helpt je(?:\s+[^.!?\n]*)?[.!?]?/giu,
+      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+    )
+    .replace(
+      /\bgebruik deze draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+      'Handig om te bepalen of deze set op je radar moet.',
+    )
+    .replace(
+      /\bdeze draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+      'Handig om te bepalen of deze set op je radar moet.',
+    )
+    .replace(
+      /\bdit draft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+    )
+    .replace(
+      /\bconceptdraft(?:\s+[^.!?\n]*)?[.!?]?/giu,
+      'Handig om te bepalen of deze set op je radar moet.',
+    )
+    .replace(/\bconcept\b/giu, 'nieuws')
+    .replace(/\bdraft\b/giu, 'nieuws');
 }
 
 function sentenceMentionsMatchedCatalogSet(
@@ -1131,10 +1229,10 @@ function buildDescription(input: EditorialAgentDraftGenerationInput): string {
           : `${setName} is aangekondigd als nieuwe LEGO-set. Vooral iets om rustig te volgen als dit thema, object of deze wereld je meteen iets doet.`;
       }
 
-      return `${setName} is vooral relevant als je hem al op je lijst had staan. Dit draft helpt je snel kiezen of je nu moet opletten of rustig kunt wachten.`;
+      return `${setName} is vooral relevant als je hem al op je lijst had staan. Je ziet snel of je moet opletten of rustig kunt wachten.`;
     case 'unknown':
     default:
-      return 'Conceptdraft op basis van extraction en exacte catalog matches. Controleer de bron en de setkoppelingen voordat je dit verder uitwerkt.';
+      return 'Handig om te bepalen of deze set op je radar moet. Let vooral op de details die straks echt het verschil maken.';
   }
 }
 
@@ -1339,7 +1437,7 @@ Twijfel je nog of deze set echt iets toevoegt aan je collectie? Wacht dan rustig
     default:
       return `## Wanneer kopen?
 
-Gebruik deze draft nog niet als hard koopadvies. Controleer eerst of de belangrijkste setkoppelingen en claims uit de bron echt kloppen.
+Handig om te bepalen of deze set op je radar moet. Kijk eerst naar de details die voor jouw collectie echt tellen.
 
 Pas daarna kun je bepalen of dit een nu-pakken, volgen of laten-lopen moment is.`;
   }
@@ -1415,7 +1513,7 @@ Als ${shortName} al op je radar stond, heb je nu genoeg om te bepalen of je aler
     default:
       return `## Korte conclusie
 
-De facts en catalog matches zijn hier bruikbaar, maar dit blijft een voorzichtige eerste draft. Check de bron nog even handmatig voordat je hier een publiceerbaar verhaal van maakt.`;
+Je ziet snel of je moet opletten of rustig kunt wachten. Vooral relevant als je deze set al volgde.`;
   }
 }
 
@@ -1539,8 +1637,8 @@ function buildIntroParagraphs(
     case 'unknown':
     default:
       return [
-        `De bron wijst op LEGO-nieuws, maar nog niet alles hangt strak genoeg aan betrouwbare catalog matches om er blind op te varen.`,
-        `Gebruik deze draft daarom als snelle start, niet als af verhaal. De facts hieronder helpen je om te zien wat al hard genoeg is en wat nog controle nodig heeft.`,
+        `Er is nieuw LEGO-nieuws om kort te beoordelen. Begin bij de set, het thema en de details die straks op een plank echt opvallen.`,
+        `Je ziet snel of je moet opletten of rustig kunt wachten. Vooral relevant als je deze set al volgde.`,
       ];
   }
 }
@@ -1558,7 +1656,7 @@ Tussen de grotere blikvangers staan vaak ook kleinere sets die pas op een tweede
     case 'unknown':
       return `## Waar moet je op letten?
 
-Controleer eerst de setnummers, thema’s en claims die uit de bron kwamen. Als daar nog gaten in zitten, moet de draft eerst feitelijk strakker voordat je hem redactioneel gaat polijsten.`;
+Kijk vooral naar de herkenbare details, de bouwvorm en de plek die deze set in je collectie zou krijgen. Als dat niet meteen iets doet, kun je rustig wachten op meer informatie.`;
     case 'multi_set_announcement':
       {
         const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);

@@ -286,12 +286,12 @@ describe('editorial agent draft generation', () => {
     );
 
     expect(result.frontmatter.title).toBe(
-      'Imperial Remnant AT-RT Driver Helmet onthuld',
+      'Imperial Remnant AT-RT Driver Helmet aangekondigd',
     );
     expect(result.frontmatter.title.startsWith('LEGO Star Wars')).toBe(false);
     expect(result.frontmatter.title).not.toContain('75458');
     expect(result.mdx).toContain(
-      'title: "Imperial Remnant AT-RT Driver Helmet onthuld"',
+      'title: "Imperial Remnant AT-RT Driver Helmet aangekondigd"',
     );
   });
 
@@ -326,10 +326,127 @@ describe('editorial agent draft generation', () => {
       }),
     );
 
-    expect(result.frontmatter.title).toBe('Star Trek U.S.S. Enterprise deal');
+    expect(result.frontmatter.title).toBe(
+      'Star Trek U.S.S. Enterprise met korting',
+    );
     expect(result.frontmatter.title).not.toContain('LEGO');
     expect(result.frontmatter.title).not.toContain('Icons');
     expect(result.frontmatter.title).not.toContain('10356');
+  });
+
+  it('varies reveal title verbs deterministically across single-set articles', () => {
+    const helmetSet = createPrimarySet({
+      name: 'Imperial Remnant AT-RT Driver Helmet',
+      setNumber: '75458',
+      theme: 'Star Wars',
+    });
+    const vaderSet = createPrimarySet({
+      name: 'Up-Scaled Darth Vader Minifigure',
+      setNumber: '75461',
+      theme: 'Star Wars',
+    });
+    const shuttleSet = createPrimarySet({
+      name: 'Imperial Lambda-Class Shuttle',
+      setNumber: '75460',
+      theme: 'Star Wars',
+    });
+    const buildRevealDraftTitle = (
+      primarySet: EditorialAgentPrimarySetSelection,
+    ) =>
+      generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            setNumbers: [primarySet.setNumber],
+            themes: ['Star Wars'],
+          }),
+          facts: createFacts({
+            setNames: [primarySet.name],
+            setNumbers: [primarySet.setNumber],
+            theme: 'Star Wars',
+            title: `LEGO Star Wars ${primarySet.setNumber} ${primarySet.name} revealed`,
+          }),
+          matching: createMatching({
+            articleType: 'single_set_news',
+            matchedSets: [primarySet],
+          }),
+          primarySet,
+          source: createSource({
+            canonicalUrl: `https://brickset.com/article/${primarySet.setNumber}`,
+            finalUrl: `https://brickset.com/article/${primarySet.setNumber}`,
+            inputUrl: `https://brickset.com/article/${primarySet.setNumber}`,
+            title: `LEGO Star Wars ${primarySet.setNumber} ${primarySet.name} revealed`,
+          }),
+        }),
+      ).frontmatter.title;
+
+    const titles = [
+      buildRevealDraftTitle(helmetSet),
+      buildRevealDraftTitle(vaderSet),
+      buildRevealDraftTitle(shuttleSet),
+    ];
+
+    expect(
+      new Set(titles.map((title) => title.split(' ').at(-1))).size,
+    ).toBeGreaterThan(1);
+    expect(titles.every((title) => !title.endsWith('onthuld'))).toBe(true);
+    expect(titles.every((title) => !/^LEGO Star Wars/u.test(title))).toBe(true);
+    expect(titles.every((title) => !/\b754\d{2}\b/u.test(title))).toBe(true);
+  });
+
+  it('uses availability and rumor wording when those signals are present', () => {
+    const shuttleSet = createPrimarySet({
+      name: 'Imperial Lambda-Class Shuttle',
+      setNumber: '75460',
+      theme: 'Star Wars',
+    });
+    const preorderTitle = generateEditorialMdxDraft(
+      createInput({
+        facts: createFacts({
+          setNames: [shuttleSet.name],
+          setNumbers: [shuttleSet.setNumber],
+          theme: 'Star Wars',
+          title: 'LEGO Star Wars Imperial Lambda-Class Shuttle pre-order open',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [shuttleSet],
+        }),
+        primarySet: shuttleSet,
+        source: createSource({
+          title: 'LEGO Star Wars Imperial Lambda-Class Shuttle pre-order open',
+        }),
+      }),
+    ).frontmatter.title;
+    const rumorTitle = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          rumorSignals: ['rumor'],
+          setNumbers: [shuttleSet.setNumber],
+        }),
+        facts: createFacts({
+          isRumor: true,
+          setNames: [shuttleSet.name],
+          setNumbers: [shuttleSet.setNumber],
+          theme: 'Star Wars',
+          title: 'LEGO Star Wars Imperial Lambda-Class Shuttle rumor',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [shuttleSet],
+        }),
+        primarySet: shuttleSet,
+        source: createSource({
+          title: 'LEGO Star Wars Imperial Lambda-Class Shuttle rumor',
+        }),
+      }),
+    ).frontmatter.title;
+
+    expect(preorderTitle).toBe(
+      'Imperial Lambda-Class Shuttle nu te pre-orderen',
+    );
+    expect(rumorTitle).toMatch(
+      /^Imperial Lambda-Class Shuttle (?:gelekt|mogelijk onthuld|eerste info opgedoken)$/u,
+    );
   });
 
   it('keeps existing multi-set titles unchanged', () => {
@@ -425,6 +542,62 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).toContain('<FeaturedSet setNumber="40787" />');
     expectFeaturedSetAtTop(result.mdx);
     expectSetRailAfterMainContent(result.mdx);
+  });
+
+  it('keeps single-set public copy free of internal draft wording', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'single_set_news',
+        }),
+        facts: createFacts({
+          summary:
+            'Dit draft helpt je snel kiezen of je nu moet opletten of rustig kunt wachten.',
+        }),
+        source: createSource({
+          description:
+            'Dit artikel helpt je bepalen of deze set op je radar moet.',
+          title: 'LEGO 40787 Mario Kart – Spiny Shell is terug',
+        }),
+      }),
+    );
+    const publicBody = result.mdx.split('---\n\n').at(1) ?? result.mdx;
+    const forbiddenPublicWording =
+      /\b(?:draft|concept|artikel helpt|deze draft)\b/iu;
+
+    expect(result.frontmatter.description).not.toMatch(forbiddenPublicWording);
+    expect(publicBody).not.toMatch(forbiddenPublicWording);
+    expect(result.frontmatter.description).toContain(
+      'Je ziet snel of je moet opletten of rustig kunt wachten.',
+    );
+    expect(publicBody).toContain(
+      'Stond hij al op je lijst, dan wil je nu vooral weten',
+    );
+  });
+
+  it('rewrites fallback body copy to reader-facing language', () => {
+    const result = generateEditorialMdxDraft(
+      createInput({
+        matching: createMatching({
+          articleType: 'unknown',
+          matchedSets: [],
+          unmatchedSetNumbers: [],
+        }),
+        primarySet: null,
+        relatedCandidates: [],
+      }),
+    );
+    const publicBody = result.mdx.split('---\n\n').at(1) ?? result.mdx;
+
+    expect(result.frontmatter.description).not.toMatch(
+      /\b(?:draft|concept|artikel helpt|deze draft)\b/iu,
+    );
+    expect(publicBody).not.toMatch(
+      /\b(?:draft|concept|artikel helpt|deze draft)\b/iu,
+    );
+    expect(publicBody).toContain(
+      'Handig om te bepalen of deze set op je radar moet.',
+    );
   });
 
   it('prefers the catalog set name as draft display name when a primary set exists', () => {
