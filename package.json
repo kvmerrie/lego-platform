@@ -17,6 +17,7 @@
     "sync:awin-feed": "pnpm nx run awin-feed-sync:run",
     "sync:coolblue-feed": "pnpm nx run awin-feed-sync:run",
     "sync:goodbricks-feed": "pnpm nx run goodbricks-feed-sync:run",
+    "sync:mediamarkt-feed": "pnpm nx run mediamarkt-feed-sync:run",
     "sync:commerce:check": "pnpm sync:commerce:local:check",
     "sync:commerce:local:check": "pnpm nx run commerce-sync:run -- --check",
     "alerts:wishlist:check": "pnpm nx run wishlist-alerts:run -- --check",
@@ -125,6 +126,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "rxjs": "~7.8.0",
+    "saxes": "^6.0.0",
     "sharp": "^0.34.5"
   }
 }

@@ -255,6 +255,12 @@ export const adtractionGoodbricksEnvKeys = {
   merchantName: 'ADTRACTION_GOODBRICKS_MERCHANT_NAME',
 } as const;
 
+export const tradeDoublerMediaMarktEnvKeys = {
+  feedUrl: 'TRADEDOUBLER_MEDIAMARKT_FEED_URL',
+  merchantSlug: 'TRADEDOUBLER_MEDIAMARKT_MERCHANT_SLUG',
+  merchantName: 'TRADEDOUBLER_MEDIAMARKT_MERCHANT_NAME',
+} as const;
+
 export interface BrowserSupabaseConfig {
   anonKey: string;
   url: string;
@@ -312,6 +318,12 @@ export interface AwinCoolblueFeedConfig {
 }
 
 export interface AdtractionGoodbricksFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+export interface TradeDoublerMediaMarktFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
@@ -1088,6 +1100,23 @@ export function getAdtractionGoodbricksFeedConfig(
   };
 }
 
+export function getTradeDoublerMediaMarktFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): TradeDoublerMediaMarktFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: tradeDoublerMediaMarktEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[tradeDoublerMediaMarktEnvKeys.merchantSlug]?.trim() ||
+      'mediamarkt',
+    merchantName:
+      environment[tradeDoublerMediaMarktEnvKeys.merchantName]?.trim() ||
+      'MediaMarkt',
+  };
+}
+
 export function hasAwinCoolblueFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): boolean {
@@ -1114,6 +1143,20 @@ export function getMissingAdtractionGoodbricksEnvKeys(
   return environment[adtractionGoodbricksEnvKeys.feedUrl]
     ? []
     : [adtractionGoodbricksEnvKeys.feedUrl];
+}
+
+export function hasTradeDoublerMediaMarktFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[tradeDoublerMediaMarktEnvKeys.feedUrl]);
+}
+
+export function getMissingTradeDoublerMediaMarktEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[tradeDoublerMediaMarktEnvKeys.feedUrl]
+    ? []
+    : [tradeDoublerMediaMarktEnvKeys.feedUrl];
 }
 
 export function hasTradeTrackerAffiliateConfig(

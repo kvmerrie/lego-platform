@@ -8,3 +8,4 @@ export * from './lib/commerce-refresh-server';
 export * from './lib/commerce-sync-server';
 export * from './lib/tradetracker-alternate-sync-server';
 export * from './lib/tradetracker-lidl-feed-sync-server';
+export * from './lib/tradedoubler-mediamarkt-sync-server';

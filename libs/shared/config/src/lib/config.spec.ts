@@ -23,11 +23,13 @@ import {
   getMissingStagingSupabaseEnvKeys,
   getMissingTradeTrackerEnvKeys,
   getMissingTradeTrackerLidlEnvKeys,
+  getMissingTradeDoublerMediaMarktEnvKeys,
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
   getTradeTrackerAffiliateConfig,
   getTradeTrackerLidlFeedConfig,
+  getTradeDoublerMediaMarktFeedConfig,
   getServerWebBaseUrl,
   getStagingSupabaseConfig,
   hasAdtractionGoodbricksFeedConfig,
@@ -39,8 +41,10 @@ import {
   hasStagingSupabaseConfig,
   hasTradeTrackerAffiliateConfig,
   hasTradeTrackerLidlFeedConfig,
+  hasTradeDoublerMediaMarktFeedConfig,
   isArticlePreviewEnabled,
   publicSiteRobotsPolicy,
+  tradeDoublerMediaMarktEnvKeys,
   webNavigation,
 } from './config';
 
@@ -446,6 +450,49 @@ describe('shared config Adtraction Goodbricks feed helpers', () => {
     expect(hasAdtractionGoodbricksFeedConfig()).toBe(false);
     expect(getMissingAdtractionGoodbricksEnvKeys()).toEqual([
       adtractionGoodbricksEnvKeys.feedUrl,
+    ]);
+  });
+});
+
+describe('shared config TradeDoubler MediaMarkt feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the TradeDoubler MediaMarkt feed config with sensible merchant defaults', () => {
+    process.env.TRADEDOUBLER_MEDIAMARKT_FEED_URL =
+      'https://api.tradedoubler.example/mediamarkt.xml';
+
+    expect(hasTradeDoublerMediaMarktFeedConfig()).toBe(true);
+    expect(getMissingTradeDoublerMediaMarktEnvKeys()).toEqual([]);
+    expect(getTradeDoublerMediaMarktFeedConfig()).toEqual({
+      feedUrl: 'https://api.tradedoubler.example/mediamarkt.xml',
+      merchantSlug: 'mediamarkt',
+      merchantName: 'MediaMarkt',
+    });
+  });
+
+  test('allows explicit MediaMarkt merchant overrides for the TradeDoubler feed config', () => {
+    process.env.TRADEDOUBLER_MEDIAMARKT_FEED_URL =
+      'https://api.tradedoubler.example/mediamarkt.xml';
+    process.env.TRADEDOUBLER_MEDIAMARKT_MERCHANT_SLUG = 'mediamarkt-nl';
+    process.env.TRADEDOUBLER_MEDIAMARKT_MERCHANT_NAME = 'MediaMarkt NL';
+
+    expect(getTradeDoublerMediaMarktFeedConfig()).toEqual({
+      feedUrl: 'https://api.tradedoubler.example/mediamarkt.xml',
+      merchantSlug: 'mediamarkt-nl',
+      merchantName: 'MediaMarkt NL',
+    });
+  });
+
+  test('reports the missing TradeDoubler MediaMarkt feed URL', () => {
+    delete process.env.TRADEDOUBLER_MEDIAMARKT_FEED_URL;
+
+    expect(hasTradeDoublerMediaMarktFeedConfig()).toBe(false);
+    expect(getMissingTradeDoublerMediaMarktEnvKeys()).toEqual([
+      tradeDoublerMediaMarktEnvKeys.feedUrl,
     ]);
   });
 });

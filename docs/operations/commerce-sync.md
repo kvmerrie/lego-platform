@@ -206,6 +206,44 @@ Render scheduled job notes:
 - use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without refreshing merchants
 - a healthy scheduled job should log one `start` line, one line per refreshed seed with merchant, seed id, set id, and status, and one `end` line with refresh, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
 
+## Affiliate Feed Imports
+
+Feed imports write merchant rows into the same Supabase commerce tables used by
+the normal commerce sync:
+
+- `commerce_merchants`
+- `commerce_offer_seeds`
+- `commerce_offer_latest`
+
+Available feed commands:
+
+- `pnpm sync:lidl-feed`
+- `pnpm sync:alternate-feed`
+- `pnpm sync:awin-feed`
+- `pnpm sync:goodbricks-feed`
+- `pnpm sync:mediamarkt-feed`
+
+MediaMarkt uses the TradeDoubler unlimited XML feed with gzip compression. The
+sync streams download, decompressing and parsing product-by-product, and keeps
+only strict LEGO rows with exact set-number matches.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:mediamarkt-feed
+```
+
+Recommended cadence:
+
+- once daily, preferably after the MediaMarkt feed refresh window
+
+MediaMarkt job notes:
+
+- keep `TRADEDOUBLER_MEDIAMARKT_FEED_URL`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- use `--dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync never uses EAN, MediaMarkt SKU, advertiser IDs, source product IDs, or TradeDoubler product IDs as LEGO set numbers
+
 ## Troubleshooting Notes
 
 Use `docs/operations/mvp-operator-troubleshooting.md` for the fast triage flow.
