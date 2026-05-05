@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
+  copyCommerceDataFromProduction,
   createCommerceBenchmarkSet,
   createCommerceMerchant,
   listActiveCommerceSyncSeeds,
@@ -11,6 +12,47 @@ import {
   updateCommerceOfferSeedValidationState,
   upsertCommerceOfferLatestRecord,
 } from './commerce-data-access-server';
+
+type InMemorySupabaseTables = Record<string, Record<string, unknown>[]>;
+
+function createCommerceCopySupabaseClient(tables: InMemorySupabaseTables) {
+  const operations: string[] = [];
+
+  return {
+    operations,
+    supabaseClient: {
+      from: vi.fn((table: string) => ({
+        delete: vi.fn(() => ({
+          not: vi.fn(async () => {
+            const deletedCount = tables[table]?.length ?? 0;
+
+            operations.push(`delete:${table}`);
+            tables[table] = [];
+
+            return {
+              count: deletedCount,
+              error: null,
+            };
+          }),
+        })),
+        insert: vi.fn(async (rows: Record<string, unknown>[]) => {
+          operations.push(`insert:${table}:${rows.length}`);
+          tables[table] = [...(tables[table] ?? []), ...rows];
+
+          return {
+            error: null,
+          };
+        }),
+        select: vi.fn(() => ({
+          range: vi.fn(async (from: number, to: number) => ({
+            data: (tables[table] ?? []).slice(from, to + 1),
+            error: null,
+          })),
+        })),
+      })),
+    },
+  };
+}
 
 describe('commerce data access server', () => {
   test('joins merchants and latest offers onto offer seeds', async () => {
@@ -674,5 +716,109 @@ describe('commerce data access server', () => {
 
     expect(from).toHaveBeenCalledWith('commerce_benchmark_sets');
     expect(eq).toHaveBeenCalledWith('set_id', '10316');
+  });
+
+  test('dry-runs production commerce copy without touching target tables', async () => {
+    const productionTables: InMemorySupabaseTables = {
+      articles: [{ slug: 'untouched-production-article' }],
+      commerce_benchmark_sets: [{ set_id: '10316' }],
+      commerce_merchants: [{ id: 'merchant-production', slug: 'lego-nl' }],
+      commerce_offer_latest: [{ id: 'latest-production' }],
+      commerce_offer_seeds: [{ id: 'seed-production' }],
+      pricing_daily_set_history: [{ set_id: '10316' }],
+    };
+    const targetTables: InMemorySupabaseTables = {
+      articles: [{ slug: 'untouched-target-article' }],
+      commerce_benchmark_sets: [{ set_id: '75355' }],
+      commerce_merchants: [{ id: 'merchant-target', slug: 'alternate' }],
+      commerce_offer_latest: [{ id: 'latest-target' }],
+      commerce_offer_seeds: [{ id: 'seed-target' }],
+      pricing_daily_set_history: [{ set_id: '75355' }],
+    };
+    const productionClient = createCommerceCopySupabaseClient(productionTables);
+    const targetClient = createCommerceCopySupabaseClient(targetTables);
+
+    const result = await copyCommerceDataFromProduction({
+      createProductionSupabaseClient: () =>
+        productionClient.supabaseClient as never,
+      createTargetSupabaseClient: () => targetClient.supabaseClient as never,
+      dryRun: true,
+      now: () => new Date('2026-05-05T12:00:00.000Z'),
+    });
+
+    expect(result.dryRun).toBe(true);
+    expect(result.tables.commerce_merchants).toEqual({
+      deletedCount: 0,
+      insertedCount: 0,
+      sourceCount: 1,
+      targetBeforeCount: 1,
+    });
+    expect(result.tables.pricing_daily_set_history.sourceCount).toBe(1);
+    expect(targetTables.commerce_merchants).toEqual([
+      { id: 'merchant-target', slug: 'alternate' },
+    ]);
+    expect(targetTables.articles).toEqual([
+      { slug: 'untouched-target-article' },
+    ]);
+    expect(targetClient.operations).toEqual([]);
+  });
+
+  test('copies only commerce tables from production into the target environment', async () => {
+    const productionTables: InMemorySupabaseTables = {
+      articles: [{ slug: 'production-article' }],
+      commerce_benchmark_sets: [{ set_id: '10316' }],
+      commerce_merchants: [{ id: 'merchant-production', slug: 'lego-nl' }],
+      commerce_offer_latest: [{ id: 'latest-production' }],
+      commerce_offer_seeds: [{ id: 'seed-production' }],
+      pricing_daily_set_history: [{ recorded_on: '2026-05-05' }],
+    };
+    const targetTables: InMemorySupabaseTables = {
+      articles: [{ slug: 'target-article' }],
+      commerce_benchmark_sets: [{ set_id: '75355' }],
+      commerce_merchants: [{ id: 'merchant-target', slug: 'alternate' }],
+      commerce_offer_latest: [{ id: 'latest-target' }],
+      commerce_offer_seeds: [{ id: 'seed-target' }],
+      pricing_daily_set_history: [{ recorded_on: '2026-05-04' }],
+    };
+    const productionClient = createCommerceCopySupabaseClient(productionTables);
+    const targetClient = createCommerceCopySupabaseClient(targetTables);
+
+    const result = await copyCommerceDataFromProduction({
+      createProductionSupabaseClient: () =>
+        productionClient.supabaseClient as never,
+      createTargetSupabaseClient: () => targetClient.supabaseClient as never,
+      dryRun: false,
+      now: () => new Date('2026-05-05T12:00:00.000Z'),
+    });
+
+    expect(result.dryRun).toBe(false);
+    expect(result.tables.commerce_offer_latest).toEqual({
+      deletedCount: 1,
+      insertedCount: 1,
+      sourceCount: 1,
+      targetBeforeCount: 1,
+    });
+    expect(targetTables.commerce_merchants).toEqual([
+      { id: 'merchant-production', slug: 'lego-nl' },
+    ]);
+    expect(targetTables.commerce_offer_seeds).toEqual([
+      { id: 'seed-production' },
+    ]);
+    expect(targetTables.pricing_daily_set_history).toEqual([
+      { recorded_on: '2026-05-05' },
+    ]);
+    expect(targetTables.articles).toEqual([{ slug: 'target-article' }]);
+    expect(targetClient.operations).toEqual([
+      'delete:pricing_daily_set_history',
+      'delete:commerce_offer_latest',
+      'delete:commerce_offer_seeds',
+      'delete:commerce_benchmark_sets',
+      'delete:commerce_merchants',
+      'insert:commerce_merchants:1',
+      'insert:commerce_benchmark_sets:1',
+      'insert:commerce_offer_seeds:1',
+      'insert:commerce_offer_latest:1',
+      'insert:pricing_daily_set_history:1',
+    ]);
   });
 });

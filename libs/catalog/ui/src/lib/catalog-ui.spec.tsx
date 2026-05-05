@@ -221,7 +221,39 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('.cardCompactPrimaryAction span {');
     expect(css).toContain('stroke: currentColor;');
     expect(css).toContain('text-decoration: none;');
+    expect(css).toContain('.railActionLink,');
+    expect(css).toContain('background: transparent;');
+    expect(css).toContain('border-radius: var(--lego-radius-pill);');
+    expect(css).toContain(
+      'background: color-mix(in srgb, var(--lego-accent) 9%, transparent);',
+    );
+    expect(css).toContain('.sectionHeaderAction');
+    expect(css).toContain('text-decoration: underline;');
     expect(source).toContain('tone="card"');
+  });
+
+  it('keeps offer comparison card hover close to regular set card hover', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const offerHoverRule =
+      css.match(/\.offerRailCardLink:hover \.offerRailCard \{[^}]+\}/u)?.[0] ??
+      '';
+    const offerCardRule = css.match(/\.offerRailCard \{[^}]+\}/u)?.[0] ?? '';
+    const bestDealRule =
+      css.match(/\.offerRailCard\[data-best='true'\] \{[^}]+\}/u)?.[0] ?? '';
+    const bestDealHoverRule =
+      css.match(
+        /\.offerRailCardLink:hover \.offerRailCard\[data-best='true'\],[\s\S]*?\.offerRailCardLink:focus-visible \.offerRailCard\[data-best='true'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(offerCardRule).not.toContain('transform');
+    expect(bestDealRule).not.toContain('translateY');
+    expect(offerHoverRule).not.toContain('translateY');
+    expect(offerHoverRule).not.toContain('0 0.55rem');
+    expect(offerHoverRule).toContain('box-shadow: inset');
+    expect(bestDealHoverRule).toContain('box-shadow: inset');
   });
 
   it('anchors optional visual actions inside the image wrapper with bottom-right padding', () => {
@@ -374,7 +406,7 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('data-brickhunt-event="catalog_set_click"');
   });
 
-  it('only uses the affiliate CTA when commerce mode is explicitly enabled', () => {
+  it('keeps commerce rail cards on the internal set-detail CTA', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         ctaMode="commerce"
@@ -412,12 +444,13 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Koop nu');
-    expect(markup).toContain('aria-label="Koop nu"');
-    expect(markup).toContain('href="https://merchant.example/rivendell"');
-    expect(markup).toContain('target="_blank"');
-    expect(markup).toContain('rel="noopener noreferrer"');
-    expect(markup).toContain('data-brickhunt-event="offer_click"');
+    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('aria-label="Bekijk set"');
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).not.toContain('Koop nu');
+    expect(markup).not.toContain('href="https://merchant.example/rivendell"');
+    expect(markup).not.toContain('target="_blank"');
+    expect(markup).not.toContain('data-brickhunt-event="offer_click"');
   });
 
   it('can hide a redundant theme badge when the surrounding collection already provides the theme context', () => {
@@ -717,8 +750,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('data-wrap="default"');
     expect(markup).toContain('€30 goedkoper dan de rest');
     expect(markup).toContain('€30 duurder');
-    expect(markup).toContain('Ga naar beste deal');
-    expect(markup).toContain('Bekijk alternatief');
+    expect(markup).toContain('href="/sets/rivendell-10316"');
+    expect(markup).toContain('Bekijk set');
     expect(markup).not.toContain('Sterke deal');
     expect(markup.indexOf('Vergelijk winkels')).toBeLessThan(
       markup.indexOf('Prijs in het kort'),
@@ -1212,12 +1245,12 @@ describe('CatalogSetCard', () => {
         ariaLabel="Verfijn ontdekken"
         items={[
           {
-            href: '/discover',
+            href: '/themes',
             isActive: true,
             label: 'Alles',
           },
           {
-            href: '/discover?filter=best-deals',
+            href: '/deals',
             label: 'Beste deals',
           },
         ]}
@@ -1225,10 +1258,10 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('aria-label="Verfijn ontdekken"');
-    expect(markup).toContain('href="/discover"');
+    expect(markup).toContain('href="/themes"');
     expect(markup).toContain('aria-current="page"');
     expect(markup).toContain('Beste deals');
-    expect(markup).toContain('href="/discover?filter=best-deals"');
+    expect(markup).toContain('href="/deals"');
   });
 });
 

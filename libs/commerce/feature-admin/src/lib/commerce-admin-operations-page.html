@@ -38,6 +38,84 @@
     </select>
   </div>
 
+  <div class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack admin-stack--tight">
+        <p class="admin-eyebrow">Staging data</p>
+        <h3>Sync commerce from production</h3>
+        <p class="admin-muted">
+          Kopieert alleen commerce- en prijstabellen naar deze omgeving.
+          Artikelen, previews, feeds en gebruikersdata worden niet aangepast.
+          Draai eerst een dry-run.
+        </p>
+      </div>
+    </div>
+
+    <div class="admin-input-with-action">
+      <input
+        [ngModel]="productionSyncSecret()"
+        (ngModelChange)="updateProductionSyncSecret($event)"
+        autocomplete="off"
+        class="admin-input"
+        placeholder="Admin secret"
+        type="password"
+      />
+
+      <div class="admin-input-actions">
+        <button
+          class="admin-button admin-button--subtle"
+          type="button"
+          [disabled]="isProductionSyncRunning()"
+          (click)="syncCommerceFromProduction(true)"
+        >
+          Dry-run
+        </button>
+        <button
+          class="admin-button admin-button--primary"
+          type="button"
+          [disabled]="isProductionSyncRunning()"
+          (click)="syncCommerceFromProduction(false)"
+        >
+          Sync commerce from production
+        </button>
+      </div>
+    </div>
+
+    @if (productionSyncMessage()) {
+    <p class="admin-muted">{{ productionSyncMessage() }}</p>
+    } @if (productionSyncResult(); as syncResult) {
+    <div class="admin-table-shell">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Tabel</th>
+            <th>Productie</th>
+            <th>Voor sync</th>
+            <th>Verwijderd</th>
+            <th>Geplaatst</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tableName of getProductionSyncTableNames(); track tableName) {
+          <tr>
+            <td>
+              <strong>{{ tableName }}</strong>
+              @if (syncResult.dryRun) {
+              <span class="admin-count-pill">Dry-run</span>
+              }
+            </td>
+            <td>{{ syncResult.tables[tableName].sourceCount }}</td>
+            <td>{{ syncResult.tables[tableName].targetBeforeCount }}</td>
+            <td>{{ syncResult.tables[tableName].deletedCount }}</td>
+            <td>{{ syncResult.tables[tableName].insertedCount }}</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </div>
+
   <div class="admin-table-shell">
     <table class="admin-table">
       <thead>

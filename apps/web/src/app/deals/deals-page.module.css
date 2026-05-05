@@ -10,19 +10,9 @@
   padding-inline: var(--lego-section-inline-padding, var(--lego-space-3));
 }
 
-.introActions {
-  display: flex;
-}
-
-.introMeta,
-.sectionMeta {
+.introMeta {
   color: var(--lego-text-muted);
   font-size: var(--lego-text-role-meta-size);
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
-}
-
-.featuredSection,
-.dealSection,
-.emptyState {
 }

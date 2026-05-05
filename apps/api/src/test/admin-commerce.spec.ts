@@ -33,8 +33,12 @@ import {
 
 async function createAdminCommerceServer({
   commerceService,
+  getExpectedAdminSecret,
+  isProductionEnvironment,
 }: {
   commerceService?: AdminCommerceService;
+  getExpectedAdminSecret?: () => string;
+  isProductionEnvironment?: () => boolean;
 } = {}) {
   const nextCommerceService: AdminCommerceService = commerceService ?? {
     importAlternateFeed: vi.fn(async () => ({
@@ -52,6 +56,44 @@ async function createAdminCommerceServer({
       totalRowCount: 1,
       upsertedLatestCount: 1,
       upsertedSeedCount: 1,
+    })),
+    copyProductionCommerce: vi.fn(async ({ dryRun }: { dryRun: boolean }) => ({
+      dryRun,
+      durationMs: 12,
+      startedAt: '2026-05-05T12:00:00.000Z',
+      status: 'ok' as const,
+      tables: {
+        commerce_merchants: {
+          deletedCount: 0,
+          insertedCount: 0,
+          sourceCount: 2,
+          targetBeforeCount: 1,
+        },
+        commerce_benchmark_sets: {
+          deletedCount: 0,
+          insertedCount: 0,
+          sourceCount: 3,
+          targetBeforeCount: 1,
+        },
+        commerce_offer_seeds: {
+          deletedCount: 0,
+          insertedCount: 0,
+          sourceCount: 5,
+          targetBeforeCount: 2,
+        },
+        commerce_offer_latest: {
+          deletedCount: 0,
+          insertedCount: 0,
+          sourceCount: 5,
+          targetBeforeCount: 2,
+        },
+        pricing_daily_set_history: {
+          deletedCount: 0,
+          insertedCount: 0,
+          sourceCount: 8,
+          targetBeforeCount: 4,
+        },
+      },
     })),
     listBenchmarkSets: vi.fn(async () => []),
     createBenchmarkSet: vi.fn(
@@ -162,6 +204,8 @@ async function createAdminCommerceServer({
   await server.register(
     createAdminCommerceRoutes({
       commerceService: nextCommerceService,
+      getExpectedAdminSecret,
+      isProductionEnvironment,
     }),
   );
 
@@ -189,6 +233,7 @@ describe('admin commerce routes', () => {
       commerceService: {
         listBenchmarkSets: vi.fn(async () => []),
         importAlternateFeed: vi.fn(),
+        copyProductionCommerce: vi.fn(),
         createBenchmarkSet: vi.fn(),
         deleteBenchmarkSet: vi.fn(),
         listCoverageQueue: vi.fn(async () => []),
@@ -295,6 +340,115 @@ describe('admin commerce routes', () => {
       staleCount: 0,
       invalidCount: 0,
     });
+
+    await server.close();
+  });
+
+  test('dry-runs production commerce sync with summary counts', async () => {
+    const { commerceService, server } = await createAdminCommerceServer({
+      getExpectedAdminSecret: () => 'sync-secret',
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/production-sync',
+      headers: {
+        'x-admin-secret': 'sync-secret',
+      },
+      payload: {
+        dryRun: true,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(commerceService.copyProductionCommerce).toHaveBeenCalledWith({
+      dryRun: true,
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        dryRun: true,
+        tables: expect.objectContaining({
+          commerce_offer_latest: expect.objectContaining({
+            sourceCount: 5,
+            targetBeforeCount: 2,
+          }),
+        }),
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('runs production commerce sync only with a valid admin secret', async () => {
+    const { commerceService, server } = await createAdminCommerceServer({
+      getExpectedAdminSecret: () => 'sync-secret',
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/production-sync',
+      headers: {
+        'x-admin-secret': 'wrong-secret',
+      },
+      payload: {
+        dryRun: false,
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(commerceService.copyProductionCommerce).not.toHaveBeenCalled();
+
+    await server.close();
+  });
+
+  test('runs production commerce sync in write mode after explicit request', async () => {
+    const { commerceService, server } = await createAdminCommerceServer({
+      getExpectedAdminSecret: () => 'sync-secret',
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/production-sync',
+      headers: {
+        'x-admin-secret': 'sync-secret',
+      },
+      payload: {
+        dryRun: false,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(commerceService.copyProductionCommerce).toHaveBeenCalledWith({
+      dryRun: false,
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        dryRun: false,
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('refuses production commerce sync in production', async () => {
+    const { commerceService, server } = await createAdminCommerceServer({
+      getExpectedAdminSecret: () => 'sync-secret',
+      isProductionEnvironment: () => true,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/production-sync',
+      headers: {
+        'x-admin-secret': 'sync-secret',
+      },
+      payload: {
+        dryRun: false,
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(commerceService.copyProductionCommerce).not.toHaveBeenCalled();
 
     await server.close();
   });

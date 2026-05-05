@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import {
   CatalogSectionShell,
+  CatalogRailActionLink,
   CatalogSetCard,
   type CatalogSetCardCtaMode,
   CatalogSetCardCollection,
@@ -20,26 +21,38 @@ export interface CatalogFeatureSetListItem extends CatalogHomepageSetCard {
 }
 
 export function CatalogFeatureSetList({
+  actionHref,
+  actionLabel,
   description = 'Grote sets die je plank én budget bepalen.',
 
   eyebrow = 'Pronkstukken',
   layout = 'rail',
   sectionId = 'featured-sets',
   setCards,
+  showSignal = true,
   signalText,
   tone = 'muted',
   title = 'Torens, walkers, supercars',
 }: {
+  actionHref?: string;
+  actionLabel?: string;
   description?: string;
   eyebrow?: string;
   layout?: 'grid' | 'rail';
   sectionId?: string;
   setCards?: readonly CatalogFeatureSetListItem[];
+  showSignal?: boolean;
   signalText?: string;
   tone?: 'default' | 'muted';
   title?: string;
 }) {
   const homepageSets: readonly CatalogFeatureSetListItem[] = setCards ?? [];
+  const actionLink =
+    actionHref && actionLabel ? (
+      <CatalogRailActionLink className={styles.railAction} href={actionHref}>
+        {actionLabel}
+      </CatalogRailActionLink>
+    ) : undefined;
   const reviewedSetCount = homepageSets.filter(
     (catalogHomepageSetCard) => catalogHomepageSetCard.priceContext,
   ).length;
@@ -52,14 +65,16 @@ export function CatalogFeatureSetList({
     headingClassName: styles.header,
     id: sectionId,
     padding: 'default' as const,
-    signal:
-      signalText ??
-      `${homepageSets.length} sets die meteen de kamer pakken${
-        reviewedSetCount ? ` · ${reviewedSetCount} met nagekeken prijzen` : ''
-      }`,
+    signal: showSignal
+      ? (signalText ??
+        `${homepageSets.length} sets die meteen de kamer pakken${
+          reviewedSetCount ? ` · ${reviewedSetCount} met nagekeken prijzen` : ''
+        }`)
+      : undefined,
     spacing: 'relaxed' as const,
     title,
     tone,
+    action: actionLink,
   };
 
   return layout === 'grid' ? (

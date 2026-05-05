@@ -34,6 +34,30 @@ describe('CatalogSectionHeader', () => {
     expect(markup).toContain('3 sets met nagekeken prijzen');
     expect(markup).toContain('Open volledig thema');
   });
+
+  it('renders a rail action inside the title row before aside controls', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSectionHeader
+        action={<a href="/deals">Bekijk alle deals</a>}
+        description="Sets die nu sneller beslissen."
+        eyebrow="Deals"
+        title="Beste deals nu"
+        utility={<button type="button">Volgende rail</button>}
+      />,
+    );
+
+    expect(markup).toContain('sectionHeaderTitleRow');
+    expect(markup).toContain('sectionHeaderAction');
+    expect(markup.indexOf('Beste deals nu')).toBeLessThan(
+      markup.indexOf('Bekijk alle deals'),
+    );
+    expect(markup.indexOf('Bekijk alle deals')).toBeLessThan(
+      markup.indexOf('Sets die nu sneller beslissen.'),
+    );
+    expect(markup.indexOf('Sets die nu sneller beslissen.')).toBeLessThan(
+      markup.indexOf('Volgende rail'),
+    );
+  });
 });
 
 describe('CatalogSectionShell', () => {
@@ -94,7 +118,7 @@ describe('CatalogSplitIntroPanel', () => {
   it('renders a split intro with primary framing and a secondary route', () => {
     const markup = renderToStaticMarkup(
       <CatalogSplitIntroPanel
-        actionHref="/discover"
+        actionHref="/themes"
         actionLabel="Bekijk sets"
         primary={{
           description: 'Begin bij sets die je echt wilt blijven bekijken.',
@@ -185,12 +209,12 @@ describe('CatalogQuickFilterBar', () => {
         ariaLabel="Verfijn ontdekken"
         items={[
           {
-            href: '/discover',
+            href: '/themes',
             isActive: true,
             label: 'Alles',
           },
           {
-            href: '/discover?filter=best-deals',
+            href: '/deals',
             label: 'Beste deals',
           },
         ]}

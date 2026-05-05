@@ -2674,6 +2674,179 @@ describe('editorial agent draft generation', () => {
     expect(result.mdx).not.toContain('Wacht op betere beelden');
   });
 
+  it('writes Architecture 21066 pre-order announcements as announcement copy', () => {
+    const architectureSet = createPrimarySet({
+      id: '21066',
+      name: 'Architecture 21066',
+      setNumber: '21066',
+      slug: 'architecture-21066',
+      theme: 'Architecture',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          dateSignals: ['1 juni 2026'],
+          keywords: ['onthuld', 'nu te pre-orderen', 'op voorraad'],
+          prices: [],
+          setNumbers: ['21066'],
+          themes: ['Architecture'],
+        }),
+        facts: createFacts({
+          keyPoints: [
+            'The set has a black apple-shaped background and a skyline with the Empire State Building, One World Trade Center and Brooklyn Bridge.',
+            'The model has 1,465 pieces and measures 29 cm high, 28 cm wide and 12 cm deep.',
+          ],
+          keywords: ['onthuld', 'nu te pre-orderen'],
+          releaseDate: '1 juni 2026',
+          setNames: ['Architecture 21066'],
+          setNumbers: ['21066'],
+          summary:
+            'LEGO Architecture 21066 is onthuld, verschijnt op 1 juni 2026 en is nu te pre-orderen.',
+          theme: 'Architecture',
+          title:
+            'LEGO Architecture 21066 onthuld: verschijnt op 1 juni 2026 en nu te pre-orderen',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [architectureSet],
+        }),
+        primarySet: architectureSet,
+        relatedCandidates: [],
+        source: createSource({
+          description:
+            'The new LEGO Architecture set has a black apple-shaped background. The skyline includes the Empire State Building, One World Trade Center and Brooklyn Bridge. It has 1,465 pieces and measures 29 cm high, 28 cm wide and 12 cm deep.',
+          title:
+            'LEGO Architecture 21066 onthuld: verschijnt op 1 juni 2026 en nu te pre-orderen',
+        }),
+      }),
+    );
+
+    expect(result.mdx).toContain('## Wat is er aangekondigd?');
+    expect(result.mdx).toContain('verschijnt op 1 juni 2026');
+    expect(result.mdx).toContain('nu te pre-orderen');
+    expect(result.mdx).toMatch(
+      /zwarte appelvormige achtergrond|Empire State Building|1\.465 stenen|29 cm hoog/u,
+    );
+    expect(result.mdx).not.toContain(
+      'Het draait om vorm, detail en de plek die hij straks op de plank krijgt.\n\n## Wat is er aangekondigd?',
+    );
+    expect(result.mdx).not.toContain('weer te krijgen');
+    expect(result.mdx).not.toContain('nu kopen');
+    expect(result.mdx).not.toContain('beschikbaarheidscheck');
+    expect(result.mdx).not.toContain('weer op voorraad');
+    expect(result.mdx).not.toContain('## Wanneer kopen?');
+  });
+
+  it('uses concrete source details in single-set announcement copy', () => {
+    const flowerSet = createPrimarySet({
+      id: '10399',
+      name: 'Pretty Pink Flower Bouquet',
+      setNumber: '10399',
+      slug: 'pretty-pink-flower-bouquet-10399',
+      theme: 'Botanicals',
+    });
+    const result = generateEditorialMdxDraft(
+      createInput({
+        detected: createDetected({
+          dateSignals: ['1 juni 2026'],
+          keywords: ['Botanicals', 'onthuld'],
+          prices: [],
+          setNumbers: ['10399'],
+          themes: ['Botanicals'],
+        }),
+        facts: createFacts({
+          keyPoints: [
+            'De set heeft een appelvormige achtergrond achter het boeket.',
+          ],
+          releaseDate: '1 juni 2026',
+          setNames: ['Pretty Pink Flower Bouquet'],
+          setNumbers: ['10399'],
+          summary:
+            'Pretty Pink Flower Bouquet is onthuld als nieuwe LEGO Botanicals-set.',
+          theme: 'Botanicals',
+          title: 'Pretty Pink Flower Bouquet onthuld',
+        }),
+        matching: createMatching({
+          articleType: 'single_set_news',
+          matchedSets: [flowerSet],
+        }),
+        primarySet: flowerSet,
+        relatedCandidates: [],
+        source: createSource({
+          description:
+            'De set heeft een appelvormige achtergrond achter het boeket. Ook zitten er roze bloemen en groene bladeren in.',
+          title: 'Pretty Pink Flower Bouquet onthuld',
+        }),
+      }),
+    );
+
+    expect(result.mdx).toContain('## Wat is er aangekondigd?');
+    expect(result.mdx).toContain('appelvormige achtergrond');
+    expect(result.mdx).not.toContain(
+      'Het draait om vorm, detail en de plek die hij straks op de plank krijgt.\n\n## Wat is er aangekondigd?',
+    );
+  });
+
+  it('varies concrete source details between similar articles', () => {
+    const cases = [
+      {
+        detail: 'De set heeft een appelvormige achtergrond achter het boeket.',
+        name: 'Pretty Pink Flower Bouquet',
+        setNumber: '10399',
+      },
+      {
+        detail: 'De set komt met een bouwbare vaas en drie losse bloemen.',
+        name: 'Spring Table Bouquet',
+        setNumber: '10400',
+      },
+    ].map(({ detail, name, setNumber }) => {
+      const primarySet = createPrimarySet({
+        id: setNumber,
+        name,
+        setNumber,
+        slug: `${setNumber}-${name.toLowerCase().replace(/\s+/gu, '-')}`,
+        theme: 'Botanicals',
+      });
+
+      return generateEditorialMdxDraft(
+        createInput({
+          detected: createDetected({
+            dateSignals: ['1 juni 2026'],
+            keywords: ['Botanicals', 'onthuld'],
+            prices: [],
+            setNumbers: [setNumber],
+            themes: ['Botanicals'],
+          }),
+          facts: createFacts({
+            keyPoints: [detail],
+            releaseDate: '1 juni 2026',
+            setNames: [name],
+            setNumbers: [setNumber],
+            summary: `${name} is onthuld als nieuwe LEGO Botanicals-set.`,
+            theme: 'Botanicals',
+            title: `${name} onthuld`,
+          }),
+          matching: createMatching({
+            articleType: 'single_set_news',
+            matchedSets: [primarySet],
+          }),
+          primarySet,
+          relatedCandidates: [],
+          source: createSource({
+            description: detail,
+            title: `${name} onthuld`,
+          }),
+        }),
+      ).mdx;
+    });
+
+    expect(cases[0]).toContain('appelvormige achtergrond');
+    expect(cases[1]).toContain('bouwbare vaas');
+    expect(cases[0]).not.toBe(cases[1]);
+    expect(cases[0]).not.toContain('bouwbare vaas');
+    expect(cases[1]).not.toContain('appelvormige achtergrond');
+  });
+
   it('skips FeaturedSet for release roundups without a primary set', () => {
     const result = generateEditorialMdxDraft(
       createInput({

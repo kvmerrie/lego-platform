@@ -144,6 +144,7 @@ describe('Catalog commerce UI', () => {
             stockLabel: 'Op voorraad',
           },
         ]}
+        setDetailHref="/sets/ultimate-collectors-series-at-at-75313"
         summaryLabel="2 winkels nagekeken · 2 apr om 09:00"
       />,
     );
@@ -157,8 +158,12 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('data-wrap="default"');
     expect(markup).toContain('€30,04 goedkoper dan de rest');
     expect(markup).toContain('€30,04 duurder');
-    expect(markup).toContain('Ga naar beste deal');
-    expect(markup).toContain('Bekijk alternatief');
+    expect(markup).toContain(
+      'href="/sets/ultimate-collectors-series-at-at-75313"',
+    );
+    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('data-best="true"');
+    expect(markup).not.toContain('href="https://example.com/atat-bol"');
     expect(markup).toContain('Vergelijk alle 2 winkels');
   });
 

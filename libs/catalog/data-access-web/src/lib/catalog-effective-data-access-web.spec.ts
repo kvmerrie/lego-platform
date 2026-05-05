@@ -17,9 +17,11 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   type CatalogDiscoverySignal,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
+  getCatalogPartnerOfferRailDiagnostics,
   type CatalogResolvedOffer,
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
+  listCatalogCurrentOfferSummaries,
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlug,
   listCanonicalCatalogSets,
@@ -51,6 +53,7 @@ import {
   listHomepageThemeSpotlightItems,
   rankCatalogBestDealSetCards,
   rankCatalogComparisonDiscoverySetCards,
+  rankCatalogPartnerOfferSetCards,
   rankCatalogNewInReleaseYearSetCards,
   rankCatalogNowInterestingSetCards,
   rankCatalogRecentPriceChangeSetCards,
@@ -58,6 +61,7 @@ import {
   rankCatalogSimilarSetCards,
   resetWebCatalogSupabaseClientsForTests,
   resolveCatalogCurrentOffers,
+  selectCatalogFirstCommerceRailSetCards,
   selectCatalogThemeOfWeekRail,
   resolveCatalogSetDetailOffers,
   summarizeCatalogCurrentOffers,
@@ -152,6 +156,10 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         column: keyof Row & string;
         ascending: boolean;
       }
+    | {
+        type: 'limit';
+        count: number;
+      }
   > = [];
 
   const builder = {
@@ -169,6 +177,14 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         column,
         type: 'in',
         values,
+      });
+
+      return builder;
+    },
+    limit(count: number) {
+      filters.push({
+        count,
+        type: 'limit',
       });
 
       return builder;
@@ -206,6 +222,10 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
             return resultRows.filter((row) =>
               filter.values.includes(row[filter.column]),
             );
+          }
+
+          if (filter.type === 'limit') {
+            return resultRows.slice(0, filter.count);
           }
 
           const sortedRows = [...resultRows].sort((left, right) => {
@@ -950,6 +970,45 @@ describe('catalog effective data access web', () => {
       '76269',
       '10316',
     ]);
+  });
+
+  test('rotates homepage follow discovery cards when scores tie', async () => {
+    const ids = ['42143', '76269', '10316', '21355'];
+    const listCanonicalCatalogSetsFn = async () =>
+      ids.map((setId) =>
+        createCanonicalCatalogSet({
+          name: `Display Set ${setId}`,
+          pieceCount: 2000,
+          releaseYear: 2024,
+          setId,
+          slug: `display-set-${setId}`,
+          sourceSetNumber: `${setId}-1`,
+          primaryTheme: 'Icons',
+        }),
+      );
+    const getCatalogDiscoverySignalFn = () =>
+      createCatalogDiscoverySignal({
+        bestPriceMinor: 19999,
+        merchantCount: 3,
+        priceSpreadMinor: 3000,
+      });
+
+    const firstSeedResult = await listHomepageSetCards({
+      getCatalogDiscoverySignalFn,
+      limit: 2,
+      listCanonicalCatalogSetsFn,
+      rotationSeed: 1,
+    });
+    const secondSeedResult = await listHomepageSetCards({
+      getCatalogDiscoverySignalFn,
+      limit: 2,
+      listCanonicalCatalogSetsFn,
+      rotationSeed: 2,
+    });
+
+    expect(
+      firstSeedResult.map((catalogSetCard) => catalogSetCard.id),
+    ).not.toEqual(secondSeedResult.map((catalogSetCard) => catalogSetCard.id));
   });
 
   test('searches canonical set cards without snapshot fallback', async () => {
@@ -1763,6 +1822,711 @@ describe('catalog effective data access web', () => {
     }).map((catalogSetCard) => catalogSetCard.id);
 
     expect(firstRefresh).not.toEqual(secondRefresh);
+  });
+
+  test('treats a recent price drop as a best-deal signal without requiring reference discount', () => {
+    const result = rankCatalogBestDealSetCards({
+      getCatalogDiscoverySignalFn: (setId) =>
+        setId === '43247'
+          ? createCatalogDiscoverySignal({
+              merchantCount: 2,
+              priceSpreadMinor: 1200,
+              recentReferencePriceChangeMinor: -900,
+              recentReferencePriceChangedAt: new Date(
+                Date.now() - 3 * 60 * 60 * 1000,
+              ).toISOString(),
+              referenceDeltaMinor: undefined,
+            })
+          : undefined,
+      limit: 6,
+      setCards: [
+        {
+          id: '43247',
+          imageUrl: undefined,
+          name: 'Young Simba the Lion King',
+          pieces: 1445,
+          releaseYear: 2024,
+          slug: 'young-simba-the-lion-king-43247',
+          theme: 'Disney',
+        },
+      ],
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '43247',
+    ]);
+  });
+
+  test('ranks partner offer rails from valid priced affiliate offers', () => {
+    const setCards = [
+      {
+        id: '10316',
+        imageUrl: undefined,
+        name: 'Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'rivendell-10316',
+        theme: 'Icons',
+      },
+      {
+        id: '76269',
+        imageUrl: undefined,
+        name: 'Avengers Tower',
+        pieces: 5201,
+        releaseYear: 2023,
+        slug: 'avengers-tower-76269',
+        theme: 'Marvel',
+      },
+      {
+        id: '42172',
+        imageUrl: undefined,
+        name: 'McLaren P1',
+        pieces: 3893,
+        releaseYear: 2024,
+        slug: 'mclaren-p1-42172',
+        theme: 'Technic',
+      },
+      {
+        id: '31208',
+        imageUrl: undefined,
+        name: 'Hokusai - The Great Wave',
+        pieces: 1810,
+        releaseYear: 2023,
+        slug: 'hokusai-the-great-wave-31208',
+        theme: 'Art',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '10316',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 42999,
+            setId: '10316',
+            url: 'https://partner.example/rivendell',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              priceCents: 42999,
+              setId: '10316',
+              url: 'https://partner.example/rivendell',
+            }),
+          ],
+          setId: '10316',
+        },
+      ],
+      [
+        '76269',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'out_of_stock',
+            priceCents: 47999,
+            setId: '76269',
+            url: 'https://partner.example/avengers',
+          }),
+          offers: [],
+          setId: '76269',
+        },
+      ],
+      [
+        '42172',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 0,
+            setId: '42172',
+            url: 'https://partner.example/mclaren',
+          }),
+          offers: [],
+          setId: '42172',
+        },
+      ],
+      [
+        '31208',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 6999,
+            setId: '31208',
+            url: '',
+          }),
+          offers: [],
+          setId: '31208',
+        },
+      ],
+    ]);
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map([
+        [
+          '10316',
+          createCatalogDiscoverySignal({
+            priceSpreadMinor: 8000,
+            referenceDeltaMinor: -5000,
+          }),
+        ],
+      ]),
+      currentOfferSummaryBySetId,
+      setCards,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10316',
+    ]);
+  });
+
+  test('excludes already rendered sets from the broader partner offer rail', () => {
+    const setCards = [
+      {
+        id: '10316',
+        imageUrl: undefined,
+        name: 'Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'rivendell-10316',
+        theme: 'Icons',
+      },
+      {
+        id: '76269',
+        imageUrl: undefined,
+        name: 'Avengers Tower',
+        pieces: 5201,
+        releaseYear: 2023,
+        slug: 'avengers-tower-76269',
+        theme: 'Marvel',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map(
+      setCards.map((setCard) => [
+        setCard.id,
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 9999,
+            setId: setCard.id,
+            url: `https://partner.example/${setCard.id}`,
+          }),
+          offers: [],
+          setId: setCard.id,
+        },
+      ]),
+    );
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map(),
+      currentOfferSummaryBySetId,
+      excludedSetIds: ['10316'],
+      setCards,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '76269',
+    ]);
+  });
+
+  test('includes buyable sets in the good-priced commerce rail without requiring a discount', () => {
+    const setCards = [
+      {
+        id: '43247',
+        imageUrl: undefined,
+        name: 'Young Simba the Lion King',
+        pieces: 1445,
+        releaseYear: 2024,
+        slug: 'young-simba-the-lion-king-43247',
+        theme: 'Disney',
+      },
+      {
+        id: '10316',
+        imageUrl: undefined,
+        name: 'Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'rivendell-10316',
+        theme: 'Icons',
+      },
+      {
+        id: '75355',
+        imageUrl: undefined,
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '43247',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 9999,
+            setId: '43247',
+            url: 'https://partner.example/simba',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              merchantName: 'Goodbricks',
+              priceCents: 9999,
+              setId: '43247',
+              url: 'https://partner.example/simba',
+            }),
+            createCatalogOffer({
+              availability: 'in_stock',
+              merchantName: 'MediaMarkt',
+              priceCents: 10999,
+              setId: '43247',
+              url: 'https://partner.example/simba-mediamarkt',
+            }),
+          ],
+          setId: '43247',
+        },
+      ],
+      [
+        '10316',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 46999,
+            setId: '10316',
+            url: 'https://partner.example/rivendell',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              priceCents: 46999,
+              setId: '10316',
+              url: 'https://partner.example/rivendell',
+            }),
+          ],
+          setId: '10316',
+        },
+      ],
+      [
+        '75355',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'out_of_stock',
+            priceCents: 19999,
+            setId: '75355',
+            url: 'https://partner.example/x-wing',
+          }),
+          offers: [],
+          setId: '75355',
+        },
+      ],
+    ]);
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map(),
+      currentOfferSummaryBySetId,
+      limit: 6,
+      setCards,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toContain(
+      '43247',
+    );
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '43247',
+      '10316',
+    ]);
+  });
+
+  test('keeps homepage commerce rails non-empty with production-like offer data', () => {
+    const setCards = [
+      {
+        id: '43247',
+        imageUrl: undefined,
+        name: 'Young Simba the Lion King',
+        pieces: 1445,
+        releaseYear: 2024,
+        slug: 'young-simba-the-lion-king-43247',
+        theme: 'Disney',
+      },
+      {
+        id: '10311',
+        imageUrl: undefined,
+        name: 'Orchid',
+        pieces: 608,
+        releaseYear: 2022,
+        slug: 'orchid-10311',
+        theme: 'Botanicals',
+      },
+      {
+        id: '75446',
+        imageUrl: undefined,
+        name: 'Grogu with Hover Pram',
+        pieces: 1048,
+        releaseYear: 2026,
+        slug: 'grogu-with-hover-pram-75446',
+        theme: 'Star Wars',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '43247',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            merchantName: 'Goodbricks',
+            priceCents: 9999,
+            setId: '43247',
+            url: 'https://id.goodbricks.nl/t/t?a=1849540612&url=43247',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              merchantName: 'Goodbricks',
+              priceCents: 9999,
+              setId: '43247',
+              url: 'https://id.goodbricks.nl/t/t?a=1849540612&url=43247',
+            }),
+          ],
+          setId: '43247',
+        },
+      ],
+      [
+        '10311',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            merchantName: 'MediaMarkt',
+            priceCents: 4299,
+            setId: '10311',
+            url: 'https://pdt.tradedoubler.com/click?a(1)product(23056-1881383)',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              merchantName: 'MediaMarkt',
+              priceCents: 4299,
+              setId: '10311',
+              url: 'https://pdt.tradedoubler.com/click?a(1)product(23056-1881383)',
+            }),
+            createCatalogOffer({
+              availability: 'in_stock',
+              merchantName: 'Top1Toys',
+              priceCents: 4799,
+              setId: '10311',
+              url: 'https://www.top1toys.nl/lego-icons-10311-orchidee',
+            }),
+          ],
+          setId: '10311',
+        },
+      ],
+      [
+        '75446',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            merchantName: 'Coppenswarenhuis',
+            priceCents: 8499,
+            setId: '75446',
+            url: 'https://tc.tradetracker.net/?u=75446',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              merchantName: 'Coppenswarenhuis',
+              priceCents: 8499,
+              setId: '75446',
+              url: 'https://tc.tradetracker.net/?u=75446',
+            }),
+          ],
+          setId: '75446',
+        },
+      ],
+    ]);
+    const discoverySignalBySetId = new Map([
+      [
+        '75446',
+        createCatalogDiscoverySignal({
+          merchantCount: 1,
+          priceSpreadMinor: 0,
+          recentReferencePriceChangeMinor: -600,
+          recentReferencePriceChangedAt: new Date(
+            Date.now() - 4 * 60 * 60 * 1000,
+          ).toISOString(),
+          referenceDeltaMinor: undefined,
+        }),
+      ],
+    ]);
+
+    const bestDeals = rankCatalogBestDealSetCards({
+      getCatalogDiscoverySignalFn: (setId) => discoverySignalBySetId.get(setId),
+      limit: 6,
+      setCards,
+    });
+    const goodPriced = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: discoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      excludedSetIds: bestDeals.map((catalogSetCard) => catalogSetCard.id),
+      limit: 8,
+      setCards,
+    });
+
+    expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '75446',
+    ]);
+    expect(goodPriced.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10311',
+      '43247',
+    ]);
+  });
+
+  test('can rank commerce candidates outside the initial homepage set list', () => {
+    const initialHomepageSetCards = [
+      {
+        id: '75446',
+        imageUrl: undefined,
+        name: 'Grogu with Hover Pram',
+        pieces: 1048,
+        releaseYear: 2026,
+        slug: 'grogu-with-hover-pram-75446',
+        theme: 'Star Wars',
+      },
+    ];
+    const commerceCandidateSetCards = [
+      {
+        id: '43247',
+        imageUrl: undefined,
+        name: 'Young Simba the Lion King',
+        pieces: 1445,
+        releaseYear: 2024,
+        slug: 'young-simba-the-lion-king-43247',
+        theme: 'Disney',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '43247',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 9999,
+            setId: '43247',
+            url: 'https://partner.example/simba',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              priceCents: 9999,
+              setId: '43247',
+              url: 'https://partner.example/simba',
+            }),
+          ],
+          setId: '43247',
+        },
+      ],
+    ]);
+
+    const homepageScopedResult = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map(),
+      currentOfferSummaryBySetId,
+      setCards: initialHomepageSetCards,
+    });
+    const commerceScopedResult = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId: new Map(),
+      currentOfferSummaryBySetId,
+      setCards: commerceCandidateSetCards,
+    });
+
+    expect(homepageScopedResult).toEqual([]);
+    expect(
+      commerceScopedResult.map((catalogSetCard) => catalogSetCard.id),
+    ).toEqual(['43247']);
+  });
+
+  test('fills the first homepage commerce rail to twenty scored candidates', () => {
+    const scoredCommerceCandidateSetCards = Array.from(
+      { length: 20 },
+      (_, index) => ({
+        id: String(43_000 + index),
+        imageUrl: undefined,
+        name: `Buyable set ${index + 1}`,
+        pieces: 1000 + index,
+        releaseYear: 2024,
+        slug: `buyable-set-${43_000 + index}`,
+        theme: 'Disney',
+      }),
+    );
+    const strictDealSetCards = scoredCommerceCandidateSetCards.slice(0, 8);
+
+    const selectedSetCards = selectCatalogFirstCommerceRailSetCards({
+      limit: 20,
+      scoredCommerceCandidateSetCards,
+      strictDealSetCards,
+    });
+
+    expect(selectedSetCards).toHaveLength(20);
+    expect(selectedSetCards.map((setCard) => setCard.id)).toEqual(
+      scoredCommerceCandidateSetCards.map((setCard) => setCard.id),
+    );
+  });
+
+  test('does not duplicate strict deal cards when filling the first commerce rail', () => {
+    const scoredCommerceCandidateSetCards = Array.from(
+      { length: 20 },
+      (_, index) => ({
+        id: String(43_000 + index),
+        imageUrl: undefined,
+        name: `Buyable set ${index + 1}`,
+        pieces: 1000 + index,
+        releaseYear: 2024,
+        slug: `buyable-set-${43_000 + index}`,
+        theme: 'Disney',
+      }),
+    );
+
+    const selectedSetCards = selectCatalogFirstCommerceRailSetCards({
+      limit: 20,
+      scoredCommerceCandidateSetCards,
+      strictDealSetCards: [
+        ...scoredCommerceCandidateSetCards.slice(3, 4),
+        ...scoredCommerceCandidateSetCards.slice(6, 7),
+      ],
+    });
+
+    expect(selectedSetCards).toHaveLength(20);
+    expect(new Set(selectedSetCards.map((setCard) => setCard.id)).size).toBe(
+      20,
+    );
+    expect(selectedSetCards.slice(0, 2).map((setCard) => setCard.id)).toEqual([
+      '43003',
+      '43006',
+    ]);
+  });
+
+  test('explains homepage partner offer rail exclusions with scoring inputs', () => {
+    const setCards = [
+      {
+        id: '43247',
+        imageUrl: undefined,
+        name: 'Young Simba the Lion King',
+        pieces: 1445,
+        releaseYear: 2024,
+        slug: 'young-simba-the-lion-king-43247',
+        theme: 'Disney',
+      },
+      {
+        id: '10311',
+        imageUrl: undefined,
+        name: 'Orchid',
+        pieces: 608,
+        releaseYear: 2022,
+        slug: 'orchid-10311',
+        theme: 'Botanicals',
+      },
+      {
+        id: '75355',
+        imageUrl: undefined,
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '43247',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 9999,
+            setId: '43247',
+            url: 'https://partner.example/simba',
+          }),
+          offers: [
+            createCatalogOffer({
+              availability: 'in_stock',
+              priceCents: 9999,
+              setId: '43247',
+              url: 'https://partner.example/simba',
+            }),
+            createCatalogOffer({
+              availability: 'in_stock',
+              priceCents: 10999,
+              setId: '43247',
+              url: 'https://partner.example/simba-other',
+            }),
+          ],
+          setId: '43247',
+        },
+      ],
+      [
+        '10311',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'in_stock',
+            priceCents: 0,
+            setId: '10311',
+            url: 'https://partner.example/orchid',
+          }),
+          offers: [],
+          setId: '10311',
+        },
+      ],
+      [
+        '75355',
+        {
+          bestOffer: createCatalogOffer({
+            availability: 'out_of_stock',
+            priceCents: 19999,
+            setId: '75355',
+            url: 'https://partner.example/x-wing',
+          }),
+          offers: [],
+          setId: '75355',
+        },
+      ],
+    ]);
+
+    const diagnostics = getCatalogPartnerOfferRailDiagnostics({
+      catalogDiscoverySignalBySetId: new Map([
+        [
+          '43247',
+          createCatalogDiscoverySignal({
+            priceSpreadMinor: 1000,
+            referenceDeltaMinor: -1500,
+          }),
+        ],
+      ]),
+      currentOfferSummaryBySetId,
+      limit: 10,
+      rotationSeed: 1,
+      setCards,
+    });
+
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        discountScore: 10,
+        excludedReason: 'included',
+        finalScore: expect.any(Number),
+        hasDeeplink: true,
+        hasPrice: true,
+        inStock: true,
+        priceSpread: 1000,
+        setId: '43247',
+      }),
+      expect.objectContaining({
+        excludedReason: 'missing_price',
+        hasDeeplink: true,
+        hasPrice: false,
+        setId: '10311',
+      }),
+      expect.objectContaining({
+        excludedReason: 'out_of_stock',
+        hasDeeplink: true,
+        hasPrice: true,
+        inStock: false,
+        setId: '75355',
+      }),
+    ]);
   });
 
   test('ranks the now-interesting rail from fresh movement, coverage and spread', () => {
@@ -3090,7 +3854,7 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
-  test('returns up to six similar sets and stays deterministic when scores tie', () => {
+  test('returns up to twenty similar sets and stays deterministic when scores tie', () => {
     const result = rankCatalogSimilarSetCards({
       currentSetCard: {
         id: '42172',
@@ -3099,28 +3863,52 @@ describe('catalog effective data access web', () => {
         releaseYear: 2024,
         theme: 'Technic',
       },
-      limit: 6,
       referenceBestPriceMinor: 34999,
-      setCards: ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((setId, index) => ({
-        id: setId,
-        imageUrl: undefined,
-        name: `Technic ${setId}`,
-        pieces: 3893,
-        releaseYear: 2024 - (index % 2),
-        slug: `technic-${setId.toLowerCase()}`,
-        theme: 'Technic',
-      })),
+      setCards: [
+        ...Array.from({ length: 22 }, (_, index) => {
+          const setId = `${String(index + 1).padStart(2, '0')}`;
+
+          return {
+            id: setId,
+            imageUrl: undefined,
+            name: `Technic ${setId}`,
+            pieces: 3893,
+            releaseYear: 2024 - (index % 2),
+            slug: `technic-${setId}`,
+            theme: 'Technic',
+          };
+        }),
+        {
+          id: '01',
+          imageUrl: undefined,
+          name: 'Technic 01 duplicate',
+          pieces: 3893,
+          releaseYear: 2024,
+          slug: 'technic-01-duplicate',
+          theme: 'Technic',
+        },
+        {
+          id: '31208',
+          imageUrl: undefined,
+          name: 'Hokusai - The Great Wave',
+          pieces: 1810,
+          releaseYear: 2024,
+          slug: 'hokusai-the-great-wave-31208',
+          theme: 'Art',
+        },
+      ],
     });
 
-    expect(result).toHaveLength(6);
-    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      'A',
-      'C',
-      'E',
-      'G',
-      'B',
-      'D',
-    ]);
+    expect(result).toHaveLength(20);
+    expect(
+      new Set(result.map((catalogSetCard) => catalogSetCard.id)).size,
+    ).toBe(20);
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).not.toContain(
+      '31208',
+    );
+    expect(
+      result.map((catalogSetCard) => catalogSetCard.id).slice(0, 4),
+    ).toEqual(['01', '03', '05', '07']);
   });
 
   test('falls back to the available same-theme set count when a theme is shallow', async () => {
@@ -3549,11 +4337,240 @@ describe('catalog effective data access web', () => {
       },
       setId: '42172',
     });
-    expect(summaries.get('75398')).toEqual({
-      bestOffer: undefined,
-      offers: [],
-      setId: '75398',
+    expect(summaries.has('75398')).toBe(false);
+  });
+
+  test('normalizes real-shaped current offer summary fields from the public API', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            best_offer: {
+              availability: 'in stock',
+              currencyCode: 'EUR',
+              merchant_name: 'Goodbricks',
+              merchant_slug: 'goodbricks',
+              observed_at: '2026-05-05T12:25:54.539Z',
+              priceMinor: 9999,
+              productUrl: 'https://id.goodbricks.nl/t/t?a=1849540612',
+              setNumber: '43247',
+            },
+            offers: [
+              {
+                affiliateDeeplink: 'https://id.goodbricks.nl/t/t?a=1849540612',
+                availability: 'in stock',
+                currencyCode: 'EUR',
+                merchant_name: 'Goodbricks',
+                merchant_slug: 'goodbricks',
+                observed_at: '2026-05-05T12:25:54.539Z',
+                price_minor: 9999,
+                set_id: '43247',
+              },
+            ],
+            setNumber: '43247',
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      fetchImpl,
+      setIds: ['43247'],
     });
+
+    expect(summaries.get('43247')).toMatchObject({
+      bestOffer: {
+        availability: 'in_stock',
+        checkedAt: '2026-05-05T12:25:54.539Z',
+        currency: 'EUR',
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+        priceCents: 9999,
+        setId: '43247',
+        url: 'https://id.goodbricks.nl/t/t?a=1849540612',
+      },
+      setId: '43247',
+    });
+    expect(summaries.get('43247')?.offers).toHaveLength(1);
+  });
+
+  test('matches current offer summaries with canonical set ids', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-05T12:25:54.539Z',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchant: 'other',
+              merchantName: 'Goodbricks',
+              merchantSlug: 'goodbricks',
+              priceCents: 9999,
+              setId: '75459-1',
+              url: 'https://id.goodbricks.nl/t/t?a=1849540612',
+            },
+            offers: [],
+            setId: '75459-1',
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      fetchImpl,
+      setIds: ['75459'],
+    });
+
+    expect(summaries.get('75459')).toMatchObject({
+      bestOffer: {
+        priceCents: 9999,
+        setId: '75459',
+      },
+      setId: '75459',
+    });
+    expect(summaries.has('75459-1')).toBe(false);
+  });
+
+  test('does not count empty placeholder summaries as current offers', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            offers: [],
+            setId: '75459',
+          },
+          {
+            offers: [],
+            setId: '75458',
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      fetchImpl,
+      setIds: ['75459', '75458'],
+    });
+
+    expect(summaries.size).toBe(0);
+  });
+
+  test('loads current offer summaries independently from requested homepage set ids', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/43247-1/1000.jpg',
+          name: 'Young Simba the Lion King',
+          piece_count: 1445,
+          primary_theme_id: 'theme:disney',
+          release_year: 2024,
+          set_id: '43247',
+          slug: 'young-simba-the-lion-king-43247',
+          source: 'rebrickable',
+          source_theme_id: 'rebrickable:608',
+          source_set_number: '43247-1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-05T12:25:54.539Z',
+          offer_seed_id: 'seed-simba',
+          price_minor: 9999,
+          updated_at: '2026-05-05T12:25:54.539Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-05T12:20:54.539Z',
+          offer_seed_id: 'seed-non-catalog',
+          price_minor: 4999,
+          updated_at: '2026-05-05T12:20:54.539Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-simba',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://partner.example/simba',
+          set_id: '43247-1',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-non-catalog',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://partner.example/non-catalog',
+          set_id: '99999',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const summaries = await listCatalogCurrentOfferSummaries({
+      supabaseClient,
+    });
+    const commerceCandidateSetCards = await listCatalogSetCardsByIds({
+      canonicalIds: [...summaries.keys()],
+      listCanonicalCatalogSetsFn: async () => [
+        createCanonicalCatalogSet({
+          name: 'Young Simba the Lion King',
+          primaryTheme: 'Disney',
+          setId: '43247',
+          slug: 'young-simba-the-lion-king-43247',
+          sourceSetNumber: '43247-1',
+        }),
+      ],
+    });
+
+    expect(summaries.get('43247')).toMatchObject({
+      bestOffer: {
+        priceCents: 9999,
+        setId: '43247',
+        url: 'https://partner.example/simba',
+      },
+      setId: '43247',
+    });
+    expect(summaries.get('99999')).toBeDefined();
+    expect(commerceCandidateSetCards.map((setCard) => setCard.id)).toEqual([
+      '43247',
+    ]);
   });
 
   test('uses ISR-friendly API fetch caching when a public catalog route passes revalidateSeconds', async () => {

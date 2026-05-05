@@ -19,6 +19,7 @@ import {
   catalogHomepageDealCandidateIds,
   catalogHomepageFeaturedSetIds,
   catalogThemeOverlays,
+  getCanonicalCatalogSetId,
   getCatalogReleaseYear,
   getCatalogThemeDisplayName,
   getCatalogThemeVisual,
@@ -51,6 +52,7 @@ const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
+const CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT = 300;
 const PRIMARY_CATALOG_MERCHANT_SLUGS = [
   'lego-nl',
   'intertoys',
@@ -171,6 +173,24 @@ export interface CatalogDiscoverySignal {
   referenceDeltaMinor?: number;
 }
 
+export interface CatalogPartnerOfferRailDiagnostic {
+  discountScore: number;
+  excludedReason:
+    | 'excluded_set'
+    | 'included'
+    | 'missing_best_offer'
+    | 'missing_deeplink'
+    | 'missing_price'
+    | 'missing_summary'
+    | 'out_of_stock';
+  finalScore: number;
+  hasDeeplink: boolean;
+  hasPrice: boolean;
+  inStock: boolean;
+  priceSpread: number;
+  setId: string;
+}
+
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
 let webCatalogSupabasePublicClient: SupabaseClient | undefined;
 
@@ -232,6 +252,26 @@ function getCatalogApiBaseUrl(): string {
   return process.env['API_PROXY_TARGET'] ?? getRuntimeBaseUrl('api');
 }
 
+function getCatalogSetIdOfferLookupVariants(
+  setIds: readonly string[],
+): string[] {
+  return [
+    ...new Set(
+      setIds.flatMap((setId) => {
+        const canonicalSetId = getCanonicalCatalogSetId(setId);
+
+        if (!canonicalSetId) {
+          return [];
+        }
+
+        return /^\d{5,6}$/.test(canonicalSetId)
+          ? [setId, canonicalSetId, `${canonicalSetId}-1`]
+          : [setId, canonicalSetId];
+      }),
+    ),
+  ].filter((setId) => setId.length > 0);
+}
+
 interface CatalogDiscoverySignalRecord extends CatalogDiscoverySignal {
   setId: string;
 }
@@ -284,17 +324,233 @@ function isCatalogResolvedOfferRecord(
   );
 }
 
-function isCatalogCurrentOfferSummaryRecord(
+function readCatalogOfferStringField(
+  record: Record<string, unknown>,
+  keys: readonly string[],
+): string | undefined {
+  for (const key of keys) {
+    const value = record[key];
+
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+}
+
+function readCatalogOfferNumberField(
+  record: Record<string, unknown>,
+  keys: readonly string[],
+): number | undefined {
+  for (const key of keys) {
+    const value = record[key];
+
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function normalizeCatalogOfferAvailability(
   value: unknown,
-): value is CatalogCurrentOfferSummaryRecord {
-  return (
-    isObjectRecord(value) &&
-    typeof value['setId'] === 'string' &&
-    Array.isArray(value['offers']) &&
-    value['offers'].every(isCatalogResolvedOfferRecord) &&
-    (typeof value['bestOffer'] === 'undefined' ||
-      isCatalogResolvedOfferRecord(value['bestOffer']))
+  inStockValue: unknown,
+): CatalogResolvedOffer['availability'] {
+  if (inStockValue === true) {
+    return 'in_stock';
+  }
+
+  if (inStockValue === false) {
+    return 'out_of_stock';
+  }
+
+  if (value === 'in_stock' || value === 'out_of_stock' || value === 'unknown') {
+    return value;
+  }
+
+  if (typeof value !== 'string') {
+    return 'unknown';
+  }
+
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (
+    normalizedValue === 'in stock' ||
+    normalizedValue === 'instock' ||
+    normalizedValue === 'op voorraad' ||
+    normalizedValue === 'limited'
+  ) {
+    return 'in_stock';
+  }
+
+  if (
+    normalizedValue === 'out of stock' ||
+    normalizedValue === 'outofstock' ||
+    normalizedValue === 'niet op voorraad' ||
+    normalizedValue === 'preorder'
+  ) {
+    return 'out_of_stock';
+  }
+
+  return 'unknown';
+}
+
+function normalizeCatalogOfferMerchant(
+  value: unknown,
+  merchantSlug?: string,
+): CatalogResolvedOffer['merchant'] {
+  if (
+    value === 'amazon' ||
+    value === 'bol' ||
+    value === 'lego' ||
+    value === 'other'
+  ) {
+    return value;
+  }
+
+  if (merchantSlug) {
+    return getCatalogOfferMerchantFromMerchantSlug(merchantSlug);
+  }
+
+  return 'other';
+}
+
+function normalizeCatalogResolvedOfferRecord(
+  value: unknown,
+  fallbackSetId?: string,
+): CatalogRuntimeOffer | undefined {
+  if (isCatalogResolvedOfferRecord(value)) {
+    const merchantSlug =
+      'merchantSlug' in value && typeof value.merchantSlug === 'string'
+        ? value.merchantSlug
+        : getOfferLookupKey({
+            merchantName: value.merchantName,
+          });
+
+    return {
+      ...value,
+      merchantSlug,
+      setId: getCanonicalCatalogSetId(value.setId),
+    };
+  }
+
+  if (!isObjectRecord(value)) {
+    return undefined;
+  }
+
+  const rawSetId =
+    readCatalogOfferStringField(value, ['setId', 'setNumber', 'set_id']) ??
+    fallbackSetId;
+  const setId = rawSetId ? getCanonicalCatalogSetId(rawSetId) : undefined;
+  const priceCents = readCatalogOfferNumberField(value, [
+    'priceCents',
+    'priceMinor',
+    'price_minor',
+    'currentPriceMinor',
+    'current_price_minor',
+  ]);
+  const url = readCatalogOfferStringField(value, [
+    'url',
+    'productUrl',
+    'product_url',
+    'affiliateDeeplink',
+    'affiliate_deeplink',
+    'deeplink',
+  ]);
+  const currency =
+    readCatalogOfferStringField(value, ['currency', 'currencyCode']) ?? 'EUR';
+  const market = readCatalogOfferStringField(value, ['market']) ?? 'NL';
+  const merchantName =
+    readCatalogOfferStringField(value, ['merchantName', 'merchant_name']) ??
+    'Partner';
+  const merchantSlug = readCatalogOfferStringField(value, [
+    'merchantSlug',
+    'merchant_slug',
+  ]);
+  const checkedAt = readCatalogOfferStringField(value, [
+    'checkedAt',
+    'observedAt',
+    'observed_at',
+    'updatedAt',
+    'updated_at',
+  ]);
+
+  if (
+    !setId ||
+    !url ||
+    !checkedAt ||
+    typeof priceCents !== 'number' ||
+    priceCents <= 0 ||
+    currency !== 'EUR' ||
+    market !== 'NL'
+  ) {
+    return undefined;
+  }
+
+  return {
+    availability: normalizeCatalogOfferAvailability(
+      value['availability'],
+      value['inStock'],
+    ),
+    checkedAt,
+    condition: 'new',
+    currency: 'EUR',
+    market: 'NL',
+    merchant: normalizeCatalogOfferMerchant(value['merchant'], merchantSlug),
+    merchantName,
+    merchantSlug:
+      merchantSlug ??
+      getOfferLookupKey({
+        merchantName,
+      }),
+    priceCents,
+    setId,
+    url,
+  };
+}
+
+function normalizeCatalogCurrentOfferSummaryRecord(
+  value: unknown,
+  fallbackSetId?: string,
+): CatalogCurrentOfferSummaryRecord | undefined {
+  if (!isObjectRecord(value)) {
+    return undefined;
+  }
+
+  const setId = getCanonicalCatalogSetId(
+    readCatalogOfferStringField(value, ['setId', 'setNumber', 'set_id']) ??
+      fallbackSetId ??
+      '',
   );
+
+  if (!setId) {
+    return undefined;
+  }
+
+  const rawOffers = Array.isArray(value['offers']) ? value['offers'] : [];
+  const offers = sortResolvedCatalogOffers(
+    rawOffers.flatMap((rawOffer) => {
+      const normalizedOffer = normalizeCatalogResolvedOfferRecord(
+        rawOffer,
+        setId,
+      );
+
+      return normalizedOffer ? [normalizedOffer] : [];
+    }),
+  ) as CatalogRuntimeOffer[];
+  const bestOffer =
+    normalizeCatalogResolvedOfferRecord(
+      value['bestOffer'] ?? value['best_offer'] ?? value['currentOffer'],
+      setId,
+    ) ?? offers[0];
+
+  return {
+    ...(bestOffer ? { bestOffer } : {}),
+    offers: offers.length ? offers : bestOffer ? [bestOffer] : [],
+    setId,
+  };
 }
 
 function toCanonicalCatalogSetFromRow({
@@ -658,7 +914,7 @@ function toCatalogRuntimeOffer({
     merchantName: merchant.name,
     merchantSlug: merchant.slug,
     priceCents: latestOffer.price_minor,
-    setId: offerSeed.set_id,
+    setId: getCanonicalCatalogSetId(offerSeed.set_id),
     url: offerSeed.product_url,
   };
 }
@@ -967,11 +1223,30 @@ function getCatalogBestDealDiscoveryScore(
     catalogDiscoverySignal.priceSpreadMinor / 180,
     45,
   );
+  const recentDropScore =
+    typeof catalogDiscoverySignal.recentReferencePriceChangeMinor ===
+      'number' &&
+    catalogDiscoverySignal.recentReferencePriceChangeMinor < 0 &&
+    getCatalogSignalAgeHours(
+      catalogDiscoverySignal.recentReferencePriceChangedAt,
+    ) <= 48
+      ? Math.min(
+          Math.abs(catalogDiscoverySignal.recentReferencePriceChangeMinor) /
+            120,
+          55,
+        )
+      : 0;
   const coverageScore = Math.min(catalogDiscoverySignal.merchantCount, 6) * 10;
   const freshnessScore =
     getCatalogDiscoveryFreshnessScore(catalogDiscoverySignal.observedAt) * 0.7;
 
-  return referenceDiscountScore + spreadScore + coverageScore + freshnessScore;
+  return (
+    referenceDiscountScore +
+    recentDropScore +
+    spreadScore +
+    coverageScore +
+    freshnessScore
+  );
 }
 
 function getCatalogPremiumDiscoveryScore(
@@ -1163,6 +1438,23 @@ function isCatalogInterestingNowCandidate(
   return hasRecentPriceDrop || isBelowReference || hasMeaningfulSpread;
 }
 
+function isCatalogBestDealCandidate(
+  catalogDiscoverySignal: CatalogDiscoverySignal,
+): boolean {
+  const hasReferenceDiscount =
+    typeof catalogDiscoverySignal.referenceDeltaMinor === 'number' &&
+    catalogDiscoverySignal.referenceDeltaMinor < 0;
+  const hasRecentPriceDrop =
+    typeof catalogDiscoverySignal.recentReferencePriceChangeMinor ===
+      'number' &&
+    catalogDiscoverySignal.recentReferencePriceChangeMinor < 0 &&
+    getCatalogSignalAgeHours(
+      catalogDiscoverySignal.recentReferencePriceChangedAt,
+    ) <= 48;
+
+  return hasReferenceDiscount || hasRecentPriceDrop;
+}
+
 function getCatalogRailRotationSeed(rotationSeed?: number): number {
   if (typeof rotationSeed === 'number' && Number.isFinite(rotationSeed)) {
     return Math.trunc(rotationSeed);
@@ -1224,6 +1516,267 @@ function sortCatalogRailCandidatesWithRotation<
       left.setCard.name.localeCompare(right.setCard.name) ||
       left.setCard.id.localeCompare(right.setCard.id),
   );
+}
+
+function hasCatalogCurrentPartnerOffer(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): boolean {
+  const bestOffer = currentOfferSummary?.bestOffer;
+
+  return Boolean(
+    bestOffer?.url &&
+      bestOffer.priceCents > 0 &&
+      (!bestOffer.availability || bestOffer.availability !== 'out_of_stock'),
+  );
+}
+
+function getCatalogOfferMerchantCount(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): number {
+  return Math.max(
+    currentOfferSummary?.offers.length ?? 0,
+    currentOfferSummary?.bestOffer ? 1 : 0,
+  );
+}
+
+function getCatalogCurrentOfferPriceSpreadMinor(
+  currentOfferSummary?: CatalogCurrentOfferSummary,
+): number {
+  const prices = (currentOfferSummary?.offers ?? [])
+    .map((catalogOffer) => catalogOffer.priceCents)
+    .filter((priceCents) => priceCents > 0);
+
+  if (prices.length < 2) {
+    return 0;
+  }
+
+  return Math.max(...prices) - Math.min(...prices);
+}
+
+function getCatalogPartnerOfferScore({
+  catalogDiscoverySignal,
+  currentOfferSummary,
+  rotationSeed,
+  setCard,
+}: {
+  catalogDiscoverySignal?: CatalogDiscoverySignal;
+  currentOfferSummary?: CatalogCurrentOfferSummary;
+  rotationSeed?: number;
+  setCard: CatalogHomepageSetCard;
+}): number {
+  const bestOffer = currentOfferSummary?.bestOffer;
+  const merchantCount = Math.max(
+    getCatalogOfferMerchantCount(currentOfferSummary),
+    catalogDiscoverySignal?.merchantCount ?? 0,
+  );
+  const priceSpreadMinor = Math.max(
+    catalogDiscoverySignal?.priceSpreadMinor ?? 0,
+    getCatalogCurrentOfferPriceSpreadMinor(currentOfferSummary),
+  );
+  const baseBuyableScore = bestOffer?.url && bestOffer.priceCents > 0 ? 90 : 0;
+  const inStockScore = bestOffer?.availability === 'in_stock' ? 80 : 30;
+  const coverageScore = Math.min(merchantCount, 6) * 16;
+  const multipleShopScore = merchantCount >= 2 ? 28 : 0;
+  const discountScore =
+    typeof catalogDiscoverySignal?.referenceDeltaMinor === 'number' &&
+    catalogDiscoverySignal.referenceDeltaMinor < 0
+      ? Math.min(Math.abs(catalogDiscoverySignal.referenceDeltaMinor) / 150, 70)
+      : 0;
+  const recentDropScore =
+    typeof catalogDiscoverySignal?.recentReferencePriceChangeMinor ===
+      'number' && catalogDiscoverySignal.recentReferencePriceChangeMinor < 0
+      ? Math.min(
+          Math.abs(catalogDiscoverySignal.recentReferencePriceChangeMinor) /
+            120,
+          40,
+        )
+      : 0;
+  const spreadScore = Math.min(priceSpreadMinor / 350, 34);
+  const releaseScore = Math.max(0, setCard.releaseYear - 2020) * 3;
+
+  return (
+    baseBuyableScore +
+    inStockScore +
+    coverageScore +
+    multipleShopScore +
+    discountScore +
+    recentDropScore +
+    spreadScore +
+    releaseScore +
+    getCatalogRailRotationScore({
+      rotationSeed,
+      setId: setCard.id,
+    }) /
+      9973
+  );
+}
+
+function getCatalogPartnerOfferDiscountScore(
+  catalogDiscoverySignal?: CatalogDiscoverySignal,
+): number {
+  return typeof catalogDiscoverySignal?.referenceDeltaMinor === 'number' &&
+    catalogDiscoverySignal.referenceDeltaMinor < 0
+    ? Math.min(Math.abs(catalogDiscoverySignal.referenceDeltaMinor) / 150, 70)
+    : 0;
+}
+
+export function getCatalogPartnerOfferRailDiagnostics({
+  catalogDiscoverySignalBySetId,
+  currentOfferSummaryBySetId,
+  excludedSetIds = [],
+  limit = 10,
+  rotationSeed,
+  setCards,
+}: {
+  catalogDiscoverySignalBySetId: ReadonlyMap<string, CatalogDiscoverySignal>;
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
+  excludedSetIds?: readonly string[];
+  limit?: number;
+  rotationSeed?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogPartnerOfferRailDiagnostic[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return setCards.slice(0, limit).map((setCard) => {
+    const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+    const bestOffer = currentOfferSummary?.bestOffer;
+    const catalogDiscoverySignal = catalogDiscoverySignalBySetId.get(
+      setCard.id,
+    );
+    const hasPrice =
+      typeof bestOffer?.priceCents === 'number' && bestOffer.priceCents > 0;
+    const hasDeeplink =
+      typeof bestOffer?.url === 'string' && bestOffer.url.length > 0;
+    const inStock = bestOffer?.availability === 'in_stock';
+    const priceSpread = Math.max(
+      catalogDiscoverySignal?.priceSpreadMinor ?? 0,
+      getCatalogCurrentOfferPriceSpreadMinor(currentOfferSummary),
+    );
+    const discountScore = getCatalogPartnerOfferDiscountScore(
+      catalogDiscoverySignal,
+    );
+    const finalScore =
+      currentOfferSummary && bestOffer
+        ? getCatalogPartnerOfferScore({
+            catalogDiscoverySignal,
+            currentOfferSummary,
+            rotationSeed,
+            setCard,
+          })
+        : 0;
+    const excludedReason = (() => {
+      if (excludedSetIdSet.has(setCard.id)) {
+        return 'excluded_set' as const;
+      }
+
+      if (!currentOfferSummary) {
+        return 'missing_summary' as const;
+      }
+
+      if (!bestOffer) {
+        return 'missing_best_offer' as const;
+      }
+
+      if (!hasPrice) {
+        return 'missing_price' as const;
+      }
+
+      if (!hasDeeplink) {
+        return 'missing_deeplink' as const;
+      }
+
+      if (bestOffer.availability === 'out_of_stock') {
+        return 'out_of_stock' as const;
+      }
+
+      return 'included' as const;
+    })();
+
+    return {
+      discountScore,
+      excludedReason,
+      finalScore,
+      hasDeeplink,
+      hasPrice,
+      inStock,
+      priceSpread,
+      setId: setCard.id,
+    };
+  });
+}
+
+export function rankCatalogPartnerOfferSetCards({
+  catalogDiscoverySignalBySetId,
+  currentOfferSummaryBySetId,
+  excludedSetIds = [],
+  limit = 6,
+  rotationSeed,
+  setCards,
+}: {
+  catalogDiscoverySignalBySetId: ReadonlyMap<string, CatalogDiscoverySignal>;
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
+  excludedSetIds?: readonly string[];
+  limit?: number;
+  rotationSeed?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return [...setCards]
+    .filter(
+      (setCard) =>
+        !excludedSetIdSet.has(setCard.id) &&
+        hasCatalogCurrentPartnerOffer(
+          currentOfferSummaryBySetId.get(setCard.id),
+        ),
+    )
+    .sort(
+      (left, right) =>
+        getCatalogPartnerOfferScore({
+          catalogDiscoverySignal: catalogDiscoverySignalBySetId.get(right.id),
+          currentOfferSummary: currentOfferSummaryBySetId.get(right.id),
+          rotationSeed,
+          setCard: right,
+        }) -
+          getCatalogPartnerOfferScore({
+            catalogDiscoverySignal: catalogDiscoverySignalBySetId.get(left.id),
+            currentOfferSummary: currentOfferSummaryBySetId.get(left.id),
+            rotationSeed,
+            setCard: left,
+          }) ||
+        right.releaseYear - left.releaseYear ||
+        right.pieces - left.pieces ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id),
+    )
+    .slice(0, limit);
+}
+
+export function selectCatalogFirstCommerceRailSetCards({
+  limit,
+  scoredCommerceCandidateSetCards,
+  strictDealSetCards,
+}: {
+  limit: number;
+  scoredCommerceCandidateSetCards: readonly CatalogHomepageSetCard[];
+  strictDealSetCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const seenSetIds = new Set<string>();
+  const selectedSetCards: CatalogHomepageSetCard[] = [];
+
+  for (const setCard of [
+    ...strictDealSetCards,
+    ...scoredCommerceCandidateSetCards,
+  ]) {
+    if (selectedSetCards.length >= limit || seenSetIds.has(setCard.id)) {
+      continue;
+    }
+
+    seenSetIds.add(setCard.id);
+    selectedSetCards.push(setCard);
+  }
+
+  return selectedSetCards;
 }
 
 const DISCOVER_RECENT_RELEASE_LOOKBACK_DAYS = 90;
@@ -1561,12 +2114,14 @@ function getCatalogSimilarSetSecondaryThemeScore({
 
 function sortCatalogDiscoverySetCards({
   getCatalogDiscoverySignalFn,
+  rotationSeed,
   scoreCatalogDiscoverySignal,
   setCards,
 }: {
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
+  rotationSeed?: number;
   scoreCatalogDiscoverySignal: (
     catalogDiscoverySignal: CatalogDiscoverySignal,
   ) => number;
@@ -1595,6 +2150,16 @@ function sortCatalogDiscoverySetCards({
           left.catalogDiscoverySignal.merchantCount ||
         right.catalogDiscoverySignal.priceSpreadMinor -
           left.catalogDiscoverySignal.priceSpreadMinor ||
+        (typeof rotationSeed === 'number'
+          ? getCatalogRailRotationScore({
+              rotationSeed,
+              setId: right.setCard.id,
+            }) -
+            getCatalogRailRotationScore({
+              rotationSeed,
+              setId: left.setCard.id,
+            })
+          : 0) ||
         right.setCard.releaseYear - left.setCard.releaseYear ||
         right.setCard.pieces - left.setCard.pieces ||
         left.setCard.name.localeCompare(right.setCard.name) ||
@@ -1641,6 +2206,7 @@ export function rankCatalogPremiumDiscoverySetCards({
   excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
+  rotationSeed,
   setCards,
 }: {
   excludedSetIds?: readonly string[];
@@ -1648,6 +2214,7 @@ export function rankCatalogPremiumDiscoverySetCards({
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
+  rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
   const excludedSetIdSet = new Set(excludedSetIds);
@@ -1670,6 +2237,7 @@ export function rankCatalogPremiumDiscoverySetCards({
 
       return catalogDiscoverySignal;
     },
+    rotationSeed,
     scoreCatalogDiscoverySignal: getCatalogPremiumDiscoveryScore,
     setCards,
   }).slice(0, limit);
@@ -1757,8 +2325,7 @@ export function rankCatalogBestDealSetCards({
       if (
         !catalogDiscoverySignal ||
         catalogDiscoverySignal.merchantCount < 1 ||
-        typeof catalogDiscoverySignal.referenceDeltaMinor !== 'number' ||
-        catalogDiscoverySignal.referenceDeltaMinor >= 0
+        !isCatalogBestDealCandidate(catalogDiscoverySignal)
       ) {
         return [];
       }
@@ -2201,7 +2768,7 @@ export function selectCatalogThemeOfWeekRail({
 export function rankCatalogSimilarSetCards({
   currentSetCard,
   getCatalogDiscoverySignalFn,
-  limit = 6,
+  limit = 20,
   referenceBestPriceMinor,
   setCards,
 }: {
@@ -2219,16 +2786,19 @@ export function rankCatalogSimilarSetCards({
   const currentSetAffinityDescriptor = getCatalogSimilarSetAffinityDescriptor(
     currentSetCard.name,
   );
+  const seenSetIds = new Set<string>([currentSetCard.id]);
 
   return [...setCards]
     .flatMap((setCard) => {
       if (
-        setCard.id === currentSetCard.id ||
+        seenSetIds.has(setCard.id) ||
         buildCatalogThemeSlug(setCard.theme) !==
           buildCatalogThemeSlug(currentSetCard.theme)
       ) {
         return [];
       }
+
+      seenSetIds.add(setCard.id);
 
       const catalogDiscoverySignal = getCatalogDiscoverySignalFn?.(setCard.id);
       const priceProximityScore = getCatalogSimilarSetPriceProximityScore({
@@ -2499,7 +3069,13 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
   setIds: readonly string[];
   supabaseClient: CatalogSupabaseClient;
 }): Promise<Map<string, CatalogRuntimeOffer[]>> {
-  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
+  const uniqueSetIds = [
+    ...new Set(
+      setIds
+        .map((setId) => getCanonicalCatalogSetId(setId))
+        .filter((setId) => setId.length > 0),
+    ),
+  ];
   const liveOffersBySetId = new Map(
     uniqueSetIds.map((setId) => [setId, [] as CatalogRuntimeOffer[]]),
   );
@@ -2508,12 +3084,14 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
     return liveOffersBySetId;
   }
 
+  const setIdLookupVariants = getCatalogSetIdOfferLookupVariants(setIds);
+
   const { data: seedData, error: seedError } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .select(
       'id, set_id, merchant_id, product_url, is_active, validation_status',
     )
-    .in('set_id', uniqueSetIds)
+    .in('set_id', setIdLookupVariants)
     .eq('is_active', true)
     .eq('validation_status', 'valid');
 
@@ -2590,13 +3168,135 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
       continue;
     }
 
-    const existingOffers = liveOffersBySetId.get(offerSeed.set_id);
+    const existingOffers = liveOffersBySetId.get(
+      getCanonicalCatalogSetId(offerSeed.set_id),
+    );
 
     if (!existingOffers) {
       continue;
     }
 
     existingOffers.push(catalogRuntimeOffer);
+  }
+
+  return new Map(
+    [...liveOffersBySetId.entries()].map(([setId, offers]) => [
+      setId,
+      sortResolvedCatalogOffers(offers) as CatalogRuntimeOffer[],
+    ]),
+  );
+}
+
+async function listCatalogRuntimeOffersByCurrentOffersFromSupabase({
+  limit = CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT,
+  supabaseClient,
+}: {
+  limit?: number;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, CatalogRuntimeOffer[]>> {
+  const safeLimit = Math.min(
+    Math.max(Math.trunc(limit), 1),
+    CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT,
+  );
+  const { data: latestOfferData, error: latestOfferError } =
+    await supabaseClient
+      .from(COMMERCE_OFFER_LATEST_TABLE)
+      .select(
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+      )
+      .eq('fetch_status', 'success')
+      .eq('currency_code', 'EUR')
+      .order('updated_at', {
+        ascending: false,
+      })
+      .limit(safeLimit);
+
+  if (latestOfferError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const latestOffers = (
+    (latestOfferData as CatalogCommerceOfferLatestRow[] | null) ?? []
+  ).filter(
+    (latestOffer) =>
+      typeof latestOffer.price_minor === 'number' &&
+      latestOffer.price_minor > 0,
+  );
+
+  if (!latestOffers.length) {
+    return new Map();
+  }
+
+  const latestOfferBySeedId = new Map<string, CatalogCommerceOfferLatestRow>();
+
+  for (const latestOffer of latestOffers) {
+    if (!latestOfferBySeedId.has(latestOffer.offer_seed_id)) {
+      latestOfferBySeedId.set(latestOffer.offer_seed_id, latestOffer);
+    }
+  }
+
+  const offerSeedIds = [...latestOfferBySeedId.keys()];
+  const { data: seedData, error: seedError } = await supabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .select(
+      'id, set_id, merchant_id, product_url, is_active, validation_status',
+    )
+    .in('id', offerSeedIds)
+    .eq('is_active', true)
+    .eq('validation_status', 'valid');
+
+  if (seedError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const offerSeeds = (seedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
+
+  if (!offerSeeds.length) {
+    return new Map();
+  }
+
+  const merchantIds = [
+    ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
+  ];
+  const { data: merchantData, error: merchantError } = await supabaseClient
+    .from(COMMERCE_MERCHANTS_TABLE)
+    .select('id, slug, name, is_active')
+    .in('id', merchantIds)
+    .eq('is_active', true);
+
+  if (merchantError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const merchantById = new Map(
+    ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
+      (merchantRow) => [merchantRow.id, merchantRow],
+    ),
+  );
+  const liveOffersBySetId = new Map<string, CatalogRuntimeOffer[]>();
+
+  for (const offerSeed of offerSeeds) {
+    const merchant = merchantById.get(offerSeed.merchant_id);
+    const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+
+    if (!merchant || !latestOffer) {
+      continue;
+    }
+
+    const catalogRuntimeOffer = toCatalogRuntimeOffer({
+      latestOffer,
+      merchant,
+      offerSeed,
+    });
+
+    if (!catalogRuntimeOffer) {
+      continue;
+    }
+
+    const canonicalSetId = getCanonicalCatalogSetId(offerSeed.set_id);
+    const existingOffers = liveOffersBySetId.get(canonicalSetId) ?? [];
+    existingOffers.push(catalogRuntimeOffer);
+    liveOffersBySetId.set(canonicalSetId, existingOffers);
   }
 
   return new Map(
@@ -2924,18 +3624,17 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   setIds: readonly string[];
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<Map<string, CatalogCurrentOfferSummary>> {
-  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
+  const uniqueSetIds = [
+    ...new Set(
+      setIds
+        .map((setId) => getCanonicalCatalogSetId(setId))
+        .filter((setId) => setId.length > 0),
+    ),
+  ];
 
   if (!uniqueSetIds.length) {
     return new Map();
   }
-
-  const createEmptySummary = (
-    setId: string,
-  ): CatalogCurrentOfferSummaryRecord => ({
-    offers: [],
-    setId,
-  });
 
   try {
     if (!supabaseClient) {
@@ -2964,20 +3663,49 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
       const payload = await response.json();
       const summaryBySetId = new Map(
         (Array.isArray(payload) ? payload : []).flatMap((summaryRecord) => {
-          if (!isCatalogCurrentOfferSummaryRecord(summaryRecord)) {
+          const normalizedSummary =
+            normalizeCatalogCurrentOfferSummaryRecord(summaryRecord);
+
+          if (!normalizedSummary || normalizedSummary.offers.length === 0) {
             return [];
           }
 
-          return [[summaryRecord.setId, summaryRecord] as const];
+          return [[normalizedSummary.setId, normalizedSummary] as const];
         }),
       );
 
-      return new Map(
-        uniqueSetIds.map((setId) => [
-          setId,
-          summaryBySetId.get(setId) ?? createEmptySummary(setId),
-        ]),
-      );
+      if (summaryBySetId.size > 0 || !hasServerSupabaseConfig()) {
+        return summaryBySetId;
+      }
+
+      try {
+        const liveOffersBySetId =
+          await listCatalogRuntimeOffersBySetIdsFromSupabase({
+            setIds: uniqueSetIds,
+            supabaseClient: getWebCatalogSupabaseAdminClient(),
+          });
+
+        return new Map(
+          [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
+            if (!offers.length) {
+              return [];
+            }
+
+            return [
+              [
+                setId,
+                summarizeCatalogCurrentOffers({
+                  generatedOffers: [],
+                  liveOffers: offers,
+                  setId,
+                }),
+              ] as const,
+            ];
+          }),
+        );
+      } catch {
+        return summaryBySetId;
+      }
     }
 
     const liveOffersBySetId =
@@ -2987,47 +3715,105 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
       });
 
     return new Map(
-      uniqueSetIds.map((setId) => {
-        const offers = liveOffersBySetId.get(setId) ?? [];
+      [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
+        if (!offers.length) {
+          return [];
+        }
 
         return [
-          setId,
-          summarizeCatalogCurrentOffers({
-            generatedOffers: [],
-            liveOffers: offers,
-            setId,
-          }),
-        ] as const;
-      }),
-    );
-  } catch (error) {
-    if (!supabaseClient && hasServerSupabaseConfig()) {
-      const liveOffersBySetId =
-        await listCatalogRuntimeOffersBySetIdsFromSupabase({
-          setIds: uniqueSetIds,
-          supabaseClient: getWebCatalogSupabaseAdminClient(),
-        });
-
-      return new Map(
-        uniqueSetIds.map((setId) => {
-          const offers = liveOffersBySetId.get(setId) ?? [];
-
-          return [
+          [
             setId,
             summarizeCatalogCurrentOffers({
               generatedOffers: [],
               liveOffers: offers,
               setId,
             }),
-          ] as const;
-        }),
-      );
+          ] as const,
+        ];
+      }),
+    );
+  } catch (error) {
+    if (!supabaseClient && hasServerSupabaseConfig()) {
+      try {
+        const liveOffersBySetId =
+          await listCatalogRuntimeOffersBySetIdsFromSupabase({
+            setIds: uniqueSetIds,
+            supabaseClient: getWebCatalogSupabaseAdminClient(),
+          });
+
+        return new Map(
+          [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
+            if (!offers.length) {
+              return [];
+            }
+
+            return [
+              [
+                setId,
+                summarizeCatalogCurrentOffers({
+                  generatedOffers: [],
+                  liveOffers: offers,
+                  setId,
+                }),
+              ] as const,
+            ];
+          }),
+        );
+      } catch {
+        return new Map();
+      }
     }
 
     if (!supabaseClient) {
-      return new Map(
-        uniqueSetIds.map((setId) => [setId, createEmptySummary(setId)]),
-      );
+      return new Map();
+    }
+
+    throw error;
+  }
+}
+
+export async function listCatalogCurrentOfferSummaries({
+  limit = CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT,
+  supabaseClient,
+}: {
+  limit?: number;
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<Map<string, CatalogCurrentOfferSummary>> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return new Map();
+  }
+
+  try {
+    const liveOffersBySetId =
+      await listCatalogRuntimeOffersByCurrentOffersFromSupabase({
+        limit,
+        supabaseClient: activeSupabaseClient,
+      });
+
+    return new Map(
+      [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
+        if (!offers.length) {
+          return [];
+        }
+
+        return [
+          [
+            setId,
+            summarizeCatalogCurrentOffers({
+              generatedOffers: [],
+              liveOffers: offers,
+              setId,
+            }),
+          ] as const,
+        ];
+      }),
+    );
+  } catch (error) {
+    if (!supabaseClient) {
+      return new Map();
     }
 
     throw error;
@@ -3039,6 +3825,7 @@ export async function listHomepageSetCards({
   getCatalogDiscoverySignalFn,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   limit = 6,
+  rotationSeed,
 }: {
   excludedSetIds?: readonly string[];
   getCatalogDiscoverySignalFn?: (
@@ -3046,6 +3833,7 @@ export async function listHomepageSetCards({
   ) => CatalogDiscoverySignal | undefined;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   limit?: number;
+  rotationSeed?: number;
 } = {}): Promise<CatalogHomepageSetCard[]> {
   if (!getCatalogDiscoverySignalFn) {
     return listCatalogSetCardsByIds({
@@ -3060,6 +3848,7 @@ export async function listHomepageSetCards({
     excludedSetIds,
     getCatalogDiscoverySignalFn,
     limit,
+    rotationSeed,
     setCards: await listAllCatalogSetCards({
       listCanonicalCatalogSetsFn,
     }),
@@ -3105,7 +3894,7 @@ export async function listHomepageDealCandidateSetCards({
 export async function listCatalogSimilarSetCards({
   currentSetCard,
   getCatalogDiscoverySignalFn,
-  limit = 6,
+  limit = 20,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   referenceBestPriceMinor,
 }: {

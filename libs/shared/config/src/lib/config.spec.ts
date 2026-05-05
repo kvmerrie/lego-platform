@@ -20,6 +20,7 @@ import {
   getMissingBrowserSupabaseEnvKeys,
   getMissingPublicWebRevalidationEnvKeys,
   getMissingProductEmailEnvKeys,
+  getMissingProductionSupabaseEnvKeys,
   getMissingStagingSupabaseEnvKeys,
   getMissingTradeTrackerEnvKeys,
   getMissingTradeTrackerCoppenswarenhuisEnvKeys,
@@ -28,6 +29,7 @@ import {
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
+  getProductionSupabaseConfig,
   getTradeTrackerAffiliateConfig,
   getTradeTrackerCoppenswarenhuisFeedConfig,
   getTradeTrackerLidlFeedConfig,
@@ -40,6 +42,7 @@ import {
   hasBrowserSupabaseConfig,
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
+  hasProductionSupabaseConfig,
   hasStagingSupabaseConfig,
   hasTradeTrackerAffiliateConfig,
   hasTradeTrackerCoppenswarenhuisFeedConfig,
@@ -134,7 +137,7 @@ describe('shared config locale and market foundations', () => {
   });
 
   test('builds unprefixed routes now while keeping locale-prefixed paths possible later', () => {
-    expect(buildWebPath('/discover')).toBe('/discover');
+    expect(buildWebPath('/deals')).toBe('/deals');
     expect(buildWebPath('account')).toBe('/account');
     expect(buildArticlePath('star-wars-day-2026', 'star-wars')).toBe(
       '/artikelen/star-wars/star-wars-day-2026',
@@ -145,14 +148,14 @@ describe('shared config locale and market foundations', () => {
     expect(buildThemePath('icons')).toBe('/themes/icons');
     expect(buildWebPath('/', { forceLocalePrefix: true })).toBe('/nl-nl');
     expect(
-      buildWebPath('/discover', {
+      buildWebPath('/deals', {
         forceLocalePrefix: true,
         localeCode: createLocaleCode({
           languageCode: 'nl',
           marketCode: 'NL',
         }),
       }),
-    ).toBe('/nl-nl/discover');
+    ).toBe('/nl-nl/deals');
   });
 
   test('exposes primary public navigation in Brickhunt order', () => {
@@ -162,7 +165,7 @@ describe('shared config locale and market foundations', () => {
         label: 'Nieuws',
       },
       {
-        href: '/discover?filter=best-deals',
+        href: '/deals',
         label: 'Deals',
       },
       {
@@ -316,6 +319,30 @@ describe('shared config catalog promotion helpers', () => {
     expect(getMissingStagingSupabaseEnvKeys()).toEqual([
       'SUPABASE_URL_STAGING',
       'SUPABASE_SERVICE_ROLE_KEY_STAGING',
+    ]);
+  });
+
+  test('reads production Supabase config for commerce staging sync', () => {
+    process.env.SUPABASE_URL_PRODUCTION = 'https://production.supabase.co';
+    process.env.SUPABASE_SERVICE_ROLE_KEY_PRODUCTION =
+      'production-service-role';
+
+    expect(hasProductionSupabaseConfig()).toBe(true);
+    expect(getMissingProductionSupabaseEnvKeys()).toEqual([]);
+    expect(getProductionSupabaseConfig()).toEqual({
+      serviceRoleKey: 'production-service-role',
+      url: 'https://production.supabase.co',
+    });
+  });
+
+  test('reports missing production Supabase env vars for commerce staging sync', () => {
+    delete process.env.SUPABASE_URL_PRODUCTION;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY_PRODUCTION;
+
+    expect(hasProductionSupabaseConfig()).toBe(false);
+    expect(getMissingProductionSupabaseEnvKeys()).toEqual([
+      'SUPABASE_URL_PRODUCTION',
+      'SUPABASE_SERVICE_ROLE_KEY_PRODUCTION',
     ]);
   });
 

@@ -99,7 +99,7 @@ export type RuntimeName = keyof typeof platformConfig.runtimes;
 export const webPathnames = {
   home: '/',
   articles: '/artikelen',
-  discover: '/discover',
+  deals: '/deals',
   themes: '/themes',
   search: '/search',
   following: '/volgt',
@@ -115,9 +115,9 @@ const webNavigationItems = [
     pathname: webPathnames.articles,
   },
   {
-    href: `${buildWebPath(webPathnames.discover)}?filter=best-deals`,
+    href: buildWebPath(webPathnames.deals),
     label: 'Deals',
-    pathname: webPathnames.discover,
+    pathname: webPathnames.deals,
   },
   {
     label: "Thema's",
@@ -157,6 +157,7 @@ export const apiPaths = {
   adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
   adminCommerceCoverageQueue: '/api/v1/admin/commerce/coverage-queue',
   adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
+  adminCommerceProductionSync: '/api/v1/admin/commerce/production-sync',
   adminCommerceAlternateFeedImports:
     '/api/v1/admin/commerce/alternate-feed/import',
   adminCatalogPromotion: '/api/admin/promote/catalog',
@@ -194,6 +195,11 @@ export const supabaseEnvKeys = {
 export const stagingSupabaseEnvKeys = {
   url: 'SUPABASE_URL_STAGING',
   serviceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY_STAGING',
+} as const;
+
+export const productionSupabaseEnvKeys = {
+  url: 'SUPABASE_URL_PRODUCTION',
+  serviceRoleKey: 'SUPABASE_SERVICE_ROLE_KEY_PRODUCTION',
 } as const;
 
 export const adminPromotionEnvKeys = {
@@ -278,6 +284,11 @@ export interface ServerSupabaseConfig {
 }
 
 export interface StagingSupabaseConfig {
+  serviceRoleKey: string;
+  url: string;
+}
+
+export interface ProductionSupabaseConfig {
   serviceRoleKey: string;
   url: string;
 }
@@ -904,6 +915,46 @@ export function getMissingStagingSupabaseEnvKeys(
 
   if (!environment[stagingSupabaseEnvKeys.serviceRoleKey]) {
     missingKeys.push(stagingSupabaseEnvKeys.serviceRoleKey);
+  }
+
+  return missingKeys;
+}
+
+export function getProductionSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): ProductionSupabaseConfig {
+  return {
+    url: requireEnvValue({
+      environment,
+      key: productionSupabaseEnvKeys.url,
+    }),
+    serviceRoleKey: requireEnvValue({
+      environment,
+      key: productionSupabaseEnvKeys.serviceRoleKey,
+    }),
+  };
+}
+
+export function hasProductionSupabaseConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(
+    environment[productionSupabaseEnvKeys.url] &&
+      environment[productionSupabaseEnvKeys.serviceRoleKey],
+  );
+}
+
+export function getMissingProductionSupabaseEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  const missingKeys: string[] = [];
+
+  if (!environment[productionSupabaseEnvKeys.url]) {
+    missingKeys.push(productionSupabaseEnvKeys.url);
+  }
+
+  if (!environment[productionSupabaseEnvKeys.serviceRoleKey]) {
+    missingKeys.push(productionSupabaseEnvKeys.serviceRoleKey);
   }
 
   return missingKeys;

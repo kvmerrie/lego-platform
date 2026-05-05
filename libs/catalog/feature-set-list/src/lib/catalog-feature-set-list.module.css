@@ -5,6 +5,10 @@
   max-width: var(--lego-max-width-reading);
 }
 
+.railAction {
+  width: fit-content;
+}
+
 .grid {
   --catalog-browse-grid-inline-border-size: 0px;
   display: grid;

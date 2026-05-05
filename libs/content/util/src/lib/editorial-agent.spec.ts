@@ -65,7 +65,7 @@ describe('editorial agent utilities', () => {
         '72054',
         '72055',
       ]),
-    ).toBe('72050, 72037, 72051, 72052, 72053, 72054');
+    ).toBe('72050, 72037, 72051, 72052, 72053, 72054, 72055');
   });
 
   it('formats SetSpotlightList set ids without introducing duplicates or empty values', () => {

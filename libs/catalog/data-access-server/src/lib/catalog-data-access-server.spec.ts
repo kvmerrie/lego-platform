@@ -677,10 +677,60 @@ describe('catalog data access server', () => {
         ],
         setId: '75398',
       },
+    ]);
+  });
+
+  test('normalizes current offer summaries to canonical set ids', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-04-20T09:30:00.000Z',
+          offer_seed_id: 'seed-1',
+          price_minor: 9999,
+          updated_at: '2026-04-20T09:30:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-1',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://id.goodbricks.nl/t/t?a=1849540612',
+          set_id: '75459-1',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['75459-1', '71411'],
+      supabaseClient,
+    });
+
+    expect(result).toEqual([
       {
-        bestOffer: undefined,
-        offers: [],
-        setId: '71411',
+        bestOffer: expect.objectContaining({
+          priceCents: 9999,
+          setId: '75459',
+        }),
+        offers: [
+          expect.objectContaining({
+            priceCents: 9999,
+            setId: '75459',
+          }),
+        ],
+        setId: '75459',
       },
     ]);
   });

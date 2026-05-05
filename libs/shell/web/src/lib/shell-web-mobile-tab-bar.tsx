@@ -28,11 +28,10 @@ interface ShellWebMobileTabItem {
   label: string;
 }
 
-const discoverPath = buildWebPath(webPathnames.discover);
 const searchPath = buildWebPath(webPathnames.search);
 const followingPath = buildWebPath(webPathnames.following);
 const wishlistPath = buildWebPath(webPathnames.wishlist);
-const dealsPath = `${discoverPath}?filter=best-deals`;
+const dealsPath = buildWebPath(webPathnames.deals);
 const searchOverlayPath = `${searchPath}?overlay=1`;
 const articlesPath = buildWebPath(webPathnames.articles);
 const articlesPathPrefix = `${articlesPath}/`;
@@ -74,10 +73,8 @@ const mobileTabItems: readonly ShellWebMobileTabItem[] = [
 
 export function getActiveMobileTabId({
   pathname,
-  searchFilter,
 }: {
   pathname?: string;
-  searchFilter?: string | null;
 }): ShellWebMobileTabId | undefined {
   if (!pathname) {
     return undefined;
@@ -99,7 +96,7 @@ export function getActiveMobileTabId({
     return 'themes';
   }
 
-  if (pathname === discoverPath && searchFilter === 'best-deals') {
+  if (pathname === dealsPath) {
     return 'deals';
   }
 
@@ -166,15 +163,10 @@ function renderMobileTabBar(activeTabId?: ShellWebMobileTabId) {
 
 export function ShellWebMobileTabBar() {
   const pathname = usePathname() ?? buildWebPath(webPathnames.home);
-  const searchFilter =
-    typeof window === 'undefined'
-      ? null
-      : new URLSearchParams(window.location.search).get('filter');
 
   return renderMobileTabBar(
     getActiveMobileTabId({
       pathname,
-      searchFilter,
     }),
   );
 }

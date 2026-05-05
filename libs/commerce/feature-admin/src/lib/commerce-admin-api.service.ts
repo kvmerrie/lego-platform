@@ -154,6 +154,21 @@ export interface CommerceAdminBulkOnboardingStartResult {
   stateFilePath: string;
 }
 
+export interface CommerceAdminProductionSyncTableSummary {
+  deletedCount: number;
+  insertedCount: number;
+  sourceCount: number;
+  targetBeforeCount: number;
+}
+
+export interface CommerceAdminProductionSyncResult {
+  dryRun: boolean;
+  durationMs: number;
+  startedAt: string;
+  status: 'ok';
+  tables: Record<string, CommerceAdminProductionSyncTableSummary>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CommerceAdminApiService {
   private readonly http = inject(HttpClient);
@@ -265,6 +280,25 @@ export class CommerceAdminApiService {
       this.http.post<CommerceSetRefreshResult>(
         apiPaths.adminCommerceSetRefreshes,
         { setId },
+      ),
+    );
+  }
+
+  async syncCommerceFromProduction(input: {
+    adminSecret: string;
+    dryRun: boolean;
+  }): Promise<CommerceAdminProductionSyncResult> {
+    return firstValueFrom(
+      this.http.post<CommerceAdminProductionSyncResult>(
+        apiPaths.adminCommerceProductionSync,
+        {
+          dryRun: input.dryRun,
+        },
+        {
+          headers: {
+            'x-admin-secret': input.adminSecret,
+          },
+        },
       ),
     );
   }

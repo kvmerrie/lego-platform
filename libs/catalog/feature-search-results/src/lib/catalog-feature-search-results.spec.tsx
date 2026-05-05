@@ -55,7 +55,7 @@ describe('CatalogFeatureSearchResults', () => {
     );
     expect(markup).toContain('<h1');
     expect(markup).toContain('Bekijk de catalogus');
-    expect(markup).toContain('href="/discover"');
+    expect(markup).toContain('href="/themes"');
   });
 
   it('renders a shared search entry when the empty state receives one', () => {

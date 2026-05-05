@@ -278,10 +278,7 @@ export function WishlistFeatureWishlistOverview() {
         title="Nog niets om in de gaten te houden"
         tone="plain"
         utility={
-          <ActionLink
-            href={buildWebPath(webPathnames.discover)}
-            tone="secondary"
-          >
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
             Ontdek sets
           </ActionLink>
         }
@@ -294,10 +291,7 @@ export function WishlistFeatureWishlistOverview() {
           tone="muted"
         >
           <div className={styles.linkRow}>
-            <ActionLink
-              href={buildWebPath(webPathnames.discover)}
-              tone="accent"
-            >
+            <ActionLink href={buildWebPath(webPathnames.deals)} tone="accent">
               Bekijk interessante sets
             </ActionLink>
             <ActionLink

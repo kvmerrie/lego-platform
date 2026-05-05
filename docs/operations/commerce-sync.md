@@ -206,6 +206,29 @@ Render scheduled job notes:
 - use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without refreshing merchants
 - a healthy scheduled job should log one `start` line, one line per refreshed seed with merchant, seed id, set id, and status, and one `end` line with refresh, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
 
+## Staging Commerce Copy
+
+The admin Operations page has a manual **Sync commerce from production** action
+for making staging/local commerce testing look like production. It is guarded by
+the admin secret, defaults to dry-run, and refuses to run in production.
+
+Scope:
+
+- copied: `commerce_merchants`, `commerce_offer_seeds`, `commerce_offer_latest`, `commerce_benchmark_sets`, `pricing_daily_set_history`
+- not copied: articles, previews, editorial feed items, users or any other content tables
+
+Required envs:
+
+- target/current environment: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- production source: `SUPABASE_URL_PRODUCTION`, `SUPABASE_SERVICE_ROLE_KEY_PRODUCTION`
+- admin guard: `ADMIN_PROMOTE_SECRET`
+
+Operator flow:
+
+1. Open Admin > Commerce > Operations.
+2. Run **Dry-run** and verify the table counts.
+3. Run **Sync commerce from production** only after the confirmation warning.
+
 ## Affiliate Feed Imports
 
 Feed imports write merchant rows into the same Supabase commerce tables used by

@@ -8,7 +8,7 @@ The current product remains intentionally simple:
 
 - one live language context in the UI
 - one live market context for commerce and price formatting
-- unprefixed public routes such as `/discover` and `/sets/...`
+- unprefixed public routes such as `/deals`, `/themes`, and `/sets/...`
 
 ## Current Reality
 
@@ -47,7 +47,7 @@ The shared route helper already supports a future prefix strategy:
 - current mode: `never`
 - future mode: `always`
 
-That means the app can keep emitting `/discover` today while the route-building contract is already ready for `/en-nl/discover` or `/nl-nl/discover` later.
+That means the app can keep emitting `/deals` today while the route-building contract is already ready for `/en-nl/deals` or `/nl-nl/deals` later.
 
 ## Commerce And Catalog Readiness
 
@@ -88,5 +88,5 @@ Until that rollout happens:
 
 - keep apps thin
 - keep locale and market defaults in shared config
-- avoid hardcoding `nl-NL`, `EUR`, `NL`, or `/discover`-style paths in feature code when a shared helper already exists
+- avoid hardcoding `nl-NL`, `EUR`, `NL`, or `/deals`-style paths in feature code when a shared helper already exists
 - treat new market or locale support as a deliberate product rollout, not as incidental copy changes

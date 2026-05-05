@@ -61,7 +61,7 @@ export const ActionLinkTones: Story = {
           <ActionLink href="/themes/icons" tone="secondary">
             Bekijk thema
           </ActionLink>
-          <ActionLink href="/discover" tone="ghost">
+          <ActionLink href="/themes" tone="ghost">
             Meer om te ontdekken
           </ActionLink>
           <ActionLink href="/themes" tone="inline">
@@ -69,7 +69,7 @@ export const ActionLinkTones: Story = {
           </ActionLink>
         </div>
         <Surface elevation="rested" tone="muted">
-          <ActionLink href="/discover" tone="card">
+          <ActionLink href="/themes" tone="card">
             <span>Kaart-link</span>
             <span style={{ color: 'var(--lego-text-muted)' }}>
               Gebruik dit wanneer een hele tegel klikbaar moet zijn zonder extra

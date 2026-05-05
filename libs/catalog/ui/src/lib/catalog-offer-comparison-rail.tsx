@@ -1,7 +1,7 @@
 'use client';
 
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
-import { ChevronRight, Clock3, X } from 'lucide-react';
+import { ChevronRight, Clock3, Eye, X } from 'lucide-react';
 import {
   ActionLink,
   Badge,
@@ -17,6 +17,7 @@ interface CatalogOfferComparisonRailProps {
   className?: string;
   id?: string;
   offers: readonly CatalogOfferItem[];
+  setDetailHref?: string;
   summaryLabel?: string;
 }
 
@@ -300,9 +301,11 @@ function handleOverlayEscape(
 function CatalogOfferRailCard({
   comparisonContext,
   offer,
+  setDetailHref,
 }: {
   comparisonContext: CompactOfferComparisonContext;
   offer: CatalogOfferItem;
+  setDetailHref?: string;
 }) {
   const presentation = buildCompactOfferPresentation({
     comparisonContext,
@@ -315,7 +318,7 @@ function CatalogOfferRailCard({
       : styles.offerRailSupportLineDefault,
   ].join(' ');
 
-  return (
+  const card = (
     <article
       className={styles.offerRailCard}
       data-best={offer.isBest ? 'true' : 'false'}
@@ -364,22 +367,32 @@ function CatalogOfferRailCard({
         </p>
       </div>
       <div className={styles.offerRailActionRow}>
-        <ActionLink
+        <span
           className={styles.offerRailAction}
-          href={offer.ctaHref}
-          rel="noreferrer sponsored"
-          size="compact"
-          target="_blank"
-          tone={offer.isBest ? 'accent' : 'secondary'}
-          {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
+          data-tone={offer.isBest ? 'accent' : 'secondary'}
         >
-          <>
-            <span>{presentation.actionLabel}</span>
-            <VisuallyHidden> bij {presentation.merchantLabel}</VisuallyHidden>
-          </>
-        </ActionLink>
+          <Eye aria-hidden="true" size={15} strokeWidth={2.2} />
+          <span>Bekijk set</span>
+        </span>
       </div>
     </article>
+  );
+
+  if (!setDetailHref) {
+    return card;
+  }
+
+  return (
+    <ActionLink
+      className={styles.offerRailCardLink}
+      href={setDetailHref}
+      tone="card"
+    >
+      {card}
+      <VisuallyHidden>
+        Bekijk setdetail met prijs bij {presentation.merchantLabel}
+      </VisuallyHidden>
+    </ActionLink>
   );
 }
 
@@ -473,6 +486,7 @@ export function CatalogOfferComparisonRail({
   className,
   id,
   offers,
+  setDetailHref,
   summaryLabel,
 }: CatalogOfferComparisonRailProps) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -528,6 +542,7 @@ export function CatalogOfferComparisonRail({
                 <CatalogOfferRailCard
                   comparisonContext={comparisonContext}
                   offer={offer}
+                  setDetailHref={setDetailHref}
                 />
               </li>
             ))}
@@ -536,7 +551,7 @@ export function CatalogOfferComparisonRail({
         <div className={styles.offerRailFooter}>
           <Button
             aria-label={viewAllLabel}
-            className={styles.offerRailViewAllAction}
+            className={`${styles.railActionLink} ${styles.offerRailViewAllAction}`}
             onClick={(event) => {
               triggerRef.current = event.currentTarget;
               setIsOverlayOpen(true);

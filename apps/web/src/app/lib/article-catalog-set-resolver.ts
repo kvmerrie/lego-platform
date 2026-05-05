@@ -304,7 +304,7 @@ export async function resolveRepresentativeArticleCatalogSetCardByTheme({
 
 export async function resolveCuratedRelatedArticleCatalogSetRail({
   featuredSetCard,
-  limit = 6,
+  limit = 20,
 }: {
   featuredSetCard: CatalogHomepageSetCard;
   limit?: number;
@@ -332,9 +332,18 @@ export async function resolveCuratedRelatedArticleCatalogSetRail({
     liveSetCards = [];
   }
 
+  const seenCandidateSetIds = new Set<string>([featuredSetCard.id]);
   const candidateSetCards = (
     liveSetCards.length ? liveSetCards : getSnapshotSetCards()
   )
+    .filter((candidateSetCard) => {
+      if (seenCandidateSetIds.has(candidateSetCard.id)) {
+        return false;
+      }
+
+      seenCandidateSetIds.add(candidateSetCard.id);
+      return true;
+    })
     .filter((candidateSetCard) =>
       isStrongRelatedCatalogSet({
         candidateSetCard,

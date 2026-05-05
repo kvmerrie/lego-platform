@@ -788,7 +788,7 @@ describe('ShellWebSearchForm', () => {
     act(() => {
       root.render(
         <ShellWebSearchForm
-          closeFallbackHref="/discover"
+          closeFallbackHref="/themes"
           hideTrigger
           inputId="site-search-overlay-close"
           openOnMount

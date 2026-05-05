@@ -766,6 +766,80 @@ Klaar.`;
     expect(resolvedMdx).not.toContain('75382');
   });
 
+  it('can inject up to twenty curated related sets without duplicates or weak matches', async () => {
+    listCatalogSetCardsByIds.mockResolvedValue([
+      {
+        id: '75458',
+        imageUrl: 'https://example.com/75458.jpg',
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        pieces: 730,
+        releaseYear: 2026,
+        slug: 'imperial-remnant-at-rt-driver-helmet-75458',
+        theme: 'Star Wars',
+      },
+    ]);
+    listCatalogSetCards.mockResolvedValue([
+      {
+        id: '75458',
+        imageUrl: 'https://example.com/75458.jpg',
+        name: 'Imperial Remnant AT-RT Driver Helmet',
+        pieces: 730,
+        releaseYear: 2026,
+        slug: 'imperial-remnant-at-rt-driver-helmet-75458',
+        theme: 'Star Wars',
+      },
+      ...Array.from({ length: 22 }, (_, index) => {
+        const setId = String(75_300 + index);
+
+        return {
+          id: setId,
+          imageUrl: `https://example.com/${setId}.jpg`,
+          name: `Star Wars Helmet ${index + 1}`,
+          pieces: 600 + index,
+          releaseYear: 2026,
+          slug: `star-wars-helmet-${setId}`,
+          theme: 'Star Wars',
+        };
+      }),
+      {
+        id: '75300',
+        imageUrl: 'https://example.com/75300-duplicate.jpg',
+        name: 'Star Wars Helmet duplicate',
+        pieces: 999,
+        releaseYear: 2026,
+        slug: 'star-wars-helmet-duplicate',
+        theme: 'Star Wars',
+      },
+      {
+        id: '75382',
+        imageUrl: 'https://example.com/75382.jpg',
+        name: 'TIE Interceptor',
+        pieces: 1931,
+        releaseYear: 2024,
+        slug: 'tie-interceptor-75382',
+        theme: 'Star Wars',
+      },
+    ]);
+
+    const resolvedMdx = await resolveArticleMdxSourceWithCuratedRelatedSetRail(
+      `<FeaturedSet setNumber="75458" />
+
+## Wat is er aangekondigd?
+
+Helmet nieuws.
+
+## Korte conclusie
+
+Klaar.`,
+    );
+    const setIdsMatch = resolvedMdx.match(/setIds="([^"]+)"/u);
+    const setIds = normalizeSetRailIds(setIdsMatch?.[1] ?? '');
+
+    expect(setIds).toHaveLength(20);
+    expect(new Set(setIds).size).toBe(20);
+    expect(setIds).not.toContain('75382');
+  });
+
   it('does not inject random same-theme sets for non-collection FeaturedSet cards', async () => {
     listCatalogSetCardsByIds.mockResolvedValue([
       {
@@ -1340,13 +1414,13 @@ Klaar.`,
       );
     });
 
-    expect(container.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
     expect(
-      container.querySelector('[data-lightbox-active-index="1"]'),
+      document.body.querySelector('[data-lightbox-active-index="1"]'),
     ).not.toBeNull();
-    expect(container.textContent).toContain('Rocking Plants · Set 11506');
+    expect(document.body.textContent).toContain('Rocking Plants · Set 11506');
     expect(
-      container.querySelectorAll('[class*="lightboxThumbButton"]'),
+      document.body.querySelectorAll('[class*="lightboxThumbButton"]'),
     ).toHaveLength(2);
     expect(
       container.querySelector('a[href="/sets/rocking-plants-11506"]'),

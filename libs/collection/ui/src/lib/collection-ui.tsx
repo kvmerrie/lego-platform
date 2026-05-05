@@ -320,10 +320,7 @@ export function CollectorCollectionPanel({
           >
             Open verlanglijst
           </ActionLink>
-          <ActionLink
-            href={buildWebPath(webPathnames.discover)}
-            tone="secondary"
-          >
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
             Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
@@ -354,10 +351,7 @@ export function CollectorCollectionPanel({
           >
             Open account
           </ActionLink>
-          <ActionLink
-            href={buildWebPath(webPathnames.discover)}
-            tone="secondary"
-          >
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
             Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">

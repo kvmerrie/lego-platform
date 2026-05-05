@@ -417,6 +417,36 @@ describe('editorial agent analysis helpers', () => {
     expect(articleType).toBe('deal');
   });
 
+  it('keeps pre-order announcements on single_set_news instead of availability deals', () => {
+    const articleType = detectArticleType(
+      createFacts({
+        keywords: ['nu te pre-orderen', 'onthuld'],
+        releaseDate: '2026-06-01',
+        setNames: ['Architecture 21066'],
+        setNumbers: ['21066'],
+        summary:
+          'LEGO Architecture 21066 is onthuld, verschijnt op 1 juni 2026 en is nu te pre-orderen.',
+        theme: 'Architecture',
+        title:
+          'LEGO Architecture 21066 onthuld: verschijnt op 1 juni 2026 en nu te pre-orderen',
+      }),
+      createDetected({
+        dateSignals: ['1 juni 2026'],
+        keywords: ['nu te pre-orderen', 'op voorraad'],
+        setNumbers: ['21066'],
+        themes: ['Architecture'],
+      }),
+      createSource({
+        description:
+          'De nieuwe LEGO Architecture set is aangekondigd, verschijnt op 1 juni 2026 en is nu te pre-orderen.',
+        title:
+          'LEGO Architecture 21066 onthuld: verschijnt op 1 juni 2026 en nu te pre-orderen',
+      }),
+    );
+
+    expect(articleType).toBe('single_set_news');
+  });
+
   it('detects Star Trek double points and discount articles as deals, not rewards', () => {
     const articleType = detectArticleType(
       createFacts({

@@ -8,6 +8,7 @@ import {
   type CatalogSetDetailVerdict,
 } from '@lego-platform/catalog/ui';
 import { CatalogSetDetail } from '@lego-platform/catalog/util';
+import { buildSetDetailPath } from '@lego-platform/shared/config';
 
 export function CatalogFeatureSetDetail({
   bestDeal,
@@ -63,6 +64,7 @@ export function CatalogFeatureSetDetail({
       ownershipActions={ownershipActions}
       priceAlertAction={priceAlertAction}
       priceHistoryPanel={priceHistoryPanel}
+      setDetailHref={buildSetDetailPath(catalogSetDetail.slug)}
       similarSetsRail={similarSetsRail}
       setNewsRail={setNewsRail}
       themeDirectoryHref={themeDirectoryHref}

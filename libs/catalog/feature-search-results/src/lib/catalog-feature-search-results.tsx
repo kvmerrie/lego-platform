@@ -183,10 +183,7 @@ export function CatalogFeatureSearchResults({
           <div className={styles.searchEntry}>{searchEntry}</div>
         ) : null}
         <div className={styles.stateActions}>
-          <ActionLink
-            href={buildWebPath(webPathnames.discover)}
-            tone="secondary"
-          >
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
             Bekijk de catalogus
           </ActionLink>
         </div>
@@ -267,10 +264,7 @@ export function CatalogFeatureSearchResults({
         tone="muted"
       >
         <div className={styles.stateActions}>
-          <ActionLink
-            href={buildWebPath(webPathnames.discover)}
-            tone="secondary"
-          >
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
             Bekijk de catalogus
           </ActionLink>
         </div>

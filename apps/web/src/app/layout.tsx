@@ -46,8 +46,8 @@ export const metadata: Metadata = {
   other: isProduction
     ? {
         'tradetracker-site-verification':
-          '8858de23ea80b4b082e07071ae75490ea2ef4c72',
-        'fo-verify': '2f17a2d6-a04a-4f2d-baf6-8d57e9ac00d1',
+          '8858de23ea80b4b082e07071ae75490ea2ef4c72', // TradeTracker
+        ed72dd3c8e4430c: 'b7c0d46716f70588d904b1e98442871a', // Daisycon
       }
     : undefined,
 };

@@ -259,6 +259,8 @@ describe('CatalogSetCardRail', () => {
   });
 
   it('updates next and previous control state after button scrolling', () => {
+    railScrollWidth = 2160;
+
     act(() => {
       root.render(
         <CatalogSetCardRail
@@ -286,6 +288,18 @@ describe('CatalogSetCardRail', () => {
                 releaseYear: 2023,
                 pieces: 5202,
                 imageUrl: 'https://images.example/avengers-tower.jpg',
+              },
+            },
+            {
+              id: '43247',
+              setSummary: {
+                id: '43247',
+                slug: 'young-simba-the-lion-king-43247',
+                name: 'Young Simba the Lion King',
+                theme: 'Disney',
+                releaseYear: 2024,
+                pieces: 1445,
+                imageUrl: 'https://images.example/simba.jpg',
               },
             },
           ]}
@@ -366,6 +380,148 @@ describe('CatalogSetCardRail', () => {
     expect(previousButtonAtStart?.disabled).toBe(true);
     expect(nextButtonAtStart?.disabled).toBe(false);
     expect(thumb?.style.left).toBe('0%');
+  });
+
+  it('keeps heading actions before the dedicated rail controls', () => {
+    railScrollWidth = 2880;
+
+    act(() => {
+      root.render(
+        <CatalogSetCardRailSection
+          action={<a href="/deals">Bekijk alle deals</a>}
+          ariaLabel="Beste deals nu"
+          items={Array.from({ length: 20 }, (_, index) => {
+            const setId = String(30_000 + index);
+
+            return {
+              id: setId,
+              href: `/sets/set-${setId}`,
+              setSummary: {
+                id: setId,
+                slug: `set-${setId}`,
+                name: `Set ${index + 1}`,
+                theme: 'Icons',
+                releaseYear: 2024,
+                pieces: 1000 + index,
+                imageUrl: `https://images.example/${setId}.jpg`,
+              },
+            };
+          })}
+          title="Beste deals nu"
+          variant="featured"
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain('Bekijk alle deals');
+
+    const markup = container.innerHTML;
+
+    expect(markup.indexOf('Beste deals nu')).toBeLessThan(
+      markup.indexOf('Bekijk alle deals'),
+    );
+    expect(markup.indexOf('Bekijk alle deals')).toBeLessThan(
+      markup.indexOf('Scroll Beste deals nu naar links'),
+    );
+  });
+
+  it('pages heading controls by the visible card group on desktop rails', () => {
+    railClientWidth = 720;
+    railScrollWidth = 2880;
+
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Uitgelichte setrail"
+          items={Array.from({ length: 20 }, (_, index) => {
+            const setId = String(10_000 + index);
+
+            return {
+              id: setId,
+              setSummary: {
+                id: setId,
+                slug: `set-${setId}`,
+                name: `Set ${index + 1}`,
+                theme: 'Icons',
+                releaseYear: 2024,
+                pieces: 1000 + index,
+                imageUrl: `https://images.example/${setId}.jpg`,
+              },
+            };
+          })}
+          showControls
+          variant="featured"
+        />,
+      );
+    });
+
+    const nextButton = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+    const previousButton = container.querySelector(
+      'button[aria-label="Scroll Uitgelichte setrail naar links"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      nextButton?.click();
+    });
+    expect(scrollLeftValue).toBe(720);
+
+    act(() => {
+      nextButton?.click();
+    });
+    expect(scrollLeftValue).toBe(1440);
+
+    act(() => {
+      nextButton?.click();
+    });
+    expect(scrollLeftValue).toBe(2160);
+
+    act(() => {
+      previousButton?.click();
+    });
+    expect(scrollLeftValue).toBe(1440);
+  });
+
+  it('uses the responsive visible card count for smaller rail viewports', () => {
+    railClientWidth = 480;
+    railScrollWidth = 2400;
+
+    act(() => {
+      root.render(
+        <CatalogSetCardRail
+          ariaLabel="Compacte setrail"
+          items={Array.from({ length: 20 }, (_, index) => {
+            const setId = String(20_000 + index);
+
+            return {
+              id: setId,
+              setSummary: {
+                id: setId,
+                slug: `set-${setId}`,
+                name: `Set ${index + 1}`,
+                theme: 'City',
+                releaseYear: 2024,
+                pieces: 500 + index,
+                imageUrl: `https://images.example/${setId}.jpg`,
+              },
+            };
+          })}
+          showControls
+          variant="featured"
+        />,
+      );
+    });
+
+    const nextButton = container.querySelector(
+      'button[aria-label="Scroll Compacte setrail naar rechts"]',
+    ) as HTMLButtonElement | null;
+
+    act(() => {
+      nextButton?.click();
+    });
+
+    expect(scrollLeftValue).toBe(480);
   });
 
   it('uses the shared default section surface for themed rails so the rail shell keeps the standard radius', () => {

@@ -369,6 +369,209 @@ function isVehicleContext(input: EditorialAgentDraftGenerationInput): boolean {
   );
 }
 
+function splitSourceDetailSentences(value: string): string[] {
+  return normalizeWhitespace(value)
+    .split(/(?<=[.!?])\s+/u)
+    .map((sentence) =>
+      sentence
+        .replace(/^[-*]\s*/u, '')
+        .replace(/\s*\([^)]*bron[^)]*\)\s*/giu, ' ')
+        .trim(),
+    )
+    .filter(isNonEmptyString);
+}
+
+function isConcreteSourceDetailSentence(
+  sentence: string,
+  input: EditorialAgentDraftGenerationInput,
+): boolean {
+  const normalizedSentence = normalizeWhitespace(sentence);
+  const lowerSentence = normalizedSentence.toLowerCase();
+
+  if (
+    normalizedSentence.length < 28 ||
+    normalizedSentence.length > 180 ||
+    looksLikeEnglishSentence(normalizedSentence)
+  ) {
+    return false;
+  }
+
+  if (
+    /\b(?:aangekondigd|onthuld|verschijnt|release|pre-?order|voorbestellen|prijs|kost|€)\b/iu.test(
+      normalizedSentence,
+    ) &&
+    !/\b(?:bevat|bestaat uit|heeft|krijgt|komt met|inclusief|met een|met twee|met drie|met vier|met vijf)\b/iu.test(
+      normalizedSentence,
+    )
+  ) {
+    return false;
+  }
+
+  const titleContext = normalizeWhitespace(
+    [input.facts.title, input.source.title].filter(isNonEmptyString).join(' '),
+  ).toLowerCase();
+
+  if (titleContext.includes(lowerSentence)) {
+    return false;
+  }
+
+  const hasConcreteSignal =
+    /\b(?:achtergrond|accessoire|auto|beeld|bloem|bloemen|bouwwerk|brug|dak|displaystandaard|diorama|figuur|gebouw|helm|huis|kasteel|kleur|kleuren|koepel|lamp|minifiguur|minifiguren|model|object|plankje|poort|robot|schip|standaard|toren|vaas|voertuig)\b/iu.test(
+      normalizedSentence,
+    ) ||
+    /\b(?:appelvormige|bouwbare|gedrukte|ronde|transparante|verlichte|vormige)\b/iu.test(
+      normalizedSentence,
+    ) ||
+    /\b(?:bevat|bestaat uit|heeft|krijgt|komt met|inclusief|met een|met twee|met drie|met vier|met vijf)\b/iu.test(
+      normalizedSentence,
+    );
+
+  if (!hasConcreteSignal) {
+    return false;
+  }
+
+  return !/^(?:deze set|dit nieuws|het artikel)\s+(?:draait|gaat|is)\b/iu.test(
+    normalizedSentence,
+  );
+}
+
+function getConcreteSourceDetails(
+  input: EditorialAgentDraftGenerationInput,
+  limit = 2,
+): string[] {
+  const structuredDetails = getStructuredConcreteSourceDetails(input, limit);
+  const candidates = [
+    ...input.facts.keyPoints,
+    input.facts.summary,
+    input.source.description,
+  ].flatMap((value) =>
+    isNonEmptyString(value) ? splitSourceDetailSentences(value) : [],
+  );
+  const details: string[] = [...structuredDetails];
+
+  for (const candidate of candidates) {
+    const detail = cleanPublicDraftCopy(candidate).replace(/\s+$/u, '');
+
+    if (
+      !isConcreteSourceDetailSentence(detail, input) ||
+      details.some(
+        (existingDetail) =>
+          existingDetail.toLowerCase() === detail.toLowerCase(),
+      )
+    ) {
+      continue;
+    }
+
+    details.push(detail);
+
+    if (details.length >= limit) {
+      return details;
+    }
+  }
+
+  return details;
+}
+
+function getStructuredConcreteSourceDetails(
+  input: EditorialAgentDraftGenerationInput,
+  limit: number,
+): string[] {
+  const sourceText = normalizeWhitespace(
+    [
+      ...input.facts.keyPoints,
+      input.facts.summary,
+      input.source.description,
+      input.source.title,
+    ]
+      .filter(isNonEmptyString)
+      .join(' '),
+  );
+  const lowerSourceText = sourceText.toLowerCase();
+  const details: string[] = [];
+
+  function addDetail(detail: string): void {
+    if (
+      details.length >= limit ||
+      details.some(
+        (existingDetail) =>
+          existingDetail.toLowerCase() === detail.toLowerCase(),
+      )
+    ) {
+      return;
+    }
+
+    details.push(detail);
+  }
+
+  if (
+    /\b(?:black|zwarte?)\b[\s\S]{0,80}\b(?:apple-shaped|appelvormige?|appelvorm)\b[\s\S]{0,80}\b(?:background|achtergrond)\b/iu.test(
+      sourceText,
+    ) ||
+    /\b(?:background|achtergrond)\b[\s\S]{0,80}\b(?:black|zwarte?)\b[\s\S]{0,80}\b(?:apple-shaped|appelvormige?|appelvorm)\b/iu.test(
+      sourceText,
+    )
+  ) {
+    addDetail(
+      'Opvallend is de zwarte appelvormige achtergrond, een duidelijke verwijzing naar New York.',
+    );
+  }
+
+  const skylineBuildings = [
+    'Empire State Building',
+    'One World Trade Center',
+    'Brooklyn Bridge',
+    'Chrysler Building',
+    'Flatiron Building',
+    'Statue of Liberty',
+    'Vrijheidsbeeld',
+  ].filter((buildingName) =>
+    lowerSourceText.includes(buildingName.toLowerCase()),
+  );
+
+  if (
+    skylineBuildings.length >= 2 &&
+    /\b(?:skyline|gebouwen|buildings?)\b/iu.test(sourceText)
+  ) {
+    addDetail(
+      `De skyline bevat onder andere ${formatDutchList(skylineBuildings)}.`,
+    );
+  }
+
+  const pieceCountMatch = sourceText.match(
+    /\b(\d{1,3}(?:[.,]\d{3})|\d{3,5})\s*(?:pieces|stenen|onderdelen)\b/iu,
+  );
+
+  if (pieceCountMatch?.[1]) {
+    addDetail(`De set telt ${pieceCountMatch[1].replace(',', '.')} stenen.`);
+  }
+
+  const dimensionMatch = sourceText.match(
+    /\b(\d{1,3})\s*cm\s*(?:high|hoog)[\s\S]{0,40}\b(\d{1,3})\s*cm\s*(?:wide|breed)[\s\S]{0,40}\b(\d{1,3})\s*cm\s*(?:deep|diep)\b/iu,
+  );
+
+  if (dimensionMatch?.[1] && dimensionMatch[2] && dimensionMatch[3]) {
+    addDetail(
+      `Het model is ${dimensionMatch[1]} cm hoog, ${dimensionMatch[2]} cm breed en ${dimensionMatch[3]} cm diep.`,
+    );
+  }
+
+  return details;
+}
+
+function buildConcreteSourceDetailParagraph(
+  input: EditorialAgentDraftGenerationInput,
+): string {
+  const sourceDetails = getConcreteSourceDetails(input);
+
+  if (sourceDetails.length === 0) {
+    return '';
+  }
+
+  return sourceDetails.length === 1
+    ? sourceDetails[0]
+    : `${sourceDetails[0]} ${sourceDetails[1]}`;
+}
+
 function getDomainAwareFocusPhrase(
   input: EditorialAgentDraftGenerationInput,
 ): string {
@@ -2638,21 +2841,24 @@ Kijk naar de details, de bouwvorm en de plek die deze set in je collectie zou kr
     case 'multi_set_announcement':
       {
         const subjectPhrase = getMultiSetAnnouncementSubjectPhrase(input);
+        const detailParagraph = buildConcreteSourceDetailParagraph(input);
 
         if (subjectPhrase) {
           return `## Wat is er aangekondigd?
 
 ${capitalizeSentenceStart(subjectPhrase)} vormen de kern van dit nieuws. Daardoor draait de eerste indruk niet om één losse favoriet, maar om vergelijken: welke set heeft de sterkste vorm, het scherpste detail of het beste displaymoment?
 
-Kijk welke naam straks blijft hangen zodra er betere beelden, prijzen en officiële details zijn.`;
+${detailParagraph ? `${detailParagraph}\n\n` : ''}Kijk welke naam straks blijft hangen zodra er betere beelden, prijzen en officiële details zijn.`;
         }
       }
 
       if (!input.primarySet) {
+        const detailParagraph = buildConcreteSourceDetailParagraph(input);
+
         if (isBricksetWeakMultiSetDraft(input)) {
           return `## Wat valt op?
 
-Het belangrijkste is de richting: meerdere sets, zonder dat één set alles draagt. Kijk naar kleuren, vormen en displaywaarde.`;
+${detailParagraph ? `${detailParagraph}\n\n` : ''}Het belangrijkste is de richting: meerdere sets, zonder dat één set alles draagt. Kijk naar kleuren, vormen en displaywaarde.`;
         }
 
         if (isIdeasApprovalDraft(input)) {
@@ -2662,30 +2868,35 @@ Het belangrijkste is de richting: meerdere sets, zonder dat één set alles draa
 
 ${subjectLine || 'De bron draait om LEGO Ideas-projecten die als officiële set mogen worden uitgewerkt.'} De projecten zitten nog vroeg in het proces, dus het draait nu om de ideeën zelf.
 
-Kijk naar wat er aangekondigd is: welke ideeën hebben een sterke scène, welk project heeft de duidelijkste uitstraling en welke richting maakt nieuwsgierig naar de uiteindelijke LEGO-uitwerking?`;
+${detailParagraph ? `${detailParagraph}\n\n` : ''}Kijk naar wat er aangekondigd is: welke ideeën hebben een sterke scène, welk project heeft de duidelijkste uitstraling en welke richting maakt nieuwsgierig naar de uiteindelijke LEGO-uitwerking?`;
         }
 
         return `## Wat is er aangekondigd?
 
 Deze aankondiging draait om meerdere nieuwe LEGO-sets, zonder dat één set alles draagt.
 
-Kijk naar wat er aangekondigd is, welke richting LEGO kiest en welke sets straks opvallen zodra er betere beelden of officiële details zijn.`;
+${detailParagraph ? `${detailParagraph}\n\n` : ''}Kijk naar wat er aangekondigd is, welke richting LEGO kiest en welke sets straks opvallen zodra er betere beelden of officiële details zijn.`;
       }
 
-      return `## Wat is er aangekondigd?
+      {
+        const detailParagraph = buildConcreteSourceDetailParagraph(input);
+
+        return `## Wat is er aangekondigd?
 
 ${input.facts.summary || `${getMultiSetAnnouncementDisplayName(input)} voert deze nieuwe LEGO-aankondiging aan.`}
 
-Omdat het om meerdere sets gaat, draait het nu om richting en eerste indruk. Welke set heeft het sterkste beeld, welke heeft de beste uitstraling en welke blijft interessant als er straks meer details volgen?`;
+${detailParagraph ? `${detailParagraph}\n\n` : ''}Omdat het om meerdere sets gaat, draait het nu om richting en eerste indruk. Welke set heeft het sterkste beeld, welke heeft de beste uitstraling en welke blijft interessant als er straks meer details volgen?`;
+      }
     case 'single_set_news':
       if (singleSetTone === 'announcement') {
         const factLine = buildSingleSetAnnouncementFactLine(input);
+        const detailParagraph = buildConcreteSourceDetailParagraph(input);
 
         return `## Wat is er aangekondigd?
 
 ${factLine}
 
-Op dit moment zegt dat vooral: hij komt eraan. De echte beoordeling volgt pas zodra beelden en details duidelijker zijn.`;
+${detailParagraph ? `${detailParagraph}\n\n` : ''}Op dit moment zegt dat vooral: hij komt eraan. De echte beoordeling volgt pas zodra beelden en details duidelijker zijn.`;
       }
 
       return `## Waarom dit opvalt

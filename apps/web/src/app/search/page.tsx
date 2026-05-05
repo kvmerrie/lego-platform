@@ -80,7 +80,7 @@ export default async function SearchPage({
         searchEntry={
           shouldOpenMobileOverlay ? (
             <ShellWebSearchForm
-              closeFallbackHref={buildWebPath(webPathnames.discover)}
+              closeFallbackHref={buildWebPath(webPathnames.themes)}
               hideTrigger
               inputId="site-search-page-mobile"
               openOnMount

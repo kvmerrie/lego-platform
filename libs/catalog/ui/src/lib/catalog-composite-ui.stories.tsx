@@ -326,10 +326,10 @@ export const QuickFilterStates: Story = {
       <CatalogQuickFilterBar
         ariaLabel="Verfijn ontdekken"
         items={[
-          { href: '/discover', isActive: true, label: 'Alles' },
-          { href: '/discover?filter=deals', label: 'Nu interessant geprijsd' },
-          { href: '/discover?filter=minifigs', label: 'Sterke minifiguren' },
-          { href: '/discover?filter=display', label: 'Displaystukken' },
+          { href: '/themes', isActive: true, label: 'Alles' },
+          { href: '/deals', label: 'Nu interessant geprijsd' },
+          { href: '/themes/star-wars', label: 'Sterke minifiguren' },
+          { href: '/themes/icons', label: 'Displaystukken' },
         ]}
       />
     </div>
@@ -348,7 +348,7 @@ export const SplitIntroPanelStates: Story = {
       }}
     >
       <CatalogSplitIntroPanel
-        actionHref="/discover"
+        actionHref="/themes"
         actionLabel="Bekijk sets"
         primary={{
           description:

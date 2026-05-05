@@ -421,11 +421,13 @@ export function CatalogOfferComparison({
   className,
   id,
   offers,
+  setDetailHref,
   summaryLabel,
 }: {
   className?: string;
   id?: string;
   offers: readonly CatalogOfferItem[];
+  setDetailHref?: string;
   summaryLabel?: string;
 }) {
   if (offers.length === 0) {
@@ -447,6 +449,7 @@ export function CatalogOfferComparison({
       className={className}
       id={id}
       offers={offers}
+      setDetailHref={setDetailHref}
       summaryLabel={summaryLabel}
     />
   );

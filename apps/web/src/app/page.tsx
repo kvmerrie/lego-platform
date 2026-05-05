@@ -11,15 +11,17 @@ import {
   CatalogFeatureThemeSpotlight,
 } from '@lego-platform/catalog/feature-theme-list';
 import {
-  listCatalogCurrentOfferSummariesBySetIds,
+  getCatalogPartnerOfferRailDiagnostics,
+  listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCards,
+  listCatalogSetCardsByIds,
   listDiscoverBestDealSetCards,
-  listDiscoverNowInterestingSetCards,
-  listDiscoverRecentPriceChangeSetCards,
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
+  rankCatalogPartnerOfferSetCards,
+  selectCatalogFirstCommerceRailSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { getHomepagePage } from '@lego-platform/content/data-access';
@@ -32,14 +34,20 @@ import {
   type BrickhuntAnalyticsEventDescriptor,
   getBrickhuntAnalyticsPriceVerdictFromDelta,
 } from '@lego-platform/shared/util';
+import {
+  hasBrowserSupabaseConfig,
+  hasServerSupabaseConfig,
+} from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
 
 export const revalidate = 300;
-const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 6;
-const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 6;
+const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 20;
+const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 10;
+const HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT = 20;
 const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = 300;
+const HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS = 2;
 const homepageValueSignals = [
   {
     id: 'price-context',
@@ -61,7 +69,7 @@ const homepageValueSignals = [
 function toFeatureSetListItems(
   setCards: readonly CatalogHomepageSetCard[],
   currentOfferSummaryBySetId: Awaited<
-    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
+    ReturnType<typeof listCatalogCurrentOfferSummaries>
   >,
   {
     cardSurface,
@@ -168,6 +176,147 @@ function getUniqueCatalogSetIds(
   ];
 }
 
+function isHomepageCommerceRailsDebugEnabled(): boolean {
+  return (
+    process.env['DEBUG_COMMERCE_RAILS'] === 'true' ||
+    process.env['NODE_ENV'] === 'development'
+  );
+}
+
+function logHomepageCommerceRailDiagnostics({
+  allCatalogSetCards,
+  catalogDiscoverySignalBySetId,
+  commerceCandidateSetCards,
+  currentOfferSummaryBySetId,
+  homepageBestDealCandidateSetCards,
+  homepageBestDealSetCards,
+  homepageFirstCommerceInputSetCards,
+  scoredCommerceCandidateSetCards,
+  rotationSeed,
+}: {
+  allCatalogSetCards: readonly CatalogHomepageSetCard[];
+  commerceCandidateSetCards: readonly CatalogHomepageSetCard[];
+  catalogDiscoverySignalBySetId: Awaited<
+    ReturnType<typeof listCatalogDiscoverySignalsBySetId>
+  >;
+  currentOfferSummaryBySetId: Awaited<
+    ReturnType<typeof listCatalogCurrentOfferSummaries>
+  >;
+  homepageBestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
+  homepageBestDealSetCards: readonly CatalogFeatureSetListItem[];
+  homepageFirstCommerceInputSetCards: readonly CatalogHomepageSetCard[];
+  scoredCommerceCandidateSetCards: readonly CatalogHomepageSetCard[];
+  rotationSeed: number;
+}): void {
+  if (!isHomepageCommerceRailsDebugEnabled()) {
+    return;
+  }
+
+  const offerSummaries = [...currentOfferSummaryBySetId.values()];
+  const nonEmptyOfferSummaries = offerSummaries.filter(
+    (currentOfferSummary) =>
+      currentOfferSummary.offers.length > 0 ||
+      Boolean(currentOfferSummary.bestOffer),
+  );
+  const summariesWithOffers = offerSummaries.filter(
+    (currentOfferSummary) => currentOfferSummary.offers.length > 0,
+  ).length;
+  const summariesWithBestOffer = offerSummaries.filter((currentOfferSummary) =>
+    Boolean(currentOfferSummary.bestOffer),
+  ).length;
+  const setsWithCurrentPrice = offerSummaries.filter(
+    (currentOfferSummary) =>
+      typeof currentOfferSummary.bestOffer?.priceCents === 'number' &&
+      currentOfferSummary.bestOffer.priceCents > 0,
+  ).length;
+  const setsWithAffiliateDeeplink = offerSummaries.filter(
+    (currentOfferSummary) =>
+      typeof currentOfferSummary.bestOffer?.url === 'string' &&
+      currentOfferSummary.bestOffer.url.length > 0,
+  ).length;
+  const setsInStock = offerSummaries.filter(
+    (currentOfferSummary) =>
+      currentOfferSummary.bestOffer?.availability === 'in_stock',
+  ).length;
+  const sampleOfferSummaries = offerSummaries
+    .filter((currentOfferSummary) => currentOfferSummary.bestOffer)
+    .slice(0, 3)
+    .map((currentOfferSummary) => {
+      const bestOffer = currentOfferSummary.bestOffer;
+      const merchantSlug =
+        bestOffer && 'merchantSlug' in bestOffer
+          ? (bestOffer as { merchantSlug?: string }).merchantSlug
+          : undefined;
+
+      return {
+        availability: bestOffer?.availability,
+        checkedAt: bestOffer?.checkedAt,
+        currency: bestOffer?.currency,
+        hasUrl: Boolean(bestOffer?.url),
+        merchantName: bestOffer?.merchantName,
+        merchantSlug,
+        priceCents: bestOffer?.priceCents,
+        setId: currentOfferSummary.setId,
+      };
+    });
+
+  console.info('[commerce-rails] homepage diagnostics', {
+    candidates: {
+      bestDealsNow: homepageBestDealCandidateSetCards.map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+    },
+    dataSource: {
+      apiProxyTarget: process.env['API_PROXY_TARGET'] ?? null,
+      commerceRailSource: 'current-offers-first',
+      currentOfferLoader: 'runtime-current-offers',
+      hasBrowserSupabaseConfig: hasBrowserSupabaseConfig(),
+      hasServerSupabaseConfig: hasServerSupabaseConfig(),
+      supabaseFallbackAvailable: hasServerSupabaseConfig(),
+      usingGeneratedArtifactsForCurrentOffers: false,
+      usingRuntimeSupabaseCommerceData: true,
+    },
+    finalRailCounts: {
+      bestDealsNow: homepageBestDealSetCards.length,
+    },
+    railPipeline: {
+      firstRailInputCount: homepageFirstCommerceInputSetCards.length,
+      firstRailRenderedCount: homepageBestDealSetCards.length,
+      scoredCommerceCandidateCount: scoredCommerceCandidateSetCards.length,
+    },
+    firstSetScoringInputs: getCatalogPartnerOfferRailDiagnostics({
+      catalogDiscoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      excludedSetIds: homepageBestDealSetCards.map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+      limit: 10,
+      rotationSeed,
+      setCards: commerceCandidateSetCards,
+    }),
+    offerSignals: {
+      firstHomepageCatalogSetIds: allCatalogSetCards
+        .map((catalogSetCard) => catalogSetCard.id)
+        .slice(0, 20),
+      firstCommerceCandidateSetIds: commerceCandidateSetCards
+        .map((catalogSetCard) => catalogSetCard.id)
+        .slice(0, 20),
+      firstReturnedOfferSetIds: offerSummaries
+        .map((currentOfferSummary) => currentOfferSummary.setId)
+        .slice(0, 20),
+      nonEmptySummaryCount: nonEmptyOfferSummaries.length,
+      sampleOfferSummaries,
+      setsInStock,
+      setsWithAffiliateDeeplink,
+      setsWithCurrentPrice,
+      summariesWithBestOffer,
+      summariesWithOffers,
+      totalOfferSummaries: offerSummaries.length,
+    },
+    totalSetsLoaded: allCatalogSetCards.length,
+  });
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const queryMode = await getEditorialQueryMode();
   const homepagePage = await getHomepagePage({
@@ -203,110 +352,74 @@ export default async function HomePage() {
       ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
       : undefined;
   const commerceRailRotationSeed = Math.floor(Date.now() / (1000 * 60 * 15));
+  const currentOfferSummaryBySetId = await listCatalogCurrentOfferSummaries({
+    limit: 300,
+  });
+  const commerceCandidateSetCards = await listCatalogSetCardsByIds({
+    canonicalIds: [...currentOfferSummaryBySetId.keys()],
+  });
   const homepageBestDealCandidateSetCards = getCatalogDiscoverySignalFn
     ? await listDiscoverBestDealSetCards({
         getCatalogDiscoverySignalFn,
         limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
         rotationSeed: commerceRailRotationSeed,
-        setCards: allCatalogSetCards,
+        setCards: commerceCandidateSetCards,
       })
     : [];
-  const homepageRecentPriceDropCandidateSetCards = getCatalogDiscoverySignalFn
-    ? await listDiscoverRecentPriceChangeSetCards({
-        excludedSetIds: homepageBestDealCandidateSetCards.map(
-          (catalogSetCard) => catalogSetCard.id,
-        ),
-        getCatalogDiscoverySignalFn,
-        limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
-        rotationSeed: commerceRailRotationSeed,
-        setCards: allCatalogSetCards,
-      })
-    : [];
-  const homepageNowInterestingCandidateSetCards = getCatalogDiscoverySignalFn
-    ? await listDiscoverNowInterestingSetCards({
-        excludedSetIds: getUniqueCatalogSetIds([
-          homepageBestDealCandidateSetCards,
-          homepageRecentPriceDropCandidateSetCards,
-        ]),
-        getCatalogDiscoverySignalFn,
-        limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
-        rotationSeed: commerceRailRotationSeed,
-        setCards: allCatalogSetCards,
-      })
-    : [];
-  const homepageFallbackWatchSetCards = await listHomepageSetCards({
-    excludedSetIds: getUniqueCatalogSetIds([
-      homepageBestDealCandidateSetCards,
-      homepageRecentPriceDropCandidateSetCards,
-      homepageNowInterestingCandidateSetCards,
-    ]),
-    getCatalogDiscoverySignalFn,
-    limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
-  });
-  const homepageFeaturedSetCards = await listHomepageSetCards({
-    excludedSetIds: getUniqueCatalogSetIds([
-      homepageBestDealCandidateSetCards,
-      homepageRecentPriceDropCandidateSetCards,
-      homepageNowInterestingCandidateSetCards,
-      homepageFallbackWatchSetCards,
-    ]),
-    getCatalogDiscoverySignalFn,
-    limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
-  });
-  const currentOfferSummaryBySetId =
-    await listCatalogCurrentOfferSummariesBySetIds({
-      cacheOptions: {
-        revalidateSeconds: HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS,
-      },
-      setIds: getUniqueCatalogSetIds([
-        homepageBestDealCandidateSetCards,
-        homepageRecentPriceDropCandidateSetCards,
-        homepageNowInterestingCandidateSetCards,
-        homepageFallbackWatchSetCards,
-        homepageFeaturedSetCards,
-      ]),
+  const homepageScoredCommerceCandidateSetCards =
+    rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
+      rotationSeed: commerceRailRotationSeed,
+      setCards: commerceCandidateSetCards,
+    });
+  const homepageFirstCommerceInputSetCards =
+    selectCatalogFirstCommerceRailSetCards({
+      limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
+      scoredCommerceCandidateSetCards: homepageScoredCommerceCandidateSetCards,
+      strictDealSetCards: homepageBestDealCandidateSetCards,
     });
   const homepageHeroSection = getHeroSection(homepagePage.sections);
-  const homepageBestDealSetCards = toFeatureSetListItems(
-    homepageBestDealCandidateSetCards,
+  const homepageBestDealCandidates = toFeatureSetListItems(
+    homepageFirstCommerceInputSetCards,
     currentOfferSummaryBySetId,
     {
       cardSurface: 'deal',
       sectionId: 'best-current-deals',
     },
   ).filter(hasCommerceAction);
-  const homepageRecentPriceDropSetCards = toFeatureSetListItems(
-    homepageRecentPriceDropCandidateSetCards,
-    currentOfferSummaryBySetId,
-    {
-      cardSurface: 'deal',
-      sectionId: 'recent-price-drops',
-    },
-  ).filter(hasCommerceAction);
-  const homepageNowInterestingSetCards = toFeatureSetListItems(
-    homepageNowInterestingCandidateSetCards,
-    currentOfferSummaryBySetId,
-    {
-      cardSurface: 'deal',
-      sectionId: 'now-interesting-to-buy',
-    },
-  ).filter(hasCommerceAction);
-  const homepageFallbackWatchItems = toFeatureSetListItems(
-    homepageFallbackWatchSetCards,
-    currentOfferSummaryBySetId,
-    {
-      cardSurface: 'deal',
-      sectionId: 'watchlist-commerce-fallback',
-    },
-  ).filter(hasCommerceAction);
+  const homepageBestDealSetCards =
+    homepageBestDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
+      ? homepageBestDealCandidates
+      : [];
+  const homepageFollowSetCards = await listHomepageSetCards({
+    excludedSetIds: getUniqueCatalogSetIds([homepageBestDealSetCards]),
+    getCatalogDiscoverySignalFn,
+    limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
+    rotationSeed: commerceRailRotationSeed,
+  });
   const homepageSetCards = toFeatureSetListItems(
-    homepageFeaturedSetCards,
+    homepageFollowSetCards,
     currentOfferSummaryBySetId,
     {
       cardSurface: 'featured',
-      sectionId: 'featured-sets',
+      sectionId: 'popular-to-follow',
     },
   );
+
+  logHomepageCommerceRailDiagnostics({
+    allCatalogSetCards,
+    catalogDiscoverySignalBySetId,
+    commerceCandidateSetCards,
+    currentOfferSummaryBySetId,
+    homepageBestDealCandidateSetCards,
+    homepageBestDealSetCards,
+    homepageFirstCommerceInputSetCards,
+    scoredCommerceCandidateSetCards: homepageScoredCommerceCandidateSetCards,
+    rotationSeed: commerceRailRotationSeed,
+  });
+
   const homepageHeroPage = homepageHeroSection
     ? {
         ...homepagePage,
@@ -327,51 +440,9 @@ export default async function HomePage() {
               eyebrow="Deals"
               sectionId="best-current-deals"
               setCards={homepageBestDealSetCards}
-              signalText={`${homepageBestDealSetCards.length} sets met een directe kooplink`}
+              showSignal={false}
               tone="default"
               title="Beste deals nu"
-            />
-          </div>
-        ) : null}
-        {homepageRecentPriceDropSetCards.length ? (
-          <div className={styles.sectionGroup}>
-            <CatalogFeatureSetList
-              description="Deze sets zijn de afgelopen dagen goedkoper geworden en hebben nu een werkende winkelactie."
-              eyebrow="Prijsdaling"
-              sectionId="recent-price-drops"
-              setCards={homepageRecentPriceDropSetCards}
-              signalText={`${homepageRecentPriceDropSetCards.length} recente prijsdalingen`}
-              tone="default"
-              title="Net goedkoper geworden"
-            />
-          </div>
-        ) : null}
-        {homepageNowInterestingSetCards.length ? (
-          <div className={styles.sectionGroup}>
-            <CatalogFeatureSetList
-              description="Goede prijs, voorraad en winkeldekking komen hier samen. Handig als je vandaag wilt kiezen."
-              eyebrow="Koopmoment"
-              sectionId="now-interesting-to-buy"
-              setCards={homepageNowInterestingSetCards}
-              signalText={`${homepageNowInterestingSetCards.length} sets met koopmoment`}
-              tone="default"
-              title="Nu interessant om te kopen"
-            />
-          </div>
-        ) : null}
-        {!homepageBestDealSetCards.length &&
-        !homepageRecentPriceDropSetCards.length &&
-        !homepageNowInterestingSetCards.length &&
-        homepageFallbackWatchItems.length ? (
-          <div className={styles.sectionGroup}>
-            <CatalogFeatureSetList
-              description="Nog geen hard dealsignaal, maar deze sets hebben wel actuele winkeldata. Zet ze klaar om te volgen."
-              eyebrow="Volgen"
-              sectionId="watchlist-commerce-fallback"
-              setCards={homepageFallbackWatchItems}
-              signalText={`${homepageFallbackWatchItems.length} sets met actuele prijsdata`}
-              tone="default"
-              title="In de gaten houden"
             />
           </div>
         ) : null}
@@ -432,10 +503,10 @@ export default async function HomePage() {
         </div>
         <div className={styles.sectionGroup}>
           <CatalogFeatureSetList
-            description="Zoek je een groot displaystuk? Begin hier."
-            eyebrow="Pronkstukken"
+            description="Geen deal-label, wel sets die je collectie richting geven. Volg ze en pak het moment zodra prijs of voorraad goed wordt."
+            eyebrow="Volgen"
             setCards={homepageSetCards}
-            title="Torens, walkers, supercars"
+            title="Populair om te volgen"
             tone="muted"
           />
         </div>

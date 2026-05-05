@@ -13,15 +13,84 @@ import {
   type CommerceOfferSeedInput,
   type CommerceOfferSeedValidationStatus,
 } from '@lego-platform/commerce/util';
-import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
+import {
+  getProductionSupabaseConfig,
+  getServerSupabaseConfig,
+} from '@lego-platform/shared/config';
+import {
+  createSupabaseAdminClient,
+  getServerSupabaseAdminClient,
+} from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 export const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 export const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 export const COMMERCE_BENCHMARK_SETS_TABLE = 'commerce_benchmark_sets';
+export const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
 
 type CommerceSupabaseClient = Pick<SupabaseClient, 'from'>;
+
+type CommerceTableCopyClient = Pick<SupabaseClient, 'from'>;
+
+const COMMERCE_PRODUCTION_COPY_TABLES = [
+  {
+    name: COMMERCE_MERCHANTS_TABLE,
+    deleteKey: 'created_at',
+  },
+  {
+    name: COMMERCE_BENCHMARK_SETS_TABLE,
+    deleteKey: 'created_at',
+  },
+  {
+    name: COMMERCE_OFFER_SEEDS_TABLE,
+    deleteKey: 'created_at',
+  },
+  {
+    name: COMMERCE_OFFER_LATEST_TABLE,
+    deleteKey: 'created_at',
+  },
+  {
+    name: PRICING_DAILY_SET_HISTORY_TABLE,
+    deleteKey: 'recorded_on',
+  },
+] as const;
+
+const COMMERCE_PRODUCTION_COPY_DELETE_ORDER = [
+  PRICING_DAILY_SET_HISTORY_TABLE,
+  COMMERCE_OFFER_LATEST_TABLE,
+  COMMERCE_OFFER_SEEDS_TABLE,
+  COMMERCE_BENCHMARK_SETS_TABLE,
+  COMMERCE_MERCHANTS_TABLE,
+] as const;
+
+type CommerceProductionCopyTableName =
+  (typeof COMMERCE_PRODUCTION_COPY_TABLES)[number]['name'];
+
+export interface CommerceProductionCopyTableSummary {
+  deletedCount: number;
+  insertedCount: number;
+  sourceCount: number;
+  targetBeforeCount: number;
+}
+
+export interface CommerceProductionCopyResult {
+  dryRun: boolean;
+  durationMs: number;
+  startedAt: string;
+  status: 'ok';
+  tables: Record<
+    CommerceProductionCopyTableName,
+    CommerceProductionCopyTableSummary
+  >;
+}
+
+export class CommerceProductionCopyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CommerceProductionCopyError';
+  }
+}
 
 export interface CommerceOfferSeedValidationUpdateInput {
   lastVerifiedAt?: string | null;
@@ -182,6 +251,208 @@ function toCommerceBenchmarkSet(
     notes: row.notes ?? '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function chunkCommerceRows<TRow>(
+  rows: readonly TRow[],
+  size: number,
+): TRow[][] {
+  const chunks: TRow[][] = [];
+
+  for (let index = 0; index < rows.length; index += size) {
+    chunks.push(rows.slice(index, index + size));
+  }
+
+  return chunks;
+}
+
+function getCommerceProductionCopyTableConfig(
+  table: CommerceProductionCopyTableName,
+) {
+  return COMMERCE_PRODUCTION_COPY_TABLES.find(
+    (tableConfig) => tableConfig.name === table,
+  );
+}
+
+async function readCommerceProductionCopyRows({
+  supabaseClient,
+  table,
+}: {
+  supabaseClient: CommerceTableCopyClient;
+  table: CommerceProductionCopyTableName;
+}): Promise<Readonly<Record<string, unknown>>[]> {
+  const rows: Readonly<Record<string, unknown>>[] = [];
+  const pageSize = 1000;
+
+  for (let from = 0; ; from += pageSize) {
+    const to = from + pageSize - 1;
+    const { data, error } = await supabaseClient
+      .from(table)
+      .select('*')
+      .range(from, to);
+
+    if (error) {
+      throw new Error(`Unable to read ${table} for commerce production sync.`);
+    }
+
+    const pageRows = (data as Readonly<Record<string, unknown>>[] | null) ?? [];
+
+    rows.push(...pageRows);
+
+    if (pageRows.length < pageSize) {
+      return rows;
+    }
+  }
+}
+
+async function deleteCommerceProductionCopyRows({
+  supabaseClient,
+  table,
+}: {
+  supabaseClient: CommerceTableCopyClient;
+  table: CommerceProductionCopyTableName;
+}): Promise<number> {
+  const tableConfig = getCommerceProductionCopyTableConfig(table);
+
+  if (!tableConfig) {
+    throw new Error(`Commerce production sync table ${table} is not allowed.`);
+  }
+
+  const { count, error } = await supabaseClient
+    .from(table)
+    .delete({ count: 'exact' })
+    .not(tableConfig.deleteKey, 'is', null);
+
+  if (error) {
+    throw new Error(
+      `Unable to clear ${table} before commerce production sync.`,
+    );
+  }
+
+  return count ?? 0;
+}
+
+async function insertCommerceProductionCopyRows({
+  rows,
+  supabaseClient,
+  table,
+}: {
+  rows: readonly Readonly<Record<string, unknown>>[];
+  supabaseClient: CommerceTableCopyClient;
+  table: CommerceProductionCopyTableName;
+}): Promise<number> {
+  let insertedCount = 0;
+
+  for (const chunk of chunkCommerceRows(rows, 500)) {
+    const { error } = await supabaseClient.from(table).insert(chunk);
+
+    if (error) {
+      throw new Error(
+        `Unable to insert ${table} during commerce production sync.`,
+      );
+    }
+
+    insertedCount += chunk.length;
+  }
+
+  return insertedCount;
+}
+
+function assertCommerceProductionCopyTargetsNonProduction(): void {
+  const productionConfig = getProductionSupabaseConfig();
+  const targetConfig = getServerSupabaseConfig();
+
+  if (productionConfig.url.trim() === targetConfig.url.trim()) {
+    throw new CommerceProductionCopyError(
+      'Commerce production sync cannot run against the production Supabase project.',
+    );
+  }
+}
+
+export async function copyCommerceDataFromProduction({
+  createProductionSupabaseClient,
+  createTargetSupabaseClient,
+  dryRun = true,
+  now = () => new Date(),
+}: {
+  createProductionSupabaseClient?: () => CommerceTableCopyClient;
+  createTargetSupabaseClient?: () => CommerceTableCopyClient;
+  dryRun?: boolean;
+  now?: () => Date;
+} = {}): Promise<CommerceProductionCopyResult> {
+  const startedAt = now();
+
+  if (!createProductionSupabaseClient && !createTargetSupabaseClient) {
+    assertCommerceProductionCopyTargetsNonProduction();
+  }
+
+  const productionSupabaseClient =
+    createProductionSupabaseClient?.() ??
+    createSupabaseAdminClient(getProductionSupabaseConfig());
+  const targetSupabaseClient =
+    createTargetSupabaseClient?.() ?? getServerSupabaseAdminClient();
+  const tableRowsByName = new Map<
+    CommerceProductionCopyTableName,
+    Readonly<Record<string, unknown>>[]
+  >();
+  const targetRowsByName = new Map<
+    CommerceProductionCopyTableName,
+    Readonly<Record<string, unknown>>[]
+  >();
+
+  for (const tableConfig of COMMERCE_PRODUCTION_COPY_TABLES) {
+    const [sourceRows, targetRows] = await Promise.all([
+      readCommerceProductionCopyRows({
+        supabaseClient: productionSupabaseClient,
+        table: tableConfig.name,
+      }),
+      readCommerceProductionCopyRows({
+        supabaseClient: targetSupabaseClient,
+        table: tableConfig.name,
+      }),
+    ]);
+
+    tableRowsByName.set(tableConfig.name, sourceRows);
+    targetRowsByName.set(tableConfig.name, targetRows);
+  }
+
+  const tables = Object.fromEntries(
+    COMMERCE_PRODUCTION_COPY_TABLES.map((tableConfig) => [
+      tableConfig.name,
+      {
+        deletedCount: 0,
+        insertedCount: 0,
+        sourceCount: tableRowsByName.get(tableConfig.name)?.length ?? 0,
+        targetBeforeCount: targetRowsByName.get(tableConfig.name)?.length ?? 0,
+      },
+    ]),
+  ) as CommerceProductionCopyResult['tables'];
+
+  if (!dryRun) {
+    for (const table of COMMERCE_PRODUCTION_COPY_DELETE_ORDER) {
+      tables[table].deletedCount = await deleteCommerceProductionCopyRows({
+        supabaseClient: targetSupabaseClient,
+        table,
+      });
+    }
+
+    for (const tableConfig of COMMERCE_PRODUCTION_COPY_TABLES) {
+      tables[tableConfig.name].insertedCount =
+        await insertCommerceProductionCopyRows({
+          rows: tableRowsByName.get(tableConfig.name) ?? [],
+          supabaseClient: targetSupabaseClient,
+          table: tableConfig.name,
+        });
+    }
+  }
+
+  return {
+    dryRun,
+    durationMs: now().getTime() - startedAt.getTime(),
+    startedAt: startedAt.toISOString(),
+    status: 'ok',
+    tables,
   };
 }
 

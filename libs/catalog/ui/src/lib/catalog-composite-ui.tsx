@@ -70,6 +70,8 @@ const catalogSectionShellBodySpacingClasses: Record<
 };
 
 export function CatalogSectionHeader({
+  action,
+  actionClassName,
   className,
   description,
   eyebrow,
@@ -84,6 +86,8 @@ export function CatalogSectionHeader({
   utilityClassName,
   utilityPlacement = 'aside',
 }: {
+  action?: ReactNode;
+  actionClassName?: string;
   className?: string;
   description?: ReactNode;
   eyebrow?: string;
@@ -99,6 +103,7 @@ export function CatalogSectionHeader({
   utilityPlacement?: CatalogSectionHeaderUtilityPlacement;
 }) {
   const hasAside = signal || (utility && utilityPlacement === 'aside');
+  const TitleTag = titleAs;
 
   return (
     <div
@@ -109,14 +114,33 @@ export function CatalogSectionHeader({
       )}
     >
       <div className={styles.sectionHeaderMain}>
-        <SectionHeading
-          className={joinClasses(styles.sectionHeaderHeading, headingClassName)}
-          description={description}
-          eyebrow={eyebrow}
-          title={title}
-          titleAs={titleAs}
-          tone={headingTone}
-        />
+        <div
+          className={joinClasses(
+            styles.sectionHeaderHeading,
+            headingTone === 'display' && styles.sectionHeaderHeadingDisplay,
+            headingClassName,
+          )}
+        >
+          {eyebrow ? (
+            <p className={styles.sectionHeaderEyebrow}>{eyebrow}</p>
+          ) : null}
+          <div className={styles.sectionHeaderTitleRow}>
+            <TitleTag className={styles.sectionHeaderTitle}>{title}</TitleTag>
+            {action ? (
+              <div
+                className={joinClasses(
+                  styles.sectionHeaderAction,
+                  actionClassName,
+                )}
+              >
+                {action}
+              </div>
+            ) : null}
+          </div>
+          {description ? (
+            <p className={styles.sectionHeaderDescription}>{description}</p>
+          ) : null}
+        </div>
         {utility && utilityPlacement === 'below-heading' ? (
           <div
             className={joinClasses(
@@ -204,6 +228,8 @@ export function CatalogPageIntro({
 }
 
 export function CatalogSectionShell({
+  action,
+  actionClassName,
   as = 'section',
   bodyClassName,
   bodySpacing = 'default',
@@ -227,6 +253,8 @@ export function CatalogSectionShell({
   utilityPlacement = 'aside',
   ...rest
 }: Omit<HTMLAttributes<HTMLElement>, 'title'> & {
+  action?: ReactNode;
+  actionClassName?: string;
   as?: CatalogSectionShellElement;
   bodyClassName?: string;
   bodySpacing?: CatalogSectionShellBodySpacing;
@@ -253,6 +281,8 @@ export function CatalogSectionShell({
   const content = (
     <>
       <CatalogSectionHeader
+        action={action}
+        actionClassName={actionClassName}
         className={headerClassName}
         description={description}
         eyebrow={eyebrow}

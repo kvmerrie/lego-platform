@@ -484,10 +484,7 @@ export function CollectorWishlistPanel({
           >
             Open collectie
           </ActionLink>
-          <ActionLink
-            href={buildWebPath(webPathnames.discover)}
-            tone="secondary"
-          >
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
             Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
@@ -518,10 +515,7 @@ export function CollectorWishlistPanel({
           >
             Open account
           </ActionLink>
-          <ActionLink
-            href={buildWebPath(webPathnames.discover)}
-            tone="secondary"
-          >
+          <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">
             Bekijk catalogus
           </ActionLink>
           <ActionLink href={buildWebPath(webPathnames.themes)} tone="secondary">

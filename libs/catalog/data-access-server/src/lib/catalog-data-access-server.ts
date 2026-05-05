@@ -10,6 +10,7 @@ import {
   type CatalogSetSummary,
   buildCatalogThemeSlug,
   createCatalogSetRecord,
+  getCanonicalCatalogSetId,
   resolveCatalogReleaseDatePrecision,
   resolveCatalogThemeIdentity,
   resolveCatalogThemeIdentityFromPersistence,
@@ -34,6 +35,26 @@ const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
 const EURO_CURRENCY_CODE = 'EUR';
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
+
+function getCatalogSetIdOfferLookupVariants(
+  setIds: readonly string[],
+): string[] {
+  return [
+    ...new Set(
+      setIds.flatMap((setId) => {
+        const canonicalSetId = getCanonicalCatalogSetId(setId);
+
+        if (!canonicalSetId) {
+          return [];
+        }
+
+        return /^\d{5,6}$/.test(canonicalSetId)
+          ? [setId, canonicalSetId, `${canonicalSetId}-1`]
+          : [setId, canonicalSetId];
+      }),
+    ),
+  ].filter((setId) => setId.length > 0);
+}
 
 interface CatalogOverlaySetRow {
   created_at: string;
@@ -413,7 +434,7 @@ function toCatalogLiveOffer({
     merchantName: merchant.name,
     merchantSlug: merchant.slug,
     priceCents: latestOffer.price_minor,
-    setId: offerSeed.set_id,
+    setId: getCanonicalCatalogSetId(offerSeed.set_id),
     url: offerSeed.product_url,
   };
 }
@@ -425,7 +446,13 @@ async function listCatalogLiveOffersBySetIdsInternal({
   setIds: readonly string[];
   supabaseClient: CatalogSupabaseClient;
 }): Promise<Map<string, CatalogLiveOffer[]>> {
-  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
+  const uniqueSetIds = [
+    ...new Set(
+      setIds
+        .map((setId) => getCanonicalCatalogSetId(setId))
+        .filter((setId) => setId.length > 0),
+    ),
+  ];
   const liveOffersBySetId = new Map(
     uniqueSetIds.map((setId) => [setId, [] as CatalogLiveOffer[]]),
   );
@@ -434,12 +461,14 @@ async function listCatalogLiveOffersBySetIdsInternal({
     return liveOffersBySetId;
   }
 
+  const setIdLookupVariants = getCatalogSetIdOfferLookupVariants(setIds);
+
   const { data: seedData, error: seedError } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .select(
       'id, set_id, merchant_id, product_url, is_active, validation_status',
     )
-    .in('set_id', uniqueSetIds)
+    .in('set_id', setIdLookupVariants)
     .eq('is_active', true)
     .eq('validation_status', 'valid');
 
@@ -516,7 +545,9 @@ async function listCatalogLiveOffersBySetIdsInternal({
       continue;
     }
 
-    const existingOffers = liveOffersBySetId.get(offerSeed.set_id);
+    const existingOffers = liveOffersBySetId.get(
+      getCanonicalCatalogSetId(offerSeed.set_id),
+    );
 
     if (!existingOffers) {
       continue;
@@ -2336,17 +2367,20 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   setIds: readonly string[];
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCurrentOfferSummaryRecord[]> {
-  const uniqueSetIds = [...new Set(setIds)].filter((setId) => setId.length > 0);
+  const uniqueSetIds = [
+    ...new Set(
+      setIds
+        .map((setId) => getCanonicalCatalogSetId(setId))
+        .filter((setId) => setId.length > 0),
+    ),
+  ];
 
   if (!uniqueSetIds.length) {
     return [];
   }
 
   if (!supabaseClient && !hasServerSupabaseConfig()) {
-    return uniqueSetIds.map((setId) => ({
-      offers: [],
-      setId,
-    }));
+    return [];
   }
 
   try {
@@ -2357,21 +2391,22 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
       supabaseClient: activeSupabaseClient,
     });
 
-    return uniqueSetIds.map((setId) => {
-      const offers = liveOffersBySetId.get(setId) ?? [];
+    return [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
+      if (!offers.length) {
+        return [];
+      }
 
-      return {
-        bestOffer: offers[0],
-        offers,
-        setId,
-      };
+      return [
+        {
+          bestOffer: offers[0],
+          offers,
+          setId,
+        },
+      ];
     });
   } catch (error) {
     if (!supabaseClient) {
-      return uniqueSetIds.map((setId) => ({
-        offers: [],
-        setId,
-      }));
+      return [];
     }
 
     throw error;

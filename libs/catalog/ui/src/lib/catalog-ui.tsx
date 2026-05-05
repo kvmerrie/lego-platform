@@ -24,13 +24,13 @@ import {
   Blocks,
   Cake,
   CalendarDays,
+  ChevronRight,
   Clock3,
   Eye,
   Hash,
   Minus,
   Package2,
   Ruler,
-  ShoppingBag,
   UsersRound,
 } from 'lucide-react';
 import {
@@ -118,6 +118,25 @@ type CatalogSetCardPriceDisplay = 'default' | 'subtle';
 type CatalogSetCardCollectionLayout = 'grid' | 'rail';
 type CatalogSetCardCollectionGridMode = 'browse' | 'tiles';
 export type CatalogSetCardCtaMode = 'default' | 'commerce';
+
+export function CatalogRailTertiaryAction({
+  children,
+  className,
+  ...props
+}: ComponentProps<typeof ActionLink>) {
+  return (
+    <ActionLink
+      className={[styles.railActionLink, className].filter(Boolean).join(' ')}
+      tone="inline"
+      {...props}
+    >
+      <span>{children}</span>
+      <ChevronRight aria-hidden="true" size={16} strokeWidth={2.2} />
+    </ActionLink>
+  );
+}
+
+export const CatalogRailActionLink = CatalogRailTertiaryAction;
 
 export const CatalogSetCardCollection = forwardRef<
   HTMLDivElement,
@@ -363,11 +382,8 @@ function getCardMerchantLabel(merchantLabel: string): string {
 }
 
 function getCardPrimaryActionConfig({
-  ctaMode,
   href,
-  priceContext,
   trackingEvent,
-  variant,
 }: {
   ctaMode: CatalogSetCardCtaMode;
   href?: string;
@@ -377,26 +393,12 @@ function getCardPrimaryActionConfig({
 }): {
   className: string;
   href?: string;
-  icon: typeof Eye | typeof ShoppingBag;
+  icon: typeof Eye;
   label: string;
   rel?: string;
   target?: '_blank';
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
 } {
-  const primaryActionHref = priceContext?.primaryActionHref?.trim();
-
-  if (ctaMode === 'commerce' && variant === 'featured' && primaryActionHref) {
-    return {
-      className: styles.cardCompactActionCommerce,
-      href: primaryActionHref,
-      icon: ShoppingBag,
-      label: 'Koop nu',
-      rel: 'noopener noreferrer',
-      target: '_blank',
-      trackingEvent: priceContext?.primaryActionTrackingEvent,
-    };
-  }
-
   return {
     className: styles.cardCompactActionBrowse,
     href,
@@ -1235,6 +1237,7 @@ export function CatalogSetDetailPanel({
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
+  setDetailHref,
   similarSetsRail,
   setNewsRail,
   themeDirectoryHref,
@@ -1254,6 +1257,7 @@ export function CatalogSetDetailPanel({
   ownershipActions?: ReactNode;
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
+  setDetailHref?: string;
   similarSetsRail?: ReactNode;
   setNewsRail?: ReactNode;
   themeDirectoryHref?: string;
@@ -1387,6 +1391,7 @@ export function CatalogSetDetailPanel({
             className={styles.detailOfferComparisonSection}
             id={offerComparisonSectionId}
             offers={offerList}
+            setDetailHref={setDetailHref ?? `/sets/${catalogSetDetail.slug}`}
             summaryLabel={offerSummaryLabel}
           />
           <CatalogSetSupportCard

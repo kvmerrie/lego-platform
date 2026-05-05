@@ -97,6 +97,52 @@ function clampRailValue(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
+function getRailVisibleGroupScrollTarget({
+  direction,
+  itemCount,
+  railElement,
+}: {
+  direction: 'next' | 'previous';
+  itemCount: number;
+  railElement: HTMLDivElement;
+}): number {
+  const maxScrollLeft = Math.max(
+    railElement.scrollWidth - railElement.clientWidth,
+    0,
+  );
+
+  if (itemCount <= 0 || maxScrollLeft <= RAIL_SCROLL_EPSILON) {
+    return railElement.scrollLeft;
+  }
+
+  const estimatedCardSpan = railElement.scrollWidth / itemCount;
+
+  if (!Number.isFinite(estimatedCardSpan) || estimatedCardSpan <= 0) {
+    return clampRailValue(
+      railElement.scrollLeft +
+        (direction === 'next'
+          ? railElement.clientWidth
+          : -railElement.clientWidth),
+      0,
+      maxScrollLeft,
+    );
+  }
+
+  const visibleCardCount = Math.max(
+    1,
+    Math.round(railElement.clientWidth / estimatedCardSpan),
+  );
+  const currentCardIndex = Math.round(
+    railElement.scrollLeft / estimatedCardSpan,
+  );
+  const nextCardIndex =
+    currentCardIndex +
+    (direction === 'next' ? visibleCardCount : -visibleCardCount);
+  const nextScrollLeft = nextCardIndex * estimatedCardSpan;
+
+  return clampRailValue(nextScrollLeft, 0, maxScrollLeft);
+}
+
 function CatalogSetCardRailIcon({
   icon: Icon,
 }: {
@@ -319,11 +365,15 @@ function CatalogSetCardRailViewport({
       return;
     }
 
-    const scrollAmount = Math.max(railElement.clientWidth * 0.92, 240);
+    const nextScrollLeft = getRailVisibleGroupScrollTarget({
+      direction,
+      itemCount: items.length,
+      railElement,
+    });
 
     railElement.scrollBy({
       behavior: 'smooth',
-      left: direction === 'next' ? scrollAmount : -scrollAmount,
+      left: nextScrollLeft - railElement.scrollLeft,
     });
     queueRailMetricsFollowUp();
   }
@@ -579,6 +629,7 @@ export function CatalogSetCardRail({
 export function CatalogSetCardRailSection({
   ariaLabel,
   className,
+  footer,
   items,
   mobileOverflowBleed = false,
   mobileOverflowBleedUntil = 'mobile',
@@ -592,6 +643,7 @@ export function CatalogSetCardRailSection({
   'children' | 'utility' | 'utilityPlacement'
 > &
   CatalogSetCardRailProps & {
+    footer?: ReactNode;
     railClassName?: string;
     surfaceVariant?: 'default' | 'themed';
   }) {
@@ -615,11 +667,12 @@ export function CatalogSetCardRailSection({
             .filter(Boolean)
             .join(' ')}
           tone={tone}
+          {...sectionProps}
           utility={controls}
           utilityPlacement="aside"
-          {...sectionProps}
         >
           <div className={railClassName}>{rail}</div>
+          {footer}
         </CatalogSectionShell>
       )}
       variant={variant}

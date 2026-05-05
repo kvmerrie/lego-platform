@@ -3,9 +3,11 @@ import {
   sortCatalogOffers,
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
+import type { Metadata } from 'next';
 import React from 'react';
 import {
   getCatalogPrimaryOfferAvailabilityStateBySetId,
+  type CatalogCurrentOfferSummary,
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
   getCatalogSetBySlug,
@@ -51,6 +53,7 @@ import {
   buildWebPath,
   buildArticlePath,
   getDefaultFormattingLocale,
+  publicWebBaseUrls,
   webPathnames,
 } from '@lego-platform/shared/config';
 import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
@@ -59,6 +62,7 @@ import { notFound } from 'next/navigation';
 import {
   getCatalogReleaseYear,
   resolveCatalogReleaseDatePrecision,
+  type CatalogSetDetail,
   type CatalogReleaseDatePrecision,
   type CatalogSetStatus,
 } from '@lego-platform/catalog/util';
@@ -70,10 +74,11 @@ export const dynamicParams = true;
 export const revalidate = 300;
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
-const SIMILAR_SETS_RAIL_LIMIT = 6;
+const SIMILAR_SETS_RAIL_LIMIT = 20;
 const SET_NEWS_RAIL_LIMIT = 4;
 const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
 const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
+const DEFAULT_SET_DETAIL_OG_IMAGE = '/favicon.ico';
 
 export type SetDetailAvailabilityFallbackState =
   | 'available'
@@ -127,6 +132,160 @@ function formatOfferPrice(catalogOffer: CatalogOffer): string {
     style: 'currency',
     currency: catalogOffer.currency,
   }).format(catalogOffer.priceCents / 100);
+}
+
+function formatMetadataPrice({
+  currencyCode,
+  minorUnits,
+}: {
+  currencyCode: string;
+  minorUnits: number;
+}): string {
+  return formatPriceMinor({
+    currencyCode,
+    minorUnits,
+  }).replace(/\u00a0/g, ' ');
+}
+
+function toAbsoluteMetadataUrl(url: string | undefined): string {
+  const baseUrl = publicWebBaseUrls.production;
+
+  if (!url) {
+    return `${baseUrl}${DEFAULT_SET_DETAIL_OG_IMAGE}`;
+  }
+
+  try {
+    return new URL(url).toString();
+  } catch {
+    return new URL(url, baseUrl).toString();
+  }
+}
+
+function getSetDetailMetadataImageUrl(
+  catalogSetDetail: Pick<
+    CatalogSetDetail,
+    'imageUrl' | 'images' | 'primaryImage'
+  >,
+): string {
+  return toAbsoluteMetadataUrl(
+    catalogSetDetail.primaryImage ??
+      catalogSetDetail.images?.find((image) => image.type === 'hero')?.url ??
+      catalogSetDetail.imageUrl,
+  );
+}
+
+function getReliableDiscountPercentage(
+  pricePanelSnapshot?: Pick<
+    PricePanelSnapshot,
+    'deltaMinor' | 'referencePriceMinor'
+  >,
+): number | undefined {
+  if (
+    typeof pricePanelSnapshot?.deltaMinor !== 'number' ||
+    pricePanelSnapshot.deltaMinor >= 0 ||
+    typeof pricePanelSnapshot.referencePriceMinor !== 'number' ||
+    pricePanelSnapshot.referencePriceMinor <= 0
+  ) {
+    return undefined;
+  }
+
+  const percentage = Math.round(
+    (Math.abs(pricePanelSnapshot.deltaMinor) /
+      pricePanelSnapshot.referencePriceMinor) *
+      100,
+  );
+
+  return percentage >= 5 ? percentage : undefined;
+}
+
+function getNextBestOfferPriceDeltaMinor(
+  offers: readonly CatalogOffer[],
+  bestOffer: CatalogOffer,
+): number | undefined {
+  const nextBestOffer = sortCatalogOffers(offers).find(
+    (catalogOffer) => catalogOffer.url !== bestOffer.url,
+  );
+  const deltaMinor = nextBestOffer
+    ? nextBestOffer.priceCents - bestOffer.priceCents
+    : undefined;
+
+  return typeof deltaMinor === 'number' && deltaMinor > 0
+    ? deltaMinor
+    : undefined;
+}
+
+export function buildSetDetailMetadata({
+  catalogSetDetail,
+  currentOfferSummary,
+  pricePanelSnapshot,
+}: {
+  catalogSetDetail: CatalogSetDetail;
+  currentOfferSummary?: CatalogCurrentOfferSummary;
+  pricePanelSnapshot?: PricePanelSnapshot;
+}): Metadata {
+  const bestOffer = currentOfferSummary?.bestOffer;
+  const discountPercentage = getReliableDiscountPercentage(pricePanelSnapshot);
+  const imageUrl = getSetDetailMetadataImageUrl(catalogSetDetail);
+  const priceLabel = bestOffer
+    ? formatMetadataPrice({
+        currencyCode: bestOffer.currency,
+        minorUnits: bestOffer.priceCents,
+      })
+    : undefined;
+  const titleParts = [
+    catalogSetDetail.name,
+    priceLabel ? `Nu ${priceLabel}` : undefined,
+    discountPercentage ? `${discountPercentage}% korting` : undefined,
+  ].filter(Boolean);
+  const title = titleParts.join('. ');
+  const nextBestPriceDeltaMinor =
+    bestOffer && currentOfferSummary
+      ? getNextBestOfferPriceDeltaMinor(currentOfferSummary.offers, bestOffer)
+      : undefined;
+  const fallbackDescriptionParts = [
+    `LEGO ${catalogSetDetail.theme}-set`,
+    catalogSetDetail.releaseYear
+      ? `uit ${catalogSetDetail.releaseYear}`
+      : undefined,
+    catalogSetDetail.pieces > 0
+      ? `met ${catalogSetDetail.pieces} stenen`
+      : undefined,
+  ].filter(Boolean);
+  const description =
+    bestOffer && typeof nextBestPriceDeltaMinor === 'number'
+      ? `Laagste nagekeken prijs bij ${bestOffer.merchantName}. ${formatMetadataPrice(
+          {
+            currencyCode: bestOffer.currency,
+            minorUnits: nextBestPriceDeltaMinor,
+          },
+        )} goedkoper dan de rest.`
+      : bestOffer && (currentOfferSummary?.offers.length ?? 0) > 1
+        ? `Nu verkrijgbaar bij ${currentOfferSummary?.offers.length} winkels. Laagste nagekeken prijs: ${priceLabel}.`
+        : bestOffer
+          ? `Laagste nagekeken prijs bij ${bestOffer.merchantName}: ${priceLabel}.`
+          : `${fallbackDescriptionParts.join(' ')}. Prijs volgt nog; volg deze set zodra er een koopmoment is.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          alt: `${catalogSetDetail.name} setbeeld`,
+        },
+      ],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
 }
 
 function formatOfferCheckedAt(checkedAt: string): string {
@@ -796,6 +955,35 @@ export function SetNewsRail({
 
 export async function generateStaticParams() {
   return (await listCatalogSetSlugs()).map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const catalogSetDetail = await getCatalogSetBySlug({
+    slug,
+  });
+
+  if (!catalogSetDetail) {
+    return {};
+  }
+
+  const currentOfferSummaryBySetId =
+    await listCatalogCurrentOfferSummariesBySetIds({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+      },
+      setIds: [catalogSetDetail.id],
+    });
+
+  return buildSetDetailMetadata({
+    catalogSetDetail,
+    currentOfferSummary: currentOfferSummaryBySetId.get(catalogSetDetail.id),
+    pricePanelSnapshot: getPricePanelSnapshot(catalogSetDetail.id),
+  });
 }
 
 export default async function SetDetailPage({

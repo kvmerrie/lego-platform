@@ -224,7 +224,7 @@ export function formatEditorialAgentSetIdsForMdx(
 
 export function formatSetRailSetIdsForMdx(setIds: readonly string[]): string {
   return formatEditorialAgentSetIdsForMdx(setIds, {
-    maxItems: 6,
+    maxItems: 20,
   });
 }
 

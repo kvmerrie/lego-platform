@@ -144,7 +144,7 @@ describe('ShellWeb', () => {
     expect(markup).toContain('href="/volgt"');
     expect(markup).toContain('href="/artikelen"');
     expect(markup).toContain('href="/search?overlay=1"');
-    expect(markup).toContain('href="/discover?filter=best-deals"');
+    expect(markup).toContain('href="/deals"');
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="/account/wishlist"');
     expect(markup).toContain('Mobiele tabnavigatie');
@@ -161,7 +161,7 @@ describe('ShellWeb', () => {
 
     expect(mobileTabbarHrefs.slice(0, 5)).toEqual([
       '/artikelen',
-      '/discover?filter=best-deals',
+      '/deals',
       '/search?overlay=1',
       '/themes',
       '/volgt',
@@ -207,15 +207,14 @@ describe('getActiveMobileTabId', () => {
     );
     expect(
       getActiveMobileTabId({
-        pathname: '/discover',
-        searchFilter: 'best-deals',
+        pathname: '/deals',
       }),
     ).toBe('deals');
   });
 
   it('returns no active tab for routes outside the main mobile tab model', () => {
     expect(getActiveMobileTabId({ pathname: '/' })).toBeUndefined();
-    expect(getActiveMobileTabId({ pathname: '/discover' })).toBeUndefined();
+    expect(getActiveMobileTabId({ pathname: '/legacy' })).toBeUndefined();
     expect(
       getActiveMobileTabId({ pathname: '/sets/rivendell-10316' }),
     ).toBeUndefined();
@@ -230,15 +229,14 @@ describe('isShellWebNavLinkActive', () => {
   it('matches desktop navigation links on index and detail routes', () => {
     expect(
       isShellWebNavLinkActive({
-        href: '/discover?filter=best-deals',
-        pathname: '/discover',
-        searchFilter: 'best-deals',
+        href: '/deals',
+        pathname: '/deals',
       }),
     ).toBe(true);
     expect(
       isShellWebNavLinkActive({
-        href: '/discover?filter=best-deals',
-        pathname: '/discover',
+        href: '/deals',
+        pathname: '/legacy',
       }),
     ).toBe(false);
     expect(
@@ -435,7 +433,7 @@ describe('advanceShellHeaderRevealState', () => {
 describe('getFollowingNavPageSurface', () => {
   it('maps core routes to stable page surfaces', () => {
     expect(getFollowingNavPageSurface('/')).toBe('homepage');
-    expect(getFollowingNavPageSurface('/discover')).toBe('discover');
+    expect(getFollowingNavPageSurface('/deals')).toBe('deals');
     expect(getFollowingNavPageSurface('/search')).toBe('search');
     expect(getFollowingNavPageSurface('/sets/rivendell-10316')).toBe(
       'set_detail',

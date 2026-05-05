@@ -30,15 +30,22 @@ const DEAL_SIGNAL_TERMS = [
   'sale',
 ] as const;
 const AVAILABILITY_SIGNAL_TERMS = [
-  'beperkte voorraad',
-  'back in stock',
-  'beschikbaar',
   'leverbaar',
   'niet meer te bestellen',
-  'nu te bestellen',
   'op voorraad',
+  'uitverkocht',
   'weer beschikbaar',
-  'weer op voorraad',
+] as const;
+const PREORDER_SIGNAL_TERMS = [
+  'nu te pre-orderen',
+  'pre-order',
+  'pre-orderen',
+  'voorbestellen',
+] as const;
+const ANNOUNCEMENT_CONTEXT_TERMS = [
+  'aangekondigd',
+  'onthuld',
+  'verschijnt op',
 ] as const;
 const RELEASE_ROUNDUP_SIGNAL_TERMS = [
   'alle nieuwe sets',
@@ -146,6 +153,10 @@ function lowerCaseContext(values: readonly string[]): string {
 
 function includesAnyTerm(context: string, terms: readonly string[]): boolean {
   return terms.some((term) => context.includes(term));
+}
+
+function hasAnnouncementContext(context: string): boolean {
+  return includesAnyTerm(context, ANNOUNCEMENT_CONTEXT_TERMS);
 }
 
 function extractSourceSlugContext(
@@ -431,10 +442,22 @@ export function detectArticleType(
     (headlineSetNumbers.length === 1 ||
       centralLegoHeadlineSetNumbers.length === 1);
 
+  const hasPreorderAnnouncementSignal =
+    includesAnyTerm(context, PREORDER_SIGNAL_TERMS) &&
+    hasAnnouncementContext(context);
+  const hasAvailabilitySignal =
+    includesAnyTerm(context, AVAILABILITY_SIGNAL_TERMS) &&
+    !hasAnnouncementContext(context);
   const hasDealSignal =
-    includesAnyTerm(context, DEAL_SIGNAL_TERMS) ||
-    includesAnyTerm(context, AVAILABILITY_SIGNAL_TERMS);
+    includesAnyTerm(context, DEAL_SIGNAL_TERMS) || hasAvailabilitySignal;
   const hasExplicitGwpSignal = includesAnyTerm(context, GWP_SIGNAL_TERMS);
+
+  if (
+    hasPreorderAnnouncementSignal &&
+    (hasSingleCentralHeadlineSet || detectedSetNumbers.length === 1)
+  ) {
+    return 'single_set_news';
+  }
 
   if (hasDealSignal && !hasExplicitGwpSignal) {
     return 'deal';

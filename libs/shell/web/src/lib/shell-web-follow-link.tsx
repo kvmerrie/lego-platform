@@ -22,8 +22,8 @@ export function getFollowingNavPageSurface(pathname?: string): string {
     return 'homepage';
   }
 
-  if (pathname === buildWebPath(webPathnames.discover)) {
-    return 'discover';
+  if (pathname === buildWebPath(webPathnames.deals)) {
+    return 'deals';
   }
 
   if (pathname === buildWebPath(webPathnames.search)) {

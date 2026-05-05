@@ -97,4 +97,79 @@ describe('CatalogFeatureSetList', () => {
     expect(markup).toContain('3 dozen nu lager');
     expect(markup).not.toContain('1 dozen die je kast overnemen');
   });
+
+  it('renders an expanded commerce rail with up to twenty useful sets', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSetList
+        actionHref="/deals"
+        actionLabel="Bekijk alle deals"
+        sectionId="best-current-deals"
+        showSignal={false}
+        setCards={Array.from({ length: 20 }, (_, index) => {
+          const setId = String(43_000 + index);
+
+          return {
+            id: setId,
+            slug: `buyable-set-${setId}`,
+            name: `Buyable set ${index + 1}`,
+            theme: 'Disney',
+            releaseYear: 2024,
+            pieces: 1000 + index,
+            priceContext: {
+              coverageLabel: 'In stock · 2 reviewed offers',
+              currentPrice: 'EUR 99.99',
+              merchantLabel: 'Lowest reviewed price at Goodbricks',
+              reviewedLabel: 'Checked today',
+            },
+          };
+        })}
+        title="Beste deals nu"
+      />,
+    );
+
+    expect(markup).toContain('Bekijk alle deals');
+    expect(markup).toContain('href="/deals"');
+    expect(markup).not.toContain('20 sets die meteen de kamer pakken');
+    expect(markup).not.toContain('20 sets met een directe kooplink');
+    expect(markup.indexOf('Beste deals nu')).toBeLessThan(
+      markup.indexOf('Bekijk alle deals'),
+    );
+    expect(markup.indexOf('Bekijk alle deals')).toBeLessThan(
+      markup.indexOf('Buyable set 1'),
+    );
+    expect(markup).toContain('Buyable set 1');
+    expect(markup).toContain('Buyable set 20');
+  });
+
+  it('keeps the commerce rail calm when no tertiary action is provided', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureSetList
+        sectionId="best-current-deals"
+        showSignal={false}
+        setCards={Array.from({ length: 20 }, (_, index) => {
+          const setId = String(44_000 + index);
+
+          return {
+            id: setId,
+            slug: `buyable-set-${setId}`,
+            name: `Buyable set ${index + 1}`,
+            theme: 'Disney',
+            releaseYear: 2024,
+            pieces: 1000 + index,
+            priceContext: {
+              coverageLabel: 'In stock · 2 reviewed offers',
+              currentPrice: 'EUR 99.99',
+              merchantLabel: 'Lowest reviewed price at Goodbricks',
+              reviewedLabel: 'Checked today',
+            },
+          };
+        })}
+        title="Beste deals nu"
+      />,
+    );
+
+    expect(markup).not.toContain('Bekijk alle deals');
+    expect(markup).not.toContain('20 sets die meteen de kamer pakken');
+    expect(markup).toContain('Buyable set 20');
+  });
 });

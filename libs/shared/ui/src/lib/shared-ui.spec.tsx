@@ -160,7 +160,7 @@ describe('ActionLink', () => {
 
   it('uses the explicit default size model for regular action links', () => {
     const markup = renderToStaticMarkup(
-      <ActionLink href="/discover" tone="accent">
+      <ActionLink href="/themes" tone="accent">
         Ontdek sets
       </ActionLink>,
     );
@@ -189,13 +189,13 @@ describe('ActionLink', () => {
 
   it('keeps card links as block content instead of collapsing them into inline content', () => {
     const markup = renderToStaticMarkup(
-      <ActionLink href="/discover" surface="image" tone="card">
+      <ActionLink href="/themes" surface="image" tone="card">
         <p>Verder</p>
         <h3>Alle thema&apos;s</h3>
       </ActionLink>,
     );
 
-    expect(markup).toContain('href="/discover"');
+    expect(markup).toContain('href="/themes"');
     expect(markup).toContain('cardLinkBase');
     expect(markup).toContain('<p>Verder</p>');
     expect(markup).toContain('<h3>Alle thema');
