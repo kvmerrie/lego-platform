@@ -13,7 +13,10 @@ import {
 import {
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
-  listHomepageDealCandidateSetCards,
+  listCatalogSetCards,
+  listDiscoverBestDealSetCards,
+  listDiscoverNowInterestingSetCards,
+  listDiscoverRecentPriceChangeSetCards,
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
@@ -36,6 +39,7 @@ import type { Metadata } from 'next';
 export const revalidate = 300;
 const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 6;
 const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 6;
+const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = 300;
 const homepageValueSignals = [
   {
     id: 'price-context',
@@ -100,7 +104,7 @@ function toFeatureSetListItems(
 
     return {
       ...homepageSetCard,
-      ctaMode: 'default' as const,
+      ctaMode: cardSurface === 'deal' ? ('commerce' as const) : 'default',
       priceContext: (() => {
         const currentSetCardPriceContext = buildCurrentSetCardPriceContext({
           currentOfferSummary,
@@ -148,6 +152,22 @@ function toFeatureSetListItems(
   });
 }
 
+function hasCommerceAction(catalogSetCard: CatalogFeatureSetListItem): boolean {
+  return Boolean(catalogSetCard.priceContext?.primaryActionHref);
+}
+
+function getUniqueCatalogSetIds(
+  setCardGroups: readonly (readonly Pick<CatalogHomepageSetCard, 'id'>[])[],
+): string[] {
+  return [
+    ...new Set(
+      setCardGroups.flatMap((setCards) =>
+        setCards.map((catalogSetCard) => catalogSetCard.id),
+      ),
+    ),
+  ];
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const queryMode = await getEditorialQueryMode();
   const homepagePage = await getHomepagePage({
@@ -162,6 +182,7 @@ export default async function HomePage() {
   const [
     homepagePage,
     catalogDiscoverySignalBySetId,
+    allCatalogSetCards,
     homepageThemeDirectoryItems,
     homepageThemeSpotlightItems,
   ] = await Promise.all([
@@ -170,9 +191,10 @@ export default async function HomePage() {
     }),
     listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
-        revalidateSeconds: revalidate,
+        revalidateSeconds: HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS,
       },
     }),
+    listCatalogSetCards(),
     listHomepageThemeDirectoryItems(),
     listHomepageThemeSpotlightItems(),
   ]);
@@ -180,40 +202,103 @@ export default async function HomePage() {
     catalogDiscoverySignalBySetId.size > 0
       ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
       : undefined;
-  const homepageDealCandidateSetCards = await listHomepageDealCandidateSetCards(
-    {
-      getCatalogDiscoverySignalFn,
-      limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
-    },
-  );
+  const commerceRailRotationSeed = Math.floor(Date.now() / (1000 * 60 * 15));
+  const homepageBestDealCandidateSetCards = getCatalogDiscoverySignalFn
+    ? await listDiscoverBestDealSetCards({
+        getCatalogDiscoverySignalFn,
+        limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
+        rotationSeed: commerceRailRotationSeed,
+        setCards: allCatalogSetCards,
+      })
+    : [];
+  const homepageRecentPriceDropCandidateSetCards = getCatalogDiscoverySignalFn
+    ? await listDiscoverRecentPriceChangeSetCards({
+        excludedSetIds: homepageBestDealCandidateSetCards.map(
+          (catalogSetCard) => catalogSetCard.id,
+        ),
+        getCatalogDiscoverySignalFn,
+        limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
+        rotationSeed: commerceRailRotationSeed,
+        setCards: allCatalogSetCards,
+      })
+    : [];
+  const homepageNowInterestingCandidateSetCards = getCatalogDiscoverySignalFn
+    ? await listDiscoverNowInterestingSetCards({
+        excludedSetIds: getUniqueCatalogSetIds([
+          homepageBestDealCandidateSetCards,
+          homepageRecentPriceDropCandidateSetCards,
+        ]),
+        getCatalogDiscoverySignalFn,
+        limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
+        rotationSeed: commerceRailRotationSeed,
+        setCards: allCatalogSetCards,
+      })
+    : [];
+  const homepageFallbackWatchSetCards = await listHomepageSetCards({
+    excludedSetIds: getUniqueCatalogSetIds([
+      homepageBestDealCandidateSetCards,
+      homepageRecentPriceDropCandidateSetCards,
+      homepageNowInterestingCandidateSetCards,
+    ]),
+    getCatalogDiscoverySignalFn,
+    limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
+  });
   const homepageFeaturedSetCards = await listHomepageSetCards({
-    excludedSetIds: homepageDealCandidateSetCards.map(
-      (catalogSetCard) => catalogSetCard.id,
-    ),
+    excludedSetIds: getUniqueCatalogSetIds([
+      homepageBestDealCandidateSetCards,
+      homepageRecentPriceDropCandidateSetCards,
+      homepageNowInterestingCandidateSetCards,
+      homepageFallbackWatchSetCards,
+    ]),
     getCatalogDiscoverySignalFn,
     limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
   });
   const currentOfferSummaryBySetId =
     await listCatalogCurrentOfferSummariesBySetIds({
       cacheOptions: {
-        revalidateSeconds: revalidate,
+        revalidateSeconds: HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS,
       },
-      setIds: [
-        ...homepageDealCandidateSetCards.map(
-          (catalogSetCard) => catalogSetCard.id,
-        ),
-        ...homepageFeaturedSetCards.map((catalogSetCard) => catalogSetCard.id),
-      ],
+      setIds: getUniqueCatalogSetIds([
+        homepageBestDealCandidateSetCards,
+        homepageRecentPriceDropCandidateSetCards,
+        homepageNowInterestingCandidateSetCards,
+        homepageFallbackWatchSetCards,
+        homepageFeaturedSetCards,
+      ]),
     });
   const homepageHeroSection = getHeroSection(homepagePage.sections);
-  const homepageDealSetCards = toFeatureSetListItems(
-    homepageDealCandidateSetCards,
+  const homepageBestDealSetCards = toFeatureSetListItems(
+    homepageBestDealCandidateSetCards,
     currentOfferSummaryBySetId,
     {
       cardSurface: 'deal',
       sectionId: 'best-current-deals',
     },
-  );
+  ).filter(hasCommerceAction);
+  const homepageRecentPriceDropSetCards = toFeatureSetListItems(
+    homepageRecentPriceDropCandidateSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
+      sectionId: 'recent-price-drops',
+    },
+  ).filter(hasCommerceAction);
+  const homepageNowInterestingSetCards = toFeatureSetListItems(
+    homepageNowInterestingCandidateSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
+      sectionId: 'now-interesting-to-buy',
+    },
+  ).filter(hasCommerceAction);
+  const homepageFallbackWatchItems = toFeatureSetListItems(
+    homepageFallbackWatchSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
+      sectionId: 'watchlist-commerce-fallback',
+    },
+  ).filter(hasCommerceAction);
   const homepageSetCards = toFeatureSetListItems(
     homepageFeaturedSetCards,
     currentOfferSummaryBySetId,
@@ -235,16 +320,58 @@ export default async function HomePage() {
         <div className={styles.heroSection}>
           <ContentFeaturePageRenderer editorialPage={homepageHeroPage} />
         </div>
-        {homepageDealSetCards.length ? (
+        {homepageBestDealSetCards.length ? (
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
-              description="Hier zie je wat nu slimmer geprijsd is. Nog niet klaar? Volg de prijs op de set."
-              eyebrow="Nu slimmer geprijsd"
+              description="Sets die nu duidelijk onder hun recente referentieprijs zitten. Dit zijn de eerste plekken om te kijken."
+              eyebrow="Deals"
               sectionId="best-current-deals"
-              setCards={homepageDealSetCards}
-              signalText={`${homepageDealSetCards.length} sets die nu interessanter zijn om te kopen`}
+              setCards={homepageBestDealSetCards}
+              signalText={`${homepageBestDealSetCards.length} sets met een directe kooplink`}
               tone="default"
-              title="Hier wil je nu als eerste kijken"
+              title="Beste deals nu"
+            />
+          </div>
+        ) : null}
+        {homepageRecentPriceDropSetCards.length ? (
+          <div className={styles.sectionGroup}>
+            <CatalogFeatureSetList
+              description="Deze sets zijn de afgelopen dagen goedkoper geworden en hebben nu een werkende winkelactie."
+              eyebrow="Prijsdaling"
+              sectionId="recent-price-drops"
+              setCards={homepageRecentPriceDropSetCards}
+              signalText={`${homepageRecentPriceDropSetCards.length} recente prijsdalingen`}
+              tone="default"
+              title="Net goedkoper geworden"
+            />
+          </div>
+        ) : null}
+        {homepageNowInterestingSetCards.length ? (
+          <div className={styles.sectionGroup}>
+            <CatalogFeatureSetList
+              description="Goede prijs, voorraad en winkeldekking komen hier samen. Handig als je vandaag wilt kiezen."
+              eyebrow="Koopmoment"
+              sectionId="now-interesting-to-buy"
+              setCards={homepageNowInterestingSetCards}
+              signalText={`${homepageNowInterestingSetCards.length} sets met koopmoment`}
+              tone="default"
+              title="Nu interessant om te kopen"
+            />
+          </div>
+        ) : null}
+        {!homepageBestDealSetCards.length &&
+        !homepageRecentPriceDropSetCards.length &&
+        !homepageNowInterestingSetCards.length &&
+        homepageFallbackWatchItems.length ? (
+          <div className={styles.sectionGroup}>
+            <CatalogFeatureSetList
+              description="Nog geen hard dealsignaal, maar deze sets hebben wel actuele winkeldata. Zet ze klaar om te volgen."
+              eyebrow="Volgen"
+              sectionId="watchlist-commerce-fallback"
+              setCards={homepageFallbackWatchItems}
+              signalText={`${homepageFallbackWatchItems.length} sets met actuele prijsdata`}
+              tone="default"
+              title="In de gaten houden"
             />
           </div>
         ) : null}

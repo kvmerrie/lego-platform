@@ -145,11 +145,11 @@ export function CatalogFeatureDiscover({
       {hasFilteredContent && resolvedNowInterestingSetCards.length ? (
         <CatalogSetCardRailSection
           as="section"
-          ariaLabel="Nu interessant"
+          ariaLabel="Nu interessant om te kopen"
           bodySpacing="relaxed"
           className={styles.dealSection}
-          description="Hier wil je nu als eerste kijken. Prijsbeweging, verse dekking en verschil tussen winkels komen hier samen."
-          eyebrow="Nu"
+          description="Prijs, voorraad en winkeldekking komen hier samen. Dit zijn sets waar nu echt iets gebeurt."
+          eyebrow="Koopmoment"
           items={resolvedNowInterestingSetCards.map((setCard) => ({
             actions: setCard.actions,
             ctaMode: setCard.ctaMode,
@@ -161,7 +161,7 @@ export function CatalogFeatureDiscover({
           }))}
           padding="default"
           signal={formatSetCount(resolvedNowInterestingSetCards.length)}
-          title="Nu interessant"
+          title="Nu interessant om te kopen"
           titleAs="h2"
           tone="default"
           variant="featured"
@@ -171,10 +171,10 @@ export function CatalogFeatureDiscover({
       {hasFilteredContent && bestDealSetCards.length ? (
         <CatalogSetCardRailSection
           as="section"
-          ariaLabel="Beste prijs nu"
+          ariaLabel="Beste deals nu"
           bodySpacing="relaxed"
           className={styles.dealSection}
-          description="De scherpste prijzen die we nu zien bij winkels."
+          description="Sets die nu duidelijk scherper geprijsd zijn dan hun recente referentie."
           eyebrow="Deals"
           items={bestDealSetCards.map((dealSetCard) => ({
             actions: dealSetCard.actions,
@@ -187,7 +187,7 @@ export function CatalogFeatureDiscover({
           }))}
           padding="default"
           signal={formatSetCount(bestDealSetCards.length)}
-          title="Beste prijs nu"
+          title="Beste deals nu"
           titleAs="h2"
           tone="default"
           variant="featured"
@@ -275,11 +275,11 @@ export function CatalogFeatureDiscover({
       {hasFilteredContent && resolvedRecentPriceChangeSetCards.length ? (
         <CatalogSetCardRailSection
           as="section"
-          ariaLabel="Net in prijs veranderd"
+          ariaLabel="Net goedkoper geworden"
           bodySpacing="relaxed"
           className={styles.featuredSection}
-          description="Sets waarvan de prijs recent is aangepast."
-          eyebrow="Beweging"
+          description="Prijsdalingen van de afgelopen dagen, met actuele winkelactie erbij."
+          eyebrow="Prijsdaling"
           items={resolvedRecentPriceChangeSetCards.map((setCard) => ({
             actions: setCard.actions,
             ctaMode: setCard.ctaMode,
@@ -291,7 +291,7 @@ export function CatalogFeatureDiscover({
           }))}
           padding="default"
           signal={formatSetCount(resolvedRecentPriceChangeSetCards.length)}
-          title="Net in prijs veranderd"
+          title="Net goedkoper geworden"
           titleAs="h2"
           tone="muted"
           variant="compact"
@@ -329,11 +329,11 @@ export function CatalogFeatureDiscover({
       {hasFilteredContent && resolvedForYouSetCards.length ? (
         <CatalogSetCardRailSection
           as="section"
-          ariaLabel="Voor jou interessant"
+          ariaLabel="In de gaten houden"
           bodySpacing="relaxed"
           className={styles.featuredSection}
-          description="Een mix van deals, prijsbeweging en thema's die nu het meest trekken."
-          eyebrow="Mix"
+          description="Geen harde dealrail, wel sets met genoeg signaal om even te bewaren."
+          eyebrow="Volgen"
           items={resolvedForYouSetCards.map((setCard) => ({
             actions: setCard.actions,
             ctaMode: setCard.ctaMode,
@@ -345,7 +345,7 @@ export function CatalogFeatureDiscover({
           }))}
           padding="default"
           signal={formatSetCount(resolvedForYouSetCards.length)}
-          title="Voor jou interessant"
+          title="In de gaten houden"
           titleAs="h2"
           tone="muted"
           variant="compact"

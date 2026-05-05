@@ -49,6 +49,7 @@ import {
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
+  rankCatalogBestDealSetCards,
   rankCatalogComparisonDiscoverySetCards,
   rankCatalogNewInReleaseYearSetCards,
   rankCatalogNowInterestingSetCards,
@@ -1595,7 +1596,9 @@ describe('catalog effective data access web', () => {
             merchantCount: 4,
             priceSpreadMinor: 7000,
             recentReferencePriceChangeMinor: -2800,
-            recentReferencePriceChangedAt: '2026-04-20',
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 8 * 60 * 60 * 1000,
+            ).toISOString(),
           });
         }
 
@@ -1603,8 +1606,10 @@ describe('catalog effective data access web', () => {
           return createCatalogDiscoverySignal({
             merchantCount: 5,
             priceSpreadMinor: 9000,
-            recentReferencePriceChangeMinor: -1200,
-            recentReferencePriceChangedAt: '2026-04-22',
+            recentReferencePriceChangeMinor: -2400,
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 2 * 60 * 60 * 1000,
+            ).toISOString(),
           });
         }
 
@@ -1613,7 +1618,9 @@ describe('catalog effective data access web', () => {
             merchantCount: 3,
             priceSpreadMinor: 6000,
             recentReferencePriceChangeMinor: 0,
-            recentReferencePriceChangedAt: '2026-04-22',
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 2 * 60 * 60 * 1000,
+            ).toISOString(),
           });
         }
 
@@ -1622,7 +1629,9 @@ describe('catalog effective data access web', () => {
             merchantCount: 1,
             priceSpreadMinor: 2000,
             recentReferencePriceChangeMinor: -2500,
-            recentReferencePriceChangedAt: '2026-04-22',
+            recentReferencePriceChangedAt: new Date(
+              Date.now() - 2 * 60 * 60 * 1000,
+            ).toISOString(),
           });
         }
 
@@ -1634,6 +1643,126 @@ describe('catalog effective data access web', () => {
       '10333',
       '10316',
     ]);
+  });
+
+  test('ranks best deals only when a set is below its recent reference', () => {
+    const result = rankCatalogBestDealSetCards({
+      limit: 6,
+      rotationSeed: 1,
+      setCards: [
+        {
+          id: '42143',
+          imageUrl: undefined,
+          name: 'Ferrari Daytona SP3',
+          pieces: 3778,
+          releaseYear: 2022,
+          slug: 'ferrari-daytona-sp3-42143',
+          theme: 'Technic',
+        },
+        {
+          id: '76269',
+          imageUrl: undefined,
+          name: 'Avengers Tower',
+          pieces: 5201,
+          releaseYear: 2023,
+          slug: 'avengers-tower-76269',
+          theme: 'Marvel',
+        },
+        {
+          id: '10316',
+          imageUrl: undefined,
+          name: 'Rivendell',
+          pieces: 6167,
+          releaseYear: 2023,
+          slug: 'rivendell-10316',
+          theme: 'Icons',
+        },
+      ],
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '42143') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 4,
+            priceSpreadMinor: 9000,
+            referenceDeltaMinor: -9000,
+          });
+        }
+
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 3,
+            priceSpreadMinor: 6000,
+            referenceDeltaMinor: 0,
+          });
+        }
+
+        if (setId === '10316') {
+          return createCatalogDiscoverySignal({
+            merchantCount: 3,
+            priceSpreadMinor: 5000,
+            referenceDeltaMinor: 2500,
+          });
+        }
+
+        return undefined;
+      },
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '42143',
+    ]);
+  });
+
+  test('rotates tied commerce rails by refresh bucket', () => {
+    const setCards = [
+      {
+        id: '10316',
+        imageUrl: undefined,
+        name: 'Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'rivendell-10316',
+        theme: 'Icons',
+      },
+      {
+        id: '76269',
+        imageUrl: undefined,
+        name: 'Avengers Tower',
+        pieces: 5201,
+        releaseYear: 2023,
+        slug: 'avengers-tower-76269',
+        theme: 'Marvel',
+      },
+      {
+        id: '42172',
+        imageUrl: undefined,
+        name: 'McLaren P1',
+        pieces: 3893,
+        releaseYear: 2024,
+        slug: 'mclaren-p1-42172',
+        theme: 'Technic',
+      },
+    ];
+    const getCatalogDiscoverySignalFn = () =>
+      createCatalogDiscoverySignal({
+        merchantCount: 4,
+        priceSpreadMinor: 5000,
+        referenceDeltaMinor: -2000,
+      });
+
+    const firstRefresh = rankCatalogBestDealSetCards({
+      getCatalogDiscoverySignalFn,
+      limit: 3,
+      rotationSeed: 1,
+      setCards,
+    }).map((catalogSetCard) => catalogSetCard.id);
+    const secondRefresh = rankCatalogBestDealSetCards({
+      getCatalogDiscoverySignalFn,
+      limit: 3,
+      rotationSeed: 2,
+      setCards,
+    }).map((catalogSetCard) => catalogSetCard.id);
+
+    expect(firstRefresh).not.toEqual(secondRefresh);
   });
 
   test('ranks the now-interesting rail from fresh movement, coverage and spread', () => {
@@ -1695,6 +1824,7 @@ describe('catalog effective data access web', () => {
           return createCatalogDiscoverySignal({
             merchantCount: 2,
             priceSpreadMinor: 1200,
+            referenceDeltaMinor: undefined,
           });
         }
 
@@ -2379,8 +2509,8 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '76419',
       '76269',
+      '76419',
       '43222',
     ]);
   });
@@ -2432,7 +2562,9 @@ describe('catalog effective data access web', () => {
           observedAt: '2026-04-20T10:00:00.000Z',
           priceSpreadMinor: 14000,
           recentReferencePriceChangeMinor: -3000,
-          recentReferencePriceChangedAt: '2026-04-20',
+          recentReferencePriceChangedAt: new Date(
+            Date.now() - 4 * 60 * 60 * 1000,
+          ).toISOString(),
           referenceDeltaMinor: -9000,
         });
       }
@@ -2443,6 +2575,7 @@ describe('catalog effective data access web', () => {
           merchantCount: 4,
           observedAt: '2026-04-20T11:00:00.000Z',
           priceSpreadMinor: 5000,
+          referenceDeltaMinor: undefined,
         });
       }
 
@@ -2453,7 +2586,9 @@ describe('catalog effective data access web', () => {
           observedAt: '2026-04-20T12:00:00.000Z',
           priceSpreadMinor: 1800,
           recentReferencePriceChangeMinor: -500,
-          recentReferencePriceChangedAt: '2026-04-19',
+          recentReferencePriceChangedAt: new Date(
+            Date.now() - 10 * 60 * 60 * 1000,
+          ).toISOString(),
           referenceDeltaMinor: -500,
         });
       }
@@ -2488,7 +2623,6 @@ describe('catalog effective data access web', () => {
     ).toEqual(['42143', '10313']);
     expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '42143',
-      '10354',
       '10313',
     ]);
     expect(recentlyReleased.map((catalogSetCard) => catalogSetCard.id)).toEqual(

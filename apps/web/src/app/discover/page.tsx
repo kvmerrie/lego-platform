@@ -28,21 +28,6 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import { buildCurrentSetCardPriceContext } from '../lib/current-set-card-price-context';
 
-function getDiscoverMinifigureHighlightRank(
-  minifigureHighlights?: readonly string[],
-): number {
-  return minifigureHighlights?.length ? 0 : 1;
-}
-
-function getDiscoverCandidateRank(
-  setId: string,
-  candidateSetIds: readonly string[],
-): number {
-  const rank = candidateSetIds.indexOf(setId);
-
-  return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
-}
-
 function toRailSetCards(
   setCards: readonly CatalogHomepageSetCard[],
   currentOfferSummaryBySetId: Awaited<
@@ -64,6 +49,81 @@ function toRailSetCards(
   });
 }
 
+function toCommerceRailSetCards({
+  currentOfferSummaryBySetId,
+  pageSurface,
+  sectionId,
+  setCards,
+}: {
+  currentOfferSummaryBySetId: Awaited<
+    ReturnType<typeof listCatalogCurrentOfferSummariesBySetIds>
+  >;
+  pageSurface: 'discover';
+  sectionId: string;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogFeatureDiscoverRailItem[] {
+  return setCards
+    .map((setCard, index) => {
+      const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
+      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+      const bestCurrentOffer = currentOfferSummary?.bestOffer;
+      const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
+        featuredSetPriceContext?.deltaMinor,
+      );
+      const priceContext = buildCurrentSetCardPriceContext({
+        currentOfferSummary,
+        pricePanelSnapshot: featuredSetPriceContext,
+        theme: setCard.theme,
+      });
+      const primaryActionTrackingEvent:
+        | BrickhuntAnalyticsEventDescriptor
+        | undefined = bestCurrentOffer
+        ? {
+            event: 'offer_click',
+            properties: {
+              merchantCount: currentOfferSummary?.offers.length,
+              merchantName: bestCurrentOffer.merchantName,
+              offerPlacement: 'card_primary_cta',
+              offerRole: 'best',
+              pageSurface,
+              priceVerdict,
+              rankPosition: index + 1,
+              sectionId,
+              setId: setCard.id,
+              theme: setCard.theme,
+            },
+          }
+        : undefined;
+
+      return {
+        ...setCard,
+        actions: (
+          <WishlistFeatureWishlistToggle
+            analyticsContext={{
+              merchantCount: currentOfferSummary?.offers.length,
+              pageSurface,
+              priceVerdict,
+              sectionId,
+              setId: setCard.id,
+              theme: setCard.theme,
+            }}
+            productIntent={bestCurrentOffer ? 'price-alert' : 'wishlist'}
+            setId={setCard.id}
+            variant="inline"
+          />
+        ),
+        ctaMode: 'commerce' as const,
+        priceContext: priceContext
+          ? {
+              ...priceContext,
+              primaryActionTrackingEvent,
+            }
+          : undefined,
+      };
+    })
+    .filter((setCard) => setCard.priceContext?.primaryActionHref);
+}
+
 function countDiscoverThemes(
   setCards: readonly Pick<CatalogHomepageSetCard, 'theme'>[],
 ): number {
@@ -79,24 +139,39 @@ export default async function DiscoverPage() {
   const [catalogDiscoverySignalBySetId, allCatalogSetCards] = await Promise.all(
     [listCatalogDiscoverySignalsBySetId(), listCatalogSetCards()],
   );
+  const commerceRailRotationSeed = Math.floor(Date.now() / (1000 * 60 * 15));
+  const bestDealCandidateSetCards = await listDiscoverBestDealSetCards({
+    getCatalogDiscoverySignalFn: (setId) =>
+      catalogDiscoverySignalBySetId.get(setId),
+    rotationSeed: commerceRailRotationSeed,
+    setCards: allCatalogSetCards,
+  });
+  const recentPriceChangeSetCards = await listDiscoverRecentPriceChangeSetCards(
+    {
+      excludedSetIds: bestDealCandidateSetCards.map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+      getCatalogDiscoverySignalFn: (setId) =>
+        catalogDiscoverySignalBySetId.get(setId),
+      rotationSeed: commerceRailRotationSeed,
+      setCards: allCatalogSetCards,
+    },
+  );
+  const nowInterestingSetCards = await listDiscoverNowInterestingSetCards({
+    excludedSetIds: [
+      ...bestDealCandidateSetCards,
+      ...recentPriceChangeSetCards,
+    ].map((catalogSetCard) => catalogSetCard.id),
+    getCatalogDiscoverySignalFn: (setId) =>
+      catalogDiscoverySignalBySetId.get(setId),
+    rotationSeed: commerceRailRotationSeed,
+    setCards: allCatalogSetCards,
+  });
   const [
-    nowInterestingSetCards,
-    bestDealCandidateSetCards,
     recentlyReleasedSetCards,
     newInReleaseYearSetCards,
     newOnBrickhuntSetCards,
-    recentPriceChangeSetCards,
   ] = await Promise.all([
-    listDiscoverNowInterestingSetCards({
-      getCatalogDiscoverySignalFn: (setId) =>
-        catalogDiscoverySignalBySetId.get(setId),
-      setCards: allCatalogSetCards,
-    }),
-    listDiscoverBestDealSetCards({
-      getCatalogDiscoverySignalFn: (setId) =>
-        catalogDiscoverySignalBySetId.get(setId),
-      setCards: allCatalogSetCards,
-    }),
     listDiscoverRecentlyReleasedSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         catalogDiscoverySignalBySetId.get(setId),
@@ -109,11 +184,6 @@ export default async function DiscoverPage() {
       setCards: allCatalogSetCards,
     }),
     listDiscoverNewOnBrickhuntSetCards({
-      getCatalogDiscoverySignalFn: (setId) =>
-        catalogDiscoverySignalBySetId.get(setId),
-      setCards: allCatalogSetCards,
-    }),
-    listDiscoverRecentPriceChangeSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         catalogDiscoverySignalBySetId.get(setId),
       setCards: allCatalogSetCards,
@@ -156,9 +226,6 @@ export default async function DiscoverPage() {
         });
   const totalSetCount = allCatalogSetCards.length;
   const totalThemeCount = countDiscoverThemes(allCatalogSetCards);
-  const bestDealCandidateSetIds = bestDealCandidateSetCards.map(
-    (catalogSetCard) => catalogSetCard.id,
-  );
   const selectedRailSetIds = [
     ...new Set(
       [
@@ -177,31 +244,24 @@ export default async function DiscoverPage() {
     await listCatalogCurrentOfferSummariesBySetIds({
       setIds: selectedRailSetIds,
     });
-  const nowInterestingRailSetCards = toRailSetCards(
-    nowInterestingSetCards,
+  const nowInterestingRailSetCards = toCommerceRailSetCards({
     currentOfferSummaryBySetId,
-  );
-  const dealSetCards = toRailSetCards(
-    bestDealCandidateSetCards,
+    pageSurface: 'discover',
+    sectionId: 'discover-now-interesting',
+    setCards: nowInterestingSetCards,
+  });
+  const featuredDealSetCards = toCommerceRailSetCards({
     currentOfferSummaryBySetId,
-  )
-    .sort(
-      (left, right) =>
-        (catalogDiscoverySignalBySetId.get(left.id)?.referenceDeltaMinor ?? 0) -
-          (catalogDiscoverySignalBySetId.get(right.id)?.referenceDeltaMinor ??
-            0) ||
-        getDiscoverMinifigureHighlightRank(left.minifigureHighlights) -
-          getDiscoverMinifigureHighlightRank(right.minifigureHighlights) ||
-        getDiscoverCandidateRank(left.id, bestDealCandidateSetIds) -
-          getDiscoverCandidateRank(right.id, bestDealCandidateSetIds) ||
-        right.releaseYear - left.releaseYear ||
-        left.name.localeCompare(right.name),
-    )
-    .slice(0, 6);
-  const recentPriceChangeRailSetCards = toRailSetCards(
-    recentPriceChangeSetCards,
+    pageSurface: 'discover',
+    sectionId: 'discover-best-deals',
+    setCards: bestDealCandidateSetCards,
+  }).slice(0, 6);
+  const recentPriceChangeRailSetCards = toCommerceRailSetCards({
     currentOfferSummaryBySetId,
-  );
+    pageSurface: 'discover',
+    sectionId: 'discover-recent-price-drops',
+    setCards: recentPriceChangeSetCards,
+  });
   const recentlyReleasedRailSetCards = toRailSetCards(
     recentlyReleasedSetCards,
     currentOfferSummaryBySetId,
@@ -221,60 +281,6 @@ export default async function DiscoverPage() {
     forYouSetCards,
     currentOfferSummaryBySetId,
   );
-  const featuredDealSetCards = dealSetCards.map((dealSetCard, index) => {
-    const featuredSetPriceContext = getFeaturedSetPriceContext(dealSetCard.id);
-    const currentOfferSummary = currentOfferSummaryBySetId.get(dealSetCard.id);
-    const bestCurrentOffer = currentOfferSummary?.bestOffer;
-    const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
-      featuredSetPriceContext?.deltaMinor,
-    );
-    const primaryActionTrackingEvent:
-      | BrickhuntAnalyticsEventDescriptor
-      | undefined = bestCurrentOffer
-      ? {
-          event: 'offer_click',
-          properties: {
-            merchantCount: currentOfferSummary?.offers.length,
-            merchantName: bestCurrentOffer?.merchantName,
-            offerPlacement: 'card_primary_cta',
-            offerRole: 'best',
-            pageSurface: 'discover',
-            priceVerdict,
-            rankPosition: index + 1,
-            sectionId: 'discover-best-deals',
-            setId: dealSetCard.id,
-            theme: dealSetCard.theme,
-          },
-        }
-      : undefined;
-
-    return {
-      ...dealSetCard,
-      actions: (
-        <WishlistFeatureWishlistToggle
-          analyticsContext={{
-            merchantCount: currentOfferSummary?.offers.length,
-            pageSurface: 'discover',
-            priceVerdict,
-            sectionId: 'discover-best-deals',
-            setId: dealSetCard.id,
-            theme: dealSetCard.theme,
-          }}
-          productIntent={bestCurrentOffer ? 'price-alert' : 'wishlist'}
-          setId={dealSetCard.id}
-          variant="inline"
-        />
-      ),
-      ctaMode: 'commerce' as const,
-      priceContext: dealSetCard.priceContext
-        ? {
-            ...dealSetCard.priceContext,
-            primaryActionTrackingEvent,
-          }
-        : undefined,
-    };
-  });
-
   return (
     <ShellWeb>
       <CatalogFeatureDiscover

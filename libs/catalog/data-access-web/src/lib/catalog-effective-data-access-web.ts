@@ -955,6 +955,25 @@ function getCatalogComparisonDiscoveryScore(
   return coverageScore + spreadScore + freshnessScore + bestOfferClarityScore;
 }
 
+function getCatalogBestDealDiscoveryScore(
+  catalogDiscoverySignal: CatalogDiscoverySignal,
+): number {
+  const referenceDiscountScore =
+    typeof catalogDiscoverySignal.referenceDeltaMinor === 'number' &&
+    catalogDiscoverySignal.referenceDeltaMinor < 0
+      ? Math.min(Math.abs(catalogDiscoverySignal.referenceDeltaMinor) / 125, 90)
+      : 0;
+  const spreadScore = Math.min(
+    catalogDiscoverySignal.priceSpreadMinor / 180,
+    45,
+  );
+  const coverageScore = Math.min(catalogDiscoverySignal.merchantCount, 6) * 10;
+  const freshnessScore =
+    getCatalogDiscoveryFreshnessScore(catalogDiscoverySignal.observedAt) * 0.7;
+
+  return referenceDiscountScore + spreadScore + coverageScore + freshnessScore;
+}
+
 function getCatalogPremiumDiscoveryScore(
   catalogDiscoverySignal: CatalogDiscoverySignal,
 ): number {
@@ -1051,7 +1070,11 @@ function getCatalogRecentPriceChangeScore(
     catalogDiscoverySignal.merchantCount < 2 ||
     typeof catalogDiscoverySignal.recentReferencePriceChangeMinor !==
       'number' ||
-    typeof catalogDiscoverySignal.recentReferencePriceChangedAt !== 'string'
+    catalogDiscoverySignal.recentReferencePriceChangeMinor >= 0 ||
+    typeof catalogDiscoverySignal.recentReferencePriceChangedAt !== 'string' ||
+    getCatalogSignalAgeHours(
+      catalogDiscoverySignal.recentReferencePriceChangedAt,
+    ) > 48
   ) {
     return 0;
   }
@@ -1125,17 +1148,82 @@ function getCatalogNowInterestingScore(
 function isCatalogInterestingNowCandidate(
   catalogDiscoverySignal: CatalogDiscoverySignal,
 ): boolean {
-  const hasRecentChange =
+  const hasRecentPriceDrop =
     typeof catalogDiscoverySignal.recentReferencePriceChangeMinor ===
       'number' &&
-    catalogDiscoverySignal.recentReferencePriceChangeMinor !== 0 &&
+    catalogDiscoverySignal.recentReferencePriceChangeMinor < 0 &&
     getCatalogSignalAgeHours(
       catalogDiscoverySignal.recentReferencePriceChangedAt,
     ) <= 48;
+  const isBelowReference =
+    typeof catalogDiscoverySignal.referenceDeltaMinor === 'number' &&
+    catalogDiscoverySignal.referenceDeltaMinor < 0;
   const hasMeaningfulSpread = catalogDiscoverySignal.priceSpreadMinor >= 1500;
-  const hasBroadCoverage = catalogDiscoverySignal.merchantCount >= 3;
 
-  return hasRecentChange || hasMeaningfulSpread || hasBroadCoverage;
+  return hasRecentPriceDrop || isBelowReference || hasMeaningfulSpread;
+}
+
+function getCatalogRailRotationSeed(rotationSeed?: number): number {
+  if (typeof rotationSeed === 'number' && Number.isFinite(rotationSeed)) {
+    return Math.trunc(rotationSeed);
+  }
+
+  return Math.floor(Date.now() / (1000 * 60 * 15));
+}
+
+function getCatalogRailRotationScore({
+  rotationSeed,
+  setId,
+}: {
+  rotationSeed?: number;
+  setId: string;
+}): number {
+  const seed = getCatalogRailRotationSeed(rotationSeed);
+  let hash = seed;
+
+  for (const character of setId) {
+    hash = (hash * 31 + character.charCodeAt(0)) % 9973;
+  }
+
+  return hash;
+}
+
+function sortCatalogRailCandidatesWithRotation<
+  Candidate extends {
+    catalogDiscoverySignal: CatalogDiscoverySignal;
+    score: number;
+    setCard: Pick<
+      CatalogHomepageSetCard,
+      'id' | 'name' | 'pieces' | 'releaseYear'
+    >;
+  },
+>({
+  candidates,
+  rotationSeed,
+}: {
+  candidates: readonly Candidate[];
+  rotationSeed?: number;
+}): Candidate[] {
+  return [...candidates].sort(
+    (left, right) =>
+      right.score - left.score ||
+      right.catalogDiscoverySignal.merchantCount -
+        left.catalogDiscoverySignal.merchantCount ||
+      right.catalogDiscoverySignal.priceSpreadMinor -
+        left.catalogDiscoverySignal.priceSpreadMinor ||
+      getCatalogRailRotationScore({
+        rotationSeed,
+        setId: right.setCard.id,
+      }) -
+        getCatalogRailRotationScore({
+          rotationSeed,
+          setId: left.setCard.id,
+        }) ||
+      right.setCard.releaseYear - left.setCard.releaseYear ||
+      right.setCard.pieces - left.setCard.pieces ||
+      left.setCard.name.localeCompare(right.setCard.name) ||
+      left.setCard.id.localeCompare(right.setCard.id),
+  );
 }
 
 const DISCOVER_RECENT_RELEASE_LOOKBACK_DAYS = 90;
@@ -1588,18 +1676,28 @@ export function rankCatalogPremiumDiscoverySetCards({
 }
 
 export function rankCatalogRecentPriceChangeSetCards({
+  excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
+  rotationSeed,
   setCards,
 }: {
+  excludedSetIds?: readonly string[];
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
+  rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
-  return [...setCards]
-    .flatMap((setCard) => {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return sortCatalogRailCandidatesWithRotation({
+    candidates: [...setCards].flatMap((setCard) => {
+      if (excludedSetIdSet.has(setCard.id)) {
+        return [];
+      }
+
       const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
 
       if (
@@ -1607,8 +1705,12 @@ export function rankCatalogRecentPriceChangeSetCards({
         catalogDiscoverySignal.merchantCount < 2 ||
         typeof catalogDiscoverySignal.recentReferencePriceChangeMinor !==
           'number' ||
-        catalogDiscoverySignal.recentReferencePriceChangeMinor === 0 ||
-        typeof catalogDiscoverySignal.recentReferencePriceChangedAt !== 'string'
+        catalogDiscoverySignal.recentReferencePriceChangeMinor >= 0 ||
+        typeof catalogDiscoverySignal.recentReferencePriceChangedAt !==
+          'string' ||
+        getCatalogSignalAgeHours(
+          catalogDiscoverySignal.recentReferencePriceChangedAt,
+        ) > 48
       ) {
         return [];
       }
@@ -1620,48 +1722,84 @@ export function rankCatalogRecentPriceChangeSetCards({
           setCard,
         },
       ];
-    })
-    .sort(
-      (left, right) =>
-        right.score - left.score ||
-        Date.parse(
-          right.catalogDiscoverySignal.recentReferencePriceChangedAt ?? '',
-        ) -
-          Date.parse(
-            left.catalogDiscoverySignal.recentReferencePriceChangedAt ?? '',
-          ) ||
-        Math.abs(
-          right.catalogDiscoverySignal.recentReferencePriceChangeMinor ?? 0,
-        ) -
-          Math.abs(
-            left.catalogDiscoverySignal.recentReferencePriceChangeMinor ?? 0,
-          ) ||
-        right.catalogDiscoverySignal.merchantCount -
-          left.catalogDiscoverySignal.merchantCount ||
-        right.catalogDiscoverySignal.priceSpreadMinor -
-          left.catalogDiscoverySignal.priceSpreadMinor ||
-        right.setCard.releaseYear - left.setCard.releaseYear ||
-        right.setCard.pieces - left.setCard.pieces ||
-        left.setCard.name.localeCompare(right.setCard.name) ||
-        left.setCard.id.localeCompare(right.setCard.id),
-    )
+    }),
+    rotationSeed,
+  })
+    .slice(0, limit)
+    .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
+}
+
+export function rankCatalogBestDealSetCards({
+  excludedSetIds = [],
+  getCatalogDiscoverySignalFn,
+  limit = 6,
+  rotationSeed,
+  setCards,
+}: {
+  excludedSetIds?: readonly string[];
+  getCatalogDiscoverySignalFn: (
+    setId: string,
+  ) => CatalogDiscoverySignal | undefined;
+  limit?: number;
+  rotationSeed?: number;
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return sortCatalogRailCandidatesWithRotation({
+    candidates: [...setCards].flatMap((setCard) => {
+      if (excludedSetIdSet.has(setCard.id)) {
+        return [];
+      }
+
+      const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
+
+      if (
+        !catalogDiscoverySignal ||
+        catalogDiscoverySignal.merchantCount < 1 ||
+        typeof catalogDiscoverySignal.referenceDeltaMinor !== 'number' ||
+        catalogDiscoverySignal.referenceDeltaMinor >= 0
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          catalogDiscoverySignal,
+          score: getCatalogBestDealDiscoveryScore(catalogDiscoverySignal),
+          setCard,
+        },
+      ];
+    }),
+    rotationSeed,
+  })
     .slice(0, limit)
     .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
 }
 
 export function rankCatalogNowInterestingSetCards({
+  excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
+  rotationSeed,
   setCards,
 }: {
+  excludedSetIds?: readonly string[];
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
+  rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
-  return [...setCards]
-    .flatMap((setCard) => {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
+  return sortCatalogRailCandidatesWithRotation({
+    candidates: [...setCards].flatMap((setCard) => {
+      if (excludedSetIdSet.has(setCard.id)) {
+        return [];
+      }
+
       const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
 
       if (
@@ -1678,27 +1816,9 @@ export function rankCatalogNowInterestingSetCards({
           setCard,
         },
       ];
-    })
-    .sort(
-      (left, right) =>
-        right.score - left.score ||
-        Date.parse(
-          right.catalogDiscoverySignal.recentReferencePriceChangedAt ??
-            right.catalogDiscoverySignal.observedAt,
-        ) -
-          Date.parse(
-            left.catalogDiscoverySignal.recentReferencePriceChangedAt ??
-              left.catalogDiscoverySignal.observedAt,
-          ) ||
-        right.catalogDiscoverySignal.priceSpreadMinor -
-          left.catalogDiscoverySignal.priceSpreadMinor ||
-        right.catalogDiscoverySignal.merchantCount -
-          left.catalogDiscoverySignal.merchantCount ||
-        right.setCard.releaseYear - left.setCard.releaseYear ||
-        right.setCard.pieces - left.setCard.pieces ||
-        left.setCard.name.localeCompare(right.setCard.name) ||
-        left.setCard.id.localeCompare(right.setCard.id),
-    )
+    }),
+    rotationSeed,
+  })
     .slice(0, limit)
     .map((catalogDiscoveryCandidate) => catalogDiscoveryCandidate.setCard);
 }
@@ -3033,42 +3153,57 @@ export async function listDiscoverDealCandidateSetCards({
 }
 
 export async function listDiscoverBestDealSetCards({
+  excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  rotationSeed,
   setCards,
 }: {
+  excludedSetIds?: readonly string[];
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  rotationSeed?: number;
   setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
-  return listHomepageDealCandidateSetCards({
+  return rankCatalogBestDealSetCards({
+    excludedSetIds,
     getCatalogDiscoverySignalFn,
     limit,
-    listCanonicalCatalogSetsFn,
-    setCards,
+    rotationSeed,
+    setCards:
+      setCards ??
+      (await listAllCatalogSetCards({
+        listCanonicalCatalogSetsFn,
+      })),
   });
 }
 
 export async function listDiscoverNowInterestingSetCards({
+  excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  rotationSeed,
   setCards,
 }: {
+  excludedSetIds?: readonly string[];
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  rotationSeed?: number;
   setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
   return rankCatalogNowInterestingSetCards({
+    excludedSetIds,
     getCatalogDiscoverySignalFn,
     limit,
+    rotationSeed,
     setCards:
       setCards ??
       (await listAllCatalogSetCards({
@@ -3078,21 +3213,27 @@ export async function listDiscoverNowInterestingSetCards({
 }
 
 export async function listDiscoverRecentPriceChangeSetCards({
+  excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  rotationSeed,
   setCards,
 }: {
+  excludedSetIds?: readonly string[];
   getCatalogDiscoverySignalFn: (
     setId: string,
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  rotationSeed?: number;
   setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
   return rankCatalogRecentPriceChangeSetCards({
+    excludedSetIds,
     getCatalogDiscoverySignalFn,
     limit,
+    rotationSeed,
     setCards:
       setCards ??
       (await listAllCatalogSetCards({
