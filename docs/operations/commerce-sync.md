@@ -220,6 +220,7 @@ Available feed commands:
 - `pnpm sync:lidl-feed`
 - `pnpm sync:alternate-feed`
 - `pnpm sync:awin-feed`
+- `pnpm sync:coppenswarenhuis-feed`
 - `pnpm sync:goodbricks-feed`
 - `pnpm sync:mediamarkt-feed`
 
@@ -243,6 +244,28 @@ MediaMarkt job notes:
 - use `--dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync never uses EAN, MediaMarkt SKU, advertiser IDs, source product IDs, or TradeDoubler product IDs as LEGO set numbers
+
+Coppenswarenhuis uses a TradeTracker XML feed and writes through the same strict
+affiliate importer. It keeps only LEGO construction-set candidates with a set
+number in human product text and filters games, software, books, clothing and
+accessory-like products before offer import.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:coppenswarenhuis-feed
+```
+
+Recommended cadence:
+
+- once daily, preferably after the Coppenswarenhuis feed refresh window
+
+Coppenswarenhuis job notes:
+
+- keep `TRADETRACKER_COPPENSWARENHUIS_FEED_URL`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- use `--dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync never uses EAN, SKU, product IDs, feed IDs, affiliate IDs or deeplink IDs as LEGO set numbers
 
 ## Troubleshooting Notes
 

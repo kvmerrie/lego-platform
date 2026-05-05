@@ -22,12 +22,14 @@ import {
   getMissingProductEmailEnvKeys,
   getMissingStagingSupabaseEnvKeys,
   getMissingTradeTrackerEnvKeys,
+  getMissingTradeTrackerCoppenswarenhuisEnvKeys,
   getMissingTradeTrackerLidlEnvKeys,
   getMissingTradeDoublerMediaMarktEnvKeys,
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
   getTradeTrackerAffiliateConfig,
+  getTradeTrackerCoppenswarenhuisFeedConfig,
   getTradeTrackerLidlFeedConfig,
   getTradeDoublerMediaMarktFeedConfig,
   getServerWebBaseUrl,
@@ -40,11 +42,13 @@ import {
   hasProductEmailConfig,
   hasStagingSupabaseConfig,
   hasTradeTrackerAffiliateConfig,
+  hasTradeTrackerCoppenswarenhuisFeedConfig,
   hasTradeTrackerLidlFeedConfig,
   hasTradeDoublerMediaMarktFeedConfig,
   isArticlePreviewEnabled,
   publicSiteRobotsPolicy,
   tradeDoublerMediaMarktEnvKeys,
+  tradeTrackerCoppenswarenhuisEnvKeys,
   webNavigation,
 } from './config';
 
@@ -536,6 +540,49 @@ describe('shared config TradeTracker Lidl feed helpers', () => {
     expect(hasTradeTrackerLidlFeedConfig()).toBe(false);
     expect(getMissingTradeTrackerLidlEnvKeys()).toEqual([
       'TRADETRACKER_LIDL_FEED_URL',
+    ]);
+  });
+});
+
+describe('shared config TradeTracker Coppenswarenhuis feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the TradeTracker Coppenswarenhuis feed config with sensible merchant defaults', () => {
+    process.env.TRADETRACKER_COPPENSWARENHUIS_FEED_URL =
+      'https://pf.tradetracker.net/example/coppenswarenhuis.xml';
+
+    expect(hasTradeTrackerCoppenswarenhuisFeedConfig()).toBe(true);
+    expect(getMissingTradeTrackerCoppenswarenhuisEnvKeys()).toEqual([]);
+    expect(getTradeTrackerCoppenswarenhuisFeedConfig()).toEqual({
+      feedUrl: 'https://pf.tradetracker.net/example/coppenswarenhuis.xml',
+      merchantSlug: 'coppenswarenhuis',
+      merchantName: 'Coppenswarenhuis',
+    });
+  });
+
+  test('allows explicit Coppenswarenhuis merchant overrides for the TradeTracker feed config', () => {
+    process.env.TRADETRACKER_COPPENSWARENHUIS_FEED_URL =
+      'https://pf.tradetracker.net/example/coppenswarenhuis.xml';
+    process.env.TRADETRACKER_COPPENSWARENHUIS_MERCHANT_SLUG = 'coppens';
+    process.env.TRADETRACKER_COPPENSWARENHUIS_MERCHANT_NAME = 'Coppens';
+
+    expect(getTradeTrackerCoppenswarenhuisFeedConfig()).toEqual({
+      feedUrl: 'https://pf.tradetracker.net/example/coppenswarenhuis.xml',
+      merchantSlug: 'coppens',
+      merchantName: 'Coppens',
+    });
+  });
+
+  test('reports the missing TradeTracker Coppenswarenhuis feed URL', () => {
+    delete process.env.TRADETRACKER_COPPENSWARENHUIS_FEED_URL;
+
+    expect(hasTradeTrackerCoppenswarenhuisFeedConfig()).toBe(false);
+    expect(getMissingTradeTrackerCoppenswarenhuisEnvKeys()).toEqual([
+      tradeTrackerCoppenswarenhuisEnvKeys.feedUrl,
     ]);
   });
 });

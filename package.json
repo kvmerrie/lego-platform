@@ -16,6 +16,7 @@
     "sync:lidl-feed": "pnpm nx run lidl-feed-sync:run",
     "sync:awin-feed": "pnpm nx run awin-feed-sync:run",
     "sync:coolblue-feed": "pnpm nx run awin-feed-sync:run",
+    "sync:coppenswarenhuis-feed": "pnpm nx run coppenswarenhuis-feed-sync:run",
     "sync:goodbricks-feed": "pnpm nx run goodbricks-feed-sync:run",
     "sync:mediamarkt-feed": "pnpm nx run mediamarkt-feed-sync:run",
     "sync:commerce:check": "pnpm sync:commerce:local:check",
