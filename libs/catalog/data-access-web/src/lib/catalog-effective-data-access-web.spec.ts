@@ -16,6 +16,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 
 import {
   type CatalogDiscoverySignal,
+  getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogPartnerOfferRailDiagnostics,
   type CatalogResolvedOffer,
@@ -4571,6 +4572,165 @@ describe('catalog effective data access web', () => {
     expect(commerceCandidateSetCards.map((setCard) => setCard.id)).toEqual([
       '43247',
     ]);
+  });
+
+  test('returns clear commerce rail diagnostics when runtime Supabase config is missing', async () => {
+    const diagnostics = await getCatalogCommerceRailRuntimeDiagnostics({
+      environment: {},
+    });
+
+    expect(diagnostics).toMatchObject({
+      activeMerchantCount: 0,
+      activeSeedCount: 0,
+      currentOfferRowCount: 0,
+      hasBrowserSupabaseConfig: false,
+      hasServerSupabaseConfig: false,
+      rowsAfterMerchantJoinCount: 0,
+      rowsAfterPriceDeeplinkInStockFiltersCount: 0,
+      rowsAfterSeedJoinCount: 0,
+      summaryCount: 0,
+    });
+    expect(diagnostics.missingBrowserSupabaseEnvKeys).toEqual([
+      'NEXT_PUBLIC_SUPABASE_URL',
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    ]);
+    expect(diagnostics.missingServerSupabaseEnvKeys).toEqual([
+      'SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL)',
+      'SUPABASE_SERVICE_ROLE_KEY',
+    ]);
+  });
+
+  test('reports production-shaped commerce join and filter counts', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-05T12:25:54.539Z',
+          offer_seed_id: 'seed-valid',
+          price_minor: 9999,
+          updated_at: '2026-05-05T12:25:54.539Z',
+        },
+        {
+          availability: 'out_of_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-05T12:24:54.539Z',
+          offer_seed_id: 'seed-out-of-stock',
+          price_minor: 8999,
+          updated_at: '2026-05-05T12:24:54.539Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-05T12:23:54.539Z',
+          offer_seed_id: 'seed-zero-price',
+          price_minor: 0,
+          updated_at: '2026-05-05T12:23:54.539Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-05T12:22:54.539Z',
+          offer_seed_id: 'seed-inactive-seed',
+          price_minor: 4999,
+          updated_at: '2026-05-05T12:22:54.539Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-05T12:21:54.539Z',
+          offer_seed_id: 'seed-inactive-merchant',
+          price_minor: 5999,
+          updated_at: '2026-05-05T12:21:54.539Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+        {
+          id: 'merchant-inactive',
+          is_active: false,
+          name: 'Inactive Shop',
+          slug: 'inactive',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-valid',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://partner.example/simba',
+          set_id: '43247-1',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-out-of-stock',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://partner.example/c3po',
+          set_id: '75398',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-zero-price',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://partner.example/zero',
+          set_id: '10316',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-inactive-seed',
+          is_active: false,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://partner.example/inactive-seed',
+          set_id: '10333',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-inactive-merchant',
+          is_active: true,
+          merchant_id: 'merchant-inactive',
+          product_url: 'https://partner.example/inactive-merchant',
+          set_id: '10354',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const diagnostics = await getCatalogCommerceRailRuntimeDiagnostics({
+      environment: {
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: 'anon-key',
+        NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'service-role-key',
+        SUPABASE_URL: 'https://example.supabase.co',
+      },
+      supabaseClient,
+    });
+
+    expect(diagnostics).toMatchObject({
+      activeMerchantCount: 1,
+      activeSeedCount: 4,
+      currentOfferRowCount: 5,
+      currentOfferRowsWithValidPriceCount: 4,
+      hasBrowserSupabaseConfig: true,
+      hasServerSupabaseConfig: true,
+      rowsAfterMerchantJoinCount: 2,
+      rowsAfterPriceDeeplinkInStockFiltersCount: 1,
+      rowsAfterSeedJoinCount: 3,
+      serverSupabaseUrlSource: 'SUPABASE_URL',
+      summaryCount: 2,
+    });
   });
 
   test('uses ISR-friendly API fetch caching when a public catalog route passes revalidateSeconds', async () => {

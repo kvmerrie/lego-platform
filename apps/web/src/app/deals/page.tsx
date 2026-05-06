@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import {
+  getCatalogCommerceRailRuntimeDiagnostics,
+  getCatalogPartnerOfferRailDiagnostics,
   listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCardsByIds,
@@ -42,6 +44,97 @@ interface DealsRailItem extends CatalogHomepageSetCard {
 
 function formatSetCount(count: number): string {
   return `${count} set${count === 1 ? '' : 's'}`;
+}
+
+function isDealsCommerceRailsDebugEnabled(): boolean {
+  return (
+    process.env['DEBUG_COMMERCE_RAILS'] === 'true' ||
+    process.env['NODE_ENV'] === 'development'
+  );
+}
+
+function logDealsCommerceRailDiagnostics({
+  bestDealCandidateSetCards,
+  bestDealSetCards,
+  budgetSetCards,
+  catalogDiscoverySignalBySetId,
+  commerceCandidateSetCards,
+  currentOfferSummaryBySetId,
+  displaySetCards,
+  goodPricedCandidateSetCards,
+  goodPricedSetCards,
+  recentPriceChangeSetCards,
+  rotationSeed,
+  runtimeDiagnostics,
+}: {
+  bestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
+  bestDealSetCards: readonly DealsRailItem[];
+  budgetSetCards: readonly DealsRailItem[];
+  catalogDiscoverySignalBySetId: Awaited<
+    ReturnType<typeof listCatalogDiscoverySignalsBySetId>
+  >;
+  commerceCandidateSetCards: readonly CatalogHomepageSetCard[];
+  currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
+  displaySetCards: readonly DealsRailItem[];
+  goodPricedCandidateSetCards: readonly CatalogHomepageSetCard[];
+  goodPricedSetCards: readonly DealsRailItem[];
+  recentPriceChangeSetCards: readonly DealsRailItem[];
+  rotationSeed: number;
+  runtimeDiagnostics?: Awaited<
+    ReturnType<typeof getCatalogCommerceRailRuntimeDiagnostics>
+  >;
+}): void {
+  if (!isDealsCommerceRailsDebugEnabled()) {
+    return;
+  }
+
+  const offerSummaries = [...currentOfferSummaryBySetId.values()];
+
+  console.info('[commerce-rails] deals diagnostics', {
+    candidateCounts: {
+      bestDealsNow: bestDealCandidateSetCards.length,
+      commerceCandidates: commerceCandidateSetCards.length,
+      goodPriced: goodPricedCandidateSetCards.length,
+      offerSummaries: offerSummaries.length,
+    },
+    finalRailCounts: {
+      bestDealsNow: bestDealSetCards.length,
+      budget: budgetSetCards.length,
+      display: displaySetCards.length,
+      goodPriced: goodPricedSetCards.length,
+      recentPriceDrops: recentPriceChangeSetCards.length,
+    },
+    firstSetScoringInputs: getCatalogPartnerOfferRailDiagnostics({
+      catalogDiscoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      limit: 10,
+      rotationSeed,
+      setCards: commerceCandidateSetCards,
+    }),
+    offerSignals: {
+      firstCommerceCandidateSetIds: commerceCandidateSetCards
+        .map((catalogSetCard) => catalogSetCard.id)
+        .slice(0, 20),
+      firstReturnedOfferSetIds: offerSummaries
+        .map((currentOfferSummary) => currentOfferSummary.setId)
+        .slice(0, 20),
+      setsInStock: offerSummaries.filter(
+        (currentOfferSummary) =>
+          currentOfferSummary.bestOffer?.availability === 'in_stock',
+      ).length,
+      setsWithAffiliateDeeplink: offerSummaries.filter(
+        (currentOfferSummary) =>
+          typeof currentOfferSummary.bestOffer?.url === 'string' &&
+          currentOfferSummary.bestOffer.url.length > 0,
+      ).length,
+      setsWithCurrentPrice: offerSummaries.filter(
+        (currentOfferSummary) =>
+          typeof currentOfferSummary.bestOffer?.priceCents === 'number' &&
+          currentOfferSummary.bestOffer.priceCents > 0,
+      ).length,
+    },
+    ...(runtimeDiagnostics ? { runtimeDiagnostics } : {}),
+  });
 }
 
 function renderCanonicalNames(names: readonly string[]): ReactNode {
@@ -299,6 +392,26 @@ export default async function DealsPage() {
     currentOfferSummaryBySetId,
     sectionId: 'deals-display',
     setCards: displayCandidateSetCards,
+  });
+  const commerceRailRuntimeDiagnostics = isDealsCommerceRailsDebugEnabled()
+    ? await getCatalogCommerceRailRuntimeDiagnostics({
+        limit: 300,
+      })
+    : undefined;
+
+  logDealsCommerceRailDiagnostics({
+    bestDealCandidateSetCards,
+    bestDealSetCards,
+    budgetSetCards,
+    catalogDiscoverySignalBySetId,
+    commerceCandidateSetCards,
+    currentOfferSummaryBySetId,
+    displaySetCards,
+    goodPricedCandidateSetCards,
+    goodPricedSetCards,
+    recentPriceChangeSetCards,
+    rotationSeed: commerceRailRotationSeed,
+    runtimeDiagnostics: commerceRailRuntimeDiagnostics,
   });
 
   return (

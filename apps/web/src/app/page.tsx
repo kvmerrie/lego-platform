@@ -11,6 +11,7 @@ import {
   CatalogFeatureThemeSpotlight,
 } from '@lego-platform/catalog/feature-theme-list';
 import {
+  getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
   listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId,
@@ -191,6 +192,7 @@ function logHomepageCommerceRailDiagnostics({
   homepageBestDealCandidateSetCards,
   homepageBestDealSetCards,
   homepageFirstCommerceInputSetCards,
+  runtimeDiagnostics,
   scoredCommerceCandidateSetCards,
   rotationSeed,
 }: {
@@ -205,6 +207,9 @@ function logHomepageCommerceRailDiagnostics({
   homepageBestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
   homepageBestDealSetCards: readonly CatalogFeatureSetListItem[];
   homepageFirstCommerceInputSetCards: readonly CatalogHomepageSetCard[];
+  runtimeDiagnostics?: Awaited<
+    ReturnType<typeof getCatalogCommerceRailRuntimeDiagnostics>
+  >;
   scoredCommerceCandidateSetCards: readonly CatalogHomepageSetCard[];
   rotationSeed: number;
 }): void {
@@ -276,6 +281,7 @@ function logHomepageCommerceRailDiagnostics({
       usingGeneratedArtifactsForCurrentOffers: false,
       usingRuntimeSupabaseCommerceData: true,
     },
+    ...(runtimeDiagnostics ? { runtimeDiagnostics } : {}),
     finalRailCounts: {
       bestDealsNow: homepageBestDealSetCards.length,
     },
@@ -355,6 +361,11 @@ export default async function HomePage() {
   const currentOfferSummaryBySetId = await listCatalogCurrentOfferSummaries({
     limit: 300,
   });
+  const commerceRailRuntimeDiagnostics = isHomepageCommerceRailsDebugEnabled()
+    ? await getCatalogCommerceRailRuntimeDiagnostics({
+        limit: 300,
+      })
+    : undefined;
   const commerceCandidateSetCards = await listCatalogSetCardsByIds({
     canonicalIds: [...currentOfferSummaryBySetId.keys()],
   });
@@ -416,6 +427,7 @@ export default async function HomePage() {
     homepageBestDealCandidateSetCards,
     homepageBestDealSetCards,
     homepageFirstCommerceInputSetCards,
+    runtimeDiagnostics: commerceRailRuntimeDiagnostics,
     scoredCommerceCandidateSetCards: homepageScoredCommerceCandidateSetCards,
     rotationSeed: commerceRailRotationSeed,
   });

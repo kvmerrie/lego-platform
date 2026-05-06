@@ -39,7 +39,10 @@ import {
   buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
   getBrowserSupabaseConfig,
+  getMissingBrowserSupabaseEnvKeys,
+  getMissingServerSupabaseEnvKeys,
   getServerSupabaseConfig,
+  getServerSupabaseUrlSource,
   getRuntimeBaseUrl,
   hasBrowserSupabaseConfig,
   hasServerSupabaseConfig,
@@ -189,6 +192,22 @@ export interface CatalogPartnerOfferRailDiagnostic {
   inStock: boolean;
   priceSpread: number;
   setId: string;
+}
+
+export interface CatalogCommerceRailRuntimeDiagnostics {
+  activeMerchantCount: number;
+  activeSeedCount: number;
+  currentOfferRowCount: number;
+  currentOfferRowsWithValidPriceCount: number;
+  hasBrowserSupabaseConfig: boolean;
+  hasServerSupabaseConfig: boolean;
+  missingBrowserSupabaseEnvKeys: readonly string[];
+  missingServerSupabaseEnvKeys: readonly string[];
+  rowsAfterMerchantJoinCount: number;
+  rowsAfterPriceDeeplinkInStockFiltersCount: number;
+  rowsAfterSeedJoinCount: number;
+  serverSupabaseUrlSource?: string;
+  summaryCount: number;
 }
 
 let webCatalogSupabaseAdminClient: SupabaseClient | undefined;
@@ -3305,6 +3324,180 @@ async function listCatalogRuntimeOffersByCurrentOffersFromSupabase({
       sortResolvedCatalogOffers(offers) as CatalogRuntimeOffer[],
     ]),
   );
+}
+
+export async function getCatalogCommerceRailRuntimeDiagnostics({
+  environment = process.env,
+  limit = CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT,
+  supabaseClient,
+}: {
+  environment?: Record<string, string | undefined>;
+  limit?: number;
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogCommerceRailRuntimeDiagnostics> {
+  const runtimeDiagnostics = {
+    hasBrowserSupabaseConfig: hasBrowserSupabaseConfig(environment),
+    hasServerSupabaseConfig: hasServerSupabaseConfig(environment),
+    missingBrowserSupabaseEnvKeys:
+      getMissingBrowserSupabaseEnvKeys(environment),
+    missingServerSupabaseEnvKeys: getMissingServerSupabaseEnvKeys(environment),
+    serverSupabaseUrlSource: getServerSupabaseUrlSource(environment),
+  };
+  const emptyDiagnostics = {
+    ...runtimeDiagnostics,
+    activeMerchantCount: 0,
+    activeSeedCount: 0,
+    currentOfferRowCount: 0,
+    currentOfferRowsWithValidPriceCount: 0,
+    rowsAfterMerchantJoinCount: 0,
+    rowsAfterPriceDeeplinkInStockFiltersCount: 0,
+    rowsAfterSeedJoinCount: 0,
+    summaryCount: 0,
+  };
+  const activeSupabaseClient =
+    supabaseClient ??
+    (environment === process.env
+      ? getWebCatalogSupabaseReadClient()
+      : undefined);
+
+  if (!activeSupabaseClient) {
+    return emptyDiagnostics;
+  }
+
+  try {
+    const safeLimit = Math.min(
+      Math.max(Math.trunc(limit), 1),
+      CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT,
+    );
+    const [
+      { data: latestOfferData, error: latestOfferError },
+      { data: activeMerchantData, error: activeMerchantError },
+      { data: activeSeedData, error: activeSeedError },
+    ] = await Promise.all([
+      activeSupabaseClient
+        .from(COMMERCE_OFFER_LATEST_TABLE)
+        .select(
+          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+        )
+        .eq('fetch_status', 'success')
+        .eq('currency_code', 'EUR')
+        .order('updated_at', {
+          ascending: false,
+        })
+        .limit(safeLimit),
+      activeSupabaseClient
+        .from(COMMERCE_MERCHANTS_TABLE)
+        .select('id, slug, name, is_active')
+        .eq('is_active', true),
+      activeSupabaseClient
+        .from(COMMERCE_OFFER_SEEDS_TABLE)
+        .select(
+          'id, set_id, merchant_id, product_url, is_active, validation_status',
+        )
+        .eq('is_active', true)
+        .eq('validation_status', 'valid'),
+    ]);
+
+    if (latestOfferError || activeMerchantError || activeSeedError) {
+      return emptyDiagnostics;
+    }
+
+    const latestOffers =
+      (latestOfferData as CatalogCommerceOfferLatestRow[] | null) ?? [];
+    const latestOffersWithValidPrice = latestOffers.filter(
+      (latestOffer) =>
+        typeof latestOffer.price_minor === 'number' &&
+        latestOffer.price_minor > 0,
+    );
+    const latestOfferBySeedId = new Map<
+      string,
+      CatalogCommerceOfferLatestRow
+    >();
+
+    for (const latestOffer of latestOffersWithValidPrice) {
+      if (!latestOfferBySeedId.has(latestOffer.offer_seed_id)) {
+        latestOfferBySeedId.set(latestOffer.offer_seed_id, latestOffer);
+      }
+    }
+
+    const currentOfferSeedIds = [...latestOfferBySeedId.keys()];
+    const currentOfferSeeds =
+      currentOfferSeedIds.length > 0
+        ? await activeSupabaseClient
+            .from(COMMERCE_OFFER_SEEDS_TABLE)
+            .select(
+              'id, set_id, merchant_id, product_url, is_active, validation_status',
+            )
+            .in('id', currentOfferSeedIds)
+            .eq('is_active', true)
+            .eq('validation_status', 'valid')
+        : { data: [], error: null };
+
+    if (currentOfferSeeds.error) {
+      return emptyDiagnostics;
+    }
+
+    const activeMerchants =
+      (activeMerchantData as CatalogCommerceMerchantRow[] | null) ?? [];
+    const activeSeeds =
+      (activeSeedData as CatalogCommerceOfferSeedRow[] | null) ?? [];
+    const offerSeeds =
+      (currentOfferSeeds.data as CatalogCommerceOfferSeedRow[] | null) ?? [];
+    const merchantById = new Map(
+      activeMerchants.map((merchantRow) => [merchantRow.id, merchantRow]),
+    );
+    let rowsAfterMerchantJoinCount = 0;
+    let rowsAfterPriceDeeplinkInStockFiltersCount = 0;
+    const liveOffersBySetId = new Map<string, CatalogRuntimeOffer[]>();
+
+    for (const offerSeed of offerSeeds) {
+      const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+      const merchant = merchantById.get(offerSeed.merchant_id);
+
+      if (!latestOffer || !merchant) {
+        continue;
+      }
+
+      rowsAfterMerchantJoinCount += 1;
+
+      const catalogRuntimeOffer = toCatalogRuntimeOffer({
+        latestOffer,
+        merchant,
+        offerSeed,
+      });
+
+      if (!catalogRuntimeOffer) {
+        continue;
+      }
+
+      if (
+        catalogRuntimeOffer.priceCents > 0 &&
+        catalogRuntimeOffer.url.length > 0 &&
+        catalogRuntimeOffer.availability === 'in_stock'
+      ) {
+        rowsAfterPriceDeeplinkInStockFiltersCount += 1;
+      }
+
+      const existingOffers =
+        liveOffersBySetId.get(catalogRuntimeOffer.setId) ?? [];
+      existingOffers.push(catalogRuntimeOffer);
+      liveOffersBySetId.set(catalogRuntimeOffer.setId, existingOffers);
+    }
+
+    return {
+      ...runtimeDiagnostics,
+      activeMerchantCount: activeMerchants.length,
+      activeSeedCount: activeSeeds.length,
+      currentOfferRowCount: latestOffers.length,
+      currentOfferRowsWithValidPriceCount: latestOffersWithValidPrice.length,
+      rowsAfterMerchantJoinCount,
+      rowsAfterPriceDeeplinkInStockFiltersCount,
+      rowsAfterSeedJoinCount: offerSeeds.length,
+      summaryCount: liveOffersBySetId.size,
+    };
+  } catch {
+    return emptyDiagnostics;
+  }
 }
 
 export async function listCatalogSetLiveOffersBySetId({
