@@ -79,6 +79,8 @@ const SET_NEWS_RAIL_LIMIT = 4;
 const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
 const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
 const DEFAULT_SET_DETAIL_OG_IMAGE = '/favicon.ico';
+const SET_DETAIL_OG_IMAGE_WIDTH = 1200;
+const SET_DETAIL_OG_IMAGE_HEIGHT = 1200;
 
 export type SetDetailAvailabilityFallbackState =
   | 'available'
@@ -155,23 +157,142 @@ function toAbsoluteMetadataUrl(url: string | undefined): string {
   }
 
   try {
-    return new URL(url).toString();
+    const parsedUrl = new URL(url);
+
+    if (parsedUrl.protocol === 'http:') {
+      parsedUrl.protocol = 'https:';
+    }
+
+    return parsedUrl.toString();
   } catch {
     return new URL(url, baseUrl).toString();
   }
 }
 
-function getSetDetailMetadataImageUrl(
+function getMetadataImageMimeType(imageUrl: string): string | undefined {
+  const pathname = (() => {
+    try {
+      return new URL(imageUrl).pathname.toLowerCase();
+    } catch {
+      return imageUrl.toLowerCase();
+    }
+  })();
+
+  if (pathname.endsWith('.jpg') || pathname.endsWith('.jpeg')) {
+    return 'image/jpeg';
+  }
+
+  if (pathname.endsWith('.png')) {
+    return 'image/png';
+  }
+
+  if (pathname.endsWith('.webp')) {
+    return 'image/webp';
+  }
+
+  return undefined;
+}
+
+function isSharePreferredImageUrl(imageUrl: string | undefined): boolean {
+  if (!imageUrl) {
+    return false;
+  }
+
+  const pathname = (() => {
+    try {
+      return new URL(imageUrl).pathname.toLowerCase();
+    } catch {
+      return imageUrl.toLowerCase();
+    }
+  })();
+
+  return (
+    pathname.endsWith('.jpg') ||
+    pathname.endsWith('.jpeg') ||
+    pathname.endsWith('.png')
+  );
+}
+
+function getSetDetailMetadataImageCandidateUrl(
   catalogSetDetail: Pick<
     CatalogSetDetail,
     'imageUrl' | 'images' | 'primaryImage'
   >,
 ): string {
-  return toAbsoluteMetadataUrl(
-    catalogSetDetail.primaryImage ??
-      catalogSetDetail.images?.find((image) => image.type === 'hero')?.url ??
-      catalogSetDetail.imageUrl,
-  );
+  const candidates = [
+    catalogSetDetail.primaryImage,
+    catalogSetDetail.images?.find((image) => image.type === 'hero')?.url,
+    catalogSetDetail.imageUrl,
+    ...(catalogSetDetail.images?.map((image) => image.url) ?? []),
+  ].filter((imageUrl): imageUrl is string => Boolean(imageUrl));
+  const preferredCandidate =
+    candidates.find(isSharePreferredImageUrl) ?? candidates[0];
+
+  return toAbsoluteMetadataUrl(preferredCandidate);
+}
+
+function getSetDetailMetadataImage(
+  catalogSetDetail: Pick<
+    CatalogSetDetail,
+    'imageUrl' | 'images' | 'primaryImage'
+  >,
+  alt: string,
+) {
+  const imageUrl = getSetDetailMetadataImageCandidateUrl(catalogSetDetail);
+  const imageType = getMetadataImageMimeType(imageUrl);
+
+  return {
+    url: imageUrl,
+    secureUrl: imageUrl,
+    alt,
+    width: SET_DETAIL_OG_IMAGE_WIDTH,
+    height: SET_DETAIL_OG_IMAGE_HEIGHT,
+    ...(imageType ? { type: imageType } : {}),
+  };
+}
+
+function shouldLogSetDetailOgImageDebug(): boolean {
+  return process.env['DEBUG_SET_OG_IMAGE']?.trim().toLowerCase() === 'true';
+}
+
+export async function resolveSetDetailOgImageDebugInfo({
+  fetchFn = fetch,
+  imageUrl,
+}: {
+  fetchFn?: typeof fetch;
+  imageUrl: string;
+}): Promise<{
+  imageUrl: string;
+  ok: boolean;
+  status?: number;
+}> {
+  try {
+    const response = await fetchFn(imageUrl, {
+      method: 'HEAD',
+      cache: 'no-store',
+    });
+
+    return {
+      imageUrl,
+      ok: response.ok,
+      status: response.status,
+    };
+  } catch {
+    return {
+      imageUrl,
+      ok: false,
+    };
+  }
+}
+
+async function logSetDetailOgImageDebug(imageUrl: string): Promise<void> {
+  if (!shouldLogSetDetailOgImageDebug()) {
+    return;
+  }
+
+  const debugInfo = await resolveSetDetailOgImageDebugInfo({ imageUrl });
+
+  console.warn('[set-detail-og-image]', debugInfo);
 }
 
 function getReliableDiscountPercentage(
@@ -225,7 +346,10 @@ export function buildSetDetailMetadata({
 }): Metadata {
   const bestOffer = currentOfferSummary?.bestOffer;
   const discountPercentage = getReliableDiscountPercentage(pricePanelSnapshot);
-  const imageUrl = getSetDetailMetadataImageUrl(catalogSetDetail);
+  const metadataImage = getSetDetailMetadataImage(
+    catalogSetDetail,
+    `${catalogSetDetail.name} setbeeld`,
+  );
   const priceLabel = bestOffer
     ? formatMetadataPrice({
         currencyCode: bestOffer.currency,
@@ -271,19 +395,14 @@ export function buildSetDetailMetadata({
     openGraph: {
       title,
       description,
-      images: [
-        {
-          url: imageUrl,
-          alt: `${catalogSetDetail.name} setbeeld`,
-        },
-      ],
+      images: [metadataImage],
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [imageUrl],
+      images: [metadataImage],
     },
   };
 }
@@ -979,11 +1098,25 @@ export async function generateMetadata({
       setIds: [catalogSetDetail.id],
     });
 
-  return buildSetDetailMetadata({
+  const metadata = buildSetDetailMetadata({
     catalogSetDetail,
     currentOfferSummary: currentOfferSummaryBySetId.get(catalogSetDetail.id),
     pricePanelSnapshot: getPricePanelSnapshot(catalogSetDetail.id),
   });
+
+  const metadataImage = Array.isArray(metadata.openGraph?.images)
+    ? metadata.openGraph.images[0]
+    : metadata.openGraph?.images;
+  const metadataImageUrl =
+    typeof metadataImage === 'string' || metadataImage instanceof URL
+      ? metadataImage.toString()
+      : metadataImage?.url?.toString();
+
+  if (metadataImageUrl) {
+    await logSetDetailOgImageDebug(metadataImageUrl);
+  }
+
+  return metadata;
 }
 
 export default async function SetDetailPage({

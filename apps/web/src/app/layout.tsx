@@ -8,6 +8,7 @@ import {
 import {
   getDefaultAppLocaleContext,
   platformConfig,
+  publicWebBaseUrls,
   publicSiteRobotsPolicy,
 } from '@lego-platform/shared/config';
 import './global.css';
@@ -28,6 +29,7 @@ const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
 const isProduction = process.env.VERCEL_ENV === 'production';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(publicWebBaseUrls.production),
   title: defaultMetadataTitle,
   description: defaultMetadataDescription,
   applicationName: platformConfig.productName,

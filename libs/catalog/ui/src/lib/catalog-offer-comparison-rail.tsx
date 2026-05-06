@@ -266,7 +266,7 @@ export function buildCompactOfferPresentation({
   });
 
   return {
-    actionLabel: offer.isBest ? 'Ga naar beste deal' : 'Bekijk alternatief',
+    actionLabel: offer.isBest ? 'Bekijk beste deal' : 'Bekijk alternatief',
     overlayCheckedLabel: getCompactCheckedLabel(offer.checkedLabel),
     railCheckedLabel: getCompactRailCheckedLabel(offer.checkedLabel),
     confidenceLabel: getBestOfferConfidenceLabel({
@@ -301,11 +301,9 @@ function handleOverlayEscape(
 function CatalogOfferRailCard({
   comparisonContext,
   offer,
-  setDetailHref,
 }: {
   comparisonContext: CompactOfferComparisonContext;
   offer: CatalogOfferItem;
-  setDetailHref?: string;
 }) {
   const presentation = buildCompactOfferPresentation({
     comparisonContext,
@@ -372,25 +370,25 @@ function CatalogOfferRailCard({
           data-tone={offer.isBest ? 'accent' : 'secondary'}
         >
           <Eye aria-hidden="true" size={15} strokeWidth={2.2} />
-          <span>Bekijk set</span>
+          <span>{presentation.actionLabel}</span>
         </span>
       </div>
     </article>
   );
 
-  if (!setDetailHref) {
-    return card;
-  }
-
   return (
     <ActionLink
       className={styles.offerRailCardLink}
-      href={setDetailHref}
+      href={offer.ctaHref}
+      prefetch={false}
+      rel="noreferrer sponsored"
+      target="_blank"
       tone="card"
+      {...buildBrickhuntAnalyticsAttributes(offer.trackingEvent)}
     >
       {card}
       <VisuallyHidden>
-        Bekijk setdetail met prijs bij {presentation.merchantLabel}
+        Open aanbieding bij {presentation.merchantLabel}
       </VisuallyHidden>
     </ActionLink>
   );
@@ -486,7 +484,6 @@ export function CatalogOfferComparisonRail({
   className,
   id,
   offers,
-  setDetailHref,
   summaryLabel,
 }: CatalogOfferComparisonRailProps) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
@@ -542,7 +539,6 @@ export function CatalogOfferComparisonRail({
                 <CatalogOfferRailCard
                   comparisonContext={comparisonContext}
                   offer={offer}
-                  setDetailHref={setDetailHref}
                 />
               </li>
             ))}

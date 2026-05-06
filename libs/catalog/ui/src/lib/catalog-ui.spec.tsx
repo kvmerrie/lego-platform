@@ -247,13 +247,38 @@ describe('CatalogSetCard', () => {
       css.match(
         /\.offerRailCardLink:hover \.offerRailCard\[data-best='true'\],[\s\S]*?\.offerRailCardLink:focus-visible \.offerRailCard\[data-best='true'\] \{[^}]+\}/u,
       )?.[0] ?? '';
+    const secondaryActionRule =
+      css.match(/\.offerRailAction\[data-tone='secondary'\] \{[^}]+\}/u)?.[0] ??
+      '';
+    const cardHoverSecondaryActionRule =
+      css.match(
+        /\.offerRailCardLink:hover \.offerRailAction\[data-tone='secondary'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
 
     expect(offerCardRule).not.toContain('transform');
     expect(bestDealRule).not.toContain('translateY');
     expect(offerHoverRule).not.toContain('translateY');
     expect(offerHoverRule).not.toContain('0 0.55rem');
+    expect(offerHoverRule).toContain(
+      'border-color: var(--catalog-card-interaction-border-color);',
+    );
     expect(offerHoverRule).toContain('box-shadow: inset');
     expect(bestDealHoverRule).toContain('box-shadow: inset');
+    expect(bestDealRule).toContain(
+      '--catalog-card-interaction-outline-color: var(--lego-accent);',
+    );
+    expect(bestDealRule).toContain(
+      'box-shadow: inset 0 0 0 1px var(--lego-accent);',
+    );
+    expect(bestDealHoverRule).toContain(
+      'box-shadow: inset 0 0 0 2px var(--lego-accent);',
+    );
+    expect(secondaryActionRule).toContain('background: transparent;');
+    expect(secondaryActionRule).toContain('border-color: var(--lego-text);');
+    expect(cardHoverSecondaryActionRule).toContain(
+      'background: var(--lego-accent-hover);',
+    );
+    expect(css).toContain('white-space: nowrap;');
   });
 
   it('anchors optional visual actions inside the image wrapper with bottom-right padding', () => {
@@ -750,8 +775,12 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('data-wrap="default"');
     expect(markup).toContain('€30 goedkoper dan de rest');
     expect(markup).toContain('€30 duurder');
-    expect(markup).toContain('href="/sets/rivendell-10316"');
-    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('href="https://example.com/rivendell"');
+    expect(markup).toContain('href="https://example.com/rivendell-lego"');
+    expect(markup).toContain('rel="noreferrer sponsored"');
+    expect(markup).toContain('target="_blank"');
+    expect(markup).toContain('Bekijk beste deal');
+    expect(markup).toContain('Bekijk alternatief');
     expect(markup).not.toContain('Sterke deal');
     expect(markup.indexOf('Vergelijk winkels')).toBeLessThan(
       markup.indexOf('Prijs in het kort'),

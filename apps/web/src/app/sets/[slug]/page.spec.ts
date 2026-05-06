@@ -276,11 +276,89 @@ describe('set detail metadata', () => {
     expect(metadata.openGraph?.images).toEqual([
       {
         url: 'https://cdn.example.com/primary.jpg',
+        secureUrl: 'https://cdn.example.com/primary.jpg',
         alt: 'Imperial Lambda-Class Shuttle setbeeld',
+        height: 1200,
+        type: 'image/jpeg',
+        width: 1200,
       },
     ]);
     expect(metadata.twitter?.images).toEqual([
-      'https://cdn.example.com/primary.jpg',
+      {
+        url: 'https://cdn.example.com/primary.jpg',
+        secureUrl: 'https://cdn.example.com/primary.jpg',
+        alt: 'Imperial Lambda-Class Shuttle setbeeld',
+        height: 1200,
+        type: 'image/jpeg',
+        width: 1200,
+      },
     ]);
+  });
+
+  it('prefers share-compatible jpg or png set images over webp-only candidates', async () => {
+    const { buildSetDetailMetadata } = await import('./page');
+    const metadata = buildSetDetailMetadata({
+      catalogSetDetail: {
+        ...baseSet,
+        imageUrl: 'https://cdn.example.com/fallback.webp',
+        images: [
+          {
+            type: 'hero',
+            url: 'https://cdn.example.com/hero.png',
+          },
+        ],
+        primaryImage: 'https://cdn.example.com/primary.webp',
+      },
+    });
+
+    expect(metadata.openGraph?.images).toEqual([
+      expect.objectContaining({
+        url: 'https://cdn.example.com/hero.png',
+        secureUrl: 'https://cdn.example.com/hero.png',
+        type: 'image/png',
+        width: 1200,
+        height: 1200,
+      }),
+    ]);
+  });
+
+  it('normalizes metadata image URLs to absolute https URLs', async () => {
+    const { buildSetDetailMetadata } = await import('./page');
+    const metadata = buildSetDetailMetadata({
+      catalogSetDetail: {
+        ...baseSet,
+        imageUrl: 'http://cdn.example.com/75459.jpg',
+      },
+    });
+
+    expect(metadata.openGraph?.images).toEqual([
+      expect.objectContaining({
+        url: 'https://cdn.example.com/75459.jpg',
+        secureUrl: 'https://cdn.example.com/75459.jpg',
+      }),
+    ]);
+  });
+
+  it('can check whether the resolved OG image responds publicly', async () => {
+    const { resolveSetDetailOgImageDebugInfo } = await import('./page');
+    const fetchFn = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+    }));
+
+    await expect(
+      resolveSetDetailOgImageDebugInfo({
+        fetchFn: fetchFn as unknown as typeof fetch,
+        imageUrl: 'https://cdn.example.com/75459.jpg',
+      }),
+    ).resolves.toEqual({
+      imageUrl: 'https://cdn.example.com/75459.jpg',
+      ok: true,
+      status: 200,
+    });
+    expect(fetchFn).toHaveBeenCalledWith('https://cdn.example.com/75459.jpg', {
+      method: 'HEAD',
+      cache: 'no-store',
+    });
   });
 });

@@ -158,12 +158,13 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('data-wrap="default"');
     expect(markup).toContain('€30,04 goedkoper dan de rest');
     expect(markup).toContain('€30,04 duurder');
-    expect(markup).toContain(
-      'href="/sets/ultimate-collectors-series-at-at-75313"',
-    );
-    expect(markup).toContain('Bekijk set');
+    expect(markup).toContain('href="https://example.com/atat-bol"');
+    expect(markup).toContain('href="https://example.com/atat-amazon"');
+    expect(markup).toContain('rel="noreferrer sponsored"');
+    expect(markup).toContain('target="_blank"');
+    expect(markup).toContain('Bekijk beste deal');
+    expect(markup).toContain('Bekijk alternatief');
     expect(markup).toContain('data-best="true"');
-    expect(markup).not.toContain('href="https://example.com/atat-bol"');
     expect(markup).toContain('Vergelijk alle 2 winkels');
   });
 
@@ -319,7 +320,7 @@ describe('Catalog commerce UI', () => {
     });
 
     expect(presentation.confidenceLabel).toBe('€30,04 goedkoper dan de rest');
-    expect(presentation.actionLabel).toBe('Ga naar beste deal');
+    expect(presentation.actionLabel).toBe('Bekijk beste deal');
     expect(presentation.priceComparisonState).toBe('best');
   });
 
