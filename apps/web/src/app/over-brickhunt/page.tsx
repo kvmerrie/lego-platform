@@ -22,11 +22,16 @@ const restraintItems = [
   'Geen prijsverhaal als de context te dun is.',
 ] as const;
 
-export const metadata = getMetadataFromSeoFields({
-  title: 'Over Brickhunt',
-  description:
-    'Lees waar Brickhunt voor is, voor wie het gebouwd is en hoe we eerlijk omgaan met prijscontext en affiliate links.',
-});
+export const metadata = getMetadataFromSeoFields(
+  {
+    title: 'Over Brickhunt',
+    description:
+      'Lees waar Brickhunt voor is, voor wie het gebouwd is en hoe we eerlijk omgaan met prijscontext en affiliate links.',
+  },
+  {
+    canonicalPath: '/over-brickhunt',
+  },
+);
 
 export default function AboutBrickhuntPage() {
   return (

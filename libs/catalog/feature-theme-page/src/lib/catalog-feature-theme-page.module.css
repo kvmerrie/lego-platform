@@ -238,6 +238,79 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
 
+.paginationNav {
+  display: flex;
+  justify-content: center;
+}
+
+.paginationList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.paginationLink {
+  align-items: center;
+  border: 1px solid var(--lego-color-border-subtle);
+  border-radius: var(--lego-radius-sm);
+  color: inherit;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 2.5rem;
+  min-width: 2.5rem;
+  text-decoration: none;
+}
+
+.paginationLink[aria-current='page'] {
+  background: var(--lego-color-text);
+  border-color: var(--lego-color-text);
+  color: var(--lego-color-surface);
+}
+
+.relatedArticlesSection {
+  scroll-margin-top: var(--shell-fragment-scroll-margin, var(--lego-space-1));
+}
+
+.relatedArticleGrid {
+  display: grid;
+  gap: var(--lego-space-2);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.relatedArticleCard {
+  min-width: 0;
+}
+
+.relatedArticleLink {
+  border: 1px solid var(--lego-color-border-subtle);
+  border-radius: var(--lego-radius-md);
+  color: inherit;
+  display: grid;
+  gap: var(--lego-space-1);
+  height: 100%;
+  padding: var(--lego-space-3);
+  text-decoration: none;
+}
+
+.relatedArticleDate,
+.relatedArticleDescription {
+  color: var(--lego-color-text-muted);
+  font-size: var(--lego-font-size-sm);
+}
+
+.relatedArticleTitle,
+.relatedArticleDescription {
+  margin: 0;
+}
+
+.relatedArticleTitle {
+  font-size: var(--lego-font-size-lg);
+}
+
 @media (min-width: 28rem) {
   .browseGrid {
     --catalog-browse-grid-inline-border-size: var(

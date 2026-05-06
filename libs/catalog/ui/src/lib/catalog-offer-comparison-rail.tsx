@@ -1,6 +1,14 @@
 'use client';
 
-import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
+import {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronRight, Clock3, Eye, X } from 'lucide-react';
 import {
   ActionLink,
@@ -298,6 +306,60 @@ function handleOverlayEscape(
   onClose();
 }
 
+function getFocusableOverlayElements(dialog: HTMLDivElement | null) {
+  if (!dialog) {
+    return [];
+  }
+
+  return Array.from(
+    dialog.querySelectorAll<HTMLElement>(
+      [
+        'a[href]',
+        'button:not([disabled])',
+        'input:not([disabled])',
+        'select:not([disabled])',
+        'textarea:not([disabled])',
+        '[tabindex]:not([tabindex="-1"])',
+      ].join(','),
+    ),
+  ).filter(
+    (element) =>
+      !element.hasAttribute('disabled') &&
+      element.getAttribute('aria-hidden') !== 'true',
+  );
+}
+
+function handleOverlayTabTrap(
+  event: KeyboardEvent<HTMLDivElement>,
+  dialog: HTMLDivElement | null,
+) {
+  if (event.key !== 'Tab') {
+    return;
+  }
+
+  const focusableElements = getFocusableOverlayElements(dialog);
+
+  if (!focusableElements.length) {
+    event.preventDefault();
+    dialog?.focus({ preventScroll: true });
+    return;
+  }
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+
+  if (event.shiftKey && document.activeElement === firstElement) {
+    event.preventDefault();
+    lastElement.focus({ preventScroll: true });
+    return;
+  }
+
+  if (!event.shiftKey && document.activeElement === lastElement) {
+    event.preventDefault();
+    firstElement.focus({ preventScroll: true });
+  }
+}
+
 function CatalogOfferRailCard({
   comparisonContext,
   offer,
@@ -490,6 +552,7 @@ export function CatalogOfferComparisonRail({
   const titleId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const overlayDialogRef = useRef<HTMLDivElement>(null);
   const railOffers = offers.slice(0, MAX_VISIBLE_OFFER_RAIL_ITEMS);
   const comparisonContext = buildCompactOfferComparisonContext(offers);
   const railTitle =
@@ -499,21 +562,98 @@ export function CatalogOfferComparisonRail({
   const viewAllLabel = `Vergelijk alle ${offers.length} winkel${
     offers.length === 1 ? '' : 's'
   }`;
+  const closeOverlay = useCallback(() => {
+    setIsOverlayOpen(false);
+  }, []);
 
   useEffect(() => {
     if (!isOverlayOpen) {
-      triggerRef.current?.focus();
-      return;
+      return undefined;
     }
 
-    closeButtonRef.current?.focus();
-    const originalOverflow = document.body.style.overflow;
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalDocumentOverflow = document.documentElement.style.overflow;
+
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus({ preventScroll: true });
+    });
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalDocumentOverflow;
+
+      window.requestAnimationFrame(() => {
+        triggerRef.current?.focus({ preventScroll: true });
+      });
     };
   }, [isOverlayOpen]);
+
+  const offerOverlay =
+    isOverlayOpen && typeof document !== 'undefined'
+      ? createPortal(
+          <div
+            className={styles.offerOverlayBackdrop}
+            data-offer-comparison-backdrop="true"
+            onClick={closeOverlay}
+            role="presentation"
+          >
+            <div
+              aria-labelledby={titleId}
+              aria-modal="true"
+              className={styles.offerOverlay}
+              data-offer-comparison-dialog="true"
+              onClick={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                handleOverlayEscape(event, closeOverlay);
+                handleOverlayTabTrap(event, overlayDialogRef.current);
+              }}
+              ref={overlayDialogRef}
+              role="dialog"
+              tabIndex={-1}
+            >
+              <div className={styles.offerOverlayHeader}>
+                <div className={styles.offerOverlayHeading}>
+                  <h2 className={styles.offerOverlayTitle} id={titleId}>
+                    Vergelijk alle winkels
+                  </h2>
+                  {summaryLabel ? (
+                    <p className={styles.offerOverlaySummary}>{summaryLabel}</p>
+                  ) : null}
+                </div>
+                <button
+                  aria-label="Vergelijking sluiten"
+                  className={styles.offerOverlayClose}
+                  onClick={closeOverlay}
+                  ref={closeButtonRef}
+                  type="button"
+                >
+                  <X aria-hidden="true" size={18} strokeWidth={2.2} />
+                  <VisuallyHidden>Vergelijking sluiten</VisuallyHidden>
+                </button>
+              </div>
+              <div className={styles.offerOverlayBody}>
+                <ol className={styles.offerOverlayList} type="1">
+                  {offers.map((offer) => (
+                    <li
+                      className={styles.offerOverlayListItem}
+                      key={`overlay-${offer.merchantLabel}-${offer.price}`}
+                    >
+                      <CatalogOfferOverlayRow
+                        comparisonContext={comparisonContext}
+                        offer={offer}
+                      />
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <>
@@ -561,59 +701,7 @@ export function CatalogOfferComparisonRail({
         </div>
       </Panel>
 
-      {isOverlayOpen ? (
-        <div
-          aria-labelledby={titleId}
-          aria-modal="true"
-          className={styles.offerOverlayBackdrop}
-          onClick={() => setIsOverlayOpen(false)}
-          onKeyDown={(event) =>
-            handleOverlayEscape(event, () => setIsOverlayOpen(false))
-          }
-          role="dialog"
-        >
-          <div
-            className={styles.offerOverlay}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className={styles.offerOverlayHeader}>
-              <div className={styles.offerOverlayHeading}>
-                <h2 className={styles.offerOverlayTitle} id={titleId}>
-                  Vergelijk alle winkels
-                </h2>
-                {summaryLabel ? (
-                  <p className={styles.offerOverlaySummary}>{summaryLabel}</p>
-                ) : null}
-              </div>
-              <button
-                aria-label="Vergelijking sluiten"
-                className={styles.offerOverlayClose}
-                onClick={() => setIsOverlayOpen(false)}
-                ref={closeButtonRef}
-                type="button"
-              >
-                <X aria-hidden="true" size={18} strokeWidth={2.2} />
-                <VisuallyHidden>Vergelijking sluiten</VisuallyHidden>
-              </button>
-            </div>
-            <div className={styles.offerOverlayBody}>
-              <ol className={styles.offerOverlayList} type="1">
-                {offers.map((offer) => (
-                  <li
-                    className={styles.offerOverlayListItem}
-                    key={`overlay-${offer.merchantLabel}-${offer.price}`}
-                  >
-                    <CatalogOfferOverlayRow
-                      comparisonContext={comparisonContext}
-                      offer={offer}
-                    />
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {offerOverlay}
     </>
   );
 }

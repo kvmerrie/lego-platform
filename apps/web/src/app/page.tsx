@@ -22,6 +22,7 @@ import {
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
   rankCatalogPartnerOfferSetCards,
+  resolveHomepageFollowRailDiagnostics,
   selectCatalogFirstCommerceRailSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
@@ -36,8 +37,10 @@ import {
   getBrickhuntAnalyticsPriceVerdictFromDelta,
 } from '@lego-platform/shared/util';
 import {
+  buildWebPath,
   hasBrowserSupabaseConfig,
   hasServerSupabaseConfig,
+  webPathnames,
 } from '@lego-platform/shared/config';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
@@ -45,7 +48,7 @@ import type { Metadata } from 'next';
 
 export const revalidate = 300;
 const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 20;
-const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 10;
+const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 20;
 const HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT = 20;
 const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = 300;
 const HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS = 2;
@@ -192,6 +195,7 @@ function logHomepageCommerceRailDiagnostics({
   homepageBestDealCandidateSetCards,
   homepageBestDealSetCards,
   homepageFirstCommerceInputSetCards,
+  homepageFollowRailDiagnostics,
   runtimeDiagnostics,
   scoredCommerceCandidateSetCards,
   rotationSeed,
@@ -207,6 +211,9 @@ function logHomepageCommerceRailDiagnostics({
   homepageBestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
   homepageBestDealSetCards: readonly CatalogFeatureSetListItem[];
   homepageFirstCommerceInputSetCards: readonly CatalogHomepageSetCard[];
+  homepageFollowRailDiagnostics?: Awaited<
+    ReturnType<typeof resolveHomepageFollowRailDiagnostics>
+  >;
   runtimeDiagnostics?: Awaited<
     ReturnType<typeof getCatalogCommerceRailRuntimeDiagnostics>
   >;
@@ -284,7 +291,17 @@ function logHomepageCommerceRailDiagnostics({
     ...(runtimeDiagnostics ? { runtimeDiagnostics } : {}),
     finalRailCounts: {
       bestDealsNow: homepageBestDealSetCards.length,
+      popularToFollow: homepageFollowRailDiagnostics?.selectedCount,
     },
+    followRail: homepageFollowRailDiagnostics
+      ? {
+          excludedCommerceSetIds: homepageFollowRailDiagnostics.excludedSetIds,
+          firstSelectedSetIds: homepageFollowRailDiagnostics.selectedSetIds,
+          rawCandidateCount: homepageFollowRailDiagnostics.rawCandidateCount,
+          selectedCount: homepageFollowRailDiagnostics.selectedCount,
+          source: homepageFollowRailDiagnostics.source,
+        }
+      : undefined,
     railPipeline: {
       firstRailInputCount: homepageFirstCommerceInputSetCards.length,
       firstRailRenderedCount: homepageBestDealSetCards.length,
@@ -329,7 +346,9 @@ export async function generateMetadata(): Promise<Metadata> {
     mode: queryMode,
   });
 
-  return getMetadataFromSeoFields(homepagePage.seo);
+  return getMetadataFromSeoFields(homepagePage.seo, {
+    canonicalPath: buildWebPath(webPathnames.home),
+  });
 }
 
 export default async function HomePage() {
@@ -404,12 +423,23 @@ export default async function HomePage() {
     homepageBestDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
       ? homepageBestDealCandidates
       : [];
+  const homepageFollowExcludedSetIds = getUniqueCatalogSetIds([
+    homepageBestDealSetCards,
+  ]);
   const homepageFollowSetCards = await listHomepageSetCards({
-    excludedSetIds: getUniqueCatalogSetIds([homepageBestDealSetCards]),
+    excludedSetIds: homepageFollowExcludedSetIds,
     getCatalogDiscoverySignalFn,
     limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
     rotationSeed: commerceRailRotationSeed,
   });
+  const homepageFollowRailDiagnostics = isHomepageCommerceRailsDebugEnabled()
+    ? await resolveHomepageFollowRailDiagnostics({
+        excludedSetIds: homepageFollowExcludedSetIds,
+        getCatalogDiscoverySignalFn,
+        limit: HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT,
+        rotationSeed: commerceRailRotationSeed,
+      })
+    : undefined;
   const homepageSetCards = toFeatureSetListItems(
     homepageFollowSetCards,
     currentOfferSummaryBySetId,
@@ -427,6 +457,7 @@ export default async function HomePage() {
     homepageBestDealCandidateSetCards,
     homepageBestDealSetCards,
     homepageFirstCommerceInputSetCards,
+    homepageFollowRailDiagnostics,
     runtimeDiagnostics: commerceRailRuntimeDiagnostics,
     scoredCommerceCandidateSetCards: homepageScoredCommerceCandidateSetCards,
     rotationSeed: commerceRailRotationSeed,

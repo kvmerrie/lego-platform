@@ -2,12 +2,53 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { createElement } from 'react';
 
 const getArticleBySlug = vi.fn();
 const listPublishedArticles = vi.fn();
 const listCatalogSetCards = vi.fn();
 const listCatalogSetCardsByIds = vi.fn();
-const contentArticlePageSpy = vi.fn(() => null);
+const contentArticlePageSpy = vi.fn(
+  ({
+    body,
+    breadcrumbs,
+    relatedArticles,
+  }: {
+    body?: unknown;
+    breadcrumbs?: readonly { href?: string; id: string; label: string }[];
+    relatedArticles?: readonly {
+      slug: string;
+      themeSlug?: string;
+      title: string;
+    }[];
+  }) =>
+    createElement(
+      'article',
+      null,
+      ...(breadcrumbs ?? []).flatMap((breadcrumb) =>
+        breadcrumb.href
+          ? [
+              createElement(
+                'a',
+                { href: breadcrumb.href, key: breadcrumb.id },
+                breadcrumb.label,
+              ),
+            ]
+          : [],
+      ),
+      body,
+      ...(relatedArticles ?? []).map((article) =>
+        createElement(
+          'a',
+          {
+            href: `/artikelen/${article.themeSlug ?? 'lego'}/${article.slug}`,
+            key: article.slug,
+          },
+          article.title,
+        ),
+      ),
+    ),
+);
 const mdxRemoteSpy = vi.fn(() => null);
 const notFound = vi.fn(() => {
   throw new Error('NEXT_NOT_FOUND');
@@ -151,8 +192,22 @@ describe('theme article detail route', () => {
         }),
       }),
     );
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'star-wars-day-2026',
+          theme: 'star-wars',
+        }),
+      }),
+    );
 
     expect(getArticleBySlug).toHaveBeenCalledWith('star-wars-day-2026');
+    expect(html).toContain('type="application/ld+json"');
+    expect(html).toContain('"@type":"NewsArticle"');
+    expect(html).toContain('"@type":"BreadcrumbList"');
+    expect(html).toContain('href="/artikelen"');
+    expect(html).toContain('href="/artikelen/star-wars"');
+    expect(html).toContain('href="/artikelen/star-wars/related"');
     expect(contentArticlePageSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         breadcrumbs: expect.arrayContaining([
@@ -177,6 +232,38 @@ describe('theme article detail route', () => {
         body: expect.anything(),
       }),
     );
+  });
+
+  it('renders representative canonical article metadata', async () => {
+    getArticleBySlug.mockResolvedValue(
+      createArticle({
+        heroImage: 'https://cdn.example.com/star-wars-day.jpg',
+      }),
+    );
+
+    const { generateMetadata } = await import('./page');
+    const metadata = await generateMetadata({
+      params: Promise.resolve({
+        slug: 'star-wars-day-2026',
+        theme: 'star-wars',
+      }),
+    });
+
+    expect(metadata).toMatchObject({
+      title: 'Star Wars Day 2026',
+      description: 'Waarom deze release telt.',
+      alternates: {
+        canonical:
+          'https://www.brickhunt.nl/artikelen/star-wars/star-wars-day-2026',
+      },
+      openGraph: {
+        description: 'Waarom deze release telt.',
+        title: 'Star Wars Day 2026',
+        type: 'website',
+        url: 'https://www.brickhunt.nl/artikelen/star-wars/star-wars-day-2026',
+      },
+    });
+    expect(metadata.robots).toBeUndefined();
   });
 
   it('returns notFound for a mismatched article theme', async () => {

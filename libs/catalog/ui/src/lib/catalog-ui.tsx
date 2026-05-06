@@ -58,6 +58,7 @@ import {
   Panel,
   SectionHeading,
   Surface,
+  VisuallyHidden,
   type CarouselImage,
 } from '@lego-platform/shared/ui';
 import {
@@ -550,6 +551,33 @@ function CatalogSetNumberMeta({ setId }: { setId: string }) {
   );
 }
 
+function CatalogSetCardClickLayer({
+  href,
+  label,
+  trackingEvent,
+}: {
+  href?: string;
+  label: string;
+  trackingEvent?: BrickhuntAnalyticsEventDescriptor;
+}) {
+  if (!href) {
+    return null;
+  }
+
+  return (
+    <ActionLink
+      aria-label={label}
+      className={styles.setCardClickLayer}
+      data-catalog-set-card-click-layer="true"
+      href={href}
+      tone="card"
+      {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
+    >
+      <VisuallyHidden>{label}</VisuallyHidden>
+    </ActionLink>
+  );
+}
+
 function formatMinifigureCount(minifigureCount?: number): string {
   if (typeof minifigureCount !== 'number') {
     return 'Nog niet bekend';
@@ -805,21 +833,14 @@ export function CatalogSetCard({
         data-theme={setThemeSlug}
         style={setThemeStyle}
       >
-        {href ? (
-          <ActionLink
-            className={styles.setCardLink}
-            data-catalog-set-card-link="true"
-            href={href}
-            tone="card"
-            {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
-          >
-            {browseCardContent}
-          </ActionLink>
-        ) : (
-          <div className={styles.setCardLink} data-catalog-set-card-link="true">
-            {browseCardContent}
-          </div>
-        )}
+        <CatalogSetCardClickLayer
+          href={href}
+          label={`Bekijk ${setSummary.name}`}
+          trackingEvent={trackingEvent}
+        />
+        <div className={styles.setCardLink} data-catalog-set-card-link="true">
+          {browseCardContent}
+        </div>
         {compactUsesDecisionZone ? (
           <div className={styles.cardCompactDecisionZone}>
             <CatalogSetNumberMeta setId={setSummary.id} />
@@ -936,21 +957,14 @@ export function CatalogSetCard({
         data-theme={setThemeSlug}
         style={setThemeStyle}
       >
-        {href ? (
-          <ActionLink
-            className={styles.setCardLink}
-            data-catalog-set-card-link="true"
-            href={href}
-            tone="card"
-            {...buildBrickhuntAnalyticsAttributes(trackingEvent)}
-          >
-            {featuredCardContent}
-          </ActionLink>
-        ) : (
-          <div className={styles.setCardLink} data-catalog-set-card-link="true">
-            {featuredCardContent}
-          </div>
-        )}
+        <CatalogSetCardClickLayer
+          href={href}
+          label={`Bekijk ${setSummary.name}`}
+          trackingEvent={trackingEvent}
+        />
+        <div className={styles.setCardLink} data-catalog-set-card-link="true">
+          {featuredCardContent}
+        </div>
         {featuredFooterMeta || primaryAction.href || actions ? (
           <div className={styles.cardCompactDecisionZone}>
             {featuredFooterMeta ? (
@@ -1229,6 +1243,7 @@ export function CatalogSetDetailPanel({
   catalogSetDetail,
   dealSupportItems = [],
   dealVerdict,
+  dealsHref,
   followCopy,
   followEyebrow,
   followTitle,
@@ -1249,6 +1264,7 @@ export function CatalogSetDetailPanel({
   catalogSetDetail: CatalogSetDetail;
   dealSupportItems?: readonly CatalogSetDetailSupportItem[];
   dealVerdict: CatalogSetDetailVerdict;
+  dealsHref?: string;
   followCopy?: string;
   followEyebrow?: string;
   followTitle?: string;
@@ -1409,6 +1425,15 @@ export function CatalogSetDetailPanel({
               followTitle={followTitle}
               verdictTone={dealVerdict.tone}
             />
+          ) : null}
+          {dealsHref ? (
+            <ActionLink
+              className={styles.actionLink}
+              href={dealsHref}
+              tone="secondary"
+            >
+              Bekijk alle LEGO deals
+            </ActionLink>
           ) : null}
         </section>
       ) : null}

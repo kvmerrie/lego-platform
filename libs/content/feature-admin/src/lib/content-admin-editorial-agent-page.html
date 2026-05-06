@@ -571,13 +571,70 @@
               <section
                 class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--hero"
               >
-                <lego-admin-section-header
-                  description="Upload alleen beeld dat je mag gebruiken. Zonder handmatige hero blijft de catalogusfallback actief."
-                  eyebrow="Beeld"
-                  title="Hero"
-                />
+                <lego-admin-section-header eyebrow="Beeld" title="Hero" />
 
-                <div class="editorial-agent__hero-row">
+                <div class="editorial-agent__hero-workspace">
+                  <div class="editorial-agent__image-controls">
+                    <div class="editorial-agent__image-row">
+                      <span class="admin-filterbar__label">Hero uploaden</span>
+                      <div class="editorial-agent__image-actions">
+                        <label class="admin-button admin-button--subtle">
+                          <span>
+                            {{ isUploadingArticleEditHeroImage() ? 'Uploaden…' :
+                            'Upload afbeelding' }}
+                          </span>
+                          <input
+                            class="editorial-agent__file-input"
+                            accept="image/jpeg,image/png,image/webp"
+                            [disabled]="isUploadingArticleEditHeroImage()"
+                            (change)="uploadArticleEditHeroImageFromInput($event)"
+                            type="file"
+                          />
+                        </label>
+                        <button
+                          class="admin-button admin-button--subtle"
+                          [disabled]="isUploadingArticleEditHeroImage() || !articleEditHeroImage()"
+                          (click)="removeArticleEditHeroImage()"
+                          type="button"
+                        >
+                          Verwijder hero
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="editorial-agent__image-row">
+                      <label
+                        class="admin-filterbar__group admin-filterbar__group--wide"
+                      >
+                        <span class="admin-filterbar__label"
+                          >Afbeeldings-URL</span
+                        >
+                        <input
+                          class="admin-input"
+                          [value]="articleEditHeroImageUrlInput()"
+                          (input)="articleEditHeroImageUrlInput.set($any($event.target).value)"
+                          placeholder="https://www.lego.com/cdn/..."
+                          type="url"
+                        />
+                        @if
+                        (isLegoProductPageImageUrlInput(articleEditHeroImageUrlInput()))
+                        {
+                        <small class="editorial-agent__field-error">
+                          {{ directImageUrlMessage }}
+                        </small>
+                        }
+                      </label>
+                      <button
+                        class="admin-button admin-button--subtle"
+                        [disabled]="isUploadingArticleEditHeroImage() || isLegoProductPageImageUrlInput(articleEditHeroImageUrlInput())"
+                        (click)="importArticleEditHeroImageFromUrl()"
+                        type="button"
+                      >
+                        Importeer afbeelding
+                      </button>
+                    </div>
+                  </div>
+
                   <div class="editorial-agent__hero-preview">
                     @if (articleEditHeroImage()) {
                     <img
@@ -585,57 +642,8 @@
                       [src]="articleEditHeroImage()"
                     />
                     } @else {
-                    <span>Geen handmatige hero ingesteld.</span>
+                    <span>Geen hero ingesteld.</span>
                     }
-                  </div>
-
-                  <div class="editorial-agent__image-actions">
-                    <label class="admin-button admin-button--subtle">
-                      <span>
-                        {{ isUploadingArticleEditHeroImage() ? 'Uploaden…' :
-                        'Upload bestand' }}
-                      </span>
-                      <input
-                        class="editorial-agent__file-input"
-                        accept="image/jpeg,image/png,image/webp"
-                        [disabled]="isUploadingArticleEditHeroImage()"
-                        (change)="uploadArticleEditHeroImageFromInput($event)"
-                        type="file"
-                      />
-                    </label>
-                    <button
-                      class="admin-button admin-button--subtle"
-                      [disabled]="isUploadingArticleEditHeroImage() || !articleEditHeroImage()"
-                      (click)="removeArticleEditHeroImage()"
-                      type="button"
-                    >
-                      Verwijder hero
-                    </button>
-                  </div>
-
-                  <div class="editorial-agent__image-import">
-                    <label
-                      class="admin-filterbar__group admin-filterbar__group--wide"
-                    >
-                      <span class="admin-filterbar__label"
-                        >Of plak afbeeldings-URL</span
-                      >
-                      <input
-                        class="admin-input"
-                        [value]="articleEditHeroImageUrlInput()"
-                        (input)="articleEditHeroImageUrlInput.set($any($event.target).value)"
-                        placeholder="https://www.lego.com/cdn/..."
-                        type="url"
-                      />
-                    </label>
-                    <button
-                      class="admin-button admin-button--subtle"
-                      [disabled]="isUploadingArticleEditHeroImage()"
-                      (click)="importArticleEditHeroImageFromUrl()"
-                      type="button"
-                    >
-                      Importeer afbeelding
-                    </button>
                   </div>
                 </div>
 
@@ -681,26 +689,14 @@
                 class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--gallery"
               >
                 <lego-admin-section-header
-                  description="Maak losse galleries en plak de gewenste snippet handmatig in de MDX."
                   eyebrow="Galleries"
                   title="Galleries"
                 />
-                <button
-                  class="admin-button admin-button--subtle"
-                  (click)="addArticleEditGalleryGroup()"
-                  type="button"
-                >
-                  Nieuwe gallery
-                </button>
-                <p class="editorial-agent__muted">
-                  Deze gallery wordt pas zichtbaar als je de snippet in de MDX
-                  plakt.
-                </p>
 
                 @for (galleryGroup of articleEditGalleryGroups(); track
                 galleryGroup.id) {
                 <article class="editorial-agent__preview-card admin-stack">
-                  <div class="editorial-agent__hero-row">
+                  <div class="editorial-agent__gallery-header">
                     <label
                       class="admin-filterbar__group admin-filterbar__group--wide"
                     >
@@ -713,6 +709,16 @@
                         type="text"
                       />
                     </label>
+                    <button
+                      class="admin-button admin-button--subtle"
+                      (click)="addArticleEditGalleryGroup()"
+                      type="button"
+                    >
+                      Nieuwe gallery
+                    </button>
+                  </div>
+
+                  <div class="editorial-agent__gallery-header">
                     <label
                       class="admin-filterbar__group admin-filterbar__group--wide"
                     >
@@ -789,7 +795,7 @@
                     <label class="admin-button admin-button--subtle">
                       <span>
                         {{ isUploadingArticleEditHeroImage() ? 'Uploaden…' :
-                        'Upload image' }}
+                        'Upload afbeelding' }}
                       </span>
                       <input
                         class="editorial-agent__file-input"
@@ -813,10 +819,17 @@
                         placeholder="https://www.lego.com/cdn/..."
                         type="url"
                       />
+                      @if
+                      (isLegoProductPageImageUrlInput(galleryGroup.imageUrlInput))
+                      {
+                      <small class="editorial-agent__field-error">
+                        {{ directImageUrlMessage }}
+                      </small>
+                      }
                     </label>
                     <button
                       class="admin-button admin-button--subtle"
-                      [disabled]="isUploadingArticleEditHeroImage()"
+                      [disabled]="isUploadingArticleEditHeroImage() || isLegoProductPageImageUrlInput(galleryGroup.imageUrlInput)"
                       (click)="importArticleEditGalleryImageFromUrl(galleryGroup.id)"
                       type="button"
                     >
@@ -1646,13 +1659,69 @@
             <section
               class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--hero"
             >
-              <lego-admin-section-header
-                description="Upload alleen beeld dat je mag gebruiken. Zonder handmatige hero blijft de catalogusfallback actief."
-                eyebrow="Beeld"
-                title="Hero"
-              />
+              <lego-admin-section-header eyebrow="Beeld" title="Hero" />
 
-              <div class="editorial-agent__hero-row">
+              <div class="editorial-agent__hero-workspace">
+                <div class="editorial-agent__image-controls">
+                  <div class="editorial-agent__image-row">
+                    <span class="admin-filterbar__label">Hero uploaden</span>
+                    <div class="editorial-agent__image-actions">
+                      <label class="admin-button admin-button--subtle">
+                        <span>
+                          {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload
+                          afbeelding' }}
+                        </span>
+                        <input
+                          class="editorial-agent__file-input"
+                          accept="image/jpeg,image/png,image/webp"
+                          [disabled]="isUploadingHeroImage()"
+                          (change)="uploadHeroImageFromInput($event)"
+                          type="file"
+                        />
+                      </label>
+                      <button
+                        class="admin-button admin-button--subtle"
+                        [disabled]="isUploadingHeroImage() || !effectiveHeroImage()"
+                        (click)="removeHeroImage()"
+                        type="button"
+                      >
+                        Verwijder hero
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="editorial-agent__image-row">
+                    <label
+                      class="admin-filterbar__group admin-filterbar__group--wide"
+                    >
+                      <span class="admin-filterbar__label"
+                        >Afbeeldings-URL</span
+                      >
+                      <input
+                        class="admin-input"
+                        [value]="heroImageUrlInput()"
+                        (input)="heroImageUrlInput.set($any($event.target).value)"
+                        placeholder="https://www.lego.com/cdn/..."
+                        type="url"
+                      />
+                      @if (isLegoProductPageImageUrlInput(heroImageUrlInput()))
+                      {
+                      <small class="editorial-agent__field-error">
+                        {{ directImageUrlMessage }}
+                      </small>
+                      }
+                    </label>
+                    <button
+                      class="admin-button admin-button--subtle"
+                      [disabled]="isImportingHeroImageUrl() || isLegoProductPageImageUrlInput(heroImageUrlInput())"
+                      (click)="importHeroImageFromUrl()"
+                      type="button"
+                    >
+                      Importeer afbeelding
+                    </button>
+                  </div>
+                </div>
+
                 <div class="editorial-agent__hero-preview">
                   @if (effectiveHeroImage(); as heroImage) {
                   <img
@@ -1660,57 +1729,8 @@
                     [src]="heroImage"
                   />
                   } @else {
-                  <span>Geen handmatige hero ingesteld.</span>
+                  <span>Geen hero ingesteld.</span>
                   }
-                </div>
-
-                <div class="editorial-agent__image-actions">
-                  <label class="admin-button admin-button--subtle">
-                    <span>
-                      {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload bestand'
-                      }}
-                    </span>
-                    <input
-                      class="editorial-agent__file-input"
-                      accept="image/jpeg,image/png,image/webp"
-                      [disabled]="isUploadingHeroImage()"
-                      (change)="uploadHeroImageFromInput($event)"
-                      type="file"
-                    />
-                  </label>
-                  <button
-                    class="admin-button admin-button--subtle"
-                    [disabled]="isUploadingHeroImage() || !effectiveHeroImage()"
-                    (click)="removeHeroImage()"
-                    type="button"
-                  >
-                    Verwijder hero
-                  </button>
-                </div>
-
-                <div class="editorial-agent__image-import">
-                  <label
-                    class="admin-filterbar__group admin-filterbar__group--wide"
-                  >
-                    <span class="admin-filterbar__label"
-                      >Of plak afbeeldings-URL</span
-                    >
-                    <input
-                      class="admin-input"
-                      [value]="heroImageUrlInput()"
-                      (input)="heroImageUrlInput.set($any($event.target).value)"
-                      placeholder="https://www.lego.com/cdn/..."
-                      type="url"
-                    />
-                  </label>
-                  <button
-                    class="admin-button admin-button--subtle"
-                    [disabled]="isImportingHeroImageUrl()"
-                    (click)="importHeroImageFromUrl()"
-                    type="button"
-                  >
-                    Importeer afbeelding
-                  </button>
                 </div>
               </div>
 
@@ -1774,25 +1794,13 @@
               class="admin-panel admin-stack editorial-agent__image-section editorial-agent__image-section--gallery"
             >
               <lego-admin-section-header
-                description="Maak losse galleries en plak de gewenste snippet handmatig in de MDX."
                 eyebrow="Galleries"
                 title="Galleries"
               />
-              <button
-                class="admin-button admin-button--subtle"
-                (click)="addGalleryGroup()"
-                type="button"
-              >
-                Nieuwe gallery
-              </button>
-              <p class="editorial-agent__muted">
-                Deze gallery wordt pas zichtbaar als je de snippet in de MDX
-                plakt.
-              </p>
 
               @for (galleryGroup of galleryGroups(); track galleryGroup.id) {
               <article class="editorial-agent__preview-card admin-stack">
-                <div class="editorial-agent__hero-row">
+                <div class="editorial-agent__gallery-header">
                   <label
                     class="admin-filterbar__group admin-filterbar__group--wide"
                   >
@@ -1805,6 +1813,16 @@
                       type="text"
                     />
                   </label>
+                  <button
+                    class="admin-button admin-button--subtle"
+                    (click)="addGalleryGroup()"
+                    type="button"
+                  >
+                    Nieuwe gallery
+                  </button>
+                </div>
+
+                <div class="editorial-agent__gallery-header">
                   <label
                     class="admin-filterbar__group admin-filterbar__group--wide"
                   >
@@ -1877,8 +1895,8 @@
                 <div class="editorial-agent__gallery-controls">
                   <label class="admin-button admin-button--subtle">
                     <span>
-                      {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload image'
-                      }}
+                      {{ isUploadingHeroImage() ? 'Uploaden…' : 'Upload
+                      afbeelding' }}
                     </span>
                     <input
                       class="editorial-agent__file-input"
@@ -1902,10 +1920,17 @@
                       placeholder="https://www.lego.com/cdn/..."
                       type="url"
                     />
+                    @if
+                    (isLegoProductPageImageUrlInput(galleryGroup.imageUrlInput))
+                    {
+                    <small class="editorial-agent__field-error">
+                      {{ directImageUrlMessage }}
+                    </small>
+                    }
                   </label>
                   <button
                     class="admin-button admin-button--subtle"
-                    [disabled]="isImportingHeroImageUrl()"
+                    [disabled]="isImportingHeroImageUrl() || isLegoProductPageImageUrlInput(galleryGroup.imageUrlInput)"
                     (click)="importGalleryImageFromUrl(galleryGroup.id)"
                     type="button"
                   >

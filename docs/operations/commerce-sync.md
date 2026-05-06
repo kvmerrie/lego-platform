@@ -246,6 +246,7 @@ Available feed commands:
 - `pnpm sync:coppenswarenhuis-feed`
 - `pnpm sync:goodbricks-feed`
 - `pnpm sync:mediamarkt-feed`
+- `pnpm sync:misterbricks-feed`
 
 MediaMarkt uses the TradeDoubler unlimited XML feed with gzip compression. The
 sync streams download, decompressing and parsing product-by-product, and keeps
@@ -289,6 +290,28 @@ Coppenswarenhuis job notes:
 - use `--dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync never uses EAN, SKU, product IDs, feed IDs, affiliate IDs or deeplink IDs as LEGO set numbers
+
+MisterBricks uses a Channable XML feed and writes through the same strict offer
+import path as the affiliate feeds, but the merchant is stored as a direct
+non-affiliate source. It can contribute prices, availability and shop URLs for
+price comparison, but it does not claim an affiliate deeplink/network.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:misterbricks-feed
+```
+
+Recommended cadence:
+
+- once daily, preferably after the MisterBricks feed refresh window
+
+MisterBricks job notes:
+
+- keep `MISTERBRICKS_FEED_URL`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- use `--dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync never uses EAN, SKU, product IDs, feed IDs or URL IDs as LEGO set numbers
 
 ## Troubleshooting Notes
 

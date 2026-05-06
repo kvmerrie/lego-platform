@@ -17,6 +17,7 @@ import {
 } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
+  buildThemePath,
   buildWebPath,
   webPathnames,
 } from '@lego-platform/shared/config';
@@ -28,6 +29,13 @@ export interface CatalogFeatureThemePageDealItem
   actions?: ReactNode;
   ctaMode?: CatalogSetCardCtaMode;
   priceContext?: CatalogSetCardPriceContext;
+}
+
+export interface CatalogFeatureThemePageArticleLink {
+  date?: string;
+  description?: string;
+  href: string;
+  title: string;
 }
 
 const themeEditorialIntroByName: Record<string, string> = {
@@ -60,10 +68,16 @@ const themeEditorialIntroByName: Record<string, string> = {
 };
 
 export function CatalogFeatureThemePage({
+  currentPage = 1,
   dealSetCards = [],
+  pageSize,
+  relatedArticles = [],
   themePage,
 }: {
+  currentPage?: number;
   dealSetCards?: readonly CatalogFeatureThemePageDealItem[];
+  pageSize?: number;
+  relatedArticles?: readonly CatalogFeatureThemePageArticleLink[];
   themePage: CatalogThemeLandingPage;
 }) {
   const { setCards, themeSnapshot } = themePage;
@@ -73,6 +87,22 @@ export function CatalogFeatureThemePage({
   const browseSectionId = 'theme-browse';
   const themeVisual = getCatalogThemeVisual(themeName);
   const themeHeroButtonSurface = getCatalogThemeSurfaceTone(themeName);
+  const normalizedCurrentPage = Math.max(1, Math.floor(currentPage));
+  const normalizedPageSize =
+    typeof pageSize === 'number' && pageSize > 0
+      ? Math.max(1, Math.floor(pageSize))
+      : setCards.length;
+  const pageCount = Math.max(
+    1,
+    Math.ceil(setCards.length / normalizedPageSize),
+  );
+  const visibleSetCards = setCards.slice(
+    (normalizedCurrentPage - 1) * normalizedPageSize,
+    normalizedCurrentPage * normalizedPageSize,
+  );
+  const themePageHref = buildThemePath(themeSnapshot.slug);
+  const buildThemePageHref = (page: number) =>
+    page <= 1 ? themePageHref : `${themePageHref}?page=${page}`;
   const themePageStyle =
     themeVisual?.backgroundColor || themeVisual?.textColor
       ? ({
@@ -260,7 +290,7 @@ export function CatalogFeatureThemePage({
           gridMode="browse"
           variant="compact"
         >
-          {setCards.map((setCard) => (
+          {visibleSetCards.map((setCard) => (
             <CatalogSetCard
               href={buildSetDetailPath(setCard.slug)}
               key={setCard.id}
@@ -270,7 +300,86 @@ export function CatalogFeatureThemePage({
             />
           ))}
         </CatalogSetCardCollection>
+        {pageCount > 1 ? (
+          <nav
+            aria-label={`${themeName} sets pagina's`}
+            className={styles.paginationNav}
+          >
+            <ol className={styles.paginationList}>
+              {Array.from({ length: pageCount }, (_, index) => index + 1).map(
+                (page) => (
+                  <li className={styles.paginationItem} key={page}>
+                    <a
+                      aria-current={
+                        page === normalizedCurrentPage ? 'page' : undefined
+                      }
+                      className={styles.paginationLink}
+                      href={buildThemePageHref(page)}
+                    >
+                      {page}
+                    </a>
+                  </li>
+                ),
+              )}
+            </ol>
+          </nav>
+        ) : null}
       </CatalogSectionShell>
+      {relatedArticles.length ? (
+        <CatalogSectionShell
+          as="section"
+          bodySpacing="relaxed"
+          className={styles.relatedArticlesSection}
+          description={
+            <>
+              Lees verder over releases en koopmomenten binnen{' '}
+              <span className="notranslate" translate="no">
+                {themeName}
+              </span>
+              .
+            </>
+          }
+          eyebrow="Verder lezen"
+          padding="default"
+          signal={`${relatedArticles.length} artikelen`}
+          spacing="relaxed"
+          title={
+            <>
+              Meer over{' '}
+              <span className="notranslate" translate="no">
+                {themeName}
+              </span>
+            </>
+          }
+          titleAs="h2"
+          tone="muted"
+        >
+          <div className={styles.relatedArticleGrid}>
+            {relatedArticles.map((article) => (
+              <article className={styles.relatedArticleCard} key={article.href}>
+                <a className={styles.relatedArticleLink} href={article.href}>
+                  {article.date ? (
+                    <time
+                      className={styles.relatedArticleDate}
+                      dateTime={article.date}
+                    >
+                      {article.date}
+                    </time>
+                  ) : null}
+                  <h3 className={styles.relatedArticleTitle}>
+                    {article.title}
+                  </h3>
+                  {article.description ? (
+                    <p className={styles.relatedArticleDescription}>
+                      {article.description}
+                    </p>
+                  ) : null}
+                </a>
+              </article>
+            ))}
+          </div>
+        </CatalogSectionShell>
+      ) : null}
     </div>
   );
 }

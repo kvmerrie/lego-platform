@@ -9,12 +9,14 @@ import {
 import type {
   CommerceMerchant,
   CommerceMerchantInput,
+  CommerceMerchantSourceType,
 } from '@lego-platform/commerce/util';
 
 export interface AffiliateFeedMerchantConfig {
-  affiliateNetwork: string;
+  affiliateNetwork?: string;
   name: string;
   notes: string;
+  sourceType?: CommerceMerchantSourceType;
   slug: string;
 }
 
@@ -393,12 +395,14 @@ async function ensureAffiliateMerchant({
   const existingMerchant = (await listCommerceMerchantsFn()).find(
     (merchant) => merchant.slug === merchantConfig.slug,
   );
+  const sourceType = merchantConfig.sourceType ?? 'affiliate';
   const merchantInput: CommerceMerchantInput = {
     slug: merchantConfig.slug,
     name: merchantConfig.name,
     isActive: true,
-    sourceType: 'affiliate',
-    affiliateNetwork: merchantConfig.affiliateNetwork,
+    sourceType,
+    affiliateNetwork:
+      sourceType === 'affiliate' ? merchantConfig.affiliateNetwork : undefined,
     notes: merchantConfig.notes,
   };
 
@@ -601,7 +605,10 @@ export async function importAffiliateFeedRowsForMerchant({
         isActive: true,
         validationStatus: 'valid',
         lastVerifiedAt: observedAt,
-        notes: `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number.`,
+        notes:
+          merchant.sourceType === 'affiliate' && merchant.affiliateNetwork
+            ? `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number.`
+            : `Feed-driven ${merchant.name} import. Exact matched by LEGO set number.`,
       },
     });
 

@@ -66,6 +66,7 @@
 }
 
 .detailMainButton {
+  border-radius: var(--lego-radius-lg);
   height: 100%;
 }
 
@@ -477,7 +478,9 @@
   }
 
   .articleImageButton:hover .articleZoomOverlay,
-  .articleImageButton:focus-visible .articleZoomOverlay {
+  .articleImageButton:focus-visible .articleZoomOverlay,
+  .detailMainButton:hover .articleZoomOverlay,
+  .detailMainButton:focus-visible .articleZoomOverlay {
     opacity: 1;
   }
 }

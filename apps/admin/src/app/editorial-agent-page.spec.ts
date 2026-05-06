@@ -2201,19 +2201,31 @@ describe('Editorial agent admin page', () => {
 
     expect(component.draftModalTab()).toBe('beeld');
     expect(fixture.nativeElement.textContent).toContain('Hero');
-    expect(fixture.nativeElement.textContent).toContain('Upload bestand');
+    expect(fixture.nativeElement.textContent).toContain('Upload afbeelding');
+    expect(fixture.nativeElement.textContent).toContain('Afbeeldings-URL');
     expect(fixture.nativeElement.textContent).toContain('Importeer afbeelding');
     expect(fixture.nativeElement.textContent).toContain('Beeldcredit');
     expect(fixture.nativeElement.textContent).toContain('Publiceren');
     expect(
-      fixture.nativeElement.querySelector('.editorial-agent__hero-row'),
+      fixture.nativeElement.querySelector('.editorial-agent__hero-workspace'),
     ).not.toBeNull();
     expect(
       fixture.nativeElement.querySelector('.editorial-agent__image-actions'),
     ).not.toBeNull();
     expect(
-      fixture.nativeElement.querySelector('.editorial-agent__image-import'),
+      fixture.nativeElement.querySelector('.editorial-agent__image-row'),
     ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        'button[aria-label="Kies LEGO afbeelding voor hero"]',
+      ),
+    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('lego-image-picker-modal')).toBe(
+      null,
+    );
+    expect(
+      fixture.nativeElement.querySelector('.lego-image-picker__tile'),
+    ).toBeNull();
     const imageSectionStack = fixture.nativeElement.querySelector(
       '.editorial-agent__image-section-stack',
     ) as HTMLElement | null;
@@ -2240,7 +2252,9 @@ describe('Editorial agent admin page', () => {
 
     expect(component.draftModalTab()).toBe('sets');
     expect(fixture.nativeElement.textContent).toContain('PrimarySet preview');
-    expect(fixture.nativeElement.textContent).not.toContain('Upload bestand');
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Upload afbeelding',
+    );
 
     clickButtonContaining(fixture, 'Inhoud');
     fixture.detectChanges();
@@ -3278,6 +3292,17 @@ describe('Editorial agent admin page', () => {
       'https://www.lego.com/cdn/product-assets/hero.jpg',
     );
 
+    expect(
+      component.isLegoProductPageImageUrlInput(
+        'https://www.lego.com/cdn/product-assets/product.img.pri/77984_Prod.png',
+      ),
+    ).toBe(false);
+    expect(
+      component.isLegoProductPageImageUrlInput(
+        'https://www.lego.com/cdn/cs/set/assets/77984_alt.png',
+      ),
+    ).toBe(false);
+
     await component.importHeroImageFromUrl();
     await component.publishArticle();
 
@@ -3296,6 +3321,51 @@ describe('Editorial agent admin page', () => {
       },
       mdx: draft.output.mdx,
     });
+  });
+
+  it('blocks LEGO product page URLs for hero image import', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+
+    component.draftResult.set(createDraftResult());
+    component.isDraftModalOpen.set(true);
+    component.draftModalTab.set('beeld');
+    component.heroImageUrlInput.set('https://www.lego.com/nl-nl/product/77984');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Gebruik een directe afbeeldings-URL, geen productpagina.',
+    );
+
+    const heroSection = fixture.nativeElement.querySelector(
+      '.editorial-agent__image-section--hero',
+    ) as HTMLElement | null;
+    const importButton = Array.from(
+      heroSection?.querySelectorAll('button') ?? [],
+    ).find((button) =>
+      (button.textContent || '').includes('Importeer afbeelding'),
+    ) as HTMLButtonElement | undefined;
+
+    expect(importButton?.disabled).toBe(true);
+
+    await component.importHeroImageFromUrl();
+
+    expect(editorialAgentApi.importHeroImageFromUrl).not.toHaveBeenCalled();
+    expect(component.heroImageUploadErrorMessage()).toBe(
+      'Gebruik een directe afbeeldings-URL, geen productpagina.',
+    );
   });
 
   it('adds gallery images and copies an ImageGallery snippet', async () => {
@@ -3538,6 +3608,54 @@ describe('Editorial agent admin page', () => {
       credit: 'Beeld: © The LEGO Group',
       url: 'https://storage.example/article-images/articles/lego-40787-mario-kart-spiny-shell-is-terug/gallery/gallery-one.webp',
     });
+  });
+
+  it('blocks LEGO product page URLs for gallery image import', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ContentAdminEditorialAgentPageComponent],
+      providers: [
+        {
+          provide: ContentAdminEditorialAgentApiService,
+          useValue: editorialAgentApi,
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(
+      ContentAdminEditorialAgentPageComponent,
+    );
+    const component = fixture.componentInstance;
+
+    component.draftResult.set(createDraftResult());
+    component.isDraftModalOpen.set(true);
+    component.draftModalTab.set('beeld');
+    component.updateGalleryImageUrlInput(
+      'gallery-default',
+      'https://www.lego.com/en-us/product/77984',
+    );
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Gebruik een directe afbeeldings-URL, geen productpagina.',
+    );
+
+    const gallerySection = fixture.nativeElement.querySelector(
+      '.editorial-agent__image-section--gallery',
+    ) as HTMLElement | null;
+    const importButton = Array.from(
+      gallerySection?.querySelectorAll('button') ?? [],
+    ).find((button) =>
+      (button.textContent || '').includes('Importeer afbeelding'),
+    ) as HTMLButtonElement | undefined;
+
+    expect(importButton?.disabled).toBe(true);
+
+    await component.importGalleryImageFromUrl('gallery-default');
+
+    expect(editorialAgentApi.uploadArticleImage).not.toHaveBeenCalled();
+    expect(component.heroImageUploadErrorMessage()).toBe(
+      'Gebruik een directe afbeeldings-URL, geen productpagina.',
+    );
   });
 
   it('creates a preview from the draft modal with current mdx and frontmatter', async () => {

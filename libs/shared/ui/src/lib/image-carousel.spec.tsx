@@ -584,6 +584,12 @@ describe('ImageGallery', () => {
     expect(css).toContain('.detailMainFrame {\n  aspect-ratio: 1 / 1;');
     expect(css).toContain('.detailMainFrame,\n.detailThumbFrame {');
     expect(css).toContain('background: #ffffff;');
+    expect(css).toContain(
+      '.detailMainButton {\n  border-radius: var(--lego-radius-lg);',
+    );
+    expect(css).toContain(
+      '.detailThumbButton {\n  border-radius: var(--lego-radius-md);',
+    );
     expect(css).toContain('.galleryImageDetail {');
     expect(css).toContain('object-fit: contain;');
     expect(css).toContain('@media (min-width: 48rem)');
@@ -596,6 +602,103 @@ describe('ImageGallery', () => {
     expect(css).toContain('position: fixed;');
     expect(css).toContain('inset: 0;');
     expect(css).toContain('z-index: 1400;');
+  });
+
+  it('gives the set detail main image the same zoom affordance as article galleries', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/shared/ui/src/lib/image-carousel.module.css',
+      ),
+      'utf-8',
+    );
+
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Oracle Red Bull Racing RB20 F1 Car',
+              src: '/sets/42206.png',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    expect(
+      container.querySelector('[data-detail-main-zoom-overlay="true"]'),
+    ).not.toBeNull();
+    expect(css).toContain('.articleZoomOverlay {');
+    expect(css).toContain('.articleZoomIconShell {');
+    expect(css).toContain('.articleImageButton:hover .articleZoomOverlay,');
+    expect(css).toContain('.detailMainButton:hover .articleZoomOverlay,');
+    expect(css).toContain(
+      '.detailMainButton:focus-visible .articleZoomOverlay',
+    );
+    expect(css).toContain('@media (hover: none), (pointer: coarse)');
+  });
+
+  it('opens the lightbox from the set detail main image', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          images={[
+            {
+              alt: 'Oracle Red Bull Racing RB20 F1 Car',
+              src: '/sets/42206.png',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    act(() => {
+      container
+        .querySelector<HTMLButtonElement>('[class*="detailMainButton"]')
+        ?.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+    });
+
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(
+      document.body.querySelector('[data-lightbox-active-index="0"]'),
+    ).not.toBeNull();
+  });
+
+  it('keeps rounded focus rings aligned with gallery trigger radii', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/shared/ui/src/lib/image-carousel.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain(
+      '.articleImageButton {\n  border-radius: var(--lego-radius-lg);',
+    );
+    expect(css).toContain(
+      '.detailMainButton {\n  border-radius: var(--lego-radius-lg);',
+    );
+    expect(css).toContain(
+      '.detailThumbButton {\n  border-radius: var(--lego-radius-md);',
+    );
+    expect(css).toContain('.lightboxCloseButton,\n.lightboxNavButton {');
+    expect(css).toContain('border-radius: var(--lego-radius-pill);');
+    expect(css).toContain(
+      '.lightboxThumbButton {\n  border-radius: var(--lego-radius-md);',
+    );
+    expect(css).toContain('@media (max-width: 47.99rem)');
+    expect(css).toContain(
+      '.detailMainButton,\n  .detailMainFrame {\n    border-radius: 0;',
+    );
   });
 
   it('keeps ImageCarousel as a compatibility alias', () => {

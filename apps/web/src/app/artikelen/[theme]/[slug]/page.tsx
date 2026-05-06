@@ -14,6 +14,7 @@ import { normalizeTheme } from '@lego-platform/catalog/util';
 import { ContentArticlePage } from '@lego-platform/content/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 import {
+  buildArticlePath,
   buildArticleThemePath,
   buildWebPath,
   webPathnames,
@@ -21,6 +22,12 @@ import {
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { JsonLdScript } from '../../../lib/json-ld';
+import {
+  buildArticleBreadcrumbJsonLd,
+  buildArticleCanonicalUrl,
+  buildArticleNewsJsonLd,
+} from '../../../lib/structured-data';
 
 export const dynamicParams = true;
 export const dynamic = 'force-dynamic';
@@ -58,11 +65,16 @@ export async function generateMetadata({
   const resolvedHeroPresentation =
     await resolveArticleHeroPresentation(contentArticle);
 
-  return getMetadataFromSeoFields({
-    description: contentArticle.description,
-    openGraphImageUrl: resolvedHeroPresentation?.imageUrl,
-    title: contentArticle.title,
-  });
+  return getMetadataFromSeoFields(
+    {
+      description: contentArticle.description,
+      openGraphImageUrl: resolvedHeroPresentation?.imageUrl,
+      title: contentArticle.title,
+    },
+    {
+      canonicalPath: buildArticlePath(slug, theme),
+    },
+  );
 }
 
 export default async function ArticleDetailPage({
@@ -147,9 +159,23 @@ export default async function ArticleDetailPage({
     await resolveArticleMdxSourceWithCuratedRelatedSetRail(
       articleWithResolvedHero.bodySource,
     );
+  const canonicalUrl = buildArticleCanonicalUrl(slug, theme);
+  const jsonLd = [
+    buildArticleNewsJsonLd({
+      canonicalUrl,
+      contentArticle: articleWithResolvedHero,
+    }),
+    buildArticleBreadcrumbJsonLd({
+      articleTitle: contentArticle.title,
+      articleUrl: canonicalUrl,
+      themeName: resolvedThemeLabel,
+      themeUrl: themeHref,
+    }),
+  ];
 
   return (
     <ShellWeb>
+      <JsonLdScript data={jsonLd} />
       <ContentArticlePage
         breadcrumbs={breadcrumbs}
         body={

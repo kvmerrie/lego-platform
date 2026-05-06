@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
@@ -16,7 +17,12 @@ import {
 } from '@lego-platform/catalog/ui';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
-import { buildSetDetailPath } from '@lego-platform/shared/config';
+import {
+  buildCanonicalUrl,
+  buildSetDetailPath,
+  buildWebPath,
+  webPathnames,
+} from '@lego-platform/shared/config';
 import { SectionHeading } from '@lego-platform/shared/ui';
 import {
   type BrickhuntAnalyticsEventDescriptor,
@@ -28,6 +34,24 @@ import { buildCurrentSetCardPriceContext } from '../lib/current-set-card-price-c
 import styles from './deals-page.module.css';
 
 export const revalidate = 300;
+
+const dealsMetadataTitle = 'LEGO deals en actuele prijzen';
+const dealsMetadataDescription =
+  'Bekijk LEGO-sets met actuele prijzen, kooplinks en prijsbewegingen bij Brickhunt.';
+
+export const metadata: Metadata = {
+  title: dealsMetadataTitle,
+  description: dealsMetadataDescription,
+  alternates: {
+    canonical: buildCanonicalUrl(buildWebPath(webPathnames.deals)),
+  },
+  openGraph: {
+    title: dealsMetadataTitle,
+    description: dealsMetadataDescription,
+    type: 'website',
+    url: buildCanonicalUrl(buildWebPath(webPathnames.deals)),
+  },
+};
 
 const DEALS_RAIL_LIMIT = 20;
 const DEALS_MIN_OPTIONAL_RAIL_ITEMS = 4;

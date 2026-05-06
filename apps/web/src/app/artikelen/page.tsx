@@ -18,7 +18,11 @@ import {
 } from '@lego-platform/content/ui';
 import type { ContentArticleListItem } from '@lego-platform/content/util';
 import { ShellWeb } from '@lego-platform/shell/web';
-import { buildArticleThemePath } from '@lego-platform/shared/config';
+import {
+  buildArticleThemePath,
+  buildWebPath,
+  webPathnames,
+} from '@lego-platform/shared/config';
 import { Surface } from '@lego-platform/shared/ui';
 import React from 'react';
 import type { Metadata } from 'next';
@@ -36,11 +40,16 @@ type ArticleListItemWithThemePresentation = ContentArticleListItem & {
   themePresentation?: ContentArticleThemePresentation;
 };
 
-export const metadata: Metadata = getMetadataFromSeoFields({
-  description:
-    'Blijf op de hoogte van nieuwe LEGO-sets, deals en aankondigingen.',
-  title: 'LEGO nieuws & updates',
-});
+export const metadata: Metadata = getMetadataFromSeoFields(
+  {
+    description:
+      'Blijf op de hoogte van nieuwe LEGO-sets, deals en aankondigingen.',
+    title: 'LEGO nieuws & updates',
+  },
+  {
+    canonicalPath: buildWebPath(webPathnames.articles),
+  },
+);
 
 export const revalidate = 60;
 

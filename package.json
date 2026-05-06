@@ -19,6 +19,7 @@
     "sync:coppenswarenhuis-feed": "pnpm nx run coppenswarenhuis-feed-sync:run",
     "sync:goodbricks-feed": "pnpm nx run goodbricks-feed-sync:run",
     "sync:mediamarkt-feed": "pnpm nx run mediamarkt-feed-sync:run",
+    "sync:misterbricks-feed": "pnpm nx run misterbricks-feed-sync:run",
     "sync:commerce:check": "pnpm sync:commerce:local:check",
     "sync:commerce:local:check": "pnpm nx run commerce-sync:run -- --check",
     "alerts:wishlist:check": "pnpm nx run wishlist-alerts:run -- --check",

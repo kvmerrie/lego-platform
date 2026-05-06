@@ -77,22 +77,262 @@ export const platformConfig = {
   ],
 } as const;
 
-export const publicSiteRobotsPolicy = {
-  allowIndexing: false,
-  meta: {
+export function buildPublicSiteRobotsPolicy({
+  allowIndexing,
+}: {
+  allowIndexing: boolean;
+}) {
+  const blockedMeta = {
     index: false,
     follow: false,
     googleBot: {
       index: false,
       follow: false,
-      noimageindex: true,
     },
-  },
-  robotsTxt: {
-    userAgent: '*',
-    disallow: '/',
-  },
+  } as const;
+
+  return {
+    allowIndexing,
+    meta: allowIndexing ? undefined : blockedMeta,
+    robotsTxt: allowIndexing
+      ? {
+          userAgent: '*',
+          disallow: [
+            '/api/',
+            '/admin/',
+            '/account/',
+            '/auth/',
+            '/search',
+            '/volgt',
+            '/*?*sort=',
+            '/*?*filter=',
+            '/*?*utm_',
+            '/*?*ref=',
+            '/*?*affiliate=',
+          ],
+        }
+      : {
+          userAgent: '*',
+          disallow: '/',
+        },
+  } as const;
+}
+
+export const publicSiteIndexingEnvKeys = {
+  allowIndexing: 'BRICKHUNT_ALLOW_INDEXING',
 } as const;
+
+const canonicalProductionHost = 'www.brickhunt.nl';
+const productionEnvironmentNames = new Set(['production', 'prod']);
+
+function isTrueEnvValue(value?: string): boolean {
+  return value?.trim().toLowerCase() === 'true';
+}
+
+function getEnvironmentHostname(value?: string): string | undefined {
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue) {
+    return undefined;
+  }
+
+  try {
+    return new URL(
+      trimmedValue.startsWith('http')
+        ? trimmedValue
+        : `https://${trimmedValue}`,
+    ).hostname.toLowerCase();
+  } catch {
+    return undefined;
+  }
+}
+
+function isCanonicalProductionIndexingEnvironment(
+  environment: Record<string, string | undefined>,
+): boolean {
+  const vercelEnvironment = environment['VERCEL_ENV']?.trim().toLowerCase();
+
+  if (vercelEnvironment && vercelEnvironment !== 'production') {
+    return false;
+  }
+
+  const deploymentEnvironment = (
+    environment['BRICKHUNT_DEPLOY_ENV'] ?? vercelEnvironment
+  )
+    ?.trim()
+    .toLowerCase();
+  const isProductionEnvironment =
+    deploymentEnvironment !== undefined &&
+    productionEnvironmentNames.has(deploymentEnvironment);
+
+  if (!isProductionEnvironment) {
+    return false;
+  }
+
+  const deploymentHostnames = [
+    environment['BRICKHUNT_CANONICAL_HOST'],
+    environment['WEB_BASE_URL'],
+    environment['NEXT_PUBLIC_WEB_BASE_URL'],
+    environment['NEXT_PUBLIC_SITE_URL'],
+    environment['VERCEL_PROJECT_PRODUCTION_URL'],
+  ].flatMap((value) => {
+    const hostname = getEnvironmentHostname(value);
+
+    return hostname ? [hostname] : [];
+  });
+
+  return deploymentHostnames.includes(canonicalProductionHost);
+}
+
+export function resolvePublicSiteAllowIndexing(
+  environment: Record<string, string | undefined> = getRuntimeEnvironment(),
+): boolean {
+  return (
+    isTrueEnvValue(environment[publicSiteIndexingEnvKeys.allowIndexing]) &&
+    isCanonicalProductionIndexingEnvironment(environment)
+  );
+}
+
+export const publicSiteRobotsPolicy = buildPublicSiteRobotsPolicy({
+  allowIndexing: resolvePublicSiteAllowIndexing(),
+});
+
+export type PublicPageIndexabilityReason =
+  | 'global-blocked'
+  | 'non-public-route'
+  | 'redirect-route'
+  | 'preview-route'
+  | 'page-noindex'
+  | 'tracked-url'
+  | 'page-one'
+  | 'unintended-pagination'
+  | 'thin-page';
+
+export interface PublicPageRobotsDirective {
+  follow: boolean;
+  googleBot: {
+    follow: boolean;
+    index: boolean;
+  };
+  index: boolean;
+}
+
+const nonPublicIndexPathPrefixes = ['/api/', '/admin/', '/account/', '/auth/'];
+const nonPublicIndexPathnames = new Set(['/account', '/search', '/volgt']);
+const redirectOnlyIndexPathnames = new Set([
+  '/collection',
+  '/discover',
+  '/wishlist',
+]);
+const trackedUrlSearchParamPrefixes = ['utm_'];
+const trackedUrlSearchParamNames = new Set([
+  'affiliate',
+  'filter',
+  'ref',
+  'sort',
+]);
+
+function getPageIndexabilityUrl(pathnameOrUrl: string | URL): URL {
+  return pathnameOrUrl instanceof URL
+    ? pathnameOrUrl
+    : new URL(pathnameOrUrl, publicWebBaseUrls.production);
+}
+
+export function getPageIndexabilityReason({
+  allowIndexing = publicSiteRobotsPolicy.allowIndexing,
+  isPreview = false,
+  isRedirect = false,
+  isThin = false,
+  pageRobotsNoIndex = false,
+  paginationIntended = false,
+  pathname,
+  seoNoIndex = false,
+}: {
+  allowIndexing?: boolean;
+  isPreview?: boolean;
+  isRedirect?: boolean;
+  isThin?: boolean;
+  pageRobotsNoIndex?: boolean;
+  paginationIntended?: boolean;
+  pathname: string | URL;
+  seoNoIndex?: boolean;
+}): PublicPageIndexabilityReason | undefined {
+  if (!allowIndexing) {
+    return 'global-blocked';
+  }
+
+  const url = getPageIndexabilityUrl(pathname);
+  const normalizedPathname = normalizePathname(url.pathname);
+
+  if (
+    nonPublicIndexPathnames.has(normalizedPathname) ||
+    nonPublicIndexPathPrefixes.some((prefix) =>
+      normalizedPathname.startsWith(prefix),
+    )
+  ) {
+    return 'non-public-route';
+  }
+
+  if (isRedirect || redirectOnlyIndexPathnames.has(normalizedPathname)) {
+    return 'redirect-route';
+  }
+
+  if (isPreview || normalizedPathname.startsWith('/artikelen/preview/')) {
+    return 'preview-route';
+  }
+
+  if (pageRobotsNoIndex || seoNoIndex) {
+    return 'page-noindex';
+  }
+
+  for (const paramName of url.searchParams.keys()) {
+    if (
+      trackedUrlSearchParamNames.has(paramName) ||
+      trackedUrlSearchParamPrefixes.some((prefix) =>
+        paramName.startsWith(prefix),
+      )
+    ) {
+      return 'tracked-url';
+    }
+  }
+
+  const page = url.searchParams.get('page');
+
+  if (page === '1') {
+    return 'page-one';
+  }
+
+  if (page && !paginationIntended) {
+    return 'unintended-pagination';
+  }
+
+  if (isThin) {
+    return 'thin-page';
+  }
+
+  return undefined;
+}
+
+export function isIndexablePage(
+  input: Parameters<typeof getPageIndexabilityReason>[0],
+): boolean {
+  return getPageIndexabilityReason(input) === undefined;
+}
+
+export function getPublicPageRobotsDirective(
+  input: Parameters<typeof getPageIndexabilityReason>[0],
+): PublicPageRobotsDirective {
+  const indexable = isIndexablePage(input);
+
+  return {
+    follow: indexable,
+    googleBot: {
+      follow: indexable,
+      index: indexable,
+    },
+    index: indexable,
+  };
+}
 
 export type RuntimeName = keyof typeof platformConfig.runtimes;
 
@@ -107,6 +347,7 @@ export const webPathnames = {
   collection: '/account/collection',
   wishlist: '/account/wishlist',
   sets: '/sets',
+  pages: '/pages',
 } as const;
 
 const webNavigationItems = [
@@ -273,6 +514,12 @@ export const tradeDoublerMediaMarktEnvKeys = {
   merchantName: 'TRADEDOUBLER_MEDIAMARKT_MERCHANT_NAME',
 } as const;
 
+export const misterBricksEnvKeys = {
+  feedUrl: 'MISTERBRICKS_FEED_URL',
+  merchantSlug: 'MISTERBRICKS_MERCHANT_SLUG',
+  merchantName: 'MISTERBRICKS_MERCHANT_NAME',
+} as const;
+
 export interface BrowserSupabaseConfig {
   anonKey: string;
   url: string;
@@ -347,6 +594,12 @@ export interface AdtractionGoodbricksFeedConfig {
 }
 
 export interface TradeDoublerMediaMarktFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+export interface MisterBricksFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
@@ -469,6 +722,32 @@ export function buildSetDetailPath(slug: string): string {
   return buildWebPath(`${webPathnames.sets}/${slug}`);
 }
 
+export function isIndexableSetDetailPage({
+  allowIndexing = publicSiteRobotsPolicy.allowIndexing,
+  slug,
+}: {
+  allowIndexing?: boolean;
+  slug: string;
+}): boolean {
+  return isIndexablePage({
+    allowIndexing,
+    pathname: buildSetDetailPath(slug),
+  });
+}
+
+export function getSetDetailPageRobotsDirective({
+  allowIndexing = publicSiteRobotsPolicy.allowIndexing,
+  slug,
+}: {
+  allowIndexing?: boolean;
+  slug: string;
+}): PublicPageRobotsDirective {
+  return getPublicPageRobotsDirective({
+    allowIndexing,
+    pathname: buildSetDetailPath(slug),
+  });
+}
+
 export function buildArticleThemePath(themeSlug: string): string {
   return buildWebPath(`${webPathnames.articles}/${themeSlug}`);
 }
@@ -488,8 +767,46 @@ export function buildThemePath(slug: string): string {
 export const publicWebBaseUrls = {
   local: getRuntimeBaseUrl('web'),
   staging: 'https://staging.brickhunt.nl',
-  production: 'https://brickhunt.nl',
+  production: 'https://www.brickhunt.nl',
 } as const;
+
+export const canonicalUrlSearchParamAllowlist = ['page'] as const;
+
+function normalizeCanonicalPathname(pathname: string): string {
+  const normalizedPathname = pathname
+    .replace(/\/{2,}/g, '/')
+    .replace(/\/+$/u, '');
+
+  return normalizedPathname ? normalizedPathname : '/';
+}
+
+export function buildCanonicalUrl(
+  input: string | URL,
+  {
+    allowedSearchParams = [],
+  }: {
+    allowedSearchParams?: readonly string[];
+  } = {},
+): string {
+  const parsedUrl =
+    input instanceof URL ? input : new URL(input, publicWebBaseUrls.production);
+  const canonicalUrl = new URL(publicWebBaseUrls.production);
+  canonicalUrl.pathname = normalizeCanonicalPathname(parsedUrl.pathname);
+  canonicalUrl.search = '';
+  canonicalUrl.hash = '';
+
+  for (const paramName of allowedSearchParams) {
+    const value = parsedUrl.searchParams.get(paramName);
+
+    if (!value || (paramName === 'page' && value === '1')) {
+      continue;
+    }
+
+    canonicalUrl.searchParams.set(paramName, value);
+  }
+
+  return canonicalUrl.toString();
+}
 
 export function getPublicWebBaseUrl({
   currentOrigin,
@@ -1197,6 +1514,21 @@ export function getTradeDoublerMediaMarktFeedConfig(
   };
 }
 
+export function getMisterBricksFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): MisterBricksFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: misterBricksEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[misterBricksEnvKeys.merchantSlug]?.trim() || 'misterbricks',
+    merchantName:
+      environment[misterBricksEnvKeys.merchantName]?.trim() || 'MisterBricks',
+  };
+}
+
 export function hasAwinCoolblueFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): boolean {
@@ -1237,6 +1569,20 @@ export function getMissingTradeDoublerMediaMarktEnvKeys(
   return environment[tradeDoublerMediaMarktEnvKeys.feedUrl]
     ? []
     : [tradeDoublerMediaMarktEnvKeys.feedUrl];
+}
+
+export function hasMisterBricksFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[misterBricksEnvKeys.feedUrl]);
+}
+
+export function getMissingMisterBricksEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[misterBricksEnvKeys.feedUrl]
+    ? []
+    : [misterBricksEnvKeys.feedUrl];
 }
 
 export function hasTradeTrackerAffiliateConfig(

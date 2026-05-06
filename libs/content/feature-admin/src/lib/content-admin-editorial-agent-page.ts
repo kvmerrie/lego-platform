@@ -140,6 +140,9 @@ function createDefaultGalleryGroups(): readonly EditorialAgentGalleryGroup[] {
   ];
 }
 
+const DIRECT_IMAGE_URL_MESSAGE =
+  'Gebruik een directe afbeeldings-URL, geen productpagina.';
+
 @Component({
   selector: 'lego-content-admin-editorial-agent-page',
   imports: [
@@ -255,6 +258,7 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   readonly storedDraftOutput = signal<EditorialAgentDraftOutput | null>(null);
   readonly isStoredFeedDraftOpen = signal(false);
   readonly componentManifest = editorialAgentArticleComponentManifest;
+  readonly directImageUrlMessage = DIRECT_IMAGE_URL_MESSAGE;
   readonly extractionJson = computed(() =>
     this.extraction() ? JSON.stringify(this.extraction(), null, 2) : '',
   );
@@ -451,6 +455,32 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   constructor() {
     void this.refreshFeedItems();
     void this.refreshPublishedArticles();
+  }
+
+  isLegoProductPageImageUrlInput(value: string): boolean {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      return false;
+    }
+
+    try {
+      const url = new URL(trimmedValue);
+      const hostname = url.hostname.toLowerCase();
+
+      if (hostname !== 'lego.com' && !hostname.endsWith('.lego.com')) {
+        return false;
+      }
+
+      const pathname = url.pathname.toLowerCase();
+
+      return (
+        /^\/product(?:\/|$)/u.test(pathname) ||
+        /^\/[a-z]{2}-[a-z]{2}\/product(?:\/|$)/u.test(pathname)
+      );
+    } catch {
+      return false;
+    }
   }
 
   async ngOnInit(): Promise<void> {
@@ -2165,6 +2195,11 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       return;
     }
 
+    if (this.isLegoProductPageImageUrlInput(imageUrl)) {
+      this.heroImageUploadErrorMessage.set(DIRECT_IMAGE_URL_MESSAGE);
+      return;
+    }
+
     this.isImportingHeroImageUrl.set(true);
     this.heroImageUploadErrorMessage.set(null);
 
@@ -2265,6 +2300,11 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
     if (!imageUrl) {
       this.heroImageUploadErrorMessage.set('Plak eerst een afbeeldings-URL.');
+      return;
+    }
+
+    if (this.isLegoProductPageImageUrlInput(imageUrl)) {
+      this.heroImageUploadErrorMessage.set(DIRECT_IMAGE_URL_MESSAGE);
       return;
     }
 
@@ -2931,6 +2971,11 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       return;
     }
 
+    if (this.isLegoProductPageImageUrlInput(imageUrl)) {
+      this.articleEditErrorMessage.set(DIRECT_IMAGE_URL_MESSAGE);
+      return;
+    }
+
     this.isUploadingArticleEditHeroImage.set(true);
     this.articleEditErrorMessage.set(null);
 
@@ -3046,6 +3091,11 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
 
     if (!imageUrl) {
       this.articleEditErrorMessage.set('Plak eerst een afbeeldings-URL.');
+      return;
+    }
+
+    if (this.isLegoProductPageImageUrlInput(imageUrl)) {
+      this.articleEditErrorMessage.set(DIRECT_IMAGE_URL_MESSAGE);
       return;
     }
 

@@ -62,6 +62,7 @@ import {
   rankCatalogSimilarSetCards,
   resetWebCatalogSupabaseClientsForTests,
   resolveCatalogCurrentOffers,
+  resolveHomepageFollowRailDiagnostics,
   selectCatalogFirstCommerceRailSetCards,
   selectCatalogThemeOfWeekRail,
   resolveCatalogSetDetailOffers,
@@ -871,7 +872,7 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
-  test('selects homepage premium discovery cards by price level, spread, and coverage', async () => {
+  test('selects homepage follow discovery cards by set interest, signals, and rotation', async () => {
     const listCanonicalCatalogSetsFn = async () => [
       createCanonicalCatalogSet({
         name: 'Technic Hypercar',
@@ -968,8 +969,9 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '76269',
       '10316',
+      '76269',
+      '31208',
     ]);
   });
 
@@ -1010,6 +1012,467 @@ describe('catalog effective data access web', () => {
     expect(
       firstSeedResult.map((catalogSetCard) => catalogSetCard.id),
     ).not.toEqual(secondSeedResult.map((catalogSetCard) => catalogSetCard.id));
+  });
+
+  test('expands homepage follow discovery to aspirational upcoming and iconic sets', async () => {
+    const aspirationalSets = Array.from({ length: 24 }, (_, index) => {
+      const setNumber = (75_400 + index).toString();
+      const theme =
+        index % 3 === 0
+          ? 'Star Wars'
+          : index % 3 === 1
+            ? 'Icons'
+            : 'Architecture';
+
+      return createCanonicalCatalogSet({
+        imageUrl: `https://images.example/${setNumber}.jpg`,
+        name:
+          theme === 'Architecture'
+            ? `Architecture Skyline Display ${setNumber}`
+            : `Display Ship ${setNumber}`,
+        pieceCount: 900 + index * 80,
+        primaryTheme: theme,
+        releaseDate: `2026-0${(index % 3) + 6}-01`,
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+        setId: setNumber,
+        slug: `display-set-${setNumber}`,
+        sourceSetNumber: `${setNumber}-1`,
+      });
+    });
+    const fillerSet = createCanonicalCatalogSet({
+      imageUrl: 'https://images.example/30701.jpg',
+      name: 'Small Polybag',
+      pieceCount: 48,
+      primaryTheme: 'City',
+      releaseYear: 2026,
+      setId: '30701',
+      slug: 'small-polybag-30701',
+      sourceSetNumber: '30701-1',
+    });
+    const listCanonicalCatalogSetsFn = async () => [
+      ...aspirationalSets,
+      fillerSet,
+    ];
+    const getCatalogDiscoverySignalFn = (setId: string) =>
+      setId === '30701'
+        ? createCatalogDiscoverySignal({
+            bestPriceMinor: 399,
+            merchantCount: 1,
+            priceSpreadMinor: 0,
+          })
+        : undefined;
+
+    const result = await listHomepageSetCards({
+      excludedSetIds: ['75400'],
+      getCatalogDiscoverySignalFn,
+      limit: 20,
+      listCanonicalCatalogSetsFn,
+      rotationSeed: 7,
+    });
+
+    expect(result).toHaveLength(20);
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).not.toContain(
+      '75400',
+    );
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).not.toContain(
+      '30701',
+    );
+    expect(
+      result.some((catalogSetCard) => catalogSetCard.releaseYear === 2026),
+    ).toBe(true);
+    expect(
+      result.every((catalogSetCard) =>
+        ['architecture', 'icons', 'star-wars'].includes(
+          buildCatalogThemeSlug(catalogSetCard.theme),
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  test('uses dynamic homepage follow selector even without discovery signals', async () => {
+    const dynamicSets = Array.from({ length: 22 }, (_, index) => {
+      const setNumber = (76_000 + index).toString();
+      const primaryTheme =
+        index % 4 === 0
+          ? 'Star Wars'
+          : index % 4 === 1
+            ? 'Architecture'
+            : index % 4 === 2
+              ? 'Icons'
+              : 'Harry Potter';
+
+      return createCanonicalCatalogSet({
+        imageUrl: `https://images.example/${setNumber}.jpg`,
+        name:
+          primaryTheme === 'Star Wars'
+            ? `Imperial Display Ship ${setNumber}`
+            : primaryTheme === 'Architecture'
+              ? `Architecture Landmark Skyline ${setNumber}`
+              : `Large Display Model ${setNumber}`,
+        pieceCount: 900 + index * 75,
+        primaryTheme,
+        releaseDate: `2026-0${(index % 4) + 5}-01`,
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+        setId: setNumber,
+        slug: `dynamic-follow-set-${setNumber}`,
+        sourceSetNumber: `${setNumber}-1`,
+      });
+    });
+    const staticFallbackSets = [
+      createCanonicalCatalogSet({
+        name: 'Rivendell',
+        pieceCount: 6167,
+        primaryTheme: 'Lord of the Rings',
+        releaseYear: 2023,
+        setId: '10316',
+        slug: 'rivendell-10316',
+        sourceSetNumber: '10316-1',
+      }),
+      createCanonicalCatalogSet({
+        name: 'Barad-dûr',
+        pieceCount: 5471,
+        primaryTheme: 'Lord of the Rings',
+        releaseYear: 2024,
+        setId: '10333',
+        slug: 'barad-dur-10333',
+        sourceSetNumber: '10333-1',
+      }),
+      createCanonicalCatalogSet({
+        name: 'The Starry Night',
+        pieceCount: 2316,
+        primaryTheme: 'Ideas',
+        releaseYear: 2022,
+        setId: '21333',
+        slug: 'the-starry-night-21333',
+        sourceSetNumber: '21333-1',
+      }),
+    ];
+
+    const result = await listHomepageSetCards({
+      limit: 20,
+      listCanonicalCatalogSetsFn: async () => [
+        ...staticFallbackSets,
+        ...dynamicSets,
+      ],
+      rotationSeed: 9,
+    });
+
+    expect(result).toHaveLength(20);
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).not.toEqual([
+      '10316',
+      '10333',
+      '21333',
+    ]);
+    expect(
+      result.some((catalogSetCard) => catalogSetCard.releaseYear === 2026),
+    ).toBe(true);
+  });
+
+  test('prioritizes iconic visually impressive follow candidates without signals', async () => {
+    const iconicSets = [
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/rivendell.jpg',
+        name: 'Rivendell',
+        pieceCount: 6167,
+        primaryTheme: 'Lord of the Rings',
+        releaseYear: 2023,
+        setId: '10316',
+        slug: 'rivendell-10316',
+        sourceSetNumber: '10316-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/barad-dur.jpg',
+        name: 'Barad-dûr',
+        pieceCount: 5471,
+        primaryTheme: 'Lord of the Rings',
+        releaseYear: 2024,
+        setId: '10333',
+        slug: 'barad-dur-10333',
+        sourceSetNumber: '10333-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/starry-night.jpg',
+        name: 'The Starry Night',
+        pieceCount: 2316,
+        primaryTheme: 'Ideas',
+        releaseYear: 2022,
+        setId: '21333',
+        slug: 'the-starry-night-21333',
+        sourceSetNumber: '21333-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/atat.jpg',
+        name: 'UCS AT-AT',
+        pieceCount: 6785,
+        primaryTheme: 'Star Wars',
+        releaseYear: 2021,
+        setId: '75313',
+        slug: 'ucs-at-at-75313',
+        sourceSetNumber: '75313-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/hogwarts.jpg',
+        name: 'Hogwarts Castle Display',
+        pieceCount: 2660,
+        primaryTheme: 'Harry Potter',
+        releaseYear: 2026,
+        setId: '76499',
+        slug: 'hogwarts-castle-display-76499',
+        sourceSetNumber: '76499-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/nyc.jpg',
+        name: 'Architecture New York City Skyline',
+        pieceCount: 1465,
+        primaryTheme: 'Architecture',
+        releaseYear: 2026,
+        setId: '21066',
+        slug: 'architecture-new-york-city-skyline-21066',
+        sourceSetNumber: '21066-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/ferrari.jpg',
+        name: 'Technic Ferrari F1 Flagship Vehicle',
+        pieceCount: 1361,
+        primaryTheme: 'Technic',
+        releaseYear: 2026,
+        setId: '42207',
+        slug: 'technic-ferrari-f1-flagship-vehicle-42207',
+        sourceSetNumber: '42207-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/orchid.jpg',
+        name: 'Botanicals Orchid Display',
+        pieceCount: 608,
+        primaryTheme: 'Botanicals',
+        releaseYear: 2026,
+        setId: '10311',
+        slug: 'botanicals-orchid-display-10311',
+        sourceSetNumber: '10311-1',
+      }),
+    ];
+    const fillerSets = Array.from({ length: 16 }, (_, index) => {
+      const setNumber = (30_700 + index).toString();
+
+      return createCanonicalCatalogSet({
+        imageUrl: `https://images.example/${setNumber}.jpg`,
+        name: `Small City Starter Set ${setNumber}`,
+        pieceCount: 180,
+        primaryTheme: 'City',
+        releaseDate: '2026-06-01',
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+        setId: setNumber,
+        slug: `small-city-starter-set-${setNumber}`,
+        sourceSetNumber: `${setNumber}-1`,
+      });
+    });
+
+    const result = await listHomepageSetCards({
+      limit: 20,
+      listCanonicalCatalogSetsFn: async () => [...fillerSets, ...iconicSets],
+      rotationSeed: 6,
+    });
+    const resultIds = result.map((catalogSetCard) => catalogSetCard.id);
+
+    expect(resultIds).toEqual(
+      expect.arrayContaining([
+        '10316',
+        '10333',
+        '21333',
+        '75313',
+        '76499',
+        '21066',
+        '42207',
+        '10311',
+      ]),
+    );
+    expect(
+      result.every((catalogSetCard) => !catalogSetCard.id.startsWith('307')),
+    ).toBe(true);
+    expect(
+      new Set(
+        result.map((catalogSetCard) =>
+          buildCatalogThemeSlug(catalogSetCard.theme),
+        ),
+      ).size,
+    ).toBeGreaterThanOrEqual(6);
+  });
+
+  test('uses static homepage follow fallback only when dynamic candidates are empty', async () => {
+    const fallbackOnlySets = ['10316', '10333', '21333'].map(
+      (setNumber, index) =>
+        createCanonicalCatalogSet({
+          imageUrl: undefined,
+          name: `Small Fallback Set ${setNumber}`,
+          pieceCount: 40 + index,
+          primaryTheme: 'City',
+          releaseYear: 2019,
+          setId: setNumber,
+          slug: `small-fallback-set-${setNumber}`,
+          sourceSetNumber: `${setNumber}-1`,
+        }),
+    );
+    const result = await listHomepageSetCards({
+      limit: 20,
+      listCanonicalCatalogSetsFn: async () => fallbackOnlySets,
+      rotationSeed: 4,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10316',
+      '10333',
+      '21333',
+    ]);
+  });
+
+  test('reports homepage follow diagnostics for selected dynamic ids', async () => {
+    const dynamicSets = Array.from({ length: 20 }, (_, index) => {
+      const setNumber = (77_000 + index).toString();
+
+      return createCanonicalCatalogSet({
+        imageUrl: `https://images.example/${setNumber}.jpg`,
+        name: `Star Wars Display Ship ${setNumber}`,
+        pieceCount: 1000 + index * 60,
+        primaryTheme: index % 2 === 0 ? 'Star Wars' : 'Icons',
+        releaseDate: '2026-06-01',
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+        setId: setNumber,
+        slug: `diagnostic-follow-set-${setNumber}`,
+        sourceSetNumber: `${setNumber}-1`,
+      });
+    });
+
+    const diagnostics = await resolveHomepageFollowRailDiagnostics({
+      excludedSetIds: ['77000'],
+      limit: 20,
+      listCanonicalCatalogSetsFn: async () => dynamicSets,
+      rotationSeed: 12,
+    });
+
+    expect(diagnostics).toMatchObject({
+      excludedSetIds: ['77000'],
+      rawCandidateCount: 20,
+      selectedCount: 19,
+      source: 'dynamic',
+    });
+    expect(diagnostics.selectedSetIds).not.toContain('77000');
+    expect(diagnostics.selectedSetIds.length).toBe(19);
+  });
+
+  test('balances legendary display sets with fresh picks across themes', async () => {
+    const canonicalSets = [
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/rivendell.jpg',
+        name: 'Rivendell',
+        pieceCount: 6167,
+        primaryTheme: 'Lord of the Rings',
+        releaseYear: 2023,
+        setId: '10316',
+        slug: 'rivendell-10316',
+        sourceSetNumber: '10316-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/barad-dur.jpg',
+        name: 'Barad-dûr',
+        pieceCount: 5471,
+        primaryTheme: 'Lord of the Rings',
+        releaseYear: 2024,
+        setId: '10333',
+        slug: 'barad-dur-10333',
+        sourceSetNumber: '10333-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/starry-night.jpg',
+        name: 'The Starry Night',
+        pieceCount: 2316,
+        primaryTheme: 'Ideas',
+        releaseYear: 2022,
+        setId: '21333',
+        slug: 'the-starry-night-21333',
+        sourceSetNumber: '21333-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/shuttle.jpg',
+        name: 'Imperial Lambda-Class Shuttle',
+        pieceCount: 1234,
+        primaryTheme: 'Star Wars',
+        releaseDate: '2026-07-01',
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+        setId: '75459',
+        slug: 'imperial-lambda-class-shuttle-75459',
+        sourceSetNumber: '75459-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/nyc.jpg',
+        name: 'New York City Skyline Display',
+        pieceCount: 1465,
+        primaryTheme: 'Architecture',
+        releaseDate: '2026-06-01',
+        releaseDatePrecision: 'day',
+        releaseYear: 2026,
+        setId: '21066',
+        slug: 'new-york-city-skyline-21066',
+        sourceSetNumber: '21066-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/hogwarts.jpg',
+        name: 'Hogwarts Castle Display',
+        pieceCount: 2660,
+        primaryTheme: 'Harry Potter',
+        releaseYear: 2026,
+        setId: '76499',
+        slug: 'hogwarts-castle-display-76499',
+        sourceSetNumber: '76499-1',
+      }),
+      createCanonicalCatalogSet({
+        imageUrl: 'https://images.example/polybag.jpg',
+        name: 'Tiny City Polybag',
+        pieceCount: 45,
+        primaryTheme: 'City',
+        releaseYear: 2026,
+        setId: '30699',
+        slug: 'tiny-city-polybag-30699',
+        sourceSetNumber: '30699-1',
+      }),
+    ];
+    const getCatalogDiscoverySignalFn = () =>
+      createCatalogDiscoverySignal({
+        bestPriceMinor: 19999,
+        merchantCount: 3,
+        priceSpreadMinor: 3000,
+      });
+
+    const result = await listHomepageSetCards({
+      getCatalogDiscoverySignalFn,
+      limit: 5,
+      listCanonicalCatalogSetsFn: async () => canonicalSets,
+      rotationSeed: 11,
+    });
+    const resultThemeSlugs = new Set(
+      result.map((catalogSetCard) =>
+        buildCatalogThemeSlug(catalogSetCard.theme),
+      ),
+    );
+
+    expect(result).toHaveLength(5);
+    expect(resultThemeSlugs.size).toBeGreaterThanOrEqual(4);
+    expect(
+      result.filter(
+        (catalogSetCard) =>
+          buildCatalogThemeSlug(catalogSetCard.theme) === 'lord-of-the-rings',
+      ),
+    ).toHaveLength(1);
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toContain(
+      '75459',
+    );
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).not.toContain(
+      '30699',
+    );
   });
 
   test('searches canonical set cards without snapshot fallback', async () => {

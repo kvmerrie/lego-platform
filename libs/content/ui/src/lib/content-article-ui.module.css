@@ -415,6 +415,7 @@
   appearance: none;
   background: transparent;
   border: 0;
+  border-radius: var(--lego-radius-lg);
   cursor: zoom-in;
   padding: 0;
   position: relative;

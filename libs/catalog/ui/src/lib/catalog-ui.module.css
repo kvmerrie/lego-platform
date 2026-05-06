@@ -68,6 +68,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  position: relative;
   transition:
     border-color var(--lego-motion-duration-fast)
       var(--lego-motion-ease-standard),
@@ -78,8 +79,40 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   height: 100%;
-  overflow: hidden;
+  overflow: visible;
   padding: 0;
+}
+
+.setCardClickLayer {
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  box-shadow: none;
+  color: inherit;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+  text-align: left;
+  text-decoration: none;
+  z-index: 1;
+}
+
+.setCardClickLayer:hover {
+  background: transparent;
+  text-decoration: none;
+}
+
+.setCardClickLayer:focus-visible {
+  outline: none;
+}
+
+.setCardClickLayer:focus-visible::after {
+  border-radius: inherit;
+  box-shadow: 0 0 0 4px var(--lego-focus-ring);
+  content: '';
+  inset: -3px;
+  pointer-events: none;
+  position: absolute;
 }
 
 .setCardLink {
@@ -96,8 +129,10 @@
   min-height: 0;
   min-width: 0;
   padding: 0.82rem;
+  position: relative;
   text-align: left;
   width: 100%;
+  z-index: 0;
 }
 
 .setCardLink:hover {
@@ -107,6 +142,11 @@
 .setCard:focus-within {
   border-color: var(--catalog-card-interaction-border-color);
   box-shadow: inset 0 0 0 1px var(--catalog-card-interaction-outline-color);
+}
+
+.setCard:has(.setCardClickLayer:focus-visible) {
+  border-color: var(--catalog-card-interaction-border-color);
+  box-shadow: none;
 }
 
 .setVisual {
@@ -643,6 +683,8 @@
   justify-content: flex-end;
   margin-left: auto;
   min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .cardCompactSecondaryAction {
@@ -1669,7 +1711,7 @@
     var(--lego-accent-subtle) 22%
   );
   border: var(--lego-border-width-1) solid var(--lego-accent);
-  box-shadow: inset 0 0 0 2px var(--lego-accent);
+  box-shadow: inset 0 0 0 1px var(--lego-accent);
 }
 
 .offerRailCard[data-price-comparison='same'],
@@ -1892,18 +1934,6 @@
   color: var(--lego-text);
 }
 
-.offerRailCardLink:focus-visible .offerRailAction[data-tone='accent'] {
-  background: var(--lego-accent-hover);
-  border-color: transparent;
-  color: var(--lego-accent-contrast);
-}
-
-.offerRailCardLink:focus-visible .offerRailAction[data-tone='secondary'] {
-  background: var(--lego-accent-hover);
-  border-color: transparent;
-  color: var(--lego-accent-contrast);
-}
-
 .offerRailFooter {
   display: flex;
   justify-content: flex-start;
@@ -1931,25 +1961,27 @@
 }
 
 .offerOverlayBackdrop {
-  align-items: stretch;
-  background: color-mix(in srgb, var(--lego-text) 48%, transparent);
+  align-items: center;
+  background: rgba(12, 18, 32, 0.82);
   display: flex;
   inset: 0;
   justify-content: center;
-  padding: 0;
+  padding: var(--lego-space-4);
   position: fixed;
-  z-index: 60;
+  z-index: 1400;
 }
 
 .offerOverlay {
   background: var(--lego-surface-default);
+  border-radius: var(--lego-radius-lg);
   color: var(--lego-text);
   display: grid;
   gap: 0;
-  max-height: 100dvh;
-  min-height: 100dvh;
+  max-height: min(100%, calc(100vh - (var(--lego-space-4) * 2)));
+  max-width: min(100%, 42rem);
+  min-height: 0;
   overflow: hidden;
-  width: 100%;
+  width: min(100%, 42rem);
 }
 
 .offerOverlayHeader {
@@ -2982,7 +3014,6 @@
     box-shadow: inset 0 0 0 1px var(--catalog-card-interaction-outline-color);
   }
 
-  .setCardLink:hover .cardCompactActionBrowse,
   .cardCompactActionBrowse:hover {
     background: var(--lego-accent-hover);
     border-color: transparent;
@@ -2997,13 +3028,13 @@
     text-decoration: none;
   }
 
-  .offerRailCardLink:hover .offerRailAction[data-tone='accent'] {
+  .offerRailAction[data-tone='accent']:hover {
     background: var(--lego-accent-hover);
     border-color: transparent;
     color: var(--lego-accent-contrast);
   }
 
-  .offerRailCardLink:hover .offerRailAction[data-tone='secondary'] {
+  .offerRailAction[data-tone='secondary']:hover {
     background: var(--lego-accent);
     border-color: transparent;
     color: var(--lego-accent-contrast);
@@ -3367,6 +3398,19 @@
 }
 
 @media (max-width: 47.999rem) {
+  .offerOverlayBackdrop {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .offerOverlay {
+    border-radius: 0;
+    max-height: 100dvh;
+    max-width: 100%;
+    min-height: 100dvh;
+    width: 100%;
+  }
+
   .offerOverlayRow {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import React from 'react';
 import {
   getCatalogPrimaryOfferAvailabilityStateBySetId,
+  type CatalogPrimaryOfferAvailabilityState,
   type CatalogCurrentOfferSummary,
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
@@ -52,7 +53,10 @@ import {
   buildThemePath,
   buildWebPath,
   buildArticlePath,
+  buildCanonicalUrl,
+  buildSetDetailPath,
   getDefaultFormattingLocale,
+  getSetDetailPageRobotsDirective,
   publicWebBaseUrls,
   webPathnames,
 } from '@lego-platform/shared/config';
@@ -67,7 +71,12 @@ import {
   type CatalogSetStatus,
 } from '@lego-platform/catalog/util';
 import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
+import { JsonLdScript } from '../../lib/json-ld';
 import { buildSimilarSetsRailDescription } from '../../lib/similar-sets-rail-copy';
+import {
+  buildSetBreadcrumbJsonLd,
+  buildSetProductJsonLd,
+} from '../../lib/structured-data';
 import styles from './page.module.css';
 
 export const dynamicParams = true;
@@ -87,6 +96,13 @@ export type SetDetailAvailabilityFallbackState =
   | 'no_current_price'
   | 'no_current_stock'
   | 'retired';
+
+const SET_DETAIL_UNAVAILABLE_OFFER_STATE: CatalogPrimaryOfferAvailabilityState =
+  {
+    primaryMerchantCount: 0,
+    primarySeedCount: 1,
+    validPrimaryOfferCount: 0,
+  };
 
 function getCalendarDayValue(date: Date): number {
   const dateParts = new Intl.DateTimeFormat('en-CA', {
@@ -127,6 +143,37 @@ function formatOfferCheckedDate(checkedAt: string): string {
 
 function isEuroCatalogOffer(catalogOffer: CatalogOffer): boolean {
   return catalogOffer.currency === 'EUR';
+}
+
+export async function loadSetDetailLiveOffers({
+  setId,
+}: {
+  setId: string;
+}): Promise<CatalogOffer[]> {
+  try {
+    return await listCatalogSetLiveOffersBySetId({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+      },
+      setId,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function loadSetDetailPrimaryOfferAvailability({
+  setId,
+}: {
+  setId: string;
+}): Promise<CatalogPrimaryOfferAvailabilityState> {
+  try {
+    return await getCatalogPrimaryOfferAvailabilityStateBySetId({
+      setId,
+    });
+  } catch {
+    return SET_DETAIL_UNAVAILABLE_OFFER_STATE;
+  }
 }
 
 function formatOfferPrice(catalogOffer: CatalogOffer): string {
@@ -336,10 +383,12 @@ function getNextBestOfferPriceDeltaMinor(
 }
 
 export function buildSetDetailMetadata({
+  allowIndexing,
   catalogSetDetail,
   currentOfferSummary,
   pricePanelSnapshot,
 }: {
+  allowIndexing?: boolean;
   catalogSetDetail: CatalogSetDetail;
   currentOfferSummary?: CatalogCurrentOfferSummary;
   pricePanelSnapshot?: PricePanelSnapshot;
@@ -388,16 +437,27 @@ export function buildSetDetailMetadata({
         : bestOffer
           ? `Laagste nagekeken prijs bij ${bestOffer.merchantName}: ${priceLabel}.`
           : `${fallbackDescriptionParts.join(' ')}. Prijs volgt nog; volg deze set zodra er een koopmoment is.`;
+  const canonicalUrl = buildCanonicalUrl(
+    buildSetDetailPath(catalogSetDetail.slug),
+  );
 
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title,
       description,
       images: [metadataImage],
       type: 'website',
+      url: canonicalUrl,
     },
+    robots: getSetDetailPageRobotsDirective({
+      allowIndexing,
+      slug: catalogSetDetail.slug,
+    }),
     twitter: {
       card: 'summary_large_image',
       title,
@@ -1133,10 +1193,7 @@ export default async function SetDetailPage({
     notFound();
   }
 
-  const liveSetDetailOffers = await listCatalogSetLiveOffersBySetId({
-    cacheOptions: {
-      revalidateSeconds: revalidate,
-    },
+  const liveSetDetailOffers = await loadSetDetailLiveOffers({
     setId: catalogSetDetail.id,
   });
   const catalogDiscoverySignalBySetId =
@@ -1145,10 +1202,9 @@ export default async function SetDetailPage({
         revalidateSeconds: revalidate,
       },
     });
-  const primaryOfferAvailability =
-    await getCatalogPrimaryOfferAvailabilityStateBySetId({
-      setId: catalogSetDetail.id,
-    });
+  const primaryOfferAvailability = await loadSetDetailPrimaryOfferAvailability({
+    setId: catalogSetDetail.id,
+  });
   // Only live validated offers count as current public pricing.
   const localizedSetDetailOffers =
     liveSetDetailOffers.filter(isEuroCatalogOffer);
@@ -1222,9 +1278,27 @@ export default async function SetDetailPage({
     limit: SET_NEWS_RAIL_LIMIT,
     setNumber: catalogSetDetail.id,
   });
+  const themeHref = buildThemePath(
+    buildCatalogThemeSlug(catalogSetDetail.theme),
+  );
+  const canonicalUrl = buildCanonicalUrl(
+    buildSetDetailPath(catalogSetDetail.slug),
+  );
+  const jsonLd = [
+    buildSetProductJsonLd({
+      canonicalUrl,
+      catalogSetDetail,
+      offers: hasTrackedAvailabilityFallback ? [] : localizedSetDetailOffers,
+    }),
+    buildSetBreadcrumbJsonLd({
+      catalogSetDetail,
+      themeUrl: themeHref,
+    }),
+  ];
 
   return (
     <ShellWeb>
+      <JsonLdScript data={jsonLd} />
       <CatalogFeatureSetDetail
         bestDeal={
           hasTrackedAvailabilityFallback
@@ -1263,6 +1337,7 @@ export default async function SetDetailPage({
               })
         }
         dealVerdict={dealVerdict}
+        dealsHref={buildWebPath(webPathnames.deals)}
         offerList={
           hasTrackedAvailabilityFallback
             ? []
@@ -1342,9 +1417,7 @@ export default async function SetDetailPage({
           ) : undefined
         }
         themeDirectoryHref={buildWebPath(webPathnames.themes)}
-        themeHref={buildThemePath(
-          buildCatalogThemeSlug(catalogSetDetail.theme),
-        )}
+        themeHref={themeHref}
         trustSignals={
           hasTrackedAvailabilityFallback
             ? buildTrackedAvailabilityFallbackTrustSignals({

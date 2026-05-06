@@ -69,11 +69,16 @@ const whyBrickhuntItems = [
 
 const heroPills = ['Kies je set', 'Begrijp de prijs', 'Koop of volg'] as const;
 
-export const metadata = getMetadataFromSeoFields({
-  title: 'Hoe Brickhunt werkt',
-  description:
-    'Lees hoe Brickhunt je helpt sneller een LEGO set te kiezen, nagekeken prijzen te begrijpen en slimmer te kopen.',
-});
+export const metadata = getMetadataFromSeoFields(
+  {
+    title: 'Hoe Brickhunt werkt',
+    description:
+      'Lees hoe Brickhunt je helpt sneller een LEGO set te kiezen, nagekeken prijzen te begrijpen en slimmer te kopen.',
+  },
+  {
+    canonicalPath: '/hoe-werkt-het',
+  },
+);
 
 export default function HowItWorksPage() {
   return (

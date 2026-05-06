@@ -646,6 +646,19 @@ export function ImageGallery({
                     )}
                     onImageError={handleImageError}
                   />
+                  <span
+                    aria-hidden="true"
+                    className={styles.articleZoomOverlay}
+                    data-detail-main-zoom-overlay="true"
+                  >
+                    <span className={styles.articleZoomIconShell}>
+                      <ZoomIn
+                        aria-hidden="true"
+                        className={styles.articleZoomIcon}
+                        strokeWidth={2.2}
+                      />
+                    </span>
+                  </span>
                 </div>
               </button>
               {hasMultipleImages ? (

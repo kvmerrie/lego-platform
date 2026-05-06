@@ -1093,6 +1093,24 @@ describe('content article ui', () => {
     expect(css).toContain('display: none;');
   });
 
+  it('keeps FeaturedSet image focus ring aligned with the rounded tile', () => {
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/content/ui/src/lib/content-article-ui.module.css',
+      ),
+      'utf-8',
+    );
+
+    expect(css).toContain(
+      '.featuredSetVisualButton {\n  appearance: none;\n  background: transparent;\n  border: 0;\n  border-radius: var(--lego-radius-lg);',
+    );
+    expect(css).toContain('.featuredSetVisualButton:focus-visible {');
+    expect(css).toContain('box-shadow: 0 0 0 4px var(--lego-focus-ring);');
+    expect(css).toContain('.imageFrame {');
+    expect(css).toContain('border-radius: var(--lego-radius-lg);');
+  });
+
   it('tracks FeaturedSet set clicks with gtag without blocking navigation', () => {
     const gtag = vi.fn();
     window.gtag = gtag;

@@ -189,6 +189,60 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Bekijk set');
     expect(markup).toContain('cardCompactDecisionZone');
     expect(markup).toContain('cardCompactFooterActions');
+    expect(markup).toContain('data-catalog-set-card-click-layer="true"');
+  });
+
+  it('uses a stretched card link without nesting compact footer actions', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        actions={<button type="button">Bewaar</button>}
+        href="/sets/rivendell-10316"
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+        variant="compact"
+      />,
+    );
+    const cardLinkStart = markup.indexOf(
+      'data-catalog-set-card-click-layer="true"',
+    );
+    const cardLinkEnd = markup.indexOf('</a>', cardLinkStart);
+    const footerStart = markup.indexOf('cardCompactFooterActions');
+    const footerActionStart = markup.indexOf('aria-label="Bekijk set"');
+
+    expect(cardLinkStart).toBeGreaterThan(-1);
+    expect(cardLinkEnd).toBeGreaterThan(cardLinkStart);
+    expect(footerStart).toBeGreaterThan(cardLinkEnd);
+    expect(footerActionStart).toBeGreaterThan(cardLinkEnd);
+    expect(markup.slice(cardLinkStart, cardLinkEnd)).not.toContain(
+      'cardCompactFooterActions',
+    );
+  });
+
+  it('styles compact card click targets as full-card overlays with outer focus rings', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(css).toContain('.setCardClickLayer {');
+    expect(css).toContain('position: absolute;');
+    expect(css).toContain('inset: 0;');
+    expect(css).toContain('z-index: 1;');
+    expect(css).toContain('.setCardClickLayer:focus-visible::after {');
+    expect(css).toContain('border-radius: inherit;');
+    expect(css).toContain('box-shadow: 0 0 0 4px var(--lego-focus-ring);');
+    expect(css).toContain('inset: -3px;');
+    expect(css).toContain('.setCard:has(.setCardClickLayer:focus-visible)');
+    expect(css).toContain('box-shadow: none;');
+    expect(css).toContain('.cardCompactFooterActions {');
+    expect(css).toContain('z-index: 2;');
   });
 
   it('keeps the compact primary action white-on-blue inside the shared footer row', () => {
@@ -250,9 +304,9 @@ describe('CatalogSetCard', () => {
     const secondaryActionRule =
       css.match(/\.offerRailAction\[data-tone='secondary'\] \{[^}]+\}/u)?.[0] ??
       '';
-    const cardHoverSecondaryActionRule =
+    const directHoverSecondaryActionRule =
       css.match(
-        /\.offerRailCardLink:hover \.offerRailAction\[data-tone='secondary'\] \{[^}]+\}/u,
+        /\.offerRailAction\[data-tone='secondary'\]:hover \{[^}]+\}/u,
       )?.[0] ?? '';
 
     expect(offerCardRule).not.toContain('transform');
@@ -275,10 +329,43 @@ describe('CatalogSetCard', () => {
     );
     expect(secondaryActionRule).toContain('background: transparent;');
     expect(secondaryActionRule).toContain('border-color: var(--lego-text);');
-    expect(cardHoverSecondaryActionRule).toContain(
-      'background: var(--lego-accent-hover);',
+    expect(css).not.toContain(
+      ".offerRailCardLink:hover .offerRailAction[data-tone='secondary']",
+    );
+    expect(css).not.toContain(
+      ".offerRailCardLink:focus-visible .offerRailAction[data-tone='secondary']",
+    );
+    expect(directHoverSecondaryActionRule).toContain(
+      'background: var(--lego-accent);',
     );
     expect(css).toContain('white-space: nowrap;');
+  });
+
+  it('does not put card CTA controls into hover state from parent card hover', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const browseActionHoverRule =
+      css.match(/\.cardCompactActionBrowse:hover \{[^}]+\}/u)?.[0] ?? '';
+    const offerAccentHoverRule =
+      css.match(
+        /\.offerRailAction\[data-tone='accent'\]:hover \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(css).not.toContain('.setCardLink:hover .cardCompactActionBrowse');
+    expect(css).not.toContain(
+      ".offerRailCardLink:hover .offerRailAction[data-tone='accent']",
+    );
+    expect(css).not.toContain(
+      ".offerRailCardLink:focus-visible .offerRailAction[data-tone='accent']",
+    );
+    expect(browseActionHoverRule).toContain(
+      'background: var(--lego-accent-hover);',
+    );
+    expect(offerAccentHoverRule).toContain(
+      'background: var(--lego-accent-hover);',
+    );
   });
 
   it('anchors optional visual actions inside the image wrapper with bottom-right padding', () => {

@@ -6,6 +6,8 @@ import {
   getAwinCoolblueFeedConfig,
   getAdminPromotionConfig,
   buildArticlePath,
+  buildCanonicalUrl,
+  buildPublicSiteRobotsPolicy,
   buildPublicSetDetailUrl,
   buildThemePath,
   buildWebPath,
@@ -17,7 +19,9 @@ import {
   getDefaultAppLocaleContext,
   getDefaultFormattingLocale,
   getDefaultMarketScopeLabel,
+  getMisterBricksFeedConfig,
   getMissingBrowserSupabaseEnvKeys,
+  getMissingMisterBricksEnvKeys,
   getMissingPublicWebRevalidationEnvKeys,
   getMissingProductEmailEnvKeys,
   getMissingProductionSupabaseEnvKeys,
@@ -29,6 +33,9 @@ import {
   getPublicWebRevalidationConfig,
   getPublicWebBaseUrl,
   getProductEmailConfig,
+  getSetDetailPageRobotsDirective,
+  isIndexablePage,
+  isIndexableSetDetailPage,
   getProductionSupabaseConfig,
   getTradeTrackerAffiliateConfig,
   getTradeTrackerCoppenswarenhuisFeedConfig,
@@ -40,6 +47,7 @@ import {
   hasAdminPromotionConfig,
   hasAwinCoolblueFeedConfig,
   hasBrowserSupabaseConfig,
+  hasMisterBricksFeedConfig,
   hasPublicWebRevalidationConfig,
   hasProductEmailConfig,
   hasProductionSupabaseConfig,
@@ -49,7 +57,10 @@ import {
   hasTradeTrackerLidlFeedConfig,
   hasTradeDoublerMediaMarktFeedConfig,
   isArticlePreviewEnabled,
+  publicSiteIndexingEnvKeys,
   publicSiteRobotsPolicy,
+  resolvePublicSiteAllowIndexing,
+  misterBricksEnvKeys,
   tradeDoublerMediaMarktEnvKeys,
   tradeTrackerCoppenswarenhuisEnvKeys,
   webNavigation,
@@ -158,6 +169,36 @@ describe('shared config locale and market foundations', () => {
     ).toBe('/nl-nl/deals');
   });
 
+  test('builds production canonical URLs without tracking, affiliate, sort, or trailing slash noise', () => {
+    expect(
+      buildCanonicalUrl(
+        'https://staging.brickhunt.nl/sets/rivendell-10316/?utm_source=wa&awc=123&sort=price#reviews',
+      ),
+    ).toBe('https://www.brickhunt.nl/sets/rivendell-10316');
+    expect(
+      buildCanonicalUrl('/artikelen/star-wars/star-wars-day/?fbclid=abc'),
+    ).toBe('https://www.brickhunt.nl/artikelen/star-wars/star-wars-day');
+    expect(buildCanonicalUrl('/sets//rivendell-10316//')).toBe(
+      'https://www.brickhunt.nl/sets/rivendell-10316',
+    );
+    expect(
+      buildCanonicalUrl('/sets/rivendell-10316?slug=rivendell-10316-copy'),
+    ).toBe('https://www.brickhunt.nl/sets/rivendell-10316');
+  });
+
+  test('keeps only explicitly whitelisted SEO search params for paginated canonicals', () => {
+    expect(
+      buildCanonicalUrl('/deals?page=2&sort=discount&utm_medium=email', {
+        allowedSearchParams: ['page'],
+      }),
+    ).toBe('https://www.brickhunt.nl/deals?page=2');
+    expect(
+      buildCanonicalUrl('/deals?page=1&sort=discount', {
+        allowedSearchParams: ['page'],
+      }),
+    ).toBe('https://www.brickhunt.nl/deals');
+  });
+
   test('exposes primary public navigation in Brickhunt order', () => {
     expect(webNavigation).toEqual([
       {
@@ -190,7 +231,12 @@ describe('shared config locale and market foundations', () => {
       getPublicWebBaseUrl({
         currentOrigin: 'https://ops.brickhunt.nl',
       }),
-    ).toBe('https://brickhunt.nl');
+    ).toBe('https://www.brickhunt.nl');
+    expect(
+      getPublicWebBaseUrl({
+        currentOrigin: 'https://brickhunt.nl',
+      }),
+    ).toBe('https://www.brickhunt.nl');
   });
 
   test('renders reusable market scope labels from the default market config', () => {
@@ -211,13 +257,179 @@ describe('shared config locale and market foundations', () => {
         googleBot: {
           index: false,
           follow: false,
-          noimageindex: true,
         },
       },
       robotsTxt: {
         userAgent: '*',
         disallow: '/',
       },
+    });
+  });
+
+  test('keeps indexing disabled by default without the explicit launch env flag', () => {
+    expect(resolvePublicSiteAllowIndexing({})).toBe(false);
+    expect(
+      resolvePublicSiteAllowIndexing({
+        BRICKHUNT_DEPLOY_ENV: 'production',
+        WEB_BASE_URL: 'https://www.brickhunt.nl',
+      }),
+    ).toBe(false);
+  });
+
+  test('enables indexing only with the explicit flag on the canonical production host', () => {
+    expect(
+      resolvePublicSiteAllowIndexing({
+        [publicSiteIndexingEnvKeys.allowIndexing]: 'true',
+        BRICKHUNT_DEPLOY_ENV: 'production',
+        WEB_BASE_URL: 'https://www.brickhunt.nl',
+      }),
+    ).toBe(true);
+    expect(
+      resolvePublicSiteAllowIndexing({
+        [publicSiteIndexingEnvKeys.allowIndexing]: 'true',
+        VERCEL_ENV: 'production',
+        VERCEL_PROJECT_PRODUCTION_URL: 'www.brickhunt.nl',
+      }),
+    ).toBe(true);
+  });
+
+  test('keeps staging, preview, and development blocked even with the launch flag', () => {
+    expect(
+      resolvePublicSiteAllowIndexing({
+        [publicSiteIndexingEnvKeys.allowIndexing]: 'true',
+        BRICKHUNT_DEPLOY_ENV: 'production',
+        WEB_BASE_URL: 'https://brickhunt.nl',
+      }),
+    ).toBe(false);
+    expect(
+      resolvePublicSiteAllowIndexing({
+        [publicSiteIndexingEnvKeys.allowIndexing]: 'true',
+        BRICKHUNT_DEPLOY_ENV: 'staging',
+        WEB_BASE_URL: 'https://www.brickhunt.nl',
+      }),
+    ).toBe(false);
+    expect(
+      resolvePublicSiteAllowIndexing({
+        [publicSiteIndexingEnvKeys.allowIndexing]: 'true',
+        VERCEL_ENV: 'preview',
+        VERCEL_PROJECT_PRODUCTION_URL: 'www.brickhunt.nl',
+      }),
+    ).toBe(false);
+    expect(
+      resolvePublicSiteAllowIndexing({
+        [publicSiteIndexingEnvKeys.allowIndexing]: 'true',
+        BRICKHUNT_DEPLOY_ENV: 'production',
+        WEB_BASE_URL: 'https://staging.brickhunt.nl',
+      }),
+    ).toBe(false);
+    expect(
+      resolvePublicSiteAllowIndexing({
+        [publicSiteIndexingEnvKeys.allowIndexing]: 'true',
+        BRICKHUNT_DEPLOY_ENV: 'development',
+        WEB_BASE_URL: 'https://www.brickhunt.nl',
+      }),
+    ).toBe(false);
+  });
+
+  test('builds the launch robots policy for public indexing', () => {
+    expect(
+      buildPublicSiteRobotsPolicy({
+        allowIndexing: true,
+      }),
+    ).toEqual({
+      allowIndexing: true,
+      meta: undefined,
+      robotsTxt: {
+        userAgent: '*',
+        disallow: [
+          '/api/',
+          '/admin/',
+          '/account/',
+          '/auth/',
+          '/search',
+          '/volgt',
+          '/*?*sort=',
+          '/*?*filter=',
+          '/*?*utm_',
+          '/*?*ref=',
+          '/*?*affiliate=',
+        ],
+      },
+    });
+  });
+
+  test('classifies indexable public paths behind the launch switch', () => {
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pathname: '/deals',
+      }),
+    ).toBe(true);
+    expect(
+      isIndexablePage({
+        allowIndexing: false,
+        pathname: '/deals',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pathname: '/search?q=rivendell',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pathname: '/deals?utm_source=newsletter',
+      }),
+    ).toBe(false);
+    expect(
+      isIndexablePage({
+        allowIndexing: true,
+        pageRobotsNoIndex: true,
+        pathname: '/sets/rivendell-10316',
+      }),
+    ).toBe(false);
+  });
+
+  test('derives set detail indexability from the shared launch policy', () => {
+    expect(
+      isIndexableSetDetailPage({
+        allowIndexing: false,
+        slug: 'lord-of-the-rings-rivendell-10316',
+      }),
+    ).toBe(false);
+    expect(
+      getSetDetailPageRobotsDirective({
+        allowIndexing: false,
+        slug: 'lord-of-the-rings-rivendell-10316',
+      }),
+    ).toEqual({
+      follow: false,
+      googleBot: {
+        follow: false,
+        index: false,
+      },
+      index: false,
+    });
+    expect(
+      isIndexableSetDetailPage({
+        allowIndexing: true,
+        slug: 'lord-of-the-rings-rivendell-10316',
+      }),
+    ).toBe(true);
+    expect(
+      getSetDetailPageRobotsDirective({
+        allowIndexing: true,
+        slug: 'lord-of-the-rings-rivendell-10316',
+      }),
+    ).toEqual({
+      follow: true,
+      googleBot: {
+        follow: true,
+        index: true,
+      },
+      index: true,
     });
   });
 });
@@ -610,6 +822,49 @@ describe('shared config TradeTracker Coppenswarenhuis feed helpers', () => {
     expect(hasTradeTrackerCoppenswarenhuisFeedConfig()).toBe(false);
     expect(getMissingTradeTrackerCoppenswarenhuisEnvKeys()).toEqual([
       tradeTrackerCoppenswarenhuisEnvKeys.feedUrl,
+    ]);
+  });
+});
+
+describe('shared config MisterBricks feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the MisterBricks feed config with sensible merchant defaults', () => {
+    process.env.MISTERBRICKS_FEED_URL =
+      'https://files.channable.com/misterbricks.xml';
+
+    expect(hasMisterBricksFeedConfig()).toBe(true);
+    expect(getMissingMisterBricksEnvKeys()).toEqual([]);
+    expect(getMisterBricksFeedConfig()).toEqual({
+      feedUrl: 'https://files.channable.com/misterbricks.xml',
+      merchantSlug: 'misterbricks',
+      merchantName: 'MisterBricks',
+    });
+  });
+
+  test('allows explicit MisterBricks merchant overrides', () => {
+    process.env.MISTERBRICKS_FEED_URL =
+      'https://files.channable.com/misterbricks.xml';
+    process.env.MISTERBRICKS_MERCHANT_SLUG = 'misterbricks-nl';
+    process.env.MISTERBRICKS_MERCHANT_NAME = 'Mister Bricks NL';
+
+    expect(getMisterBricksFeedConfig()).toEqual({
+      feedUrl: 'https://files.channable.com/misterbricks.xml',
+      merchantSlug: 'misterbricks-nl',
+      merchantName: 'Mister Bricks NL',
+    });
+  });
+
+  test('reports the missing MisterBricks feed URL', () => {
+    delete process.env.MISTERBRICKS_FEED_URL;
+
+    expect(hasMisterBricksFeedConfig()).toBe(false);
+    expect(getMissingMisterBricksEnvKeys()).toEqual([
+      misterBricksEnvKeys.feedUrl,
     ]);
   });
 });

@@ -196,6 +196,19 @@ describe('admin catalog routes', () => {
     await server.close();
   });
 
+  test('does not expose a LEGO image candidates route', async () => {
+    const { server } = await createAdminCatalogServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/catalog/sets/77984/lego-images',
+    });
+
+    expect(response.statusCode).toBe(404);
+
+    await server.close();
+  });
+
   test('searches Rebrickable for missing sets', async () => {
     const { catalogService, server } = await createAdminCatalogServer();
 

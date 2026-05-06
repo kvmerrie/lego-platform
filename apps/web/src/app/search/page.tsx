@@ -11,8 +11,10 @@ import { getFeaturedSetPriceContext } from '@lego-platform/pricing/data-access';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import { ShellWeb, ShellWebSearchForm } from '@lego-platform/shell/web';
 import { buildCurrentSearchReviewedPriceContext } from '../lib/current-set-card-price-context';
+import { getUtilityRouteMetadata } from '../lib/utility-route-metadata';
 
 export const dynamic = 'force-dynamic';
+export const metadata = getUtilityRouteMetadata(webPathnames.search);
 
 function readQueryParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');

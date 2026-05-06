@@ -109,6 +109,58 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('href="/sets/avengers-tower-76269"');
   });
 
+  it('renders related article links and crawlable pagination links', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureThemePage
+        currentPage={1}
+        pageSize={1}
+        relatedArticles={[
+          {
+            date: '2026-05-04',
+            description: 'Welke Star Wars-sets je eerst wilt bekijken.',
+            href: '/artikelen/star-wars/star-wars-day-2026',
+            title: 'Star Wars Day 2026',
+          },
+        ]}
+        themePage={{
+          themeSnapshot: {
+            name: 'Star Wars',
+            slug: 'star-wars',
+            setCount: 2,
+            momentum: 'Ships, walkers en displaywaarde.',
+            signatureSet: 'X-wing Starfighter',
+          },
+          setCards: [
+            {
+              id: '75355',
+              slug: 'x-wing-starfighter-75355',
+              name: 'X-wing Starfighter',
+              theme: 'Star Wars',
+              releaseYear: 2023,
+              pieces: 1949,
+            },
+            {
+              id: '75446',
+              slug: 'grogu-mandalorian-apprentice-75446',
+              name: 'Grogu with Hover Pram',
+              theme: 'Star Wars',
+              releaseYear: 2026,
+              pieces: 1048,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('href="/sets/x-wing-starfighter-75355"');
+    expect(markup).not.toContain(
+      'href="/sets/grogu-mandalorian-apprentice-75446"',
+    );
+    expect(markup).toContain('href="/themes/star-wars"');
+    expect(markup).toContain('href="/themes/star-wars?page=2"');
+    expect(markup).toContain('href="/artikelen/star-wars/star-wars-day-2026"');
+  });
+
   it('uses the shared theme visual mapping for theme page surfaces', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureThemePage

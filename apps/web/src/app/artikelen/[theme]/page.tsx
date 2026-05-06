@@ -121,10 +121,15 @@ export async function generateMetadata({
     themeArticle.theme ??
     'LEGO';
 
-  return getMetadataFromSeoFields({
-    description: `Lees het nieuwste LEGO nieuws over ${themeLabel}.`,
-    title: `${themeLabel} nieuws`,
-  });
+  return getMetadataFromSeoFields(
+    {
+      description: `Lees het nieuwste LEGO nieuws over ${themeLabel}.`,
+      title: `${themeLabel} nieuws`,
+    },
+    {
+      canonicalPath: buildArticleThemePath(theme),
+    },
+  );
 }
 
 export default async function ArticleThemePage({

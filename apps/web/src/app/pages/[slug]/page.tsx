@@ -6,6 +6,7 @@ import {
 } from '@lego-platform/content/data-access';
 import { ContentFeaturePageRenderer } from '@lego-platform/content/feature-page-renderer';
 import { ShellWeb } from '@lego-platform/shell/web';
+import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -34,7 +35,9 @@ export async function generateMetadata({
     return {};
   }
 
-  return getMetadataFromSeoFields(editorialPage.seo);
+  return getMetadataFromSeoFields(editorialPage.seo, {
+    canonicalPath: buildWebPath(`${webPathnames.pages}/${slug}`),
+  });
 }
 
 export default async function EditorialPageRoute({
