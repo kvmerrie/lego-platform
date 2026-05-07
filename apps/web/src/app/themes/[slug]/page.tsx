@@ -21,6 +21,7 @@ import {
   buildCanonicalUrl,
   buildArticlePath,
   buildThemePath,
+  cacheTags,
 } from '@lego-platform/shared/config';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
@@ -35,7 +36,7 @@ import {
 } from '../../lib/structured-data';
 
 export const dynamicParams = true;
-export const revalidate = 300;
+export const revalidate = 21_600;
 const THEME_DISCOVERY_RAIL_LIMIT = 6;
 const THEME_SET_PAGE_SIZE = 48;
 const THEME_RELATED_ARTICLE_LIMIT = 3;
@@ -130,6 +131,7 @@ export default async function ThemePage({
       listCatalogDiscoverySignalsBySetId({
         cacheOptions: {
           revalidateSeconds: revalidate,
+          tags: [cacheTags.theme(slug)],
         },
       }),
       listPublishedArticles(),
@@ -160,6 +162,10 @@ export default async function ThemePage({
     await listCatalogCurrentOfferSummariesBySetIds({
       cacheOptions: {
         revalidateSeconds: revalidate,
+        tags: [
+          cacheTags.theme(slug),
+          ...themeDiscoverySetCards.map((setCard) => cacheTags.set(setCard.id)),
+        ],
       },
       setIds: themeDiscoverySetCards.map((setCard) => setCard.id),
     });

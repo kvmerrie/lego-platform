@@ -1,6 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { syncTradeDoublerMediaMarktFeed } from '@lego-platform/api/data-access-server';
+import {
+  resolveAffiliateFeedDiscoveryEnabled,
+  syncTradeDoublerMediaMarktFeed,
+} from '@lego-platform/api/data-access-server';
 import {
   getMissingServerSupabaseEnvKeys,
   getMissingTradeDoublerMediaMarktEnvKeys,
@@ -101,6 +104,9 @@ async function main() {
     argv,
     flag: '--report-unmatched-path',
   });
+  const discoveryEnabled = resolveAffiliateFeedDiscoveryEnabled({
+    argv,
+  });
 
   if (!hasServerSupabaseConfig() && !dryRun) {
     throw new Error(
@@ -115,7 +121,7 @@ async function main() {
   }
 
   console.log(
-    `[mediamarkt-feed-sync] start source=tradedoubler merchant=mediamarkt mode=${dryRun ? 'dry-run' : 'write'} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[mediamarkt-feed-sync] start source=tradedoubler merchant=mediamarkt mode=${dryRun ? 'dry-run' : 'write'} discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} max_products=${maxProducts ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
   );
 
   const result = await syncTradeDoublerMediaMarktFeed({
@@ -125,6 +131,7 @@ async function main() {
       debugSamples,
       dryRun,
       maxProducts,
+      persistDiscoveredSets: discoveryEnabled,
       unmatchedSampleLimit: debugUnmatchedSamples,
     },
   });
@@ -190,7 +197,7 @@ async function main() {
   }
 
   console.log(
-    `[mediamarkt-feed-sync] end status=imported source=tradedoubler merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[mediamarkt-feed-sync] end status=imported source=tradedoubler merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} lego_candidates=${result.legoCandidateCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

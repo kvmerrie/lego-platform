@@ -19,6 +19,9 @@ import {
   type CommerceBenchmarkCoverageRow,
   type CommerceBenchmarkMerchantCoverageStatus,
   type CommerceBenchmarkSet,
+  type CommerceAffiliateDiscoveredSet,
+  type CommerceAffiliateDiscoveredSetImportResult,
+  type CommerceAffiliateDiscoveredSetStatus,
   type CommerceCoverageSetOption,
   type CommerceMerchant,
   type CommerceMerchantInput,
@@ -208,6 +211,9 @@ export class CommerceAdminStore {
   );
   readonly benchmarkSets = signal<CommerceBenchmarkSet[]>([]);
   readonly coverageQueueRows = signal<CommerceCoverageQueueRow[]>([]);
+  readonly affiliateDiscoveredSets = signal<CommerceAffiliateDiscoveredSet[]>(
+    [],
+  );
   readonly merchants = signal<CommerceMerchant[]>([]);
   readonly offerSeeds = signal<CommerceOfferSeed[]>([]);
   readonly activeSetId = signal<string | null>(null);
@@ -310,12 +316,14 @@ export class CommerceAdminStore {
     try {
       const [
         catalogSets,
+        affiliateDiscoveredSets,
         benchmarkSets,
         coverageQueueRows,
         merchants,
         offerSeeds,
       ] = await Promise.all([
         this.commerceAdminApi.listCatalogSets(),
+        this.commerceAdminApi.listAffiliateDiscoveredSets(),
         this.commerceAdminApi.listBenchmarkSets(),
         this.commerceAdminApi.listCoverageQueue(),
         this.commerceAdminApi.listMerchants(),
@@ -323,6 +331,7 @@ export class CommerceAdminStore {
       ]);
 
       this.catalogSetOptions.set(this.toCatalogSetOptions(catalogSets));
+      this.affiliateDiscoveredSets.set(affiliateDiscoveredSets);
       this.benchmarkSets.set(benchmarkSets);
       this.coverageQueueRows.set(coverageQueueRows);
       this.merchants.set(merchants);
@@ -490,6 +499,39 @@ export class CommerceAdminStore {
       const result = await this.commerceAdminApi.refreshSet(setId);
       await this.reload();
       return result;
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
+  async importAffiliateDiscoveredSets(input: {
+    discoveredSetIds?: readonly string[];
+    highConfidenceOnly?: boolean;
+    maxBatchSize?: number;
+  }): Promise<CommerceAffiliateDiscoveredSetImportResult> {
+    try {
+      const result =
+        await this.commerceAdminApi.importAffiliateDiscoveredSets(input);
+      await this.reload();
+      return result;
+    } catch (error) {
+      const message = toApiErrorMessage(error);
+
+      this.errorMessage.set(message);
+      throw new Error(message);
+    }
+  }
+
+  async updateAffiliateDiscoveredSetStatus(input: {
+    discoveredSetId: string;
+    status: Exclude<CommerceAffiliateDiscoveredSetStatus, 'imported'>;
+  }): Promise<void> {
+    try {
+      await this.commerceAdminApi.updateAffiliateDiscoveredSetStatus(input);
+      await this.reload();
     } catch (error) {
       const message = toApiErrorMessage(error);
 

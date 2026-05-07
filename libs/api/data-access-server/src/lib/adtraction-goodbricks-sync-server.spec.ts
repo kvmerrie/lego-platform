@@ -245,6 +245,7 @@ describe('Adtraction Goodbricks sync server', () => {
       },
       options: {
         collectUnmatchedDebug: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 10,
       },
       rows: [
@@ -324,6 +325,7 @@ describe('Adtraction Goodbricks sync server', () => {
       options: {
         collectUnmatchedDebug: true,
         dryRun: undefined,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 20,
       },
       rows: expect.arrayContaining([
@@ -395,6 +397,7 @@ describe('Adtraction Goodbricks sync server', () => {
       options: {
         collectUnmatchedDebug: true,
         dryRun: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 5,
       },
     });
@@ -404,6 +407,7 @@ describe('Adtraction Goodbricks sync server', () => {
         options: {
           collectUnmatchedDebug: true,
           dryRun: true,
+          persistDiscoveredSets: false,
           unmatchedSampleLimit: 5,
         },
       }),

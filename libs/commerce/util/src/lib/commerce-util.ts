@@ -24,6 +24,18 @@ export const commerceOfferLatestFetchStatuses = [
   'error',
 ] as const;
 
+export const commerceAffiliateDiscoveredSetConfidences = [
+  'high',
+  'low',
+] as const;
+
+export const commerceAffiliateDiscoveredSetStatuses = [
+  'new',
+  'imported',
+  'ignored',
+  'non_set',
+] as const;
+
 export type CommerceMerchantSourceType =
   (typeof commerceMerchantSourceTypes)[number];
 
@@ -35,6 +47,12 @@ export type CommerceOfferSeedValidationStatus =
 
 export type CommerceOfferLatestFetchStatus =
   (typeof commerceOfferLatestFetchStatuses)[number];
+
+export type CommerceAffiliateDiscoveredSetConfidence =
+  (typeof commerceAffiliateDiscoveredSetConfidences)[number];
+
+export type CommerceAffiliateDiscoveredSetStatus =
+  (typeof commerceAffiliateDiscoveredSetStatuses)[number];
 
 export const DEFAULT_COMMERCE_STALE_DAYS = 14;
 
@@ -205,6 +223,109 @@ export interface CommerceBenchmarkSet {
 export interface CommerceBenchmarkSetInput {
   notes?: string;
   setId: string;
+}
+
+export interface CommerceAffiliateDiscoveredSet {
+  affiliate: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  confidence: CommerceAffiliateDiscoveredSetConfidence;
+  createdAt: string;
+  currencyCode?: string;
+  firstSeenAt: string;
+  id: string;
+  imageUrl?: string;
+  importAttemptedAt?: string;
+  importError?: string;
+  importedSetId?: string;
+  lastSeenAt: string;
+  normalizedSetId: string;
+  priceMinor?: number;
+  productTitle: string;
+  productUrl: string;
+  rawPayload: Readonly<Record<string, unknown>>;
+  sourceSetNumber: string;
+  status: CommerceAffiliateDiscoveredSetStatus;
+  updatedAt: string;
+}
+
+export interface CommerceAffiliateDiscoveredSetInput {
+  affiliateId: string;
+  currencyCode?: string;
+  imageUrl?: string;
+  observedAt: string;
+  priceMinor?: number;
+  productTitle?: string;
+  productUrl?: string;
+  rawPayload: Readonly<Record<string, unknown>>;
+  setNumber?: string;
+}
+
+export interface CommerceAffiliateDiscoveredSetImportResult {
+  alreadyCatalogedCount: number;
+  attachedOfferCount: number;
+  createdCatalogSetCount: number;
+  failedLookupCount: number;
+  importedCount: number;
+  requestedCount: number;
+  skippedCount: number;
+  uniqueSetCount: number;
+}
+
+export interface CommerceAffiliateDiscoverySummary {
+  autoImportableCount: number;
+  discoveredCount: number;
+  ignoredOrNonSetCount: number;
+  reviewNeededCount: number;
+}
+
+const commerceNonSetTitlePattern =
+  /\b(bundle|bundel|multipack|multi-pack|pakket|pack|accessoire|accessory|sleutelhanger|keychain|display case|vitrine|minifiguur|minifigure|polybag|boeken|boek|magazine|tijdschrift|storage|opberg|lichtset|light kit)\b/i;
+
+export function normalizeCommerceLegoSetNumber(
+  value?: string,
+): string | undefined {
+  const normalizedValue = value?.trim().toUpperCase();
+
+  if (!normalizedValue) {
+    return undefined;
+  }
+
+  const match = normalizedValue.match(/(?:LEGO\s*)?(\d{4,7})(?:\s*-\s*\d+)?/);
+  const setNumber = match?.[1];
+
+  if (!setNumber || !/^\d{4,7}$/.test(setNumber)) {
+    return undefined;
+  }
+
+  return setNumber;
+}
+
+export function buildCommerceSourceSetNumber(setId: string): string {
+  return setId.includes('-') ? setId : `${setId}-1`;
+}
+
+export function scoreCommerceAffiliateDiscoveredSet(
+  input: Pick<
+    CommerceAffiliateDiscoveredSetInput,
+    'imageUrl' | 'productTitle' | 'productUrl' | 'setNumber'
+  >,
+): CommerceAffiliateDiscoveredSetConfidence {
+  const normalizedSetNumber = normalizeCommerceLegoSetNumber(input.setNumber);
+  const title = input.productTitle?.trim() ?? '';
+  const hasReviewRisk = commerceNonSetTitlePattern.test(title);
+  const hasTitle = title.length > 0;
+  const hasProductUrl = Boolean(input.productUrl?.trim());
+  const hasImageOrProductUrl = Boolean(input.imageUrl?.trim()) || hasProductUrl;
+
+  return normalizedSetNumber &&
+    hasTitle &&
+    hasImageOrProductUrl &&
+    !hasReviewRisk
+    ? 'high'
+    : 'low';
 }
 
 export interface CommerceCoverageSetOption {

@@ -82,7 +82,7 @@ describe('alternate affiliate feed server', () => {
         fetchedAt: '2026-04-22T09:15:00.000Z',
       },
     });
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       importedOfferCount: 1,
       matchedCatalogSetCount: 1,
       merchantCreated: true,
@@ -97,6 +97,107 @@ describe('alternate affiliate feed server', () => {
       totalRowCount: 1,
       upsertedLatestCount: 1,
       upsertedSeedCount: 1,
+      discoveredMissingSetCount: 0,
+      autoImportableMissingSetCount: 0,
+      reviewNeededMissingSetCount: 0,
+      ignoredOrNonSetMissingSetCount: 0,
+    });
+  });
+
+  test('does not report changed sets or write latest offers when feed content is unchanged', async () => {
+    const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();
+    const upsertCommerceOfferLatestRecordFn = vi.fn();
+
+    const existingMerchant = {
+      id: 'merchant-alternate',
+      slug: 'alternate',
+      name: 'Alternate',
+      isActive: true,
+      sourceType: 'affiliate',
+      affiliateNetwork: 'TradeTracker',
+      notes:
+        'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+      createdAt: '2026-04-22T09:00:00.000Z',
+      updatedAt: '2026-04-22T09:00:00.000Z',
+    } as const;
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        createCommerceMerchantFn: vi.fn(),
+        getNow: () => new Date('2026-04-24T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '10316',
+            slug: 'rivendell-10316',
+            sourceSetNumber: '10316-1',
+            status: 'active',
+          },
+        ]),
+        listCommerceMerchantsFn: vi.fn().mockResolvedValue([existingMerchant]),
+        listCommerceOfferSeedsFn: vi.fn().mockResolvedValue([
+          {
+            id: 'seed-10316-alternate',
+            setId: '10316',
+            merchantId: 'merchant-alternate',
+            productUrl: 'https://clk.tradetracker.example/alternate/10316',
+            isActive: true,
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-24T08:00:00.000Z',
+            notes:
+              'Feed-driven Alternate import via TradeTracker. Exact matched by LEGO set number.',
+            createdAt: '2026-04-22T09:00:00.000Z',
+            updatedAt: '2026-04-22T09:00:00.000Z',
+            latestOffer: {
+              id: 'latest-10316-alternate',
+              offerSeedId: 'seed-10316-alternate',
+              setId: '10316',
+              merchantId: 'merchant-alternate',
+              productUrl: 'https://clk.tradetracker.example/alternate/10316',
+              fetchStatus: 'success',
+              priceMinor: 29999,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              fetchedAt: '2026-04-24T08:00:00.000Z',
+              observedAt: '2026-04-24T08:00:00.000Z',
+              createdAt: '2026-04-22T09:00:00.000Z',
+              updatedAt: '2026-04-22T09:00:00.000Z',
+            },
+          },
+        ]),
+        updateCommerceMerchantFn: vi.fn().mockResolvedValue(existingMerchant),
+        upsertCommerceOfferLatestRecordFn,
+        upsertCommerceOfferSeedByCompositeKeyFn,
+      },
+      merchant: {
+        affiliateNetwork: 'TradeTracker',
+        name: 'Alternate',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+        sourceType: 'affiliate',
+        slug: 'alternate',
+      },
+      rows: [
+        {
+          affiliateDeeplink: 'https://clk.tradetracker.example/alternate/10316',
+          availabilityText: 'Op voorraad',
+          brand: 'LEGO',
+          condition: 'new',
+          currency: 'EUR',
+          legoSetNumber: '10316',
+          price: '299,99',
+          productTitle: 'LEGO Icons Rivendell',
+        },
+      ],
+    });
+
+    expect(upsertCommerceOfferSeedByCompositeKeyFn).not.toHaveBeenCalled();
+    expect(upsertCommerceOfferLatestRecordFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      changedSetIds: [],
+      changedSetSlugs: [],
+      importedOfferCount: 0,
+      matchedCatalogSetCount: 1,
+      upsertedLatestCount: 0,
+      upsertedSeedCount: 0,
     });
   });
 
@@ -344,7 +445,7 @@ describe('alternate affiliate feed server', () => {
 
     expect(upsertCommerceOfferSeedByCompositeKeyFn).not.toHaveBeenCalled();
     expect(upsertCommerceOfferLatestRecordFn).not.toHaveBeenCalled();
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       importedOfferCount: 0,
       matchedCatalogSetCount: 0,
       merchantCreated: false,
@@ -359,6 +460,10 @@ describe('alternate affiliate feed server', () => {
       totalRowCount: 5,
       upsertedLatestCount: 0,
       upsertedSeedCount: 0,
+      discoveredMissingSetCount: 0,
+      autoImportableMissingSetCount: 0,
+      reviewNeededMissingSetCount: 0,
+      ignoredOrNonSetMissingSetCount: 0,
     });
   });
 
@@ -481,6 +586,123 @@ describe('alternate affiliate feed server', () => {
           productTitle: 'LEGO City testset',
         },
       ],
+    });
+  });
+
+  test('does not persist unmatched LEGO set rows by default', async () => {
+    const upsertDiscoveredAffiliateSetFn = vi.fn();
+
+    const result = await importAlternateAffiliateFeedRows({
+      dependencies: {
+        getNow: () => new Date('2026-04-22T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn(async () => []),
+        listCommerceMerchantsFn: vi.fn(async () => [
+          {
+            id: 'merchant-alternate',
+            slug: 'alternate',
+            name: 'Alternate',
+            isActive: true,
+            sourceType: 'affiliate',
+            affiliateNetwork: 'TradeTracker',
+            notes:
+              'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+            createdAt: '',
+            updatedAt: '',
+          },
+        ]),
+        upsertDiscoveredAffiliateSetFn,
+      },
+      rows: [
+        {
+          affiliateDeeplink: 'https://clk.tradetracker.example/alternate/31214',
+          brand: 'LEGO',
+          currency: 'EUR',
+          legoSetNumber: 'LEGO 31214',
+          price: '149,99',
+          productTitle: 'LEGO Art Love 31214',
+        },
+      ],
+    });
+
+    expect(upsertDiscoveredAffiliateSetFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      discoveredMissingSetCount: 0,
+      skippedUnmatchedSetCount: 1,
+    });
+  });
+
+  test('persists unmatched LEGO set rows for admin review when discovery is enabled', async () => {
+    const upsertDiscoveredAffiliateSetFn = vi.fn(async () => ({
+      id: 'discovered-31214',
+      affiliate: {
+        id: 'merchant-alternate',
+        name: 'Alternate',
+        slug: 'alternate',
+      },
+      confidence: 'high' as const,
+      createdAt: '2026-04-22T09:15:00.000Z',
+      currencyCode: 'EUR',
+      firstSeenAt: '2026-04-22T09:15:00.000Z',
+      imageUrl: 'https://cdn.example.test/31214.jpg',
+      lastSeenAt: '2026-04-22T09:15:00.000Z',
+      normalizedSetId: '31214',
+      priceMinor: 14999,
+      productTitle: 'LEGO Art Love 31214',
+      productUrl: 'https://clk.tradetracker.example/alternate/31214',
+      rawPayload: {},
+      sourceSetNumber: '31214-1',
+      status: 'new' as const,
+      updatedAt: '2026-04-22T09:15:00.000Z',
+    }));
+
+    const result = await importAlternateAffiliateFeedRows({
+      dependencies: {
+        getNow: () => new Date('2026-04-22T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn(async () => []),
+        listCommerceMerchantsFn: vi.fn(async () => [
+          {
+            id: 'merchant-alternate',
+            slug: 'alternate',
+            name: 'Alternate',
+            isActive: true,
+            sourceType: 'affiliate',
+            affiliateNetwork: 'TradeTracker',
+            notes:
+              'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+            createdAt: '',
+            updatedAt: '',
+          },
+        ]),
+        upsertDiscoveredAffiliateSetFn,
+      },
+      options: {
+        persistDiscoveredSets: true,
+      },
+      rows: [
+        {
+          affiliateDeeplink: 'https://clk.tradetracker.example/alternate/31214',
+          brand: 'LEGO',
+          currency: 'EUR',
+          imageUrl: 'https://cdn.example.test/31214.jpg',
+          legoSetNumber: 'LEGO 31214',
+          price: '149,99',
+          productTitle: 'LEGO Art Love 31214',
+        },
+      ],
+    });
+
+    expect(upsertDiscoveredAffiliateSetFn).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        affiliateId: 'merchant-alternate',
+        productUrl: 'https://clk.tradetracker.example/alternate/31214',
+        setNumber: 'LEGO 31214',
+      }),
+    });
+    expect(result).toMatchObject({
+      discoveredMissingSetCount: 1,
+      autoImportableMissingSetCount: 1,
+      reviewNeededMissingSetCount: 0,
+      ignoredOrNonSetMissingSetCount: 0,
     });
   });
 

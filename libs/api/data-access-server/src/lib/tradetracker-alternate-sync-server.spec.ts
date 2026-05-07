@@ -172,6 +172,7 @@ describe('TradeTracker Alternate sync server', () => {
     expect(importAlternateAffiliateFeedRowsFn).toHaveBeenCalledWith({
       options: {
         collectUnmatchedDebug: undefined,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: undefined,
       },
       rows: [

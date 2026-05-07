@@ -355,6 +355,7 @@ describe('TradeDoubler MediaMarkt sync server', () => {
       },
       options: {
         collectUnmatchedDebug: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 10,
       },
       rows: [
@@ -435,6 +436,7 @@ describe('TradeDoubler MediaMarkt sync server', () => {
       options: {
         collectUnmatchedDebug: true,
         dryRun: undefined,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 20,
       },
       rows: expect.arrayContaining([

@@ -49,6 +49,11 @@ export class ShellAdminComponent {
       path: '/bulk-onboarding',
     },
     {
+      description: 'Review sets die affiliate feeds buiten de catalogus vinden',
+      label: 'Affiliate discoveries',
+      path: '/affiliate-discovered-sets',
+    },
+    {
       description: 'Mock een artikelflow voordat AI of scraping meekijkt',
       label: 'Editorial agent',
       path: '/editorial-agent',

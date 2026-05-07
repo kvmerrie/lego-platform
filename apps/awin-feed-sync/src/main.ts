@@ -1,6 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { syncAwinCoolblueFeed } from '@lego-platform/api/data-access-server';
+import {
+  resolveAffiliateFeedDiscoveryEnabled,
+  syncAwinCoolblueFeed,
+} from '@lego-platform/api/data-access-server';
 import {
   getMissingAwinCoolblueEnvKeys,
   getMissingServerSupabaseEnvKeys,
@@ -83,6 +86,9 @@ async function main() {
     argv,
     flag: '--report-unmatched-path',
   });
+  const discoveryEnabled = resolveAffiliateFeedDiscoveryEnabled({
+    argv,
+  });
 
   if (!hasServerSupabaseConfig()) {
     throw new Error(
@@ -97,7 +103,7 @@ async function main() {
   }
 
   console.log(
-    `[awin-feed-sync] start source=awin merchant=coolblue mode=write debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[awin-feed-sync] start source=awin merchant=coolblue mode=write discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
   );
 
   const result = await syncAwinCoolblueFeed({
@@ -105,6 +111,7 @@ async function main() {
       collectUnmatchedDebug:
         Boolean(debugUnmatchedSamples) || Boolean(reportUnmatchedPath),
       debugSamples,
+      persistDiscoveredSets: discoveryEnabled,
       unmatchedSampleLimit: debugUnmatchedSamples,
     },
   });
@@ -169,7 +176,7 @@ async function main() {
   }
 
   console.log(
-    `[awin-feed-sync] end status=imported source=awin merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[awin-feed-sync] end status=imported source=awin merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

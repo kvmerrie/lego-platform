@@ -51,7 +51,7 @@ export const metadata: Metadata = getMetadataFromSeoFields(
   },
 );
 
-export const revalidate = 60;
+export const revalidate = 21_600;
 
 function sortArticlesByArticleDateDesc(
   contentArticles: readonly ContentArticleListItem[],

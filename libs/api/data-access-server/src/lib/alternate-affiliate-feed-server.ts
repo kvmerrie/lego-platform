@@ -2,14 +2,20 @@ import { listCanonicalCatalogSets } from '@lego-platform/catalog/data-access-ser
 import {
   createCommerceMerchant,
   listCommerceMerchants,
+  listCommerceOfferSeeds,
+  upsertCommerceAffiliateDiscoveredSet,
   upsertCommerceOfferLatestRecord,
   upsertCommerceOfferSeedByCompositeKey,
   updateCommerceMerchant,
 } from '@lego-platform/commerce/data-access-server';
-import type {
-  CommerceMerchant,
-  CommerceMerchantInput,
-  CommerceMerchantSourceType,
+import {
+  scoreCommerceAffiliateDiscoveredSet,
+  type CommerceMerchant,
+  type CommerceMerchantInput,
+  type CommerceMerchantSourceType,
+  type CommerceOfferLatestRecordInput,
+  type CommerceOfferSeed,
+  type CommerceOfferSeedInput,
 } from '@lego-platform/commerce/util';
 
 export interface AffiliateFeedMerchantConfig {
@@ -46,6 +52,8 @@ export interface AlternateAffiliateFeedRow {
 }
 
 export interface AlternateAffiliateFeedImportResult {
+  changedSetIds: readonly string[];
+  changedSetSlugs: readonly string[];
   importedOfferCount: number;
   matchedCatalogSetCount: number;
   merchantCreated: boolean;
@@ -61,6 +69,10 @@ export interface AlternateAffiliateFeedImportResult {
   unmatchedDebug?: AlternateAffiliateFeedUnmatchedDebugInfo;
   upsertedLatestCount: number;
   upsertedSeedCount: number;
+  discoveredMissingSetCount: number;
+  autoImportableMissingSetCount: number;
+  reviewNeededMissingSetCount: number;
+  ignoredOrNonSetMissingSetCount: number;
 }
 
 export interface AlternateAffiliateFeedImportDependencies {
@@ -68,14 +80,18 @@ export interface AlternateAffiliateFeedImportDependencies {
   getNow?: () => Date;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   listCommerceMerchantsFn?: typeof listCommerceMerchants;
+  listCommerceOfferSeedsFn?: typeof listCommerceOfferSeeds;
   upsertCommerceOfferLatestRecordFn?: typeof upsertCommerceOfferLatestRecord;
   upsertCommerceOfferSeedByCompositeKeyFn?: typeof upsertCommerceOfferSeedByCompositeKey;
+  upsertDiscoveredAffiliateSetFn?: typeof upsertCommerceAffiliateDiscoveredSet;
   updateCommerceMerchantFn?: typeof updateCommerceMerchant;
 }
 
 export interface AlternateAffiliateFeedImportOptions {
   collectUnmatchedDebug?: boolean;
+  discoverMissingSets?: boolean;
   dryRun?: boolean;
+  persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
 }
 
@@ -154,6 +170,57 @@ function buildCatalogSetIdLookup(
   }
 
   return lookup;
+}
+
+function buildCommerceOfferSeedKey({
+  merchantId,
+  setId,
+}: {
+  merchantId: string;
+  setId: string;
+}): string {
+  return `${merchantId}:${setId}`;
+}
+
+function hasOfferSeedContentChanged({
+  existingOfferSeed,
+  input,
+}: {
+  existingOfferSeed?: CommerceOfferSeed;
+  input: CommerceOfferSeedInput;
+}): boolean {
+  if (!existingOfferSeed) {
+    return true;
+  }
+
+  return (
+    existingOfferSeed.productUrl !== input.productUrl ||
+    existingOfferSeed.isActive !== input.isActive ||
+    existingOfferSeed.validationStatus !== input.validationStatus ||
+    existingOfferSeed.notes !== (input.notes ?? '')
+  );
+}
+
+function hasLatestOfferContentChanged({
+  existingOfferSeed,
+  input,
+}: {
+  existingOfferSeed?: CommerceOfferSeed;
+  input: CommerceOfferLatestRecordInput;
+}): boolean {
+  const existingLatestOffer = existingOfferSeed?.latestOffer;
+
+  if (!existingLatestOffer) {
+    return true;
+  }
+
+  return (
+    existingLatestOffer.fetchStatus !== input.fetchStatus ||
+    existingLatestOffer.priceMinor !== input.priceMinor ||
+    existingLatestOffer.currencyCode !== input.currencyCode ||
+    existingLatestOffer.availability !== input.availability ||
+    existingLatestOffer.errorMessage !== input.errorMessage
+  );
 }
 
 function resolveCatalogSetIdForAlternateRow({
@@ -470,10 +537,15 @@ export async function importAffiliateFeedRowsForMerchant({
     getNow = () => new Date(),
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
     listCommerceMerchantsFn = listCommerceMerchants,
+    listCommerceOfferSeedsFn = listCommerceOfferSeeds,
     upsertCommerceOfferLatestRecordFn = upsertCommerceOfferLatestRecord,
     upsertCommerceOfferSeedByCompositeKeyFn = upsertCommerceOfferSeedByCompositeKey,
+    upsertDiscoveredAffiliateSetFn = upsertCommerceAffiliateDiscoveredSet,
     updateCommerceMerchantFn = updateCommerceMerchant,
   } = dependencies;
+  const shouldPersistDiscoveredSets =
+    !options?.dryRun &&
+    Boolean(options?.persistDiscoveredSets ?? options?.discoverMissingSets);
   const { merchant: resolvedMerchant, merchantCreated } =
     await ensureAffiliateMerchant({
       createCommerceMerchantFn,
@@ -482,13 +554,37 @@ export async function importAffiliateFeedRowsForMerchant({
       merchantConfig: merchant,
       updateCommerceMerchantFn,
     });
-  const catalogSetIdByIdentifier = buildCatalogSetIdLookup(
-    await listCanonicalCatalogSetsFn(),
+  const [canonicalCatalogSets, existingOfferSeeds] = await Promise.all([
+    listCanonicalCatalogSetsFn(),
+    options?.dryRun || merchantCreated
+      ? Promise.resolve([])
+      : listCommerceOfferSeedsFn(),
+  ]);
+  const catalogSetIdByIdentifier =
+    buildCatalogSetIdLookup(canonicalCatalogSets);
+  const catalogSetSlugById = new Map(
+    canonicalCatalogSets.flatMap((catalogSet) =>
+      catalogSet.slug ? [[catalogSet.setId, catalogSet.slug] as const] : [],
+    ),
+  );
+  const existingOfferSeedBySetAndMerchantId = new Map(
+    existingOfferSeeds.map((offerSeed) => [
+      buildCommerceOfferSeedKey({
+        merchantId: offerSeed.merchantId,
+        setId: offerSeed.setId,
+      }),
+      offerSeed,
+    ]),
   );
   const observedAt = getNow().toISOString();
   const matchedCatalogSetIds = new Set<string>();
   const upsertedSeedIds = new Set<string>();
   const upsertedLatestSeedIds = new Set<string>();
+  const changedSetIds = new Set<string>();
+  const discoveredMissingSetIds = new Set<string>();
+  const autoImportableMissingSetIds = new Set<string>();
+  const reviewNeededMissingSetIds = new Set<string>();
+  const ignoredOrNonSetMissingSetIds = new Set<string>();
   let skippedNonLegoCount = 0;
   let skippedNonNewCount = 0;
   let skippedMissingSetNumberCount = 0;
@@ -526,6 +622,63 @@ export async function importAffiliateFeedRowsForMerchant({
 
     if (!matchedCatalogSetId) {
       skippedUnmatchedSetCount += 1;
+      let deeplinkUrl: URL | undefined;
+
+      try {
+        deeplinkUrl = row.affiliateDeeplink
+          ? new URL(row.affiliateDeeplink)
+          : undefined;
+      } catch {
+        deeplinkUrl = undefined;
+      }
+
+      if (deeplinkUrl && shouldPersistDiscoveredSets) {
+        const discoveredSet = await upsertDiscoveredAffiliateSetFn({
+          input: {
+            affiliateId: resolvedMerchant.id,
+            currencyCode: normalizeCurrency(row.currency),
+            imageUrl: normalizeOptionalText(row.imageUrl),
+            observedAt,
+            priceMinor: parsePriceMinor(row.price),
+            productTitle: normalizeOptionalText(row.productTitle),
+            productUrl: deeplinkUrl.toString(),
+            rawPayload: {
+              ...row,
+            },
+            setNumber: setId,
+          },
+        });
+
+        if (discoveredSet) {
+          discoveredMissingSetIds.add(discoveredSet.id);
+
+          if (
+            discoveredSet.status === 'ignored' ||
+            discoveredSet.status === 'non_set'
+          ) {
+            ignoredOrNonSetMissingSetIds.add(discoveredSet.id);
+          } else if (discoveredSet.confidence === 'high') {
+            autoImportableMissingSetIds.add(discoveredSet.id);
+          } else {
+            reviewNeededMissingSetIds.add(discoveredSet.id);
+          }
+        }
+      } else if (options?.dryRun) {
+        const dryRunConfidence = scoreCommerceAffiliateDiscoveredSet({
+          imageUrl: row.imageUrl,
+          productTitle: row.productTitle,
+          productUrl: row.affiliateDeeplink,
+          setNumber: setId,
+        });
+
+        discoveredMissingSetIds.add(`${resolvedMerchant.id}:${setId}`);
+
+        if (dryRunConfidence === 'high') {
+          autoImportableMissingSetIds.add(`${resolvedMerchant.id}:${setId}`);
+        } else {
+          reviewNeededMissingSetIds.add(`${resolvedMerchant.id}:${setId}`);
+        }
+      }
 
       if (options?.collectUnmatchedDebug) {
         const existingUnmatchedSet = unmatchedRowsBySetId.get(setId);
@@ -597,39 +750,75 @@ export async function importAffiliateFeedRowsForMerchant({
       continue;
     }
 
-    const offerSeed = await upsertCommerceOfferSeedByCompositeKeyFn({
-      input: {
-        setId: matchedCatalogSetId,
+    const existingOfferSeed = existingOfferSeedBySetAndMerchantId.get(
+      buildCommerceOfferSeedKey({
         merchantId: resolvedMerchant.id,
-        productUrl: deeplinkUrl.toString(),
-        isActive: true,
-        validationStatus: 'valid',
-        lastVerifiedAt: observedAt,
-        notes:
-          merchant.sourceType === 'affiliate' && merchant.affiliateNetwork
-            ? `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number.`
-            : `Feed-driven ${merchant.name} import. Exact matched by LEGO set number.`,
-      },
+        setId: matchedCatalogSetId,
+      }),
+    );
+    const offerSeedInput: CommerceOfferSeedInput = {
+      setId: matchedCatalogSetId,
+      merchantId: resolvedMerchant.id,
+      productUrl: deeplinkUrl.toString(),
+      isActive: true,
+      validationStatus: 'valid',
+      lastVerifiedAt: observedAt,
+      notes:
+        merchant.sourceType === 'affiliate' && merchant.affiliateNetwork
+          ? `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number.`
+          : `Feed-driven ${merchant.name} import. Exact matched by LEGO set number.`,
+    };
+    const seedContentChanged = hasOfferSeedContentChanged({
+      existingOfferSeed,
+      input: offerSeedInput,
+    });
+    const offerSeed = seedContentChanged
+      ? await upsertCommerceOfferSeedByCompositeKeyFn({
+          input: offerSeedInput,
+        })
+      : existingOfferSeed;
+    const latestOfferInput: CommerceOfferLatestRecordInput = {
+      offerSeedId: offerSeed.id,
+      fetchStatus: 'success',
+      priceMinor,
+      currencyCode: 'EUR',
+      availability: normalizeAvailability(row.availabilityText),
+      observedAt,
+      fetchedAt: observedAt,
+    };
+    const latestOfferContentChanged = hasLatestOfferContentChanged({
+      existingOfferSeed,
+      input: latestOfferInput,
     });
 
-    await upsertCommerceOfferLatestRecordFn({
-      input: {
-        offerSeedId: offerSeed.id,
-        fetchStatus: 'success',
-        priceMinor,
-        currencyCode: 'EUR',
-        availability: normalizeAvailability(row.availabilityText),
-        observedAt,
-        fetchedAt: observedAt,
-      },
-    });
+    if (latestOfferContentChanged) {
+      await upsertCommerceOfferLatestRecordFn({
+        input: latestOfferInput,
+      });
+    }
 
     matchedCatalogSetIds.add(matchedCatalogSetId);
-    upsertedSeedIds.add(offerSeed.id);
-    upsertedLatestSeedIds.add(offerSeed.id);
+
+    if (seedContentChanged) {
+      upsertedSeedIds.add(offerSeed.id);
+      changedSetIds.add(matchedCatalogSetId);
+    }
+
+    if (latestOfferContentChanged) {
+      upsertedLatestSeedIds.add(offerSeed.id);
+      changedSetIds.add(matchedCatalogSetId);
+    }
   }
 
   return {
+    changedSetIds: [...changedSetIds].sort(),
+    changedSetSlugs: [...changedSetIds]
+      .flatMap((setId) => {
+        const slug = catalogSetSlugById.get(setId);
+
+        return slug ? [slug] : [];
+      })
+      .sort(),
     importedOfferCount: upsertedLatestSeedIds.size,
     matchedCatalogSetCount: matchedCatalogSetIds.size,
     merchantCreated,
@@ -642,15 +831,20 @@ export async function importAffiliateFeedRowsForMerchant({
     skippedNonNewCount,
     skippedUnmatchedSetCount,
     totalRowCount: rows.length,
-    unmatchedDebug:
-      options?.collectUnmatchedDebug && skippedUnmatchedSetCount > 0
-        ? buildUnmatchedDebugInfo({
-            sampleLimit: options.unmatchedSampleLimit,
-            unmatchedRowsBySetId,
-          })
-        : undefined,
     upsertedLatestCount: upsertedLatestSeedIds.size,
     upsertedSeedCount: upsertedSeedIds.size,
+    discoveredMissingSetCount: discoveredMissingSetIds.size,
+    autoImportableMissingSetCount: autoImportableMissingSetIds.size,
+    reviewNeededMissingSetCount: reviewNeededMissingSetIds.size,
+    ignoredOrNonSetMissingSetCount: ignoredOrNonSetMissingSetIds.size,
+    ...(options?.collectUnmatchedDebug && skippedUnmatchedSetCount > 0
+      ? {
+          unmatchedDebug: buildUnmatchedDebugInfo({
+            sampleLimit: options.unmatchedSampleLimit,
+            unmatchedRowsBySetId,
+          }),
+        }
+      : {}),
   };
 }
 

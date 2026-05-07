@@ -156,6 +156,7 @@ https://awin.example/99999,Cool gadget,https://images.example/99999.jpg,Geen LEG
       },
       options: {
         collectUnmatchedDebug: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 5,
       },
       rows: [

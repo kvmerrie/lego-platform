@@ -1,6 +1,9 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { syncAdtractionGoodbricksFeed } from '@lego-platform/api/data-access-server';
+import {
+  resolveAffiliateFeedDiscoveryEnabled,
+  syncAdtractionGoodbricksFeed,
+} from '@lego-platform/api/data-access-server';
 import {
   getMissingAdtractionGoodbricksEnvKeys,
   getMissingServerSupabaseEnvKeys,
@@ -97,6 +100,9 @@ async function main() {
     argv,
     flag: '--report-unmatched-path',
   });
+  const discoveryEnabled = resolveAffiliateFeedDiscoveryEnabled({
+    argv,
+  });
 
   if (!hasServerSupabaseConfig() && !dryRun) {
     throw new Error(
@@ -111,7 +117,7 @@ async function main() {
   }
 
   console.log(
-    `[goodbricks-feed-sync] start source=adtraction merchant=goodbricks mode=${dryRun ? 'dry-run' : 'write'} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[goodbricks-feed-sync] start source=adtraction merchant=goodbricks mode=${dryRun ? 'dry-run' : 'write'} discovery_enabled=${discoveryEnabled} debug_samples=${debugSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
   );
 
   const result = await syncAdtractionGoodbricksFeed({
@@ -120,6 +126,7 @@ async function main() {
         Boolean(debugUnmatchedSamples) || Boolean(reportUnmatchedPath),
       debugSamples,
       dryRun,
+      persistDiscoveredSets: discoveryEnabled,
       unmatchedSampleLimit: debugUnmatchedSamples,
     },
   });
@@ -184,7 +191,7 @@ async function main() {
   }
 
   console.log(
-    `[goodbricks-feed-sync] end status=imported source=adtraction merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[goodbricks-feed-sync] end status=imported source=adtraction merchant=${result.merchantSlug} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

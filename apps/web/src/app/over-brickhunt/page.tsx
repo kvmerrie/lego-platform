@@ -8,7 +8,7 @@ import {
 } from '@lego-platform/shared/ui';
 import { ShellWeb } from '@lego-platform/shell/web';
 
-export const revalidate = 300;
+export const revalidate = 86_400;
 
 const valueItems = [
   'Eerst kiezen welke set je echt wilt hebben.',

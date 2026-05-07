@@ -4788,9 +4788,12 @@ describe('catalog effective data access web', () => {
     expect(fetchImpl).toHaveBeenCalledWith(
       'http://localhost:3333/api/v1/catalog/current-offer-summaries?setIds=42172%2C75398',
       expect.objectContaining({
-        cache: 'no-store',
         headers: {
           accept: 'application/json',
+        },
+        next: {
+          revalidate: 21_600,
+          tags: ['prices', 'set:42172', 'set:75398'],
         },
       }),
     );
@@ -5227,7 +5230,7 @@ describe('catalog effective data access web', () => {
     );
   });
 
-  test('keeps live-offer API reads dynamic by default when no cache options are provided', async () => {
+  test('keeps live-offer API reads ISR-friendly by default when no cache options are provided', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify([]), {
         headers: {
@@ -5245,9 +5248,12 @@ describe('catalog effective data access web', () => {
     expect(fetchImpl).toHaveBeenCalledWith(
       'http://localhost:3333/api/v1/catalog/sets/71411/live-offers',
       expect.objectContaining({
-        cache: 'no-store',
         headers: {
           accept: 'application/json',
+        },
+        next: {
+          revalidate: 21_600,
+          tags: ['prices', 'set:71411'],
         },
       }),
     );
@@ -5308,7 +5314,7 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('keeps runtime discovery signal API reads dynamic by default when no cache options are provided', async () => {
+  test('keeps runtime discovery signal API reads ISR-friendly by default when no cache options are provided', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify([]), {
         headers: {
@@ -5325,9 +5331,12 @@ describe('catalog effective data access web', () => {
     expect(fetchImpl).toHaveBeenCalledWith(
       'http://localhost:3333/api/v1/catalog/discovery-signals',
       expect.objectContaining({
-        cache: 'no-store',
         headers: {
           accept: 'application/json',
+        },
+        next: {
+          revalidate: 21_600,
+          tags: ['prices'],
         },
       }),
     );

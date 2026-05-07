@@ -8,7 +8,7 @@ import {
 } from '@lego-platform/shared/config';
 import type { Metadata } from 'next';
 
-export const revalidate = 300;
+export const revalidate = 21_600;
 
 export const metadata: Metadata = {
   title: 'Brickhunt – LEGO thema’s ontdekken',

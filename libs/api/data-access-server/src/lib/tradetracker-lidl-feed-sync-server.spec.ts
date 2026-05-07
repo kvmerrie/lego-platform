@@ -254,6 +254,7 @@ describe('TradeTracker Lidl feed sync server', () => {
       },
       options: {
         collectUnmatchedDebug: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 5,
       },
       rows: [

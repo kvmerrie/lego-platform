@@ -13,6 +13,7 @@ import {
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
+  listCachedCatalogCurrentOfferSummaries,
   listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCards,
@@ -38,6 +39,7 @@ import {
 } from '@lego-platform/shared/util';
 import {
   buildWebPath,
+  cacheTags,
   hasBrowserSupabaseConfig,
   hasServerSupabaseConfig,
   webPathnames,
@@ -46,11 +48,11 @@ import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
 
-export const revalidate = 300;
+export const revalidate = 21_600;
 const HOMEPAGE_DISCOVERY_RAIL_LIMIT = 20;
 const HOMEPAGE_PREMIUM_DISCOVERY_RAIL_LIMIT = 20;
 const HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT = 20;
-const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = 300;
+const HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS = 21_600;
 const HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS = 2;
 const homepageValueSignals = [
   {
@@ -366,6 +368,7 @@ export default async function HomePage() {
     listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
         revalidateSeconds: HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS,
+        tags: [cacheTags.homepage()],
       },
     }),
     listCatalogSetCards(),
@@ -376,10 +379,15 @@ export default async function HomePage() {
     catalogDiscoverySignalBySetId.size > 0
       ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
       : undefined;
-  const commerceRailRotationSeed = Math.floor(Date.now() / (1000 * 60 * 15));
-  const currentOfferSummaryBySetId = await listCatalogCurrentOfferSummaries({
-    limit: 300,
-  });
+  const commerceRailRotationSeed = 0;
+  const currentOfferSummaryBySetId =
+    await listCachedCatalogCurrentOfferSummaries({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+        tags: [cacheTags.homepage()],
+      },
+      limit: 300,
+    });
   const commerceRailRuntimeDiagnostics = isHomepageCommerceRailsDebugEnabled()
     ? await getCatalogCommerceRailRuntimeDiagnostics({
         limit: 300,

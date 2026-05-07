@@ -55,6 +55,7 @@ import {
   buildArticlePath,
   buildCanonicalUrl,
   buildSetDetailPath,
+  cacheTags,
   getDefaultFormattingLocale,
   getSetDetailPageRobotsDirective,
   publicWebBaseUrls,
@@ -80,7 +81,7 @@ import {
 import styles from './page.module.css';
 
 export const dynamicParams = true;
-export const revalidate = 300;
+export const revalidate = 21_600;
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SIMILAR_SETS_RAIL_LIMIT = 20;
@@ -154,6 +155,7 @@ export async function loadSetDetailLiveOffers({
     return await listCatalogSetLiveOffersBySetId({
       cacheOptions: {
         revalidateSeconds: revalidate,
+        tags: [cacheTags.set(setId)],
       },
       setId,
     });
@@ -1154,6 +1156,10 @@ export async function generateMetadata({
     await listCatalogCurrentOfferSummariesBySetIds({
       cacheOptions: {
         revalidateSeconds: revalidate,
+        tags: [
+          cacheTags.set(catalogSetDetail.id),
+          cacheTags.set(catalogSetDetail.slug),
+        ],
       },
       setIds: [catalogSetDetail.id],
     });
@@ -1200,6 +1206,10 @@ export default async function SetDetailPage({
     await listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
         revalidateSeconds: revalidate,
+        tags: [
+          cacheTags.set(catalogSetDetail.id),
+          cacheTags.set(catalogSetDetail.slug),
+        ],
       },
     });
   const primaryOfferAvailability = await loadSetDetailPrimaryOfferAvailability({
@@ -1266,6 +1276,9 @@ export default async function SetDetailPage({
       ? await listCatalogCurrentOfferSummariesBySetIds({
           cacheOptions: {
             revalidateSeconds: revalidate,
+            tags: [
+              ...similarSetCards.map((setCard) => cacheTags.set(setCard.id)),
+            ],
           },
           setIds: similarSetCards.map((setCard) => setCard.id),
         })

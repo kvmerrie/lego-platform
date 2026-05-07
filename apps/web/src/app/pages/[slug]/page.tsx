@@ -10,7 +10,7 @@ import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 300;
+export const revalidate = 21_600;
 
 export async function generateStaticParams() {
   const editorialPageSlugs = await listEditorialPageSlugs({

@@ -27,6 +27,8 @@ export interface TradeTrackerLidlFeedSyncDependencies {
 export interface TradeTrackerLidlFeedSyncOptions {
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
+  discoverMissingSets?: boolean;
+  persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
 }
 
@@ -656,6 +658,8 @@ export async function syncTradeTrackerLidlFeed({
     },
     options: {
       collectUnmatchedDebug: options?.collectUnmatchedDebug,
+      persistDiscoveredSets:
+        options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,

@@ -20,7 +20,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import styles from '../page.module.css';
 
-export const revalidate = 60;
+export const revalidate = 21_600;
 export const dynamicParams = true;
 
 type ArticleListItemWithThemePresentation = ContentArticleListItem & {

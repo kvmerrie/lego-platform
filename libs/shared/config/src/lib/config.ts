@@ -401,6 +401,8 @@ export const apiPaths = {
   adminCommerceProductionSync: '/api/v1/admin/commerce/production-sync',
   adminCommerceAlternateFeedImports:
     '/api/v1/admin/commerce/alternate-feed/import',
+  adminCommerceAffiliateDiscoveredSets:
+    '/api/v1/admin/commerce/affiliate-discovered-sets',
   adminCatalogPromotion: '/api/admin/promote/catalog',
 } as const;
 

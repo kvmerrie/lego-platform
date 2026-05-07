@@ -2,6 +2,8 @@ import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
 import type {
   CommerceBenchmarkSet,
+  CommerceAffiliateDiscoveredSet,
+  CommerceAffiliateDiscoveredSetImportResult,
   CommerceCoverageQueueRow,
   CommerceMerchant,
   CommerceOfferSeed,
@@ -42,9 +44,15 @@ async function createAdminCommerceServer({
 } = {}) {
   const nextCommerceService: AdminCommerceService = commerceService ?? {
     importAlternateFeed: vi.fn(async () => ({
+      autoImportableMissingSetCount: 0,
+      changedSetIds: ['10316'],
+      changedSetSlugs: ['rivendell-10316'],
+      discoveredMissingSetCount: 0,
+      ignoredOrNonSetMissingSetCount: 0,
       importedOfferCount: 1,
       matchedCatalogSetCount: 1,
       merchantCreated: true,
+      reviewNeededMissingSetCount: 0,
       merchantSlug: 'alternate',
       skippedInvalidCurrencyCount: 0,
       skippedInvalidDeeplinkCount: 0,
@@ -57,6 +65,68 @@ async function createAdminCommerceServer({
       upsertedLatestCount: 1,
       upsertedSeedCount: 1,
     })),
+    importDiscoveredSets: vi.fn(
+      async () =>
+        ({
+          alreadyCatalogedCount: 0,
+          attachedOfferCount: 1,
+          createdCatalogSetCount: 1,
+          failedLookupCount: 0,
+          importedCount: 1,
+          requestedCount: 1,
+          skippedCount: 0,
+          uniqueSetCount: 1,
+        }) satisfies CommerceAffiliateDiscoveredSetImportResult,
+    ),
+    listAffiliateDiscoveredSets: vi.fn(
+      async () =>
+        [
+          {
+            id: 'discovered-1',
+            affiliate: {
+              id: 'merchant-1',
+              name: 'Alternate',
+              slug: 'alternate',
+            },
+            confidence: 'high',
+            createdAt: '2026-05-06T10:00:00.000Z',
+            currencyCode: 'EUR',
+            firstSeenAt: '2026-05-06T10:00:00.000Z',
+            imageUrl: 'https://cdn.example.test/75313.jpg',
+            lastSeenAt: '2026-05-06T10:00:00.000Z',
+            normalizedSetId: '75313',
+            priceMinor: 64999,
+            productTitle: 'LEGO Star Wars AT-AT 75313',
+            productUrl: 'https://shop.example.test/75313',
+            rawPayload: {},
+            sourceSetNumber: '75313-1',
+            status: 'new',
+            updatedAt: '2026-05-06T10:00:00.000Z',
+          },
+        ] satisfies CommerceAffiliateDiscoveredSet[],
+    ),
+    updateDiscoveredSetStatus: vi.fn(
+      async () =>
+        ({
+          id: 'discovered-1',
+          affiliate: {
+            id: 'merchant-1',
+            name: 'Alternate',
+            slug: 'alternate',
+          },
+          confidence: 'high',
+          createdAt: '2026-05-06T10:00:00.000Z',
+          firstSeenAt: '2026-05-06T10:00:00.000Z',
+          lastSeenAt: '2026-05-06T10:00:00.000Z',
+          normalizedSetId: '75313',
+          productTitle: 'LEGO Star Wars AT-AT 75313',
+          productUrl: 'https://shop.example.test/75313',
+          rawPayload: {},
+          sourceSetNumber: '75313-1',
+          status: 'ignored',
+          updatedAt: '2026-05-06T10:00:00.000Z',
+        }) satisfies CommerceAffiliateDiscoveredSet,
+    ),
     copyProductionCommerce: vi.fn(async ({ dryRun }: { dryRun: boolean }) => ({
       dryRun,
       durationMs: 12,
@@ -86,6 +156,12 @@ async function createAdminCommerceServer({
           insertedCount: 0,
           sourceCount: 5,
           targetBeforeCount: 2,
+        },
+        commerce_affiliate_discovered_sets: {
+          deletedCount: 0,
+          insertedCount: 0,
+          sourceCount: 1,
+          targetBeforeCount: 0,
         },
         pricing_daily_set_history: {
           deletedCount: 0,
@@ -233,6 +309,9 @@ describe('admin commerce routes', () => {
       commerceService: {
         listBenchmarkSets: vi.fn(async () => []),
         importAlternateFeed: vi.fn(),
+        importDiscoveredSets: vi.fn(),
+        listAffiliateDiscoveredSets: vi.fn(async () => []),
+        updateDiscoveredSetStatus: vi.fn(),
         copyProductionCommerce: vi.fn(),
         createBenchmarkSet: vi.fn(),
         deleteBenchmarkSet: vi.fn(),
@@ -315,6 +394,71 @@ describe('admin commerce routes', () => {
         merchantSlug: 'alternate',
       }),
     );
+
+    await server.close();
+  });
+
+  test('lists affiliate discovered sets for admin review', async () => {
+    const { commerceService, server } = await createAdminCommerceServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/v1/admin/commerce/affiliate-discovered-sets?confidence=high&status=new',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(commerceService.listAffiliateDiscoveredSets).toHaveBeenCalledWith({
+      affiliateId: undefined,
+      confidence: 'high',
+      status: 'new',
+    });
+    expect(response.json()[0]).toMatchObject({
+      normalizedSetId: '75313',
+      confidence: 'high',
+    });
+
+    await server.close();
+  });
+
+  test('bulk imports high-confidence affiliate discovered sets', async () => {
+    const { commerceService, server } = await createAdminCommerceServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/affiliate-discovered-sets/import',
+      payload: {
+        discoveredSetIds: ['discovered-1'],
+        highConfidenceOnly: true,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(commerceService.importDiscoveredSets).toHaveBeenCalledWith({
+      discoveredSetIds: ['discovered-1'],
+      highConfidenceOnly: true,
+      maxBatchSize: 50,
+    });
+    expect(response.json()).toMatchObject({
+      importedCount: 1,
+      attachedOfferCount: 1,
+    });
+
+    await server.close();
+  });
+
+  test('rejects invalid affiliate discovered-set admin statuses', async () => {
+    const { commerceService, server } = await createAdminCommerceServer();
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/v1/admin/commerce/affiliate-discovered-sets/discovered-1/status',
+      payload: {
+        status: 'imported',
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(commerceService.updateDiscoveredSetStatus).not.toHaveBeenCalled();
 
     await server.close();
   });

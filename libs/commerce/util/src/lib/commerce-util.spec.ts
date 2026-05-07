@@ -13,6 +13,8 @@ import {
   getCommerceMerchantSupportTier,
   includeCatalogSetInDefaultCommerceCoverage,
   normalizeCommerceSlug,
+  normalizeCommerceLegoSetNumber,
+  scoreCommerceAffiliateDiscoveredSet,
   includeCommerceMerchantInDefaultRefresh,
   includeCommerceMerchantInDefaultSeedGeneration,
   supportsCommerceMerchantManualSeed,
@@ -22,6 +24,34 @@ import {
 } from './commerce-util';
 
 describe('commerce util', () => {
+  test('normalizes LEGO set numbers from affiliate feed text', () => {
+    expect(normalizeCommerceLegoSetNumber('75313')).toBe('75313');
+    expect(normalizeCommerceLegoSetNumber('75313-1')).toBe('75313');
+    expect(normalizeCommerceLegoSetNumber('LEGO 75313')).toBe('75313');
+    expect(normalizeCommerceLegoSetNumber('LEGO 75313 - 1')).toBe('75313');
+    expect(normalizeCommerceLegoSetNumber('bundle')).toBeUndefined();
+  });
+
+  test('scores high confidence only for clear set products', () => {
+    expect(
+      scoreCommerceAffiliateDiscoveredSet({
+        imageUrl: 'https://example.test/75313.jpg',
+        productTitle: 'LEGO Star Wars AT-AT 75313',
+        productUrl: 'https://example.test/75313',
+        setNumber: 'LEGO 75313',
+      }),
+    ).toBe('high');
+
+    expect(
+      scoreCommerceAffiliateDiscoveredSet({
+        imageUrl: 'https://example.test/bundle.jpg',
+        productTitle: 'LEGO Star Wars multipack bundle',
+        productUrl: 'https://example.test/bundle',
+        setNumber: '75313',
+      }),
+    ).toBe('low');
+  });
+
   test('normalizes merchant slugs for boring operator-safe ids', () => {
     expect(normalizeCommerceSlug('  Amazon NL  ')).toBe('amazon-nl');
   });

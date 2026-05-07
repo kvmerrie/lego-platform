@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { unstable_cache } from 'next/cache';
 import type {
   CatalogCanonicalSet,
   CatalogBrowseThemeGroup,
@@ -38,6 +39,7 @@ import {
   buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
+  cacheTags,
   getBrowserSupabaseConfig,
   getMissingBrowserSupabaseEnvKeys,
   getMissingServerSupabaseEnvKeys,
@@ -163,6 +165,7 @@ export interface CatalogPrimaryOfferAvailabilityState {
 
 export interface CatalogApiReadCacheOptions {
   revalidateSeconds?: number;
+  tags?: readonly string[];
 }
 
 export interface CatalogDiscoverySignal {
@@ -3932,10 +3935,14 @@ export async function listCatalogSetLiveOffersBySetId({
             ? {
                 next: {
                   revalidate: cacheOptions.revalidateSeconds,
+                  tags: cacheOptions.tags ? [...cacheOptions.tags] : undefined,
                 },
               }
             : {
-                cache: 'no-store' as const,
+                next: {
+                  revalidate: 21_600,
+                  tags: [cacheTags.prices(), cacheTags.set(setId)],
+                },
               }),
         },
       );
@@ -4005,10 +4012,14 @@ export async function listCatalogDiscoverySignalsBySetId({
           ? {
               next: {
                 revalidate: cacheOptions.revalidateSeconds,
+                tags: cacheOptions.tags ? [...cacheOptions.tags] : undefined,
               },
             }
           : {
-              cache: 'no-store' as const,
+              next: {
+                revalidate: 21_600,
+                tags: [cacheTags.prices()],
+              },
             }),
       },
     );
@@ -4248,10 +4259,17 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
             ? {
                 next: {
                   revalidate: cacheOptions.revalidateSeconds,
+                  tags: cacheOptions.tags ? [...cacheOptions.tags] : undefined,
                 },
               }
             : {
-                cache: 'no-store' as const,
+                next: {
+                  revalidate: 21_600,
+                  tags: [
+                    cacheTags.prices(),
+                    ...uniqueSetIds.map((setId) => cacheTags.set(setId)),
+                  ],
+                },
               }),
         },
       );
@@ -4418,6 +4436,29 @@ export async function listCatalogCurrentOfferSummaries({
 
     throw error;
   }
+}
+
+export async function listCachedCatalogCurrentOfferSummaries({
+  cacheOptions,
+  limit = CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT,
+}: {
+  cacheOptions: Required<Pick<CatalogApiReadCacheOptions, 'tags'>> &
+    Pick<CatalogApiReadCacheOptions, 'revalidateSeconds'>;
+  limit?: number;
+}): Promise<Map<string, CatalogCurrentOfferSummary>> {
+  const cachedRead = unstable_cache(
+    async () =>
+      listCatalogCurrentOfferSummaries({
+        limit,
+      }),
+    ['catalog-current-offer-summaries', String(limit)],
+    {
+      revalidate: cacheOptions.revalidateSeconds ?? 21_600,
+      tags: [...cacheOptions.tags],
+    },
+  );
+
+  return cachedRead();
 }
 
 export async function listHomepageSetCards({

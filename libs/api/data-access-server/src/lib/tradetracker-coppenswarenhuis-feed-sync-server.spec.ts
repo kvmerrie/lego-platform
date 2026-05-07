@@ -175,6 +175,7 @@ describe('TradeTracker Coppenswarenhuis feed sync server', () => {
       options: {
         collectUnmatchedDebug: true,
         dryRun: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 5,
       },
       rows: [
@@ -248,6 +249,7 @@ describe('TradeTracker Coppenswarenhuis feed sync server', () => {
       },
       options: {
         collectUnmatchedDebug: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 5,
       },
       rows: [

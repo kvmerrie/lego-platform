@@ -41,8 +41,10 @@ export interface TradeTrackerCoppenswarenhuisFeedSyncDependencies {
 export interface TradeTrackerCoppenswarenhuisFeedSyncOptions {
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
+  discoverMissingSets?: boolean;
   dryRun?: boolean;
   maxProducts?: number;
+  persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
 }
 
@@ -656,6 +658,8 @@ export async function syncTradeTrackerCoppenswarenhuisFeed({
     options: {
       collectUnmatchedDebug: options?.collectUnmatchedDebug,
       dryRun: options?.dryRun,
+      persistDiscoveredSets:
+        options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,

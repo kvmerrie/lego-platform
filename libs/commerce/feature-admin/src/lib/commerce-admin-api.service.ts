@@ -7,6 +7,10 @@ import {
 } from '@lego-platform/catalog/util';
 import {
   type CommerceBenchmarkSet,
+  type CommerceAffiliateDiscoveredSet,
+  type CommerceAffiliateDiscoveredSetConfidence,
+  type CommerceAffiliateDiscoveredSetImportResult,
+  type CommerceAffiliateDiscoveredSetStatus,
   type CommerceCoverageQueueRow,
   type CommerceMerchant,
   type CommerceMerchantInput,
@@ -169,6 +173,12 @@ export interface CommerceAdminProductionSyncResult {
   tables: Record<string, CommerceAdminProductionSyncTableSummary>;
 }
 
+export interface CommerceAdminAffiliateDiscoveredSetFilters {
+  affiliateId?: string;
+  confidence?: CommerceAffiliateDiscoveredSetConfidence | 'all';
+  status?: CommerceAffiliateDiscoveredSetStatus | 'all';
+}
+
 @Injectable({ providedIn: 'root' })
 export class CommerceAdminApiService {
   private readonly http = inject(HttpClient);
@@ -271,6 +281,60 @@ export class CommerceAdminApiService {
     return firstValueFrom(
       this.http.get<CommerceCoverageQueueRow[]>(
         apiPaths.adminCommerceCoverageQueue,
+      ),
+    );
+  }
+
+  async listAffiliateDiscoveredSets(
+    filters: CommerceAdminAffiliateDiscoveredSetFilters = {},
+  ): Promise<CommerceAffiliateDiscoveredSet[]> {
+    const params: Record<string, string> = {};
+
+    if (filters.affiliateId) {
+      params['affiliateId'] = filters.affiliateId;
+    }
+
+    if (filters.confidence && filters.confidence !== 'all') {
+      params['confidence'] = filters.confidence;
+    }
+
+    if (filters.status && filters.status !== 'all') {
+      params['status'] = filters.status;
+    }
+
+    return firstValueFrom(
+      this.http.get<CommerceAffiliateDiscoveredSet[]>(
+        apiPaths.adminCommerceAffiliateDiscoveredSets,
+        {
+          params,
+        },
+      ),
+    );
+  }
+
+  async importAffiliateDiscoveredSets(input: {
+    discoveredSetIds?: readonly string[];
+    highConfidenceOnly?: boolean;
+    maxBatchSize?: number;
+  }): Promise<CommerceAffiliateDiscoveredSetImportResult> {
+    return firstValueFrom(
+      this.http.post<CommerceAffiliateDiscoveredSetImportResult>(
+        `${apiPaths.adminCommerceAffiliateDiscoveredSets}/import`,
+        input,
+      ),
+    );
+  }
+
+  async updateAffiliateDiscoveredSetStatus(input: {
+    discoveredSetId: string;
+    status: Exclude<CommerceAffiliateDiscoveredSetStatus, 'imported'>;
+  }): Promise<CommerceAffiliateDiscoveredSet> {
+    return firstValueFrom(
+      this.http.post<CommerceAffiliateDiscoveredSet>(
+        `${apiPaths.adminCommerceAffiliateDiscoveredSets}/${input.discoveredSetId}/status`,
+        {
+          status: input.status,
+        },
       ),
     );
   }

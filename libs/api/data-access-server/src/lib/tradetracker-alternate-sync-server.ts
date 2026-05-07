@@ -102,8 +102,10 @@ export interface TradeTrackerAlternateSetNumberDebugInfo {
 }
 
 export interface TradeTrackerAlternateFeedSyncOptions {
-  debugLegoSamples?: number;
   collectUnmatchedDebug?: boolean;
+  debugLegoSamples?: number;
+  discoverMissingSets?: boolean;
+  persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
 }
 
@@ -1234,6 +1236,8 @@ export async function syncAlternateTradeTrackerFeed({
   const importResult = await importAlternateAffiliateFeedRowsFn({
     options: {
       collectUnmatchedDebug: options?.collectUnmatchedDebug,
+      persistDiscoveredSets:
+        options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,

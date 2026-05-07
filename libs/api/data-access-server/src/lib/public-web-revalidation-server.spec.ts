@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   buildPublicCatalogRevalidationPaths,
+  buildPublicCatalogRevalidationTags,
   revalidatePublicCatalogPaths,
+  revalidatePublicWeb,
 } from './public-web-revalidation-server';
 
 describe('public web revalidation server', () => {
@@ -10,6 +12,85 @@ describe('public web revalidation server', () => {
   afterEach(() => {
     process.env = { ...originalEnv };
     vi.restoreAllMocks();
+  });
+
+  test('logs compact outbound revalidation metrics and warns for broad tags', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    process.env.WEB_BASE_URL = 'https://staging.brickhunt.nl';
+    const infoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
+    const warnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ revalidated: true }), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+
+    await revalidatePublicWeb({
+      fetchImpl,
+      paths: Array.from({ length: 14 }, (_, index) => `/sets/set-${index}`),
+      reason: 'observability_test',
+      tags: ['homepage', 'homepage', 'set:10316'],
+    });
+
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] request',
+      expect.objectContaining({
+        attempted: true,
+        broadTagCount: 1,
+        pathCount: 14,
+        pathSampleOmittedCount: 2,
+        reason: 'observability_test',
+        skipped: false,
+        source: 'generic',
+        tagCount: 2,
+      }),
+    );
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] response',
+      expect.objectContaining({
+        pathCount: 14,
+        reason: 'observability_test',
+        source: 'generic',
+        status: 200,
+        tagCount: 2,
+      }),
+    );
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] broad tags requested',
+      {
+        broadTags: ['homepage'],
+        reason: 'observability_test',
+        source: 'generic',
+      },
+    );
+  });
+
+  test('builds catalog tags for targeted cache revalidation', () => {
+    expect(
+      buildPublicCatalogRevalidationTags({
+        targets: [
+          {
+            setId: '10316',
+            slug: 'rivendell-10316',
+            theme: 'Icons',
+          },
+        ],
+      }),
+    ).toEqual([
+      'homepage',
+      'themes',
+      'deals',
+      'set:10316',
+      'set:rivendell-10316',
+      'theme:icons',
+    ]);
   });
 
   test('builds explicit set and theme paths for catalog targets', () => {
@@ -31,6 +112,7 @@ describe('public web revalidation server', () => {
     ).toEqual([
       '/',
       '/themes',
+      '/deals',
       '/sets/rivendell-10316',
       '/themes/icons',
       '/sets/land-rover-classic-defender-90-10317',
@@ -55,9 +137,24 @@ describe('public web revalidation server', () => {
 
     expect(result).toEqual({
       attempted: false,
-      pathCount: 4,
-      paths: ['/', '/themes', '/sets/rivendell-10316', '/themes/icons'],
+      pathCount: 5,
+      paths: [
+        '/',
+        '/themes',
+        '/deals',
+        '/sets/rivendell-10316',
+        '/themes/icons',
+      ],
       skipped: true,
+      tagCount: 6,
+      tags: [
+        'homepage',
+        'themes',
+        'deals',
+        'set:10316',
+        'set:rivendell-10316',
+        'theme:icons',
+      ],
     });
     expect(fetchImpl).not.toHaveBeenCalled();
   });
@@ -95,16 +192,45 @@ describe('public web revalidation server', () => {
           'x-revalidate-secret': 'revalidate-secret',
         },
         body: JSON.stringify({
-          paths: ['/', '/themes', '/sets/rivendell-10316', '/themes/icons'],
+          paths: [
+            '/',
+            '/themes',
+            '/deals',
+            '/sets/rivendell-10316',
+            '/themes/icons',
+          ],
           reason: 'commerce_sync',
+          tags: [
+            'homepage',
+            'themes',
+            'deals',
+            'set:10316',
+            'set:rivendell-10316',
+            'theme:icons',
+          ],
         }),
       }),
     );
     expect(result).toEqual({
       attempted: true,
-      pathCount: 4,
-      paths: ['/', '/themes', '/sets/rivendell-10316', '/themes/icons'],
+      pathCount: 5,
+      paths: [
+        '/',
+        '/themes',
+        '/deals',
+        '/sets/rivendell-10316',
+        '/themes/icons',
+      ],
       skipped: false,
+      tagCount: 6,
+      tags: [
+        'homepage',
+        'themes',
+        'deals',
+        'set:10316',
+        'set:rivendell-10316',
+        'theme:icons',
+      ],
     });
   });
 });

@@ -1,6 +1,9 @@
 import {
+  importAffiliateDiscoveredSets,
   importAlternateAffiliateFeedRows,
   refreshCommerceSetOfferSeeds,
+  revalidatePublicWeb,
+  updateAffiliateDiscoveredSetStatus,
   type AlternateAffiliateFeedRow,
   type AlternateAffiliateFeedImportResult,
 } from '@lego-platform/api/data-access-server';
@@ -14,6 +17,7 @@ import {
   createCommerceMerchant,
   createCommerceOfferSeed,
   deleteCommerceBenchmarkSet,
+  listCommerceAffiliateDiscoveredSets,
   listCommerceBenchmarkSets,
   listCommerceMerchants,
   listCommerceOfferSeeds,
@@ -24,6 +28,10 @@ import {
 import {
   type CommerceBenchmarkSet,
   type CommerceBenchmarkSetInput,
+  type CommerceAffiliateDiscoveredSet,
+  type CommerceAffiliateDiscoveredSetConfidence,
+  type CommerceAffiliateDiscoveredSetImportResult,
+  type CommerceAffiliateDiscoveredSetStatus,
   type CommerceCoverageQueueRow,
   type CommerceMerchant,
   type CommerceMerchantInput,
@@ -37,8 +45,14 @@ import {
 } from '@lego-platform/commerce/util';
 import {
   apiPaths,
+  buildCatalogSetRevalidationTags,
+  buildMerchantRevalidationTags,
+  buildSetDetailPath,
+  buildThemePath,
+  cacheTags,
   getAdminPromotionConfig,
 } from '@lego-platform/shared/config';
+import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import { timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 
@@ -46,6 +60,20 @@ export interface AdminCommerceService {
   importAlternateFeed(
     rows: readonly AlternateAffiliateFeedRow[],
   ): Promise<AlternateAffiliateFeedImportResult>;
+  importDiscoveredSets(input: {
+    discoveredSetIds?: readonly string[];
+    highConfidenceOnly?: boolean;
+    maxBatchSize?: number;
+  }): Promise<CommerceAffiliateDiscoveredSetImportResult>;
+  listAffiliateDiscoveredSets(input?: {
+    affiliateId?: string;
+    confidence?: CommerceAffiliateDiscoveredSetConfidence | 'all';
+    status?: CommerceAffiliateDiscoveredSetStatus | 'all';
+  }): Promise<CommerceAffiliateDiscoveredSet[]>;
+  updateDiscoveredSetStatus(input: {
+    discoveredSetId: string;
+    status: Exclude<CommerceAffiliateDiscoveredSetStatus, 'imported'>;
+  }): Promise<CommerceAffiliateDiscoveredSet>;
   copyProductionCommerce(input: {
     dryRun: boolean;
   }): Promise<CommerceProductionCopyResult>;
@@ -76,6 +104,11 @@ function createAdminCommerceService(): AdminCommerceService {
       importAlternateAffiliateFeedRows({
         rows,
       }),
+    importDiscoveredSets: (input) => importAffiliateDiscoveredSets(input),
+    listAffiliateDiscoveredSets: (input) =>
+      listCommerceAffiliateDiscoveredSets(input),
+    updateDiscoveredSetStatus: (input) =>
+      updateAffiliateDiscoveredSetStatus(input),
     copyProductionCommerce: ({ dryRun }) =>
       copyCommerceDataFromProduction({
         dryRun,
@@ -184,6 +217,113 @@ function readRequiredSetId(value: unknown): string {
   return setId.trim();
 }
 
+function readOptionalStringQuery(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function readAffiliateDiscoveredSetFilters(value: {
+  affiliateId?: string;
+  confidence?: string;
+  status?: string;
+}): {
+  affiliateId?: string;
+  confidence?: CommerceAffiliateDiscoveredSetConfidence | 'all';
+  status?: CommerceAffiliateDiscoveredSetStatus | 'all';
+} {
+  const confidence = readOptionalStringQuery(value.confidence);
+  const status = readOptionalStringQuery(value.status);
+
+  if (
+    confidence &&
+    !(['all', 'high', 'low'] as const).includes(confidence as never)
+  ) {
+    throw new Error('Confidence filter is ongeldig.');
+  }
+
+  if (
+    status &&
+    !(['all', 'new', 'imported', 'ignored', 'non_set'] as const).includes(
+      status as never,
+    )
+  ) {
+    throw new Error('Status filter is ongeldig.');
+  }
+
+  return {
+    affiliateId: readOptionalStringQuery(value.affiliateId),
+    confidence: confidence as CommerceAffiliateDiscoveredSetConfidence | 'all',
+    status: status as CommerceAffiliateDiscoveredSetStatus | 'all',
+  };
+}
+
+function readDiscoveredSetIds(value: unknown): string[] | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const discoveredSetIds = (value as { discoveredSetIds?: unknown })
+    .discoveredSetIds;
+
+  if (typeof discoveredSetIds === 'undefined') {
+    return undefined;
+  }
+
+  if (!Array.isArray(discoveredSetIds)) {
+    throw new Error('Discovered-set input mist een geldige id-lijst.');
+  }
+
+  return discoveredSetIds
+    .map((discoveredSetId) =>
+      typeof discoveredSetId === 'string' ? discoveredSetId.trim() : '',
+    )
+    .filter(Boolean);
+}
+
+function readAffiliateDiscoveredSetImportBody(value: unknown): {
+  discoveredSetIds?: string[];
+  highConfidenceOnly: boolean;
+  maxBatchSize: number;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {
+      highConfidenceOnly: true,
+      maxBatchSize: 50,
+    };
+  }
+  const rawMaxBatchSize = (value as { maxBatchSize?: unknown }).maxBatchSize;
+  const maxBatchSize =
+    typeof rawMaxBatchSize === 'number' &&
+    Number.isInteger(rawMaxBatchSize) &&
+    rawMaxBatchSize > 0
+      ? Math.min(rawMaxBatchSize, 50)
+      : 50;
+
+  return {
+    discoveredSetIds: readDiscoveredSetIds(value),
+    highConfidenceOnly:
+      (value as { highConfidenceOnly?: unknown }).highConfidenceOnly !== false,
+    maxBatchSize,
+  };
+}
+
+function readAffiliateDiscoveredSetStatusBody(value: unknown): {
+  status: Exclude<CommerceAffiliateDiscoveredSetStatus, 'imported'>;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Reviewstatus ontbreekt.');
+  }
+
+  const status = (value as { status?: unknown }).status;
+
+  if (status !== 'ignored' && status !== 'non_set' && status !== 'new') {
+    throw new Error('Reviewstatus is ongeldig.');
+  }
+
+  return {
+    status,
+  };
+}
+
 function readAlternateAffiliateFeedRows(
   value: unknown,
 ): AlternateAffiliateFeedRow[] {
@@ -251,7 +391,7 @@ function readAlternateAffiliateFeedRows(
   });
 }
 
-async function ensureCatalogSetExists(setId: string): Promise<void> {
+async function ensureCatalogSetExists(setId: string) {
   const catalogSet = await findCatalogSetSummaryByIdWithOverlay({
     setId,
   });
@@ -259,6 +399,60 @@ async function ensureCatalogSetExists(setId: string): Promise<void> {
   if (!catalogSet) {
     throw new Error(
       `Set ${setId} is not part of the Brickhunt catalog, so it cannot receive commerce seeds yet.`,
+    );
+  }
+
+  return catalogSet;
+}
+
+async function revalidateCommerceOfferSeedSurfaces({
+  setId,
+}: {
+  setId: string;
+}): Promise<void> {
+  try {
+    const catalogSet = await ensureCatalogSetExists(setId);
+    const themeSlug = buildCatalogThemeSlug(catalogSet.theme);
+
+    await revalidatePublicWeb({
+      paths: [buildSetDetailPath(catalogSet.slug), buildThemePath(themeSlug)],
+      reason: 'admin_commerce_offer_seed_mutation',
+      tags: [
+        ...buildCatalogSetRevalidationTags({
+          affectsHomepage: true,
+          setNumberOrSlug: catalogSet.id,
+          themeSlug,
+        }),
+        cacheTags.deals(),
+      ],
+    });
+  } catch (error) {
+    console.warn(
+      error instanceof Error
+        ? error.message
+        : 'Public web commerce offer seed revalidation failed.',
+    );
+  }
+}
+
+async function revalidateMerchantSurfaces({
+  merchantSlug,
+}: {
+  merchantSlug: string;
+}): Promise<void> {
+  try {
+    await revalidatePublicWeb({
+      reason: 'admin_commerce_merchant_mutation',
+      tags: buildMerchantRevalidationTags({
+        includeGlobalPrices: false,
+        merchantSlug,
+      }),
+    });
+  } catch (error) {
+    console.warn(
+      error instanceof Error
+        ? error.message
+        : 'Public web commerce merchant revalidation failed.',
     );
   }
 }
@@ -332,6 +526,9 @@ export function createAdminCommerceRoutes({
         try {
           const input = validateCommerceMerchantInput(request.body);
           const merchant = await commerceService.createMerchant(input);
+          await revalidateMerchantSurfaces({
+            merchantSlug: merchant.slug,
+          });
 
           return reply.status(201).send(merchant);
         } catch (error) {
@@ -351,10 +548,15 @@ export function createAdminCommerceRoutes({
         try {
           const input = validateCommerceMerchantInput(request.body);
 
-          return commerceService.updateMerchant({
+          const merchant = await commerceService.updateMerchant({
             merchantId: request.params.merchantId,
             input,
           });
+          await revalidateMerchantSurfaces({
+            merchantSlug: merchant.slug,
+          });
+
+          return merchant;
         } catch (error) {
           return reply.status(400).send({
             message: toBadRequestMessage(
@@ -369,6 +571,69 @@ export function createAdminCommerceRoutes({
     fastify.get(apiPaths.adminCommerceOfferSeeds, async function () {
       return commerceService.listOfferSeeds();
     });
+
+    fastify.get<{
+      Querystring: {
+        affiliateId?: string;
+        confidence?: string;
+        status?: string;
+      };
+    }>(
+      apiPaths.adminCommerceAffiliateDiscoveredSets,
+      async function (request, reply) {
+        try {
+          return commerceService.listAffiliateDiscoveredSets(
+            readAffiliateDiscoveredSetFilters(request.query),
+          );
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Affiliate discovered-set filters are invalid.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown }>(
+      `${apiPaths.adminCommerceAffiliateDiscoveredSets}/import`,
+      async function (request, reply) {
+        try {
+          return await commerceService.importDiscoveredSets(
+            readAffiliateDiscoveredSetImportBody(request.body),
+          );
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Affiliate discovered sets could not be imported.',
+            ),
+          });
+        }
+      },
+    );
+
+    fastify.post<{ Body: unknown; Params: { discoveredSetId: string } }>(
+      `${apiPaths.adminCommerceAffiliateDiscoveredSets}/:discoveredSetId/status`,
+      async function (request, reply) {
+        try {
+          const { status } = readAffiliateDiscoveredSetStatusBody(request.body);
+
+          return await commerceService.updateDiscoveredSetStatus({
+            discoveredSetId: request.params.discoveredSetId,
+            status,
+          });
+        } catch (error) {
+          return reply.status(400).send({
+            message: toBadRequestMessage(
+              error,
+              'Affiliate discovered set reviewstatus is invalid.',
+            ),
+          });
+        }
+      },
+    );
 
     fastify.post<{ Body: unknown }>(
       apiPaths.adminCommerceAlternateFeedImports,
@@ -466,6 +731,9 @@ export function createAdminCommerceRoutes({
           const input = validateCommerceOfferSeedInput(request.body);
           await ensureCatalogSetExists(input.setId);
           const offerSeed = await commerceService.createOfferSeed(input);
+          await revalidateCommerceOfferSeedSurfaces({
+            setId: offerSeed.setId,
+          });
 
           return reply.status(201).send(offerSeed);
         } catch (error) {
@@ -486,10 +754,15 @@ export function createAdminCommerceRoutes({
           const input = validateCommerceOfferSeedInput(request.body);
           await ensureCatalogSetExists(input.setId);
 
-          return commerceService.updateOfferSeed({
+          const offerSeed = await commerceService.updateOfferSeed({
             offerSeedId: request.params.offerSeedId,
             input,
           });
+          await revalidateCommerceOfferSeedSurfaces({
+            setId: offerSeed.setId,
+          });
+
+          return offerSeed;
         } catch (error) {
           return reply.status(400).send({
             message: toBadRequestMessage(

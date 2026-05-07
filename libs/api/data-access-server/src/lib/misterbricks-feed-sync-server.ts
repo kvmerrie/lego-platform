@@ -34,8 +34,10 @@ export interface MisterBricksFeedSyncDependencies {
 export interface MisterBricksFeedSyncOptions {
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
+  discoverMissingSets?: boolean;
   dryRun?: boolean;
   maxProducts?: number;
+  persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
 }
 
@@ -462,6 +464,8 @@ export async function syncMisterBricksFeed({
     options: {
       collectUnmatchedDebug: options?.collectUnmatchedDebug,
       dryRun: options?.dryRun,
+      persistDiscoveredSets:
+        options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
     } satisfies AlternateAffiliateFeedImportOptions,
     rows: normalizedRows,

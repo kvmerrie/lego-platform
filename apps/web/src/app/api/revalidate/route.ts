@@ -1,15 +1,27 @@
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { NextResponse } from 'next/server';
 import {
   getPublicWebRevalidationConfig,
   hasPublicWebRevalidationConfig,
+  normalizeCacheTags,
 } from '@lego-platform/shared/config';
 
 export const dynamic = 'force-dynamic';
 
+const MAX_REVALIDATION_PATHS = 25;
+const MAX_REVALIDATION_TAGS = 100;
+const BROAD_REVALIDATION_TAGS = new Set([
+  'homepage',
+  'deals',
+  'prices',
+  'sitemap',
+]);
+const LOGGED_VALUE_LIMIT = 12;
+
 interface RevalidationRequestBody {
   paths?: unknown;
   reason?: unknown;
+  tags?: unknown;
 }
 
 function normalizePathname(pathname: string): string | undefined {
@@ -38,6 +50,16 @@ function readRevalidationSecret(request: Request): string {
   }
 
   return '';
+}
+
+function summarizeValues(values: readonly string[]): {
+  omittedCount: number;
+  sample: readonly string[];
+} {
+  return {
+    omittedCount: Math.max(0, values.length - LOGGED_VALUE_LIMIT),
+    sample: values.slice(0, LOGGED_VALUE_LIMIT),
+  };
 }
 
 export async function POST(request: Request) {
@@ -93,11 +115,38 @@ export async function POST(request: Request) {
         ),
       ]
     : [];
+  const tags = Array.isArray(body.tags)
+    ? normalizeCacheTags(
+        body.tags.filter((tag): tag is string => typeof tag === 'string'),
+      )
+    : [];
 
-  if (paths.length === 0) {
+  if (paths.length > MAX_REVALIDATION_PATHS) {
     return NextResponse.json(
       {
-        error: 'Provide at least one valid path to revalidate.',
+        error: `Provide at most ${MAX_REVALIDATION_PATHS} paths to revalidate.`,
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+
+  if (tags.length > MAX_REVALIDATION_TAGS) {
+    return NextResponse.json(
+      {
+        error: `Provide at most ${MAX_REVALIDATION_TAGS} tags to revalidate.`,
+      },
+      {
+        status: 400,
+      },
+    );
+  }
+
+  if (paths.length === 0 && tags.length === 0) {
+    return NextResponse.json(
+      {
+        error: 'Provide at least one valid tag or path to revalidate.',
       },
       {
         status: 400,
@@ -109,10 +158,38 @@ export async function POST(request: Request) {
     revalidatePath(path);
   }
 
+  for (const tag of tags) {
+    revalidateTag(tag, 'max');
+  }
+
+  const broadTags = tags.filter((tag) => BROAD_REVALIDATION_TAGS.has(tag));
+  const pathSummary = summarizeValues(paths);
+  const tagSummary = summarizeValues(tags);
+
+  console.info('Public web revalidation requested.', {
+    broadTagCount: broadTags.length,
+    pathCount: paths.length,
+    pathSample: pathSummary.sample,
+    pathSampleOmittedCount: pathSummary.omittedCount,
+    reason: typeof body.reason === 'string' ? body.reason : undefined,
+    tagCount: tags.length,
+    tagSample: tagSummary.sample,
+    tagSampleOmittedCount: tagSummary.omittedCount,
+  });
+
+  if (broadTags.length > 0) {
+    console.warn('Public web revalidation received broad tags.', {
+      broadTags,
+      reason: typeof body.reason === 'string' ? body.reason : undefined,
+    });
+  }
+
   return NextResponse.json({
     pathCount: paths.length,
     paths,
     reason: typeof body.reason === 'string' ? body.reason : undefined,
     revalidated: true,
+    tagCount: tags.length,
+    tags,
   });
 }

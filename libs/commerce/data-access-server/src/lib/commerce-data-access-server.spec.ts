@@ -8,6 +8,7 @@ import {
   listActiveCommerceRefreshSeeds,
   listCommerceBenchmarkSets,
   listCommerceOfferSeeds,
+  upsertCommerceAffiliateDiscoveredSet,
   upsertCommerceOfferSeedByCompositeKey,
   updateCommerceOfferSeedValidationState,
   upsertCommerceOfferLatestRecord,
@@ -723,6 +724,7 @@ describe('commerce data access server', () => {
       articles: [{ slug: 'untouched-production-article' }],
       commerce_benchmark_sets: [{ set_id: '10316' }],
       commerce_merchants: [{ id: 'merchant-production', slug: 'lego-nl' }],
+      commerce_affiliate_discovered_sets: [{ id: 'discovered-production' }],
       commerce_offer_latest: [{ id: 'latest-production' }],
       commerce_offer_seeds: [{ id: 'seed-production' }],
       pricing_daily_set_history: [{ set_id: '10316' }],
@@ -731,6 +733,7 @@ describe('commerce data access server', () => {
       articles: [{ slug: 'untouched-target-article' }],
       commerce_benchmark_sets: [{ set_id: '75355' }],
       commerce_merchants: [{ id: 'merchant-target', slug: 'alternate' }],
+      commerce_affiliate_discovered_sets: [{ id: 'discovered-target' }],
       commerce_offer_latest: [{ id: 'latest-target' }],
       commerce_offer_seeds: [{ id: 'seed-target' }],
       pricing_daily_set_history: [{ set_id: '75355' }],
@@ -766,6 +769,7 @@ describe('commerce data access server', () => {
   test('copies only commerce tables from production into the target environment', async () => {
     const productionTables: InMemorySupabaseTables = {
       articles: [{ slug: 'production-article' }],
+      commerce_affiliate_discovered_sets: [{ id: 'discovered-production' }],
       commerce_benchmark_sets: [{ set_id: '10316' }],
       commerce_merchants: [{ id: 'merchant-production', slug: 'lego-nl' }],
       commerce_offer_latest: [{ id: 'latest-production' }],
@@ -774,6 +778,7 @@ describe('commerce data access server', () => {
     };
     const targetTables: InMemorySupabaseTables = {
       articles: [{ slug: 'target-article' }],
+      commerce_affiliate_discovered_sets: [{ id: 'discovered-target' }],
       commerce_benchmark_sets: [{ set_id: '75355' }],
       commerce_merchants: [{ id: 'merchant-target', slug: 'alternate' }],
       commerce_offer_latest: [{ id: 'latest-target' }],
@@ -810,6 +815,7 @@ describe('commerce data access server', () => {
     expect(targetTables.articles).toEqual([{ slug: 'target-article' }]);
     expect(targetClient.operations).toEqual([
       'delete:pricing_daily_set_history',
+      'delete:commerce_affiliate_discovered_sets',
       'delete:commerce_offer_latest',
       'delete:commerce_offer_seeds',
       'delete:commerce_benchmark_sets',
@@ -818,7 +824,63 @@ describe('commerce data access server', () => {
       'insert:commerce_benchmark_sets:1',
       'insert:commerce_offer_seeds:1',
       'insert:commerce_offer_latest:1',
+      'insert:commerce_affiliate_discovered_sets:1',
       'insert:pricing_daily_set_history:1',
     ]);
+  });
+
+  test('includes Supabase details and sanitized attempted fields when discovered set persistence fails', async () => {
+    const maybeSingle = vi.fn(async () => ({
+      data: null,
+      error: null,
+    }));
+    const eqProductUrl = vi.fn(() => ({ maybeSingle }));
+    const eqMerchantId = vi.fn(() => ({ eq: eqProductUrl }));
+    const selectExisting = vi.fn(() => ({ eq: eqMerchantId }));
+    const single = vi.fn(async () => ({
+      data: null,
+      error: {
+        message: 'duplicate key value violates unique constraint',
+        code: '23505',
+        details: 'Key (merchant_id, product_url) already exists.',
+        hint: 'Use a different product URL.',
+      },
+    }));
+    const selectPersisted = vi.fn(() => ({ single }));
+    const upsert = vi.fn(() => ({ select: selectPersisted }));
+    const supabaseClient = {
+      from: vi.fn(() => ({
+        select: selectExisting,
+        upsert,
+      })),
+    };
+
+    let errorMessage = '';
+
+    try {
+      await upsertCommerceAffiliateDiscoveredSet({
+        input: {
+          affiliateId: 'merchant-alternate',
+          currencyCode: 'EUR',
+          imageUrl: 'https://cdn.example.test/75313.jpg',
+          observedAt: '2026-05-06T12:00:00.000Z',
+          priceMinor: 64999,
+          productTitle: 'LEGO Star Wars AT-AT',
+          productUrl: 'https://shop.example.test/75313',
+          rawPayload: {
+            secretDebugBlob: 'do-not-include-me',
+          },
+          setNumber: 'LEGO 75313',
+        },
+        supabaseClient: supabaseClient as never,
+      });
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : '';
+    }
+
+    expect(errorMessage).toBe(
+      'Unable to persist the affiliate discovered set. message="duplicate key value violates unique constraint" code="23505" details="Key (merchant_id, product_url) already exists." hint="Use a different product URL." merchant_id="merchant-alternate" source="https://shop.example.test/75313" source_set_number="75313-1" normalized_set_number="75313" status="new" confidence="high"',
+    );
+    expect(errorMessage).not.toContain('do-not-include-me');
   });
 });

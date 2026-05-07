@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
+  listCachedCatalogCurrentOfferSummaries,
   listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCardsByIds,
@@ -21,6 +22,7 @@ import {
   buildCanonicalUrl,
   buildSetDetailPath,
   buildWebPath,
+  cacheTags,
   webPathnames,
 } from '@lego-platform/shared/config';
 import { SectionHeading } from '@lego-platform/shared/ui';
@@ -33,7 +35,7 @@ import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-w
 import { buildCurrentSetCardPriceContext } from '../lib/current-set-card-price-context';
 import styles from './deals-page.module.css';
 
-export const revalidate = 300;
+export const revalidate = 21_600;
 
 const dealsMetadataTitle = 'LEGO deals en actuele prijzen';
 const dealsMetadataDescription =
@@ -338,17 +340,22 @@ export default async function DealsPage() {
     await Promise.all([
       listCatalogDiscoverySignalsBySetId({
         cacheOptions: {
-          revalidateSeconds: 300,
+          revalidateSeconds: revalidate,
+          tags: [cacheTags.deals()],
         },
       }),
-      listCatalogCurrentOfferSummaries({
+      listCachedCatalogCurrentOfferSummaries({
+        cacheOptions: {
+          revalidateSeconds: revalidate,
+          tags: [cacheTags.deals()],
+        },
         limit: 300,
       }),
     ]);
   const commerceCandidateSetCards = await listCatalogSetCardsByIds({
     canonicalIds: [...currentOfferSummaryBySetId.keys()],
   });
-  const commerceRailRotationSeed = Math.floor(Date.now() / (1000 * 60 * 15));
+  const commerceRailRotationSeed = 0;
   const getCatalogDiscoverySignalFn = (setId: string) =>
     catalogDiscoverySignalBySetId.get(setId);
   const bestDealCandidateSetCards = await listDiscoverBestDealSetCards({

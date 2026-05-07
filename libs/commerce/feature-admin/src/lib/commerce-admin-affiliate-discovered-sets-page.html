@@ -1,0 +1,239 @@
+<section class="admin-section admin-table-page admin-discovered-page">
+  <header class="admin-panel admin-panel--compact admin-discovered-page__bar">
+    <div class="admin-stack admin-stack--tight">
+      <p class="admin-eyebrow">Affiliate discovered sets</p>
+      <h2>Controleer LEGO sets die feeds buiten de catalogus vinden.</h2>
+      <p class="admin-muted">
+        High-confidence rijen kunnen in bulk door. Bundels, accessoires en
+        onduidelijke producten blijven in review.
+      </p>
+    </div>
+
+    <div class="admin-actions">
+      <span class="admin-count-pill">
+        {{ filteredRows().length }}/{{
+        commerceAdminStore.affiliateDiscoveredSets().length }} rijen
+      </span>
+      <span class="admin-count-pill">
+        Batch: {{ highConfidenceBatchRows().length }} rijen / {{
+        highConfidenceBatchUniqueSetCount() }} sets
+      </span>
+      <button
+        class="admin-button admin-button--primary"
+        type="button"
+        [disabled]="
+          highConfidenceBatchRows().length === 0 || busyAction() !== null
+        "
+        (click)="bulkImportHighConfidence()"
+      >
+        Bulk import hoog ({{ highConfidenceBatchRows().length }})
+      </button>
+    </div>
+  </header>
+
+  <section class="admin-panel admin-panel--compact">
+    <div class="admin-filterbar">
+      <label class="admin-filterbar__group admin-filterbar__group--wide">
+        <span class="admin-filterbar__label">Zoek</span>
+        <input
+          class="admin-input"
+          type="search"
+          placeholder="Zoek op titel, setnummer of affiliate"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+        />
+      </label>
+
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Affiliate</span>
+        <select
+          class="admin-input"
+          [ngModel]="affiliateFilter()"
+          (ngModelChange)="affiliateFilter.set($event)"
+        >
+          <option value="all">Alle affiliates</option>
+          @for (affiliate of affiliateOptions(); track affiliate.id) {
+          <option [value]="affiliate.id">{{ affiliate.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Confidence</span>
+        <select
+          class="admin-input"
+          [ngModel]="confidenceFilter()"
+          (ngModelChange)="confidenceFilter.set($event)"
+        >
+          <option value="all">Alle confidence</option>
+          <option value="high">Hoog</option>
+          <option value="low">Laag</option>
+        </select>
+      </label>
+
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Status</span>
+        <select
+          class="admin-input"
+          [ngModel]="statusFilter()"
+          (ngModelChange)="statusFilter.set($event)"
+        >
+          <option value="all">Alle statussen</option>
+          <option value="new">Nieuw</option>
+          <option value="imported">Geimporteerd</option>
+          <option value="ignored">Genegeerd</option>
+          <option value="non_set">Geen set</option>
+        </select>
+      </label>
+
+      <label class="admin-filterbar__group">
+        <span class="admin-filterbar__label">Max batch</span>
+        <input
+          class="admin-input"
+          type="number"
+          min="1"
+          max="50"
+          [ngModel]="maxBatchSize()"
+          (ngModelChange)="updateMaxBatchSize($event)"
+        />
+      </label>
+    </div>
+  </section>
+
+  @if (importProgress()) {
+  <section class="admin-panel admin-panel--compact">
+    <p class="admin-muted">{{ importProgress() }}</p>
+  </section>
+  } @if (feedback()) {
+  <section class="admin-panel admin-panel--compact">
+    <p class="admin-muted">{{ feedback() }}</p>
+  </section>
+  }
+
+  <section class="admin-panel admin-panel--compact admin-table-panel">
+    <div class="admin-data-table-shell admin-table-scroll">
+      <table class="admin-data-table">
+        <thead>
+          <tr>
+            <th><span class="admin-table__heading">Set</span></th>
+            <th><span class="admin-table__heading">Titel</span></th>
+            <th><span class="admin-table__heading">Affiliate</span></th>
+            <th><span class="admin-table__heading">Prijs</span></th>
+            <th><span class="admin-table__heading">Image</span></th>
+            <th><span class="admin-table__heading">Product URL</span></th>
+            <th><span class="admin-table__heading">Confidence</span></th>
+            <th><span class="admin-table__heading">Status</span></th>
+            <th><span class="admin-table__heading">Import poging</span></th>
+            <th><span class="admin-table__heading">Import fout</span></th>
+            <th><span class="admin-table__heading">Eerste keer</span></th>
+            <th><span class="admin-table__heading">Laatste keer</span></th>
+            <th><span class="admin-table__heading">Acties</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of filteredRows(); track row.id) {
+          <tr>
+            <td>
+              <div class="admin-data-table__cell-stack">
+                <span class="admin-data-table__cell-title">
+                  {{ row.normalizedSetId }}
+                </span>
+                <span class="admin-data-table__cell-meta">
+                  {{ row.sourceSetNumber }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="admin-data-table__cell-title">
+                {{ row.productTitle }}
+              </span>
+            </td>
+            <td>{{ row.affiliate.name }}</td>
+            <td>{{ formatPrice(row) }}</td>
+            <td>
+              @if (row.imageUrl) {
+              <img
+                class="admin-discovered-page__image"
+                [src]="row.imageUrl"
+                [alt]="row.productTitle"
+                loading="lazy"
+              />
+              } @else {
+              <span class="admin-data-table__cell-meta">Geen image</span>
+              }
+            </td>
+            <td class="admin-discovered-page__url">
+              <a [href]="row.productUrl" target="_blank" rel="noreferrer">
+                {{ row.productUrl }}
+              </a>
+            </td>
+            <td>
+              <span
+                class="admin-status-pill"
+                [class.admin-status-pill--positive]="row.confidence === 'high'"
+                [class.admin-status-pill--warning]="row.confidence === 'low'"
+              >
+                {{ getConfidenceLabel(row.confidence) }}
+              </span>
+            </td>
+            <td>{{ getStatusLabel(row.status) }}</td>
+            <td>
+              @if (row.importAttemptedAt) { {{ formatDate(row.importAttemptedAt)
+              }} } @else {
+              <span class="admin-data-table__cell-meta">Nog niet</span>
+              }
+            </td>
+            <td>
+              @if (row.importError) {
+              <span class="admin-data-table__cell-meta">
+                {{ row.importError }}
+              </span>
+              } @else {
+              <span class="admin-data-table__cell-meta">-</span>
+              }
+            </td>
+            <td>{{ formatDate(row.firstSeenAt) }}</td>
+            <td>{{ formatDate(row.lastSeenAt) }}</td>
+            <td>
+              <div class="admin-actions">
+                <button
+                  class="admin-button admin-button--compact"
+                  type="button"
+                  [disabled]="row.status !== 'new' || busyAction() !== null"
+                  (click)="importRow(row)"
+                >
+                  Import
+                </button>
+                <button
+                  class="admin-button admin-button--compact"
+                  type="button"
+                  [disabled]="row.status !== 'new' || busyAction() !== null"
+                  (click)="markStatus(row, 'ignored')"
+                >
+                  Ignore
+                </button>
+                <button
+                  class="admin-button admin-button--compact"
+                  type="button"
+                  [disabled]="row.status !== 'new' || busyAction() !== null"
+                  (click)="markStatus(row, 'non_set')"
+                >
+                  Non-set
+                </button>
+              </div>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="13">
+              <span class="admin-data-table__cell-meta">
+                Geen affiliate discoveries voor deze filters.
+              </span>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

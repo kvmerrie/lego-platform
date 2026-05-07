@@ -155,6 +155,7 @@ describe('MisterBricks feed sync server', () => {
       options: {
         collectUnmatchedDebug: true,
         dryRun: true,
+        persistDiscoveredSets: false,
         unmatchedSampleLimit: 5,
       },
       rows: [

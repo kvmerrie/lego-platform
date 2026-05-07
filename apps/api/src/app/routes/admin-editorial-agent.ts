@@ -41,9 +41,16 @@ import {
 } from '@lego-platform/content/util';
 import {
   apiPaths,
+  buildArticlePath,
+  buildArticleThemePath,
+  buildNewsRevalidationTags,
+  buildWebPath,
   hasRebrickableApiConfig,
   hasServerSupabaseConfig,
+  webPathnames,
 } from '@lego-platform/shared/config';
+import { normalizeTheme } from '@lego-platform/catalog/util';
+import { revalidatePublicWeb } from '@lego-platform/api/data-access-server';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 export interface AdminEditorialAgentService {
@@ -688,6 +695,38 @@ function readPublishInput(value: unknown): ContentArticlePublishInput {
   return publishInput;
 }
 
+async function revalidatePublishedArticleSurfaces({
+  publishInput,
+  slug,
+}: {
+  publishInput: ContentArticlePublishInput;
+  slug: string;
+}): Promise<void> {
+  const themeSlug = normalizeTheme(publishInput.frontmatter.theme)?.key;
+
+  try {
+    await revalidatePublicWeb({
+      paths: [
+        buildWebPath(webPathnames.articles),
+        ...(themeSlug ? [buildArticleThemePath(themeSlug)] : []),
+        ...(themeSlug ? [buildArticlePath(slug, themeSlug)] : []),
+      ],
+      reason: 'editorial_article_publish',
+      tags: buildNewsRevalidationTags({
+        affectsHomepage: true,
+        affectsSitemap: true,
+        articleSlug: slug,
+      }),
+    });
+  } catch (error) {
+    console.warn(
+      error instanceof Error
+        ? error.message
+        : 'Public web article publish revalidation failed.',
+    );
+  }
+}
+
 function readOptionalFeedItemId(value: unknown): string | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return undefined;
@@ -1231,12 +1270,19 @@ export function createAdminEditorialAgentRoutes({
         const publishInput = readPublishInput(request.body);
         const feedItemId = readOptionalFeedItemId(request.body);
 
-        return feedItemId
+        const result = feedItemId
           ? await editorialAgentService.publishArticleFromFeedItem({
               feedItemId,
               publishInput,
             })
           : await editorialAgentService.publishArticle(publishInput);
+
+        await revalidatePublishedArticleSurfaces({
+          publishInput,
+          slug: result.slug,
+        });
+
+        return result;
       } catch (error) {
         request.log.error(
           {

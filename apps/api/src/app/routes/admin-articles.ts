@@ -15,10 +15,17 @@ import type {
 } from '@lego-platform/content/util';
 import {
   apiPaths,
+  buildArticlePath,
   buildArticlePreviewPath,
+  buildArticleThemePath,
+  buildNewsRevalidationTags,
+  buildWebPath,
   getPublicWebBaseUrl,
   isArticlePreviewEnabled,
+  webPathnames,
 } from '@lego-platform/shared/config';
+import { normalizeTheme } from '@lego-platform/catalog/util';
+import { revalidatePublicWeb } from '@lego-platform/api/data-access-server';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminArticlesService {
@@ -100,6 +107,53 @@ function readUpdateInput(value: unknown): AdminContentArticleUpdateInput {
   };
 }
 
+function buildArticleRevalidationPaths({
+  article,
+  slug,
+}: {
+  article?: Pick<AdminContentArticleDetail, 'theme'>;
+  slug: string;
+}): string[] {
+  const themeSlug = normalizeTheme(article?.theme)?.key;
+
+  return [
+    buildWebPath(webPathnames.articles),
+    ...(themeSlug ? [buildArticleThemePath(themeSlug)] : []),
+    ...(themeSlug ? [buildArticlePath(slug, themeSlug)] : []),
+  ];
+}
+
+async function revalidateArticleSurfaces({
+  article,
+  reason,
+  slug,
+}: {
+  article?: Pick<AdminContentArticleDetail, 'theme'>;
+  reason: string;
+  slug: string;
+}): Promise<void> {
+  try {
+    await revalidatePublicWeb({
+      paths: buildArticleRevalidationPaths({
+        article,
+        slug,
+      }),
+      reason,
+      tags: buildNewsRevalidationTags({
+        affectsHomepage: true,
+        affectsSitemap: true,
+        articleSlug: slug,
+      }),
+    });
+  } catch (error) {
+    console.warn(
+      error instanceof Error
+        ? error.message
+        : 'Public web article revalidation failed.',
+    );
+  }
+}
+
 export function createAdminArticlesRoutes({
   articlesService = createAdminArticlesService(),
   isPreviewEnabled = () => isArticlePreviewEnabled(),
@@ -153,10 +207,18 @@ export function createAdminArticlesRoutes({
       `${apiPaths.adminArticles}/:slug`,
       async function (request, reply) {
         try {
-          return await articlesService.updateArticle({
+          const article = await articlesService.updateArticle({
             article: readUpdateInput(request.body),
             slug: readSlugParam(request.params),
           });
+
+          await revalidateArticleSurfaces({
+            article,
+            reason: 'admin_article_update',
+            slug: article.slug,
+          });
+
+          return article;
         } catch (error) {
           request.log.error({ err: error }, 'Admin article update failed');
 
@@ -183,9 +245,17 @@ export function createAdminArticlesRoutes({
       `${apiPaths.adminArticles}/:slug`,
       async function (request, reply) {
         try {
-          return await articlesService.deleteArticle({
-            slug: readSlugParam(request.params),
+          const slug = readSlugParam(request.params);
+          const result = await articlesService.deleteArticle({
+            slug,
           });
+
+          await revalidateArticleSurfaces({
+            reason: 'admin_article_delete',
+            slug,
+          });
+
+          return result;
         } catch (error) {
           request.log.error({ err: error }, 'Admin article delete failed');
 

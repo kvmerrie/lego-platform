@@ -30,7 +30,7 @@ import {
 } from '../../../lib/structured-data';
 
 export const dynamicParams = true;
-export const dynamic = 'force-dynamic';
+export const revalidate = 21_600;
 
 function getArticleThemeSlug(theme?: string): string | undefined {
   return normalizeTheme(theme)?.key;

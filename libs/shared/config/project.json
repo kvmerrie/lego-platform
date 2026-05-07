@@ -10,7 +10,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "libs/shared/config",
-        "command": "vitest run src/lib/config.spec.ts --config ../../vitest.config.mts"
+        "command": "vitest run src/lib/config.spec.ts src/lib/cache-tags.spec.ts --config ../../vitest.config.mts"
       }
     }
   }

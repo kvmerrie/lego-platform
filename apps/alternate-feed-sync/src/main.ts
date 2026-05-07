@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
   buildTradeTrackerAlternateOnboardingQueue,
+  resolveAffiliateFeedDiscoveryEnabled,
   syncAlternateTradeTrackerFeed,
 } from '@lego-platform/api/data-access-server';
 import {
@@ -91,6 +92,9 @@ async function main() {
       argv,
       flag: '--onboarding-batch-size',
     }) ?? 25;
+  const discoveryEnabled = resolveAffiliateFeedDiscoveryEnabled({
+    argv,
+  });
 
   if (!hasServerSupabaseConfig()) {
     throw new Error(
@@ -105,7 +109,7 @@ async function main() {
   }
 
   console.log(
-    `[alternate-feed-sync] start source=tradetracker merchant=alternate mode=write debug_lego_samples=${debugLegoSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} onboarding_batch_size=${onboardingBatchSize} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
+    `[alternate-feed-sync] start source=tradetracker merchant=alternate mode=write discovery_enabled=${discoveryEnabled} debug_lego_samples=${debugLegoSamples ?? 0} debug_unmatched_samples=${debugUnmatchedSamples ?? 0} onboarding_batch_size=${onboardingBatchSize} report_unmatched_path=${JSON.stringify(reportUnmatchedPath ?? '')}`,
   );
 
   const result = await syncAlternateTradeTrackerFeed({
@@ -113,6 +117,7 @@ async function main() {
       collectUnmatchedDebug:
         Boolean(debugUnmatchedSamples) || Boolean(reportUnmatchedPath),
       debugLegoSamples,
+      persistDiscoveredSets: discoveryEnabled,
       unmatchedSampleLimit: debugUnmatchedSamples,
     },
   });
@@ -190,7 +195,11 @@ async function main() {
   }
 
   console.log(
-    `[alternate-feed-sync] end status=imported source=tradetracker merchant=alternate affiliate_site_id=${result.affiliateSiteId} affiliate_site_name=${JSON.stringify(result.affiliateSiteName)} feed_id=${result.feedId} feed_name=${JSON.stringify(result.feedName)} campaign_id=${result.campaignId} campaign_name=${JSON.stringify(result.campaignName)} selection=${result.selectionStrategy} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} pages=${result.pageCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
+    `[alternate-feed-sync] missing_sets discovered=${result.discoveredMissingSetCount} auto_importable=${result.autoImportableMissingSetCount} review_needed=${result.reviewNeededMissingSetCount} ignored_or_non_set=${result.ignoredOrNonSetMissingSetCount}`,
+  );
+
+  console.log(
+    `[alternate-feed-sync] end status=imported source=tradetracker merchant=alternate affiliate_site_id=${result.affiliateSiteId} affiliate_site_name=${JSON.stringify(result.affiliateSiteName)} feed_id=${result.feedId} feed_name=${JSON.stringify(result.feedName)} campaign_id=${result.campaignId} campaign_name=${JSON.stringify(result.campaignName)} selection=${result.selectionStrategy} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} pages=${result.pageCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,
   );
 }
 

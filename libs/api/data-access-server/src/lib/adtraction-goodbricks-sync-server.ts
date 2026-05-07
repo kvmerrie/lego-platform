@@ -27,7 +27,9 @@ export interface AdtractionGoodbricksFeedSyncDependencies {
 export interface AdtractionGoodbricksFeedSyncOptions {
   collectUnmatchedDebug?: boolean;
   debugSamples?: number;
+  discoverMissingSets?: boolean;
   dryRun?: boolean;
+  persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
 }
 
@@ -580,6 +582,8 @@ export async function syncAdtractionGoodbricksFeed({
     options: {
       collectUnmatchedDebug: options?.collectUnmatchedDebug,
       dryRun: options?.dryRun,
+      persistDiscoveredSets:
+        options?.persistDiscoveredSets ?? options?.discoverMissingSets ?? false,
       unmatchedSampleLimit: options?.unmatchedSampleLimit,
     } satisfies AlternateAffiliateFeedImportOptions,
     rows,

@@ -9,14 +9,21 @@ import {
   type CatalogBulkOnboardingStartResult,
   getCatalogBulkOnboardingRun,
   getLatestCatalogBulkOnboardingRun,
+  revalidatePublicWeb,
   startCatalogBulkOnboardingRun,
 } from '@lego-platform/api/data-access-server';
 import {
+  buildCatalogThemeSlug,
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSet,
   type CatalogSet,
 } from '@lego-platform/catalog/util';
-import { apiPaths } from '@lego-platform/shared/config';
+import {
+  apiPaths,
+  buildCatalogSetRevalidationTags,
+  buildSetDetailPath,
+  buildThemePath,
+} from '@lego-platform/shared/config';
 import type { FastifyInstance } from 'fastify';
 
 export interface AdminCatalogSetSummary {
@@ -88,6 +95,32 @@ function createAdminCatalogService(): AdminCatalogService {
 
 function toBadRequestMessage(error: unknown, fallbackMessage: string): string {
   return error instanceof Error ? error.message : fallbackMessage;
+}
+
+async function revalidateCatalogSetSurfaces(
+  catalogSet: Pick<CatalogSet, 'setId' | 'slug' | 'theme'>,
+): Promise<void> {
+  try {
+    const themeSlug = buildCatalogThemeSlug(catalogSet.theme);
+
+    await revalidatePublicWeb({
+      paths: [buildSetDetailPath(catalogSet.slug), buildThemePath(themeSlug)],
+      reason: 'admin_catalog_set_mutation',
+      tags: buildCatalogSetRevalidationTags({
+        affectsHomepage: true,
+        affectsSearchIndex: true,
+        affectsSitemap: true,
+        setNumberOrSlug: catalogSet.setId,
+        themeSlug,
+      }),
+    });
+  } catch (error) {
+    console.warn(
+      error instanceof Error
+        ? error.message
+        : 'Public web catalog set revalidation failed.',
+    );
+  }
 }
 
 function readSearchQuery(value: unknown): string {
@@ -282,6 +315,7 @@ export function createAdminCatalogRoutes({
         try {
           const input = readCatalogSetInput(request.body);
           const catalogSet = await catalogService.createSet(input);
+          await revalidateCatalogSetSurfaces(catalogSet);
 
           return reply.status(201).send(catalogSet);
         } catch (error) {
