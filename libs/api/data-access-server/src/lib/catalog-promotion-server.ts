@@ -4,7 +4,10 @@ import {
   getStagingSupabaseConfig,
 } from '@lego-platform/shared/config';
 import { CATALOG_SETS_TABLE } from '@lego-platform/catalog/data-access-server';
-import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
+import {
+  buildCatalogSetSlug,
+  buildCatalogThemeSlug,
+} from '@lego-platform/catalog/util';
 import {
   COMMERCE_BENCHMARK_SETS_TABLE,
   COMMERCE_MERCHANTS_TABLE,
@@ -30,6 +33,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'piece_count',
     'primary_theme_id',
     'release_year',
+    'slug',
     'source',
     'source_set_number',
     'source_theme_id',
@@ -265,6 +269,36 @@ function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
     ...theme,
     display_name: displayName,
     id,
+    slug: normalizedSlug,
+  };
+}
+
+function normalizeCatalogSetRow(catalogSet: CatalogSetRow): CatalogSetRow {
+  const name = readRequiredPromotionString({
+    column: 'name',
+    row: catalogSet as unknown as Readonly<Record<string, unknown>>,
+    table: CATALOG_SETS_TABLE,
+  });
+  const setId = readRequiredPromotionString({
+    column: 'set_id',
+    row: catalogSet as unknown as Readonly<Record<string, unknown>>,
+    table: CATALOG_SETS_TABLE,
+  });
+  const normalizedSlug =
+    typeof catalogSet.slug === 'string' && catalogSet.slug.trim()
+      ? catalogSet.slug.trim()
+      : buildCatalogSetSlug(name, setId);
+
+  if (!normalizedSlug) {
+    throw new Error(
+      `Unable to promote ${CATALOG_SETS_TABLE}. Required column slug is missing for row ${JSON.stringify(catalogSet)}.`,
+    );
+  }
+
+  return {
+    ...catalogSet,
+    name,
+    set_id: setId,
     slug: normalizedSlug,
   };
 }
@@ -754,13 +788,35 @@ export async function promoteCatalogFromStagingToProduction({
     });
 
     const normalizedCatalogThemes = catalogThemes.map(normalizeCatalogThemeRow);
+    const normalizedCatalogSets = catalogSets.map(normalizeCatalogSetRow);
 
+    validatePromotionRowsRequiredColumns({
+      columns: ['id', 'source_system', 'source_theme_name'],
+      rows: catalogSourceThemes as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SOURCE_THEMES_TABLE,
+    });
     validatePromotionRowsRequiredColumns({
       columns: ['id', 'display_name', 'slug', 'status'],
       rows: normalizedCatalogThemes as unknown as Readonly<
         Record<string, unknown>
       >[],
       table: CATALOG_THEMES_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: ['source_theme_id', 'primary_theme_id'],
+      rows: catalogThemeMappings as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_THEME_MAPPINGS_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: ['set_id', 'name', 'slug', 'status'],
+      rows: normalizedCatalogSets as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SETS_TABLE,
     });
 
     tables.catalog_source_themes = await upsertRows({
@@ -783,7 +839,7 @@ export async function promoteCatalogFromStagingToProduction({
     });
     tables.catalog_sets = await upsertRows({
       onConflict: 'set_id',
-      rows: catalogSets,
+      rows: normalizedCatalogSets,
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SETS_TABLE,
     });

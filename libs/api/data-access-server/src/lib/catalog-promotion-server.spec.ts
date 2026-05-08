@@ -439,6 +439,7 @@ describe('catalog promotion server', () => {
           primary_theme_id: 'icons',
           release_year: 2023,
           set_id: '10316',
+          slug: 'staging-rivendell-10316',
           source: 'rebrickable',
           source_set_number: '10316-1',
           source_theme_id: 'rebrickable-theme-icons',
@@ -448,6 +449,179 @@ describe('catalog promotion server', () => {
         onConflict: 'set_id',
       },
     );
+  });
+
+  test('derives missing catalog set slugs before promotion writes', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/at-at.jpg',
+            name: 'AT-AT',
+            piece_count: 1555,
+            primary_theme_id: 'star-wars',
+            release_year: 2025,
+            set_id: '75440',
+            slug: null,
+            source: 'rebrickable',
+            source_set_number: '75440-1',
+            source_theme_id: 'rebrickable-theme-star-wars',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_sets'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          name: 'AT-AT',
+          set_id: '75440',
+          slug: 'at-at-75440',
+          source_set_number: '75440-1',
+          status: 'active',
+        }),
+      ],
+      {
+        onConflict: 'set_id',
+      },
+    );
+  });
+
+  test('keeps catalog set update payload slugs non-null for existing production rows', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/at-at.jpg',
+            name: 'AT-AT',
+            piece_count: 1555,
+            primary_theme_id: 'star-wars',
+            release_year: 2025,
+            set_id: '75440',
+            slug: null,
+            source: 'rebrickable',
+            source_set_number: '75440-1',
+            source_theme_id: 'rebrickable-theme-star-wars',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_sets: [
+          {
+            set_id: '75440',
+            slug: 'legacy-at-at-75440',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_sets'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          set_id: '75440',
+          slug: 'at-at-75440',
+        }),
+      ],
+      {
+        onConflict: 'set_id',
+      },
+    );
+  });
+
+  test('validates catalog set required fields before any promotion writes', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/at-at.jpg',
+            name: '',
+            piece_count: 1555,
+            primary_theme_id: 'star-wars',
+            release_year: 2025,
+            set_id: '75440',
+            slug: null,
+            source: 'rebrickable',
+            source_set_number: '75440-1',
+            source_theme_id: 'rebrickable-theme-star-wars',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    await expect(
+      promoteCatalogFromStagingToProduction({
+        createProductionSupabaseClient: () => productionClient as never,
+        createStagingSupabaseClient: () => stagingClient as never,
+        now: vi
+          .fn()
+          .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+          .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+      }),
+    ).rejects.toThrow(
+      'Unable to promote catalog_sets. Required column name is missing',
+    );
+    expect(
+      Array.from(productionClient.upsertByTable.values()).some(
+        (upsert) => upsert.mock.calls.length > 0,
+      ),
+    ).toBe(false);
   });
 
   test('includes catalog theme slug when promoting existing theme rows', async () => {
