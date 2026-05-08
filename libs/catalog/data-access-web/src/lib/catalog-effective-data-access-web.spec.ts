@@ -163,6 +163,10 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         count: number;
       }
     | {
+        type: 'or';
+        query: string;
+      }
+    | {
         type: 'range';
         from: number;
         to: number;
@@ -201,6 +205,14 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         ascending: options.ascending,
         column,
         type: 'order',
+      });
+
+      return builder;
+    },
+    or(query: string) {
+      filters.push({
+        query,
+        type: 'or',
       });
 
       return builder;
@@ -264,6 +276,29 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
           if (filter.type === 'limit') {
             return resultRows.slice(0, filter.count);
+          }
+
+          if (filter.type === 'or') {
+            const clauses = filter.query.split(',').flatMap((clause) => {
+              const [column, operator, pattern] = clause.split('.');
+
+              return column && operator === 'ilike' && pattern
+                ? [
+                    {
+                      column: column as keyof Row & string,
+                      pattern: pattern.replace(/^%|%$/gu, '').toLowerCase(),
+                    },
+                  ]
+                : [];
+            });
+
+            return resultRows.filter((row) =>
+              clauses.some(({ column, pattern }) =>
+                String(row[column] ?? '')
+                  .toLowerCase()
+                  .includes(pattern),
+              ),
+            );
           }
 
           if (filter.type === 'range') {
@@ -1999,6 +2034,261 @@ describe('catalog effective data access web', () => {
       slug: 'mario-kart-mario-standard-kart-72037',
       theme: 'LEGO® Super Mario™',
     });
+  });
+
+  test('searches Supabase catalog sets directly by set number', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/42177.jpg',
+          name: 'Mercedes-Benz G 500 PROFESSIONAL Line',
+          piece_count: 2891,
+          primary_theme_id: 'theme:technic',
+          release_date: null,
+          release_date_precision: null,
+          release_year: 2024,
+          set_id: '42177',
+          slug: 'mercedes-benz-g-500-professional-line-42177',
+          source: 'rebrickable',
+          source_set_number: '42177-1',
+          source_theme_id: 'rebrickable:1',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/75398.jpg',
+          name: 'C-3PO',
+          piece_count: 1138,
+          primary_theme_id: 'theme:star-wars',
+          release_date: null,
+          release_date_precision: null,
+          release_year: 2024,
+          set_id: '75398',
+          slug: 'c-3po-75398',
+          source: 'rebrickable',
+          source_set_number: '75398-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/75440.jpg',
+          name: 'AT-AT',
+          piece_count: 1555,
+          primary_theme_id: 'theme:star-wars',
+          release_date: null,
+          release_date_precision: null,
+          release_year: 2025,
+          set_id: '75440',
+          slug: 'at-at-75440',
+          source: 'rebrickable',
+          source_set_number: '75440-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Technic',
+          id: 'theme:technic',
+        },
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogSearchMatches({
+        query: '42177',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '42177',
+          name: 'Mercedes-Benz G 500 PROFESSIONAL Line',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: '75398',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '75398',
+          name: 'C-3PO',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: '75440',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '75440',
+          name: 'AT-AT',
+        }),
+      }),
+    ]);
+  });
+
+  test('searches Supabase catalog sets directly by name and slug', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/42177.jpg',
+          name: 'Mercedes-Benz G 500 PROFESSIONAL Line',
+          piece_count: 2891,
+          primary_theme_id: 'theme:technic',
+          release_date: null,
+          release_date_precision: null,
+          release_year: 2024,
+          set_id: '42177',
+          slug: 'mercedes-benz-g-500-professional-line-42177',
+          source: 'rebrickable',
+          source_set_number: '42177-1',
+          source_theme_id: 'rebrickable:1',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/75398.jpg',
+          name: 'C-3PO',
+          piece_count: 1138,
+          primary_theme_id: 'theme:star-wars',
+          release_date: null,
+          release_date_precision: null,
+          release_year: 2024,
+          set_id: '75398',
+          slug: 'c-3po-75398',
+          source: 'rebrickable',
+          source_set_number: '75398-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/75440.jpg',
+          name: 'AT-AT',
+          piece_count: 1555,
+          primary_theme_id: 'theme:star-wars',
+          release_date: null,
+          release_date_precision: null,
+          release_year: 2025,
+          set_id: '75440',
+          slug: 'at-at-75440',
+          source: 'rebrickable',
+          source_set_number: '75440-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Technic',
+          id: 'theme:technic',
+        },
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogSearchMatches({
+        query: 'Mercedes-Benz G 500',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '42177',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: 'C-3PO',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '75398',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: 'AT-AT',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '75440',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: 'mercedes-benz-g-500-professional-line-42177',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '42177',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: 'c-3po-75398',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '75398',
+        }),
+      }),
+    ]);
+    await expect(
+      listCatalogSearchMatches({
+        query: 'at-at-75440',
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        setCard: expect.objectContaining({
+          id: '75440',
+        }),
+      }),
+    ]);
   });
 
   test('searches theme directory items with prefix ranking', async () => {

@@ -73,16 +73,32 @@ type InlineSearchCloseReason =
   | 'tab-forward';
 
 interface ShellWebSearchSuggestionPayload {
+  query: string;
   sets: CatalogHomepageSetCard[];
   themes: CatalogThemeDirectoryItem[];
 }
 
-let overlaySearchSuggestionSetCardsRequest:
-  | Promise<ShellWebSearchSuggestionPayload>
-  | undefined;
+const overlaySearchSuggestionSetCardsRequests = new Map<
+  string,
+  Promise<ShellWebSearchSuggestionPayload>
+>();
 
 export function clearShellWebSearchSuggestionOverlaySetCardsCache() {
-  overlaySearchSuggestionSetCardsRequest = undefined;
+  overlaySearchSuggestionSetCardsRequests.clear();
+}
+
+function buildSearchSuggestionsApiPath(query: string): string {
+  const normalizedQuery = normalizeRecentSearchQuery(query);
+
+  if (!normalizedQuery) {
+    return searchSuggestionsApiPath;
+  }
+
+  const searchParams = new URLSearchParams({
+    q: normalizedQuery,
+  });
+
+  return `${searchSuggestionsApiPath}?${searchParams.toString()}`;
 }
 
 function isCatalogHomepageSetCard(
@@ -104,13 +120,24 @@ function isCatalogHomepageSetCard(
   );
 }
 
-async function loadOverlaySearchSuggestionSetCards(): Promise<ShellWebSearchSuggestionPayload> {
-  overlaySearchSuggestionSetCardsRequest ??= fetch(searchSuggestionsApiPath, {
+async function loadOverlaySearchSuggestionSetCards(
+  query: string,
+): Promise<ShellWebSearchSuggestionPayload> {
+  const normalizedQuery = normalizeRecentSearchQuery(query);
+  const cachedRequest =
+    overlaySearchSuggestionSetCardsRequests.get(normalizedQuery);
+
+  if (cachedRequest) {
+    return cachedRequest;
+  }
+
+  const request = fetch(buildSearchSuggestionsApiPath(normalizedQuery), {
     cache: 'no-store',
   })
     .then(async (response) => {
       if (!response.ok) {
         return {
+          query: normalizedQuery,
           sets: [],
           themes: [],
         };
@@ -120,6 +147,7 @@ async function loadOverlaySearchSuggestionSetCards(): Promise<ShellWebSearchSugg
 
       if (Array.isArray(payload)) {
         return {
+          query: normalizedQuery,
           sets: payload.filter(isCatalogHomepageSetCard),
           themes: [],
         };
@@ -127,17 +155,23 @@ async function loadOverlaySearchSuggestionSetCards(): Promise<ShellWebSearchSugg
 
       if (!payload || typeof payload !== 'object') {
         return {
+          query: normalizedQuery,
           sets: [],
           themes: [],
         };
       }
 
       const candidate = payload as Partial<{
+        query: unknown;
         sets: unknown;
         themes: unknown;
       }>;
 
       return {
+        query:
+          typeof candidate.query === 'string'
+            ? normalizeRecentSearchQuery(candidate.query)
+            : normalizedQuery,
         sets: Array.isArray(candidate.sets)
           ? candidate.sets.filter(isCatalogHomepageSetCard)
           : [],
@@ -147,11 +181,14 @@ async function loadOverlaySearchSuggestionSetCards(): Promise<ShellWebSearchSugg
       };
     })
     .catch(() => ({
+      query: normalizedQuery,
       sets: [],
       themes: [],
     }));
 
-  return overlaySearchSuggestionSetCardsRequest;
+  overlaySearchSuggestionSetCardsRequests.set(normalizedQuery, request);
+
+  return request;
 }
 
 function isCatalogThemeDirectoryItem(
@@ -203,6 +240,24 @@ function listShellWebSearchSuggestions({
 
       return [catalogSearchMatch.setCard];
     });
+}
+
+function listShellWebServerSearchSuggestions({
+  suggestionSetCards,
+}: {
+  suggestionSetCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const seenSetIds = new Set<string>();
+
+  return suggestionSetCards.flatMap((setCard) => {
+    if (seenSetIds.has(setCard.id) || seenSetIds.size >= 6) {
+      return [];
+    }
+
+    seenSetIds.add(setCard.id);
+
+    return [setCard];
+  });
 }
 
 function normalizeSearchSuggestionText(value: string): string {
@@ -333,6 +388,8 @@ export function ShellWebSearchForm({
     useState<CatalogHomepageSetCard[]>([]);
   const [overlaySearchSuggestionThemes, setOverlaySearchSuggestionThemes] =
     useState<CatalogThemeDirectoryItem[]>([]);
+  const [overlaySearchSuggestionQuery, setOverlaySearchSuggestionQuery] =
+    useState('');
   const [inlineSearchOverlayRect, setInlineSearchOverlayRect] = useState<{
     left: number;
     top: number;
@@ -579,27 +636,42 @@ export function ShellWebSearchForm({
     }
   }, []);
 
+  const normalizedSearchValue = normalizeRecentSearchQuery(searchValue);
+
   useEffect(() => {
+    if (!normalizedSearchValue) {
+      setOverlaySearchSuggestionSetCards([]);
+      setOverlaySearchSuggestionThemes([]);
+      setOverlaySearchSuggestionQuery('');
+      return;
+    }
+
     let isCancelled = false;
 
-    void loadOverlaySearchSuggestionSetCards().then((payload) => {
-      if (!isCancelled) {
-        setOverlaySearchSuggestionSetCards(payload.sets);
-        setOverlaySearchSuggestionThemes(payload.themes);
-      }
-    });
+    void loadOverlaySearchSuggestionSetCards(normalizedSearchValue).then(
+      (payload) => {
+        if (!isCancelled) {
+          setOverlaySearchSuggestionSetCards(payload.sets);
+          setOverlaySearchSuggestionThemes(payload.themes);
+          setOverlaySearchSuggestionQuery(payload.query);
+        }
+      },
+    );
 
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [normalizedSearchValue]);
 
-  const normalizedSearchValue = normalizeRecentSearchQuery(searchValue);
   const searchSuggestions = normalizedSearchValue
-    ? listShellWebSearchSuggestions({
-        suggestionSetCards: overlaySearchSuggestionSetCards,
-        query: normalizedSearchValue,
-      })
+    ? overlaySearchSuggestionQuery === normalizedSearchValue
+      ? listShellWebServerSearchSuggestions({
+          suggestionSetCards: overlaySearchSuggestionSetCards,
+        })
+      : listShellWebSearchSuggestions({
+          suggestionSetCards: overlaySearchSuggestionSetCards,
+          query: normalizedSearchValue,
+        })
     : [];
   const themeSuggestions = normalizedSearchValue
     ? listShellWebThemeSearchSuggestions({

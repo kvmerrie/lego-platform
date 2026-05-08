@@ -61,6 +61,7 @@ const CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT = 300;
 const CATALOG_PUBLIC_DEFAULT_PAGE_SIZE = 96;
 const CATALOG_PUBLIC_RAIL_CANDIDATE_LIMIT = 240;
 const CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT = 120;
+const CATALOG_PUBLIC_SEARCH_MATCH_LIMIT = 500;
 const CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT = 100;
 const CATALOG_THEME_REPRESENTATIVE_SET_LIMIT = 8;
 const CATALOG_SET_SELECT_COLUMNS =
@@ -1227,6 +1228,10 @@ function normalizeCatalogReadLimit(limit?: number, fallback = 24): number {
 
 function normalizeCatalogReadOffset(offset?: number): number {
   return Math.max(0, Math.floor(offset ?? 0));
+}
+
+function escapeCatalogSupabaseSearchPattern(query: string): string {
+  return query.trim().replace(/[%_]/gu, '\\$&');
 }
 
 async function listCatalogSetCardsFromSupabase({
@@ -5317,6 +5322,169 @@ export async function getCatalogSetBySlug({
   return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
 }
 
+function getCatalogSearchMatchScore({
+  query,
+  row,
+  setCard,
+}: {
+  query: string;
+  row: CatalogSetRow;
+  setCard: CatalogHomepageSetCard;
+}): number | undefined {
+  const [cardMatch] = listCatalogSetCardSearchMatches({
+    limit: 1,
+    query,
+    setCards: [setCard],
+  });
+
+  if (cardMatch) {
+    return cardMatch.score;
+  }
+
+  const normalizedQuery = normalizeCatalogAsciiText(query).toLowerCase().trim();
+  const normalizedQueryToken = normalizedQuery.replace(/[^a-z0-9]+/giu, '');
+  const normalizedSlug = normalizeCatalogAsciiText(row.slug.replace(/-/gu, ' '))
+    .toLowerCase()
+    .trim();
+  const normalizedSlugToken = normalizedSlug.replace(/[^a-z0-9]+/giu, '');
+  const normalizedSourceSetNumber = normalizeCatalogAsciiText(
+    row.source_set_number,
+  )
+    .toLowerCase()
+    .trim();
+  const normalizedSourceSetNumberToken = normalizedSourceSetNumber.replace(
+    /[^a-z0-9]+/giu,
+    '',
+  );
+
+  if (!normalizedQuery || !normalizedQueryToken) {
+    return undefined;
+  }
+
+  if (
+    normalizedSlug === normalizedQuery ||
+    normalizedSlugToken === normalizedQueryToken ||
+    normalizedSourceSetNumber === normalizedQuery ||
+    normalizedSourceSetNumberToken === normalizedQueryToken
+  ) {
+    return 0;
+  }
+
+  if (
+    normalizedSlug.startsWith(normalizedQuery) ||
+    normalizedSlugToken.startsWith(normalizedQueryToken) ||
+    normalizedSourceSetNumber.startsWith(normalizedQuery) ||
+    normalizedSourceSetNumberToken.startsWith(normalizedQueryToken)
+  ) {
+    return 1;
+  }
+
+  if (
+    normalizedSlug.includes(normalizedQuery) ||
+    normalizedSlugToken.includes(normalizedQueryToken) ||
+    normalizedSourceSetNumber.includes(normalizedQuery) ||
+    normalizedSourceSetNumberToken.includes(normalizedQueryToken)
+  ) {
+    return 4;
+  }
+
+  return undefined;
+}
+
+async function listCatalogSearchMatchesFromSupabase({
+  limit,
+  query,
+  supabaseClient,
+}: {
+  limit: number;
+  query: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogSearchMatch[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  const safeCandidateLimit = normalizeCatalogReadLimit(
+    Math.max(CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT, limit * 24),
+    CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT,
+  );
+  const searchPattern = escapeCatalogSupabaseSearchPattern(query);
+
+  try {
+    const { data, error } = await activeSupabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .select(CATALOG_SET_SELECT_COLUMNS)
+      .eq('status', 'active')
+      .or(
+        [
+          `set_id.ilike.%${searchPattern}%`,
+          `source_set_number.ilike.%${searchPattern}%`,
+          `name.ilike.%${searchPattern}%`,
+          `slug.ilike.%${searchPattern}%`,
+        ].join(','),
+      )
+      .order('release_year', { ascending: false })
+      .order('name', { ascending: true })
+      .order('set_id', { ascending: true })
+      .limit(Math.min(CATALOG_PUBLIC_SEARCH_MATCH_LIMIT, safeCandidateLimit));
+
+    if (error) {
+      throw new Error('Unable to search catalog sets.');
+    }
+
+    const catalogRows = (data as CatalogSetRow[] | null) ?? [];
+    const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+      catalogRows,
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return catalogRows
+      .flatMap((row): CatalogSearchMatch[] => {
+        const setCard = toCatalogSetCardFromCanonicalSet(
+          toCanonicalCatalogSetFromRow({
+            row,
+            themeIdentity: themeIdentityBySetId.get(row.set_id),
+          }),
+        );
+        const score = getCatalogSearchMatchScore({
+          query,
+          row,
+          setCard,
+        });
+
+        return typeof score === 'number'
+          ? [
+              {
+                discoverRank: getExplicitBrowseRank(
+                  setCard.id,
+                  catalogDiscoverSetOrder,
+                ),
+                score,
+                setCard,
+              },
+            ]
+          : [];
+      })
+      .sort(
+        (left, right) =>
+          left.score - right.score ||
+          left.discoverRank - right.discoverRank ||
+          right.setCard.releaseYear - left.setCard.releaseYear ||
+          left.setCard.name.localeCompare(right.setCard.name),
+      )
+      .slice(0, limit);
+  } catch (error) {
+    if (!supabaseClient) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
 export async function listCatalogSearchMatches({
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
@@ -5334,22 +5502,20 @@ export async function listCatalogSearchMatches({
     return [];
   }
 
+  if (listCanonicalCatalogSetsFn === listCanonicalCatalogSets) {
+    return listCatalogSearchMatchesFromSupabase({
+      limit: suggestionLimit,
+      query,
+      supabaseClient,
+    });
+  }
+
   return listCatalogSetCardSearchMatches({
     limit: Number.MAX_SAFE_INTEGER,
     query,
-    setCards:
-      listCanonicalCatalogSetsFn === listCanonicalCatalogSets
-        ? await listCatalogSetCardsFromSupabase({
-            limit: Math.max(
-              CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT,
-              suggestionLimit * 12,
-            ),
-            orderBy: 'release_year',
-            supabaseClient,
-          })
-        : await listAllCatalogSetCards({
-            listCanonicalCatalogSetsFn,
-          }),
+    setCards: await listAllCatalogSetCards({
+      listCanonicalCatalogSetsFn,
+    }),
   })
     .map(
       ({ score, setCard }): CatalogSearchMatch => ({

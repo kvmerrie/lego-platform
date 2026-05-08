@@ -39,6 +39,13 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+async function flushSearchSuggestionUpdates() {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+}
+
 describe('ShellWebSearchForm', () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -206,8 +213,14 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
+    await flushSearchSuggestionUpdates();
+
     expect(document.body.textContent).toContain(
       'Mario Kart - Mario & Standard Kart',
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/catalog/search-suggestions?q=72037',
+      { cache: 'no-store' },
     );
     expect(
       document.body.querySelector(
@@ -277,6 +290,8 @@ describe('ShellWebSearchForm', () => {
         searchInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
     });
+
+    await flushSearchSuggestionUpdates();
 
     expect(document.body.textContent).toContain("Thema's");
     expect(document.body.textContent).toContain('Star Wars™');
@@ -456,6 +471,8 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
+    await flushSearchSuggestionUpdates();
+
     const searchResultsLink = document.body.querySelector(
       'a[href="/search?q=Rivendell"]',
     ) as HTMLAnchorElement | null;
@@ -545,6 +562,8 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
+    await flushSearchSuggestionUpdates();
+
     const firstSuggestion = document.body.querySelector(
       'a[href="/sets/rivendell-10316"]',
     ) as HTMLAnchorElement | null;
@@ -622,46 +641,61 @@ describe('ShellWebSearchForm', () => {
     expect(document.activeElement).not.toBe(restoreTarget);
   });
 
-  it('keeps snapshot-backed suggestions available while deduping overlay duplicates', async () => {
-    fetchMock.mockResolvedValueOnce(
-      new Response(
-        JSON.stringify([
+  it('uses query-backed suggestions while deduping duplicate set rows', async () => {
+    fetchMock.mockImplementation((input) => {
+      const url = String(input);
+      const sets = url.includes('q=10316')
+        ? [
+            {
+              id: '10316',
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+              name: 'Rivendell',
+              pieces: 6167,
+              releaseYear: 2023,
+              slug: 'rivendell-10316',
+              theme: 'LEGO® Icons',
+            },
+          ]
+        : [
+            {
+              id: '72037',
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+              name: 'Mario Kart - Mario & Standard Kart',
+              pieces: 1972,
+              releaseYear: 2025,
+              slug: 'mario-kart-mario-standard-kart-72037',
+              theme: 'Super Mario',
+            },
+            {
+              id: '72037',
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+              name: 'Mario Kart - Mario & Standard Kart',
+              pieces: 1972,
+              releaseYear: 2025,
+              slug: 'mario-kart-mario-standard-kart-72037',
+              theme: 'Super Mario',
+            },
+          ];
+
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            query: url.includes('q=10316') ? '10316' : '72037',
+            sets,
+            themes: [],
+          }),
           {
-            id: '72037',
-            imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
-            name: 'Mario Kart - Mario & Standard Kart',
-            pieces: 1972,
-            releaseYear: 2025,
-            slug: 'mario-kart-mario-standard-kart-72037',
-            theme: 'Super Mario',
+            headers: {
+              'content-type': 'application/json',
+            },
+            status: 200,
           },
-          {
-            id: '72037',
-            imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
-            name: 'Mario Kart - Mario & Standard Kart',
-            pieces: 1972,
-            releaseYear: 2025,
-            slug: 'mario-kart-mario-standard-kart-72037',
-            theme: 'Super Mario',
-          },
-          {
-            id: '10316',
-            imageUrl: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
-            name: 'Rivendell',
-            pieces: 6167,
-            releaseYear: 2023,
-            slug: 'rivendell-10316',
-            theme: 'LEGO® Icons',
-          },
-        ]),
-        {
-          headers: {
-            'content-type': 'application/json',
-          },
-          status: 200,
-        },
-      ),
-    );
+        ),
+      );
+    });
 
     act(() => {
       root.render(
@@ -690,6 +724,8 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
+    await flushSearchSuggestionUpdates();
+
     expect(document.body.textContent).toContain('Rivendell');
 
     act(() => {
@@ -705,11 +741,85 @@ describe('ShellWebSearchForm', () => {
       }
     });
 
+    await flushSearchSuggestionUpdates();
+
     expect(
       document.body.querySelectorAll(
         'a[href="/sets/mario-kart-mario-standard-kart-72037"]',
       ),
     ).toHaveLength(1);
+  });
+
+  it('shows server-backed slug autosuggest matches without client-side candidate filtering', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          query: 'mercedes-benz-g-500-professional-line-42177',
+          sets: [
+            {
+              id: '42177',
+              imageUrl:
+                'https://cdn.rebrickable.com/media/sets/42177-1/1000.jpg',
+              name: 'Mercedes-Benz G 500 Professional Line',
+              pieces: 2891,
+              releaseYear: 2024,
+              slug: 'mercedes-benz-g-500-professional-line-42177',
+              theme: 'Technic',
+            },
+          ],
+          themes: [],
+        }),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    act(() => {
+      root.render(
+        <ShellWebSearchForm autoFocus inputId="site-search-inline-slug" />,
+      );
+    });
+
+    await flushSearchSuggestionUpdates();
+
+    const searchInput = document.getElementById(
+      'site-search-inline-slug',
+    ) as HTMLInputElement | null;
+
+    act(() => {
+      if (searchInput) {
+        const valueSetter = Object.getOwnPropertyDescriptor(
+          HTMLInputElement.prototype,
+          'value',
+        )?.set;
+
+        valueSetter?.call(
+          searchInput,
+          'mercedes-benz-g-500-professional-line-42177',
+        );
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+
+    await flushSearchSuggestionUpdates();
+
+    expect(document.body.textContent).toContain(
+      'Mercedes-Benz G 500 Professional Line',
+    );
+    expect(
+      document.body.querySelector(
+        'a[href="/sets/mercedes-benz-g-500-professional-line-42177"]',
+      ),
+    ).not.toBeNull();
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/catalog/search-suggestions?q=mercedes-benz-g-500-professional-line-42177',
+      { cache: 'no-store' },
+    );
   });
 
   it('can autofocus the inline search field for a direct search page entry', async () => {
