@@ -61,6 +61,11 @@ create table if not exists public.catalog_themes (
   slug text not null unique,
   display_name text not null,
   is_public boolean not null default false,
+  public_display_name text null,
+  public_description text null,
+  public_image_url text null,
+  public_accent_color text null,
+  public_logo_url text null,
   public_order integer null,
   status text not null default 'active' check (
     status in ('active', 'inactive')

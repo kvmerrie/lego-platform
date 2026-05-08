@@ -1202,8 +1202,6 @@ describe('catalog promotion server', () => {
         {
           display_name: 'Advent',
           id: 'theme:advent',
-          is_public: false,
-          public_order: null,
           slug: 'advent',
         },
       ],
@@ -1263,9 +1261,107 @@ describe('catalog promotion server', () => {
         {
           display_name: 'Advent',
           id: 'theme:advent',
-          is_public: true,
-          public_order: 10,
           slug: 'advent',
+        },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+  });
+
+  test('preserves existing catalog theme presentation fields during promotion', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Icons',
+            id: 'theme:icons',
+            is_public: false,
+            public_accent_color: '#000000',
+            public_description: 'Staging copy should not replace production.',
+            public_display_name: 'Staging Icons',
+            public_image_url: 'https://cdn.example.com/staging-icons.jpg',
+            public_logo_url: 'https://cdn.example.com/staging-icons.svg',
+            public_order: 99,
+            slug: 'icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'City',
+            id: 'theme:city',
+            is_public: true,
+            public_accent_color: '#2f7fc0',
+            public_description: 'Stadssets met politie, treinen en trucks.',
+            public_display_name: 'City',
+            public_image_url: 'https://cdn.example.com/city.jpg',
+            public_logo_url: 'https://cdn.example.com/city.svg',
+            public_order: 60,
+            slug: 'city',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            id: 'theme:icons',
+            is_public: true,
+            public_accent_color: '#f0c63b',
+            public_description: 'Production curated copy.',
+            public_display_name: 'LEGO® Icons',
+            public_image_url: 'https://cdn.example.com/production-icons.jpg',
+            public_logo_url: 'https://cdn.example.com/production-icons.svg',
+            public_order: 4,
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          slug: 'icons',
+        },
+        {
+          created_at: '2026-04-21T08:00:00.000Z',
+          display_name: 'City',
+          id: 'theme:city',
+          is_public: true,
+          public_accent_color: '#2f7fc0',
+          public_description: 'Stadssets met politie, treinen en trucks.',
+          public_display_name: 'City',
+          public_image_url: 'https://cdn.example.com/city.jpg',
+          public_logo_url: 'https://cdn.example.com/city.svg',
+          public_order: 60,
+          slug: 'city',
+          status: 'active',
+          updated_at: '2026-04-21T08:00:00.000Z',
         },
       ],
       {

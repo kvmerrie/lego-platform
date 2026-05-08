@@ -54,6 +54,11 @@ interface CatalogBootstrapThemeRow {
   display_name: string;
   id: string;
   is_public: boolean;
+  public_accent_color: string | null;
+  public_description: string | null;
+  public_display_name: string | null;
+  public_image_url: string | null;
+  public_logo_url: string | null;
   public_order: number | null;
   slug: string;
   status: string;
@@ -131,6 +136,11 @@ export interface CatalogBootstrapTheme {
   displayName: string;
   id: string;
   isPublic?: boolean;
+  publicAccentColor?: string;
+  publicDescription?: string;
+  publicDisplayName?: string;
+  publicImageUrl?: string;
+  publicLogoUrl?: string;
   publicOrder?: number;
   slug: string;
   status: string;
@@ -335,6 +345,31 @@ function toBootstrapTheme(
     ...(row.is_public
       ? {
           isPublic: row.is_public,
+        }
+      : {}),
+    ...(row.public_accent_color
+      ? {
+          publicAccentColor: row.public_accent_color,
+        }
+      : {}),
+    ...(row.public_description
+      ? {
+          publicDescription: row.public_description,
+        }
+      : {}),
+    ...(row.public_display_name
+      ? {
+          publicDisplayName: row.public_display_name,
+        }
+      : {}),
+    ...(row.public_image_url
+      ? {
+          publicImageUrl: row.public_image_url,
+        }
+      : {}),
+    ...(row.public_logo_url
+      ? {
+          publicLogoUrl: row.public_logo_url,
         }
       : {}),
     ...(typeof row.public_order === 'number'
@@ -652,6 +687,11 @@ function toTargetThemeRow(theme: CatalogBootstrapTheme) {
     display_name: theme.displayName,
     id: theme.id,
     is_public: theme.isPublic ?? false,
+    public_accent_color: theme.publicAccentColor ?? null,
+    public_description: theme.publicDescription ?? null,
+    public_display_name: theme.publicDisplayName ?? null,
+    public_image_url: theme.publicImageUrl ?? null,
+    public_logo_url: theme.publicLogoUrl ?? null,
     public_order: theme.publicOrder ?? null,
     slug: theme.slug,
     status: theme.status,
@@ -1081,7 +1121,7 @@ async function listCurrentThemes({
 }): Promise<CatalogBootstrapThemeRow[]> {
   return readOrderedBootstrapRows<CatalogBootstrapThemeRow>({
     columns:
-      'id, slug, display_name, is_public, public_order, status, created_at, updated_at',
+      'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_logo_url, public_order, status, created_at, updated_at',
     orderBy: 'slug',
     supabaseClient,
     table: CURRENT_CATALOG_THEMES_TABLE,

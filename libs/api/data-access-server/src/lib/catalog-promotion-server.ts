@@ -43,7 +43,17 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'source_system',
     'source_theme_name',
   ],
-  [CATALOG_THEMES_TABLE]: ['display_name', 'is_public', 'public_order', 'slug'],
+  [CATALOG_THEMES_TABLE]: [
+    'display_name',
+    'is_public',
+    'public_accent_color',
+    'public_description',
+    'public_display_name',
+    'public_image_url',
+    'public_logo_url',
+    'public_order',
+    'slug',
+  ],
   [CATALOG_THEME_MAPPINGS_TABLE]: ['primary_theme_id'],
   commerce_benchmark_sets: [],
   // TODO(brickhunt): decide whether production commerce seed and merchant
@@ -77,6 +87,11 @@ interface CatalogThemeRow {
   display_name: string;
   id: string;
   is_public: boolean;
+  public_accent_color: string | null;
+  public_description: string | null;
+  public_display_name: string | null;
+  public_image_url: string | null;
+  public_logo_url: string | null;
   public_order: number | null;
   slug: string;
   status: string;
@@ -443,13 +458,19 @@ function validatePromotionRowsRequiredNumberColumns({
   }
 }
 
+function hasBlankOptionalPromotionValue(value: unknown): boolean {
+  return value === null || (typeof value === 'string' && !value.trim());
+}
+
 function selectPromotionUpsertColumns({
   conflictColumns,
+  existingRow,
   isExistingRow,
   row,
   table,
 }: {
   conflictColumns: readonly string[];
+  existingRow?: Readonly<Record<string, unknown>>;
   isExistingRow: boolean;
   row: Readonly<Record<string, unknown>>;
   table: string;
@@ -463,7 +484,34 @@ function selectPromotionUpsertColumns({
   const allowedColumns = new Set([...conflictColumns, ...mutableColumns]);
 
   return Object.fromEntries(
-    Object.entries(row).filter(([column]) => allowedColumns.has(column)),
+    Object.entries(row).filter(([column, value]) => {
+      if (!allowedColumns.has(column)) {
+        return false;
+      }
+
+      if (table === CATALOG_THEMES_TABLE && column === 'is_public') {
+        return !isExistingRow;
+      }
+
+      if (
+        table === CATALOG_THEMES_TABLE &&
+        [
+          'public_accent_color',
+          'public_description',
+          'public_display_name',
+          'public_image_url',
+          'public_logo_url',
+          'public_order',
+        ].includes(column) &&
+        (hasBlankOptionalPromotionValue(value) ||
+          (isExistingRow &&
+            !hasBlankOptionalPromotionValue(existingRow?.[column])))
+      ) {
+        return false;
+      }
+
+      return true;
+    }),
   );
 }
 
@@ -541,7 +589,32 @@ async function readOrderedRows<TRow>({
   }
 }
 
-async function listExistingConflictKeys({
+function listExistingPromotionInspectionColumns({
+  conflictColumns,
+  table,
+}: {
+  conflictColumns: readonly string[];
+  table: string;
+}): string {
+  if (table !== CATALOG_THEMES_TABLE) {
+    return conflictColumns.join(', ');
+  }
+
+  return [
+    ...new Set([
+      ...conflictColumns,
+      'is_public',
+      'public_accent_color',
+      'public_description',
+      'public_display_name',
+      'public_image_url',
+      'public_logo_url',
+      'public_order',
+    ]),
+  ].join(', ');
+}
+
+async function listExistingConflictRows({
   onConflict,
   supabaseClient,
   table,
@@ -549,15 +622,19 @@ async function listExistingConflictKeys({
   onConflict: string;
   supabaseClient: CatalogPromotionSupabaseClient;
   table: string;
-}): Promise<Set<string>> {
+}): Promise<Map<string, Readonly<Record<string, unknown>>>> {
   const conflictColumns = splitConflictColumns(onConflict);
   const rows: Record<string, unknown>[] = [];
+  const selectColumns = listExistingPromotionInspectionColumns({
+    conflictColumns,
+    table,
+  });
 
   for (let from = 0; ; from += CATALOG_PROMOTION_PAGE_SIZE) {
     const to = from + CATALOG_PROMOTION_PAGE_SIZE - 1;
     const { data, error } = await supabaseClient
       .from(table)
-      .select(conflictColumns.join(', '))
+      .select(selectColumns)
       .range(from, to);
 
     if (error) {
@@ -575,13 +652,14 @@ async function listExistingConflictKeys({
     }
   }
 
-  return new Set(
-    rows.map((row) =>
+  return new Map(
+    rows.map((row) => [
       buildConflictKey({
         columns: conflictColumns,
         row,
       }),
-    ),
+      row,
+    ]),
   );
 }
 
@@ -606,7 +684,7 @@ async function upsertRows<TRow>({
   }
 
   const conflictColumns = splitConflictColumns(onConflict);
-  const existingKeys = await listExistingConflictKeys({
+  const existingRowsByConflictKey = await listExistingConflictRows({
     onConflict,
     supabaseClient,
     table,
@@ -621,7 +699,7 @@ async function upsertRows<TRow>({
       row: toRowRecord(row),
     });
 
-    if (existingKeys.has(conflictKey)) {
+    if (existingRowsByConflictKey.has(conflictKey)) {
       updatedCount += 1;
     } else {
       insertedCount += 1;
@@ -637,7 +715,8 @@ async function upsertRows<TRow>({
 
     return selectPromotionUpsertColumns({
       conflictColumns,
-      isExistingRow: existingKeys.has(conflictKey),
+      existingRow: existingRowsByConflictKey.get(conflictKey),
+      isExistingRow: existingRowsByConflictKey.has(conflictKey),
       row: rowRecord,
       table,
     });
@@ -920,7 +999,7 @@ export async function promoteCatalogFromStagingToProduction({
       }),
       readOrderedRows<CatalogThemeRow>({
         columns:
-          'id, slug, display_name, is_public, public_order, status, created_at, updated_at',
+          'id, slug, display_name, is_public, public_display_name, public_description, public_image_url, public_accent_color, public_logo_url, public_order, status, created_at, updated_at',
         orderBy: 'slug',
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_THEMES_TABLE,

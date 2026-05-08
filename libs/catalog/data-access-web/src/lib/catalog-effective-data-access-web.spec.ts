@@ -1190,6 +1190,99 @@ describe('catalog effective data access web', () => {
     expect(hiddenThemePage).toBeUndefined();
   });
 
+  test('uses public theme presentation metadata while keeping image fallback behavior', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/icons-representative.jpg',
+          name: 'Natural History Museum',
+          piece_count: 4014,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10326',
+          slug: 'natural-history-museum-10326',
+          source: 'rebrickable',
+          source_set_number: '10326-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/city-representative.jpg',
+          name: 'Snackbartruck',
+          piece_count: 406,
+          primary_theme_id: 'theme:city',
+          release_year: 2025,
+          set_id: '60488',
+          slug: 'snackbartruck-60488',
+          source: 'rebrickable',
+          source_set_number: '60488-1',
+          source_theme_id: 'rebrickable:52',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          is_public: true,
+          public_accent_color: '#123abc',
+          public_description: 'Grote blikvangers voor op de plank.',
+          public_display_name: 'Custom Icons',
+          public_image_url: 'https://cdn.example.com/custom-icons.jpg',
+          public_logo_url: 'https://cdn.example.com/icons-logo.svg',
+          public_order: 1,
+          slug: 'icons',
+          status: 'active',
+        },
+        {
+          display_name: 'City',
+          id: 'theme:city',
+          is_public: true,
+          public_accent_color: 'javascript:alert(1)',
+          public_description: null,
+          public_display_name: null,
+          public_image_url: null,
+          public_logo_url: null,
+          public_order: 2,
+          slug: 'city',
+          status: 'active',
+        },
+      ],
+    });
+
+    const [iconsItem, cityItem] = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(iconsItem?.themeSnapshot).toMatchObject({
+      momentum: 'Grote blikvangers voor op de plank.',
+      name: 'Custom Icons',
+      slug: 'icons',
+    });
+    expect(iconsItem?.imageUrl).toBe(
+      'https://cdn.example.com/custom-icons.jpg',
+    );
+    expect(iconsItem?.visual).toMatchObject({
+      backgroundColor: '#123abc',
+      imageUrl: 'https://cdn.example.com/custom-icons.jpg',
+    });
+    expect(cityItem?.themeSnapshot.name).toBe('City');
+    expect(cityItem?.imageUrl).toBe(
+      'https://cdn.example.com/city-representative.jpg',
+    );
+    expect(cityItem?.visual?.backgroundColor).toBe('#2f7fc0');
+    expect(cityItem?.visual?.imageUrl).toBe(
+      'https://cdn.example.com/city-representative.jpg',
+    );
+  });
+
   test('returns server-paginated theme pages with the total theme set count', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
