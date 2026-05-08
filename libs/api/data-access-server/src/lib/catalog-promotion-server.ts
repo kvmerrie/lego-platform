@@ -50,7 +50,15 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
   // operator fields should be promoted at all. Keep manual/protected columns
   // out of updates until that contract is explicit.
   commerce_merchants: ['affiliate_network', 'name', 'source_type'],
-  commerce_offer_seeds: ['id', 'product_url'],
+  commerce_offer_seeds: [
+    'id',
+    'product_url',
+    'is_active',
+    'validation_status',
+    'notes',
+    'created_at',
+    'updated_at',
+  ],
 };
 
 type CatalogPromotionSupabaseClient = Pick<SupabaseClient, 'from'>;
@@ -160,6 +168,17 @@ interface CommerceMerchantPromotionPlan {
   merchantIdByStagingId: Map<string, string>;
   rowsForUpsert: CommerceMerchantRow[];
 }
+
+type ProductionOfferSeedIdentity = Pick<
+  CommerceOfferSeedRow,
+  'id' | 'merchant_id' | 'set_id'
+> &
+  Partial<
+    Pick<
+      CommerceOfferSeedRow,
+      'created_at' | 'is_active' | 'notes' | 'updated_at' | 'validation_status'
+    >
+  >;
 
 export class CatalogPromotionError extends Error {
   constructor(
@@ -286,6 +305,14 @@ function readRequiredPromotionNumber({
   }
 
   return value;
+}
+
+function readOptionalPromotionBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+function readOptionalPromotionString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
 function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
@@ -467,10 +494,7 @@ function normalizeBenchmarkSetRow(
 function normalizeOfferSeedRow(
   offerSeed: CommerceOfferSeedRow,
 ): CommerceOfferSeedRow {
-  return {
-    ...offerSeed,
-    notes: offerSeed.notes ?? '',
-  };
+  return offerSeed;
 }
 
 async function readOrderedRows<TRow>({
@@ -668,18 +692,16 @@ async function listProductionOfferSeeds({
   supabaseClient,
 }: {
   supabaseClient: CatalogPromotionSupabaseClient;
-}): Promise<
-  Array<Pick<CommerceOfferSeedRow, 'id' | 'merchant_id' | 'set_id'>>
-> {
-  const rows: Array<
-    Pick<CommerceOfferSeedRow, 'id' | 'merchant_id' | 'set_id'>
-  > = [];
+}): Promise<ProductionOfferSeedIdentity[]> {
+  const rows: ProductionOfferSeedIdentity[] = [];
 
   for (let from = 0; ; from += CATALOG_PROMOTION_PAGE_SIZE) {
     const to = from + CATALOG_PROMOTION_PAGE_SIZE - 1;
     const { data, error } = await supabaseClient
       .from(COMMERCE_OFFER_SEEDS_TABLE)
-      .select('id, set_id, merchant_id')
+      .select(
+        'id, set_id, merchant_id, is_active, validation_status, notes, created_at, updated_at',
+      )
       .order('set_id', { ascending: true })
       .range(from, to);
 
@@ -690,9 +712,7 @@ async function listProductionOfferSeeds({
     }
 
     const pageRows =
-      (data as unknown as Array<
-        Pick<CommerceOfferSeedRow, 'id' | 'merchant_id' | 'set_id'>
-      > | null) ?? [];
+      (data as unknown as ProductionOfferSeedIdentity[] | null) ?? [];
     rows.push(...pageRows);
 
     if (pageRows.length < CATALOG_PROMOTION_PAGE_SIZE) {
@@ -750,19 +770,18 @@ async function upsertMerchantsBySlug({
 function resolveOfferSeedsByCompositeKey({
   existingOfferSeeds,
   merchantIdByStagingId,
+  nowIso,
   rows,
 }: {
-  existingOfferSeeds: readonly Pick<
-    CommerceOfferSeedRow,
-    'id' | 'merchant_id' | 'set_id'
-  >[];
+  existingOfferSeeds: readonly ProductionOfferSeedIdentity[];
   merchantIdByStagingId: ReadonlyMap<string, string>;
+  nowIso: string;
   rows: readonly CommerceOfferSeedRow[];
 }): CommerceOfferSeedRow[] {
-  const existingOfferSeedIdByKey = new Map(
+  const existingOfferSeedByKey = new Map(
     existingOfferSeeds.map((offerSeed) => [
       `${offerSeed.set_id}::${offerSeed.merchant_id}`,
-      offerSeed.id,
+      offerSeed,
     ]),
   );
   return rows.map((offerSeed) => {
@@ -781,11 +800,6 @@ function resolveOfferSeedsByCompositeKey({
       row: offerSeed as unknown as Readonly<Record<string, unknown>>,
       table: COMMERCE_OFFER_SEEDS_TABLE,
     });
-    const validationStatus = readRequiredPromotionString({
-      column: 'validation_status',
-      row: offerSeed as unknown as Readonly<Record<string, unknown>>,
-      table: COMMERCE_OFFER_SEEDS_TABLE,
-    });
     const targetMerchantId = merchantIdByStagingId.get(stagingMerchantId);
 
     if (!targetMerchantId) {
@@ -795,11 +809,12 @@ function resolveOfferSeedsByCompositeKey({
     }
 
     const compositeKey = `${setId}::${targetMerchantId}`;
+    const existingOfferSeed = existingOfferSeedByKey.get(compositeKey);
     const stagingId =
       typeof offerSeed.id === 'string' && offerSeed.id.trim()
         ? offerSeed.id.trim()
         : undefined;
-    const targetId = existingOfferSeedIdByKey.get(compositeKey) ?? stagingId;
+    const targetId = existingOfferSeed?.id ?? stagingId;
 
     if (!targetId) {
       throw new Error(
@@ -807,12 +822,37 @@ function resolveOfferSeedsByCompositeKey({
       );
     }
 
+    const isActive =
+      readOptionalPromotionBoolean(offerSeed.is_active) ??
+      readOptionalPromotionBoolean(existingOfferSeed?.is_active) ??
+      true;
+    const validationStatus =
+      readOptionalPromotionString(offerSeed.validation_status) ??
+      readOptionalPromotionString(existingOfferSeed?.validation_status) ??
+      'pending';
+    const notes =
+      typeof offerSeed.notes === 'string'
+        ? offerSeed.notes
+        : (existingOfferSeed?.notes ?? '');
+    const createdAt =
+      readOptionalPromotionString(offerSeed.created_at) ??
+      readOptionalPromotionString(existingOfferSeed?.created_at) ??
+      nowIso;
+    const updatedAt =
+      readOptionalPromotionString(offerSeed.updated_at) ??
+      readOptionalPromotionString(existingOfferSeed?.updated_at) ??
+      nowIso;
+
     return {
       ...offerSeed,
+      created_at: createdAt,
       id: targetId,
+      is_active: isActive,
       merchant_id: targetMerchantId,
+      notes,
       product_url: productUrl,
       set_id: setId,
+      updated_at: updatedAt,
       validation_status: validationStatus,
     };
   });
@@ -1032,6 +1072,7 @@ export async function promoteCatalogFromStagingToProduction({
     const resolvedCommerceOfferSeeds = resolveOfferSeedsByCompositeKey({
       existingOfferSeeds,
       merchantIdByStagingId: merchantPromotionPlan.merchantIdByStagingId,
+      nowIso: startedAt.toISOString(),
       rows: normalizedCommerceOfferSeeds,
     });
     validatePromotionRowsRequiredColumns({

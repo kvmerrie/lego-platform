@@ -279,13 +279,13 @@ describe('catalog promotion server', () => {
       productionClient.upsertByTable.get('commerce_offer_seeds'),
     ).toHaveBeenCalledWith(
       [
-        {
+        expect.objectContaining({
           id: 'production-seed-bol-rivendell',
           merchant_id: 'production-merchant-bol',
           product_url:
             'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
           set_id: '10316',
-        },
+        }),
       ],
       {
         onConflict: 'set_id,merchant_id',
@@ -369,13 +369,13 @@ describe('catalog promotion server', () => {
       productionClient.upsertByTable.get('commerce_offer_seeds'),
     ).toHaveBeenCalledWith(
       [
-        {
+        expect.objectContaining({
           id: 'production-seed-bol-rivendell',
           merchant_id: 'production-merchant-bol',
           product_url:
             'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
           set_id: '10316',
-        },
+        }),
       ],
       {
         onConflict: 'set_id,merchant_id',
@@ -529,13 +529,184 @@ describe('catalog promotion server', () => {
       productionClient.upsertByTable.get('commerce_offer_seeds'),
     ).toHaveBeenCalledWith(
       [
-        {
+        expect.objectContaining({
           id: 'production-seed-bol-rivendell',
           merchant_id: 'production-merchant-bol',
           product_url:
             'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
           set_id: '10316',
-        },
+        }),
+      ],
+      {
+        onConflict: 'set_id,merchant_id',
+      },
+    );
+  });
+
+  test('preserves production offer seed required fields when staging values are null', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-bol',
+            is_active: true,
+            name: 'bol',
+            notes: '',
+            slug: 'bol',
+            source_type: 'direct',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [
+          {
+            created_at: null,
+            id: null,
+            is_active: null,
+            last_verified_at: '2026-04-21T08:00:00.000Z',
+            merchant_id: 'staging-merchant-bol',
+            notes: null,
+            product_url:
+              'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
+            set_id: '10316',
+            updated_at: null,
+            validation_status: null,
+          },
+        ],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        commerce_merchants: [
+          {
+            id: 'production-merchant-bol',
+            slug: 'bol',
+          },
+        ],
+        commerce_offer_seeds: [
+          {
+            created_at: '2026-04-20T08:00:00.000Z',
+            id: 'production-seed-bol-rivendell',
+            is_active: false,
+            merchant_id: 'production-merchant-bol',
+            notes: 'Keep production note',
+            set_id: '10316',
+            updated_at: '2026-04-20T09:00:00.000Z',
+            validation_status: 'stale',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('commerce_offer_seeds'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          created_at: '2026-04-20T08:00:00.000Z',
+          id: 'production-seed-bol-rivendell',
+          is_active: false,
+          merchant_id: 'production-merchant-bol',
+          notes: 'Keep production note',
+          set_id: '10316',
+          updated_at: '2026-04-20T09:00:00.000Z',
+          validation_status: 'stale',
+        }),
+      ],
+      {
+        onConflict: 'set_id,merchant_id',
+      },
+    );
+  });
+
+  test('derives schema defaults for new offer seed required fields when staging values are null', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-bol',
+            is_active: true,
+            name: 'bol',
+            notes: '',
+            slug: 'bol',
+            source_type: 'direct',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [
+          {
+            created_at: null,
+            id: 'staging-seed-bol-millennium-falcon',
+            is_active: null,
+            last_verified_at: null,
+            merchant_id: 'staging-merchant-bol',
+            notes: null,
+            product_url:
+              'https://www.bol.com/nl/nl/p/lego-millennium-falcon/9300000145678',
+            set_id: '75192',
+            updated_at: null,
+            validation_status: null,
+          },
+        ],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        commerce_merchants: [
+          {
+            id: 'production-merchant-bol',
+            slug: 'bol',
+          },
+        ],
+        commerce_offer_seeds: [],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('commerce_offer_seeds'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          created_at: '2026-04-22T09:00:00.000Z',
+          id: 'staging-seed-bol-millennium-falcon',
+          is_active: true,
+          merchant_id: 'production-merchant-bol',
+          notes: '',
+          set_id: '75192',
+          updated_at: '2026-04-22T09:00:00.000Z',
+          validation_status: 'pending',
+        }),
       ],
       {
         onConflict: 'set_id,merchant_id',
