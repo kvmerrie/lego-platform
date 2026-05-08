@@ -50,7 +50,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
   // operator fields should be promoted at all. Keep manual/protected columns
   // out of updates until that contract is explicit.
   commerce_merchants: ['affiliate_network', 'name', 'source_type'],
-  commerce_offer_seeds: ['product_url'],
+  commerce_offer_seeds: ['id', 'product_url'],
 };
 
 type CatalogPromotionSupabaseClient = Pick<SupabaseClient, 'from'>;
@@ -156,6 +156,11 @@ export interface PromoteCatalogFromStagingToProductionDependencies {
   now?: () => Date;
 }
 
+interface CommerceMerchantPromotionPlan {
+  merchantIdByStagingId: Map<string, string>;
+  rowsForUpsert: CommerceMerchantRow[];
+}
+
 export class CatalogPromotionError extends Error {
   constructor(
     message: string,
@@ -243,6 +248,46 @@ function readRequiredPromotionString({
   return value;
 }
 
+function readRequiredPromotionBoolean({
+  column,
+  row,
+  table,
+}: {
+  column: string;
+  row: Readonly<Record<string, unknown>>;
+  table: string;
+}): boolean {
+  const value = row[column];
+
+  if (typeof value !== 'boolean') {
+    throw new Error(
+      `Unable to promote ${table}. Required column ${column} is missing for row ${JSON.stringify(row)}.`,
+    );
+  }
+
+  return value;
+}
+
+function readRequiredPromotionNumber({
+  column,
+  row,
+  table,
+}: {
+  column: string;
+  row: Readonly<Record<string, unknown>>;
+  table: string;
+}): number {
+  const value = row[column];
+
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(
+      `Unable to promote ${table}. Required column ${column} is missing for row ${JSON.stringify(row)}.`,
+    );
+  }
+
+  return value;
+}
+
 function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
   const displayName = readRequiredPromotionString({
     column: 'display_name',
@@ -315,6 +360,46 @@ function validatePromotionRowsRequiredColumns({
   for (const row of rows) {
     for (const column of columns) {
       readRequiredPromotionString({
+        column,
+        row,
+        table,
+      });
+    }
+  }
+}
+
+function validatePromotionRowsRequiredBooleanColumns({
+  columns,
+  rows,
+  table,
+}: {
+  columns: readonly string[];
+  rows: readonly Readonly<Record<string, unknown>>[];
+  table: string;
+}) {
+  for (const row of rows) {
+    for (const column of columns) {
+      readRequiredPromotionBoolean({
+        column,
+        row,
+        table,
+      });
+    }
+  }
+}
+
+function validatePromotionRowsRequiredNumberColumns({
+  columns,
+  rows,
+  table,
+}: {
+  columns: readonly string[];
+  rows: readonly Readonly<Record<string, unknown>>[];
+  table: string;
+}) {
+  for (const row of rows) {
+    for (const column of columns) {
+      readRequiredPromotionNumber({
         column,
         row,
         table,
@@ -616,16 +701,13 @@ async function listProductionOfferSeeds({
   }
 }
 
-async function upsertMerchantsBySlug({
+async function planMerchantsBySlug({
   rows,
   supabaseClient,
 }: {
   rows: readonly CommerceMerchantRow[];
   supabaseClient: CatalogPromotionSupabaseClient;
-}): Promise<{
-  merchantIdByStagingId: Map<string, string>;
-  summary: CatalogPromotionTableSummary;
-}> {
+}): Promise<CommerceMerchantPromotionPlan> {
   const existingMerchants = await listProductionMerchants({
     supabaseClient,
   });
@@ -646,35 +728,65 @@ async function upsertMerchantsBySlug({
 
   return {
     merchantIdByStagingId,
-    summary: await upsertRows({
-      onConflict: 'slug',
-      rows: rowsForUpsert,
-      supabaseClient,
-      table: COMMERCE_MERCHANTS_TABLE,
-    }),
+    rowsForUpsert,
   };
 }
 
-async function upsertOfferSeedsByCompositeKey({
-  merchantIdByStagingId,
-  rows,
+async function upsertMerchantsBySlug({
+  plan,
   supabaseClient,
 }: {
-  merchantIdByStagingId: ReadonlyMap<string, string>;
-  rows: readonly CommerceOfferSeedRow[];
+  plan: CommerceMerchantPromotionPlan;
   supabaseClient: CatalogPromotionSupabaseClient;
 }): Promise<CatalogPromotionTableSummary> {
-  const existingOfferSeeds = await listProductionOfferSeeds({
+  return upsertRows({
+    onConflict: 'slug',
+    rows: plan.rowsForUpsert,
     supabaseClient,
+    table: COMMERCE_MERCHANTS_TABLE,
   });
+}
+
+function resolveOfferSeedsByCompositeKey({
+  existingOfferSeeds,
+  merchantIdByStagingId,
+  rows,
+}: {
+  existingOfferSeeds: readonly Pick<
+    CommerceOfferSeedRow,
+    'id' | 'merchant_id' | 'set_id'
+  >[];
+  merchantIdByStagingId: ReadonlyMap<string, string>;
+  rows: readonly CommerceOfferSeedRow[];
+}): CommerceOfferSeedRow[] {
   const existingOfferSeedIdByKey = new Map(
     existingOfferSeeds.map((offerSeed) => [
       `${offerSeed.set_id}::${offerSeed.merchant_id}`,
       offerSeed.id,
     ]),
   );
-  const rowsForUpsert = rows.map((offerSeed) => {
-    const targetMerchantId = merchantIdByStagingId.get(offerSeed.merchant_id);
+  return rows.map((offerSeed) => {
+    const stagingMerchantId = readRequiredPromotionString({
+      column: 'merchant_id',
+      row: offerSeed as unknown as Readonly<Record<string, unknown>>,
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
+    const setId = readRequiredPromotionString({
+      column: 'set_id',
+      row: offerSeed as unknown as Readonly<Record<string, unknown>>,
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
+    const productUrl = readRequiredPromotionString({
+      column: 'product_url',
+      row: offerSeed as unknown as Readonly<Record<string, unknown>>,
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
+    const validationStatus = readRequiredPromotionString({
+      column: 'validation_status',
+      row: offerSeed as unknown as Readonly<Record<string, unknown>>,
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
+    const targetMerchantId = merchantIdByStagingId.get(stagingMerchantId);
 
     if (!targetMerchantId) {
       throw new Error(
@@ -682,19 +794,40 @@ async function upsertOfferSeedsByCompositeKey({
       );
     }
 
-    const compositeKey = `${offerSeed.set_id}::${targetMerchantId}`;
-    const targetId = existingOfferSeedIdByKey.get(compositeKey) ?? offerSeed.id;
+    const compositeKey = `${setId}::${targetMerchantId}`;
+    const stagingId =
+      typeof offerSeed.id === 'string' && offerSeed.id.trim()
+        ? offerSeed.id.trim()
+        : undefined;
+    const targetId = existingOfferSeedIdByKey.get(compositeKey) ?? stagingId;
+
+    if (!targetId) {
+      throw new Error(
+        `Unable to promote ${COMMERCE_OFFER_SEEDS_TABLE}. Required column id is missing for new row set_id=${setId}, merchant_id=${targetMerchantId}.`,
+      );
+    }
 
     return {
       ...offerSeed,
       id: targetId,
       merchant_id: targetMerchantId,
+      product_url: productUrl,
+      set_id: setId,
+      validation_status: validationStatus,
     };
   });
+}
 
+async function upsertOfferSeedsByCompositeKey({
+  rows,
+  supabaseClient,
+}: {
+  rows: readonly CommerceOfferSeedRow[];
+  supabaseClient: CatalogPromotionSupabaseClient;
+}): Promise<CatalogPromotionTableSummary> {
   return upsertRows({
     onConflict: 'set_id,merchant_id',
-    rows: rowsForUpsert,
+    rows,
     supabaseClient,
     table: COMMERCE_OFFER_SEEDS_TABLE,
   });
@@ -789,34 +922,139 @@ export async function promoteCatalogFromStagingToProduction({
 
     const normalizedCatalogThemes = catalogThemes.map(normalizeCatalogThemeRow);
     const normalizedCatalogSets = catalogSets.map(normalizeCatalogSetRow);
+    const normalizedCommerceMerchants =
+      commerceMerchants.map(normalizeMerchantRow);
+    const normalizedCommerceBenchmarkSets = commerceBenchmarkSets.map(
+      normalizeBenchmarkSetRow,
+    );
+    const normalizedCommerceOfferSeeds = commerceOfferSeeds.map(
+      normalizeOfferSeedRow,
+    );
 
     validatePromotionRowsRequiredColumns({
-      columns: ['id', 'source_system', 'source_theme_name'],
+      columns: [
+        'id',
+        'source_system',
+        'source_theme_name',
+        'created_at',
+        'updated_at',
+      ],
       rows: catalogSourceThemes as unknown as Readonly<
         Record<string, unknown>
       >[],
       table: CATALOG_SOURCE_THEMES_TABLE,
     });
     validatePromotionRowsRequiredColumns({
-      columns: ['id', 'display_name', 'slug', 'status'],
+      columns: [
+        'id',
+        'display_name',
+        'slug',
+        'status',
+        'created_at',
+        'updated_at',
+      ],
       rows: normalizedCatalogThemes as unknown as Readonly<
         Record<string, unknown>
       >[],
       table: CATALOG_THEMES_TABLE,
     });
     validatePromotionRowsRequiredColumns({
-      columns: ['source_theme_id', 'primary_theme_id'],
+      columns: [
+        'source_theme_id',
+        'primary_theme_id',
+        'created_at',
+        'updated_at',
+      ],
       rows: catalogThemeMappings as unknown as Readonly<
         Record<string, unknown>
       >[],
       table: CATALOG_THEME_MAPPINGS_TABLE,
     });
     validatePromotionRowsRequiredColumns({
-      columns: ['set_id', 'name', 'slug', 'status'],
+      columns: [
+        'set_id',
+        'source_set_number',
+        'slug',
+        'name',
+        'source',
+        'status',
+        'created_at',
+        'updated_at',
+      ],
       rows: normalizedCatalogSets as unknown as Readonly<
         Record<string, unknown>
       >[],
       table: CATALOG_SETS_TABLE,
+    });
+    validatePromotionRowsRequiredNumberColumns({
+      columns: ['release_year', 'piece_count'],
+      rows: normalizedCatalogSets as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SETS_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: [
+        'id',
+        'slug',
+        'name',
+        'source_type',
+        'created_at',
+        'updated_at',
+      ],
+      rows: normalizedCommerceMerchants as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: COMMERCE_MERCHANTS_TABLE,
+    });
+    validatePromotionRowsRequiredBooleanColumns({
+      columns: ['is_active'],
+      rows: normalizedCommerceMerchants as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: COMMERCE_MERCHANTS_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: ['set_id', 'created_at', 'updated_at'],
+      rows: normalizedCommerceBenchmarkSets as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: COMMERCE_BENCHMARK_SETS_TABLE,
+    });
+
+    const merchantPromotionPlan = await planMerchantsBySlug({
+      rows: normalizedCommerceMerchants,
+      supabaseClient: productionSupabaseClient,
+    });
+    const existingOfferSeeds = await listProductionOfferSeeds({
+      supabaseClient: productionSupabaseClient,
+    });
+    const resolvedCommerceOfferSeeds = resolveOfferSeedsByCompositeKey({
+      existingOfferSeeds,
+      merchantIdByStagingId: merchantPromotionPlan.merchantIdByStagingId,
+      rows: normalizedCommerceOfferSeeds,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: [
+        'id',
+        'set_id',
+        'merchant_id',
+        'product_url',
+        'validation_status',
+        'created_at',
+        'updated_at',
+      ],
+      rows: resolvedCommerceOfferSeeds as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
+    validatePromotionRowsRequiredBooleanColumns({
+      columns: ['is_active'],
+      rows: resolvedCommerceOfferSeeds as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: COMMERCE_OFFER_SEEDS_TABLE,
     });
 
     tables.catalog_source_themes = await upsertRows({
@@ -844,21 +1082,19 @@ export async function promoteCatalogFromStagingToProduction({
       table: CATALOG_SETS_TABLE,
     });
 
-    const merchantPromotion = await upsertMerchantsBySlug({
-      rows: commerceMerchants.map(normalizeMerchantRow),
+    tables.commerce_merchants = await upsertMerchantsBySlug({
+      plan: merchantPromotionPlan,
       supabaseClient: productionSupabaseClient,
     });
 
-    tables.commerce_merchants = merchantPromotion.summary;
     tables.commerce_benchmark_sets = await upsertRows({
       onConflict: 'set_id',
-      rows: commerceBenchmarkSets.map(normalizeBenchmarkSetRow),
+      rows: normalizedCommerceBenchmarkSets,
       supabaseClient: productionSupabaseClient,
       table: COMMERCE_BENCHMARK_SETS_TABLE,
     });
     tables.commerce_offer_seeds = await upsertOfferSeedsByCompositeKey({
-      merchantIdByStagingId: merchantPromotion.merchantIdByStagingId,
-      rows: commerceOfferSeeds.map(normalizeOfferSeedRow),
+      rows: resolvedCommerceOfferSeeds,
       supabaseClient: productionSupabaseClient,
     });
 

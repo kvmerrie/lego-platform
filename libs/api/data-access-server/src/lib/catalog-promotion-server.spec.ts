@@ -280,6 +280,7 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
+          id: 'production-seed-bol-rivendell',
           merchant_id: 'production-merchant-bol',
           product_url:
             'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
@@ -369,6 +370,7 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
+          id: 'production-seed-bol-rivendell',
           merchant_id: 'production-merchant-bol',
           product_url:
             'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
@@ -379,6 +381,361 @@ describe('catalog promotion server', () => {
         onConflict: 'set_id,merchant_id',
       },
     );
+  });
+
+  test('promotes new offer seeds with valid staging ids', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-bol',
+            is_active: true,
+            name: 'bol',
+            notes: '',
+            slug: 'bol',
+            source_type: 'direct',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-seed-bol-millennium-falcon',
+            is_active: true,
+            last_verified_at: '2026-04-21T08:00:00.000Z',
+            merchant_id: 'staging-merchant-bol',
+            notes: '',
+            product_url:
+              'https://www.bol.com/nl/nl/p/lego-millennium-falcon/9300000145678',
+            set_id: '75192',
+            updated_at: '2026-04-21T08:00:00.000Z',
+            validation_status: 'valid',
+          },
+        ],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        commerce_merchants: [
+          {
+            id: 'production-merchant-bol',
+            slug: 'bol',
+          },
+        ],
+        commerce_offer_seeds: [],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('commerce_offer_seeds'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          id: 'staging-seed-bol-millennium-falcon',
+          merchant_id: 'production-merchant-bol',
+          product_url:
+            'https://www.bol.com/nl/nl/p/lego-millennium-falcon/9300000145678',
+          set_id: '75192',
+        }),
+      ],
+      {
+        onConflict: 'set_id,merchant_id',
+      },
+    );
+  });
+
+  test('preserves production offer seed ids when staging ids are missing', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-bol',
+            is_active: true,
+            name: 'bol',
+            notes: '',
+            slug: 'bol',
+            source_type: 'direct',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: null,
+            is_active: true,
+            last_verified_at: '2026-04-21T08:00:00.000Z',
+            merchant_id: 'staging-merchant-bol',
+            notes: '',
+            product_url:
+              'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
+            set_id: '10316',
+            updated_at: '2026-04-21T08:00:00.000Z',
+            validation_status: 'valid',
+          },
+        ],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        commerce_merchants: [
+          {
+            id: 'production-merchant-bol',
+            slug: 'bol',
+          },
+        ],
+        commerce_offer_seeds: [
+          {
+            id: 'production-seed-bol-rivendell',
+            merchant_id: 'production-merchant-bol',
+            set_id: '10316',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('commerce_offer_seeds'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          id: 'production-seed-bol-rivendell',
+          merchant_id: 'production-merchant-bol',
+          product_url:
+            'https://www.bol.com/nl/nl/p/lego-rivendell/9300000141234',
+          set_id: '10316',
+        },
+      ],
+      {
+        onConflict: 'set_id,merchant_id',
+      },
+    );
+  });
+
+  test('rejects new offer seeds without ids before any promotion writes', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'rebrickable-theme-icons',
+            parent_source_theme_id: null,
+            source_system: 'rebrickable',
+            source_theme_name: 'Icons',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Icons',
+            id: 'icons',
+            slug: 'icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-bol',
+            is_active: true,
+            name: 'bol',
+            notes: '',
+            slug: 'bol',
+            source_type: 'direct',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: null,
+            is_active: true,
+            last_verified_at: '2026-04-21T08:00:00.000Z',
+            merchant_id: 'staging-merchant-bol',
+            notes: '',
+            product_url:
+              'https://www.bol.com/nl/nl/p/lego-millennium-falcon/9300000145678',
+            set_id: '75192',
+            updated_at: '2026-04-21T08:00:00.000Z',
+            validation_status: 'valid',
+          },
+        ],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        commerce_merchants: [
+          {
+            id: 'production-merchant-bol',
+            slug: 'bol',
+          },
+        ],
+        commerce_offer_seeds: [],
+      },
+    });
+
+    await expect(
+      promoteCatalogFromStagingToProduction({
+        createProductionSupabaseClient: () => productionClient as never,
+        createStagingSupabaseClient: () => stagingClient as never,
+        now: vi
+          .fn()
+          .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+          .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+      }),
+    ).rejects.toThrow(
+      'Unable to promote commerce_offer_seeds. Required column id is missing for new row set_id=75192, merchant_id=production-merchant-bol.',
+    );
+    expect(
+      Array.from(productionClient.upsertByTable.values()).some(
+        (upsert) => upsert.mock.calls.length > 0,
+      ),
+    ).toBe(false);
+  });
+
+  test('does not partially write catalog tables when offer seed validation fails', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'rebrickable-theme-icons',
+            parent_source_theme_id: null,
+            source_system: 'rebrickable',
+            source_theme_name: 'Icons',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Icons',
+            id: 'icons',
+            slug: 'icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            primary_theme_id: 'icons',
+            source_theme_id: 'rebrickable-theme-icons',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: null,
+            name: 'Rivendell',
+            piece_count: 6167,
+            primary_theme_id: 'icons',
+            release_year: 2023,
+            set_id: '10316',
+            slug: 'lord-of-the-rings-rivendell-10316',
+            source: 'rebrickable',
+            source_set_number: '10316-1',
+            source_theme_id: 'rebrickable-theme-icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'staging-merchant-bol',
+            is_active: true,
+            name: 'bol',
+            notes: '',
+            slug: 'bol',
+            source_type: 'direct',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: null,
+            is_active: true,
+            last_verified_at: '2026-04-21T08:00:00.000Z',
+            merchant_id: 'staging-merchant-bol',
+            notes: '',
+            product_url:
+              'https://www.bol.com/nl/nl/p/lego-millennium-falcon/9300000145678',
+            set_id: '75192',
+            updated_at: '2026-04-21T08:00:00.000Z',
+            validation_status: 'valid',
+          },
+        ],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        commerce_merchants: [
+          {
+            id: 'production-merchant-bol',
+            slug: 'bol',
+          },
+        ],
+        commerce_offer_seeds: [],
+      },
+    });
+
+    await expect(
+      promoteCatalogFromStagingToProduction({
+        createProductionSupabaseClient: () => productionClient as never,
+        createStagingSupabaseClient: () => stagingClient as never,
+        now: vi
+          .fn()
+          .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+          .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+      }),
+    ).rejects.toThrow('Unable to promote commerce_offer_seeds');
+    expect(
+      Array.from(productionClient.upsertByTable.values()).some(
+        (upsert) => upsert.mock.calls.length > 0,
+      ),
+    ).toBe(false);
   });
 
   test('does not overwrite protected catalog set fields during promotion updates', async () => {
