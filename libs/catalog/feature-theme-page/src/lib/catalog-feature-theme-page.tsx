@@ -92,14 +92,16 @@ export function CatalogFeatureThemePage({
     typeof pageSize === 'number' && pageSize > 0
       ? Math.max(1, Math.floor(pageSize))
       : setCards.length;
-  const pageCount = Math.max(
-    1,
-    Math.ceil(setCards.length / normalizedPageSize),
-  );
-  const visibleSetCards = setCards.slice(
-    (normalizedCurrentPage - 1) * normalizedPageSize,
-    normalizedCurrentPage * normalizedPageSize,
-  );
+  const totalSetCount = Math.max(setCards.length, themeSnapshot.setCount);
+  const pageCount = Math.max(1, Math.ceil(totalSetCount / normalizedPageSize));
+  const isServerPaginated =
+    totalSetCount > setCards.length && setCards.length <= normalizedPageSize;
+  const visibleSetCards = isServerPaginated
+    ? setCards
+    : setCards.slice(
+        (normalizedCurrentPage - 1) * normalizedPageSize,
+        normalizedCurrentPage * normalizedPageSize,
+      );
   const themePageHref = buildThemePath(themeSnapshot.slug);
   const buildThemePageHref = (page: number) =>
     page <= 1 ? themePageHref : `${themePageHref}?page=${page}`;

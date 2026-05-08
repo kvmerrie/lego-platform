@@ -93,7 +93,7 @@ describe('commerce sync server', () => {
       },
       merchantSlugs: ['lego-nl'],
       mode: 'write',
-      setIds: ['10316'],
+      setIds: ['10316-1'],
       workspaceRoot: '/tmp/brickhunt-workspace',
     });
 
@@ -113,6 +113,7 @@ describe('commerce sync server', () => {
     });
     expect(result.refreshSuccessCount).toBe(1);
     expect(result.scoped).toBe(true);
+    expect(result.scopedSetIds).toEqual(['10316']);
   });
 
   test('does not revalidate catalog paths during check mode', async () => {

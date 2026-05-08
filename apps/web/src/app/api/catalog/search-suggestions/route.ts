@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const [sets, themes] = await Promise.all([
-    listCatalogSearchSuggestionSetCards(),
+    listCatalogSearchSuggestionSetCards({ limit: 24 }),
     listCatalogThemeDirectoryItems(),
   ]);
 

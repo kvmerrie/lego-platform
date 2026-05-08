@@ -27,6 +27,7 @@ import {
   updateCommerceOfferSeedValidationState,
   upsertCommerceOfferLatestRecord,
 } from '@lego-platform/commerce/data-access-server';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 
 const MERCHANT_REQUEST_TIMEOUT_MS = 15000;
 const TOP1TOYS_REQUEST_TIMEOUT_MS = 30000;
@@ -2138,7 +2139,9 @@ function filterCommerceRefreshSeeds({
   refreshSeeds: readonly CommerceRefreshSeed[];
 }) {
   const requestedSetIds = new Set(
-    (filters?.setIds ?? []).map((setId) => setId.trim()).filter(Boolean),
+    (filters?.setIds ?? [])
+      .map((setId) => normalizeCatalogSetId(setId))
+      .filter(Boolean),
   );
   const requestedMerchantSlugs = new Set(
     (filters?.merchantSlugs ?? [])
@@ -2225,13 +2228,14 @@ export async function refreshCommerceSetOfferSeeds({
   now?: Date;
   setId: string;
 }): Promise<CommerceRefreshSummary> {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const refreshSeeds = (await listActiveCommerceRefreshSeeds()).filter(
-    (refreshSeed) => refreshSeed.offerSeed.setId === setId,
+    (refreshSeed) => refreshSeed.offerSeed.setId === canonicalSetId,
   );
 
   if (refreshSeeds.length === 0) {
     throw new Error(
-      `Set ${setId} heeft nog geen actieve seeds om opnieuw te checken.`,
+      `Set ${canonicalSetId} heeft nog geen actieve seeds om opnieuw te checken.`,
     );
   }
 

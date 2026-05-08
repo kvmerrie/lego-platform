@@ -28,6 +28,7 @@ import {
   createSupabaseAdminClient,
   getServerSupabaseAdminClient,
 } from '@lego-platform/shared/data-access-auth-server';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
@@ -80,6 +81,23 @@ const COMMERCE_PRODUCTION_COPY_DELETE_ORDER = [
 
 type CommerceProductionCopyTableName =
   (typeof COMMERCE_PRODUCTION_COPY_TABLES)[number]['name'];
+
+const COMMERCE_PRODUCTION_COPY_SELECT_COLUMNS: Record<
+  CommerceProductionCopyTableName,
+  string
+> = {
+  [COMMERCE_AFFILIATE_DISCOVERED_SETS_TABLE]:
+    'id, merchant_id, normalized_set_id, source_set_number, product_title, price_minor, currency_code, image_url, product_url, confidence, status, raw_payload, import_attempted_at, import_error, imported_set_id, first_seen_at, last_seen_at, created_at, updated_at',
+  [COMMERCE_BENCHMARK_SETS_TABLE]: 'set_id, notes, created_at, updated_at',
+  [COMMERCE_MERCHANTS_TABLE]:
+    'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
+  [COMMERCE_OFFER_LATEST_TABLE]:
+    'id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at',
+  [COMMERCE_OFFER_SEEDS_TABLE]:
+    'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+  [PRICING_DAILY_SET_HISTORY_TABLE]:
+    'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on, created_at, updated_at',
+};
 
 export interface CommerceProductionCopyTableSummary {
   deletedCount: number;
@@ -408,6 +426,14 @@ function getCommerceProductionCopyTableConfig(
   );
 }
 
+function normalizeSupabaseRows(
+  data: unknown,
+): Readonly<Record<string, unknown>>[] {
+  return Array.isArray(data)
+    ? (data as Readonly<Record<string, unknown>>[])
+    : [];
+}
+
 async function readCommerceProductionCopyRows({
   supabaseClient,
   table,
@@ -422,14 +448,14 @@ async function readCommerceProductionCopyRows({
     const to = from + pageSize - 1;
     const { data, error } = await supabaseClient
       .from(table)
-      .select('*')
+      .select(COMMERCE_PRODUCTION_COPY_SELECT_COLUMNS[table])
       .range(from, to);
 
     if (error) {
       throw new Error(`Unable to read ${table} for commerce production sync.`);
     }
 
-    const pageRows = (data as Readonly<Record<string, unknown>>[] | null) ?? [];
+    const pageRows = normalizeSupabaseRows(data);
 
     rows.push(...pageRows);
 
@@ -504,14 +530,18 @@ function assertCommerceProductionCopyTargetsNonProduction(): void {
 }
 
 export async function copyCommerceDataFromProduction({
+  allowDestructive = false,
   createProductionSupabaseClient,
   createTargetSupabaseClient,
   dryRun = true,
+  logger = console,
   now = () => new Date(),
 }: {
+  allowDestructive?: boolean;
   createProductionSupabaseClient?: () => CommerceTableCopyClient;
   createTargetSupabaseClient?: () => CommerceTableCopyClient;
   dryRun?: boolean;
+  logger?: Pick<Console, 'info' | 'warn'>;
   now?: () => Date;
 } = {}): Promise<CommerceProductionCopyResult> {
   const startedAt = now();
@@ -562,7 +592,51 @@ export async function copyCommerceDataFromProduction({
     ]),
   ) as CommerceProductionCopyResult['tables'];
 
+  logger.info(
+    `[commerce-production-copy] dry_run=${dryRun} allow_destructive=${allowDestructive} row_counts=${JSON.stringify(
+      Object.fromEntries(
+        COMMERCE_PRODUCTION_COPY_TABLES.map((tableConfig) => [
+          tableConfig.name,
+          {
+            source: tables[tableConfig.name].sourceCount,
+            targetBefore: tables[tableConfig.name].targetBeforeCount,
+          },
+        ]),
+      ),
+    )}`,
+  );
+
   if (!dryRun) {
+    const populatedTargetTables = COMMERCE_PRODUCTION_COPY_TABLES.filter(
+      (tableConfig) => tables[tableConfig.name].targetBeforeCount > 0,
+    );
+
+    if (populatedTargetTables.length > 0 && !allowDestructive) {
+      throw new CommerceProductionCopyError(
+        [
+          'Commerce production copy would delete rows from the target environment.',
+          'Re-run with allowDestructive=true after reviewing the dry-run row counts.',
+          `Populated tables: ${populatedTargetTables
+            .map(
+              (tableConfig) =>
+                `${tableConfig.name}=${tables[tableConfig.name].targetBeforeCount}`,
+            )
+            .join(', ')}.`,
+        ].join(' '),
+      );
+    }
+
+    logger.warn(
+      `[commerce-production-copy] proceeding_with_destructive_delete row_counts=${JSON.stringify(
+        Object.fromEntries(
+          populatedTargetTables.map((tableConfig) => [
+            tableConfig.name,
+            tables[tableConfig.name].targetBeforeCount,
+          ]),
+        ),
+      )}`,
+    );
+
     for (const table of COMMERCE_PRODUCTION_COPY_DELETE_ORDER) {
       tables[table].deletedCount = await deleteCommerceProductionCopyRows({
         supabaseClient: targetSupabaseClient,
@@ -851,10 +925,11 @@ export async function createCommerceBenchmarkSet({
   input: CommerceBenchmarkSetInput;
   supabaseClient?: CommerceSupabaseClient;
 }): Promise<CommerceBenchmarkSet> {
+  const canonicalSetId = normalizeCatalogSetId(input.setId);
   const { data, error } = await supabaseClient
     .from(COMMERCE_BENCHMARK_SETS_TABLE)
     .insert({
-      set_id: input.setId,
+      set_id: canonicalSetId,
       notes: input.notes ?? '',
     })
     .select('set_id, notes, created_at, updated_at')
@@ -949,10 +1024,11 @@ export async function createCommerceOfferSeed({
   input: CommerceOfferSeedInput;
   supabaseClient?: CommerceSupabaseClient;
 }): Promise<CommerceOfferSeed> {
+  const canonicalSetId = normalizeCatalogSetId(input.setId);
   const { data, error } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .insert({
-      set_id: input.setId,
+      set_id: canonicalSetId,
       merchant_id: input.merchantId,
       product_url: input.productUrl,
       is_active: input.isActive,
@@ -989,10 +1065,11 @@ export async function updateCommerceOfferSeed({
   offerSeedId: string;
   supabaseClient?: CommerceSupabaseClient;
 }): Promise<CommerceOfferSeed> {
+  const canonicalSetId = normalizeCatalogSetId(input.setId);
   const { data, error } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .update({
-      set_id: input.setId,
+      set_id: canonicalSetId,
       merchant_id: input.merchantId,
       product_url: input.productUrl,
       is_active: input.isActive,
@@ -1099,10 +1176,11 @@ export async function deleteCommerceBenchmarkSet({
   setId: string;
   supabaseClient?: CommerceSupabaseClient;
 }): Promise<void> {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const { error } = await supabaseClient
     .from(COMMERCE_BENCHMARK_SETS_TABLE)
     .delete()
-    .eq('set_id', setId);
+    .eq('set_id', canonicalSetId);
 
   if (error) {
     throw new Error('Unable to delete the commerce benchmark set.');
@@ -1146,11 +1224,12 @@ export async function upsertCommerceOfferSeedByCompositeKey({
   input: CommerceOfferSeedInput;
   supabaseClient?: CommerceSupabaseClient;
 }): Promise<CommerceOfferSeed> {
+  const canonicalSetId = normalizeCatalogSetId(input.setId);
   const { data, error } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .upsert(
       {
-        set_id: input.setId,
+        set_id: canonicalSetId,
         merchant_id: input.merchantId,
         product_url: input.productUrl,
         is_active: input.isActive,

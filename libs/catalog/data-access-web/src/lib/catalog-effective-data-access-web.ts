@@ -58,6 +58,13 @@ const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 const CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT = 300;
+const CATALOG_PUBLIC_DEFAULT_PAGE_SIZE = 96;
+const CATALOG_PUBLIC_RAIL_CANDIDATE_LIMIT = 240;
+const CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT = 120;
+const CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT = 100;
+const CATALOG_THEME_REPRESENTATIVE_SET_LIMIT = 8;
+const CATALOG_SET_SELECT_COLUMNS =
+  'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at';
 const PRIMARY_CATALOG_MERCHANT_SLUGS = [
   'lego-nl',
   'intertoys',
@@ -95,6 +102,8 @@ interface CatalogSourceThemeRow {
 interface CatalogThemeRow {
   display_name: string;
   id: string;
+  slug?: string;
+  status?: string;
 }
 
 interface CatalogThemeMappingRow {
@@ -1088,32 +1097,85 @@ export function resetWebCatalogSupabaseClientsForTests() {
   webCatalogSupabasePublicClient = undefined;
 }
 
-export async function getCanonicalCatalogSetById({
-  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
-  setId,
+async function getCanonicalCatalogSetByColumn({
+  column,
+  value,
+  supabaseClient,
 }: {
-  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
-  setId: string;
+  column: 'set_id' | 'slug';
+  value: string;
+  supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCanonicalSet | undefined> {
-  const canonicalCatalogSets = await listCanonicalCatalogSetsFn();
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
 
-  return canonicalCatalogSets.find(
-    (canonicalCatalogSet) => canonicalCatalogSet.setId === setId,
-  );
+  if (!activeSupabaseClient) {
+    return undefined;
+  }
+
+  try {
+    const { data, error } = await activeSupabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .select(
+        'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
+      )
+      .eq(column, value)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (error) {
+      throw new Error('Unable to load canonical catalog set.');
+    }
+
+    if (!data) {
+      return undefined;
+    }
+
+    const row = data as CatalogSetRow;
+    const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+      catalogRows: [row],
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return toCanonicalCatalogSetFromRow({
+      row,
+      themeIdentity: themeIdentityBySetId.get(row.set_id),
+    });
+  } catch (error) {
+    if (!supabaseClient) {
+      return undefined;
+    }
+
+    throw error;
+  }
+}
+
+export async function getCanonicalCatalogSetById({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogCanonicalSet | undefined> {
+  return getCanonicalCatalogSetByColumn({
+    column: 'set_id',
+    supabaseClient,
+    value: getCanonicalCatalogSetId(setId),
+  });
 }
 
 export async function getCanonicalCatalogSetBySlug({
-  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   slug,
+  supabaseClient,
 }: {
-  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   slug: string;
+  supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCanonicalSet | undefined> {
-  const canonicalCatalogSets = await listCanonicalCatalogSetsFn();
-
-  return canonicalCatalogSets.find(
-    (canonicalCatalogSet) => canonicalCatalogSet.slug === slug,
-  );
+  return getCanonicalCatalogSetByColumn({
+    column: 'slug',
+    supabaseClient,
+    value: slug,
+  });
 }
 
 export async function listCatalogSetSummaries({
@@ -1159,11 +1221,99 @@ function toCatalogSetCardFromCanonicalSet(
   };
 }
 
-async function listAllCatalogSetCards({
-  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+function normalizeCatalogReadLimit(limit?: number, fallback = 24): number {
+  return Math.max(1, Math.min(500, Math.floor(limit ?? fallback)));
+}
+
+function normalizeCatalogReadOffset(offset?: number): number {
+  return Math.max(0, Math.floor(offset ?? 0));
+}
+
+async function listCatalogSetCardsFromSupabase({
+  limit = CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
+  offset = 0,
+  orderBy = 'created_at',
+  ascending = false,
+  supabaseClient,
 }: {
-  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  ascending?: boolean;
+  limit?: number;
+  offset?: number;
+  orderBy?: 'created_at' | 'name' | 'release_year' | 'updated_at';
+  supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogHomepageSetCard[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  const safeLimit = normalizeCatalogReadLimit(
+    limit,
+    CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
+  );
+  const safeOffset = normalizeCatalogReadOffset(offset);
+
+  try {
+    const { data, error } = await activeSupabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .select(CATALOG_SET_SELECT_COLUMNS)
+      .eq('status', 'active')
+      .order(orderBy, { ascending })
+      .range(safeOffset, safeOffset + safeLimit - 1);
+
+    if (error) {
+      throw new Error('Unable to load catalog set cards.');
+    }
+
+    const catalogRows = (data as CatalogSetRow[] | null) ?? [];
+    const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+      catalogRows,
+      supabaseClient: activeSupabaseClient,
+    });
+
+    return catalogRows.map((row) =>
+      toCatalogSetCardFromCanonicalSet(
+        toCanonicalCatalogSetFromRow({
+          row,
+          themeIdentity: themeIdentityBySetId.get(row.set_id),
+        }),
+      ),
+    );
+  } catch (error) {
+    if (!supabaseClient) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+async function listAllCatalogSetCards({
+  allowFullCatalogRead = false,
+  listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  limit = CATALOG_PUBLIC_RAIL_CANDIDATE_LIMIT,
+  offset = 0,
+  supabaseClient,
+}: {
+  allowFullCatalogRead?: boolean;
+  listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  limit?: number;
+  offset?: number;
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogHomepageSetCard[]> {
+  if (
+    listCanonicalCatalogSetsFn === listCanonicalCatalogSets &&
+    !allowFullCatalogRead
+  ) {
+    return listCatalogSetCardsFromSupabase({
+      limit,
+      offset,
+      supabaseClient,
+    });
+  }
+
   return (await listCanonicalCatalogSetsFn()).map(
     toCatalogSetCardFromCanonicalSet,
   );
@@ -1171,11 +1321,20 @@ async function listAllCatalogSetCards({
 
 export async function listCatalogSetCards({
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  limit = CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
+  offset = 0,
+  supabaseClient,
 }: {
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  limit?: number;
+  offset?: number;
+  supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogHomepageSetCard[]> {
   return listAllCatalogSetCards({
     listCanonicalCatalogSetsFn,
+    limit,
+    offset,
+    supabaseClient,
   });
 }
 
@@ -3435,12 +3594,18 @@ function createThemeSnapshot({
 }
 
 async function listCatalogBrowseThemeGroupsInternal({
+  allowFullCatalogRead = false,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  supabaseClient,
 }: {
+  allowFullCatalogRead?: boolean;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogBrowseThemeGroup[]> {
   const setCards = await listAllCatalogSetCards({
+    allowFullCatalogRead,
     listCanonicalCatalogSetsFn,
+    supabaseClient,
   });
   const setCardsByTheme = new Map<string, CatalogHomepageSetCard[]>();
 
@@ -3476,13 +3641,190 @@ async function listCatalogBrowseThemeGroupsInternal({
     );
 }
 
+async function listCatalogThemeDirectoryItemsFromSupabase({
+  limit = CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
+  offset = 0,
+  supabaseClient,
+}: {
+  limit?: number;
+  offset?: number;
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<CatalogThemeDirectoryItem[]> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return [];
+  }
+
+  const safeLimit = normalizeCatalogReadLimit(
+    limit,
+    CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
+  );
+  const safeOffset = normalizeCatalogReadOffset(offset);
+
+  try {
+    const { data: themeData, error: themeError } = await activeSupabaseClient
+      .from(CATALOG_THEMES_TABLE)
+      .select('id, slug, display_name, status')
+      .eq('status', 'active')
+      .order('display_name', { ascending: true })
+      .range(safeOffset, safeOffset + safeLimit - 1);
+
+    if (themeError) {
+      throw new Error('Unable to load catalog theme directory.');
+    }
+
+    const themeRows = ((themeData as CatalogThemeRow[] | null) ?? []).filter(
+      (themeRow) => {
+        const displayThemeName =
+          getCatalogThemeDisplayName(themeRow.display_name) ??
+          themeRow.display_name;
+
+        return isCatalogBrowsablePrimaryTheme(displayThemeName);
+      },
+    );
+
+    const directoryItems = await Promise.all(
+      themeRows.map(
+        async (themeRow): Promise<CatalogThemeDirectoryItem | undefined> => {
+          const { count, data, error } = await activeSupabaseClient
+            .from(CATALOG_SETS_TABLE)
+            .select(CATALOG_SET_SELECT_COLUMNS, { count: 'exact' })
+            .eq('status', 'active')
+            .eq('primary_theme_id', themeRow.id)
+            .order('release_year', { ascending: false })
+            .order('name', { ascending: true })
+            .order('set_id', { ascending: true })
+            .limit(CATALOG_THEME_REPRESENTATIVE_SET_LIMIT);
+
+          if (error) {
+            throw new Error('Unable to load catalog theme directory.');
+          }
+
+          const catalogRows = (data as CatalogSetRow[] | null) ?? [];
+          const setCards = catalogRows.map((row) =>
+            toCatalogSetCardFromCanonicalSet(
+              toCanonicalCatalogSetFromRow({
+                row,
+                themeIdentity: resolveCatalogThemeIdentityFromPersistence({
+                  primaryThemeName: themeRow.display_name,
+                  sourceThemeName: undefined,
+                }),
+              }),
+            ),
+          );
+          const themeSnapshot = {
+            ...createThemeSnapshot({
+              setCards,
+              theme: themeRow.display_name,
+            }),
+            setCount: count ?? catalogRows.length,
+          };
+
+          if (themeSnapshot.setCount === 0) {
+            return undefined;
+          }
+
+          const imageUrl = getCatalogThemeRepresentativeImageUrl({
+            setCards,
+            themeSnapshot,
+          });
+          const themeVisual = getCatalogThemeVisual(themeSnapshot.name);
+
+          return {
+            imageUrl,
+            themeSnapshot,
+            visual: themeVisual
+              ? {
+                  ...themeVisual,
+                  imageUrl: themeVisual.imageUrl ?? imageUrl,
+                }
+              : imageUrl
+                ? {
+                    imageUrl,
+                  }
+                : undefined,
+          } satisfies CatalogThemeDirectoryItem;
+        },
+      ),
+    );
+
+    return directoryItems
+      .flatMap((directoryItem) => (directoryItem ? [directoryItem] : []))
+      .sort(
+        (left, right) =>
+          left.themeSnapshot.name.localeCompare(
+            right.themeSnapshot.name,
+            'nl',
+          ) || left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug),
+      );
+  } catch (error) {
+    if (!supabaseClient) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
 export async function listCatalogSetCardsByIds({
   canonicalIds = [],
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  supabaseClient,
 }: {
   canonicalIds?: readonly string[];
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogHomepageSetCard[]> {
+  if (listCanonicalCatalogSetsFn === listCanonicalCatalogSets) {
+    const activeSupabaseClient =
+      supabaseClient ?? getWebCatalogSupabaseReadClient();
+    const uniqueCanonicalIds = [...new Set(canonicalIds)].filter(Boolean);
+
+    if (!activeSupabaseClient || uniqueCanonicalIds.length === 0) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await activeSupabaseClient
+        .from(CATALOG_SETS_TABLE)
+        .select(CATALOG_SET_SELECT_COLUMNS)
+        .eq('status', 'active')
+        .in('set_id', uniqueCanonicalIds)
+        .limit(uniqueCanonicalIds.length);
+
+      if (error) {
+        throw new Error('Unable to load catalog set cards.');
+      }
+
+      const catalogRows = (data as CatalogSetRow[] | null) ?? [];
+      const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+        catalogRows,
+        supabaseClient: activeSupabaseClient,
+      });
+      const setCards = catalogRows.map((row) =>
+        toCatalogSetCardFromCanonicalSet(
+          toCanonicalCatalogSetFromRow({
+            row,
+            themeIdentity: themeIdentityBySetId.get(row.set_id),
+          }),
+        ),
+      );
+
+      return selectCatalogSetCardsByIds({
+        canonicalIds,
+        setCards,
+      });
+    } catch (error) {
+      if (!supabaseClient) {
+        return [];
+      }
+
+      throw error;
+    }
+  }
+
   return selectCatalogSetCardsByIds({
     canonicalIds,
     setCards: await listAllCatalogSetCards({
@@ -4081,6 +4423,8 @@ export async function getCatalogPrimaryOfferAvailabilityStateBySetId({
   setId: string;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogPrimaryOfferAvailabilityState> {
+  const canonicalSetId = getCanonicalCatalogSetId(setId);
+
   if (!supabaseClient && !hasServerSupabaseConfig()) {
     return {
       primaryMerchantCount: PRIMARY_CATALOG_MERCHANT_SLUGS.length,
@@ -4119,7 +4463,7 @@ export async function getCatalogPrimaryOfferAvailabilityStateBySetId({
     .select(
       'id, set_id, merchant_id, product_url, is_active, validation_status',
     )
-    .eq('set_id', setId)
+    .eq('set_id', canonicalSetId)
     .eq('is_active', true)
     .in('merchant_id', primaryMerchantIds);
 
@@ -4447,18 +4791,23 @@ export async function listCachedCatalogCurrentOfferSummaries({
   limit?: number;
 }): Promise<Map<string, CatalogCurrentOfferSummary>> {
   const cachedRead = unstable_cache(
-    async () =>
-      listCatalogCurrentOfferSummaries({
-        limit,
-      }),
-    ['catalog-current-offer-summaries', String(limit)],
+    async () => {
+      const currentOfferSummaryBySetId = await listCatalogCurrentOfferSummaries(
+        {
+          limit,
+        },
+      );
+
+      return [...currentOfferSummaryBySetId.entries()];
+    },
+    ['catalog-current-offer-summaries-v2', String(limit)],
     {
       revalidate: cacheOptions.revalidateSeconds ?? 21_600,
       tags: [...cacheOptions.tags],
     },
   );
 
-  return cachedRead();
+  return new Map(await cachedRead());
 }
 
 export async function listHomepageSetCards({
@@ -4490,6 +4839,14 @@ export async function listHomepageSetCards({
 
   if (dynamicSetCards.length) {
     return dynamicSetCards;
+  }
+
+  if (listCanonicalCatalogSetsFn === listCanonicalCatalogSets) {
+    return listCatalogSetCardsByIds({
+      canonicalIds: catalogHomepageFeaturedSetIds.filter(
+        (canonicalId) => !excludedSetIds.includes(canonicalId),
+      ),
+    }).then((setCardsById) => setCardsById.slice(0, limit));
   }
 
   return selectCatalogSetCardsByIds({
@@ -4876,19 +5233,31 @@ export async function listDiscoverCharacterSetCards({
 }
 
 export async function listCatalogSearchSuggestionSetCards({
+  limit = 24,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  supabaseClient,
 }: {
+  limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogHomepageSetCard[]> {
   return (
-    await listAllCatalogSetCards({
-      listCanonicalCatalogSetsFn,
-    })
-  ).sort(
-    (left, right) =>
-      right.releaseYear - left.releaseYear ||
-      left.name.localeCompare(right.name),
-  );
+    listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+      ? await listCatalogSetCardsFromSupabase({
+          limit: Math.max(limit, CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT),
+          orderBy: 'release_year',
+          supabaseClient,
+        })
+      : await listAllCatalogSetCards({
+          listCanonicalCatalogSetsFn,
+        })
+  )
+    .sort(
+      (left, right) =>
+        right.releaseYear - left.releaseYear ||
+        left.name.localeCompare(right.name),
+    )
+    .slice(0, limit);
 }
 
 export async function listCatalogSetSlugs({
@@ -4904,14 +5273,21 @@ export async function listCatalogSetSlugs({
 export async function getCatalogSetBySlug({
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   slug,
+  supabaseClient,
 }: {
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   slug: string;
+  supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogSetDetail | undefined> {
-  const canonicalCatalogSet = await getCanonicalCatalogSetBySlug({
-    listCanonicalCatalogSetsFn,
-    slug,
-  });
+  const canonicalCatalogSet =
+    listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+      ? await getCanonicalCatalogSetBySlug({
+          slug,
+          supabaseClient,
+        })
+      : (await listCanonicalCatalogSetsFn()).find(
+          (catalogSet) => catalogSet.slug === slug,
+        );
 
   if (!canonicalCatalogSet) {
     return undefined;
@@ -4924,10 +5300,12 @@ export async function listCatalogSearchMatches({
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   query,
+  supabaseClient,
 }: {
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   query: string;
+  supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogSearchMatch[]> {
   const suggestionLimit = Math.max(0, Math.floor(limit));
 
@@ -4938,9 +5316,19 @@ export async function listCatalogSearchMatches({
   return listCatalogSetCardSearchMatches({
     limit: Number.MAX_SAFE_INTEGER,
     query,
-    setCards: await listAllCatalogSetCards({
-      listCanonicalCatalogSetsFn,
-    }),
+    setCards:
+      listCanonicalCatalogSetsFn === listCanonicalCatalogSets
+        ? await listCatalogSetCardsFromSupabase({
+            limit: Math.max(
+              CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT,
+              suggestionLimit * 12,
+            ),
+            orderBy: 'release_year',
+            supabaseClient,
+          })
+        : await listAllCatalogSetCards({
+            listCanonicalCatalogSetsFn,
+          }),
   })
     .map(
       ({ score, setCard }): CatalogSearchMatch => ({
@@ -5013,10 +5401,12 @@ export async function listCatalogThemeSearchMatches({
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   query,
+  supabaseClient,
 }: {
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   query: string;
+  supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogThemeSearchMatch[]> {
   const suggestionLimit = Math.max(0, Math.floor(limit));
 
@@ -5024,7 +5414,12 @@ export async function listCatalogThemeSearchMatches({
     return [];
   }
 
-  return (await listCatalogThemeDirectoryItems({ listCanonicalCatalogSetsFn }))
+  return (
+    await listCatalogThemeDirectoryItems({
+      listCanonicalCatalogSetsFn,
+      supabaseClient,
+    })
+  )
     .flatMap((theme): CatalogThemeSearchMatch[] => {
       const score = getCatalogThemeSearchScore({ query, theme });
 
@@ -5051,12 +5446,33 @@ export async function listCatalogThemeSearchMatches({
 }
 
 export async function listCatalogThemeDirectoryItems({
+  allowFullCatalogRead = false,
+  limit = CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  offset = 0,
+  supabaseClient,
 }: {
+  allowFullCatalogRead?: boolean;
+  limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  offset?: number;
+  supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
+  if (
+    listCanonicalCatalogSetsFn === listCanonicalCatalogSets &&
+    !allowFullCatalogRead
+  ) {
+    return listCatalogThemeDirectoryItemsFromSupabase({
+      limit,
+      offset,
+      supabaseClient,
+    });
+  }
+
   const themeGroups = await listCatalogBrowseThemeGroupsInternal({
+    allowFullCatalogRead,
     listCanonicalCatalogSetsFn,
+    supabaseClient,
   });
 
   return themeGroups
@@ -5146,6 +5562,7 @@ export async function listCatalogThemePageSlugs({
 } = {}): Promise<string[]> {
   return (
     await listCatalogThemeDirectoryItems({
+      allowFullCatalogRead: true,
       listCanonicalCatalogSetsFn,
     })
   ).map(
@@ -5154,12 +5571,107 @@ export async function listCatalogThemePageSlugs({
 }
 
 export async function getCatalogThemePageBySlug({
+  limit = CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  offset = 0,
   slug,
+  supabaseClient,
 }: {
+  limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  offset?: number;
   slug: string;
+  supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogThemeLandingPage | undefined> {
+  if (listCanonicalCatalogSetsFn === listCanonicalCatalogSets) {
+    const activeSupabaseClient =
+      supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+    if (!activeSupabaseClient) {
+      return undefined;
+    }
+
+    try {
+      const { data: themeData, error: themeError } = await activeSupabaseClient
+        .from(CATALOG_THEMES_TABLE)
+        .select('id, slug, display_name, status')
+        .eq('slug', slug)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (themeError) {
+        throw new Error('Unable to load catalog theme page.');
+      }
+
+      const themeRow = themeData as
+        | (CatalogThemeRow & { slug?: string; status?: string })
+        | null;
+
+      if (!themeRow) {
+        return undefined;
+      }
+
+      const safeLimit = normalizeCatalogReadLimit(
+        limit,
+        CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
+      );
+      const safeOffset = normalizeCatalogReadOffset(offset);
+      const {
+        count: setCount,
+        data: setData,
+        error: setError,
+      } = await activeSupabaseClient
+        .from(CATALOG_SETS_TABLE)
+        .select(CATALOG_SET_SELECT_COLUMNS, { count: 'exact' })
+        .eq('status', 'active')
+        .eq('primary_theme_id', themeRow.id)
+        .order('release_year', { ascending: false })
+        .order('name', { ascending: true })
+        .order('set_id', { ascending: true })
+        .range(safeOffset, safeOffset + safeLimit - 1);
+
+      if (setError) {
+        throw new Error('Unable to load catalog theme page.');
+      }
+
+      const catalogRows = (setData as CatalogSetRow[] | null) ?? [];
+      const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+        catalogRows,
+        supabaseClient: activeSupabaseClient,
+      });
+      const setCards = catalogRows.map((row) =>
+        toCatalogSetCardFromCanonicalSet(
+          toCanonicalCatalogSetFromRow({
+            row,
+            themeIdentity:
+              themeIdentityBySetId.get(row.set_id) ??
+              resolveCatalogThemeIdentityFromPersistence({
+                primaryThemeName: themeRow.display_name,
+                sourceThemeName: undefined,
+              }),
+          }),
+        ),
+      );
+
+      return {
+        themeSnapshot: {
+          ...createThemeSnapshot({
+            setCards,
+            theme: themeRow.display_name,
+          }),
+          setCount: setCount ?? catalogRows.length,
+        },
+        setCards,
+      };
+    } catch (error) {
+      if (!supabaseClient) {
+        return undefined;
+      }
+
+      throw error;
+    }
+  }
+
   const themeGroups = await listCatalogBrowseThemeGroupsInternal({
     listCanonicalCatalogSetsFn,
   });

@@ -26,6 +26,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 const WISHLIST_ALERT_NOTIFICATION_STATE_TABLE =
   'wishlist_alert_notification_states';
+const DEFAULT_PRICE_HISTORY_READ_WINDOW_DAYS = 90;
+const DAY_MS = 86_400_000;
 
 interface WishlistAlertSubscriberProfileRow {
   display_name: string;
@@ -100,7 +102,13 @@ export interface WishlistAlertEmailFlowDependencies {
     setIds: readonly string[];
     userIds: readonly string[];
   }): Promise<WishlistAlertNotificationStateRecord[]>;
-  listPriceHistory(setIds: readonly string[]): Promise<PriceHistoryPoint[]>;
+  listPriceHistory(
+    setIds: readonly string[],
+    options?: {
+      oldestRecordedOn?: string;
+      windowDays?: number;
+    },
+  ): Promise<PriceHistoryPoint[]>;
   listSubscribers(): Promise<WishlistAlertSubscriber[]>;
   listWishlistStates(
     userIds: readonly string[],
@@ -114,6 +122,48 @@ export interface WishlistAlertEmailFlowDependencies {
     to: string;
   }): Promise<WishlistAlertEmailSendResult>;
   webBaseUrl: string;
+}
+
+function toRecordedOnDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function getDefaultPriceHistoryWindowStart({
+  now = new Date(),
+  windowDays = DEFAULT_PRICE_HISTORY_READ_WINDOW_DAYS,
+}: {
+  now?: Date;
+  windowDays?: number;
+} = {}): string {
+  const safeWindowDays = Math.max(1, Math.floor(windowDays));
+
+  return toRecordedOnDate(
+    new Date(now.getTime() - (safeWindowDays - 1) * DAY_MS),
+  );
+}
+
+function getRecordedOnFromTimestamp(timestamp?: string): string | undefined {
+  if (!timestamp) {
+    return undefined;
+  }
+
+  const parsedTimestamp = Date.parse(timestamp);
+
+  if (!Number.isFinite(parsedTimestamp)) {
+    return undefined;
+  }
+
+  return toRecordedOnDate(new Date(parsedTimestamp));
+}
+
+function getOldestRecordedOn(
+  recordedOnDates: readonly (string | undefined)[],
+): string | undefined {
+  return recordedOnDates
+    .filter((recordedOnDate): recordedOnDate is string =>
+      Boolean(recordedOnDate),
+    )
+    .sort((left, right) => left.localeCompare(right))[0];
 }
 
 export interface WishlistAlertEmailFlowFailure {
@@ -552,16 +602,22 @@ async function saveWishlistAlertNotificationStates({
 }
 
 async function listDutchPriceHistoryBySetIds({
+  oldestRecordedOn,
   setIds,
   supabaseAdminClient,
+  windowDays = DEFAULT_PRICE_HISTORY_READ_WINDOW_DAYS,
 }: {
+  oldestRecordedOn?: string;
   setIds: readonly string[];
   supabaseAdminClient: SupabaseClient;
+  windowDays?: number;
 }): Promise<PriceHistoryPoint[]> {
   if (setIds.length === 0) {
     return [];
   }
 
+  const windowStartRecordedOn =
+    oldestRecordedOn ?? getDefaultPriceHistoryWindowStart({ windowDays });
   const { data, error } = await supabaseAdminClient
     .from(PRICING_HISTORY_TABLE)
     .select(
@@ -571,9 +627,9 @@ async function listDutchPriceHistoryBySetIds({
     .eq('region_code', DUTCH_REGION_CODE)
     .eq('currency_code', EURO_CURRENCY_CODE)
     .eq('condition', NEW_OFFER_CONDITION)
+    .gte('recorded_on', windowStartRecordedOn)
     .order('set_id', { ascending: true })
-    .order('recorded_on', { ascending: true })
-    .limit(5000);
+    .order('recorded_on', { ascending: true });
 
   if (error) {
     throw new Error('Unable to load pricing history for wishlist alerts.');
@@ -607,10 +663,12 @@ export function createWishlistAlertEmailFlowDependencies({
         supabaseAdminClient,
         userIds,
       }),
-    listPriceHistory: (setIds) =>
+    listPriceHistory: (setIds, options) =>
       listDutchPriceHistoryBySetIds({
+        oldestRecordedOn: options?.oldestRecordedOn,
         setIds,
         supabaseAdminClient,
+        windowDays: options?.windowDays,
       }),
     listSubscribers: () => listWishlistAlertSubscribers(supabaseAdminClient),
     listWishlistStates: (userIds) =>
@@ -668,7 +726,14 @@ export async function runWishlistAlertEmailFlow({
       ),
     ),
   ];
-  const priceHistoryPoints = await dependencies.listPriceHistory(uniqueSetIds);
+  const oldestSavedRecordedOn = getOldestRecordedOn(
+    wishlistAlertWishlistStates.map((wishlistAlertWishlistState) =>
+      getRecordedOnFromTimestamp(wishlistAlertWishlistState.createdAt),
+    ),
+  );
+  const priceHistoryPoints = await dependencies.listPriceHistory(uniqueSetIds, {
+    oldestRecordedOn: oldestSavedRecordedOn,
+  });
   const priceHistoryPointsBySetId = groupBySetId(priceHistoryPoints);
   const notificationStatesByUserId = groupNotificationStatesByUserId(
     await dependencies.listNotificationStates({

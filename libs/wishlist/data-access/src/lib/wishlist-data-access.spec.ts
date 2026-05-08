@@ -227,4 +227,28 @@ describe('wishlist data access', () => {
     expect(localStorage.getItem('brickhunt.followed-price-set-ids')).toBeNull();
     expect(notifyBrowserAccountDataChanged).toHaveBeenCalledTimes(2);
   });
+
+  test('normalizes local followed price set ids so suffix variants do not duplicate rows', () => {
+    const localStorage = createLocalStorageMock({
+      'brickhunt.followed-price-set-ids': JSON.stringify(['42177']),
+    });
+
+    vi.stubGlobal('window', {
+      localStorage,
+    });
+
+    expect(addLocalFollowedPriceSet('42177-1')).toEqual({
+      isWanted: true,
+      setId: '42177',
+    });
+    expect(localStorage.getItem('brickhunt.followed-price-set-ids')).toBe(
+      JSON.stringify(['42177']),
+    );
+
+    expect(removeLocalFollowedPriceSet('42177-1')).toEqual({
+      isWanted: false,
+      setId: '42177',
+    });
+    expect(localStorage.getItem('brickhunt.followed-price-set-ids')).toBeNull();
+  });
 });

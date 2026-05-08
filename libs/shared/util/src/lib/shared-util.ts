@@ -56,6 +56,23 @@ export function readStringArrayProperty(
   );
 }
 
+export function normalizeCatalogSetId(input: string): string {
+  const normalizedInput = input.trim().replace(/\s+/g, ' ');
+  const legoSetNumberMatch = normalizedInput.match(
+    /^(?:LEGO\s*)?(\d{4,7})(?:\s*-\s*[0-9A-Za-z]+)?$/i,
+  );
+
+  if (legoSetNumberMatch?.[1]) {
+    return legoSetNumberMatch[1];
+  }
+
+  const variantMatch = normalizedInput.match(
+    /^([0-9A-Za-z]+)\s*-\s*[0-9A-Za-z]+$/,
+  );
+
+  return variantMatch ? variantMatch[1] : normalizedInput;
+}
+
 const toneCopy: Record<StatusTone, string> = {
   accent: 'Strategisch signaal',
   neutral: 'Stabiele basis',

@@ -643,32 +643,6 @@ function toCanonicalCatalogSetFromOverlaySet(
   };
 }
 
-function toCatalogSetFromCanonicalSet(
-  canonicalCatalogSet: CatalogCanonicalSet,
-): CatalogSet {
-  return {
-    createdAt: canonicalCatalogSet.createdAt,
-    imageUrl: canonicalCatalogSet.imageUrl,
-    name: canonicalCatalogSet.name,
-    pieces: canonicalCatalogSet.pieceCount,
-    ...(canonicalCatalogSet.releaseDate
-      ? {
-          releaseDate: canonicalCatalogSet.releaseDate,
-        }
-      : {}),
-    releaseDatePrecision: canonicalCatalogSet.releaseDatePrecision,
-    releaseYear: canonicalCatalogSet.releaseYear,
-    secondaryThemeLabels: canonicalCatalogSet.secondaryLabels,
-    setId: canonicalCatalogSet.setId,
-    slug: canonicalCatalogSet.slug,
-    source: 'rebrickable',
-    sourceSetNumber: canonicalCatalogSet.sourceSetNumber ?? '',
-    status: canonicalCatalogSet.status,
-    theme: canonicalCatalogSet.primaryTheme,
-    updatedAt: canonicalCatalogSet.updatedAt,
-  };
-}
-
 function toCatalogSummaryFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetSummary {
@@ -1640,6 +1614,50 @@ async function listCatalogOverlaySetRows({
   return (data as CatalogOverlaySetRow[] | null) ?? [];
 }
 
+async function getCatalogOverlaySetByColumn({
+  column,
+  includeInactive = false,
+  supabaseClient,
+  value,
+}: {
+  column: 'set_id' | 'slug';
+  includeInactive?: boolean;
+  supabaseClient: CatalogSupabaseClient;
+  value: string;
+}): Promise<CatalogSet | undefined> {
+  let query = supabaseClient
+    .from(CATALOG_SETS_TABLE)
+    .select(
+      'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
+    )
+    .eq(column, value);
+
+  if (!includeInactive) {
+    query = query.eq('status', 'active');
+  }
+
+  const { data, error } = await query.maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load catalog set.');
+  }
+
+  if (!data) {
+    return undefined;
+  }
+
+  const row = data as CatalogOverlaySetRow;
+  const themeIdentityBySetId = await listCatalogThemeIdentityBySetId({
+    overlayRows: [row],
+    supabaseClient,
+  });
+
+  return toCatalogSet({
+    row,
+    themeIdentity: themeIdentityBySetId.get(row.set_id),
+  });
+}
+
 async function updateCatalogThemeIdentityRow({
   primaryThemeId,
   setId,
@@ -1995,14 +2013,28 @@ export async function getCanonicalCatalogSetById({
   setId: string;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCanonicalSet | undefined> {
-  const canonicalCatalogSets = await listCanonicalCatalogSets({
-    includeInactive,
-    supabaseClient,
-  });
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return undefined;
+  }
 
-  return canonicalCatalogSets.find(
-    (canonicalCatalogSet) => canonicalCatalogSet.setId === setId,
-  );
+  try {
+    const catalogSet = await getCatalogOverlaySetByColumn({
+      column: 'set_id',
+      includeInactive,
+      supabaseClient: supabaseClient ?? getServerSupabaseAdminClient(),
+      value: setId,
+    });
+
+    return catalogSet
+      ? toCanonicalCatalogSetFromOverlaySet(catalogSet)
+      : undefined;
+  } catch (error) {
+    if (!supabaseClient) {
+      return undefined;
+    }
+
+    throw error;
+  }
 }
 
 export async function getCanonicalCatalogSetBySlug({
@@ -2014,14 +2046,28 @@ export async function getCanonicalCatalogSetBySlug({
   slug: string;
   supabaseClient?: CatalogSupabaseClient;
 }): Promise<CatalogCanonicalSet | undefined> {
-  const canonicalCatalogSets = await listCanonicalCatalogSets({
-    includeInactive,
-    supabaseClient,
-  });
+  if (!supabaseClient && !hasServerSupabaseConfig()) {
+    return undefined;
+  }
 
-  return canonicalCatalogSets.find(
-    (canonicalCatalogSet) => canonicalCatalogSet.slug === slug,
-  );
+  try {
+    const catalogSet = await getCatalogOverlaySetByColumn({
+      column: 'slug',
+      includeInactive,
+      supabaseClient: supabaseClient ?? getServerSupabaseAdminClient(),
+      value: slug,
+    });
+
+    return catalogSet
+      ? toCanonicalCatalogSetFromOverlaySet(catalogSet)
+      : undefined;
+  } catch (error) {
+    if (!supabaseClient) {
+      return undefined;
+    }
+
+    throw error;
+  }
 }
 
 export async function listCatalogSetSummariesWithOverlay({
@@ -2682,27 +2728,26 @@ export async function createCatalogSet({
     themeName: input.theme,
     year: input.releaseYear,
   });
-  const existingCatalogSets = await listCanonicalCatalogSets({
+  const setConflict = await getCatalogOverlaySetByColumn({
+    column: 'set_id',
     includeInactive: true,
-    supabaseClient,
+    supabaseClient: activeSupabaseClient,
+    value: normalizedSet.setId,
   });
-  const setConflict = existingCatalogSets.find(
-    (catalogSet) => catalogSet.setId === normalizedSet.setId,
-  );
 
   if (setConflict) {
-    if (setConflict.pieceCount === 0 && normalizedSet.pieces > 0) {
+    if (setConflict.pieces === 0 && normalizedSet.pieces > 0) {
       await updateCatalogSetPieceCountRow({
         pieceCount: normalizedSet.pieces,
         setId: setConflict.setId,
         supabaseClient: activeSupabaseClient,
       });
 
-      return toCatalogSetFromCanonicalSet({
+      return {
         ...setConflict,
-        pieceCount: normalizedSet.pieces,
+        pieces: normalizedSet.pieces,
         updatedAt: new Date().toISOString(),
-      });
+      };
     }
 
     throw new Error(
@@ -2712,9 +2757,12 @@ export async function createCatalogSet({
     );
   }
 
-  const slugConflict = existingCatalogSets.find(
-    (catalogSet) => catalogSet.slug === normalizedSet.slug,
-  );
+  const slugConflict = await getCatalogOverlaySetByColumn({
+    column: 'slug',
+    includeInactive: true,
+    supabaseClient: activeSupabaseClient,
+    value: normalizedSet.slug,
+  });
 
   if (slugConflict) {
     throw new Error(
@@ -2755,7 +2803,7 @@ export async function createCatalogSet({
     const conflictMessage =
       error &&
       getCatalogSetInsertConflictMessage({
-        existingCatalogSets,
+        existingCatalogSets: [],
         error: error as DatabaseConflictLike,
         normalizedSet,
       });

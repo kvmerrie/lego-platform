@@ -1,5 +1,8 @@
 import { MetricCard } from '@lego-platform/shared/types';
-import { formatCompactNumber } from '@lego-platform/shared/util';
+import {
+  formatCompactNumber,
+  normalizeCatalogSetId,
+} from '@lego-platform/shared/util';
 import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import {
   isThemeVisible,
@@ -1694,12 +1697,7 @@ function buildCatalogSlugBase({
 }
 
 export function getCanonicalCatalogSetId(sourceSetNumber: string): string {
-  const normalizedSourceSetNumber = normalizeCatalogText(sourceSetNumber);
-  const variantMatch = normalizedSourceSetNumber.match(
-    /^([0-9A-Za-z]+)-[0-9A-Za-z]+$/,
-  );
-
-  return variantMatch ? variantMatch[1] : normalizedSourceSetNumber;
+  return normalizeCatalogSetId(sourceSetNumber);
 }
 
 export function buildCatalogSetSlug(name: string, canonicalId: string): string {

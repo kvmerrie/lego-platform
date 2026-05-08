@@ -20,6 +20,7 @@ const TARGET_COMMERCE_BENCHMARK_SETS_TABLE = 'commerce_benchmark_sets';
 const TARGET_COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 
 type CatalogBootstrapSupabaseClient = Pick<SupabaseClient, 'from'>;
+const CATALOG_BOOTSTRAP_PAGE_SIZE = 1000;
 
 interface CatalogBootstrapSetRow {
   created_at: string;
@@ -212,6 +213,12 @@ export interface CatalogCleanBootstrapImportStepSummary {
 
 export interface CatalogCleanBootstrapImportSummary {
   steps: readonly CatalogCleanBootstrapImportStepSummary[];
+}
+
+export interface ImportCatalogCleanBootstrapPayloadOptions {
+  allowPartial?: boolean;
+  payload: CatalogCleanBootstrapPayload;
+  supabaseClient?: CatalogBootstrapSupabaseClient;
 }
 
 export interface CatalogCleanBootstrapVerifyStepSummary {
@@ -713,17 +720,30 @@ async function listExistingConflictKeys({
   table: string;
 }): Promise<Set<string>> {
   const conflictColumns = splitConflictColumns(onConflict);
-  const { data, error } = await supabaseClient
-    .from(table)
-    .select(conflictColumns.join(', '));
+  const rows: Record<string, unknown>[] = [];
 
-  if (error) {
-    throw new Error(
-      `Unable to load existing ${table} rows before import. ${JSON.stringify(error)}`,
-    );
+  for (let from = 0; ; from += CATALOG_BOOTSTRAP_PAGE_SIZE) {
+    const to = from + CATALOG_BOOTSTRAP_PAGE_SIZE - 1;
+    const { data, error } = await supabaseClient
+      .from(table)
+      .select(conflictColumns.join(', '))
+      .order(conflictColumns[0], { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(
+        `Unable to load existing ${table} rows before import. ${JSON.stringify(error)}`,
+      );
+    }
+
+    const pageRows =
+      (data as unknown as Record<string, unknown>[] | null) ?? [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_BOOTSTRAP_PAGE_SIZE) {
+      break;
+    }
   }
-
-  const rows = (data as unknown as Record<string, unknown>[] | null) ?? [];
 
   return new Set(
     rows.map((row) =>
@@ -733,6 +753,52 @@ async function listExistingConflictKeys({
       }),
     ),
   );
+}
+
+async function readOrderedBootstrapRows<TRow>({
+  activeFilterValue = 'active',
+  columns,
+  includeInactive = true,
+  orderBy,
+  statusColumn,
+  supabaseClient,
+  table,
+}: {
+  activeFilterValue?: boolean | string;
+  columns: string;
+  includeInactive?: boolean;
+  orderBy: string;
+  statusColumn?: string;
+  supabaseClient: CatalogBootstrapSupabaseClient;
+  table: string;
+}): Promise<TRow[]> {
+  const rows: TRow[] = [];
+
+  for (let from = 0; ; from += CATALOG_BOOTSTRAP_PAGE_SIZE) {
+    const to = from + CATALOG_BOOTSTRAP_PAGE_SIZE - 1;
+    let query = supabaseClient.from(table).select(columns);
+
+    if (!includeInactive && statusColumn) {
+      query = query.eq(statusColumn, activeFilterValue);
+    }
+
+    query = query.order(orderBy, { ascending: true }).range(from, to);
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(
+        `Unable to load current ${table} rows. ${JSON.stringify(error)}`,
+      );
+    }
+
+    const pageRows = (data as TRow[] | null) ?? [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_BOOTSTRAP_PAGE_SIZE) {
+      return rows;
+    }
+  }
 }
 
 async function upsertBootstrapRows<TRow extends Record<string, unknown>>({
@@ -800,13 +866,17 @@ async function upsertBootstrapRows<TRow extends Record<string, unknown>>({
 }
 
 export async function importCatalogCleanBootstrapPayload({
+  allowPartial = false,
   payload,
   supabaseClient = getServerSupabaseAdminClient(),
-}: {
-  payload: CatalogCleanBootstrapPayload;
-  supabaseClient?: CatalogBootstrapSupabaseClient;
-}): Promise<CatalogCleanBootstrapImportSummary> {
+}: ImportCatalogCleanBootstrapPayloadOptions): Promise<CatalogCleanBootstrapImportSummary> {
   validateCatalogCleanBootstrapPayload(payload);
+
+  if (!allowPartial && payload.catalog.sets.length === 1000) {
+    throw new Error(
+      'Refusing to import a clean bootstrap payload with exactly 1000 catalog sets. This usually means the export was capped by Supabase pagination. Re-export with the paginated bootstrap exporter, or pass --allow-partial if this partial import is intentional.',
+    );
+  }
 
   const steps = [
     await upsertBootstrapRows({
@@ -963,26 +1033,15 @@ async function listCurrentCatalogSetRows({
   includeInactive?: boolean;
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapSetRow[]> {
-  let query = supabaseClient
-    .from(CURRENT_CATALOG_SETS_TABLE)
-    .select(
+  return readOrderedBootstrapRows<CatalogBootstrapSetRow>({
+    columns:
       'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at',
-    )
-    .order('created_at', { ascending: true });
-
-  if (!includeInactive) {
-    query = query.eq('status', 'active');
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error(
-      `Unable to load current canonical catalog sets. ${JSON.stringify(error)}`,
-    );
-  }
-
-  return (data as CatalogBootstrapSetRow[] | null) ?? [];
+    includeInactive,
+    orderBy: 'created_at',
+    statusColumn: 'status',
+    supabaseClient,
+    table: CURRENT_CATALOG_SETS_TABLE,
+  });
 }
 
 async function listCurrentSourceThemes({
@@ -990,20 +1049,13 @@ async function listCurrentSourceThemes({
 }: {
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapSourceThemeRow[]> {
-  const { data, error } = await supabaseClient
-    .from(CURRENT_CATALOG_SOURCE_THEMES_TABLE)
-    .select(
+  return readOrderedBootstrapRows<CatalogBootstrapSourceThemeRow>({
+    columns:
       'id, source_system, source_theme_name, parent_source_theme_id, created_at, updated_at',
-    )
-    .order('id', { ascending: true });
-
-  if (error) {
-    throw new Error(
-      `Unable to load current catalog source themes. ${JSON.stringify(error)}`,
-    );
-  }
-
-  return (data as CatalogBootstrapSourceThemeRow[] | null) ?? [];
+    orderBy: 'id',
+    supabaseClient,
+    table: CURRENT_CATALOG_SOURCE_THEMES_TABLE,
+  });
 }
 
 async function listCurrentThemes({
@@ -1011,16 +1063,12 @@ async function listCurrentThemes({
 }: {
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapThemeRow[]> {
-  const { data, error } = await supabaseClient
-    .from(CURRENT_CATALOG_THEMES_TABLE)
-    .select('id, slug, display_name, status, created_at, updated_at')
-    .order('slug', { ascending: true });
-
-  if (error) {
-    throw new Error('Unable to load current Brickhunt catalog themes.');
-  }
-
-  return (data as CatalogBootstrapThemeRow[] | null) ?? [];
+  return readOrderedBootstrapRows<CatalogBootstrapThemeRow>({
+    columns: 'id, slug, display_name, status, created_at, updated_at',
+    orderBy: 'slug',
+    supabaseClient,
+    table: CURRENT_CATALOG_THEMES_TABLE,
+  });
 }
 
 async function listCurrentThemeMappings({
@@ -1028,16 +1076,12 @@ async function listCurrentThemeMappings({
 }: {
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapThemeMappingRow[]> {
-  const { data, error } = await supabaseClient
-    .from(CURRENT_CATALOG_THEME_MAPPINGS_TABLE)
-    .select('source_theme_id, primary_theme_id, created_at, updated_at')
-    .order('source_theme_id', { ascending: true });
-
-  if (error) {
-    throw new Error('Unable to load current catalog theme mappings.');
-  }
-
-  return (data as CatalogBootstrapThemeMappingRow[] | null) ?? [];
+  return readOrderedBootstrapRows<CatalogBootstrapThemeMappingRow>({
+    columns: 'source_theme_id, primary_theme_id, created_at, updated_at',
+    orderBy: 'source_theme_id',
+    supabaseClient,
+    table: CURRENT_CATALOG_THEME_MAPPINGS_TABLE,
+  });
 }
 
 async function listCurrentMerchants({
@@ -1047,24 +1091,16 @@ async function listCurrentMerchants({
   includeInactive?: boolean;
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapMerchantRow[]> {
-  let query = supabaseClient
-    .from(CURRENT_COMMERCE_MERCHANTS_TABLE)
-    .select(
+  return readOrderedBootstrapRows<CatalogBootstrapMerchantRow>({
+    activeFilterValue: true,
+    columns:
       'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
-    )
-    .order('name', { ascending: true });
-
-  if (!includeInactive) {
-    query = query.eq('is_active', true);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error('Unable to load current commerce merchants.');
-  }
-
-  return (data as CatalogBootstrapMerchantRow[] | null) ?? [];
+    includeInactive,
+    orderBy: 'name',
+    statusColumn: 'is_active',
+    supabaseClient,
+    table: CURRENT_COMMERCE_MERCHANTS_TABLE,
+  });
 }
 
 async function listCurrentOfferSeeds({
@@ -1074,24 +1110,16 @@ async function listCurrentOfferSeeds({
   includeInactive?: boolean;
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapOfferSeedRow[]> {
-  let query = supabaseClient
-    .from(CURRENT_COMMERCE_OFFER_SEEDS_TABLE)
-    .select(
+  return readOrderedBootstrapRows<CatalogBootstrapOfferSeedRow>({
+    activeFilterValue: true,
+    columns:
       'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
-    )
-    .order('created_at', { ascending: true });
-
-  if (!includeInactive) {
-    query = query.eq('is_active', true);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    throw new Error('Unable to load current commerce offer seeds.');
-  }
-
-  return (data as CatalogBootstrapOfferSeedRow[] | null) ?? [];
+    includeInactive,
+    orderBy: 'created_at',
+    statusColumn: 'is_active',
+    supabaseClient,
+    table: CURRENT_COMMERCE_OFFER_SEEDS_TABLE,
+  });
 }
 
 async function listCurrentBenchmarkSets({
@@ -1099,16 +1127,12 @@ async function listCurrentBenchmarkSets({
 }: {
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapBenchmarkSetRow[]> {
-  const { data, error } = await supabaseClient
-    .from(CURRENT_COMMERCE_BENCHMARK_SETS_TABLE)
-    .select('set_id, notes, created_at, updated_at')
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    throw new Error('Unable to load current commerce benchmark sets.');
-  }
-
-  return (data as CatalogBootstrapBenchmarkSetRow[] | null) ?? [];
+  return readOrderedBootstrapRows<CatalogBootstrapBenchmarkSetRow>({
+    columns: 'set_id, notes, created_at, updated_at',
+    orderBy: 'created_at',
+    supabaseClient,
+    table: CURRENT_COMMERCE_BENCHMARK_SETS_TABLE,
+  });
 }
 
 export async function buildCatalogCleanBootstrapPayload({

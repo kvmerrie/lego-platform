@@ -350,12 +350,14 @@ export class CommerceAdminApiService {
 
   async syncCommerceFromProduction(input: {
     adminSecret: string;
+    allowDestructive?: boolean;
     dryRun: boolean;
   }): Promise<CommerceAdminProductionSyncResult> {
     return firstValueFrom(
       this.http.post<CommerceAdminProductionSyncResult>(
         apiPaths.adminCommerceProductionSync,
         {
+          allowDestructive: input.allowDestructive === true,
           dryRun: input.dryRun,
         },
         {

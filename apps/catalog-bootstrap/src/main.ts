@@ -32,6 +32,16 @@ function getFlagValue({
   return '';
 }
 
+function hasFlag({
+  argv,
+  flag,
+}: {
+  argv: readonly string[];
+  flag: `--${string}`;
+}): boolean {
+  return argv.some((argument) => argument === flag);
+}
+
 function resolveMode(argv: readonly string[]): CatalogBootstrapMode {
   const modes = (
     [
@@ -97,6 +107,10 @@ async function main() {
     );
 
     const summary = await importCatalogCleanBootstrapPayload({
+      allowPartial: hasFlag({
+        argv,
+        flag: '--allow-partial',
+      }),
       payload,
     });
 

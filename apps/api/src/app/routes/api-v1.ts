@@ -12,6 +12,7 @@ import {
   buildCatalogCurrentOfferSummariesApiPath,
   buildCatalogDiscoverySignalsApiPath,
 } from '@lego-platform/shared/config';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import type { RequestPrincipal } from '@lego-platform/shared/data-access-auth-server';
 import {
   CollectorHandleConflictError,
@@ -114,9 +115,13 @@ export function createApiV1Routes({
       return [];
     }
 
-    return [...new Set(value.split(',').map((setId) => setId.trim()))].filter(
-      (setId) => setId.length > 0,
-    );
+    return [
+      ...new Set(value.split(',').map((setId) => normalizeCatalogSetId(setId))),
+    ].filter((setId) => setId.length > 0);
+  }
+
+  function normalizeRouteSetId(setId: string): string {
+    return normalizeCatalogSetId(setId);
   }
 
   return async function (fastify: FastifyInstance) {
@@ -157,7 +162,9 @@ export function createApiV1Routes({
     fastify.get<{ Params: { setId: string } }>(
       `${apiPaths.catalogSets}/:setId/live-offers`,
       async function (request) {
-        return listCatalogSetLiveOffersBySetIdDependency(request.params.setId);
+        return listCatalogSetLiveOffersBySetIdDependency(
+          normalizeRouteSetId(request.params.setId),
+        );
       },
     );
 
@@ -267,12 +274,12 @@ export function createApiV1Routes({
 
         await userSetStatusRepository.setOwnedState({
           userId: request.requestPrincipal.userId,
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isOwned: true,
         });
 
         return {
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isOwned: true,
         };
       },
@@ -287,12 +294,12 @@ export function createApiV1Routes({
 
         await userSetStatusRepository.setOwnedState({
           userId: request.requestPrincipal.userId,
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isOwned: false,
         });
 
         return {
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isOwned: false,
         };
       },
@@ -307,12 +314,12 @@ export function createApiV1Routes({
 
         await userSetStatusRepository.setWantedState({
           userId: request.requestPrincipal.userId,
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isWanted: true,
         });
 
         return {
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isWanted: true,
         };
       },
@@ -327,12 +334,12 @@ export function createApiV1Routes({
 
         await userSetStatusRepository.setWantedState({
           userId: request.requestPrincipal.userId,
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isWanted: false,
         });
 
         return {
-          setId: request.params.setId,
+          setId: normalizeRouteSetId(request.params.setId),
           isWanted: false,
         };
       },

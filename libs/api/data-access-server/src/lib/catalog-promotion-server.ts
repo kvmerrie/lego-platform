@@ -14,6 +14,39 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
+const CATALOG_PROMOTION_PAGE_SIZE = 1000;
+const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
+  CATALOG_SETS_TABLE,
+  COMMERCE_OFFER_SEEDS_TABLE,
+]);
+const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
+  string,
+  readonly string[]
+> = {
+  catalog_sets: [
+    'image_url',
+    'name',
+    'piece_count',
+    'primary_theme_id',
+    'release_year',
+    'source',
+    'source_set_number',
+    'source_theme_id',
+  ],
+  [CATALOG_SOURCE_THEMES_TABLE]: [
+    'parent_source_theme_id',
+    'source_system',
+    'source_theme_name',
+  ],
+  [CATALOG_THEMES_TABLE]: ['display_name'],
+  [CATALOG_THEME_MAPPINGS_TABLE]: ['primary_theme_id'],
+  commerce_benchmark_sets: [],
+  // TODO(brickhunt): decide whether production commerce seed and merchant
+  // operator fields should be promoted at all. Keep manual/protected columns
+  // out of updates until that contract is explicit.
+  commerce_merchants: ['affiliate_network', 'name', 'source_type'],
+  commerce_offer_seeds: ['product_url'],
+};
 
 type CatalogPromotionSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -168,6 +201,47 @@ function toRowRecord(value: unknown): Readonly<Record<string, unknown>> {
   return value as Record<string, unknown>;
 }
 
+function assertPromotionReadWasNotDefaultCapped({
+  readCount,
+  table,
+}: {
+  readCount: number;
+  table: string;
+}) {
+  if (
+    CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES.has(table) &&
+    readCount === CATALOG_PROMOTION_PAGE_SIZE
+  ) {
+    throw new Error(
+      `Catalog promotion read for ${table} returned exactly ${CATALOG_PROMOTION_PAGE_SIZE} rows. This table is expected to exceed Supabase's default cap, so aborting to avoid promoting a truncated staging snapshot.`,
+    );
+  }
+}
+
+function selectPromotionUpsertColumns({
+  conflictColumns,
+  isExistingRow,
+  row,
+  table,
+}: {
+  conflictColumns: readonly string[];
+  isExistingRow: boolean;
+  row: Readonly<Record<string, unknown>>;
+  table: string;
+}): Record<string, unknown> {
+  if (!isExistingRow) {
+    return { ...row };
+  }
+
+  const mutableColumns =
+    CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE[table] ?? [];
+  const allowedColumns = new Set([...conflictColumns, ...mutableColumns]);
+
+  return Object.fromEntries(
+    Object.entries(row).filter(([column]) => allowedColumns.has(column)),
+  );
+}
+
 function createPromotionClients(): {
   productionSupabaseClient: CatalogPromotionSupabaseClient;
   stagingSupabaseClient: CatalogPromotionSupabaseClient;
@@ -220,18 +294,29 @@ async function readOrderedRows<TRow>({
   supabaseClient: CatalogPromotionSupabaseClient;
   table: string;
 }): Promise<TRow[]> {
-  const { data, error } = await supabaseClient
-    .from(table)
-    .select(columns)
-    .order(orderBy, { ascending: true });
+  const rows: TRow[] = [];
 
-  if (error) {
-    throw new Error(
-      `Unable to read ${table} from staging. ${JSON.stringify(error)}`,
-    );
+  for (let from = 0; ; from += CATALOG_PROMOTION_PAGE_SIZE) {
+    const to = from + CATALOG_PROMOTION_PAGE_SIZE - 1;
+    const { data, error } = await supabaseClient
+      .from(table)
+      .select(columns)
+      .order(orderBy, { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(
+        `Unable to read ${table} from staging. ${JSON.stringify(error)}`,
+      );
+    }
+
+    const pageRows = (data as unknown as TRow[] | null) ?? [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_PROMOTION_PAGE_SIZE) {
+      return rows;
+    }
   }
-
-  return (data as unknown as TRow[] | null) ?? [];
 }
 
 async function listExistingConflictKeys({
@@ -244,17 +329,29 @@ async function listExistingConflictKeys({
   table: string;
 }): Promise<Set<string>> {
   const conflictColumns = splitConflictColumns(onConflict);
-  const { data, error } = await supabaseClient
-    .from(table)
-    .select(conflictColumns.join(', '));
+  const rows: Record<string, unknown>[] = [];
 
-  if (error) {
-    throw new Error(
-      `Unable to inspect existing ${table} rows before promotion. ${JSON.stringify(error)}`,
-    );
+  for (let from = 0; ; from += CATALOG_PROMOTION_PAGE_SIZE) {
+    const to = from + CATALOG_PROMOTION_PAGE_SIZE - 1;
+    const { data, error } = await supabaseClient
+      .from(table)
+      .select(conflictColumns.join(', '))
+      .range(from, to);
+
+    if (error) {
+      throw new Error(
+        `Unable to inspect existing ${table} rows before promotion. ${JSON.stringify(error)}`,
+      );
+    }
+
+    const pageRows =
+      (data as unknown as Record<string, unknown>[] | null) ?? [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_PROMOTION_PAGE_SIZE) {
+      break;
+    }
   }
-
-  const rows = (data as unknown as Record<string, unknown>[] | null) ?? [];
 
   return new Set(
     rows.map((row) =>
@@ -309,12 +406,25 @@ async function upsertRows<TRow>({
     }
   }
 
-  for (const chunk of chunkValues(rows, 100)) {
-    const { error } = await supabaseClient
-      .from(table)
-      .upsert(chunk as readonly Record<string, unknown>[], {
-        onConflict,
-      });
+  const rowsForUpsert = rows.map((row) => {
+    const rowRecord = toRowRecord(row);
+    const conflictKey = buildConflictKey({
+      columns: conflictColumns,
+      row: rowRecord,
+    });
+
+    return selectPromotionUpsertColumns({
+      conflictColumns,
+      isExistingRow: existingKeys.has(conflictKey),
+      row: rowRecord,
+      table,
+    });
+  });
+
+  for (const chunk of chunkValues(rowsForUpsert, 100)) {
+    const { error } = await supabaseClient.from(table).upsert(chunk, {
+      onConflict,
+    });
 
     if (error) {
       throw new Error(
@@ -336,17 +446,32 @@ async function listProductionMerchants({
 }: {
   supabaseClient: CatalogPromotionSupabaseClient;
 }): Promise<Array<Pick<CommerceMerchantRow, 'id' | 'slug'>>> {
-  const { data, error } = await supabaseClient
-    .from(COMMERCE_MERCHANTS_TABLE)
-    .select('id, slug');
+  const rows: Array<Pick<CommerceMerchantRow, 'id' | 'slug'>> = [];
 
-  if (error) {
-    throw new Error(
-      `Unable to inspect existing ${COMMERCE_MERCHANTS_TABLE} rows before promotion. ${JSON.stringify(error)}`,
-    );
+  for (let from = 0; ; from += CATALOG_PROMOTION_PAGE_SIZE) {
+    const to = from + CATALOG_PROMOTION_PAGE_SIZE - 1;
+    const { data, error } = await supabaseClient
+      .from(COMMERCE_MERCHANTS_TABLE)
+      .select('id, slug')
+      .order('slug', { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(
+        `Unable to inspect existing ${COMMERCE_MERCHANTS_TABLE} rows before promotion. ${JSON.stringify(error)}`,
+      );
+    }
+
+    const pageRows =
+      (data as unknown as Array<
+        Pick<CommerceMerchantRow, 'id' | 'slug'>
+      > | null) ?? [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_PROMOTION_PAGE_SIZE) {
+      return rows;
+    }
   }
-
-  return (data as Array<Pick<CommerceMerchantRow, 'id' | 'slug'>> | null) ?? [];
 }
 
 async function listProductionOfferSeeds({
@@ -356,21 +481,34 @@ async function listProductionOfferSeeds({
 }): Promise<
   Array<Pick<CommerceOfferSeedRow, 'id' | 'merchant_id' | 'set_id'>>
 > {
-  const { data, error } = await supabaseClient
-    .from(COMMERCE_OFFER_SEEDS_TABLE)
-    .select('id, set_id, merchant_id');
+  const rows: Array<
+    Pick<CommerceOfferSeedRow, 'id' | 'merchant_id' | 'set_id'>
+  > = [];
 
-  if (error) {
-    throw new Error(
-      `Unable to inspect existing ${COMMERCE_OFFER_SEEDS_TABLE} rows before promotion. ${JSON.stringify(error)}`,
-    );
+  for (let from = 0; ; from += CATALOG_PROMOTION_PAGE_SIZE) {
+    const to = from + CATALOG_PROMOTION_PAGE_SIZE - 1;
+    const { data, error } = await supabaseClient
+      .from(COMMERCE_OFFER_SEEDS_TABLE)
+      .select('id, set_id, merchant_id')
+      .order('set_id', { ascending: true })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(
+        `Unable to inspect existing ${COMMERCE_OFFER_SEEDS_TABLE} rows before promotion. ${JSON.stringify(error)}`,
+      );
+    }
+
+    const pageRows =
+      (data as unknown as Array<
+        Pick<CommerceOfferSeedRow, 'id' | 'merchant_id' | 'set_id'>
+      > | null) ?? [];
+    rows.push(...pageRows);
+
+    if (pageRows.length < CATALOG_PROMOTION_PAGE_SIZE) {
+      return rows;
+    }
   }
-
-  return (
-    (data as Array<
-      Pick<CommerceOfferSeedRow, 'id' | 'merchant_id' | 'set_id'>
-    > | null) ?? []
-  );
 }
 
 async function upsertMerchantsBySlug({
@@ -534,6 +672,15 @@ export async function promoteCatalogFromStagingToProduction({
         table: COMMERCE_OFFER_SEEDS_TABLE,
       }),
     ]);
+
+    assertPromotionReadWasNotDefaultCapped({
+      readCount: catalogSets.length,
+      table: CATALOG_SETS_TABLE,
+    });
+    assertPromotionReadWasNotDefaultCapped({
+      readCount: commerceOfferSeeds.length,
+      table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
 
     tables.catalog_source_themes = await upsertRows({
       onConflict: 'id',

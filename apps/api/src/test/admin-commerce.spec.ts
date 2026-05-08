@@ -127,50 +127,52 @@ async function createAdminCommerceServer({
           updatedAt: '2026-05-06T10:00:00.000Z',
         }) satisfies CommerceAffiliateDiscoveredSet,
     ),
-    copyProductionCommerce: vi.fn(async ({ dryRun }: { dryRun: boolean }) => ({
-      dryRun,
-      durationMs: 12,
-      startedAt: '2026-05-05T12:00:00.000Z',
-      status: 'ok' as const,
-      tables: {
-        commerce_merchants: {
-          deletedCount: 0,
-          insertedCount: 0,
-          sourceCount: 2,
-          targetBeforeCount: 1,
+    copyProductionCommerce: vi.fn(
+      async ({ dryRun }: { allowDestructive: boolean; dryRun: boolean }) => ({
+        dryRun,
+        durationMs: 12,
+        startedAt: '2026-05-05T12:00:00.000Z',
+        status: 'ok' as const,
+        tables: {
+          commerce_merchants: {
+            deletedCount: 0,
+            insertedCount: 0,
+            sourceCount: 2,
+            targetBeforeCount: 1,
+          },
+          commerce_benchmark_sets: {
+            deletedCount: 0,
+            insertedCount: 0,
+            sourceCount: 3,
+            targetBeforeCount: 1,
+          },
+          commerce_offer_seeds: {
+            deletedCount: 0,
+            insertedCount: 0,
+            sourceCount: 5,
+            targetBeforeCount: 2,
+          },
+          commerce_offer_latest: {
+            deletedCount: 0,
+            insertedCount: 0,
+            sourceCount: 5,
+            targetBeforeCount: 2,
+          },
+          commerce_affiliate_discovered_sets: {
+            deletedCount: 0,
+            insertedCount: 0,
+            sourceCount: 1,
+            targetBeforeCount: 0,
+          },
+          pricing_daily_set_history: {
+            deletedCount: 0,
+            insertedCount: 0,
+            sourceCount: 8,
+            targetBeforeCount: 4,
+          },
         },
-        commerce_benchmark_sets: {
-          deletedCount: 0,
-          insertedCount: 0,
-          sourceCount: 3,
-          targetBeforeCount: 1,
-        },
-        commerce_offer_seeds: {
-          deletedCount: 0,
-          insertedCount: 0,
-          sourceCount: 5,
-          targetBeforeCount: 2,
-        },
-        commerce_offer_latest: {
-          deletedCount: 0,
-          insertedCount: 0,
-          sourceCount: 5,
-          targetBeforeCount: 2,
-        },
-        commerce_affiliate_discovered_sets: {
-          deletedCount: 0,
-          insertedCount: 0,
-          sourceCount: 1,
-          targetBeforeCount: 0,
-        },
-        pricing_daily_set_history: {
-          deletedCount: 0,
-          insertedCount: 0,
-          sourceCount: 8,
-          targetBeforeCount: 4,
-        },
-      },
-    })),
+      }),
+    ),
     listBenchmarkSets: vi.fn(async () => []),
     createBenchmarkSet: vi.fn(
       async () =>
@@ -470,7 +472,7 @@ describe('admin commerce routes', () => {
       method: 'POST',
       url: '/api/v1/admin/commerce/set-refreshes',
       payload: {
-        setId: '10316',
+        setId: '10316-1',
       },
     });
 
@@ -506,6 +508,7 @@ describe('admin commerce routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(commerceService.copyProductionCommerce).toHaveBeenCalledWith({
+      allowDestructive: false,
       dryRun: true,
     });
     expect(response.json()).toEqual(
@@ -535,6 +538,7 @@ describe('admin commerce routes', () => {
         'x-admin-secret': 'wrong-secret',
       },
       payload: {
+        allowDestructive: true,
         dryRun: false,
       },
     });
@@ -557,12 +561,14 @@ describe('admin commerce routes', () => {
         'x-admin-secret': 'sync-secret',
       },
       payload: {
+        allowDestructive: true,
         dryRun: false,
       },
     });
 
     expect(response.statusCode).toBe(200);
     expect(commerceService.copyProductionCommerce).toHaveBeenCalledWith({
+      allowDestructive: true,
       dryRun: false,
     });
     expect(response.json()).toEqual(
@@ -604,7 +610,7 @@ describe('admin commerce routes', () => {
       method: 'POST',
       url: '/api/v1/admin/commerce/offer-seeds',
       payload: {
-        setId: '10316',
+        setId: '10316-1',
         merchantId: 'merchant-1',
         productUrl: 'https://misterbricks.nl/rivendell-10316.html',
         isActive: true,

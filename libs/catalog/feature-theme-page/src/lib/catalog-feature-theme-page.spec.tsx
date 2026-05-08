@@ -161,6 +161,39 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('href="/artikelen/star-wars/star-wars-day-2026"');
   });
 
+  it('uses server-paginated theme set cards without slicing them again', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureThemePage
+        currentPage={2}
+        pageSize={1}
+        themePage={{
+          themeSnapshot: {
+            name: 'Star Wars',
+            slug: 'star-wars',
+            setCount: 2,
+            momentum: 'Ships, walkers en displaywaarde.',
+            signatureSet: 'X-wing Starfighter',
+          },
+          setCards: [
+            {
+              id: '75446',
+              slug: 'grogu-mandalorian-apprentice-75446',
+              name: 'Grogu with Hover Pram',
+              theme: 'Star Wars',
+              releaseYear: 2026,
+              pieces: 1048,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('href="/sets/grogu-mandalorian-apprentice-75446"');
+    expect(markup).not.toContain('href="/sets/x-wing-starfighter-75355"');
+    expect(markup).toContain('href="/themes/star-wars"');
+    expect(markup).toContain('href="/themes/star-wars?page=2"');
+  });
+
   it('uses the shared theme visual mapping for theme page surfaces', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureThemePage

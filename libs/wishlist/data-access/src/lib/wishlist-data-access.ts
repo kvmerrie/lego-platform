@@ -8,7 +8,10 @@ import {
   buildSupabaseAuthorizationHeaders,
   notifyBrowserAccountDataChanged,
 } from '@lego-platform/shared/data-access-auth';
-import { readStringArrayProperty } from '@lego-platform/shared/util';
+import {
+  normalizeCatalogSetId,
+  readStringArrayProperty,
+} from '@lego-platform/shared/util';
 
 const LOCAL_FOLLOWED_PRICE_SET_IDS_STORAGE_KEY =
   'brickhunt.followed-price-set-ids';
@@ -96,9 +99,13 @@ function readLocalFollowedPriceSetIds(): string[] {
       return [];
     }
 
-    return parsedValue.filter(
-      (value): value is string => typeof value === 'string',
-    );
+    return [
+      ...new Set(
+        parsedValue.flatMap((value) =>
+          typeof value === 'string' ? [normalizeCatalogSetId(value)] : [],
+        ),
+      ),
+    ].filter(Boolean);
   } catch {
     return [];
   }
@@ -111,7 +118,9 @@ function writeLocalFollowedPriceSetIds(setIds: readonly string[]): void {
     return;
   }
 
-  const nextSetIds = [...new Set(setIds)];
+  const nextSetIds = [
+    ...new Set(setIds.map((setId) => normalizeCatalogSetId(setId))),
+  ].filter(Boolean);
 
   if (nextSetIds.length === 0) {
     browserStorage.removeItem(LOCAL_FOLLOWED_PRICE_SET_IDS_STORAGE_KEY);
@@ -125,37 +134,45 @@ function writeLocalFollowedPriceSetIds(setIds: readonly string[]): void {
 }
 
 export function addLocalFollowedPriceSet(setId: string): WantedSetState {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const localFollowedPriceSetIds = readLocalFollowedPriceSetIds();
 
-  writeLocalFollowedPriceSetIds([setId, ...localFollowedPriceSetIds]);
+  writeLocalFollowedPriceSetIds([canonicalSetId, ...localFollowedPriceSetIds]);
   notifyBrowserAccountDataChanged();
 
   return {
     isWanted: true,
-    setId,
+    setId: canonicalSetId,
   };
 }
 
 export function removeLocalFollowedPriceSet(setId: string): WantedSetState {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const localFollowedPriceSetIds = readLocalFollowedPriceSetIds();
 
   writeLocalFollowedPriceSetIds(
     localFollowedPriceSetIds.filter(
-      (localFollowedPriceSetId) => localFollowedPriceSetId !== setId,
+      (localFollowedPriceSetId) => localFollowedPriceSetId !== canonicalSetId,
     ),
   );
   notifyBrowserAccountDataChanged();
 
   return {
     isWanted: false,
-    setId,
+    setId: canonicalSetId,
   };
 }
 
 function readFollowedPriceSetCollection(
   sessionPayload: unknown,
 ): FollowedPriceSetCollection {
-  const wantedSetIds = readStringArrayProperty(sessionPayload, 'wantedSetIds');
+  const wantedSetIds = [
+    ...new Set(
+      readStringArrayProperty(sessionPayload, 'wantedSetIds').map((setId) =>
+        normalizeCatalogSetId(setId),
+      ),
+    ),
+  ].filter(Boolean);
   const isAuthenticated =
     Boolean(sessionPayload) &&
     typeof sessionPayload === 'object' &&
@@ -195,6 +212,7 @@ export async function getFollowedPriceSetCollection(): Promise<FollowedPriceSetC
 export async function getWantedSetContext(
   setId: string,
 ): Promise<WantedSetContext> {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const followedPriceSetCollection = await getFollowedPriceSetCollection();
 
   return {
@@ -202,8 +220,9 @@ export async function getWantedSetContext(
     isAuthenticated: followedPriceSetCollection.isAuthenticated,
     wantedCount: followedPriceSetCollection.followedSetIds.length,
     wantedSetState: {
-      setId,
-      isWanted: followedPriceSetCollection.followedSetIds.includes(setId),
+      setId: canonicalSetId,
+      isWanted:
+        followedPriceSetCollection.followedSetIds.includes(canonicalSetId),
     },
   };
 }
@@ -217,9 +236,10 @@ export async function getWantedSetState(
 }
 
 export async function addWantedSet(setId: string): Promise<WantedSetState> {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(
-    `${apiPaths.wantedSets}/${encodeURIComponent(setId)}`,
+    `${apiPaths.wantedSets}/${encodeURIComponent(canonicalSetId)}`,
     {
       headers,
       method: 'PUT',
@@ -242,9 +262,10 @@ export async function addWantedSet(setId: string): Promise<WantedSetState> {
 }
 
 export async function removeWantedSet(setId: string): Promise<WantedSetState> {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const headers = await buildSupabaseAuthorizationHeaders();
   const response = await fetch(
-    `${apiPaths.wantedSets}/${encodeURIComponent(setId)}`,
+    `${apiPaths.wantedSets}/${encodeURIComponent(canonicalSetId)}`,
     {
       headers,
       method: 'DELETE',

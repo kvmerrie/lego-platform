@@ -140,6 +140,7 @@ export class CommerceAdminOperationsPageComponent {
     try {
       const result = await this.commerceAdminApi.syncCommerceFromProduction({
         adminSecret,
+        allowDestructive: !dryRun,
         dryRun,
       });
 

@@ -190,7 +190,9 @@ describe('pricing data access server', () => {
 
   test('upserts daily price-history points by the daily composite key', async () => {
     const upsert = vi.fn(async () => ({ error: null }));
+    const deleteRows = vi.fn();
     const from = vi.fn(() => ({
+      delete: deleteRows,
       upsert,
     }));
 
@@ -246,5 +248,6 @@ describe('pricing data access server', () => {
         onConflict: 'set_id,region_code,currency_code,condition,recorded_on',
       },
     );
+    expect(deleteRows).not.toHaveBeenCalled();
   });
 });

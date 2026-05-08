@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 vi.mock('@lego-platform/shared/data-access-auth', () => ({
   getBrowserSupabaseClient: vi.fn(),
@@ -31,6 +31,7 @@ import {
   listDealSpotlightPriceContexts,
   listWishlistAlertNotificationCandidates,
   listWishlistPriceAlerts,
+  listTrackedPriceHistory,
   listReviewedPriceSetIds,
   getPriceHistorySummary,
   getPriceHistorySummaryState,
@@ -47,6 +48,10 @@ describe('pricing data access', () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
     vi.mocked(getDefaultFormattingLocale).mockReturnValue('nl-NL');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   test('returns a set-aware Dutch price panel snapshot', () => {
@@ -590,7 +595,7 @@ describe('pricing data access', () => {
       from: vi.fn().mockReturnValue(queryBuilder),
     } as never);
 
-    await expect(listPriceHistory('10316')).resolves.toEqual([
+    await expect(listPriceHistory('10316-1')).resolves.toEqual([
       {
         setId: '10316',
         regionCode: 'NL',
@@ -614,42 +619,45 @@ describe('pricing data access', () => {
         recordedOn: '2026-03-29',
       },
     ]);
+    expect(queryBuilder.eq).toHaveBeenCalledWith('set_id', '10316');
   });
 
   test('batches wishlist alerts across saved sets and uses saved timestamps', async () => {
+    const order = vi.fn();
     const queryBuilder = {
       select: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue({
-        data: [
-          {
-            set_id: '76453',
-            region_code: 'NL',
-            currency_code: 'EUR',
-            condition: 'new',
-            headline_price_minor: 12999,
-            reference_price_minor: 14999,
-            lowest_merchant_id: 'lego-nl',
-            observed_at: '2026-04-01T09:00:00.000Z',
-            recorded_on: '2026-04-01',
-          },
-          {
-            set_id: '76453',
-            region_code: 'NL',
-            currency_code: 'EUR',
-            condition: 'new',
-            headline_price_minor: 12499,
-            reference_price_minor: 14999,
-            lowest_merchant_id: 'lego-nl',
-            observed_at: '2026-04-02T09:00:00.000Z',
-            recorded_on: '2026-04-02',
-          },
-        ],
-        error: null,
-      }),
+      gte: vi.fn().mockReturnThis(),
+      order,
     };
+    order.mockReturnValueOnce(queryBuilder).mockResolvedValueOnce({
+      data: [
+        {
+          set_id: '76453',
+          region_code: 'NL',
+          currency_code: 'EUR',
+          condition: 'new',
+          headline_price_minor: 12999,
+          reference_price_minor: 14999,
+          lowest_merchant_id: 'lego-nl',
+          observed_at: '2026-04-01T09:00:00.000Z',
+          recorded_on: '2026-04-01',
+        },
+        {
+          set_id: '76453',
+          region_code: 'NL',
+          currency_code: 'EUR',
+          condition: 'new',
+          headline_price_minor: 12499,
+          reference_price_minor: 14999,
+          lowest_merchant_id: 'lego-nl',
+          observed_at: '2026-04-02T09:00:00.000Z',
+          recorded_on: '2026-04-02',
+        },
+      ],
+      error: null,
+    });
 
     vi.mocked(hasBrowserSupabaseConfig).mockReturnValue(true);
     vi.mocked(getBrowserSupabaseClient).mockReturnValue({
@@ -659,18 +667,46 @@ describe('pricing data access', () => {
     await expect(
       listWishlistPriceAlerts({
         savedAtBySetId: {
-          '76453': '2026-04-01T12:00:00.000Z',
+          '76453-1': '2026-04-01T12:00:00.000Z',
         },
-        setIds: ['76453'],
+        setIds: ['76453-1'],
       }),
     ).resolves.toEqual({
       '76453': {
-        detail: '€ 119,99 is € 5,00 onder de vorige beste tracked prijs.',
+        detail: '€ 119,90 is € 5,09 onder de vorige beste tracked prijs.',
         kind: 'new-best-price',
         label: 'Nieuwe beste reviewed prijs',
         tone: 'positive',
       },
     });
+    expect(queryBuilder.in).toHaveBeenCalledWith('set_id', ['76453']);
+    expect(queryBuilder.gte).toHaveBeenCalledWith('recorded_on', '2026-04-01');
+  });
+
+  test('uses a default 90-day browser history window for tracked price reads', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-08T12:00:00.000Z'));
+
+    const queryBuilder = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
+        data: [],
+        error: null,
+      }),
+    };
+
+    vi.mocked(hasBrowserSupabaseConfig).mockReturnValue(true);
+    vi.mocked(getBrowserSupabaseClient).mockReturnValue({
+      from: vi.fn().mockReturnValue(queryBuilder),
+    } as never);
+
+    await expect(listTrackedPriceHistory('10316')).resolves.toEqual([]);
+
+    expect(queryBuilder.gte).toHaveBeenCalledWith('recorded_on', '2026-02-08');
+    expect('limit' in queryBuilder).toBe(false);
+    vi.useRealTimers();
   });
 
   test('summarizes active wishlist alerts by kind', () => {
@@ -1063,8 +1099,8 @@ describe('pricing data access', () => {
     const queryBuilder = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue({
+      gte: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
         data: [
           {
             set_id: '10316',
@@ -1124,8 +1160,8 @@ describe('pricing data access', () => {
     const queryBuilder = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue({
+      gte: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
         data: [
           {
             set_id: '10316',
@@ -1198,8 +1234,8 @@ describe('pricing data access', () => {
     const queryBuilder = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue({
+      gte: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({
         data: [
           {
             set_id: '10316',

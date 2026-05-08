@@ -18,12 +18,22 @@ function createResolvedQuery<TData>(data: readonly TData[]) {
 }
 
 function createQueryBuilder<TData>(data: readonly TData[]) {
+  let rangeStart = 0;
+  let rangeEnd = data.length - 1;
   const queryBuilder = {
     eq: vi.fn(() => queryBuilder),
     order: vi.fn(() => queryBuilder),
+    range: vi.fn((from: number, to: number) => {
+      rangeStart = from;
+      rangeEnd = to;
+
+      return queryBuilder;
+    }),
     select: vi.fn(() => queryBuilder),
     then: vi.fn((resolve: (value: unknown) => unknown) =>
-      Promise.resolve(createResolvedQuery(data)).then(resolve),
+      Promise.resolve(
+        createResolvedQuery(data.slice(rangeStart, rangeEnd + 1)),
+      ).then(resolve),
     ),
   };
 
@@ -57,6 +67,8 @@ function createMutableSupabaseClient(
     from(table: string) {
       const selectedColumns: string[] = [];
       const eqFilters: Array<{ column: string; value: unknown }> = [];
+      let rangeStart = 0;
+      let rangeEnd = 999;
 
       const queryBuilder = {
         eq(column: string, value: unknown) {
@@ -68,6 +80,12 @@ function createMutableSupabaseClient(
           return queryBuilder;
         },
         order() {
+          return queryBuilder;
+        },
+        range(from: number, to: number) {
+          rangeStart = from;
+          rangeEnd = to;
+
           return queryBuilder;
         },
         select(columns: string) {
@@ -85,6 +103,8 @@ function createMutableSupabaseClient(
           for (const filter of eqFilters) {
             rows = rows.filter((row) => row[filter.column] === filter.value);
           }
+
+          rows = rows.slice(rangeStart, rangeEnd + 1);
 
           if (selectedColumns.length > 0) {
             rows = rows.map((row) =>
@@ -147,6 +167,79 @@ function createMutableSupabaseClient(
     operationLog,
     supabaseClient,
     tables,
+  };
+}
+
+function createCatalogBootstrapSet(index: number) {
+  const setNumber = String(20_000 + index);
+
+  return {
+    createdAt: '2026-04-18T08:00:00.000Z',
+    name: `Catalog Set ${setNumber}`,
+    pieceCount: 100 + index,
+    primaryThemeId: 'theme:icons',
+    releaseYear: 2026,
+    setId: setNumber,
+    slug: `catalog-set-${setNumber}`,
+    source: 'rebrickable',
+    sourceSetNumber: `${setNumber}-1`,
+    sourceThemeId: 'rebrickable:721',
+    status: 'active',
+    updatedAt: '2026-04-18T09:00:00.000Z',
+  };
+}
+
+function createCatalogBootstrapPayload({
+  catalogSets,
+}: {
+  catalogSets: readonly ReturnType<typeof createCatalogBootstrapSet>[];
+}) {
+  return {
+    catalog: {
+      sets: catalogSets,
+      sourceThemes: [
+        {
+          createdAt: '2026-04-18T08:00:00.000Z',
+          id: 'rebrickable:721',
+          sourceSystem: 'rebrickable',
+          sourceThemeName: 'Icons',
+          updatedAt: '2026-04-18T09:00:00.000Z',
+        },
+      ],
+      themeMappings: [
+        {
+          createdAt: '2026-04-18T08:00:00.000Z',
+          primaryThemeId: 'theme:icons',
+          sourceThemeId: 'rebrickable:721',
+          updatedAt: '2026-04-18T09:00:00.000Z',
+        },
+      ],
+      themes: [
+        {
+          createdAt: '2026-04-18T08:00:00.000Z',
+          displayName: 'Icons',
+          id: 'theme:icons',
+          slug: 'icons',
+          status: 'active',
+          updatedAt: '2026-04-18T09:00:00.000Z',
+        },
+      ],
+    },
+    commerce: {
+      benchmarkSets: [],
+      merchants: [],
+      offerSeeds: [],
+    },
+    exclusions: {
+      latestOffers: 'excluded',
+      localCatalogProse: 'excluded',
+      pricingHistoryRows: 'excluded',
+      snapshotArtifacts: 'excluded',
+      userData: 'excluded',
+    },
+    generatedAt: '2026-04-18T10:00:00.000Z',
+    notes: 'test',
+    source: 'brickhunt-clean-bootstrap' as const,
   };
 }
 
@@ -343,6 +436,82 @@ describe('catalog clean bootstrap payload', () => {
     });
     expect(payload.commerce.offerSeeds).toHaveLength(1);
     expect(payload.exclusions.latestOffers).toBe('excluded');
+  });
+
+  test('exports catalog rows beyond the first Supabase page', async () => {
+    const catalogRows = Array.from({ length: 1002 }, (_, index) => {
+      const setNumber = String(10_000 + index);
+
+      return {
+        created_at: `2026-04-18T08:${String(index % 60).padStart(2, '0')}:00.000Z`,
+        image_url: null,
+        name: `Catalog Set ${setNumber}`,
+        piece_count: 100 + index,
+        primary_theme_id: 'theme:icons',
+        release_year: 2026,
+        set_id: setNumber,
+        slug: `catalog-set-${setNumber}`,
+        source: 'rebrickable',
+        source_set_number: `${setNumber}-1`,
+        source_theme_id: 'rebrickable:721',
+        status: 'active',
+        updated_at: '2026-04-18T09:00:00.000Z',
+      };
+    });
+    const emptyQuery = createQueryBuilder([]);
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return createQueryBuilder(catalogRows);
+        }
+
+        if (table === 'catalog_source_themes') {
+          return createQueryBuilder([
+            {
+              created_at: '2026-04-18T08:00:00.000Z',
+              id: 'rebrickable:721',
+              parent_source_theme_id: null,
+              source_system: 'rebrickable',
+              source_theme_name: 'Icons',
+              updated_at: '2026-04-18T09:00:00.000Z',
+            },
+          ]);
+        }
+
+        if (table === 'catalog_themes') {
+          return createQueryBuilder([
+            {
+              created_at: '2026-04-18T08:00:00.000Z',
+              display_name: 'Icons',
+              id: 'theme:icons',
+              slug: 'icons',
+              status: 'active',
+              updated_at: '2026-04-18T09:00:00.000Z',
+            },
+          ]);
+        }
+
+        if (table === 'catalog_theme_mappings') {
+          return createQueryBuilder([
+            {
+              created_at: '2026-04-18T08:00:00.000Z',
+              primary_theme_id: 'theme:icons',
+              source_theme_id: 'rebrickable:721',
+              updated_at: '2026-04-18T09:00:00.000Z',
+            },
+          ]);
+        }
+
+        return emptyQuery;
+      }),
+    } satisfies MockSupabaseClient;
+
+    const payload = await buildCatalogCleanBootstrapPayload({
+      supabaseClient,
+    });
+
+    expect(payload.catalog.sets).toHaveLength(1002);
+    expect(payload.catalog.sets.at(-1)?.setId).toBe('11001');
   });
 
   test('fails when a set is still missing normalized theme ids', async () => {
@@ -628,6 +797,80 @@ describe('catalog clean bootstrap payload', () => {
         set_id: '75192',
       }),
     ]);
+  });
+
+  test('refuses to import an exactly 1000-row catalog payload unless partial imports are allowed', async () => {
+    const catalogSets = Array.from({ length: 1000 }, (_, index) =>
+      createCatalogBootstrapSet(index),
+    );
+    const payload = createCatalogBootstrapPayload({ catalogSets });
+    const blockedClient = createMutableSupabaseClient({}).supabaseClient;
+
+    await expect(
+      importCatalogCleanBootstrapPayload({
+        payload,
+        supabaseClient: blockedClient,
+      }),
+    ).rejects.toThrow(/exactly 1000 catalog sets/i);
+
+    const { operationLog, supabaseClient, tables } =
+      createMutableSupabaseClient({});
+    const summary = await importCatalogCleanBootstrapPayload({
+      allowPartial: true,
+      payload,
+      supabaseClient,
+    });
+
+    expect(operationLog).toContain('upsert:catalog_sets');
+    expect(summary.steps.find((step) => step.table === 'catalog_sets')).toEqual(
+      {
+        insertedCount: 1000,
+        inputCount: 1000,
+        table: 'catalog_sets',
+        updatedCount: 0,
+      },
+    );
+    expect(tables.get('catalog_sets')).toHaveLength(1000);
+  });
+
+  test('paginates conflict-key reads so verification includes row 1001 and later', async () => {
+    const catalogSets = Array.from({ length: 1001 }, (_, index) =>
+      createCatalogBootstrapSet(index),
+    );
+    const payload = createCatalogBootstrapPayload({ catalogSets });
+    const { supabaseClient } = createMutableSupabaseClient({
+      catalog_sets: catalogSets.map((catalogSet) => ({
+        set_id: catalogSet.setId,
+      })),
+      catalog_source_themes: [
+        {
+          id: 'rebrickable:721',
+        },
+      ],
+      catalog_theme_mappings: [
+        {
+          source_theme_id: 'rebrickable:721',
+        },
+      ],
+      catalog_themes: [
+        {
+          id: 'theme:icons',
+        },
+      ],
+    });
+
+    const summary = await verifyCatalogCleanBootstrapImport({
+      payload,
+      supabaseClient,
+    });
+
+    expect(summary.isComplete).toBe(true);
+    expect(summary.steps).toContainEqual({
+      expectedCount: 1001,
+      matchedCount: 1001,
+      missingKeys: [],
+      table: 'catalog_sets',
+    });
   });
 
   test('verifies whether all payload rows are present in the target environment', async () => {

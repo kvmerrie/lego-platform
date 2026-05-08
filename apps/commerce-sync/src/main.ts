@@ -1,4 +1,5 @@
 import { runCommerceSync } from '@lego-platform/api/data-access-server';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 
 function getSyncMode(argv: readonly string[]): 'check' | 'write' {
   const hasCheckFlag = argv.includes('--check');
@@ -35,7 +36,7 @@ function parseSetIds(argv: readonly string[]) {
   return parseCsvFlag({
     argv,
     flag: '--set-ids',
-  });
+  }).map(normalizeCatalogSetId);
 }
 
 function parseCsvFlag({

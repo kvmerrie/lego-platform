@@ -9,7 +9,7 @@ This document describes the current 30-day Dutch price-history slice for set-det
 - condition: `new` only
 - current commerce-enabled set scope only
 - one daily history point per set
-- no alerts
+- wishlist deal alerts use the same bounded Dutch history slice
 - no multi-region UI
 - no homepage pricing changes
 
@@ -23,6 +23,7 @@ Storage horizon:
 
 - daily pricing rows are stored indefinitely for now
 - no retention window is enforced in the current MVP slice
+- no runtime cleanup, truncate, or delete job is part of the pricing history path
 
 Migration:
 
@@ -37,6 +38,7 @@ Primary key:
 - `apps/commerce-sync` continues to generate the current snapshot-backed price panel artifacts
 - in `write` mode, the same sync run now also upserts one daily history point per commerce-enabled set through `libs/pricing/data-access-server`
 - the daily history point is built from the current headline price-panel snapshot for that set
+- `pricing_daily_set_history` is a mutable daily snapshot table: rerunning on the same `recorded_on` updates that day's row through the composite-key upsert instead of appending a duplicate
 
 Required server env for `write` mode:
 
@@ -53,7 +55,8 @@ Check mode behavior:
 - the current price panel remains snapshot-backed
 - the 30-day history chart and additive summary metrics are browser read surfaces
 - the current UI reads the last 30 days for the chart and 30-day average/low/high summary
-- the current price panel also derives tracked low, tracked high, tracked since, and current-vs-tracked deltas from the full stored history for that set
+- tracked low, tracked high, tracked since, and current-vs-tracked deltas are derived from a bounded browser-safe history window, defaulting to 90 days
+- wishlist alert reads use the oldest relevant saved date when available, so “since you saved it” comparisons can use the right baseline without unbounded browser reads
 - browser reads use the existing browser-safe Supabase configuration and the public select policy on `pricing_daily_set_history`
 
 Future scope note:

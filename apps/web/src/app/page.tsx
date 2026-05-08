@@ -371,7 +371,7 @@ export default async function HomePage() {
         tags: [cacheTags.homepage()],
       },
     }),
-    listCatalogSetCards(),
+    listCatalogSetCards({ limit: 240 }),
     listHomepageThemeDirectoryItems(),
     listHomepageThemeSpotlightItems(),
   ]);

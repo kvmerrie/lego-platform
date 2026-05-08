@@ -597,6 +597,55 @@ describe('api v1 auth and set-status routes', () => {
     await server.close();
   });
 
+  test('normalizes route set ids before owned and wanted persistence', async () => {
+    const requestPrincipal: RequestPrincipal = {
+      state: 'authenticated',
+      userId: 'user-123',
+      email: 'alex@example.test',
+    };
+    const { server, userSetStatusRepository } = await createApiServer({
+      requestPrincipal,
+    });
+
+    const ownedResponse = await server.inject({
+      method: 'PUT',
+      url: '/api/v1/me/owned-sets/42177-1',
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+    const wantedResponse = await server.inject({
+      method: 'PUT',
+      url: '/api/v1/me/wanted-sets/42177-1',
+      headers: {
+        authorization: 'Bearer valid-token',
+      },
+    });
+
+    expect(ownedResponse.statusCode).toBe(200);
+    expect(wantedResponse.statusCode).toBe(200);
+    expect(userSetStatusRepository.setOwnedState).toHaveBeenCalledWith({
+      userId: 'user-123',
+      setId: '42177',
+      isOwned: true,
+    });
+    expect(userSetStatusRepository.setWantedState).toHaveBeenCalledWith({
+      userId: 'user-123',
+      setId: '42177',
+      isWanted: true,
+    });
+    expect(ownedResponse.json()).toEqual({
+      setId: '42177',
+      isOwned: true,
+    });
+    expect(wantedResponse.json()).toEqual({
+      setId: '42177',
+      isWanted: true,
+    });
+
+    await server.close();
+  });
+
   test('persists wanted-set mutations through the repository-backed route', async () => {
     const requestPrincipal: RequestPrincipal = {
       state: 'authenticated',

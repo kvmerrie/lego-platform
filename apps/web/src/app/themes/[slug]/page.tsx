@@ -126,6 +126,8 @@ export default async function ThemePage({
   const [themePage, catalogDiscoverySignalBySetId, publishedArticles] =
     await Promise.all([
       getCatalogThemePageBySlug({
+        limit: THEME_SET_PAGE_SIZE,
+        offset: (currentPage - 1) * THEME_SET_PAGE_SIZE,
         slug,
       }),
       listCatalogDiscoverySignalsBySetId({
@@ -143,7 +145,7 @@ export default async function ThemePage({
 
   const pageCount = Math.max(
     1,
-    Math.ceil(themePage.setCards.length / THEME_SET_PAGE_SIZE),
+    Math.ceil(themePage.themeSnapshot.setCount / THEME_SET_PAGE_SIZE),
   );
 
   if (currentPage > pageCount) {

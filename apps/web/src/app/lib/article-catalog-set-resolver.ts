@@ -280,7 +280,7 @@ export async function resolveRepresentativeArticleCatalogSetCardByTheme({
   let liveSetCards: CatalogHomepageSetCard[] = [];
 
   try {
-    const resolvedLiveSetCards = await listCatalogSetCards();
+    const resolvedLiveSetCards = await listCatalogSetCards({ limit: 240 });
     liveSetCards = Array.isArray(resolvedLiveSetCards)
       ? resolvedLiveSetCards
       : [];
@@ -324,7 +324,7 @@ export async function resolveCuratedRelatedArticleCatalogSetRail({
   let liveSetCards: CatalogHomepageSetCard[] = [];
 
   try {
-    const resolvedLiveSetCards = await listCatalogSetCards();
+    const resolvedLiveSetCards = await listCatalogSetCards({ limit: 240 });
     liveSetCards = Array.isArray(resolvedLiveSetCards)
       ? resolvedLiveSetCards
       : [];

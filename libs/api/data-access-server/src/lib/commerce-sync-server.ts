@@ -11,6 +11,7 @@ import {
   upsertDailyPriceHistoryPoints,
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import {
   loadCommerceSyncInputs,
   refreshCommerceOfferSeeds,
@@ -56,7 +57,11 @@ export interface CommerceSyncDependencies {
 
 function normalizeRequestedSetIds(setIds?: readonly string[]) {
   return [
-    ...new Set((setIds ?? []).map((setId) => setId.trim()).filter(Boolean)),
+    ...new Set(
+      (setIds ?? [])
+        .map((setId) => normalizeCatalogSetId(setId))
+        .filter(Boolean),
+    ),
   ];
 }
 
@@ -135,7 +140,7 @@ export async function resolveCommerceCatalogSetSummaries({
       catalogSetSummary,
     ]),
   );
-  const uniqueSetIds = [...new Set(setIds)];
+  const uniqueSetIds = [...new Set(setIds.map(normalizeCatalogSetId))];
 
   return uniqueSetIds.map((setId) => {
     const catalogSetSummary = catalogSetSummaryById.get(setId);

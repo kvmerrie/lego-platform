@@ -162,6 +162,11 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
         type: 'limit';
         count: number;
       }
+    | {
+        type: 'range';
+        from: number;
+        to: number;
+      }
   > = [];
 
   const builder = {
@@ -200,18 +205,49 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
       return builder;
     },
+    range(from: number, to: number) {
+      filters.push({
+        from,
+        to,
+        type: 'range',
+      });
+
+      return builder;
+    },
     select() {
       return builder;
     },
-    then<TResult1 = { data: Row[]; error: null }>(
+    maybeSingle() {
+      return builder.then(({ data, error }) => ({
+        data: data[0] ?? null,
+        error,
+      }));
+    },
+    then<TResult1 = { count: number; data: Row[]; error: null }>(
       onFulfilled?:
         | ((value: {
+            count: number;
             data: Row[];
             error: null;
           }) => TResult1 | PromiseLike<TResult1>)
         | null,
       onRejected?: ((reason: unknown) => PromiseLike<never>) | null,
     ) {
+      const countRows = filters.reduce<readonly Row[]>((resultRows, filter) => {
+        if (filter.type === 'eq') {
+          return resultRows.filter(
+            (row) => row[filter.column] === filter.value,
+          );
+        }
+
+        if (filter.type === 'in') {
+          return resultRows.filter((row) =>
+            filter.values.includes(row[filter.column]),
+          );
+        }
+
+        return resultRows;
+      }, rows);
       const filteredRows = filters.reduce<readonly Row[]>(
         (resultRows, filter) => {
           if (filter.type === 'eq') {
@@ -228,6 +264,10 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
           if (filter.type === 'limit') {
             return resultRows.slice(0, filter.count);
+          }
+
+          if (filter.type === 'range') {
+            return resultRows.slice(filter.from, filter.to + 1);
           }
 
           const sortedRows = [...resultRows].sort((left, right) => {
@@ -255,6 +295,7 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
       );
 
       return Promise.resolve({
+        count: countRows.length,
         data: [...filteredRows],
         error: null,
       }).then(onFulfilled, onRejected ?? undefined);
@@ -631,18 +672,121 @@ describe('catalog effective data access web', () => {
   });
 
   test('does not fall back to snapshot canonical identity when a set is absent', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [],
+    });
+
     const canonicalCatalogSet = await getCanonicalCatalogSetById({
-      listCanonicalCatalogSetsFn: async () => [],
       setId: '21061',
+      supabaseClient,
     });
 
     expect(canonicalCatalogSet).toBeUndefined();
   });
 
+  test('normalizes source-style ids before canonical catalog set id reads', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/42177-1/1000.jpg',
+          name: 'Mercedes-Benz G 500 PROFESSIONAL Line',
+          piece_count: 2891,
+          primary_theme_id: 'theme:technic',
+          release_date_precision: 'year',
+          release_year: 2024,
+          set_id: '42177',
+          slug: 'mercedes-benz-g-500-professional-line-42177',
+          source: 'rebrickable',
+          source_set_number: '42177-1',
+          source_theme_id: 'rebrickable:1',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Technic',
+          id: 'theme:technic',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:1',
+          source_theme_name: 'Technic',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:technic',
+          source_theme_id: 'rebrickable:1',
+        },
+      ],
+    });
+
+    const canonicalCatalogSet = await getCanonicalCatalogSetById({
+      setId: '42177-1',
+      supabaseClient,
+    });
+
+    expect(canonicalCatalogSet).toMatchObject({
+      setId: '42177',
+      sourceSetNumber: '42177-1',
+    });
+  });
+
   test('keeps slug lookups stable through the canonical catalog layer', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+          name: 'Mario Kart - Mario & Standard Kart',
+          piece_count: 1972,
+          primary_theme_id: 'theme:super-mario',
+          release_date_precision: 'year',
+          release_year: 2025,
+          set_id: '72037',
+          slug: 'mario-kart-mario-standard-kart-72037',
+          source: 'rebrickable',
+          source_set_number: '72037-1',
+          source_theme_id: 'rebrickable:690',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Super Mario',
+          id: 'theme:super-mario',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:690',
+          source_theme_name: 'Super Mario',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:super-mario',
+          source_theme_id: 'rebrickable:690',
+        },
+      ],
+    });
+
     const canonicalCatalogSet = await getCanonicalCatalogSetBySlug({
-      listCanonicalCatalogSetsFn: async () => [createCanonicalCatalogSet()],
       slug: 'mario-kart-mario-standard-kart-72037',
+      supabaseClient,
     });
 
     expect(canonicalCatalogSet).toMatchObject({
@@ -652,6 +796,310 @@ describe('catalog effective data access web', () => {
       slug: 'mario-kart-mario-standard-kart-72037',
       source: 'rebrickable',
     });
+  });
+
+  test('paginates public catalog set card reads from Supabase', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          source: 'rebrickable',
+          source_set_number: '10316-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
+          name: 'Mario Kart - Mario & Standard Kart',
+          piece_count: 1972,
+          primary_theme_id: 'theme:super-mario',
+          release_year: 2025,
+          set_id: '72037',
+          slug: 'mario-kart-mario-standard-kart-72037',
+          source: 'rebrickable',
+          source_set_number: '72037-1',
+          source_theme_id: 'rebrickable:690',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+        {
+          display_name: 'Super Mario',
+          id: 'theme:super-mario',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogSetCards({
+        limit: 1,
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        id: '10316',
+      }),
+    ]);
+  });
+
+  test('builds public theme directory from paginated Supabase catalog cards', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          source: 'rebrickable',
+          source_set_number: '10316-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75313-1/1000.jpg',
+          name: 'AT-AT',
+          piece_count: 6785,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2021,
+          set_id: '75313',
+          slug: 'at-at-75313',
+          source: 'rebrickable',
+          source_set_number: '75313-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          slug: 'icons',
+          status: 'active',
+        },
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          slug: 'star-wars',
+          status: 'active',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogThemeDirectoryItems({
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        themeSnapshot: expect.objectContaining({
+          name: 'LEGO® Icons',
+        }),
+      }),
+      expect.objectContaining({
+        themeSnapshot: expect.objectContaining({
+          name: 'Star Wars™',
+        }),
+      }),
+    ]);
+    expect(supabaseClient.from).toHaveBeenCalledWith('catalog_sets');
+  });
+
+  test('builds public theme directory from theme rows beyond the catalog set page', async () => {
+    const catalogRows = Array.from({ length: 241 }, (_, index) => ({
+      created_at: `2026-04-${String(Math.max(1, 28 - (index % 20))).padStart(
+        2,
+        '0',
+      )}T08:00:00.000Z`,
+      image_url: `https://cdn.example.com/city-${index}.jpg`,
+      name: `City Set ${index}`,
+      piece_count: 100 + index,
+      primary_theme_id: 'theme:city',
+      release_year: 2025,
+      set_id: `60${String(index).padStart(3, '0')}`,
+      slug: `city-set-${index}`,
+      source: 'rebrickable',
+      source_set_number: `60${String(index).padStart(3, '0')}-1`,
+      source_theme_id: 'rebrickable:52',
+      status: 'active',
+      updated_at: '2026-04-18T08:00:00.000Z',
+    }));
+    catalogRows.push({
+      created_at: '2025-01-01T08:00:00.000Z',
+      image_url: 'https://cdn.rebrickable.com/media/sets/75313-1/1000.jpg',
+      name: 'AT-AT',
+      piece_count: 6785,
+      primary_theme_id: 'theme:star-wars',
+      release_year: 2021,
+      set_id: '75313',
+      slug: 'at-at-75313',
+      source: 'rebrickable',
+      source_set_number: '75313-1',
+      source_theme_id: 'rebrickable:158',
+      status: 'active',
+      updated_at: '2025-01-01T08:00:00.000Z',
+    });
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows,
+      primaryThemeRows: [
+        {
+          display_name: 'City',
+          id: 'theme:city',
+          slug: 'city',
+          status: 'active',
+        },
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          slug: 'star-wars',
+          status: 'active',
+        },
+      ],
+    });
+
+    const directoryItems = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(
+      directoryItems.map((directoryItem) => directoryItem.themeSnapshot.name),
+    ).toEqual(expect.arrayContaining(['City', 'Star Wars™']));
+    expect(
+      directoryItems.find(
+        (directoryItem) => directoryItem.themeSnapshot.name === 'City',
+      )?.themeSnapshot.setCount,
+    ).toBe(241);
+  });
+
+  test('returns server-paginated theme pages with the total theme set count', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75313-1/1000.jpg',
+          name: 'AT-AT',
+          piece_count: 6785,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2021,
+          set_id: '75313',
+          slug: 'at-at-75313',
+          source: 'rebrickable',
+          source_set_number: '75313-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/75399-1/1000.jpg',
+          name: 'Rebel U-Wing Starfighter',
+          piece_count: 594,
+          primary_theme_id: 'theme:star-wars',
+          release_year: 2021,
+          set_id: '75399',
+          slug: 'rebel-u-wing-starfighter-75399',
+          source: 'rebrickable',
+          source_set_number: '75399-1',
+          source_theme_id: 'rebrickable:158',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          slug: 'star-wars',
+          status: 'active',
+        },
+      ],
+    });
+
+    const themePage = await getCatalogThemePageBySlug({
+      limit: 1,
+      offset: 1,
+      slug: 'star-wars',
+      supabaseClient,
+    });
+
+    expect(themePage?.themeSnapshot.setCount).toBe(2);
+    expect(themePage?.setCards.map((setCard) => setCard.id)).toEqual(['75399']);
+  });
+
+  test('loads catalog cards by id without a full catalog read', async () => {
+    const listCanonicalCatalogSetsFn = vi.fn(async () => []);
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          source: 'rebrickable',
+          source_set_number: '10316-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogSetCardsByIds({
+        canonicalIds: ['10316'],
+        supabaseClient,
+      }),
+    ).resolves.toEqual([
+      expect.objectContaining({
+        id: '10316',
+      }),
+    ]);
+    expect(listCanonicalCatalogSetsFn).not.toHaveBeenCalled();
   });
 
   test('builds summaries and slugs from canonical catalog sets only', async () => {

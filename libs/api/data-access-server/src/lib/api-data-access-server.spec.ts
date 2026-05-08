@@ -7,6 +7,47 @@ import {
 } from './api-data-access-server';
 
 describe('api data access server wishlist alert delivery', () => {
+  test('passes the oldest wishlist saved date to the history reader', async () => {
+    const listPriceHistory = vi
+      .fn<WishlistAlertEmailFlowDependencies['listPriceHistory']>()
+      .mockResolvedValue([]);
+
+    await runWishlistAlertEmailFlow({
+      dependencies: {
+        getNow: () => new Date('2026-04-03T10:00:00.000Z'),
+        listNotificationStates: vi.fn().mockResolvedValue([]),
+        listPriceHistory,
+        listSubscribers: vi.fn().mockResolvedValue([
+          {
+            collectorName: 'Alex Rivera',
+            email: 'alex@example.test',
+            userId: 'user-123',
+          },
+        ]),
+        listWishlistStates: vi.fn().mockResolvedValue([
+          {
+            createdAt: '2026-04-01T12:00:00.000Z',
+            setId: '10354',
+            userId: 'user-123',
+          },
+          {
+            createdAt: '2026-03-20T12:00:00.000Z',
+            setId: '76453',
+            userId: 'user-123',
+          },
+        ]),
+        saveNotificationStates: vi.fn().mockResolvedValue(undefined),
+        sendWishlistDealAlertEmail: vi.fn().mockResolvedValue({}),
+        webBaseUrl: 'https://brickhunt.example',
+      },
+      mode: 'check',
+    });
+
+    expect(listPriceHistory).toHaveBeenCalledWith(['10354', '76453'], {
+      oldestRecordedOn: '2026-03-20',
+    });
+  });
+
   test('sends one wishlist deal email and persists notification state after a successful send', async () => {
     const sendWishlistDealAlertEmail = vi
       .fn<WishlistAlertEmailFlowDependencies['sendWishlistDealAlertEmail']>()
@@ -16,35 +57,38 @@ describe('api data access server wishlist alert delivery', () => {
     const saveNotificationStates = vi
       .fn<WishlistAlertEmailFlowDependencies['saveNotificationStates']>()
       .mockResolvedValue(undefined);
+    const listPriceHistory = vi
+      .fn<WishlistAlertEmailFlowDependencies['listPriceHistory']>()
+      .mockResolvedValue([
+        {
+          setId: '10354',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          condition: 'new',
+          headlinePriceMinor: 25999,
+          referencePriceMinor: 26999,
+          lowestMerchantId: 'lego-nl',
+          observedAt: '2026-04-01T09:00:00.000Z',
+          recordedOn: '2026-04-01',
+        },
+        {
+          setId: '10354',
+          regionCode: 'NL',
+          currencyCode: 'EUR',
+          condition: 'new',
+          headlinePriceMinor: 25499,
+          referencePriceMinor: 26999,
+          lowestMerchantId: 'bol',
+          observedAt: '2026-04-02T09:00:00.000Z',
+          recordedOn: '2026-04-02',
+        },
+      ]);
 
     const result = await runWishlistAlertEmailFlow({
       dependencies: {
         getNow: () => new Date('2026-04-03T10:00:00.000Z'),
         listNotificationStates: vi.fn().mockResolvedValue([]),
-        listPriceHistory: vi.fn().mockResolvedValue([
-          {
-            setId: '10354',
-            regionCode: 'NL',
-            currencyCode: 'EUR',
-            condition: 'new',
-            headlinePriceMinor: 25999,
-            referencePriceMinor: 26999,
-            lowestMerchantId: 'lego-nl',
-            observedAt: '2026-04-01T09:00:00.000Z',
-            recordedOn: '2026-04-01',
-          },
-          {
-            setId: '10354',
-            regionCode: 'NL',
-            currencyCode: 'EUR',
-            condition: 'new',
-            headlinePriceMinor: 25499,
-            referencePriceMinor: 26999,
-            lowestMerchantId: 'bol',
-            observedAt: '2026-04-02T09:00:00.000Z',
-            recordedOn: '2026-04-02',
-          },
-        ]),
+        listPriceHistory,
         listSubscribers: vi.fn().mockResolvedValue([
           {
             collectorName: 'Alex Rivera',
@@ -92,6 +136,9 @@ describe('api data access server wishlist alert delivery', () => {
         userId: 'user-123',
       },
     ]);
+    expect(listPriceHistory).toHaveBeenCalledWith(['10354'], {
+      oldestRecordedOn: '2026-04-01',
+    });
   });
 
   test('check mode previews wishlist deal emails without sending or persisting', async () => {

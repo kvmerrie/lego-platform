@@ -53,6 +53,7 @@ import {
   getAdminPromotionConfig,
 } from '@lego-platform/shared/config';
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import { timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 
@@ -75,6 +76,7 @@ export interface AdminCommerceService {
     status: Exclude<CommerceAffiliateDiscoveredSetStatus, 'imported'>;
   }): Promise<CommerceAffiliateDiscoveredSet>;
   copyProductionCommerce(input: {
+    allowDestructive: boolean;
     dryRun: boolean;
   }): Promise<CommerceProductionCopyResult>;
   createBenchmarkSet(
@@ -109,8 +111,9 @@ function createAdminCommerceService(): AdminCommerceService {
       listCommerceAffiliateDiscoveredSets(input),
     updateDiscoveredSetStatus: (input) =>
       updateAffiliateDiscoveredSetStatus(input),
-    copyProductionCommerce: ({ dryRun }) =>
+    copyProductionCommerce: ({ allowDestructive, dryRun }) =>
       copyCommerceDataFromProduction({
+        allowDestructive,
         dryRun,
       }),
     listBenchmarkSets: () => listCommerceBenchmarkSets(),
@@ -187,14 +190,20 @@ function matchesAdminSecret({
   return timingSafeEqual(expectedBuffer, providedBuffer);
 }
 
-function readCommerceProductionSyncBody(value: unknown): { dryRun: boolean } {
+function readCommerceProductionSyncBody(value: unknown): {
+  allowDestructive: boolean;
+  dryRun: boolean;
+} {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return {
+      allowDestructive: false,
       dryRun: true,
     };
   }
 
   return {
+    allowDestructive:
+      (value as { allowDestructive?: unknown }).allowDestructive === true,
     dryRun: (value as { dryRun?: unknown }).dryRun !== false,
   };
 }
@@ -214,7 +223,25 @@ function readRequiredSetId(value: unknown): string {
     throw new Error('Kies eerst een set om opnieuw te checken.');
   }
 
-  return setId.trim();
+  return normalizeCatalogSetId(setId);
+}
+
+function normalizeBenchmarkSetInput(
+  input: CommerceBenchmarkSetInput,
+): CommerceBenchmarkSetInput {
+  return {
+    ...input,
+    setId: normalizeCatalogSetId(input.setId),
+  };
+}
+
+function normalizeOfferSeedInput(
+  input: CommerceOfferSeedInput,
+): CommerceOfferSeedInput {
+  return {
+    ...input,
+    setId: normalizeCatalogSetId(input.setId),
+  };
 }
 
 function readOptionalStringQuery(value: unknown): string | undefined {
@@ -482,7 +509,9 @@ export function createAdminCommerceRoutes({
       apiPaths.adminCommerceBenchmarkSets,
       async function (request, reply) {
         try {
-          const input = validateCommerceBenchmarkSetInput(request.body);
+          const input = normalizeBenchmarkSetInput(
+            validateCommerceBenchmarkSetInput(request.body),
+          );
           await ensureCatalogSetExists(input.setId);
           const benchmarkSet = await commerceService.createBenchmarkSet(input);
 
@@ -502,7 +531,9 @@ export function createAdminCommerceRoutes({
       `${apiPaths.adminCommerceBenchmarkSets}/:setId`,
       async function (request, reply) {
         try {
-          await commerceService.deleteBenchmarkSet(request.params.setId);
+          await commerceService.deleteBenchmarkSet(
+            normalizeCatalogSetId(request.params.setId),
+          );
 
           return reply.status(204).send();
         } catch (error) {
@@ -728,7 +759,9 @@ export function createAdminCommerceRoutes({
       apiPaths.adminCommerceOfferSeeds,
       async function (request, reply) {
         try {
-          const input = validateCommerceOfferSeedInput(request.body);
+          const input = normalizeOfferSeedInput(
+            validateCommerceOfferSeedInput(request.body),
+          );
           await ensureCatalogSetExists(input.setId);
           const offerSeed = await commerceService.createOfferSeed(input);
           await revalidateCommerceOfferSeedSurfaces({
@@ -751,7 +784,9 @@ export function createAdminCommerceRoutes({
       `${apiPaths.adminCommerceOfferSeeds}/:offerSeedId`,
       async function (request, reply) {
         try {
-          const input = validateCommerceOfferSeedInput(request.body);
+          const input = normalizeOfferSeedInput(
+            validateCommerceOfferSeedInput(request.body),
+          );
           await ensureCatalogSetExists(input.setId);
 
           const offerSeed = await commerceService.updateOfferSeed({

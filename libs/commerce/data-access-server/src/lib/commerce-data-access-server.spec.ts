@@ -18,9 +18,11 @@ type InMemorySupabaseTables = Record<string, Record<string, unknown>[]>;
 
 function createCommerceCopySupabaseClient(tables: InMemorySupabaseTables) {
   const operations: string[] = [];
+  const selectedColumnsByTable = new Map<string, string[]>();
 
   return {
     operations,
+    selectedColumnsByTable,
     supabaseClient: {
       from: vi.fn((table: string) => ({
         delete: vi.fn(() => ({
@@ -44,12 +46,19 @@ function createCommerceCopySupabaseClient(tables: InMemorySupabaseTables) {
             error: null,
           };
         }),
-        select: vi.fn(() => ({
-          range: vi.fn(async (from: number, to: number) => ({
-            data: (tables[table] ?? []).slice(from, to + 1),
-            error: null,
-          })),
-        })),
+        select: vi.fn((columns: string) => {
+          selectedColumnsByTable.set(table, [
+            ...(selectedColumnsByTable.get(table) ?? []),
+            columns,
+          ]);
+
+          return {
+            range: vi.fn(async (from: number, to: number) => ({
+              data: (tables[table] ?? []).slice(from, to + 1),
+              error: null,
+            })),
+          };
+        }),
       })),
     },
   };
@@ -232,7 +241,7 @@ describe('commerce data access server', () => {
 
     const benchmarkSet = await createCommerceBenchmarkSet({
       input: {
-        setId: '10316',
+        setId: '10316-1',
       },
       supabaseClient: { from } as never,
     });
@@ -653,7 +662,7 @@ describe('commerce data access server', () => {
 
     const result = await upsertCommerceOfferSeedByCompositeKey({
       input: {
-        setId: '76784',
+        setId: '76784-1',
         merchantId: 'merchant-1',
         productUrl: 'https://clk.tradedoubler.test/alternate/76784',
         isActive: true,
@@ -711,7 +720,7 @@ describe('commerce data access server', () => {
     const from = vi.fn(() => ({ delete: remove }));
 
     await deleteCommerceBenchmarkSet({
-      setId: '10316',
+      setId: '10316-1',
       supabaseClient: { from } as never,
     });
 
@@ -763,6 +772,19 @@ describe('commerce data access server', () => {
     expect(targetTables.articles).toEqual([
       { slug: 'untouched-target-article' },
     ]);
+    expect(
+      [...productionClient.selectedColumnsByTable.values()].flat(),
+    ).not.toContain('*');
+    expect(
+      productionClient.selectedColumnsByTable.get('commerce_merchants'),
+    ).toEqual([
+      'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
+    ]);
+    expect(
+      productionClient.selectedColumnsByTable.get('pricing_daily_set_history'),
+    ).toEqual([
+      'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on, created_at, updated_at',
+    ]);
     expect(targetClient.operations).toEqual([]);
   });
 
@@ -789,6 +811,7 @@ describe('commerce data access server', () => {
     const targetClient = createCommerceCopySupabaseClient(targetTables);
 
     const result = await copyCommerceDataFromProduction({
+      allowDestructive: true,
       createProductionSupabaseClient: () =>
         productionClient.supabaseClient as never,
       createTargetSupabaseClient: () => targetClient.supabaseClient as never,
@@ -827,6 +850,32 @@ describe('commerce data access server', () => {
       'insert:commerce_affiliate_discovered_sets:1',
       'insert:pricing_daily_set_history:1',
     ]);
+  });
+
+  test('aborts production commerce copy when target rows exist without destructive approval', async () => {
+    const productionTables: InMemorySupabaseTables = {
+      commerce_merchants: [{ id: 'merchant-production', slug: 'lego-nl' }],
+    };
+    const targetTables: InMemorySupabaseTables = {
+      commerce_merchants: [{ id: 'merchant-target', slug: 'alternate' }],
+    };
+    const productionClient = createCommerceCopySupabaseClient(productionTables);
+    const targetClient = createCommerceCopySupabaseClient(targetTables);
+
+    await expect(
+      copyCommerceDataFromProduction({
+        createProductionSupabaseClient: () =>
+          productionClient.supabaseClient as never,
+        createTargetSupabaseClient: () => targetClient.supabaseClient as never,
+        dryRun: false,
+        now: () => new Date('2026-05-05T12:00:00.000Z'),
+      }),
+    ).rejects.toThrow(/allowDestructive=true/);
+
+    expect(targetTables.commerce_merchants).toEqual([
+      { id: 'merchant-target', slug: 'alternate' },
+    ]);
+    expect(targetClient.operations).toEqual([]);
   });
 
   test('includes Supabase details and sanitized attempted fields when discovered set persistence fails', async () => {

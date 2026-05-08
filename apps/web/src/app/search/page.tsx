@@ -37,7 +37,7 @@ export default async function SearchPage({
   const [searchMatches, themeMatches] = query
     ? await Promise.all([
         listCatalogSearchMatches({
-          limit: Number.MAX_SAFE_INTEGER,
+          limit: 60,
           query,
         }),
         listCatalogThemeSearchMatches({

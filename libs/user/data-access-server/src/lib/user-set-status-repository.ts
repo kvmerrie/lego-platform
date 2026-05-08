@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 
 const userSetStatusColumns = [
   'user_id',
@@ -75,11 +76,12 @@ async function deleteUserSetStatusRow({
   supabaseAdminClient: SupabaseClient;
   userId: string;
 }) {
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const { error } = await supabaseAdminClient
     .from('user_set_statuses')
     .delete()
     .eq('user_id', userId)
-    .eq('set_id', setId);
+    .eq('set_id', canonicalSetId);
 
   if (error) {
     throw new Error('Unable to clear the user set status.');
@@ -119,11 +121,12 @@ export function createUserSetStatusRepository(
     userId: string,
     setId: string,
   ): Promise<UserSetStatusRecord | null> {
+    const canonicalSetId = normalizeCatalogSetId(setId);
     const { data, error } = await getSupabaseAdminClient()
       .from('user_set_statuses')
       .select(userSetStatusColumns)
       .eq('user_id', userId)
-      .eq('set_id', setId)
+      .eq('set_id', canonicalSetId)
       .maybeSingle();
 
     if (error) {
@@ -154,17 +157,18 @@ export function createUserSetStatusRepository(
     getByUserIdAndSetId,
 
     async setOwnedState({ userId, setId, isOwned }) {
-      const currentStatus = await getByUserIdAndSetId(userId, setId);
+      const canonicalSetId = normalizeCatalogSetId(setId);
+      const currentStatus = await getByUserIdAndSetId(userId, canonicalSetId);
       const nextStatus = {
         user_id: userId,
-        set_id: setId,
+        set_id: canonicalSetId,
         is_owned: isOwned,
         is_wanted: isOwned ? false : (currentStatus?.isWanted ?? false),
       };
 
       if (!nextStatus.is_owned && !nextStatus.is_wanted) {
         await deleteUserSetStatusRow({
-          setId,
+          setId: canonicalSetId,
           supabaseAdminClient: getSupabaseAdminClient(),
           userId,
         });
@@ -179,17 +183,18 @@ export function createUserSetStatusRepository(
     },
 
     async setWantedState({ userId, setId, isWanted }) {
-      const currentStatus = await getByUserIdAndSetId(userId, setId);
+      const canonicalSetId = normalizeCatalogSetId(setId);
+      const currentStatus = await getByUserIdAndSetId(userId, canonicalSetId);
       const nextStatus = {
         user_id: userId,
-        set_id: setId,
+        set_id: canonicalSetId,
         is_owned: isWanted ? false : (currentStatus?.isOwned ?? false),
         is_wanted: isWanted,
       };
 
       if (!nextStatus.is_owned && !nextStatus.is_wanted) {
         await deleteUserSetStatusRow({
-          setId,
+          setId: canonicalSetId,
           supabaseAdminClient: getSupabaseAdminClient(),
           userId,
         });

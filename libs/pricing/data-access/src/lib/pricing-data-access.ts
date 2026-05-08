@@ -19,6 +19,7 @@ import {
   hasBrowserSupabaseConfig,
 } from '@lego-platform/shared/config';
 import { getBrowserSupabaseClient } from '@lego-platform/shared/data-access-auth';
+import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import { pricePanelSnapshots } from './price-panel-snapshots.generated';
 import { pricingObservations } from './pricing-observations.generated';
 
@@ -77,6 +78,8 @@ export interface WishlistAlertNotificationCandidate extends WishlistPriceAlert {
 }
 
 export const DEFAULT_WISHLIST_ALERT_NOTIFICATION_COOLDOWN_DAYS = 14;
+const DEFAULT_PRICE_HISTORY_READ_WINDOW_DAYS = 90;
+const DAY_MS = 86_400_000;
 
 export interface WishlistNewAlertSummary {
   newCount: number;
@@ -285,6 +288,48 @@ interface PriceHistoryRowRecord {
   reference_price_minor: number | null;
   region_code: string;
   set_id: string;
+}
+
+function toRecordedOnDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function getDefaultPriceHistoryWindowStart({
+  now = new Date(),
+  windowDays = DEFAULT_PRICE_HISTORY_READ_WINDOW_DAYS,
+}: {
+  now?: Date;
+  windowDays?: number;
+} = {}): string {
+  const safeWindowDays = Math.max(1, Math.floor(windowDays));
+
+  return toRecordedOnDate(
+    new Date(now.getTime() - (safeWindowDays - 1) * DAY_MS),
+  );
+}
+
+function getRecordedOnFromTimestamp(timestamp?: string): string | undefined {
+  if (!timestamp) {
+    return undefined;
+  }
+
+  const parsedTimestamp = Date.parse(timestamp);
+
+  if (!Number.isFinite(parsedTimestamp)) {
+    return undefined;
+  }
+
+  return toRecordedOnDate(new Date(parsedTimestamp));
+}
+
+function getOldestRecordedOn(
+  recordedOnDates: readonly (string | undefined)[],
+): string | undefined {
+  return recordedOnDates
+    .filter((recordedOnDate): recordedOnDate is string =>
+      Boolean(recordedOnDate),
+    )
+    .sort((left, right) => left.localeCompare(right))[0];
 }
 
 export interface PriceHistorySummaryState {
@@ -614,7 +659,7 @@ export function buildBrickhuntValueItems({
 export function getPricePanelSnapshot(
   setId: string,
 ): PricePanelSnapshot | undefined {
-  return pricePanelSnapshotBySetId.get(setId);
+  return pricePanelSnapshotBySetId.get(normalizeCatalogSetId(setId));
 }
 
 export function getSetDealVerdict(setId: string): SetDealVerdict {
@@ -967,12 +1012,13 @@ export async function listPriceHistory(
     return [];
   }
 
+  const canonicalSetId = normalizeCatalogSetId(setId);
   const { data, error } = await getBrowserSupabaseClient()
     .from(PRICING_HISTORY_TABLE)
     .select(
       'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on',
     )
-    .eq('set_id', setId)
+    .eq('set_id', canonicalSetId)
     .eq('region_code', DUTCH_REGION_CODE)
     .eq('currency_code', EURO_CURRENCY_CODE)
     .eq('condition', NEW_OFFER_CONDITION)
@@ -998,22 +1044,32 @@ export async function listPriceHistory(
 
 export async function listTrackedPriceHistory(
   setId: string,
+  {
+    oldestRecordedOn,
+    windowDays = DEFAULT_PRICE_HISTORY_READ_WINDOW_DAYS,
+  }: {
+    oldestRecordedOn?: string;
+    windowDays?: number;
+  } = {},
 ): Promise<PriceHistoryPoint[]> {
   if (!hasBrowserSupabaseConfig()) {
     return [];
   }
 
+  const canonicalSetId = normalizeCatalogSetId(setId);
+  const windowStartRecordedOn =
+    oldestRecordedOn ?? getDefaultPriceHistoryWindowStart({ windowDays });
   const { data, error } = await getBrowserSupabaseClient()
     .from(PRICING_HISTORY_TABLE)
     .select(
       'set_id, region_code, currency_code, condition, headline_price_minor, reference_price_minor, lowest_merchant_id, observed_at, recorded_on',
     )
-    .eq('set_id', setId)
+    .eq('set_id', canonicalSetId)
     .eq('region_code', DUTCH_REGION_CODE)
     .eq('currency_code', EURO_CURRENCY_CODE)
     .eq('condition', NEW_OFFER_CONDITION)
-    .order('recorded_on', { ascending: true })
-    .limit(5000);
+    .gte('recorded_on', windowStartRecordedOn)
+    .order('recorded_on', { ascending: true });
 
   if (error || !Array.isArray(data)) {
     return [];
@@ -1134,12 +1190,20 @@ export function buildWishlistPriceAlert({
 export async function listWishlistPriceAlerts({
   savedAtBySetId,
   setIds,
+  windowDays = DEFAULT_PRICE_HISTORY_READ_WINDOW_DAYS,
 }: {
   savedAtBySetId?: Record<string, string | undefined>;
   setIds: readonly string[];
+  windowDays?: number;
 }): Promise<Record<string, WishlistPriceAlert | undefined>> {
-  const uniqueSetIds = [...new Set(setIds)].filter((setId) =>
-    Boolean(getPricePanelSnapshot(setId)),
+  const normalizedSavedAtBySetId = Object.fromEntries(
+    Object.entries(savedAtBySetId ?? {}).map(([setId, savedAt]) => [
+      normalizeCatalogSetId(setId),
+      savedAt,
+    ]),
+  );
+  const uniqueSetIds = [...new Set(setIds.map(normalizeCatalogSetId))].filter(
+    (setId) => Boolean(getPricePanelSnapshot(setId)),
   );
 
   if (uniqueSetIds.length === 0) {
@@ -1154,7 +1218,7 @@ export async function listWishlistPriceAlerts({
         setId,
         buildWishlistPriceAlert({
           priceHistoryPoints: groupedPriceHistoryPoints.get(setId),
-          savedAt: savedAtBySetId?.[setId],
+          savedAt: normalizedSavedAtBySetId[setId],
           setId,
         }),
       ]),
@@ -1164,6 +1228,13 @@ export async function listWishlistPriceAlerts({
     return buildAlertLookup(new Map());
   }
 
+  const oldestSavedRecordedOn = getOldestRecordedOn(
+    uniqueSetIds.map((setId) =>
+      getRecordedOnFromTimestamp(normalizedSavedAtBySetId[setId]),
+    ),
+  );
+  const windowStartRecordedOn =
+    oldestSavedRecordedOn ?? getDefaultPriceHistoryWindowStart({ windowDays });
   const { data, error } = await getBrowserSupabaseClient()
     .from(PRICING_HISTORY_TABLE)
     .select(
@@ -1173,9 +1244,9 @@ export async function listWishlistPriceAlerts({
     .eq('region_code', DUTCH_REGION_CODE)
     .eq('currency_code', EURO_CURRENCY_CODE)
     .eq('condition', NEW_OFFER_CONDITION)
+    .gte('recorded_on', windowStartRecordedOn)
     .order('set_id', { ascending: true })
-    .order('recorded_on', { ascending: true })
-    .limit(5000);
+    .order('recorded_on', { ascending: true });
 
   if (error || !Array.isArray(data)) {
     return buildAlertLookup(new Map());
