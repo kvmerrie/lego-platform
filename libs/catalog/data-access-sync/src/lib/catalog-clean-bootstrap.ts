@@ -53,6 +53,8 @@ interface CatalogBootstrapThemeRow {
   created_at: string;
   display_name: string;
   id: string;
+  is_public: boolean;
+  public_order: number | null;
   slug: string;
   status: string;
   updated_at: string;
@@ -128,6 +130,8 @@ export interface CatalogBootstrapTheme {
   createdAt: string;
   displayName: string;
   id: string;
+  isPublic?: boolean;
+  publicOrder?: number;
   slug: string;
   status: string;
   updatedAt: string;
@@ -328,6 +332,16 @@ function toBootstrapTheme(
     createdAt: row.created_at,
     displayName: row.display_name,
     id: row.id,
+    ...(row.is_public
+      ? {
+          isPublic: row.is_public,
+        }
+      : {}),
+    ...(typeof row.public_order === 'number'
+      ? {
+          publicOrder: row.public_order,
+        }
+      : {}),
     slug: row.slug,
     status: row.status,
     updatedAt: row.updated_at,
@@ -637,6 +651,8 @@ function toTargetThemeRow(theme: CatalogBootstrapTheme) {
     created_at: theme.createdAt,
     display_name: theme.displayName,
     id: theme.id,
+    is_public: theme.isPublic ?? false,
+    public_order: theme.publicOrder ?? null,
     slug: theme.slug,
     status: theme.status,
     updated_at: theme.updatedAt,
@@ -1064,7 +1080,8 @@ async function listCurrentThemes({
   supabaseClient: CatalogBootstrapSupabaseClient;
 }): Promise<CatalogBootstrapThemeRow[]> {
   return readOrderedBootstrapRows<CatalogBootstrapThemeRow>({
-    columns: 'id, slug, display_name, status, created_at, updated_at',
+    columns:
+      'id, slug, display_name, is_public, public_order, status, created_at, updated_at',
     orderBy: 'slug',
     supabaseClient,
     table: CURRENT_CATALOG_THEMES_TABLE,

@@ -43,7 +43,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'source_system',
     'source_theme_name',
   ],
-  [CATALOG_THEMES_TABLE]: ['display_name', 'slug'],
+  [CATALOG_THEMES_TABLE]: ['display_name', 'is_public', 'public_order', 'slug'],
   [CATALOG_THEME_MAPPINGS_TABLE]: ['primary_theme_id'],
   commerce_benchmark_sets: [],
   // TODO(brickhunt): decide whether production commerce seed and merchant
@@ -76,6 +76,8 @@ interface CatalogThemeRow {
   created_at: string;
   display_name: string;
   id: string;
+  is_public: boolean;
+  public_order: number | null;
   slug: string;
   status: string;
   updated_at: string;
@@ -341,6 +343,12 @@ function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
     ...theme,
     display_name: displayName,
     id,
+    is_public: readOptionalPromotionBoolean(theme.is_public) ?? false,
+    public_order:
+      typeof theme.public_order === 'number' &&
+      Number.isFinite(theme.public_order)
+        ? theme.public_order
+        : null,
     slug: normalizedSlug,
   };
 }
@@ -911,7 +919,8 @@ export async function promoteCatalogFromStagingToProduction({
         table: CATALOG_SOURCE_THEMES_TABLE,
       }),
       readOrderedRows<CatalogThemeRow>({
-        columns: 'id, slug, display_name, status, created_at, updated_at',
+        columns:
+          'id, slug, display_name, is_public, public_order, status, created_at, updated_at',
         orderBy: 'slug',
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_THEMES_TABLE,
@@ -993,6 +1002,13 @@ export async function promoteCatalogFromStagingToProduction({
         'created_at',
         'updated_at',
       ],
+      rows: normalizedCatalogThemes as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_THEMES_TABLE,
+    });
+    validatePromotionRowsRequiredBooleanColumns({
+      columns: ['is_public'],
       rows: normalizedCatalogThemes as unknown as Readonly<
         Record<string, unknown>
       >[],

@@ -103,6 +103,8 @@ interface CatalogSourceThemeRow {
 interface CatalogThemeRow {
   display_name: string;
   id: string;
+  is_public?: boolean;
+  public_order?: number | null;
   slug?: string;
   status?: string;
 }
@@ -3689,8 +3691,10 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
   try {
     const { data: themeData, error: themeError } = await activeSupabaseClient
       .from(CATALOG_THEMES_TABLE)
-      .select('id, slug, display_name, status')
+      .select('id, slug, display_name, status, is_public, public_order')
       .eq('status', 'active')
+      .eq('is_public', true)
+      .order('public_order', { ascending: true })
       .order('display_name', { ascending: true })
       .range(safeOffset, safeOffset + safeLimit - 1);
 
@@ -3776,14 +3780,31 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
     return dedupeCatalogThemeDirectoryItemsBySlug(
       directoryItems
         .flatMap((directoryItem) => (directoryItem ? [directoryItem] : []))
-        .sort(
-          (left, right) =>
+        .sort((left, right) => {
+          const leftThemeRow = themeRows.find(
+            (themeRow) => themeRow.slug === left.themeSnapshot.slug,
+          );
+          const rightThemeRow = themeRows.find(
+            (themeRow) => themeRow.slug === right.themeSnapshot.slug,
+          );
+          const leftPublicOrder =
+            typeof leftThemeRow?.public_order === 'number'
+              ? leftThemeRow.public_order
+              : Number.MAX_SAFE_INTEGER;
+          const rightPublicOrder =
+            typeof rightThemeRow?.public_order === 'number'
+              ? rightThemeRow.public_order
+              : Number.MAX_SAFE_INTEGER;
+
+          return (
+            leftPublicOrder - rightPublicOrder ||
             left.themeSnapshot.name.localeCompare(
               right.themeSnapshot.name,
               'nl',
             ) ||
-            left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug),
-        ),
+            left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug)
+          );
+        }),
     );
   } catch (error) {
     if (!supabaseClient) {
@@ -5748,9 +5769,22 @@ export async function listHomepageThemeSpotlightItems({
 
 export async function listCatalogThemePageSlugs({
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  supabaseClient,
 }: {
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<string[]> {
+  if (listCanonicalCatalogSetsFn === listCanonicalCatalogSets) {
+    return (
+      await listCatalogThemeDirectoryItems({
+        supabaseClient,
+      })
+    ).map(
+      (catalogThemeDirectoryItem) =>
+        catalogThemeDirectoryItem.themeSnapshot.slug,
+    );
+  }
+
   return (
     await listCatalogThemeDirectoryItems({
       allowFullCatalogRead: true,
@@ -5785,9 +5819,10 @@ export async function getCatalogThemePageBySlug({
     try {
       const { data: themeData, error: themeError } = await activeSupabaseClient
         .from(CATALOG_THEMES_TABLE)
-        .select('id, slug, display_name, status')
+        .select('id, slug, display_name, status, is_public, public_order')
         .eq('slug', slug)
         .eq('status', 'active')
+        .eq('is_public', true)
         .maybeSingle();
 
       if (themeError) {

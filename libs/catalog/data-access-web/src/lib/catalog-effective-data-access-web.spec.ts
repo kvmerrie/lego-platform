@@ -368,7 +368,12 @@ function createCatalogSupabaseClientMock({
       }
 
       if (table === 'catalog_themes') {
-        return createSupabaseTableBuilder(primaryThemeRows);
+        return createSupabaseTableBuilder(
+          primaryThemeRows.map((primaryThemeRow) => ({
+            is_public: true,
+            ...primaryThemeRow,
+          })),
+        );
       }
 
       if (table === 'catalog_theme_mappings') {
@@ -1097,6 +1102,92 @@ describe('catalog effective data access web', () => {
         (directoryItem) => directoryItem.themeSnapshot.name === 'City',
       )?.themeSnapshot.setCount,
     ).toBe(241);
+  });
+
+  test('hides non-public source subthemes from the public theme directory while keeping mapped sets under the public parent', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/71039-1/1000.jpg',
+          name: 'Marvel Series 2 Minifigure',
+          piece_count: 8,
+          primary_theme_id: 'theme:marvel',
+          release_year: 2023,
+          set_id: '71039',
+          slug: 'marvel-series-2-minifigure-71039',
+          source: 'rebrickable',
+          source_set_number: '71039-1',
+          source_theme_id: 'rebrickable:71039',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Marvel',
+          id: 'theme:marvel',
+          is_public: true,
+          public_order: 1,
+          slug: 'marvel',
+          status: 'active',
+        },
+        {
+          display_name: 'Marvel Series 2',
+          id: 'theme:marvel-series-2',
+          is_public: false,
+          public_order: null,
+          slug: 'marvel-series-2',
+          status: 'active',
+        },
+        {
+          display_name: 'Advent',
+          id: 'theme:advent',
+          is_public: false,
+          public_order: null,
+          slug: 'advent',
+          status: 'active',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:71039',
+          source_theme_name: 'Marvel Series 2',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:marvel',
+          source_theme_id: 'rebrickable:71039',
+        },
+      ],
+    });
+
+    const [directoryItems, themePageSlugs, hiddenThemePage] = await Promise.all(
+      [
+        listCatalogThemeDirectoryItems({
+          supabaseClient,
+        }),
+        listCatalogThemePageSlugs({
+          supabaseClient,
+        }),
+        getCatalogThemePageBySlug({
+          slug: 'marvel-series-2',
+          supabaseClient,
+        }),
+      ],
+    );
+
+    expect(
+      directoryItems.map((directoryItem) => directoryItem.themeSnapshot.slug),
+    ).toEqual(['marvel']);
+    expect(directoryItems[0]?.themeSnapshot.setCount).toBe(1);
+    expect(directoryItems[0]?.themeSnapshot.name).toBe('Marvel');
+    expect(themePageSlugs).toEqual(['marvel']);
+    expect(hiddenThemePage).toBeUndefined();
   });
 
   test('returns server-paginated theme pages with the total theme set count', async () => {
