@@ -3593,6 +3593,24 @@ function createThemeSnapshot({
   };
 }
 
+function dedupeCatalogThemeDirectoryItemsBySlug(
+  directoryItems: readonly CatalogThemeDirectoryItem[],
+): CatalogThemeDirectoryItem[] {
+  const seenThemeSlugs = new Set<string>();
+
+  return directoryItems.filter((directoryItem) => {
+    const { slug } = directoryItem.themeSnapshot;
+
+    if (seenThemeSlugs.has(slug)) {
+      return false;
+    }
+
+    seenThemeSlugs.add(slug);
+
+    return true;
+  });
+}
+
 async function listCatalogBrowseThemeGroupsInternal({
   allowFullCatalogRead = false,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
@@ -3750,15 +3768,18 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
       ),
     );
 
-    return directoryItems
-      .flatMap((directoryItem) => (directoryItem ? [directoryItem] : []))
-      .sort(
-        (left, right) =>
-          left.themeSnapshot.name.localeCompare(
-            right.themeSnapshot.name,
-            'nl',
-          ) || left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug),
-      );
+    return dedupeCatalogThemeDirectoryItemsBySlug(
+      directoryItems
+        .flatMap((directoryItem) => (directoryItem ? [directoryItem] : []))
+        .sort(
+          (left, right) =>
+            left.themeSnapshot.name.localeCompare(
+              right.themeSnapshot.name,
+              'nl',
+            ) ||
+            left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug),
+        ),
+    );
   } catch (error) {
     if (!supabaseClient) {
       return [];
@@ -5475,38 +5496,42 @@ export async function listCatalogThemeDirectoryItems({
     supabaseClient,
   });
 
-  return themeGroups
-    .map((themeGroup) => {
-      const themeSnapshot = createThemeSnapshot({
-        setCards: themeGroup.setCards,
-        theme: themeGroup.theme,
-      });
-      const imageUrl = getCatalogThemeRepresentativeImageUrl({
-        setCards: themeGroup.setCards,
-        themeSnapshot,
-      });
-      const themeVisual = getCatalogThemeVisual(themeSnapshot.name);
+  return dedupeCatalogThemeDirectoryItemsBySlug(
+    themeGroups
+      .map((themeGroup) => {
+        const themeSnapshot = createThemeSnapshot({
+          setCards: themeGroup.setCards,
+          theme: themeGroup.theme,
+        });
+        const imageUrl = getCatalogThemeRepresentativeImageUrl({
+          setCards: themeGroup.setCards,
+          themeSnapshot,
+        });
+        const themeVisual = getCatalogThemeVisual(themeSnapshot.name);
 
-      return {
-        imageUrl,
-        themeSnapshot,
-        visual: themeVisual
-          ? {
-              ...themeVisual,
-              imageUrl: themeVisual.imageUrl ?? imageUrl,
-            }
-          : imageUrl
+        return {
+          imageUrl,
+          themeSnapshot,
+          visual: themeVisual
             ? {
-                imageUrl,
+                ...themeVisual,
+                imageUrl: themeVisual.imageUrl ?? imageUrl,
               }
-            : undefined,
-      } satisfies CatalogThemeDirectoryItem;
-    })
-    .sort(
-      (left, right) =>
-        left.themeSnapshot.name.localeCompare(right.themeSnapshot.name, 'nl') ||
-        left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug),
-    );
+            : imageUrl
+              ? {
+                  imageUrl,
+                }
+              : undefined,
+        } satisfies CatalogThemeDirectoryItem;
+      })
+      .sort(
+        (left, right) =>
+          left.themeSnapshot.name.localeCompare(
+            right.themeSnapshot.name,
+            'nl',
+          ) || left.themeSnapshot.slug.localeCompare(right.themeSnapshot.slug),
+      ),
+  );
 }
 
 export async function listHomepageThemeDirectoryItems({

@@ -931,6 +931,70 @@ describe('catalog effective data access web', () => {
     expect(supabaseClient.from).toHaveBeenCalledWith('catalog_sets');
   });
 
+  test('deduplicates repeated logical theme rows from the public theme directory', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'theme:icons',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'lord-of-the-rings-rivendell-10316',
+          source: 'rebrickable',
+          source_set_number: '10316-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10317-1/1000.jpg',
+          name: 'Land Rover Classic Defender 90',
+          piece_count: 2336,
+          primary_theme_id: 'theme:icons-duplicate',
+          release_year: 2023,
+          set_id: '10317',
+          slug: 'land-rover-classic-defender-90-10317',
+          source: 'rebrickable',
+          source_set_number: '10317-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          slug: 'icons',
+          status: 'active',
+        },
+        {
+          display_name: 'Icons',
+          id: 'theme:icons-duplicate',
+          slug: 'icons-duplicate',
+          status: 'active',
+        },
+      ],
+    });
+
+    const directoryItems = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(
+      directoryItems.filter(
+        (directoryItem) => directoryItem.themeSnapshot.name === 'LEGO® Icons',
+      ),
+    ).toHaveLength(1);
+  });
+
   test('builds public theme directory from theme rows beyond the catalog set page', async () => {
     const catalogRows = Array.from({ length: 241 }, (_, index) => ({
       created_at: `2026-04-${String(Math.max(1, 28 - (index % 20))).padStart(

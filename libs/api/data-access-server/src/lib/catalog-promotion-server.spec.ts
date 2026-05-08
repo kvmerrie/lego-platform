@@ -450,6 +450,164 @@ describe('catalog promotion server', () => {
     );
   });
 
+  test('includes catalog theme slug when promoting existing theme rows', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Advent',
+            id: 'theme:advent',
+            slug: 'advent',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            id: 'theme:advent',
+            slug: 'advent',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          display_name: 'Advent',
+          id: 'theme:advent',
+          slug: 'advent',
+        },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+  });
+
+  test('derives missing catalog theme slugs before promotion writes', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Advent',
+            id: 'theme:advent',
+            slug: null,
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            id: 'theme:advent',
+            slug: 'advent',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          display_name: 'Advent',
+          id: 'theme:advent',
+          slug: 'advent',
+        },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+  });
+
+  test('validates catalog theme required fields before any promotion writes', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Advent',
+            id: 'theme:advent',
+            slug: 'advent',
+            status: '',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    await expect(
+      promoteCatalogFromStagingToProduction({
+        createProductionSupabaseClient: () => productionClient as never,
+        createStagingSupabaseClient: () => stagingClient as never,
+        now: vi
+          .fn()
+          .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+          .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+      }),
+    ).rejects.toThrow(
+      'Unable to promote catalog_themes. Required column status is missing',
+    );
+    expect(
+      Array.from(productionClient.upsertByTable.values()).some(
+        (upsert) => upsert.mock.calls.length > 0,
+      ),
+    ).toBe(false);
+  });
+
   test('paginates staging catalog set and offer seed reads beyond row 1000', async () => {
     const stagingCatalogSets = createCatalogSetRows(1001);
     const stagingOfferSeeds = createOfferSeedRows(1001);

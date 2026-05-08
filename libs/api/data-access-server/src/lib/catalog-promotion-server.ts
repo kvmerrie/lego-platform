@@ -4,6 +4,7 @@ import {
   getStagingSupabaseConfig,
 } from '@lego-platform/shared/config';
 import { CATALOG_SETS_TABLE } from '@lego-platform/catalog/data-access-server';
+import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import {
   COMMERCE_BENCHMARK_SETS_TABLE,
   COMMERCE_MERCHANTS_TABLE,
@@ -38,7 +39,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'source_system',
     'source_theme_name',
   ],
-  [CATALOG_THEMES_TABLE]: ['display_name'],
+  [CATALOG_THEMES_TABLE]: ['display_name', 'slug'],
   [CATALOG_THEME_MAPPINGS_TABLE]: ['primary_theme_id'],
   commerce_benchmark_sets: [],
   // TODO(brickhunt): decide whether production commerce seed and merchant
@@ -215,6 +216,76 @@ function assertPromotionReadWasNotDefaultCapped({
     throw new Error(
       `Catalog promotion read for ${table} returned exactly ${CATALOG_PROMOTION_PAGE_SIZE} rows. This table is expected to exceed Supabase's default cap, so aborting to avoid promoting a truncated staging snapshot.`,
     );
+  }
+}
+
+function readRequiredPromotionString({
+  column,
+  row,
+  table,
+}: {
+  column: string;
+  row: Readonly<Record<string, unknown>>;
+  table: string;
+}): string {
+  const value = row[column];
+
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error(
+      `Unable to promote ${table}. Required column ${column} is missing for row ${JSON.stringify(row)}.`,
+    );
+  }
+
+  return value;
+}
+
+function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
+  const displayName = readRequiredPromotionString({
+    column: 'display_name',
+    row: theme as unknown as Readonly<Record<string, unknown>>,
+    table: CATALOG_THEMES_TABLE,
+  });
+  const id = readRequiredPromotionString({
+    column: 'id',
+    row: theme as unknown as Readonly<Record<string, unknown>>,
+    table: CATALOG_THEMES_TABLE,
+  });
+  const normalizedSlug =
+    typeof theme.slug === 'string' && theme.slug.trim()
+      ? theme.slug.trim()
+      : buildCatalogThemeSlug(displayName || id.replace(/^theme:/u, ''));
+
+  if (!normalizedSlug) {
+    throw new Error(
+      `Unable to promote ${CATALOG_THEMES_TABLE}. Required column slug is missing for row ${JSON.stringify(theme)}.`,
+    );
+  }
+
+  return {
+    ...theme,
+    display_name: displayName,
+    id,
+    slug: normalizedSlug,
+  };
+}
+
+function validatePromotionRowsRequiredColumns({
+  columns,
+  rows,
+  table,
+}: {
+  columns: readonly string[];
+  rows: readonly Readonly<Record<string, unknown>>[];
+  table: string;
+}) {
+  for (const row of rows) {
+    for (const column of columns) {
+      readRequiredPromotionString({
+        column,
+        row,
+        table,
+      });
+    }
   }
 }
 
@@ -682,6 +753,16 @@ export async function promoteCatalogFromStagingToProduction({
       table: COMMERCE_OFFER_SEEDS_TABLE,
     });
 
+    const normalizedCatalogThemes = catalogThemes.map(normalizeCatalogThemeRow);
+
+    validatePromotionRowsRequiredColumns({
+      columns: ['id', 'display_name', 'slug', 'status'],
+      rows: normalizedCatalogThemes as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_THEMES_TABLE,
+    });
+
     tables.catalog_source_themes = await upsertRows({
       onConflict: 'id',
       rows: catalogSourceThemes,
@@ -690,7 +771,7 @@ export async function promoteCatalogFromStagingToProduction({
     });
     tables.catalog_themes = await upsertRows({
       onConflict: 'id',
-      rows: catalogThemes,
+      rows: normalizedCatalogThemes,
       supabaseClient: productionSupabaseClient,
       table: CATALOG_THEMES_TABLE,
     });

@@ -12,6 +12,42 @@ import { ActionLink } from '@lego-platform/shared/ui';
 import { buildBrickhuntAnalyticsAttributes } from '@lego-platform/shared/util';
 import styles from './catalog-feature-theme-list.module.css';
 
+function getThemeItemKey(
+  themeItem: CatalogThemeDirectoryItem,
+  index: number,
+): string {
+  const themeSnapshot =
+    themeItem.themeSnapshot as typeof themeItem.themeSnapshot & {
+      id?: string;
+      sourceThemeId?: string;
+    };
+
+  return (
+    themeSnapshot.slug ||
+    themeSnapshot.id ||
+    themeSnapshot.sourceThemeId ||
+    `${themeSnapshot.name}-${index}`
+  );
+}
+
+function dedupeThemeItems(
+  themeItems: readonly CatalogThemeDirectoryItem[],
+): CatalogThemeDirectoryItem[] {
+  const seenThemeKeys = new Set<string>();
+
+  return themeItems.filter((themeItem, index) => {
+    const themeKey = getThemeItemKey(themeItem, index);
+
+    if (seenThemeKeys.has(themeKey)) {
+      return false;
+    }
+
+    seenThemeKeys.add(themeKey);
+
+    return true;
+  });
+}
+
 export function CatalogFeatureThemeList({
   themeItems = [],
   tone = 'default',
@@ -19,7 +55,9 @@ export function CatalogFeatureThemeList({
   themeItems?: readonly CatalogThemeDirectoryItem[];
   tone?: 'default' | 'inverse';
 }) {
-  if (!themeItems.length) {
+  const renderedThemeItems = dedupeThemeItems(themeItems);
+
+  if (!renderedThemeItems.length) {
     return null;
   }
 
@@ -32,18 +70,18 @@ export function CatalogFeatureThemeList({
       headingClassName={styles.header}
       id="explore-themes"
       padding="default"
-      signal={`${themeItems.length} thema’s om mee te starten + alle thema’s`}
+      signal={`${renderedThemeItems.length} thema’s om mee te starten + alle thema’s`}
       title="Fantasy, Star Wars of strak design?"
       tone={tone === 'inverse' ? 'inverse' : 'plain'}
     >
       <div className={styles.railViewport}>
         <div className={styles.railTrack}>
-          {themeItems.map((themeItem, index) => (
+          {renderedThemeItems.map((themeItem, index) => (
             <CatalogThemeHighlight
               href={buildThemePath(themeItem.themeSnapshot.slug)}
               visual={themeItem.visual}
               imageUrl={themeItem.imageUrl}
-              key={themeItem.themeSnapshot.name}
+              key={getThemeItemKey(themeItem, index)}
               themeSnapshot={themeItem.themeSnapshot}
               trackingEvent={{
                 event: 'theme_tile_click',
@@ -67,7 +105,7 @@ export function CatalogFeatureThemeList({
                 event: 'theme_tile_click',
                 properties: {
                   pageSurface: 'homepage',
-                  rankPosition: themeItems.length + 1,
+                  rankPosition: renderedThemeItems.length + 1,
                   sectionId: 'explore-themes',
                   tileType: 'all_themes',
                   theme: null,

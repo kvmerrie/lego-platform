@@ -6,12 +6,50 @@ import {
 import { buildThemePath } from '@lego-platform/shared/config';
 import styles from './catalog-feature-theme-spotlight.module.css';
 
+function getThemeItemKey(
+  themeItem: CatalogThemeDirectoryItem,
+  index: number,
+): string {
+  const themeSnapshot =
+    themeItem.themeSnapshot as typeof themeItem.themeSnapshot & {
+      id?: string;
+      sourceThemeId?: string;
+    };
+
+  return (
+    themeSnapshot.slug ||
+    themeSnapshot.id ||
+    themeSnapshot.sourceThemeId ||
+    `${themeSnapshot.name}-${index}`
+  );
+}
+
+function dedupeThemeItems(
+  themeItems: readonly CatalogThemeDirectoryItem[],
+): CatalogThemeDirectoryItem[] {
+  const seenThemeKeys = new Set<string>();
+
+  return themeItems.filter((themeItem, index) => {
+    const themeKey = getThemeItemKey(themeItem, index);
+
+    if (seenThemeKeys.has(themeKey)) {
+      return false;
+    }
+
+    seenThemeKeys.add(themeKey);
+
+    return true;
+  });
+}
+
 export function CatalogFeatureThemeSpotlight({
   themeItems = [],
 }: {
   themeItems?: readonly CatalogThemeDirectoryItem[];
 }) {
-  if (!themeItems.length) {
+  const renderedThemeItems = dedupeThemeItems(themeItems);
+
+  if (!renderedThemeItems.length) {
     return null;
   }
 
@@ -24,14 +62,14 @@ export function CatalogFeatureThemeSpotlight({
       headingClassName={styles.header}
       id="theme-spotlight"
       padding="default"
-      signal={`${themeItems.length} thema's als je iets anders zoekt`}
+      signal={`${renderedThemeItems.length} thema's als je iets anders zoekt`}
       title="Botanicals, kunst of modulaire straten?"
       tone="plain"
     >
-      {themeItems.map((themeItem, index) => (
+      {renderedThemeItems.map((themeItem, index) => (
         <div
           className={styles.spotlightItem}
-          key={themeItem.themeSnapshot.name}
+          key={getThemeItemKey(themeItem, index)}
         >
           <CatalogThemeHighlight
             className={styles.spotlightTile}
