@@ -1554,6 +1554,82 @@ describe('catalog data access server', () => {
     expect(results.some((result) => result.theme === 'Pokémon')).toBe(false);
   });
 
+  test('excludes suggested missing sets that already exist by normalized set id or source set number', async () => {
+    process.env.REBRICKABLE_API_KEY = 'test-key';
+
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      overlayRows: [
+        createCatalogOverlayRow({
+          name: 'Nike Dunk x LEGO',
+          set_id: '43020',
+          slug: 'nike-dunk-x-lego-43020',
+          source_set_number: '43020-1',
+        }),
+        createCatalogOverlayRow({
+          name: 'Known Source Number',
+          set_id: '42177',
+          slug: 'known-source-number-42177',
+          source_set_number: '42177-1',
+        }),
+      ],
+    });
+    const fetchImpl = createRebrickableFetchMock({
+      listPayloads: {
+        'min_year=2024&ordering=-year%2C-num_parts&page=1&page_size=100': {
+          results: [
+            {
+              set_num: '43020-1',
+              name: 'Nike Dunk x LEGO',
+              year: 2026,
+              num_parts: 1180,
+              theme_id: 2,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/43020-1/1000.jpg',
+            },
+            {
+              set_num: '42177-1',
+              name: 'Mercedes-Benz G 500 PROFESSIONAL Line',
+              year: 2024,
+              num_parts: 2891,
+              theme_id: 2,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/42177-1/1000.jpg',
+            },
+            {
+              set_num: '60488-1',
+              name: 'New Unknown City Set',
+              year: 2026,
+              num_parts: 999,
+              theme_id: 52,
+              set_img_url:
+                'https://cdn.rebrickable.com/media/sets/60488-1/1000.jpg',
+            },
+          ],
+        },
+      },
+      setPayloads: {},
+      themePayloads: {
+        '2': {
+          id: 2,
+          name: 'Technic',
+        },
+        '52': {
+          id: 52,
+          name: 'City',
+        },
+      },
+    });
+
+    const results = await listCatalogSuggestedMissingSets({
+      fetchImpl,
+      limit: 10,
+      nowImpl: () => new Date('2026-04-20T08:00:00.000Z').getTime(),
+      supabaseClient,
+    });
+
+    expect(results.map((result) => result.setId)).toEqual(['60488']);
+  });
+
   test('creates a canonical catalog record with normalized set data', async () => {
     process.env.REBRICKABLE_API_KEY = 'test-key';
     const { canonicalInsert, insert, supabaseClient } =

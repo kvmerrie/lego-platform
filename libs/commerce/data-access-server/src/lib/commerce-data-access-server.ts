@@ -38,6 +38,7 @@ export const COMMERCE_BENCHMARK_SETS_TABLE = 'commerce_benchmark_sets';
 export const COMMERCE_AFFILIATE_DISCOVERED_SETS_TABLE =
   'commerce_affiliate_discovered_sets';
 export const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
+const CATALOG_SETS_TABLE = 'catalog_sets';
 
 type CommerceSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -207,6 +208,11 @@ interface CommerceAffiliateDiscoveredSetRow {
   source_set_number: string;
   status: string;
   updated_at: string;
+}
+
+interface CommerceCatalogSetIdentityRow {
+  set_id: string;
+  source_set_number: string | null;
 }
 
 export interface CommerceRefreshSeed {
@@ -432,6 +438,136 @@ function normalizeSupabaseRows(
   return Array.isArray(data)
     ? (data as Readonly<Record<string, unknown>>[])
     : [];
+}
+
+function normalizeCommerceCatalogSetLookupValue(
+  value: unknown,
+): string | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return normalizeCatalogSetId(String(value));
+  }
+
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalizedValue = normalizeCatalogSetId(value);
+
+  return normalizedValue.trim() ? normalizedValue : undefined;
+}
+
+function buildCatalogSourceSetNumberLookupValue(
+  normalizedSetId: string,
+): string | undefined {
+  const sourceSetNumber = buildCommerceSourceSetNumber(normalizedSetId);
+
+  return sourceSetNumber.trim() ? sourceSetNumber : undefined;
+}
+
+async function findExistingCatalogSetId({
+  setNumber,
+  supabaseClient,
+}: {
+  setNumber: unknown;
+  supabaseClient: CommerceSupabaseClient;
+}): Promise<string | undefined> {
+  const normalizedSetId = normalizeCommerceCatalogSetLookupValue(setNumber);
+
+  if (!normalizedSetId) {
+    return undefined;
+  }
+
+  const sourceSetNumber =
+    buildCatalogSourceSetNumberLookupValue(normalizedSetId);
+  const [setIdResponse, sourceSetNumberResponse] = await Promise.all([
+    supabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .select('set_id, source_set_number')
+      .eq('set_id', normalizedSetId)
+      .maybeSingle(),
+    sourceSetNumber
+      ? supabaseClient
+          .from(CATALOG_SETS_TABLE)
+          .select('set_id, source_set_number')
+          .eq('source_set_number', sourceSetNumber)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+
+  if (setIdResponse.error || sourceSetNumberResponse.error) {
+    throw new Error('Unable to inspect catalog set identity.');
+  }
+
+  const matchingRow = (setIdResponse.data ??
+    sourceSetNumberResponse.data) as CommerceCatalogSetIdentityRow | null;
+
+  return matchingRow?.set_id
+    ? normalizeCatalogSetId(matchingRow.set_id)
+    : undefined;
+}
+
+async function listExistingCatalogSetIds({
+  setNumbers,
+  supabaseClient,
+}: {
+  setNumbers: readonly unknown[];
+  supabaseClient: CommerceSupabaseClient;
+}): Promise<Set<string>> {
+  const normalizedSetIds = [
+    ...new Set(
+      setNumbers.flatMap((setNumber) => {
+        const normalizedSetId =
+          normalizeCommerceCatalogSetLookupValue(setNumber);
+
+        return normalizedSetId ? [normalizedSetId] : [];
+      }),
+    ),
+  ];
+
+  if (!normalizedSetIds.length) {
+    return new Set();
+  }
+
+  const sourceSetNumbers = normalizedSetIds.flatMap((normalizedSetId) => {
+    const sourceSetNumber =
+      buildCatalogSourceSetNumberLookupValue(normalizedSetId);
+
+    return sourceSetNumber ? [sourceSetNumber] : [];
+  });
+  const [setIdResponse, sourceSetNumberResponse] = await Promise.all([
+    supabaseClient
+      .from(CATALOG_SETS_TABLE)
+      .select('set_id, source_set_number')
+      .in('set_id', normalizedSetIds),
+    sourceSetNumbers.length
+      ? supabaseClient
+          .from(CATALOG_SETS_TABLE)
+          .select('set_id, source_set_number')
+          .in('source_set_number', sourceSetNumbers)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (setIdResponse.error || sourceSetNumberResponse.error) {
+    throw new Error('Unable to inspect catalog set identities.');
+  }
+
+  return new Set(
+    [
+      ...((setIdResponse.data as CommerceCatalogSetIdentityRow[] | null) ?? []),
+      ...((sourceSetNumberResponse.data as
+        | CommerceCatalogSetIdentityRow[]
+        | null) ?? []),
+    ].flatMap((row) => {
+      const setId = normalizeCommerceCatalogSetLookupValue(row.set_id);
+      const sourceSetId = normalizeCommerceCatalogSetLookupValue(
+        row.source_set_number,
+      );
+
+      return [setId, sourceSetId].filter((value): value is string =>
+        Boolean(value),
+      );
+    }),
+  );
 }
 
 async function readCommerceProductionCopyRows({
@@ -755,9 +891,25 @@ export async function listCommerceAffiliateDiscoveredSets({
     throw new Error('Unable to load affiliate discovered sets.');
   }
 
-  return ((data as CommerceAffiliateDiscoveredSetRow[] | null) ?? []).map(
-    toCommerceAffiliateDiscoveredSet,
-  );
+  const discoveredRows =
+    (data as CommerceAffiliateDiscoveredSetRow[] | null) ?? [];
+  const existingCatalogSetIds = await listExistingCatalogSetIds({
+    setNumbers: discoveredRows.flatMap((row) => [
+      row.normalized_set_id,
+      row.source_set_number,
+    ]),
+    supabaseClient,
+  });
+
+  return discoveredRows
+    .filter(
+      (row) =>
+        row.status !== 'new' ||
+        !existingCatalogSetIds.has(
+          normalizeCatalogSetId(row.normalized_set_id),
+        ),
+    )
+    .map(toCommerceAffiliateDiscoveredSet);
 }
 
 export async function upsertCommerceAffiliateDiscoveredSet({
@@ -776,6 +928,10 @@ export async function upsertCommerceAffiliateDiscoveredSet({
 
   const productTitle = input.productTitle?.trim() || normalizedSetId;
   const confidence = scoreCommerceAffiliateDiscoveredSet(input);
+  const existingCatalogSetId = await findExistingCatalogSetId({
+    setNumber: input.setNumber ?? normalizedSetId,
+    supabaseClient,
+  });
   const existingResponse = await supabaseClient
     .from(COMMERCE_AFFILIATE_DISCOVERED_SETS_TABLE)
     .select('first_seen_at, status')
@@ -794,7 +950,9 @@ export async function upsertCommerceAffiliateDiscoveredSet({
   const status =
     existingRow?.status === 'ignored' || existingRow?.status === 'non_set'
       ? existingRow.status
-      : 'new';
+      : existingCatalogSetId
+        ? 'ignored'
+        : 'new';
   const { data, error } = await supabaseClient
     .from(COMMERCE_AFFILIATE_DISCOVERED_SETS_TABLE)
     .upsert(
@@ -809,6 +967,10 @@ export async function upsertCommerceAffiliateDiscoveredSet({
         product_url: productUrl,
         confidence,
         status,
+        imported_set_id: existingCatalogSetId ?? null,
+        import_error: existingCatalogSetId
+          ? 'Skipped discovery because this set already exists in catalog_sets.'
+          : null,
         raw_payload: input.rawPayload,
         first_seen_at: existingRow?.first_seen_at ?? input.observedAt,
         last_seen_at: input.observedAt,

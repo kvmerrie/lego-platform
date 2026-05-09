@@ -2624,7 +2624,12 @@ export async function listCatalogSuggestedMissingSets({
     supabaseClient,
   });
   const existingSetIds = new Set(
-    existingCatalogSets.map((catalogSet) => catalogSet.setId),
+    existingCatalogSets.flatMap((catalogSet) => [
+      getCanonicalCatalogSetId(catalogSet.setId),
+      ...(catalogSet.sourceSetNumber
+        ? [getCanonicalCatalogSetId(catalogSet.sourceSetNumber)]
+        : []),
+    ]),
   );
   const fetchedSearchSets: ValidatedRebrickableSearchSet[] = [];
 
@@ -2639,22 +2644,23 @@ export async function listCatalogSuggestedMissingSets({
       page: pageNumber,
       pageSize: CATALOG_SUGGESTED_SET_FETCH_PAGE_SIZE,
     });
-    const validatedSearchSets = validateRebrickableSearchPayload(payload)
-      .flatMap((searchSetPayload) => {
-        try {
-          return [validateRebrickableSearchSetPayload(searchSetPayload)];
-        } catch {
-          return [];
-        }
-      })
-      .filter(
-        (searchSet) =>
-          !existingSetIds.has(
-            getCanonicalCatalogSetIdFromSourceSetNumber(searchSet.setNumber),
-          ),
-      );
+    const validatedSearchSets = validateRebrickableSearchPayload(
+      payload,
+    ).flatMap((searchSetPayload) => {
+      try {
+        return [validateRebrickableSearchSetPayload(searchSetPayload)];
+      } catch {
+        return [];
+      }
+    });
+    const missingSearchSets = validatedSearchSets.filter(
+      (searchSet) =>
+        !existingSetIds.has(
+          getCanonicalCatalogSetIdFromSourceSetNumber(searchSet.setNumber),
+        ),
+    );
 
-    fetchedSearchSets.push(...validatedSearchSets);
+    fetchedSearchSets.push(...missingSearchSets);
 
     if (validatedSearchSets.length < CATALOG_SUGGESTED_SET_FETCH_PAGE_SIZE) {
       break;

@@ -1273,6 +1273,7 @@ describe('catalog promotion server', () => {
           display_name: 'Advent',
           id: 'theme:advent',
           slug: 'advent',
+          status: 'active',
         },
       ],
       {
@@ -1332,6 +1333,7 @@ describe('catalog promotion server', () => {
           display_name: 'Advent',
           id: 'theme:advent',
           slug: 'advent',
+          status: 'active',
         },
       ],
       {
@@ -1417,6 +1419,7 @@ describe('catalog promotion server', () => {
           display_name: 'Icons',
           id: 'theme:icons',
           slug: 'icons',
+          status: 'active',
         },
         {
           created_at: '2026-04-21T08:00:00.000Z',
@@ -1473,7 +1476,13 @@ describe('catalog promotion server', () => {
       },
     });
     const productionClient = createPromotionSupabaseClient({
-      rowsByTable: {},
+      rowsByTable: {
+        catalog_themes: [
+          {
+            id: 'theme:advent',
+          },
+        ],
+      },
     });
 
     await promoteCatalogFromStagingToProduction({
@@ -1490,14 +1499,10 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
-          created_at: '2026-04-21T08:00:00.000Z',
           display_name: 'Advent',
           id: 'theme:advent',
-          is_public: false,
-          public_order: null,
           slug: 'advent',
           status: 'active',
-          updated_at: '2026-04-21T08:00:00.000Z',
         },
         {
           created_at: '2026-04-21T08:05:00.000Z',

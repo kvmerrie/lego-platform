@@ -53,6 +53,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'public_logo_url',
     'public_order',
     'slug',
+    'status',
   ],
   [CATALOG_THEME_MAPPINGS_TABLE]: ['primary_theme_id'],
   commerce_benchmark_sets: [],

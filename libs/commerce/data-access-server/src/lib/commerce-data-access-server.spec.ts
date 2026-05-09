@@ -5,6 +5,7 @@ import {
   createCommerceMerchant,
   listActiveCommerceSyncSeeds,
   deleteCommerceBenchmarkSet,
+  listCommerceAffiliateDiscoveredSets,
   listActiveCommerceRefreshSeeds,
   listCommerceBenchmarkSets,
   listCommerceOfferSeeds,
@@ -15,6 +16,92 @@ import {
 } from './commerce-data-access-server';
 
 type InMemorySupabaseTables = Record<string, Record<string, unknown>[]>;
+
+function createCommerceSupabaseTableBuilder(
+  rows: readonly Record<string, unknown>[],
+) {
+  const filters: Array<
+    | {
+        column: string;
+        type: 'eq';
+        value: unknown;
+      }
+    | {
+        column: string;
+        type: 'in';
+        values: readonly unknown[];
+      }
+  > = [];
+  const builder = {
+    eq(column: string, value: unknown) {
+      filters.push({
+        column,
+        type: 'eq',
+        value,
+      });
+
+      return builder;
+    },
+    in(column: string, values: readonly unknown[]) {
+      filters.push({
+        column,
+        type: 'in',
+        values,
+      });
+
+      return builder;
+    },
+    maybeSingle() {
+      return builder.then(({ data, error }) => ({
+        data: data[0] ?? null,
+        error,
+      }));
+    },
+    order() {
+      return builder;
+    },
+    select() {
+      return builder;
+    },
+    single() {
+      return builder.then(({ data, error }) => ({
+        data: data[0] ?? null,
+        error,
+      }));
+    },
+    then<TResult1 = { data: Record<string, unknown>[]; error: null }>(
+      onFulfilled?:
+        | ((value: {
+            data: Record<string, unknown>[];
+            error: null;
+          }) => TResult1 | PromiseLike<TResult1>)
+        | null,
+      onRejected?: ((reason: unknown) => PromiseLike<never>) | null,
+    ) {
+      const filteredRows = filters.reduce<readonly Record<string, unknown>[]>(
+        (resultRows, filter) => {
+          if (filter.type === 'eq') {
+            return resultRows.filter(
+              (row) => row[filter.column] === filter.value,
+            );
+          }
+
+          return resultRows.filter((row) =>
+            filter.values.includes(row[filter.column]),
+          );
+        },
+        rows,
+      );
+
+      return Promise.resolve({
+        data: [...filteredRows],
+        error: null,
+      }).then(onFulfilled, onRejected ?? undefined);
+    },
+  };
+
+  return builder;
+}
 
 function createCommerceCopySupabaseClient(tables: InMemorySupabaseTables) {
   const operations: string[] = [];
@@ -878,6 +965,171 @@ describe('commerce data access server', () => {
     expect(targetClient.operations).toEqual([]);
   });
 
+  test('marks affiliate discovered sets that already exist in catalog as ignored and linked', async () => {
+    const maybeSingleExistingDiscovery = vi.fn(async () => ({
+      data: null,
+      error: null,
+    }));
+    const upsertPayloads: Record<string, unknown>[] = [];
+    const persistedRow = {
+      confidence: 'high',
+      created_at: '2026-05-06T12:00:00.000Z',
+      currency_code: 'EUR',
+      first_seen_at: '2026-05-06T12:00:00.000Z',
+      id: 'discovered-43020',
+      image_url: 'https://cdn.example.test/43020.jpg',
+      import_attempted_at: null,
+      import_error:
+        'Skipped discovery because this set already exists in catalog_sets.',
+      imported_set_id: '43020',
+      last_seen_at: '2026-05-06T12:00:00.000Z',
+      merchant_id: 'merchant-alternate',
+      normalized_set_id: '43020',
+      price_minor: 7999,
+      product_title: 'LEGO Nike Dunk x LEGO',
+      product_url: 'https://shop.example.test/43020',
+      raw_payload: {},
+      source_set_number: '43020-1',
+      status: 'ignored',
+      updated_at: '2026-05-06T12:00:00.000Z',
+    };
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return createCommerceSupabaseTableBuilder([
+            {
+              set_id: '43020',
+              source_set_number: '43020-1',
+            },
+          ]);
+        }
+
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              eq: vi.fn(() => ({
+                maybeSingle: maybeSingleExistingDiscovery,
+              })),
+            })),
+          })),
+          upsert: vi.fn((payload: Record<string, unknown>) => {
+            upsertPayloads.push(payload);
+
+            return {
+              select: vi.fn(() => ({
+                single: vi.fn(async () => ({
+                  data: persistedRow,
+                  error: null,
+                })),
+              })),
+            };
+          }),
+        };
+      }),
+    };
+
+    const result = await upsertCommerceAffiliateDiscoveredSet({
+      input: {
+        affiliateId: 'merchant-alternate',
+        currencyCode: 'EUR',
+        imageUrl: 'https://cdn.example.test/43020.jpg',
+        observedAt: '2026-05-06T12:00:00.000Z',
+        priceMinor: 7999,
+        productTitle: 'LEGO Nike Dunk x LEGO',
+        productUrl: 'https://shop.example.test/43020',
+        rawPayload: {},
+        setNumber: ' 43020-1 ',
+      },
+      supabaseClient: supabaseClient as never,
+    });
+
+    expect(upsertPayloads[0]).toMatchObject({
+      imported_set_id: '43020',
+      normalized_set_id: '43020',
+      status: 'ignored',
+    });
+    expect(result?.status).toBe('ignored');
+    expect(result?.importedSetId).toBe('43020');
+  });
+
+  test('filters existing catalog sets out of affiliate discovered review queues', async () => {
+    const discoveredRows = [
+      {
+        commerce_merchants: {
+          id: 'merchant-alternate',
+          name: 'Alternate',
+          slug: 'alternate',
+        },
+        confidence: 'high',
+        created_at: '2026-05-06T12:00:00.000Z',
+        currency_code: 'EUR',
+        first_seen_at: '2026-05-06T12:00:00.000Z',
+        id: 'discovered-existing',
+        image_url: 'https://cdn.example.test/43020.jpg',
+        import_attempted_at: null,
+        import_error: null,
+        imported_set_id: null,
+        last_seen_at: '2026-05-06T12:00:00.000Z',
+        merchant_id: 'merchant-alternate',
+        normalized_set_id: '43020',
+        price_minor: 7999,
+        product_title: 'LEGO Nike Dunk x LEGO',
+        product_url: 'https://shop.example.test/43020',
+        raw_payload: {},
+        source_set_number: '43020-1',
+        status: 'new',
+        updated_at: '2026-05-06T12:00:00.000Z',
+      },
+      {
+        commerce_merchants: {
+          id: 'merchant-alternate',
+          name: 'Alternate',
+          slug: 'alternate',
+        },
+        confidence: 'high',
+        created_at: '2026-05-06T12:05:00.000Z',
+        currency_code: 'EUR',
+        first_seen_at: '2026-05-06T12:05:00.000Z',
+        id: 'discovered-new',
+        image_url: 'https://cdn.example.test/99999.jpg',
+        import_attempted_at: null,
+        import_error: null,
+        imported_set_id: null,
+        last_seen_at: '2026-05-06T12:05:00.000Z',
+        merchant_id: 'merchant-alternate',
+        normalized_set_id: '99999',
+        price_minor: 9999,
+        product_title: 'LEGO Unknown Set',
+        product_url: 'https://shop.example.test/99999',
+        raw_payload: {},
+        source_set_number: '99999-1',
+        status: 'new',
+        updated_at: '2026-05-06T12:05:00.000Z',
+      },
+    ];
+    const supabaseClient = {
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return createCommerceSupabaseTableBuilder([
+            {
+              set_id: '43020',
+              source_set_number: '43020-1',
+            },
+          ]);
+        }
+
+        return createCommerceSupabaseTableBuilder(discoveredRows);
+      }),
+    };
+
+    const results = await listCommerceAffiliateDiscoveredSets({
+      status: 'new',
+      supabaseClient: supabaseClient as never,
+    });
+
+    expect(results.map((result) => result.normalizedSetId)).toEqual(['99999']);
+  });
+
   test('includes Supabase details and sanitized attempted fields when discovered set persistence fails', async () => {
     const maybeSingle = vi.fn(async () => ({
       data: null,
@@ -898,10 +1150,16 @@ describe('commerce data access server', () => {
     const selectPersisted = vi.fn(() => ({ single }));
     const upsert = vi.fn(() => ({ select: selectPersisted }));
     const supabaseClient = {
-      from: vi.fn(() => ({
-        select: selectExisting,
-        upsert,
-      })),
+      from: vi.fn((table: string) => {
+        if (table === 'catalog_sets') {
+          return createCommerceSupabaseTableBuilder([]);
+        }
+
+        return {
+          select: selectExisting,
+          upsert,
+        };
+      }),
     };
 
     let errorMessage = '';
