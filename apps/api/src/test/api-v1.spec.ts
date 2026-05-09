@@ -218,12 +218,29 @@ describe('api v1 auth and set-status routes', () => {
 
     const response = await server.inject({
       method: 'GET',
-      url: buildCatalogDiscoverySignalsApiPath(),
+      url: buildCatalogDiscoverySignalsApiPath(['42172-1', '42172']),
     });
 
     expect(response.statusCode).toBe(200);
-    expect(listCatalogDiscoverySignals).toHaveBeenCalledWith();
+    expect(listCatalogDiscoverySignals).toHaveBeenCalledWith(['42172']);
     expect(response.json()).toEqual(discoverySignals);
+
+    await server.close();
+  });
+
+  test('rejects unscoped public catalog discovery signal reads', async () => {
+    const { listCatalogDiscoverySignals, server } = await createApiServer();
+
+    const response = await server.inject({
+      method: 'GET',
+      url: buildCatalogDiscoverySignalsApiPath(),
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(listCatalogDiscoverySignals).not.toHaveBeenCalled();
+    expect(response.json()).toEqual({
+      message: 'catalog discovery signals require setIds.',
+    });
 
     await server.close();
   });

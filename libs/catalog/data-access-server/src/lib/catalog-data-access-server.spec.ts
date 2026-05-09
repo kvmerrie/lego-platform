@@ -492,13 +492,19 @@ describe('catalog data access server', () => {
       ],
       priceHistoryRows: [
         {
+          condition: 'new',
+          currency_code: 'EUR',
           recorded_on: '2026-04-20',
           reference_price_minor: 44999,
+          region_code: 'NL',
           set_id: '42172',
         },
         {
+          condition: 'new',
+          currency_code: 'EUR',
           recorded_on: '2026-04-19',
           reference_price_minor: 45999,
+          region_code: 'NL',
           set_id: '42172',
         },
       ],

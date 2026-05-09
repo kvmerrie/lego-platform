@@ -15,6 +15,7 @@ import {
   listCatalogSimilarSetCards,
   listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs,
+  rankCatalogSimilarSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CatalogFeatureSetList,
@@ -1202,16 +1203,6 @@ export default async function SetDetailPage({
   const liveSetDetailOffers = await loadSetDetailLiveOffers({
     setId: catalogSetDetail.id,
   });
-  const catalogDiscoverySignalBySetId =
-    await listCatalogDiscoverySignalsBySetId({
-      cacheOptions: {
-        revalidateSeconds: revalidate,
-        tags: [
-          cacheTags.set(catalogSetDetail.id),
-          cacheTags.set(catalogSetDetail.slug),
-        ],
-      },
-    });
   const primaryOfferAvailability = await loadSetDetailPrimaryOfferAvailability({
     setId: catalogSetDetail.id,
   });
@@ -1257,7 +1248,36 @@ export default async function SetDetailPage({
   const analyticsPriceVerdict = hasTrackedAvailabilityFallback
     ? 'neutral'
     : getBrickhuntAnalyticsPriceVerdict(defaultDealVerdict.tone);
-  const similarSetCards = await listCatalogSimilarSetCards({
+  const similarSetCandidateCards = await listCatalogSimilarSetCards({
+    currentSetCard: {
+      id: catalogSetDetail.id,
+      name: catalogSetDetail.name,
+      pieces: catalogSetDetail.pieces,
+      releaseYear: catalogSetDetail.releaseYear,
+      theme: catalogSetDetail.theme,
+    },
+    limit: SIMILAR_SETS_RAIL_LIMIT * 4,
+    referenceBestPriceMinor:
+      bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor,
+  });
+  const catalogDiscoverySignalBySetId =
+    await listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+        tags: [
+          cacheTags.set(catalogSetDetail.id),
+          cacheTags.set(catalogSetDetail.slug),
+          ...similarSetCandidateCards.map((setCard) =>
+            cacheTags.set(setCard.id),
+          ),
+        ],
+      },
+      setIds: [
+        catalogSetDetail.id,
+        ...similarSetCandidateCards.map((setCard) => setCard.id),
+      ],
+    });
+  const similarSetCards = rankCatalogSimilarSetCards({
     currentSetCard: {
       id: catalogSetDetail.id,
       name: catalogSetDetail.name,
@@ -1270,6 +1290,7 @@ export default async function SetDetailPage({
     limit: SIMILAR_SETS_RAIL_LIMIT,
     referenceBestPriceMinor:
       bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor,
+    setCards: similarSetCandidateCards,
   });
   const similarSetCurrentOfferSummaryBySetId =
     similarSetCards.length > 0

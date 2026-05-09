@@ -35,9 +35,9 @@ export interface ApiV1RouteDependencies {
   ) => Promise<
     Awaited<ReturnType<typeof listCatalogCurrentOfferSummariesBySetIdsServer>>
   >;
-  listCatalogDiscoverySignals?: () => Promise<
-    Awaited<ReturnType<typeof listCatalogDiscoverySignalsServer>>
-  >;
+  listCatalogDiscoverySignals?: (
+    setIds: readonly string[],
+  ) => Promise<Awaited<ReturnType<typeof listCatalogDiscoverySignalsServer>>>;
   getPublishedArticleBySlug?: (
     slug: string,
   ) => Promise<Awaited<ReturnType<typeof getPublishedArticleBySlug>>>;
@@ -94,8 +94,9 @@ export function createApiV1Routes({
   listCatalogCurrentOfferSummariesBySetIds:
     listCatalogCurrentOfferSummariesBySetIdsDependency = (setIds) =>
       listCatalogCurrentOfferSummariesBySetIdsServer({ setIds }),
-  listCatalogDiscoverySignals: listCatalogDiscoverySignalsDependency = () =>
-    listCatalogDiscoverySignalsServer(),
+  listCatalogDiscoverySignals: listCatalogDiscoverySignalsDependency = (
+    setIds,
+  ) => listCatalogDiscoverySignalsServer({ setIds }),
   getPublishedArticleBySlug: getPublishedArticleBySlugDependency = (slug) =>
     getPublishedArticleBySlug(slug),
   listPublishedArticles: listPublishedArticlesDependency = () =>
@@ -125,9 +126,20 @@ export function createApiV1Routes({
   }
 
   return async function (fastify: FastifyInstance) {
-    fastify.get(buildCatalogDiscoverySignalsApiPath(), async function () {
-      return listCatalogDiscoverySignalsDependency();
-    });
+    fastify.get<{ Querystring: { setIds?: string } }>(
+      buildCatalogDiscoverySignalsApiPath(),
+      async function (request, reply) {
+        const setIds = parseCatalogSetIds(request.query.setIds);
+
+        if (!setIds.length) {
+          return reply.status(400).send({
+            message: 'catalog discovery signals require setIds.',
+          });
+        }
+
+        return listCatalogDiscoverySignalsDependency(setIds);
+      },
+    );
 
     fastify.get(apiPaths.articles, async function () {
       return listPublishedArticlesDependency();

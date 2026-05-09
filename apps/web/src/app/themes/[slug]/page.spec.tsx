@@ -85,6 +85,10 @@ describe('theme page JSON-LD', () => {
       },
     });
     expect(metadata.robots).toBeUndefined();
+    expect(themePageMocks.getCatalogThemePageBySlug).toHaveBeenCalledWith({
+      limit: 1,
+      slug: 'star-wars',
+    });
   });
 
   it('renders CollectionPage and BreadcrumbList structured data', async () => {
@@ -128,5 +132,14 @@ describe('theme page JSON-LD', () => {
     expect(html).toContain('"@type":"CollectionPage"');
     expect(html).toContain('"@type":"BreadcrumbList"');
     expect(html).toContain('https://www.brickhunt.nl/themes/star-wars');
+    expect(
+      themePageMocks.listCatalogDiscoverySignalsBySetId,
+    ).toHaveBeenCalledWith({
+      cacheOptions: {
+        revalidateSeconds: 21_600,
+        tags: ['theme:star-wars'],
+      },
+      setIds: ['75355'],
+    });
   });
 });

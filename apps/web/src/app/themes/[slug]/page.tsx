@@ -87,6 +87,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const themePage = await getCatalogThemePageBySlug({
+    limit: 1,
     slug,
   });
 
@@ -123,25 +124,26 @@ export default async function ThemePage({
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const currentPage = readThemePageParam(resolvedSearchParams?.page);
-  const [themePage, catalogDiscoverySignalBySetId, publishedArticles] =
-    await Promise.all([
-      getCatalogThemePageBySlug({
-        limit: THEME_SET_PAGE_SIZE,
-        offset: (currentPage - 1) * THEME_SET_PAGE_SIZE,
-        slug,
-      }),
-      listCatalogDiscoverySignalsBySetId({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [cacheTags.theme(slug)],
-        },
-      }),
-      listPublishedArticles(),
-    ]);
+  const themePage = await getCatalogThemePageBySlug({
+    limit: THEME_SET_PAGE_SIZE,
+    offset: (currentPage - 1) * THEME_SET_PAGE_SIZE,
+    slug,
+  });
 
   if (!themePage) {
     notFound();
   }
+
+  const [catalogDiscoverySignalBySetId, publishedArticles] = await Promise.all([
+    listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+        tags: [cacheTags.theme(slug)],
+      },
+      setIds: themePage.setCards.map((setCard) => setCard.id),
+    }),
+    listPublishedArticles(),
+  ]);
 
   const pageCount = Math.max(
     1,

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import type { Metadata } from 'next';
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
@@ -336,25 +336,25 @@ function selectDealDisplaySetCards({
 }
 
 export default async function DealsPage() {
-  const [catalogDiscoverySignalBySetId, currentOfferSummaryBySetId] =
-    await Promise.all([
-      listCatalogDiscoverySignalsBySetId({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [cacheTags.deals()],
-        },
-      }),
-      listCachedCatalogCurrentOfferSummaries({
-        cacheOptions: {
-          revalidateSeconds: revalidate,
-          tags: [cacheTags.deals()],
-        },
-        limit: 300,
-      }),
-    ]);
+  const currentOfferSummaryBySetId =
+    await listCachedCatalogCurrentOfferSummaries({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+        tags: [cacheTags.deals()],
+      },
+      limit: 300,
+    });
   const commerceCandidateSetCards = await listCatalogSetCardsByIds({
     canonicalIds: [...currentOfferSummaryBySetId.keys()],
   });
+  const catalogDiscoverySignalBySetId =
+    await listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: revalidate,
+        tags: [cacheTags.deals()],
+      },
+      setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
+    });
   const commerceRailRotationSeed = 0;
   const getCatalogDiscoverySignalFn = (setId: string) =>
     catalogDiscoverySignalBySetId.get(setId);

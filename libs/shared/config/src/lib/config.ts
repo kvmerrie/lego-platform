@@ -410,8 +410,18 @@ export function buildCatalogSetLiveOffersApiPath(setId: string): string {
   return `${apiPaths.catalogSets}/${encodeURIComponent(setId)}/live-offers`;
 }
 
-export function buildCatalogDiscoverySignalsApiPath(): string {
-  return apiPaths.catalogDiscoverySignals;
+export function buildCatalogDiscoverySignalsApiPath(
+  setIds: readonly string[] = [],
+): string {
+  if (!setIds.length) {
+    return apiPaths.catalogDiscoverySignals;
+  }
+
+  const queryParams = new URLSearchParams({
+    setIds: [...new Set(setIds)].join(','),
+  });
+
+  return `${apiPaths.catalogDiscoverySignals}?${queryParams.toString()}`;
 }
 
 export function buildCatalogCurrentOfferSummariesApiPath(

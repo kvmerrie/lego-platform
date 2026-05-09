@@ -32,7 +32,10 @@ const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
+const DUTCH_REGION_CODE = 'NL';
 const EURO_CURRENCY_CODE = 'EUR';
+const NEW_OFFER_CONDITION = 'new';
+const CATALOG_DISCOVERY_PRICE_HISTORY_ROWS_PER_SET = 8;
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -2268,9 +2271,16 @@ export async function listCatalogDiscoverySignals({
           .from(PRICING_DAILY_SET_HISTORY_TABLE)
           .select('set_id, reference_price_minor, recorded_on')
           .in('set_id', discoverySignalSetIds)
+          .eq('region_code', DUTCH_REGION_CODE)
+          .eq('currency_code', EURO_CURRENCY_CODE)
+          .eq('condition', NEW_OFFER_CONDITION)
           .order('recorded_on', {
             ascending: false,
-          });
+          })
+          .limit(
+            discoverySignalSetIds.length *
+              CATALOG_DISCOVERY_PRICE_HISTORY_ROWS_PER_SET,
+          );
 
       if (priceHistoryError) {
         throw new Error('Unable to load catalog discovery signals.');

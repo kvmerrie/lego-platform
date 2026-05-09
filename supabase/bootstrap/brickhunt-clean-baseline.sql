@@ -197,6 +197,15 @@ on public.catalog_sets (status);
 create index if not exists catalog_sets_primary_theme_id_idx
 on public.catalog_sets (primary_theme_id);
 
+create index if not exists catalog_sets_theme_page_order_idx
+on public.catalog_sets (
+  primary_theme_id,
+  status,
+  release_year desc,
+  name asc,
+  set_id asc
+);
+
 create index if not exists catalog_sets_source_theme_id_idx
 on public.catalog_sets (source_theme_id);
 

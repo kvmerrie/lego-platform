@@ -1341,6 +1341,56 @@ describe('catalog effective data access web', () => {
     expect(themePage?.setCards.map((setCard) => setCard.id)).toEqual(['75399']);
   });
 
+  test('fetches only the requested page for large theme detail pages', async () => {
+    const catalogRows = Array.from({ length: 1001 }, (_, index) => {
+      const setNumber = String(70_000 + index);
+
+      return {
+        created_at: '2026-04-18T08:00:00.000Z',
+        image_url: `https://cdn.example.com/star-wars-${setNumber}.jpg`,
+        name: `Star Wars Set ${String(index).padStart(4, '0')}`,
+        piece_count: 100 + index,
+        primary_theme_id: 'theme:star-wars',
+        release_year: 2026,
+        set_id: setNumber,
+        slug: `star-wars-set-${setNumber}`,
+        source: 'rebrickable',
+        source_set_number: `${setNumber}-1`,
+        source_theme_id: 'rebrickable:158',
+        status: 'active',
+        updated_at: '2026-04-18T08:00:00.000Z',
+      };
+    });
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows,
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          is_public: true,
+          public_order: 1,
+          slug: 'star-wars',
+          status: 'active',
+        },
+      ],
+    });
+
+    const themePage = await getCatalogThemePageBySlug({
+      limit: 48,
+      offset: 48,
+      slug: 'star-wars',
+      supabaseClient,
+    });
+
+    expect(themePage?.themeSnapshot.setCount).toBe(1001);
+    expect(themePage?.setCards).toHaveLength(48);
+    expect(themePage?.setCards[0]?.id).toBe('70048');
+    expect(themePage?.setCards.at(-1)?.id).toBe('70095');
+  });
+
   test('loads catalog cards by id without a full catalog read', async () => {
     const listCanonicalCatalogSetsFn = vi.fn(async () => []);
     const supabaseClient = createCatalogSupabaseClientMock({
@@ -6275,10 +6325,11 @@ describe('catalog effective data access web', () => {
         revalidateSeconds: 300,
       },
       fetchImpl,
+      setIds: ['42172-1', '42172'],
     });
 
     expect(fetchImpl).toHaveBeenCalledWith(
-      'http://localhost:3333/api/v1/catalog/discovery-signals',
+      'http://localhost:3333/api/v1/catalog/discovery-signals?setIds=42172',
       expect.objectContaining({
         headers: {
           accept: 'application/json',
@@ -6300,7 +6351,7 @@ describe('catalog effective data access web', () => {
     });
   });
 
-  test('keeps runtime discovery signal API reads ISR-friendly by default when no cache options are provided', async () => {
+  test('skips runtime discovery signal API reads when no set ids are provided', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify([]), {
         headers: {
@@ -6314,8 +6365,26 @@ describe('catalog effective data access web', () => {
       fetchImpl,
     });
 
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  test('keeps scoped runtime discovery signal API reads ISR-friendly by default when no cache options are provided', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+
+    await listCatalogDiscoverySignalsBySetId({
+      fetchImpl,
+      setIds: ['75355'],
+    });
+
     expect(fetchImpl).toHaveBeenCalledWith(
-      'http://localhost:3333/api/v1/catalog/discovery-signals',
+      'http://localhost:3333/api/v1/catalog/discovery-signals?setIds=75355',
       expect.objectContaining({
         headers: {
           accept: 'application/json',
@@ -6411,9 +6480,11 @@ describe('catalog effective data access web', () => {
     ];
     const firstSignalMap = await listCatalogDiscoverySignalsBySetId({
       fetchImpl: firstFetchImpl,
+      setIds: ['42172', '10330'],
     });
     const secondSignalMap = await listCatalogDiscoverySignalsBySetId({
       fetchImpl: secondFetchImpl,
+      setIds: ['42172', '10330'],
     });
 
     const firstResult = rankCatalogComparisonDiscoverySetCards({

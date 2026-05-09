@@ -4478,14 +4478,28 @@ export async function listCatalogDiscoverySignalsBySetId({
   apiBaseUrl,
   cacheOptions,
   fetchImpl,
+  setIds,
 }: {
   apiBaseUrl?: string;
   cacheOptions?: CatalogApiReadCacheOptions;
   fetchImpl?: typeof fetch;
+  setIds?: readonly string[];
 } = {}): Promise<Map<string, CatalogDiscoverySignal>> {
+  const scopedSetIds = [
+    ...new Set(
+      (setIds ?? [])
+        .map((setId) => getCanonicalCatalogSetId(setId))
+        .filter((setId) => setId.length > 0),
+    ),
+  ];
+
+  if (!scopedSetIds.length) {
+    return new Map();
+  }
+
   try {
     const response = await (fetchImpl ?? fetch)(
-      `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogDiscoverySignalsApiPath()}`,
+      `${apiBaseUrl ?? getCatalogApiBaseUrl()}${buildCatalogDiscoverySignalsApiPath(scopedSetIds)}`,
       {
         headers: {
           accept: 'application/json',

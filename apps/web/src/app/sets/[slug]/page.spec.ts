@@ -11,6 +11,10 @@ const setPageMocks = vi.hoisted(() => ({
   listCatalogSetSlugs: vi.fn(),
   listCatalogSimilarSetCards: vi.fn(),
   listPublishedArticlesByPrimarySetNumber: vi.fn(),
+  rankCatalogSimilarSetCards: vi.fn(
+    ({ limit, setCards }: { limit?: number; setCards: readonly unknown[] }) =>
+      setCards.slice(0, limit ?? setCards.length),
+  ),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -28,6 +32,7 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
   listCatalogSetLiveOffersBySetId: setPageMocks.listCatalogSetLiveOffersBySetId,
   listCatalogSetSlugs: setPageMocks.listCatalogSetSlugs,
   listCatalogSimilarSetCards: setPageMocks.listCatalogSimilarSetCards,
+  rankCatalogSimilarSetCards: setPageMocks.rankCatalogSimilarSetCards,
 }));
 
 vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
@@ -551,6 +556,15 @@ describe('set detail page JSON-LD', () => {
     expect(html).toContain(
       'https://www.brickhunt.nl/sets/lord-of-the-rings-rivendell-10316',
     );
+    expect(
+      setPageMocks.listCatalogDiscoverySignalsBySetId,
+    ).toHaveBeenCalledWith({
+      cacheOptions: {
+        revalidateSeconds: 21_600,
+        tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316'],
+      },
+      setIds: ['10316'],
+    });
   });
 
   it('renders without offer schema when merchant availability fails', async () => {

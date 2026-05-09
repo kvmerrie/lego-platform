@@ -2,6 +2,7 @@ import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
 import { buildCurrentSetCardPriceContext } from './lib/current-set-card-price-context';
 import styles from './page.module.css';
+import React from 'react';
 import {
   CatalogFeatureSetList,
   type CatalogFeatureSetListItem,
@@ -357,7 +358,6 @@ export default async function HomePage() {
   const queryMode = await getEditorialQueryMode();
   const [
     homepagePage,
-    catalogDiscoverySignalBySetId,
     allCatalogSetCards,
     homepageThemeDirectoryItems,
     homepageThemeSpotlightItems,
@@ -365,20 +365,10 @@ export default async function HomePage() {
     getHomepagePage({
       mode: queryMode,
     }),
-    listCatalogDiscoverySignalsBySetId({
-      cacheOptions: {
-        revalidateSeconds: HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS,
-        tags: [cacheTags.homepage()],
-      },
-    }),
     listCatalogSetCards({ limit: 240 }),
     listHomepageThemeDirectoryItems(),
     listHomepageThemeSpotlightItems(),
   ]);
-  const getCatalogDiscoverySignalFn =
-    catalogDiscoverySignalBySetId.size > 0
-      ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
-      : undefined;
   const commerceRailRotationSeed = 0;
   const currentOfferSummaryBySetId =
     await listCachedCatalogCurrentOfferSummaries({
@@ -396,6 +386,21 @@ export default async function HomePage() {
   const commerceCandidateSetCards = await listCatalogSetCardsByIds({
     canonicalIds: [...currentOfferSummaryBySetId.keys()],
   });
+  const catalogDiscoverySignalBySetId =
+    await listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS,
+        tags: [cacheTags.homepage()],
+      },
+      setIds: getUniqueCatalogSetIds([
+        allCatalogSetCards,
+        commerceCandidateSetCards,
+      ]),
+    });
+  const getCatalogDiscoverySignalFn =
+    catalogDiscoverySignalBySetId.size > 0
+      ? (setId: string) => catalogDiscoverySignalBySetId.get(setId)
+      : undefined;
   const homepageBestDealCandidateSetCards = getCatalogDiscoverySignalFn
     ? await listDiscoverBestDealSetCards({
         getCatalogDiscoverySignalFn,

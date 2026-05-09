@@ -157,17 +157,16 @@ function toRenderableCommerceSetCards({
 }
 
 async function buildCommerceDiagnostics(page: CommerceDiagnosticsPage) {
-  const [catalogDiscoverySignalBySetId, currentOfferSummaryBySetId] =
-    await Promise.all([
-      listCatalogDiscoverySignalsBySetId({
-        cacheOptions: {
-          revalidateSeconds: 0,
-        },
-      }),
-      listCatalogCurrentOfferSummaries({
-        limit: COMMERCE_DIAGNOSTICS_LIMIT,
-      }),
-    ]);
+  const currentOfferSummaryBySetId = await listCatalogCurrentOfferSummaries({
+    limit: COMMERCE_DIAGNOSTICS_LIMIT,
+  });
+  const catalogDiscoverySignalBySetId =
+    await listCatalogDiscoverySignalsBySetId({
+      cacheOptions: {
+        revalidateSeconds: 0,
+      },
+      setIds: [...currentOfferSummaryBySetId.keys()],
+    });
   const [commerceCandidateSetCards, runtimeDiagnostics] = await Promise.all([
     listCatalogSetCardsByIds({
       canonicalIds: [...currentOfferSummaryBySetId.keys()],
