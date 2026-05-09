@@ -100,7 +100,7 @@ export function createApiV1Routes({
   getPublishedArticleBySlug: getPublishedArticleBySlugDependency = (slug) =>
     getPublishedArticleBySlug(slug),
   listPublishedArticles: listPublishedArticlesDependency = () =>
-    listPublishedArticles(),
+    listPublishedArticles({ limit: 100 }),
   listCatalogSetLiveOffersBySetId: listCatalogSetLiveOffersBySetIdDependency = (
     setId,
   ) => listCatalogSetLiveOffersBySetIdServer({ setId }),

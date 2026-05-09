@@ -142,7 +142,10 @@ export default async function ThemePage({
       },
       setIds: themePage.setCards.map((setCard) => setCard.id),
     }),
-    listPublishedArticles(),
+    listPublishedArticles({
+      limit: THEME_RELATED_ARTICLE_LIMIT,
+      themeQuery: slug,
+    }),
   ]);
 
   const pageCount = Math.max(

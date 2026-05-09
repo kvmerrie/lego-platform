@@ -57,9 +57,9 @@ describe('articles index route', () => {
     expect(source).not.toContain('useEffect');
     expect(source).not.toContain('useSWR');
     expect(source).not.toContain('fetch(');
-    expect(source).toContain('listPublishedArticles()');
+    expect(source).toContain('listPublishedArticles({');
     expect(source).toContain('getPopularArticles({');
-    expect(source).toContain('revalidate = 60');
+    expect(source).toContain('revalidate = 21_600');
   });
 
   it('uses the shared editorial hero instead of duplicate page hero CSS', async () => {

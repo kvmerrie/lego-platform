@@ -106,7 +106,10 @@ export async function generateMetadata({
   params: Promise<{ theme: string }>;
 }): Promise<Metadata> {
   const { theme } = await params;
-  const articles = await listPublishedArticles();
+  const articles = await listPublishedArticles({
+    limit: 48,
+    themeQuery: theme,
+  });
   const themeArticle = articles.find(
     (article) => getArticleThemeSlug(article.theme) === theme,
   );
@@ -138,7 +141,10 @@ export default async function ArticleThemePage({
   params: Promise<{ theme: string }>;
 }) {
   const { theme } = await params;
-  const articles = await listPublishedArticles();
+  const articles = await listPublishedArticles({
+    limit: 48,
+    themeQuery: theme,
+  });
   const themeArticles = sortArticlesByArticleDateDesc(
     articles.filter((article) => getArticleThemeSlug(article.theme) === theme),
   );

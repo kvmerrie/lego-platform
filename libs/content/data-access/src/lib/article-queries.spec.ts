@@ -33,32 +33,190 @@ function createArticleRow(
 function createArticlesSupabaseClient(
   rows: readonly ContentArticleSupabaseRow[],
 ) {
-  return {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn((fieldName: string, value: string) => {
-          const filteredRows =
-            fieldName === 'status'
-              ? rows.filter((row) => row.status === value)
-              : rows;
+  const calls: Array<readonly unknown[]> = [];
 
-          return {
-            data: filteredRows,
-            error: null,
-            in: vi.fn(
-              async (inFieldName: string, values: readonly string[]) => ({
-                data:
-                  inFieldName === 'slug'
-                    ? filteredRows.filter((row) => values.includes(row.slug))
-                    : filteredRows,
-                error: null,
-              }),
-            ),
-          };
-        }),
-      })),
-    })),
+  function createBuilder(sourceRows: readonly ContentArticleSupabaseRow[]) {
+    const filters: Array<
+      | { type: 'eq'; fieldName: string; value: string }
+      | { type: 'ilike'; fieldName: string; value: string }
+      | { type: 'in'; fieldName: string; values: readonly string[] }
+      | { type: 'notIn'; fieldName: string; values: readonly string[] }
+      | { type: 'or'; value: string }
+      | { type: 'order'; fieldName: string; ascending: boolean }
+      | { type: 'range'; from: number; to: number }
+    > = [];
+    const builder = {
+      eq: vi.fn((fieldName: string, value: string) => {
+        calls.push(['eq', fieldName, value]);
+        filters.push({ fieldName, type: 'eq', value });
+
+        return builder;
+      }),
+      ilike: vi.fn((fieldName: string, value: string) => {
+        calls.push(['ilike', fieldName, value]);
+        filters.push({ fieldName, type: 'ilike', value });
+
+        return builder;
+      }),
+      in: vi.fn((fieldName: string, values: readonly string[]) => {
+        calls.push(['in', fieldName, values]);
+        filters.push({ fieldName, type: 'in', values });
+
+        return builder;
+      }),
+      not: vi.fn((fieldName: string, operator: string, value: string) => {
+        calls.push(['not', fieldName, operator, value]);
+
+        if (operator === 'in') {
+          filters.push({
+            fieldName,
+            type: 'notIn',
+            values: value
+              .replace(/^\(/u, '')
+              .replace(/\)$/u, '')
+              .split(',')
+              .filter(Boolean),
+          });
+        }
+
+        return builder;
+      }),
+      or: vi.fn((value: string) => {
+        calls.push(['or', value]);
+        filters.push({ type: 'or', value });
+
+        return builder;
+      }),
+      order: vi.fn((fieldName: string, options: { ascending: boolean }) => {
+        calls.push(['order', fieldName, options]);
+        filters.push({
+          ascending: options.ascending,
+          fieldName,
+          type: 'order',
+        });
+
+        return builder;
+      }),
+      range: vi.fn((from: number, to: number) => {
+        calls.push(['range', from, to]);
+        filters.push({ from, to, type: 'range' });
+
+        return builder;
+      }),
+      select: vi.fn((fields: string) => {
+        calls.push(['select', fields]);
+
+        return builder;
+      }),
+      then<TResult1 = { data: ContentArticleSupabaseRow[]; error: null }>(
+        onFulfilled?:
+          | ((value: {
+              data: ContentArticleSupabaseRow[];
+              error: null;
+            }) => TResult1 | PromiseLike<TResult1>)
+          | null,
+      ) {
+        const filteredRows = filters.reduce<
+          readonly ContentArticleSupabaseRow[]
+        >((resultRows, filter) => {
+          if (filter.type === 'eq') {
+            return resultRows.filter((row) => {
+              if (filter.fieldName === 'status') {
+                return row.status === filter.value;
+              }
+
+              return (
+                row[filter.fieldName as keyof ContentArticleSupabaseRow] ===
+                filter.value
+              );
+            });
+          }
+
+          if (filter.type === 'in') {
+            return filter.fieldName === 'slug'
+              ? resultRows.filter((row) => filter.values.includes(row.slug))
+              : resultRows;
+          }
+
+          if (filter.type === 'notIn') {
+            return filter.fieldName === 'slug'
+              ? resultRows.filter((row) => !filter.values.includes(row.slug))
+              : resultRows;
+          }
+
+          if (filter.type === 'ilike') {
+            const needle = filter.value
+              .replaceAll('%', '')
+              .replaceAll('\\_', '_')
+              .replaceAll('\\%', '%')
+              .toLowerCase();
+
+            if (filter.fieldName === 'frontmatter->>theme') {
+              return resultRows.filter((row) =>
+                String(row.frontmatter?.['theme'] ?? '')
+                  .toLowerCase()
+                  .includes(needle),
+              );
+            }
+
+            return resultRows;
+          }
+
+          if (filter.type === 'or') {
+            const needles = filter.value.split(',').map((entry) =>
+              entry
+                .replace(/^mdx\.ilike\.%/u, '')
+                .replace(/%$/u, '')
+                .toLowerCase(),
+            );
+
+            return resultRows.filter((row) =>
+              needles.some((needle) => row.mdx.toLowerCase().includes(needle)),
+            );
+          }
+
+          if (filter.type === 'order') {
+            const sortedRows = [...resultRows].sort((left, right) => {
+              const leftValue =
+                filter.fieldName === 'frontmatter->>date'
+                  ? left.frontmatter?.['date']
+                  : left[filter.fieldName as keyof ContentArticleSupabaseRow];
+              const rightValue =
+                filter.fieldName === 'frontmatter->>date'
+                  ? right.frontmatter?.['date']
+                  : right[filter.fieldName as keyof ContentArticleSupabaseRow];
+
+              return String(leftValue ?? '').localeCompare(
+                String(rightValue ?? ''),
+              );
+            });
+
+            return filter.ascending ? sortedRows : sortedRows.reverse();
+          }
+
+          if (filter.type === 'range') {
+            return resultRows.slice(filter.from, filter.to + 1);
+          }
+
+          return resultRows;
+        }, sourceRows);
+
+        return Promise.resolve({
+          data: [...filteredRows],
+          error: null,
+        }).then(onFulfilled ?? undefined);
+      },
+    };
+
+    return builder;
+  }
+
+  const client = {
+    calls,
+    from: vi.fn(() => createBuilder(rows)),
   };
+
+  return client;
 }
 
 const uploadedHeroImage =
@@ -351,34 +509,116 @@ describe('content article queries', () => {
   });
 
   test('sorts Supabase articles by article date instead of publish timestamp', async () => {
+    const supabaseClient = createArticlesSupabaseClient([
+      createArticleRow({
+        created_at: '2026-05-03T11:00:00.000Z',
+        frontmatter: {
+          date: '2026-04-15',
+          description: 'Eerder gepubliceerd, maar ouder nieuws.',
+        },
+        slug: 'april-nieuws',
+        title: 'April nieuws',
+      }),
+      createArticleRow({
+        created_at: '2026-05-02T09:00:00.000Z',
+        frontmatter: {
+          date: '2026-05-01',
+          description: 'Historisch artikel met latere artikeldatum.',
+        },
+        published_at: '2026-05-04T09:00:00.000Z',
+        slug: 'mei-nieuws',
+        title: 'Mei nieuws',
+      }),
+    ]);
     const result = await listPublishedArticles({
-      supabaseClient: createArticlesSupabaseClient([
-        createArticleRow({
-          created_at: '2026-05-03T11:00:00.000Z',
-          frontmatter: {
-            date: '2026-04-15',
-            description: 'Eerder gepubliceerd, maar ouder nieuws.',
-          },
-          slug: 'april-nieuws',
-          title: 'April nieuws',
-        }),
-        createArticleRow({
-          created_at: '2026-05-02T09:00:00.000Z',
-          frontmatter: {
-            date: '2026-05-01',
-            description: 'Historisch artikel met latere artikeldatum.',
-          },
-          slug: 'mei-nieuws',
-          title: 'Mei nieuws',
-        }),
+      limit: 1,
+      supabaseClient,
+    });
+
+    expect(result.map((article) => article.slug)).toEqual(['mei-nieuws']);
+    expect(result[0]?.date).toBe('2026-05-01');
+    expect(supabaseClient.calls).toEqual(
+      expect.arrayContaining([
+        ['eq', 'status', 'published'],
+        ['order', 'frontmatter->>date', { ascending: false }],
+        ['order', 'published_at', { ascending: false }],
+        ['range', 0, 0],
       ]),
+    );
+  });
+
+  test('filters themed article lists in Supabase before parsing rows', async () => {
+    const supabaseClient = createArticlesSupabaseClient([
+      createArticleRow({
+        frontmatter: {
+          date: '2026-05-03',
+          description: 'Star Wars nieuws.',
+          theme: 'Star Wars',
+        },
+        slug: 'star-wars-nieuws',
+        title: 'Star Wars nieuws',
+      }),
+      createArticleRow({
+        frontmatter: {
+          date: '2026-05-02',
+          description: 'Technic nieuws.',
+          theme: 'Technic',
+        },
+        slug: 'technic-nieuws',
+        title: 'Technic nieuws',
+      }),
+    ]);
+
+    const result = await listPublishedArticles({
+      limit: 4,
+      supabaseClient,
+      themeQuery: 'star-wars',
+    });
+
+    expect(result.map((article) => article.slug)).toEqual(['star-wars-nieuws']);
+    expect(supabaseClient.calls).toContainEqual([
+      'ilike',
+      'frontmatter->>theme',
+      '%star wars%',
+    ]);
+    expect(supabaseClient.calls).toContainEqual(['range', 0, 3]);
+  });
+
+  test('queries primary-set article candidates in Supabase before exact matching', async () => {
+    const supabaseClient = createArticlesSupabaseClient([
+      createArticleRow({
+        frontmatter: {
+          date: '2026-05-04',
+          description: 'Deze hoort bij de Spiny Shell.',
+        },
+        mdx: '<FeaturedSet setNumber="40787" />',
+        slug: 'spiny-shell-update',
+        title: 'Spiny Shell update',
+      }),
+      createArticleRow({
+        frontmatter: {
+          date: '2026-05-03',
+          description: 'Zelfde thema, andere set.',
+        },
+        mdx: '<FeaturedSet setNumber="72037" />',
+        slug: 'mario-kart-andere-set',
+        title: 'Andere Mario Kart set',
+      }),
+    ]);
+    const result = await listPublishedArticlesByPrimarySetNumber({
+      limit: 1,
+      setNumber: '40787-1',
+      supabaseClient,
     });
 
     expect(result.map((article) => article.slug)).toEqual([
-      'mei-nieuws',
-      'april-nieuws',
+      'spiny-shell-update',
     ]);
-    expect(result[0]?.date).toBe('2026-05-01');
+    expect(supabaseClient.calls).toContainEqual([
+      'or',
+      'mdx.ilike.%40787%,mdx.ilike.%40787-1%',
+    ]);
+    expect(supabaseClient.calls).toContainEqual(['range', 0, 23]);
   });
 
   test('prefers non-empty DB frontmatter heroImage over empty MDX frontmatter', async () => {

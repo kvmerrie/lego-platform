@@ -188,6 +188,14 @@ on public.catalog_source_themes (parent_source_theme_id);
 create index if not exists catalog_themes_status_idx
 on public.catalog_themes (status);
 
+create index if not exists catalog_themes_public_navigation_idx
+on public.catalog_themes (
+  status,
+  is_public,
+  public_order,
+  display_name
+);
+
 create index if not exists catalog_theme_mappings_primary_theme_id_idx
 on public.catalog_theme_mappings (primary_theme_id);
 

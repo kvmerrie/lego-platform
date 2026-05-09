@@ -113,7 +113,9 @@ async function resolveArticleListItemImage(
 
 export default async function ArticlesIndexPage() {
   const [publishedArticles, popularArticles] = await Promise.all([
-    listPublishedArticles(),
+    listPublishedArticles({
+      limit: 48,
+    }),
     getPopularArticles({
       days: 7,
       limit: 6,

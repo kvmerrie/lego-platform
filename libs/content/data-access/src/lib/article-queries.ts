@@ -26,6 +26,8 @@ const ARTICLE_ROW_SELECT_FIELDS =
 const ARTICLE_PREVIEW_ROW_SELECT_FIELDS =
   'created_at, expires_at, frontmatter, id, mdx';
 const ARTICLE_UPDATED_AT_DISPLAY_TOLERANCE_MS = 60_000;
+const DEFAULT_RELATED_ARTICLE_CANDIDATE_LIMIT = 24;
+const MAX_PUBLIC_ARTICLE_READ_LIMIT = 100;
 
 let contentArticlesSupabaseAdminClient: SupabaseClient | undefined;
 let contentArticlesSupabasePublicClient: SupabaseClient | undefined;
@@ -65,6 +67,15 @@ export interface ContentArticleQueryOptions {
   supabaseClient?: ContentArticleSupabaseClient;
 }
 
+interface PublishedArticleRowQueryOptions extends ContentArticleQueryOptions {
+  excludeSlugs?: readonly string[];
+  limit?: number;
+  mdxSearchTerms?: readonly string[];
+  offset?: number;
+  slugs?: readonly string[];
+  themeQuery?: string;
+}
+
 interface ParsedContentArticleFrontmatter {
   authorName?: string;
   cardImage?: string;
@@ -94,6 +105,54 @@ function isNonEmptyString(value: unknown): value is string {
 
 function normalizeOptionalString(value: unknown): string | undefined {
   return isNonEmptyString(value) ? value.trim() : undefined;
+}
+
+function normalizeArticleReadLimit(limit?: number): number | undefined {
+  if (typeof limit !== 'number') {
+    return undefined;
+  }
+
+  if (!Number.isFinite(limit) || limit <= 0) {
+    return 0;
+  }
+
+  return Math.min(MAX_PUBLIC_ARTICLE_READ_LIMIT, Math.floor(limit));
+}
+
+function normalizeArticleReadOffset(offset?: number): number {
+  return typeof offset === 'number' && Number.isFinite(offset) && offset > 0
+    ? Math.floor(offset)
+    : 0;
+}
+
+function normalizeArticleSearchTerm(value: string): string {
+  return value.trim().replace(/\s+/gu, ' ');
+}
+
+function escapeArticleSupabaseSearchTerm(value: string): string {
+  return normalizeArticleSearchTerm(value).replace(/[%_]/gu, (match) =>
+    match === '%' ? '\\%' : '\\_',
+  );
+}
+
+function toArticleThemeSearchTerm(themeQuery?: string): string | undefined {
+  const normalizedThemeQuery = normalizeArticleSearchTerm(themeQuery ?? '');
+
+  if (!normalizedThemeQuery) {
+    return undefined;
+  }
+
+  return normalizedThemeQuery.replace(/-/gu, ' ');
+}
+
+function toPrimarySetArticleSearchTerms(setNumber: string): string[] {
+  const normalizedSetNumber = normalizeContentArticleSetNumber(setNumber);
+
+  if (!normalizedSetNumber) {
+    return [];
+  }
+
+  return [...new Set([normalizedSetNumber, `${normalizedSetNumber}-1`])];
 }
 
 function resolveMeaningfulArticleUpdatedAt({
@@ -503,12 +562,16 @@ function parseContentArticlePreviewSupabaseRow({
 }
 
 async function listPublishedContentArticleSupabaseRows({
+  excludeSlugs,
+  limit,
+  mdxSearchTerms,
+  offset,
   slugs,
   supabaseClient,
-}: {
-  slugs?: readonly string[];
-  supabaseClient?: ContentArticleSupabaseClient;
-}): Promise<readonly ContentArticleSupabaseRow[]> {
+  themeQuery,
+}: PublishedArticleRowQueryOptions): Promise<
+  readonly ContentArticleSupabaseRow[]
+> {
   const activeSupabaseClient =
     supabaseClient ?? getContentArticlesSupabaseReadClient();
 
@@ -516,13 +579,55 @@ async function listPublishedContentArticleSupabaseRows({
     return [];
   }
 
+  const safeLimit = normalizeArticleReadLimit(limit);
+  const safeOffset = normalizeArticleReadOffset(offset);
+
+  if (safeLimit === 0) {
+    return [];
+  }
+
   let query = activeSupabaseClient
     .from(ARTICLES_TABLE_NAME)
     .select(ARTICLE_ROW_SELECT_FIELDS)
-    .eq('status', 'published');
+    .eq('status', 'published')
+    .order('frontmatter->>date', { ascending: false })
+    .order('published_at', { ascending: false });
 
   if (slugs?.length) {
     query = query.in('slug', [...new Set(slugs)]);
+  }
+
+  if (excludeSlugs?.length) {
+    query = query.not(
+      'slug',
+      'in',
+      `(${[...new Set(excludeSlugs)].join(',')})`,
+    );
+  }
+
+  const themeSearchTerm = toArticleThemeSearchTerm(themeQuery);
+
+  if (themeSearchTerm) {
+    query = query.ilike(
+      'frontmatter->>theme',
+      `%${escapeArticleSupabaseSearchTerm(themeSearchTerm)}%`,
+    );
+  }
+
+  const mdxTerms = [
+    ...new Set(
+      (mdxSearchTerms ?? [])
+        .map(escapeArticleSupabaseSearchTerm)
+        .filter(Boolean),
+    ),
+  ];
+
+  if (mdxTerms.length) {
+    query = query.or(mdxTerms.map((term) => `mdx.ilike.%${term}%`).join(','));
+  }
+
+  if (typeof safeLimit === 'number') {
+    query = query.range(safeOffset, safeOffset + safeLimit - 1);
   }
 
   const { data, error } = await query;
@@ -558,13 +663,26 @@ function toContentArticleListItem(
 }
 
 export async function listPublishedArticles({
+  excludeSlugs,
   limit,
+  mdxSearchTerms,
+  offset,
   supabaseClient,
+  themeQuery,
 }: ContentArticleQueryOptions & {
+  excludeSlugs?: readonly string[];
   limit?: number;
+  mdxSearchTerms?: readonly string[];
+  offset?: number;
+  themeQuery?: string;
 } = {}): Promise<readonly ContentArticleListItem[]> {
   const supabaseRows = await listPublishedContentArticleSupabaseRows({
+    excludeSlugs,
+    limit,
+    mdxSearchTerms,
+    offset,
     supabaseClient,
+    themeQuery,
   });
   const publishedArticles = sortContentArticlesByDateDesc(
     supabaseRows.map((row) => parseContentArticleSupabaseRow({ row })),
@@ -573,7 +691,7 @@ export async function listPublishedArticles({
     .map(toContentArticleListItem);
 
   return typeof limit === 'number'
-    ? publishedArticles.slice(0, limit)
+    ? publishedArticles.slice(0, Math.max(0, limit))
     : publishedArticles;
 }
 
@@ -600,6 +718,11 @@ export async function listPublishedArticlesByPrimarySetNumber({
   }
 
   const articles = await listPublishedArticles({
+    limit: Math.max(
+      DEFAULT_RELATED_ARTICLE_CANDIDATE_LIMIT,
+      Math.max(0, limit) * 6,
+    ),
+    mdxSearchTerms: toPrimarySetArticleSearchTerms(normalizedSetNumber),
     supabaseClient,
   });
 

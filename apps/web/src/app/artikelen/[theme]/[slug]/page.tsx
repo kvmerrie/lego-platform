@@ -85,7 +85,11 @@ export default async function ArticleDetailPage({
   const { slug, theme } = await params;
   const [contentArticle, publishedArticles] = await Promise.all([
     getArticleBySlug(slug),
-    listPublishedArticles(),
+    listPublishedArticles({
+      excludeSlugs: [slug],
+      limit: 3,
+      themeQuery: theme,
+    }),
   ]);
 
   const articleThemeSlug = getArticleThemeSlug(contentArticle?.theme);
