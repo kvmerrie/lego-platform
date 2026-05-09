@@ -202,13 +202,32 @@ describe('catalog snapshot helpers', () => {
         'Creator',
         'Dreamzzz',
         'Duplo',
+        'Editions',
+        'Fortnite',
         'Friends',
+        "Gabby's Dollhouse",
         'Minecraft',
+        'Minifigures',
         'Nike',
+        'ONE PIECE',
         'Pokémon',
         'Seasonal',
+        'Sonic the Hedgehog',
+        'Wicked',
       ].every((themeName) => Boolean(getCatalogThemeVisual(themeName))),
     ).toBe(true);
+    expect(getCatalogThemeVisual('Editions')).toEqual({
+      backgroundColor: '#e0b84f',
+      textColor: '#171a22',
+    });
+    expect(getCatalogThemeVisual('LEGO® Fortnite®')).toEqual({
+      backgroundColor: '#6f4bd8',
+      textColor: '#ffffff',
+    });
+    expect(getCatalogThemeVisual('ONE PIECE')).toEqual({
+      backgroundColor: '#d84f45',
+      textColor: '#ffffff',
+    });
     expect(getCatalogThemeVisual('Icons')?.imageUrl).toContain('10326-1');
     expect(getCatalogThemeVisual('Icons')?.imageUrl).not.toContain('10316-1');
     expect(getCatalogThemeVisual('Lord of the Rings')).toEqual({

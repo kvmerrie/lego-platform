@@ -102,11 +102,17 @@ function createOfferSeedRows(count: number) {
 }
 
 function createPromotionSupabaseClient({
+  rpcResult = { data: null, error: null },
   rowsByTable,
 }: {
+  rpcResult?: {
+    data: unknown;
+    error: { message: string } | null;
+  };
   rowsByTable: Record<string, readonly Record<string, unknown>[]>;
 }) {
   const upsertByTable = new Map<string, ReturnType<typeof vi.fn>>();
+  const rpc = vi.fn().mockResolvedValue(rpcResult);
   const from = vi.fn((table: string) => {
     const rows = rowsByTable[table] ?? [];
     const upsert = vi.fn().mockResolvedValue({
@@ -123,6 +129,7 @@ function createPromotionSupabaseClient({
 
   return {
     from,
+    rpc,
     upsertByTable,
   };
 }
@@ -260,6 +267,10 @@ describe('catalog promotion server', () => {
       updatedCount: 1,
       upsertedCount: 1,
     });
+    expect(productionClient.rpc).toHaveBeenCalledTimes(1);
+    expect(productionClient.rpc).toHaveBeenCalledWith(
+      'refresh_catalog_theme_summaries',
+    );
     expect(
       productionClient.upsertByTable.get('commerce_merchants'),
     ).toHaveBeenCalledWith(
@@ -290,6 +301,65 @@ describe('catalog promotion server', () => {
       {
         onConflict: 'set_id,merchant_id',
       },
+    );
+  });
+
+  test('refreshes catalog theme summaries once after successful catalog promotion writes', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Technic',
+            id: 'technic',
+            is_public: true,
+            public_accent_color: null,
+            public_description: null,
+            public_display_name: null,
+            public_image_url: null,
+            public_logo_url: null,
+            public_order: 1,
+            slug: 'technic',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: 'https://cdn.example.com/42177.jpg',
+            name: 'Mercedes-Benz G 500 Professional Line',
+            piece_count: 2891,
+            primary_theme_id: 'technic',
+            release_year: 2024,
+            set_id: '42177',
+            slug: 'mercedes-benz-g-500-professional-line-42177',
+            source: 'rebrickable',
+            source_set_number: '42177-1',
+            source_theme_id: 'rebrickable-theme-technic',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+    });
+
+    expect(productionClient.rpc).toHaveBeenCalledTimes(1);
+    expect(productionClient.rpc).toHaveBeenCalledWith(
+      'refresh_catalog_theme_summaries',
     );
   });
 
@@ -1370,7 +1440,7 @@ describe('catalog promotion server', () => {
     );
   });
 
-  test('validates catalog theme required fields before any promotion writes', async () => {
+  test('defaults missing catalog theme status before promotion writes', async () => {
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {
         catalog_source_themes: [],
@@ -1382,8 +1452,17 @@ describe('catalog promotion server', () => {
             is_public: false,
             public_order: null,
             slug: 'advent',
-            status: '',
             updated_at: '2026-04-21T08:00:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:05:00.000Z',
+            display_name: 'City',
+            id: 'theme:city',
+            is_public: true,
+            public_order: 20,
+            slug: 'city',
+            status: null,
+            updated_at: '2026-04-21T08:05:00.000Z',
           },
         ],
         catalog_theme_mappings: [],
@@ -1397,23 +1476,44 @@ describe('catalog promotion server', () => {
       rowsByTable: {},
     });
 
-    await expect(
-      promoteCatalogFromStagingToProduction({
-        createProductionSupabaseClient: () => productionClient as never,
-        createStagingSupabaseClient: () => stagingClient as never,
-        now: vi
-          .fn()
-          .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
-          .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
-      }),
-    ).rejects.toThrow(
-      'Unable to promote catalog_themes. Required column status is missing',
-    );
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
     expect(
-      Array.from(productionClient.upsertByTable.values()).some(
-        (upsert) => upsert.mock.calls.length > 0,
-      ),
-    ).toBe(false);
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          created_at: '2026-04-21T08:00:00.000Z',
+          display_name: 'Advent',
+          id: 'theme:advent',
+          is_public: false,
+          public_order: null,
+          slug: 'advent',
+          status: 'active',
+          updated_at: '2026-04-21T08:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-21T08:05:00.000Z',
+          display_name: 'City',
+          id: 'theme:city',
+          is_public: true,
+          public_order: 20,
+          slug: 'city',
+          status: 'active',
+          updated_at: '2026-04-21T08:05:00.000Z',
+        },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
   });
 
   test('paginates staging catalog set and offer seed reads beyond row 1000', async () => {

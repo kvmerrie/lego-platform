@@ -19,7 +19,7 @@ const TARGET_COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const TARGET_COMMERCE_BENCHMARK_SETS_TABLE = 'commerce_benchmark_sets';
 const TARGET_COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 
-type CatalogBootstrapSupabaseClient = Pick<SupabaseClient, 'from'>;
+type CatalogBootstrapSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
 const CATALOG_BOOTSTRAP_PAGE_SIZE = 1000;
 
 interface CatalogBootstrapSetRow {
@@ -921,6 +921,20 @@ async function upsertBootstrapRows<TRow extends Record<string, unknown>>({
   };
 }
 
+async function refreshCatalogThemeSummaries({
+  supabaseClient,
+}: {
+  supabaseClient: CatalogBootstrapSupabaseClient;
+}): Promise<void> {
+  const { error } = await supabaseClient.rpc('refresh_catalog_theme_summaries');
+
+  if (error) {
+    throw new Error(
+      `Unable to refresh catalog theme summaries after clean bootstrap import. ${JSON.stringify(error)}`,
+    );
+  }
+}
+
 export async function importCatalogCleanBootstrapPayload({
   allowPartial = false,
   payload,
@@ -978,6 +992,19 @@ export async function importCatalogCleanBootstrapPayload({
       table: TARGET_COMMERCE_OFFER_SEEDS_TABLE,
     }),
   ] satisfies CatalogCleanBootstrapImportStepSummary[];
+
+  const wroteSummaryBackedCatalogRows = steps.some(
+    (step) =>
+      (step.table === TARGET_CATALOG_THEMES_TABLE ||
+        step.table === TARGET_CATALOG_SETS_TABLE) &&
+      step.inputCount > 0,
+  );
+
+  if (wroteSummaryBackedCatalogRows) {
+    await refreshCatalogThemeSummaries({
+      supabaseClient,
+    });
+  }
 
   return {
     steps,

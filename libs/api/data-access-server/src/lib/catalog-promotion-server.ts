@@ -71,7 +71,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
   ],
 };
 
-type CatalogPromotionSupabaseClient = Pick<SupabaseClient, 'from'>;
+type CatalogPromotionSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
 
 interface CatalogSourceThemeRow {
   created_at: string;
@@ -365,6 +365,7 @@ function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
         ? theme.public_order
         : null,
     slug: normalizedSlug,
+    status: readOptionalPromotionString(theme.status) ?? 'active',
   };
 }
 
@@ -740,6 +741,20 @@ async function upsertRows<TRow>({
     updatedCount,
     upsertedCount: rows.length,
   };
+}
+
+async function refreshCatalogThemeSummaries({
+  supabaseClient,
+}: {
+  supabaseClient: CatalogPromotionSupabaseClient;
+}): Promise<void> {
+  const { error } = await supabaseClient.rpc('refresh_catalog_theme_summaries');
+
+  if (error) {
+    throw new Error(
+      `Unable to refresh catalog theme summaries after catalog promotion. ${JSON.stringify(error)}`,
+    );
+  }
 }
 
 async function listProductionMerchants({
@@ -1217,6 +1232,15 @@ export async function promoteCatalogFromStagingToProduction({
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SETS_TABLE,
     });
+
+    if (
+      tables.catalog_themes.upsertedCount > 0 ||
+      tables.catalog_sets.upsertedCount > 0
+    ) {
+      await refreshCatalogThemeSummaries({
+        supabaseClient: productionSupabaseClient,
+      });
+    }
 
     tables.commerce_merchants = await upsertMerchantsBySlug({
       plan: merchantPromotionPlan,

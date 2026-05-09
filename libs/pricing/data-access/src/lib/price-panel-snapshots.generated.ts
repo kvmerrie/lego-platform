@@ -923,20 +923,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
-  },
-  {
-    "setId": "42213",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 4895,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T17:56:27.641Z"
   },
   {
     "setId": "42214",

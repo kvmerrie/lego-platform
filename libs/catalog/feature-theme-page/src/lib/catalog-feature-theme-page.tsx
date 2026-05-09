@@ -85,7 +85,7 @@ export function CatalogFeatureThemePage({
   const themeSignatureSet = themeSnapshot.signatureSet;
   const dealSectionId = 'theme-deals';
   const browseSectionId = 'theme-browse';
-  const themeVisual = getCatalogThemeVisual(themeName);
+  const themeVisual = themePage.visual ?? getCatalogThemeVisual(themeName);
   const themeHeroButtonSurface = getCatalogThemeSurfaceTone(themeName);
   const normalizedCurrentPage = Math.max(1, Math.floor(currentPage));
   const normalizedPageSize =

@@ -37,7 +37,7 @@ const EURO_CURRENCY_CODE = 'EUR';
 const NEW_OFFER_CONDITION = 'new';
 const CATALOG_DISCOVERY_PRICE_HISTORY_ROWS_PER_SET = 8;
 
-type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
+type CatalogSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
 
 function getCatalogSetIdOfferLookupVariants(
   setIds: readonly string[],
@@ -1685,6 +1685,20 @@ async function updateCatalogThemeIdentityRow({
   }
 }
 
+async function refreshCatalogThemeSummaries({
+  supabaseClient,
+}: {
+  supabaseClient: CatalogSupabaseClient;
+}) {
+  const { error } = await supabaseClient.rpc('refresh_catalog_theme_summaries');
+
+  if (error) {
+    throw new Error(
+      `Unable to refresh catalog theme summaries after catalog mutation. ${formatSupabaseLikeError(error)}`,
+    );
+  }
+}
+
 async function updateCatalogSetPieceCountRow({
   pieceCount,
   setId,
@@ -1969,6 +1983,12 @@ export async function backfillCatalogOverlayThemeIdentity({
     });
 
     updatedCount += 1;
+  }
+
+  if (updatedCount > 0) {
+    await refreshCatalogThemeSummaries({
+      supabaseClient: activeSupabaseClient,
+    });
   }
 
   return {
@@ -2799,6 +2819,9 @@ export async function createCatalogSet({
       normalizedSet,
       supabaseClient: activeSupabaseClient,
       themePersistence,
+    });
+    await refreshCatalogThemeSummaries({
+      supabaseClient: activeSupabaseClient,
     });
 
     return toCatalogSet({

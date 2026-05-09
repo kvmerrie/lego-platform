@@ -1218,36 +1218,6 @@ const affiliateOfferSnapshotsPayload = String.raw`[
     "ctaLabel": "Bekijk bij Alternate"
   },
   {
-    "setId": "42211",
-    "merchantId": "goodbricks",
-    "merchantName": "Goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7995,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://id.goodbricks.nl/t/t?a=1849540612&as=2068237378&t=2&tk=1&cupa_sku=42211&url=https://www.goodbricks.nl/lego-technic-lunar-outpost-moon-rover-space-vehicle-42211.html",
-    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-05-08T12:26:01.014Z",
-    "displayRank": 7,
-    "ctaLabel": "Bekijk bij Goodbricks"
-  },
-  {
-    "setId": "42213",
-    "merchantId": "goodbricks",
-    "merchantName": "Goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4895,
-    "availabilityLabel": "In stock",
-    "outboundUrl": "https://id.goodbricks.nl/t/t?a=1849540612&as=2068237378&t=2&tk=1&cupa_sku=42213&url=https://www.goodbricks.nl/lego-ford-bronco-suv-42213.html",
-    "disclosureCopy": "Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.",
-    "observedAt": "2026-05-08T12:26:01.014Z",
-    "displayRank": 7,
-    "ctaLabel": "Bekijk bij Goodbricks"
-  },
-  {
     "setId": "42214",
     "merchantId": "alternate",
     "merchantName": "Alternate",

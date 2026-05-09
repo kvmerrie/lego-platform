@@ -258,6 +258,10 @@ export const brickhuntThemeRegistry = [
     aliases: ['Dreamzzz', 'DREAMZzz'],
   }),
   createThemeOverride({
+    displayName: 'Editions',
+    isVisible: true,
+  }),
+  createThemeOverride({
     displayName: 'LEGO® DUPLO®',
     aliases: ['Duplo', 'DUPLO'],
   }),
@@ -276,7 +280,14 @@ export const brickhuntThemeRegistry = [
   }),
   createThemeOverride({
     displayName: "LEGO® Gabby's poppenhuis",
-    aliases: ["Gabby's Dollhouse", "Gabby's poppenhuis"],
+    aliases: [
+      "Gabby's Dollhouse",
+      "Gabby's poppenhuis",
+      "Gabby's Poppenhuis",
+      'Gabby’s Dollhouse',
+      'Gabby’s Poppenhuis',
+      'Gabby’s poppenhuis',
+    ],
   }),
   createThemeOverride({
     displayName: 'Gear',
@@ -351,6 +362,10 @@ export const brickhuntThemeRegistry = [
     sortPriority: 14,
   }),
   createThemeOverride({
+    displayName: 'ONE PIECE',
+    aliases: ['One Piece'],
+  }),
+  createThemeOverride({
     displayName: 'LEGO® Pokémon™ speelgoed en sets',
     aliases: ['Pokémon', 'Pokemon'],
   }),
@@ -393,6 +408,9 @@ export const brickhuntThemeRegistry = [
   createThemeOverride({
     displayName: 'LEGO® Wednesday',
     aliases: ['Wednesday'],
+  }),
+  createThemeOverride({
+    displayName: 'Wicked',
   }),
 ] as const satisfies readonly BrickhuntThemeRegistryEntry[];
 

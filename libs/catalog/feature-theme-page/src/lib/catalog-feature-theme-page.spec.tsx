@@ -227,6 +227,42 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('--theme-page-text:#ffffff');
     expect(markup).toContain('interactiveSurfaceDark');
   });
+
+  it('uses curated public theme visual metadata when provided', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureThemePage
+        themePage={{
+          themeSnapshot: {
+            name: 'Editions',
+            slug: 'editions',
+            setCount: 14,
+            momentum:
+              'Voor losse specials die juist opvallen doordat ze nergens anders bij horen.',
+            signatureSet: 'Nike Dunk x LEGO Set',
+          },
+          visual: {
+            backgroundColor: '#e0b84f',
+            imageUrl: 'https://images.example/editions.jpg',
+            textColor: '#171a22',
+          },
+          setCards: [
+            {
+              id: '43020',
+              slug: 'nike-dunk-x-lego-set-43020',
+              name: 'Nike Dunk x LEGO Set',
+              theme: 'Editions',
+              releaseYear: 2026,
+              pieces: 1180,
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain('--theme-page-surface:#e0b84f');
+    expect(markup).toContain('--theme-page-text:#171a22');
+    expect(markup).toContain('interactiveSurfaceLight');
+  });
 });
 
 describe('CatalogFeatureThemeIndex', () => {
@@ -286,5 +322,29 @@ describe('CatalogFeatureThemeIndex', () => {
     expect(markup).toContain('Lord of the Rings');
     expect(markup).toContain('src="https://images.example/icons.jpg"');
     expect(markup).not.toContain('href="/sets/');
+  });
+
+  it('renders late public themes such as Editions in the overview grid', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogFeatureThemeIndex
+        themeDirectoryItems={[
+          {
+            imageUrl: 'https://images.example/editions.jpg',
+            themeSnapshot: {
+              name: 'Editions',
+              slug: 'editions',
+              setCount: 14,
+              momentum:
+                'Voor losse specials die juist opvallen doordat ze nergens anders bij horen.',
+              signatureSet: 'Editions',
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain('href="/themes/editions"');
+    expect(markup).toContain('Editions');
+    expect(markup).toContain('src="https://images.example/editions.jpg"');
   });
 });

@@ -246,17 +246,21 @@ export function buildSetBreadcrumbJsonLd({
   themeUrl,
 }: {
   catalogSetDetail: CatalogSetDetail;
-  themeUrl: string;
+  themeUrl?: string;
 }): JsonLdValue {
   return buildBreadcrumbListJsonLd([
     {
       name: "Thema's",
       url: buildCanonicalUrl(buildWebPath(webPathnames.themes)),
     },
-    {
-      name: catalogSetDetail.theme,
-      url: buildCanonicalUrl(themeUrl),
-    },
+    ...(themeUrl
+      ? [
+          {
+            name: catalogSetDetail.publicTheme?.name ?? catalogSetDetail.theme,
+            url: buildCanonicalUrl(themeUrl),
+          },
+        ]
+      : []),
     {
       name: catalogSetDetail.name,
       url: buildCanonicalUrl(buildSetDetailPath(catalogSetDetail.slug)),

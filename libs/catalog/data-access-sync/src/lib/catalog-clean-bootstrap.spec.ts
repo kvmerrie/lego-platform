@@ -8,7 +8,7 @@ import {
   writeCatalogCleanBootstrapPayload,
 } from './catalog-clean-bootstrap';
 
-type MockSupabaseClient = Pick<SupabaseClient, 'from'>;
+type MockSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
 
 function createResolvedQuery<TData>(data: readonly TData[]) {
   return {
@@ -161,6 +161,10 @@ function createMutableSupabaseClient(
 
       return queryBuilder;
     },
+    rpc: vi.fn().mockResolvedValue({
+      data: null,
+      error: null,
+    }),
   } satisfies MockSupabaseClient;
 
   return {
@@ -785,6 +789,10 @@ describe('catalog clean bootstrap payload', () => {
         updatedCount: 0,
       },
     ]);
+    expect(supabaseClient.rpc).toHaveBeenCalledTimes(1);
+    expect(supabaseClient.rpc).toHaveBeenCalledWith(
+      'refresh_catalog_theme_summaries',
+    );
     expect(tables.get('catalog_sets')).toEqual([
       expect.objectContaining({
         set_id: '75192',

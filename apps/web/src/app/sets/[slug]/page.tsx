@@ -29,10 +29,7 @@ import type {
   CatalogSetDetailTrustSignal,
   CatalogSetDetailVerdict,
 } from '@lego-platform/catalog/ui';
-import {
-  buildCatalogThemeSlug,
-  normalizeTheme,
-} from '@lego-platform/catalog/util';
+import { normalizeTheme } from '@lego-platform/catalog/util';
 import { CollectionFeatureOwnedToggle } from '@lego-platform/collection/feature-owned-toggle';
 import { listPublishedArticlesByPrimarySetNumber } from '@lego-platform/content/data-access';
 import type { ContentArticleListItem } from '@lego-platform/content/util';
@@ -1312,9 +1309,9 @@ export default async function SetDetailPage({
     limit: SET_NEWS_RAIL_LIMIT,
     setNumber: catalogSetDetail.id,
   });
-  const themeHref = buildThemePath(
-    buildCatalogThemeSlug(catalogSetDetail.theme),
-  );
+  const themeHref = catalogSetDetail.publicTheme
+    ? buildThemePath(catalogSetDetail.publicTheme.slug)
+    : undefined;
   const canonicalUrl = buildCanonicalUrl(
     buildSetDetailPath(catalogSetDetail.slug),
   );

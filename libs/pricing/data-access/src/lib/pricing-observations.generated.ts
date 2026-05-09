@@ -813,26 +813,6 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-08T17:56:27.641Z"
   },
   {
-    "setId": "42211",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7995,
-    "availability": "in_stock",
-    "observedAt": "2026-05-08T12:26:01.014Z"
-  },
-  {
-    "setId": "42213",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4895,
-    "availability": "in_stock",
-    "observedAt": "2026-05-08T12:26:01.014Z"
-  },
-  {
     "setId": "42214",
     "merchantId": "alternate",
     "regionCode": "NL",

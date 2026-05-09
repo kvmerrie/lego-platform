@@ -25,6 +25,7 @@ import {
   listCatalogCurrentOfferSummaries,
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlug,
+  getCatalogSetBySlug,
   listCanonicalCatalogSets,
   listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
@@ -141,6 +142,9 @@ function createCatalogDiscoverySignal(
 
 function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
   rows: readonly Row[],
+  options: {
+    onSelect?: (args: unknown[]) => void;
+  } = {},
 ) {
   const filters: Array<
     | {
@@ -226,7 +230,9 @@ function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
 
       return builder;
     },
-    select() {
+    select(...args: unknown[]) {
+      options.onSelect?.(args);
+
       return builder;
     },
     maybeSingle() {
@@ -346,50 +352,76 @@ function createCatalogSupabaseClientMock({
   latestOfferRows,
   merchantRows,
   offerSeedRows,
+  onSelect,
   sourceThemeRows = [],
   themeMappingRows = [],
+  themeSummaryRows = [],
 }: {
   catalogRows?: readonly Record<string, unknown>[];
   primaryThemeRows?: readonly Record<string, unknown>[];
   latestOfferRows: readonly Record<string, unknown>[];
   merchantRows: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
+  onSelect?: (table: string, args: unknown[]) => void;
   sourceThemeRows?: readonly Record<string, unknown>[];
   themeMappingRows?: readonly Record<string, unknown>[];
+  themeSummaryRows?: readonly Record<string, unknown>[];
 }) {
   return {
     from: vi.fn((table: string) => {
       if (table === 'catalog_sets') {
-        return createSupabaseTableBuilder(catalogRows);
+        return createSupabaseTableBuilder(catalogRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
       }
 
       if (table === 'catalog_source_themes') {
-        return createSupabaseTableBuilder(sourceThemeRows);
+        return createSupabaseTableBuilder(sourceThemeRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
       }
 
       if (table === 'catalog_themes') {
         return createSupabaseTableBuilder(
           primaryThemeRows.map((primaryThemeRow) => ({
             is_public: true,
+            status: 'active',
             ...primaryThemeRow,
           })),
+          {
+            onSelect: (args) => onSelect?.(table, args),
+          },
         );
       }
 
       if (table === 'catalog_theme_mappings') {
-        return createSupabaseTableBuilder(themeMappingRows);
+        return createSupabaseTableBuilder(themeMappingRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'catalog_theme_summaries') {
+        return createSupabaseTableBuilder(themeSummaryRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
       }
 
       if (table === 'commerce_offer_seeds') {
-        return createSupabaseTableBuilder(offerSeedRows);
+        return createSupabaseTableBuilder(offerSeedRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
       }
 
       if (table === 'commerce_merchants') {
-        return createSupabaseTableBuilder(merchantRows);
+        return createSupabaseTableBuilder(merchantRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
       }
 
       if (table === 'commerce_offer_latest') {
-        return createSupabaseTableBuilder(latestOfferRows);
+        return createSupabaseTableBuilder(latestOfferRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
       }
 
       throw new Error(`Unexpected table requested in test: ${table}`);
@@ -484,6 +516,7 @@ describe('catalog effective data access web', () => {
         {
           display_name: 'Super Mario',
           id: 'theme:super-mario',
+          slug: 'super-mario',
         },
       ],
       sourceThemeRows: [
@@ -808,6 +841,7 @@ describe('catalog effective data access web', () => {
         {
           display_name: 'Super Mario',
           id: 'theme:super-mario',
+          slug: 'super-mario',
         },
       ],
       sourceThemeRows: [
@@ -832,10 +866,135 @@ describe('catalog effective data access web', () => {
     expect(canonicalCatalogSet).toMatchObject({
       name: 'Mario Kart - Mario & Standard Kart',
       primaryTheme: 'Super Mario',
+      publicTheme: {
+        name: 'Super Mario',
+        slug: 'super-mario',
+      },
       setId: '72037',
       slug: 'mario-kart-mario-standard-kart-72037',
       source: 'rebrickable',
     });
+  });
+
+  test('prefers a public mapped parent theme for set detail links when primary theme is hidden', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/43020.jpg',
+          name: 'Nike Dunk x LEGO',
+          piece_count: 1180,
+          primary_theme_id: 'theme:other',
+          release_date_precision: 'year',
+          release_year: 2026,
+          set_id: '43020',
+          slug: 'nike-dunk-x-lego-43020',
+          source: 'rebrickable',
+          source_set_number: '43020-1',
+          source_theme_id: 'rebrickable:editions',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Other',
+          id: 'theme:other',
+          is_public: false,
+          slug: 'other',
+          status: 'active',
+        },
+        {
+          display_name: 'Editions',
+          id: 'theme:editions',
+          is_public: true,
+          public_display_name: 'LEGO® Editions',
+          slug: 'editions',
+          status: 'active',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:editions',
+          source_theme_name: 'Nike x LEGO® collectie',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'theme:editions',
+          source_theme_id: 'rebrickable:editions',
+        },
+      ],
+    });
+
+    const catalogSetDetail = await getCatalogSetBySlug({
+      slug: 'nike-dunk-x-lego-43020',
+      supabaseClient,
+    });
+
+    expect(catalogSetDetail).toMatchObject({
+      publicTheme: {
+        name: 'LEGO® Editions',
+        slug: 'editions',
+      },
+      subtheme: 'Nike x LEGO® collectie',
+      theme: 'LEGO® Editions',
+    });
+  });
+
+  test('does not expose a public theme link target for hidden primary themes', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/99999.jpg',
+          name: 'Internal test set',
+          piece_count: 100,
+          primary_theme_id: 'theme:other',
+          release_date_precision: 'year',
+          release_year: 2026,
+          set_id: '99999',
+          slug: 'internal-test-set-99999',
+          source: 'rebrickable',
+          source_set_number: '99999-1',
+          source_theme_id: 'rebrickable:other',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Other',
+          id: 'theme:other',
+          is_public: false,
+          slug: 'other',
+          status: 'active',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:other',
+          source_theme_name: 'Other',
+        },
+      ],
+      themeMappingRows: [],
+    });
+
+    const catalogSetDetail = await getCatalogSetBySlug({
+      slug: 'internal-test-set-99999',
+      supabaseClient,
+    });
+
+    expect(catalogSetDetail).toMatchObject({
+      theme: 'Other',
+    });
+    expect(catalogSetDetail?.publicTheme).toBeUndefined();
   });
 
   test('paginates public catalog set card reads from Supabase', async () => {
@@ -1389,6 +1548,264 @@ describe('catalog effective data access web', () => {
     expect(themePage?.setCards).toHaveLength(48);
     expect(themePage?.setCards[0]?.id).toBe('70048');
     expect(themePage?.setCards.at(-1)?.id).toBe('70095');
+  });
+
+  test('uses cached theme summaries for theme detail pagination without exact counts', async () => {
+    const catalogSetSelects: unknown[][] = [];
+    const catalogRows = Array.from({ length: 12 }, (_, index) => {
+      const setNumber = String(75_300 + index);
+
+      return {
+        created_at: '2026-04-18T08:00:00.000Z',
+        image_url: `https://cdn.example.com/star-wars-${setNumber}.jpg`,
+        name: `Star Wars Set ${String(index).padStart(2, '0')}`,
+        piece_count: 100 + index,
+        primary_theme_id: 'theme:star-wars',
+        release_year: 2026,
+        set_id: setNumber,
+        slug: `star-wars-set-${setNumber}`,
+        source: 'rebrickable',
+        source_set_number: `${setNumber}-1`,
+        source_theme_id: 'rebrickable:158',
+        status: 'active',
+        updated_at: '2026-04-18T08:00:00.000Z',
+      };
+    });
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows,
+      onSelect: (table, args) => {
+        if (table === 'catalog_sets') {
+          catalogSetSelects.push(args);
+        }
+      },
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          is_public: true,
+          slug: 'star-wars',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 1001,
+          representative_image_url: 'https://cdn.example.com/star-wars.jpg',
+          representative_set_id: '75300',
+          theme_id: 'theme:star-wars',
+        },
+      ],
+    });
+
+    const themePage = await getCatalogThemePageBySlug({
+      limit: 6,
+      offset: 6,
+      slug: 'star-wars',
+      supabaseClient,
+    });
+
+    expect(themePage?.themeSnapshot.setCount).toBe(1001);
+    expect(themePage?.setCards).toHaveLength(6);
+    expect(
+      catalogSetSelects.some((args) =>
+        args.some(
+          (arg) =>
+            typeof arg === 'object' &&
+            arg !== null &&
+            (arg as { count?: unknown }).count === 'exact',
+        ),
+      ),
+    ).toBe(false);
+  });
+
+  test('uses cached theme summaries for the theme directory without per-theme exact counts', async () => {
+    const catalogSetSelects: unknown[][] = [];
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [],
+      onSelect: (table, args) => {
+        if (table === 'catalog_sets') {
+          catalogSetSelects.push(args);
+        }
+      },
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          is_public: true,
+          public_order: 1,
+          slug: 'star-wars',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 1166,
+          representative_image_url: 'https://cdn.example.com/star-wars.jpg',
+          representative_set_id: '75355',
+          theme_id: 'theme:star-wars',
+        },
+      ],
+    });
+
+    const [directoryItem] = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+
+    expect(directoryItem?.themeSnapshot.setCount).toBe(1166);
+    expect(directoryItem?.imageUrl).toBe(
+      'https://cdn.example.com/star-wars.jpg',
+    );
+    expect(catalogSetSelects).toHaveLength(0);
+  });
+
+  test('renders public curated Editions in the theme directory using representative summary image fallback', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Zeta Theme',
+          id: 'theme:zeta',
+          is_public: true,
+          public_order: 1,
+          slug: 'zeta-theme',
+          status: 'active',
+        },
+        {
+          display_name: 'Editions',
+          id: 'theme:editions',
+          is_public: true,
+          public_accent_color: '#e0b84f',
+          public_image_url: null,
+          public_order: 325,
+          slug: 'editions',
+          status: 'active',
+        },
+        {
+          display_name: 'Alpha Theme',
+          id: 'theme:alpha',
+          is_public: true,
+          public_order: 400,
+          slug: 'alpha-theme',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 3,
+          representative_image_url: 'https://cdn.example.com/zeta.jpg',
+          representative_set_id: '10001',
+          theme_id: 'theme:zeta',
+        },
+        {
+          active_set_count: 14,
+          representative_image_url: 'https://cdn.example.com/editions.jpg',
+          representative_set_id: '50001',
+          theme_id: 'theme:editions',
+        },
+        {
+          active_set_count: 2,
+          representative_image_url: 'https://cdn.example.com/alpha.jpg',
+          representative_set_id: '90001',
+          theme_id: 'theme:alpha',
+        },
+      ],
+    });
+
+    const directoryItems = await listCatalogThemeDirectoryItems({
+      supabaseClient,
+    });
+    const editionsItem = directoryItems.find(
+      (directoryItem) => directoryItem.themeSnapshot.slug === 'editions',
+    );
+
+    expect(directoryItems.map((item) => item.themeSnapshot.slug)).toEqual([
+      'zeta-theme',
+      'editions',
+      'alpha-theme',
+    ]);
+    expect(editionsItem?.themeSnapshot).toMatchObject({
+      name: 'Editions',
+      setCount: 14,
+      signatureSet: 'Editions',
+      slug: 'editions',
+    });
+    expect(editionsItem?.imageUrl).toBe('https://cdn.example.com/editions.jpg');
+    expect(editionsItem?.visual?.backgroundColor).toBe('#e0b84f');
+    expect(editionsItem?.visual?.textColor).toBe('#171a22');
+    expect(editionsItem?.visual?.imageUrl).toBe(
+      'https://cdn.example.com/editions.jpg',
+    );
+  });
+
+  test('passes curated public theme visual metadata to theme detail pages', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/editions-set.jpg',
+          name: 'Nike Dunk x LEGO Set',
+          piece_count: 1180,
+          primary_theme_id: 'theme:editions',
+          release_year: 2026,
+          set_id: '43020',
+          slug: 'nike-dunk-x-lego-set-43020',
+          source: 'rebrickable',
+          source_set_number: '43020-1',
+          source_theme_id: 'rebrickable:editions',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Editions',
+          id: 'theme:editions',
+          is_public: true,
+          public_accent_color: '#e0b84f',
+          public_image_url: 'https://cdn.example.com/editions-public.jpg',
+          public_order: 325,
+          slug: 'editions',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 14,
+          representative_image_url:
+            'https://cdn.example.com/editions-summary.jpg',
+          representative_set_id: '43020',
+          theme_id: 'theme:editions',
+        },
+      ],
+    });
+
+    const themePage = await getCatalogThemePageBySlug({
+      slug: 'editions',
+      supabaseClient,
+    });
+
+    expect(themePage?.themeSnapshot).toMatchObject({
+      name: 'Editions',
+      setCount: 14,
+      slug: 'editions',
+    });
+    expect(themePage?.visual).toEqual({
+      backgroundColor: '#e0b84f',
+      imageUrl: 'https://cdn.example.com/editions-public.jpg',
+      textColor: '#171a22',
+    });
   });
 
   test('loads catalog cards by id without a full catalog read', async () => {

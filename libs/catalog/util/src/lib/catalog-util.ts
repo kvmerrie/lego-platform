@@ -31,6 +31,7 @@ export interface CatalogSetSummary {
   id: string;
   slug: string;
   name: string;
+  publicTheme?: CatalogPublicThemeReference;
   theme: string;
   secondaryLabels?: readonly string[];
   releaseYear: number;
@@ -102,7 +103,13 @@ export interface CatalogSetDisplaySize {
 
 export interface CatalogThemeIdentity {
   primaryTheme: string;
+  publicTheme?: CatalogPublicThemeReference;
   secondaryThemes: readonly string[];
+}
+
+export interface CatalogPublicThemeReference {
+  name: string;
+  slug: string;
 }
 
 export interface CatalogSetDetail extends CatalogSetSummary {
@@ -478,6 +485,41 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
     },
   ],
   [
+    'Editions',
+    {
+      backgroundColor: '#e0b84f',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Fortnite',
+    {
+      backgroundColor: '#6f4bd8',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    "Gabby's Dollhouse",
+    {
+      backgroundColor: '#ef8fc0',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    "Gabby's poppenhuis",
+    {
+      backgroundColor: '#ef8fc0',
+      textColor: '#171a22',
+    },
+  ],
+  [
+    'Minifiguren',
+    {
+      backgroundColor: '#f2c84b',
+      textColor: '#171a22',
+    },
+  ],
+  [
     'NINJAGO',
     {
       backgroundColor: '#bf4b47',
@@ -576,6 +618,13 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
     },
   ],
   [
+    'ONE PIECE',
+    {
+      backgroundColor: '#d84f45',
+      textColor: '#ffffff',
+    },
+  ],
+  [
     'Pokémon',
     {
       backgroundColor: '#f0c63b',
@@ -590,9 +639,23 @@ const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
     },
   ],
   [
+    'Sonic the Hedgehog',
+    {
+      backgroundColor: '#2e65c8',
+      textColor: '#ffffff',
+    },
+  ],
+  [
     'The Legend of Zelda',
     {
       backgroundColor: '#4d8b72',
+      textColor: '#ffffff',
+    },
+  ],
+  [
+    'Wicked',
+    {
+      backgroundColor: '#2f8a64',
       textColor: '#ffffff',
     },
   ],
@@ -702,6 +765,7 @@ export interface CatalogCanonicalSet {
   name: string;
   pieceCount: number;
   primaryTheme: string;
+  publicTheme?: CatalogPublicThemeReference;
   releaseYear: number;
   releaseDate?: string;
   releaseDatePrecision?: CatalogReleaseDatePrecision;
@@ -758,6 +822,7 @@ export interface CatalogBrowseThemeGroup {
 export interface CatalogThemeLandingPage {
   setCards: CatalogHomepageSetCard[];
   themeSnapshot: CatalogThemeSnapshot;
+  visual?: CatalogThemeVisual;
 }
 
 export interface CatalogThemeDirectoryItem {

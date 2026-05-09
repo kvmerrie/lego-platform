@@ -278,6 +278,10 @@ function createCatalogOverlaySupabaseClient({
     select: insertSelect,
   }));
   const activeCanonicalRows = canonicalRows ?? overlayRows;
+  const rpc = vi.fn().mockResolvedValue({
+    data: null,
+    error: null,
+  });
   const from = vi.fn((table: string) => {
     if (table === 'catalog_sets') {
       const builder = createSupabaseTableBuilder(activeCanonicalRows);
@@ -339,7 +343,8 @@ function createCatalogOverlaySupabaseClient({
     insertSingle,
     primaryThemeUpsert,
     sourceThemeUpsert,
-    supabaseClient: { from } as never,
+    rpc,
+    supabaseClient: { from, rpc } as never,
     themeMappingUpsert,
     updateCanonical,
     updateCanonicalEq,

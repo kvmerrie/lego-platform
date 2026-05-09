@@ -507,6 +507,10 @@ describe('set detail page JSON-LD', () => {
       imageUrl: 'https://cdn.example.com/10316.jpg',
       name: 'The Lord of the Rings: Rivendell',
       pieces: 6167,
+      publicTheme: {
+        name: 'Lord of the Rings',
+        slug: 'lord-of-the-rings',
+      },
       releaseYear: 2023,
       slug: 'lord-of-the-rings-rivendell-10316',
       theme: 'Lord of the Rings',
@@ -616,6 +620,10 @@ describe('set detail page JSON-LD', () => {
       imageUrl: 'https://cdn.example.com/75355.jpg',
       name: 'X-wing Starfighter',
       pieces: 1949,
+      publicTheme: {
+        name: 'Star Wars',
+        slug: 'star-wars',
+      },
       releaseYear: 2023,
       slug: 'x-wing-starfighter-75355',
       theme: 'Star Wars',
@@ -675,5 +683,92 @@ describe('set detail page JSON-LD', () => {
       'href="/artikelen/star-wars/x-wing-starfighter-review"',
     );
     expect(html).toContain('href="/deals"');
+  });
+
+  it('links set breadcrumbs to a public curated parent theme when available', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '43020',
+      imageUrl: 'https://cdn.example.com/43020.jpg',
+      name: 'Nike Dunk x LEGO',
+      pieces: 1180,
+      publicTheme: {
+        name: 'LEGO® Editions',
+        slug: 'editions',
+      },
+      releaseYear: 2026,
+      slug: 'nike-dunk-x-lego-43020',
+      subtheme: 'Nike x LEGO® collectie',
+      theme: 'LEGO® Editions',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 1,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'nike-dunk-x-lego-43020',
+        }),
+      }),
+    );
+
+    expect(html).toContain('href="/themes"');
+    expect(html).toContain('href="/themes/editions"');
+    expect(html).not.toContain('href="/themes/other"');
+    expect(html).not.toContain('href="/themes/nike-x-lego-collectie"');
+  });
+
+  it('does not link hidden set themes from breadcrumbs', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '99999',
+      imageUrl: 'https://cdn.example.com/99999.jpg',
+      name: 'Internal test set',
+      pieces: 100,
+      releaseYear: 2026,
+      slug: 'internal-test-set-99999',
+      theme: 'Other',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 1,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'internal-test-set-99999',
+        }),
+      }),
+    );
+
+    expect(html).toContain('href="/themes"');
+    expect(html).not.toContain('href="/themes/other"');
   });
 });

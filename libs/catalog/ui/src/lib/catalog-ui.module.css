@@ -2471,7 +2471,7 @@
 }
 
 .setCardRail {
-  --catalog-rail-card-gap: var(--lego-space-2);
+  --catalog-rail-card-gap: var(--lego-space-3);
   --catalog-rail-inline-padding: var(
     --catalog-section-inline-padding,
     var(
@@ -2568,9 +2568,7 @@
 .setCardRailTrack {
   display: grid;
   gap: var(--catalog-rail-card-gap);
-  grid-auto-columns: calc(
-    (100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.35
-  );
+  grid-auto-columns: calc((100% - (var(--catalog-rail-card-gap) * 0.35)) / 1.5);
   grid-auto-flow: column;
   margin: 0;
   overflow-x: auto;
@@ -2973,6 +2971,14 @@
   white-space: nowrap;
 }
 
+@media (min-width: 36rem) {
+  .setCardRailTrack {
+    grid-auto-columns: calc(
+      (100% - (var(--catalog-rail-card-gap) * 1.85)) / 2.25
+    );
+  }
+}
+
 @media (min-width: 48rem) {
   .setCardCollectionBrowse {
     border-left: var(--catalog-browse-grid-inline-border-size) solid
@@ -2981,21 +2987,19 @@
   }
 
   .setCardRail {
-    --catalog-rail-card-gap: var(--lego-space-3);
+    --catalog-rail-card-gap: var(--lego-space-4);
   }
 
   .setCardRailTrack {
     grid-auto-columns: calc(
-      (100% - (var(--catalog-rail-card-gap) * 1.85)) / 2.85
+      (100% - (var(--catalog-rail-card-gap) * 1.85)) / 3.25
     );
   }
 }
 
 @media (min-width: 72rem) {
   .setCardRailTrack {
-    grid-auto-columns: calc(
-      (100% - (var(--catalog-rail-card-gap) * 3.75)) / 4.75
-    );
+    grid-auto-columns: calc((100% - (var(--catalog-rail-card-gap) * 4)) / 5);
   }
 }
 
@@ -3426,7 +3430,7 @@
 
 @media (min-width: 100rem) {
   .setCardRail {
-    --catalog-rail-card-gap: var(--lego-space-4);
+    --catalog-rail-card-gap: var(--lego-space-6);
     --catalog-rail-scrollbar-width: 50%;
   }
 

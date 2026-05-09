@@ -3,6 +3,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const themePageMocks = vi.hoisted(() => ({
+  getCatalogThemeMetadataBySlug: vi.fn(),
   getCatalogThemePageBySlug: vi.fn(),
   listCatalogCurrentOfferSummariesBySetIds: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
@@ -12,6 +13,7 @@ const themePageMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
+  getCatalogThemeMetadataBySlug: themePageMocks.getCatalogThemeMetadataBySlug,
   getCatalogThemePageBySlug: themePageMocks.getCatalogThemePageBySlug,
   listCatalogCurrentOfferSummariesBySetIds:
     themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
@@ -52,14 +54,12 @@ describe('theme page JSON-LD', () => {
   });
 
   it('renders representative canonical theme metadata', async () => {
-    themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
-      setCards: [],
-      themeSnapshot: {
-        momentum: 'X-wings, R2-D2 en displayhelmen blijven goede blikvangers.',
-        name: 'Star Wars',
-        setCount: 42,
-        slug: 'star-wars',
-      },
+    themePageMocks.getCatalogThemeMetadataBySlug.mockResolvedValue({
+      momentum: 'X-wings, R2-D2 en displayhelmen blijven goede blikvangers.',
+      name: 'Star Wars',
+      setCount: 0,
+      signatureSet: 'Star Wars',
+      slug: 'star-wars',
     });
 
     const { generateMetadata } = await import('./page');
@@ -85,10 +85,10 @@ describe('theme page JSON-LD', () => {
       },
     });
     expect(metadata.robots).toBeUndefined();
-    expect(themePageMocks.getCatalogThemePageBySlug).toHaveBeenCalledWith({
-      limit: 1,
+    expect(themePageMocks.getCatalogThemeMetadataBySlug).toHaveBeenCalledWith({
       slug: 'star-wars',
     });
+    expect(themePageMocks.getCatalogThemePageBySlug).not.toHaveBeenCalled();
   });
 
   it('renders CollectionPage and BreadcrumbList structured data', async () => {
@@ -141,5 +141,46 @@ describe('theme page JSON-LD', () => {
       },
       setIds: ['75355'],
     });
+    expect(themePageMocks.listPublishedArticles).toHaveBeenCalledWith({
+      limit: 3,
+      themeQuery: 'star-wars',
+    });
+  });
+
+  it('does not load current offer summaries when discovery has no scoped signals', async () => {
+    themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
+      setCards: [
+        {
+          id: '75355',
+          imageUrl: 'https://cdn.example.com/75355.jpg',
+          name: 'X-wing Starfighter',
+          pieces: 1949,
+          releaseYear: 2023,
+          slug: 'x-wing-starfighter-75355',
+          theme: 'Star Wars',
+        },
+      ],
+      themeSnapshot: {
+        momentum: 'R2-D2, X-wings en displaysets houden dit thema sterk.',
+        name: 'Star Wars',
+        setCount: 1,
+        slug: 'star-wars',
+      },
+    });
+    themePageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map(),
+    );
+    themePageMocks.listPublishedArticles.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    await pageModule.default({
+      params: Promise.resolve({
+        slug: 'star-wars',
+      }),
+    });
+
+    expect(
+      themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
+    ).not.toHaveBeenCalled();
   });
 });

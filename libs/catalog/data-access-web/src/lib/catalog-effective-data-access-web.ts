@@ -11,6 +11,7 @@ import type {
   CatalogThemeLandingPage,
   CatalogThemeSearchMatch,
   CatalogThemeSnapshot,
+  CatalogThemeVisual,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogThemeSlug,
@@ -27,6 +28,7 @@ import {
   getThemeTileImage,
   isCatalogBrowsablePrimaryTheme,
   listCatalogSetCardSearchMatches,
+  normalizeTheme,
   normalizeCatalogAsciiText,
   resolveCatalogReleaseDatePrecision,
   resolveCatalogThemeIdentity,
@@ -54,6 +56,7 @@ const CATALOG_SETS_TABLE = 'catalog_sets';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
+const CATALOG_THEME_SUMMARIES_TABLE = 'catalog_theme_summaries';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
@@ -117,6 +120,14 @@ interface CatalogThemeRow {
 interface CatalogThemeMappingRow {
   primary_theme_id: string;
   source_theme_id: string;
+}
+
+interface CatalogThemeSummaryRow {
+  active_set_count: number;
+  representative_image_url?: string | null;
+  representative_set_id?: string | null;
+  theme_id: string;
+  updated_at?: string;
 }
 
 interface CatalogCommerceMerchantRow {
@@ -612,6 +623,11 @@ function toCanonicalCatalogSetFromRow({
     name: row.name,
     pieceCount: row.piece_count,
     primaryTheme: resolvedThemeIdentity.primaryTheme,
+    ...(resolvedThemeIdentity.publicTheme
+      ? {
+          publicTheme: resolvedThemeIdentity.publicTheme,
+        }
+      : {}),
     ...(row.release_date
       ? {
           releaseDate: row.release_date,
@@ -658,6 +674,11 @@ function toCatalogSummaryFromCanonicalSet(
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
     theme: displayTheme,
+    ...(canonicalCatalogSet.publicTheme
+      ? {
+          publicTheme: canonicalCatalogSet.publicTheme,
+        }
+      : {}),
     ...(canonicalCatalogSet.secondaryLabels.length
       ? {
           secondaryLabels: canonicalCatalogSet.secondaryLabels,
@@ -694,6 +715,11 @@ function toCatalogSetDetailFromCanonicalSet(
     slug: canonicalCatalogSet.slug,
     name: canonicalCatalogSet.name,
     theme: displayTheme,
+    ...(canonicalCatalogSet.publicTheme
+      ? {
+          publicTheme: canonicalCatalogSet.publicTheme,
+        }
+      : {}),
     ...(canonicalCatalogSet.releaseDate
       ? {
           releaseDate: canonicalCatalogSet.releaseDate,
@@ -786,7 +812,9 @@ async function listCatalogThemeIdentityBySetId({
     const primaryThemeResponse = primaryThemeIdsToLoad.length
       ? await supabaseClient
           .from(CATALOG_THEMES_TABLE)
-          .select('id, display_name, public_display_name')
+          .select(
+            'id, slug, display_name, public_display_name, status, is_public',
+          )
           .in('id', primaryThemeIdsToLoad)
       : { data: [], error: null };
 
@@ -814,23 +842,68 @@ async function listCatalogThemeIdentityBySetId({
         const sourceThemeName = catalogRow.source_theme_id
           ? sourceThemeById.get(catalogRow.source_theme_id)?.source_theme_name
           : undefined;
+        const mappedPrimaryThemeId = catalogRow.source_theme_id
+          ? primaryThemeIdBySourceThemeId.get(catalogRow.source_theme_id)
+          : undefined;
+        const candidatePrimaryThemeIds = [
+          mappedPrimaryThemeId,
+          catalogRow.primary_theme_id,
+        ].filter((themeId): themeId is string => Boolean(themeId));
+        const publicPrimaryTheme = candidatePrimaryThemeIds
+          .map((themeId) => primaryThemeById.get(themeId))
+          .find(
+            (catalogTheme): catalogTheme is CatalogThemeRow =>
+              Boolean(catalogTheme) &&
+              catalogTheme.is_public === true &&
+              catalogTheme.status === 'active' &&
+              Boolean(catalogTheme.slug),
+          );
         const primaryThemeId =
+          publicPrimaryTheme?.id ??
           catalogRow.primary_theme_id ??
-          (catalogRow.source_theme_id
-            ? primaryThemeIdBySourceThemeId.get(catalogRow.source_theme_id)
-            : undefined);
-        const primaryThemeName = primaryThemeId
+          mappedPrimaryThemeId;
+        const primaryThemeName = publicPrimaryTheme
           ? (normalizeCatalogThemePublicText(
-              primaryThemeById.get(primaryThemeId)?.public_display_name,
-            ) ?? primaryThemeById.get(primaryThemeId)?.display_name)
+              publicPrimaryTheme.public_display_name,
+            ) ?? publicPrimaryTheme.display_name)
+          : primaryThemeId
+            ? (normalizeCatalogThemePublicText(
+                primaryThemeById.get(primaryThemeId)?.public_display_name,
+              ) ?? primaryThemeById.get(primaryThemeId)?.display_name)
+            : undefined;
+
+        const resolvedThemeIdentity =
+          resolveCatalogThemeIdentityFromPersistence({
+            primaryThemeName,
+            sourceThemeName,
+          });
+        const publicThemeName = publicPrimaryTheme
+          ? (normalizeCatalogThemePublicText(
+              publicPrimaryTheme.public_display_name,
+            ) ?? publicPrimaryTheme.display_name)
           : undefined;
 
         return [
           catalogRow.set_id,
-          resolveCatalogThemeIdentityFromPersistence({
-            primaryThemeName,
-            sourceThemeName,
-          }),
+          {
+            ...(publicPrimaryTheme?.slug && publicThemeName
+              ? {
+                  primaryTheme: publicThemeName,
+                  publicTheme: {
+                    name: publicThemeName,
+                    slug: publicPrimaryTheme.slug,
+                  },
+                  secondaryThemes: [
+                    ...new Set([
+                      ...(sourceThemeName && sourceThemeName !== publicThemeName
+                        ? [sourceThemeName]
+                        : []),
+                      ...resolvedThemeIdentity.secondaryThemes,
+                    ]),
+                  ],
+                }
+              : resolvedThemeIdentity),
+          },
         ] as const;
       }),
     );
@@ -1212,6 +1285,11 @@ function toCatalogSetCardFromCanonicalSet(
     slug: catalogSetDetail.slug,
     name: catalogSetDetail.name,
     theme: catalogSetDetail.theme,
+    ...(catalogSetDetail.publicTheme
+      ? {
+          publicTheme: catalogSetDetail.publicTheme,
+        }
+      : {}),
     ...(canonicalCatalogSet.secondaryLabels.length
       ? {
           secondaryLabels: canonicalCatalogSet.secondaryLabels,
@@ -3607,6 +3685,35 @@ function createThemeSnapshot({
   };
 }
 
+function createPublicCatalogThemeSnapshot({
+  setCards,
+  setCount,
+  slug,
+  theme,
+}: {
+  setCards: readonly CatalogHomepageSetCard[];
+  setCount: number;
+  slug: string;
+  theme: string;
+}): CatalogThemeSnapshot {
+  const displayThemeName = normalizeTheme(theme)?.displayName ?? theme;
+  const themeSnapshot = createThemeSnapshot({
+    setCards,
+    theme: displayThemeName,
+  });
+
+  return {
+    ...themeSnapshot,
+    name: displayThemeName,
+    setCount,
+    signatureSet:
+      themeSnapshot.signatureSet === themeSnapshot.name
+        ? displayThemeName
+        : themeSnapshot.signatureSet,
+    slug,
+  };
+}
+
 function dedupeCatalogThemeDirectoryItemsBySlug(
   directoryItems: readonly CatalogThemeDirectoryItem[],
 ): CatalogThemeDirectoryItem[] {
@@ -3663,6 +3770,65 @@ function normalizeCatalogThemePublicAccentColor(
   }
 
   return normalizedValue;
+}
+
+function createPublicCatalogThemeVisual({
+  imageUrl,
+  publicAccentColor,
+  themeName,
+}: {
+  imageUrl?: string;
+  publicAccentColor?: string;
+  themeName: string;
+}): CatalogThemeVisual | undefined {
+  const themeVisual = getCatalogThemeVisual(themeName);
+  const visual = {
+    ...(themeVisual ?? {}),
+    ...(publicAccentColor
+      ? {
+          backgroundColor: publicAccentColor,
+        }
+      : {}),
+    ...(imageUrl
+      ? {
+          imageUrl,
+        }
+      : {}),
+  };
+
+  return Object.keys(visual).length > 0 ? visual : undefined;
+}
+
+async function listCatalogThemeSummariesByThemeId({
+  supabaseClient,
+  themeIds,
+}: {
+  supabaseClient: CatalogSupabaseClient;
+  themeIds: readonly string[];
+}): Promise<Map<string, CatalogThemeSummaryRow>> {
+  const uniqueThemeIds = [...new Set(themeIds.filter(Boolean))];
+
+  if (uniqueThemeIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await supabaseClient
+    .from(CATALOG_THEME_SUMMARIES_TABLE)
+    .select(
+      'theme_id, active_set_count, representative_set_id, representative_image_url, updated_at',
+    )
+    .in('theme_id', uniqueThemeIds);
+
+  if (error) {
+    throw new Error('Unable to load catalog theme summaries.');
+  }
+
+  return new Map(
+    ((data as CatalogThemeSummaryRow[] | null) ?? []).map((summaryRow) => [
+      summaryRow.theme_id,
+      summaryRow,
+    ]),
+  );
 }
 
 async function listCatalogBrowseThemeGroupsInternal({
@@ -3751,15 +3917,11 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
       throw new Error('Unable to load catalog theme directory.');
     }
 
-    const themeRows = ((themeData as CatalogThemeRow[] | null) ?? []).filter(
-      (themeRow) => {
-        const displayThemeName =
-          getCatalogThemeDisplayName(themeRow.display_name) ??
-          themeRow.display_name;
-
-        return isCatalogBrowsablePrimaryTheme(displayThemeName);
-      },
-    );
+    const themeRows = (themeData as CatalogThemeRow[] | null) ?? [];
+    const themeSummariesByThemeId = await listCatalogThemeSummariesByThemeId({
+      supabaseClient: activeSupabaseClient,
+      themeIds: themeRows.map((themeRow) => themeRow.id),
+    });
 
     const directoryItems = await Promise.all(
       themeRows.map(
@@ -3767,21 +3929,29 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
           const publicDisplayName =
             normalizeCatalogThemePublicText(themeRow.public_display_name) ??
             themeRow.display_name;
-          const { count, data, error } = await activeSupabaseClient
-            .from(CATALOG_SETS_TABLE)
-            .select(CATALOG_SET_SELECT_COLUMNS, { count: 'exact' })
-            .eq('status', 'active')
-            .eq('primary_theme_id', themeRow.id)
-            .order('release_year', { ascending: false })
-            .order('name', { ascending: true })
-            .order('set_id', { ascending: true })
-            .limit(CATALOG_THEME_REPRESENTATIVE_SET_LIMIT);
+          const themeSummary = themeSummariesByThemeId.get(themeRow.id);
+          let catalogRows: CatalogSetRow[] = [];
+          let setCount = themeSummary?.active_set_count;
 
-          if (error) {
-            throw new Error('Unable to load catalog theme directory.');
+          if (!themeSummary) {
+            const { count, data, error } = await activeSupabaseClient
+              .from(CATALOG_SETS_TABLE)
+              .select(CATALOG_SET_SELECT_COLUMNS, { count: 'exact' })
+              .eq('status', 'active')
+              .eq('primary_theme_id', themeRow.id)
+              .order('release_year', { ascending: false })
+              .order('name', { ascending: true })
+              .order('set_id', { ascending: true })
+              .limit(CATALOG_THEME_REPRESENTATIVE_SET_LIMIT);
+
+            if (error) {
+              throw new Error('Unable to load catalog theme directory.');
+            }
+
+            catalogRows = (data as CatalogSetRow[] | null) ?? [];
+            setCount = count ?? catalogRows.length;
           }
 
-          const catalogRows = (data as CatalogSetRow[] | null) ?? [];
           const setCards = catalogRows.map((row) =>
             toCatalogSetCardFromCanonicalSet(
               toCanonicalCatalogSetFromRow({
@@ -3797,8 +3967,10 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
             themeRow.public_description,
           );
           const themeSnapshot = {
-            ...createThemeSnapshot({
+            ...createPublicCatalogThemeSnapshot({
               setCards,
+              setCount: setCount ?? catalogRows.length,
+              slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),
               theme: publicDisplayName,
             }),
             ...(publicDescription
@@ -3806,8 +3978,6 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
                   momentum: publicDescription,
                 }
               : {}),
-            setCount: count ?? catalogRows.length,
-            slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),
           };
 
           if (themeSnapshot.setCount === 0) {
@@ -3822,39 +3992,23 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
           );
           const imageUrl =
             publicImageUrl ??
+            normalizeCatalogThemePublicImageUrl(
+              themeSummary?.representative_image_url,
+            ) ??
             getCatalogThemeRepresentativeImageUrl({
               setCards,
               themeSnapshot,
             });
-          const themeVisual = getCatalogThemeVisual(themeSnapshot.name);
-          const visual = {
-            ...(themeVisual ?? {}),
-            ...(publicAccentColor
-              ? {
-                  backgroundColor: publicAccentColor,
-                }
-              : {}),
-            ...(publicImageUrl
-              ? {
-                  imageUrl: publicImageUrl,
-                }
-              : {}),
-          };
+          const visual = createPublicCatalogThemeVisual({
+            imageUrl,
+            publicAccentColor,
+            themeName: themeSnapshot.name,
+          });
 
           return {
             imageUrl,
             themeSnapshot,
-            visual:
-              Object.keys(visual).length > 0
-                ? {
-                    ...visual,
-                    imageUrl: visual.imageUrl ?? imageUrl,
-                  }
-                : imageUrl
-                  ? {
-                      imageUrl,
-                    }
-                  : undefined,
+            visual,
           } satisfies CatalogThemeDirectoryItem;
         },
       ),
@@ -5952,24 +6106,39 @@ export async function getCatalogThemePageBySlug({
       const publicDescription = normalizeCatalogThemePublicText(
         themeRow.public_description,
       );
+      const publicImageUrl = normalizeCatalogThemePublicImageUrl(
+        themeRow.public_image_url,
+      );
+      const publicAccentColor = normalizeCatalogThemePublicAccentColor(
+        themeRow.public_accent_color,
+      );
       const safeLimit = normalizeCatalogReadLimit(
         limit,
         CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
       );
       const safeOffset = normalizeCatalogReadOffset(offset);
-      const {
-        count: setCount,
-        data: setData,
-        error: setError,
-      } = await activeSupabaseClient
+      const themeSummariesByThemeId = await listCatalogThemeSummariesByThemeId({
+        supabaseClient: activeSupabaseClient,
+        themeIds: [themeRow.id],
+      });
+      const themeSummary = themeSummariesByThemeId.get(themeRow.id);
+      const setQuery = activeSupabaseClient
         .from(CATALOG_SETS_TABLE)
-        .select(CATALOG_SET_SELECT_COLUMNS, { count: 'exact' })
+        .select(
+          CATALOG_SET_SELECT_COLUMNS,
+          themeSummary ? undefined : { count: 'exact' },
+        )
         .eq('status', 'active')
         .eq('primary_theme_id', themeRow.id)
         .order('release_year', { ascending: false })
         .order('name', { ascending: true })
         .order('set_id', { ascending: true })
         .range(safeOffset, safeOffset + safeLimit - 1);
+      const {
+        count: fallbackSetCount,
+        data: setData,
+        error: setError,
+      } = await setQuery;
 
       if (setError) {
         throw new Error('Unable to load catalog theme page.');
@@ -5993,22 +6162,40 @@ export async function getCatalogThemePageBySlug({
           }),
         ),
       );
+      const themeSnapshot = {
+        ...createPublicCatalogThemeSnapshot({
+          setCards,
+          setCount:
+            themeSummary?.active_set_count ??
+            fallbackSetCount ??
+            catalogRows.length,
+          slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),
+          theme: publicDisplayName,
+        }),
+        ...(publicDescription
+          ? {
+              momentum: publicDescription,
+            }
+          : {}),
+      };
+      const visualImageUrl =
+        publicImageUrl ??
+        normalizeCatalogThemePublicImageUrl(
+          themeSummary?.representative_image_url,
+        ) ??
+        getCatalogThemeRepresentativeImageUrl({
+          setCards,
+          themeSnapshot,
+        });
 
       return {
-        themeSnapshot: {
-          ...createThemeSnapshot({
-            setCards,
-            theme: publicDisplayName,
-          }),
-          ...(publicDescription
-            ? {
-                momentum: publicDescription,
-              }
-            : {}),
-          setCount: setCount ?? catalogRows.length,
-          slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),
-        },
         setCards,
+        themeSnapshot,
+        visual: createPublicCatalogThemeVisual({
+          imageUrl: visualImageUrl,
+          publicAccentColor,
+          themeName: themeSnapshot.name,
+        }),
       };
     } catch (error) {
       if (!supabaseClient) {
@@ -6037,6 +6224,78 @@ export async function getCatalogThemePageBySlug({
     }),
     setCards: themeGroup.setCards,
   };
+}
+
+export async function getCatalogThemeMetadataBySlug({
+  slug,
+  supabaseClient,
+}: {
+  slug: string;
+  supabaseClient?: CatalogSupabaseClient;
+}): Promise<CatalogThemeSnapshot | undefined> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return undefined;
+  }
+
+  try {
+    const { data, error } = await activeSupabaseClient
+      .from(CATALOG_THEMES_TABLE)
+      .select(
+        'id, slug, display_name, public_display_name, public_description, status, is_public',
+      )
+      .eq('slug', slug)
+      .eq('status', 'active')
+      .eq('is_public', true)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error('Unable to load catalog theme metadata.');
+    }
+
+    const themeRow = data as Pick<
+      CatalogThemeRow,
+      | 'display_name'
+      | 'id'
+      | 'is_public'
+      | 'public_description'
+      | 'public_display_name'
+      | 'slug'
+      | 'status'
+    > | null;
+
+    if (!themeRow) {
+      return undefined;
+    }
+
+    const publicDisplayName =
+      normalizeCatalogThemePublicText(themeRow.public_display_name) ??
+      themeRow.display_name;
+    const publicDescription = normalizeCatalogThemePublicText(
+      themeRow.public_description,
+    );
+
+    return {
+      ...createThemeSnapshot({
+        setCards: [],
+        theme: publicDisplayName,
+      }),
+      ...(publicDescription
+        ? {
+            momentum: publicDescription,
+          }
+        : {}),
+      slug: themeRow.slug ?? buildCatalogThemeSlug(publicDisplayName),
+    };
+  } catch (error) {
+    if (!supabaseClient) {
+      return undefined;
+    }
+
+    throw error;
+  }
 }
 
 export async function listDiscoverBrowseThemeGroups({
