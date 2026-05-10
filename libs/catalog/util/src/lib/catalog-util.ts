@@ -394,6 +394,13 @@ export interface CatalogThemeDefinition {
 
 const curatedCatalogThemeVisualsByName = new Map<string, CatalogThemeVisual>([
   [
+    'LEGO® Animal Crossing™',
+    {
+      backgroundColor: '#6bbf59',
+      textColor: '#10241f',
+    },
+  ],
+  [
     'Icons',
     {
       backgroundColor: '#f0c63b',

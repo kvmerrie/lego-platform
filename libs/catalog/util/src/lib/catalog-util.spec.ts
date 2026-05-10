@@ -186,6 +186,14 @@ describe('catalog snapshot helpers', () => {
       backgroundColor: '#2f7fc0',
       textColor: '#ffffff',
     });
+    expect(getCatalogThemeVisual('Animal Crossing')).toEqual({
+      backgroundColor: '#6bbf59',
+      textColor: '#10241f',
+    });
+    expect(getCatalogThemeVisual('LEGO® Animal Crossing™')).toEqual({
+      backgroundColor: '#6bbf59',
+      textColor: '#10241f',
+    });
     expect(getCatalogThemeVisual('The Legend of Zelda')).toEqual({
       backgroundColor: '#4d8b72',
       textColor: '#ffffff',

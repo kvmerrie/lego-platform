@@ -42,7 +42,7 @@ import {
 export const dynamicParams = true;
 export const revalidate = 21_600;
 const THEME_DISCOVERY_RAIL_LIMIT = 6;
-const THEME_SET_PAGE_SIZE = 48;
+const THEME_SET_PAGE_SIZE = 20;
 const THEME_RELATED_ARTICLE_LIMIT = 3;
 const THEME_NON_CRITICAL_TIMEOUT_MS = 350;
 
@@ -498,14 +498,9 @@ async function ThemeDealRailSlot({
   slug: string;
   themePage: NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>;
 }) {
-  const dealSetCards = await withThemePageOptionalTimeout({
-    fallback: [] as CatalogFeatureThemePageDealItem[],
-    label: 'deal-rail',
-    promise: loadThemeDealSetCards({
-      slug,
-      themePage,
-    }),
+  const dealSetCards = await loadThemeDealSetCards({
     slug,
+    themePage,
   });
 
   return (

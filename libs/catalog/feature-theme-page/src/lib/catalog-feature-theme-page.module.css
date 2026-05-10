@@ -337,6 +337,10 @@
   .introContent {
     padding-right: var(--lego-space-4);
   }
+
+  .browseGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 100rem) {

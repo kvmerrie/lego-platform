@@ -1249,8 +1249,10 @@ describe('catalog promotion server', () => {
       rowsByTable: {
         catalog_themes: [
           {
+            created_at: '2026-04-20T08:00:00.000Z',
             id: 'theme:advent',
             slug: 'advent',
+            updated_at: '2026-04-20T09:00:00.000Z',
           },
         ],
       },
@@ -1270,10 +1272,12 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
+          created_at: '2026-04-20T08:00:00.000Z',
           display_name: 'Advent',
           id: 'theme:advent',
           slug: 'advent',
           status: 'active',
+          updated_at: '2026-04-21T08:00:00.000Z',
         },
       ],
       {
@@ -1330,10 +1334,12 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
+          created_at: '2026-04-21T08:00:00.000Z',
           display_name: 'Advent',
           id: 'theme:advent',
           slug: 'advent',
           status: 'active',
+          updated_at: '2026-04-21T08:00:00.000Z',
         },
       ],
       {
@@ -1416,10 +1422,12 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
+          created_at: '2026-04-21T08:00:00.000Z',
           display_name: 'Icons',
           id: 'theme:icons',
           slug: 'icons',
           status: 'active',
+          updated_at: '2026-04-21T08:00:00.000Z',
         },
         {
           created_at: '2026-04-21T08:00:00.000Z',
@@ -1499,10 +1507,12 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
+          created_at: '2026-04-21T08:00:00.000Z',
           display_name: 'Advent',
           id: 'theme:advent',
           slug: 'advent',
           status: 'active',
+          updated_at: '2026-04-21T08:00:00.000Z',
         },
         {
           created_at: '2026-04-21T08:05:00.000Z',
@@ -1514,6 +1524,97 @@ describe('catalog promotion server', () => {
           status: 'active',
           updated_at: '2026-04-21T08:05:00.000Z',
         },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+  });
+
+  test('defaults required catalog theme timestamps in the actual upsert payload', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: null,
+            display_name: 'Existing Theme',
+            id: 'theme:existing',
+            is_public: false,
+            public_order: null,
+            slug: 'existing-theme',
+            status: null,
+            updated_at: null,
+          },
+          {
+            display_name: 'Missing Timestamp Theme',
+            id: 'theme:missing-timestamp',
+            is_public: false,
+            public_order: null,
+            slug: 'missing-timestamp-theme',
+          },
+          {
+            created_at: '   ',
+            display_name: 'Blank Timestamp Theme',
+            id: 'theme:blank-timestamp',
+            is_public: false,
+            public_order: null,
+            slug: 'blank-timestamp-theme',
+            status: '',
+            updated_at: '',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            created_at: '2026-04-20T07:00:00.000Z',
+            id: 'theme:existing',
+            slug: 'existing-theme',
+            updated_at: '2026-04-20T08:00:00.000Z',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          created_at: '2026-04-20T07:00:00.000Z',
+          id: 'theme:existing',
+          status: 'active',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        }),
+        expect.objectContaining({
+          created_at: '2026-04-22T09:00:00.000Z',
+          id: 'theme:missing-timestamp',
+          status: 'active',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        }),
+        expect.objectContaining({
+          created_at: '2026-04-22T09:00:00.000Z',
+          id: 'theme:blank-timestamp',
+          status: 'active',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        }),
       ],
       {
         onConflict: 'id',

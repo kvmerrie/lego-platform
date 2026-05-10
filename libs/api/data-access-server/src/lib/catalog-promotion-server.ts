@@ -333,7 +333,13 @@ function readOptionalPromotionString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
-function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
+function normalizeCatalogThemeRow({
+  nowIso,
+  theme,
+}: {
+  nowIso: string;
+  theme: CatalogThemeRow;
+}): CatalogThemeRow {
   const displayName = readRequiredPromotionString({
     column: 'display_name',
     row: theme as unknown as Readonly<Record<string, unknown>>,
@@ -357,6 +363,7 @@ function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
 
   return {
     ...theme,
+    created_at: readOptionalPromotionString(theme.created_at) ?? nowIso,
     display_name: displayName,
     id,
     is_public: readOptionalPromotionBoolean(theme.is_public) ?? false,
@@ -367,6 +374,7 @@ function normalizeCatalogThemeRow(theme: CatalogThemeRow): CatalogThemeRow {
         : null,
     slug: normalizedSlug,
     status: readOptionalPromotionString(theme.status) ?? 'active',
+    updated_at: readOptionalPromotionString(theme.updated_at) ?? nowIso,
   };
 }
 
@@ -517,6 +525,42 @@ function selectPromotionUpsertColumns({
   );
 }
 
+function finalizePromotionUpsertRow({
+  existingRow,
+  nowIso,
+  row,
+  sourceRow,
+  table,
+}: {
+  existingRow?: Readonly<Record<string, unknown>>;
+  nowIso: string;
+  row: Record<string, unknown>;
+  sourceRow: Readonly<Record<string, unknown>>;
+  table: string;
+}): Record<string, unknown> {
+  if (table !== CATALOG_THEMES_TABLE) {
+    return row;
+  }
+
+  return {
+    ...row,
+    created_at:
+      readOptionalPromotionString(existingRow?.['created_at']) ??
+      readOptionalPromotionString(sourceRow['created_at']) ??
+      readOptionalPromotionString(row['created_at']) ??
+      nowIso,
+    status:
+      readOptionalPromotionString(row['status']) ??
+      readOptionalPromotionString(sourceRow['status']) ??
+      'active',
+    updated_at:
+      readOptionalPromotionString(sourceRow['updated_at']) ??
+      readOptionalPromotionString(row['updated_at']) ??
+      readOptionalPromotionString(existingRow?.['updated_at']) ??
+      nowIso,
+  };
+}
+
 function createPromotionClients(): {
   productionSupabaseClient: CatalogPromotionSupabaseClient;
   stagingSupabaseClient: CatalogPromotionSupabaseClient;
@@ -612,6 +656,8 @@ function listExistingPromotionInspectionColumns({
       'public_image_url',
       'public_logo_url',
       'public_order',
+      'created_at',
+      'updated_at',
     ]),
   ].join(', ');
 }
@@ -666,11 +712,13 @@ async function listExistingConflictRows({
 }
 
 async function upsertRows<TRow>({
+  nowIso,
   onConflict,
   rows,
   supabaseClient,
   table,
 }: {
+  nowIso: string;
   onConflict: string;
   rows: readonly TRow[];
   supabaseClient: CatalogPromotionSupabaseClient;
@@ -715,11 +763,20 @@ async function upsertRows<TRow>({
       row: rowRecord,
     });
 
-    return selectPromotionUpsertColumns({
+    const existingRow = existingRowsByConflictKey.get(conflictKey);
+    const projectedRow = selectPromotionUpsertColumns({
       conflictColumns,
-      existingRow: existingRowsByConflictKey.get(conflictKey),
+      existingRow,
       isExistingRow: existingRowsByConflictKey.has(conflictKey),
       row: rowRecord,
+      table,
+    });
+
+    return finalizePromotionUpsertRow({
+      existingRow,
+      nowIso,
+      row: projectedRow,
+      sourceRow: rowRecord,
       table,
     });
   });
@@ -856,13 +913,16 @@ async function planMerchantsBySlug({
 }
 
 async function upsertMerchantsBySlug({
+  nowIso,
   plan,
   supabaseClient,
 }: {
+  nowIso: string;
   plan: CommerceMerchantPromotionPlan;
   supabaseClient: CatalogPromotionSupabaseClient;
 }): Promise<CatalogPromotionTableSummary> {
   return upsertRows({
+    nowIso,
     onConflict: 'slug',
     rows: plan.rowsForUpsert,
     supabaseClient,
@@ -962,13 +1022,16 @@ function resolveOfferSeedsByCompositeKey({
 }
 
 async function upsertOfferSeedsByCompositeKey({
+  nowIso,
   rows,
   supabaseClient,
 }: {
+  nowIso: string;
   rows: readonly CommerceOfferSeedRow[];
   supabaseClient: CatalogPromotionSupabaseClient;
 }): Promise<CatalogPromotionTableSummary> {
   return upsertRows({
+    nowIso,
     onConflict: 'set_id,merchant_id',
     rows,
     supabaseClient,
@@ -982,6 +1045,7 @@ export async function promoteCatalogFromStagingToProduction({
   now = () => new Date(),
 }: PromoteCatalogFromStagingToProductionDependencies = {}): Promise<CatalogPromotionResult> {
   const startedAt = now();
+  const startedAtIso = startedAt.toISOString();
   let promotionClients: ReturnType<typeof createPromotionClients> | undefined;
   const getPromotionClients = () => {
     promotionClients ??= createPromotionClients();
@@ -1064,7 +1128,12 @@ export async function promoteCatalogFromStagingToProduction({
       table: COMMERCE_OFFER_SEEDS_TABLE,
     });
 
-    const normalizedCatalogThemes = catalogThemes.map(normalizeCatalogThemeRow);
+    const normalizedCatalogThemes = catalogThemes.map((theme) =>
+      normalizeCatalogThemeRow({
+        nowIso: startedAtIso,
+        theme,
+      }),
+    );
     const normalizedCatalogSets = catalogSets.map(normalizeCatalogSetRow);
     const normalizedCommerceMerchants =
       commerceMerchants.map(normalizeMerchantRow);
@@ -1210,24 +1279,28 @@ export async function promoteCatalogFromStagingToProduction({
     });
 
     tables.catalog_source_themes = await upsertRows({
+      nowIso: startedAtIso,
       onConflict: 'id',
       rows: catalogSourceThemes,
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SOURCE_THEMES_TABLE,
     });
     tables.catalog_themes = await upsertRows({
+      nowIso: startedAtIso,
       onConflict: 'id',
       rows: normalizedCatalogThemes,
       supabaseClient: productionSupabaseClient,
       table: CATALOG_THEMES_TABLE,
     });
     tables.catalog_theme_mappings = await upsertRows({
+      nowIso: startedAtIso,
       onConflict: 'source_theme_id',
       rows: catalogThemeMappings,
       supabaseClient: productionSupabaseClient,
       table: CATALOG_THEME_MAPPINGS_TABLE,
     });
     tables.catalog_sets = await upsertRows({
+      nowIso: startedAtIso,
       onConflict: 'set_id',
       rows: normalizedCatalogSets,
       supabaseClient: productionSupabaseClient,
@@ -1244,24 +1317,27 @@ export async function promoteCatalogFromStagingToProduction({
     }
 
     tables.commerce_merchants = await upsertMerchantsBySlug({
+      nowIso: startedAtIso,
       plan: merchantPromotionPlan,
       supabaseClient: productionSupabaseClient,
     });
 
     tables.commerce_benchmark_sets = await upsertRows({
+      nowIso: startedAtIso,
       onConflict: 'set_id',
       rows: normalizedCommerceBenchmarkSets,
       supabaseClient: productionSupabaseClient,
       table: COMMERCE_BENCHMARK_SETS_TABLE,
     });
     tables.commerce_offer_seeds = await upsertOfferSeedsByCompositeKey({
+      nowIso: startedAtIso,
       rows: resolvedCommerceOfferSeeds,
       supabaseClient: productionSupabaseClient,
     });
 
     return {
       durationMs: now().getTime() - startedAt.getTime(),
-      startedAt: startedAt.toISOString(),
+      startedAt: startedAtIso,
       status: 'ok',
       tables: tables as CatalogPromotionResult['tables'],
     };

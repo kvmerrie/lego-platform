@@ -1538,16 +1538,16 @@ describe('catalog effective data access web', () => {
     });
 
     const themePage = await getCatalogThemePageBySlug({
-      limit: 48,
-      offset: 48,
+      limit: 20,
+      offset: 20,
       slug: 'star-wars',
       supabaseClient,
     });
 
     expect(themePage?.themeSnapshot.setCount).toBe(1001);
-    expect(themePage?.setCards).toHaveLength(48);
-    expect(themePage?.setCards[0]?.id).toBe('70048');
-    expect(themePage?.setCards.at(-1)?.id).toBe('70095');
+    expect(themePage?.setCards).toHaveLength(20);
+    expect(themePage?.setCards[0]?.id).toBe('70020');
+    expect(themePage?.setCards.at(-1)?.id).toBe('70039');
   });
 
   test('uses cached theme summaries for theme detail pagination without exact counts', async () => {
@@ -1805,6 +1805,80 @@ describe('catalog effective data access web', () => {
       backgroundColor: '#e0b84f',
       imageUrl: 'https://cdn.example.com/editions-public.jpg',
       textColor: '#171a22',
+    });
+  });
+
+  test('uses curated Animal Crossing visuals for public directory and detail pages', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-18T08:00:00.000Z',
+          image_url: 'https://cdn.example.com/animal-crossing-set.jpg',
+          name: "Kapp'n's Island Boat Tour",
+          piece_count: 233,
+          primary_theme_id: 'theme:animal-crossing',
+          release_year: 2024,
+          set_id: '77048',
+          slug: 'kappns-island-boat-tour-77048',
+          source: 'rebrickable',
+          source_set_number: '77048-1',
+          source_theme_id: 'rebrickable:animal-crossing',
+          status: 'active',
+          updated_at: '2026-04-18T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Animal Crossing',
+          id: 'theme:animal-crossing',
+          is_public: true,
+          public_accent_color: null,
+          public_display_name: 'LEGO® Animal Crossing™',
+          public_image_url: null,
+          public_order: 10,
+          slug: 'animal-crossing',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 9,
+          representative_image_url:
+            'https://cdn.example.com/animal-crossing-summary.jpg',
+          representative_set_id: '77048',
+          theme_id: 'theme:animal-crossing',
+        },
+      ],
+    });
+
+    const [directoryItem, themePage] = await Promise.all([
+      listCatalogThemeDirectoryItems({
+        supabaseClient,
+      }).then((items) =>
+        items.find((item) => item.themeSnapshot.slug === 'animal-crossing'),
+      ),
+      getCatalogThemePageBySlug({
+        slug: 'animal-crossing',
+        supabaseClient,
+      }),
+    ]);
+
+    expect(directoryItem?.imageUrl).toBe(
+      'https://cdn.example.com/animal-crossing-summary.jpg',
+    );
+    expect(directoryItem?.visual).toEqual({
+      backgroundColor: '#6bbf59',
+      imageUrl: 'https://cdn.example.com/animal-crossing-summary.jpg',
+      textColor: '#10241f',
+    });
+    expect(themePage?.themeSnapshot.name).toBe('LEGO® Animal Crossing™');
+    expect(themePage?.visual).toEqual({
+      backgroundColor: '#6bbf59',
+      imageUrl: 'https://cdn.example.com/animal-crossing-summary.jpg',
+      textColor: '#10241f',
     });
   });
 

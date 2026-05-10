@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { renderToReadableStream } from 'react-dom/server.browser';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -37,7 +38,12 @@ vi.mock('@lego-platform/catalog/feature-theme-page', () => ({
       {relatedArticlesRail}
     </div>
   ),
-  CatalogFeatureThemeDealRail: () => <section data-testid="theme-deal-rail" />,
+  CatalogFeatureThemeDealRail: ({
+    dealSetCards,
+  }: {
+    dealSetCards: readonly unknown[];
+  }) =>
+    dealSetCards.length ? <section data-testid="theme-deal-rail" /> : null,
   CatalogFeatureThemeRelatedArticles: () => (
     <section data-testid="theme-related-articles" />
   ),
@@ -66,6 +72,14 @@ vi.mock('next/navigation', () => ({
 vi.mock('next/cache', () => ({
   unstable_cache: (callback: () => unknown) => callback,
 }));
+
+async function renderToStreamedMarkup(element: React.ReactElement) {
+  const stream = await renderToReadableStream(element);
+
+  await stream.allReady;
+
+  return new Response(stream).text();
+}
 
 describe('theme page JSON-LD', () => {
   beforeEach(() => {
@@ -151,6 +165,11 @@ describe('theme page JSON-LD', () => {
     expect(html).toContain('"@type":"CollectionPage"');
     expect(html).toContain('"@type":"BreadcrumbList"');
     expect(html).toContain('https://www.brickhunt.nl/themes/star-wars');
+    expect(themePageMocks.getCatalogThemePageBySlug).toHaveBeenCalledWith({
+      limit: 20,
+      offset: 0,
+      slug: 'star-wars',
+    });
     expect(
       themePageMocks.listCatalogDiscoverySignalsBySetId,
     ).toHaveBeenCalledWith(
@@ -250,5 +269,86 @@ describe('theme page JSON-LD', () => {
     expect(
       themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
     ).not.toHaveBeenCalled();
+  });
+
+  it('streams the deal rail after slow discovery resolves on client navigation', async () => {
+    themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
+      setCards: [
+        {
+          id: '75355',
+          imageUrl: 'https://cdn.example.com/75355.jpg',
+          name: 'X-wing Starfighter',
+          pieces: 1949,
+          releaseYear: 2023,
+          slug: 'x-wing-starfighter-75355',
+          theme: 'Star Wars',
+        },
+      ],
+      themeSnapshot: {
+        momentum: 'R2-D2, X-wings en displaysets houden dit thema sterk.',
+        name: 'Star Wars',
+        setCount: 1,
+        slug: 'star-wars',
+      },
+    });
+    themePageMocks.listCatalogDiscoverySignalsBySetId.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve(
+                new Map([
+                  [
+                    '75355',
+                    {
+                      latestPriceMinor: 19999,
+                    },
+                  ],
+                ]),
+              ),
+            450,
+          );
+        }),
+    );
+    themePageMocks.rankCatalogComparisonDiscoverySetCards.mockReturnValue([
+      {
+        id: '75355',
+        imageUrl: 'https://cdn.example.com/75355.jpg',
+        name: 'X-wing Starfighter',
+        pieces: 1949,
+        releaseYear: 2023,
+        slug: 'x-wing-starfighter-75355',
+        theme: 'Star Wars',
+      },
+    ]);
+    themePageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    themePageMocks.listPublishedArticles.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = await renderToStreamedMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'star-wars',
+        }),
+      }),
+    );
+
+    expect(html).toContain('data-testid="theme-deal-rail"');
+    expect(
+      themePageMocks.listCatalogDiscoverySignalsBySetId,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setIds: ['75355'],
+      }),
+    );
+    expect(
+      themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setIds: ['75355'],
+      }),
+    );
   });
 });
