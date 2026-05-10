@@ -4,7 +4,7 @@ import {
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
 import type { Metadata } from 'next';
-import React from 'react';
+import React, { Suspense } from 'react';
 import {
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   type CatalogPrimaryOfferAvailabilityState,
@@ -65,6 +65,7 @@ import {
 } from '@lego-platform/shared/config';
 import { getBrickhuntAnalyticsPriceVerdict } from '@lego-platform/shared/util';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
+import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import {
   getCatalogReleaseYear,
@@ -88,11 +89,165 @@ export const revalidate = 21_600;
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SIMILAR_SETS_RAIL_LIMIT = 20;
 const SET_NEWS_RAIL_LIMIT = 4;
+const SET_DETAIL_OPTIONAL_RAIL_TIMEOUT_MS = 350;
 const SET_DETAIL_RECENT_RELEASE_LOOKBACK_DAYS = 90;
 const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
 const DEFAULT_SET_DETAIL_OG_IMAGE = '/favicon.ico';
 const SET_DETAIL_OG_IMAGE_WIDTH = 1200;
 const SET_DETAIL_OG_IMAGE_HEIGHT = 1200;
+
+function isSetPagePerfDebugEnabled(): boolean {
+  return process.env['DEBUG_SET_PAGE_PERF'] === 'true';
+}
+
+function logSetPagePerf({
+  details,
+  durationMs,
+  label,
+  slug,
+  status,
+}: {
+  details?: Readonly<Record<string, unknown>>;
+  durationMs: number;
+  label: string;
+  slug: string;
+  status: 'ok' | 'error' | 'timeout';
+}) {
+  if (!isSetPagePerfDebugEnabled()) {
+    return;
+  }
+
+  console.info('[set-page-perf]', {
+    ...details,
+    durationMs,
+    label,
+    slug,
+    status,
+  });
+}
+
+async function measureSetPageFetch<T>({
+  label,
+  load,
+  slug,
+}: {
+  label: string;
+  load: () => Promise<T>;
+  slug: string;
+}): Promise<T> {
+  if (!isSetPagePerfDebugEnabled()) {
+    return load();
+  }
+
+  const startedAt = Date.now();
+
+  try {
+    const result = await load();
+
+    logSetPagePerf({
+      durationMs: Date.now() - startedAt,
+      label,
+      slug,
+      status: 'ok',
+    });
+
+    return result;
+  } catch (error) {
+    logSetPagePerf({
+      durationMs: Date.now() - startedAt,
+      label,
+      slug,
+      status: 'error',
+    });
+
+    throw error;
+  }
+}
+
+function measureSetPageSync<T>({
+  label,
+  load,
+  slug,
+}: {
+  label: string;
+  load: () => T;
+  slug: string;
+}): T {
+  if (!isSetPagePerfDebugEnabled()) {
+    return load();
+  }
+
+  const startedAt = Date.now();
+
+  try {
+    const result = load();
+
+    logSetPagePerf({
+      durationMs: Date.now() - startedAt,
+      label,
+      slug,
+      status: 'ok',
+    });
+
+    return result;
+  } catch (error) {
+    logSetPagePerf({
+      durationMs: Date.now() - startedAt,
+      label,
+      slug,
+      status: 'error',
+    });
+
+    throw error;
+  }
+}
+
+async function getCachedCatalogSetBySlug({ slug }: { slug: string }) {
+  return unstable_cache(
+    () => getCatalogSetBySlug({ slug }),
+    ['catalog-set-detail', slug],
+    {
+      revalidate,
+      tags: [cacheTags.set(slug)],
+    },
+  )();
+}
+
+async function withSetPageOptionalTimeout<T>({
+  fallback,
+  label,
+  promise,
+  slug,
+  timeoutMs = SET_DETAIL_OPTIONAL_RAIL_TIMEOUT_MS,
+}: {
+  fallback: T;
+  label: string;
+  promise: Promise<T>;
+  slug: string;
+  timeoutMs?: number;
+}): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<T>((resolve) => {
+    timeout = setTimeout(() => {
+      logSetPagePerf({
+        durationMs: timeoutMs,
+        label,
+        slug,
+        status: 'timeout',
+      });
+
+      resolve(fallback);
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise.catch(() => fallback), timeoutPromise]);
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+  }
+}
 
 export type SetDetailAvailabilityFallbackState =
   | 'available'
@@ -1162,30 +1317,43 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const catalogSetDetail = await getCatalogSetBySlug({
+  const catalogSetDetail = await measureSetPageFetch({
+    label: 'metadata:set-detail',
     slug,
+    load: () => getCachedCatalogSetBySlug({ slug }),
   });
 
   if (!catalogSetDetail) {
     return {};
   }
 
-  const currentOfferSummaryBySetId =
-    await listCatalogCurrentOfferSummariesBySetIds({
-      cacheOptions: {
-        revalidateSeconds: revalidate,
-        tags: [
-          cacheTags.set(catalogSetDetail.id),
-          cacheTags.set(catalogSetDetail.slug),
-        ],
-      },
-      setIds: [catalogSetDetail.id],
-    });
+  const metadataOffers = await measureSetPageFetch({
+    label: 'metadata:offers',
+    slug,
+    load: () =>
+      loadSetDetailLiveOffers({
+        setId: catalogSetDetail.id,
+      }),
+  });
+  const localizedMetadataOffers = metadataOffers.filter(isEuroCatalogOffer);
+  const metadataCurrentOfferSummary: CatalogCurrentOfferSummary | undefined =
+    localizedMetadataOffers.length
+      ? {
+          bestOffer: getBestOffer(localizedMetadataOffers) ?? undefined,
+          offers: localizedMetadataOffers,
+          setId: catalogSetDetail.id,
+        }
+      : undefined;
 
-  const metadata = buildSetDetailMetadata({
-    catalogSetDetail,
-    currentOfferSummary: currentOfferSummaryBySetId.get(catalogSetDetail.id),
-    pricePanelSnapshot: getPricePanelSnapshot(catalogSetDetail.id),
+  const metadata = measureSetPageSync({
+    label: 'metadata:build',
+    slug,
+    load: () =>
+      buildSetDetailMetadata({
+        catalogSetDetail,
+        currentOfferSummary: metadataCurrentOfferSummary,
+        pricePanelSnapshot: getPricePanelSnapshot(catalogSetDetail.id),
+      }),
   });
 
   const metadataImage = Array.isArray(metadata.openGraph?.images)
@@ -1208,20 +1376,25 @@ export default async function SetDetailPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const serverRenderStartedAt = Date.now();
   const { slug } = await params;
-  const catalogSetDetail = await getCatalogSetBySlug({
+  const catalogSetDetail = await measureSetPageFetch({
+    label: 'set-detail',
     slug,
+    load: () => getCachedCatalogSetBySlug({ slug }),
   });
 
   if (!catalogSetDetail) {
     notFound();
   }
 
-  const liveSetDetailOffers = await loadSetDetailLiveOffers({
-    setId: catalogSetDetail.id,
-  });
-  const primaryOfferAvailability = await loadSetDetailPrimaryOfferAvailability({
-    setId: catalogSetDetail.id,
+  const liveSetDetailOffers = await measureSetPageFetch({
+    label: 'offers',
+    slug,
+    load: () =>
+      loadSetDetailLiveOffers({
+        setId: catalogSetDetail.id,
+      }),
   });
   // Only live validated offers count as current public pricing.
   const localizedSetDetailOffers =
@@ -1229,6 +1402,20 @@ export default async function SetDetailPage({
   const hasInStockOffer = localizedSetDetailOffers.some(
     (catalogOffer) => catalogOffer.availability === 'in_stock',
   );
+  const primaryOfferAvailability = hasInStockOffer
+    ? {
+        primaryMerchantCount: 0,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 1,
+      }
+    : await measureSetPageFetch({
+        label: 'offer-availability',
+        slug,
+        load: () =>
+          loadSetDetailPrimaryOfferAvailability({
+            setId: catalogSetDetail.id,
+          }),
+      });
   const availabilityFallbackState = resolveSetDetailAvailabilityFallbackState({
     hasInStockOffer,
     primaryOfferAvailability,
@@ -1265,87 +1452,50 @@ export default async function SetDetailPage({
   const analyticsPriceVerdict = hasTrackedAvailabilityFallback
     ? 'neutral'
     : getBrickhuntAnalyticsPriceVerdict(defaultDealVerdict.tone);
-  const similarSetCandidateCards = await listCatalogSimilarSetCards({
-    currentSetCard: {
-      id: catalogSetDetail.id,
-      name: catalogSetDetail.name,
-      pieces: catalogSetDetail.pieces,
-      releaseYear: catalogSetDetail.releaseYear,
-      theme: catalogSetDetail.theme,
-    },
-    limit: SIMILAR_SETS_RAIL_LIMIT * 4,
-    referenceBestPriceMinor:
-      bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor,
-  });
-  const catalogDiscoverySignalBySetId =
-    await listCatalogDiscoverySignalsBySetId({
-      cacheOptions: {
-        revalidateSeconds: revalidate,
-        tags: [
-          cacheTags.set(catalogSetDetail.id),
-          cacheTags.set(catalogSetDetail.slug),
-          ...similarSetCandidateCards.map((setCard) =>
-            cacheTags.set(setCard.id),
-          ),
-        ],
-      },
-      setIds: [
-        catalogSetDetail.id,
-        ...similarSetCandidateCards.map((setCard) => setCard.id),
-      ],
-    });
-  const similarSetCards = rankCatalogSimilarSetCards({
-    currentSetCard: {
-      id: catalogSetDetail.id,
-      name: catalogSetDetail.name,
-      pieces: catalogSetDetail.pieces,
-      releaseYear: catalogSetDetail.releaseYear,
-      theme: catalogSetDetail.theme,
-    },
-    getCatalogDiscoverySignalFn: (setId) =>
-      catalogDiscoverySignalBySetId.get(setId),
-    limit: SIMILAR_SETS_RAIL_LIMIT,
-    referenceBestPriceMinor:
-      bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor,
-    setCards: similarSetCandidateCards,
-  });
-  const similarSetCurrentOfferSummaryBySetId =
-    similarSetCards.length > 0
-      ? await listCatalogCurrentOfferSummariesBySetIds({
-          cacheOptions: {
-            revalidateSeconds: revalidate,
-            tags: [
-              ...similarSetCards.map((setCard) => cacheTags.set(setCard.id)),
-            ],
-          },
-          setIds: similarSetCards.map((setCard) => setCard.id),
-        })
-      : new Map();
-  const similarSetRailItems = toSimilarSetRailItems({
-    currentOfferSummaryBySetId: similarSetCurrentOfferSummaryBySetId,
-    setCards: similarSetCards,
-  });
-  const setNewsArticles = await listPublishedArticlesByPrimarySetNumber({
-    limit: SET_NEWS_RAIL_LIMIT,
-    setNumber: catalogSetDetail.id,
-  });
   const themeHref = catalogSetDetail.publicTheme
     ? buildThemePath(catalogSetDetail.publicTheme.slug)
     : undefined;
   const canonicalUrl = buildCanonicalUrl(
     buildSetDetailPath(catalogSetDetail.slug),
   );
-  const jsonLd = [
-    buildSetProductJsonLd({
-      canonicalUrl,
-      catalogSetDetail,
-      offers: hasTrackedAvailabilityFallback ? [] : localizedSetDetailOffers,
-    }),
-    buildSetBreadcrumbJsonLd({
-      catalogSetDetail,
-      themeUrl: themeHref,
-    }),
-  ];
+  const jsonLd = measureSetPageSync({
+    label: 'structured-data',
+    slug,
+    load: () => [
+      buildSetProductJsonLd({
+        canonicalUrl,
+        catalogSetDetail,
+        offers: hasTrackedAvailabilityFallback ? [] : localizedSetDetailOffers,
+      }),
+      buildSetBreadcrumbJsonLd({
+        catalogSetDetail,
+        themeUrl: themeHref,
+      }),
+    ],
+  });
+
+  logSetPagePerf({
+    details: {
+      lcpImageCandidate:
+        catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl,
+      setId: catalogSetDetail.id,
+    },
+    durationMs: 0,
+    label: 'price-history',
+    slug,
+    status: 'ok',
+  });
+  logSetPagePerf({
+    details: {
+      lcpImageCandidate:
+        catalogSetDetail.primaryImage ?? catalogSetDetail.imageUrl,
+      setId: catalogSetDetail.id,
+    },
+    durationMs: Date.now() - serverRenderStartedAt,
+    label: 'server-render-total',
+    slug,
+    status: 'ok',
+  });
 
   return (
     <ShellWeb>
@@ -1452,24 +1602,20 @@ export default async function SetDetailPage({
           <CatalogFeatureRecentlyViewed currentSetNum={catalogSetDetail.id} />
         }
         similarSetsRail={
-          similarSetRailItems.length > 0 ? (
-            <CatalogFeatureSetList
-              description={buildSimilarSetsRailDescription(
-                catalogSetDetail.name,
-              )}
-              eyebrow="Hierna kijken"
-              sectionId="similar-sets"
-              setCards={similarSetRailItems}
-              signalText={`${similarSetRailItems.length} sets in ${catalogSetDetail.theme} met een vergelijkbare schaal of prijszone`}
-              tone="muted"
-              title="Vergelijkbare sets"
+          <Suspense fallback={null}>
+            <SetDetailSimilarSetsRailSlot
+              bestPriceMinor={
+                bestOffer?.priceCents ?? pricePanelSnapshot?.headlinePriceMinor
+              }
+              catalogSetDetail={catalogSetDetail}
+              slug={slug}
             />
-          ) : undefined
+          </Suspense>
         }
         setNewsRail={
-          setNewsArticles.length > 0 ? (
-            <SetNewsRail articles={setNewsArticles} />
-          ) : undefined
+          <Suspense fallback={null}>
+            <SetDetailNewsRailSlot setId={catalogSetDetail.id} slug={slug} />
+          </Suspense>
         }
         themeDirectoryHref={buildWebPath(webPathnames.themes)}
         themeHref={themeHref}
@@ -1514,4 +1660,164 @@ export default async function SetDetailPage({
       />
     </ShellWeb>
   );
+}
+
+async function SetDetailSimilarSetsRailSlot({
+  bestPriceMinor,
+  catalogSetDetail,
+  slug,
+}: {
+  bestPriceMinor?: number;
+  catalogSetDetail: CatalogSetDetail;
+  slug: string;
+}) {
+  return withSetPageOptionalTimeout({
+    fallback: null,
+    label: 'similar-sets:rail',
+    promise: loadSetDetailSimilarSetsRail({
+      bestPriceMinor,
+      catalogSetDetail,
+      slug,
+    }),
+    slug,
+  });
+}
+
+async function loadSetDetailSimilarSetsRail({
+  bestPriceMinor,
+  catalogSetDetail,
+  slug,
+}: {
+  bestPriceMinor?: number;
+  catalogSetDetail: CatalogSetDetail;
+  slug: string;
+}) {
+  const currentSetCard = {
+    id: catalogSetDetail.id,
+    name: catalogSetDetail.name,
+    pieces: catalogSetDetail.pieces,
+    releaseYear: catalogSetDetail.releaseYear,
+    theme: catalogSetDetail.theme,
+  };
+  const similarSetCandidateCards = await measureSetPageFetch({
+    label: 'similar-sets:candidates',
+    slug,
+    load: () =>
+      listCatalogSimilarSetCards({
+        currentSetCard,
+        limit: SIMILAR_SETS_RAIL_LIMIT * 4,
+        referenceBestPriceMinor: bestPriceMinor,
+      }),
+  });
+  const catalogDiscoverySignalBySetId = await measureSetPageFetch({
+    label: 'discovery-signals',
+    slug,
+    load: () =>
+      listCatalogDiscoverySignalsBySetId({
+        cacheOptions: {
+          revalidateSeconds: revalidate,
+          tags: [
+            cacheTags.set(catalogSetDetail.id),
+            cacheTags.set(catalogSetDetail.slug),
+            ...similarSetCandidateCards.map((setCard) =>
+              cacheTags.set(setCard.id),
+            ),
+          ],
+        },
+        setIds: [
+          catalogSetDetail.id,
+          ...similarSetCandidateCards.map((setCard) => setCard.id),
+        ],
+      }),
+  });
+  const similarSetCards = measureSetPageSync({
+    label: 'similar-sets:rank',
+    slug,
+    load: () =>
+      rankCatalogSimilarSetCards({
+        currentSetCard,
+        getCatalogDiscoverySignalFn: (setId) =>
+          catalogDiscoverySignalBySetId.get(setId),
+        limit: SIMILAR_SETS_RAIL_LIMIT,
+        referenceBestPriceMinor: bestPriceMinor,
+        setCards: similarSetCandidateCards,
+      }),
+  });
+  const similarSetCurrentOfferSummaryBySetId =
+    similarSetCards.length > 0
+      ? await measureSetPageFetch({
+          label: 'similar-sets:offers',
+          slug,
+          load: () =>
+            listCatalogCurrentOfferSummariesBySetIds({
+              cacheOptions: {
+                revalidateSeconds: revalidate,
+                tags: [
+                  ...similarSetCards.map((setCard) =>
+                    cacheTags.set(setCard.id),
+                  ),
+                ],
+              },
+              setIds: similarSetCards.map((setCard) => setCard.id),
+            }),
+        })
+      : new Map();
+  const similarSetRailItems = toSimilarSetRailItems({
+    currentOfferSummaryBySetId: similarSetCurrentOfferSummaryBySetId,
+    setCards: similarSetCards,
+  });
+
+  if (!similarSetRailItems.length) {
+    return null;
+  }
+
+  return (
+    <CatalogFeatureSetList
+      description={buildSimilarSetsRailDescription(catalogSetDetail.name)}
+      eyebrow="Hierna kijken"
+      sectionId="similar-sets"
+      setCards={similarSetRailItems}
+      signalText={`${similarSetRailItems.length} sets in ${catalogSetDetail.theme} met een vergelijkbare schaal of prijszone`}
+      tone="muted"
+      title="Vergelijkbare sets"
+    />
+  );
+}
+
+async function SetDetailNewsRailSlot({
+  setId,
+  slug,
+}: {
+  setId: string;
+  slug: string;
+}) {
+  return withSetPageOptionalTimeout({
+    fallback: null,
+    label: 'articles:rail',
+    promise: loadSetDetailNewsRail({
+      setId,
+      slug,
+    }),
+    slug,
+  });
+}
+
+async function loadSetDetailNewsRail({
+  setId,
+  slug,
+}: {
+  setId: string;
+  slug: string;
+}) {
+  const setNewsArticles = await measureSetPageFetch({
+    label: 'articles',
+    slug,
+    load: () =>
+      listPublishedArticlesByPrimarySetNumber({
+        limit: SET_NEWS_RAIL_LIMIT,
+        setNumber: setId,
+      }),
+  });
+
+  return <SetNewsRail articles={setNewsArticles} />;
 }

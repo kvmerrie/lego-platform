@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -19,6 +19,10 @@ const setPageMocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
+}));
+
+vi.mock('next/cache', () => ({
+  unstable_cache: (callback: () => unknown) => callback,
 }));
 
 vi.mock('@lego-platform/catalog/data-access-web', () => ({
@@ -104,6 +108,10 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
   WishlistFeatureWishlistToggle: () =>
     createElement('button', { type: 'button' }, 'wishlist'),
 }));
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 describe('set detail availability fallback state', () => {
   it('treats a current-year set with no current tracked offers as no_current_price', async () => {
@@ -562,13 +570,10 @@ describe('set detail page JSON-LD', () => {
     );
     expect(
       setPageMocks.listCatalogDiscoverySignalsBySetId,
-    ).toHaveBeenCalledWith({
-      cacheOptions: {
-        revalidateSeconds: 21_600,
-        tags: ['set:10316', 'set:lord-of-the-rings-rivendell-10316'],
-      },
-      setIds: ['10316'],
-    });
+    ).not.toHaveBeenCalled();
+    expect(
+      setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId,
+    ).not.toHaveBeenCalled();
   });
 
   it('renders without offer schema when merchant availability fails', async () => {
@@ -614,7 +619,7 @@ describe('set detail page JSON-LD', () => {
     );
   });
 
-  it('renders crawlable theme, related set, related article, and deals links', async () => {
+  it('renders crawlable critical theme and deals links without blocking on optional rails', async () => {
     setPageMocks.getCatalogSetBySlug.mockResolvedValue({
       id: '75355',
       imageUrl: 'https://cdn.example.com/75355.jpg',
@@ -678,10 +683,58 @@ describe('set detail page JSON-LD', () => {
 
     expect(html).toContain('href="/themes"');
     expect(html).toContain('href="/themes/star-wars"');
-    expect(html).toContain('href="/sets/grogu-mandalorian-apprentice-75446"');
-    expect(html).toContain(
-      'href="/artikelen/star-wars/x-wing-starfighter-review"',
+    expect(html).toContain('href="/deals"');
+    expect(
+      setPageMocks.listCatalogDiscoverySignalsBySetId,
+    ).not.toHaveBeenCalled();
+    expect(
+      setPageMocks.listPublishedArticlesByPrimarySetNumber,
+    ).toHaveBeenCalledWith({
+      limit: 4,
+      setNumber: '75355',
+    });
+  });
+
+  it('does not block initial render when optional similar and article rails are slow', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '75355',
+      imageUrl: 'https://cdn.example.com/75355.jpg',
+      name: 'X-wing Starfighter',
+      pieces: 1949,
+      publicTheme: {
+        name: 'Star Wars',
+        slug: 'star-wars',
+      },
+      releaseYear: 2023,
+      slug: 'x-wing-starfighter-75355',
+      theme: 'Star Wars',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+    setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId.mockResolvedValue(
+      {
+        primaryMerchantCount: 1,
+        primarySeedCount: 0,
+        validPrimaryOfferCount: 0,
+      },
     );
+    setPageMocks.listCatalogSimilarSetCards.mockImplementation(
+      () => new Promise(() => undefined),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockImplementation(
+      () => new Promise(() => undefined),
+    );
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'x-wing-starfighter-75355',
+        }),
+      }),
+    );
+
+    expect(html).toContain('data-testid="set-detail"');
+    expect(html).toContain('href="/themes/star-wars"');
     expect(html).toContain('href="/deals"');
   });
 
