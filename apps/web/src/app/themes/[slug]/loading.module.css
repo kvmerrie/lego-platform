@@ -1,0 +1,286 @@
+.page {
+  --theme-loading-base: color-mix(
+    in srgb,
+    var(--lego-color-surface-muted) 82%,
+    var(--lego-color-border-subtle) 18%
+  );
+  --theme-loading-sheen: color-mix(
+    in srgb,
+    var(--lego-color-surface) 86%,
+    transparent
+  );
+  display: grid;
+  gap: var(--lego-page-section-gap, var(--lego-space-6));
+}
+
+.hero,
+.browse {
+  border-radius: var(--lego-section-surface-radius-lg, var(--lego-radius-lg));
+}
+
+.hero {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, white 8%, transparent),
+      transparent 42%
+    ),
+    #d5dde8;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #171a22 10%, transparent);
+  display: grid;
+  gap: var(--lego-space-4);
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-6));
+  padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-6));
+}
+
+.heroContent {
+  align-content: start;
+  display: grid;
+  gap: var(--lego-space-4);
+  max-width: min(44rem, 100%);
+}
+
+.descriptionStack {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.heroMedia {
+  align-self: stretch;
+  background: color-mix(in srgb, white 28%, transparent);
+  border: 1px solid color-mix(in srgb, #171a22 10%, transparent);
+  border-radius: var(--lego-radius-md);
+  box-shadow: 0 1rem 2.2rem color-mix(in srgb, #171a22 12%, transparent);
+  display: grid;
+  gap: var(--lego-space-3);
+  min-height: 18rem;
+  overflow: hidden;
+  padding: var(--lego-space-3);
+}
+
+.heroMediaMeta {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.browse {
+  display: grid;
+  gap: var(--lego-space-4);
+}
+
+.sectionHeader {
+  display: grid;
+  gap: var(--lego-space-2);
+}
+
+.actions,
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+}
+
+.grid {
+  display: grid;
+  gap: var(--lego-space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+}
+
+.card {
+  background: var(--lego-color-surface);
+  border: 1px solid var(--lego-color-border-subtle);
+  border-radius: var(--lego-radius-md);
+  display: grid;
+  gap: var(--lego-space-3);
+  overflow: hidden;
+  padding: var(--lego-space-2);
+}
+
+.cardBody {
+  display: grid;
+  gap: var(--lego-space-2);
+  padding: 0 var(--lego-space-1) var(--lego-space-1);
+}
+
+.breadcrumb,
+.eyebrow,
+.title,
+.lead,
+.leadShort,
+.support,
+.primaryAction,
+.secondaryAction,
+.countChip,
+.sectionEyebrow,
+.sectionTitle,
+.sectionMeta,
+.heroImage,
+.heroMediaMeta > div,
+.cardImage,
+.cardTitle,
+.cardMeta,
+.cardFooter,
+.pagination > div {
+  animation: theme-loading-pulse 1.35s ease-in-out infinite;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--theme-loading-sheen),
+      transparent
+    ),
+    var(--theme-loading-base);
+  background-size: 220% 100%;
+  border-radius: var(--lego-radius-sm);
+}
+
+.breadcrumb {
+  height: 0.85rem;
+  width: 9rem;
+}
+
+.eyebrow {
+  height: 0.7rem;
+  width: 5.5rem;
+}
+
+.sectionEyebrow {
+  height: 0.7rem;
+  width: 5.5rem;
+}
+
+.title {
+  height: clamp(3.8rem, 3rem + 2vw, 5.7rem);
+  max-width: 24rem;
+}
+
+.lead {
+  height: 1.35rem;
+  max-width: 34rem;
+}
+
+.leadShort {
+  height: 1.35rem;
+  max-width: 26rem;
+}
+
+.support {
+  height: 1rem;
+  max-width: 30rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  height: 2.9rem;
+}
+
+.primaryAction {
+  width: 11rem;
+}
+
+.secondaryAction {
+  width: 9rem;
+}
+
+.countChip {
+  border-radius: var(--lego-radius-pill, 999px);
+  height: 2.2rem;
+  width: 6.75rem;
+}
+
+.heroImage {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--lego-radius-sm);
+  min-height: 13rem;
+}
+
+.heroMediaMeta > div {
+  height: 0.9rem;
+}
+
+.heroMediaMeta > div:first-child {
+  width: 62%;
+}
+
+.heroMediaMeta > div:last-child {
+  width: 42%;
+}
+
+.sectionTitle {
+  height: 2rem;
+  max-width: 18rem;
+}
+
+.sectionMeta {
+  height: 1rem;
+  max-width: 14rem;
+}
+
+.cardImage {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--lego-radius-sm);
+}
+
+.cardTitle {
+  height: 1.25rem;
+}
+
+.cardMeta {
+  height: 0.9rem;
+  width: 70%;
+}
+
+.cardFooter {
+  height: 1.1rem;
+  width: 48%;
+}
+
+.pagination {
+  justify-content: center;
+}
+
+.pagination > div {
+  height: 2.25rem;
+  width: 2.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breadcrumb,
+  .eyebrow,
+  .title,
+  .lead,
+  .leadShort,
+  .support,
+  .primaryAction,
+  .secondaryAction,
+  .countChip,
+  .sectionEyebrow,
+  .sectionTitle,
+  .sectionMeta,
+  .heroImage,
+  .heroMediaMeta > div,
+  .cardImage,
+  .cardTitle,
+  .cardMeta,
+  .cardFooter,
+  .pagination > div {
+    animation: none;
+  }
+}
+
+@media (min-width: 56rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.42fr);
+  }
+}
+
+@keyframes theme-loading-pulse {
+  0% {
+    background-position: 160% 0;
+  }
+
+  100% {
+    background-position: -60% 0;
+  }
+}

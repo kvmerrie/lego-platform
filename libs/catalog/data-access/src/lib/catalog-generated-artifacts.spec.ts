@@ -2,9 +2,11 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
 import {
+  renderCatalogPopularitySnapshotModule,
   renderCatalogSnapshotModule,
   renderCatalogSyncManifestModule,
 } from '@lego-platform/catalog/util';
+import { catalogPopularitySnapshot } from './catalog-popularity-snapshot.generated';
 import { catalogSnapshot } from './catalog-snapshot.generated';
 import { catalogSyncManifest } from './catalog-sync-manifest.generated';
 
@@ -19,12 +21,19 @@ describe('generated catalog artifacts', () => {
       workspaceRoot,
       'libs/catalog/data-access/src/lib/catalog-sync-manifest.generated.ts',
     );
+    const popularitySnapshotPath = resolve(
+      workspaceRoot,
+      'libs/catalog/data-access/src/lib/catalog-popularity-snapshot.generated.ts',
+    );
 
     expect(await readFile(snapshotPath, 'utf8')).toBe(
       renderCatalogSnapshotModule(catalogSnapshot),
     );
     expect(await readFile(manifestPath, 'utf8')).toBe(
       renderCatalogSyncManifestModule(catalogSyncManifest),
+    );
+    expect(await readFile(popularitySnapshotPath, 'utf8')).toBe(
+      renderCatalogPopularitySnapshotModule(catalogPopularitySnapshot),
     );
   });
 });

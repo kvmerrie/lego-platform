@@ -104,6 +104,9 @@ Recommended production jobs:
 - `catalog-sync-production`
   - schedule: once per day
   - command: `pnpm sync:catalog`
+- `catalog-events-cleanup-production`
+  - schedule: once per day
+  - command: `pnpm cleanup:catalog-events`
 
 Optional controlled-rollout job:
 
@@ -114,6 +117,7 @@ Optional controlled-rollout job:
 Recommended guardrails:
 
 - keep each sync secret only on the scheduled job that needs it
+- keep raw catalog event retention bounded; see `docs/operations/catalog-events-retention.md`
 - keep Resend plus wishlist-alert env scoped to the wishlist alert job only
 - do not add sync or wishlist-alert write commands to the always-on API service
 - use the same repository root and install strategy as the normal Render API build setup

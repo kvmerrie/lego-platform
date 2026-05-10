@@ -1,0 +1,8 @@
+{
+  "name": "catalog-feature-recently-viewed",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/catalog/feature-recently-viewed/src",
+  "projectType": "library",
+  "tags": ["scope:catalog", "type:feature", "platform:web"],
+  "targets": {}
+}

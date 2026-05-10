@@ -9,6 +9,8 @@ import {
 import { normalizeTheme } from '@lego-platform/catalog/util';
 import {
   CatalogFeatureThemePage,
+  CatalogFeatureThemeDealRail,
+  CatalogFeatureThemeRelatedArticles,
   type CatalogFeatureThemePageDealItem,
 } from '@lego-platform/catalog/feature-theme-page';
 import { listPublishedArticles } from '@lego-platform/content/data-access';
@@ -26,8 +28,9 @@ import {
 } from '@lego-platform/shared/config';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
 import {
@@ -45,6 +48,32 @@ const THEME_NON_CRITICAL_TIMEOUT_MS = 350;
 
 function isThemePagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
+}
+
+function logThemePagePerf({
+  details,
+  durationMs,
+  label,
+  slug,
+  status,
+}: {
+  details?: Readonly<Record<string, unknown>>;
+  durationMs: number;
+  label: string;
+  slug: string;
+  status: 'ok' | 'error' | 'timeout';
+}) {
+  if (!isThemePagePerfDebugEnabled()) {
+    return;
+  }
+
+  console.info('[theme-page-perf]', {
+    ...details,
+    durationMs,
+    label,
+    slug,
+    status,
+  });
 }
 
 async function measureThemePageFetch<T>({
@@ -65,7 +94,7 @@ async function measureThemePageFetch<T>({
   try {
     const result = await load();
 
-    console.info('[theme-page-perf]', {
+    logThemePagePerf({
       durationMs: Date.now() - startedAt,
       label,
       slug,
@@ -74,7 +103,7 @@ async function measureThemePageFetch<T>({
 
     return result;
   } catch (error) {
-    console.info('[theme-page-perf]', {
+    logThemePagePerf({
       durationMs: Date.now() - startedAt,
       label,
       slug,
@@ -102,7 +131,7 @@ async function withThemePageOptionalTimeout<T>({
   const timeoutPromise = new Promise<T>((resolve) => {
     timeout = setTimeout(() => {
       if (isThemePagePerfDebugEnabled()) {
-        console.info('[theme-page-perf]', {
+        logThemePagePerf({
           durationMs: timeoutMs,
           label,
           slug,
@@ -121,6 +150,41 @@ async function withThemePageOptionalTimeout<T>({
       clearTimeout(timeout);
     }
   }
+}
+
+async function getCachedCatalogThemeMetadataBySlug({ slug }: { slug: string }) {
+  return unstable_cache(
+    () => getCatalogThemeMetadataBySlug({ slug }),
+    ['catalog-theme-metadata', slug],
+    {
+      revalidate,
+      tags: [cacheTags.theme(slug)],
+    },
+  )();
+}
+
+async function getCachedCatalogThemePageBySlug({
+  limit,
+  offset,
+  slug,
+}: {
+  limit: number;
+  offset: number;
+  slug: string;
+}) {
+  return unstable_cache(
+    () =>
+      getCatalogThemePageBySlug({
+        limit,
+        offset,
+        slug,
+      }),
+    ['catalog-theme-page', slug, String(limit), String(offset)],
+    {
+      revalidate,
+      tags: [cacheTags.theme(slug)],
+    },
+  )();
 }
 
 function readThemePageParam(value: string | string[] | undefined): number {
@@ -312,7 +376,7 @@ export async function generateMetadata({
   const themeSnapshot = await measureThemePageFetch({
     label: 'metadata',
     slug,
-    load: () => getCatalogThemeMetadataBySlug({ slug }),
+    load: () => getCachedCatalogThemeMetadataBySlug({ slug }),
   });
 
   if (!themeSnapshot) {
@@ -345,6 +409,7 @@ export default async function ThemePage({
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{ page?: string | string[] }>;
 }) {
+  const serverRenderStartedAt = Date.now();
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
   const currentPage = readThemePageParam(resolvedSearchParams?.page);
@@ -352,7 +417,7 @@ export default async function ThemePage({
     label: 'theme-page',
     slug,
     load: () =>
-      getCatalogThemePageBySlug({
+      getCachedCatalogThemePageBySlug({
         limit: THEME_SET_PAGE_SIZE,
         offset: (currentPage - 1) * THEME_SET_PAGE_SIZE,
         slug,
@@ -372,25 +437,6 @@ export default async function ThemePage({
     notFound();
   }
 
-  const [featuredDealSetCards, relatedArticles] = await Promise.all([
-    withThemePageOptionalTimeout({
-      fallback: [] as CatalogFeatureThemePageDealItem[],
-      label: 'deal-rail',
-      promise: loadThemeDealSetCards({
-        slug,
-        themePage,
-      }),
-      slug,
-    }),
-    withThemePageOptionalTimeout({
-      fallback: [] as Awaited<ReturnType<typeof loadThemeRelatedArticles>>,
-      label: 'related-articles',
-      promise: loadThemeRelatedArticles({
-        slug,
-      }),
-      slug,
-    }),
-  ]);
   const canonicalUrl = buildThemeCanonicalUrl(slug);
   const title = `Brickhunt – ${themePage.themeSnapshot.name} LEGO sets`;
   const description = `Ontdek ${themePage.themeSnapshot.name} LEGO sets op Brickhunt met reviewed prijzen, shops en private saves. ${themePage.themeSnapshot.momentum}`;
@@ -406,16 +452,90 @@ export default async function ThemePage({
     }),
   ];
 
+  logThemePagePerf({
+    details: {
+      currentPage,
+      lcpImageCandidate:
+        themePage.visual?.imageUrl ?? themePage.setCards[0]?.imageUrl,
+      setCardCount: themePage.setCards.length,
+      totalSetCount: themePage.themeSnapshot.setCount,
+    },
+    durationMs: Date.now() - serverRenderStartedAt,
+    label: 'server-render-total',
+    slug,
+    status: 'ok',
+  });
+
   return (
     <ShellWeb>
       <JsonLdScript data={jsonLd} />
       <CatalogFeatureThemePage
         currentPage={currentPage}
-        dealSetCards={featuredDealSetCards}
+        dealRail={
+          <Suspense fallback={null}>
+            <ThemeDealRailSlot slug={slug} themePage={themePage} />
+          </Suspense>
+        }
         pageSize={THEME_SET_PAGE_SIZE}
-        relatedArticles={relatedArticles}
+        relatedArticlesRail={
+          <Suspense fallback={null}>
+            <ThemeRelatedArticlesSlot
+              slug={slug}
+              themeName={themePage.themeSnapshot.name}
+            />
+          </Suspense>
+        }
         themePage={themePage}
       />
     </ShellWeb>
+  );
+}
+
+async function ThemeDealRailSlot({
+  slug,
+  themePage,
+}: {
+  slug: string;
+  themePage: NonNullable<Awaited<ReturnType<typeof getCatalogThemePageBySlug>>>;
+}) {
+  const dealSetCards = await withThemePageOptionalTimeout({
+    fallback: [] as CatalogFeatureThemePageDealItem[],
+    label: 'deal-rail',
+    promise: loadThemeDealSetCards({
+      slug,
+      themePage,
+    }),
+    slug,
+  });
+
+  return (
+    <CatalogFeatureThemeDealRail
+      dealSetCards={dealSetCards}
+      themeName={themePage.themeSnapshot.name}
+    />
+  );
+}
+
+async function ThemeRelatedArticlesSlot({
+  slug,
+  themeName,
+}: {
+  slug: string;
+  themeName: string;
+}) {
+  const relatedArticles = await withThemePageOptionalTimeout({
+    fallback: [] as Awaited<ReturnType<typeof loadThemeRelatedArticles>>,
+    label: 'related-articles',
+    promise: loadThemeRelatedArticles({
+      slug,
+    }),
+    slug,
+  });
+
+  return (
+    <CatalogFeatureThemeRelatedArticles
+      relatedArticles={relatedArticles}
+      themeName={themeName}
+    />
   );
 }

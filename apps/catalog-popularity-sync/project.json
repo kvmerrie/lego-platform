@@ -1,0 +1,38 @@
+{
+  "name": "catalog-popularity-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-popularity-sync/src",
+  "projectType": "application",
+  "tags": ["scope:catalog", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-popularity-sync",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-popularity-sync/src/main.ts",
+        "tsConfig": "apps/catalog-popularity-sync/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-popularity-sync/main.cjs"
+      }
+    }
+  }
+}

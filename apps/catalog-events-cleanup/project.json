@@ -1,0 +1,45 @@
+{
+  "name": "catalog-events-cleanup",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/catalog-events-cleanup/src",
+  "projectType": "application",
+  "tags": ["scope:catalog", "type:app", "platform:server"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/catalog-events-cleanup",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/catalog-events-cleanup/src/main.ts",
+        "tsConfig": "apps/catalog-events-cleanup/tsconfig.app.json",
+        "assets": []
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/catalog-events-cleanup",
+        "command": "vitest run src/lib/*.spec.ts --config ../../libs/vitest.config.mts"
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/apps/catalog-events-cleanup/main.cjs"
+      }
+    }
+  }
+}

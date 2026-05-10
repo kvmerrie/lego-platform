@@ -70,14 +70,18 @@ const themeEditorialIntroByName: Record<string, string> = {
 export function CatalogFeatureThemePage({
   currentPage = 1,
   dealSetCards = [],
+  dealRail,
   pageSize,
   relatedArticles = [],
+  relatedArticlesRail,
   themePage,
 }: {
   currentPage?: number;
   dealSetCards?: readonly CatalogFeatureThemePageDealItem[];
+  dealRail?: ReactNode;
   pageSize?: number;
   relatedArticles?: readonly CatalogFeatureThemePageArticleLink[];
+  relatedArticlesRail?: ReactNode;
   themePage: CatalogThemeLandingPage;
 }) {
   const { setCards, themeSnapshot } = themePage;
@@ -209,49 +213,13 @@ export function CatalogFeatureThemePage({
         </div>
       </CatalogPageIntro>
 
-      {dealSetCards.length ? (
-        <CatalogSetCardRailSection
-          as="section"
-          ariaLabel={`Hier wil je nu als eerste kijken in ${themeName}`}
-          bodySpacing="relaxed"
-          className={styles.dealSection}
-          id={dealSectionId}
-          description={
-            <>
-              Deze{' '}
-              <span className="notranslate" translate="no">
-                {themeName}
-              </span>
-              -sets zitten nu onder wat we meestal zien. Begin hier als je niet
-              alles wilt openen.
-            </>
-          }
-          eyebrow="Nu interessant"
-          items={dealSetCards.map((dealSetCard) => ({
-            actions: dealSetCard.actions,
-            ctaMode: dealSetCard.ctaMode,
-            href: buildSetDetailPath(dealSetCard.slug),
-            id: dealSetCard.id,
-            priceContext: dealSetCard.priceContext,
-            setSummary: dealSetCard,
-            showThemeBadge: false,
-          }))}
-          padding="default"
-          signal={`${dealSetCards.length} sets`}
-          spacing="relaxed"
-          title={
-            <>
-              Hier wil je nu als eerste kijken in{' '}
-              <span className="notranslate" translate="no">
-                {themeName}
-              </span>
-            </>
-          }
-          titleAs="h2"
-          tone="inverse"
-          variant="featured"
+      {dealRail ?? (
+        <CatalogFeatureThemeDealRail
+          dealSectionId={dealSectionId}
+          dealSetCards={dealSetCards}
+          themeName={themeName}
         />
-      ) : null}
+      )}
 
       <CatalogSectionShell
         as="section"
@@ -292,9 +260,10 @@ export function CatalogFeatureThemePage({
           gridMode="browse"
           variant="compact"
         >
-          {visibleSetCards.map((setCard) => (
+          {visibleSetCards.map((setCard, index) => (
             <CatalogSetCard
               href={buildSetDetailPath(setCard.slug)}
+              imageLoading={index < 6 ? 'eager' : 'lazy'}
               key={setCard.id}
               setSummary={setCard}
               showThemeBadge={false}
@@ -327,62 +296,137 @@ export function CatalogFeatureThemePage({
           </nav>
         ) : null}
       </CatalogSectionShell>
-      {relatedArticles.length ? (
-        <CatalogSectionShell
-          as="section"
-          bodySpacing="relaxed"
-          className={styles.relatedArticlesSection}
-          description={
-            <>
-              Lees verder over releases en koopmomenten binnen{' '}
-              <span className="notranslate" translate="no">
-                {themeName}
-              </span>
-              .
-            </>
-          }
-          eyebrow="Verder lezen"
-          padding="default"
-          signal={`${relatedArticles.length} artikelen`}
-          spacing="relaxed"
-          title={
-            <>
-              Meer over{' '}
-              <span className="notranslate" translate="no">
-                {themeName}
-              </span>
-            </>
-          }
-          titleAs="h2"
-          tone="muted"
-        >
-          <div className={styles.relatedArticleGrid}>
-            {relatedArticles.map((article) => (
-              <article className={styles.relatedArticleCard} key={article.href}>
-                <a className={styles.relatedArticleLink} href={article.href}>
-                  {article.date ? (
-                    <time
-                      className={styles.relatedArticleDate}
-                      dateTime={article.date}
-                    >
-                      {article.date}
-                    </time>
-                  ) : null}
-                  <h3 className={styles.relatedArticleTitle}>
-                    {article.title}
-                  </h3>
-                  {article.description ? (
-                    <p className={styles.relatedArticleDescription}>
-                      {article.description}
-                    </p>
-                  ) : null}
-                </a>
-              </article>
-            ))}
-          </div>
-        </CatalogSectionShell>
-      ) : null}
+      {relatedArticlesRail ?? (
+        <CatalogFeatureThemeRelatedArticles
+          relatedArticles={relatedArticles}
+          themeName={themeName}
+        />
+      )}
     </div>
+  );
+}
+
+export function CatalogFeatureThemeDealRail({
+  dealSectionId = 'theme-deals',
+  dealSetCards,
+  themeName,
+}: {
+  dealSectionId?: string;
+  dealSetCards: readonly CatalogFeatureThemePageDealItem[];
+  themeName: string;
+}) {
+  if (!dealSetCards.length) {
+    return null;
+  }
+
+  return (
+    <CatalogSetCardRailSection
+      as="section"
+      ariaLabel={`Hier wil je nu als eerste kijken in ${themeName}`}
+      bodySpacing="relaxed"
+      className={styles.dealSection}
+      id={dealSectionId}
+      description={
+        <>
+          Deze{' '}
+          <span className="notranslate" translate="no">
+            {themeName}
+          </span>
+          -sets zitten nu onder wat we meestal zien. Begin hier als je niet
+          alles wilt openen.
+        </>
+      }
+      eyebrow="Nu interessant"
+      items={dealSetCards.map((dealSetCard) => ({
+        actions: dealSetCard.actions,
+        ctaMode: dealSetCard.ctaMode,
+        href: buildSetDetailPath(dealSetCard.slug),
+        id: dealSetCard.id,
+        priceContext: dealSetCard.priceContext,
+        setSummary: dealSetCard,
+        showThemeBadge: false,
+      }))}
+      padding="default"
+      signal={`${dealSetCards.length} sets`}
+      spacing="relaxed"
+      title={
+        <>
+          Hier wil je nu als eerste kijken in{' '}
+          <span className="notranslate" translate="no">
+            {themeName}
+          </span>
+        </>
+      }
+      titleAs="h2"
+      tone="inverse"
+      variant="featured"
+    />
+  );
+}
+
+export function CatalogFeatureThemeRelatedArticles({
+  relatedArticles,
+  themeName,
+}: {
+  relatedArticles: readonly CatalogFeatureThemePageArticleLink[];
+  themeName: string;
+}) {
+  if (!relatedArticles.length) {
+    return null;
+  }
+
+  return (
+    <CatalogSectionShell
+      as="section"
+      bodySpacing="relaxed"
+      className={styles.relatedArticlesSection}
+      description={
+        <>
+          Lees verder over releases en koopmomenten binnen{' '}
+          <span className="notranslate" translate="no">
+            {themeName}
+          </span>
+          .
+        </>
+      }
+      eyebrow="Verder lezen"
+      padding="default"
+      signal={`${relatedArticles.length} artikelen`}
+      spacing="relaxed"
+      title={
+        <>
+          Meer over{' '}
+          <span className="notranslate" translate="no">
+            {themeName}
+          </span>
+        </>
+      }
+      titleAs="h2"
+      tone="muted"
+    >
+      <div className={styles.relatedArticleGrid}>
+        {relatedArticles.map((article) => (
+          <article className={styles.relatedArticleCard} key={article.href}>
+            <a className={styles.relatedArticleLink} href={article.href}>
+              {article.date ? (
+                <time
+                  className={styles.relatedArticleDate}
+                  dateTime={article.date}
+                >
+                  {article.date}
+                </time>
+              ) : null}
+              <h3 className={styles.relatedArticleTitle}>{article.title}</h3>
+              {article.description ? (
+                <p className={styles.relatedArticleDescription}>
+                  {article.description}
+                </p>
+              ) : null}
+            </a>
+          </article>
+        ))}
+      </div>
+    </CatalogSectionShell>
   );
 }
 

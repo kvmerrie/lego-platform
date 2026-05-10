@@ -732,6 +732,7 @@ export function CatalogSetCard({
   ctaMode = 'default',
   contextBadge,
   href,
+  imageLoading,
   priceContext,
   priceDisplay = 'default',
   savedState,
@@ -746,6 +747,7 @@ export function CatalogSetCard({
   ctaMode?: CatalogSetCardCtaMode;
   contextBadge?: CatalogSetCardContextBadge;
   href?: string;
+  imageLoading?: 'eager' | 'lazy';
   priceContext?: CatalogSetCardPriceContext;
   priceDisplay?: CatalogSetCardPriceDisplay;
   savedState?: CatalogSetSavedState;
@@ -786,6 +788,7 @@ export function CatalogSetCard({
     const browseCardContent = (
       <>
         <CatalogSetVisual
+          imageLoading={imageLoading}
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
           overlayBadges={overlayBadges}
@@ -901,6 +904,7 @@ export function CatalogSetCard({
     const featuredCardContent = (
       <>
         <CatalogSetVisual
+          imageLoading={imageLoading}
           imageUrl={setSummary.imageUrl}
           name={setSummary.name}
           overlayBadges={overlayBadges}
@@ -1016,6 +1020,7 @@ export function CatalogSetCard({
       style={setThemeStyle}
     >
       <CatalogSetVisual
+        imageLoading={imageLoading}
         imageUrl={setSummary.imageUrl}
         name={setSummary.name}
         overlayControls={visualActions}
@@ -1252,6 +1257,7 @@ export function CatalogSetDetailPanel({
   ownershipActions,
   priceAlertAction,
   priceHistoryPanel,
+  recentlyViewedRail,
   setDetailHref,
   similarSetsRail,
   setNewsRail,
@@ -1273,6 +1279,7 @@ export function CatalogSetDetailPanel({
   ownershipActions?: ReactNode;
   priceAlertAction?: ReactNode;
   priceHistoryPanel?: ReactNode;
+  recentlyViewedRail?: ReactNode;
   setDetailHref?: string;
   similarSetsRail?: ReactNode;
   setNewsRail?: ReactNode;
@@ -1454,6 +1461,10 @@ export function CatalogSetDetailPanel({
 
       {setNewsRail ? (
         <div className={styles.detailSimilarRail}>{setNewsRail}</div>
+      ) : null}
+
+      {recentlyViewedRail ? (
+        <div className={styles.detailSimilarRail}>{recentlyViewedRail}</div>
       ) : null}
     </section>
   );

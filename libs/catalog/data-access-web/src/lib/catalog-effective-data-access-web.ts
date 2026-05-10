@@ -80,6 +80,48 @@ const genericCatalogThemeMomentum =
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 
+function isCatalogThemePagePerfDebugEnabled(): boolean {
+  return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
+}
+
+async function measureCatalogThemePageQuery<T>({
+  label,
+  load,
+  slug,
+}: {
+  label: string;
+  load: () => Promise<T>;
+  slug: string;
+}): Promise<T> {
+  if (!isCatalogThemePagePerfDebugEnabled()) {
+    return load();
+  }
+
+  const startedAt = Date.now();
+
+  try {
+    const result = await load();
+
+    console.info('[theme-page-perf]', {
+      durationMs: Date.now() - startedAt,
+      label,
+      slug,
+      status: 'ok',
+    });
+
+    return result;
+  } catch (error) {
+    console.info('[theme-page-perf]', {
+      durationMs: Date.now() - startedAt,
+      label,
+      slug,
+      status: 'error',
+    });
+
+    throw error;
+  }
+}
+
 interface CatalogSetRow {
   created_at: string;
   image_url: string | null;
@@ -6083,15 +6125,21 @@ export async function getCatalogThemePageBySlug({
     }
 
     try {
-      const { data: themeData, error: themeError } = await activeSupabaseClient
-        .from(CATALOG_THEMES_TABLE)
-        .select(
-          'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_logo_url, status, is_public, public_order',
-        )
-        .eq('slug', slug)
-        .eq('status', 'active')
-        .eq('is_public', true)
-        .maybeSingle();
+      const { data: themeData, error: themeError } =
+        await measureCatalogThemePageQuery({
+          label: 'catalog_themes',
+          slug,
+          load: async () =>
+            await activeSupabaseClient
+              .from(CATALOG_THEMES_TABLE)
+              .select(
+                'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_logo_url, status, is_public, public_order',
+              )
+              .eq('slug', slug)
+              .eq('status', 'active')
+              .eq('is_public', true)
+              .maybeSingle(),
+        });
 
       if (themeError) {
         throw new Error('Unable to load catalog theme page.');
@@ -6122,9 +6170,14 @@ export async function getCatalogThemePageBySlug({
         CATALOG_PUBLIC_DEFAULT_PAGE_SIZE,
       );
       const safeOffset = normalizeCatalogReadOffset(offset);
-      const themeSummariesByThemeId = await listCatalogThemeSummariesByThemeId({
-        supabaseClient: activeSupabaseClient,
-        themeIds: [themeRow.id],
+      const themeSummariesByThemeId = await measureCatalogThemePageQuery({
+        label: 'catalog_theme_summaries',
+        slug,
+        load: () =>
+          listCatalogThemeSummariesByThemeId({
+            supabaseClient: activeSupabaseClient,
+            themeIds: [themeRow.id],
+          }),
       });
       const themeSummary = themeSummariesByThemeId.get(themeRow.id);
       const setQuery = activeSupabaseClient
@@ -6143,7 +6196,11 @@ export async function getCatalogThemePageBySlug({
         count: fallbackSetCount,
         data: setData,
         error: setError,
-      } = await setQuery;
+      } = await measureCatalogThemePageQuery({
+        label: 'catalog_sets',
+        slug,
+        load: async () => await setQuery,
+      });
 
       if (setError) {
         throw new Error('Unable to load catalog theme page.');
@@ -6246,15 +6303,20 @@ export async function getCatalogThemeMetadataBySlug({
   }
 
   try {
-    const { data, error } = await activeSupabaseClient
-      .from(CATALOG_THEMES_TABLE)
-      .select(
-        'id, slug, display_name, public_display_name, public_description, status, is_public',
-      )
-      .eq('slug', slug)
-      .eq('status', 'active')
-      .eq('is_public', true)
-      .maybeSingle();
+    const { data, error } = await measureCatalogThemePageQuery({
+      label: 'catalog_theme_metadata',
+      slug,
+      load: async () =>
+        await activeSupabaseClient
+          .from(CATALOG_THEMES_TABLE)
+          .select(
+            'id, slug, display_name, public_display_name, public_description, status, is_public',
+          )
+          .eq('slug', slug)
+          .eq('status', 'active')
+          .eq('is_public', true)
+          .maybeSingle(),
+    });
 
     if (error) {
       throw new Error('Unable to load catalog theme metadata.');

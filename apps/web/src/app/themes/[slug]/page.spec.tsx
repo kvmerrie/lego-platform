@@ -25,7 +25,22 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 }));
 
 vi.mock('@lego-platform/catalog/feature-theme-page', () => ({
-  CatalogFeatureThemePage: () => <div data-testid="theme-page" />,
+  CatalogFeatureThemePage: ({
+    dealRail,
+    relatedArticlesRail,
+  }: {
+    dealRail?: React.ReactNode;
+    relatedArticlesRail?: React.ReactNode;
+  }) => (
+    <div data-testid="theme-page">
+      {dealRail}
+      {relatedArticlesRail}
+    </div>
+  ),
+  CatalogFeatureThemeDealRail: () => <section data-testid="theme-deal-rail" />,
+  CatalogFeatureThemeRelatedArticles: () => (
+    <section data-testid="theme-related-articles" />
+  ),
 }));
 
 vi.mock('@lego-platform/content/data-access', () => ({
@@ -46,6 +61,10 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
+}));
+
+vi.mock('next/cache', () => ({
+  unstable_cache: (callback: () => unknown) => callback,
 }));
 
 describe('theme page JSON-LD', () => {
@@ -134,17 +153,17 @@ describe('theme page JSON-LD', () => {
     expect(html).toContain('https://www.brickhunt.nl/themes/star-wars');
     expect(
       themePageMocks.listCatalogDiscoverySignalsBySetId,
-    ).toHaveBeenCalledWith({
-      cacheOptions: {
-        revalidateSeconds: 21_600,
-        tags: ['theme:star-wars'],
-      },
-      setIds: ['75355'],
-    });
-    expect(themePageMocks.listPublishedArticles).toHaveBeenCalledWith({
-      limit: 3,
-      themeQuery: 'star-wars',
-    });
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setIds: ['75355'],
+      }),
+    );
+    expect(themePageMocks.listPublishedArticles).toHaveBeenCalledWith(
+      expect.objectContaining({
+        limit: 3,
+        themeQuery: 'star-wars',
+      }),
+    );
   });
 
   it('does not load current offer summaries when discovery has no scoped signals', async () => {
@@ -179,6 +198,55 @@ describe('theme page JSON-LD', () => {
       }),
     });
 
+    expect(
+      themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('does not block the first HTML on optional deal or article rails', async () => {
+    themePageMocks.getCatalogThemePageBySlug.mockResolvedValue({
+      setCards: [
+        {
+          id: '75355',
+          imageUrl: 'https://cdn.example.com/75355.jpg',
+          name: 'X-wing Starfighter',
+          pieces: 1949,
+          releaseYear: 2023,
+          slug: 'x-wing-starfighter-75355',
+          theme: 'Star Wars',
+        },
+      ],
+      themeSnapshot: {
+        momentum: 'R2-D2, X-wings en displaysets houden dit thema sterk.',
+        name: 'Star Wars',
+        setCount: 1,
+        slug: 'star-wars',
+      },
+    });
+    themePageMocks.listCatalogDiscoverySignalsBySetId.mockImplementation(
+      () => new Promise(() => undefined),
+    );
+    themePageMocks.listPublishedArticles.mockImplementation(
+      () => new Promise(() => undefined),
+    );
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'star-wars',
+        }),
+      }),
+    );
+
+    expect(html).toContain('data-testid="theme-page"');
+    expect(
+      themePageMocks.listCatalogDiscoverySignalsBySetId,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        setIds: ['75355'],
+      }),
+    );
     expect(
       themePageMocks.listCatalogCurrentOfferSummariesBySetIds,
     ).not.toHaveBeenCalled();

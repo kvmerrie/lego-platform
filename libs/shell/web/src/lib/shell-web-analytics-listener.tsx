@@ -17,7 +17,11 @@ export function ShellWebAnalyticsListener() {
         return;
       }
 
-      trackBrickhuntAnalyticsEvent(descriptor);
+      try {
+        trackBrickhuntAnalyticsEvent(descriptor);
+      } catch {
+        // Analytics must never interrupt navigation or clickout.
+      }
     }
 
     document.addEventListener('click', handleClick, true);

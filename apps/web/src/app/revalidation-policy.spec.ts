@@ -9,6 +9,7 @@ const allowedForceDynamicFiles = new Set([
   'apps/web/src/app/api/catalog/search-suggestions/route.ts',
   'apps/web/src/app/api/catalog/set-cards/route.ts',
   'apps/web/src/app/api/events/article-click/route.ts',
+  'apps/web/src/app/api/events/catalog/route.ts',
   'apps/web/src/app/api/revalidate/route.ts',
   'apps/web/src/app/artikelen/preview/[previewId]/page.tsx',
   'apps/web/src/app/search/page.tsx',

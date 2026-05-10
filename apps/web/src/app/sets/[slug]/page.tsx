@@ -22,6 +22,10 @@ import {
   type CatalogFeatureSetListItem,
 } from '@lego-platform/catalog/feature-set-list';
 import { CatalogFeatureSetDetail } from '@lego-platform/catalog/feature-set-detail';
+import {
+  CatalogFeatureRecentlyViewed,
+  CatalogRecentlyViewedSetTracker,
+} from '@lego-platform/catalog/feature-recently-viewed';
 import type {
   CatalogSetDetailBestDeal,
   CatalogSetDetailOfferItem,
@@ -379,6 +383,18 @@ function getNextBestOfferPriceDeltaMinor(
 
   return typeof deltaMinor === 'number' && deltaMinor > 0
     ? deltaMinor
+    : undefined;
+}
+
+function getCatalogOfferMerchantSlug(
+  catalogOffer: CatalogOffer,
+): string | undefined {
+  const merchantSlug = (
+    catalogOffer as CatalogOffer & { merchantSlug?: unknown }
+  ).merchantSlug;
+
+  return typeof merchantSlug === 'string' && merchantSlug.trim()
+    ? merchantSlug.trim()
     : undefined;
 }
 
@@ -771,6 +787,8 @@ function buildBestDeal({
     return undefined;
   }
 
+  const merchantSlug = getCatalogOfferMerchantSlug(catalogOffer);
+
   return {
     affiliateNote:
       'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
@@ -795,6 +813,7 @@ function buildBestDeal({
       properties: {
         merchantCount,
         merchantName: catalogOffer.merchantName,
+        merchantSlug,
         offerPlacement: 'best_offer',
         offerRole: 'best',
         pageSurface: 'set_detail',
@@ -841,6 +860,7 @@ function buildOfferList(
       properties: {
         merchantCount,
         merchantName: catalogOffer.merchantName,
+        merchantSlug: getCatalogOfferMerchantSlug(catalogOffer),
         offerPlacement: 'comparison_row',
         offerRole: bestOffer?.url === catalogOffer.url ? 'best' : 'alternative',
         pageSurface: 'set_detail',
@@ -1330,6 +1350,7 @@ export default async function SetDetailPage({
   return (
     <ShellWeb>
       <JsonLdScript data={jsonLd} />
+      <CatalogRecentlyViewedSetTracker setNum={catalogSetDetail.id} />
       <CatalogFeatureSetDetail
         bestDeal={
           hasTrackedAvailabilityFallback
@@ -1426,6 +1447,9 @@ export default async function SetDetailPage({
             setId={catalogSetDetail.id}
             variant="set-detail"
           />
+        }
+        recentlyViewedRail={
+          <CatalogFeatureRecentlyViewed currentSetNum={catalogSetDetail.id} />
         }
         similarSetsRail={
           similarSetRailItems.length > 0 ? (

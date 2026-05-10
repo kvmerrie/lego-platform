@@ -105,6 +105,9 @@
       "@lego-platform/catalog/feature-set-detail": [
         "libs/catalog/feature-set-detail/src/index.ts"
       ],
+      "@lego-platform/catalog/feature-recently-viewed": [
+        "libs/catalog/feature-recently-viewed/src/index.ts"
+      ],
       "@lego-platform/catalog/feature-search-results": [
         "libs/catalog/feature-search-results/src/index.ts"
       ],

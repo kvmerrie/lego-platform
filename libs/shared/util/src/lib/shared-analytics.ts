@@ -10,6 +10,7 @@ export type BrickhuntAnalyticsEventName =
   | 'open_following_click'
   | 'offer_click'
   | 'open_wishlist_click'
+  | 'set_view'
   | 'support_link_click'
   | 'theme_tile_click';
 
@@ -38,6 +39,18 @@ interface BrickhuntAnalyticsPayload extends BrickhuntAnalyticsProperties {
   occurredAt: string;
   pathname?: string;
 }
+
+const BRICKHUNT_ANALYTICS_SESSION_STORAGE_KEY =
+  'brickhunt.analytics-session-id';
+const BRICKHUNT_CATALOG_EVENT_ENDPOINT = '/api/events/catalog';
+const BRICKHUNT_ANALYTICS_SESSION_ID_PATTERN = /^.{16,128}$/u;
+const SET_VIEW_DEDUPE_TTL_MS = 30_000;
+const brickhuntServerPostedEvents = new Set<BrickhuntAnalyticsEventName>([
+  'catalog_set_click',
+  'offer_click',
+  'set_view',
+]);
+const recentSetViewEventTimestamps = new Map<string, number>();
 
 function sanitizeBrickhuntAnalyticsProperties(
   properties: BrickhuntAnalyticsProperties = {},
@@ -106,6 +119,221 @@ export function buildBrickhuntAnalyticsAttributes(
   };
 }
 
+function createBrickhuntAnalyticsSessionId(): string {
+  const cryptoLike = window.crypto;
+
+  if (typeof cryptoLike?.randomUUID === 'function') {
+    return cryptoLike.randomUUID();
+  }
+
+  const randomValues = new Uint32Array(4);
+
+  if (typeof cryptoLike?.getRandomValues === 'function') {
+    cryptoLike.getRandomValues(randomValues);
+  } else {
+    for (let index = 0; index < randomValues.length; index += 1) {
+      randomValues[index] = Math.floor(Math.random() * 0xffffffff);
+    }
+  }
+
+  return [...randomValues]
+    .map((value) => value.toString(16).padStart(8, '0'))
+    .join('-');
+}
+
+export function getBrickhuntAnalyticsSessionId(): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  try {
+    const existingSessionId = window.localStorage.getItem(
+      BRICKHUNT_ANALYTICS_SESSION_STORAGE_KEY,
+    );
+
+    if (
+      existingSessionId &&
+      BRICKHUNT_ANALYTICS_SESSION_ID_PATTERN.test(existingSessionId)
+    ) {
+      return existingSessionId;
+    }
+
+    const sessionId = createBrickhuntAnalyticsSessionId();
+
+    window.localStorage.setItem(
+      BRICKHUNT_ANALYTICS_SESSION_STORAGE_KEY,
+      sessionId,
+    );
+
+    return sessionId;
+  } catch {
+    return createBrickhuntAnalyticsSessionId();
+  }
+}
+
+function getAnalyticsStringProperty(
+  properties: BrickhuntAnalyticsProperties | undefined,
+  keys: readonly string[],
+): string | undefined {
+  for (const key of keys) {
+    const value = properties?.[key];
+
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return undefined;
+}
+
+function buildCatalogEventMetadata(
+  properties: BrickhuntAnalyticsProperties | undefined,
+): BrickhuntAnalyticsProperties | undefined {
+  const reservedKeys = new Set(['merchantSlug', 'setId', 'setNum']);
+  const metadata = sanitizeBrickhuntAnalyticsProperties(
+    Object.fromEntries(
+      Object.entries(properties ?? {}).filter(
+        ([key]) => !reservedKeys.has(key),
+      ),
+    ),
+  );
+
+  return Object.keys(metadata).length > 0 ? metadata : undefined;
+}
+
+function getSetViewDedupeStorageKey(dedupeKey: string): string {
+  return `brickhunt.analytics-dedupe.${dedupeKey}`;
+}
+
+function readSetViewDedupeTimestamp(dedupeKey: string): number | undefined {
+  const memoryTimestamp = recentSetViewEventTimestamps.get(dedupeKey);
+
+  if (typeof memoryTimestamp === 'number') {
+    return memoryTimestamp;
+  }
+
+  try {
+    const storedTimestamp = window.sessionStorage.getItem(
+      getSetViewDedupeStorageKey(dedupeKey),
+    );
+    const parsedTimestamp = storedTimestamp ? Number(storedTimestamp) : NaN;
+
+    return Number.isFinite(parsedTimestamp) ? parsedTimestamp : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function writeSetViewDedupeTimestamp(
+  dedupeKey: string,
+  timestamp: number,
+): void {
+  recentSetViewEventTimestamps.set(dedupeKey, timestamp);
+
+  try {
+    window.sessionStorage.setItem(
+      getSetViewDedupeStorageKey(dedupeKey),
+      String(timestamp),
+    );
+  } catch {
+    // Session storage is only a best-effort duplicate guard.
+  }
+}
+
+export function shouldPostSetViewAnalyticsEvent({
+  now = Date.now(),
+  pagePath,
+  setNum,
+}: {
+  now?: number;
+  pagePath: string;
+  setNum?: string;
+}): boolean {
+  if (!setNum) {
+    return false;
+  }
+
+  const dedupeKey = `set_view:${setNum}:${pagePath}`;
+  const previousTimestamp = readSetViewDedupeTimestamp(dedupeKey);
+
+  if (
+    typeof previousTimestamp === 'number' &&
+    previousTimestamp <= now &&
+    now - previousTimestamp < SET_VIEW_DEDUPE_TTL_MS
+  ) {
+    return false;
+  }
+
+  writeSetViewDedupeTimestamp(dedupeKey, now);
+
+  return true;
+}
+
+export function postBrickhuntAnalyticsEventToServer({
+  event,
+  properties,
+}: BrickhuntAnalyticsEventDescriptor): void {
+  if (
+    typeof window === 'undefined' ||
+    !brickhuntServerPostedEvents.has(event)
+  ) {
+    return;
+  }
+
+  try {
+    const sessionId = getBrickhuntAnalyticsSessionId();
+
+    if (!sessionId) {
+      return;
+    }
+
+    const payload = {
+      event_type: event,
+      merchant_slug: getAnalyticsStringProperty(properties, ['merchantSlug']),
+      metadata: buildCatalogEventMetadata(properties),
+      page_path: window.location.pathname,
+      session_id: sessionId,
+      set_num: getAnalyticsStringProperty(properties, ['setNum', 'setId']),
+    };
+
+    if (
+      event === 'set_view' &&
+      !shouldPostSetViewAnalyticsEvent({
+        pagePath: payload.page_path,
+        setNum: payload.set_num,
+      })
+    ) {
+      return;
+    }
+
+    const body = JSON.stringify(payload);
+    const blob = new Blob([body], {
+      type: 'application/json',
+    });
+    const beaconSent =
+      typeof window.navigator.sendBeacon === 'function'
+        ? window.navigator.sendBeacon(BRICKHUNT_CATALOG_EVENT_ENDPOINT, blob)
+        : false;
+
+    if (beaconSent) {
+      return;
+    }
+
+    void window
+      .fetch(BRICKHUNT_CATALOG_EVENT_ENDPOINT, {
+        body,
+        headers: {
+          'content-type': 'application/json',
+        },
+        keepalive: true,
+        method: 'POST',
+      })
+      .catch(() => undefined);
+  } catch {
+    // Analytics must never block navigation or merchant clickout.
+  }
+}
+
 export function readBrickhuntAnalyticsDescriptorFromTarget(
   target: EventTarget | null,
 ): BrickhuntAnalyticsEventDescriptor | undefined {
@@ -171,6 +399,10 @@ export function trackBrickhuntAnalyticsEvent({
     analyticsWindow.__brickhuntAnalyticsQueue ?? [];
   analyticsWindow.dataLayer.push(payload);
   analyticsWindow.__brickhuntAnalyticsQueue.push(payload);
+  postBrickhuntAnalyticsEventToServer({
+    event,
+    properties,
+  });
   window.dispatchEvent(
     new CustomEvent('brickhunt:analytics', {
       detail: payload,
