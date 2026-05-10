@@ -117,6 +117,17 @@ interface CatalogThemeRow {
   status?: string;
 }
 
+function isPublicCatalogThemeRow(
+  catalogTheme: CatalogThemeRow | null | undefined,
+): catalogTheme is CatalogThemeRow {
+  return (
+    catalogTheme != null &&
+    catalogTheme.is_public === true &&
+    catalogTheme.status === 'active' &&
+    Boolean(catalogTheme.slug)
+  );
+}
+
 interface CatalogThemeMappingRow {
   primary_theme_id: string;
   source_theme_id: string;
@@ -851,13 +862,7 @@ async function listCatalogThemeIdentityBySetId({
         ].filter((themeId): themeId is string => Boolean(themeId));
         const publicPrimaryTheme = candidatePrimaryThemeIds
           .map((themeId) => primaryThemeById.get(themeId))
-          .find(
-            (catalogTheme): catalogTheme is CatalogThemeRow =>
-              Boolean(catalogTheme) &&
-              catalogTheme.is_public === true &&
-              catalogTheme.status === 'active' &&
-              Boolean(catalogTheme.slug),
-          );
+          .find(isPublicCatalogThemeRow);
         const primaryThemeId =
           publicPrimaryTheme?.id ??
           catalogRow.primary_theme_id ??
