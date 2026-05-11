@@ -4,8 +4,8 @@ import type { PricingSyncManifest } from '@lego-platform/pricing/util';
 const pricingSyncManifestPayload = String.raw`{
   "source": "supabase-commerce-refresh",
   "generatedAt": "2026-05-08T17:56:27.641Z",
-  "observationCount": 197,
-  "setCount": 189,
+  "observationCount": 2896,
+  "setCount": 934,
   "notes": "Generated from Supabase-managed commerce seeds and the latest verified merchant refresh state."
 }`;
 
