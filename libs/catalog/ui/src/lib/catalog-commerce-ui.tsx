@@ -91,25 +91,37 @@ interface CatalogPriceDecisionPanelProps {
   verdictTone?: CatalogDecisionVerdict['tone'];
 }
 
-function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
+function CatalogDecisionOfferCard({
+  followAction,
+  offer,
+}: {
+  followAction?: ReactNode;
+  offer?: CatalogDecisionOffer;
+}) {
   if (!offer) {
     return (
-      <section className={styles.bestDealCard}>
-        <p className={styles.bestDealEyebrow}>Beste deal nu</p>
+      <section className={styles.bestDealCard} data-commerce-state="follow">
+        <p className={styles.bestDealEyebrow}>Prijs volgen</p>
         <p className={styles.bestDealFallbackValue}>Nog geen deal</p>
         <p className={styles.bestDealMeta}>Prijsbeeld bouwt nog op.</p>
+        {followAction ? (
+          <div className={styles.bestDealFollowAction}>{followAction}</div>
+        ) : null}
       </section>
     );
   }
 
+  const hasCommerceAction = Boolean(offer.ctaHref && offer.ctaLabel);
+
   return (
     <section
       className={styles.bestDealCard}
+      data-commerce-state={hasCommerceAction ? 'buy' : 'follow'}
       data-tone={offer.decisionTone ?? 'neutral'}
     >
       <div className={styles.bestDealHeader}>
         <p className={styles.bestDealEyebrow}>
-          {offer.eyebrow ?? 'Beste deal nu'}
+          {offer.eyebrow ?? 'Beste prijs nu'}
         </p>
         {offer.decisionLabel ? (
           <Badge tone={offer.decisionTone ?? 'neutral'}>
@@ -144,7 +156,7 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
           {offer.checkedLabel}
         </MetaSignal>
       </div>
-      {offer.ctaHref && offer.ctaLabel ? (
+      {hasCommerceAction && offer.ctaHref && offer.ctaLabel ? (
         <ActionLink
           className={styles.bestDealAction}
           href={offer.ctaHref}
@@ -155,6 +167,8 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
         >
           {offer.ctaLabel}
         </ActionLink>
+      ) : followAction ? (
+        <div className={styles.bestDealFollowAction}>{followAction}</div>
       ) : null}
       {offer.affiliateNote ? (
         <p className={styles.bestDealAffiliateNote}>{offer.affiliateNote}</p>
@@ -164,9 +178,15 @@ function CatalogDecisionOfferCard({ offer }: { offer?: CatalogDecisionOffer }) {
 }
 
 export function CatalogPriceDecisionPrimary({
+  followAction,
   primaryOffer,
-}: Pick<CatalogPriceDecisionPanelProps, 'primaryOffer'>) {
-  return <CatalogDecisionOfferCard offer={primaryOffer} />;
+}: Pick<CatalogPriceDecisionPanelProps, 'followAction' | 'primaryOffer'>) {
+  return (
+    <CatalogDecisionOfferCard
+      followAction={followAction}
+      offer={primaryOffer}
+    />
+  );
 }
 
 function getFollowTitle(tone?: CatalogDecisionVerdict['tone']): string {
@@ -345,7 +365,10 @@ export function CatalogPriceDecisionPanel({
   verdictTone,
 }: CatalogPriceDecisionPanelProps) {
   const primaryDecision = (
-    <CatalogPriceDecisionPrimary primaryOffer={primaryOffer} />
+    <CatalogPriceDecisionPrimary
+      followAction={followAction}
+      primaryOffer={primaryOffer}
+    />
   );
   const secondaryDecision = (
     <CatalogPriceDecisionSecondary

@@ -714,15 +714,23 @@ describe('CatalogSetCard', () => {
           checkedLabel: '31 mrt om 09:00',
           coverageLabel: '2 winkels nagekeken',
           ctaHref: 'https://example.com/rivendell',
-          ctaLabel: 'Bekijk bij bol',
+          ctaLabel: 'Bekijk deal bij bol',
           ctaTone: 'accent',
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
           decisionLabel: 'Goede deal',
           decisionTone: 'positive',
-          merchantLabel: 'bol',
+          merchantLabel: 'Bij bol',
           price: '€ 469,99',
-          rankingLabel: 'Laagste nagekeken prijs op voorraad.',
+          rankingLabel: '€ 30,00 goedkoper dan de rest',
           stockLabel: 'Op voorraad',
+          trackingEvent: {
+            event: 'offer_click',
+            properties: {
+              merchantName: 'bol',
+              offerPlacement: 'best_offer',
+              setId: '10316',
+            },
+          },
         }}
         brickhuntValueItems={[
           {
@@ -840,18 +848,21 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('>10316</span>');
     expect(markup).toContain('aria-label="Afbeeldingen van Rivendell"');
     expect(markup).toContain('Open Rivendell LEGO-set in volledig scherm');
-    expect(markup).toContain('Bekijk bij bol');
+    expect(markup).toContain('Bekijk deal bij bol');
     expect(markup).toContain(
       '€ 30,00 onder wat we meestal zien voor deze set.',
     );
     expect(markup).toContain('--catalog-theme-badge-surface:#f0c63b');
     expect(markup).toContain('--catalog-theme-badge-text:#171a22');
-    expect(markup).toContain('Beste deal nu');
-    expect(markup).toContain('bol');
-    expect(markup).toContain('Laagste nagekeken prijs op voorraad.');
+    expect(markup).toContain('Beste prijs nu');
+    expect(markup).toContain('Bij bol');
+    expect(markup).toContain('€ 30,00 goedkoper dan de rest');
     expect(markup).toContain(
       'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
     );
+    expect(markup).toContain('data-brickhunt-event="offer_click"');
+    expect(markup).toContain('offerPlacement');
+    expect(markup).toContain('best_offer');
     expect(markup).toContain('Waarom nu');
     expect(markup).toContain('Beste prijs die we nu volgen.');
     expect(markup).toContain('Vergelijk winkels');
@@ -1077,11 +1088,18 @@ describe('CatalogSetCard', () => {
         followCopy="Zodra we actuele voorraad zien bij de winkels die Brickhunt controleert, zie je dat hier terug."
         followEyebrow="Beschikbaarheid"
         followTitle="We volgen deze set"
+        priceAlertAction={<button type="button">Volg prijs</button>}
       />,
     );
 
     expect(markup).toContain('Nog geen actuele prijs');
     expect(markup).toContain('Nog geen actuele voorraad');
+    expect(markup.indexOf('Volg prijs')).toBeGreaterThan(
+      markup.indexOf('Nog geen actuele prijs'),
+    );
+    expect(markup.indexOf('Volg prijs')).toBeLessThan(
+      markup.indexOf('Zodra we actuele voorraad zien'),
+    );
     expect(markup).toContain(
       'We volgen deze set, maar hebben op dit moment nog geen actuele voorraad bij de winkels die Brickhunt controleert.',
     );

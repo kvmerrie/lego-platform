@@ -1401,8 +1401,8 @@
 .bestDealCard {
   background: var(--lego-surface-default);
   display: grid;
-  gap: var(--lego-space-2);
-  padding: var(--lego-space-4);
+  gap: var(--lego-space-3);
+  padding: var(--lego-space-5);
 }
 
 .bestDealCard[data-tone='positive'] {
@@ -1410,7 +1410,7 @@
 }
 
 .bestDealCard[data-tone='info'] {
-  background: var(--lego-info-subtle);
+  background: var(--lego-surface-subtle);
 }
 
 .bestDealCard[data-tone='warning'] {
@@ -1418,7 +1418,11 @@
 }
 
 .bestDealCard[data-tone='neutral'] {
-  background: var(--lego-surface-default);
+  background: var(--lego-surface-subtle);
+}
+
+.bestDealCard[data-commerce-state='follow'] {
+  background: var(--lego-commerce-subtle);
 }
 
 .bestDealHeader {
@@ -1432,11 +1436,17 @@
 .bestDealPrice,
 .bestDealFallbackValue {
   font-family: var(--lego-font-family-heading);
-  font-size: clamp(2rem, 7vw, 3rem);
+  font-size: clamp(2.35rem, 8vw, 3.45rem);
   font-weight: var(--lego-text-role-hero-weight);
   letter-spacing: -0.05em;
   line-height: 0.92;
   margin: 0;
+}
+
+.bestDealFallbackValue {
+  font-size: clamp(1.55rem, 6vw, 2.25rem);
+  letter-spacing: 0;
+  line-height: 1;
 }
 
 .bestDealMeta,
@@ -1451,15 +1461,21 @@
 
 .bestDealMeta {
   color: var(--lego-text);
-  font-size: 1.06rem;
-  font-weight: var(--lego-font-weight-semibold);
+  font-size: 1.08rem;
+  font-weight: var(--lego-font-weight-bold);
   line-height: 1.2;
 }
 
 .bestDealRanking {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-support-size);
-  line-height: 1.35;
+  background: var(--lego-surface-default);
+  border-radius: var(--lego-radius-xs);
+  color: var(--lego-text);
+  display: inline-flex;
+  font-size: 0.94rem;
+  font-weight: var(--lego-font-weight-bold);
+  line-height: 1.25;
+  padding: 0.38rem 0.58rem;
+  width: fit-content;
 }
 
 .bestDealDecision {
@@ -1509,16 +1525,26 @@
 .bestDealAction {
   --lego-action-font-size: var(--lego-font-size-base);
   --lego-action-line-height: 1.05;
-  --lego-action-min-height: 3.1rem;
-  --lego-action-padding-block: 0.76rem;
+  --lego-action-min-height: 3.35rem;
+  --lego-action-padding-block: 0.86rem;
   --lego-action-padding-inline: 1.26rem;
   justify-content: center;
   width: 100%;
 }
 
+.bestDealFollowAction {
+  display: grid;
+}
+
+.bestDealFollowAction > * {
+  justify-content: center;
+  min-height: 3.35rem;
+  width: 100%;
+}
+
 .bestDealAffiliateNote {
   color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
+  font-size: 0.78rem;
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
 }

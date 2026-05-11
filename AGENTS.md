@@ -42,6 +42,43 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 
 ---
 
+## Business Logic Placement
+
+App routes and UI components must not own business decision logic.
+
+They may:
+
+- fetch data
+- compose feature components
+- pass props
+- handle routing, metadata, and shell concerns
+- do small presentation mapping
+
+They must not contain:
+
+- pricing verdict rules
+- deal scoring
+- merchant ranking logic
+- recommendation logic
+- discount threshold logic
+- availability decision trees
+- affiliate attribution rules
+- SEO indexing policy logic beyond calling shared helpers
+
+Business rules belong in domain libraries:
+
+- `*/util` for pure calculations, scoring, formatting, and decision rules
+- `*/data-access` for loading/composing persisted or generated data
+- `feature-*` for orchestration
+- `ui` for presentational rendering only
+
+If logic may be reused by API, native app, jobs, or admin, it must not live in `apps/web`.
+
+Rule of thumb:
+If changing a number, threshold, ranking rule, or commercial decision changes product behavior, it belongs in a domain library, not a page component.
+
+---
+
 ## Current Workspace Reality
 
 - Domain `util` and `data-access` libraries are shared business layers.
@@ -58,6 +95,58 @@ This file is the durable source of truth for Codex tasks and day-to-day engineer
 - The product should feel premium, playful, clean, and retail-grade.
 - Take inspiration from lego.com, but do not clone it.
 - Accessibility, consistency, and performance are mandatory.
+- Use flat solid tinted surfaces for hierarchy when useful. Avoid gradients, glossy effects, glassmorphism, and decorative borders.
+- Visual hierarchy should come from spacing, layout, typography, and surface tone differences — not decorative effects.
+
+---
+
+## Public Web Visual Design Rules
+
+Brickhunt public web uses a flat retail-inspired visual system.
+
+Visual hierarchy should come from:
+
+- spacing
+- typography
+- layout
+- scale
+- contrast
+- subtle surface tone differences
+
+Not from decorative effects.
+
+Allowed:
+
+- flat solid backgrounds
+- subtle tinted surfaces
+- rounded cards
+- restrained shadows when necessary
+- clear CTA contrast
+
+Avoid by default:
+
+- gradients
+- glassmorphism
+- glossy/plastic effects
+- decorative borders
+- glow effects
+- layered color-mix backgrounds
+- “premium UI” styling patterns
+
+Commerce UI should feel:
+
+- calm
+- trustworthy
+- fast
+- product-first
+
+Do not introduce new visual treatments per feature.
+New commerce components should visually belong to the existing Brickhunt system.
+
+When improving conversion:
+
+- prioritize hierarchy and copy first
+- not decorative styling
 
 ---
 

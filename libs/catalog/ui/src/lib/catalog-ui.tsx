@@ -1312,6 +1312,12 @@ export function CatalogSetDetailPanel({
   const hasFollowModule = Boolean(
     priceAlertAction || followCopy || followTitle || followEyebrow,
   );
+  const shouldLeadHeroWithFollowAction = Boolean(
+    priceAlertAction && !bestDeal?.ctaHref,
+  );
+  const secondaryPriceAlertAction = shouldLeadHeroWithFollowAction
+    ? undefined
+    : priceAlertAction;
 
   return (
     <section className={styles.detailPage}>
@@ -1382,7 +1388,12 @@ export function CatalogSetDetailPanel({
             </>
           }
           decisionPrimary={
-            <CatalogPriceDecisionPrimary primaryOffer={bestDeal} />
+            <CatalogPriceDecisionPrimary
+              followAction={
+                shouldLeadHeroWithFollowAction ? priceAlertAction : undefined
+              }
+              primaryOffer={bestDeal}
+            />
           }
           eyebrow={
             <span className={styles.detailHeroIdentifier}>
@@ -1426,7 +1437,7 @@ export function CatalogSetDetailPanel({
           {hasFollowModule ? (
             <CatalogPriceDecisionSecondary
               compact
-              followAction={priceAlertAction}
+              followAction={secondaryPriceAlertAction}
               followCopy={followCopy}
               followEyebrow={followEyebrow}
               followTitle={followTitle}

@@ -57,15 +57,23 @@ describe('Catalog commerce UI', () => {
           checkedLabel: '2 apr om 09:00',
           coverageLabel: '3 winkels nagekeken',
           ctaHref: 'https://example.com/rivendell',
-          ctaLabel: 'Bekijk bij bol',
+          ctaLabel: 'Bekijk deal bij bol',
           ctaTone: 'accent',
           decisionHelper: '€ 30,00 onder wat we meestal zien voor deze set.',
           decisionLabel: 'Goede deal',
           decisionTone: 'positive',
-          merchantLabel: 'bol',
+          merchantLabel: 'Bij bol',
           price: '€ 469,99',
-          rankingLabel: 'Laagste nagekeken prijs op voorraad.',
+          rankingLabel: '€ 30,00 goedkoper dan de rest',
           stockLabel: 'Op voorraad',
+          trackingEvent: {
+            event: 'offer_click',
+            properties: {
+              merchantName: 'bol',
+              offerPlacement: 'best_offer',
+              setId: '10316',
+            },
+          },
         }}
         supportItems={[
           {
@@ -79,10 +87,15 @@ describe('Catalog commerce UI', () => {
     );
 
     expect(markup).toContain('Goede deal');
-    expect(markup).toContain('Beste deal nu');
-    expect(markup).toContain('bol');
-    expect(markup).toContain('Laagste nagekeken prijs op voorraad.');
-    expect(markup).toContain('Bekijk bij bol');
+    expect(markup).toContain('Beste prijs nu');
+    expect(markup).toContain('Bij bol');
+    expect(markup).toContain('€ 30,00 goedkoper dan de rest');
+    expect(markup).toContain('Bekijk deal bij bol');
+    expect(markup).toContain('target="_blank"');
+    expect(markup).toContain('rel="noreferrer sponsored"');
+    expect(markup).toContain('data-brickhunt-event="offer_click"');
+    expect(markup).toContain('offerPlacement');
+    expect(markup).toContain('best_offer');
     expect(markup).toContain(
       'Als je via Brickhunt doorklikt, kunnen wij een kleine commissie ontvangen.',
     );
@@ -91,6 +104,30 @@ describe('Catalog commerce UI', () => {
       'Nog niet klaar? Dan houdt Brickhunt dit moment vast.',
     );
     expect(markup).toContain('Waarom nu');
+  });
+
+  it('leads no-offer states with the follow-price action', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogPriceDecisionPanel
+        followAction={<button type="button">Volg prijs</button>}
+        primaryOffer={{
+          checkedLabel: 'Vandaag om 07:01',
+          coverageLabel: '5 winkels nagekeken',
+          decisionHelper: 'We volgen deze set zodra er voorraad terugkomt.',
+          decisionLabel: 'Nog geen deal',
+          decisionTone: 'neutral',
+          eyebrow: 'Beschikbaarheid nu',
+          merchantLabel: 'Nog geen deal',
+          price: 'Nog geen actuele prijs',
+          stockLabel: 'Nog geen voorraad',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Volg prijs');
+    expect(markup).toContain('Nog geen deal');
+    expect(markup).not.toContain('target="_blank"');
+    expect(markup).not.toContain('data-brickhunt-event="offer_click"');
   });
 
   it('renders a comparison fallback when only one reviewed offer is available', () => {

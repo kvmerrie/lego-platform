@@ -195,7 +195,7 @@ describe('CatalogSetDetailHero', () => {
     expect(markup).toContain('Rivendell');
     expect(markup).toContain('Hero-afbeelding');
     expect(markup).toContain('Setnummer');
-    expect(markup).toContain('Beste deal nu');
+    expect(markup).toContain('Beste prijs nu');
     expect(markup).toContain('Waarom nu');
     expect(markup).toContain('Volg prijs');
     expect(markup).toContain('Vergelijk winkels');

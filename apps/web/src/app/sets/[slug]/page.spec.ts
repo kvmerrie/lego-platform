@@ -41,12 +41,18 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
 
 vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
   CatalogFeatureSetDetail: ({
+    bestDeal,
     dealsHref,
     setNewsRail,
     similarSetsRail,
     themeDirectoryHref,
     themeHref,
   }: {
+    bestDeal?: {
+      decisionLabel?: string;
+      decisionTone?: string;
+      rankingLabel?: string;
+    };
     dealsHref?: string;
     setNewsRail?: unknown;
     similarSetsRail?: unknown;
@@ -61,6 +67,17 @@ vi.mock('@lego-platform/catalog/feature-set-detail', () => ({
         : null,
       themeHref ? createElement('a', { href: themeHref }, 'Thema') : null,
       dealsHref ? createElement('a', { href: dealsHref }, 'Deals') : null,
+      bestDeal
+        ? createElement(
+            'div',
+            {
+              'data-testid': 'best-deal',
+              'data-tone': bestDeal.decisionTone,
+            },
+            bestDeal.decisionLabel,
+            bestDeal.rankingLabel,
+          )
+        : null,
       similarSetsRail,
       setNewsRail,
     ),
@@ -588,10 +605,87 @@ describe('set detail page JSON-LD', () => {
     );
     expect(
       setPageMocks.listCatalogDiscoverySignalsBySetId,
-    ).not.toHaveBeenCalled();
+    ).toHaveBeenCalledWith({
+      cacheOptions: {
+        revalidateSeconds: 21_600,
+        tags: ['prices', 'set:10316'],
+      },
+      setIds: ['10316'],
+    });
     expect(
       setPageMocks.getCatalogPrimaryOfferAvailabilityStateBySetId,
     ).not.toHaveBeenCalled();
+  });
+
+  it('uses the current discovery reference delta for the set-detail deal verdict', async () => {
+    setPageMocks.getCatalogSetBySlug.mockResolvedValue({
+      id: '42177',
+      imageUrl: 'https://cdn.example.com/42177.jpg',
+      name: 'Mercedes-Benz G 500 Professional Line',
+      pieces: 2891,
+      releaseYear: 2024,
+      slug: 'mercedes-benz-g-500-professional-line-42177',
+      theme: 'Technic',
+    });
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-05-05T10:00:00.000Z',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchant: 'other',
+        merchantName: 'Wehkamp',
+        priceCents: 19999,
+        setId: '42177',
+        url: 'https://partner.example/42177',
+      },
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-05-05T10:00:00.000Z',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchant: 'lego',
+        merchantName: 'LEGO',
+        priceCents: 24999,
+        setId: '42177',
+        url: 'https://partner.example/42177-lego',
+      },
+    ]);
+    setPageMocks.listCatalogDiscoverySignalsBySetId.mockResolvedValue(
+      new Map([
+        [
+          '42177',
+          {
+            bestPriceMinor: 19999,
+            merchantCount: 2,
+            observedAt: '2026-05-05T10:00:00.000Z',
+            priceSpreadMinor: 5000,
+            referenceDeltaMinor: -5000,
+          },
+        ],
+      ]),
+    );
+    setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
+    setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
+      new Map(),
+    );
+    setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
+
+    const pageModule = await import('./page');
+    const html = renderToStaticMarkup(
+      await pageModule.default({
+        params: Promise.resolve({
+          slug: 'mercedes-benz-g-500-professional-line-42177',
+        }),
+      }),
+    );
+
+    expect(html).toContain('data-testid="best-deal"');
+    expect(html).toContain('data-tone="positive"');
+    expect(html).toContain('Goede deal');
+    expect(html).toContain('€ 50,00 goedkoper dan de rest');
   });
 
   it('renders without offer schema when merchant availability fails', async () => {

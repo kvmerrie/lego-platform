@@ -115,6 +115,42 @@ export interface SetDealVerdict {
   tone: 'info' | 'neutral' | 'positive' | 'warning';
 }
 
+export const EFFECTIVE_SET_DEAL_DISCOVERY_MINIMUM_MERCHANTS = 2;
+export const EFFECTIVE_SET_DEAL_MINIMUM_ABSOLUTE_DISCOUNT_MINOR = 2500;
+export const EFFECTIVE_SET_DEAL_MINIMUM_DISCOUNT_PERCENTAGE = 15;
+
+export interface EffectiveSetDealCurrentOfferInput {
+  availabilityLabel?: string;
+  condition: PricePanelSnapshot['condition'];
+  currencyCode: PricePanelSnapshot['currencyCode'];
+  merchantCount?: number;
+  merchantId: string;
+  merchantName: string;
+  observedAt: string;
+  priceMinor: number;
+  regionCode: PricePanelSnapshot['regionCode'];
+  setId: string;
+}
+
+export interface EffectiveSetDealDiscoveryInput {
+  bestPriceMinor: number;
+  merchantCount: number;
+  referenceDeltaMinor?: number;
+}
+
+export interface EffectiveSetDealSnapshotResult {
+  reason:
+    | 'current_offer_missing'
+    | 'discount_below_threshold'
+    | 'discovery_price_mismatch'
+    | 'discovery_reference_missing'
+    | 'insufficient_merchant_coverage'
+    | 'price_panel_delta_available'
+    | 'strong_discovery_discount';
+  snapshot?: PricePanelSnapshot;
+  source: 'discovery_reference_fallback' | 'none' | 'price_panel_snapshot';
+}
+
 export interface SetPriceInsight {
   id:
     | 'coverage'
@@ -125,6 +161,130 @@ export interface SetPriceInsight {
     | 'recent-low'
     | 'tracked-low';
   text: string;
+}
+
+function getReferencePriceMinorFromDiscoveryInput(
+  discoveryInput?: EffectiveSetDealDiscoveryInput,
+): number | undefined {
+  if (
+    typeof discoveryInput?.bestPriceMinor !== 'number' ||
+    discoveryInput.bestPriceMinor <= 0 ||
+    typeof discoveryInput.referenceDeltaMinor !== 'number'
+  ) {
+    return undefined;
+  }
+
+  const referencePriceMinor =
+    discoveryInput.bestPriceMinor - discoveryInput.referenceDeltaMinor;
+
+  return Number.isInteger(referencePriceMinor) && referencePriceMinor > 0
+    ? referencePriceMinor
+    : undefined;
+}
+
+function getFallbackSource(
+  pricePanelSnapshot?: PricePanelSnapshot,
+): 'none' | 'price_panel_snapshot' {
+  return pricePanelSnapshot ? 'price_panel_snapshot' : 'none';
+}
+
+export function buildEffectiveSetDealSnapshot({
+  currentOffer,
+  discoveryInput,
+  pricePanelSnapshot,
+}: {
+  currentOffer?: EffectiveSetDealCurrentOfferInput;
+  discoveryInput?: EffectiveSetDealDiscoveryInput;
+  pricePanelSnapshot?: PricePanelSnapshot;
+}): EffectiveSetDealSnapshotResult {
+  if (typeof pricePanelSnapshot?.deltaMinor === 'number') {
+    return {
+      reason: 'price_panel_delta_available',
+      snapshot: pricePanelSnapshot,
+      source: 'price_panel_snapshot',
+    };
+  }
+
+  if (!currentOffer) {
+    return {
+      reason: 'current_offer_missing',
+      snapshot: pricePanelSnapshot,
+      source: getFallbackSource(pricePanelSnapshot),
+    };
+  }
+
+  const discoveryReferencePriceMinor =
+    getReferencePriceMinorFromDiscoveryInput(discoveryInput);
+
+  if (typeof discoveryReferencePriceMinor !== 'number') {
+    return {
+      reason: 'discovery_reference_missing',
+      snapshot: pricePanelSnapshot,
+      source: getFallbackSource(pricePanelSnapshot),
+    };
+  }
+
+  if (discoveryInput?.bestPriceMinor !== currentOffer.priceMinor) {
+    return {
+      reason: 'discovery_price_mismatch',
+      snapshot: pricePanelSnapshot,
+      source: getFallbackSource(pricePanelSnapshot),
+    };
+  }
+
+  if (
+    discoveryInput.merchantCount <
+    EFFECTIVE_SET_DEAL_DISCOVERY_MINIMUM_MERCHANTS
+  ) {
+    return {
+      reason: 'insufficient_merchant_coverage',
+      snapshot: pricePanelSnapshot,
+      source: getFallbackSource(pricePanelSnapshot),
+    };
+  }
+
+  const discoveryDeltaMinor =
+    currentOffer.priceMinor - discoveryReferencePriceMinor;
+  const discoveryDiscountPercentage = Math.round(
+    (Math.abs(discoveryDeltaMinor) / discoveryReferencePriceMinor) * 100,
+  );
+  const hasStrongDiscoveryDiscount =
+    discoveryDeltaMinor < 0 &&
+    Math.abs(discoveryDeltaMinor) >=
+      EFFECTIVE_SET_DEAL_MINIMUM_ABSOLUTE_DISCOUNT_MINOR &&
+    discoveryDiscountPercentage >=
+      EFFECTIVE_SET_DEAL_MINIMUM_DISCOUNT_PERCENTAGE;
+
+  if (!hasStrongDiscoveryDiscount) {
+    return {
+      reason: 'discount_below_threshold',
+      snapshot: pricePanelSnapshot,
+      source: getFallbackSource(pricePanelSnapshot),
+    };
+  }
+
+  return {
+    reason: 'strong_discovery_discount',
+    snapshot: {
+      condition: currentOffer.condition,
+      currencyCode: currentOffer.currencyCode,
+      deltaMinor: discoveryDeltaMinor,
+      headlinePriceMinor: currentOffer.priceMinor,
+      lowestAvailabilityLabel: currentOffer.availabilityLabel,
+      lowestMerchantId: currentOffer.merchantId,
+      lowestMerchantName: currentOffer.merchantName,
+      merchantCount: Math.max(
+        currentOffer.merchantCount ?? 0,
+        discoveryInput.merchantCount,
+        pricePanelSnapshot?.merchantCount ?? 0,
+      ),
+      observedAt: currentOffer.observedAt,
+      referencePriceMinor: discoveryReferencePriceMinor,
+      regionCode: currentOffer.regionCode,
+      setId: currentOffer.setId,
+    },
+    source: 'discovery_reference_fallback',
+  };
 }
 
 export function getPriceDirection(deltaMinor?: number): 'up' | 'down' | 'flat' {
