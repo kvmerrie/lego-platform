@@ -114,6 +114,7 @@ describe('commerce sync server', () => {
               skipped: {
                 inactiveSeedOrMerchant: 0,
                 invalidSeed: 0,
+                missingLatest: 0,
                 missingOrInvalidPrice: 0,
                 nonEur: 0,
                 staleOrError: 0,
@@ -201,6 +202,7 @@ describe('commerce sync server', () => {
                 skipped: {
                   inactiveSeedOrMerchant: 0,
                   invalidSeed: 0,
+                  missingLatest: 0,
                   missingOrInvalidPrice: 0,
                   nonEur: 0,
                   staleOrError: 0,
@@ -372,6 +374,7 @@ describe('commerce sync server', () => {
                 skipped: {
                   inactiveSeedOrMerchant: 1,
                   invalidSeed: 1,
+                  missingLatest: 0,
                   missingOrInvalidPrice: 1,
                   nonEur: 1,
                   staleOrError: 1,
@@ -394,7 +397,7 @@ describe('commerce sync server', () => {
 
       expect(info).toHaveBeenCalledWith(
         expect.stringContaining(
-          'latest_offer_rows_seen=6 eligible_latest_offer_rows=2 daily_history_points_built=1 daily_history_points_upserted=1',
+          'latest_rows_loaded=6 joined_rows=6 missing_latest_count=0 eligible_latest_offer_rows=2 daily_history_points_built=1 daily_history_points_upserted=1',
         ),
       );
     } finally {

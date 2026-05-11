@@ -48,6 +48,29 @@ function buildLatestOfferInput(
 ): Parameters<
   typeof buildDailyPriceHistoryPointsFromCommerceLatestOffers
 >[0]['latestOffers'][number] {
+  const hasLatestOfferOverride = Object.prototype.hasOwnProperty.call(
+    overrides,
+    'latestOffer',
+  );
+  const latestOffer = hasLatestOfferOverride
+    ? overrides.latestOffer
+      ? {
+          availability: 'in_stock',
+          currencyCode: 'EUR',
+          fetchStatus: 'success',
+          observedAt: '2026-05-11T10:00:00.000Z',
+          priceMinor: 46999,
+          ...overrides.latestOffer,
+        }
+      : undefined
+    : {
+        availability: 'in_stock',
+        currencyCode: 'EUR',
+        fetchStatus: 'success',
+        observedAt: '2026-05-11T10:00:00.000Z',
+        priceMinor: 46999,
+      };
+
   return {
     merchant: {
       isActive: true,
@@ -60,14 +83,7 @@ function buildLatestOfferInput(
       validationStatus: 'valid',
       ...overrides.offerSeed,
     },
-    latestOffer: {
-      availability: 'in_stock',
-      currencyCode: 'EUR',
-      fetchStatus: 'success',
-      observedAt: '2026-05-11T10:00:00.000Z',
-      priceMinor: 46999,
-      ...overrides.latestOffer,
-    },
+    latestOffer,
   };
 }
 
@@ -279,6 +295,9 @@ describe('pricing data access server', () => {
         buildLatestOfferInput({
           latestOffer: { priceMinor: 0 },
         }),
+        buildLatestOfferInput({
+          latestOffer: undefined,
+        }),
       ],
       now: new Date('2026-05-11T12:00:00.000Z'),
     });
@@ -286,15 +305,81 @@ describe('pricing data access server', () => {
     expect(result.points).toEqual([]);
     expect(result.summary).toMatchObject({
       latestOfferRowsSeen: 6,
+      seedRowsLoaded: 7,
+      missingLatestCount: 1,
       eligibleLatestOfferRows: 0,
       dailyHistoryPointsBuilt: 0,
+      fetchStatusCounts: {
+        success: 5,
+        error: 1,
+      },
+      availabilityCounts: {
+        unknown: 1,
+        in_stock: 5,
+      },
       skipped: {
         inactiveSeedOrMerchant: 1,
         invalidSeed: 1,
+        missingLatest: 1,
         missingOrInvalidPrice: 1,
         nonEur: 1,
         staleOrError: 1,
         unavailableForHeadline: 1,
+      },
+    });
+  });
+
+  test('counts seeds without latest separately from stale or error latest rows', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          latestOffer: undefined,
+        }),
+        buildLatestOfferInput({
+          latestOffer: {
+            fetchStatus: 'error',
+          },
+        }),
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'goodbricks' },
+          latestOffer: {
+            availability: 'in_stock',
+            currencyCode: 'EUR',
+            fetchStatus: 'success',
+            observedAt: '2026-05-11T10:00:00.000Z',
+            priceMinor: 1999,
+          },
+          offerSeed: {
+            isActive: true,
+            setId: '10316',
+            validationStatus: 'valid',
+          },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toEqual([
+      expect.objectContaining({
+        headlinePriceMinor: 1999,
+        lowestMerchantId: 'goodbricks',
+      }),
+    ]);
+    expect(result.summary).toMatchObject({
+      seedRowsLoaded: 3,
+      latestOfferRowsSeen: 2,
+      missingLatestCount: 1,
+      eligibleLatestOfferRows: 1,
+      fetchStatusCounts: {
+        error: 1,
+        success: 1,
+      },
+      availabilityCounts: {
+        in_stock: 2,
+      },
+      skipped: {
+        missingLatest: 1,
+        staleOrError: 1,
       },
     });
   });

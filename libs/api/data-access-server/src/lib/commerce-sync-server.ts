@@ -141,6 +141,7 @@ function createEmptyDailyHistorySummary(): CommerceLatestOfferHistorySummary {
     skipped: {
       inactiveSeedOrMerchant: 0,
       invalidSeed: 0,
+      missingLatest: 0,
       missingOrInvalidPrice: 0,
       nonEur: 0,
       staleOrError: 0,
@@ -162,7 +163,10 @@ function formatDailyHistorySummaryLog({
   return [
     '[commerce-sync] daily_history',
     `mode=${mode}`,
-    `latest_offer_rows_seen=${summary.latestOfferRowsSeen}`,
+    `seed_rows_loaded=${summary.seedRowsLoaded ?? summary.latestOfferRowsSeen}`,
+    `latest_rows_loaded=${summary.latestOfferRowsSeen}`,
+    `joined_rows=${summary.latestOfferRowsSeen}`,
+    `missing_latest_count=${summary.missingLatestCount ?? summary.skipped.missingLatest ?? 0}`,
     `eligible_latest_offer_rows=${summary.eligibleLatestOfferRows}`,
     `daily_history_points_built=${summary.dailyHistoryPointsBuilt}`,
     `daily_history_points_upserted=${upsertedCount}`,
@@ -176,6 +180,7 @@ function formatDailyHistorySummaryLog({
     `skipped_stale_or_error=${summary.skipped.staleOrError}`,
     `skipped_inactive_seed_or_merchant=${summary.skipped.inactiveSeedOrMerchant}`,
     `skipped_invalid_seed=${summary.skipped.invalidSeed}`,
+    `skipped_missing_latest=${summary.skipped.missingLatest ?? 0}`,
     `skipped_non_eur=${summary.skipped.nonEur}`,
     `skipped_missing_or_invalid_price=${summary.skipped.missingOrInvalidPrice}`,
     `skipped_unavailable_for_headline=${summary.skipped.unavailableForHeadline}`,

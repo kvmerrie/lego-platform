@@ -76,6 +76,7 @@ function createDailyHistoryUpsertResult(points: readonly PriceHistoryPoint[]) {
       skipped: {
         inactiveSeedOrMerchant: 0,
         invalidSeed: 0,
+        missingLatest: 0,
         missingOrInvalidPrice: 0,
         nonEur: 0,
         staleOrError: 0,

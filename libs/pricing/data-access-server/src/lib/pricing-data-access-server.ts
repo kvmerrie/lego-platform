@@ -75,6 +75,7 @@ export interface CommerceLatestOfferHistoryInput {
 export interface CommerceLatestOfferHistorySkipCounts {
   inactiveSeedOrMerchant: number;
   invalidSeed: number;
+  missingLatest: number;
   missingOrInvalidPrice: number;
   nonEur: number;
   staleOrError: number;
@@ -88,9 +89,11 @@ export interface CommerceLatestOfferHistorySummary {
   fetchStatusCounts?: Record<string, number>;
   latestOfferRowsSeen: number;
   maxObservedAgeHours: number;
+  missingLatestCount?: number;
   newestObservedAt?: string;
   oldestObservedAt?: string;
   merchantSlugCounts?: Record<string, number>;
+  seedRowsLoaded?: number;
   skipped: CommerceLatestOfferHistorySkipCounts;
   validationStatusCounts?: Record<string, number>;
 }
@@ -134,6 +137,7 @@ function createEmptyCommerceLatestOfferHistorySkipCounts(): CommerceLatestOfferH
   return {
     inactiveSeedOrMerchant: 0,
     invalidSeed: 0,
+    missingLatest: 0,
     missingOrInvalidPrice: 0,
     nonEur: 0,
     staleOrError: 0,
@@ -407,6 +411,7 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
   const validationStatusCounts: Record<string, number> = {};
   const bestPointBySetId = new Map<string, PriceHistoryPoint>();
   let eligibleLatestOfferRows = 0;
+  let latestOfferRowsSeen = 0;
   let newestObservedAt: string | undefined;
   let oldestObservedAt: string | undefined;
 
@@ -415,11 +420,14 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
     const merchant = latestOfferInput.merchant;
     const offerSeed = latestOfferInput.offerSeed;
 
-    incrementCommerceHistoryCount(
-      availabilityCounts,
-      latestOffer?.availability,
-    );
-    incrementCommerceHistoryCount(fetchStatusCounts, latestOffer?.fetchStatus);
+    if (latestOffer) {
+      latestOfferRowsSeen += 1;
+      incrementCommerceHistoryCount(
+        availabilityCounts,
+        latestOffer.availability,
+      );
+      incrementCommerceHistoryCount(fetchStatusCounts, latestOffer.fetchStatus);
+    }
     incrementCommerceHistoryCount(merchantSlugCounts, merchant?.slug);
     incrementCommerceHistoryCount(
       validationStatusCounts,
@@ -450,7 +458,12 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       continue;
     }
 
-    if (!latestOffer || latestOffer.fetchStatus !== 'success') {
+    if (!latestOffer) {
+      skipped.missingLatest += 1;
+      continue;
+    }
+
+    if (latestOffer.fetchStatus !== 'success') {
       skipped.staleOrError += 1;
       continue;
     }
@@ -530,11 +543,13 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       eligibleLatestOfferRows,
       availabilityCounts,
       fetchStatusCounts,
-      latestOfferRowsSeen: latestOffers.length,
+      latestOfferRowsSeen,
       maxObservedAgeHours,
+      missingLatestCount: skipped.missingLatest,
       newestObservedAt,
       oldestObservedAt,
       merchantSlugCounts,
+      seedRowsLoaded: latestOffers.length,
       skipped,
       validationStatusCounts,
     },
