@@ -98,6 +98,8 @@ export interface CatalogThemeVisual {
 export interface CatalogSetCardPriceContext {
   coverageLabel: string;
   currentPrice: string;
+  dealReason?: string;
+  discountMetric?: string;
   decisionLabel?: string;
   decisionNote?: string;
   merchantLabel: string;
@@ -940,6 +942,17 @@ export function CatalogSetCard({
                   </p>
                 ) : null}
                 <p className={styles.priceValue}>{priceContext.currentPrice}</p>
+                {priceContext.discountMetric ? (
+                  <p
+                    className={styles.discountMetric}
+                    data-catalog-discount-metric="true"
+                  >
+                    {priceContext.discountMetric}
+                  </p>
+                ) : null}
+                {priceContext.dealReason ? (
+                  <p className={styles.dealReason}>{priceContext.dealReason}</p>
+                ) : null}
                 <p className={styles.cardCompactSupporting}>
                   {featuredMerchantLabel}
                 </p>
@@ -1056,6 +1069,17 @@ export function CatalogSetCard({
         <div className={styles.priceBlock}>
           <p className={styles.priceLabel}>Reviewed prijs</p>
           <p className={styles.priceValue}>{priceContext.currentPrice}</p>
+          {priceContext.discountMetric ? (
+            <p
+              className={styles.discountMetric}
+              data-catalog-discount-metric="true"
+            >
+              {priceContext.discountMetric}
+            </p>
+          ) : null}
+          {priceContext.dealReason ? (
+            <p className={styles.dealReason}>{priceContext.dealReason}</p>
+          ) : null}
           <p className={styles.priceMeta}>
             {priceContext.decisionNote ?? priceContext.merchantLabel}
           </p>

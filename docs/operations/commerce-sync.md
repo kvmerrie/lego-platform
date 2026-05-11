@@ -97,7 +97,9 @@ The current commerce sync slice needs the normal server-side Supabase credential
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
-`write` mode also needs outbound network access to merchant product pages.
+Default `write` mode is aggregate-only. It reads `commerce_offer_latest`, writes generated commerce artifacts, and writes one daily pricing-history point per eligible set. It does not call merchant product pages.
+
+Outbound merchant access is only needed for explicit legacy scraper refresh runs with `--refresh-merchants` or `--legacy-scrape`.
 
 ## Run The Sync
 
@@ -113,25 +115,33 @@ Or directly:
 pnpm nx run commerce-sync:run
 ```
 
-Scoped operator refresh for a selected batch:
+Scoped aggregate run for a selected batch:
 
 ```bash
 pnpm nx run commerce-sync:run -- --set-ids 10300,10320,10317
 ```
 
-Scoped operator refresh for selected sets and merchants:
+Scoped aggregate run for selected sets and merchants:
 
 ```bash
 pnpm nx run commerce-sync:run -- --write --set-ids 10316,76437 --merchant-slugs intertoys,lego-nl
 ```
 
-Scoped runs keep the refresh pass, offer state, and history writes limited to the
-requested sets. In `write` mode the generated pricing and affiliate artifacts are
-still rewritten from the full current Supabase state afterward, so the committed
-artifact files stay coherent.
-The same rule now applies to merchant scoping: only the requested merchants are
-refreshed, but generated files are still rebuilt from the full current Supabase
-state after the scoped write run.
+Scoped default runs do not refresh merchant pages. They aggregate current
+`commerce_offer_latest` rows, scope daily-history writes to the requested sets,
+and still rebuild generated pricing and affiliate artifacts from the full current
+Supabase state afterward so committed artifact files stay coherent.
+
+Legacy scraper refresh is manual and explicit:
+
+```bash
+pnpm nx run commerce-sync:run -- --write --refresh-merchants --set-ids 10316 --merchant-slugs top1toys
+```
+
+`--legacy-scrape` is accepted as an alias for `--refresh-merchants`. Keep these
+runs scoped and operator-driven; feed jobs are the default owner of offer
+freshness. A legacy scraper run without `--merchant-slugs` is rejected to avoid
+accidental broad scraping.
 
 When you run the higher-level coverage workflow, `--skip-sync-when-no-seed-work`
 can skip this scoped sync step if the merchant batch produced no new candidates
@@ -160,20 +170,23 @@ This check does not call merchants and does not write Supabase latest or history
 - The current slice is set-detail only.
 - No runtime merchant calls and no click tracking are included.
 - The current snapshot-backed price panel remains unchanged for the public app.
+- Feed jobs refresh `commerce_offer_latest`; `commerce-sync` aggregates those latest offers by default.
 - `pnpm sync:commerce` now also writes one daily Dutch price-history point per commerce-enabled set into Supabase Postgres.
 - Those daily history rows are stored indefinitely for now; the current UI reads only the latest 30 days.
-- `pnpm sync:commerce` now refreshes only the current production-viable default merchant allowlist. Other merchants stay available for explicit `--merchant-slugs` runs, but are not part of the standard batch refresh loop.
-- `pnpm nx run commerce-sync:run -- --set-ids ...` is the fast operator path for batch coverage work. It scopes refresh metrics to the requested sets while keeping generated files consistent after the run.
+- `pnpm sync:commerce` is aggregate-only by default and never runs scraper refresh implicitly in production.
+- `pnpm nx run commerce-sync:run -- --set-ids ...` is the fast operator path for batch coverage work. It scopes daily-history metrics to the requested sets while keeping generated files consistent after the run.
+- Legacy scraper lanes are manual only via `--refresh-merchants` or `--legacy-scrape`.
+- Legacy scraper runs must include an explicit `--merchant-slugs` scope.
+- `top1toys` is legacy/manual and is not part of the default production refresh path.
 - The upstream coverage reports and workflow batches now default to actionable sets only. Retired or deprioritized exceptions such as `70728` only re-enter that queue when you explicitly use `--include-non-active` on the reporting or workflow command.
 - When a set stays stuck in `partial_primary_coverage`, use `pnpm nx run commerce-seed-generator:run -- --gap-audit ...` before rerunning sync. That tells you whether the blocker is a missing seed, a stale or invalid seed, or a refresh problem on an already valid seed. The gap audit also adds a conservative `recover_now / verify_first / parked` hint so operators can separate cheap wins from queues that are better parked for later.
 - `pnpm sync:commerce:check` and `pnpm sync:commerce:local:check` remain generated-artifact drift checks only and do not write latest or history rows.
 - Merchant presentation metadata and reference pricing remain curated locally.
 - Active merchant and seed scope now come from Supabase, not from local seed files.
-- Current production default refresh allowlist:
-  - `top1toys`
-- Current merchant support outside default refresh:
+- Current merchant support outside default aggregate path:
   - primary/manual: `lego-nl`, `intertoys`, `bol`, `misterbricks`
   - secondary/manual: `smyths-toys`, `kruidvat`, `wehkamp`
+  - legacy/manual scraper: `top1toys`
   - blocked/deprioritized: `amazon-nl`, `proshop`
 - If a stable merchant product page cannot be verified for a seed, keep the seed reviewable in admin instead of guessing a replacement URL.
 - Technical workflow only: merchant approvals, affiliate terms, and legal review still require manual business validation outside the repo.
@@ -203,8 +216,9 @@ Render scheduled job notes:
 - run this as a scheduled background job, not as an always-on service
 - keep `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job only
 - use `pnpm sync:commerce:local:check` in local hooks or fast local review
-- use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without refreshing merchants
-- a healthy scheduled job should log one `start` line, one line per refreshed seed with merchant, seed id, set id, and status, and one `end` line with refresh, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
+- use `pnpm sync:commerce:check` manually or in CI when you want an artifact drift review without writing latest offers or history rows
+- a healthy scheduled job should log one `start` line, an aggregate-only mode line, one daily-history summary line, and one `end` line with refresh, offer, and history counts; if it never reaches `end`, treat the run as failed and inspect Render logs before retrying
+- refreshed-seed lines should only appear in explicit legacy scraper runs with `--refresh-merchants` or `--legacy-scrape`
 
 ## Staging Commerce Copy
 

@@ -2214,6 +2214,7 @@ export async function loadCommerceSyncInputs({
 
   return {
     refreshSeeds,
+    syncSeeds,
     syncInputs: buildCommerceSyncInputs({
       refreshSeeds: syncSeeds,
     }),

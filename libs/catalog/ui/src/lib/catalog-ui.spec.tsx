@@ -462,6 +462,132 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('Nagekeken prijs');
   });
 
+  it('renders a compact deal reason under the price when provided', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Op voorraad · 3 winkels nagekeken',
+          currentPrice: '€ 489,99',
+          dealReason: '€50 goedkoper dan de rest',
+          merchantLabel: 'Nu het laagst bij bol',
+          pricePositionLabel: 'Goede deal',
+          pricePositionTone: 'positive',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup.indexOf('€ 489,99')).toBeLessThan(
+      markup.indexOf('€50 goedkoper dan de rest'),
+    );
+    expect(markup).toContain('€50 goedkoper dan de rest');
+  });
+
+  it('renders a prominent discount metric under the price when provided', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Op voorraad · 3 winkels nagekeken',
+          currentPrice: '€ 489,99',
+          discountMetric: '€ 60,00 goedkoper · 11% lager',
+          merchantLabel: 'Nu het laagst bij bol',
+          pricePositionLabel: 'Goede deal',
+          pricePositionTone: 'positive',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup.indexOf('€ 489,99')).toBeLessThan(
+      markup.indexOf('€ 60,00 goedkoper · 11% lager'),
+    );
+    expect(markup).toContain('data-catalog-discount-metric="true"');
+    expect(markup).toContain('€ 60,00 goedkoper · 11% lager');
+  });
+
+  it('does not render an empty deal reason fallback', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetCard
+        href="/sets/rivendell-10316"
+        priceContext={{
+          coverageLabel: 'Op voorraad · 3 winkels nagekeken',
+          currentPrice: '€ 489,99',
+          merchantLabel: 'Nu het laagst bij bol',
+          pricePositionLabel: 'Goede deal',
+          pricePositionTone: 'positive',
+          reviewedLabel: 'Nagekeken 29 mrt',
+        }}
+        setSummary={{
+          id: '10316',
+          slug: 'rivendell-10316',
+          name: 'Rivendell',
+          theme: 'Icons',
+          releaseYear: 2023,
+          pieces: 6181,
+          imageUrl: 'https://images.example/rivendell.jpg',
+        }}
+        variant="featured"
+      />,
+    );
+
+    expect(markup).not.toContain('class="dealReason"');
+  });
+
+  it('keeps deal reasons to one mobile-safe line', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const dealReasonRule = css.slice(
+      css.indexOf('.dealReason {'),
+      css.indexOf('.priceMeta {'),
+    );
+
+    expect(dealReasonRule).toContain('overflow: hidden;');
+    expect(dealReasonRule).toContain('text-overflow: ellipsis;');
+    expect(dealReasonRule).toContain('white-space: nowrap;');
+    expect(dealReasonRule).toContain('min-width: 0;');
+  });
+
+  it('keeps discount metrics to one mobile-safe line', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const discountMetricRule = css.slice(
+      css.indexOf('.discountMetric {'),
+      css.indexOf('.dealReason {'),
+    );
+
+    expect(discountMetricRule).toContain('color: var(--lego-positive);');
+    expect(discountMetricRule).toContain('overflow: hidden;');
+    expect(discountMetricRule).toContain('text-overflow: ellipsis;');
+    expect(discountMetricRule).toContain('white-space: nowrap;');
+    expect(discountMetricRule).toContain('min-width: 0;');
+  });
+
   it('keeps the homepage follow-later action lighter than the primary set click', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard

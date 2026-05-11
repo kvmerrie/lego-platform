@@ -64,6 +64,27 @@ function createPriceHistoryPoint(
   };
 }
 
+function createDailyHistoryUpsertResult(points: readonly PriceHistoryPoint[]) {
+  return {
+    points: [...points],
+    summary: {
+      dailyHistoryPointsBuilt: points.length,
+      eligibleLatestOfferRows: points.length,
+      latestOfferRowsSeen: points.length,
+      maxObservedAgeHours: 48,
+      newestObservedAt: points.at(-1)?.observedAt,
+      skipped: {
+        inactiveSeedOrMerchant: 0,
+        invalidSeed: 0,
+        missingOrInvalidPrice: 0,
+        nonEur: 0,
+        staleOrError: 0,
+        unavailableForHeadline: 0,
+      },
+    },
+  };
+}
+
 describe('commerce sync catalog validation', () => {
   test('accepts a set present in the current canonical catalog', async () => {
     const catalogSetSummary = createCatalogSetSummary({
@@ -648,9 +669,98 @@ describe('commerce sync scoped runs', () => {
     expect(result.syncInputs.enabledSetIds).toEqual(['10316', '76437']);
   });
 
+  test('defaults write mode to aggregate-only without merchant page refresh', async () => {
+    const refreshCommerceOfferSeedsFn = vi.fn();
+    const writePricingGeneratedArtifactsFn = vi.fn().mockResolvedValue({
+      isClean: true,
+      manifestPath: '/tmp/brickhunt/pricing-sync-manifest.generated.ts',
+      observationsPath: '/tmp/brickhunt/pricing-observations.generated.ts',
+      panelSnapshotsPath: '/tmp/brickhunt/price-panel-snapshots.generated.ts',
+      stalePaths: [],
+    });
+    const writeAffiliateGeneratedArtifactsFn = vi.fn().mockResolvedValue({
+      isClean: true,
+      manifestPath: '/tmp/brickhunt/affiliate-sync-manifest.generated.ts',
+      offersPath: '/tmp/brickhunt/affiliate-offers.generated.ts',
+      stalePaths: [],
+    });
+
+    const result = await runCommerceSync({
+      dependencies: {
+        listCatalogSetSummariesFn: async () => [],
+        loadCommerceSyncInputsFn: vi.fn().mockResolvedValue({
+          refreshSeeds: [
+            {
+              merchant: {
+                id: 'merchant-top1toys',
+                slug: 'top1toys',
+                name: 'Top1Toys',
+                isActive: true,
+                sourceType: 'direct',
+                notes: '',
+                createdAt: '2026-04-19T10:00:00.000Z',
+                updatedAt: '2026-04-19T10:00:00.000Z',
+              },
+              offerSeed: {
+                id: 'seed-10316-top1toys',
+                setId: '10316',
+                merchantId: 'merchant-top1toys',
+                productUrl: 'https://www.top1toys.nl/lego-10316',
+                isActive: true,
+                validationStatus: 'valid',
+                notes: '',
+                createdAt: '2026-04-19T10:00:00.000Z',
+                updatedAt: '2026-04-19T10:00:00.000Z',
+              },
+            },
+          ],
+          syncSeeds: [],
+          syncInputs: {
+            activeMerchantCount: 0,
+            affiliateMerchantConfigs: [],
+            enabledSetIds: [],
+            merchantSummaries: [],
+            pricingObservationSeeds: [],
+          },
+        }),
+        refreshCommerceOfferSeedsFn,
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
+          .fn()
+          .mockResolvedValue(createDailyHistoryUpsertResult([])),
+        writeAffiliateGeneratedArtifactsFn,
+        writePricingGeneratedArtifactsFn,
+      },
+      mode: 'write',
+      workspaceRoot: '/tmp/brickhunt',
+    });
+
+    expect(result.refreshMerchants).toBe(false);
+    expect(result.refreshSuccessCount).toBe(0);
+    expect(refreshCommerceOfferSeedsFn).not.toHaveBeenCalled();
+  });
+
+  test('rejects legacy scraper refresh without an explicit merchant scope', async () => {
+    const loadCommerceSyncInputsFn = vi.fn();
+
+    await expect(
+      runCommerceSync({
+        dependencies: {
+          loadCommerceSyncInputsFn,
+        },
+        mode: 'write',
+        refreshMerchants: true,
+        setIds: ['10316'],
+        workspaceRoot: '/tmp/brickhunt',
+      }),
+    ).rejects.toThrow(
+      'Legacy merchant refresh requires an explicit --merchant-slugs scope.',
+    );
+    expect(loadCommerceSyncInputsFn).not.toHaveBeenCalled();
+  });
+
   test('passes scoped set ids through refresh loading and reports subset metrics', async () => {
     const loadCommerceSyncInputsFn = vi
-      .fn<NonNullable<CommerceSyncDependencies['loadCommerceSyncInputsFn']>>()
+      .fn()
       .mockImplementation(async ({ setIds } = {}) => ({
         refreshSeeds: setIds?.includes('10316')
           ? [
@@ -872,11 +982,17 @@ describe('commerce sync scoped runs', () => {
         offersPath: '/tmp/brickhunt/affiliate-offers.generated.ts',
         stalePaths: [],
       });
-    const upsertDailyPriceHistoryPointsFn = vi
+    const upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = vi
       .fn<
-        NonNullable<CommerceSyncDependencies['upsertDailyPriceHistoryPointsFn']>
+        NonNullable<
+          CommerceSyncDependencies['upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn']
+        >
       >()
-      .mockResolvedValue([createPriceHistoryPoint({ setId: '10316' })]);
+      .mockResolvedValue(
+        createDailyHistoryUpsertResult([
+          createPriceHistoryPoint({ setId: '10316' }),
+        ]),
+      );
 
     const result = await runCommerceSync({
       dependencies: {
@@ -886,19 +1002,23 @@ describe('commerce sync scoped runs', () => {
         ],
         loadCommerceSyncInputsFn,
         refreshCommerceOfferSeedsFn,
-        upsertDailyPriceHistoryPointsFn,
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn,
         writeAffiliateGeneratedArtifactsFn,
         writePricingGeneratedArtifactsFn,
       },
+      merchantSlugs: ['bol'],
       mode: 'write',
+      refreshMerchants: true,
       setIds: ['10316'],
       workspaceRoot: '/tmp/brickhunt',
     });
 
     expect(loadCommerceSyncInputsFn).toHaveBeenNthCalledWith(1, {
+      merchantSlugs: ['bol'],
       setIds: ['10316'],
     });
     expect(loadCommerceSyncInputsFn).toHaveBeenNthCalledWith(2, {
+      merchantSlugs: ['bol'],
       setIds: ['10316'],
     });
     expect(loadCommerceSyncInputsFn).toHaveBeenNthCalledWith(3);
@@ -930,7 +1050,7 @@ describe('commerce sync scoped runs', () => {
 
   test('passes merchant slugs through refresh loading and keeps default full-write behavior intact', async () => {
     const loadCommerceSyncInputsFn = vi
-      .fn<NonNullable<CommerceSyncDependencies['loadCommerceSyncInputsFn']>>()
+      .fn()
       .mockImplementation(async ({ merchantSlugs, setIds } = {}) => ({
         refreshSeeds:
           merchantSlugs?.includes('lego-nl') && setIds?.includes('76437')
@@ -1148,11 +1268,17 @@ describe('commerce sync scoped runs', () => {
         offersPath: '/tmp/brickhunt/affiliate-offers.generated.ts',
         stalePaths: [],
       });
-    const upsertDailyPriceHistoryPointsFn = vi
+    const upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = vi
       .fn<
-        NonNullable<CommerceSyncDependencies['upsertDailyPriceHistoryPointsFn']>
+        NonNullable<
+          CommerceSyncDependencies['upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn']
+        >
       >()
-      .mockResolvedValue([createPriceHistoryPoint({ setId: '76437' })]);
+      .mockResolvedValue(
+        createDailyHistoryUpsertResult([
+          createPriceHistoryPoint({ setId: '76437' }),
+        ]),
+      );
 
     const result = await runCommerceSync({
       dependencies: {
@@ -1162,12 +1288,13 @@ describe('commerce sync scoped runs', () => {
         ],
         loadCommerceSyncInputsFn,
         refreshCommerceOfferSeedsFn,
-        upsertDailyPriceHistoryPointsFn,
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn,
         writeAffiliateGeneratedArtifactsFn,
         writePricingGeneratedArtifactsFn,
       },
       merchantSlugs: ['lego-nl'],
       mode: 'write',
+      refreshMerchants: true,
       setIds: ['76437'],
       workspaceRoot: '/tmp/brickhunt',
     });

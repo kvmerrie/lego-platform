@@ -380,6 +380,33 @@
   margin: 0;
 }
 
+.discountMetric {
+  color: var(--lego-positive);
+  font-size: var(--lego-text-role-meta-size);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--lego-font-weight-bold);
+  line-height: 1.3;
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dealReason {
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.3;
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .priceMeta {
   color: var(--lego-text);
   font-weight: var(--lego-font-weight-semibold);

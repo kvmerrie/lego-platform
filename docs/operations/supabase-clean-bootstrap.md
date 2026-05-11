@@ -65,13 +65,13 @@ The fresh environment should **not** depend on:
 
 ### Intentionally Leave Behind
 
-| Domain                                     | Why                                                                            |
-| ------------------------------------------ | ------------------------------------------------------------------------------ |
-| Snapshot runtime identity                  | No longer the source of truth.                                                 |
-| Local catalog prose and editorial remnants | Low-value, hand-maintained ballast.                                            |
-| Snapshot/overlay merge behavior            | Transitional complexity we do not want to rebootstrap.                         |
-| `commerce_offer_latest` rows               | Better rebuilt by a fresh `pnpm sync:commerce` run than copied as stale state. |
-| Generated catalog artifacts as truth       | Keep only as build output if still useful.                                     |
+| Domain                                     | Why                                                     |
+| ------------------------------------------ | ------------------------------------------------------- |
+| Snapshot runtime identity                  | No longer the source of truth.                          |
+| Local catalog prose and editorial remnants | Low-value, hand-maintained ballast.                     |
+| Snapshot/overlay merge behavior            | Transitional complexity we do not want to rebootstrap.  |
+| `commerce_offer_latest` rows               | Better rebuilt by feed jobs than copied as stale state. |
+| Generated catalog artifacts as truth       | Keep only as build output if still useful.              |
 
 ## Recommended Bootstrap Order
 
@@ -158,12 +158,9 @@ Optional verification:
 pnpm nx run catalog-bootstrap:run -- --verify ./tmp/brickhunt-clean-bootstrap.json
 ```
 
-Do **not** seed `commerce_offer_latest` as source truth.
-Rebuild it afterward with:
-
-```bash
-pnpm sync:commerce
-```
+Do **not** seed `commerce_offer_latest` as source truth. Rebuild latest offer
+state afterward with the feed jobs for production merchants. `pnpm sync:commerce`
+only aggregates whatever latest rows already exist.
 
 Do **not** seed snapshot artifacts as runtime truth.
 If you still need generated artifacts for build-time, regenerate them from the clean environment with:
@@ -177,12 +174,13 @@ pnpm sync:catalog
 After seeding:
 
 1. run `pnpm sync:catalog`
-2. run `pnpm sync:commerce`
+2. run the production feed jobs that fill `commerce_offer_latest`
+3. run `pnpm sync:commerce`
 
 That gives the clean environment:
 
 - generated snapshot artifacts derived from the new canonical source
-- fresh `commerce_offer_latest` rows
+- fresh `commerce_offer_latest` rows from feed jobs
 - fresh pricing history points
 
 ## What We Can Skip Completely In The Clean Environment
@@ -245,21 +243,23 @@ After the clean environment is live and the runtime table rename is complete, th
 5. Admin workbench and add-set flow
    Confirm set lookup, coverage queue, and first-offer workflows still operate.
 6. Offer comparison and best-deal visibility
-   Confirm `sync:commerce` rebuilds fresh live state after seeding seeds only.
+   Confirm feed jobs rebuild latest offer state and `sync:commerce` aggregates it
+   into generated artifacts and daily pricing history.
 
 ### First smoke tests after bootstrap
 
 Run in this order:
 
 1. `pnpm sync:catalog`
-2. `pnpm sync:commerce`
-3. public checks:
+2. run the production feed jobs
+3. `pnpm sync:commerce`
+4. public checks:
    - homepage
    - discover
    - a primary theme page
    - search
    - a set detail page with valid live offers
-4. admin checks:
+5. admin checks:
    - Workbench loads
    - Sets index loads
    - New set flow can add a set

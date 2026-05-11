@@ -53,6 +53,60 @@ export interface UpsertDailyPriceHistoryPointsOptions
   supabaseClient?: PricingHistorySupabaseClient;
 }
 
+export interface CommerceLatestOfferHistoryInput {
+  latestOffer?: {
+    availability?: string;
+    currencyCode?: string;
+    fetchStatus?: string;
+    observedAt?: string;
+    priceMinor?: number;
+  };
+  merchant?: {
+    isActive: boolean;
+    slug: string;
+  };
+  offerSeed: {
+    isActive: boolean;
+    setId: string;
+    validationStatus: string;
+  };
+}
+
+export interface CommerceLatestOfferHistorySkipCounts {
+  inactiveSeedOrMerchant: number;
+  invalidSeed: number;
+  missingOrInvalidPrice: number;
+  nonEur: number;
+  staleOrError: number;
+  unavailableForHeadline: number;
+}
+
+export interface CommerceLatestOfferHistorySummary {
+  dailyHistoryPointsBuilt: number;
+  eligibleLatestOfferRows: number;
+  latestOfferRowsSeen: number;
+  maxObservedAgeHours: number;
+  newestObservedAt?: string;
+  skipped: CommerceLatestOfferHistorySkipCounts;
+}
+
+export interface BuildDailyPriceHistoryPointsFromCommerceLatestOffersResult {
+  points: PriceHistoryPoint[];
+  summary: CommerceLatestOfferHistorySummary;
+}
+
+export interface BuildDailyPriceHistoryPointsFromCommerceLatestOffersOptions {
+  latestOffers: readonly CommerceLatestOfferHistoryInput[];
+  maxObservedAgeHours?: number;
+  now?: Date;
+  pricingReferenceValues?: readonly PricingReferenceValue[];
+}
+
+export interface UpsertDailyPriceHistoryPointsFromCommerceLatestOffersOptions
+  extends BuildDailyPriceHistoryPointsFromCommerceLatestOffersOptions {
+  supabaseClient?: PricingHistorySupabaseClient;
+}
+
 interface PersistedPriceHistoryRow {
   condition: PriceHistoryPoint['condition'];
   currency_code: PriceHistoryPoint['currencyCode'];
@@ -65,8 +119,52 @@ interface PersistedPriceHistoryRow {
   set_id: PriceHistoryPoint['setId'];
 }
 
+export const DEFAULT_COMMERCE_LATEST_OFFER_HISTORY_MAX_AGE_HOURS = 48;
+
 function toRecordedOn(now?: Date): string {
   return (now ?? new Date()).toISOString().slice(0, 10);
+}
+
+function createEmptyCommerceLatestOfferHistorySkipCounts(): CommerceLatestOfferHistorySkipCounts {
+  return {
+    inactiveSeedOrMerchant: 0,
+    invalidSeed: 0,
+    missingOrInvalidPrice: 0,
+    nonEur: 0,
+    staleOrError: 0,
+    unavailableForHeadline: 0,
+  };
+}
+
+function normalizeCommerceLatestOfferCurrencyCode(value?: string): string {
+  return (value ?? '').trim().toUpperCase();
+}
+
+function isHeadlineHistoryAvailability(value?: string): boolean {
+  return value === 'in_stock' || value === 'limited';
+}
+
+function isValidObservedAt(value?: string): value is string {
+  if (!value) {
+    return false;
+  }
+
+  return Number.isFinite(new Date(value).getTime());
+}
+
+function isObservedAtWithinMaxAge({
+  maxObservedAgeHours,
+  now,
+  observedAt,
+}: {
+  maxObservedAgeHours: number;
+  now: Date;
+  observedAt: string;
+}): boolean {
+  const observedTime = new Date(observedAt).getTime();
+  const maxAgeMs = maxObservedAgeHours * 60 * 60 * 1000;
+
+  return now.getTime() - observedTime <= maxAgeMs;
 }
 
 function validateObservedAt(value: string, seedLabel: string): string {
@@ -274,18 +372,139 @@ export function buildDailyPriceHistoryPoints({
     .sort((left, right) => left.setId.localeCompare(right.setId));
 }
 
-export async function upsertDailyPriceHistoryPoints({
+export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+  latestOffers,
+  maxObservedAgeHours = DEFAULT_COMMERCE_LATEST_OFFER_HISTORY_MAX_AGE_HOURS,
   now,
-  pricePanelSnapshots,
-  supabaseClient,
-}: UpsertDailyPriceHistoryPointsOptions): Promise<PriceHistoryPoint[]> {
-  const dailyPriceHistoryPoints = buildDailyPriceHistoryPoints({
-    now,
-    pricePanelSnapshots,
-  });
+  pricingReferenceValues = dutchPricingReferenceValues,
+}: BuildDailyPriceHistoryPointsFromCommerceLatestOffersOptions): BuildDailyPriceHistoryPointsFromCommerceLatestOffersResult {
+  const recordedOn = toRecordedOn(now);
+  const runDate = now ?? new Date();
+  const referencePriceMinorBySetId = new Map(
+    pricingReferenceValues.map((pricingReferenceValue) => [
+      pricingReferenceValue.setId,
+      pricingReferenceValue.referencePriceMinor,
+    ]),
+  );
+  const skipped = createEmptyCommerceLatestOfferHistorySkipCounts();
+  const bestPointBySetId = new Map<string, PriceHistoryPoint>();
+  let eligibleLatestOfferRows = 0;
+  let newestObservedAt: string | undefined;
 
+  for (const latestOfferInput of latestOffers) {
+    const latestOffer = latestOfferInput.latestOffer;
+    const merchant = latestOfferInput.merchant;
+    const offerSeed = latestOfferInput.offerSeed;
+
+    if (!offerSeed.isActive || merchant?.isActive !== true) {
+      skipped.inactiveSeedOrMerchant += 1;
+      continue;
+    }
+
+    if (offerSeed.validationStatus !== 'valid') {
+      skipped.invalidSeed += 1;
+      continue;
+    }
+
+    if (!latestOffer || latestOffer.fetchStatus !== 'success') {
+      skipped.staleOrError += 1;
+      continue;
+    }
+
+    if (
+      normalizeCommerceLatestOfferCurrencyCode(latestOffer.currencyCode) !==
+      EURO_CURRENCY_CODE
+    ) {
+      skipped.nonEur += 1;
+      continue;
+    }
+
+    if (
+      !Number.isInteger(latestOffer.priceMinor) ||
+      (latestOffer.priceMinor ?? 0) <= 0 ||
+      !isValidObservedAt(latestOffer.observedAt)
+    ) {
+      skipped.missingOrInvalidPrice += 1;
+      continue;
+    }
+
+    const observedAt = new Date(latestOffer.observedAt).toISOString();
+
+    if (
+      !isObservedAtWithinMaxAge({
+        maxObservedAgeHours,
+        now: runDate,
+        observedAt,
+      })
+    ) {
+      skipped.staleOrError += 1;
+      continue;
+    }
+
+    if (!isHeadlineHistoryAvailability(latestOffer.availability)) {
+      skipped.unavailableForHeadline += 1;
+      continue;
+    }
+
+    eligibleLatestOfferRows += 1;
+
+    if (!newestObservedAt || observedAt > newestObservedAt) {
+      newestObservedAt = observedAt;
+    }
+
+    const point: PriceHistoryPoint = {
+      setId: offerSeed.setId,
+      regionCode: DUTCH_REGION_CODE,
+      currencyCode: EURO_CURRENCY_CODE,
+      condition: NEW_OFFER_CONDITION,
+      headlinePriceMinor: latestOffer.priceMinor,
+      referencePriceMinor: referencePriceMinorBySetId.get(offerSeed.setId),
+      lowestMerchantId: merchant.slug,
+      observedAt,
+      recordedOn,
+    };
+    const previousPoint = bestPointBySetId.get(point.setId);
+
+    if (
+      !previousPoint ||
+      point.headlinePriceMinor < previousPoint.headlinePriceMinor ||
+      (point.headlinePriceMinor === previousPoint.headlinePriceMinor &&
+        (point.observedAt > previousPoint.observedAt ||
+          (point.observedAt === previousPoint.observedAt &&
+            (point.lowestMerchantId ?? '').localeCompare(
+              previousPoint.lowestMerchantId ?? '',
+            ) < 0)))
+    ) {
+      bestPointBySetId.set(point.setId, point);
+    }
+  }
+
+  const points = [...bestPointBySetId.values()].sort((left, right) =>
+    left.setId.localeCompare(right.setId),
+  );
+
+  return {
+    points,
+    summary: {
+      dailyHistoryPointsBuilt: points.length,
+      eligibleLatestOfferRows,
+      latestOfferRowsSeen: latestOffers.length,
+      maxObservedAgeHours,
+      newestObservedAt,
+      skipped,
+    },
+  };
+}
+
+async function upsertPersistedDailyPriceHistoryRows({
+  dailyPriceHistoryPoints,
+  supabaseClient,
+}: {
+  dailyPriceHistoryPoints: readonly PriceHistoryPoint[];
+  supabaseClient?: PricingHistorySupabaseClient;
+}): Promise<void> {
   if (dailyPriceHistoryPoints.length === 0) {
-    return [];
+    return;
   }
 
   const persistedPriceHistoryRows: PersistedPriceHistoryRow[] =
@@ -312,8 +531,48 @@ export async function upsertDailyPriceHistoryPoints({
       `Unable to persist ${PRICE_HISTORY_WINDOW_DAYS}-day pricing history points.`,
     );
   }
+}
+
+export async function upsertDailyPriceHistoryPoints({
+  now,
+  pricePanelSnapshots,
+  supabaseClient,
+}: UpsertDailyPriceHistoryPointsOptions): Promise<PriceHistoryPoint[]> {
+  const dailyPriceHistoryPoints = buildDailyPriceHistoryPoints({
+    now,
+    pricePanelSnapshots,
+  });
+
+  if (dailyPriceHistoryPoints.length === 0) {
+    return [];
+  }
+
+  await upsertPersistedDailyPriceHistoryRows({
+    dailyPriceHistoryPoints,
+    supabaseClient,
+  });
 
   return dailyPriceHistoryPoints;
+}
+
+export async function upsertDailyPriceHistoryPointsFromCommerceLatestOffers({
+  latestOffers,
+  now,
+  pricingReferenceValues,
+  supabaseClient,
+}: UpsertDailyPriceHistoryPointsFromCommerceLatestOffersOptions): Promise<BuildDailyPriceHistoryPointsFromCommerceLatestOffersResult> {
+  const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+    latestOffers,
+    now,
+    pricingReferenceValues,
+  });
+
+  await upsertPersistedDailyPriceHistoryRows({
+    dailyPriceHistoryPoints: result.points,
+    supabaseClient,
+  });
+
+  return result;
 }
 
 export function validatePricingSyncArtifacts({

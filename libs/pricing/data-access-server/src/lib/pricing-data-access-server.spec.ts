@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 import {
   buildPricingSyncArtifacts,
   buildDailyPriceHistoryPoints,
+  buildDailyPriceHistoryPointsFromCommerceLatestOffers,
   upsertDailyPriceHistoryPoints,
 } from './pricing-data-access-server';
 
@@ -37,6 +38,38 @@ const expandedCommerceEnabledSetIds = [
   '42177',
   '10342',
 ] as const;
+
+function buildLatestOfferInput(
+  overrides: Partial<
+    Parameters<
+      typeof buildDailyPriceHistoryPointsFromCommerceLatestOffers
+    >[0]['latestOffers'][number]
+  > = {},
+): Parameters<
+  typeof buildDailyPriceHistoryPointsFromCommerceLatestOffers
+>[0]['latestOffers'][number] {
+  return {
+    merchant: {
+      isActive: true,
+      slug: 'alternate',
+      ...overrides.merchant,
+    },
+    offerSeed: {
+      isActive: true,
+      setId: '10316',
+      validationStatus: 'valid',
+      ...overrides.offerSeed,
+    },
+    latestOffer: {
+      availability: 'in_stock',
+      currencyCode: 'EUR',
+      fetchStatus: 'success',
+      observedAt: '2026-05-11T10:00:00.000Z',
+      priceMinor: 46999,
+      ...overrides.latestOffer,
+    },
+  };
+}
 
 describe('pricing data access server', () => {
   test('builds Dutch pricing artifacts for the curated commerce-enabled sets', () => {
@@ -186,6 +219,169 @@ describe('pricing data access server', () => {
         }),
       ]),
     );
+  });
+
+  test('builds daily price-history from valid EUR in-stock latest offers', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [buildLatestOfferInput()],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+      pricingReferenceValues: [
+        {
+          setId: '10316',
+          referencePriceMinor: 49999,
+        },
+      ],
+    });
+
+    expect(result.points).toEqual([
+      {
+        setId: '10316',
+        regionCode: 'NL',
+        currencyCode: 'EUR',
+        condition: 'new',
+        headlinePriceMinor: 46999,
+        referencePriceMinor: 49999,
+        lowestMerchantId: 'alternate',
+        observedAt: '2026-05-11T10:00:00.000Z',
+        recordedOn: '2026-05-11',
+      },
+    ]);
+    expect(result.summary).toMatchObject({
+      latestOfferRowsSeen: 1,
+      eligibleLatestOfferRows: 1,
+      dailyHistoryPointsBuilt: 1,
+      newestObservedAt: '2026-05-11T10:00:00.000Z',
+    });
+  });
+
+  test('excludes latest offers that should not become headline history', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          latestOffer: { availability: 'unknown' },
+        }),
+        buildLatestOfferInput({
+          latestOffer: { fetchStatus: 'error' },
+        }),
+        buildLatestOfferInput({
+          merchant: { isActive: false, slug: 'alternate' },
+        }),
+        buildLatestOfferInput({
+          offerSeed: {
+            isActive: true,
+            setId: '10317',
+            validationStatus: 'stale',
+          },
+        }),
+        buildLatestOfferInput({
+          latestOffer: { currencyCode: 'GBP' },
+        }),
+        buildLatestOfferInput({
+          latestOffer: { priceMinor: 0 },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toEqual([]);
+    expect(result.summary).toMatchObject({
+      latestOfferRowsSeen: 6,
+      eligibleLatestOfferRows: 0,
+      dailyHistoryPointsBuilt: 0,
+      skipped: {
+        inactiveSeedOrMerchant: 1,
+        invalidSeed: 1,
+        missingOrInvalidPrice: 1,
+        nonEur: 1,
+        staleOrError: 1,
+        unavailableForHeadline: 1,
+      },
+    });
+  });
+
+  test('excludes old success latest offers from today headline history', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          latestOffer: {
+            observedAt: '2026-05-08T11:59:59.000Z',
+          },
+        }),
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'coolblue' },
+          latestOffer: {
+            observedAt: '2026-05-09T12:00:00.000Z',
+            priceMinor: 45999,
+          },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toEqual([
+      expect.objectContaining({
+        setId: '10316',
+        headlinePriceMinor: 45999,
+        lowestMerchantId: 'coolblue',
+      }),
+    ]);
+    expect(result.summary).toMatchObject({
+      eligibleLatestOfferRows: 1,
+      maxObservedAgeHours: 48,
+      skipped: {
+        staleOrError: 1,
+      },
+    });
+  });
+
+  test('keeps one best-price history point per set and day', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'alternate' },
+          latestOffer: {
+            observedAt: '2026-05-11T09:00:00.000Z',
+            priceMinor: 46999,
+          },
+        }),
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'coolblue' },
+          latestOffer: {
+            observedAt: '2026-05-11T11:00:00.000Z',
+            priceMinor: 45999,
+          },
+        }),
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'goodbricks' },
+          offerSeed: {
+            isActive: true,
+            setId: '10317',
+            validationStatus: 'valid',
+          },
+          latestOffer: {
+            observedAt: '2026-05-11T08:00:00.000Z',
+            priceMinor: 22999,
+          },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toHaveLength(2);
+    expect(result.points).toEqual([
+      expect.objectContaining({
+        setId: '10316',
+        headlinePriceMinor: 45999,
+        lowestMerchantId: 'coolblue',
+        recordedOn: '2026-05-11',
+      }),
+      expect.objectContaining({
+        setId: '10317',
+        headlinePriceMinor: 22999,
+        lowestMerchantId: 'goodbricks',
+        recordedOn: '2026-05-11',
+      }),
+    ]);
   });
 
   test('upserts daily price-history points by the daily composite key', async () => {

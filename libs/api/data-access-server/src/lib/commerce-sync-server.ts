@@ -8,7 +8,8 @@ import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import {
   buildPricingSyncArtifacts,
   checkPricingGeneratedArtifacts,
-  upsertDailyPriceHistoryPoints,
+  type CommerceLatestOfferHistorySummary,
+  upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
 import { normalizeCatalogSetId } from '@lego-platform/shared/util';
@@ -27,6 +28,7 @@ export interface CommerceGeneratedArtifactCheckResult {
 export interface CommerceSyncRunResult {
   affiliateArtifactCheck: CommerceGeneratedArtifactCheckResult;
   affiliateOfferCount: number;
+  dailyHistorySummary: CommerceLatestOfferHistorySummary;
   dailyHistoryPointCount: number;
   enabledSetCount: number;
   merchantCount: number;
@@ -34,6 +36,7 @@ export interface CommerceSyncRunResult {
   pricePanelSnapshotCount: number;
   pricingArtifactCheck: CommerceGeneratedArtifactCheckResult;
   pricingObservationCount: number;
+  refreshMerchants: boolean;
   refreshInvalidCount: number;
   refreshStaleCount: number;
   refreshSuccessCount: number;
@@ -50,7 +53,7 @@ export interface CommerceSyncDependencies {
   loadCommerceSyncInputsFn?: typeof loadCommerceSyncInputs;
   revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   refreshCommerceOfferSeedsFn?: typeof refreshCommerceOfferSeeds;
-  upsertDailyPriceHistoryPointsFn?: typeof upsertDailyPriceHistoryPoints;
+  upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn?: typeof upsertDailyPriceHistoryPointsFromCommerceLatestOffers;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
   writePricingGeneratedArtifactsFn?: typeof writePricingGeneratedArtifacts;
 }
@@ -126,6 +129,55 @@ function buildCommerceSyncArtifacts({
   };
 }
 
+function createEmptyDailyHistorySummary(): CommerceLatestOfferHistorySummary {
+  return {
+    dailyHistoryPointsBuilt: 0,
+    eligibleLatestOfferRows: 0,
+    latestOfferRowsSeen: 0,
+    maxObservedAgeHours: 0,
+    skipped: {
+      inactiveSeedOrMerchant: 0,
+      invalidSeed: 0,
+      missingOrInvalidPrice: 0,
+      nonEur: 0,
+      staleOrError: 0,
+      unavailableForHeadline: 0,
+    },
+  };
+}
+
+function formatDailyHistorySummaryLog({
+  mode,
+  summary,
+  upsertedCount,
+}: {
+  mode: 'check' | 'write';
+  summary: CommerceLatestOfferHistorySummary;
+  upsertedCount: number;
+}): string {
+  return [
+    '[commerce-sync] daily_history',
+    `mode=${mode}`,
+    `latest_offer_rows_seen=${summary.latestOfferRowsSeen}`,
+    `eligible_latest_offer_rows=${summary.eligibleLatestOfferRows}`,
+    `daily_history_points_built=${summary.dailyHistoryPointsBuilt}`,
+    `daily_history_points_upserted=${upsertedCount}`,
+    `max_observed_age_hours=${summary.maxObservedAgeHours}`,
+    `newest_observed_at=${summary.newestObservedAt ?? 'none'}`,
+    `skipped_stale_or_error=${summary.skipped.staleOrError}`,
+    `skipped_inactive_seed_or_merchant=${summary.skipped.inactiveSeedOrMerchant}`,
+    `skipped_invalid_seed=${summary.skipped.invalidSeed}`,
+    `skipped_non_eur=${summary.skipped.nonEur}`,
+    `skipped_missing_or_invalid_price=${summary.skipped.missingOrInvalidPrice}`,
+    `skipped_unavailable_for_headline=${summary.skipped.unavailableForHeadline}`,
+    summary.dailyHistoryPointsBuilt === 0
+      ? 'zero_points_reason=no_eligible_latest_offers'
+      : undefined,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(' ');
+}
+
 export async function resolveCommerceCatalogSetSummaries({
   listCatalogSetSummariesFn = listCatalogSetSummariesWithOverlay,
   setIds,
@@ -160,6 +212,7 @@ export async function runCommerceSync({
   merchantSlugs,
   mode = 'write',
   now,
+  refreshMerchants = false,
   setIds,
   workspaceRoot,
 }: {
@@ -167,6 +220,7 @@ export async function runCommerceSync({
   merchantSlugs?: readonly string[];
   mode?: 'check' | 'write';
   now?: Date;
+  refreshMerchants?: boolean;
   setIds?: readonly string[];
   workspaceRoot: string;
 }): Promise<CommerceSyncRunResult> {
@@ -177,7 +231,7 @@ export async function runCommerceSync({
     loadCommerceSyncInputsFn = loadCommerceSyncInputs,
     revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     refreshCommerceOfferSeedsFn = refreshCommerceOfferSeeds,
-    upsertDailyPriceHistoryPointsFn = upsertDailyPriceHistoryPoints,
+    upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
     writeAffiliateGeneratedArtifactsFn = writeAffiliateGeneratedArtifacts,
     writePricingGeneratedArtifactsFn = writePricingGeneratedArtifacts,
   } = dependencies;
@@ -186,15 +240,24 @@ export async function runCommerceSync({
   const requestedMerchantSlugs =
     scopedMerchantSlugs.length > 0 ? scopedMerchantSlugs : undefined;
   const scoped = scopedSetIds.length > 0 || scopedMerchantSlugs.length > 0;
+  const shouldRefreshMerchants = mode === 'write' && refreshMerchants;
+
+  if (shouldRefreshMerchants && scopedMerchantSlugs.length === 0) {
+    throw new Error(
+      'Legacy merchant refresh requires an explicit --merchant-slugs scope. Default commerce-sync is aggregate-only.',
+    );
+  }
+
   const initialCommerceSyncInputs = await loadCommerceSyncInputsFn({
     merchantSlugs: requestedMerchantSlugs,
     setIds: scopedSetIds,
   });
+  const merchantRefreshSeeds = shouldRefreshMerchants
+    ? initialCommerceSyncInputs.refreshSeeds
+    : [];
   const refreshSeedSetIds = [
     ...new Set(
-      initialCommerceSyncInputs.refreshSeeds.map(
-        (refreshSeed) => refreshSeed.offerSeed.setId,
-      ),
+      merchantRefreshSeeds.map((refreshSeed) => refreshSeed.offerSeed.setId),
     ),
   ];
   const revalidationSetIds =
@@ -212,24 +275,28 @@ export async function runCommerceSync({
     setIds: refreshSeedSetIds,
   });
 
-  const refreshSummary =
-    mode === 'write'
-      ? await refreshCommerceOfferSeedsFn({
-          now,
-          refreshSeeds: initialCommerceSyncInputs.refreshSeeds,
-        })
-      : {
-          totalCount: initialCommerceSyncInputs.refreshSeeds.length,
-          successCount: 0,
-          unavailableCount: 0,
-          invalidCount: 0,
-          staleCount: 0,
-        };
+  console.info(
+    `[commerce-sync] aggregate mode=${shouldRefreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${shouldRefreshMerchants}`,
+  );
 
-  const { syncInputs } = await loadCommerceSyncInputsFn({
+  const refreshSummary = shouldRefreshMerchants
+    ? await refreshCommerceOfferSeedsFn({
+        now,
+        refreshSeeds: merchantRefreshSeeds,
+      })
+    : {
+        totalCount: merchantRefreshSeeds.length,
+        successCount: 0,
+        unavailableCount: 0,
+        invalidCount: 0,
+        staleCount: 0,
+      };
+
+  const refreshedCommerceSyncInputs = await loadCommerceSyncInputsFn({
     merchantSlugs: requestedMerchantSlugs,
     setIds: scopedSetIds,
   });
+  const { syncInputs } = refreshedCommerceSyncInputs;
   const { affiliateArtifacts, pricingArtifacts } = buildCommerceSyncArtifacts({
     now,
     syncInputs,
@@ -271,13 +338,28 @@ export async function runCommerceSync({
               workspaceRoot,
             });
 
-  const dailyPriceHistoryPoints =
+  const dailyPriceHistoryResult =
     mode === 'write'
-      ? await upsertDailyPriceHistoryPointsFn({
+      ? await upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn({
+          latestOffers:
+            'syncSeeds' in refreshedCommerceSyncInputs
+              ? refreshedCommerceSyncInputs.syncSeeds
+              : [],
           now,
-          pricePanelSnapshots: pricingArtifacts.pricePanelSnapshots,
         })
-      : [];
+      : {
+          points: [],
+          summary: createEmptyDailyHistorySummary(),
+        };
+
+  console.info(
+    formatDailyHistorySummaryLog({
+      mode,
+      summary: dailyPriceHistoryResult.summary,
+      upsertedCount:
+        mode === 'write' ? dailyPriceHistoryResult.points.length : 0,
+    }),
+  );
 
   if (scoped && mode === 'write') {
     const { syncInputs: fullSyncInputs } = await loadCommerceSyncInputsFn();
@@ -326,14 +408,16 @@ export async function runCommerceSync({
     affiliateOfferCount: affiliateArtifacts.affiliateOfferSnapshots.length,
     dailyHistoryPointCount:
       mode === 'write'
-        ? dailyPriceHistoryPoints.length
+        ? dailyPriceHistoryResult.points.length
         : pricingArtifacts.pricePanelSnapshots.length,
+    dailyHistorySummary: dailyPriceHistoryResult.summary,
     enabledSetCount: syncInputs.enabledSetIds.length,
     merchantCount: syncInputs.activeMerchantCount,
     mode,
     pricePanelSnapshotCount: pricingArtifacts.pricePanelSnapshots.length,
     pricingArtifactCheck,
     pricingObservationCount: pricingArtifacts.pricingObservations.length,
+    refreshMerchants: shouldRefreshMerchants,
     refreshInvalidCount: refreshSummary.invalidCount,
     refreshStaleCount: refreshSummary.staleCount,
     refreshSuccessCount: refreshSummary.successCount,

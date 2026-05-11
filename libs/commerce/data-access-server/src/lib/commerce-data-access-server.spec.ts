@@ -341,7 +341,7 @@ describe('commerce data access server', () => {
     expect(benchmarkSet.setId).toBe('10316');
   });
 
-  test('lists active refresh seeds for cron consumers without exposing inactive rows', async () => {
+  test('does not include scraper-only merchants in the default refresh path', async () => {
     const merchantOrder = vi.fn().mockResolvedValue({
       data: [
         {
@@ -457,8 +457,7 @@ describe('commerce data access server', () => {
       supabaseClient: { from } as never,
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0].offerSeed.id).toBe('seed-3');
+    expect(result).toHaveLength(0);
   });
 
   test('can include blocked merchants when refresh consumers explicitly ask for the full set', async () => {

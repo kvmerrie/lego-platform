@@ -57,23 +57,51 @@ function parseCsvFlag({
     .filter(Boolean);
 }
 
+function hasBooleanFlag({
+  argv,
+  flag,
+}: {
+  argv: readonly string[];
+  flag: `--${string}`;
+}): boolean {
+  return argv.includes(flag);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const mode = getSyncMode(argv);
+  const requestedMerchantRefresh =
+    hasBooleanFlag({
+      argv,
+      flag: '--refresh-merchants',
+    }) ||
+    hasBooleanFlag({
+      argv,
+      flag: '--legacy-scrape',
+    });
+  const refreshMerchants = mode === 'write' && requestedMerchantRefresh;
   const setIds = parseSetIds(argv);
   const merchantSlugs = parseCsvFlag({
     argv,
     flag: '--merchant-slugs',
   });
+
+  if (requestedMerchantRefresh && merchantSlugs.length === 0) {
+    throw new Error(
+      'Legacy merchant refresh requires an explicit --merchant-slugs scope.',
+    );
+  }
+
   const startedAt = Date.now();
   const scoped = setIds.length > 0 || merchantSlugs.length > 0;
 
   console.log(
-    `[commerce-sync] start mode=${mode} scope=supabase-commerce-refresh scoped=${scoped} set_ids=${setIds.join(',') || 'all'} merchant_scoped=${merchantSlugs.length > 0} merchant_slugs=${merchantSlugs.join(',') || 'all'}`,
+    `[commerce-sync] start mode=${mode} scope=supabase-commerce-aggregate aggregate_mode=${refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${refreshMerchants} scoped=${scoped} set_ids=${setIds.join(',') || 'all'} merchant_scoped=${merchantSlugs.length > 0} merchant_slugs=${merchantSlugs.join(',') || 'all'}`,
   );
   const result = await runCommerceSync({
     merchantSlugs,
     mode,
+    refreshMerchants,
     setIds,
     workspaceRoot: process.cwd(),
   });
@@ -93,13 +121,13 @@ async function main() {
 
     console.log('[commerce-sync] check passed for the Dutch set-detail slice.');
     console.log(
-      `[commerce-sync] end mode=check status=clean scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+      `[commerce-sync] end mode=check status=clean aggregate_mode=${result.refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${result.refreshMerchants} scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
     );
     return;
   }
 
   console.log(
-    `[commerce-sync] end mode=write status=${stalePaths.length === 0 ? 'verified' : 'updated'} scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
+    `[commerce-sync] end mode=write status=${stalePaths.length === 0 ? 'verified' : 'updated'} aggregate_mode=${result.refreshMerchants ? 'legacy-refresh' : 'aggregate-only'} refresh_merchants=${result.refreshMerchants} scoped=${result.scoped} set_ids=${result.scopedSetIds.join(',') || 'all'} merchant_scoped=${result.scopedMerchantSlugs.length > 0} merchant_slugs=${result.scopedMerchantSlugs.join(',') || 'all'} enabled_sets=${result.enabledSetCount} price_panels=${result.pricePanelSnapshotCount} pricing_observations=${result.pricingObservationCount} affiliate_offers=${result.affiliateOfferCount} merchants=${result.merchantCount} history_points=${result.dailyHistoryPointCount} refresh_success=${result.refreshSuccessCount} refresh_unavailable=${result.refreshUnavailableCount} refresh_invalid=${result.refreshInvalidCount} refresh_stale=${result.refreshStaleCount} stale_paths=${stalePaths.length} duration_ms=${Date.now() - startedAt}`,
   );
 }
 
@@ -113,7 +141,7 @@ main().catch((error) => {
   });
 
   console.error(
-    `[commerce-sync] failed mode=${mode} scope=supabase-commerce-refresh scoped=${setIds.length > 0 || merchantSlugs.length > 0} set_ids=${setIds.join(',') || 'all'} merchant_scoped=${merchantSlugs.length > 0} merchant_slugs=${merchantSlugs.join(',') || 'all'}`,
+    `[commerce-sync] failed mode=${mode} scope=supabase-commerce-aggregate scoped=${setIds.length > 0 || merchantSlugs.length > 0} set_ids=${setIds.join(',') || 'all'} merchant_scoped=${merchantSlugs.length > 0} merchant_slugs=${merchantSlugs.join(',') || 'all'}`,
   );
   if (error instanceof Error) {
     console.error(`[commerce-sync] error=${error.message}`);

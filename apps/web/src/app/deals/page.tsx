@@ -9,7 +9,6 @@ import {
   listCatalogSetCardsByIds,
   listDiscoverBestDealSetCards,
   listDiscoverRecentPriceChangeSetCards,
-  rankCatalogPartnerOfferSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import {
   CatalogSetCardRailSection,
@@ -32,7 +31,11 @@ import {
 } from '@lego-platform/shared/util';
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
-import { buildCurrentSetCardPriceContext } from '../lib/current-set-card-price-context';
+import {
+  buildCurrentSetCardPriceContext,
+  compareReliableDealDiscounts,
+  buildReliableDealDiscount,
+} from '../lib/current-set-card-price-context';
 import styles from './deals-page.module.css';
 
 export const revalidate = 21_600;
@@ -195,11 +198,54 @@ function toRailItems(setCards: readonly DealsRailItem[]) {
   }));
 }
 
+function renderMerchandisingGroups({
+  budgetSetCards,
+  displaySetCards,
+  goodPricedSetCards,
+  recentPriceChangeSetCards,
+}: {
+  budgetSetCards: readonly DealsRailItem[];
+  displaySetCards: readonly DealsRailItem[];
+  goodPricedSetCards: readonly DealsRailItem[];
+  recentPriceChangeSetCards: readonly DealsRailItem[];
+}): ReactNode {
+  const groups = [
+    goodPricedSetCards.length ? 'Nu goed geprijsd' : undefined,
+    budgetSetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS
+      ? 'Onder €50'
+      : undefined,
+    displaySetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS
+      ? 'Grote displaysets'
+      : undefined,
+    recentPriceChangeSetCards.length >= DEALS_MIN_OPTIONAL_RAIL_ITEMS
+      ? 'Net goedkoper'
+      : undefined,
+  ].filter((group): group is string => Boolean(group));
+
+  if (groups.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul className={styles.merchandisingGroups} aria-label="Dealgroepen">
+      {groups.map((group) => (
+        <li className={styles.merchandisingGroup} key={group}>
+          {group}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function toDealsRailSetCards({
+  catalogDiscoverySignalBySetId,
   currentOfferSummaryBySetId,
   sectionId,
   setCards,
 }: {
+  catalogDiscoverySignalBySetId: Awaited<
+    ReturnType<typeof listCatalogDiscoverySignalsBySetId>
+  >;
   currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
   sectionId: string;
   setCards: readonly CatalogHomepageSetCard[];
@@ -213,6 +259,7 @@ function toDealsRailSetCards({
         featuredSetPriceContext?.deltaMinor,
       );
       const priceContext = buildCurrentSetCardPriceContext({
+        catalogDiscoverySignal: catalogDiscoverySignalBySetId.get(setCard.id),
         currentOfferSummary,
         pricePanelSnapshot: featuredSetPriceContext,
         theme: setCard.theme,
@@ -305,7 +352,7 @@ function selectDealBudgetSetCards({
     .slice(0, DEALS_RAIL_LIMIT);
 }
 
-function selectDealDisplaySetCards({
+function selectReliableDiscountSetCards({
   currentOfferSummaryBySetId,
   excludedSetIds = [],
   setCards,
@@ -316,9 +363,84 @@ function selectDealDisplaySetCards({
 }): CatalogHomepageSetCard[] {
   const excludedSetIdSet = new Set(excludedSetIds);
 
+  return [...setCards]
+    .filter((setCard) => {
+      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+      const bestOffer = currentOfferSummary?.bestOffer;
+
+      return (
+        !excludedSetIdSet.has(setCard.id) &&
+        Boolean(bestOffer?.url) &&
+        bestOffer?.availability !== 'out_of_stock' &&
+        Boolean(
+          buildReliableDealDiscount({
+            currentOfferSummary,
+            pricePanelSnapshot: getFeaturedSetPriceContext(setCard.id),
+          }),
+        )
+      );
+    })
+    .sort((left, right) => {
+      const leftDiscount = buildReliableDealDiscount({
+        currentOfferSummary: currentOfferSummaryBySetId.get(left.id),
+        pricePanelSnapshot: getFeaturedSetPriceContext(left.id),
+      });
+      const rightDiscount = buildReliableDealDiscount({
+        currentOfferSummary: currentOfferSummaryBySetId.get(right.id),
+        pricePanelSnapshot: getFeaturedSetPriceContext(right.id),
+      });
+
+      return (
+        compareReliableDealDiscounts({
+          left: leftDiscount,
+          leftMerchantCount:
+            currentOfferSummaryBySetId.get(left.id)?.offers.length ?? 0,
+          right: rightDiscount,
+          rightMerchantCount:
+            currentOfferSummaryBySetId.get(right.id)?.offers.length ?? 0,
+        }) ||
+        right.releaseYear - left.releaseYear ||
+        right.pieces - left.pieces ||
+        left.name.localeCompare(right.name) ||
+        left.id.localeCompare(right.id)
+      );
+    })
+    .slice(0, DEALS_RAIL_LIMIT);
+}
+
+function selectDealDisplaySetCards({
+  catalogDiscoverySignalBySetId,
+  currentOfferSummaryBySetId,
+  excludedSetIds = [],
+  setCards,
+}: {
+  catalogDiscoverySignalBySetId: Awaited<
+    ReturnType<typeof listCatalogDiscoverySignalsBySetId>
+  >;
+  currentOfferSummaryBySetId: CurrentOfferSummaryBySetId;
+  excludedSetIds?: readonly string[];
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageSetCard[] {
+  const excludedSetIdSet = new Set(excludedSetIds);
+
   return setCards
     .filter((setCard) => {
-      const bestOffer = currentOfferSummaryBySetId.get(setCard.id)?.bestOffer;
+      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+      const bestOffer = currentOfferSummary?.bestOffer;
+      const discoverySignal = catalogDiscoverySignalBySetId.get(setCard.id);
+      const hasClearBuyingReason =
+        Boolean(
+          buildReliableDealDiscount({
+            currentOfferSummary,
+            pricePanelSnapshot: getFeaturedSetPriceContext(setCard.id),
+          }),
+        ) ||
+        Boolean(
+          currentOfferSummary &&
+            currentOfferSummary.offers.length >= 2 &&
+            typeof discoverySignal?.priceSpreadMinor === 'number' &&
+            discoverySignal.priceSpreadMinor >= 100,
+        );
 
       return (
         !excludedSetIdSet.has(setCard.id) &&
@@ -326,10 +448,11 @@ function selectDealDisplaySetCards({
         bestOffer.priceCents > 0 &&
         Boolean(bestOffer.url) &&
         bestOffer.availability !== 'out_of_stock' &&
-        (setCard.pieces >= 1500 ||
-          ['Architecture', 'Icons', 'Star Wars', 'Technic'].includes(
-            setCard.theme,
-          ))
+        hasClearBuyingReason &&
+        setCard.pieces >= 1500 &&
+        ['Architecture', 'Icons', 'Ideas', 'Star Wars', 'Technic'].includes(
+          setCard.theme,
+        )
       );
     })
     .slice(0, DEALS_RAIL_LIMIT);
@@ -365,19 +488,18 @@ export default async function DealsPage() {
     setCards: commerceCandidateSetCards,
   });
   const bestDealSetCards = toDealsRailSetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     sectionId: 'deals-best-deals',
     setCards: bestDealCandidateSetCards,
   });
-  const goodPricedCandidateSetCards = rankCatalogPartnerOfferSetCards({
-    catalogDiscoverySignalBySetId,
+  const goodPricedCandidateSetCards = selectReliableDiscountSetCards({
     currentOfferSummaryBySetId,
     excludedSetIds: getUniqueSetIds([bestDealSetCards]),
-    limit: DEALS_RAIL_LIMIT,
-    rotationSeed: commerceRailRotationSeed,
     setCards: commerceCandidateSetCards,
   });
   const goodPricedSetCards = toDealsRailSetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     sectionId: 'deals-good-priced',
     setCards: goodPricedCandidateSetCards,
@@ -391,6 +513,7 @@ export default async function DealsPage() {
       setCards: commerceCandidateSetCards,
     });
   const recentPriceChangeSetCards = toDealsRailSetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     sectionId: 'deals-recent-price-drops',
     setCards: recentPriceChangeCandidateSetCards,
@@ -405,11 +528,13 @@ export default async function DealsPage() {
     setCards: commerceCandidateSetCards,
   });
   const budgetSetCards = toDealsRailSetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     sectionId: 'deals-budget',
     setCards: budgetCandidateSetCards,
   });
   const displayCandidateSetCards = selectDealDisplaySetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     excludedSetIds: getUniqueSetIds([
       bestDealSetCards,
@@ -420,6 +545,7 @@ export default async function DealsPage() {
     setCards: commerceCandidateSetCards,
   });
   const displaySetCards = toDealsRailSetCards({
+    catalogDiscoverySignalBySetId,
     currentOfferSummaryBySetId,
     sectionId: 'deals-display',
     setCards: displayCandidateSetCards,
@@ -458,6 +584,12 @@ export default async function DealsPage() {
           <p className={styles.introMeta}>
             {commerceCandidateSetCards.length} sets met actuele koopdata
           </p>
+          {renderMerchandisingGroups({
+            budgetSetCards,
+            displaySetCards,
+            goodPricedSetCards,
+            recentPriceChangeSetCards,
+          })}
         </section>
 
         {goodPricedSetCards.length ? (
@@ -521,7 +653,7 @@ export default async function DealsPage() {
             items={toRailItems(budgetSetCards)}
             padding="default"
             signal={formatSetCount(budgetSetCards.length)}
-            title="Klein budget"
+            title="Onder €50"
             titleAs="h2"
             tone="muted"
             variant="featured"

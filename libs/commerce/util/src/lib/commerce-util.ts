@@ -109,8 +109,8 @@ const commerceMerchantSupportProfiles = {
   top1toys: {
     tier: 'secondary',
     defaultSeedGeneration: false,
-    defaultRefresh: true,
-    operatorLabel: 'Secondary',
+    defaultRefresh: false,
+    operatorLabel: 'Legacy/manual',
   },
   'smyths-toys': {
     tier: 'secondary',

@@ -16,3 +16,22 @@
   line-height: var(--lego-text-role-meta-line-height);
   margin: 0;
 }
+
+.merchandisingGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lego-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.merchandisingGroup {
+  background: var(--lego-surface-subtle);
+  border-radius: var(--lego-radius-pill);
+  color: var(--lego-text);
+  font-size: var(--lego-text-role-meta-size);
+  font-weight: var(--lego-font-weight-semibold);
+  line-height: 1.2;
+  padding: 0.42rem 0.64rem;
+}
