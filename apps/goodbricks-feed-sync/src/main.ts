@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  logScheduledJobFailure,
   resolveAffiliateFeedDiscoveryEnabled,
   syncAdtractionGoodbricksFeed,
 } from '@lego-platform/api/data-access-server';
@@ -196,14 +197,13 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    '[goodbricks-feed-sync] failed source=adtraction merchant=goodbricks',
-  );
+  const classification = logScheduledJobFailure({
+    context: 'source=adtraction merchant=goodbricks',
+    error,
+    jobName: 'goodbricks-feed-sync',
+  });
 
-  if (error instanceof Error) {
-    console.error(`[goodbricks-feed-sync] error=${error.message}`);
+  if (!classification.recoverable) {
+    process.exit(1);
   }
-
-  console.error(error);
-  process.exit(1);
 });

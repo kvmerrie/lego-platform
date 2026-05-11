@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  logScheduledJobFailure,
   resolveAffiliateFeedDiscoveryEnabled,
   syncTradeDoublerMediaMarktFeed,
 } from '@lego-platform/api/data-access-server';
@@ -202,14 +203,13 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    '[mediamarkt-feed-sync] failed source=tradedoubler merchant=mediamarkt',
-  );
+  const classification = logScheduledJobFailure({
+    context: 'source=tradedoubler merchant=mediamarkt',
+    error,
+    jobName: 'mediamarkt-feed-sync',
+  });
 
-  if (error instanceof Error) {
-    console.error(`[mediamarkt-feed-sync] error=${error.message}`);
+  if (!classification.recoverable) {
+    process.exit(1);
   }
-
-  console.error(error);
-  process.exit(1);
 });

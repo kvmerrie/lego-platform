@@ -1891,7 +1891,7 @@ describe('commerce refresh', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
-  test('builds pricing sync inputs from active refresh seeds and merchant slugs', () => {
+  test('excludes stale error offers from pricing sync inputs', () => {
     const result = buildCommerceSyncInputs({
       refreshSeeds: [
         createRefreshSeed({
@@ -1930,6 +1930,54 @@ describe('commerce refresh', () => {
     });
 
     expect(result.activeMerchantCount).toBe(1);
+    expect(result.enabledSetIds).toEqual([]);
+    expect(result.pricingObservationSeeds).toEqual([]);
+    expect(result.affiliateMerchantConfigs).toEqual([
+      expect.objectContaining({
+        merchantId: 'amazon-nl',
+        displayName: 'Amazon',
+        urlHost: 'www.amazon.nl',
+      }),
+    ]);
+  });
+
+  test('builds pricing sync inputs from active valid refresh seeds and merchant slugs', () => {
+    const result = buildCommerceSyncInputs({
+      refreshSeeds: [
+        createRefreshSeed({
+          merchant: {
+            ...createRefreshSeed().merchant,
+            slug: 'amazon-nl',
+            name: 'Amazon',
+          },
+          offerSeed: {
+            ...createRefreshSeed().offerSeed,
+            id: 'seed-2',
+            merchantId: 'merchant-2',
+            productUrl:
+              'https://www.amazon.nl/LEGO-10316-Icons-LORD-RINGS/dp/B0BVMZ5NT5',
+            validationStatus: 'valid',
+            latestOffer: {
+              id: 'latest-2',
+              offerSeedId: 'seed-2',
+              setId: '10316',
+              merchantId: 'merchant-2',
+              productUrl:
+                'https://www.amazon.nl/LEGO-10316-Icons-LORD-RINGS/dp/B0BVMZ5NT5',
+              fetchStatus: 'success',
+              priceMinor: 48246,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              observedAt: '2026-04-14T10:00:00.000Z',
+              fetchedAt: '2026-04-14T11:00:00.000Z',
+              createdAt: '2026-04-14T10:00:00.000Z',
+              updatedAt: '2026-04-14T11:00:00.000Z',
+            },
+          },
+        }),
+      ],
+    });
+
     expect(result.enabledSetIds).toEqual(['10316']);
     expect(result.pricingObservationSeeds).toEqual([
       expect.objectContaining({
@@ -1937,13 +1985,6 @@ describe('commerce refresh', () => {
         merchantId: 'amazon-nl',
         totalPriceMinor: 48246,
         availability: 'in_stock',
-      }),
-    ]);
-    expect(result.affiliateMerchantConfigs).toEqual([
-      expect.objectContaining({
-        merchantId: 'amazon-nl',
-        displayName: 'Amazon',
-        urlHost: 'www.amazon.nl',
       }),
     ]);
   });

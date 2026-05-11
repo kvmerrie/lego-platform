@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  logScheduledJobFailure,
   resolveAffiliateFeedDiscoveryEnabled,
   syncTradeTrackerCoppenswarenhuisFeed,
 } from '@lego-platform/api/data-access-server';
@@ -202,14 +203,13 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    '[coppenswarenhuis-feed-sync] failed source=tradetracker merchant=coppenswarenhuis',
-  );
+  const classification = logScheduledJobFailure({
+    context: 'source=tradetracker merchant=coppenswarenhuis',
+    error,
+    jobName: 'coppenswarenhuis-feed-sync',
+  });
 
-  if (error instanceof Error) {
-    console.error(`[coppenswarenhuis-feed-sync] error=${error.message}`);
+  if (!classification.recoverable) {
+    process.exit(1);
   }
-
-  console.error(error);
-  process.exit(1);
 });

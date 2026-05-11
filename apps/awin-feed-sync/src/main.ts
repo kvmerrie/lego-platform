@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  logScheduledJobFailure,
   resolveAffiliateFeedDiscoveryEnabled,
   syncAwinCoolblueFeed,
 } from '@lego-platform/api/data-access-server';
@@ -181,14 +182,13 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    '[awin-feed-sync] failed source=awin merchant=coolblue mode=write',
-  );
+  const classification = logScheduledJobFailure({
+    context: 'source=awin merchant=coolblue mode=write',
+    error,
+    jobName: 'awin-feed-sync',
+  });
 
-  if (error instanceof Error) {
-    console.error(`[awin-feed-sync] error=${error.message}`);
+  if (!classification.recoverable) {
+    process.exit(1);
   }
-
-  console.error(error);
-  process.exit(1);
 });

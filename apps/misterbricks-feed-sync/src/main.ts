@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  logScheduledJobFailure,
   resolveAffiliateFeedDiscoveryEnabled,
   syncMisterBricksFeed,
 } from '@lego-platform/api/data-access-server';
@@ -202,14 +203,13 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    '[misterbricks-feed-sync] failed source=channable merchant=misterbricks',
-  );
+  const classification = logScheduledJobFailure({
+    context: 'source=channable merchant=misterbricks',
+    error,
+    jobName: 'misterbricks-feed-sync',
+  });
 
-  if (error instanceof Error) {
-    console.error(`[misterbricks-feed-sync] error=${error.message}`);
+  if (!classification.recoverable) {
+    process.exit(1);
   }
-
-  console.error(error);
-  process.exit(1);
 });

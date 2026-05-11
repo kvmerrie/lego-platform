@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
+  logScheduledJobFailure,
   resolveAffiliateFeedDiscoveryEnabled,
   syncTradeTrackerLidlFeed,
 } from '@lego-platform/api/data-access-server';
@@ -181,14 +182,13 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    '[lidl-feed-sync] failed source=tradetracker merchant=lidl mode=write',
-  );
+  const classification = logScheduledJobFailure({
+    context: 'source=tradetracker merchant=lidl mode=write',
+    error,
+    jobName: 'lidl-feed-sync',
+  });
 
-  if (error instanceof Error) {
-    console.error(`[lidl-feed-sync] error=${error.message}`);
+  if (!classification.recoverable) {
+    process.exit(1);
   }
-
-  console.error(error);
-  process.exit(1);
 });

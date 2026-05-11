@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
   buildTradeTrackerAlternateOnboardingQueue,
+  logScheduledJobFailure,
   resolveAffiliateFeedDiscoveryEnabled,
   syncAlternateTradeTrackerFeed,
 } from '@lego-platform/api/data-access-server';
@@ -204,14 +205,13 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(
-    '[alternate-feed-sync] failed source=tradetracker merchant=alternate mode=write',
-  );
+  const classification = logScheduledJobFailure({
+    context: 'source=tradetracker merchant=alternate mode=write',
+    error,
+    jobName: 'alternate-feed-sync',
+  });
 
-  if (error instanceof Error) {
-    console.error(`[alternate-feed-sync] error=${error.message}`);
+  if (!classification.recoverable) {
+    process.exit(1);
   }
-
-  console.error(error);
-  process.exit(1);
 });

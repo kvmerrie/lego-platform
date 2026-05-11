@@ -2071,6 +2071,9 @@ export function buildCommerceSyncInputs({
     if (
       !latestOffer ||
       refreshSeed.offerSeed.validationStatus === 'invalid' ||
+      refreshSeed.offerSeed.validationStatus === 'stale' ||
+      (latestOffer.fetchStatus !== 'success' &&
+        latestOffer.fetchStatus !== 'unavailable') ||
       typeof latestOffer.priceMinor !== 'number' ||
       latestOffer.priceMinor <= 0 ||
       normalizeCurrencyCode(latestOffer.currencyCode) !== EURO_CURRENCY_CODE ||
