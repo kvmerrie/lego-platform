@@ -133,8 +133,11 @@ function createEmptyDailyHistorySummary(): CommerceLatestOfferHistorySummary {
   return {
     dailyHistoryPointsBuilt: 0,
     eligibleLatestOfferRows: 0,
+    availabilityCounts: {},
+    fetchStatusCounts: {},
     latestOfferRowsSeen: 0,
     maxObservedAgeHours: 0,
+    merchantSlugCounts: {},
     skipped: {
       inactiveSeedOrMerchant: 0,
       invalidSeed: 0,
@@ -143,6 +146,7 @@ function createEmptyDailyHistorySummary(): CommerceLatestOfferHistorySummary {
       staleOrError: 0,
       unavailableForHeadline: 0,
     },
+    validationStatusCounts: {},
   };
 }
 
@@ -163,7 +167,12 @@ function formatDailyHistorySummaryLog({
     `daily_history_points_built=${summary.dailyHistoryPointsBuilt}`,
     `daily_history_points_upserted=${upsertedCount}`,
     `max_observed_age_hours=${summary.maxObservedAgeHours}`,
+    `oldest_observed_at=${summary.oldestObservedAt ?? 'none'}`,
     `newest_observed_at=${summary.newestObservedAt ?? 'none'}`,
+    `fetch_status_counts=${JSON.stringify(summary.fetchStatusCounts ?? {})}`,
+    `validation_status_counts=${JSON.stringify(summary.validationStatusCounts ?? {})}`,
+    `availability_counts=${JSON.stringify(summary.availabilityCounts ?? {})}`,
+    `merchant_slug_counts=${JSON.stringify(summary.merchantSlugCounts ?? {})}`,
     `skipped_stale_or_error=${summary.skipped.staleOrError}`,
     `skipped_inactive_seed_or_merchant=${summary.skipped.inactiveSeedOrMerchant}`,
     `skipped_invalid_seed=${summary.skipped.invalidSeed}`,

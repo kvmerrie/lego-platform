@@ -84,10 +84,15 @@ export interface CommerceLatestOfferHistorySkipCounts {
 export interface CommerceLatestOfferHistorySummary {
   dailyHistoryPointsBuilt: number;
   eligibleLatestOfferRows: number;
+  availabilityCounts?: Record<string, number>;
+  fetchStatusCounts?: Record<string, number>;
   latestOfferRowsSeen: number;
   maxObservedAgeHours: number;
   newestObservedAt?: string;
+  oldestObservedAt?: string;
+  merchantSlugCounts?: Record<string, number>;
   skipped: CommerceLatestOfferHistorySkipCounts;
+  validationStatusCounts?: Record<string, number>;
 }
 
 export interface BuildDailyPriceHistoryPointsFromCommerceLatestOffersResult {
@@ -134,6 +139,15 @@ function createEmptyCommerceLatestOfferHistorySkipCounts(): CommerceLatestOfferH
     staleOrError: 0,
     unavailableForHeadline: 0,
   };
+}
+
+function incrementCommerceHistoryCount(
+  counts: Record<string, number>,
+  value: string | undefined,
+): void {
+  const key = value?.trim() || 'missing';
+
+  counts[key] = (counts[key] ?? 0) + 1;
 }
 
 function normalizeCommerceLatestOfferCurrencyCode(value?: string): string {
@@ -387,14 +401,44 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
     ]),
   );
   const skipped = createEmptyCommerceLatestOfferHistorySkipCounts();
+  const availabilityCounts: Record<string, number> = {};
+  const fetchStatusCounts: Record<string, number> = {};
+  const merchantSlugCounts: Record<string, number> = {};
+  const validationStatusCounts: Record<string, number> = {};
   const bestPointBySetId = new Map<string, PriceHistoryPoint>();
   let eligibleLatestOfferRows = 0;
   let newestObservedAt: string | undefined;
+  let oldestObservedAt: string | undefined;
 
   for (const latestOfferInput of latestOffers) {
     const latestOffer = latestOfferInput.latestOffer;
     const merchant = latestOfferInput.merchant;
     const offerSeed = latestOfferInput.offerSeed;
+
+    incrementCommerceHistoryCount(
+      availabilityCounts,
+      latestOffer?.availability,
+    );
+    incrementCommerceHistoryCount(fetchStatusCounts, latestOffer?.fetchStatus);
+    incrementCommerceHistoryCount(merchantSlugCounts, merchant?.slug);
+    incrementCommerceHistoryCount(
+      validationStatusCounts,
+      offerSeed.validationStatus,
+    );
+
+    const loadedObservedAtInput = latestOffer?.observedAt;
+
+    if (isValidObservedAt(loadedObservedAtInput)) {
+      const loadedObservedAt = new Date(loadedObservedAtInput).toISOString();
+
+      if (!newestObservedAt || loadedObservedAt > newestObservedAt) {
+        newestObservedAt = loadedObservedAt;
+      }
+
+      if (!oldestObservedAt || loadedObservedAt < oldestObservedAt) {
+        oldestObservedAt = loadedObservedAt;
+      }
+    }
 
     if (!offerSeed.isActive || merchant?.isActive !== true) {
       skipped.inactiveSeedOrMerchant += 1;
@@ -448,10 +492,6 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
 
     eligibleLatestOfferRows += 1;
 
-    if (!newestObservedAt || observedAt > newestObservedAt) {
-      newestObservedAt = observedAt;
-    }
-
     const point: PriceHistoryPoint = {
       setId: offerSeed.setId,
       regionCode: DUTCH_REGION_CODE,
@@ -488,10 +528,15 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
     summary: {
       dailyHistoryPointsBuilt: points.length,
       eligibleLatestOfferRows,
+      availabilityCounts,
+      fetchStatusCounts,
       latestOfferRowsSeen: latestOffers.length,
       maxObservedAgeHours,
       newestObservedAt,
+      oldestObservedAt,
+      merchantSlugCounts,
       skipped,
+      validationStatusCounts,
     },
   };
 }

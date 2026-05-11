@@ -241,6 +241,323 @@ describe('commerce data access server', () => {
     ]);
   });
 
+  test('paginates latest offers and offer seeds beyond the Supabase default page size', async () => {
+    const merchantOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'merchant-feed',
+          slug: 'alternate',
+          name: 'Alternate',
+          is_active: true,
+          source_type: 'affiliate',
+          affiliate_network: 'TradeTracker',
+          notes: null,
+          created_at: '2026-05-10T08:00:00.000Z',
+          updated_at: '2026-05-10T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const latestRows = Array.from({ length: 1001 }, (_, index) => ({
+      id: `latest-${index}`,
+      offer_seed_id: `seed-${index}`,
+      price_minor: index === 1000 ? 1999 : null,
+      currency_code: index === 1000 ? 'EUR' : null,
+      availability: index === 1000 ? 'in_stock' : null,
+      fetch_status: index === 1000 ? 'success' : 'error',
+      observed_at: index === 1000 ? '2026-05-10T08:00:00.000Z' : null,
+      fetched_at: '2026-05-10T08:00:00.000Z',
+      error_message: index === 1000 ? null : 'old scraper error',
+      created_at: '2026-05-10T08:00:00.000Z',
+      updated_at: '2026-05-10T08:00:00.000Z',
+    }));
+    const seedRows = Array.from({ length: 1001 }, (_, index) => ({
+      id: `seed-${index}`,
+      set_id: `${10000 + index}`,
+      merchant_id: 'merchant-feed',
+      product_url: `https://example.com/${10000 + index}`,
+      is_active: true,
+      validation_status: 'valid',
+      last_verified_at: '2026-05-10T08:00:00.000Z',
+      notes: null,
+      created_at: '2026-05-10T08:00:00.000Z',
+      updated_at: '2026-05-10T08:00:00.000Z',
+    }));
+    const latestRange = vi.fn(async (from: number, to: number) => ({
+      data: latestRows.slice(from, to + 1),
+      error: null,
+    }));
+    const seedRange = vi.fn(async (from: number, to: number) => ({
+      data: seedRows.slice(from, to + 1),
+      error: null,
+    }));
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_merchants') {
+        return {
+          select: vi.fn(() => ({
+            order: merchantOrder,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return {
+          select: vi.fn(() => ({
+            range: latestRange,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_seeds') {
+        return {
+          select: vi.fn(() => ({
+            order: vi.fn(() => ({
+              range: seedRange,
+            })),
+          })),
+        };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    const result = await listActiveCommerceSyncSeeds({
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toHaveLength(1001);
+    expect(
+      result.find((refreshSeed) => refreshSeed.offerSeed.id === 'seed-1000')
+        ?.offerSeed.latestOffer,
+    ).toEqual(
+      expect.objectContaining({
+        fetchStatus: 'success',
+        priceMinor: 1999,
+      }),
+    );
+    expect(latestRange).toHaveBeenCalledTimes(2);
+    expect(seedRange).toHaveBeenCalledTimes(2);
+  });
+
+  test('handles exact-page and empty paginated commerce inputs', async () => {
+    async function loadWithRowCount(rowCount: number) {
+      const merchantOrder = vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: 'merchant-feed',
+            slug: 'alternate',
+            name: 'Alternate',
+            is_active: true,
+            source_type: 'affiliate',
+            affiliate_network: 'TradeTracker',
+            notes: null,
+            created_at: '2026-05-10T08:00:00.000Z',
+            updated_at: '2026-05-10T08:00:00.000Z',
+          },
+        ],
+        error: null,
+      });
+      const latestRows = Array.from({ length: rowCount }, (_, index) => ({
+        id: `latest-${index}`,
+        offer_seed_id: `seed-${index}`,
+        price_minor: 1999,
+        currency_code: 'EUR',
+        availability: 'in_stock',
+        fetch_status: 'success',
+        observed_at: '2026-05-10T08:00:00.000Z',
+        fetched_at: '2026-05-10T08:00:00.000Z',
+        error_message: null,
+        created_at: '2026-05-10T08:00:00.000Z',
+        updated_at: '2026-05-10T08:00:00.000Z',
+      }));
+      const seedRows = Array.from({ length: rowCount }, (_, index) => ({
+        id: `seed-${index}`,
+        set_id: `${10000 + index}`,
+        merchant_id: 'merchant-feed',
+        product_url: `https://example.com/${10000 + index}`,
+        is_active: true,
+        validation_status: 'valid',
+        last_verified_at: '2026-05-10T08:00:00.000Z',
+        notes: null,
+        created_at: '2026-05-10T08:00:00.000Z',
+        updated_at: '2026-05-10T08:00:00.000Z',
+      }));
+      const latestRange = vi.fn(async (from: number, to: number) => ({
+        data: latestRows.slice(from, to + 1),
+        error: null,
+      }));
+      const seedRange = vi.fn(async (from: number, to: number) => ({
+        data: seedRows.slice(from, to + 1),
+        error: null,
+      }));
+      const from = vi.fn((table: string) => {
+        if (table === 'commerce_merchants') {
+          return {
+            select: vi.fn(() => ({
+              order: merchantOrder,
+            })),
+          };
+        }
+
+        if (table === 'commerce_offer_latest') {
+          return {
+            select: vi.fn(() => ({
+              range: latestRange,
+            })),
+          };
+        }
+
+        if (table === 'commerce_offer_seeds') {
+          return {
+            select: vi.fn(() => ({
+              order: vi.fn(() => ({
+                range: seedRange,
+              })),
+            })),
+          };
+        }
+
+        throw new Error(`Unexpected table ${table}`);
+      });
+
+      const result = await listActiveCommerceSyncSeeds({
+        supabaseClient: { from } as never,
+      });
+
+      return {
+        latestRange,
+        result,
+        seedRange,
+      };
+    }
+
+    const exactPage = await loadWithRowCount(1000);
+
+    expect(exactPage.result).toHaveLength(1000);
+    expect(exactPage.latestRange).toHaveBeenCalledTimes(2);
+    expect(exactPage.seedRange).toHaveBeenCalledTimes(2);
+
+    const emptyPage = await loadWithRowCount(0);
+
+    expect(emptyPage.result).toHaveLength(0);
+    expect(emptyPage.latestRange).toHaveBeenCalledTimes(1);
+    expect(emptyPage.seedRange).toHaveBeenCalledTimes(1);
+  });
+
+  test('throws when a paginated latest-offer page fails', async () => {
+    const merchantOrder = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    const latestRange = vi.fn(async () => ({
+      data: null,
+      error: {
+        message: 'timeout',
+      },
+    }));
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_merchants') {
+        return {
+          select: vi.fn(() => ({
+            order: merchantOrder,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return {
+          select: vi.fn(() => ({
+            range: latestRange,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_seeds') {
+        return {
+          select: vi.fn(() => ({
+            order: vi.fn(() => ({
+              range: vi.fn(async () => ({
+                data: [],
+                error: null,
+              })),
+            })),
+          })),
+        };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    await expect(
+      listActiveCommerceSyncSeeds({
+        supabaseClient: { from } as never,
+      }),
+    ).rejects.toThrow('Unable to load commerce latest offers.');
+  });
+
+  test('uses deterministic ordering for paginated latest offers and offer seeds when supported', async () => {
+    const merchantOrder = vi.fn().mockResolvedValue({
+      data: [],
+      error: null,
+    });
+    const latestOrder = vi.fn(() => ({
+      range: vi.fn(async () => ({
+        data: [],
+        error: null,
+      })),
+    }));
+    const seedOrderById = vi.fn(() => ({
+      range: vi.fn(async () => ({
+        data: [],
+        error: null,
+      })),
+    }));
+    const seedOrderByUpdatedAt = vi.fn(() => ({
+      order: seedOrderById,
+    }));
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_merchants') {
+        return {
+          select: vi.fn(() => ({
+            order: merchantOrder,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return {
+          select: vi.fn(() => ({
+            order: latestOrder,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_seeds') {
+        return {
+          select: vi.fn(() => ({
+            order: seedOrderByUpdatedAt,
+          })),
+        };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    await listActiveCommerceSyncSeeds({
+      supabaseClient: { from } as never,
+    });
+
+    expect(latestOrder).toHaveBeenCalledWith('offer_seed_id', {
+      ascending: true,
+    });
+    expect(seedOrderByUpdatedAt).toHaveBeenCalledWith('updated_at', {
+      ascending: false,
+    });
+    expect(seedOrderById).toHaveBeenCalledWith('id', {
+      ascending: true,
+    });
+  });
+
   test('creates a merchant through the Supabase table', async () => {
     const single = vi.fn().mockResolvedValue({
       data: {

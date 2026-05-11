@@ -79,6 +79,7 @@ const COMMERCE_PRODUCTION_COPY_DELETE_ORDER = [
   COMMERCE_BENCHMARK_SETS_TABLE,
   COMMERCE_MERCHANTS_TABLE,
 ] as const;
+const COMMERCE_SUPABASE_PAGE_SIZE = 1000;
 
 type CommerceProductionCopyTableName =
   (typeof COMMERCE_PRODUCTION_COPY_TABLES)[number]['name'];
@@ -804,17 +805,44 @@ async function listCommerceOfferLatestRows({
 }: {
   supabaseClient: CommerceSupabaseClient;
 }): Promise<CommerceOfferLatestRow[]> {
-  const { data, error } = await supabaseClient
+  const selectedQuery = supabaseClient
     .from(COMMERCE_OFFER_LATEST_TABLE)
     .select(
       'id, offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, error_message, created_at, updated_at',
     );
+  const query =
+    typeof selectedQuery.order === 'function'
+      ? selectedQuery.order('offer_seed_id', { ascending: true })
+      : selectedQuery;
 
-  if (error) {
-    throw new Error('Unable to load commerce latest offers.');
+  if (typeof query.range !== 'function') {
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error('Unable to load commerce latest offers.');
+    }
+
+    return (data as CommerceOfferLatestRow[] | null) ?? [];
   }
 
-  return (data as CommerceOfferLatestRow[] | null) ?? [];
+  const rows: CommerceOfferLatestRow[] = [];
+
+  for (let from = 0; ; from += COMMERCE_SUPABASE_PAGE_SIZE) {
+    const to = from + COMMERCE_SUPABASE_PAGE_SIZE - 1;
+    const { data, error } = await query.range(from, to);
+
+    if (error) {
+      throw new Error('Unable to load commerce latest offers.');
+    }
+
+    const pageRows = (data as CommerceOfferLatestRow[] | null) ?? [];
+
+    rows.push(...pageRows);
+
+    if (pageRows.length < COMMERCE_SUPABASE_PAGE_SIZE) {
+      return rows;
+    }
+  }
 }
 
 export async function listCommerceMerchants({
@@ -853,6 +881,50 @@ export async function listCommerceBenchmarkSets({
   return ((data as CommerceBenchmarkSetRow[] | null) ?? []).map(
     toCommerceBenchmarkSet,
   );
+}
+
+async function readCommerceOfferSeedRows(
+  query: PromiseLike<{
+    data: CommerceOfferSeedRow[] | null;
+    error: unknown;
+  }> & {
+    range?: (
+      from: number,
+      to: number,
+    ) => PromiseLike<{
+      data: CommerceOfferSeedRow[] | null;
+      error: unknown;
+    }>;
+  },
+): Promise<CommerceOfferSeedRow[]> {
+  if (typeof query.range !== 'function') {
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error('Unable to load commerce offer seeds.');
+    }
+
+    return data ?? [];
+  }
+
+  const rows: CommerceOfferSeedRow[] = [];
+
+  for (let from = 0; ; from += COMMERCE_SUPABASE_PAGE_SIZE) {
+    const to = from + COMMERCE_SUPABASE_PAGE_SIZE - 1;
+    const { data, error } = await query.range(from, to);
+
+    if (error) {
+      throw new Error('Unable to load commerce offer seeds.');
+    }
+
+    const pageRows = data ?? [];
+
+    rows.push(...pageRows);
+
+    if (pageRows.length < COMMERCE_SUPABASE_PAGE_SIZE) {
+      return rows;
+    }
+  }
 }
 
 export async function listCommerceAffiliateDiscoveredSets({
@@ -1141,22 +1213,23 @@ export async function listCommerceOfferSeeds({
 }: {
   supabaseClient?: CommerceSupabaseClient;
 } = {}): Promise<CommerceOfferSeed[]> {
+  const offerSeedQueryByUpdatedAt = supabaseClient
+    .from(COMMERCE_OFFER_SEEDS_TABLE)
+    .select(
+      'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
+    )
+    .order('updated_at', { ascending: false });
+  const offerSeedQuery =
+    typeof offerSeedQueryByUpdatedAt.order === 'function'
+      ? offerSeedQueryByUpdatedAt.order('id', { ascending: true })
+      : offerSeedQueryByUpdatedAt;
   const [merchants, latestOfferRows, offerSeedRowsResponse] = await Promise.all(
     [
       listCommerceMerchants({ supabaseClient }),
       listCommerceOfferLatestRows({ supabaseClient }),
-      supabaseClient
-        .from(COMMERCE_OFFER_SEEDS_TABLE)
-        .select(
-          'id, set_id, merchant_id, product_url, is_active, validation_status, last_verified_at, notes, created_at, updated_at',
-        )
-        .order('updated_at', { ascending: false }),
+      readCommerceOfferSeedRows(offerSeedQuery),
     ],
   );
-
-  if (offerSeedRowsResponse.error) {
-    throw new Error('Unable to load commerce offer seeds.');
-  }
 
   const merchantById = new Map(
     merchants.map((merchant) => [merchant.id, merchant] as const),
@@ -1168,9 +1241,7 @@ export async function listCommerceOfferSeeds({
     ]),
   );
 
-  return (
-    (offerSeedRowsResponse.data as CommerceOfferSeedRow[] | null) ?? []
-  ).map((row) =>
+  return offerSeedRowsResponse.map((row) =>
     toCommerceOfferSeed({
       latestOfferBySeedId,
       merchantById,
