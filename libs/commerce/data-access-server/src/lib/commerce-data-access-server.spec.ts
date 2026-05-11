@@ -339,6 +339,96 @@ describe('commerce data access server', () => {
     expect(seedRange).toHaveBeenCalledTimes(2);
   });
 
+  test('ignores latest offer rows that do not match an active seed', async () => {
+    const merchantOrder = vi.fn().mockResolvedValue({
+      data: [
+        {
+          id: 'merchant-feed',
+          slug: 'alternate',
+          name: 'Alternate',
+          is_active: true,
+          source_type: 'affiliate',
+          affiliate_network: 'TradeTracker',
+          notes: null,
+          created_at: '2026-05-10T08:00:00.000Z',
+          updated_at: '2026-05-10T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    });
+    const latestRange = vi.fn(async () => ({
+      data: [
+        {
+          id: 'latest-orphan',
+          offer_seed_id: 'seed-missing',
+          price_minor: 1999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-05-10T08:00:00.000Z',
+          fetched_at: '2026-05-10T08:00:00.000Z',
+          error_message: null,
+          created_at: '2026-05-10T08:00:00.000Z',
+          updated_at: '2026-05-10T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    }));
+    const seedRange = vi.fn(async () => ({
+      data: [
+        {
+          id: 'seed-existing',
+          set_id: '10316',
+          merchant_id: 'merchant-feed',
+          product_url: 'https://example.com/10316',
+          is_active: true,
+          validation_status: 'valid',
+          last_verified_at: '2026-05-10T08:00:00.000Z',
+          notes: null,
+          created_at: '2026-05-10T08:00:00.000Z',
+          updated_at: '2026-05-10T08:00:00.000Z',
+        },
+      ],
+      error: null,
+    }));
+    const from = vi.fn((table: string) => {
+      if (table === 'commerce_merchants') {
+        return {
+          select: vi.fn(() => ({
+            order: merchantOrder,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_latest') {
+        return {
+          select: vi.fn(() => ({
+            range: latestRange,
+          })),
+        };
+      }
+
+      if (table === 'commerce_offer_seeds') {
+        return {
+          select: vi.fn(() => ({
+            order: vi.fn(() => ({
+              range: seedRange,
+            })),
+          })),
+        };
+      }
+
+      throw new Error(`Unexpected table ${table}`);
+    });
+
+    const result = await listActiveCommerceSyncSeeds({
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].offerSeed.latestOffer).toBeUndefined();
+  });
+
   test('handles exact-page and empty paginated commerce inputs', async () => {
     async function loadWithRowCount(rowCount: number) {
       const merchantOrder = vi.fn().mockResolvedValue({

@@ -8,11 +8,13 @@ import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import {
   buildPricingSyncArtifacts,
   checkPricingGeneratedArtifacts,
+  type CommerceLatestOfferHistoryInput,
   type CommerceLatestOfferHistorySummary,
   upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
 import { normalizeCatalogSetId } from '@lego-platform/shared/util';
+import type { CommerceRefreshSeed } from '@lego-platform/commerce/data-access-server';
 import {
   loadCommerceSyncInputs,
   refreshCommerceOfferSeeds,
@@ -149,6 +151,31 @@ function createEmptyDailyHistorySummary(): CommerceLatestOfferHistorySummary {
     },
     validationStatusCounts: {},
   };
+}
+
+function buildDailyHistoryInputsFromCommerceSyncSeeds(
+  syncSeeds: readonly CommerceRefreshSeed[],
+): CommerceLatestOfferHistoryInput[] {
+  return syncSeeds.map((syncSeed) => ({
+    latestOffer: syncSeed.offerSeed.latestOffer
+      ? {
+          availability: syncSeed.offerSeed.latestOffer.availability,
+          currencyCode: syncSeed.offerSeed.latestOffer.currencyCode,
+          fetchStatus: syncSeed.offerSeed.latestOffer.fetchStatus,
+          observedAt: syncSeed.offerSeed.latestOffer.observedAt,
+          priceMinor: syncSeed.offerSeed.latestOffer.priceMinor,
+        }
+      : undefined,
+    merchant: {
+      isActive: syncSeed.merchant.isActive,
+      slug: syncSeed.merchant.slug,
+    },
+    offerSeed: {
+      isActive: syncSeed.offerSeed.isActive,
+      setId: syncSeed.offerSeed.setId,
+      validationStatus: syncSeed.offerSeed.validationStatus,
+    },
+  }));
 }
 
 function formatDailyHistorySummaryLog({
@@ -357,7 +384,9 @@ export async function runCommerceSync({
       ? await upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn({
           latestOffers:
             'syncSeeds' in refreshedCommerceSyncInputs
-              ? refreshedCommerceSyncInputs.syncSeeds
+              ? buildDailyHistoryInputsFromCommerceSyncSeeds(
+                  refreshedCommerceSyncInputs.syncSeeds,
+                )
               : [],
           now,
         })

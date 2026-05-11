@@ -299,6 +299,219 @@ describe('commerce sync server', () => {
     ).not.toHaveBeenCalled();
   });
 
+  test('lifts latest offer data from sync seeds for daily history input', async () => {
+    const syncSeeds = [
+      {
+        merchant: {
+          id: 'merchant-lego',
+          slug: 'lego-nl',
+          name: 'LEGO',
+          isActive: true,
+          sourceType: 'affiliate' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+        },
+        offerSeed: {
+          id: 'seed-lego-10316',
+          setId: '10316',
+          merchantId: 'merchant-lego',
+          productUrl: 'https://www.lego.com/10316',
+          isActive: true,
+          validationStatus: 'valid' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+          latestOffer: {
+            id: 'latest-lego-10316',
+            offerSeedId: 'seed-lego-10316',
+            setId: '10316',
+            merchantId: 'merchant-lego',
+            productUrl: 'https://www.lego.com/10316',
+            fetchStatus: 'success' as const,
+            availability: 'in_stock' as const,
+            currencyCode: 'EUR',
+            fetchedAt: '2026-05-11T10:00:00.000Z',
+            observedAt: '2026-05-11T10:00:00.000Z',
+            priceMinor: 1999,
+            createdAt: '2026-05-11T10:00:00.000Z',
+            updatedAt: '2026-05-11T10:00:00.000Z',
+          },
+        },
+      },
+      {
+        merchant: {
+          id: 'merchant-alternate',
+          slug: 'alternate',
+          name: 'Alternate',
+          isActive: true,
+          sourceType: 'affiliate' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+        },
+        offerSeed: {
+          id: 'seed-alternate-10316',
+          setId: '10316',
+          merchantId: 'merchant-alternate',
+          productUrl: 'https://alternate.example/10316',
+          isActive: true,
+          validationStatus: 'valid' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+          latestOffer: {
+            id: 'latest-alternate-10316',
+            offerSeedId: 'seed-alternate-10316',
+            setId: '10316',
+            merchantId: 'merchant-alternate',
+            productUrl: 'https://alternate.example/10316',
+            fetchStatus: 'error' as const,
+            availability: 'unknown' as const,
+            currencyCode: 'EUR',
+            fetchedAt: '2026-05-11T10:00:00.000Z',
+            observedAt: '2026-05-11T10:00:00.000Z',
+            priceMinor: 2099,
+            createdAt: '2026-05-11T10:00:00.000Z',
+            updatedAt: '2026-05-11T10:00:00.000Z',
+          },
+        },
+      },
+      {
+        merchant: {
+          id: 'merchant-coppens',
+          slug: 'coppenswarenhuis',
+          name: 'Coppenswarenhuis',
+          isActive: true,
+          sourceType: 'affiliate' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+        },
+        offerSeed: {
+          id: 'seed-coppens-10316',
+          setId: '10316',
+          merchantId: 'merchant-coppens',
+          productUrl: 'https://coppens.example/10316',
+          isActive: true,
+          validationStatus: 'valid' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+        },
+      },
+    ];
+    const upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn = vi
+      .fn()
+      .mockResolvedValue({
+        points: [],
+        summary: {
+          seedRowsLoaded: 3,
+          latestOfferRowsSeen: 2,
+          missingLatestCount: 1,
+          eligibleLatestOfferRows: 1,
+          dailyHistoryPointsBuilt: 1,
+          maxObservedAgeHours: 48,
+          skipped: {
+            inactiveSeedOrMerchant: 0,
+            invalidSeed: 0,
+            missingLatest: 1,
+            missingOrInvalidPrice: 0,
+            nonEur: 0,
+            staleOrError: 1,
+            unavailableForHeadline: 0,
+          },
+        },
+      });
+
+    await runCommerceSync({
+      dependencies: {
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([]),
+        loadCommerceSyncInputsFn: vi.fn().mockResolvedValue({
+          refreshSeeds: [],
+          syncSeeds,
+          syncInputs: {
+            activeMerchantCount: 3,
+            affiliateMerchantConfigs: [
+              {
+                merchantId: 'lego-nl',
+                displayName: 'LEGO',
+                regionCode: 'NL',
+                currencyCode: 'EUR',
+                enabled: true,
+                displayRank: 1,
+                urlHost: 'www.lego.com',
+                disclosureCopy: 'Direct merchant link.',
+                ctaLabel: 'Bekijk bij LEGO',
+                perks: 'Directe LEGO-winkel',
+              },
+            ],
+            enabledSetIds: ['10316'],
+            merchantSummaries: [],
+            pricingObservationSeeds: [
+              {
+                setId: '10316',
+                merchantId: 'lego-nl',
+                merchantProductUrl: 'https://www.lego.com/10316',
+                totalPriceMinor: 1999,
+                availability: 'in_stock',
+                observedAt: '2026-05-11T10:00:00.000Z',
+                regionCode: 'NL',
+                currencyCode: 'EUR',
+                condition: 'new',
+              },
+            ],
+          },
+        }),
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn,
+        writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        writePricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+      },
+      mode: 'write',
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(
+      upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn,
+    ).toHaveBeenCalledWith({
+      latestOffers: [
+        expect.objectContaining({
+          latestOffer: expect.objectContaining({
+            fetchStatus: 'success',
+            priceMinor: 1999,
+          }),
+          merchant: {
+            isActive: true,
+            slug: 'lego-nl',
+          },
+          offerSeed: {
+            isActive: true,
+            setId: '10316',
+            validationStatus: 'valid',
+          },
+        }),
+        expect.objectContaining({
+          latestOffer: expect.objectContaining({
+            fetchStatus: 'error',
+          }),
+        }),
+        expect.objectContaining({
+          latestOffer: undefined,
+          merchant: expect.objectContaining({
+            slug: 'coppenswarenhuis',
+          }),
+        }),
+      ],
+      now: undefined,
+    });
+  });
+
   test('fails write mode when feed-latest daily history upsert fails', async () => {
     await expect(
       runCommerceSync({
