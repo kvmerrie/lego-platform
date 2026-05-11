@@ -434,6 +434,7 @@ function CatalogOfferRailCard({
       className={styles.offerRailCard}
       data-best={offer.isBest ? 'true' : 'false'}
       data-price-comparison={presentation.priceComparisonState}
+      data-stock-state={presentation.stockState}
     >
       <div className={styles.offerRailHeader}>
         <p className={styles.offerRailMerchant}>{presentation.merchantLabel}</p>

@@ -74,10 +74,13 @@ function buildLatestOfferInput(
   return {
     merchant: {
       isActive: true,
+      reliabilityTier: 'production_feed',
       slug: 'alternate',
+      trustedForHistory: true,
       ...overrides.merchant,
     },
     offerSeed: {
+      commercialUnitType: 'full_set',
       isActive: true,
       setId: '10316',
       validationStatus: 'valid',
@@ -267,6 +270,63 @@ describe('pricing data access server', () => {
       eligibleLatestOfferRows: 1,
       dailyHistoryPointsBuilt: 1,
       newestObservedAt: '2026-05-11T10:00:00.000Z',
+    });
+  });
+
+  test('allows production-feed merchants to write daily headline history', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          merchant: {
+            isActive: true,
+            reliabilityTier: 'production_feed',
+            slug: 'goodbricks',
+            trustedForHistory: true,
+          },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toEqual([
+      expect.objectContaining({
+        headlinePriceMinor: 46999,
+        lowestMerchantId: 'goodbricks',
+      }),
+    ]);
+    expect(result.summary).toMatchObject({
+      trustedOfferCount: 1,
+      strategicManualOfferCount: 0,
+      historyPointsFromTrusted: 1,
+      ignoredForConfidenceCount: 0,
+    });
+  });
+
+  test('excludes strategic-manual merchants from headline history', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          merchant: {
+            isActive: true,
+            reliabilityTier: 'strategic_manual',
+            slug: 'coppenswarenhuis',
+            trustedForHistory: false,
+          },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toEqual([]);
+    expect(result.summary).toMatchObject({
+      eligibleLatestOfferRows: 0,
+      trustedOfferCount: 0,
+      strategicManualOfferCount: 1,
+      historyPointsFromTrusted: 0,
+      ignoredForConfidenceCount: 1,
+      skipped: {
+        untrustedMerchant: 1,
+      },
     });
   });
 
@@ -465,6 +525,193 @@ describe('pricing data access server', () => {
         headlinePriceMinor: 22999,
         lowestMerchantId: 'goodbricks',
         recordedOn: '2026-05-11',
+      }),
+    ]);
+  });
+
+  test('excludes blind-bag offers from display-box headline history comparisons', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          merchant: {
+            isActive: true,
+            reliabilityTier: 'production_feed',
+            slug: 'goodbricks',
+            trustedForHistory: true,
+          },
+          offerSeed: {
+            commercialUnitType: 'display_box',
+            isActive: true,
+            setId: '71050',
+            validationStatus: 'valid',
+          },
+          latestOffer: {
+            priceMinor: 5995,
+          },
+        }),
+        buildLatestOfferInput({
+          merchant: {
+            isActive: true,
+            reliabilityTier: 'production_feed',
+            slug: 'misterbricks',
+            trustedForHistory: true,
+          },
+          offerSeed: {
+            commercialUnitType: 'blind_bag',
+            isActive: true,
+            setId: '71050',
+            validationStatus: 'valid',
+          },
+          latestOffer: {
+            priceMinor: 359,
+          },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+      pricingReferenceValues: [
+        {
+          setId: '71050',
+          referencePriceMinor: 5995,
+        },
+      ],
+    });
+
+    expect(result.points).toEqual([
+      expect.objectContaining({
+        setId: '71050',
+        headlinePriceMinor: 5995,
+        lowestMerchantId: 'goodbricks',
+        referencePriceMinor: 5995,
+      }),
+    ]);
+    expect(result.summary).toMatchObject({
+      excludedUnitMismatchCount: 1,
+      unitTypeCounts: {
+        blind_bag: 1,
+        display_box: 1,
+      },
+      skipped: {
+        unitMismatch: 1,
+      },
+    });
+  });
+
+  test('keeps same commercial unit types comparable by price', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'goodbricks' },
+          offerSeed: {
+            commercialUnitType: 'display_box',
+            isActive: true,
+            setId: '71050',
+            validationStatus: 'valid',
+          },
+          latestOffer: { priceMinor: 5995 },
+        }),
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'alternate' },
+          offerSeed: {
+            commercialUnitType: 'display_box',
+            isActive: true,
+            setId: '71050',
+            validationStatus: 'valid',
+          },
+          latestOffer: { priceMinor: 5795 },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toEqual([
+      expect.objectContaining({
+        headlinePriceMinor: 5795,
+        lowestMerchantId: 'alternate',
+      }),
+    ]);
+    expect(result.summary.excludedUnitMismatchCount).toBe(0);
+  });
+
+  test('does not create reference discount confidence for unknown commercial units', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          offerSeed: {
+            commercialUnitType: 'unknown',
+            isActive: true,
+            setId: '71050',
+            validationStatus: 'valid',
+          },
+          latestOffer: { priceMinor: 359 },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+      pricingReferenceValues: [
+        {
+          setId: '71050',
+          referencePriceMinor: 5995,
+        },
+      ],
+    });
+
+    expect(result.points).toEqual([
+      expect.objectContaining({
+        headlinePriceMinor: 359,
+        referencePriceMinor: undefined,
+      }),
+    ]);
+    expect(result.summary.unitTypeCounts).toMatchObject({
+      unknown: 1,
+    });
+  });
+
+  test('builds price-panel snapshots from comparable commercial units only', () => {
+    const result = buildPricingSyncArtifacts({
+      enabledSetIds: ['71050'],
+      merchantSummaries: [
+        { merchantId: 'goodbricks', displayName: 'Goodbricks' },
+        { merchantId: 'coppenswarenhuis', displayName: 'Coppenswarenhuis' },
+      ],
+      pricingObservationSeeds: [
+        {
+          availability: 'in_stock',
+          commercialUnitType: 'display_box',
+          condition: 'new',
+          currencyCode: 'EUR',
+          merchantId: 'goodbricks',
+          merchantProductUrl: 'https://goodbricks.example/71050-box',
+          observedAt: '2026-05-11T10:00:00.000Z',
+          regionCode: 'NL',
+          setId: '71050',
+          totalPriceMinor: 5995,
+        },
+        {
+          availability: 'in_stock',
+          commercialUnitType: 'blind_bag',
+          condition: 'new',
+          currencyCode: 'EUR',
+          merchantId: 'coppenswarenhuis',
+          merchantProductUrl: 'https://coppens.example/71050-blind-bag',
+          observedAt: '2026-05-11T10:01:00.000Z',
+          regionCode: 'NL',
+          setId: '71050',
+          totalPriceMinor: 359,
+        },
+      ],
+      pricingReferenceValues: [
+        {
+          setId: '71050',
+          referencePriceMinor: 5995,
+        },
+      ],
+    });
+
+    expect(result.pricePanelSnapshots).toEqual([
+      expect.objectContaining({
+        headlinePriceMinor: 5995,
+        lowestMerchantId: 'goodbricks',
+        merchantCount: 1,
+        referencePriceMinor: 5995,
       }),
     ]);
   });

@@ -76,6 +76,7 @@ export function CatalogFeatureThemeSpotlight({
             href={buildThemePath(themeItem.themeSnapshot.slug)}
             visual={themeItem.visual}
             imageUrl={themeItem.imageUrl}
+            showFeatureSignature={false}
             themeSnapshot={themeItem.themeSnapshot}
             trackingEvent={{
               event: 'theme_tile_click',

@@ -10,6 +10,12 @@ import {
   type PricingObservation,
   type PricingSyncManifest,
 } from '@lego-platform/pricing/util';
+import {
+  compareCommerceCommercialUnitPreference,
+  getCommerceCommercialUnitComparisonGroup,
+  isCommerceCommercialUnitComparableForDeals,
+  type CommerceCommercialUnitType,
+} from '@lego-platform/shared/config';
 import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-auth-server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
@@ -63,10 +69,15 @@ export interface CommerceLatestOfferHistoryInput {
   };
   merchant?: {
     isActive: boolean;
+    reliabilityTier?: 'production_feed' | 'strategic_manual';
     slug: string;
+    trustedForHistory?: boolean;
   };
   offerSeed: {
+    commercialUnitType?: CommerceCommercialUnitType;
     isActive: boolean;
+    notes?: string;
+    productUrl?: string;
     setId: string;
     validationStatus: string;
   };
@@ -79,6 +90,8 @@ export interface CommerceLatestOfferHistorySkipCounts {
   missingOrInvalidPrice: number;
   nonEur: number;
   staleOrError: number;
+  unitMismatch: number;
+  untrustedMerchant: number;
   unavailableForHeadline: number;
 }
 
@@ -94,7 +107,13 @@ export interface CommerceLatestOfferHistorySummary {
   oldestObservedAt?: string;
   merchantSlugCounts?: Record<string, number>;
   seedRowsLoaded?: number;
+  strategicManualOfferCount?: number;
   skipped: CommerceLatestOfferHistorySkipCounts;
+  excludedUnitMismatchCount?: number;
+  trustedOfferCount?: number;
+  historyPointsFromTrusted?: number;
+  ignoredForConfidenceCount?: number;
+  unitTypeCounts?: Record<string, number>;
   validationStatusCounts?: Record<string, number>;
 }
 
@@ -127,6 +146,11 @@ interface PersistedPriceHistoryRow {
   set_id: PriceHistoryPoint['setId'];
 }
 
+interface CommerceLatestOfferHistoryCandidate {
+  commercialUnitType?: CommerceCommercialUnitType;
+  point: PriceHistoryPoint;
+}
+
 export const DEFAULT_COMMERCE_LATEST_OFFER_HISTORY_MAX_AGE_HOURS = 48;
 
 function toRecordedOn(now?: Date): string {
@@ -141,6 +165,8 @@ function createEmptyCommerceLatestOfferHistorySkipCounts(): CommerceLatestOfferH
     missingOrInvalidPrice: 0,
     nonEur: 0,
     staleOrError: 0,
+    unitMismatch: 0,
+    untrustedMerchant: 0,
     unavailableForHeadline: 0,
   };
 }
@@ -263,6 +289,7 @@ function validatePricingObservationSeed(
       pricingObservationSeed.availability,
       seedLabel,
     ),
+    commercialUnitType: pricingObservationSeed.commercialUnitType ?? 'full_set',
     observedAt: validateObservedAt(
       pricingObservationSeed.observedAt,
       seedLabel,
@@ -294,6 +321,41 @@ function toAvailabilityLabel(availability: PricingAvailability): string {
   }
 }
 
+function selectComparablePricingObservations<
+  Observation extends Pick<
+    PricingObservation,
+    'commercialUnitType' | 'observedAt' | 'totalPriceMinor'
+  >,
+>(observations: readonly Observation[]): Observation[] {
+  if (observations.length <= 1) {
+    return [...observations];
+  }
+
+  const priorities = {
+    set_package: 0,
+    single_item: 1,
+    accessory: 2,
+    magazine_bonus: 3,
+  } as const;
+  const preferredGroup = observations
+    .map((observation) =>
+      getCommerceCommercialUnitComparisonGroup(observation.commercialUnitType),
+    )
+    .filter((group): group is keyof typeof priorities => group in priorities)
+    .sort((left, right) => priorities[left] - priorities[right])[0];
+
+  if (!preferredGroup) {
+    return [...observations];
+  }
+
+  return observations.filter(
+    (observation) =>
+      getCommerceCommercialUnitComparisonGroup(
+        observation.commercialUnitType,
+      ) === preferredGroup,
+  );
+}
+
 function buildPricePanelSnapshot({
   merchantNameById,
   pricingObservations,
@@ -305,18 +367,18 @@ function buildPricePanelSnapshot({
   referencePriceBySetId: ReadonlyMap<string, number>;
   setId: string;
 }): PricePanelSnapshot | undefined {
-  const eligibleObservations = pricingObservations
-    .filter(
+  const eligibleObservations = selectComparablePricingObservations(
+    pricingObservations.filter(
       (pricingObservation) =>
         pricingObservation.setId === setId &&
         isHeadlineEligibleAvailability(pricingObservation.availability),
-    )
-    .sort(
-      (left, right) =>
-        left.totalPriceMinor - right.totalPriceMinor ||
-        right.observedAt.localeCompare(left.observedAt) ||
-        left.merchantId.localeCompare(right.merchantId),
-    );
+    ),
+  ).sort(
+    (left, right) =>
+      left.totalPriceMinor - right.totalPriceMinor ||
+      right.observedAt.localeCompare(left.observedAt) ||
+      left.merchantId.localeCompare(right.merchantId),
+  );
 
   const headlineObservation = eligibleObservations[0];
 
@@ -324,7 +386,11 @@ function buildPricePanelSnapshot({
     return undefined;
   }
 
-  const referencePriceMinor = referencePriceBySetId.get(setId);
+  const referencePriceMinor = isCommerceCommercialUnitComparableForDeals(
+    headlineObservation.commercialUnitType,
+  )
+    ? referencePriceBySetId.get(setId)
+    : undefined;
   const deltaMinor =
     typeof referencePriceMinor === 'number'
       ? headlineObservation.totalPriceMinor - referencePriceMinor
@@ -408,9 +474,17 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
   const availabilityCounts: Record<string, number> = {};
   const fetchStatusCounts: Record<string, number> = {};
   const merchantSlugCounts: Record<string, number> = {};
+  const unitTypeCounts: Record<string, number> = {};
   const validationStatusCounts: Record<string, number> = {};
-  const bestPointBySetId = new Map<string, PriceHistoryPoint>();
+  const bestCandidateBySetId = new Map<
+    string,
+    CommerceLatestOfferHistoryCandidate
+  >();
+  let excludedUnitMismatchCount = 0;
   let eligibleLatestOfferRows = 0;
+  let ignoredForConfidenceCount = 0;
+  let strategicManualOfferCount = 0;
+  let trustedOfferCount = 0;
   let latestOfferRowsSeen = 0;
   let newestObservedAt: string | undefined;
   let oldestObservedAt: string | undefined;
@@ -422,6 +496,17 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
 
     if (latestOffer) {
       latestOfferRowsSeen += 1;
+      if (
+        merchant?.trustedForHistory === true ||
+        merchant?.reliabilityTier === 'production_feed'
+      ) {
+        trustedOfferCount += 1;
+      } else if (
+        merchant?.trustedForHistory === false ||
+        merchant?.reliabilityTier === 'strategic_manual'
+      ) {
+        strategicManualOfferCount += 1;
+      }
       incrementCommerceHistoryCount(
         availabilityCounts,
         latestOffer.availability,
@@ -433,6 +518,7 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       validationStatusCounts,
       offerSeed.validationStatus,
     );
+    incrementCommerceHistoryCount(unitTypeCounts, offerSeed.commercialUnitType);
 
     const loadedObservedAtInput = latestOffer?.observedAt;
 
@@ -503,6 +589,16 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       continue;
     }
 
+    const trustedForHistory =
+      merchant?.trustedForHistory === true ||
+      merchant?.reliabilityTier === 'production_feed';
+
+    if (!trustedForHistory) {
+      skipped.untrustedMerchant += 1;
+      ignoredForConfidenceCount += 1;
+      continue;
+    }
+
     eligibleLatestOfferRows += 1;
 
     const point: PriceHistoryPoint = {
@@ -511,30 +607,55 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       currencyCode: EURO_CURRENCY_CODE,
       condition: NEW_OFFER_CONDITION,
       headlinePriceMinor: latestOffer.priceMinor,
-      referencePriceMinor: referencePriceMinorBySetId.get(offerSeed.setId),
+      referencePriceMinor: isCommerceCommercialUnitComparableForDeals(
+        offerSeed.commercialUnitType,
+      )
+        ? referencePriceMinorBySetId.get(offerSeed.setId)
+        : undefined,
       lowestMerchantId: merchant.slug,
       observedAt,
       recordedOn,
     };
-    const previousPoint = bestPointBySetId.get(point.setId);
+    const candidate = {
+      commercialUnitType: offerSeed.commercialUnitType,
+      point,
+    };
+    const previousCandidate = bestCandidateBySetId.get(point.setId);
+    const unitPreferenceDelta = previousCandidate
+      ? compareCommerceCommercialUnitPreference(
+          candidate.commercialUnitType,
+          previousCandidate.commercialUnitType,
+        )
+      : 0;
 
     if (
-      !previousPoint ||
-      point.headlinePriceMinor < previousPoint.headlinePriceMinor ||
-      (point.headlinePriceMinor === previousPoint.headlinePriceMinor &&
-        (point.observedAt > previousPoint.observedAt ||
-          (point.observedAt === previousPoint.observedAt &&
-            (point.lowestMerchantId ?? '').localeCompare(
-              previousPoint.lowestMerchantId ?? '',
-            ) < 0)))
+      !previousCandidate ||
+      unitPreferenceDelta < 0 ||
+      (unitPreferenceDelta === 0 &&
+        (point.headlinePriceMinor <
+          previousCandidate.point.headlinePriceMinor ||
+          (point.headlinePriceMinor ===
+            previousCandidate.point.headlinePriceMinor &&
+            (point.observedAt > previousCandidate.point.observedAt ||
+              (point.observedAt === previousCandidate.point.observedAt &&
+                (point.lowestMerchantId ?? '').localeCompare(
+                  previousCandidate.point.lowestMerchantId ?? '',
+                ) < 0)))))
     ) {
-      bestPointBySetId.set(point.setId, point);
+      if (previousCandidate && unitPreferenceDelta < 0) {
+        excludedUnitMismatchCount += 1;
+        skipped.unitMismatch += 1;
+      }
+      bestCandidateBySetId.set(point.setId, candidate);
+    } else if (unitPreferenceDelta > 0) {
+      excludedUnitMismatchCount += 1;
+      skipped.unitMismatch += 1;
     }
   }
 
-  const points = [...bestPointBySetId.values()].sort((left, right) =>
-    left.setId.localeCompare(right.setId),
-  );
+  const points = [...bestCandidateBySetId.values()]
+    .map((candidate) => candidate.point)
+    .sort((left, right) => left.setId.localeCompare(right.setId));
 
   return {
     points,
@@ -550,7 +671,13 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       oldestObservedAt,
       merchantSlugCounts,
       seedRowsLoaded: latestOffers.length,
+      strategicManualOfferCount,
       skipped,
+      excludedUnitMismatchCount,
+      trustedOfferCount,
+      historyPointsFromTrusted: points.length,
+      ignoredForConfidenceCount,
+      unitTypeCounts,
       validationStatusCounts,
     },
   };
@@ -731,6 +858,7 @@ export function buildPricingSyncArtifacts({
       condition: validatedOfferInput.condition,
       totalPriceMinor: validatedOfferInput.totalPriceMinor,
       availability: validatedOfferInput.availability,
+      commercialUnitType: validatedOfferInput.commercialUnitType,
       observedAt: validatedOfferInput.observedAt,
     }),
   );

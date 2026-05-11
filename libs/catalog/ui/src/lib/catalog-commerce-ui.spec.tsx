@@ -225,6 +225,7 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('Nagekeken 2 apr');
     expect(markup).not.toContain('2 apr om 09:00');
     expect(markup).toContain('data-best="true"');
+    expect(markup).toContain('data-stock-state="available"');
     expect(markup).toContain('data-brickhunt-event="offer_click"');
     expect(markup).toContain('offerPlacement');
     expect(markup).toContain('comparison_row');

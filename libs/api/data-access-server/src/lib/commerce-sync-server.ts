@@ -13,6 +13,11 @@ import {
   upsertDailyPriceHistoryPointsFromCommerceLatestOffers,
   writePricingGeneratedArtifacts,
 } from '@lego-platform/pricing/data-access-server';
+import {
+  classifyCommerceCommercialUnitType,
+  getCommerceMerchantReliabilityTier,
+  isCommerceMerchantProductionFeed,
+} from '@lego-platform/shared/config';
 import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import type { CommerceRefreshSeed } from '@lego-platform/commerce/data-access-server';
 import {
@@ -147,6 +152,8 @@ function createEmptyDailyHistorySummary(): CommerceLatestOfferHistorySummary {
       missingOrInvalidPrice: 0,
       nonEur: 0,
       staleOrError: 0,
+      unitMismatch: 0,
+      untrustedMerchant: 0,
       unavailableForHeadline: 0,
     },
     validationStatusCounts: {},
@@ -168,10 +175,22 @@ function buildDailyHistoryInputsFromCommerceSyncSeeds(
       : undefined,
     merchant: {
       isActive: syncSeed.merchant.isActive,
+      reliabilityTier: getCommerceMerchantReliabilityTier(
+        syncSeed.merchant.slug,
+      ),
       slug: syncSeed.merchant.slug,
+      trustedForHistory: isCommerceMerchantProductionFeed(
+        syncSeed.merchant.slug,
+      ),
     },
     offerSeed: {
+      commercialUnitType: classifyCommerceCommercialUnitType({
+        notes: syncSeed.offerSeed.notes,
+        productUrl: syncSeed.offerSeed.productUrl,
+      }),
       isActive: syncSeed.offerSeed.isActive,
+      notes: syncSeed.offerSeed.notes,
+      productUrl: syncSeed.offerSeed.productUrl,
       setId: syncSeed.offerSeed.setId,
       validationStatus: syncSeed.offerSeed.validationStatus,
     },
@@ -194,8 +213,14 @@ function formatDailyHistorySummaryLog({
     `latest_rows_loaded=${summary.latestOfferRowsSeen}`,
     `joined_rows=${summary.latestOfferRowsSeen}`,
     `missing_latest_count=${summary.missingLatestCount ?? summary.skipped.missingLatest ?? 0}`,
+    `unit_type_counts=${JSON.stringify(summary.unitTypeCounts ?? {})}`,
+    `trusted_offer_count=${summary.trustedOfferCount ?? 0}`,
+    `strategic_manual_offer_count=${summary.strategicManualOfferCount ?? 0}`,
     `eligible_latest_offer_rows=${summary.eligibleLatestOfferRows}`,
     `daily_history_points_built=${summary.dailyHistoryPointsBuilt}`,
+    `excluded_unit_mismatch_count=${summary.excludedUnitMismatchCount ?? 0}`,
+    `history_points_from_trusted=${summary.historyPointsFromTrusted ?? summary.dailyHistoryPointsBuilt}`,
+    `ignored_for_confidence_count=${summary.ignoredForConfidenceCount ?? 0}`,
     `daily_history_points_upserted=${upsertedCount}`,
     `max_observed_age_hours=${summary.maxObservedAgeHours}`,
     `oldest_observed_at=${summary.oldestObservedAt ?? 'none'}`,
@@ -205,6 +230,8 @@ function formatDailyHistorySummaryLog({
     `availability_counts=${JSON.stringify(summary.availabilityCounts ?? {})}`,
     `merchant_slug_counts=${JSON.stringify(summary.merchantSlugCounts ?? {})}`,
     `skipped_stale_or_error=${summary.skipped.staleOrError}`,
+    `skipped_unit_mismatch=${summary.skipped.unitMismatch ?? 0}`,
+    `skipped_untrusted_merchant=${summary.skipped.untrustedMerchant ?? 0}`,
     `skipped_inactive_seed_or_merchant=${summary.skipped.inactiveSeedOrMerchant}`,
     `skipped_invalid_seed=${summary.skipped.invalidSeed}`,
     `skipped_missing_latest=${summary.skipped.missingLatest ?? 0}`,

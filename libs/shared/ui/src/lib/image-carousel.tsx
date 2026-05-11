@@ -126,6 +126,7 @@ function GalleryImageMedia({
 export function ImageGallery({
   ariaLabel = 'Afbeeldingen',
   className,
+  detailMobileFullBleed = false,
   images,
   lightboxRequest,
   onImageClick,
@@ -134,6 +135,7 @@ export function ImageGallery({
 }: {
   ariaLabel?: string;
   className?: string;
+  detailMobileFullBleed?: boolean;
   images: readonly GalleryImage[];
   lightboxRequest?: {
     index: number;
@@ -562,6 +564,9 @@ export function ImageGallery({
         <section
           aria-label={ariaLabel}
           className={joinClasses(styles.root, className)}
+          data-detail-mobile-full-bleed={
+            variant === 'detail' && detailMobileFullBleed ? 'true' : undefined
+          }
           onKeyDown={handleGalleryKeyDown}
           tabIndex={variant === 'detail' ? 0 : -1}
         >

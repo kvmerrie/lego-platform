@@ -1207,6 +1207,7 @@ function CatalogSetImageGallery({
   return (
     <ImageGallery
       ariaLabel={`Afbeeldingen van ${catalogSetDetail.name}`}
+      detailMobileFullBleed
       images={galleryImages}
       variant="detail"
     />
@@ -1509,6 +1510,7 @@ export function CatalogThemeHighlight({
   className,
   href,
   imageUrl,
+  showFeatureSignature = true,
   themeSnapshot,
   trackingEvent,
   variant = 'default',
@@ -1517,6 +1519,7 @@ export function CatalogThemeHighlight({
   className?: string;
   href?: string;
   imageUrl?: string;
+  showFeatureSignature?: boolean;
   themeSnapshot: CatalogThemeSnapshot;
   trackingEvent?: BrickhuntAnalyticsEventDescriptor;
   variant?: 'default' | 'feature' | 'portrait';
@@ -1608,12 +1611,14 @@ export function CatalogThemeHighlight({
             <CatalogCanonicalText>{themeSnapshot.name}</CatalogCanonicalText>
           </h3>
           <p className={styles.themeFeatureCopy}>{themeSnapshot.momentum}</p>
-          <p className={styles.themeFeatureSignature}>
-            Pak eerst{' '}
-            <CatalogCanonicalText>
-              {themeSnapshot.signatureSet}
-            </CatalogCanonicalText>
-          </p>
+          {showFeatureSignature ? (
+            <p className={styles.themeFeatureSignature}>
+              Pak eerst{' '}
+              <CatalogCanonicalText>
+                {themeSnapshot.signatureSet}
+              </CatalogCanonicalText>
+            </p>
+          ) : null}
         </div>
       </>
     );

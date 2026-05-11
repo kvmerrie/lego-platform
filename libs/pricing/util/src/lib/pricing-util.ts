@@ -2,6 +2,7 @@ import {
   getDefaultFormattingLocale,
   type AppCurrencyCode,
   type AppMarketCode,
+  type CommerceCommercialUnitType,
 } from '@lego-platform/shared/config';
 
 export const DUTCH_REGION_CODE = 'NL';
@@ -24,6 +25,7 @@ export interface PricingObservation {
   availability: PricingAvailability;
   condition: PricingCondition;
   currencyCode: PricingCurrencyCode;
+  commercialUnitType?: CommerceCommercialUnitType;
   merchantId: string;
   observedAt: string;
   regionCode: PricingRegionCode;

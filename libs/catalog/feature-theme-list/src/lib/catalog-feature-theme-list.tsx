@@ -10,6 +10,7 @@ import {
 } from '@lego-platform/shared/config';
 import { ActionLink } from '@lego-platform/shared/ui';
 import { buildBrickhuntAnalyticsAttributes } from '@lego-platform/shared/util';
+import { Ellipsis } from 'lucide-react';
 import styles from './catalog-feature-theme-list.module.css';
 
 function getThemeItemKey(
@@ -112,9 +113,17 @@ export function CatalogFeatureThemeList({
                 },
               })}
             >
-              <p className={styles.allThemesEyebrow}>Verder</p>
-              <h3 className={styles.allThemesTitle}>Alle thema&apos;s</h3>
-              <p className={styles.allThemesCopy}>Zie alles bij elkaar</p>
+              <div className={styles.allThemesVisual} aria-hidden="true">
+                <Ellipsis
+                  className={styles.allThemesIcon}
+                  size={76}
+                  strokeWidth={1.8}
+                />
+              </div>
+              <div className={styles.allThemesBody}>
+                <h3 className={styles.allThemesTitle}>Alle thema&apos;s</h3>
+                <p className={styles.allThemesMeta}>34 thema&apos;s</p>
+              </div>
             </ActionLink>
           </div>
         </div>

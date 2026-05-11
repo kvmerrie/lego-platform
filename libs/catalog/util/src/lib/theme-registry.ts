@@ -240,7 +240,7 @@ export const brickhuntThemeRegistry = [
     displayName: 'City',
     imageSetId: '60488',
     isFeatured: true,
-    sortPriority: 6,
+    sortPriority: 15,
   }),
   createThemeOverride({
     displayName: 'Creator 3in1',
@@ -400,7 +400,11 @@ export const brickhuntThemeRegistry = [
     aliases: ['Super Mario'],
     sortPriority: 11,
   }),
-  createThemeOverride({ displayName: 'Technic', sortPriority: 15 }),
+  createThemeOverride({
+    displayName: 'Technic',
+    isFeatured: true,
+    sortPriority: 6,
+  }),
   createThemeOverride({
     displayName: 'LEGO® The Legend of Zelda™',
     aliases: ['The Legend of Zelda'],

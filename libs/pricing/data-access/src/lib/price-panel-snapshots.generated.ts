@@ -12,7 +12,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10261",
@@ -24,7 +24,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10263",
@@ -36,7 +36,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10264",
@@ -48,7 +48,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10270",
@@ -60,7 +60,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10274",
@@ -72,7 +72,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10280",
@@ -84,7 +84,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "10281",
@@ -96,7 +96,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10291",
@@ -108,7 +108,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10293",
@@ -120,7 +120,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10295",
@@ -132,7 +132,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10297",
@@ -144,7 +144,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10298",
@@ -156,7 +156,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10300",
@@ -168,7 +168,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "10302",
@@ -180,7 +180,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10305",
@@ -192,9 +192,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z",
-    "referencePriceMinor": 39999,
-    "deltaMinor": 5996
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "10311",
@@ -213,12 +211,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 31900,
+    "headlinePriceMinor": 29900,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10313",
@@ -230,7 +228,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "10315",
@@ -242,7 +240,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10317",
@@ -254,9 +252,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z",
-    "referencePriceMinor": 23999,
-    "deltaMinor": -99
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "10318",
@@ -268,7 +264,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10323",
@@ -280,7 +276,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10326",
@@ -292,7 +288,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10327",
@@ -304,9 +300,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 16499,
-    "deltaMinor": -3509
+    "observedAt": "2026-05-08T12:01:43.649Z"
   },
   {
     "setId": "10328",
@@ -318,9 +312,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 6,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 5999,
-    "deltaMinor": -1400
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "10329",
@@ -332,7 +324,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 6,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-08T18:21:22.648Z"
   },
   {
     "setId": "10330",
@@ -344,7 +336,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "10331",
@@ -356,7 +348,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "10337",
@@ -368,7 +360,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10338",
@@ -380,7 +372,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10340",
@@ -392,7 +384,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10342",
@@ -404,9 +396,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 6,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 5999,
-    "deltaMinor": -1600
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "10343",
@@ -418,7 +408,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10344",
@@ -430,7 +420,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10347",
@@ -442,7 +432,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10348",
@@ -454,7 +444,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "10349",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1695,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10350",
@@ -466,7 +468,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "10352",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 18900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10353",
@@ -490,9 +504,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z",
-    "referencePriceMinor": 26999,
-    "deltaMinor": -2099
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "10356",
@@ -504,7 +516,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10357",
@@ -516,7 +528,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10358",
@@ -528,7 +540,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-10T18:26:01.497Z"
   },
   {
     "setId": "10359",
@@ -540,7 +552,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "10360",
@@ -552,7 +564,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "10362",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6090,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10363",
@@ -564,7 +588,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10367",
@@ -576,7 +600,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "10368",
@@ -588,7 +612,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 6,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10369",
@@ -600,7 +624,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10370",
@@ -612,7 +636,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10374",
@@ -624,7 +648,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-07T12:01:40.369Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10391",
@@ -636,7 +660,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10412",
@@ -648,7 +672,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "10413",
@@ -660,7 +684,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10414",
@@ -672,7 +696,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10415",
@@ -684,7 +708,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10416",
@@ -696,7 +720,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10421",
@@ -707,8 +731,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10422",
@@ -720,7 +744,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10423",
@@ -732,7 +756,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10425",
@@ -744,7 +768,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10426",
@@ -756,19 +780,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10427",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5990,
+    "headlinePriceMinor": 5399,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "10428",
@@ -780,7 +804,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "10431",
@@ -792,7 +816,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "10432",
@@ -804,7 +828,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "10434",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5290,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10435",
@@ -816,7 +852,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10440",
@@ -828,7 +864,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10441",
@@ -840,7 +876,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10442",
@@ -852,7 +888,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "10443",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2395,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10444",
@@ -864,7 +912,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10445",
@@ -876,7 +924,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10446",
@@ -888,7 +936,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10447",
@@ -900,7 +948,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10448",
@@ -911,8 +959,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10450",
@@ -924,7 +972,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "10451",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5390,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "10452",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10453",
@@ -936,7 +1008,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T00:05:29.520Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10454",
@@ -948,7 +1020,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "10455",
@@ -960,7 +1032,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10456",
@@ -972,7 +1044,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10457",
@@ -984,7 +1056,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10458",
@@ -996,7 +1068,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10459",
@@ -1008,7 +1080,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10460",
@@ -1020,7 +1092,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10463",
@@ -1032,7 +1104,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10465",
@@ -1044,7 +1116,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10467",
@@ -1056,7 +1128,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10468",
@@ -1068,7 +1140,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10470",
@@ -1080,7 +1152,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10471",
@@ -1092,7 +1164,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10473",
@@ -1104,7 +1176,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10474",
@@ -1116,7 +1188,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10475",
@@ -1128,19 +1200,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10476",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6990,
+    "headlinePriceMinor": 6699,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "10477",
@@ -1152,7 +1224,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10696",
@@ -1164,7 +1236,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10698",
@@ -1175,8 +1247,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10713",
@@ -1188,7 +1260,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10788",
@@ -1200,7 +1272,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10795",
@@ -1212,7 +1284,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10914",
@@ -1224,7 +1296,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10931",
@@ -1236,7 +1308,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10941",
@@ -1248,7 +1320,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10954",
@@ -1260,7 +1332,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "10965",
@@ -1272,7 +1344,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10967",
@@ -1284,7 +1356,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10977",
@@ -1296,7 +1368,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "10983",
@@ -1308,7 +1380,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10989",
@@ -1320,7 +1392,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10992",
@@ -1332,7 +1404,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "10993",
@@ -1344,7 +1416,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11018",
@@ -1356,7 +1428,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "11023",
@@ -1368,7 +1440,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11024",
@@ -1380,7 +1452,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "11025",
@@ -1392,7 +1464,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11026",
@@ -1404,7 +1476,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11036",
@@ -1413,10 +1485,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 4099,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "11039",
@@ -1428,7 +1500,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "11040",
@@ -1440,7 +1512,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "11041",
@@ -1451,8 +1523,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "11042",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3295,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11043",
@@ -1464,7 +1548,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11198",
@@ -1476,7 +1560,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11200",
@@ -1485,10 +1569,22 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 4199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "lidl",
-    "lowestMerchantName": "Lidl",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
+  },
+  {
+    "setId": "11201",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1695,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11202",
@@ -1500,7 +1596,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11203",
@@ -1512,7 +1608,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "11204",
@@ -1524,7 +1620,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11205",
@@ -1536,7 +1632,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "11206",
@@ -1548,7 +1644,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11207",
@@ -1560,7 +1656,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11208",
@@ -1572,7 +1668,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11215",
@@ -1584,7 +1680,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11216",
@@ -1596,7 +1692,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11217",
@@ -1608,7 +1704,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11221",
@@ -1620,7 +1716,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11372",
@@ -1632,7 +1728,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "11373",
@@ -1656,7 +1752,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "11376",
@@ -1680,7 +1776,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "11384",
@@ -1704,7 +1800,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "11502",
@@ -1716,7 +1812,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "11504",
@@ -1728,7 +1824,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11505",
@@ -1740,7 +1836,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11506",
@@ -1752,7 +1848,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11508",
@@ -1764,7 +1860,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11509",
@@ -1776,7 +1872,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "11510",
@@ -1788,7 +1884,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "11511",
@@ -1800,7 +1896,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "11514",
@@ -1812,7 +1908,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21034",
@@ -1824,7 +1920,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "21042",
@@ -1836,7 +1932,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "21058",
@@ -1848,19 +1944,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21060",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12400,
+    "headlinePriceMinor": 12300,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "21061",
@@ -1872,9 +1968,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z",
-    "referencePriceMinor": 22999,
-    "deltaMinor": -5599
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "21062",
@@ -1886,7 +1980,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-04T00:21:16.397Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "21063",
@@ -1898,7 +1992,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "21064",
@@ -1922,7 +2016,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21246",
@@ -1934,7 +2028,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21251",
@@ -1946,7 +2040,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21260",
@@ -1958,7 +2052,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "21266",
@@ -1970,7 +2064,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21267",
@@ -1982,31 +2076,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21268",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1495,
+    "headlinePriceMinor": 1299,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "21269",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2199,
+    "headlinePriceMinor": 1999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T18:21:21.395Z"
   },
   {
     "setId": "21270",
@@ -2018,7 +2112,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21271",
@@ -2030,7 +2124,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21272",
@@ -2042,7 +2136,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "21273",
@@ -2054,7 +2148,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "21274",
@@ -2066,7 +2160,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21275",
@@ -2078,7 +2172,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21276",
@@ -2089,8 +2183,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21277",
@@ -2102,7 +2196,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21278",
@@ -2114,7 +2208,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21279",
@@ -2125,8 +2219,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21316",
@@ -2138,7 +2232,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21318",
@@ -2150,7 +2244,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21323",
@@ -2162,7 +2256,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21324",
@@ -2174,7 +2268,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21325",
@@ -2186,7 +2280,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21326",
@@ -2198,7 +2292,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "21330",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 27900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21331",
@@ -2210,7 +2316,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21333",
@@ -2222,9 +2328,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 16999,
-    "deltaMinor": -1009
+    "observedAt": "2026-05-08T12:01:43.649Z"
   },
   {
     "setId": "21343",
@@ -2236,7 +2340,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21345",
@@ -2248,7 +2352,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21348",
@@ -2260,9 +2364,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z",
-    "referencePriceMinor": 35999,
-    "deltaMinor": -3499
+    "observedAt": "2026-05-08T18:10:57.489Z"
+  },
+  {
+    "setId": "21357",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4699,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "21358",
@@ -2274,7 +2388,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "21359",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 25900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21360",
@@ -2286,7 +2412,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "21362",
@@ -2298,7 +2424,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21366",
@@ -2310,7 +2436,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "21368",
@@ -2322,7 +2448,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21583",
@@ -2334,7 +2460,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21584",
@@ -2346,7 +2472,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "21585",
@@ -2358,7 +2484,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21586",
@@ -2370,7 +2496,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21587",
@@ -2382,7 +2508,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21588",
@@ -2394,7 +2520,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21589",
@@ -2418,7 +2544,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30416",
@@ -2430,7 +2556,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "30435",
@@ -2442,7 +2568,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "30510",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 395,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "30577",
@@ -2454,7 +2592,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "30582",
@@ -2466,7 +2604,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "30585",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 395,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "30655",
@@ -2478,7 +2628,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "30659",
@@ -2490,22 +2640,94 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30660",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 399,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T06:01:32.162Z"
+  },
+  {
+    "setId": "30661",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "30662",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 299,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T18:01:34.932Z"
+  },
+  {
+    "setId": "30663",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 295,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30673",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "30675",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
     "headlinePriceMinor": 299,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30676",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "30679",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
@@ -2514,7 +2736,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30682",
@@ -2526,7 +2748,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "30686",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30688",
@@ -2538,7 +2772,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30689",
@@ -2550,7 +2784,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30690",
@@ -2562,7 +2796,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30691",
@@ -2574,7 +2808,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30693",
@@ -2585,8 +2819,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30694",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 299,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30695",
@@ -2598,7 +2844,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30696",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 299,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T00:03:59.104Z"
+  },
+  {
+    "setId": "30697",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 299,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30698",
@@ -2609,8 +2879,32 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30699",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 299,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30701",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 399,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30702",
@@ -2622,7 +2916,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30703",
@@ -2633,8 +2927,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30704",
@@ -2645,11 +2939,23 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30705",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "30706",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
@@ -2658,7 +2964,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "30707",
@@ -2670,19 +2976,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30708",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 399,
+    "headlinePriceMinor": 394,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30709",
@@ -2694,19 +3000,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30710",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 399,
+    "headlinePriceMinor": 350,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30711",
@@ -2718,7 +3024,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "30716",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30719",
@@ -2730,7 +3048,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30720",
@@ -2742,7 +3060,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30721",
@@ -2754,7 +3072,55 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30723",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 299,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30724",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 399,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30725",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 394,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "30726",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30727",
@@ -2766,7 +3132,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "30728",
@@ -2778,7 +3144,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "30731",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 350,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30733",
@@ -2790,19 +3168,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30734",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 295,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "30736",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 399,
+    "headlinePriceMinor": 295,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31134",
@@ -2814,19 +3204,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31136",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1999,
+    "headlinePriceMinor": 1799,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "31140",
@@ -2838,7 +3228,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31141",
@@ -2850,7 +3240,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31145",
@@ -2862,7 +3252,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31146",
@@ -2874,7 +3264,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "31147",
@@ -2886,7 +3276,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31148",
@@ -2898,19 +3288,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31149",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2099,
+    "headlinePriceMinor": 1899,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "31150",
@@ -2922,31 +3312,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31151",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4399,
+    "headlinePriceMinor": 3999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 6,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "31152",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3499,
+    "headlinePriceMinor": 3699,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31159",
@@ -2958,7 +3348,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31160",
@@ -2970,19 +3360,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31161",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5290,
+    "headlinePriceMinor": 4799,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "coolblue",
+    "lowestMerchantName": "Coolblue",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "31162",
@@ -2993,8 +3383,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31163",
@@ -3005,8 +3395,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "31164",
@@ -3018,19 +3408,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "31165",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3196,
+    "headlinePriceMinor": 2699,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "31166",
@@ -3042,7 +3432,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "31167",
@@ -3054,7 +3444,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "31168",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 7799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
+    "merchantCount": 5,
+    "observedAt": "2026-05-09T05:01:04.341Z"
   },
   {
     "setId": "31169",
@@ -3066,7 +3468,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31170",
@@ -3078,7 +3480,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31173",
@@ -3090,7 +3492,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31174",
@@ -3101,8 +3503,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31208",
@@ -3126,7 +3528,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "31212",
@@ -3138,7 +3540,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-09T00:16:18.890Z"
   },
   {
     "setId": "31213",
@@ -3150,19 +3552,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-09T00:16:18.890Z"
   },
   {
     "setId": "31214",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4999,
+    "headlinePriceMinor": 6290,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31215",
@@ -3174,7 +3576,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31216",
@@ -3186,7 +3588,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "31217",
@@ -3198,7 +3600,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31218",
@@ -3210,7 +3612,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "31220",
@@ -3222,7 +3624,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "31376",
@@ -3234,7 +3636,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31377",
@@ -3246,7 +3648,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "31379",
@@ -3257,8 +3659,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31380",
@@ -3270,7 +3672,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31381",
@@ -3282,7 +3684,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "31382",
@@ -3294,7 +3696,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31383",
@@ -3305,8 +3707,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31384",
@@ -3318,7 +3720,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31385",
@@ -3330,7 +3732,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "31386",
@@ -3341,8 +3743,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31387",
@@ -3353,20 +3755,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31389",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7396,
+    "headlinePriceMinor": 7395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "31390",
@@ -3378,7 +3780,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31391",
@@ -3390,7 +3792,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "31392",
@@ -3402,7 +3804,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "40186",
@@ -3414,7 +3816,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "40298",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 595,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "40460",
@@ -3426,7 +3840,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "40491",
@@ -3438,7 +3852,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "40499",
@@ -3450,7 +3864,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "40524",
@@ -3462,7 +3876,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "40575",
@@ -3474,7 +3888,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "40611",
@@ -3486,7 +3900,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "40638",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40647",
@@ -3498,7 +3924,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40678",
@@ -3510,7 +3936,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40709",
@@ -3522,7 +3948,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40711",
@@ -3534,7 +3960,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "40721",
@@ -3546,7 +3972,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40725",
@@ -3558,7 +3984,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "40743",
@@ -3570,7 +3996,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "40744",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1029,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40746",
@@ -3582,7 +4020,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T00:03:59.104Z"
   },
   {
     "setId": "40747",
@@ -3606,19 +4044,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40813",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2395,
+    "headlinePriceMinor": 2599,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40816",
@@ -3630,7 +4068,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "40824",
@@ -3642,7 +4080,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "41696",
@@ -3654,7 +4092,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41716",
@@ -3666,7 +4104,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "41717",
@@ -3678,7 +4116,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "41724",
@@ -3690,7 +4128,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41725",
@@ -3702,7 +4140,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "41728",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2790,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41734",
@@ -3714,7 +4164,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "41739",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41744",
@@ -3726,7 +4188,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41749",
@@ -3738,7 +4200,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41754",
@@ -3749,8 +4211,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41758",
@@ -3762,7 +4224,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "41964",
@@ -3774,7 +4236,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42115",
@@ -3786,7 +4248,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "42129",
@@ -3798,7 +4260,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42130",
@@ -3810,7 +4272,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42141",
@@ -3822,7 +4284,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "42143",
@@ -3834,7 +4296,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "42146",
@@ -3846,7 +4308,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42151",
@@ -3858,7 +4320,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42154",
@@ -3870,7 +4332,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "42156",
@@ -3882,7 +4344,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "42158",
@@ -3894,7 +4356,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42160",
@@ -3906,7 +4368,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "42161",
@@ -3918,7 +4380,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "42164",
@@ -3930,7 +4392,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42167",
@@ -3942,7 +4404,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-07T18:01:46.123Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "42169",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 3999,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42170",
@@ -3954,7 +4428,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "42171",
@@ -3966,9 +4440,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z",
-    "referencePriceMinor": 21999,
-    "deltaMinor": -5299
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "42172",
@@ -3980,9 +4452,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T05:01:30.634Z",
-    "referencePriceMinor": 44999,
-    "deltaMinor": -10899
+    "observedAt": "2026-05-08T05:01:30.634Z"
   },
   {
     "setId": "42173",
@@ -3994,7 +4464,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T00:05:29.520Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "42174",
@@ -4018,7 +4488,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "42176",
@@ -4030,7 +4500,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "42177",
@@ -4042,21 +4512,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z",
-    "referencePriceMinor": 24999,
-    "deltaMinor": -6099
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "42179",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6190,
+    "headlinePriceMinor": 5999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "42182",
@@ -4068,7 +4536,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42197",
@@ -4080,7 +4548,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42198",
@@ -4092,7 +4560,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42199",
@@ -4104,7 +4572,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42200",
@@ -4116,7 +4584,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42201",
@@ -4127,8 +4595,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "42202",
@@ -4140,7 +4608,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 6,
-    "observedAt": "2026-05-01T00:22:16.730Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "42203",
@@ -4152,7 +4620,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "42204",
@@ -4164,7 +4632,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "42205",
@@ -4176,7 +4644,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-04T00:21:16.397Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "42206",
@@ -4188,7 +4656,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "42207",
@@ -4200,7 +4668,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "42208",
@@ -4212,7 +4680,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42209",
@@ -4224,7 +4692,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "42210",
@@ -4236,19 +4704,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "42211",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7690,
+    "headlinePriceMinor": 7399,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42212",
@@ -4260,7 +4728,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42213",
@@ -4272,31 +4740,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42214",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13900,
+    "headlinePriceMinor": 13200,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-06T00:15:55.566Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42215",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 28995,
+    "headlinePriceMinor": 29700,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
+    "lowestMerchantId": "coolblue",
+    "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "42218",
@@ -4308,7 +4776,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42219",
@@ -4320,7 +4788,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42220",
@@ -4332,7 +4800,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42221",
@@ -4356,7 +4824,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "42223",
@@ -4368,7 +4836,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "42224",
@@ -4380,7 +4848,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "42225",
@@ -4392,7 +4860,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42226",
@@ -4404,7 +4872,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "42227",
@@ -4416,7 +4884,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "42228",
@@ -4428,7 +4896,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "42234",
@@ -4440,7 +4908,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42235",
@@ -4452,7 +4920,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42239",
@@ -4464,7 +4932,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42603",
@@ -4476,7 +4944,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42605",
@@ -4488,7 +4956,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42608",
@@ -4500,7 +4968,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42609",
@@ -4512,7 +4980,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42610",
@@ -4524,7 +4992,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42614",
@@ -4536,7 +5004,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42616",
@@ -4548,7 +5016,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42619",
@@ -4560,7 +5028,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42622",
@@ -4572,7 +5040,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42625",
@@ -4584,7 +5052,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42626",
@@ -4596,7 +5064,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42635",
@@ -4608,7 +5076,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "42641",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1099,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42642",
@@ -4620,7 +5100,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T00:03:59.104Z"
   },
   {
     "setId": "42643",
@@ -4632,7 +5112,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42644",
@@ -4644,7 +5124,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42647",
@@ -4656,7 +5136,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42648",
@@ -4668,19 +5148,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42649",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2499,
+    "headlinePriceMinor": 2395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42650",
@@ -4692,7 +5172,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42652",
@@ -4704,7 +5184,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42653",
@@ -4716,7 +5196,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42654",
@@ -4728,7 +5208,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "42658",
@@ -4739,8 +5219,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42659",
@@ -4752,7 +5232,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42661",
@@ -4764,7 +5244,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42662",
@@ -4776,19 +5256,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42663",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4399,
+    "headlinePriceMinor": 3799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 6,
+    "observedAt": "2026-05-11T12:21:15.352Z"
+  },
+  {
+    "setId": "42664",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5690,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42665",
@@ -4800,7 +5292,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42666",
@@ -4812,7 +5304,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "42669",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 7490,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42671",
@@ -4824,7 +5328,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42673",
@@ -4836,7 +5340,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "42675",
@@ -4848,7 +5352,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "42676",
@@ -4860,7 +5364,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42677",
@@ -4872,7 +5376,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42678",
@@ -4884,7 +5388,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42679",
@@ -4895,8 +5399,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42680",
@@ -4908,7 +5412,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42681",
@@ -4920,7 +5424,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42682",
@@ -4932,7 +5436,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42684",
@@ -4944,7 +5448,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "42685",
@@ -4956,7 +5460,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42686",
@@ -4968,7 +5472,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42687",
@@ -4992,7 +5496,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42689",
@@ -5004,7 +5508,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42690",
@@ -5016,7 +5520,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42692",
@@ -5028,7 +5532,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42693",
@@ -5040,7 +5544,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42694",
@@ -5052,7 +5556,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42695",
@@ -5064,7 +5568,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42696",
@@ -5076,7 +5580,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42699",
@@ -5088,7 +5592,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "42701",
@@ -5100,7 +5604,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "42702",
@@ -5112,7 +5616,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43011",
@@ -5124,7 +5628,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43012",
@@ -5136,7 +5640,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43013",
@@ -5148,7 +5652,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43014",
@@ -5159,7 +5663,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-05-08T00:15:55.645Z"
   },
   {
@@ -5171,8 +5675,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43016",
@@ -5184,7 +5688,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43018",
@@ -5196,7 +5700,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43019",
@@ -5220,7 +5724,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "43022",
@@ -5231,8 +5735,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "43027",
@@ -5244,7 +5748,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43102",
@@ -5256,7 +5760,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43103",
@@ -5268,7 +5772,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43104",
@@ -5280,7 +5784,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43105",
@@ -5292,7 +5796,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43106",
@@ -5304,7 +5808,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43107",
@@ -5316,7 +5820,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43109",
@@ -5328,7 +5832,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43110",
@@ -5340,7 +5844,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43206",
@@ -5352,7 +5856,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "43216",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5390,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43220",
@@ -5364,7 +5880,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43221",
@@ -5376,7 +5892,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43223",
@@ -5388,7 +5904,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43224",
@@ -5400,7 +5916,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "43231",
@@ -5412,7 +5928,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43235",
@@ -5424,7 +5940,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43237",
@@ -5436,7 +5952,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43239",
@@ -5448,7 +5964,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43240",
@@ -5460,7 +5976,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43243",
@@ -5472,7 +5988,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43244",
@@ -5496,7 +6012,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43246",
@@ -5507,8 +6023,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43247",
@@ -5532,7 +6048,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43249",
@@ -5544,7 +6060,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-08T18:21:22.648Z"
+  },
+  {
+    "setId": "43253",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2899,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43254",
@@ -5556,7 +6084,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43257",
@@ -5567,8 +6095,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43258",
@@ -5580,7 +6108,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43260",
@@ -5592,7 +6120,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43262",
@@ -5603,8 +6131,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43264",
@@ -5616,7 +6144,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43265",
@@ -5627,8 +6155,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43266",
@@ -5640,31 +6168,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43267",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9590,
+    "headlinePriceMinor": 9499,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "43268",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6790,
+    "headlinePriceMinor": 6699,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "43269",
@@ -5676,7 +6204,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "43270",
@@ -5691,16 +6219,28 @@ const pricePanelSnapshotsPayload = String.raw`[
     "observedAt": "2026-05-04T18:21:15.390Z"
   },
   {
+    "setId": "43271",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1895,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
     "setId": "43272",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2999,
+    "headlinePriceMinor": 3595,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43273",
@@ -5712,7 +6252,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43274",
@@ -5724,7 +6264,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43275",
@@ -5736,7 +6276,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "43276",
@@ -5748,7 +6288,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43277",
@@ -5760,7 +6300,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43279",
@@ -5772,7 +6312,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43281",
@@ -5783,8 +6323,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43284",
@@ -5796,7 +6336,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43285",
@@ -5808,7 +6348,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43286",
@@ -5820,7 +6360,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "43287",
@@ -5832,7 +6372,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "43288",
@@ -5844,7 +6384,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43290",
@@ -5856,7 +6396,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "43291",
@@ -5868,7 +6408,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43300",
@@ -5880,7 +6420,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "43301",
@@ -5892,7 +6432,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "43303",
@@ -5904,7 +6444,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "43304",
@@ -5916,7 +6456,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60205",
@@ -5928,7 +6468,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "60236",
@@ -5940,7 +6480,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60237",
@@ -5952,7 +6492,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60238",
@@ -5964,7 +6504,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60304",
@@ -5976,7 +6516,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T00:03:59.104Z"
   },
   {
     "setId": "60312",
@@ -5988,7 +6528,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60316",
@@ -6000,7 +6540,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-08T18:21:22.648Z"
   },
   {
     "setId": "60337",
@@ -6012,7 +6552,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "60339",
@@ -6024,7 +6564,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "60353",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2390,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "60355",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2199,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60357",
@@ -6036,7 +6600,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "60359",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1499,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60361",
@@ -6048,7 +6624,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60367",
@@ -6060,7 +6636,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60368",
@@ -6072,7 +6648,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "60373",
@@ -6084,7 +6660,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60400",
@@ -6096,7 +6672,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "60404",
@@ -6108,7 +6684,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60407",
@@ -6120,7 +6696,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60409",
@@ -6132,7 +6708,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60411",
@@ -6144,7 +6720,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60414",
@@ -6156,7 +6732,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "60415",
@@ -6168,7 +6744,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "60423",
@@ -6180,19 +6756,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-01T18:21:05.914Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "60430",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1399,
+    "headlinePriceMinor": 1595,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "60434",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 10790,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60442",
@@ -6204,7 +6792,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60443",
@@ -6215,8 +6803,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 6,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60444",
@@ -6228,7 +6816,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60445",
@@ -6240,7 +6828,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T00:05:29.520Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60447",
@@ -6252,7 +6840,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "60451",
@@ -6264,7 +6852,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60452",
@@ -6275,20 +6863,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60454",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2395,
+    "headlinePriceMinor": 2099,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "60455",
@@ -6300,7 +6888,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60456",
@@ -6312,19 +6900,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "60458",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 799,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "60462",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4399,
+    "headlinePriceMinor": 4099,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "60463",
@@ -6336,7 +6936,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60464",
@@ -6348,7 +6948,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "60466",
@@ -6360,7 +6960,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "60467",
@@ -6372,7 +6972,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60469",
@@ -6383,8 +6983,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "60471",
@@ -6396,7 +6996,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60478",
@@ -6408,7 +7008,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60479",
@@ -6420,7 +7020,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60480",
@@ -6431,8 +7031,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60481",
@@ -6444,7 +7044,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60482",
@@ -6456,7 +7056,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60483",
@@ -6468,7 +7068,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60484",
@@ -6480,7 +7080,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60485",
@@ -6492,7 +7092,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60486",
@@ -6504,7 +7104,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60487",
@@ -6516,7 +7116,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60488",
@@ -6527,8 +7127,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 1,
+    "observedAt": "2026-05-09T18:25:31.073Z"
   },
   {
     "setId": "60489",
@@ -6540,7 +7140,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60490",
@@ -6552,7 +7152,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60491",
@@ -6564,7 +7164,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "60492",
@@ -6575,8 +7175,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60493",
@@ -6587,20 +7187,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60494",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10295,
+    "headlinePriceMinor": 10195,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60495",
@@ -6611,8 +7211,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60496",
@@ -6623,8 +7223,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60497",
@@ -6635,8 +7235,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60498",
@@ -6648,7 +7248,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60499",
@@ -6660,7 +7260,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60500",
@@ -6672,7 +7272,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60502",
@@ -6696,7 +7296,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60504",
@@ -6708,7 +7308,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "60505",
@@ -6720,7 +7320,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "60506",
@@ -6731,8 +7331,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "60508",
@@ -6744,79 +7344,79 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "60511",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7396,
+    "headlinePriceMinor": 7395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71039",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12900,
+    "headlinePriceMinor": 595,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T18:25:55.467Z"
   },
   {
     "setId": "71049",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10900,
+    "headlinePriceMinor": 375,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T18:10:57.956Z"
   },
   {
     "setId": "71050",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 395,
+    "headlinePriceMinor": 5995,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T18:25:55.467Z"
   },
   {
     "setId": "71051",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 395,
+    "headlinePriceMinor": 399,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71052",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4495,
+    "headlinePriceMinor": 395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T18:10:57.956Z"
   },
   {
     "setId": "71390",
@@ -6828,7 +7428,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71408",
@@ -6840,7 +7440,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71409",
@@ -6852,7 +7452,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71411",
@@ -6864,7 +7464,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71417",
@@ -6876,7 +7476,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71422",
@@ -6888,7 +7488,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-10T06:01:46.851Z"
   },
   {
     "setId": "71424",
@@ -6900,7 +7500,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71425",
@@ -6912,7 +7512,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71426",
@@ -6924,7 +7524,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71437",
@@ -6936,7 +7536,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71438",
@@ -6948,7 +7548,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71439",
@@ -6960,7 +7560,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "71440",
@@ -6972,7 +7572,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "71441",
@@ -6984,7 +7584,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "71453",
@@ -6996,7 +7596,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71454",
@@ -7008,7 +7608,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71455",
@@ -7020,7 +7620,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71458",
@@ -7032,7 +7632,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "71459",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6290,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71472",
@@ -7044,7 +7656,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71475",
@@ -7056,7 +7668,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71476",
@@ -7068,7 +7680,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "71477",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 6590,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71478",
@@ -7080,7 +7704,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71479",
@@ -7092,7 +7716,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71481",
@@ -7104,7 +7728,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-07T12:01:40.369Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "71483",
@@ -7116,7 +7740,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71484",
@@ -7128,7 +7752,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "71485",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 10590,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71488",
@@ -7140,7 +7776,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T00:03:59.104Z"
   },
   {
     "setId": "71489",
@@ -7151,8 +7787,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71490",
@@ -7163,8 +7799,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71491",
@@ -7176,7 +7812,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71492",
@@ -7188,7 +7824,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71495",
@@ -7200,7 +7836,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71497",
@@ -7212,7 +7848,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71499",
@@ -7224,19 +7860,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71500",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 10900,
+    "headlinePriceMinor": 11400,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "71508",
@@ -7248,7 +7884,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71512",
@@ -7260,7 +7896,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "71513",
@@ -7272,7 +7908,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71514",
@@ -7284,7 +7920,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "71515",
@@ -7308,7 +7944,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71757",
@@ -7320,7 +7956,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71759",
@@ -7332,7 +7968,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71761",
@@ -7344,7 +7980,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71780",
@@ -7356,7 +7992,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71783",
@@ -7368,7 +8004,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71799",
@@ -7380,7 +8016,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71804",
@@ -7392,7 +8028,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71807",
@@ -7404,7 +8040,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71808",
@@ -7416,7 +8052,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71811",
@@ -7428,7 +8064,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71814",
@@ -7440,7 +8076,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71816",
@@ -7452,7 +8088,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "71822",
@@ -7464,7 +8100,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71823",
@@ -7476,7 +8112,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "71824",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 895,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71826",
@@ -7488,7 +8136,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71827",
@@ -7500,7 +8148,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "71828",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1749,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "71829",
@@ -7512,7 +8172,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71830",
@@ -7524,7 +8184,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "71831",
@@ -7536,7 +8196,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "71832",
@@ -7548,19 +8208,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71834",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7390,
+    "headlinePriceMinor": 6199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "71836",
@@ -7569,10 +8229,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 6199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "71838",
@@ -7583,20 +8243,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71839",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1499,
+    "headlinePriceMinor": 1495,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71842",
@@ -7608,19 +8268,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71843",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4499,
+    "headlinePriceMinor": 5290,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71844",
@@ -7632,19 +8292,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71845",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7490,
+    "headlinePriceMinor": 6499,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
+    "merchantCount": 4,
+    "observedAt": "2026-05-10T05:01:05.214Z"
   },
   {
     "setId": "71846",
@@ -7656,7 +8316,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
+  },
+  {
+    "setId": "71847",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 12195,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "71848",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 15900,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71849",
@@ -7668,7 +8352,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71850",
@@ -7680,7 +8364,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71851",
@@ -7692,7 +8376,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71853",
@@ -7704,7 +8388,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71854",
@@ -7716,7 +8400,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71855",
@@ -7728,7 +8412,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71856",
@@ -7740,7 +8424,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71857",
@@ -7752,7 +8436,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "71858",
@@ -7764,7 +8448,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "71859",
@@ -7799,8 +8483,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71863",
@@ -7811,8 +8495,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71864",
@@ -7823,8 +8507,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71865",
@@ -7835,8 +8519,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71866",
@@ -7848,67 +8532,67 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "71868",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7396,
+    "headlinePriceMinor": 7395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71869",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11094,
+    "headlinePriceMinor": 10900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71870",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11995,
+    "headlinePriceMinor": 11595,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71871",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7396,
+    "headlinePriceMinor": 7395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71872",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 17095,
+    "headlinePriceMinor": 16900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "72031",
@@ -7920,7 +8604,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "72032",
@@ -7932,7 +8616,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "72034",
@@ -7944,7 +8628,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "72035",
@@ -7956,7 +8640,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "72036",
@@ -7968,7 +8652,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "72037",
@@ -7979,20 +8663,32 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "72038",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3599,
+    "headlinePriceMinor": 3899,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "72039",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 7699,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T00:03:59.104Z"
   },
   {
     "setId": "72040",
@@ -8004,7 +8700,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "72041",
@@ -8016,7 +8712,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "72042",
@@ -8028,7 +8724,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "72043",
@@ -8040,7 +8736,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "72046",
@@ -8052,7 +8748,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "72151",
@@ -8063,8 +8759,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "72152",
@@ -8076,7 +8772,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75290",
@@ -8088,7 +8784,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75304",
@@ -8100,7 +8796,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75305",
@@ -8112,7 +8808,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75313",
@@ -8124,7 +8820,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75325",
@@ -8136,7 +8832,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "75328",
@@ -8148,7 +8844,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "75331",
@@ -8160,7 +8856,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
+  },
+  {
+    "setId": "75332",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2790,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75333",
@@ -8172,7 +8880,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75337",
@@ -8196,7 +8904,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75347",
@@ -8208,7 +8916,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75349",
@@ -8220,7 +8928,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75350",
@@ -8232,7 +8940,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75351",
@@ -8244,7 +8952,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "75355",
@@ -8256,9 +8964,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z",
-    "referencePriceMinor": 23999,
-    "deltaMinor": -1099
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "75358",
@@ -8270,7 +8976,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "75363",
@@ -8282,7 +8988,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
+  },
+  {
+    "setId": "75364",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 7790,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75367",
@@ -8294,9 +9012,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 64999,
-    "deltaMinor": -8099
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "75371",
@@ -8308,7 +9024,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "75372",
@@ -8320,7 +9036,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "75373",
@@ -8332,7 +9048,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75374",
@@ -8344,7 +9060,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75375",
@@ -8356,7 +9072,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75376",
@@ -8368,7 +9084,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75379",
@@ -8380,7 +9096,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75380",
@@ -8392,7 +9108,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75384",
@@ -8404,7 +9120,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75386",
@@ -8416,7 +9132,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75388",
@@ -8428,7 +9144,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "75389",
@@ -8440,7 +9156,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75391",
@@ -8452,7 +9168,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75397",
@@ -8464,9 +9180,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z",
-    "referencePriceMinor": 49999,
-    "deltaMinor": -3099
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "75398",
@@ -8478,9 +9192,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 13999,
-    "deltaMinor": -3009
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "75399",
@@ -8492,7 +9204,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75400",
@@ -8503,8 +9215,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75401",
@@ -8515,7 +9227,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-05T18:25:59.497Z"
   },
   {
@@ -8523,12 +9235,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4695,
+    "headlinePriceMinor": 4399,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 6,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "75403",
@@ -8540,7 +9252,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75404",
@@ -8552,7 +9264,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "75405",
@@ -8564,7 +9276,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 6,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75407",
@@ -8576,7 +9288,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75408",
@@ -8588,7 +9300,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75410",
@@ -8600,7 +9312,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75411",
@@ -8612,7 +9324,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75412",
@@ -8624,7 +9336,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75413",
@@ -8660,7 +9372,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75417",
@@ -8672,7 +9384,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75419",
@@ -8684,7 +9396,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75421",
@@ -8696,7 +9408,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75423",
@@ -8732,7 +9444,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-09T18:25:31.073Z"
   },
   {
     "setId": "75433",
@@ -8744,7 +9456,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75434",
@@ -8756,7 +9468,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75435",
@@ -8780,7 +9492,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75437",
@@ -8792,7 +9504,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75438",
@@ -8804,19 +9516,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75439",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4195,
+    "headlinePriceMinor": 3995,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75440",
@@ -8828,7 +9540,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75441",
@@ -8840,19 +9552,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75443",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1495,
+    "headlinePriceMinor": 1395,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75444",
@@ -8864,7 +9576,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75445",
@@ -8876,7 +9588,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75446",
@@ -8888,19 +9600,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "75447",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12795,
+    "headlinePriceMinor": 12500,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75448",
@@ -8912,7 +9624,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75449",
@@ -8924,7 +9636,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75451",
@@ -8936,7 +9648,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75452",
@@ -8948,7 +9660,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75636",
@@ -8960,7 +9672,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "75637",
@@ -8972,7 +9684,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75638",
@@ -8983,8 +9695,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75639",
@@ -8996,7 +9708,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75640",
@@ -9008,7 +9720,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "75641",
@@ -9020,7 +9732,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75642",
@@ -9032,7 +9744,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75643",
@@ -9044,7 +9756,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75644",
@@ -9056,7 +9768,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75645",
@@ -9068,7 +9780,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75646",
@@ -9080,7 +9792,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75681",
@@ -9092,7 +9804,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75682",
@@ -9104,7 +9816,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "75684",
@@ -9116,7 +9828,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75685",
@@ -9128,7 +9840,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75687",
@@ -9140,7 +9852,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "75688",
@@ -9152,7 +9864,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75689",
@@ -9164,7 +9876,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "75955",
@@ -9176,7 +9888,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "75980",
@@ -9188,7 +9900,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76155",
@@ -9200,7 +9912,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76156",
@@ -9212,7 +9924,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76161",
@@ -9224,7 +9936,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76193",
@@ -9236,7 +9948,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76211",
@@ -9248,7 +9960,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76212",
@@ -9260,7 +9972,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76213",
@@ -9272,7 +9984,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76218",
@@ -9284,7 +9996,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76243",
@@ -9296,7 +10008,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "76245",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2990,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76253",
@@ -9308,7 +10032,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76254",
@@ -9320,7 +10044,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76255",
@@ -9332,7 +10056,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "76257",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 2699,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76258",
@@ -9344,7 +10080,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76259",
@@ -9356,7 +10092,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76263",
@@ -9368,7 +10104,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76269",
@@ -9380,9 +10116,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z",
-    "referencePriceMinor": 49999,
-    "deltaMinor": -99
+    "observedAt": "2026-05-08T18:10:57.489Z"
   },
   {
     "setId": "76273",
@@ -9394,7 +10128,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76277",
@@ -9406,7 +10140,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76278",
@@ -9418,7 +10152,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76281",
@@ -9430,7 +10164,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T00:05:29.520Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76284",
@@ -9442,7 +10176,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76288",
@@ -9454,7 +10188,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76291",
@@ -9466,7 +10200,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76292",
@@ -9478,7 +10212,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76296",
@@ -9490,7 +10224,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76297",
@@ -9502,7 +10236,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76298",
@@ -9514,7 +10248,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76303",
@@ -9526,7 +10260,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76304",
@@ -9538,7 +10272,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76307",
@@ -9550,7 +10284,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76308",
@@ -9562,7 +10296,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76309",
@@ -9574,7 +10308,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76311",
@@ -9586,7 +10320,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76312",
@@ -9598,7 +10332,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76313",
@@ -9610,9 +10344,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 9999,
-    "deltaMinor": -2509
+    "observedAt": "2026-05-08T12:01:43.649Z"
   },
   {
     "setId": "76314",
@@ -9624,7 +10356,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76315",
@@ -9636,7 +10368,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76316",
@@ -9648,7 +10380,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76319",
@@ -9660,7 +10392,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76320",
@@ -9672,7 +10404,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76321",
@@ -9684,7 +10416,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76322",
@@ -9696,7 +10428,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "76323",
@@ -9707,8 +10439,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "76324",
@@ -9720,19 +10452,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76325",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 9500,
+    "headlinePriceMinor": 9400,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "76326",
@@ -9744,7 +10476,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76327",
@@ -9756,7 +10488,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "76330",
@@ -9768,7 +10500,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "76331",
@@ -9780,7 +10512,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76332",
@@ -9792,7 +10524,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76334",
@@ -9804,7 +10536,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76335",
@@ -9816,7 +10548,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76336",
@@ -9828,7 +10560,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76337",
@@ -9840,7 +10572,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76338",
@@ -9852,7 +10584,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76339",
@@ -9864,7 +10596,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76341",
@@ -9876,7 +10608,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76342",
@@ -9888,7 +10620,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "76343",
@@ -9900,7 +10632,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76344",
@@ -9912,7 +10644,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "76354",
@@ -9924,7 +10656,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76405",
@@ -9936,7 +10668,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-08T18:01:37.786Z"
   },
   {
     "setId": "76419",
@@ -9948,7 +10680,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "76424",
@@ -9960,7 +10692,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76425",
@@ -9972,7 +10704,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76427",
@@ -9984,7 +10716,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76428",
@@ -9996,7 +10728,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76429",
@@ -10008,9 +10740,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-05T18:17:06.651Z",
-    "referencePriceMinor": 9999,
-    "deltaMinor": -3099
+    "observedAt": "2026-05-05T18:17:06.651Z"
   },
   {
     "setId": "76435",
@@ -10022,9 +10752,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 3,
-    "observedAt": "2026-05-05T12:16:06.849Z",
-    "referencePriceMinor": 19999,
-    "deltaMinor": -4399
+    "observedAt": "2026-05-05T12:16:06.849Z"
   },
   {
     "setId": "76442",
@@ -10036,7 +10764,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76443",
@@ -10048,31 +10776,43 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "76444",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 15300,
+    "headlinePriceMinor": 13900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T00:21:09.581Z"
+  },
+  {
+    "setId": "76445",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4095,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76446",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3799,
+    "headlinePriceMinor": 3499,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 6,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "76448",
@@ -10084,7 +10824,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "76449",
@@ -10095,8 +10835,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 4,
+    "observedAt": "2026-05-10T18:01:55.701Z"
   },
   {
     "setId": "76450",
@@ -10107,20 +10847,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76451",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6890,
+    "headlinePriceMinor": 6995,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76452",
@@ -10132,7 +10872,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "76453",
@@ -10144,9 +10884,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z",
-    "referencePriceMinor": 14999,
-    "deltaMinor": -3009
+    "observedAt": "2026-05-08T18:01:37.786Z"
+  },
+  {
+    "setId": "76454",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 19000,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "coolblue",
+    "lowestMerchantName": "Coolblue",
+    "merchantCount": 3,
+    "observedAt": "2026-05-09T00:16:18.890Z"
   },
   {
     "setId": "76456",
@@ -10158,7 +10908,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76457",
@@ -10170,7 +10920,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76459",
@@ -10182,7 +10932,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76460",
@@ -10194,7 +10944,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76461",
@@ -10206,7 +10956,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76462",
@@ -10218,7 +10968,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76463",
@@ -10230,7 +10980,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-08T18:16:00.233Z"
   },
   {
     "setId": "76464",
@@ -10242,7 +10992,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "76466",
@@ -10254,7 +11004,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-08T18:25:56.123Z"
   },
   {
     "setId": "76467",
@@ -10266,7 +11016,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "76469",
@@ -10278,7 +11028,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76470",
@@ -10290,7 +11040,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76471",
@@ -10302,7 +11052,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76473",
@@ -10314,7 +11064,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76474",
@@ -10326,7 +11076,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76475",
@@ -10338,7 +11088,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76784",
@@ -10350,7 +11100,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76785",
@@ -10361,8 +11111,8 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76831",
@@ -10374,7 +11124,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76917",
@@ -10386,19 +11136,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76919",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2199,
+    "headlinePriceMinor": 2195,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76921",
@@ -10410,7 +11160,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76922",
@@ -10422,7 +11172,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76924",
@@ -10434,7 +11184,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76934",
@@ -10446,7 +11196,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-07T12:01:40.369Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76967",
@@ -10458,7 +11208,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76968",
@@ -10470,7 +11220,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76969",
@@ -10482,7 +11232,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76970",
@@ -10494,19 +11244,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76972",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2599,
+    "headlinePriceMinor": 2795,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-07T18:01:46.123Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "76973",
@@ -10518,7 +11268,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76975",
@@ -10530,7 +11280,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "76976",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 11495,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76992",
@@ -10542,7 +11304,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "76997",
@@ -10554,7 +11316,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "76999",
@@ -10566,7 +11328,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "77001",
@@ -10578,7 +11340,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77002",
@@ -10590,7 +11352,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "77003",
@@ -10602,7 +11364,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "77005",
@@ -10614,7 +11376,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77006",
@@ -10626,7 +11388,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77037",
@@ -10638,7 +11400,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "77047",
@@ -10650,7 +11412,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77049",
@@ -10662,7 +11424,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77050",
@@ -10674,7 +11436,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "77052",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 5990,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T00:03:59.104Z"
   },
   {
     "setId": "77053",
@@ -10686,19 +11460,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77054",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2099,
+    "headlinePriceMinor": 2199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77055",
@@ -10710,7 +11484,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-09T18:21:34.584Z"
   },
   {
     "setId": "77056",
@@ -10722,19 +11496,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77057",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6699,
+    "headlinePriceMinor": 6890,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "mediamarkt",
-    "lowestMerchantName": "MediaMarkt",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T05:01:30.634Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77058",
@@ -10746,7 +11520,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77059",
@@ -10758,7 +11532,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77071",
@@ -10770,7 +11544,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-11T12:21:15.352Z"
+  },
+  {
+    "setId": "77072",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 7490,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
+    "merchantCount": 1,
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77073",
@@ -10782,7 +11568,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "77075",
@@ -10794,7 +11580,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77076",
@@ -10806,7 +11592,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77077",
@@ -10818,19 +11604,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "coolblue",
     "lowestMerchantName": "Coolblue",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:16:23.104Z"
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "77078",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 18290,
+    "headlinePriceMinor": 17400,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 1,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "coolblue",
+    "lowestMerchantName": "Coolblue",
+    "merchantCount": 3,
+    "observedAt": "2026-05-11T12:16:29.702Z"
   },
   {
     "setId": "77082",
@@ -10842,7 +11628,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "77117",
@@ -10854,7 +11640,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77118",
@@ -10866,7 +11652,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77119",
@@ -10878,7 +11664,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77237",
@@ -10890,7 +11676,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77238",
@@ -10902,7 +11688,19 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
+  },
+  {
+    "setId": "77239",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 1995,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 4,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77240",
@@ -10914,7 +11712,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77242",
@@ -10926,7 +11724,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77243",
@@ -10938,7 +11736,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 6,
-    "observedAt": "2026-05-08T12:21:31.868Z"
+    "observedAt": "2026-05-08T18:21:22.648Z"
   },
   {
     "setId": "77244",
@@ -10949,20 +11747,20 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77245",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1999,
+    "headlinePriceMinor": 1899,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 6,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "77246",
@@ -10974,7 +11772,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77248",
@@ -10986,7 +11784,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T06:01:31.653Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77249",
@@ -10998,7 +11796,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77250",
@@ -11010,7 +11808,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77251",
@@ -11019,10 +11817,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 1999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 5,
+    "observedAt": "2026-05-11T12:21:15.352Z"
   },
   {
     "setId": "77253",
@@ -11034,7 +11832,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "77254",
@@ -11046,7 +11844,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T12:01:43.649Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77255",
@@ -11058,7 +11856,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77256",
@@ -11070,31 +11868,31 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "77257",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2095,
+    "headlinePriceMinor": 2195,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77258",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2395,
+    "headlinePriceMinor": 2295,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77259",
@@ -11106,7 +11904,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
     "merchantCount": 5,
-    "observedAt": "2026-05-08T17:56:27.641Z"
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "77260",
@@ -11115,10 +11913,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 2395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77261",
@@ -11127,10 +11925,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 2395,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77262",
@@ -11142,7 +11940,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77264",
@@ -11154,7 +11952,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77977",
@@ -11166,7 +11964,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77978",
@@ -11178,7 +11976,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77981",
@@ -11190,7 +11988,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77982",
@@ -11202,7 +12000,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77983",
@@ -11214,7 +12012,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 3,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "77985",
@@ -11226,7 +12024,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:26:01.014Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "80109",
@@ -11238,7 +12036,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "92176",
@@ -11250,7 +12048,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-08T12:10:57.035Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   }
 ]`;
 

@@ -95,6 +95,68 @@ describe('TradeTracker Coppenswarenhuis feed sync server', () => {
     });
   });
 
+  test.each([
+    ['availability', 'Op voorraad', 'In stock'],
+    ['stockStatus', 'Direct leverbaar', 'In stock'],
+    ['availabilityText', 'Tijdelijk niet leverbaar', 'Out of stock'],
+    ['availability', 'Uitverkocht', 'Out of stock'],
+    ['levertijd', 'Pre-order verwacht in juni', 'Preorder'],
+    ['availability', 'Nader te bepalen', undefined],
+    ['stock', '', undefined],
+  ])(
+    'maps Coppens availability field %s=%s deterministically',
+    (fieldName, fieldValue, expectedAvailabilityText) => {
+      const [product] =
+        parseTradeTrackerCoppenswarenhuisProductFeedXml(`<?xml version="1.0" encoding="utf-8"?>
+<products>
+  <product ID="cw-10316">
+    <name>LEGO Icons 10316 Rivendell</name>
+    <price currency="EUR">399.99</price>
+    <URL>https://tc.tradetracker.net/click?p=123&amp;id=10316</URL>
+    <properties>
+      <property name="Brand"><value>LEGO</value></property>
+      <property name="fromPrice"><value>399.99</value></property>
+      <property name="${fieldName}"><value>${fieldValue}</value></property>
+    </properties>
+  </product>
+</products>`);
+
+      expect(
+        normalizeTradeTrackerCoppenswarenhuisFeedProductToAffiliateFeedRow(
+          product,
+        ),
+      ).toMatchObject({
+        availabilityText: expectedAvailabilityText,
+        legoSetNumber: '10316',
+      });
+    },
+  );
+
+  test('uses complete Coppens TradeTracker offer presence as the fallback stock signal', () => {
+    const [product] =
+      parseTradeTrackerCoppenswarenhuisProductFeedXml(`<?xml version="1.0" encoding="utf-8"?>
+<products>
+  <product ID="cw-10316">
+    <name>LEGO Icons 10316 Rivendell</name>
+    <price currency="EUR">399.99</price>
+    <URL>https://tc.tradetracker.net/click?p=123&amp;id=10316</URL>
+    <properties>
+      <property name="Brand"><value>LEGO</value></property>
+      <property name="fromPrice"><value>399.99</value></property>
+    </properties>
+  </product>
+</products>`);
+
+    expect(
+      normalizeTradeTrackerCoppenswarenhuisFeedProductToAffiliateFeedRow(
+        product,
+      ),
+    ).toMatchObject({
+      availabilityText: 'In stock',
+      legoSetNumber: '10316',
+    });
+  });
+
   test('does not use EAN, SKU, product id or deeplink ids as set numbers', () => {
     const [product] =
       parseTradeTrackerCoppenswarenhuisProductFeedXml(`<?xml version="1.0" encoding="utf-8"?>
@@ -187,16 +249,30 @@ describe('TradeTracker Coppenswarenhuis feed sync server', () => {
       ],
     });
     expect(result).toMatchObject({
+      availabilityRawCounts: {
+        '3': 1,
+      },
       debugInfo: {
+        availabilityRawCounts: {
+          '3': 1,
+        },
         fetchedProductCount: 3,
         legoCandidateCount: 2,
+        normalizedAvailabilityCounts: {
+          'In stock': 1,
+        },
         sampleCount: 2,
+        unknownAfterMappingCount: 0,
       },
       fetchedProductCount: 3,
       legoCandidateCount: 2,
+      normalizedAvailabilityCounts: {
+        'In stock': 1,
+      },
       normalizedRowCount: 1,
       skippedNonLegoCount: 1,
       skippedNonNewCount: 1,
+      unknownAfterMappingCount: 0,
     });
   });
 

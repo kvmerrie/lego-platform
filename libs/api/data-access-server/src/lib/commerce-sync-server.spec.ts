@@ -118,6 +118,7 @@ describe('commerce sync server', () => {
                 missingOrInvalidPrice: 0,
                 nonEur: 0,
                 staleOrError: 0,
+                untrustedMerchant: 0,
                 unavailableForHeadline: 1,
               },
             },
@@ -206,6 +207,7 @@ describe('commerce sync server', () => {
                   missingOrInvalidPrice: 0,
                   nonEur: 0,
                   staleOrError: 0,
+                  untrustedMerchant: 0,
                   unavailableForHeadline: 0,
                 },
               },
@@ -419,6 +421,7 @@ describe('commerce sync server', () => {
             missingOrInvalidPrice: 0,
             nonEur: 0,
             staleOrError: 1,
+            untrustedMerchant: 0,
             unavailableForHeadline: 0,
           },
         },
@@ -488,13 +491,15 @@ describe('commerce sync server', () => {
           }),
           merchant: {
             isActive: true,
+            reliabilityTier: 'strategic_manual',
             slug: 'lego-nl',
+            trustedForHistory: false,
           },
-          offerSeed: {
+          offerSeed: expect.objectContaining({
             isActive: true,
             setId: '10316',
             validationStatus: 'valid',
-          },
+          }),
         }),
         expect.objectContaining({
           latestOffer: expect.objectContaining({
@@ -504,7 +509,9 @@ describe('commerce sync server', () => {
         expect.objectContaining({
           latestOffer: undefined,
           merchant: expect.objectContaining({
+            reliabilityTier: 'strategic_manual',
             slug: 'coppenswarenhuis',
+            trustedForHistory: false,
           }),
         }),
       ],
@@ -591,6 +598,7 @@ describe('commerce sync server', () => {
                   missingOrInvalidPrice: 1,
                   nonEur: 1,
                   staleOrError: 1,
+                  untrustedMerchant: 0,
                   unavailableForHeadline: 1,
                 },
               },
@@ -610,7 +618,17 @@ describe('commerce sync server', () => {
 
       expect(info).toHaveBeenCalledWith(
         expect.stringContaining(
-          'latest_rows_loaded=6 joined_rows=6 missing_latest_count=0 eligible_latest_offer_rows=2 daily_history_points_built=1 daily_history_points_upserted=1',
+          'latest_rows_loaded=6 joined_rows=6 missing_latest_count=0',
+        ),
+      );
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'eligible_latest_offer_rows=2 daily_history_points_built=1',
+        ),
+      );
+      expect(info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'history_points_from_trusted=1 ignored_for_confidence_count=0 daily_history_points_upserted=1',
         ),
       );
     } finally {

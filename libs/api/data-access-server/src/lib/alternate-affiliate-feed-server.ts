@@ -765,8 +765,8 @@ export async function importAffiliateFeedRowsForMerchant({
       lastVerifiedAt: observedAt,
       notes:
         merchant.sourceType === 'affiliate' && merchant.affiliateNetwork
-          ? `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number.`
-          : `Feed-driven ${merchant.name} import. Exact matched by LEGO set number.`,
+          ? `Feed-driven ${merchant.name} import via ${merchant.affiliateNetwork}. Exact matched by LEGO set number. Product title: ${row.productTitle ?? 'unknown'}.`
+          : `Feed-driven ${merchant.name} import. Exact matched by LEGO set number. Product title: ${row.productTitle ?? 'unknown'}.`,
     };
     const seedContentChanged = hasOfferSeedContentChanged({
       existingOfferSeed,

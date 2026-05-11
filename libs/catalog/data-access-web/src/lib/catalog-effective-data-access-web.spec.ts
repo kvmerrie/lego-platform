@@ -3146,11 +3146,11 @@ describe('catalog effective data access web', () => {
       'Marvel',
       'Harry Potter™',
       'LEGO® Icons',
+      'Technic',
       'Botanicals',
-      'Ideas',
     ]);
     expect(spotlightItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Technic',
+      'Ideas',
     ]);
   });
 
@@ -6246,6 +6246,144 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('prefers trusted production-feed offers when strategic manual prices are near-equal', () => {
+    const liveOffers = [
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-11T10:00:00.000Z',
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'bol' as const,
+        merchantName: 'bol',
+        merchantSlug: 'bol',
+        priceCents: 19999,
+        setId: '42177',
+        url: 'https://bol.example/42177',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-11T10:00:00.000Z',
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+        priceCents: 20999,
+        setId: '42177',
+        url: 'https://goodbricks.example/42177',
+      },
+    ];
+
+    const summary = summarizeCatalogCurrentOffers({
+      generatedOffers: [],
+      liveOffers,
+      setId: '42177',
+    });
+
+    expect(summary.bestOffer).toMatchObject({
+      merchantSlug: 'goodbricks',
+      priceCents: 20999,
+    });
+    expect(summary.offers.map((offer) => offer.merchantSlug)).toEqual([
+      'goodbricks',
+      'bol',
+    ]);
+  });
+
+  test('lets strategic manual offers surface when the price advantage is large', () => {
+    const liveOffers = [
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-11T10:00:00.000Z',
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'bol' as const,
+        merchantName: 'bol',
+        merchantSlug: 'bol',
+        priceCents: 14999,
+        setId: '42177',
+        url: 'https://bol.example/42177',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-11T10:00:00.000Z',
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+        priceCents: 19999,
+        setId: '42177',
+        url: 'https://goodbricks.example/42177',
+      },
+    ];
+
+    const summary = summarizeCatalogCurrentOffers({
+      generatedOffers: [],
+      liveOffers,
+      setId: '42177',
+    });
+
+    expect(summary.bestOffer).toMatchObject({
+      merchantSlug: 'bol',
+      priceCents: 14999,
+    });
+    expect(summary.offers).toHaveLength(2);
+  });
+
+  test('keeps blind-bag offers visible but away from display-box best deal comparison', () => {
+    const liveOffers = [
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-11T10:00:00.000Z',
+        commercialUnitType: 'blind_bag' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Coppenswarenhuis',
+        merchantSlug: 'coppenswarenhuis',
+        priceCents: 359,
+        setId: '71050',
+        url: 'https://coppens.example/71050-blind-bag',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-11T10:00:00.000Z',
+        commercialUnitType: 'display_box' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+        priceCents: 5995,
+        setId: '71050',
+        url: 'https://goodbricks.example/71050-random-box',
+      },
+    ];
+
+    const summary = summarizeCatalogCurrentOffers({
+      generatedOffers: [],
+      liveOffers,
+      setId: '71050',
+    });
+
+    expect(summary.bestOffer).toMatchObject({
+      commercialUnitType: 'display_box',
+      merchantSlug: 'goodbricks',
+      priceCents: 5995,
+    });
+    expect(summary.offers.map((offer) => offer.merchantSlug)).toEqual([
+      'goodbricks',
+      'coppenswarenhuis',
+    ]);
+  });
+
   test('does not produce a current live offer summary when no live offers exist', async () => {
     const summary = await getCatalogCurrentOfferSummaryBySetId({
       fetchImpl: vi.fn<typeof fetch>().mockResolvedValue(
@@ -7026,7 +7164,7 @@ describe('catalog effective data access web', () => {
           fetched_at: '2026-04-18T12:05:00.000Z',
           fetch_status: 'success',
           observed_at: '2026-04-18T11:40:00.000Z',
-          offer_seed_id: 'seed-lego',
+          offer_seed_id: 'seed-goodbricks',
           price_minor: 4999,
           updated_at: '2026-04-18T11:40:05.000Z',
         },
@@ -7035,23 +7173,23 @@ describe('catalog effective data access web', () => {
           currency_code: 'EUR',
           fetch_status: 'unavailable',
           observed_at: '2026-04-18T11:42:00.000Z',
-          offer_seed_id: 'seed-bol',
+          offer_seed_id: 'seed-alternate',
           price_minor: null,
           updated_at: '2026-04-18T11:42:05.000Z',
         },
       ],
       merchantRows: [
         {
-          id: 'merchant-lego',
+          id: 'merchant-goodbricks',
           is_active: true,
-          name: 'LEGO',
-          slug: 'lego-nl',
+          name: 'Goodbricks',
+          slug: 'goodbricks',
         },
         {
-          id: 'merchant-bol',
+          id: 'merchant-alternate',
           is_active: true,
-          name: 'bol',
-          slug: 'bol',
+          name: 'Alternate',
+          slug: 'alternate',
         },
         {
           id: 'merchant-top1toys',
@@ -7062,18 +7200,18 @@ describe('catalog effective data access web', () => {
       ],
       offerSeedRows: [
         {
-          id: 'seed-lego',
+          id: 'seed-goodbricks',
           is_active: true,
-          merchant_id: 'merchant-lego',
-          product_url: 'https://www.lego.com/nl-nl/product/21340',
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://goodbricks.example/21340',
           set_id: '21340',
           validation_status: 'valid',
         },
         {
-          id: 'seed-bol',
+          id: 'seed-alternate',
           is_active: true,
-          merchant_id: 'merchant-bol',
-          product_url: 'https://www.bol.com/nl/nl/p/21340',
+          merchant_id: 'merchant-alternate',
+          product_url: 'https://alternate.example/21340',
           set_id: '21340',
           validation_status: 'valid',
         },
@@ -7109,25 +7247,25 @@ describe('catalog effective data access web', () => {
           currency_code: 'EUR',
           fetch_status: 'success',
           observed_at: '2026-04-18T11:44:00.000Z',
-          offer_seed_id: 'seed-lego',
+          offer_seed_id: 'seed-goodbricks',
           price_minor: 16999,
           updated_at: '2026-04-18T11:44:05.000Z',
         },
       ],
       merchantRows: [
         {
-          id: 'merchant-lego',
+          id: 'merchant-goodbricks',
           is_active: true,
-          name: 'LEGO',
-          slug: 'lego-nl',
+          name: 'Goodbricks',
+          slug: 'goodbricks',
         },
       ],
       offerSeedRows: [
         {
-          id: 'seed-lego',
+          id: 'seed-goodbricks',
           is_active: true,
-          merchant_id: 'merchant-lego',
-          product_url: 'https://www.lego.com/nl-nl/product/72037',
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://goodbricks.example/72037',
           set_id: '72037',
           validation_status: 'valid',
         },

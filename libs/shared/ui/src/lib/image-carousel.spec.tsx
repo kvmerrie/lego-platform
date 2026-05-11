@@ -73,6 +73,60 @@ describe('ImageGallery', () => {
     expect(container.textContent).not.toContain('1 / 1');
   });
 
+  it('can make only the detail hero media full-bleed on mobile', () => {
+    act(() => {
+      root.render(
+        <ImageGallery
+          detailMobileFullBleed
+          images={[
+            {
+              alt: 'LEGO Harry Potter Hogwarts Castle The Main Tower',
+              src: '/sets/hogwarts-main-tower.jpg',
+            },
+          ]}
+          variant="detail"
+        />,
+      );
+    });
+
+    const gallery = container.querySelector(
+      '[data-detail-mobile-full-bleed="true"]',
+    );
+
+    expect(gallery).not.toBeNull();
+    expect(gallery?.querySelector('[class*="detailThumbRow"]')).toBeNull();
+
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        'libs/shared/ui/src/lib/image-carousel.module.css',
+      ),
+      'utf-8',
+    );
+    const mobileBleedRule =
+      css.match(
+        /\.root\[data-detail-mobile-full-bleed='true'\] \.detailMainButton \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const mobileFrameRule =
+      css.match(
+        /\.root\[data-detail-mobile-full-bleed='true'\] \.detailMainFrame \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const mobileFocusRule =
+      css.match(
+        /\.root\[data-detail-mobile-full-bleed='true'\]\s+\.detailMainButton:focus-visible \{[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(css).toContain('@media (max-width: 47.999rem)');
+    expect(mobileBleedRule).toContain('margin-inline: calc(50% - 50vw);');
+    expect(mobileBleedRule).toContain('width: 100vw;');
+    expect(mobileBleedRule).toContain('max-width: none;');
+    expect(mobileFrameRule).toContain('border: 0;');
+    expect(mobileFrameRule).toContain('border-radius: 0;');
+    expect(mobileFocusRule).toContain(
+      'box-shadow: inset 0 0 0 4px var(--lego-focus-ring);',
+    );
+  });
+
   it('renders an article grid and opens a fullscreen viewer with controls for multiple images', () => {
     act(() => {
       root.render(

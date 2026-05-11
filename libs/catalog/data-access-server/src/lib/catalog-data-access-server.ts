@@ -18,6 +18,12 @@ import {
   sortCatalogSetSummaries,
 } from '@lego-platform/catalog/util';
 import {
+  classifyCommerceCommercialUnitType,
+  canStrategicManualOfferBeatProductionFeed,
+  compareCommerceCommercialUnitPreference,
+  type CommerceCommercialUnitType,
+  getCommerceCommercialUnitComparisonGroup,
+  getCommerceMerchantReliabilityTier,
   getRebrickableApiConfig,
   hasServerSupabaseConfig,
 } from '@lego-platform/shared/config';
@@ -119,6 +125,7 @@ interface CatalogCommerceOfferSeedRow {
   id: string;
   is_active: boolean;
   merchant_id: string;
+  notes?: string | null;
   product_url: string;
   set_id: string;
   validation_status: string;
@@ -134,6 +141,7 @@ export interface CatalogLiveOffer {
   availability: 'in_stock' | 'out_of_stock' | 'unknown';
   checkedAt: string;
   condition: 'new';
+  commercialUnitType?: CommerceCommercialUnitType;
   currency: 'EUR';
   market: 'NL';
   merchant: 'amazon' | 'bol' | 'lego' | 'other';
@@ -157,6 +165,13 @@ export interface CatalogDiscoverySignalRecord extends CatalogDiscoverySignal {
 interface CatalogReferencePriceSnapshot {
   recordedOn: string;
   referencePriceMinor: number;
+}
+
+interface CatalogDiscoveryCurrentOffer {
+  commercialUnitType?: CommerceCommercialUnitType;
+  merchantSlug: string;
+  observedAt: string;
+  priceMinor: number;
 }
 
 interface ValidatedRebrickableSearchSet {
@@ -353,6 +368,38 @@ function isEligibleCatalogDiscoveryOfferAvailability(
   );
 }
 
+function selectComparableCatalogDiscoveryOffers(
+  currentOffers: readonly CatalogDiscoveryCurrentOffer[],
+): CatalogDiscoveryCurrentOffer[] {
+  if (currentOffers.length <= 1) {
+    return [...currentOffers];
+  }
+
+  const priorities = {
+    set_package: 0,
+    single_item: 1,
+    accessory: 2,
+    magazine_bonus: 3,
+  } as const;
+  const preferredGroup = currentOffers
+    .map((currentOffer) =>
+      getCommerceCommercialUnitComparisonGroup(currentOffer.commercialUnitType),
+    )
+    .filter((group): group is keyof typeof priorities => group in priorities)
+    .sort((left, right) => priorities[left] - priorities[right])[0];
+
+  if (!preferredGroup) {
+    return [...currentOffers];
+  }
+
+  return currentOffers.filter(
+    (currentOffer) =>
+      getCommerceCommercialUnitComparisonGroup(
+        currentOffer.commercialUnitType,
+      ) === preferredGroup,
+  );
+}
+
 function getCatalogOfferMerchantFromMerchantSlug(
   merchantSlug: string,
 ): CatalogLiveOffer['merchant'] {
@@ -385,6 +432,33 @@ function getOfferSortAvailabilityPriority(
   return 2;
 }
 
+function compareLiveCatalogOfferReliability<Offer extends CatalogLiveOffer>(
+  left: Offer,
+  right: Offer,
+): number {
+  const leftTier = getCommerceMerchantReliabilityTier(left.merchantSlug);
+  const rightTier = getCommerceMerchantReliabilityTier(right.merchantSlug);
+
+  if (leftTier === rightTier) {
+    return 0;
+  }
+
+  const leftIsProductionFeed = leftTier === 'production_feed';
+  const productionFeedOffer = leftIsProductionFeed ? left : right;
+  const strategicManualOffer = leftIsProductionFeed ? right : left;
+
+  if (
+    canStrategicManualOfferBeatProductionFeed({
+      productionFeedPriceMinor: productionFeedOffer.priceCents,
+      strategicManualPriceMinor: strategicManualOffer.priceCents,
+    })
+  ) {
+    return 0;
+  }
+
+  return leftIsProductionFeed ? -1 : 1;
+}
+
 function sortLiveCatalogOffers<Offer extends CatalogLiveOffer>(
   offers: readonly Offer[],
 ): Offer[] {
@@ -395,6 +469,24 @@ function sortLiveCatalogOffers<Offer extends CatalogLiveOffer>(
 
     if (availabilityPriorityDelta !== 0) {
       return availabilityPriorityDelta;
+    }
+
+    const commercialUnitPriorityDelta = compareCommerceCommercialUnitPreference(
+      left.commercialUnitType,
+      right.commercialUnitType,
+    );
+
+    if (commercialUnitPriorityDelta !== 0) {
+      return commercialUnitPriorityDelta;
+    }
+
+    const reliabilityPriorityDelta = compareLiveCatalogOfferReliability(
+      left,
+      right,
+    );
+
+    if (reliabilityPriorityDelta !== 0) {
+      return reliabilityPriorityDelta;
     }
 
     if (left.priceCents !== right.priceCents) {
@@ -429,10 +521,16 @@ function toCatalogLiveOffer({
     return undefined;
   }
 
+  const commercialUnitType = classifyCommerceCommercialUnitType({
+    notes: offerSeed.notes,
+    productUrl: offerSeed.product_url,
+  });
+
   return {
     availability: normalizeRuntimeOfferAvailability(latestOffer.availability),
     checkedAt,
     condition: 'new',
+    ...(commercialUnitType !== 'unknown' ? { commercialUnitType } : {}),
     currency: 'EUR',
     market: 'NL',
     merchant: getCatalogOfferMerchantFromMerchantSlug(merchant.slug),
@@ -471,7 +569,7 @@ async function listCatalogLiveOffersBySetIdsInternal({
   const { data: seedData, error: seedError } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .select(
-      'id, set_id, merchant_id, product_url, is_active, validation_status',
+      'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
     )
     .in('set_id', setIdLookupVariants)
     .eq('is_active', true)
@@ -2148,7 +2246,7 @@ export async function listCatalogDiscoverySignals({
     let seedQuery = activeSupabaseClient
       .from(COMMERCE_OFFER_SEEDS_TABLE)
       .select(
-        'id, set_id, merchant_id, product_url, is_active, validation_status',
+        'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
       )
       .eq('is_active', true)
       .eq('validation_status', 'valid');
@@ -2218,6 +2316,7 @@ export async function listCatalogDiscoverySignals({
     const currentOfferBySetAndMerchantSlug = new Map<
       string,
       {
+        commercialUnitType?: CommerceCommercialUnitType;
         merchantSlug: string;
         observedAt: string;
         priceMinor: number;
@@ -2251,6 +2350,10 @@ export async function listCatalogDiscoverySignals({
         latestOffer.observed_at > existingObservation.observedAt
       ) {
         currentOfferBySetAndMerchantSlug.set(observationKey, {
+          commercialUnitType: classifyCommerceCommercialUnitType({
+            notes: offerSeed.notes,
+            productUrl: offerSeed.product_url,
+          }),
           merchantSlug: merchant.slug,
           observedAt: latestOffer.observed_at,
           priceMinor: latestOffer.price_minor,
@@ -2261,11 +2364,7 @@ export async function listCatalogDiscoverySignals({
 
     const currentOfferGroupsBySetId = new Map<
       string,
-      Array<{
-        merchantSlug: string;
-        observedAt: string;
-        priceMinor: number;
-      }>
+      CatalogDiscoveryCurrentOffer[]
     >();
 
     for (const currentOffer of currentOfferBySetAndMerchantSlug.values()) {
@@ -2273,6 +2372,7 @@ export async function listCatalogDiscoverySignals({
         currentOfferGroupsBySetId.get(currentOffer.setId) ?? [];
 
       currentOfferGroup.push({
+        commercialUnitType: currentOffer.commercialUnitType,
         merchantSlug: currentOffer.merchantSlug,
         observedAt: currentOffer.observedAt,
         priceMinor: currentOffer.priceMinor,
@@ -2344,7 +2444,9 @@ export async function listCatalogDiscoverySignals({
     const catalogDiscoverySignalRecords: CatalogDiscoverySignalRecord[] = [];
 
     for (const [setId, currentOffers] of currentOfferGroupsBySetId.entries()) {
-      const sortedPriceMinorValues = currentOffers
+      const comparableCurrentOffers =
+        selectComparableCatalogDiscoveryOffers(currentOffers);
+      const sortedPriceMinorValues = comparableCurrentOffers
         .map((currentOffer) => currentOffer.priceMinor)
         .sort((left, right) => left - right);
       const bestPriceMinor = sortedPriceMinorValues[0];
@@ -2369,14 +2471,14 @@ export async function listCatalogDiscoverySignals({
 
       catalogDiscoverySignalRecords.push({
         bestPriceMinor,
-        merchantCount: currentOffers.length,
+        merchantCount: comparableCurrentOffers.length,
         nextBestPriceMinor: sortedPriceMinorValues[1],
-        observedAt: currentOffers.reduce(
+        observedAt: comparableCurrentOffers.reduce(
           (latestObservedAt, currentOffer) =>
             currentOffer.observedAt > latestObservedAt
               ? currentOffer.observedAt
               : latestObservedAt,
-          currentOffers[0]?.observedAt ?? '',
+          comparableCurrentOffers[0]?.observedAt ?? '',
         ),
         priceSpreadMinor: Math.max(0, highestPriceMinor - bestPriceMinor),
         recentReferencePriceChangeMinor:

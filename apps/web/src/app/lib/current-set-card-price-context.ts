@@ -9,7 +9,10 @@ import {
   formatPriceMinor,
   type FeaturedSetPriceContext,
 } from '@lego-platform/pricing/util';
-import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
+import {
+  getDefaultFormattingLocale,
+  isCommerceCommercialUnitComparableForDeals,
+} from '@lego-platform/shared/config';
 
 const DEAL_REASON_MIN_MERCHANT_COUNT = 2;
 const DEAL_REASON_MIN_PRICE_SPREAD_MINOR = 100;
@@ -51,6 +54,14 @@ function formatDiscountPercentage(percentage: number): string {
   return `${Math.round(percentage)}% lager`;
 }
 
+function canBestOfferDriveDealClaims(
+  bestOffer?: CatalogCurrentOfferSummary['bestOffer'],
+): boolean {
+  return isCommerceCommercialUnitComparableForDeals(
+    bestOffer?.commercialUnitType,
+  );
+}
+
 export function buildReliableDealDiscount({
   currentOfferSummary,
   pricePanelSnapshot,
@@ -63,6 +74,7 @@ export function buildReliableDealDiscount({
 
   if (
     !bestOffer ||
+    !canBestOfferDriveDealClaims(bestOffer) ||
     !currentOfferSummary ||
     typeof referencePriceMinor !== 'number' ||
     referencePriceMinor <= 0 ||
@@ -158,6 +170,10 @@ function buildDealReason({
   const bestOffer = currentOfferSummary.bestOffer;
 
   if (!bestOffer) {
+    return undefined;
+  }
+
+  if (!canBestOfferDriveDealClaims(bestOffer)) {
     return undefined;
   }
 

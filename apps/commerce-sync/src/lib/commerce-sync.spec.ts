@@ -80,6 +80,8 @@ function createDailyHistoryUpsertResult(points: readonly PriceHistoryPoint[]) {
         missingOrInvalidPrice: 0,
         nonEur: 0,
         staleOrError: 0,
+        unitMismatch: 0,
+        untrustedMerchant: 0,
         unavailableForHeadline: 0,
       },
     },

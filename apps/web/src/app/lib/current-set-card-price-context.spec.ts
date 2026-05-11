@@ -17,6 +17,7 @@ function createOffer(
     availability: 'in_stock',
     checkedAt: '2026-05-11T07:01:00.000Z',
     condition: 'new',
+    commercialUnitType: 'full_set',
     currency: 'EUR',
     market: 'NL',
     merchant: 'bol',
@@ -130,6 +131,38 @@ describe('buildCurrentSetCardPriceContext', () => {
     expect(result?.discountMetric).toContain('€ 15,00 goedkoper');
     expect(result?.discountMetric).toContain('3% lager');
     expect(result?.dealReason).toBeUndefined();
+  });
+
+  it('does not render aggressive deal claims for unknown commercial units', () => {
+    const result = buildCurrentSetCardPriceContext({
+      catalogDiscoverySignal: {
+        bestPriceMinor: 359,
+        merchantCount: 2,
+        observedAt: '2026-05-11T07:01:00.000Z',
+        priceSpreadMinor: 5636,
+      },
+      currentOfferSummary: createCurrentOfferSummary({
+        offers: [
+          createOffer({
+            commercialUnitType: 'unknown',
+            priceCents: 359,
+          }),
+          createOffer({
+            commercialUnitType: 'display_box',
+            merchantName: 'Goodbricks',
+            priceCents: 5995,
+          }),
+        ],
+      }),
+      pricePanelSnapshot: createPricePanelSnapshot({
+        referencePriceMinor: 5995,
+      }),
+      theme: 'Minifigures',
+    });
+
+    expect(result?.discountMetric).toBeUndefined();
+    expect(result?.dealReason).toBeUndefined();
+    expect(result?.decisionLabel).toBe('Actuele prijs binnen');
   });
 
   it('uses a market spread reason only with multiple reviewed merchants', () => {

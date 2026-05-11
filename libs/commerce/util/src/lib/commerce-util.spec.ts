@@ -6,10 +6,12 @@ import {
   buildCommerceMerchantSearchQuery,
   buildCommerceMerchantSearchUrl,
   buildCommercePrimaryCoverageSummary,
+  canCommerceMerchantDriveDealConfidence,
   compareCommerceMerchantsByOperationalPriority,
   filterCommerceCoverageQueueRows,
   getCommerceCoverageEligibilityStatus,
   getCommerceGapRecoveryProfile,
+  getCommerceMerchantReliabilityTier,
   getCommerceMerchantSupportTier,
   includeCatalogSetInDefaultCommerceCoverage,
   normalizeCommerceSlug,
@@ -167,6 +169,23 @@ describe('commerce util', () => {
     expect(includeCommerceMerchantInDefaultRefresh('wehkamp')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('alternate')).toBe(false);
     expect(includeCommerceMerchantInDefaultRefresh('amazon-nl')).toBe(false);
+  });
+
+  test('separates production feed merchants from strategic manual coverage', () => {
+    expect(getCommerceMerchantReliabilityTier('goodbricks')).toBe(
+      'production_feed',
+    );
+    expect(getCommerceMerchantReliabilityTier('misterbricks')).toBe(
+      'production_feed',
+    );
+    expect(getCommerceMerchantReliabilityTier('coppenswarenhuis')).toBe(
+      'strategic_manual',
+    );
+    expect(getCommerceMerchantReliabilityTier('lego-nl')).toBe(
+      'strategic_manual',
+    );
+    expect(canCommerceMerchantDriveDealConfidence('alternate')).toBe(true);
+    expect(canCommerceMerchantDriveDealConfidence('bol')).toBe(false);
   });
 
   test('marks retired catalog sets as non-actionable in the default coverage queue', () => {

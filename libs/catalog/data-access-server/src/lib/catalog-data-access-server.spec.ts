@@ -535,6 +535,89 @@ describe('catalog data access server', () => {
     ]);
   });
 
+  test('builds discovery signals from comparable commercial units only', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          offer_seed_id: 'seed-display',
+          price_minor: 5995,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T09:30:00.000Z',
+          updated_at: '2026-05-11T09:35:00.000Z',
+        },
+        {
+          offer_seed_id: 'seed-blind-bag',
+          price_minor: 359,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T09:31:00.000Z',
+          updated_at: '2026-05-11T09:36:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+        {
+          id: 'merchant-coppens',
+          is_active: true,
+          name: 'Coppenswarenhuis',
+          slug: 'coppenswarenhuis',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-display',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          notes: 'Product title: LEGO 71050 random box complete serie.',
+          product_url: 'https://goodbricks.example/71050-random-box',
+          set_id: '71050',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-blind-bag',
+          is_active: true,
+          merchant_id: 'merchant-coppens',
+          notes: 'Product title: LEGO 71050 blind bag single pack.',
+          product_url: 'https://coppens.example/71050-blind-bag',
+          set_id: '71050',
+          validation_status: 'valid',
+        },
+      ],
+      priceHistoryRows: [
+        {
+          condition: 'new',
+          currency_code: 'EUR',
+          recorded_on: '2026-05-11',
+          reference_price_minor: 5995,
+          region_code: 'NL',
+          set_id: '71050',
+        },
+      ],
+    });
+
+    const result = await listCatalogDiscoverySignals({
+      supabaseClient,
+    });
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        setId: '71050',
+        bestPriceMinor: 5995,
+        merchantCount: 1,
+        priceSpreadMinor: 0,
+        referenceDeltaMinor: 0,
+      }),
+    ]);
+  });
+
   test('builds current offer summaries for many set ids in one batch selector', async () => {
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
       latestOfferRows: [
@@ -746,6 +829,152 @@ describe('catalog data access server', () => {
         setId: '75459',
       },
     ]);
+  });
+
+  test('prefers trusted production-feed current offers over near-equal strategic manual offers', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T10:00:00.000Z',
+          offer_seed_id: 'seed-bol',
+          price_minor: 19999,
+          updated_at: '2026-05-11T10:00:00.000Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T10:00:00.000Z',
+          offer_seed_id: 'seed-goodbricks',
+          price_minor: 20999,
+          updated_at: '2026-05-11T10:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-bol',
+          is_active: true,
+          name: 'bol',
+          slug: 'bol',
+        },
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-bol',
+          is_active: true,
+          merchant_id: 'merchant-bol',
+          product_url: 'https://bol.example/42177',
+          set_id: '42177',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-goodbricks',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://goodbricks.example/42177',
+          set_id: '42177',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['42177'],
+      supabaseClient,
+    });
+
+    expect(result[0]).toMatchObject({
+      bestOffer: {
+        merchantSlug: 'goodbricks',
+        priceCents: 20999,
+      },
+      offers: [
+        {
+          merchantSlug: 'goodbricks',
+          priceCents: 20999,
+        },
+        {
+          merchantSlug: 'bol',
+          priceCents: 19999,
+        },
+      ],
+    });
+  });
+
+  test('lets strategic manual current offers win on a large price advantage', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T10:00:00.000Z',
+          offer_seed_id: 'seed-bol',
+          price_minor: 14999,
+          updated_at: '2026-05-11T10:00:00.000Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T10:00:00.000Z',
+          offer_seed_id: 'seed-goodbricks',
+          price_minor: 19999,
+          updated_at: '2026-05-11T10:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-bol',
+          is_active: true,
+          name: 'bol',
+          slug: 'bol',
+        },
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-bol',
+          is_active: true,
+          merchant_id: 'merchant-bol',
+          product_url: 'https://bol.example/42177',
+          set_id: '42177',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-goodbricks',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://goodbricks.example/42177',
+          set_id: '42177',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['42177'],
+      supabaseClient,
+    });
+
+    expect(result[0]?.bestOffer).toMatchObject({
+      merchantSlug: 'bol',
+      priceCents: 14999,
+    });
   });
 
   test('reads canonical catalog sets from the clean catalog_sets table when available', async () => {

@@ -7,10 +7,12 @@ import {
   type PricingCurrencyCode,
   type PricingRegionCode,
 } from '@lego-platform/pricing/util';
+import type { CommerceCommercialUnitType } from '@lego-platform/shared/config';
 
 export interface PricingObservationSeed {
   availability: PricingAvailability;
   condition: PricingCondition;
+  commercialUnitType?: CommerceCommercialUnitType;
   currencyCode: PricingCurrencyCode;
   merchantId: string;
   merchantProductUrl: string;

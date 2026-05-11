@@ -30,6 +30,11 @@
   scroll-snap-type: x proximity;
 }
 
+.railTrack::after {
+  content: '';
+  flex: 0 0 var(--catalog-section-inline-padding, var(--lego-space-4));
+}
+
 .railTrack > * {
   flex: 0 0 min(13rem, calc(100% - var(--lego-space-6)));
   min-width: 0;
@@ -38,8 +43,8 @@
 
 .allThemesTile {
   aspect-ratio: 3 / 4;
-  background: var(--lego-surface-default);
-  border: var(--lego-border-width-1) solid var(--lego-border-subtle);
+  background: #6f8594;
+  border: 0;
   border-radius: var(--lego-radius-sm);
   box-shadow: none;
   min-width: 0;
@@ -62,34 +67,65 @@
 }
 
 .allThemesLink {
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  color: inherit;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: 100%;
+  padding: 0;
+  text-align: left;
+}
+
+.allThemesVisual {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 11.25rem;
+  overflow: hidden;
+  padding: var(--lego-space-4) var(--lego-space-3) 0;
+}
+
+.allThemesIcon {
+  color: #ffffff;
+  height: clamp(4.25rem, 2.5rem + 5vw, 5.25rem);
+  width: clamp(4.25rem, 2.5rem + 5vw, 5.25rem);
+}
+
+.allThemesBody {
   align-content: end;
   display: grid;
-  gap: var(--lego-space-2);
-  min-height: 100%;
-  padding: var(--lego-space-4) var(--lego-space-3);
-}
-
-.allThemesEyebrow,
-.allThemesCopy {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-meta-size);
-  line-height: var(--lego-text-role-meta-line-height);
-  margin: 0;
-}
-
-.allThemesEyebrow {
-  font-weight: var(--lego-font-weight-bold);
-  letter-spacing: var(--lego-text-role-label-tracking);
-  text-transform: uppercase;
+  gap: var(--lego-space-1);
+  min-width: 0;
+  padding: var(--lego-space-3) var(--lego-space-3) var(--lego-space-4);
 }
 
 .allThemesTitle {
-  color: var(--lego-text);
+  color: #ffffff;
+  display: -webkit-box;
   font-size: clamp(1.18rem, 1rem + 0.7vw, 1.5rem);
   font-weight: var(--lego-font-weight-bold);
   letter-spacing: -0.03em;
   line-height: 1.02;
   margin: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.allThemesMeta {
+  color: #f4f7fb;
+  font-size: var(--lego-text-role-meta-size);
+  line-height: var(--lego-text-role-meta-line-height);
+  margin: 0;
+}
+
+.allThemesLink:focus-visible {
+  outline: 3px solid var(--lego-focus-ring);
+  outline-offset: -3px;
 }
 
 @media (min-width: 75rem) {
@@ -102,5 +138,9 @@
 
   .railTrack > * {
     flex: 1 1 0;
+  }
+
+  .railTrack::after {
+    content: none;
   }
 }

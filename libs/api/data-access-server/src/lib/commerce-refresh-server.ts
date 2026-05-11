@@ -8,6 +8,7 @@ import {
   type CommerceOfferLatestRecordInput,
   type CommerceOfferSeedValidationStatus,
 } from '@lego-platform/commerce/util';
+import { classifyCommerceCommercialUnitType } from '@lego-platform/shared/config';
 import {
   dutchPricingReferenceValues,
   type PricingMerchantSummary,
@@ -2088,6 +2089,10 @@ export function buildCommerceSyncInputs({
       merchantProductUrl: refreshSeed.offerSeed.productUrl,
       totalPriceMinor: latestOffer.priceMinor,
       availability: normalizeAvailability(latestOffer.availability),
+      commercialUnitType: classifyCommerceCommercialUnitType({
+        notes: refreshSeed.offerSeed.notes,
+        productUrl: refreshSeed.offerSeed.productUrl,
+      }),
       observedAt: latestOffer.observedAt,
       regionCode: DUTCH_REGION_CODE,
       currencyCode: EURO_CURRENCY_CODE,

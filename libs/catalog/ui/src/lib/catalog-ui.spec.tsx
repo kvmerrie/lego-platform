@@ -297,9 +297,13 @@ describe('CatalogSetCard', () => {
     const offerCardRule = css.match(/\.offerRailCard \{[^}]+\}/u)?.[0] ?? '';
     const bestDealRule =
       css.match(/\.offerRailCard\[data-best='true'\] \{[^}]+\}/u)?.[0] ?? '';
-    const bestDealHoverRule =
+    const unknownStockRule =
       css.match(
-        /\.offerRailCardLink:hover \.offerRailCard\[data-best='true'\] \{[^}]+\}/u,
+        /\.offerRailCard\[data-stock-state='unknown'\] \{[^}]+\}/u,
+      )?.[0] ?? '';
+    const unknownLowerPriceRule =
+      css.match(
+        /\.offerRailCard\[data-stock-state='unknown'\]\[data-price-comparison='lower-unavailable'\]\s+\.offerRailPrice \{[^}]+\}/u,
       )?.[0] ?? '';
     const secondaryActionRule =
       css.match(/\.offerRailAction\[data-tone='secondary'\] \{[^}]+\}/u)?.[0] ??
@@ -313,20 +317,38 @@ describe('CatalogSetCard', () => {
     expect(bestDealRule).not.toContain('translateY');
     expect(offerHoverRule).not.toContain('translateY');
     expect(offerHoverRule).not.toContain('0 0.55rem');
-    expect(offerCardRule).not.toContain('border:');
-    expect(offerHoverRule).not.toContain('border-color');
-    expect(offerHoverRule).not.toContain('box-shadow');
-    expect(offerHoverRule).not.toContain('linear-gradient');
-    expect(offerHoverRule).not.toContain('color-mix');
+    expect(offerCardRule).toContain('border: var(--lego-border-width-1) solid');
     expect(offerHoverRule).toContain(
-      'background: var(--lego-surface-default);',
+      'border-color: var(--catalog-offer-card-interaction-border-color);',
     );
+    expect(offerHoverRule).toContain('box-shadow: inset 0 0 0 1px');
+    expect(offerHoverRule).not.toContain('linear-gradient');
+    expect(offerHoverRule).not.toContain('background');
+    expect(offerCardRule).toContain('background: var(--lego-surface-default);');
     expect(bestDealRule).toContain('background: var(--lego-positive-subtle);');
-    expect(bestDealHoverRule).toContain(
-      'background: var(--lego-positive-subtle);',
+    expect(bestDealRule).toContain('--catalog-offer-card-border-color:');
+    expect(bestDealRule).toContain(
+      '--catalog-offer-card-interaction-border-color:',
+    );
+    expect(bestDealRule).toContain(
+      '--catalog-offer-card-interaction-outline-color:',
+    );
+    expect(bestDealRule).toContain('var(--lego-positive) 36%');
+    expect(bestDealRule).toContain('var(--lego-positive) 24%');
+    expect(unknownStockRule).toContain(
+      'background: var(--lego-surface-subtle);',
+    );
+    expect(unknownStockRule).not.toContain('color:');
+    expect(unknownLowerPriceRule).toContain('color: var(--lego-text-muted);');
+    expect(css).not.toContain(
+      ".offerRailCardLink:hover .offerRailCard[data-best='true']",
+    );
+    expect(css).not.toContain(
+      ".offerRailCardLink:hover .offerRailCard[data-price-comparison='lower-unavailable']",
     );
     expect(secondaryActionRule).toContain('background: transparent;');
     expect(secondaryActionRule).toContain('border-color: var(--lego-text);');
+    expect(secondaryActionRule).toContain('color: var(--lego-text);');
     expect(css).not.toContain(
       ".offerRailCardLink:hover .offerRailAction[data-tone='secondary']",
     );
@@ -337,6 +359,38 @@ describe('CatalogSetCard', () => {
       'background: var(--lego-accent);',
     );
     expect(css).toContain('white-space: nowrap;');
+  });
+
+  it('lets offer comparison cards scroll full-bleed on mobile only', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const viewportRule = css.match(/\.offerRailViewport \{[^}]+\}/u)?.[0] ?? '';
+    const desktopViewportRule =
+      css.match(
+        /\.offerRailViewport \{\n {4}margin-inline: calc\(var\(--lego-space-1\) \* -1\);[^}]+\}/u,
+      )?.[0] ?? '';
+
+    expect(viewportRule).toContain('margin-inline: calc(50% - 50vw);');
+    expect(viewportRule).toContain('--catalog-offer-rail-inline-padding: var(');
+    expect(viewportRule).toContain(
+      'padding: 0.25rem var(--catalog-offer-rail-inline-padding) 0.35rem;',
+    );
+    expect(viewportRule).toContain(
+      'scroll-padding-inline: var(--catalog-offer-rail-inline-padding);',
+    );
+    expect(viewportRule).toContain('overflow-x: auto;');
+    expect(viewportRule).toContain('overflow-y: hidden;');
+    expect(desktopViewportRule).toContain(
+      'margin-inline: calc(var(--lego-space-1) * -1);',
+    );
+    expect(desktopViewportRule).toContain(
+      'padding: 0 var(--lego-space-1) 0.05rem;',
+    );
+    expect(desktopViewportRule).toContain(
+      'scroll-padding-inline: var(--lego-space-1);',
+    );
   });
 
   it('keeps offer availability status compact with text and a status dot', () => {
@@ -1481,6 +1535,68 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('--theme-surface:#cf554c');
     expect(markup).toContain('--theme-text:#ffffff');
     expect(markup).toContain('Bekijk sets');
+  });
+
+  it('can render feature theme tiles with only one helper line below the title', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogThemeHighlight
+        href="/themes/botanicals"
+        showFeatureSignature={false}
+        themeSnapshot={{
+          name: 'Botanicals',
+          slug: 'botanicals',
+          setCount: 4,
+          momentum:
+            'Boeketten en planten die tafel, kast en cadeau meteen meer kleur geven.',
+          signatureSet: 'Flower Bouquet',
+        }}
+        variant="feature"
+      />,
+    );
+
+    expect(markup).toContain('Bekijk sets');
+    expect(markup).toContain('Botanicals');
+    expect(markup).toContain(
+      'Boeketten en planten die tafel, kast en cadeau meteen meer kleur geven.',
+    );
+    expect(markup).not.toContain('Pak eerst');
+    expect(markup).not.toContain('Flower Bouquet');
+  });
+
+  it('keeps feature theme tile copy inside a fixed bottom content zone', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const featureCardRule =
+      css.match(/\.themeFeatureCard \{[^}]+\}/u)?.[0] ?? '';
+    const featureLinkRule =
+      css.match(/\.themeFeatureLink \{[^}]+\}/u)?.[0] ?? '';
+    const featureBodyRule =
+      css.match(/\.themeFeatureBody \{[^}]+\}/u)?.[0] ?? '';
+    const featureTitleRule =
+      css.match(/\.themeFeatureTitle \{[^}]+\}/u)?.[0] ?? '';
+    const featureCopyRule =
+      css.match(/\.themeFeatureCopy \{[^}]+\}/u)?.[0] ?? '';
+    const featureHoverRule =
+      css.match(/\.themeFeatureLink:hover \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(featureCardRule).toContain('min-height: 22.5rem;');
+    expect(featureCardRule).toContain('overflow: hidden;');
+    expect(featureLinkRule).toContain('display: grid;');
+    expect(featureLinkRule).toContain(
+      'grid-template-rows: minmax(7.75rem, 1fr) auto;',
+    );
+    expect(featureBodyRule).toContain(
+      'grid-template-rows: auto auto minmax(3rem, auto);',
+    );
+    expect(featureBodyRule).toContain('min-height: 12.25rem;');
+    expect(featureBodyRule).toContain('overflow: hidden;');
+    expect(featureTitleRule).toContain('-webkit-line-clamp: 2;');
+    expect(featureTitleRule).toContain('line-clamp: 2;');
+    expect(featureCopyRule).toContain('-webkit-line-clamp: 2;');
+    expect(featureCopyRule).toContain('line-clamp: 2;');
+    expect(featureHoverRule).toContain('background: transparent;');
   });
 
   it('renders a leaner portrait theme tile variant for fast browsing', () => {

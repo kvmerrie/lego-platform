@@ -60,21 +60,27 @@ export interface TradeTrackerCoppenswarenhuisDebugSample {
 }
 
 export interface TradeTrackerCoppenswarenhuisDebugInfo {
+  availabilityRawCounts: Record<string, number>;
   fetchedProductCount: number;
   legoCandidateCount: number;
+  normalizedAvailabilityCounts: Record<string, number>;
   sampleCount: number;
   samples: readonly TradeTrackerCoppenswarenhuisDebugSample[];
+  unknownAfterMappingCount: number;
   uniquePropertyKeys: readonly string[];
 }
 
 export interface TradeTrackerCoppenswarenhuisFeedSyncResult
   extends AlternateAffiliateFeedImportResult {
+  availabilityRawCounts: Record<string, number>;
   debugInfo?: TradeTrackerCoppenswarenhuisDebugInfo;
   fetchedProductCount: number;
   legoCandidateCount: number;
   merchantName: string;
   merchantSlug: string;
+  normalizedAvailabilityCounts: Record<string, number>;
   normalizedRowCount: number;
+  unknownAfterMappingCount: number;
 }
 
 function ensureArray<T>(value: T | readonly T[] | undefined): readonly T[] {
@@ -179,8 +185,8 @@ function toProperties(value: unknown): Record<string, string> {
     const propertyName = readString(propertyRecord['name']);
     const propertyValueText = readString(propertyRecord['value']);
 
-    if (propertyName && propertyValueText) {
-      properties[normalizeLookupKey(propertyName)] = propertyValueText;
+    if (propertyName) {
+      properties[normalizeLookupKey(propertyName)] = propertyValueText ?? '';
     }
 
     return properties;
@@ -301,6 +307,21 @@ function pickAdditionalField(
   return undefined;
 }
 
+function readAdditionalField(
+  additional: Record<string, string>,
+  aliases: readonly string[],
+): string | undefined {
+  for (const alias of aliases) {
+    const key = normalizeLookupKey(alias);
+
+    if (Object.prototype.hasOwnProperty.call(additional, key)) {
+      return additional[key];
+    }
+  }
+
+  return undefined;
+}
+
 function isLegoContext(
   product: TradeTrackerCoppenswarenhuisXmlFeedProduct,
 ): boolean {
@@ -415,43 +436,145 @@ function resolveCurrency(
   );
 }
 
+const coppensAvailabilityFieldAliases = [
+  'availability',
+  'availabilitytext',
+  'beschikbaarheid',
+  'delivery',
+  'deliverytext',
+  'deliverytime',
+  'instock',
+  'levertijd',
+  'leverbaarheid',
+  'stock',
+  'stocklevel',
+  'stockstatus',
+  'voorraad',
+] as const;
+
+function normalizeCoppensAvailabilityText(
+  availabilityText?: string,
+): string | undefined {
+  const normalizedValue = normalizeSearchText(availabilityText);
+
+  if (!normalizedValue) {
+    return undefined;
+  }
+
+  if (
+    ['0', 'false', 'nee', 'no', 'n', 'niet', 'uitverkocht'].includes(
+      normalizedValue,
+    ) ||
+    /\b(geen voorraad|niet op voorraad|niet voorradig|out of stock|uitverkocht|tijdelijk niet leverbaar|niet leverbaar|niet beschikbaar)\b/iu.test(
+      normalizedValue,
+    )
+  ) {
+    return 'Out of stock';
+  }
+
+  if (
+    /\b(pre-?order|voorbestel|voorbestelling|reserveren|verwacht|binnenkort)\b/iu.test(
+      normalizedValue,
+    )
+  ) {
+    return 'Preorder';
+  }
+
+  if (
+    /\b(beperkte voorraad|limited stock|laatste stuks|laatste stuk|bijna uitverkocht|nog maar \d+)\b/iu.test(
+      normalizedValue,
+    )
+  ) {
+    return 'Limited stock';
+  }
+
+  const stockNumber = Number(availabilityText);
+
+  if (
+    ['1', 'true', 'yes', 'ja', 'y'].includes(normalizedValue) ||
+    (Number.isFinite(stockNumber) && stockNumber > 0) ||
+    /\b(op voorraad|in stock|direct leverbaar|voorraad|voorradig|beschikbaar)\b/iu.test(
+      normalizedValue,
+    )
+  ) {
+    return 'In stock';
+  }
+
+  return undefined;
+}
+
+function hasCompleteCoppensFeedOffer(
+  product: TradeTrackerCoppenswarenhuisXmlFeedProduct,
+): boolean {
+  return Boolean(
+    product.productUrl &&
+      typeof resolvePrice(product) === 'number' &&
+      resolveCurrency(product) === 'EUR' &&
+      pickAdditionalField(product.additional, ['fromprice']),
+  );
+}
+
+function resolveAvailabilityRawValue(
+  product: TradeTrackerCoppenswarenhuisXmlFeedProduct,
+): string | undefined {
+  const explicitAvailabilityValue = readAdditionalField(
+    product.additional,
+    coppensAvailabilityFieldAliases,
+  );
+
+  if (explicitAvailabilityValue !== undefined) {
+    return explicitAvailabilityValue;
+  }
+
+  return hasCompleteCoppensFeedOffer(product)
+    ? '__feed_product_present__'
+    : undefined;
+}
+
 function normalizeAvailability(
   product: TradeTrackerCoppenswarenhuisXmlFeedProduct,
 ): string | undefined {
-  const stockValue = pickAdditionalField(product.additional, [
-    'stock',
-    'stocklevel',
-    'instock',
-    'voorraad',
-  ]);
+  const explicitAvailabilityValue = readAdditionalField(
+    product.additional,
+    coppensAvailabilityFieldAliases,
+  );
 
-  if (stockValue) {
-    const normalizedStock = normalizeSearchText(stockValue);
-    const stockNumber = Number(stockValue);
-
-    if (
-      ['true', 'yes', 'ja', '1'].includes(normalizedStock) ||
-      (Number.isFinite(stockNumber) && stockNumber > 0)
-    ) {
-      return 'In stock';
-    }
-
-    if (
-      ['false', 'no', 'nee', '0'].includes(normalizedStock) ||
-      normalizedStock.includes('niet op voorraad') ||
-      normalizedStock.includes('out of stock')
-    ) {
-      return 'Out of stock';
-    }
-
-    return stockValue;
+  if (explicitAvailabilityValue !== undefined) {
+    return normalizeCoppensAvailabilityText(explicitAvailabilityValue);
   }
 
-  return pickAdditionalField(product.additional, [
-    'availability',
-    'availabilitytext',
-    'stockstatus',
-  ]);
+  return hasCompleteCoppensFeedOffer(product) ? 'In stock' : undefined;
+}
+
+function incrementCount(counts: Record<string, number>, value?: string): void {
+  const key = value?.trim() || 'missing';
+
+  counts[key] = (counts[key] ?? 0) + 1;
+}
+
+function buildAvailabilityDebugCounts(
+  products: readonly TradeTrackerCoppenswarenhuisXmlFeedProduct[],
+): {
+  availabilityRawCounts: Record<string, number>;
+  normalizedAvailabilityCounts: Record<string, number>;
+  unknownAfterMappingCount: number;
+} {
+  const availabilityRawCounts: Record<string, number> = {};
+  const normalizedAvailabilityCounts: Record<string, number> = {};
+
+  for (const product of products) {
+    const rawValue = resolveAvailabilityRawValue(product);
+    const normalizedValue = normalizeAvailability(product);
+
+    incrementCount(availabilityRawCounts, rawValue);
+    incrementCount(normalizedAvailabilityCounts, normalizedValue);
+  }
+
+  return {
+    availabilityRawCounts,
+    normalizedAvailabilityCounts,
+    unknownAfterMappingCount: normalizedAvailabilityCounts['missing'] ?? 0,
+  };
 }
 
 function buildSetNumberCandidateFields(
@@ -538,11 +661,17 @@ export function normalizeTradeTrackerCoppenswarenhuisFeedProductToAffiliateFeedR
 }
 
 function buildDebugInfo({
+  availabilityRawCounts,
+  normalizedAvailabilityCounts,
   products,
   sampleLimit,
+  unknownAfterMappingCount,
 }: {
+  availabilityRawCounts: Record<string, number>;
+  normalizedAvailabilityCounts: Record<string, number>;
   products: readonly TradeTrackerCoppenswarenhuisXmlFeedProduct[];
   sampleLimit?: number;
+  unknownAfterMappingCount: number;
 }): TradeTrackerCoppenswarenhuisDebugInfo | undefined {
   if (!sampleLimit || sampleLimit <= 0) {
     return undefined;
@@ -573,10 +702,13 @@ function buildDebugInfo({
     }));
 
   return {
+    availabilityRawCounts,
     fetchedProductCount: products.length,
     legoCandidateCount: legoCandidates.length,
+    normalizedAvailabilityCounts,
     sampleCount: samples.length,
     samples,
+    unknownAfterMappingCount,
     uniquePropertyKeys,
   };
 }
@@ -643,9 +775,19 @@ export async function syncTradeTrackerCoppenswarenhuisFeed({
   const rows = constructionCandidates
     .map(normalizeTradeTrackerCoppenswarenhuisFeedProductToAffiliateFeedRow)
     .filter((row) => Boolean(row.legoSetNumber));
+  const constructionProductsWithSetNumber = constructionCandidates.filter(
+    (product) => Boolean(resolveSetNumber(product)),
+  );
+  const availabilityDebugCounts = buildAvailabilityDebugCounts(
+    constructionProductsWithSetNumber,
+  );
   const debugInfo = buildDebugInfo({
+    availabilityRawCounts: availabilityDebugCounts.availabilityRawCounts,
+    normalizedAvailabilityCounts:
+      availabilityDebugCounts.normalizedAvailabilityCounts,
     products: rawProducts,
     sampleLimit: options?.debugSamples,
+    unknownAfterMappingCount: availabilityDebugCounts.unknownAfterMappingCount,
   });
   const importResult = await importAffiliateFeedRowsForMerchantFn({
     merchant: {
@@ -667,12 +809,16 @@ export async function syncTradeTrackerCoppenswarenhuisFeed({
 
   return {
     ...importResult,
+    availabilityRawCounts: availabilityDebugCounts.availabilityRawCounts,
     debugInfo,
     fetchedProductCount: rawProducts.length,
     legoCandidateCount: legoCandidates.length,
     merchantName: config.merchantName,
     merchantSlug: config.merchantSlug,
+    normalizedAvailabilityCounts:
+      availabilityDebugCounts.normalizedAvailabilityCounts,
     normalizedRowCount: rows.length,
+    unknownAfterMappingCount: availabilityDebugCounts.unknownAfterMappingCount,
     skippedMissingSetNumberCount:
       importResult.skippedMissingSetNumberCount + missingSetNumberProductCount,
     skippedNonLegoCount:

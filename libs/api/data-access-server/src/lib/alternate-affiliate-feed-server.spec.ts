@@ -143,7 +143,7 @@ describe('alternate affiliate feed server', () => {
             validationStatus: 'valid',
             lastVerifiedAt: '2026-04-24T08:00:00.000Z',
             notes:
-              'Feed-driven Alternate import via TradeTracker. Exact matched by LEGO set number.',
+              'Feed-driven Alternate import via TradeTracker. Exact matched by LEGO set number. Product title: LEGO Icons Rivendell.',
             createdAt: '2026-04-22T09:00:00.000Z',
             updatedAt: '2026-04-22T09:00:00.000Z',
             latestOffer: {

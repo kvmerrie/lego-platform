@@ -60,72 +60,119 @@ export interface CommerceMerchantSupportProfile {
   defaultSeedGeneration: boolean;
   defaultRefresh: boolean;
   operatorLabel: string;
+  reliabilityTier: CommerceMerchantReliabilityTier;
   tier: CommerceMerchantSupportTier;
 }
 
 const commerceMerchantSupportProfiles = {
   'lego-nl': {
     tier: 'primary',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: true,
     defaultRefresh: false,
     operatorLabel: 'Primary',
   },
   intertoys: {
     tier: 'primary',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: true,
     defaultRefresh: false,
     operatorLabel: 'Primary',
   },
   bol: {
     tier: 'primary',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: true,
     defaultRefresh: false,
     operatorLabel: 'Primary',
+  },
+  goodbricks: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
+  },
+  mediamarkt: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
+  },
+  alternate: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
+  },
+  coolblue: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
   },
   misterbricks: {
     tier: 'primary',
+    reliabilityTier: 'production_feed',
     defaultSeedGeneration: true,
     defaultRefresh: false,
     operatorLabel: 'Primary',
   },
+  lidl: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
+  },
+  coppenswarenhuis: {
+    tier: 'secondary',
+    reliabilityTier: 'strategic_manual',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Strategic/manual',
+  },
   kruidvat: {
     tier: 'secondary',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: false,
     defaultRefresh: false,
     operatorLabel: 'Secondary',
   },
   wehkamp: {
     tier: 'secondary',
-    defaultSeedGeneration: false,
-    defaultRefresh: false,
-    operatorLabel: 'Secondary',
-  },
-  alternate: {
-    tier: 'secondary',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: false,
     defaultRefresh: false,
     operatorLabel: 'Secondary',
   },
   top1toys: {
     tier: 'secondary',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: false,
     defaultRefresh: false,
     operatorLabel: 'Legacy/manual',
   },
   'smyths-toys': {
     tier: 'secondary',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: false,
     defaultRefresh: false,
     operatorLabel: 'Secondary',
   },
   'amazon-nl': {
     tier: 'blocked',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: false,
     defaultRefresh: false,
     operatorLabel: 'Blocked',
   },
   proshop: {
     tier: 'blocked',
+    reliabilityTier: 'strategic_manual',
     defaultSeedGeneration: false,
     defaultRefresh: false,
     operatorLabel: 'Blocked',
@@ -134,6 +181,7 @@ const commerceMerchantSupportProfiles = {
 
 const defaultCommerceMerchantSupportProfile: CommerceMerchantSupportProfile = {
   tier: 'secondary',
+  reliabilityTier: 'strategic_manual',
   defaultSeedGeneration: false,
   defaultRefresh: false,
   operatorLabel: 'Secondary',
@@ -586,6 +634,24 @@ export function getCommerceMerchantSupportTier(
 
 export function getCommerceMerchantSupportTierLabel(merchantSlug: string) {
   return getCommerceMerchantSupportProfile(merchantSlug).operatorLabel;
+}
+
+export function getCommerceMerchantReliabilityTier(
+  merchantSlug: string,
+): CommerceMerchantReliabilityTier {
+  const configuredTier =
+    getConfiguredCommerceMerchantReliabilityTier(merchantSlug);
+  const supportProfile = getCommerceMerchantSupportProfile(merchantSlug);
+
+  return supportProfile.reliabilityTier === configuredTier
+    ? supportProfile.reliabilityTier
+    : configuredTier;
+}
+
+export function canCommerceMerchantDriveDealConfidence(
+  merchantSlug: string,
+): boolean {
+  return isConfiguredCommerceMerchantProductionFeed(merchantSlug);
 }
 
 function getCommerceMerchantSupportTierPriority(merchantSlug: string): number {
@@ -1899,3 +1965,8 @@ export function filterCommerceCoverageQueueRows({
     );
   });
 }
+import {
+  getCommerceMerchantReliabilityTier as getConfiguredCommerceMerchantReliabilityTier,
+  isCommerceMerchantProductionFeed as isConfiguredCommerceMerchantProductionFeed,
+  type CommerceMerchantReliabilityTier,
+} from '@lego-platform/shared/config';

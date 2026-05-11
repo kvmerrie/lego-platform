@@ -42,7 +42,13 @@ import {
   buildCatalogDiscoverySignalsApiPath,
   buildCatalogSetLiveOffersApiPath,
   cacheTags,
+  classifyCommerceCommercialUnitType,
+  canStrategicManualOfferBeatProductionFeed,
+  commerceProductionFeedMerchantSlugs,
+  compareCommerceCommercialUnitPreference,
+  type CommerceCommercialUnitType,
   getBrowserSupabaseConfig,
+  getCommerceMerchantReliabilityTier,
   getMissingBrowserSupabaseEnvKeys,
   getMissingServerSupabaseEnvKeys,
   getServerSupabaseConfig,
@@ -69,12 +75,7 @@ const CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT = 100;
 const CATALOG_THEME_REPRESENTATIVE_SET_LIMIT = 8;
 const CATALOG_SET_SELECT_COLUMNS =
   'set_id, source_set_number, slug, name, source_theme_id, primary_theme_id, release_year, release_date, release_date_precision, piece_count, image_url, source, status, created_at, updated_at';
-const PRIMARY_CATALOG_MERCHANT_SLUGS = [
-  'lego-nl',
-  'intertoys',
-  'bol',
-  'misterbricks',
-] as const;
+const PRIMARY_CATALOG_MERCHANT_SLUGS = commerceProductionFeedMerchantSlugs;
 const genericCatalogThemeMomentum =
   'Nieuw in Brickhunt. We bouwen hier nu de eerste prijsvergelijkingen op.';
 
@@ -205,6 +206,7 @@ interface CatalogCommerceOfferSeedRow {
   id: string;
   is_active: boolean;
   merchant_id: string;
+  notes?: string | null;
   product_url: string;
   set_id: string;
   validation_status: string;
@@ -215,6 +217,7 @@ export interface CatalogResolvedOffer {
   checkedAt: string;
   condition: 'new';
   currency: 'EUR';
+  commercialUnitType?: CommerceCommercialUnitType;
   market: 'NL';
   merchant: 'amazon' | 'bol' | 'lego' | 'other';
   merchantName: string;
@@ -1022,6 +1025,46 @@ function getCatalogOfferAvailabilityRank(
   return 2;
 }
 
+function getCatalogOfferMerchantReliabilityKey(
+  catalogOffer: CatalogResolvedOffer,
+): string {
+  return 'merchantSlug' in catalogOffer &&
+    typeof catalogOffer.merchantSlug === 'string'
+    ? catalogOffer.merchantSlug
+    : catalogOffer.merchantName;
+}
+
+function compareCatalogOfferReliability<Offer extends CatalogResolvedOffer>(
+  left: Offer,
+  right: Offer,
+): number {
+  const leftTier = getCommerceMerchantReliabilityTier(
+    getCatalogOfferMerchantReliabilityKey(left),
+  );
+  const rightTier = getCommerceMerchantReliabilityTier(
+    getCatalogOfferMerchantReliabilityKey(right),
+  );
+
+  if (leftTier === rightTier) {
+    return 0;
+  }
+
+  const leftIsProductionFeed = leftTier === 'production_feed';
+  const productionFeedOffer = leftIsProductionFeed ? left : right;
+  const strategicManualOffer = leftIsProductionFeed ? right : left;
+
+  if (
+    canStrategicManualOfferBeatProductionFeed({
+      productionFeedPriceMinor: productionFeedOffer.priceCents,
+      strategicManualPriceMinor: strategicManualOffer.priceCents,
+    })
+  ) {
+    return 0;
+  }
+
+  return leftIsProductionFeed ? -1 : 1;
+}
+
 function sortResolvedCatalogOffers<Offer extends CatalogResolvedOffer>(
   catalogOffers: readonly Offer[],
 ): Offer[] {
@@ -1029,6 +1072,11 @@ function sortResolvedCatalogOffers<Offer extends CatalogResolvedOffer>(
     (left, right) =>
       getCatalogOfferAvailabilityRank(left.availability) -
         getCatalogOfferAvailabilityRank(right.availability) ||
+      compareCommerceCommercialUnitPreference(
+        left.commercialUnitType,
+        right.commercialUnitType,
+      ) ||
+      compareCatalogOfferReliability(left, right) ||
       left.priceCents - right.priceCents ||
       left.merchantName.localeCompare(right.merchantName),
   );
@@ -1071,11 +1119,17 @@ function toCatalogRuntimeOffer({
     return undefined;
   }
 
+  const commercialUnitType = classifyCommerceCommercialUnitType({
+    notes: offerSeed.notes,
+    productUrl: offerSeed.product_url,
+  });
+
   return {
     availability: normalizeRuntimeOfferAvailability(latestOffer.availability),
     checkedAt,
     condition: 'new',
     currency: 'EUR',
+    ...(commercialUnitType !== 'unknown' ? { commercialUnitType } : {}),
     market: 'NL',
     merchant: getCatalogOfferMerchantFromMerchantSlug(merchant.slug),
     merchantName: merchant.name,
@@ -4212,7 +4266,7 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
   const { data: seedData, error: seedError } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .select(
-      'id, set_id, merchant_id, product_url, is_active, validation_status',
+      'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
     )
     .in('set_id', setIdLookupVariants)
     .eq('is_active', true)
@@ -4362,7 +4416,7 @@ async function listCatalogRuntimeOffersByCurrentOffersFromSupabase({
   const { data: seedData, error: seedError } = await supabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .select(
-      'id, set_id, merchant_id, product_url, is_active, validation_status',
+      'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
     )
     .in('id', offerSeedIds)
     .eq('is_active', true)
@@ -4496,7 +4550,7 @@ export async function getCatalogCommerceRailRuntimeDiagnostics({
       activeSupabaseClient
         .from(COMMERCE_OFFER_SEEDS_TABLE)
         .select(
-          'id, set_id, merchant_id, product_url, is_active, validation_status',
+          'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
         )
         .eq('is_active', true)
         .eq('validation_status', 'valid'),
@@ -4530,7 +4584,7 @@ export async function getCatalogCommerceRailRuntimeDiagnostics({
         ? await activeSupabaseClient
             .from(COMMERCE_OFFER_SEEDS_TABLE)
             .select(
-              'id, set_id, merchant_id, product_url, is_active, validation_status',
+              'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
             )
             .in('id', currentOfferSeedIds)
             .eq('is_active', true)
@@ -4827,7 +4881,7 @@ export async function getCatalogPrimaryOfferAvailabilityStateBySetId({
   const { data: seedData, error: seedError } = await activeSupabaseClient
     .from(COMMERCE_OFFER_SEEDS_TABLE)
     .select(
-      'id, set_id, merchant_id, product_url, is_active, validation_status',
+      'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
     )
     .eq('set_id', canonicalSetId)
     .eq('is_active', true)
