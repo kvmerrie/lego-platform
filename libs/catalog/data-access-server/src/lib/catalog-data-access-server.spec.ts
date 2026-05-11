@@ -409,6 +409,7 @@ describe('catalog data access server', () => {
           price_minor: 32999,
           currency_code: 'EUR',
           availability: 'in_stock',
+          fetched_at: '2026-04-20T10:15:00.000Z',
           fetch_status: 'success',
           observed_at: '2026-04-20T09:30:00.000Z',
           updated_at: '2026-04-20T09:35:00.000Z',
@@ -542,6 +543,7 @@ describe('catalog data access server', () => {
           price_minor: 32999,
           currency_code: 'EUR',
           availability: 'in_stock',
+          fetched_at: '2026-04-20T10:15:00.000Z',
           fetch_status: 'success',
           observed_at: '2026-04-20T09:30:00.000Z',
           updated_at: '2026-04-20T09:35:00.000Z',
@@ -616,7 +618,7 @@ describe('catalog data access server', () => {
       {
         bestOffer: {
           availability: 'in_stock',
-          checkedAt: '2026-04-20T09:30:00.000Z',
+          checkedAt: '2026-04-20T10:15:00.000Z',
           condition: 'new',
           currency: 'EUR',
           market: 'NL',
@@ -630,7 +632,7 @@ describe('catalog data access server', () => {
         offers: [
           {
             availability: 'in_stock',
-            checkedAt: '2026-04-20T09:30:00.000Z',
+            checkedAt: '2026-04-20T10:15:00.000Z',
             condition: 'new',
             currency: 'EUR',
             market: 'NL',

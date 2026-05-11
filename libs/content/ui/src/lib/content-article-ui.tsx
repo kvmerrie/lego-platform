@@ -226,6 +226,7 @@ function ContentArticleImage({
 
 function ContentArticleMeta({
   contentArticle,
+  disableThemeLink = false,
   showAuthor = false,
   themePresentation,
 }: {
@@ -233,6 +234,7 @@ function ContentArticleMeta({
     ContentArticleListItem,
     'authorName' | 'date' | 'theme' | 'updatedAt'
   >;
+  disableThemeLink?: boolean;
   showAuthor?: boolean;
   themePresentation?: ContentArticleThemePresentation;
 }) {
@@ -240,15 +242,16 @@ function ContentArticleMeta({
     themePresentation?.label ?? contentArticle.theme,
   );
   const authorName = contentArticle.authorName?.trim();
+  const themeHref = disableThemeLink ? undefined : themePresentation?.href;
 
   return (
     <div className={styles.metaRow}>
       {resolvedThemeLabel ? (
-        themePresentation?.href ? (
-          <a className={styles.themeBadgeLink} href={themePresentation.href}>
+        themeHref ? (
+          <a className={styles.themeBadgeLink} href={themeHref}>
             <span
               className={styles.themeBadgeShell}
-              style={themePresentation.style}
+              style={themePresentation?.style}
             >
               <Badge className={styles.themeBadge} tone="neutral">
                 {resolvedThemeLabel}
@@ -309,6 +312,7 @@ export function ContentArticleCard({
         <div className={styles.cardBody}>
           <ContentArticleMeta
             contentArticle={contentArticle}
+            disableThemeLink
             themePresentation={contentArticle.themePresentation}
           />
           <h3 className={styles.cardTitle}>{contentArticle.title}</h3>
@@ -351,6 +355,7 @@ export function ContentArticleFeaturedCard({
         <div className={styles.featuredArticleBody}>
           <ContentArticleMeta
             contentArticle={contentArticle}
+            disableThemeLink
             themePresentation={contentArticle.themePresentation}
           />
           <h2 className={styles.featuredArticleTitle}>
@@ -432,6 +437,7 @@ export function ContentArticleCompactRail({
               <div className={styles.compactCardBody}>
                 <ContentArticleMeta
                   contentArticle={contentArticle}
+                  disableThemeLink
                   themePresentation={contentArticle.themePresentation}
                 />
                 <h3 className={styles.compactCardTitle}>

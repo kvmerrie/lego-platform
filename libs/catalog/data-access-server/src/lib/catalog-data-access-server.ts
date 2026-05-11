@@ -107,6 +107,7 @@ interface CatalogCommerceMerchantRow {
 interface CatalogCommerceOfferLatestRow {
   availability: string | null;
   currency_code: string | null;
+  fetched_at?: string | null;
   fetch_status: string;
   observed_at: string | null;
   offer_seed_id: string;
@@ -421,7 +422,8 @@ function toCatalogLiveOffer({
     return undefined;
   }
 
-  const checkedAt = latestOffer.observed_at ?? latestOffer.updated_at;
+  const checkedAt =
+    latestOffer.fetched_at ?? latestOffer.observed_at ?? latestOffer.updated_at;
 
   if (!checkedAt) {
     return undefined;
@@ -503,7 +505,7 @@ async function listCatalogLiveOffersBySetIdsInternal({
     supabaseClient
       .from(COMMERCE_OFFER_LATEST_TABLE)
       .select(
-        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
       )
       .in('offer_seed_id', offerSeedIds)
       .order('updated_at', {

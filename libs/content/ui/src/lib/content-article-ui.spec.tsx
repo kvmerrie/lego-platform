@@ -196,6 +196,33 @@ describe('content article ui', () => {
     expect(markup).toContain('Star Wars™');
   });
 
+  it('keeps article page theme badges clickable outside full-card links', () => {
+    const markup = renderToStaticMarkup(
+      <ContentArticlePage
+        body={<p>Waarom deze release telt.</p>}
+        contentArticle={{
+          bodySource: 'Waarom deze release telt.',
+          cardImageAlt: 'Star Wars hero',
+          date: '2026-05-03',
+          description: 'Waarom deze release telt.',
+          heroImageAlt: 'Star Wars hero',
+          slug: 'star-wars-release',
+          status: 'published',
+          theme: 'Star Wars',
+          title: 'Star Wars release',
+        }}
+        themePresentation={{
+          href: '/artikelen/star-wars',
+          label: 'Star Wars™',
+        }}
+      />,
+    );
+
+    expect(markup).toMatch(
+      /<a class="[^"]*themeBadgeLink[^"]*" href="\/artikelen\/star-wars"/u,
+    );
+  });
+
   it('uses the same theme presentation styles for FeaturedSet badges', () => {
     const markup = renderToStaticMarkup(
       <ContentArticleFeaturedSet
@@ -347,6 +374,10 @@ describe('content article ui', () => {
           slug: 'lego-marvel-herbie',
           status: 'published',
           theme: 'Marvel',
+          themePresentation: {
+            href: '/artikelen/marvel',
+            label: 'Marvel',
+          },
           title: 'LEGO Marvel H.E.R.B.I.E. onthuld',
         }}
       />,
@@ -360,6 +391,8 @@ describe('content article ui', () => {
     expect(markup).toContain('LEGO Marvel H.E.R.B.I.E. onthuld');
     expect(markup).toContain('Waarom deze reveal blijft hangen.');
     expect(markup).toContain('Marvel');
+    expect(markup.match(/<a\b/gu) ?? []).toHaveLength(1);
+    expect(markup).not.toMatch(/<a class="[^"]*themeBadgeLink[^"]*"/u);
   });
 
   it('tracks featured article clicks with gtag', () => {

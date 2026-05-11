@@ -113,6 +113,24 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+describe('set detail live offer loading', () => {
+  it('tags live offer reads with price and set cache tags', async () => {
+    setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
+
+    const { loadSetDetailLiveOffers } = await import('./page');
+
+    await loadSetDetailLiveOffers({ setId: '75419' });
+
+    expect(setPageMocks.listCatalogSetLiveOffersBySetId).toHaveBeenCalledWith({
+      cacheOptions: {
+        revalidateSeconds: 21_600,
+        tags: ['prices', 'set:75419'],
+      },
+      setId: '75419',
+    });
+  });
+});
+
 describe('set detail availability fallback state', () => {
   it('treats a current-year set with no current tracked offers as no_current_price', async () => {
     const { resolveSetDetailAvailabilityFallbackState } = await import(

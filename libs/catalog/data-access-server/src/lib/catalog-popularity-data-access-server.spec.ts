@@ -68,6 +68,7 @@ describe('aggregateCatalogPopularityEvents', () => {
       {
         set_num: '10316',
         score: 12,
+        unique_sessions: 3,
         counts: {
           set_view: 1,
           catalog_set_click: 1,
@@ -84,6 +85,7 @@ describe('aggregateCatalogPopularityEvents', () => {
         eventRow({ event_type: 'offer_click', session_id: 'session-a' }),
         eventRow({ event_type: 'set_view', session_id: 'session-a' }),
         eventRow({ event_type: 'set_view', session_id: 'session-a' }),
+        eventRow({ event_type: 'set_view', session_id: 'session-b' }),
       ],
       now,
     });
@@ -91,9 +93,10 @@ describe('aggregateCatalogPopularityEvents', () => {
     expect(snapshot.windows.day).toEqual([
       {
         set_num: '10316',
-        score: 9,
+        score: 10,
+        unique_sessions: 2,
         counts: {
-          set_view: 1,
+          set_view: 2,
           catalog_set_click: 0,
           offer_click: 1,
         },
@@ -115,6 +118,46 @@ describe('aggregateCatalogPopularityEvents', () => {
     expect(snapshot.windows.day).toEqual([]);
   });
 
+  test('filters a high-scoring set from a single session', () => {
+    const snapshot = aggregateCatalogPopularityEvents({
+      events: [
+        eventRow({ event_type: 'offer_click', session_id: 'session-a' }),
+        eventRow({
+          event_type: 'catalog_set_click',
+          session_id: 'session-a',
+        }),
+        eventRow({ event_type: 'set_view', session_id: 'session-a' }),
+      ],
+      now,
+    });
+
+    expect(snapshot.windows.day).toEqual([]);
+  });
+
+  test('includes a set with score at least five from two sessions', () => {
+    const snapshot = aggregateCatalogPopularityEvents({
+      events: [
+        eventRow({ event_type: 'catalog_set_click', session_id: 'session-a' }),
+        eventRow({ event_type: 'set_view', session_id: 'session-b' }),
+        eventRow({ event_type: 'set_view', session_id: 'session-c' }),
+      ],
+      now,
+    });
+
+    expect(snapshot.windows.day).toEqual([
+      {
+        set_num: '10316',
+        score: 5,
+        unique_sessions: 3,
+        counts: {
+          set_view: 2,
+          catalog_set_click: 1,
+          offer_click: 0,
+        },
+      },
+    ]);
+  });
+
   test('sorts deterministically by score, counts, and set number', () => {
     const snapshot = aggregateCatalogPopularityEvents({
       events: [
@@ -131,6 +174,11 @@ describe('aggregateCatalogPopularityEvents', () => {
         eventRow({
           event_type: 'offer_click',
           session_id: 'session-c',
+          set_num: '21348',
+        }),
+        eventRow({
+          event_type: 'set_view',
+          session_id: 'session-c-2',
           set_num: '21348',
         }),
         eventRow({
@@ -199,10 +247,17 @@ describe('aggregateCatalogPopularityEvents', () => {
     const snapshot = aggregateCatalogPopularityEvents({
       events: [
         eventRow({ event_type: 'offer_click', session_id: 'session-day' }),
+        eventRow({ event_type: 'set_view', session_id: 'session-day-2' }),
         eventRow({
           created_at: '2026-05-05T12:00:00.000Z',
           event_type: 'offer_click',
           session_id: 'session-week',
+          set_num: '21348',
+        }),
+        eventRow({
+          created_at: '2026-05-05T12:00:00.000Z',
+          event_type: 'set_view',
+          session_id: 'session-week-2',
           set_num: '21348',
         }),
       ],
@@ -323,6 +378,52 @@ describe('runCatalogPopularitySync', () => {
       });
       expect(await readFile(artifactPath, 'utf8')).toBe(
         renderCatalogPopularitySnapshotModule(result.popularitySnapshot),
+      );
+    } finally {
+      await rm(workspaceRoot, { force: true, recursive: true });
+    }
+  });
+
+  test('writes unique session counts into the generated artifact', async () => {
+    const workspaceRoot = await mkdtemp(
+      resolve(tmpdir(), 'catalog-popularity-sync-'),
+    );
+    const artifactPath = resolve(
+      workspaceRoot,
+      'libs/catalog/data-access/src/lib/catalog-popularity-snapshot.generated.ts',
+    );
+    const { from } = createSupabaseClientMock({
+      pages: [
+        [
+          eventRow({ event_type: 'offer_click', session_id: 'session-a' }),
+          eventRow({ event_type: 'set_view', session_id: 'session-b' }),
+        ],
+        [],
+      ],
+    });
+
+    try {
+      const result = await runCatalogPopularitySync({
+        mode: 'write',
+        now,
+        supabaseClient: { from } as never,
+        workspaceRoot,
+      });
+
+      expect(result.popularitySnapshot.windows.day).toEqual([
+        {
+          set_num: '10316',
+          score: 9,
+          unique_sessions: 2,
+          counts: {
+            set_view: 1,
+            catalog_set_click: 0,
+            offer_click: 1,
+          },
+        },
+      ]);
+      expect(await readFile(artifactPath, 'utf8')).toContain(
+        '"unique_sessions": 2',
       );
     } finally {
       await rm(workspaceRoot, { force: true, recursive: true });

@@ -6129,6 +6129,7 @@ describe('catalog effective data access web', () => {
         {
           availability: 'limited',
           currency_code: 'EUR',
+          fetched_at: '2026-04-18T12:15:00.000Z',
           fetch_status: 'success',
           observed_at: '2026-04-18T11:44:00.000Z',
           offer_seed_id: 'seed-1',
@@ -6189,6 +6190,7 @@ describe('catalog effective data access web', () => {
         merchantName: 'Proshop',
         priceCents: 16541,
         availability: 'in_stock',
+        checkedAt: '2026-04-18T12:15:00.000Z',
       },
       {
         merchantName: 'Amazon',
@@ -7021,6 +7023,7 @@ describe('catalog effective data access web', () => {
         {
           availability: 'out_of_stock',
           currency_code: 'EUR',
+          fetched_at: '2026-04-18T12:05:00.000Z',
           fetch_status: 'success',
           observed_at: '2026-04-18T11:40:00.000Z',
           offer_seed_id: 'seed-lego',
@@ -7091,7 +7094,7 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result).toEqual({
-      latestPrimaryOfferCheckedAt: '2026-04-18T11:42:00.000Z',
+      latestPrimaryOfferCheckedAt: '2026-04-18T12:05:00.000Z',
       primaryMerchantCount: 2,
       primarySeedCount: 2,
       validPrimaryOfferCount: 0,

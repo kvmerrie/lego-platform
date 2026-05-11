@@ -805,6 +805,7 @@ export interface CatalogPopularitySetCounts {
 export interface CatalogPopularitySetSnapshot {
   set_num: string;
   score: number;
+  unique_sessions: number;
   counts: CatalogPopularitySetCounts;
 }
 

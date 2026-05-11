@@ -12,6 +12,8 @@ The snapshot is intentionally precomputed. Public pages must not aggregate raw e
 
 Rows without `set_num` are ignored. Events are deduplicated per `session_id`, `set_num`, and `event_type` inside each aggregation window so one session cannot inflate a set by repeating the same action.
 
+A set is only written when it reaches both the score threshold and at least two unique sessions in that window. This keeps one browser or test session from becoming “populariteit”.
+
 ## Output
 
 The job writes:

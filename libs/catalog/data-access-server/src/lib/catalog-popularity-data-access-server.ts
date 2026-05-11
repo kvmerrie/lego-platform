@@ -26,6 +26,7 @@ const CATALOG_POPULARITY_SCORE_WEIGHTS = {
 } as const satisfies Record<CatalogPopularityEventType, number>;
 
 const DEFAULT_MIN_SCORE = 5;
+const DEFAULT_MIN_UNIQUE_SESSIONS = 2;
 const DEFAULT_MAX_ITEMS_PER_WINDOW = 100;
 const EVENT_PAGE_SIZE = 1_000;
 const MAX_EVENT_ROWS_PER_RUN = 100_000;
@@ -118,6 +119,7 @@ function aggregateCatalogPopularityWindow({
 }: CatalogPopularityWindowOptions): CatalogPopularitySetSnapshot[] {
   const seenEventKeys = new Set<string>();
   const countsBySetNum = new Map<string, CatalogPopularitySetCounts>();
+  const sessionIdsBySetNum = new Map<string, Set<string>>();
 
   for (const event of events) {
     if (
@@ -149,15 +151,24 @@ function aggregateCatalogPopularityWindow({
     const counts = countsBySetNum.get(event.set_num) ?? createEmptyCounts();
     counts[event.event_type] += 1;
     countsBySetNum.set(event.set_num, counts);
+
+    const sessionIds = sessionIdsBySetNum.get(event.set_num) ?? new Set();
+    sessionIds.add(event.session_id);
+    sessionIdsBySetNum.set(event.set_num, sessionIds);
   }
 
   return [...countsBySetNum.entries()]
     .map(([setNum, counts]) => ({
       set_num: setNum,
       score: calculateCatalogPopularityScore(counts),
+      unique_sessions: sessionIdsBySetNum.get(setNum)?.size ?? 0,
       counts,
     }))
-    .filter((snapshot) => snapshot.score >= minScore)
+    .filter(
+      (snapshot) =>
+        snapshot.score >= minScore &&
+        snapshot.unique_sessions >= DEFAULT_MIN_UNIQUE_SESSIONS,
+    )
     .sort(
       (left, right) =>
         right.score - left.score ||

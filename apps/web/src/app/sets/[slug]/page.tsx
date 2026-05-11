@@ -312,7 +312,7 @@ export async function loadSetDetailLiveOffers({
     return await listCatalogSetLiveOffersBySetId({
       cacheOptions: {
         revalidateSeconds: revalidate,
-        tags: [cacheTags.set(setId)],
+        tags: [cacheTags.prices(), cacheTags.set(setId)],
       },
       setId,
     });

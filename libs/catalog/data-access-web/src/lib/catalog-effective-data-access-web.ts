@@ -193,6 +193,7 @@ interface CatalogCommerceMerchantRow {
 interface CatalogCommerceOfferLatestRow {
   availability: string | null;
   currency_code: string | null;
+  fetched_at?: string | null;
   fetch_status: string;
   observed_at: string | null;
   offer_seed_id: string;
@@ -574,6 +575,8 @@ function normalizeCatalogResolvedOfferRecord(
   ]);
   const checkedAt = readCatalogOfferStringField(value, [
     'checkedAt',
+    'fetchedAt',
+    'fetched_at',
     'observedAt',
     'observed_at',
     'updatedAt',
@@ -1059,7 +1062,10 @@ function toCatalogRuntimeOffer({
   }
 
   const checkedAt =
-    latestOffer.observed_at ?? latestOffer.updated_at ?? undefined;
+    latestOffer.fetched_at ??
+    latestOffer.observed_at ??
+    latestOffer.updated_at ??
+    undefined;
 
   if (!checkedAt) {
     return undefined;
@@ -1084,7 +1090,12 @@ function getLatestCheckedAtForPrimaryOffers(
   latestOffers: readonly CatalogCommerceOfferLatestRow[],
 ): string | undefined {
   return latestOffers
-    .map((latestOffer) => latestOffer.observed_at ?? latestOffer.updated_at)
+    .map(
+      (latestOffer) =>
+        latestOffer.fetched_at ??
+        latestOffer.observed_at ??
+        latestOffer.updated_at,
+    )
     .filter((checkedAt): checkedAt is string => Boolean(checkedAt))
     .sort((left, right) => right.localeCompare(left))[0];
 }
@@ -4235,7 +4246,7 @@ async function listCatalogRuntimeOffersBySetIdsFromSupabase({
     supabaseClient
       .from(COMMERCE_OFFER_LATEST_TABLE)
       .select(
-        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
       )
       .in('offer_seed_id', offerSeedIds)
       .order('updated_at', {
@@ -4314,7 +4325,7 @@ async function listCatalogRuntimeOffersByCurrentOffersFromSupabase({
     await supabaseClient
       .from(COMMERCE_OFFER_LATEST_TABLE)
       .select(
-        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
       )
       .eq('fetch_status', 'success')
       .eq('currency_code', 'EUR')
@@ -4470,7 +4481,7 @@ export async function getCatalogCommerceRailRuntimeDiagnostics({
       activeSupabaseClient
         .from(COMMERCE_OFFER_LATEST_TABLE)
         .select(
-          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
         )
         .eq('fetch_status', 'success')
         .eq('currency_code', 'EUR')
@@ -4841,7 +4852,7 @@ export async function getCatalogPrimaryOfferAvailabilityStateBySetId({
     await activeSupabaseClient
       .from(COMMERCE_OFFER_LATEST_TABLE)
       .select(
-        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, updated_at',
+        'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
       )
       .in('offer_seed_id', offerSeedIds)
       .order('updated_at', {
