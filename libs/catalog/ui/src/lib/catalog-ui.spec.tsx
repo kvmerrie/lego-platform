@@ -299,7 +299,7 @@ describe('CatalogSetCard', () => {
       css.match(/\.offerRailCard\[data-best='true'\] \{[^}]+\}/u)?.[0] ?? '';
     const bestDealHoverRule =
       css.match(
-        /\.offerRailCardLink:hover \.offerRailCard\[data-best='true'\],[\s\S]*?\.offerRailCardLink:focus-visible \.offerRailCard\[data-best='true'\] \{[^}]+\}/u,
+        /\.offerRailCardLink:hover \.offerRailCard\[data-best='true'\] \{[^}]+\}/u,
       )?.[0] ?? '';
     const secondaryActionRule =
       css.match(/\.offerRailAction\[data-tone='secondary'\] \{[^}]+\}/u)?.[0] ??
@@ -313,19 +313,17 @@ describe('CatalogSetCard', () => {
     expect(bestDealRule).not.toContain('translateY');
     expect(offerHoverRule).not.toContain('translateY');
     expect(offerHoverRule).not.toContain('0 0.55rem');
+    expect(offerCardRule).not.toContain('border:');
+    expect(offerHoverRule).not.toContain('border-color');
+    expect(offerHoverRule).not.toContain('box-shadow');
+    expect(offerHoverRule).not.toContain('linear-gradient');
+    expect(offerHoverRule).not.toContain('color-mix');
     expect(offerHoverRule).toContain(
-      'border-color: var(--catalog-card-interaction-border-color);',
+      'background: var(--lego-surface-default);',
     );
-    expect(offerHoverRule).toContain('box-shadow: inset');
-    expect(bestDealHoverRule).toContain('box-shadow: inset');
-    expect(bestDealRule).toContain(
-      '--catalog-card-interaction-outline-color: var(--lego-accent);',
-    );
-    expect(bestDealRule).toContain(
-      'box-shadow: inset 0 0 0 1px var(--lego-accent);',
-    );
+    expect(bestDealRule).toContain('background: var(--lego-positive-subtle);');
     expect(bestDealHoverRule).toContain(
-      'box-shadow: inset 0 0 0 2px var(--lego-accent);',
+      'background: var(--lego-positive-subtle);',
     );
     expect(secondaryActionRule).toContain('background: transparent;');
     expect(secondaryActionRule).toContain('border-color: var(--lego-text);');
@@ -339,6 +337,27 @@ describe('CatalogSetCard', () => {
       'background: var(--lego-accent);',
     );
     expect(css).toContain('white-space: nowrap;');
+  });
+
+  it('keeps offer availability status compact with text and a status dot', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const statusRule =
+      css.match(/\.offerAvailabilityStatus \{[^}]+\}/u)?.[0] ?? '';
+    const statusDotRule =
+      css.match(/\.offerAvailabilityStatus::before \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(statusRule).toContain('display: inline-flex;');
+    expect(statusRule).toContain('white-space: nowrap;');
+    expect(statusRule).not.toContain('padding:');
+    expect(statusRule).not.toContain('background:');
+    expect(statusRule).not.toContain('border-radius:');
+    expect(statusDotRule).toContain('background: currentColor;');
+    expect(statusDotRule).toContain('border-radius: var(--lego-radius-pill);');
+    expect(css).not.toContain('offerRailStock');
+    expect(css).not.toContain('offerOverlayStock');
   });
 
   it('does not put card CTA controls into hover state from parent card hover', () => {
@@ -867,7 +886,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Beste prijs die we nu volgen.');
     expect(markup).toContain('Vergelijk winkels');
     expect(markup).toContain('Nu bij 2 winkels');
-    expect(markup).toContain('2 winkels nagekeken · 31 mrt om 09:00');
+    expect(markup).toContain('2 winkels nagekeken');
+    expect(markup).not.toContain('2 winkels nagekeken · 31 mrt om 09:00');
     expect(markup).toContain('Beste deal');
     expect(markup).toContain('data-wrap="best"');
     expect(markup).toContain('data-wrap="default"');
@@ -878,7 +898,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('rel="noreferrer sponsored"');
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('Bekijk beste deal');
-    expect(markup).toContain('Bekijk alternatief');
+    expect(markup).toContain('Naar winkel');
+    expect(markup).toContain('Naar winkel bij LEGO');
     expect(markup).not.toContain('Sterke deal');
     expect(markup.indexOf('Vergelijk winkels')).toBeLessThan(
       markup.indexOf('Prijs in het kort'),

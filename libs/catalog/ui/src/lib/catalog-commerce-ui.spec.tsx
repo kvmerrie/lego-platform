@@ -170,6 +170,15 @@ describe('Catalog commerce UI', () => {
             price: '€ 1.049,95',
             rankingLabel: 'Laagste nagekeken prijs op voorraad.',
             stockLabel: 'Op voorraad',
+            trackingEvent: {
+              event: 'offer_click',
+              properties: {
+                offerPlacement: 'comparison_row',
+                offerRole: 'best',
+                rankPosition: 1,
+                setId: '75313',
+              },
+            },
           },
           {
             checkedLabel: '2 apr om 09:00',
@@ -179,6 +188,15 @@ describe('Catalog commerce UI', () => {
             price: '€ 1.079,99',
             rankingLabel: '€ 30,04 boven de beste prijs.',
             stockLabel: 'Op voorraad',
+            trackingEvent: {
+              event: 'offer_click',
+              properties: {
+                offerPlacement: 'comparison_row',
+                offerRole: 'alternative',
+                rankPosition: 2,
+                setId: '75313',
+              },
+            },
           },
         ]}
         setDetailHref="/sets/ultimate-collectors-series-at-at-75313"
@@ -188,6 +206,8 @@ describe('Catalog commerce UI', () => {
 
     expect(markup).toContain('Vergelijk winkels');
     expect(markup).toContain('Nu bij 2 winkels');
+    expect(markup).toContain('2 winkels nagekeken');
+    expect(markup).not.toContain('2 winkels nagekeken · 2 apr om 09:00');
     expect(markup).toContain('Beste deal');
     expect(markup).toContain('bol');
     expect(markup).toContain('Amazon');
@@ -200,8 +220,17 @@ describe('Catalog commerce UI', () => {
     expect(markup).toContain('rel="noreferrer sponsored"');
     expect(markup).toContain('target="_blank"');
     expect(markup).toContain('Bekijk beste deal');
-    expect(markup).toContain('Bekijk alternatief');
+    expect(markup).toContain('Naar winkel');
+    expect(markup).toContain('Naar winkel bij Amazon');
+    expect(markup).toContain('Nagekeken 2 apr');
+    expect(markup).not.toContain('2 apr om 09:00');
     expect(markup).toContain('data-best="true"');
+    expect(markup).toContain('data-brickhunt-event="offer_click"');
+    expect(markup).toContain('offerPlacement');
+    expect(markup).toContain('comparison_row');
+    expect(markup).toContain('offerRole');
+    expect(markup).toContain('alternative');
+    expect(markup).toContain('rankPosition');
     expect(markup).toContain('Vergelijk alle 2 winkels');
   });
 
@@ -307,10 +336,10 @@ describe('Catalog commerce UI', () => {
     });
 
     expect(presentation.stockLabel).toBe('Uitverkocht');
-    expect(presentation.railCheckedLabel).toBe('2 apr');
+    expect(presentation.railCheckedLabel).toBe('Nagekeken 2 apr');
     expect(presentation.overlayCheckedLabel).toBe('2 apr om 09:00');
     expect(presentation.deltaLabel).toBe('€30,04 duurder');
-    expect(presentation.actionLabel).toBe('Bekijk alternatief');
+    expect(presentation.actionLabel).toBe('Naar winkel');
     expect(presentation.priceComparisonState).toBe('higher');
   });
 
@@ -402,7 +431,47 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(presentation.confidenceLabel).toBe('Goedkoopste optie nu');
+    expect(presentation.confidenceLabel).toBe('Laagste prijs');
+  });
+
+  it('shows lower unavailable alternatives without presenting them as equal-price choices', () => {
+    const soldOutPresentation = buildCompactOfferPresentation({
+      comparisonContext: {
+        bestPriceMinor: 19999,
+        comparedOfferCount: 3,
+        nextBestAvailablePriceMinor: 21999,
+        reviewedInStockOfferCount: 2,
+      },
+      offer: {
+        checkedLabel: 'Vandaag om 07:01',
+        ctaHref: 'https://example.com/sold-out',
+        ctaLabel: 'Bekijk bij Sold Out',
+        merchantLabel: 'Sold Out',
+        price: '€ 189,99',
+        stockLabel: 'Uitverkocht',
+      },
+    });
+    const unknownPresentation = buildCompactOfferPresentation({
+      comparisonContext: {
+        bestPriceMinor: 19999,
+        comparedOfferCount: 3,
+        nextBestAvailablePriceMinor: 21999,
+        reviewedInStockOfferCount: 2,
+      },
+      offer: {
+        checkedLabel: 'Vandaag om 07:01',
+        ctaHref: 'https://example.com/unknown',
+        ctaLabel: 'Bekijk bij Unknown',
+        merchantLabel: 'Unknown',
+        price: '€ 189,99',
+        stockLabel: 'Voorraad onbekend',
+      },
+    });
+
+    expect(soldOutPresentation.deltaLabel).toBe('Uitverkocht maar lager');
+    expect(soldOutPresentation.priceComparisonState).toBe('lower-unavailable');
+    expect(unknownPresentation.deltaLabel).toBe('Voorraad onbekend, lager');
+    expect(unknownPresentation.priceComparisonState).toBe('lower-unavailable');
   });
 
   it('marks the best offer as the only available option when no other reviewed in-stock offers exist', () => {
@@ -477,7 +546,7 @@ describe('Catalog commerce UI', () => {
       },
     });
 
-    expect(presentation.railCheckedLabel).toBe('Vandaag');
+    expect(presentation.railCheckedLabel).toBe('Nagekeken vandaag');
     expect(presentation.overlayCheckedLabel).toBe('Vandaag om 03:00');
   });
 
@@ -508,8 +577,8 @@ describe('Catalog commerce UI', () => {
       />,
     );
 
-    expect(markup).toContain('>Vandaag<');
-    expect(markup).toContain('>Gisteren<');
+    expect(markup).toContain('>Nagekeken vandaag<');
+    expect(markup).toContain('>Nagekeken gisteren<');
     expect(markup).not.toContain('Vandaag om 03:00');
     expect(markup).not.toContain('Gisteren om 11:34');
   });

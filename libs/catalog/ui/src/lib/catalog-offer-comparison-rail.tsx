@@ -40,7 +40,13 @@ interface CompactOfferPresentation {
   deltaLabel?: string;
   merchantLabel: string;
   price: string;
-  priceComparisonState: 'best' | 'close' | 'higher' | 'same' | 'unknown';
+  priceComparisonState:
+    | 'best'
+    | 'close'
+    | 'higher'
+    | 'lower-unavailable'
+    | 'same'
+    | 'unknown';
   stockLabel: string;
   stockState: 'available' | 'limited' | 'out' | 'unknown';
 }
@@ -99,7 +105,11 @@ function getCompactStockLabel(stockLabel: string): string {
     return 'Op voorraad';
   }
 
-  return stockLabel.trim();
+  if (normalizedLabel.includes('onbekend')) {
+    return 'Voorraad onbekend';
+  }
+
+  return stockLabel.trim() || 'Voorraad onbekend';
 }
 
 function getStockState(
@@ -131,18 +141,36 @@ function getCompactRailCheckedLabel(checkedLabel: string): string {
   const normalizedLowerLabel = normalizedLabel.toLowerCase();
 
   if (normalizedLowerLabel.startsWith('vandaag')) {
-    return 'Vandaag';
+    return 'Nagekeken vandaag';
   }
 
   if (normalizedLowerLabel.startsWith('gisteren')) {
-    return 'Gisteren';
+    return 'Nagekeken gisteren';
   }
 
   if (normalizedLowerLabel.startsWith('eergisteren')) {
-    return '2 dagen geleden';
+    return 'Nagekeken 2 dagen geleden';
   }
 
-  return normalizedLabel.replace(/\s+om\s+.+$/i, '');
+  return `Nagekeken ${normalizedLabel.replace(/\s+om\s+.+$/i, '')}`;
+}
+
+function getOfferCountSummaryLabel({
+  offerCount,
+  summaryLabel,
+}: {
+  offerCount: number;
+  summaryLabel?: string;
+}): string {
+  const merchantCountLabel = `${offerCount} winkel${
+    offerCount === 1 ? '' : 's'
+  } nagekeken`;
+
+  if (!summaryLabel) {
+    return merchantCountLabel;
+  }
+
+  return summaryLabel.split('·')[0]?.trim() || merchantCountLabel;
 }
 
 function isOfferAvailableForComparison(offer: CatalogOfferItem): boolean {
@@ -187,7 +215,30 @@ function getCompactDeltaPresentation({
   if (currentPriceMinor !== undefined) {
     const deltaMinor = currentPriceMinor - bestPriceMinor;
 
-    if (deltaMinor <= 0) {
+    if (deltaMinor < 0) {
+      const stockState = getStockState(offer.stockLabel);
+
+      if (stockState === 'out') {
+        return {
+          deltaLabel: 'Uitverkocht maar lager',
+          priceComparisonState: 'lower-unavailable',
+        };
+      }
+
+      if (stockState === 'unknown') {
+        return {
+          deltaLabel: 'Voorraad onbekend, lager',
+          priceComparisonState: 'lower-unavailable',
+        };
+      }
+
+      return {
+        deltaLabel: `${formatCompactEuroAmount(Math.abs(deltaMinor))} lager`,
+        priceComparisonState: 'lower-unavailable',
+      };
+    }
+
+    if (deltaMinor === 0) {
       return {
         deltaLabel: 'Zelfde prijs',
         priceComparisonState: 'same',
@@ -255,7 +306,7 @@ function getBestOfferConfidenceLabel({
   }
 
   if (comparedOfferCount > 1) {
-    return 'Goedkoopste optie nu';
+    return 'Laagste prijs';
   }
 
   return 'Enige beschikbare optie';
@@ -274,7 +325,7 @@ export function buildCompactOfferPresentation({
   });
 
   return {
-    actionLabel: offer.isBest ? 'Bekijk beste deal' : 'Bekijk alternatief',
+    actionLabel: offer.isBest ? 'Bekijk beste deal' : 'Naar winkel',
     overlayCheckedLabel: getCompactCheckedLabel(offer.checkedLabel),
     railCheckedLabel: getCompactRailCheckedLabel(offer.checkedLabel),
     confidenceLabel: getBestOfferConfidenceLabel({
@@ -416,7 +467,7 @@ function CatalogOfferRailCard({
       </div>
       <div className={styles.offerRailStatusBlock}>
         <span
-          className={styles.offerRailStock}
+          className={styles.offerAvailabilityStatus}
           data-state={presentation.stockState}
         >
           {presentation.stockLabel}
@@ -450,7 +501,7 @@ function CatalogOfferRailCard({
     >
       {card}
       <VisuallyHidden>
-        Open aanbieding bij {presentation.merchantLabel}
+        {presentation.actionLabel} bij {presentation.merchantLabel}
       </VisuallyHidden>
     </ActionLink>
   );
@@ -467,15 +518,10 @@ function CatalogOfferOverlayRow({
     comparisonContext,
     offer,
   });
-  const supportLineClassName = [
-    styles.offerOverlaySupportLine,
-    offer.isBest
-      ? styles.offerOverlaySupportLineBest
-      : styles.offerOverlaySupportLineDefault,
-  ].join(' ');
 
   return (
     <ActionLink
+      aria-label={`${presentation.actionLabel} bij ${presentation.merchantLabel}`}
       className={styles.offerOverlayRowLink}
       href={offer.ctaHref}
       rel="noreferrer sponsored"
@@ -488,54 +534,52 @@ function CatalogOfferOverlayRow({
         data-best={offer.isBest ? 'true' : 'false'}
         data-price-comparison={presentation.priceComparisonState}
       >
-        <div className={styles.offerOverlayRowMain}>
-          <div className={styles.offerOverlayRowHeader}>
-            <p className={styles.offerOverlayMerchant}>
-              {presentation.merchantLabel}
-            </p>
-            <div className={styles.offerOverlayBadges}>
-              {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
-              {!offer.isBest &&
-              (presentation.priceComparisonState === 'same' ||
-                presentation.priceComparisonState === 'close') ? (
-                <Badge tone="neutral">Alternatief</Badge>
-              ) : null}
-            </div>
-          </div>
-          <div className={styles.offerOverlayPriceBlock}>
-            <p className={styles.offerOverlayPrice}>{presentation.price}</p>
-            <div className={styles.offerRailSupport}>
-              <p
-                aria-hidden={
-                  !presentation.confidenceLabel && !presentation.deltaLabel
-                    ? 'true'
-                    : undefined
-                }
-                className={supportLineClassName}
-                data-kind={offer.isBest ? 'confidence' : 'delta'}
-                data-wrap={offer.isBest ? 'best' : 'default'}
-              >
-                {presentation.confidenceLabel ??
-                  presentation.deltaLabel ??
-                  '\u00a0'}
-              </p>
-            </div>
-          </div>
-          <div className={styles.offerOverlayStatusBlock}>
-            <span
-              className={styles.offerRailStock}
-              data-state={presentation.stockState}
-            >
-              {presentation.stockLabel}
-            </span>
-            <p className={styles.offerOverlayChecked}>
-              <Clock3 aria-hidden="true" size={14} strokeWidth={2.2} />
-              <span>{presentation.overlayCheckedLabel}</span>
-            </p>
+        <div className={styles.offerOverlayMerchantCell}>
+          <p className={styles.offerOverlayMerchant}>
+            {presentation.merchantLabel}
+          </p>
+          <div className={styles.offerOverlayBadges}>
+            {offer.isBest ? <Badge tone="accent">Beste deal</Badge> : null}
+            {!offer.isBest &&
+            (presentation.priceComparisonState === 'same' ||
+              presentation.priceComparisonState === 'close') ? (
+              <Badge tone="neutral">Alternatief</Badge>
+            ) : null}
           </div>
         </div>
+        <div className={styles.offerOverlayMetaCell}>
+          <span
+            className={styles.offerAvailabilityStatus}
+            data-state={presentation.stockState}
+          >
+            {presentation.stockLabel}
+          </span>
+          <p className={styles.offerOverlayChecked}>
+            <Clock3 aria-hidden="true" size={14} strokeWidth={2.2} />
+            <span>{presentation.overlayCheckedLabel}</span>
+          </p>
+        </div>
+        <div className={styles.offerOverlayPriceCell}>
+          <p className={styles.offerOverlayPrice}>{presentation.price}</p>
+          <p
+            aria-hidden={
+              !presentation.confidenceLabel && !presentation.deltaLabel
+                ? 'true'
+                : undefined
+            }
+            className={styles.offerOverlaySupportLine}
+            data-kind={offer.isBest ? 'confidence' : 'delta'}
+          >
+            {presentation.confidenceLabel ??
+              presentation.deltaLabel ??
+              '\u00a0'}
+          </p>
+        </div>
+        <span className={styles.offerOverlayChevron} aria-hidden="true">
+          <ChevronRight size={18} strokeWidth={2.2} />
+        </span>
         <VisuallyHidden>
-          Bekijk deal bij {presentation.merchantLabel}
+          {presentation.actionLabel} bij {presentation.merchantLabel}
         </VisuallyHidden>
       </article>
     </ActionLink>
@@ -559,6 +603,10 @@ export function CatalogOfferComparisonRail({
     railOffers.length < offers.length
       ? `Nu bij ${railOffers.length} van ${offers.length} winkels`
       : `Nu bij ${railOffers.length} winkels`;
+  const offerCountSummaryLabel = getOfferCountSummaryLabel({
+    offerCount: offers.length,
+    summaryLabel,
+  });
   const viewAllLabel = `Vergelijk alle ${offers.length} winkel${
     offers.length === 1 ? '' : 's'
   }`;
@@ -619,9 +667,9 @@ export function CatalogOfferComparisonRail({
                   <h2 className={styles.offerOverlayTitle} id={titleId}>
                     Vergelijk alle winkels
                   </h2>
-                  {summaryLabel ? (
-                    <p className={styles.offerOverlaySummary}>{summaryLabel}</p>
-                  ) : null}
+                  <p className={styles.offerOverlaySummary}>
+                    {offerCountSummaryLabel}
+                  </p>
                 </div>
                 <button
                   aria-label="Vergelijking sluiten"
@@ -660,7 +708,7 @@ export function CatalogOfferComparisonRail({
       <Panel
         as="section"
         className={[styles.offerListCard, className].filter(Boolean).join(' ')}
-        description={summaryLabel}
+        description={offerCountSummaryLabel}
         eyebrow="Vergelijk winkels"
         elevation="rested"
         headingClassName={styles.offerRailHeading}
