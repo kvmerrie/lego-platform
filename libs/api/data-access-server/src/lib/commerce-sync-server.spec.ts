@@ -1,9 +1,36 @@
 import { describe, expect, test, vi } from 'vitest';
-import { runCommerceSync } from './commerce-sync-server';
+import {
+  assertCommerceCheckInputSourceReady,
+  runCommerceSync,
+} from './commerce-sync-server';
 
 describe('commerce sync server', () => {
   function buildCommerceSyncInputMock({
-    refreshSeeds = [],
+    refreshSeeds = [
+      {
+        merchant: {
+          id: 'merchant-goodbricks',
+          slug: 'goodbricks',
+          name: 'Goodbricks',
+          isActive: true,
+          sourceType: 'affiliate' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+        },
+        offerSeed: {
+          id: 'seed-10316-goodbricks',
+          setId: '10316',
+          merchantId: 'merchant-goodbricks',
+          productUrl: 'https://goodbricks.example/lego-10316',
+          isActive: true,
+          validationStatus: 'valid' as const,
+          notes: '',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          updatedAt: '2026-05-11T10:00:00.000Z',
+        },
+      },
+    ],
     syncSeeds = refreshSeeds,
   }: {
     refreshSeeds?: unknown[];
@@ -373,6 +400,48 @@ describe('commerce sync server', () => {
       'Legacy merchant refresh requires an explicit --merchant-slugs scope.',
     );
     expect(loadCommerceSyncInputsFn).not.toHaveBeenCalled();
+  });
+
+  test('fails check mode before loading Supabase when required env is missing', async () => {
+    await expect(
+      runCommerceSync({
+        environment: {},
+        mode: 'check',
+        workspaceRoot: '/tmp/brickhunt-workspace',
+      }),
+    ).rejects.toThrow(
+      'Missing Supabase env for commerce check: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY',
+    );
+  });
+
+  test('fails check mode before stale artifact comparison when loaded rows are empty', () => {
+    expect(() =>
+      assertCommerceCheckInputSourceReady({
+        environment: {
+          SUPABASE_SERVICE_ROLE_KEY: 'service-role',
+          SUPABASE_URL: 'https://example.supabase.co',
+        },
+        latestRowsLoaded: 0,
+        seedRowsLoaded: 0,
+        source: 'supabase',
+      }),
+    ).toThrow(
+      'Commerce check loaded 0 seeds/latest rows; refusing to compare empty artifacts.',
+    );
+  });
+
+  test('allows normal check input so artifact drift checks can run', () => {
+    expect(() =>
+      assertCommerceCheckInputSourceReady({
+        environment: {
+          SUPABASE_SERVICE_ROLE_KEY: 'service-role',
+          SUPABASE_URL: 'https://example.supabase.co',
+        },
+        latestRowsLoaded: 1,
+        seedRowsLoaded: 3,
+        source: 'supabase',
+      }),
+    ).not.toThrow();
   });
 
   test('does not revalidate catalog paths during check mode', async () => {

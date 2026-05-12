@@ -118,7 +118,7 @@ if (dirtyGeneratedArtifacts.length > 0) {
 
 if (hasPrefixMatch(changedFiles, commerceGuardPrefixes)) {
   logGuard(
-    'Commerce-related changes detected. Running pnpm sync:commerce:local:check.',
+    'Commerce-related changes detected. Running pnpm sync:commerce:local:check. This requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, either exported or present in .env.local.',
   );
   runCommand(pnpmCommand, ['sync:commerce:local:check']);
 }

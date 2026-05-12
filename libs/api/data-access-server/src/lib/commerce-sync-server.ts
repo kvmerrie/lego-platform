@@ -6,6 +6,7 @@ import {
 import { listCatalogSetSummariesWithOverlay } from '@lego-platform/catalog/data-access-server';
 import type { CatalogSetSummary } from '@lego-platform/catalog/util';
 import {
+  buildDailyPriceHistoryPointsFromCommerceLatestOffers,
   buildPricingSyncArtifacts,
   checkPricingGeneratedArtifacts,
   type CommerceLatestOfferHistoryInput,
@@ -17,6 +18,7 @@ import {
   classifyCommerceCommercialUnitType,
   getCommerceMerchantReliabilityTier,
   isCommerceMerchantProductionFeed,
+  supabaseEnvKeys,
 } from '@lego-platform/shared/config';
 import { normalizeCatalogSetId } from '@lego-platform/shared/util';
 import type { CommerceRefreshSeed } from '@lego-platform/commerce/data-access-server';
@@ -53,6 +55,13 @@ export interface CommerceSyncRunResult {
   scopedSetIds: readonly string[];
 }
 
+export interface CommerceCheckInputGuardContext {
+  environment?: Record<string, string | undefined>;
+  latestRowsLoaded: number;
+  seedRowsLoaded: number;
+  source: 'injected' | 'supabase';
+}
+
 export interface CommerceSyncDependencies {
   checkAffiliateGeneratedArtifactsFn?: typeof checkAffiliateGeneratedArtifacts;
   checkPricingGeneratedArtifactsFn?: typeof checkPricingGeneratedArtifacts;
@@ -63,6 +72,41 @@ export interface CommerceSyncDependencies {
   upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn?: typeof upsertDailyPriceHistoryPointsFromCommerceLatestOffers;
   writeAffiliateGeneratedArtifactsFn?: typeof writeAffiliateGeneratedArtifacts;
   writePricingGeneratedArtifactsFn?: typeof writePricingGeneratedArtifacts;
+}
+
+function hasRequiredCommerceCheckSupabaseEnv(
+  environment: Record<string, string | undefined>,
+): boolean {
+  return Boolean(
+    environment[supabaseEnvKeys.serverUrl]?.trim() &&
+      environment[supabaseEnvKeys.serverServiceRoleKey]?.trim(),
+  );
+}
+
+export function assertCommerceCheckInputSourceReady({
+  environment = process.env,
+  latestRowsLoaded,
+  seedRowsLoaded,
+  source,
+}: CommerceCheckInputGuardContext): void {
+  if (
+    source === 'supabase' &&
+    !hasRequiredCommerceCheckSupabaseEnv(environment)
+  ) {
+    throw new Error(
+      `Missing Supabase env for commerce check: ${supabaseEnvKeys.serverUrl}, ${supabaseEnvKeys.serverServiceRoleKey}`,
+    );
+  }
+
+  if (seedRowsLoaded === 0 && latestRowsLoaded === 0) {
+    throw new Error(
+      `Commerce check loaded 0 seeds/latest rows; refusing to compare empty artifacts. source=${source} has_${supabaseEnvKeys.serverUrl.toLowerCase()}=${Boolean(
+        environment[supabaseEnvKeys.serverUrl]?.trim(),
+      )} has_${supabaseEnvKeys.serverServiceRoleKey.toLowerCase()}=${Boolean(
+        environment[supabaseEnvKeys.serverServiceRoleKey]?.trim(),
+      )}`,
+    );
+  }
 }
 
 function normalizeRequestedSetIds(setIds?: readonly string[]) {
@@ -163,30 +207,6 @@ function buildCommerceSyncArtifacts({
   return {
     affiliateArtifacts,
     pricingArtifacts,
-  };
-}
-
-function createEmptyDailyHistorySummary(): CommerceLatestOfferHistorySummary {
-  return {
-    dailyHistoryPointsBuilt: 0,
-    eligibleLatestOfferRows: 0,
-    availabilityCounts: {},
-    fetchStatusCounts: {},
-    latestOfferRowsSeen: 0,
-    maxObservedAgeHours: 0,
-    merchantSlugCounts: {},
-    skipped: {
-      inactiveSeedOrMerchant: 0,
-      invalidSeed: 0,
-      missingLatest: 0,
-      missingOrInvalidPrice: 0,
-      nonEur: 0,
-      staleOrError: 0,
-      unitMismatch: 0,
-      untrustedMerchant: 0,
-      unavailableForHeadline: 0,
-    },
-    validationStatusCounts: {},
   };
 }
 
@@ -308,6 +328,7 @@ export async function resolveCommerceCatalogSetSummaries({
 
 export async function runCommerceSync({
   dependencies = {},
+  environment = process.env,
   merchantSlugs,
   mode = 'write',
   now,
@@ -316,6 +337,7 @@ export async function runCommerceSync({
   workspaceRoot,
 }: {
   dependencies?: CommerceSyncDependencies;
+  environment?: Record<string, string | undefined>;
   merchantSlugs?: readonly string[];
   mode?: 'check' | 'write';
   now?: Date;
@@ -340,11 +362,24 @@ export async function runCommerceSync({
     scopedMerchantSlugs.length > 0 ? scopedMerchantSlugs : undefined;
   const scoped = scopedSetIds.length > 0 || scopedMerchantSlugs.length > 0;
   const shouldRefreshMerchants = mode === 'write' && refreshMerchants;
+  const inputSource =
+    loadCommerceSyncInputsFn === loadCommerceSyncInputs
+      ? 'supabase'
+      : 'injected';
 
   if (shouldRefreshMerchants && scopedMerchantSlugs.length === 0) {
     throw new Error(
       'Legacy merchant refresh requires an explicit --merchant-slugs scope. Default commerce-sync is aggregate-only.',
     );
+  }
+
+  if (!scoped && mode === 'check' && inputSource === 'supabase') {
+    assertCommerceCheckInputSourceReady({
+      environment,
+      latestRowsLoaded: 1,
+      seedRowsLoaded: 1,
+      source: inputSource,
+    });
   }
 
   const initialCommerceSyncInputs = await loadCommerceSyncInputsFn({
@@ -396,6 +431,27 @@ export async function runCommerceSync({
     setIds: scopedSetIds,
   });
   const { syncInputs } = refreshedCommerceSyncInputs;
+  const dailyHistoryInputs =
+    'syncSeeds' in refreshedCommerceSyncInputs
+      ? buildDailyHistoryInputsFromCommerceSyncSeeds(
+          refreshedCommerceSyncInputs.syncSeeds,
+        )
+      : [];
+
+  if (!scoped && mode === 'check') {
+    const seedRowsLoaded = dailyHistoryInputs.length;
+    const latestRowsLoaded = dailyHistoryInputs.filter((dailyHistoryInput) =>
+      Boolean(dailyHistoryInput.latestOffer),
+    ).length;
+
+    assertCommerceCheckInputSourceReady({
+      environment,
+      latestRowsLoaded,
+      seedRowsLoaded,
+      source: inputSource,
+    });
+  }
+
   const { affiliateArtifacts, pricingArtifacts } = buildCommerceSyncArtifacts({
     now,
     syncInputs,
@@ -440,18 +496,13 @@ export async function runCommerceSync({
   const dailyPriceHistoryResult =
     mode === 'write'
       ? await upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn({
-          latestOffers:
-            'syncSeeds' in refreshedCommerceSyncInputs
-              ? buildDailyHistoryInputsFromCommerceSyncSeeds(
-                  refreshedCommerceSyncInputs.syncSeeds,
-                )
-              : [],
+          latestOffers: dailyHistoryInputs,
           now,
         })
-      : {
-          points: [],
-          summary: createEmptyDailyHistorySummary(),
-        };
+      : buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+          latestOffers: dailyHistoryInputs,
+          now,
+        });
 
   console.info(
     formatDailyHistorySummaryLog({

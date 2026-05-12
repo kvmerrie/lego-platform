@@ -273,9 +273,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 15299,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10302",
@@ -471,9 +471,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 9449,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10317",
@@ -867,9 +867,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7829,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10340",
@@ -1009,10 +1009,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "10343",
@@ -1065,9 +1065,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2655,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10344",
@@ -1086,10 +1086,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "10344",
@@ -1142,9 +1142,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2655,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10347",
@@ -1163,10 +1163,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "10348",
@@ -1230,9 +1230,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5219,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10349",
@@ -1241,9 +1241,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1490,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "10349",
@@ -1313,6 +1313,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10353",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "10353",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1321,17 +1332,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "10353",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6499,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "10353",
@@ -1450,9 +1450,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 16199,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10359",
@@ -1505,9 +1505,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8775,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10359",
@@ -1555,6 +1555,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10362",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "10362",
     "merchantId": "coolblue",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1563,17 +1574,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:16:29.702Z"
-  },
-  {
-    "setId": "10362",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6499,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "10362",
@@ -1610,6 +1610,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "10363",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "10363",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -1618,17 +1629,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "10363",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "10363",
@@ -1725,9 +1725,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2655,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10368",
@@ -1845,10 +1845,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4899,
+    "totalPriceMinor": 4799,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "10374",
@@ -1868,9 +1868,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5399,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10391",
@@ -1879,9 +1879,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 9990,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "10391",
@@ -1923,9 +1923,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10413",
@@ -2000,9 +2000,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10416",
@@ -2066,9 +2066,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3465,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10421",
@@ -2110,9 +2110,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5669,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10423",
@@ -2176,9 +2176,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10426",
@@ -2220,9 +2220,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3465,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10427",
@@ -2275,9 +2275,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6929,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10428",
@@ -2330,9 +2330,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 12150,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10431",
@@ -2385,9 +2385,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6119,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10435",
@@ -2418,9 +2418,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7829,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10440",
@@ -2495,9 +2495,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2475,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10442",
@@ -2561,9 +2561,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2475,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10444",
@@ -2605,9 +2605,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10445",
@@ -2619,6 +2619,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "10445",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "10445",
@@ -2649,9 +2660,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3915,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10446",
@@ -2693,9 +2704,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6929,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10447",
@@ -2770,9 +2781,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2879,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10450",
@@ -2814,9 +2825,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3465,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10451",
@@ -2858,9 +2869,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6075,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10452",
@@ -2924,9 +2935,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10454",
@@ -3001,9 +3012,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5265,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10456",
@@ -3045,9 +3056,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10457",
@@ -3100,9 +3111,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10459",
@@ -3133,9 +3144,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6165,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10460",
@@ -3155,9 +3166,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1079,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10460",
@@ -3397,9 +3408,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10473",
@@ -3452,9 +3463,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10474",
@@ -3485,9 +3496,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10475",
@@ -3529,9 +3540,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2249,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10475",
@@ -3595,9 +3606,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8099,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10477",
@@ -3639,9 +3650,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10696",
@@ -3672,9 +3683,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10696",
@@ -3716,9 +3727,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10698",
@@ -3760,9 +3771,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10788",
@@ -3815,9 +3826,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1259,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10795",
@@ -3936,9 +3947,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10967",
@@ -3969,9 +3980,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3509,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10977",
@@ -4013,9 +4024,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10989",
@@ -4046,9 +4057,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3735,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10992",
@@ -4068,9 +4079,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4275,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "10993",
@@ -4090,9 +4101,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7650,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11018",
@@ -4134,9 +4145,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 765,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11024",
@@ -4167,9 +4178,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11025",
@@ -4200,9 +4211,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 765,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11026",
@@ -4233,9 +4244,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 765,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11036",
@@ -4287,10 +4298,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4599,
+    "totalPriceMinor": 4499,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "11039",
@@ -4310,9 +4321,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 855,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11039",
@@ -4332,9 +4343,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1399,
-    "availability": "in_stock",
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "11040",
@@ -4398,9 +4409,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2969,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11041",
@@ -4419,10 +4430,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3099,
+    "totalPriceMinor": 2999,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "11042",
@@ -4431,9 +4442,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3295,
-    "availability": "in_stock",
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "observedAt": "2026-05-12T18:11:21.501Z"
   },
   {
     "setId": "11042",
@@ -4442,9 +4453,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3465,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11043",
@@ -4563,9 +4574,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4815,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11201",
@@ -4596,9 +4607,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11202",
@@ -4640,9 +4651,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6165,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11204",
@@ -4651,9 +4662,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1665,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11204",
@@ -4717,9 +4728,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11206",
@@ -4761,9 +4772,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11207",
@@ -4805,9 +4816,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3149,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11207",
@@ -4815,10 +4826,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3399,
+    "totalPriceMinor": 3299,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "11208",
@@ -4849,9 +4860,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11208",
@@ -4904,9 +4915,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11215",
@@ -5134,10 +5145,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 10995,
+    "totalPriceMinor": 11295,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "11384",
@@ -5355,9 +5366,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5399,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11505",
@@ -5443,9 +5454,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "11509",
@@ -6083,7 +6094,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 1999,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T18:21:21.395Z"
+    "observedAt": "2026-05-12T18:21:18.799Z"
   },
   {
     "setId": "21269",
@@ -6230,6 +6241,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21273",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
+  },
+  {
+    "setId": "21273",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -6282,6 +6304,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "21274",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "21274",
@@ -6670,6 +6703,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21345",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "21345",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -6681,25 +6725,14 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "21345",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6499,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "21345",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6929,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21348",
@@ -6740,10 +6773,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4699,
+    "totalPriceMinor": 4999,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "21357",
@@ -6785,9 +6818,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6165,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21358",
@@ -6873,9 +6906,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5309,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21366",
@@ -6972,9 +7005,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21584",
@@ -7005,9 +7038,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21585",
@@ -7049,9 +7082,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21585",
@@ -7115,9 +7148,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21586",
@@ -7214,9 +7247,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4049,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "21588",
@@ -7346,9 +7379,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5849,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30416",
@@ -7445,9 +7478,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 341,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30660",
@@ -7489,9 +7522,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 299,
-    "availability": "in_stock",
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T18:01:34.932Z"
+    "observedAt": "2026-05-12T12:01:42.061Z"
   },
   {
     "setId": "30662",
@@ -7512,7 +7545,7 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 295,
     "availability": "in_stock",
-    "commercialUnitType": "full_set",
+    "commercialUnitType": "blind_bag",
     "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
@@ -7525,6 +7558,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "30672",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "30673",
@@ -7544,9 +7588,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 341,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30673",
@@ -7841,9 +7885,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 341,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30699",
@@ -7863,9 +7907,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 341,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30701",
@@ -8028,9 +8072,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 341,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30710",
@@ -8072,9 +8116,31 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 359,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "30714",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:04:02.326Z"
+  },
+  {
+    "setId": "30714",
+    "merchantId": "coppenswarenhuis",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 359,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30716",
@@ -8094,9 +8160,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 359,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30716",
@@ -8127,9 +8193,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 359,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30720",
@@ -8154,6 +8220,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
+    "setId": "30722",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 299,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30722",
+    "merchantId": "coppenswarenhuis",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 359,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
     "setId": "30723",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -8171,9 +8259,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 359,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "30724",
@@ -8319,6 +8407,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
+    "setId": "30735",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 299,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "30735",
+    "merchantId": "coppenswarenhuis",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 359,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
     "setId": "30736",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -8364,17 +8474,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31136",
-    "merchantId": "lidl",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 1799,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:21:15.352Z"
-  },
-  {
-    "setId": "31136",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8386,14 +8485,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31136",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
+  },
+  {
+    "setId": "31136",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2299,
+    "totalPriceMinor": 2399,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "31140",
@@ -8424,9 +8534,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 855,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31140",
@@ -8457,9 +8567,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 12419,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31145",
@@ -8479,9 +8589,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 855,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31145",
@@ -8562,17 +8672,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31148",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2099,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "31148",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8595,14 +8694,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31148",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "31148",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31149",
@@ -8628,17 +8738,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31149",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2099,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "31149",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8661,14 +8760,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31149",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "31149",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31150",
@@ -8732,20 +8842,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5669,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "31151",
-    "merchantId": "lidl",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3999,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:21:15.352Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31151",
@@ -8757,6 +8856,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-10T18:01:55.701Z"
+  },
+  {
+    "setId": "31151",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "31151",
@@ -8809,9 +8919,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5399,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31152",
@@ -8826,17 +8936,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31152",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "31152",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -8845,6 +8944,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "31152",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "31152",
@@ -8886,9 +8996,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1079,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31159",
@@ -8930,9 +9040,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1215,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31160",
@@ -8996,9 +9106,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5175,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31161",
@@ -9028,10 +9138,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 1399,
+    "totalPriceMinor": 1499,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T00:21:09.581Z"
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "31162",
@@ -9051,9 +9161,20 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "31163",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "31163",
@@ -9095,9 +9216,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2069,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31163",
@@ -9178,17 +9299,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31166",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3399,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "31166",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9216,9 +9326,20 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "31166",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "31167",
@@ -9271,9 +9392,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7785,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31168",
@@ -9337,9 +9458,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 10799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31169",
@@ -9351,17 +9472,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
-  },
-  {
-    "setId": "31169",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2099,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "31169",
@@ -9392,9 +9502,20 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "31169",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "31170",
@@ -9436,9 +9557,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2069,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31173",
@@ -9480,9 +9601,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1215,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31174",
@@ -9524,9 +9645,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2475,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31174",
@@ -9585,17 +9706,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31212",
-    "merchantId": "coolblue",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 13900,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-09T00:16:18.890Z"
-  },
-  {
-    "setId": "31212",
     "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -9615,6 +9725,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T06:01:32.162Z"
+  },
+  {
+    "setId": "31212",
+    "merchantId": "coolblue",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16700,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T18:16:16.418Z"
   },
   {
     "setId": "31212",
@@ -9799,9 +9920,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 10799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31217",
@@ -9854,9 +9975,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5265,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31218",
@@ -9975,9 +10096,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31377",
@@ -10008,9 +10129,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31379",
@@ -10063,9 +10184,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2249,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31380",
@@ -10107,9 +10228,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31380",
@@ -10121,17 +10242,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:21:15.352Z"
-  },
-  {
-    "setId": "31381",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2399,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "31381",
@@ -10173,9 +10283,20 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3149,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "31381",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "31382",
@@ -10217,9 +10338,20 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "31382",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "31383",
@@ -10283,20 +10415,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "31385",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3299,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31385",
@@ -10333,14 +10454,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "31385",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "31385",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "31386",
@@ -10503,9 +10635,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1305,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40491",
@@ -10536,9 +10668,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3555,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40499",
@@ -10602,9 +10734,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1305,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40575",
@@ -10668,9 +10800,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1305,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40647",
@@ -10712,9 +10844,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40678",
@@ -10745,9 +10877,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1079,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40711",
@@ -10822,9 +10954,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1305,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40743",
@@ -10866,9 +10998,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3465,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40743",
@@ -10910,9 +11042,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1665,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40746",
@@ -10976,9 +11108,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1305,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "40808",
@@ -11086,9 +11218,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3149,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41696",
@@ -11108,9 +11240,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3509,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41716",
@@ -11152,9 +11284,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41724",
@@ -11163,9 +11295,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3915,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41724",
@@ -11207,9 +11339,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41734",
@@ -11229,9 +11361,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7469,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41739",
@@ -11251,9 +11383,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1665,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41744",
@@ -11273,9 +11405,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41749",
@@ -11306,9 +11438,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1665,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41754",
@@ -11339,9 +11471,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2249,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "41964",
@@ -11361,9 +11493,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3509,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42115",
@@ -11405,9 +11537,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 26550,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42130",
@@ -11536,10 +11668,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "42151",
@@ -11548,9 +11680,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42154",
@@ -11658,9 +11790,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8099,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42160",
@@ -11713,9 +11845,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 15119,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42161",
@@ -11774,6 +11906,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42167",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
+  },
+  {
+    "setId": "42167",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -11822,10 +11965,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 6499,
+    "totalPriceMinor": 6399,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "42170",
@@ -11856,9 +11999,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7065,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42171",
@@ -12285,9 +12428,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 855,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42197",
@@ -12350,10 +12493,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2699,
+    "totalPriceMinor": 2599,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "42199",
@@ -12472,9 +12615,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3509,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42201",
@@ -12515,10 +12658,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 15300,
+    "totalPriceMinor": 15200,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "42202",
@@ -12560,9 +12703,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 17775,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42203",
@@ -12574,6 +12717,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-10T18:01:55.701Z"
+  },
+  {
+    "setId": "42203",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "42203",
@@ -12632,6 +12786,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42204",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42204",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12640,17 +12805,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "42204",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42205",
@@ -12714,9 +12868,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5265,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42206",
@@ -12797,6 +12951,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42207",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 17400,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42207",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12805,17 +12970,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "42207",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 17500,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42207",
@@ -12863,6 +13017,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42208",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42208",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -12874,25 +13039,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42208",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "42208",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5265,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "42209",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "42209",
@@ -12915,17 +13080,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-08T12:16:23.104Z"
-  },
-  {
-    "setId": "42209",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7799,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42209",
@@ -12956,9 +13110,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8819,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42210",
@@ -13011,9 +13165,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 12599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42211",
@@ -13094,6 +13248,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42213",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4399,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42213",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -13124,17 +13289,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "42213",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5299,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42214",
@@ -13198,9 +13352,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 16199,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42215",
@@ -13264,9 +13418,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 35999,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42218",
@@ -13296,10 +13450,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 899,
-    "availability": "unknown",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T18:36:34.261Z"
+    "observedAt": "2026-05-12T18:36:11.216Z"
   },
   {
     "setId": "42219",
@@ -13407,9 +13561,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42221",
@@ -13869,9 +14023,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42605",
@@ -13902,9 +14056,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7875,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42608",
@@ -13946,9 +14100,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1305,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42610",
@@ -13979,9 +14133,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42614",
@@ -14012,9 +14166,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3419,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42616",
@@ -14045,9 +14199,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5669,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42619",
@@ -14067,9 +14221,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7469,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42622",
@@ -14122,9 +14276,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1619,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42625",
@@ -14155,9 +14309,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5850,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42635",
@@ -14199,9 +14353,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1259,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42641",
@@ -14243,9 +14397,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1215,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42642",
@@ -14348,6 +14502,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42648",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42648",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -14356,17 +14521,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "42648",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "42649",
@@ -14407,10 +14561,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "42650",
@@ -14551,9 +14705,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42654",
@@ -14650,9 +14804,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1665,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42659",
@@ -14694,9 +14848,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3465,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42661",
@@ -14738,9 +14892,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3915,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42663",
@@ -14870,9 +15024,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6569,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42665",
@@ -14980,9 +15134,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8550,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42671",
@@ -15046,9 +15200,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7829,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42673",
@@ -15112,9 +15266,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 11699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42675",
@@ -15145,9 +15299,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42676",
@@ -15195,25 +15349,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42677",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2399,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "42677",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "42677",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "42678",
@@ -15255,9 +15409,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42678",
@@ -15310,9 +15464,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2249,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42679",
@@ -15354,9 +15508,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42680",
@@ -15453,20 +15607,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3599,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "42685",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3399,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42685",
@@ -15503,14 +15646,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42685",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42685",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42686",
@@ -15563,9 +15717,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5399,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42687",
@@ -15646,25 +15800,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42688",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42688",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7199,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "42689",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42689",
@@ -15690,6 +15844,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42689",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42689",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -15706,9 +15871,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8099,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42690",
@@ -15750,9 +15915,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42693",
@@ -15778,17 +15943,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42695",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2099,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "42695",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -15811,25 +15965,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42695",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42695",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "42696",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2099,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42696",
@@ -15866,14 +16020,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "42696",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2599,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "42696",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42699",
@@ -15904,9 +16069,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "42701",
@@ -16036,9 +16201,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6895,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "43014",
@@ -16388,9 +16553,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1755,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43104",
@@ -16421,9 +16586,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1755,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43106",
@@ -16443,9 +16608,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1755,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43107",
@@ -16465,9 +16630,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1755,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43109",
@@ -16498,9 +16663,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1755,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43206",
@@ -16520,9 +16685,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6659,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43206",
@@ -16553,9 +16718,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5625,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43220",
@@ -16597,9 +16762,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4949,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43223",
@@ -16630,9 +16795,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43224",
@@ -16685,9 +16850,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4679,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43231",
@@ -16740,9 +16905,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43237",
@@ -16784,9 +16949,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43240",
@@ -16817,9 +16982,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6119,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43243",
@@ -16916,9 +17081,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 14399,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43245",
@@ -16960,9 +17125,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8819,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43247",
@@ -17037,9 +17202,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2969,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43249",
@@ -17125,9 +17290,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43257",
@@ -17235,9 +17400,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8819,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43260",
@@ -17367,9 +17532,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3555,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43264",
@@ -17377,10 +17542,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3999,
+    "totalPriceMinor": 3899,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "43265",
@@ -17455,9 +17620,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3509,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43266",
@@ -17521,9 +17686,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 10799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43268",
@@ -17626,6 +17791,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "43270",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "43270",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -17634,17 +17810,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "43270",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "43270",
@@ -17697,9 +17862,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2115,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43272",
@@ -17763,9 +17928,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2925,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43273",
@@ -17818,9 +17983,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3555,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43274",
@@ -17873,9 +18038,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3959,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43277",
@@ -17917,9 +18082,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43279",
@@ -17939,9 +18104,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5499,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "43279",
@@ -17960,10 +18125,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 6100,
+    "totalPriceMinor": 6200,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:16:29.702Z"
+    "observedAt": "2026-05-12T12:16:00.030Z"
   },
   {
     "setId": "43281",
@@ -18049,9 +18214,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43285",
@@ -18093,9 +18258,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43286",
@@ -18148,9 +18313,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43287",
@@ -18334,10 +18499,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3699,
+    "totalPriceMinor": 3399,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "43300",
@@ -18566,9 +18731,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1619,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60238",
@@ -18648,15 +18813,26 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
+    "setId": "60316",
+    "merchantId": "coolblue",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5800,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T18:16:16.418Z"
+  },
+  {
     "setId": "60337",
     "merchantId": "lidl",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 10900,
+    "totalPriceMinor": 11900,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:21:15.352Z"
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "60337",
@@ -18697,10 +18873,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 14000,
+    "totalPriceMinor": 13000,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:16:29.702Z"
+    "observedAt": "2026-05-12T12:16:00.030Z"
   },
   {
     "setId": "60339",
@@ -18720,9 +18896,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 12599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60353",
@@ -18764,9 +18940,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60359",
@@ -18797,9 +18973,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7829,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60367",
@@ -18830,9 +19006,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 11490,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T06:01:32.162Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "60368",
@@ -18851,10 +19027,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 12600,
+    "totalPriceMinor": 14999,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60373",
@@ -18940,9 +19116,42 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "60402",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1099,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "60402",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1295,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "60402",
+    "merchantId": "coppenswarenhuis",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1305,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60404",
@@ -18973,9 +19182,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60407",
@@ -19027,10 +19236,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60409",
@@ -19093,10 +19302,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 6399,
+    "totalPriceMinor": 6299,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60414",
@@ -19215,9 +19424,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8550,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60430",
@@ -19226,9 +19435,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1399,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "60430",
@@ -19253,6 +19462,28 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
+    "setId": "60433",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8195,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-08T12:10:57.035Z"
+  },
+  {
+    "setId": "60433",
+    "merchantId": "coppenswarenhuis",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 8819,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
     "setId": "60434",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -19270,9 +19501,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 11699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60442",
@@ -19303,9 +19534,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1079,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60442",
@@ -19379,10 +19610,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60444",
@@ -19457,9 +19688,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8550,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60447",
@@ -19578,9 +19809,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60454",
@@ -19644,9 +19875,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 855,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60455",
@@ -19710,9 +19941,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 855,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60462",
@@ -19885,10 +20116,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4899,
+    "totalPriceMinor": 4799,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60466",
@@ -19908,9 +20139,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5219,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60467",
@@ -19973,10 +20204,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 7199,
+    "totalPriceMinor": 6999,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60469",
@@ -19996,9 +20227,31 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7785,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "60470",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15690,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T12:01:42.061Z"
+  },
+  {
+    "setId": "60470",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 15900,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "60471",
@@ -20062,9 +20315,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 9899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60478",
@@ -20117,9 +20370,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60479",
@@ -20161,9 +20414,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60480",
@@ -20227,9 +20480,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60482",
@@ -20271,9 +20524,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60483",
@@ -20315,9 +20568,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60484",
@@ -20348,9 +20601,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60485",
@@ -20392,9 +20645,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60486",
@@ -20425,9 +20678,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60487",
@@ -20458,9 +20711,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60488",
@@ -20480,9 +20733,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1499,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T12:01:42.061Z"
   },
   {
     "setId": "60488",
@@ -20502,20 +20755,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "60489",
-    "merchantId": "coppenswarenhuis",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 1799,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T18:36:34.261Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60489",
@@ -20562,6 +20804,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
+    "setId": "60489",
+    "merchantId": "coppenswarenhuis",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T18:36:11.216Z"
+  },
+  {
     "setId": "60490",
     "merchantId": "goodbricks",
     "regionCode": "NL",
@@ -20601,9 +20854,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2249,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60491",
@@ -20634,9 +20887,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60492",
@@ -20699,10 +20952,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3899,
+    "totalPriceMinor": 3799,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60494",
@@ -20810,9 +21063,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1499,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "60498",
@@ -20864,10 +21117,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 5699,
+    "totalPriceMinor": 5599,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60499",
@@ -20887,9 +21140,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6299,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60500",
@@ -20942,9 +21195,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60500",
@@ -20952,10 +21205,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60502",
@@ -21052,9 +21305,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5399,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60504",
@@ -21107,9 +21360,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 9899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "60505",
@@ -21274,7 +21527,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 595,
     "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:25:55.467Z"
+    "observedAt": "2026-05-12T18:25:58.657Z"
   },
   {
     "setId": "71039",
@@ -21296,7 +21549,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 375,
     "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:10:57.956Z"
+    "observedAt": "2026-05-12T18:11:21.501Z"
   },
   {
     "setId": "71049",
@@ -21306,8 +21559,8 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5995,
     "availability": "in_stock",
-    "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:25:55.467Z"
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-05-12T18:25:58.657Z"
   },
   {
     "setId": "71050",
@@ -21316,9 +21569,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 359,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71050",
@@ -21328,8 +21581,8 @@ const pricingObservationsPayload = String.raw`[
     "condition": "new",
     "totalPriceMinor": 5995,
     "availability": "in_stock",
-    "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:25:55.467Z"
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-05-12T18:25:58.657Z"
   },
   {
     "setId": "71050",
@@ -21340,7 +21593,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 11900,
     "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:10:57.956Z"
+    "observedAt": "2026-05-12T18:11:21.501Z"
   },
   {
     "setId": "71051",
@@ -21349,9 +21602,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 359,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71051",
@@ -21373,7 +21626,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 11900,
     "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:10:57.956Z"
+    "observedAt": "2026-05-12T18:11:21.501Z"
   },
   {
     "setId": "71051",
@@ -21384,7 +21637,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 12995,
     "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:25:55.467Z"
+    "observedAt": "2026-05-12T18:25:58.657Z"
   },
   {
     "setId": "71052",
@@ -21395,7 +21648,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 395,
     "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:10:57.956Z"
+    "observedAt": "2026-05-12T18:11:21.501Z"
   },
   {
     "setId": "71052",
@@ -21406,7 +21659,7 @@ const pricingObservationsPayload = String.raw`[
     "totalPriceMinor": 11896,
     "availability": "in_stock",
     "commercialUnitType": "unknown",
-    "observedAt": "2026-05-11T18:25:55.467Z"
+    "observedAt": "2026-05-12T18:25:58.657Z"
   },
   {
     "setId": "71390",
@@ -21426,9 +21679,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6119,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71408",
@@ -21459,9 +21712,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 11699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71409",
@@ -21503,9 +21756,31 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5759,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "71421",
+    "merchantId": "coppenswarenhuis",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2339,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "71421",
+    "merchantId": "alternate",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2399,
+    "availability": "out_of_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
     "setId": "71422",
@@ -21536,9 +21811,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3285,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71424",
@@ -21558,9 +21833,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5669,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71425",
@@ -21591,9 +21866,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8910,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71425",
@@ -21855,9 +22130,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71453",
@@ -21910,9 +22185,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3329,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71458",
@@ -21932,9 +22207,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5399,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71459",
@@ -21954,9 +22229,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7469,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71472",
@@ -22009,9 +22284,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71477",
@@ -22031,9 +22306,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7829,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71478",
@@ -22064,9 +22339,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8550,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71479",
@@ -22130,9 +22405,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3869,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71484",
@@ -22152,9 +22427,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6750,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71485",
@@ -22174,9 +22449,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 11519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71488",
@@ -22317,9 +22592,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71495",
@@ -22449,9 +22724,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8685,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71500",
@@ -22459,10 +22734,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 11400,
+    "totalPriceMinor": 10900,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "71500",
@@ -22482,9 +22757,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 12599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71508",
@@ -22796,17 +23071,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71808",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2099,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "71808",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -22826,6 +23090,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "71808",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "71811",
@@ -22856,9 +23131,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4319,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71814",
@@ -22911,20 +23186,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 895,
-    "availability": "in_stock",
+    "availability": "out_of_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "71824",
-    "merchantId": "misterbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 895,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "observedAt": "2026-05-12T18:11:21.501Z"
   },
   {
     "setId": "71826",
@@ -23026,6 +23290,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
+    "setId": "71828",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
     "setId": "71829",
     "merchantId": "misterbricks",
     "regionCode": "NL",
@@ -23049,17 +23324,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71830",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3299,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "71830",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23079,6 +23343,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "71830",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4199,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "71831",
@@ -23115,17 +23390,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71831",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3199,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "71831",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23134,6 +23398,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "71831",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "71832",
@@ -23225,17 +23500,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71836",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6199,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "71836",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23244,6 +23508,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "71836",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7499,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "71836",
@@ -23372,10 +23647,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3899,
+    "totalPriceMinor": 3799,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "71843",
@@ -23417,9 +23692,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6075,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71843",
@@ -23472,9 +23747,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7785,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71844",
@@ -23538,9 +23813,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8685,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71846",
@@ -23604,9 +23879,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 10799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71847",
@@ -23637,9 +23912,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 13499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71848",
@@ -23670,9 +23945,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 17999,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71849",
@@ -23714,9 +23989,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71850",
@@ -23758,9 +24033,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71851",
@@ -23780,9 +24055,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71853",
@@ -23857,9 +24132,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71855",
@@ -23934,9 +24209,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71857",
@@ -23962,6 +24237,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71857",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6299,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "71857",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -23970,17 +24256,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "71857",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6399,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "71857",
@@ -24000,9 +24275,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7199,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71858",
@@ -24264,9 +24539,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "71868",
@@ -24682,9 +24957,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4365,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "72038",
@@ -24759,9 +25034,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8819,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "72040",
@@ -24835,10 +25110,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2799,
+    "totalPriceMinor": 2699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "72042",
@@ -24891,9 +25166,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8819,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "72043",
@@ -24902,9 +25177,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3899,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "72043",
@@ -24945,10 +25220,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "72043",
@@ -24957,9 +25232,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "72043",
@@ -25007,6 +25282,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "72151",
+    "merchantId": "misterbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4900,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T12:10:57.652Z"
+  },
+  {
+    "setId": "72151",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25015,17 +25301,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "72151",
-    "merchantId": "misterbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4995,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "72151",
@@ -25242,10 +25517,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3199,
+    "totalPriceMinor": 2899,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "75337",
@@ -25287,9 +25562,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 12599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75345",
@@ -25298,9 +25573,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1399,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "75345",
@@ -25342,9 +25617,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5759,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75347",
@@ -25617,9 +25892,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75372",
@@ -25661,20 +25936,20 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
-    "setId": "75374",
-    "merchantId": "goodbricks",
+    "setId": "75373",
+    "merchantId": "mediamarkt",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 10495,
+    "totalPriceMinor": 2099,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "75374",
@@ -25694,9 +25969,20 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 12599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "75374",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12795,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75375",
@@ -25766,17 +26052,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75376",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5595,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75376",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25788,14 +26063,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75376",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6995,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
+  },
+  {
+    "setId": "75376",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7065,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75379",
@@ -25837,9 +26123,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8819,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75380",
@@ -25847,10 +26133,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 6395,
+    "totalPriceMinor": 6995,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75380",
@@ -25865,17 +26151,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75384",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3495,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75384",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25887,25 +26162,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75384",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4695,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
+  },
+  {
+    "setId": "75384",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4769,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "75386",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2995,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75386",
@@ -25917,6 +26192,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "75386",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3495,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75388",
@@ -25931,17 +26217,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75388",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2695,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75388",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -25950,6 +26225,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "75388",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3195,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75388",
@@ -25969,9 +26255,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3465,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75389",
@@ -26002,9 +26288,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 16199,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75391",
@@ -26063,17 +26349,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75399",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4695,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75399",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26082,6 +26357,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "75399",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5495,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75399",
@@ -26118,17 +26404,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75400",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 995,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75400",
     "merchantId": "lidl",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26137,6 +26412,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:21:15.352Z"
+  },
+  {
+    "setId": "75400",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1195,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75400",
@@ -26156,9 +26442,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1259,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75400",
@@ -26239,17 +26525,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75402",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4695,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75402",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26258,6 +26533,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "75402",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5495,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75402",
@@ -26276,10 +26562,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 5799,
+    "totalPriceMinor": 5699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "75402",
@@ -26294,17 +26580,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75403",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6595,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75403",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26313,6 +26588,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "75403",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7795,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75403",
@@ -26338,14 +26624,14 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75404",
-    "merchantId": "goodbricks",
+    "merchantId": "lidl",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 3495,
+    "totalPriceMinor": 3199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "75404",
@@ -26360,6 +26646,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75404",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3895,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
+  },
+  {
+    "setId": "75404",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26368,17 +26665,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "75405",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4895,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "75405",
@@ -26401,6 +26687,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "75405",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5495,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75405",
@@ -26437,17 +26734,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75407",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4895,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
-  },
-  {
-    "setId": "75407",
     "merchantId": "alternate",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -26467,6 +26753,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T05:01:06.969Z"
+  },
+  {
+    "setId": "75407",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5495,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75407",
@@ -26584,10 +26881,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 995,
+    "totalPriceMinor": 1195,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75411",
@@ -26607,9 +26904,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1259,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75411",
@@ -26628,10 +26925,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 1395,
+    "totalPriceMinor": 1495,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75412",
@@ -26640,9 +26937,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1665,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75412",
@@ -26706,9 +27003,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 13499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75414",
@@ -26761,20 +27058,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "75416",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 7595,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75416",
@@ -26804,10 +27090,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 8899,
+    "totalPriceMinor": 8799,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "75416",
@@ -26821,15 +27107,15 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
-    "setId": "75417",
+    "setId": "75416",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 14595,
+    "totalPriceMinor": 8995,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75417",
@@ -26848,10 +27134,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 15300,
+    "totalPriceMinor": 15200,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "75417",
@@ -26863,6 +27149,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "75417",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 16195,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75417",
@@ -26882,9 +27179,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 17999,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75419",
@@ -26970,9 +27267,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3555,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75432",
@@ -27036,9 +27333,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5715,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75433",
@@ -27046,10 +27343,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4695,
+    "totalPriceMinor": 5495,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75433",
@@ -27079,10 +27376,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 5799,
+    "totalPriceMinor": 5699,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "75433",
@@ -27102,20 +27399,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6165,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "75434",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5995,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75434",
@@ -27127,6 +27413,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T05:01:06.969Z"
+  },
+  {
+    "setId": "75434",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 6995,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75434",
@@ -27157,9 +27454,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7965,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75435",
@@ -27212,9 +27509,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 13499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75436",
@@ -27222,10 +27519,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 695,
+    "totalPriceMinor": 795,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75436",
@@ -27255,10 +27552,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2095,
+    "totalPriceMinor": 2295,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75437",
@@ -27289,9 +27586,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75437",
@@ -27464,10 +27761,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 1395,
+    "totalPriceMinor": 1495,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75443",
@@ -27498,9 +27795,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75444",
@@ -27592,6 +27889,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75447",
+    "merchantId": "coolblue",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 12500,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T00:16:00.281Z"
+  },
+  {
+    "setId": "75447",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -27613,26 +27921,15 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
-    "setId": "75447",
-    "merchantId": "coolblue",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 12800,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:16:29.702Z"
-  },
-  {
     "setId": "75448",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 995,
+    "totalPriceMinor": 1195,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-12T00:25:58.837Z"
   },
   {
     "setId": "75448",
@@ -27663,9 +27960,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75449",
@@ -27707,9 +28004,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75451",
@@ -27817,9 +28114,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75636",
@@ -27883,9 +28180,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75638",
@@ -27938,9 +28235,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7065,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75639",
@@ -28037,9 +28334,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 26999,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75641",
@@ -28279,9 +28576,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75682",
@@ -28334,9 +28631,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4769,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75684",
@@ -28389,9 +28686,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8550,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75685",
@@ -28433,9 +28730,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 13499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75685",
@@ -28499,9 +28796,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2115,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75688",
@@ -28532,9 +28829,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3509,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "75688",
@@ -28582,25 +28879,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "75689",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 6699,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "75689",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7065,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "75689",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 7099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "75955",
@@ -28631,9 +28928,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5850,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76155",
@@ -28664,9 +28961,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 9450,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76161",
@@ -28719,9 +29016,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76212",
@@ -28730,9 +29027,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 855,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76212",
@@ -28763,9 +29060,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76213",
@@ -28818,9 +29115,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2969,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76245",
@@ -28884,9 +29181,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2969,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76255",
@@ -28917,9 +29214,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8369,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76257",
@@ -28939,9 +29236,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3239,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76258",
@@ -28961,9 +29258,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3239,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76259",
@@ -29005,9 +29302,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2249,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76263",
@@ -29060,9 +29357,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6525,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76277",
@@ -29137,9 +29434,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7469,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76284",
@@ -29181,9 +29478,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3239,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76288",
@@ -29214,9 +29511,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 8550,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76292",
@@ -29247,9 +29544,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4769,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76296",
@@ -29291,9 +29588,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2925,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76297",
@@ -29368,9 +29665,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2969,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76303",
@@ -29396,6 +29693,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76303",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "76303",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -29404,17 +29712,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "76303",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "76303",
@@ -29642,10 +29939,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "76311",
@@ -29924,25 +30221,25 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76319",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "76319",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2925,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "76319",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 3199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76320",
@@ -30017,9 +30314,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76322",
@@ -30071,10 +30368,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "76323",
@@ -30149,9 +30446,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 11699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76325",
@@ -30232,6 +30529,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76326",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "76326",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30259,20 +30567,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 5265,
-    "availability": "unknown",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
-  },
-  {
-    "setId": "76326",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5299,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76327",
@@ -30501,9 +30798,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2249,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76334",
@@ -30556,9 +30853,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 899,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76336",
@@ -30589,9 +30886,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76337",
@@ -30633,9 +30930,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76337",
@@ -30688,9 +30985,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2699,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76338",
@@ -30738,6 +31035,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "76341",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4899,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "76341",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -30746,17 +31054,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "76341",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 4999,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "76341",
@@ -31336,10 +31633,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "76445",
@@ -31348,9 +31645,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76446",
@@ -31402,10 +31699,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "76446",
@@ -31579,9 +31876,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7965,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76452",
@@ -31688,10 +31985,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 19000,
+    "totalPriceMinor": 19400,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-09T00:16:18.890Z"
+    "observedAt": "2026-05-12T12:16:00.030Z"
   },
   {
     "setId": "76454",
@@ -31722,9 +32019,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 22499,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76456",
@@ -31799,9 +32096,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1799,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76460",
@@ -31832,9 +32129,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1349,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76461",
@@ -32150,10 +32447,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 6499,
+    "totalPriceMinor": 6399,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "76470",
@@ -32173,9 +32470,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7199,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76471",
@@ -32349,9 +32646,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7065,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76831",
@@ -32360,9 +32657,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2609,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76831",
@@ -32502,10 +32799,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "76924",
@@ -32689,10 +32986,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2499,
+    "totalPriceMinor": 2299,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "76972",
@@ -32701,9 +32998,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2599,
-    "availability": "out_of_stock",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "observedAt": "2026-05-12T00:04:02.326Z"
   },
   {
     "setId": "76972",
@@ -32844,9 +33141,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4635,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76997",
@@ -32877,9 +33174,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4769,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "76999",
@@ -33092,6 +33389,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77006",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 5699,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "77006",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -33103,25 +33411,14 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77006",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5799,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
-  },
-  {
-    "setId": "77006",
     "merchantId": "coppenswarenhuis",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6165,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77037",
@@ -33185,9 +33482,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1709,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77049",
@@ -33251,9 +33548,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 6929,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77053",
@@ -33427,9 +33724,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 7065,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77056",
@@ -33504,9 +33801,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 1665,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77058",
@@ -33922,9 +34219,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 3599,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77118",
@@ -34042,10 +34339,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 4299,
+    "totalPriceMinor": 4199,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "77238",
@@ -34054,9 +34351,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 4409,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77239",
@@ -34082,6 +34379,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77239",
+    "merchantId": "mediamarkt",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 2099,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T05:01:26.023Z"
+  },
+  {
+    "setId": "77239",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34090,17 +34398,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:10:57.772Z"
-  },
-  {
-    "setId": "77239",
-    "merchantId": "mediamarkt",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 2499,
-    "availability": "in_stock",
-    "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
     "setId": "77240",
@@ -34269,6 +34566,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "77244",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1799,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
+  },
+  {
+    "setId": "77244",
     "merchantId": "goodbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -34307,9 +34615,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2339,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77244",
@@ -34384,9 +34692,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2339,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77245",
@@ -34460,10 +34768,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2699,
+    "totalPriceMinor": 2599,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "77248",
@@ -34475,6 +34783,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "full_set",
     "observedAt": "2026-05-11T12:02:39.905Z"
+  },
+  {
+    "setId": "77248",
+    "merchantId": "lidl",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 1999,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T06:21:33.428Z"
   },
   {
     "setId": "77248",
@@ -34505,9 +34824,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2339,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77248",
@@ -34626,9 +34945,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2339,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77250",
@@ -34890,9 +35209,9 @@ const pricingObservationsPayload = String.raw`[
     "currencyCode": "EUR",
     "condition": "new",
     "totalPriceMinor": 2519,
-    "availability": "unknown",
+    "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T12:36:31.260Z"
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "77257",
@@ -35021,10 +35340,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 2699,
+    "totalPriceMinor": 2599,
     "availability": "in_stock",
     "commercialUnitType": "full_set",
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "77260",

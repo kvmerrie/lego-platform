@@ -164,6 +164,11 @@ pnpm sync:commerce:local:check
 ```
 
 This check does not call merchants and does not write Supabase latest or history rows.
+It still reads Supabase aggregate data, so local runs need `SUPABASE_URL` and
+`SUPABASE_SERVICE_ROLE_KEY` exported or present in `.env.local`. If those env
+values are missing, or the check loads zero seeds/latest rows, the command fails
+before comparing generated artifacts so operators do not chase a false stale
+artifact diff.
 
 ## Operator Notes
 

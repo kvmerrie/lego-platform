@@ -83,7 +83,7 @@ When touching catalog, pricing, affiliate, or commerce-related code, treat drift
 
 - local deterministic:
   - `pnpm sync:catalog:local:check`
-  - `pnpm sync:commerce:local:check`
+  - `pnpm sync:commerce:local:check` with `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` exported or present in `.env.local`
 - live or external when appropriate:
   - `pnpm sync:catalog:check`
   - `pnpm sync:commerce`

@@ -1,5 +1,7 @@
 import { runCommerceSync } from '@lego-platform/api/data-access-server';
 import { normalizeCatalogSetId } from '@lego-platform/shared/util';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 function getSyncMode(argv: readonly string[]): 'check' | 'write' {
   const hasCheckFlag = argv.includes('--check');
@@ -67,8 +69,64 @@ function hasBooleanFlag({
   return argv.includes(flag);
 }
 
+function parseDotenvLine(line: string): [string, string] | undefined {
+  const trimmedLine = line.trim();
+
+  if (!trimmedLine || trimmedLine.startsWith('#')) {
+    return undefined;
+  }
+
+  const separatorIndex = trimmedLine.indexOf('=');
+
+  if (separatorIndex <= 0) {
+    return undefined;
+  }
+
+  const key = trimmedLine.slice(0, separatorIndex).trim();
+  const rawValue = trimmedLine.slice(separatorIndex + 1).trim();
+  const value =
+    (rawValue.startsWith('"') && rawValue.endsWith('"')) ||
+    (rawValue.startsWith("'") && rawValue.endsWith("'"))
+      ? rawValue.slice(1, -1)
+      : rawValue;
+
+  return key ? [key, value] : undefined;
+}
+
+function loadLocalEnvFileIfPresent({
+  environment = process.env,
+  workspaceRoot,
+}: {
+  environment?: NodeJS.ProcessEnv;
+  workspaceRoot: string;
+}): void {
+  const envPath = join(workspaceRoot, '.env.local');
+
+  if (!existsSync(envPath)) {
+    return;
+  }
+
+  for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/u)) {
+    const entry = parseDotenvLine(line);
+
+    if (!entry) {
+      continue;
+    }
+
+    const [key, value] = entry;
+
+    environment[key] ??= value;
+  }
+}
+
 async function main() {
   const argv = process.argv.slice(2);
+  const workspaceRoot = process.cwd();
+
+  loadLocalEnvFileIfPresent({
+    workspaceRoot,
+  });
+
   const mode = getSyncMode(argv);
   const requestedMerchantRefresh =
     hasBooleanFlag({
@@ -103,7 +161,7 @@ async function main() {
     mode,
     refreshMerchants,
     setIds,
-    workspaceRoot: process.cwd(),
+    workspaceRoot,
   });
   const stalePaths = [
     ...result.pricingArtifactCheck.stalePaths,
