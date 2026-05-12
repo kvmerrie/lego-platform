@@ -333,6 +333,25 @@ function readOptionalPromotionString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
+function normalizePromotionTimestamps<
+  TRow extends { created_at?: unknown; updated_at?: unknown },
+>({
+  nowIso,
+  row,
+}: {
+  nowIso: string;
+  row: TRow;
+}): TRow & {
+  created_at: string;
+  updated_at: string;
+} {
+  return {
+    ...row,
+    created_at: readOptionalPromotionString(row.created_at) ?? nowIso,
+    updated_at: readOptionalPromotionString(row.updated_at) ?? nowIso,
+  };
+}
+
 function normalizeCatalogThemeRow({
   nowIso,
   theme,
@@ -1128,17 +1147,42 @@ export async function promoteCatalogFromStagingToProduction({
       table: COMMERCE_OFFER_SEEDS_TABLE,
     });
 
+    const normalizedCatalogSourceThemes = catalogSourceThemes.map((theme) =>
+      normalizePromotionTimestamps({
+        nowIso: startedAtIso,
+        row: theme,
+      }),
+    );
     const normalizedCatalogThemes = catalogThemes.map((theme) =>
       normalizeCatalogThemeRow({
         nowIso: startedAtIso,
         theme,
       }),
     );
-    const normalizedCatalogSets = catalogSets.map(normalizeCatalogSetRow);
-    const normalizedCommerceMerchants =
-      commerceMerchants.map(normalizeMerchantRow);
+    const normalizedCatalogThemeMappings = catalogThemeMappings.map((mapping) =>
+      normalizePromotionTimestamps({
+        nowIso: startedAtIso,
+        row: mapping,
+      }),
+    );
+    const normalizedCatalogSets = catalogSets.map((catalogSet) =>
+      normalizePromotionTimestamps({
+        nowIso: startedAtIso,
+        row: normalizeCatalogSetRow(catalogSet),
+      }),
+    );
+    const normalizedCommerceMerchants = commerceMerchants.map((merchant) =>
+      normalizePromotionTimestamps({
+        nowIso: startedAtIso,
+        row: normalizeMerchantRow(merchant),
+      }),
+    );
     const normalizedCommerceBenchmarkSets = commerceBenchmarkSets.map(
-      normalizeBenchmarkSetRow,
+      (benchmarkSet) =>
+        normalizePromotionTimestamps({
+          nowIso: startedAtIso,
+          row: normalizeBenchmarkSetRow(benchmarkSet),
+        }),
     );
     const normalizedCommerceOfferSeeds = commerceOfferSeeds.map(
       normalizeOfferSeedRow,
@@ -1152,7 +1196,7 @@ export async function promoteCatalogFromStagingToProduction({
         'created_at',
         'updated_at',
       ],
-      rows: catalogSourceThemes as unknown as Readonly<
+      rows: normalizedCatalogSourceThemes as unknown as Readonly<
         Record<string, unknown>
       >[],
       table: CATALOG_SOURCE_THEMES_TABLE,
@@ -1185,7 +1229,7 @@ export async function promoteCatalogFromStagingToProduction({
         'created_at',
         'updated_at',
       ],
-      rows: catalogThemeMappings as unknown as Readonly<
+      rows: normalizedCatalogThemeMappings as unknown as Readonly<
         Record<string, unknown>
       >[],
       table: CATALOG_THEME_MAPPINGS_TABLE,
@@ -1281,7 +1325,7 @@ export async function promoteCatalogFromStagingToProduction({
     tables.catalog_source_themes = await upsertRows({
       nowIso: startedAtIso,
       onConflict: 'id',
-      rows: catalogSourceThemes,
+      rows: normalizedCatalogSourceThemes,
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SOURCE_THEMES_TABLE,
     });
@@ -1295,7 +1339,7 @@ export async function promoteCatalogFromStagingToProduction({
     tables.catalog_theme_mappings = await upsertRows({
       nowIso: startedAtIso,
       onConflict: 'source_theme_id',
-      rows: catalogThemeMappings,
+      rows: normalizedCatalogThemeMappings,
       supabaseClient: productionSupabaseClient,
       table: CATALOG_THEME_MAPPINGS_TABLE,
     });

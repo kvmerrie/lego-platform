@@ -363,6 +363,163 @@ describe('catalog promotion server', () => {
     );
   });
 
+  test('defaults null catalog source theme timestamps before production upsert', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [
+          {
+            created_at: null,
+            id: 'rebrickable:1',
+            parent_source_theme_id: null,
+            source_system: 'rebrickable',
+            source_theme_name: 'Technic',
+            updated_at: null,
+          },
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            id: 'rebrickable:2',
+            parent_source_theme_id: null,
+            source_system: 'rebrickable',
+            source_theme_name: 'Space',
+            updated_at: '2026-04-21T08:05:00.000Z',
+          },
+        ],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_source_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          created_at: '2026-04-22T09:00:00.000Z',
+          id: 'rebrickable:1',
+          parent_source_theme_id: null,
+          source_system: 'rebrickable',
+          source_theme_name: 'Technic',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        },
+        {
+          created_at: '2026-04-21T08:00:00.000Z',
+          id: 'rebrickable:2',
+          parent_source_theme_id: null,
+          source_system: 'rebrickable',
+          source_theme_name: 'Space',
+          updated_at: '2026-04-21T08:05:00.000Z',
+        },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+  });
+
+  test('does not send explicit null timestamps for other promoted timestamped tables', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [
+          {
+            created_at: null,
+            primary_theme_id: 'technic',
+            source_theme_id: 'rebrickable:1',
+            updated_at: null,
+          },
+        ],
+        catalog_sets: [
+          {
+            created_at: null,
+            image_url: null,
+            name: 'Mercedes-Benz G 500 Professional Line',
+            piece_count: 2891,
+            primary_theme_id: 'technic',
+            release_year: 2024,
+            set_id: '42177',
+            slug: 'mercedes-benz-g-500-professional-line-42177',
+            source: 'rebrickable',
+            source_set_number: '42177-1',
+            source_theme_id: 'rebrickable:1',
+            status: 'active',
+            updated_at: null,
+          },
+        ],
+        commerce_merchants: [
+          {
+            affiliate_network: null,
+            created_at: null,
+            id: 'merchant-goodbricks',
+            is_active: true,
+            name: 'Goodbricks',
+            notes: '',
+            slug: 'goodbricks',
+            source_type: 'affiliate_feed',
+            updated_at: null,
+          },
+        ],
+        commerce_benchmark_sets: [
+          {
+            created_at: null,
+            notes: '',
+            set_id: '42177',
+            updated_at: null,
+          },
+        ],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    for (const table of [
+      'catalog_theme_mappings',
+      'catalog_sets',
+      'commerce_merchants',
+      'commerce_benchmark_sets',
+    ]) {
+      const payload = productionClient.upsertByTable.get(table)?.mock
+        .calls[0]?.[0] as Array<{
+        created_at?: unknown;
+        updated_at?: unknown;
+      }>;
+
+      expect(payload).toEqual([
+        expect.objectContaining({
+          created_at: '2026-04-22T09:00:00.000Z',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        }),
+      ]);
+    }
+  });
+
   test('paginates production merchant and offer seed mapping lookups beyond row 1000', async () => {
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {
