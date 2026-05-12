@@ -431,6 +431,11 @@ export async function runCommerceSync({
     }),
   );
 
+  const aggregateArtifactsChanged =
+    !scoped &&
+    mode === 'write' &&
+    (!pricingArtifactCheck.isClean || !affiliateArtifactCheck.isClean);
+
   if (scoped && mode === 'write') {
     const { syncInputs: fullSyncInputs } = await loadCommerceSyncInputsFn();
     const {
@@ -469,6 +474,20 @@ export async function runCommerceSync({
         error instanceof Error
           ? error.message
           : 'Public web revalidation failed after commerce sync.',
+      );
+    }
+  } else if (aggregateArtifactsChanged) {
+    try {
+      await revalidatePublicCatalogPathsFn({
+        includeThemeDirectory: false,
+        reason: 'commerce_sync_aggregate',
+        targets: [],
+      });
+    } catch (error) {
+      console.warn(
+        error instanceof Error
+          ? error.message
+          : 'Public web aggregate revalidation failed after commerce sync.',
       );
     }
   }

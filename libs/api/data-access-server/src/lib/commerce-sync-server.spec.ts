@@ -237,6 +237,66 @@ describe('commerce sync server', () => {
     }
   });
 
+  test('revalidates homepage and deals after aggregate artifacts change', async () => {
+    const revalidatePublicCatalogPathsFn = vi.fn().mockResolvedValue({
+      attempted: true,
+      pathCount: 2,
+      paths: ['/', '/deals'],
+      skipped: false,
+      tagCount: 2,
+      tags: ['homepage', 'deals'],
+    });
+
+    await runCommerceSync({
+      dependencies: {
+        listCatalogSetSummariesFn: vi.fn().mockResolvedValue([]),
+        loadCommerceSyncInputsFn: vi
+          .fn()
+          .mockResolvedValue(buildCommerceSyncInputMock()),
+        revalidatePublicCatalogPathsFn,
+        upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
+          .fn()
+          .mockResolvedValue({
+            points: [],
+            summary: {
+              latestOfferRowsSeen: 0,
+              eligibleLatestOfferRows: 0,
+              dailyHistoryPointsBuilt: 0,
+              maxObservedAgeHours: 48,
+              skipped: {
+                inactiveSeedOrMerchant: 0,
+                invalidSeed: 0,
+                missingLatest: 0,
+                missingOrInvalidPrice: 0,
+                nonEur: 0,
+                staleOrError: 0,
+                untrustedMerchant: 0,
+                unavailableForHeadline: 0,
+              },
+            },
+          }),
+        writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: true,
+          stalePaths: [],
+        }),
+        writePricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+          isClean: false,
+          stalePaths: [
+            '/tmp/brickhunt-workspace/libs/pricing/data-access/src/lib/pricing-observations.generated.ts',
+          ],
+        }),
+      },
+      mode: 'write',
+      workspaceRoot: '/tmp/brickhunt-workspace',
+    });
+
+    expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
+      includeThemeDirectory: false,
+      reason: 'commerce_sync_aggregate',
+      targets: [],
+    });
+  });
+
   test('rejects broad legacy merchant refresh without an explicit merchant scope', async () => {
     const loadCommerceSyncInputsFn = vi.fn();
 
