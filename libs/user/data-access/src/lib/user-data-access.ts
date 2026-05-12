@@ -9,6 +9,7 @@ import {
   buildSupabaseAuthorizationHeaders,
   completeSupabaseAuthCallback,
   notifyBrowserAccountDataChanged,
+  readBrowserSessionPayload,
   resetSupabasePasswordForEmail,
   signInWithSupabaseOAuth,
   signInWithSupabaseOtp,
@@ -32,17 +33,7 @@ import type {
 } from '@lego-platform/user/util';
 
 export async function getUserSession(): Promise<UserSession> {
-  const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(apiPaths.session, {
-    cache: 'no-store',
-    headers,
-  });
-
-  if (!response.ok) {
-    throw new Error('De huidige sessie kon niet worden geladen.');
-  }
-
-  return (await response.json()) as UserSession;
+  return (await readBrowserSessionPayload()) as UserSession;
 }
 
 function getDefaultEmailRedirectUrl(): string | undefined {

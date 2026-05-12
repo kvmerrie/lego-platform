@@ -11,11 +11,13 @@ import {
 vi.mock('@lego-platform/shared/data-access-auth', () => ({
   buildSupabaseAuthorizationHeaders: vi.fn(),
   notifyBrowserAccountDataChanged: vi.fn(),
+  readBrowserSessionPayload: vi.fn(),
 }));
 
 import {
   buildSupabaseAuthorizationHeaders,
   notifyBrowserAccountDataChanged,
+  readBrowserSessionPayload,
 } from '@lego-platform/shared/data-access-auth';
 
 describe('wishlist data access', () => {
@@ -99,30 +101,13 @@ describe('wishlist data access', () => {
   });
 
   test('reads follow context from the current session without user-domain dependencies', async () => {
-    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
-
-    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
-      new Headers({
-        Authorization: 'Bearer browser-token',
-      }),
-    );
-    fetchMock.mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          state: 'authenticated',
-          notificationPreferences: {
-            wishlistDealAlerts: true,
-          },
-          wantedSetIds: ['10316', '21348', '76417'],
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      ),
-    );
+    vi.mocked(readBrowserSessionPayload).mockResolvedValue({
+      state: 'authenticated',
+      notificationPreferences: {
+        wishlistDealAlerts: true,
+      },
+      wantedSetIds: ['10316', '21348', '76417'],
+    });
 
     await expect(getWantedSetContext('21348')).resolves.toEqual({
       alertsEnabled: true,
@@ -136,30 +121,15 @@ describe('wishlist data access', () => {
   });
 
   test('reads locally followed price sets for signed-out sessions', async () => {
-    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
-
     vi.stubGlobal('window', {
       localStorage: createLocalStorageMock({
         'brickhunt.followed-price-set-ids': JSON.stringify(['10316', '21348']),
       }),
     });
-    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
-      new Headers(),
-    );
-    fetchMock.mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          state: 'anonymous',
-          wantedSetIds: ['76417'],
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      ),
-    );
+    vi.mocked(readBrowserSessionPayload).mockResolvedValue({
+      state: 'anonymous',
+      wantedSetIds: ['76417'],
+    });
 
     await expect(getWantedSetContext('21348')).resolves.toEqual({
       alertsEnabled: false,
@@ -173,30 +143,15 @@ describe('wishlist data access', () => {
   });
 
   test('lists followed price sets for signed-out sessions from local storage', async () => {
-    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
-
     vi.stubGlobal('window', {
       localStorage: createLocalStorageMock({
         'brickhunt.followed-price-set-ids': JSON.stringify(['10316', '21348']),
       }),
     });
-    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
-      new Headers(),
-    );
-    fetchMock.mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          state: 'anonymous',
-          wantedSetIds: ['76417'],
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      ),
-    );
+    vi.mocked(readBrowserSessionPayload).mockResolvedValue({
+      state: 'anonymous',
+      wantedSetIds: ['76417'],
+    });
 
     await expect(getFollowedPriceSetCollection()).resolves.toEqual({
       alertsEnabled: false,

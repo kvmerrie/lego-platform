@@ -7,6 +7,7 @@ import { apiPaths } from '@lego-platform/shared/config';
 import {
   buildSupabaseAuthorizationHeaders,
   notifyBrowserAccountDataChanged,
+  readBrowserSessionPayload,
 } from '@lego-platform/shared/data-access-auth';
 import {
   normalizeCatalogSetId,
@@ -196,17 +197,11 @@ function readFollowedPriceSetCollection(
 }
 
 export async function getFollowedPriceSetCollection(): Promise<FollowedPriceSetCollection> {
-  const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(apiPaths.session, {
-    cache: 'no-store',
-    headers,
-  });
-
-  if (!response.ok) {
+  try {
+    return readFollowedPriceSetCollection(await readBrowserSessionPayload());
+  } catch {
     throw new Error('De gevolgde sets konden nu niet worden geladen.');
   }
-
-  return readFollowedPriceSetCollection(await response.json());
 }
 
 export async function getWantedSetContext(

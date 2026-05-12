@@ -32,6 +32,7 @@ vi.mock('@lego-platform/shared/data-access-auth', () => ({
   buildSupabaseAuthorizationHeaders: vi.fn(),
   completeSupabaseAuthCallback: vi.fn(),
   notifyBrowserAccountDataChanged: vi.fn(),
+  readBrowserSessionPayload: vi.fn(),
   resetSupabasePasswordForEmail: vi.fn(),
   signInWithSupabaseOAuth: vi.fn(),
   signInWithSupabaseOtp: vi.fn(),
@@ -48,6 +49,7 @@ import {
   buildSupabaseAuthorizationHeaders,
   completeSupabaseAuthCallback,
   notifyBrowserAccountDataChanged,
+  readBrowserSessionPayload,
   resetSupabasePasswordForEmail,
   signInWithSupabaseOAuth,
   signInWithSupabaseOtp,
@@ -73,8 +75,7 @@ describe('user data access', () => {
     vi.restoreAllMocks();
   });
 
-  test('attaches the bearer token when loading the current session', async () => {
-    const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+  test('loads the current session through the shared browser session cache', async () => {
     const anonymousSession: UserSession = {
       state: 'anonymous',
       ownedSetIds: [],
@@ -82,34 +83,11 @@ describe('user data access', () => {
       wantedSetIds: [],
     };
 
-    vi.mocked(buildSupabaseAuthorizationHeaders).mockResolvedValue(
-      new Headers({
-        Authorization: 'Bearer browser-token',
-      }),
-    );
-    fetchMock.mockResolvedValue(
-      new Response(JSON.stringify(anonymousSession), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }),
-    );
+    vi.mocked(readBrowserSessionPayload).mockResolvedValue(anonymousSession);
 
-    await getUserSession();
+    await expect(getUserSession()).resolves.toEqual(anonymousSession);
 
-    expect(fetchMock).toHaveBeenCalledWith(
-      apiPaths.session,
-      expect.objectContaining({
-        cache: 'no-store',
-        headers: expect.any(Headers),
-      }),
-    );
-    const requestInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
-
-    expect(new Headers(requestInit.headers).get('Authorization')).toBe(
-      'Bearer browser-token',
-    );
+    expect(readBrowserSessionPayload).toHaveBeenCalledTimes(1);
   });
 
   test('starts email sign-in with a redirect through the dedicated auth callback route', async () => {

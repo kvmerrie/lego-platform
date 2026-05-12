@@ -1,15 +1,17 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { apiPaths } from '@lego-platform/shared/config';
-import { addOwnedSet } from './collection-data-access';
+import { addOwnedSet, getOwnedSetState } from './collection-data-access';
 
 vi.mock('@lego-platform/shared/data-access-auth', () => ({
   buildSupabaseAuthorizationHeaders: vi.fn(),
   notifyBrowserAccountDataChanged: vi.fn(),
+  readBrowserSessionPayload: vi.fn(),
 }));
 
 import {
   buildSupabaseAuthorizationHeaders,
   notifyBrowserAccountDataChanged,
+  readBrowserSessionPayload,
 } from '@lego-platform/shared/data-access-auth';
 
 describe('collection data access', () => {
@@ -71,7 +73,19 @@ describe('collection data access', () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 401 }));
 
     await expect(addOwnedSet('10316')).rejects.toThrow(
-      'Sign in to mark this set as owned.',
+      'Log in om deze set als in collectie te markeren.',
     );
+  });
+
+  test('reads owned set state from the shared browser session cache', async () => {
+    vi.mocked(readBrowserSessionPayload).mockResolvedValue({
+      ownedSetIds: ['10316', '21348'],
+    });
+
+    await expect(getOwnedSetState('10316')).resolves.toEqual({
+      isOwned: true,
+      setId: '10316',
+    });
+    expect(readBrowserSessionPayload).toHaveBeenCalledTimes(1);
   });
 });

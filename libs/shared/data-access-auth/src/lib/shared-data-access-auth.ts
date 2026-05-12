@@ -6,6 +6,7 @@ import {
   type SupabaseClient,
 } from '@supabase/supabase-js';
 import {
+  apiPaths,
   getMissingBrowserSupabaseEnvKeys,
   getBrowserSupabaseConfig,
   hasBrowserSupabaseConfig,
@@ -14,16 +15,33 @@ import {
 let browserSupabaseClient: SupabaseClient | undefined;
 let hasWarnedAboutMissingBrowserSupabaseConfig = false;
 const browserAccountDataChangeListeners = new Set<() => void>();
+let browserSessionPayloadCacheEntry:
+  | BrowserSessionPayloadCacheEntry
+  | undefined;
+let browserSessionPayloadRequest: BrowserSessionPayloadRequest | undefined;
+let browserSessionPayloadCacheVersion = 0;
 const DEFAULT_POST_AUTH_REDIRECT_PATH = '/';
 const SUPABASE_AUTH_CALLBACK_PATH = '/auth/callback';
 const AUTH_UNAVAILABLE_ERROR_MESSAGE =
   'Inloggen is in deze omgeving nog niet beschikbaar.';
+const BROWSER_SESSION_PAYLOAD_CACHE_TTL_MS = 30_000;
 
 export type BrowserSupabaseAuthChangeListener = (
   authChangeEvent: AuthChangeEvent,
 ) => void;
 
 export type BrowserAccountDataChangeListener = () => void;
+
+interface BrowserSessionPayloadCacheEntry {
+  authorizationCacheKey: string;
+  payload: unknown;
+  readAtMs: number;
+}
+
+interface BrowserSessionPayloadRequest {
+  authorizationCacheKey: string;
+  promise: Promise<unknown>;
+}
 
 interface BrowserSupabaseLocationLike {
   origin: string;
@@ -309,6 +327,83 @@ export async function buildSupabaseAuthorizationHeaders(
   return nextHeaders;
 }
 
+function getSessionPayloadAuthorizationCacheKey(headers: Headers): string {
+  return headers.get('Authorization') ?? 'anonymous';
+}
+
+export function clearBrowserSessionPayloadCache(): void {
+  browserSessionPayloadCacheVersion += 1;
+  browserSessionPayloadCacheEntry = undefined;
+  browserSessionPayloadRequest = undefined;
+}
+
+export async function readBrowserSessionPayload({
+  force = false,
+}: {
+  force?: boolean;
+} = {}): Promise<unknown> {
+  const headers = await buildSupabaseAuthorizationHeaders();
+  const authorizationCacheKey = getSessionPayloadAuthorizationCacheKey(headers);
+  const nowMs = Date.now();
+  const requestCacheVersion = browserSessionPayloadCacheVersion;
+
+  if (
+    !force &&
+    browserSessionPayloadCacheEntry &&
+    browserSessionPayloadCacheEntry.authorizationCacheKey ===
+      authorizationCacheKey &&
+    nowMs - browserSessionPayloadCacheEntry.readAtMs <
+      BROWSER_SESSION_PAYLOAD_CACHE_TTL_MS
+  ) {
+    return browserSessionPayloadCacheEntry.payload;
+  }
+
+  if (
+    !force &&
+    browserSessionPayloadRequest &&
+    browserSessionPayloadRequest.authorizationCacheKey === authorizationCacheKey
+  ) {
+    return browserSessionPayloadRequest.promise;
+  }
+
+  const sessionPayloadRequest = fetch(apiPaths.session, {
+    cache: 'no-store',
+    headers,
+  }).then(async (response) => {
+    if (!response.ok) {
+      throw new Error('De huidige sessie kon niet worden geladen.');
+    }
+
+    const payload = (await response.json()) as unknown;
+
+    if (requestCacheVersion === browserSessionPayloadCacheVersion) {
+      browserSessionPayloadCacheEntry = {
+        authorizationCacheKey,
+        payload,
+        readAtMs: Date.now(),
+      };
+    }
+
+    return payload;
+  });
+
+  browserSessionPayloadRequest = {
+    authorizationCacheKey,
+    promise: sessionPayloadRequest,
+  };
+
+  try {
+    return await sessionPayloadRequest;
+  } finally {
+    if (
+      browserSessionPayloadRequest?.authorizationCacheKey ===
+      authorizationCacheKey
+    ) {
+      browserSessionPayloadRequest = undefined;
+    }
+  }
+}
+
 export function subscribeToSupabaseAuthChanges(
   listener: BrowserSupabaseAuthChangeListener,
 ): () => void {
@@ -319,6 +414,10 @@ export function subscribeToSupabaseAuthChanges(
   const {
     data: { subscription },
   } = getBrowserSupabaseClient().auth.onAuthStateChange((authChangeEvent) => {
+    if (authChangeEvent !== 'INITIAL_SESSION') {
+      clearBrowserSessionPayloadCache();
+    }
+
     listener(authChangeEvent);
   });
 
@@ -422,6 +521,8 @@ export async function signOutSupabaseBrowserSession() {
 }
 
 export function notifyBrowserAccountDataChanged(): void {
+  clearBrowserSessionPayloadCache();
+
   browserAccountDataChangeListeners.forEach((listener) => {
     listener();
   });
@@ -441,4 +542,5 @@ export function resetBrowserSupabaseClientForTests() {
   browserSupabaseClient = undefined;
   hasWarnedAboutMissingBrowserSupabaseConfig = false;
   browserAccountDataChangeListeners.clear();
+  clearBrowserSessionPayloadCache();
 }

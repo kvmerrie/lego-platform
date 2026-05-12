@@ -8,6 +8,7 @@ import { apiPaths } from '@lego-platform/shared/config';
 import {
   buildSupabaseAuthorizationHeaders,
   notifyBrowserAccountDataChanged,
+  readBrowserSessionPayload,
 } from '@lego-platform/shared/data-access-auth';
 import { readStringArrayProperty } from '@lego-platform/shared/util';
 
@@ -71,22 +72,17 @@ export function listCollectionEditorSections(): CollectionEditorSection[] {
 }
 
 export async function getOwnedSetState(setId: string): Promise<OwnedSetState> {
-  const headers = await buildSupabaseAuthorizationHeaders();
-  const response = await fetch(apiPaths.session, {
-    cache: 'no-store',
-    headers,
-  });
+  let sessionPayload: unknown;
 
-  if (!response.ok) {
+  try {
+    sessionPayload = await readBrowserSessionPayload();
+  } catch {
     throw new Error(
       'De collectiestatus voor deze set kon niet worden geladen.',
     );
   }
 
-  const ownedSetIds = readStringArrayProperty(
-    await response.json(),
-    'ownedSetIds',
-  );
+  const ownedSetIds = readStringArrayProperty(sessionPayload, 'ownedSetIds');
 
   return {
     setId,
