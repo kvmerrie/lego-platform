@@ -2839,7 +2839,7 @@
   }
 }
 
-.themePortraitCard {
+.themeCard.themePortraitCard {
   --theme-surface: #d9e4f2;
   --theme-text: #171a22;
   --theme-muted: #425066;
@@ -2928,7 +2928,7 @@
   gap: var(--lego-space-2);
 }
 
-.themeFeatureCard {
+.themeCard.themeFeatureCard {
   --theme-surface: #eef1f5;
   --theme-text: #171a22;
   --theme-muted: #425066;

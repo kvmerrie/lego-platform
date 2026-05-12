@@ -1569,7 +1569,7 @@ describe('CatalogSetCard', () => {
       'utf-8',
     );
     const featureCardRule =
-      css.match(/\.themeFeatureCard \{[^}]+\}/u)?.[0] ?? '';
+      css.match(/\.themeCard\.themeFeatureCard \{[^}]+\}/u)?.[0] ?? '';
     const featureLinkRule =
       css.match(/\.themeFeatureLink \{[^}]+\}/u)?.[0] ?? '';
     const featureBodyRule =
@@ -1634,6 +1634,20 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain(
       'Premium verzamelaars trekken steeds vaker naar grote displaystukken.',
     );
+  });
+
+  it('keeps theme tile surface colors stronger than shared Surface tone classes', () => {
+    const css = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const portraitCardRule =
+      css.match(/\.themeCard\.themePortraitCard \{[^}]+\}/u)?.[0] ?? '';
+    const featureCardRule =
+      css.match(/\.themeCard\.themeFeatureCard \{[^}]+\}/u)?.[0] ?? '';
+
+    expect(portraitCardRule).toContain('background: var(--theme-surface);');
+    expect(featureCardRule).toContain('background: var(--theme-surface);');
   });
 
   it('renders a lightweight quick-filter chip row with an active state', () => {
