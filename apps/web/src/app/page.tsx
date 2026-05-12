@@ -512,7 +512,22 @@ export default async function HomePage() {
               title="Beste deals nu"
             />
           </div>
-        ) : null}
+        ) : (
+          <div className={styles.sectionGroup}>
+            <Panel
+              as="section"
+              description="We tonen hier alleen sets waarvan prijs, winkel en settype goed vergelijkbaar zijn. Vandaag is er nog geen deal die hard genoeg is."
+              eyebrow="Deals"
+              padding="md"
+              title="Nog geen harde deals"
+              tone="muted"
+            >
+              <ActionLink href="/deals" tone="inline">
+                Bekijk alle actuele prijzen
+              </ActionLink>
+            </Panel>
+          </div>
+        )}
         <Panel
           as="section"
           className={styles.valueSection}

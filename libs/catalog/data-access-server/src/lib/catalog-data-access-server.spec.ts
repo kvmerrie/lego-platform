@@ -539,6 +539,93 @@ describe('catalog data access server', () => {
     ]);
   });
 
+  test('treats normal LEGO set offers with set numbers as comparable full sets', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          offer_seed_id: 'seed-coolblue',
+          price_minor: 18900,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T09:30:00.000Z',
+          updated_at: '2026-05-11T09:35:00.000Z',
+        },
+        {
+          offer_seed_id: 'seed-mediamarkt',
+          price_minor: 19999,
+          currency_code: 'EUR',
+          availability: 'in_stock',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T09:31:00.000Z',
+          updated_at: '2026-05-11T09:36:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-coolblue',
+          is_active: true,
+          name: 'Coolblue',
+          slug: 'coolblue',
+        },
+        {
+          id: 'merchant-mediamarkt',
+          is_active: true,
+          name: 'MediaMarkt',
+          slug: 'mediamarkt',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-coolblue',
+          is_active: true,
+          merchant_id: 'merchant-coolblue',
+          notes:
+            'Product title: LEGO Technic Mercedes-AMG F1 W14 E Performance.',
+          product_url:
+            'https://www.coolblue.nl/product/42177/lego-technic-mercedes-amg-f1-w14-e-performance.html',
+          set_id: '42177',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-mediamarkt',
+          is_active: true,
+          merchant_id: 'merchant-mediamarkt',
+          notes:
+            'Product title: LEGO Technic Mercedes-AMG F1 W14 E Performance.',
+          product_url:
+            'https://www.mediamarkt.nl/nl/product/_lego-42177-technic-mercedes-amg-f1-w14-e-performance-1792500.html',
+          set_id: '42177',
+          validation_status: 'valid',
+        },
+      ],
+      priceHistoryRows: [
+        {
+          condition: 'new',
+          currency_code: 'EUR',
+          recorded_on: '2026-05-11',
+          reference_price_minor: 24999,
+          region_code: 'NL',
+          set_id: '42177',
+        },
+      ],
+    });
+
+    const result = await listCatalogDiscoverySignals({
+      supabaseClient,
+    });
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        setId: '42177',
+        bestPriceMinor: 18900,
+        merchantCount: 2,
+        nextBestPriceMinor: 19999,
+        referenceDeltaMinor: -6099,
+      }),
+    ]);
+  });
+
   test('builds discovery signals from comparable commercial units only', async () => {
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
       latestOfferRows: [

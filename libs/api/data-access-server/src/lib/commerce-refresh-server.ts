@@ -2092,6 +2092,7 @@ export function buildCommerceSyncInputs({
       commercialUnitType: classifyCommerceCommercialUnitType({
         notes: refreshSeed.offerSeed.notes,
         productUrl: refreshSeed.offerSeed.productUrl,
+        setId: refreshSeed.offerSeed.setId,
       }),
       observedAt: latestOffer.observedAt,
       regionCode: DUTCH_REGION_CODE,

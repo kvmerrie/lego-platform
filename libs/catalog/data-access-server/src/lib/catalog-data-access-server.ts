@@ -524,6 +524,7 @@ function toCatalogLiveOffer({
   const commercialUnitType = classifyCommerceCommercialUnitType({
     notes: offerSeed.notes,
     productUrl: offerSeed.product_url,
+    setId: offerSeed.set_id,
   });
 
   return {
@@ -2353,6 +2354,7 @@ export async function listCatalogDiscoverySignals({
           commercialUnitType: classifyCommerceCommercialUnitType({
             notes: offerSeed.notes,
             productUrl: offerSeed.product_url,
+            setId: offerSeed.set_id,
           }),
           merchantSlug: merchant.slug,
           observedAt: latestOffer.observed_at,

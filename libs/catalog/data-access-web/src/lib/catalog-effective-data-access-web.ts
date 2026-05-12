@@ -48,6 +48,7 @@ import {
   compareCommerceCommercialUnitPreference,
   type CommerceCommercialUnitType,
   getBrowserSupabaseConfig,
+  getCommerceCommercialUnitComparisonGroup,
   getCommerceMerchantReliabilityTier,
   isCommerceCommercialUnitComparableForDeals,
   isCommerceMerchantProductionFeed,
@@ -285,6 +286,9 @@ export interface CatalogPartnerOfferRailDiagnostic {
 }
 
 export interface CatalogHomepageDealQualityDiagnostics {
+  excluded_missing_reference_discount_count: number;
+  excluded_unit_mismatch_count: number;
+  excluded_untrusted_merchant_count: number;
   excluded_unknown_unit_count: number;
   excluded_unknown_verdict_count: number;
   homepage_deal_accepted_count: number;
@@ -1131,6 +1135,7 @@ function toCatalogRuntimeOffer({
   const commercialUnitType = classifyCommerceCommercialUnitType({
     notes: offerSeed.notes,
     productUrl: offerSeed.product_url,
+    setId: offerSeed.set_id,
   });
 
   return {
@@ -2577,6 +2582,9 @@ export function getCatalogHomepageDealQualityDiagnostics({
   selectedSetCards: readonly CatalogHomepageSetCard[];
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageDealQualityDiagnostics {
+  let excludedMissingReferenceDiscountCount = 0;
+  let excludedUnitMismatchCount = 0;
+  let excludedUntrustedMerchantCount = 0;
   let excludedUnknownUnitCount = 0;
   let excludedUnknownVerdictCount = 0;
 
@@ -2590,20 +2598,55 @@ export function getCatalogHomepageDealQualityDiagnostics({
       continue;
     }
 
+    if (!currentOfferSummary) {
+      continue;
+    }
+
+    const { bestOffer } = currentOfferSummary;
+
+    if (!bestOffer) {
+      continue;
+    }
+
     if (
-      !isCommerceCommercialUnitComparableForDeals(
-        currentOfferSummary?.bestOffer?.commercialUnitType,
-      )
+      !isCommerceCommercialUnitComparableForDeals(bestOffer.commercialUnitType)
     ) {
       excludedUnknownUnitCount += 1;
     }
 
+    const comparableOfferGroups = new Set(
+      currentOfferSummary.offers
+        .map((catalogOffer) =>
+          getCommerceCommercialUnitComparisonGroup(
+            catalogOffer.commercialUnitType,
+          ),
+        )
+        .filter((comparisonGroup) => comparisonGroup !== 'unknown'),
+    );
+
+    if (comparableOfferGroups.size > 1) {
+      excludedUnitMismatchCount += 1;
+    }
+
+    if (
+      !isCommerceMerchantProductionFeed(
+        getCatalogOfferMerchantReliabilityKey(bestOffer),
+      )
+    ) {
+      excludedUntrustedMerchantCount += 1;
+    }
+
     if (!hasReliableCatalogReferenceDiscount(catalogDiscoverySignal)) {
       excludedUnknownVerdictCount += 1;
+      excludedMissingReferenceDiscountCount += 1;
     }
   }
 
   return {
+    excluded_missing_reference_discount_count:
+      excludedMissingReferenceDiscountCount,
+    excluded_unit_mismatch_count: excludedUnitMismatchCount,
+    excluded_untrusted_merchant_count: excludedUntrustedMerchantCount,
     excluded_unknown_unit_count: excludedUnknownUnitCount,
     excluded_unknown_verdict_count: excludedUnknownVerdictCount,
     homepage_deal_accepted_count: selectedSetCards.length,

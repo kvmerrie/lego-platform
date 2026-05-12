@@ -30,6 +30,26 @@ describe('commerce commercial unit config', () => {
     ).toBe(false);
   });
 
+  test('treats normal LEGO set-number offers as full set packages', () => {
+    expect(
+      classifyCommerceCommercialUnitType({
+        productUrl:
+          'https://www.mediamarkt.nl/nl/product/_lego-technic-42177-mercedes-benz-g-500-bouwstenen-1892796.html',
+        setId: '42177',
+      }),
+    ).toBe('full_set');
+  });
+
+  test('keeps collectible minifigure series unknown without explicit unit wording', () => {
+    expect(
+      classifyCommerceCommercialUnitType({
+        productUrl:
+          'https://www.example.nl/lego-71050-minifiguren-spider-man.html',
+        setId: '71050',
+      }),
+    ).toBe('unknown');
+  });
+
   test('treats unknown unit types as non-comparable for deal claims', () => {
     expect(classifyCommerceCommercialUnitType({ productTitle: '' })).toBe(
       'unknown',

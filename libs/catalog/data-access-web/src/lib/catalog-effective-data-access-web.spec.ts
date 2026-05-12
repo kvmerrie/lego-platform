@@ -2147,6 +2147,9 @@ describe('catalog effective data access web', () => {
   });
 
   test('selects homepage follow discovery cards by set interest, signals, and rotation', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2025-05-10T12:00:00.000Z'));
+
     const listCanonicalCatalogSetsFn = async () => [
       createCanonicalCatalogSet({
         name: 'Technic Hypercar',
@@ -2243,10 +2246,12 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '76269',
       '10316',
-      '10311',
+      '76269',
+      '31208',
     ]);
+
+    vi.useRealTimers();
   });
 
   test('rotates homepage follow discovery cards when scores tie', async () => {
@@ -4391,6 +4396,9 @@ describe('catalog effective data access web', () => {
         setCards,
       }),
     ).toEqual({
+      excluded_missing_reference_discount_count: 1,
+      excluded_unit_mismatch_count: 0,
+      excluded_untrusted_merchant_count: 1,
       excluded_unknown_unit_count: 1,
       excluded_unknown_verdict_count: 1,
       homepage_deal_accepted_count: 1,

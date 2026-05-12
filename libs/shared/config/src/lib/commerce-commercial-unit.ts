@@ -22,6 +22,7 @@ export interface CommerceCommercialUnitClassificationInput {
   notes?: string | null;
   productTitle?: string | null;
   productUrl?: string | null;
+  setId?: string | null;
 }
 
 const displayBoxPattern =
@@ -32,6 +33,8 @@ const accessoryPattern =
   /\b(accessory|accessoire|sleutelhanger|keychain|display case|vitrine|light kit|verlichting|minifigure frame)\b/i;
 const magazinePattern = /\b(magazine|tijdschrift|boekje|booklet|foil pack)\b/i;
 const fullSetPattern = /\b(full set|complete set|bouwset|construction set)\b/i;
+const legoSetNumberPattern = /\b\d{4,7}(?:-1)?\b/;
+const collectibleMinifigureSeriesPattern = /^710\d{2}(?:-1)?$/;
 
 function normalizeCommercialUnitText(value?: string | null): string {
   return (value ?? '')
@@ -44,6 +47,7 @@ export function classifyCommerceCommercialUnitType({
   notes,
   productTitle,
   productUrl,
+  setId,
 }: CommerceCommercialUnitClassificationInput): CommerceCommercialUnitType {
   const text = normalizeCommercialUnitText(
     [productTitle, notes, productUrl].filter(Boolean).join(' '),
@@ -71,6 +75,17 @@ export function classifyCommerceCommercialUnitType({
 
   if (blindBagPattern.test(text)) {
     return 'blind_bag';
+  }
+
+  const normalizedSetId = normalizeCommercialUnitText(setId).trim();
+
+  if (
+    normalizedSetId &&
+    !collectibleMinifigureSeriesPattern.test(normalizedSetId) &&
+    (legoSetNumberPattern.test(normalizedSetId) ||
+      legoSetNumberPattern.test(text))
+  ) {
+    return 'full_set';
   }
 
   return 'unknown';

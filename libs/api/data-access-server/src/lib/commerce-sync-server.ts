@@ -217,6 +217,7 @@ function buildDailyHistoryInputsFromCommerceSyncSeeds(
       commercialUnitType: classifyCommerceCommercialUnitType({
         notes: syncSeed.offerSeed.notes,
         productUrl: syncSeed.offerSeed.productUrl,
+        setId: syncSeed.offerSeed.setId,
       }),
       isActive: syncSeed.offerSeed.isActive,
       notes: syncSeed.offerSeed.notes,
