@@ -297,6 +297,66 @@ describe('commerce sync server', () => {
     });
   });
 
+  test('fails production write mode when aggregate revalidation fails', async () => {
+    const originalEnv = { ...process.env };
+    process.env = {
+      ...process.env,
+      BRICKHUNT_DEPLOY_ENV: 'production',
+    };
+    const revalidationError = new TypeError('fetch failed');
+
+    try {
+      await expect(
+        runCommerceSync({
+          dependencies: {
+            listCatalogSetSummariesFn: vi.fn().mockResolvedValue([]),
+            loadCommerceSyncInputsFn: vi
+              .fn()
+              .mockResolvedValue(buildCommerceSyncInputMock()),
+            revalidatePublicCatalogPathsFn: vi
+              .fn()
+              .mockRejectedValue(revalidationError),
+            upsertDailyPriceHistoryPointsFromCommerceLatestOffersFn: vi
+              .fn()
+              .mockResolvedValue({
+                points: [],
+                summary: {
+                  latestOfferRowsSeen: 0,
+                  eligibleLatestOfferRows: 0,
+                  dailyHistoryPointsBuilt: 0,
+                  maxObservedAgeHours: 48,
+                  skipped: {
+                    inactiveSeedOrMerchant: 0,
+                    invalidSeed: 0,
+                    missingLatest: 0,
+                    missingOrInvalidPrice: 0,
+                    nonEur: 0,
+                    staleOrError: 0,
+                    untrustedMerchant: 0,
+                    unavailableForHeadline: 0,
+                  },
+                },
+              }),
+            writeAffiliateGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+              isClean: true,
+              stalePaths: [],
+            }),
+            writePricingGeneratedArtifactsFn: vi.fn().mockResolvedValue({
+              isClean: false,
+              stalePaths: [
+                '/tmp/brickhunt-workspace/libs/pricing/data-access/src/lib/pricing-observations.generated.ts',
+              ],
+            }),
+          },
+          mode: 'write',
+          workspaceRoot: '/tmp/brickhunt-workspace',
+        }),
+      ).rejects.toThrow('fetch failed');
+    } finally {
+      process.env = originalEnv;
+    }
+  });
+
   test('rejects broad legacy merchant refresh without an explicit merchant scope', async () => {
     const loadCommerceSyncInputsFn = vi.fn();
 

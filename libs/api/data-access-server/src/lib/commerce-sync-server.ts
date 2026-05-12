@@ -92,6 +92,36 @@ function createCleanArtifactCheck(): CommerceGeneratedArtifactCheckResult {
   };
 }
 
+function shouldFailCommerceSyncOnRevalidationFailure(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  const deploymentEnvironment = (
+    environment['BRICKHUNT_DEPLOY_ENV'] ??
+    environment['VERCEL_ENV'] ??
+    environment['NODE_ENV']
+  )
+    ?.trim()
+    .toLowerCase();
+
+  return (
+    deploymentEnvironment === 'production' || deploymentEnvironment === 'prod'
+  );
+}
+
+function handleCommerceSyncRevalidationFailure({
+  error,
+  fallbackMessage,
+}: {
+  error: unknown;
+  fallbackMessage: string;
+}): void {
+  if (shouldFailCommerceSyncOnRevalidationFailure()) {
+    throw error;
+  }
+
+  console.warn(error instanceof Error ? error.message : fallbackMessage);
+}
+
 function buildCommerceSyncArtifacts({
   now,
   syncInputs,
@@ -470,11 +500,10 @@ export async function runCommerceSync({
         })),
       });
     } catch (error) {
-      console.warn(
-        error instanceof Error
-          ? error.message
-          : 'Public web revalidation failed after commerce sync.',
-      );
+      handleCommerceSyncRevalidationFailure({
+        error,
+        fallbackMessage: 'Public web revalidation failed after commerce sync.',
+      });
     }
   } else if (aggregateArtifactsChanged) {
     try {
@@ -484,11 +513,11 @@ export async function runCommerceSync({
         targets: [],
       });
     } catch (error) {
-      console.warn(
-        error instanceof Error
-          ? error.message
-          : 'Public web aggregate revalidation failed after commerce sync.',
-      );
+      handleCommerceSyncRevalidationFailure({
+        error,
+        fallbackMessage:
+          'Public web aggregate revalidation failed after commerce sync.',
+      });
     }
   }
 

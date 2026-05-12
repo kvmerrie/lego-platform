@@ -62,6 +62,19 @@ describe('public web revalidation server', () => {
         tagCount: 2,
       }),
     );
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] success',
+      expect.objectContaining({
+        event: 'public_web_revalidation_succeeded',
+        path_count: 14,
+        reason: 'observability_test',
+        source: 'generic',
+        status: 200,
+        tag_count: 2,
+        target_host: 'staging.brickhunt.nl',
+        target_pathname: '/api/revalidate',
+      }),
+    );
     expect(warnSpy).toHaveBeenCalledWith(
       '[public-web-revalidation] broad tags requested',
       {
@@ -157,6 +170,142 @@ describe('public web revalidation server', () => {
       ],
     });
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  test('skips outbound revalidation when no origin is configured outside production', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    delete process.env.WEB_BASE_URL;
+    delete process.env.BRICKHUNT_DEPLOY_ENV;
+    delete process.env.VERCEL_ENV;
+    process.env.NODE_ENV = 'test';
+    const infoSpy = vi
+      .spyOn(console, 'info')
+      .mockImplementation(() => undefined);
+    const fetchImpl = vi.fn<typeof fetch>();
+
+    const result = await revalidatePublicWeb({
+      fetchImpl,
+      paths: ['/'],
+      reason: 'missing_origin_test',
+      tags: ['homepage'],
+    });
+
+    expect(result).toMatchObject({
+      attempted: false,
+      skipped: true,
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] request diagnostics',
+      expect.objectContaining({
+        event: 'public_web_revalidation_request',
+        has_origin: false,
+        has_secret: true,
+        origin_env_name: 'runtime:web.baseUrl',
+        reason: 'missing_origin_test',
+        target_pathname: '/api/revalidate',
+      }),
+    );
+  });
+
+  test('fails clearly when the configured origin URL is invalid', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    process.env.WEB_BASE_URL = 'not a valid url';
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const fetchImpl = vi.fn<typeof fetch>();
+
+    await expect(
+      revalidatePublicWeb({
+        fetchImpl,
+        paths: ['/'],
+        reason: 'invalid_origin_test',
+        tags: ['homepage'],
+      }),
+    ).rejects.toThrow('Invalid public web revalidation origin');
+
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] fetch failed',
+      expect.objectContaining({
+        error_message: 'Invalid public web revalidation origin: WEB_BASE_URL.',
+        event: 'public_web_revalidation_fetch_failed',
+        reason: 'invalid_origin_test',
+        target_pathname: '/api/revalidate',
+      }),
+    );
+  });
+
+  test('logs actionable diagnostics when fetch throws', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
+    const cause = Object.assign(new Error('connect ECONNREFUSED'), {
+      code: 'ECONNREFUSED',
+    });
+    const fetchError = new TypeError('fetch failed');
+    (fetchError as Error & { cause?: unknown }).cause = cause;
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const fetchImpl = vi.fn<typeof fetch>().mockRejectedValue(fetchError);
+
+    await expect(
+      revalidatePublicWeb({
+        fetchImpl,
+        paths: ['/'],
+        reason: 'fetch_failure_test',
+        tags: ['homepage'],
+      }),
+    ).rejects.toThrow('fetch failed');
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] fetch failed',
+      expect.objectContaining({
+        error_cause_code: 'ECONNREFUSED',
+        error_cause_message: 'connect ECONNREFUSED',
+        error_message: 'fetch failed',
+        error_name: 'TypeError',
+        event: 'public_web_revalidation_fetch_failed',
+        reason: 'fetch_failure_test',
+        target_host: 'www.brickhunt.nl',
+        target_pathname: '/api/revalidate',
+      }),
+    );
+  });
+
+  test('logs response status and body excerpt when the endpoint rejects the request', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
+    const errorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response('Invalid revalidation secret.', {
+        status: 401,
+      }),
+    );
+
+    await expect(
+      revalidatePublicWeb({
+        fetchImpl,
+        paths: ['/'],
+        reason: 'unauthorized_test',
+        tags: ['homepage'],
+      }),
+    ).rejects.toThrow('Public web revalidation failed with status 401.');
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] http failed',
+      expect.objectContaining({
+        event: 'public_web_revalidation_http_failed',
+        reason: 'unauthorized_test',
+        response_body_excerpt: 'Invalid revalidation secret.',
+        status: 401,
+        target_host: 'www.brickhunt.nl',
+        target_pathname: '/api/revalidate',
+      }),
+    );
   });
 
   test('posts path-based revalidation requests to the public web app when configured', async () => {

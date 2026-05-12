@@ -3,8 +3,8 @@ import {
   buildSetDetailPath,
   buildThemePath,
   cacheTags,
-  getPublicWebRevalidationConfig,
-  hasPublicWebRevalidationConfig,
+  productEmailEnvKeys,
+  publicWebRevalidationEnvKeys,
   webPathnames,
 } from '@lego-platform/shared/config';
 
@@ -39,6 +39,75 @@ const broadRevalidationTags = new Set([
   'sitemap',
 ]);
 const loggedValueLimit = 12;
+const responseBodyExcerptLimit = 500;
+const productionEnvironmentNames = new Set(['production', 'prod']);
+
+type PublicWebRevalidationSource = 'catalog' | 'generic';
+
+interface PublicWebRevalidationRequestDiagnostics {
+  hasOrigin: boolean;
+  hasSecret: boolean;
+  originEnvName: string;
+  targetHost?: string;
+  targetPathname: string;
+}
+
+function isProductionEnvironment(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  const deploymentEnvironment = (
+    environment['BRICKHUNT_DEPLOY_ENV'] ??
+    environment['VERCEL_ENV'] ??
+    environment['NODE_ENV']
+  )
+    ?.trim()
+    .toLowerCase();
+
+  return deploymentEnvironment
+    ? productionEnvironmentNames.has(deploymentEnvironment)
+    : false;
+}
+
+function buildRequestDiagnostics(
+  environment: Record<string, string | undefined> = process.env,
+): PublicWebRevalidationRequestDiagnostics {
+  const explicitOrigin = environment[productEmailEnvKeys.webBaseUrl]?.trim();
+  const hasOrigin = Boolean(explicitOrigin);
+  const originEnvName = hasOrigin
+    ? productEmailEnvKeys.webBaseUrl
+    : 'runtime:web.baseUrl';
+  const targetUrl = explicitOrigin
+    ? tryBuildRevalidationUrl(explicitOrigin)
+    : undefined;
+
+  return {
+    hasOrigin,
+    hasSecret: Boolean(environment[publicWebRevalidationEnvKeys.secret]),
+    originEnvName,
+    targetHost: targetUrl?.host,
+    targetPathname: targetUrl?.pathname ?? '/api/revalidate',
+  };
+}
+
+function tryBuildRevalidationUrl(webBaseUrl: string): URL | undefined {
+  try {
+    return new URL('/api/revalidate', webBaseUrl);
+  } catch {
+    return undefined;
+  }
+}
+
+function buildRevalidationUrl(webBaseUrl: string): URL {
+  const targetUrl = tryBuildRevalidationUrl(webBaseUrl);
+
+  if (!targetUrl) {
+    throw new Error(
+      `Invalid public web revalidation origin: ${productEmailEnvKeys.webBaseUrl}.`,
+    );
+  }
+
+  return targetUrl;
+}
 
 function normalizeRevalidationPath(pathname: string): string | undefined {
   const trimmedPathname = pathname.trim();
@@ -68,17 +137,21 @@ function getBroadRevalidationTags(tags: readonly string[]): string[] {
 
 function logPublicWebRevalidationRequest({
   attempted,
+  diagnostics,
   paths,
   reason,
+  skipReason,
   skipped,
   source,
   tags,
 }: {
   attempted: boolean;
+  diagnostics: PublicWebRevalidationRequestDiagnostics;
   paths: readonly string[];
   reason?: string;
+  skipReason?: string;
   skipped: boolean;
-  source: 'catalog' | 'generic';
+  source: PublicWebRevalidationSource;
   tags: readonly string[];
 }): void {
   const broadTags = getBroadRevalidationTags(tags);
@@ -92,11 +165,25 @@ function logPublicWebRevalidationRequest({
     pathSample: pathSummary.sample,
     pathSampleOmittedCount: pathSummary.omittedCount,
     reason,
+    skipReason,
     skipped,
     source,
     tagCount: tags.length,
     tagSample: tagSummary.sample,
     tagSampleOmittedCount: tagSummary.omittedCount,
+  });
+
+  console.info('[public-web-revalidation] request diagnostics', {
+    event: 'public_web_revalidation_request',
+    has_origin: diagnostics.hasOrigin,
+    has_secret: diagnostics.hasSecret,
+    origin_env_name: diagnostics.originEnvName,
+    path_count: paths.length,
+    reason,
+    source,
+    tag_count: tags.length,
+    target_host: diagnostics.targetHost,
+    target_pathname: diagnostics.targetPathname,
   });
 
   if (broadTags.length > 0) {
@@ -110,6 +197,7 @@ function logPublicWebRevalidationRequest({
 
 function logPublicWebRevalidationResponse({
   durationMs,
+  diagnostics,
   pathCount,
   reason,
   source,
@@ -117,9 +205,10 @@ function logPublicWebRevalidationResponse({
   tagCount,
 }: {
   durationMs: number;
+  diagnostics: PublicWebRevalidationRequestDiagnostics;
   pathCount: number;
   reason?: string;
-  source: 'catalog' | 'generic';
+  source: PublicWebRevalidationSource;
   status: number;
   tagCount: number;
 }): void {
@@ -131,6 +220,260 @@ function logPublicWebRevalidationResponse({
     status,
     tagCount,
   });
+
+  console.info('[public-web-revalidation] success', {
+    duration_ms: durationMs,
+    event: 'public_web_revalidation_succeeded',
+    path_count: pathCount,
+    reason,
+    source,
+    status,
+    tag_count: tagCount,
+    target_host: diagnostics.targetHost,
+    target_pathname: diagnostics.targetPathname,
+  });
+}
+
+function getErrorCauseDiagnostics(error: unknown): {
+  causeCode?: string;
+  causeMessage?: string;
+  errorMessage: string;
+  errorName: string;
+} {
+  const errorName = error instanceof Error ? error.name : typeof error;
+  const errorMessage =
+    error instanceof Error ? error.message : String(error ?? 'Unknown error');
+  const cause =
+    error instanceof Error && 'cause' in error ? error.cause : undefined;
+  const causeCode =
+    typeof cause === 'object' &&
+    cause !== null &&
+    'code' in cause &&
+    typeof cause.code === 'string'
+      ? cause.code
+      : undefined;
+  const causeMessage =
+    cause instanceof Error
+      ? cause.message
+      : typeof cause === 'object' &&
+          cause !== null &&
+          'message' in cause &&
+          typeof cause.message === 'string'
+        ? cause.message
+        : undefined;
+
+  return {
+    causeCode,
+    causeMessage,
+    errorMessage,
+    errorName,
+  };
+}
+
+function logPublicWebRevalidationFetchFailure({
+  diagnostics,
+  error,
+  reason,
+  source,
+}: {
+  diagnostics: PublicWebRevalidationRequestDiagnostics;
+  error: unknown;
+  reason?: string;
+  source: PublicWebRevalidationSource;
+}): void {
+  const errorDiagnostics = getErrorCauseDiagnostics(error);
+
+  console.error('[public-web-revalidation] fetch failed', {
+    error_cause_code: errorDiagnostics.causeCode,
+    error_cause_message: errorDiagnostics.causeMessage,
+    error_message: errorDiagnostics.errorMessage,
+    error_name: errorDiagnostics.errorName,
+    event: 'public_web_revalidation_fetch_failed',
+    reason,
+    source,
+    target_host: diagnostics.targetHost,
+    target_pathname: diagnostics.targetPathname,
+  });
+}
+
+async function readResponseBodyExcerpt(response: Response): Promise<string> {
+  try {
+    return (await response.text()).slice(0, responseBodyExcerptLimit);
+  } catch (error) {
+    return error instanceof Error
+      ? `[failed to read response body: ${error.message}]`
+      : '[failed to read response body]';
+  }
+}
+
+function logPublicWebRevalidationHttpFailure({
+  bodyExcerpt,
+  diagnostics,
+  reason,
+  source,
+  status,
+}: {
+  bodyExcerpt: string;
+  diagnostics: PublicWebRevalidationRequestDiagnostics;
+  reason?: string;
+  source: PublicWebRevalidationSource;
+  status: number;
+}): void {
+  console.error('[public-web-revalidation] http failed', {
+    event: 'public_web_revalidation_http_failed',
+    reason,
+    response_body_excerpt: bodyExcerpt,
+    source,
+    status,
+    target_host: diagnostics.targetHost,
+    target_pathname: diagnostics.targetPathname,
+  });
+}
+
+async function sendPublicWebRevalidationRequest({
+  fetchImpl,
+  paths,
+  reason,
+  source,
+  tags,
+}: {
+  fetchImpl: typeof fetch;
+  paths: readonly string[];
+  reason?: string;
+  source: PublicWebRevalidationSource;
+  tags: readonly string[];
+}): Promise<PublicWebRevalidationResult> {
+  const diagnostics = buildRequestDiagnostics();
+  const skipReason =
+    paths.length === 0 && tags.length === 0
+      ? 'empty_targets'
+      : !diagnostics.hasSecret
+        ? `missing_${publicWebRevalidationEnvKeys.secret}`
+        : !diagnostics.hasOrigin
+          ? `missing_${productEmailEnvKeys.webBaseUrl}`
+          : undefined;
+
+  if (skipReason) {
+    logPublicWebRevalidationRequest({
+      attempted: false,
+      diagnostics,
+      paths,
+      reason,
+      skipReason,
+      skipped: true,
+      source,
+      tags,
+    });
+
+    if (isProductionEnvironment()) {
+      throw new Error(
+        `Public web revalidation is not configured: ${skipReason}.`,
+      );
+    }
+
+    return {
+      attempted: false,
+      pathCount: paths.length,
+      paths,
+      skipped: true,
+      tagCount: tags.length,
+      tags,
+    };
+  }
+
+  let targetUrl: URL;
+
+  try {
+    targetUrl = buildRevalidationUrl(
+      process.env[productEmailEnvKeys.webBaseUrl] ?? '',
+    );
+  } catch (error) {
+    logPublicWebRevalidationFetchFailure({
+      diagnostics,
+      error,
+      reason,
+      source,
+    });
+    throw error;
+  }
+
+  const requestDiagnostics = {
+    ...diagnostics,
+    targetHost: targetUrl.host,
+    targetPathname: targetUrl.pathname,
+  };
+
+  logPublicWebRevalidationRequest({
+    attempted: true,
+    diagnostics: requestDiagnostics,
+    paths,
+    reason,
+    skipped: false,
+    source,
+    tags,
+  });
+
+  const startedAt = Date.now();
+  let response: Response;
+
+  try {
+    response = await fetchImpl(targetUrl.toString(), {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-revalidate-secret':
+          process.env[publicWebRevalidationEnvKeys.secret] ?? '',
+      },
+      body: JSON.stringify({
+        paths,
+        reason,
+        tags,
+      }),
+    });
+  } catch (error) {
+    logPublicWebRevalidationFetchFailure({
+      diagnostics: requestDiagnostics,
+      error,
+      reason,
+      source,
+    });
+    throw error;
+  }
+
+  if (!response.ok) {
+    const bodyExcerpt = await readResponseBodyExcerpt(response);
+
+    logPublicWebRevalidationHttpFailure({
+      bodyExcerpt,
+      diagnostics: requestDiagnostics,
+      reason,
+      source,
+      status: response.status,
+    });
+
+    throw new Error(
+      `Public web revalidation failed with status ${response.status}.`,
+    );
+  }
+
+  logPublicWebRevalidationResponse({
+    diagnostics: requestDiagnostics,
+    durationMs: Date.now() - startedAt,
+    pathCount: paths.length,
+    reason,
+    source,
+    status: response.status,
+    tagCount: tags.length,
+  });
+
+  return {
+    attempted: true,
+    pathCount: paths.length,
+    paths,
+    skipped: false,
+    tagCount: tags.length,
+    tags,
+  };
 }
 
 export function buildPublicCatalogRevalidationPaths({
@@ -238,78 +581,13 @@ export async function revalidatePublicCatalogPaths({
     targets,
   });
 
-  if (
-    (paths.length === 0 && tags.length === 0) ||
-    !hasPublicWebRevalidationConfig()
-  ) {
-    logPublicWebRevalidationRequest({
-      attempted: false,
-      paths,
-      reason,
-      skipped: true,
-      source: 'catalog',
-      tags,
-    });
-
-    return {
-      attempted: false,
-      pathCount: paths.length,
-      paths,
-      skipped: true,
-      tagCount: tags.length,
-      tags,
-    };
-  }
-
-  const revalidationConfig = getPublicWebRevalidationConfig();
-  logPublicWebRevalidationRequest({
-    attempted: true,
+  return sendPublicWebRevalidationRequest({
+    fetchImpl,
     paths,
     reason,
-    skipped: false,
     source: 'catalog',
     tags,
   });
-  const startedAt = Date.now();
-  const response = await fetchImpl(
-    `${revalidationConfig.webBaseUrl}/api/revalidate`,
-    {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-revalidate-secret': revalidationConfig.secret,
-      },
-      body: JSON.stringify({
-        paths,
-        reason,
-        tags,
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Public web revalidation failed with status ${response.status}.`,
-    );
-  }
-
-  logPublicWebRevalidationResponse({
-    durationMs: Date.now() - startedAt,
-    pathCount: paths.length,
-    reason,
-    source: 'catalog',
-    status: response.status,
-    tagCount: tags.length,
-  });
-
-  return {
-    attempted: true,
-    pathCount: paths.length,
-    paths,
-    skipped: false,
-    tagCount: tags.length,
-    tags,
-  };
 }
 
 export async function revalidatePublicWeb({
@@ -332,76 +610,11 @@ export async function revalidatePublicWeb({
   ];
   const normalizedTags = [...new Set(tags)];
 
-  if (
-    (normalizedPaths.length === 0 && normalizedTags.length === 0) ||
-    !hasPublicWebRevalidationConfig()
-  ) {
-    logPublicWebRevalidationRequest({
-      attempted: false,
-      paths: normalizedPaths,
-      reason,
-      skipped: true,
-      source: 'generic',
-      tags: normalizedTags,
-    });
-
-    return {
-      attempted: false,
-      pathCount: normalizedPaths.length,
-      paths: normalizedPaths,
-      skipped: true,
-      tagCount: normalizedTags.length,
-      tags: normalizedTags,
-    };
-  }
-
-  const revalidationConfig = getPublicWebRevalidationConfig();
-  logPublicWebRevalidationRequest({
-    attempted: true,
+  return sendPublicWebRevalidationRequest({
+    fetchImpl,
     paths: normalizedPaths,
     reason,
-    skipped: false,
     source: 'generic',
     tags: normalizedTags,
   });
-  const startedAt = Date.now();
-  const response = await fetchImpl(
-    `${revalidationConfig.webBaseUrl}/api/revalidate`,
-    {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-revalidate-secret': revalidationConfig.secret,
-      },
-      body: JSON.stringify({
-        paths: normalizedPaths,
-        reason,
-        tags: normalizedTags,
-      }),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(
-      `Public web revalidation failed with status ${response.status}.`,
-    );
-  }
-
-  logPublicWebRevalidationResponse({
-    durationMs: Date.now() - startedAt,
-    pathCount: normalizedPaths.length,
-    reason,
-    source: 'generic',
-    status: response.status,
-    tagCount: normalizedTags.length,
-  });
-
-  return {
-    attempted: true,
-    pathCount: normalizedPaths.length,
-    paths: normalizedPaths,
-    skipped: false,
-    tagCount: normalizedTags.length,
-    tags: normalizedTags,
-  };
 }
