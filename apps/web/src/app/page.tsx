@@ -13,6 +13,7 @@ import {
 } from '@lego-platform/catalog/feature-theme-list';
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
+  getCatalogHomepageDealQualityDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
   listCachedCatalogCurrentOfferSummaries,
   listCatalogCurrentOfferSummaries,
@@ -403,6 +404,7 @@ export default async function HomePage() {
       : undefined;
   const homepageBestDealCandidateSetCards = getCatalogDiscoverySignalFn
     ? await listDiscoverBestDealSetCards({
+        currentOfferSummaryBySetId,
         getCatalogDiscoverySignalFn,
         limit: HOMEPAGE_DISCOVERY_RAIL_LIMIT,
         rotationSeed: commerceRailRotationSeed,
@@ -414,6 +416,7 @@ export default async function HomePage() {
       catalogDiscoverySignalBySetId,
       currentOfferSummaryBySetId,
       limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
+      requirePrimaryDealQuality: true,
       rotationSeed: commerceRailRotationSeed,
       setCards: commerceCandidateSetCards,
     });
@@ -423,6 +426,14 @@ export default async function HomePage() {
       scoredCommerceCandidateSetCards: homepageScoredCommerceCandidateSetCards,
       strictDealSetCards: homepageBestDealCandidateSetCards,
     });
+  console.info('[homepage-deal-quality]', {
+    ...getCatalogHomepageDealQualityDiagnostics({
+      catalogDiscoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      selectedSetCards: homepageFirstCommerceInputSetCards,
+      setCards: commerceCandidateSetCards,
+    }),
+  });
   const homepageHeroSection = getHeroSection(homepagePage.sections);
   const homepageBestDealCandidates = toFeatureSetListItems(
     homepageFirstCommerceInputSetCards,

@@ -16,9 +16,27 @@ describe('shared design tokens', () => {
       '--lego-surface-default: var(--lego-surface);',
     );
     expect(themeStyles).toContain('--lego-text-default: var(--lego-text);');
+    expect(themeStyles).toContain('--lego-color-surface: var(--lego-surface);');
+    expect(themeStyles).toContain('--lego-color-text: var(--lego-text);');
+    expect(themeStyles).toContain(
+      '--lego-color-text-muted: var(--lego-text-muted);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-color-border-subtle: var(--lego-border-subtle);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-text-role-display-support-size: var(--lego-text-role-support-size);',
+    );
+    expect(themeStyles).toContain(
+      '--lego-text-role-display-support-line-height: var(--lego-text-role-support-line-height);',
+    );
     expect(themeStyles).toContain(
       '--lego-button-surface-default-primary-background: var(--lego-accent);',
     );
+    expect(themeStyles).toContain('--lego-accent: #0057d9;');
+    expect(themeStyles).toContain('--lego-accent-contrast: #ffffff;');
+    expect(themeStyles).toContain(":root[data-theme='dark']");
+    expect(themeStyles).toContain('--lego-accent: #5c9dff;');
     expect(themeStyles).toContain('--lego-border-strong:');
     expect(themeStyles).toContain(
       '--lego-button-surface-light-primary-background: var(--lego-contrast-ink);',

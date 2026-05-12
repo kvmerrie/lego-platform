@@ -17,6 +17,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
   type CatalogDiscoverySignal,
   getCatalogCommerceRailRuntimeDiagnostics,
+  getCatalogHomepageDealQualityDiagnostics,
   getCatalogPrimaryOfferAvailabilityStateBySetId,
   getCatalogPartnerOfferRailDiagnostics,
   type CatalogResolvedOffer,
@@ -114,6 +115,7 @@ function createCatalogOffer(
   return {
     availability: 'in_stock',
     checkedAt: '2026-04-18T08:30:00.000Z',
+    commercialUnitType: 'full_set',
     condition: 'new',
     currency: 'EUR',
     market: 'NL',
@@ -2241,9 +2243,9 @@ describe('catalog effective data access web', () => {
     });
 
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '10316',
       '76269',
-      '31208',
+      '10316',
+      '10311',
     ]);
   });
 
@@ -3815,7 +3817,7 @@ describe('catalog effective data access web', () => {
     expect(firstRefresh).not.toEqual(secondRefresh);
   });
 
-  test('treats a recent price drop as a best-deal signal without requiring reference discount', () => {
+  test('does not treat a recent price drop as a primary best-deal signal without reliable reference discount', () => {
     const result = rankCatalogBestDealSetCards({
       getCatalogDiscoverySignalFn: (setId) =>
         setId === '43247'
@@ -3843,9 +3845,7 @@ describe('catalog effective data access web', () => {
       ],
     });
 
-    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '43247',
-    ]);
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([]);
   });
 
   test('ranks partner offer rails from valid priced affiliate offers', () => {
@@ -4163,6 +4163,7 @@ describe('catalog effective data access web', () => {
         {
           bestOffer: createCatalogOffer({
             availability: 'in_stock',
+            commercialUnitType: 'full_set',
             merchantName: 'Goodbricks',
             priceCents: 9999,
             setId: '43247',
@@ -4171,6 +4172,7 @@ describe('catalog effective data access web', () => {
           offers: [
             createCatalogOffer({
               availability: 'in_stock',
+              commercialUnitType: 'full_set',
               merchantName: 'Goodbricks',
               priceCents: 9999,
               setId: '43247',
@@ -4185,6 +4187,7 @@ describe('catalog effective data access web', () => {
         {
           bestOffer: createCatalogOffer({
             availability: 'in_stock',
+            commercialUnitType: 'full_set',
             merchantName: 'MediaMarkt',
             priceCents: 4299,
             setId: '10311',
@@ -4193,6 +4196,7 @@ describe('catalog effective data access web', () => {
           offers: [
             createCatalogOffer({
               availability: 'in_stock',
+              commercialUnitType: 'full_set',
               merchantName: 'MediaMarkt',
               priceCents: 4299,
               setId: '10311',
@@ -4200,6 +4204,7 @@ describe('catalog effective data access web', () => {
             }),
             createCatalogOffer({
               availability: 'in_stock',
+              commercialUnitType: 'full_set',
               merchantName: 'Top1Toys',
               priceCents: 4799,
               setId: '10311',
@@ -4214,6 +4219,7 @@ describe('catalog effective data access web', () => {
         {
           bestOffer: createCatalogOffer({
             availability: 'in_stock',
+            commercialUnitType: 'full_set',
             merchantName: 'Coppenswarenhuis',
             priceCents: 8499,
             setId: '75446',
@@ -4222,6 +4228,7 @@ describe('catalog effective data access web', () => {
           offers: [
             createCatalogOffer({
               availability: 'in_stock',
+              commercialUnitType: 'full_set',
               merchantName: 'Coppenswarenhuis',
               priceCents: 8499,
               setId: '75446',
@@ -4260,13 +4267,136 @@ describe('catalog effective data access web', () => {
       setCards,
     });
 
-    expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([
-      '75446',
-    ]);
+    expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([]);
     expect(goodPriced.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '10311',
+      '75446',
       '43247',
     ]);
+  });
+
+  test('excludes 71050-like unknown unit and unknown verdict cards from primary deal quality rails', () => {
+    const setCards = [
+      {
+        id: '71050',
+        imageUrl: undefined,
+        name: 'Minifigures Random Box',
+        pieces: 1,
+        releaseYear: 2026,
+        slug: 'minifigures-random-box-71050',
+        theme: 'Minifigures',
+      },
+      {
+        id: '10316',
+        imageUrl: undefined,
+        name: 'Rivendell',
+        pieces: 6167,
+        releaseYear: 2023,
+        slug: 'rivendell-10316',
+        theme: 'Icons',
+      },
+    ];
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '71050',
+        {
+          bestOffer: createCatalogOffer({
+            commercialUnitType: 'unknown',
+            merchantName: 'Coppenswarenhuis',
+            priceCents: 359,
+            setId: '71050',
+          }),
+          offers: [
+            createCatalogOffer({
+              commercialUnitType: 'unknown',
+              merchantName: 'Coppenswarenhuis',
+              priceCents: 359,
+              setId: '71050',
+            }),
+            createCatalogOffer({
+              commercialUnitType: 'unknown',
+              merchantName: 'MisterBricks',
+              priceCents: 11900,
+              setId: '71050',
+            }),
+          ],
+          setId: '71050',
+        },
+      ],
+      [
+        '10316',
+        {
+          bestOffer: createCatalogOffer({
+            commercialUnitType: 'full_set',
+            merchantName: 'Goodbricks',
+            priceCents: 39999,
+            setId: '10316',
+          }),
+          offers: [
+            createCatalogOffer({
+              commercialUnitType: 'full_set',
+              merchantName: 'Goodbricks',
+              priceCents: 39999,
+              setId: '10316',
+            }),
+            createCatalogOffer({
+              commercialUnitType: 'full_set',
+              merchantName: 'MediaMarkt',
+              priceCents: 42999,
+              setId: '10316',
+            }),
+          ],
+          setId: '10316',
+        },
+      ],
+    ]);
+    const catalogDiscoverySignalBySetId = new Map([
+      [
+        '71050',
+        createCatalogDiscoverySignal({
+          bestPriceMinor: 359,
+          merchantCount: 2,
+          nextBestPriceMinor: 11900,
+          priceSpreadMinor: 11541,
+          referenceDeltaMinor: undefined,
+        }),
+      ],
+      [
+        '10316',
+        createCatalogDiscoverySignal({
+          bestPriceMinor: 39999,
+          merchantCount: 2,
+          nextBestPriceMinor: 42999,
+          priceSpreadMinor: 3000,
+          referenceDeltaMinor: -6000,
+        }),
+      ],
+    ]);
+
+    const result = rankCatalogPartnerOfferSetCards({
+      catalogDiscoverySignalBySetId,
+      currentOfferSummaryBySetId,
+      requirePrimaryDealQuality: true,
+      setCards,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10316',
+    ]);
+    expect(
+      getCatalogHomepageDealQualityDiagnostics({
+        catalogDiscoverySignalBySetId,
+        currentOfferSummaryBySetId,
+        selectedSetCards: result,
+        setCards,
+      }),
+    ).toEqual({
+      excluded_unknown_unit_count: 1,
+      excluded_unknown_verdict_count: 1,
+      homepage_deal_accepted_count: 1,
+      homepage_deal_candidate_count: 2,
+    });
+    expect(currentOfferSummaryBySetId.get('71050')?.offers).toHaveLength(2);
   });
 
   test('can rank commerce candidates outside the initial homepage set list', () => {
@@ -5086,7 +5216,6 @@ describe('catalog effective data access web', () => {
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '42143',
       '76269',
-      '10313',
     ]);
   });
 
@@ -5378,7 +5507,6 @@ describe('catalog effective data access web', () => {
     ).toEqual(['42143', '10313']);
     expect(bestDeals.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '42143',
-      '10313',
     ]);
     expect(recentlyReleased.map((catalogSetCard) => catalogSetCard.id)).toEqual(
       ['10354'],

@@ -49,6 +49,8 @@ import {
   type CommerceCommercialUnitType,
   getBrowserSupabaseConfig,
   getCommerceMerchantReliabilityTier,
+  isCommerceCommercialUnitComparableForDeals,
+  isCommerceMerchantProductionFeed,
   getMissingBrowserSupabaseEnvKeys,
   getMissingServerSupabaseEnvKeys,
   getServerSupabaseConfig,
@@ -280,6 +282,13 @@ export interface CatalogPartnerOfferRailDiagnostic {
   inStock: boolean;
   priceSpread: number;
   setId: string;
+}
+
+export interface CatalogHomepageDealQualityDiagnostics {
+  excluded_unknown_unit_count: number;
+  excluded_unknown_verdict_count: number;
+  homepage_deal_accepted_count: number;
+  homepage_deal_candidate_count: number;
 }
 
 export interface CatalogCommerceRailRuntimeDiagnostics {
@@ -1129,7 +1138,7 @@ function toCatalogRuntimeOffer({
     checkedAt,
     condition: 'new',
     currency: 'EUR',
-    ...(commercialUnitType !== 'unknown' ? { commercialUnitType } : {}),
+    commercialUnitType,
     market: 'NL',
     merchant: getCatalogOfferMerchantFromMerchantSlug(merchant.slug),
     merchantName: merchant.name,
@@ -2134,18 +2143,92 @@ function isCatalogInterestingNowCandidate(
 function isCatalogBestDealCandidate(
   catalogDiscoverySignal: CatalogDiscoverySignal,
 ): boolean {
-  const hasReferenceDiscount =
-    typeof catalogDiscoverySignal.referenceDeltaMinor === 'number' &&
-    catalogDiscoverySignal.referenceDeltaMinor < 0;
-  const hasRecentPriceDrop =
-    typeof catalogDiscoverySignal.recentReferencePriceChangeMinor ===
-      'number' &&
-    catalogDiscoverySignal.recentReferencePriceChangeMinor < 0 &&
-    getCatalogSignalAgeHours(
-      catalogDiscoverySignal.recentReferencePriceChangedAt,
-    ) <= 48;
+  return hasReliableCatalogReferenceDiscount(catalogDiscoverySignal);
+}
 
-  return hasReferenceDiscount || hasRecentPriceDrop;
+const HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT = 2;
+const HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_MINOR = 1000;
+const HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_RATIO = 0.03;
+const HOMEPAGE_PRIMARY_DEAL_SUSPICIOUS_SPREAD_RATIO = 4;
+const HOMEPAGE_PRIMARY_DEAL_SUSPICIOUS_SPREAD_MINOR = 2500;
+
+function hasReliableCatalogReferenceDiscount(
+  catalogDiscoverySignal?: CatalogDiscoverySignal,
+): boolean {
+  if (
+    !catalogDiscoverySignal ||
+    typeof catalogDiscoverySignal.referenceDeltaMinor !== 'number' ||
+    catalogDiscoverySignal.referenceDeltaMinor >= 0 ||
+    catalogDiscoverySignal.bestPriceMinor <= 0
+  ) {
+    return false;
+  }
+
+  const referencePriceMinor =
+    catalogDiscoverySignal.bestPriceMinor -
+    catalogDiscoverySignal.referenceDeltaMinor;
+  const discountMinor = Math.abs(catalogDiscoverySignal.referenceDeltaMinor);
+
+  return (
+    referencePriceMinor > 0 &&
+    discountMinor >= HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_MINOR &&
+    discountMinor / referencePriceMinor >=
+      HOMEPAGE_PRIMARY_DEAL_MIN_REFERENCE_DISCOUNT_RATIO
+  );
+}
+
+function hasSuspiciousCatalogDealSpread(
+  catalogDiscoverySignal?: CatalogDiscoverySignal,
+): boolean {
+  if (
+    !catalogDiscoverySignal ||
+    typeof catalogDiscoverySignal.nextBestPriceMinor !== 'number' ||
+    catalogDiscoverySignal.bestPriceMinor <= 0
+  ) {
+    return false;
+  }
+
+  return (
+    catalogDiscoverySignal.priceSpreadMinor >=
+      HOMEPAGE_PRIMARY_DEAL_SUSPICIOUS_SPREAD_MINOR &&
+    catalogDiscoverySignal.nextBestPriceMinor /
+      catalogDiscoverySignal.bestPriceMinor >=
+      HOMEPAGE_PRIMARY_DEAL_SUSPICIOUS_SPREAD_RATIO
+  );
+}
+
+function canCatalogOfferDrivePrimaryDealClaims(
+  catalogOffer?: CatalogResolvedOffer,
+): boolean {
+  return (
+    Boolean(catalogOffer?.url) &&
+    (catalogOffer?.priceCents ?? 0) > 0 &&
+    catalogOffer?.availability === 'in_stock' &&
+    isCommerceCommercialUnitComparableForDeals(
+      catalogOffer.commercialUnitType,
+    ) &&
+    isCommerceMerchantProductionFeed(
+      getCatalogOfferMerchantReliabilityKey(catalogOffer),
+    )
+  );
+}
+
+function isCatalogPrimaryDealCandidate({
+  catalogDiscoverySignal,
+  currentOfferSummary,
+}: {
+  catalogDiscoverySignal?: CatalogDiscoverySignal;
+  currentOfferSummary?: CatalogCurrentOfferSummary;
+}): boolean {
+  return (
+    (catalogDiscoverySignal?.merchantCount ?? 0) >=
+      HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT &&
+    getCatalogOfferMerchantCount(currentOfferSummary) >=
+      HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT &&
+    canCatalogOfferDrivePrimaryDealClaims(currentOfferSummary?.bestOffer) &&
+    hasReliableCatalogReferenceDiscount(catalogDiscoverySignal) &&
+    !hasSuspiciousCatalogDealSpread(catalogDiscoverySignal)
+  );
 }
 
 function getCatalogRailRotationSeed(rotationSeed?: number): number {
@@ -2403,6 +2486,7 @@ export function rankCatalogPartnerOfferSetCards({
   currentOfferSummaryBySetId,
   excludedSetIds = [],
   limit = 6,
+  requirePrimaryDealQuality = false,
   rotationSeed,
   setCards,
 }: {
@@ -2410,19 +2494,29 @@ export function rankCatalogPartnerOfferSetCards({
   currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
   excludedSetIds?: readonly string[];
   limit?: number;
+  requirePrimaryDealQuality?: boolean;
   rotationSeed?: number;
   setCards: readonly CatalogHomepageSetCard[];
 }): CatalogHomepageSetCard[] {
   const excludedSetIdSet = new Set(excludedSetIds);
 
   return [...setCards]
-    .filter(
-      (setCard) =>
+    .filter((setCard) => {
+      const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+      const catalogDiscoverySignal = catalogDiscoverySignalBySetId.get(
+        setCard.id,
+      );
+
+      return (
         !excludedSetIdSet.has(setCard.id) &&
-        hasCatalogCurrentPartnerOffer(
-          currentOfferSummaryBySetId.get(setCard.id),
-        ),
-    )
+        hasCatalogCurrentPartnerOffer(currentOfferSummary) &&
+        (!requirePrimaryDealQuality ||
+          isCatalogPrimaryDealCandidate({
+            catalogDiscoverySignal,
+            currentOfferSummary,
+          }))
+      );
+    })
     .sort(
       (left, right) =>
         getCatalogPartnerOfferScore({
@@ -2470,6 +2564,51 @@ export function selectCatalogFirstCommerceRailSetCards({
   }
 
   return selectedSetCards;
+}
+
+export function getCatalogHomepageDealQualityDiagnostics({
+  catalogDiscoverySignalBySetId,
+  currentOfferSummaryBySetId,
+  selectedSetCards,
+  setCards,
+}: {
+  catalogDiscoverySignalBySetId: ReadonlyMap<string, CatalogDiscoverySignal>;
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
+  selectedSetCards: readonly CatalogHomepageSetCard[];
+  setCards: readonly CatalogHomepageSetCard[];
+}): CatalogHomepageDealQualityDiagnostics {
+  let excludedUnknownUnitCount = 0;
+  let excludedUnknownVerdictCount = 0;
+
+  for (const setCard of setCards) {
+    const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+    const catalogDiscoverySignal = catalogDiscoverySignalBySetId.get(
+      setCard.id,
+    );
+
+    if (!hasCatalogCurrentPartnerOffer(currentOfferSummary)) {
+      continue;
+    }
+
+    if (
+      !isCommerceCommercialUnitComparableForDeals(
+        currentOfferSummary?.bestOffer?.commercialUnitType,
+      )
+    ) {
+      excludedUnknownUnitCount += 1;
+    }
+
+    if (!hasReliableCatalogReferenceDiscount(catalogDiscoverySignal)) {
+      excludedUnknownVerdictCount += 1;
+    }
+  }
+
+  return {
+    excluded_unknown_unit_count: excludedUnknownUnitCount,
+    excluded_unknown_verdict_count: excludedUnknownVerdictCount,
+    homepage_deal_accepted_count: selectedSetCards.length,
+    homepage_deal_candidate_count: setCards.length,
+  };
 }
 
 const DISCOVER_RECENT_RELEASE_LOOKBACK_DAYS = 90;
@@ -3090,12 +3229,14 @@ export function rankCatalogRecentPriceChangeSetCards({
 }
 
 export function rankCatalogBestDealSetCards({
+  currentOfferSummaryBySetId,
   excludedSetIds = [],
   getCatalogDiscoverySignalFn,
   limit = 6,
   rotationSeed,
   setCards,
 }: {
+  currentOfferSummaryBySetId?: ReadonlyMap<string, CatalogCurrentOfferSummary>;
   excludedSetIds?: readonly string[];
   getCatalogDiscoverySignalFn: (
     setId: string,
@@ -3113,11 +3254,18 @@ export function rankCatalogBestDealSetCards({
       }
 
       const catalogDiscoverySignal = getCatalogDiscoverySignalFn(setCard.id);
+      const currentOfferSummary = currentOfferSummaryBySetId?.get(setCard.id);
 
       if (
         !catalogDiscoverySignal ||
-        catalogDiscoverySignal.merchantCount < 1 ||
-        !isCatalogBestDealCandidate(catalogDiscoverySignal)
+        catalogDiscoverySignal.merchantCount <
+          HOMEPAGE_PRIMARY_DEAL_MIN_MERCHANT_COUNT ||
+        !isCatalogBestDealCandidate(catalogDiscoverySignal) ||
+        (currentOfferSummaryBySetId &&
+          !isCatalogPrimaryDealCandidate({
+            catalogDiscoverySignal,
+            currentOfferSummary,
+          }))
       ) {
         return [];
       }
@@ -5420,6 +5568,7 @@ export async function listDiscoverBestDealSetCards({
   getCatalogDiscoverySignalFn,
   limit = 6,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
+  currentOfferSummaryBySetId,
   rotationSeed,
   setCards,
 }: {
@@ -5429,6 +5578,7 @@ export async function listDiscoverBestDealSetCards({
   ) => CatalogDiscoverySignal | undefined;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
+  currentOfferSummaryBySetId?: ReadonlyMap<string, CatalogCurrentOfferSummary>;
   rotationSeed?: number;
   setCards?: readonly CatalogHomepageSetCard[];
 }): Promise<CatalogHomepageSetCard[]> {
@@ -5436,6 +5586,7 @@ export async function listDiscoverBestDealSetCards({
     excludedSetIds,
     getCatalogDiscoverySignalFn,
     limit,
+    currentOfferSummaryBySetId,
     rotationSeed,
     setCards:
       setCards ??

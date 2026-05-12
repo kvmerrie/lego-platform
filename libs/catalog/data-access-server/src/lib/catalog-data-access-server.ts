@@ -141,7 +141,7 @@ export interface CatalogLiveOffer {
   availability: 'in_stock' | 'out_of_stock' | 'unknown';
   checkedAt: string;
   condition: 'new';
-  commercialUnitType?: CommerceCommercialUnitType;
+  commercialUnitType: CommerceCommercialUnitType;
   currency: 'EUR';
   market: 'NL';
   merchant: 'amazon' | 'bol' | 'lego' | 'other';
@@ -389,7 +389,7 @@ function selectComparableCatalogDiscoveryOffers(
     .sort((left, right) => priorities[left] - priorities[right])[0];
 
   if (!preferredGroup) {
-    return [...currentOffers];
+    return [];
   }
 
   return currentOffers.filter(
@@ -530,7 +530,7 @@ function toCatalogLiveOffer({
     availability: normalizeRuntimeOfferAvailability(latestOffer.availability),
     checkedAt,
     condition: 'new',
-    ...(commercialUnitType !== 'unknown' ? { commercialUnitType } : {}),
+    commercialUnitType,
     currency: 'EUR',
     market: 'NL',
     merchant: getCatalogOfferMerchantFromMerchantSlug(merchant.slug),

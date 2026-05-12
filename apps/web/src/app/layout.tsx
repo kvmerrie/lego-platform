@@ -68,6 +68,13 @@ export default function RootLayout({
       data-theme="light"
       suppressHydrationWarning
     >
+      <head>
+        <style
+          data-lego-theme-styles="true"
+          dangerouslySetInnerHTML={{ __html: getThemeStyles() }}
+        />
+      </head>
+
       {gtmId ? (
         <Script
           id="gtm-script"
@@ -85,7 +92,6 @@ export default function RootLayout({
       ) : null}
 
       <body className={plusJakartaSans.className}>
-        <style dangerouslySetInnerHTML={{ __html: getThemeStyles() }} />
         <Script id="theme-bootstrap" strategy="beforeInteractive">
           {getThemeBootstrapScript()}
         </Script>

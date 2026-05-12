@@ -467,6 +467,7 @@ describe('catalog data access server', () => {
           id: 'seed-1',
           is_active: true,
           merchant_id: 'merchant-intertoys',
+          notes: 'Product title: LEGO Technic full set bouwset.',
           product_url: 'https://www.intertoys.nl/technic',
           set_id: '42172',
           validation_status: 'valid',
@@ -475,6 +476,7 @@ describe('catalog data access server', () => {
           id: 'seed-2',
           is_active: true,
           merchant_id: 'merchant-bol',
+          notes: 'Product title: LEGO Technic full set bouwset.',
           product_url: 'https://www.bol.com/nl/nl/p/technic',
           set_id: '42172',
           validation_status: 'valid',
@@ -483,6 +485,7 @@ describe('catalog data access server', () => {
           id: 'seed-3',
           is_active: true,
           merchant_id: 'merchant-blocked',
+          notes: 'Product title: LEGO Technic full set bouwset.',
           product_url: 'https://example.test/dormant',
           set_id: '42172',
           validation_status: 'valid',
@@ -491,6 +494,7 @@ describe('catalog data access server', () => {
           id: 'seed-4',
           is_active: true,
           merchant_id: 'merchant-bol',
+          notes: 'Product title: LEGO Technic full set bouwset.',
           product_url: 'https://www.bol.com/nl/nl/p/technic-duplicate',
           set_id: '42171',
           validation_status: 'valid',
@@ -618,6 +622,71 @@ describe('catalog data access server', () => {
     ]);
   });
 
+  test('does not let unknown commercial units create discovery deal spreads', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T09:30:00.000Z',
+          offer_seed_id: 'seed-coppens',
+          price_minor: 359,
+          updated_at: '2026-05-11T09:35:00.000Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-11T09:31:00.000Z',
+          offer_seed_id: 'seed-misterbricks',
+          price_minor: 11900,
+          updated_at: '2026-05-11T09:36:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-coppens',
+          is_active: true,
+          name: 'Coppenswarenhuis',
+          slug: 'coppenswarenhuis',
+        },
+        {
+          id: 'merchant-misterbricks',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-coppens',
+          is_active: true,
+          merchant_id: 'merchant-coppens',
+          notes: '',
+          product_url: 'https://coppens.example/71050',
+          set_id: '71050',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-misterbricks',
+          is_active: true,
+          merchant_id: 'merchant-misterbricks',
+          notes: '',
+          product_url: 'https://misterbricks.example/71050',
+          set_id: '71050',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogDiscoverySignals({
+        supabaseClient,
+      }),
+    ).resolves.toEqual([]);
+  });
+
   test('builds current offer summaries for many set ids in one batch selector', async () => {
     const { supabaseClient } = createCatalogOverlaySupabaseClient({
       latestOfferRows: [
@@ -669,6 +738,7 @@ describe('catalog data access server', () => {
           id: 'seed-1',
           is_active: true,
           merchant_id: 'merchant-intertoys',
+          notes: 'Product title: LEGO Technic full set bouwset.',
           product_url: 'https://www.intertoys.nl/technic',
           set_id: '42172',
           validation_status: 'valid',
@@ -677,6 +747,7 @@ describe('catalog data access server', () => {
           id: 'seed-2',
           is_active: true,
           merchant_id: 'merchant-bol',
+          notes: 'Product title: LEGO Technic full set bouwset.',
           product_url: 'https://www.bol.com/nl/nl/p/technic',
           set_id: '42172',
           validation_status: 'valid',
@@ -685,6 +756,7 @@ describe('catalog data access server', () => {
           id: 'seed-3',
           is_active: true,
           merchant_id: 'merchant-bol',
+          notes: 'Product title: LEGO Star Wars full set bouwset.',
           product_url: 'https://www.bol.com/nl/nl/p/star-wars',
           set_id: '75398',
           validation_status: 'valid',
@@ -703,6 +775,7 @@ describe('catalog data access server', () => {
           availability: 'in_stock',
           checkedAt: '2026-04-20T10:15:00.000Z',
           condition: 'new',
+          commercialUnitType: 'full_set',
           currency: 'EUR',
           market: 'NL',
           merchant: 'bol',
@@ -717,6 +790,7 @@ describe('catalog data access server', () => {
             availability: 'in_stock',
             checkedAt: '2026-04-20T10:15:00.000Z',
             condition: 'new',
+            commercialUnitType: 'full_set',
             currency: 'EUR',
             market: 'NL',
             merchant: 'bol',
@@ -730,6 +804,7 @@ describe('catalog data access server', () => {
             availability: 'unknown',
             checkedAt: '2026-04-20T08:30:00.000Z',
             condition: 'new',
+            commercialUnitType: 'full_set',
             currency: 'EUR',
             market: 'NL',
             merchant: 'other',
@@ -747,6 +822,7 @@ describe('catalog data access server', () => {
           availability: 'in_stock',
           checkedAt: '2026-04-20T07:30:00.000Z',
           condition: 'new',
+          commercialUnitType: 'full_set',
           currency: 'EUR',
           market: 'NL',
           merchant: 'bol',
@@ -761,6 +837,7 @@ describe('catalog data access server', () => {
             availability: 'in_stock',
             checkedAt: '2026-04-20T07:30:00.000Z',
             condition: 'new',
+            commercialUnitType: 'full_set',
             currency: 'EUR',
             market: 'NL',
             merchant: 'bol',
