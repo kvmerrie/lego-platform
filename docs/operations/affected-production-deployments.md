@@ -6,6 +6,22 @@ The workflow is `.github/workflows/affected-production-deploy.yml` and appears i
 
 Production providers should use deploy hooks from this workflow as the production trigger. Disable provider-side automatic deploys from every `main` push for services that are managed here, otherwise the provider can still deploy even when the router intentionally selects no target.
 
+For the public web Vercel project, automatic Git deployments from `main` are disabled in `vercel.json` with:
+
+```json
+{
+  "git": {
+    "deploymentEnabled": {
+      "main": false
+    }
+  }
+}
+```
+
+This prevents Vercel from deploying web on every merge to `main`. Web production deploys should come from the `WEB_DEPLOY_HOOK_URL` selected by this router. The same config exists at the repository root and at `apps/web/vercel.json` because Vercel reads `vercel.json` from the configured project Root Directory.
+
+Do not use Vercel's Ignored Build Step for this policy. Ignored Build Step can cancel builds triggered by deploy hooks too, because deploy hooks still run the project build step. `git.deploymentEnabled.main=false` targets Git push deployments while leaving deploy-hook deployments available.
+
 ## How routing works
 
 1. GitHub Actions checks out the merge commit on `main`.
@@ -98,6 +114,16 @@ These secrets are read from the selected GitHub Environment:
 - `Production – lego-platform-web-staging` for manual staging deploys
 
 If a selected target has no hook configured, the workflow fails visibly.
+
+## Vercel web setup
+
+In the Vercel web project:
+
+1. Keep the Git repository connected so deploy hooks can resolve the configured branch.
+2. Keep a production deploy hook for `main` and store it as `WEB_DEPLOY_HOOK_URL` in the selected GitHub Environment.
+3. Confirm Vercel automatic Git deployments for `main` are disabled by the checked-in `vercel.json`.
+4. If Vercel ignores the checked-in config because the project Root Directory is different, either correct the Root Directory or set the same `git.deploymentEnabled.main=false` config in the Vercel project root.
+5. Do not set `github.enabled=false`; Vercel documents that this prevents deploy hooks from triggering.
 
 ## Web revalidation
 
