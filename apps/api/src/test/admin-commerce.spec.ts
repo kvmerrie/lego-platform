@@ -22,11 +22,19 @@ const catalogLookupMocks = vi.hoisted(() => ({
   ),
 }));
 
-vi.mock('@lego-platform/catalog/data-access-server', () => ({
-  findCatalogSetSummaryByIdWithOverlay:
-    catalogLookupMocks.findCatalogSetSummaryByIdWithOverlay,
-  listCanonicalCatalogSets: vi.fn(async () => []),
-}));
+vi.mock('@lego-platform/catalog/data-access-server', async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import('@lego-platform/catalog/data-access-server')
+    >();
+
+  return {
+    ...actual,
+    findCatalogSetSummaryByIdWithOverlay:
+      catalogLookupMocks.findCatalogSetSummaryByIdWithOverlay,
+    listCanonicalCatalogSets: vi.fn(async () => []),
+  };
+});
 
 import {
   createAdminCommerceRoutes,

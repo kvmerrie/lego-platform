@@ -39,9 +39,14 @@ jobs:
   mvp-readiness:
     runs-on: ubuntu-latest
     needs: quality
+    environment: Production – lego-platform-web-production
     env:
       CI: true
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_URL: ${{ vars.SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL }}
 
     steps:
       - name: Checkout
@@ -62,6 +67,14 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Config diagnostics
+        shell: bash
+        run: |
+          echo "HAS_SUPABASE_URL=$([[ -n "${NEXT_PUBLIC_SUPABASE_URL}" ]] && echo true || echo false)"
+          echo "HAS_SERVER_SUPABASE_URL=$([[ -n "${SUPABASE_URL}" ]] && echo true || echo false)"
+          echo "HAS_SUPABASE_SERVICE_ROLE_KEY=$([[ -n "${SUPABASE_SERVICE_ROLE_KEY}" ]] && echo true || echo false)"
+          echo "HAS_REBRICKABLE_API_KEY=$([[ -n "${REBRICKABLE_API_KEY}" ]] && echo true || echo false)"
 
       - name: API tests
         run: pnpm nx run api:test
