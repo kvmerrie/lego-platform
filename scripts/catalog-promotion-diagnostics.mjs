@@ -95,6 +95,7 @@ function isDifferent(left, right) {
 function countChangedFields({ fields, productionRows, stagingRows }) {
   const productionById = byKey(productionRows, 'id');
   const counts = Object.fromEntries(fields.map((field) => [field, 0]));
+  const details = [];
   let missingInProduction = 0;
 
   for (const stagingRow of stagingRows) {
@@ -108,12 +109,22 @@ function countChangedFields({ fields, productionRows, stagingRows }) {
     for (const field of fields) {
       if (isDifferent(stagingRow[field], productionRow[field])) {
         counts[field] += 1;
+        details.push({
+          displayName:
+            stagingRow.public_display_name ?? stagingRow.display_name,
+          field,
+          id: stagingRow.id,
+          production: productionRow[field] ?? null,
+          slug: stagingRow.slug,
+          staging: stagingRow[field] ?? null,
+        });
       }
     }
   }
 
   return {
     counts,
+    details,
     missingInProduction,
   };
 }
