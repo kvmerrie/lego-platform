@@ -94,7 +94,45 @@ test('manual targets override affected routing', () => {
   });
 
   assert.deepEqual(result.targets, ['api', 'web']);
+  assert.equal(result.manualOverride, true);
   assert.equal(result.reason, 'manual_override');
+});
+
+test('manual web target overrides empty affected routing', () => {
+  const result = routeAffectedDeployments({
+    affectedProjects: [],
+    changedFiles: [],
+    manualTargets: [' web '],
+  });
+
+  assert.deepEqual(result.targets, ['web']);
+  assert.equal(result.manualOverride, true);
+  assert.equal(result.reason, 'manual_override');
+});
+
+test('manual web and api targets de-dupe and override affected routing', () => {
+  const result = routeAffectedDeployments({
+    affectedProjects: ['goodbricks-feed-sync'],
+    changedFiles: ['apps/goodbricks-feed-sync/src/main.ts'],
+    manualTargets: ['web', 'api', 'web'],
+  });
+
+  assert.deepEqual(result.targets, ['api', 'web']);
+  assert.deepEqual(result.manualActions, []);
+  assert.equal(result.manualOverride, true);
+  assert.equal(result.reason, 'manual_override');
+});
+
+test('no manual target uses affected routing', () => {
+  const result = routeAffectedDeployments({
+    affectedProjects: ['web'],
+    changedFiles: ['apps/web/src/app/page.tsx'],
+    manualTargets: [],
+  });
+
+  assert.deepEqual(result.targets, ['web']);
+  assert.equal(result.manualOverride, false);
+  assert.equal(result.reason, 'affected_projects');
 });
 
 test('manual override rejects unsupported feed targets clearly', () => {

@@ -1,4 +1,4 @@
-name: Affected Production Deploy
+name: Production Deploy Router
 
 on:
   push:
@@ -54,8 +54,37 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Resolve deploy mode
+        id: deploy_mode
+        shell: bash
+        env:
+          DISPATCH_DEPLOY_TARGETS: ${{ inputs.deploy_targets }}
+          DISPATCH_ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          set -euo pipefail
+
+          manual_targets="$(printf '%s' "${DISPATCH_DEPLOY_TARGETS:-}" | xargs)"
+          deploy_environment="${DISPATCH_ENVIRONMENT:-production}"
+
+          if [[ "${GITHUB_EVENT_NAME}" != "workflow_dispatch" ]]; then
+            deploy_environment="production"
+          fi
+
+          if [[ -n "${manual_targets}" ]]; then
+            manual_override="true"
+          else
+            manual_override="false"
+          fi
+
+          echo "deploy_environment=${deploy_environment}" >> "${GITHUB_OUTPUT}"
+          echo "manual_override=${manual_override}" >> "${GITHUB_OUTPUT}"
+          echo "manual_targets=${manual_targets}" >> "${GITHUB_OUTPUT}"
+          echo "[affected-deploy] deploy_environment=${deploy_environment}"
+          echo "[affected-deploy] manual_override=${manual_override}"
+
       - name: Resolve affected range
         id: range
+        if: ${{ steps.deploy_mode.outputs.manual_override != 'true' }}
         shell: bash
         env:
           DISPATCH_BASE_REF: ${{ inputs.base_ref }}
@@ -76,6 +105,7 @@ jobs:
           echo "[affected-deploy] base_ref=${BASE_REF} head_ref=${HEAD_REF}"
 
       - name: List changed files
+        if: ${{ steps.deploy_mode.outputs.manual_override != 'true' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -85,6 +115,7 @@ jobs:
 
       - name: Detect affected Nx projects
         id: affected
+        if: ${{ steps.deploy_mode.outputs.manual_override != 'true' }}
         shell: bash
         run: |
           set +e
@@ -104,20 +135,31 @@ jobs:
 
       - name: Route deployment targets
         id: route
+        shell: bash
         env:
-          AFFECTED_DETECTION_UNCERTAIN: ${{ steps.affected.outputs.uncertain }}
-        run: >
-          node scripts/affected-deployment-router.mjs route
-          --affected-projects-file affected-projects.txt
-          --changed-files-file changed-files.txt
-          --manual-targets "${{ inputs.deploy_targets }}"
+          AFFECTED_DETECTION_UNCERTAIN: ${{ steps.affected.outputs.uncertain || 'false' }}
+          MANUAL_OVERRIDE: ${{ steps.deploy_mode.outputs.manual_override }}
+          MANUAL_TARGETS: ${{ steps.deploy_mode.outputs.manual_targets }}
+        run: |
+          set -euo pipefail
+
+          if [[ "${MANUAL_OVERRIDE}" == "true" ]]; then
+            node scripts/affected-deployment-router.mjs route \
+              --manual-targets "${MANUAL_TARGETS}"
+          else
+            node scripts/affected-deployment-router.mjs route \
+              --affected-projects-file affected-projects.txt \
+              --changed-files-file changed-files.txt
+          fi
 
       - name: Log selected deploy environment
         env:
-          DEPLOY_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}
+          DEPLOY_ENVIRONMENT: ${{ steps.deploy_mode.outputs.deploy_environment }}
+          MANUAL_OVERRIDE: ${{ steps.route.outputs.manual_override }}
           DEPLOY_TARGETS: ${{ steps.route.outputs.targets }}
         run: |
           echo "[affected-deploy] deploy_environment=${DEPLOY_ENVIRONMENT}"
+          echo "[affected-deploy] manual_override=${MANUAL_OVERRIDE}"
           echo "[affected-deploy] deploy_targets=${DEPLOY_TARGETS}"
 
       - name: Trigger selected deployments

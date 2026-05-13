@@ -1,8 +1,8 @@
-# Affected production deployments
+# Production deploy router
 
 Brickhunt deploys from `main` with an Nx affected-based router so small changes do not redeploy every production service.
 
-The workflow is `.github/workflows/affected-production-deploy.yml`.
+The workflow is `.github/workflows/affected-production-deploy.yml` and appears in GitHub Actions as `Production Deploy Router`.
 
 Production providers should use deploy hooks from this workflow as the production trigger. Disable provider-side automatic deploys from every `main` push for services that are managed here, otherwise the provider can still deploy even when the router intentionally selects no target.
 
@@ -33,7 +33,7 @@ It does not deploy all jobs.
 
 ## Manual deploys
 
-Use the `Affected Production Deploy` workflow dispatch action with:
+Use the `Production Deploy Router` workflow dispatch action with:
 
 - `environment`: `production` or `staging`
 - `deploy_targets`: optional comma-separated targets
@@ -41,13 +41,14 @@ Use the `Affected Production Deploy` workflow dispatch action with:
 Examples:
 
 ```text
-web
-api,web
+environment=staging, deploy_targets=web
+environment=production, deploy_targets=web
+environment=production, deploy_targets=web,api
 ```
 
 Manual dispatch defaults to `production`. Pushes to `main` always use the production GitHub Environment.
 
-Manual targets override affected detection. Unknown target names fail before any deploy hook is called.
+When `deploy_targets` is provided, manual targets override affected detection entirely. The workflow skips affected range/diff/project detection and deploys exactly the requested targets after validation. Unknown target names fail before any deploy hook is called.
 Only `web` and `api` are supported manual targets for now.
 
 ## Target mapping

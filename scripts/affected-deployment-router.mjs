@@ -124,7 +124,9 @@ export function routeAffectedDeployments({
   detectionUncertain = false,
   manualTargets = [],
 } = {}) {
-  const normalizedManualTargets = uniqueSorted(manualTargets);
+  const normalizedManualTargets = uniqueSorted(
+    manualTargets.map((target) => String(target).trim()).filter(Boolean),
+  );
 
   if (normalizedManualTargets.length > 0) {
     const unknownTargets = normalizedManualTargets.filter(
@@ -142,6 +144,7 @@ export function routeAffectedDeployments({
       changedFiles,
       detectionUncertain: false,
       manualActions: [],
+      manualOverride: true,
       reason: 'manual_override',
       targets: normalizedManualTargets,
     };
@@ -153,6 +156,7 @@ export function routeAffectedDeployments({
       changedFiles,
       detectionUncertain: true,
       manualActions: [],
+      manualOverride: false,
       reason: 'uncertain_detection_fallback',
       targets: ['api', 'web'],
     };
@@ -164,6 +168,7 @@ export function routeAffectedDeployments({
       changedFiles,
       detectionUncertain: false,
       manualActions: [],
+      manualOverride: false,
       reason: 'docs_or_tests_only',
       targets: [],
     };
@@ -198,6 +203,7 @@ export function routeAffectedDeployments({
     changedFiles,
     detectionUncertain: false,
     manualActions: uniqueSorted([...manualActions]),
+    manualOverride: false,
     reason: targets.size > 0 ? 'affected_projects' : 'no_deployable_projects',
     targets: uniqueSorted([...targets]),
   };
@@ -217,6 +223,7 @@ function writeGithubOutput(result) {
     `targets_json=${JSON.stringify(result.targets)}`,
     `manual_actions=${(result.manualActions ?? []).join(' | ')}`,
     `manual_actions_json=${JSON.stringify(result.manualActions ?? [])}`,
+    `manual_override=${String(result.manualOverride)}`,
     `reason=${result.reason}`,
     `detection_uncertain=${String(result.detectionUncertain)}`,
     ...deployTargets.map(
@@ -306,6 +313,7 @@ async function main() {
     console.log('[affected-deploy] affected projects', result.affectedProjects);
     console.log('[affected-deploy] changed files', result.changedFiles);
     console.log('[affected-deploy] selected targets', {
+      manualOverride: result.manualOverride,
       manualActions: result.manualActions,
       reason: result.reason,
       targets: result.targets,
