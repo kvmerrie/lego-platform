@@ -83,6 +83,91 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'updated_at',
   ],
 };
+const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
+  string,
+  {
+    canonical: readonly string[];
+    curated: readonly string[];
+    generatedRuntime: readonly string[];
+    protected: readonly string[];
+  }
+> = {
+  [CATALOG_SOURCE_THEMES_TABLE]: {
+    canonical: [
+      'id',
+      'source_system',
+      'source_theme_name',
+      'parent_source_theme_id',
+    ],
+    curated: [],
+    generatedRuntime: [],
+    protected: ['created_at', 'updated_at'],
+  },
+  [CATALOG_THEMES_TABLE]: {
+    canonical: ['id', 'slug', 'display_name', 'status'],
+    curated: [
+      'is_public',
+      'public_accent_color',
+      'public_description',
+      'public_display_name',
+      'public_image_url',
+      'public_logo_url',
+      'public_order',
+    ],
+    generatedRuntime: [],
+    protected: ['created_at', 'updated_at'],
+  },
+  [CATALOG_THEME_MAPPINGS_TABLE]: {
+    canonical: ['source_theme_id', 'primary_theme_id'],
+    curated: [],
+    generatedRuntime: [],
+    protected: ['created_at', 'updated_at'],
+  },
+  [CATALOG_SETS_TABLE]: {
+    canonical: [
+      'set_id',
+      'source_set_number',
+      'slug',
+      'name',
+      'source_theme_id',
+      'primary_theme_id',
+      'release_year',
+      'piece_count',
+      'image_url',
+      'source',
+      'status',
+    ],
+    curated: [],
+    generatedRuntime: [],
+    protected: ['created_at', 'updated_at'],
+  },
+  [COMMERCE_MERCHANTS_TABLE]: {
+    canonical: ['id', 'slug', 'name', 'source_type', 'affiliate_network'],
+    curated: [],
+    generatedRuntime: [],
+    protected: ['is_active', 'notes', 'created_at', 'updated_at'],
+  },
+  [COMMERCE_BENCHMARK_SETS_TABLE]: {
+    canonical: ['set_id'],
+    curated: [],
+    generatedRuntime: [],
+    protected: ['notes', 'created_at', 'updated_at'],
+  },
+  [COMMERCE_OFFER_SEEDS_TABLE]: {
+    canonical: [
+      'id',
+      'set_id',
+      'merchant_id',
+      'product_url',
+      'is_active',
+      'validation_status',
+      'notes',
+    ],
+    curated: [],
+    generatedRuntime: [],
+    protected: ['last_verified_at', 'created_at', 'updated_at'],
+  },
+};
 
 type CatalogPromotionSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
 
@@ -673,6 +758,52 @@ function hasBlankOptionalPromotionValue(value: unknown): boolean {
   return value === null || (typeof value === 'string' && !value.trim());
 }
 
+function valuesArePromotionEqual(left: unknown, right: unknown): boolean {
+  return (left ?? null) === (right ?? null);
+}
+
+function incrementPromotionFieldCount({
+  counts,
+  field,
+}: {
+  counts: Map<string, number>;
+  field: string;
+}): void {
+  counts.set(field, (counts.get(field) ?? 0) + 1);
+}
+
+function toSortedFieldCountRecord(
+  counts: ReadonlyMap<string, number>,
+): Record<string, number> {
+  return Object.fromEntries(
+    [...counts.entries()].sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
+function categorizePromotionField({
+  field,
+  table,
+}: {
+  field: string;
+  table: string;
+}): 'canonical' | 'curated' | 'generatedRuntime' | 'protected' {
+  const ownership = CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE[table];
+
+  if (ownership?.curated.includes(field)) {
+    return 'curated';
+  }
+
+  if (ownership?.generatedRuntime.includes(field)) {
+    return 'generatedRuntime';
+  }
+
+  if (ownership?.canonical.includes(field)) {
+    return 'canonical';
+  }
+
+  return 'protected';
+}
+
 function selectPromotionUpsertColumns({
   conflictColumns,
   existingRow,
@@ -839,22 +970,18 @@ function listExistingPromotionInspectionColumns({
   conflictColumns: readonly string[];
   table: string;
 }): string {
-  if (table !== CATALOG_THEMES_TABLE) {
-    return conflictColumns.join(', ');
-  }
+  const ownership = CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE[table];
+  const mutableColumns =
+    CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE[table] ?? [];
 
   return [
     ...new Set([
       ...conflictColumns,
-      'is_public',
-      'public_accent_color',
-      'public_description',
-      'public_display_name',
-      'public_image_url',
-      'public_logo_url',
-      'public_order',
-      'created_at',
-      'updated_at',
+      ...mutableColumns,
+      ...(ownership?.canonical ?? []),
+      ...(ownership?.curated ?? []),
+      ...(ownership?.generatedRuntime ?? []),
+      ...(ownership?.protected ?? []),
     ]),
   ].join(', ');
 }
@@ -939,6 +1066,10 @@ async function upsertRows<TRow>({
 
   let insertedCount = 0;
   let updatedCount = 0;
+  const changedCanonicalFields = new Map<string, number>();
+  const changedCuratedFields = new Map<string, number>();
+  const changedGeneratedRuntimeFields = new Map<string, number>();
+  const skippedProtectedFields = new Map<string, number>();
 
   for (const row of rows) {
     const conflictKey = buildConflictKey({
@@ -969,6 +1100,47 @@ async function upsertRows<TRow>({
       table,
     });
 
+    if (existingRow) {
+      for (const [field, value] of Object.entries(projectedRow)) {
+        if (
+          Object.prototype.hasOwnProperty.call(existingRow, field) &&
+          !valuesArePromotionEqual(existingRow[field], value)
+        ) {
+          const category = categorizePromotionField({ field, table });
+
+          if (category === 'curated') {
+            incrementPromotionFieldCount({
+              counts: changedCuratedFields,
+              field,
+            });
+          } else if (category === 'generatedRuntime') {
+            incrementPromotionFieldCount({
+              counts: changedGeneratedRuntimeFields,
+              field,
+            });
+          } else {
+            incrementPromotionFieldCount({
+              counts: changedCanonicalFields,
+              field,
+            });
+          }
+        }
+      }
+
+      for (const [field, value] of Object.entries(rowRecord)) {
+        if (
+          !Object.prototype.hasOwnProperty.call(projectedRow, field) &&
+          Object.prototype.hasOwnProperty.call(existingRow, field) &&
+          !valuesArePromotionEqual(existingRow[field], value)
+        ) {
+          incrementPromotionFieldCount({
+            counts: skippedProtectedFields,
+            field,
+          });
+        }
+      }
+    }
+
     return finalizePromotionUpsertRow({
       existingRow,
       nowIso,
@@ -977,6 +1149,20 @@ async function upsertRows<TRow>({
       table,
     });
   });
+
+  console.info('[catalog-promotion] table promotion plan', {
+    changedCanonicalFields: toSortedFieldCountRecord(changedCanonicalFields),
+    changedCuratedFields: toSortedFieldCountRecord(changedCuratedFields),
+    changedGeneratedRuntimeFields: toSortedFieldCountRecord(
+      changedGeneratedRuntimeFields,
+    ),
+    insertedCount,
+    readCount: rows.length,
+    skippedProtectedFields: toSortedFieldCountRecord(skippedProtectedFields),
+    table,
+    updatedCount,
+  });
+
   const rowsForUpsert = sanitizePromotionUpsertTimestamps({
     nowIso,
     rows: projectedRowsForUpsert,
