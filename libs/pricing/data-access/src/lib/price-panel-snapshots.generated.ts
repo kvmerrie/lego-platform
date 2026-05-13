@@ -583,24 +583,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6090,
+    "headlinePriceMinor": 5699,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 4,
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 5,
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "10363",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4895,
+    "headlinePriceMinor": 4499,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 5,
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 6,
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "10367",
@@ -799,12 +799,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5399,
+    "headlinePriceMinor": 5599,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-11T12:21:15.352Z"
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "10428",
@@ -1965,10 +1965,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 12300,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
     "merchantCount": 4,
-    "observedAt": "2026-05-11T12:16:29.702Z"
+    "observedAt": "2026-05-13T05:01:08.741Z"
   },
   {
     "setId": "21061",
@@ -2109,12 +2109,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1999,
+    "headlinePriceMinor": 2199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "lidl",
-    "lowestMerchantName": "Lidl",
+    "lowestMerchantId": "alternate",
+    "lowestMerchantName": "Alternate",
     "merchantCount": 4,
-    "observedAt": "2026-05-12T18:21:18.799Z"
+    "observedAt": "2026-05-11T06:01:32.162Z"
   },
   {
     "setId": "21270",
@@ -2169,12 +2169,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1399,
+    "headlinePriceMinor": 1495,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "lidl",
-    "lowestMerchantName": "Lidl",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
     "merchantCount": 4,
-    "observedAt": "2026-05-12T06:21:33.428Z"
+    "observedAt": "2026-05-11T12:26:01.187Z"
   },
   {
     "setId": "21275",
@@ -2301,12 +2301,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 13900,
+    "headlinePriceMinor": 14900,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "observedAt": "2026-05-13T18:10:56.172Z"
   },
   {
     "setId": "21330",
@@ -2389,12 +2389,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4999,
+    "headlinePriceMinor": 5299,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-12T05:01:26.023Z"
+    "observedAt": "2026-05-13T05:01:08.741Z"
   },
   {
     "setId": "21358",
@@ -3435,10 +3435,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 4799,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "coolblue",
-    "lowestMerchantName": "Coolblue",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
     "merchantCount": 6,
-    "observedAt": "2026-05-11T12:16:29.702Z"
+    "observedAt": "2026-05-13T05:01:08.741Z"
   },
   {
     "setId": "31162",
@@ -3457,12 +3457,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1599,
+    "headlinePriceMinor": 1699,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 6,
-    "observedAt": "2026-05-12T06:21:33.428Z"
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "31164",
@@ -3793,12 +3793,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3895,
+    "headlinePriceMinor": 3799,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-11T12:26:01.187Z"
+    "observedAt": "2026-05-13T05:01:08.741Z"
   },
   {
     "setId": "31386",
@@ -4651,24 +4651,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2295,
+    "headlinePriceMinor": 2199,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 3,
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "42201",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2999,
+    "headlinePriceMinor": 2599,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 6,
-    "observedAt": "2026-05-11T06:01:32.162Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 7,
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "42202",
@@ -4687,12 +4687,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3899,
+    "headlinePriceMinor": 3599,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-12T06:21:33.428Z"
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "42204",
@@ -5875,24 +5875,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 800,
+    "headlinePriceMinor": 1755,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "lowestMerchantId": "coppenswarenhuis",
+    "lowestMerchantName": "Coppenswarenhuis",
+    "merchantCount": 1,
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43107",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 800,
+    "headlinePriceMinor": 1755,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "lowestMerchantId": "coppenswarenhuis",
+    "lowestMerchantName": "Coppenswarenhuis",
+    "merchantCount": 1,
+    "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
     "setId": "43109",
@@ -6715,12 +6715,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 11490,
+    "headlinePriceMinor": 14999,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 2,
-    "observedAt": "2026-05-12T00:04:02.326Z"
+    "lowestMerchantId": "mediamarkt",
+    "lowestMerchantName": "MediaMarkt",
+    "merchantCount": 1,
+    "observedAt": "2026-05-12T05:01:26.023Z"
   },
   {
     "setId": "60373",
@@ -6825,10 +6825,10 @@ const pricePanelSnapshotsPayload = String.raw`[
     "condition": "new",
     "headlinePriceMinor": 1399,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-11T06:01:32.162Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 4,
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "60423",
@@ -6967,12 +6967,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 2099,
+    "headlinePriceMinor": 1899,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 4,
-    "observedAt": "2026-05-11T12:21:15.352Z"
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "60455",
@@ -7471,12 +7471,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 12900,
+    "headlinePriceMinor": 595,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "observedAt": "2026-05-13T18:25:58.546Z"
   },
   {
     "setId": "71049",
@@ -7488,7 +7488,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestMerchantId": "misterbricks",
     "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-12T18:11:21.501Z"
+    "observedAt": "2026-05-13T18:10:56.172Z"
   },
   {
     "setId": "71050",
@@ -7507,24 +7507,24 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4995,
+    "headlinePriceMinor": 12995,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-12T21:53:31.933Z"
+    "observedAt": "2026-05-13T18:25:58.546Z"
   },
   {
     "setId": "71052",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 4495,
+    "headlinePriceMinor": 11896,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "goodbricks",
     "lowestMerchantName": "Goodbricks",
     "merchantCount": 1,
-    "observedAt": "2026-05-12T21:53:31.933Z"
+    "observedAt": "2026-05-13T18:25:58.546Z"
   },
   {
     "setId": "71390",
@@ -9327,12 +9327,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1099,
+    "headlinePriceMinor": 969,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-11T12:21:15.352Z"
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "75401",
@@ -9363,12 +9363,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 7490,
+    "headlinePriceMinor": 6399,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "alternate",
-    "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
-    "observedAt": "2026-05-11T12:02:39.905Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 4,
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "75404",
@@ -9579,12 +9579,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 6699,
+    "headlinePriceMinor": 6199,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
     "merchantCount": 5,
-    "observedAt": "2026-05-11T05:01:06.969Z"
+    "observedAt": "2026-05-13T05:01:08.741Z"
   },
   {
     "setId": "75435",
@@ -10899,7 +10899,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "mediamarkt",
     "lowestMerchantName": "MediaMarkt",
-    "merchantCount": 4,
+    "merchantCount": 5,
     "observedAt": "2026-05-11T05:01:06.969Z"
   },
   {
@@ -11353,12 +11353,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 3695,
+    "headlinePriceMinor": 3099,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 5,
-    "observedAt": "2026-05-11T12:10:57.772Z"
+    "lowestMerchantId": "lidl",
+    "lowestMerchantName": "Lidl",
+    "merchantCount": 6,
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "76970",
@@ -11869,12 +11869,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1799,
+    "headlinePriceMinor": 1699,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 7,
-    "observedAt": "2026-05-12T06:21:33.428Z"
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "77245",
@@ -11941,12 +11941,12 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 1999,
+    "headlinePriceMinor": 1899,
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "lidl",
     "lowestMerchantName": "Lidl",
     "merchantCount": 5,
-    "observedAt": "2026-05-11T12:21:15.352Z"
+    "observedAt": "2026-05-13T06:21:45.972Z"
   },
   {
     "setId": "77253",
