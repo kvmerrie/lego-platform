@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       deploy_targets:
-        description: 'Optional comma-separated manual targets, for example: web,api,commerce-sync'
+        description: 'Optional comma-separated manual targets, for example: web,api'
         required: false
         type: string
       base_ref:
@@ -108,13 +108,4 @@ jobs:
           DEPLOY_TARGETS: ${{ steps.route.outputs.targets }}
           WEB_DEPLOY_HOOK_URL: ${{ secrets.WEB_DEPLOY_HOOK_URL }}
           API_DEPLOY_HOOK_URL: ${{ secrets.API_DEPLOY_HOOK_URL }}
-          COMMERCE_SYNC_DEPLOY_HOOK_URL: ${{ secrets.COMMERCE_SYNC_DEPLOY_HOOK_URL }}
-          ALTERNATE_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.ALTERNATE_FEED_SYNC_DEPLOY_HOOK_URL }}
-          AWIN_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.AWIN_FEED_SYNC_DEPLOY_HOOK_URL }}
-          COPPENSWARENHUIS_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.COPPENSWARENHUIS_FEED_SYNC_DEPLOY_HOOK_URL }}
-          GOODBRICKS_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.GOODBRICKS_FEED_SYNC_DEPLOY_HOOK_URL }}
-          LIDL_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.LIDL_FEED_SYNC_DEPLOY_HOOK_URL }}
-          MEDIAMARKT_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.MEDIAMARKT_FEED_SYNC_DEPLOY_HOOK_URL }}
-          MISTERBRICKS_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.MISTERBRICKS_FEED_SYNC_DEPLOY_HOOK_URL }}
-          WISHLIST_ALERTS_DEPLOY_HOOK_URL: ${{ secrets.WISHLIST_ALERTS_DEPLOY_HOOK_URL }}
         run: node scripts/affected-deployment-router.mjs deploy

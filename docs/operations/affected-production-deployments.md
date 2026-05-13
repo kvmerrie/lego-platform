@@ -40,29 +40,44 @@ Examples:
 ```text
 web
 api,web
-commerce-sync
-goodbricks-feed-sync,mediamarkt-feed-sync
 ```
 
 Manual targets override affected detection. Unknown target names fail before any deploy hook is called.
+Only `web` and `api` are supported manual targets for now.
 
 ## Target mapping
 
-| Affected project pattern                                                                                                                                         | Deploy target                |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `web`, `shell-web`, web-facing `catalog-*`, `pricing-*`, `affiliate-*`, `content-*`, `collection-*`, `wishlist-*`, `user-*`, `shared-ui`, `shared-design-tokens` | `web`                        |
-| `api`, `api-data-access-server`, `*-data-access-server`, `shared-data-access-auth-server`                                                                        | `api`                        |
-| `commerce-sync`, `api-data-access-server`, commerce/pricing/affiliate/catalog server or util libraries                                                           | `commerce-sync`              |
-| `alternate-feed-sync`                                                                                                                                            | `alternate-feed-sync`        |
-| `awin-feed-sync`                                                                                                                                                 | `awin-feed-sync`             |
-| `coppenswarenhuis-feed-sync`                                                                                                                                     | `coppenswarenhuis-feed-sync` |
-| `goodbricks-feed-sync`                                                                                                                                           | `goodbricks-feed-sync`       |
-| `lidl-feed-sync`                                                                                                                                                 | `lidl-feed-sync`             |
-| `mediamarkt-feed-sync`                                                                                                                                           | `mediamarkt-feed-sync`       |
-| `misterbricks-feed-sync`                                                                                                                                         | `misterbricks-feed-sync`     |
-| `wishlist-alerts`                                                                                                                                                | `wishlist-alerts`            |
+| Affected project pattern                                                                                                                                         | Deploy target |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `web`, `shell-web`, web-facing `catalog-*`, `pricing-*`, `affiliate-*`, `content-*`, `collection-*`, `wishlist-*`, `user-*`, `shared-ui`, `shared-design-tokens` | `web`         |
+| `api`, `api-data-access-server`, `*-data-access-server`, `shared-data-access-auth-server`                                                                        | `api`         |
 
 Docs-only and tests-only changes select no production deploy targets.
+
+## Manual cron redeploys
+
+Render cron jobs stay scheduled and keep `autoDeployTrigger: off`, but they are operationally separate from the automatic web/API deploy path. They are not automatically redeployed by the affected router. Render cron deploy-hook support is intentionally not wired into this workflow, so commerce, feed, and alert job changes are logged as manual actions instead of requiring cron hook secrets.
+
+Manual-only cron projects:
+
+- `commerce-sync`
+- `alternate-feed-sync`
+- `awin-feed-sync`
+- `coppenswarenhuis-feed-sync`
+- `goodbricks-feed-sync`
+- `lidl-feed-sync`
+- `mediamarkt-feed-sync`
+- `misterbricks-feed-sync`
+- `wishlist-alerts`
+
+When one of these projects changes, the workflow logs a warning such as:
+
+```text
+commerce-sync code changed; redeploy the Render cron job manually
+feed cron code changed; redeploy the Render cron job manually
+```
+
+Redeploy the affected Render cron job manually from Render when the app or its cron-specific code changes. Scheduled executions continue normally; this only controls when new code is deployed.
 
 ## Required GitHub secrets
 
@@ -70,15 +85,6 @@ Set deploy hook secrets only for services that should be deployable by this work
 
 - `WEB_DEPLOY_HOOK_URL`
 - `API_DEPLOY_HOOK_URL`
-- `COMMERCE_SYNC_DEPLOY_HOOK_URL`
-- `ALTERNATE_FEED_SYNC_DEPLOY_HOOK_URL`
-- `AWIN_FEED_SYNC_DEPLOY_HOOK_URL`
-- `COPPENSWARENHUIS_FEED_SYNC_DEPLOY_HOOK_URL`
-- `GOODBRICKS_FEED_SYNC_DEPLOY_HOOK_URL`
-- `LIDL_FEED_SYNC_DEPLOY_HOOK_URL`
-- `MEDIAMARKT_FEED_SYNC_DEPLOY_HOOK_URL`
-- `MISTERBRICKS_FEED_SYNC_DEPLOY_HOOK_URL`
-- `WISHLIST_ALERTS_DEPLOY_HOOK_URL`
 
 If a selected target has no hook configured, the workflow fails visibly.
 

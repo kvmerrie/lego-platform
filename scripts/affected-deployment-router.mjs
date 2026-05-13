@@ -2,19 +2,7 @@
 
 import { appendFileSync, readFileSync } from 'node:fs';
 
-export const deployTargets = [
-  'web',
-  'api',
-  'commerce-sync',
-  'alternate-feed-sync',
-  'awin-feed-sync',
-  'coppenswarenhuis-feed-sync',
-  'goodbricks-feed-sync',
-  'lidl-feed-sync',
-  'mediamarkt-feed-sync',
-  'misterbricks-feed-sync',
-  'wishlist-alerts',
-];
+export const deployTargets = ['web', 'api'];
 
 const feedJobProjects = new Set([
   'alternate-feed-sync',
@@ -24,6 +12,12 @@ const feedJobProjects = new Set([
   'lidl-feed-sync',
   'mediamarkt-feed-sync',
   'misterbricks-feed-sync',
+]);
+
+const manualCronJobProjects = new Set([
+  ...feedJobProjects,
+  'commerce-sync',
+  'wishlist-alerts',
 ]);
 
 const webProjectPatterns = [
@@ -88,6 +82,18 @@ function parseList(value) {
     .filter(Boolean);
 }
 
+function buildManualCronWarning(project) {
+  if (project === 'commerce-sync') {
+    return 'commerce-sync: commerce-sync code changed; redeploy the Render cron job manually';
+  }
+
+  if (feedJobProjects.has(project)) {
+    return `${project}: feed cron code changed; redeploy the Render cron job manually`;
+  }
+
+  return `${project}: cron code changed; redeploy the Render cron job manually`;
+}
+
 function isDocsOrTestsOnlyFile(filePath) {
   return (
     filePath.startsWith('docs/') ||
@@ -127,7 +133,7 @@ export function routeAffectedDeployments({
 
     if (unknownTargets.length > 0) {
       throw new Error(
-        `Unknown manual deploy target(s): ${unknownTargets.join(', ')}`,
+        `Unsupported manual deploy target(s): ${unknownTargets.join(', ')}. Supported targets: ${deployTargets.join(', ')}.`,
       );
     }
 
@@ -135,6 +141,7 @@ export function routeAffectedDeployments({
       affectedProjects: uniqueSorted(affectedProjects ?? []),
       changedFiles,
       detectionUncertain: false,
+      manualActions: [],
       reason: 'manual_override',
       targets: normalizedManualTargets,
     };
@@ -145,6 +152,7 @@ export function routeAffectedDeployments({
       affectedProjects: uniqueSorted(affectedProjects ?? []),
       changedFiles,
       detectionUncertain: true,
+      manualActions: [],
       reason: 'uncertain_detection_fallback',
       targets: ['api', 'web'],
     };
@@ -155,6 +163,7 @@ export function routeAffectedDeployments({
       affectedProjects: uniqueSorted(affectedProjects ?? []),
       changedFiles,
       detectionUncertain: false,
+      manualActions: [],
       reason: 'docs_or_tests_only',
       targets: [],
     };
@@ -162,6 +171,7 @@ export function routeAffectedDeployments({
 
   const projects = uniqueSorted(affectedProjects ?? []);
   const targets = new Set();
+  const manualActions = new Set();
 
   for (const project of projects) {
     if (projectMatches(project, webProjectPatterns)) {
@@ -173,15 +183,13 @@ export function routeAffectedDeployments({
     }
 
     if (projectMatches(project, commerceSyncProjectPatterns)) {
-      targets.add('commerce-sync');
+      manualActions.add(
+        'commerce-sync: commerce-sync code changed; redeploy the Render cron job manually',
+      );
     }
 
-    if (feedJobProjects.has(project)) {
-      targets.add(project);
-    }
-
-    if (project === 'wishlist-alerts') {
-      targets.add('wishlist-alerts');
+    if (manualCronJobProjects.has(project)) {
+      manualActions.add(buildManualCronWarning(project));
     }
   }
 
@@ -189,6 +197,7 @@ export function routeAffectedDeployments({
     affectedProjects: projects,
     changedFiles,
     detectionUncertain: false,
+    manualActions: uniqueSorted([...manualActions]),
     reason: targets.size > 0 ? 'affected_projects' : 'no_deployable_projects',
     targets: uniqueSorted([...targets]),
   };
@@ -206,6 +215,8 @@ function writeGithubOutput(result) {
   const lines = [
     `targets=${result.targets.join(',')}`,
     `targets_json=${JSON.stringify(result.targets)}`,
+    `manual_actions=${(result.manualActions ?? []).join(' | ')}`,
+    `manual_actions_json=${JSON.stringify(result.manualActions ?? [])}`,
     `reason=${result.reason}`,
     `detection_uncertain=${String(result.detectionUncertain)}`,
     ...deployTargets.map(
@@ -295,10 +306,14 @@ async function main() {
     console.log('[affected-deploy] affected projects', result.affectedProjects);
     console.log('[affected-deploy] changed files', result.changedFiles);
     console.log('[affected-deploy] selected targets', {
+      manualActions: result.manualActions,
       reason: result.reason,
       targets: result.targets,
       uncertain: result.detectionUncertain,
     });
+    for (const manualAction of result.manualActions ?? []) {
+      console.warn(`[affected-deploy] manual action: ${manualAction}`);
+    }
     writeGithubOutput(result);
     return;
   }

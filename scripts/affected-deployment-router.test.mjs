@@ -15,7 +15,7 @@ test('routes web-facing changes to the web deployment', () => {
   assert.equal(result.reason, 'affected_projects');
 });
 
-test('routes API server libraries to api and commerce-sync when shared by both', () => {
+test('routes API server libraries to api and emits commerce-sync manual warning when shared by both', () => {
   const result = routeAffectedDeployments({
     affectedProjects: ['api-data-access-server'],
     changedFiles: [
@@ -23,16 +23,36 @@ test('routes API server libraries to api and commerce-sync when shared by both',
     ],
   });
 
-  assert.deepEqual(result.targets, ['api', 'commerce-sync']);
+  assert.deepEqual(result.targets, ['api']);
+  assert.deepEqual(result.manualActions, [
+    'commerce-sync: commerce-sync code changed; redeploy the Render cron job manually',
+  ]);
 });
 
-test('routes feed apps to their individual feed job only', () => {
+test('does not auto deploy feed apps and emits a manual cron warning', () => {
   const result = routeAffectedDeployments({
     affectedProjects: ['goodbricks-feed-sync'],
     changedFiles: ['apps/goodbricks-feed-sync/src/main.ts'],
   });
 
-  assert.deepEqual(result.targets, ['goodbricks-feed-sync']);
+  assert.deepEqual(result.targets, []);
+  assert.deepEqual(result.manualActions, [
+    'goodbricks-feed-sync: feed cron code changed; redeploy the Render cron job manually',
+  ]);
+  assert.equal(result.reason, 'no_deployable_projects');
+});
+
+test('does not auto deploy commerce-sync and emits a manual cron warning', () => {
+  const result = routeAffectedDeployments({
+    affectedProjects: ['commerce-sync'],
+    changedFiles: ['apps/commerce-sync/src/main.ts'],
+  });
+
+  assert.deepEqual(result.targets, []);
+  assert.deepEqual(result.manualActions, [
+    'commerce-sync: commerce-sync code changed; redeploy the Render cron job manually',
+  ]);
+  assert.equal(result.reason, 'no_deployable_projects');
 });
 
 test('does not deploy for docs-only changes', () => {
@@ -70,9 +90,33 @@ test('manual targets override affected routing', () => {
   const result = routeAffectedDeployments({
     affectedProjects: ['docs'],
     changedFiles: ['docs/operations/deployments.md'],
-    manualTargets: ['commerce-sync', 'web'],
+    manualTargets: ['api', 'web'],
   });
 
-  assert.deepEqual(result.targets, ['commerce-sync', 'web']);
+  assert.deepEqual(result.targets, ['api', 'web']);
   assert.equal(result.reason, 'manual_override');
+});
+
+test('manual override rejects unsupported feed targets clearly', () => {
+  assert.throws(
+    () =>
+      routeAffectedDeployments({
+        affectedProjects: ['goodbricks-feed-sync'],
+        changedFiles: ['apps/goodbricks-feed-sync/src/main.ts'],
+        manualTargets: ['goodbricks-feed-sync'],
+      }),
+    /Unsupported manual deploy target\(s\): goodbricks-feed-sync\. Supported targets: web, api\./u,
+  );
+});
+
+test('manual override rejects commerce-sync clearly', () => {
+  assert.throws(
+    () =>
+      routeAffectedDeployments({
+        affectedProjects: ['commerce-sync'],
+        changedFiles: ['apps/commerce-sync/src/main.ts'],
+        manualTargets: ['commerce-sync'],
+      }),
+    /Unsupported manual deploy target\(s\): commerce-sync\. Supported targets: web, api\./u,
+  );
 });
