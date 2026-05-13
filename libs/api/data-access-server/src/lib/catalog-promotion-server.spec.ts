@@ -364,6 +364,9 @@ describe('catalog promotion server', () => {
   });
 
   test('defaults null catalog source theme timestamps before production upsert', async () => {
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
+      // Keep promotion diagnostics out of the test output.
+    });
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {
         catalog_source_themes: [
@@ -430,6 +433,19 @@ describe('catalog promotion server', () => {
         onConflict: 'id',
       },
     );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] timestamp upsert payload sanitized',
+      expect.objectContaining({
+        inputRows: 2,
+        nullCreatedAtAfterSanitize: 0,
+        nullCreatedAtBeforeSanitize: 0,
+        nullUpdatedAtAfterSanitize: 0,
+        nullUpdatedAtBeforeSanitize: 0,
+        table: 'catalog_source_themes',
+      }),
+    );
+
+    consoleInfoSpy.mockRestore();
   });
 
   test('does not send explicit null timestamps for other promoted timestamped tables', async () => {

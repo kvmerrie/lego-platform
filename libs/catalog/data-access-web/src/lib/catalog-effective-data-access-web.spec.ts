@@ -4401,8 +4401,10 @@ describe('catalog effective data access web', () => {
       excluded_untrusted_merchant_count: 1,
       excluded_unknown_unit_count: 1,
       excluded_unknown_verdict_count: 1,
-      homepage_deal_accepted_count: 1,
-      homepage_deal_candidate_count: 2,
+      soft_deal_accepted: 0,
+      soft_deal_candidates: 1,
+      strong_deal_accepted: 1,
+      strong_deal_candidates: 1,
     });
     expect(currentOfferSummaryBySetId.get('71050')?.offers).toHaveLength(2);
   });
@@ -4728,6 +4730,149 @@ describe('catalog effective data access web', () => {
     expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
       '10333',
       '76269',
+    ]);
+  });
+
+  test('uses trusted current offers for soft homepage price opportunities', () => {
+    const setCards = [
+      {
+        id: '10333',
+        imageUrl: undefined,
+        name: 'The Lord of the Rings: Barad-dur',
+        pieces: 5471,
+        releaseYear: 2024,
+        slug: 'the-lord-of-the-rings-barad-dur-10333',
+        theme: 'Icons',
+      },
+      {
+        id: '76269',
+        imageUrl: undefined,
+        name: 'Avengers Tower',
+        pieces: 5201,
+        releaseYear: 2023,
+        slug: 'avengers-tower-76269',
+        theme: 'Marvel',
+      },
+      {
+        id: '71050',
+        imageUrl: undefined,
+        name: 'Spider-Man: Across the Spider-Verse',
+        pieces: 9,
+        releaseYear: 2026,
+        slug: 'spider-man-across-the-spider-verse-71050',
+        theme: 'Minifigures',
+      },
+    ];
+    const now = new Date().toISOString();
+    const currentOfferSummaryBySetId = new Map([
+      [
+        '10333',
+        {
+          bestOffer: createCatalogOffer({
+            merchantName: 'Goodbricks',
+            priceCents: 39999,
+            setId: '10333',
+          }),
+          offers: [
+            createCatalogOffer({
+              merchantName: 'Goodbricks',
+              priceCents: 39999,
+              setId: '10333',
+            }),
+          ],
+          setId: '10333',
+        },
+      ],
+      [
+        '76269',
+        {
+          bestOffer: createCatalogOffer({
+            merchantName: 'Coppenswarenhuis',
+            priceCents: 26999,
+            setId: '76269',
+          }),
+          offers: [
+            createCatalogOffer({
+              merchantName: 'Coppenswarenhuis',
+              priceCents: 26999,
+              setId: '76269',
+            }),
+          ],
+          setId: '76269',
+        },
+      ],
+      [
+        '71050',
+        {
+          bestOffer: createCatalogOffer({
+            commercialUnitType: 'blind_bag',
+            merchantName: 'Goodbricks',
+            priceCents: 359,
+            setId: '71050',
+          }),
+          offers: [
+            createCatalogOffer({
+              commercialUnitType: 'blind_bag',
+              merchantName: 'Goodbricks',
+              priceCents: 359,
+              setId: '71050',
+            }),
+            createCatalogOffer({
+              commercialUnitType: 'display_box',
+              merchantName: 'Misterbricks',
+              priceCents: 5995,
+              setId: '71050',
+            }),
+          ],
+          setId: '71050',
+        },
+      ],
+    ]);
+
+    const result = rankCatalogNowInterestingSetCards({
+      currentOfferSummaryBySetId,
+      getCatalogDiscoverySignalFn: (setId) => {
+        if (setId === '10333') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 39999,
+            merchantCount: 1,
+            priceSpreadMinor: 0,
+            recentReferencePriceChangeMinor: -900,
+            recentReferencePriceChangedAt: now,
+            referenceDeltaMinor: undefined,
+          });
+        }
+
+        if (setId === '76269') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 26999,
+            merchantCount: 1,
+            priceSpreadMinor: 0,
+            recentReferencePriceChangeMinor: -1200,
+            recentReferencePriceChangedAt: now,
+            referenceDeltaMinor: undefined,
+          });
+        }
+
+        if (setId === '71050') {
+          return createCatalogDiscoverySignal({
+            bestPriceMinor: 359,
+            merchantCount: 2,
+            nextBestPriceMinor: 5995,
+            priceSpreadMinor: 5636,
+            recentReferencePriceChangeMinor: -1200,
+            recentReferencePriceChangedAt: now,
+            referenceDeltaMinor: undefined,
+          });
+        }
+
+        return undefined;
+      },
+      setCards,
+    });
+
+    expect(result.map((catalogSetCard) => catalogSetCard.id)).toEqual([
+      '10333',
     ]);
   });
 

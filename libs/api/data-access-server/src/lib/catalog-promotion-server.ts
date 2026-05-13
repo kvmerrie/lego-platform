@@ -23,6 +23,15 @@ const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   CATALOG_SETS_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
 ]);
+const CATALOG_PROMOTION_TIMESTAMPED_TABLES = new Set([
+  CATALOG_SOURCE_THEMES_TABLE,
+  CATALOG_THEMES_TABLE,
+  CATALOG_THEME_MAPPINGS_TABLE,
+  CATALOG_SETS_TABLE,
+  COMMERCE_MERCHANTS_TABLE,
+  COMMERCE_BENCHMARK_SETS_TABLE,
+  COMMERCE_OFFER_SEEDS_TABLE,
+]);
 const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
   string,
   readonly string[]
@@ -333,6 +342,14 @@ function readOptionalPromotionString(value: unknown): string | undefined {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 }
 
+function hasInvalidPromotionTimestamp(value: unknown): boolean {
+  return (
+    value === null ||
+    value === undefined ||
+    (typeof value === 'string' && !value.trim())
+  );
+}
+
 function normalizePromotionTimestamps<
   TRow extends { created_at?: unknown; updated_at?: unknown },
 >({
@@ -350,6 +367,89 @@ function normalizePromotionTimestamps<
     created_at: readOptionalPromotionString(row.created_at) ?? nowIso,
     updated_at: readOptionalPromotionString(row.updated_at) ?? nowIso,
   };
+}
+
+function countRowsWithInvalidPromotionTimestamp({
+  column,
+  rows,
+}: {
+  column: 'created_at' | 'updated_at';
+  rows: readonly Readonly<Record<string, unknown>>[];
+}): number {
+  return rows.filter(
+    (row) =>
+      Object.prototype.hasOwnProperty.call(row, column) &&
+      hasInvalidPromotionTimestamp(row[column]),
+  ).length;
+}
+
+function sanitizePromotionUpsertTimestamps({
+  nowIso,
+  rows,
+  table,
+}: {
+  nowIso: string;
+  rows: readonly Record<string, unknown>[];
+  table: string;
+}): Record<string, unknown>[] {
+  if (!CATALOG_PROMOTION_TIMESTAMPED_TABLES.has(table)) {
+    return [...rows];
+  }
+
+  return rows.map((row) => {
+    const sanitizedRow = { ...row };
+
+    if (
+      Object.prototype.hasOwnProperty.call(sanitizedRow, 'created_at') &&
+      hasInvalidPromotionTimestamp(sanitizedRow['created_at'])
+    ) {
+      sanitizedRow['created_at'] = nowIso;
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(sanitizedRow, 'updated_at') &&
+      hasInvalidPromotionTimestamp(sanitizedRow['updated_at'])
+    ) {
+      sanitizedRow['updated_at'] = nowIso;
+    }
+
+    return sanitizedRow;
+  });
+}
+
+function logPromotionUpsertTimestampSanitization({
+  rowsAfter,
+  rowsBefore,
+  table,
+}: {
+  rowsAfter: readonly Readonly<Record<string, unknown>>[];
+  rowsBefore: readonly Readonly<Record<string, unknown>>[];
+  table: string;
+}): void {
+  if (!CATALOG_PROMOTION_TIMESTAMPED_TABLES.has(table)) {
+    return;
+  }
+
+  console.info('[catalog-promotion] timestamp upsert payload sanitized', {
+    inputRows: rowsBefore.length,
+    nullCreatedAtAfterSanitize: countRowsWithInvalidPromotionTimestamp({
+      column: 'created_at',
+      rows: rowsAfter,
+    }),
+    nullCreatedAtBeforeSanitize: countRowsWithInvalidPromotionTimestamp({
+      column: 'created_at',
+      rows: rowsBefore,
+    }),
+    nullUpdatedAtAfterSanitize: countRowsWithInvalidPromotionTimestamp({
+      column: 'updated_at',
+      rows: rowsAfter,
+    }),
+    nullUpdatedAtBeforeSanitize: countRowsWithInvalidPromotionTimestamp({
+      column: 'updated_at',
+      rows: rowsBefore,
+    }),
+    table,
+  });
 }
 
 function normalizeCatalogThemeRow({
@@ -775,7 +875,7 @@ async function upsertRows<TRow>({
     }
   }
 
-  const rowsForUpsert = rows.map((row) => {
+  const projectedRowsForUpsert = rows.map((row) => {
     const rowRecord = toRowRecord(row);
     const conflictKey = buildConflictKey({
       columns: conflictColumns,
@@ -798,6 +898,17 @@ async function upsertRows<TRow>({
       sourceRow: rowRecord,
       table,
     });
+  });
+  const rowsForUpsert = sanitizePromotionUpsertTimestamps({
+    nowIso,
+    rows: projectedRowsForUpsert,
+    table,
+  });
+
+  logPromotionUpsertTimestampSanitization({
+    rowsAfter: rowsForUpsert,
+    rowsBefore: projectedRowsForUpsert,
+    table,
   });
 
   for (const chunk of chunkValues(rowsForUpsert, 100)) {

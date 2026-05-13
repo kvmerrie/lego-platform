@@ -21,12 +21,11 @@ import {
   listCatalogSetCards,
   listCatalogSetCardsByIds,
   listDiscoverBestDealSetCards,
+  listDiscoverNowInterestingSetCards,
   listHomepageSetCards,
   listHomepageThemeDirectoryItems,
   listHomepageThemeSpotlightItems,
-  rankCatalogPartnerOfferSetCards,
   resolveHomepageFollowRailDiagnostics,
-  selectCatalogFirstCommerceRailSetCards,
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
 import { getHomepagePage } from '@lego-platform/content/data-access';
@@ -81,9 +80,13 @@ function toFeatureSetListItems(
   >,
   {
     cardSurface,
+    catalogDiscoverySignalBySetId,
     sectionId,
   }: {
     cardSurface: 'deal' | 'featured';
+    catalogDiscoverySignalBySetId?: Awaited<
+      ReturnType<typeof listCatalogDiscoverySignalsBySetId>
+    >;
     sectionId: string;
   },
 ): CatalogFeatureSetListItem[] {
@@ -123,6 +126,9 @@ function toFeatureSetListItems(
       ctaMode: cardSurface === 'deal' ? ('commerce' as const) : 'default',
       priceContext: (() => {
         const currentSetCardPriceContext = buildCurrentSetCardPriceContext({
+          catalogDiscoverySignal: catalogDiscoverySignalBySetId?.get(
+            homepageSetCard.id,
+          ),
           currentOfferSummary,
           pricePanelSnapshot: featuredSetPriceContext,
           theme: homepageSetCard.theme,
@@ -196,12 +202,13 @@ function logHomepageCommerceRailDiagnostics({
   catalogDiscoverySignalBySetId,
   commerceCandidateSetCards,
   currentOfferSummaryBySetId,
-  homepageBestDealCandidateSetCards,
-  homepageBestDealSetCards,
-  homepageFirstCommerceInputSetCards,
+  homepageRenderedDealSetCards,
   homepageFollowRailDiagnostics,
+  homepageSoftDealCandidateSetCards,
+  homepageSoftDealSetCards,
+  homepageStrongDealCandidateSetCards,
+  homepageStrongDealSetCards,
   runtimeDiagnostics,
-  scoredCommerceCandidateSetCards,
   rotationSeed,
 }: {
   allCatalogSetCards: readonly CatalogHomepageSetCard[];
@@ -212,16 +219,17 @@ function logHomepageCommerceRailDiagnostics({
   currentOfferSummaryBySetId: Awaited<
     ReturnType<typeof listCatalogCurrentOfferSummaries>
   >;
-  homepageBestDealCandidateSetCards: readonly CatalogHomepageSetCard[];
-  homepageBestDealSetCards: readonly CatalogFeatureSetListItem[];
-  homepageFirstCommerceInputSetCards: readonly CatalogHomepageSetCard[];
+  homepageRenderedDealSetCards: readonly CatalogFeatureSetListItem[];
   homepageFollowRailDiagnostics?: Awaited<
     ReturnType<typeof resolveHomepageFollowRailDiagnostics>
   >;
+  homepageSoftDealCandidateSetCards: readonly CatalogHomepageSetCard[];
+  homepageSoftDealSetCards: readonly CatalogFeatureSetListItem[];
+  homepageStrongDealCandidateSetCards: readonly CatalogHomepageSetCard[];
+  homepageStrongDealSetCards: readonly CatalogFeatureSetListItem[];
   runtimeDiagnostics?: Awaited<
     ReturnType<typeof getCatalogCommerceRailRuntimeDiagnostics>
   >;
-  scoredCommerceCandidateSetCards: readonly CatalogHomepageSetCard[];
   rotationSeed: number;
 }): void {
   if (!isHomepageCommerceRailsDebugEnabled()) {
@@ -278,7 +286,10 @@ function logHomepageCommerceRailDiagnostics({
 
   console.info('[commerce-rails] homepage diagnostics', {
     candidates: {
-      bestDealsNow: homepageBestDealCandidateSetCards.map(
+      softPriceOpportunities: homepageSoftDealCandidateSetCards.map(
+        (catalogSetCard) => catalogSetCard.id,
+      ),
+      strongDealsNow: homepageStrongDealCandidateSetCards.map(
         (catalogSetCard) => catalogSetCard.id,
       ),
     },
@@ -294,7 +305,9 @@ function logHomepageCommerceRailDiagnostics({
     },
     ...(runtimeDiagnostics ? { runtimeDiagnostics } : {}),
     finalRailCounts: {
-      bestDealsNow: homepageBestDealSetCards.length,
+      renderedDeals: homepageRenderedDealSetCards.length,
+      softPriceOpportunities: homepageSoftDealSetCards.length,
+      strongDealsNow: homepageStrongDealSetCards.length,
       popularToFollow: homepageFollowRailDiagnostics?.selectedCount,
     },
     followRail: homepageFollowRailDiagnostics
@@ -307,14 +320,14 @@ function logHomepageCommerceRailDiagnostics({
         }
       : undefined,
     railPipeline: {
-      firstRailInputCount: homepageFirstCommerceInputSetCards.length,
-      firstRailRenderedCount: homepageBestDealSetCards.length,
-      scoredCommerceCandidateCount: scoredCommerceCandidateSetCards.length,
+      softCandidateCount: homepageSoftDealCandidateSetCards.length,
+      strongCandidateCount: homepageStrongDealCandidateSetCards.length,
+      renderedDealCount: homepageRenderedDealSetCards.length,
     },
     firstSetScoringInputs: getCatalogPartnerOfferRailDiagnostics({
       catalogDiscoverySignalBySetId,
       currentOfferSummaryBySetId,
-      excludedSetIds: homepageBestDealSetCards.map(
+      excludedSetIds: homepageRenderedDealSetCards.map(
         (catalogSetCard) => catalogSetCard.id,
       ),
       limit: 10,
@@ -411,44 +424,58 @@ export default async function HomePage() {
         setCards: commerceCandidateSetCards,
       })
     : [];
-  const homepageScoredCommerceCandidateSetCards =
-    rankCatalogPartnerOfferSetCards({
+  const homepageSoftDealCandidateSetCards = getCatalogDiscoverySignalFn
+    ? await listDiscoverNowInterestingSetCards({
+        currentOfferSummaryBySetId,
+        getCatalogDiscoverySignalFn,
+        limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
+        rotationSeed: commerceRailRotationSeed,
+        setCards: commerceCandidateSetCards,
+      })
+    : [];
+  const homepageHeroSection = getHeroSection(homepagePage.sections);
+  const homepageBestDealCandidates = toFeatureSetListItems(
+    homepageBestDealCandidateSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
       catalogDiscoverySignalBySetId,
-      currentOfferSummaryBySetId,
-      limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
-      requirePrimaryDealQuality: true,
-      rotationSeed: commerceRailRotationSeed,
-      setCards: commerceCandidateSetCards,
-    });
-  const homepageFirstCommerceInputSetCards =
-    selectCatalogFirstCommerceRailSetCards({
-      limit: HOMEPAGE_FIRST_COMMERCE_RAIL_LIMIT,
-      scoredCommerceCandidateSetCards: homepageScoredCommerceCandidateSetCards,
-      strictDealSetCards: homepageBestDealCandidateSetCards,
-    });
+      sectionId: 'best-current-deals',
+    },
+  ).filter(hasCommerceAction);
+  const homepageStrongDealSetCards =
+    homepageBestDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
+      ? homepageBestDealCandidates
+      : [];
+  const homepageSoftDealCandidates = toFeatureSetListItems(
+    homepageSoftDealCandidateSetCards,
+    currentOfferSummaryBySetId,
+    {
+      cardSurface: 'deal',
+      catalogDiscoverySignalBySetId,
+      sectionId: 'soft-price-opportunities',
+    },
+  ).filter(hasCommerceAction);
+  const homepageSoftDealSetCards =
+    homepageStrongDealSetCards.length === 0 &&
+    homepageSoftDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
+      ? homepageSoftDealCandidates
+      : [];
+  const homepageRenderedDealSetCards = homepageStrongDealSetCards.length
+    ? homepageStrongDealSetCards
+    : homepageSoftDealSetCards;
   console.info('[homepage-deal-quality]', {
     ...getCatalogHomepageDealQualityDiagnostics({
       catalogDiscoverySignalBySetId,
       currentOfferSummaryBySetId,
-      selectedSetCards: homepageFirstCommerceInputSetCards,
+      selectedSetCards: homepageRenderedDealSetCards,
+      softSetCards: homepageSoftDealSetCards,
+      strongSetCards: homepageStrongDealSetCards,
       setCards: commerceCandidateSetCards,
     }),
   });
-  const homepageHeroSection = getHeroSection(homepagePage.sections);
-  const homepageBestDealCandidates = toFeatureSetListItems(
-    homepageFirstCommerceInputSetCards,
-    currentOfferSummaryBySetId,
-    {
-      cardSurface: 'deal',
-      sectionId: 'best-current-deals',
-    },
-  ).filter(hasCommerceAction);
-  const homepageBestDealSetCards =
-    homepageBestDealCandidates.length >= HOMEPAGE_MIN_COMMERCE_RAIL_ITEMS
-      ? homepageBestDealCandidates
-      : [];
   const homepageFollowExcludedSetIds = getUniqueCatalogSetIds([
-    homepageBestDealSetCards,
+    homepageRenderedDealSetCards,
   ]);
   const homepageFollowSetCards = await listHomepageSetCards({
     excludedSetIds: homepageFollowExcludedSetIds,
@@ -469,6 +496,7 @@ export default async function HomePage() {
     currentOfferSummaryBySetId,
     {
       cardSurface: 'featured',
+      catalogDiscoverySignalBySetId,
       sectionId: 'popular-to-follow',
     },
   );
@@ -478,12 +506,13 @@ export default async function HomePage() {
     catalogDiscoverySignalBySetId,
     commerceCandidateSetCards,
     currentOfferSummaryBySetId,
-    homepageBestDealCandidateSetCards,
-    homepageBestDealSetCards,
-    homepageFirstCommerceInputSetCards,
+    homepageRenderedDealSetCards,
     homepageFollowRailDiagnostics,
+    homepageSoftDealCandidateSetCards,
+    homepageSoftDealSetCards,
+    homepageStrongDealCandidateSetCards: homepageBestDealCandidateSetCards,
+    homepageStrongDealSetCards,
     runtimeDiagnostics: commerceRailRuntimeDiagnostics,
-    scoredCommerceCandidateSetCards: homepageScoredCommerceCandidateSetCards,
     rotationSeed: commerceRailRotationSeed,
   });
 
@@ -500,16 +529,28 @@ export default async function HomePage() {
         <div className={styles.heroSection}>
           <ContentFeaturePageRenderer editorialPage={homepageHeroPage} />
         </div>
-        {homepageBestDealSetCards.length ? (
+        {homepageStrongDealSetCards.length ? (
           <div className={styles.sectionGroup}>
             <CatalogFeatureSetList
               description="Sets die nu duidelijk onder hun recente referentieprijs zitten. Dit zijn de eerste plekken om te kijken."
               eyebrow="Deals"
               sectionId="best-current-deals"
-              setCards={homepageBestDealSetCards}
+              setCards={homepageStrongDealSetCards}
               showSignal={false}
               tone="default"
               title="Beste deals nu"
+            />
+          </div>
+        ) : homepageSoftDealSetCards.length ? (
+          <div className={styles.sectionGroup}>
+            <CatalogFeatureSetList
+              description="Sets die nu lager staan dan recent. Geen hard deal-label, wel een goed moment om te kijken."
+              eyebrow="Prijsbeweging"
+              sectionId="soft-price-opportunities"
+              setCards={homepageSoftDealSetCards}
+              showSignal={false}
+              tone="default"
+              title="Nu lager geprijsd"
             />
           </div>
         ) : (
