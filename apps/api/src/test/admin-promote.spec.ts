@@ -5,12 +5,18 @@ import {
   type AdminPromoteService,
 } from '../app/routes/admin-promote';
 
+type AdminPromoteRouteOptions = NonNullable<
+  Parameters<typeof createAdminPromoteRoutes>[0]
+>;
+
 async function createAdminPromoteServer({
   adminPromoteService,
   getExpectedAdminSecret,
+  revalidatePublicWebFn,
 }: {
   adminPromoteService?: AdminPromoteService;
   getExpectedAdminSecret?: () => string;
+  revalidatePublicWebFn?: AdminPromoteRouteOptions['revalidatePublicWebFn'];
 } = {}) {
   const nextAdminPromoteService: AdminPromoteService = adminPromoteService ?? {
     promoteCatalog: vi.fn(async () => ({
@@ -69,11 +75,13 @@ async function createAdminPromoteServer({
     createAdminPromoteRoutes({
       adminPromoteService: nextAdminPromoteService,
       getExpectedAdminSecret,
+      revalidatePublicWebFn,
     }),
   );
 
   return {
     adminPromoteService: nextAdminPromoteService,
+    revalidatePublicWebFn,
     server,
   };
 }
@@ -100,8 +108,17 @@ describe('admin promote routes', () => {
   });
 
   test('returns structured promotion counts on a successful run', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 2,
+      paths: ['/', '/themes'],
+      skipped: false,
+      tagCount: 3,
+      tags: ['homepage', 'themes', 'catalog'],
+    }));
     const { adminPromoteService, server } = await createAdminPromoteServer({
       getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
     });
 
     const response = await server.inject({
@@ -114,8 +131,21 @@ describe('admin promote routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/themes'],
+      reason: 'catalog_promote',
+      tags: ['homepage', 'themes', 'catalog'],
+    });
     expect(response.json()).toEqual({
       durationMs: 421,
+      revalidation: {
+        attempted: true,
+        pathCount: 2,
+        paths: ['/', '/themes'],
+        skipped: false,
+        tagCount: 3,
+        tags: ['homepage', 'themes', 'catalog'],
+      },
       startedAt: '2026-04-22T09:00:00.000Z',
       status: 'ok',
       tables: expect.objectContaining({
@@ -129,6 +159,80 @@ describe('admin promote routes', () => {
         }),
       }),
     });
+
+    await server.close();
+  });
+
+  test('returns a warning when catalog promotion succeeds but revalidation fails', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => {
+      throw new Error('Public web revalidation failed with status 401.');
+    });
+    const { adminPromoteService, server } = await createAdminPromoteServer({
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(adminPromoteService.promoteCatalog).toHaveBeenCalled();
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/themes'],
+      reason: 'catalog_promote',
+      tags: ['homepage', 'themes', 'catalog'],
+    });
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        revalidationWarning: 'Public web revalidation failed with status 401.',
+        status: 'ok',
+      }),
+    );
+
+    await server.close();
+  });
+
+  test('keeps successful catalog promotion when revalidation is skipped as unconfigured', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: false,
+      pathCount: 2,
+      paths: ['/', '/themes'],
+      skipped: true,
+      tagCount: 3,
+      tags: ['homepage', 'themes', 'catalog'],
+    }));
+    const { server } = await createAdminPromoteServer({
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual(
+      expect.objectContaining({
+        revalidation: {
+          attempted: false,
+          pathCount: 2,
+          paths: ['/', '/themes'],
+          skipped: true,
+          tagCount: 3,
+          tags: ['homepage', 'themes', 'catalog'],
+        },
+        status: 'ok',
+      }),
+    );
 
     await server.close();
   });
@@ -156,6 +260,33 @@ describe('admin promote routes', () => {
       message: 'Catalog promotion is not configured.',
       status: 'error',
     });
+
+    await server.close();
+  });
+
+  test('does not revalidate when catalog promotion fails', async () => {
+    const revalidatePublicWebFn = vi.fn();
+    const adminPromoteService: AdminPromoteService = {
+      promoteCatalog: vi.fn(async () => {
+        throw new Error('Promotion failed.');
+      }),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+    });
+
+    expect(response.statusCode).toBe(500);
+    expect(revalidatePublicWebFn).not.toHaveBeenCalled();
 
     await server.close();
   });

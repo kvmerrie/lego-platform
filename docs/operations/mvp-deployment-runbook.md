@@ -90,6 +90,7 @@ Recommended service settings:
 - let Render provide `PORT`
 - set `WEB_BASE_URL` to the deployed public web host when API or operator jobs should trigger on-demand catalog revalidation
 - set the same `WEB_REVALIDATE_SECRET` as the Vercel web app when on-demand catalog revalidation is enabled
+- successful `POST /api/admin/promote/catalog` calls revalidate `/` and `/themes` with tags `homepage`, `themes`, and `catalog`; if revalidation fails after the database promotion, the API logs and returns a warning instead of rolling back promoted data
 - enable automatic deploys from the protected release branch only after staging rehearsal is trusted
 - set the Render health check path to `/health`
 - keep service notifications enabled at `Only failure notifications`
