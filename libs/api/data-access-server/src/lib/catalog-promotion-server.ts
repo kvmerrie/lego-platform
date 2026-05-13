@@ -383,6 +383,18 @@ function countRowsWithInvalidPromotionTimestamp({
   ).length;
 }
 
+function countRowsWithInvalidPromotionBoolean({
+  column,
+  rows,
+}: {
+  column: string;
+  rows: readonly Readonly<Record<string, unknown>>[];
+}): number {
+  return rows.filter(
+    (row) => readOptionalPromotionBoolean(row[column]) === undefined,
+  ).length;
+}
+
 function sanitizePromotionUpsertTimestamps({
   nowIso,
   rows,
@@ -414,6 +426,33 @@ function sanitizePromotionUpsertTimestamps({
     }
 
     return sanitizedRow;
+  });
+}
+
+function logCatalogThemeIsPublicNormalization({
+  rowsAfter,
+  rowsBefore,
+}: {
+  rowsAfter: readonly Readonly<Record<string, unknown>>[];
+  rowsBefore: readonly Readonly<Record<string, unknown>>[];
+}): void {
+  const nullOrMissingBefore = countRowsWithInvalidPromotionBoolean({
+    column: 'is_public',
+    rows: rowsBefore,
+  });
+
+  if (nullOrMissingBefore === 0) {
+    return;
+  }
+
+  console.info('[catalog-promotion] catalog theme boolean payload normalized', {
+    inputRows: rowsBefore.length,
+    nullOrMissingIsPublicAfterNormalize: countRowsWithInvalidPromotionBoolean({
+      column: 'is_public',
+      rows: rowsAfter,
+    }),
+    nullOrMissingIsPublicBeforeNormalize: nullOrMissingBefore,
+    table: CATALOG_THEMES_TABLE,
   });
 }
 
@@ -616,10 +655,6 @@ function selectPromotionUpsertColumns({
     Object.entries(row).filter(([column, value]) => {
       if (!allowedColumns.has(column)) {
         return false;
-      }
-
-      if (table === CATALOG_THEMES_TABLE && column === 'is_public') {
-        return !isExistingRow;
       }
 
       if (
@@ -1270,6 +1305,14 @@ export async function promoteCatalogFromStagingToProduction({
         theme,
       }),
     );
+    logCatalogThemeIsPublicNormalization({
+      rowsAfter: normalizedCatalogThemes as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      rowsBefore: catalogThemes as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+    });
     const normalizedCatalogThemeMappings = catalogThemeMappings.map((mapping) =>
       normalizePromotionTimestamps({
         nowIso: startedAtIso,

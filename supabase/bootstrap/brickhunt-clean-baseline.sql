@@ -12,6 +12,36 @@ begin
 end;
 $$;
 
+create or replace function public.set_missing_catalog_theme_timestamps()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.created_at is null then
+    new.created_at = timezone('utc', now());
+  end if;
+
+  if new.updated_at is null then
+    new.updated_at = timezone('utc', now());
+  end if;
+
+  return new;
+end;
+$$;
+
+create or replace function public.set_missing_catalog_theme_visibility()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.is_public is null then
+    new.is_public = false;
+  end if;
+
+  return new;
+end;
+$$;
+
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null,
@@ -269,6 +299,13 @@ before update on public.catalog_source_themes
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists set_catalog_source_themes_missing_timestamps
+on public.catalog_source_themes;
+create trigger set_catalog_source_themes_missing_timestamps
+before insert or update on public.catalog_source_themes
+for each row
+execute function public.set_missing_catalog_theme_timestamps();
+
 drop trigger if exists set_catalog_themes_updated_at
 on public.catalog_themes;
 create trigger set_catalog_themes_updated_at
@@ -276,12 +313,33 @@ before update on public.catalog_themes
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists set_catalog_themes_missing_timestamps
+on public.catalog_themes;
+create trigger set_catalog_themes_missing_timestamps
+before insert or update on public.catalog_themes
+for each row
+execute function public.set_missing_catalog_theme_timestamps();
+
+drop trigger if exists set_catalog_themes_missing_visibility
+on public.catalog_themes;
+create trigger set_catalog_themes_missing_visibility
+before insert or update on public.catalog_themes
+for each row
+execute function public.set_missing_catalog_theme_visibility();
+
 drop trigger if exists set_catalog_theme_mappings_updated_at
 on public.catalog_theme_mappings;
 create trigger set_catalog_theme_mappings_updated_at
 before update on public.catalog_theme_mappings
 for each row
 execute function public.set_updated_at();
+
+drop trigger if exists set_catalog_theme_mappings_missing_timestamps
+on public.catalog_theme_mappings;
+create trigger set_catalog_theme_mappings_missing_timestamps
+before insert or update on public.catalog_theme_mappings
+for each row
+execute function public.set_missing_catalog_theme_timestamps();
 
 drop trigger if exists set_catalog_sets_updated_at
 on public.catalog_sets;

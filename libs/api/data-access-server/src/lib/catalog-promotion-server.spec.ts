@@ -1448,6 +1448,7 @@ describe('catalog promotion server', () => {
           created_at: '2026-04-20T08:00:00.000Z',
           display_name: 'Advent',
           id: 'theme:advent',
+          is_public: false,
           slug: 'advent',
           status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
@@ -1510,6 +1511,7 @@ describe('catalog promotion server', () => {
           created_at: '2026-04-21T08:00:00.000Z',
           display_name: 'Advent',
           id: 'theme:advent',
+          is_public: true,
           slug: 'advent',
           status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
@@ -1598,6 +1600,7 @@ describe('catalog promotion server', () => {
           created_at: '2026-04-21T08:00:00.000Z',
           display_name: 'Icons',
           id: 'theme:icons',
+          is_public: false,
           slug: 'icons',
           status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
@@ -1683,6 +1686,7 @@ describe('catalog promotion server', () => {
           created_at: '2026-04-21T08:00:00.000Z',
           display_name: 'Advent',
           id: 'theme:advent',
+          is_public: false,
           slug: 'advent',
           status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
@@ -1702,6 +1706,130 @@ describe('catalog promotion server', () => {
         onConflict: 'id',
       },
     );
+  });
+
+  test('preserves source catalog theme visibility and normalizes null visibility to false', async () => {
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
+      // Keep promotion diagnostics out of the test output.
+    });
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Public Theme',
+            id: 'theme:public',
+            is_public: true,
+            public_order: null,
+            slug: 'public-theme',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:05:00.000Z',
+            display_name: 'Private Theme',
+            id: 'theme:private',
+            is_public: false,
+            public_order: null,
+            slug: 'private-theme',
+            status: 'active',
+            updated_at: '2026-04-21T08:05:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:10:00.000Z',
+            display_name: 'Null Visibility Theme',
+            id: 'theme:null-visibility',
+            is_public: null,
+            public_order: null,
+            slug: 'null-visibility-theme',
+            status: 'active',
+            updated_at: '2026-04-21T08:10:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:15:00.000Z',
+            display_name: 'Missing Visibility Theme',
+            id: 'theme:missing-visibility',
+            public_order: null,
+            slug: 'missing-visibility-theme',
+            status: 'active',
+            updated_at: '2026-04-21T08:15:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            id: 'theme:public',
+            is_public: false,
+          },
+          {
+            id: 'theme:private',
+            is_public: true,
+          },
+          {
+            id: 'theme:null-visibility',
+            is_public: true,
+          },
+          {
+            id: 'theme:missing-visibility',
+            is_public: true,
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          id: 'theme:public',
+          is_public: true,
+        }),
+        expect.objectContaining({
+          id: 'theme:private',
+          is_public: false,
+        }),
+        expect.objectContaining({
+          id: 'theme:null-visibility',
+          is_public: false,
+        }),
+        expect.objectContaining({
+          id: 'theme:missing-visibility',
+          is_public: false,
+        }),
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] catalog theme boolean payload normalized',
+      expect.objectContaining({
+        inputRows: 4,
+        nullOrMissingIsPublicAfterNormalize: 0,
+        nullOrMissingIsPublicBeforeNormalize: 2,
+        table: 'catalog_themes',
+      }),
+    );
+    consoleInfoSpy.mockRestore();
   });
 
   test('defaults required catalog theme timestamps in the actual upsert payload', async () => {
