@@ -37,6 +37,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
   readonly string[]
 > = {
   catalog_sets: [
+    'created_at',
     'image_url',
     'name',
     'piece_count',
@@ -47,6 +48,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'source_set_number',
     'source_theme_id',
     'status',
+    'updated_at',
   ],
   [CATALOG_SOURCE_THEMES_TABLE]: [
     'parent_source_theme_id',

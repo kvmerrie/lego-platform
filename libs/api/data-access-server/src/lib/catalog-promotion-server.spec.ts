@@ -1204,6 +1204,7 @@ describe('catalog promotion server', () => {
     ).toHaveBeenCalledWith(
       [
         {
+          created_at: '2026-04-21T08:00:00.000Z',
           image_url: 'https://cdn.example.com/staging.jpg',
           name: 'Rivendell staging',
           piece_count: 6167,
@@ -1215,6 +1216,7 @@ describe('catalog promotion server', () => {
           source_set_number: '10316-1',
           source_theme_id: 'rebrickable-theme-icons',
           status: 'inactive',
+          updated_at: '2026-04-21T08:00:00.000Z',
         },
       ],
       {
@@ -1406,6 +1408,69 @@ describe('catalog promotion server', () => {
     );
 
     consoleInfoSpy.mockRestore();
+  });
+
+  test('normalizes catalog set timestamps in existing-row upsert payloads', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: null,
+            image_url: null,
+            name: 'Mercedes-AMG F1 W14 E Performance',
+            piece_count: 1642,
+            primary_theme_id: 'speed-champions',
+            release_year: 2024,
+            set_id: '42171',
+            slug: 'mercedes-amg-f1-w14-e-performance-42171',
+            source: 'rebrickable',
+            source_set_number: '42171-1',
+            source_theme_id: 'rebrickable-theme-technic',
+            status: 'active',
+            updated_at: null,
+          },
+        ],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_sets: [
+          {
+            set_id: '42171',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_sets'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          created_at: '2026-04-22T09:00:00.000Z',
+          set_id: '42171',
+          updated_at: '2026-04-22T09:00:00.000Z',
+        }),
+      ],
+      {
+        onConflict: 'set_id',
+      },
+    );
   });
 
   test('keeps catalog set update payload slugs non-null for existing production rows', async () => {
