@@ -146,7 +146,7 @@ Dit verlaagt vooral writes op homepage, deals, thema's en set details. In plaats
 
 - De Supabase data-access laag bevat nog directe server reads op meerdere admin en diagnostic surfaces. Publieke homepage/deals gebruiken nu een cached facade voor current offer summaries, maar extra publieke reads moeten dezelfde route volgen.
 - Feed importers geven exact gewijzigde set IDs/slugs terug voor de gedeelde affiliate importer. Controleer nieuwe importers op dezelfde contractvorm voordat ze revalidation triggeren.
-- Catalog promotion revalidates `/` and `/themes` with tags `homepage`, `themes`, and `catalog` after a successful database promotion. A revalidation failure is reported as a warning because the promoted data has already been committed.
+- Catalog promotion revalidates `/` and `/themes` with tags `homepage`, `themes`, and `catalog` after a successful database promotion. It also revalidates targeted `/themes/<slug>` paths for changed public theme presentation rows, capped at 50 paths. If the cap is exceeded, slug detail paths are skipped and `broad_theme_revalidation_fallback` is logged. A revalidation failure is reported as a warning because the promoted data has already been committed.
 - Er is nog geen aparte theme create/update admin route gevonden. Voeg bij introductie direct `buildThemeRevalidationTags` toe.
 - Controleer in productie met Vercel logs hoeveel `/api/revalidate` calls per cronjob ontstaan en cap grote changed-set batches.
 

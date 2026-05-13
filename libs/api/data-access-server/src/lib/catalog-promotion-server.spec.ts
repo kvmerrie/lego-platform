@@ -1819,6 +1819,169 @@ describe('catalog promotion server', () => {
     );
   });
 
+  test('returns changed public theme slugs for promoted presentation changes', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Icons',
+            id: 'theme:icons',
+            is_public: true,
+            public_accent_color: '#f0c63b',
+            public_description: 'Displaysets die direct opvallen.',
+            public_display_name: 'LEGO® Icons',
+            public_image_url: 'https://cdn.example.com/icons.jpg',
+            public_logo_url: null,
+            public_order: 10,
+            slug: 'icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            id: 'theme:icons',
+            is_public: true,
+            public_accent_color: null,
+            public_description: 'Displaysets die direct opvallen.',
+            public_display_name: 'LEGO® Icons',
+            public_image_url: null,
+            public_logo_url: null,
+            public_order: 10,
+            slug: 'icons',
+            status: 'active',
+          },
+        ],
+      },
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(result.changedThemeSlugs).toEqual(['icons']);
+  });
+
+  test('does not return unchanged theme slugs for detail revalidation', async () => {
+    const themeRow = {
+      created_at: '2026-04-21T08:00:00.000Z',
+      display_name: 'Icons',
+      id: 'theme:icons',
+      is_public: true,
+      public_accent_color: '#f0c63b',
+      public_description: 'Displaysets die direct opvallen.',
+      public_display_name: 'LEGO® Icons',
+      public_image_url: 'https://cdn.example.com/icons.jpg',
+      public_logo_url: null,
+      public_order: 10,
+      slug: 'icons',
+      status: 'active',
+      updated_at: '2026-04-21T08:00:00.000Z',
+    };
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [themeRow],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [themeRow],
+      },
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(result.changedThemeSlugs).toEqual([]);
+  });
+
+  test('ignores changed private themes for detail revalidation', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Retired Theme',
+            id: 'theme:retired',
+            is_public: false,
+            public_accent_color: '#f0c63b',
+            public_description: 'Private staging copy.',
+            public_display_name: 'Retired Theme',
+            public_image_url: 'https://cdn.example.com/private.jpg',
+            public_logo_url: null,
+            public_order: 99,
+            slug: 'retired',
+            status: 'inactive',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            id: 'theme:retired',
+            is_public: false,
+            public_accent_color: null,
+            public_description: 'Private production copy.',
+            public_display_name: 'Retired Theme',
+            public_image_url: null,
+            public_logo_url: null,
+            public_order: 99,
+            slug: 'retired',
+            status: 'inactive',
+          },
+        ],
+      },
+    });
+
+    const result = await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(result.changedThemeSlugs).toEqual([]);
+  });
+
   test('defaults missing catalog theme status before promotion writes', async () => {
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {

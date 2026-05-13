@@ -32,6 +32,16 @@ const CATALOG_PROMOTION_TIMESTAMPED_TABLES = new Set([
   COMMERCE_BENCHMARK_SETS_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
 ]);
+const CATALOG_THEME_PUBLIC_REVALIDATION_FIELDS = [
+  'public_display_name',
+  'public_description',
+  'public_image_url',
+  'public_accent_color',
+  'public_logo_url',
+  'public_order',
+  'is_public',
+  'status',
+] as const;
 const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
   string,
   readonly string[]
@@ -259,6 +269,7 @@ export interface CatalogPromotionTableSummary {
 }
 
 export interface CatalogPromotionResult {
+  changedThemeSlugs: string[];
   durationMs: number;
   startedAt: string;
   status: 'ok';
@@ -762,6 +773,21 @@ function valuesArePromotionEqual(left: unknown, right: unknown): boolean {
   return (left ?? null) === (right ?? null);
 }
 
+function isPublicCatalogThemeForRevalidation(
+  row: Readonly<Record<string, unknown>> | undefined,
+): boolean {
+  return (
+    row?.['is_public'] === true &&
+    (readOptionalPromotionString(row['status']) ?? 'active') === 'active'
+  );
+}
+
+function readCatalogThemeSlugForRevalidation(
+  row: Readonly<Record<string, unknown>>,
+): string | undefined {
+  return readOptionalPromotionString(row['slug']);
+}
+
 function incrementPromotionFieldCount({
   counts,
   field,
@@ -1193,6 +1219,80 @@ async function upsertRows<TRow>({
     updatedCount,
     upsertedCount: rows.length,
   };
+}
+
+async function listChangedPublicCatalogThemeSlugs({
+  nowIso,
+  rows,
+  supabaseClient,
+}: {
+  nowIso: string;
+  rows: readonly CatalogThemeRow[];
+  supabaseClient: CatalogPromotionSupabaseClient;
+}): Promise<string[]> {
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const conflictColumns = ['id'];
+  const existingRowsByConflictKey = await listExistingConflictRows({
+    onConflict: 'id',
+    supabaseClient,
+    table: CATALOG_THEMES_TABLE,
+  });
+  const changedSlugs = new Set<string>();
+
+  for (const theme of rows) {
+    const rowRecord = toRowRecord(theme);
+    const conflictKey = buildConflictKey({
+      columns: conflictColumns,
+      row: rowRecord,
+    });
+    const existingRow = existingRowsByConflictKey.get(conflictKey);
+    const projectedRow = finalizePromotionUpsertRow({
+      existingRow,
+      nowIso,
+      row: selectPromotionUpsertColumns({
+        conflictColumns,
+        existingRow,
+        isExistingRow: Boolean(existingRow),
+        row: rowRecord,
+        table: CATALOG_THEMES_TABLE,
+      }),
+      sourceRow: rowRecord,
+      table: CATALOG_THEMES_TABLE,
+    });
+
+    const wasPublic = isPublicCatalogThemeForRevalidation(existingRow);
+    const willBePublic = isPublicCatalogThemeForRevalidation({
+      ...existingRow,
+      ...projectedRow,
+    });
+
+    if (!wasPublic && !willBePublic) {
+      continue;
+    }
+
+    const changedPublicField = CATALOG_THEME_PUBLIC_REVALIDATION_FIELDS.some(
+      (field) =>
+        Object.prototype.hasOwnProperty.call(projectedRow, field) &&
+        !valuesArePromotionEqual(existingRow?.[field], projectedRow[field]),
+    );
+
+    if (!changedPublicField && existingRow) {
+      continue;
+    }
+
+    const slug =
+      readCatalogThemeSlugForRevalidation(projectedRow) ??
+      readCatalogThemeSlugForRevalidation(existingRow ?? {});
+
+    if (slug) {
+      changedSlugs.add(slug);
+    }
+  }
+
+  return [...changedSlugs].sort((left, right) => left.localeCompare(right));
 }
 
 async function refreshCatalogThemeSummaries({
@@ -1713,6 +1813,12 @@ export async function promoteCatalogFromStagingToProduction({
       table: COMMERCE_OFFER_SEEDS_TABLE,
     });
 
+    const changedThemeSlugs = await listChangedPublicCatalogThemeSlugs({
+      nowIso: startedAtIso,
+      rows: normalizedCatalogThemes,
+      supabaseClient: productionSupabaseClient,
+    });
+
     tables.catalog_source_themes = await upsertRows({
       nowIso: startedAtIso,
       onConflict: 'id',
@@ -1771,6 +1877,7 @@ export async function promoteCatalogFromStagingToProduction({
     });
 
     return {
+      changedThemeSlugs,
       durationMs: now().getTime() - startedAt.getTime(),
       startedAt: startedAtIso,
       status: 'ok',

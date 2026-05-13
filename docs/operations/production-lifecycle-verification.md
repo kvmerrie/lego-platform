@@ -82,27 +82,17 @@ Look for the current deploy/cache behavior and avoid judging only by a cached
 HTML hit after a promote. Use `/api/revalidate` logs as the source of truth for
 whether invalidation was requested.
 
-## Theme Detail Freshness Gap
+## Theme Detail Freshness
 
-Known current gap: `promote/catalog` revalidates `/themes`, but not every
-`/themes/<slug>` detail page.
+`promote/catalog` always revalidates `/` and `/themes`. It also returns
+`changedThemeSlugs` for public `catalog_themes` rows whose public presentation
+or visibility changed, and the API revalidates those exact `/themes/<slug>`
+paths.
 
-Smallest safe design:
-
-1. Extend promotion planning to track changed `catalog_themes` rows.
-2. For rows where public presentation or public visibility changed, collect the
-   final slug.
-3. Return `changedThemeSlugs` from `promoteCatalogFromStagingToProduction`.
-4. In the API route, add `changedThemeSlugs.map(buildThemePath)` to the existing
-   revalidation paths.
-5. Keep `/` and `/themes` always included for successful catalog promotion.
-6. Cap changed theme paths, for example at 50. If more changed, revalidate only
-   `/themes` plus tags and log a broad-change warning.
-7. Do not revalidate every theme detail page unless the promote result says the
-   public theme row changed.
-
-This keeps normal curation fast and avoids broad invalidation during large
-catalog set imports.
+Safety rule: targeted theme detail revalidation is capped at 50 paths. If more
+public themes changed, the API keeps only `/` and `/themes` in the request and
+logs `broad_theme_revalidation_fallback`. Do not manually invalidate every theme
+detail page unless there is a confirmed public cache incident.
 
 ## Deployment Safety
 
@@ -165,7 +155,6 @@ Trust checks:
 
 ## Remaining Risks
 
-- Theme detail revalidation is not yet targeted by changed slug.
 - Commerce generated artifacts can drift whenever production latest offers
   change; this is expected until sync/check cadence is formalized.
 - `public_accent_color` completeness is curation-dependent, not required for

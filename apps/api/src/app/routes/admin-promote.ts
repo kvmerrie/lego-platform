@@ -8,11 +8,15 @@ import {
 } from '@lego-platform/api/data-access-server';
 import {
   apiPaths,
+  buildThemePath,
   cacheTags,
   getAdminPromotionConfig,
   webPathnames,
 } from '@lego-platform/shared/config';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyBaseLogger, FastifyInstance } from 'fastify';
+
+const MAX_THEME_DETAIL_REVALIDATION_PATHS = 50;
+const LOGGED_CHANGED_THEME_SLUG_LIMIT = 12;
 
 export interface AdminPromoteService {
   promoteCatalog(): Promise<CatalogPromotionResult>;
@@ -57,6 +61,72 @@ function matchesAdminSecret({
   }
 
   return timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
+function buildCatalogPromoteRevalidationPaths({
+  changedThemeSlugs,
+  log,
+}: {
+  changedThemeSlugs: readonly string[];
+  log: FastifyBaseLogger;
+}): {
+  fallbackMode: boolean;
+  paths: string[];
+} {
+  const basePaths = [webPathnames.home, webPathnames.themes];
+  const uniqueChangedThemeSlugs = [...new Set(changedThemeSlugs)].sort(
+    (left, right) => left.localeCompare(right),
+  );
+  const fallbackMode =
+    uniqueChangedThemeSlugs.length > MAX_THEME_DETAIL_REVALIDATION_PATHS;
+
+  if (fallbackMode) {
+    log.warn(
+      {
+        changedThemeSlugCount: uniqueChangedThemeSlugs.length,
+        changedThemeSlugSample: uniqueChangedThemeSlugs.slice(
+          0,
+          LOGGED_CHANGED_THEME_SLUG_LIMIT,
+        ),
+        event: 'broad_theme_revalidation_fallback',
+        finalPathCount: basePaths.length,
+        maxThemeDetailRevalidationPaths: MAX_THEME_DETAIL_REVALIDATION_PATHS,
+        paths: basePaths,
+        route: apiPaths.adminCatalogPromotion,
+      },
+      'Skipping targeted theme detail revalidation after catalog promotion because too many public themes changed.',
+    );
+
+    return {
+      fallbackMode,
+      paths: basePaths,
+    };
+  }
+
+  const themeDetailPaths = uniqueChangedThemeSlugs.map((slug) =>
+    buildThemePath(slug),
+  );
+  const paths = [...basePaths, ...themeDetailPaths];
+
+  log.info(
+    {
+      changedThemeSlugCount: uniqueChangedThemeSlugs.length,
+      changedThemeSlugSample: uniqueChangedThemeSlugs.slice(
+        0,
+        LOGGED_CHANGED_THEME_SLUG_LIMIT,
+      ),
+      fallbackMode,
+      finalPathCount: paths.length,
+      paths,
+      route: apiPaths.adminCatalogPromotion,
+    },
+    'Catalog promotion public web revalidation targets planned.',
+  );
+
+  return {
+    fallbackMode,
+    paths,
+  };
 }
 
 export function createAdminPromoteRoutes({
@@ -109,7 +179,11 @@ export function createAdminPromoteRoutes({
           const result = await adminPromoteService.promoteCatalog();
           let revalidation: PublicWebRevalidationResult | undefined;
           let revalidationWarning: string | undefined;
-          const revalidationPaths = [webPathnames.home, webPathnames.themes];
+          const revalidationPlan = buildCatalogPromoteRevalidationPaths({
+            changedThemeSlugs: result.changedThemeSlugs,
+            log: request.log,
+          });
+          const revalidationPaths = revalidationPlan.paths;
           const revalidationTags = [
             cacheTags.homepage(),
             cacheTags.themes(),
@@ -146,6 +220,7 @@ export function createAdminPromoteRoutes({
                 attempted: revalidation?.attempted ?? false,
                 pathCount: revalidation?.pathCount ?? revalidationPaths.length,
                 paths: revalidation?.paths ?? revalidationPaths,
+                themeDetailFallback: revalidationPlan.fallbackMode,
                 skipped: revalidation?.skipped ?? false,
                 tagCount: revalidation?.tagCount ?? revalidationTags.length,
                 tags: revalidation?.tags ?? revalidationTags,

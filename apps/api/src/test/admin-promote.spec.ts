@@ -20,6 +20,7 @@ async function createAdminPromoteServer({
 } = {}) {
   const nextAdminPromoteService: AdminPromoteService = adminPromoteService ?? {
     promoteCatalog: vi.fn(async () => ({
+      changedThemeSlugs: [],
       durationMs: 421,
       startedAt: '2026-04-22T09:00:00.000Z',
       status: 'ok' as const,
@@ -137,6 +138,7 @@ describe('admin promote routes', () => {
       tags: ['homepage', 'themes', 'catalog'],
     });
     expect(response.json()).toEqual({
+      changedThemeSlugs: [],
       durationMs: 421,
       revalidation: {
         attempted: true,
@@ -158,6 +160,179 @@ describe('admin promote routes', () => {
           upsertedCount: 5,
         }),
       }),
+    });
+
+    await server.close();
+  });
+
+  test('revalidates changed public theme detail paths after promotion', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 3,
+      paths: ['/', '/themes', '/themes/icons'],
+      skipped: false,
+      tagCount: 3,
+      tags: ['homepage', 'themes', 'catalog'],
+    }));
+    const adminPromoteService: AdminPromoteService = {
+      promoteCatalog: vi.fn(async () => ({
+        changedThemeSlugs: ['icons'],
+        durationMs: 421,
+        startedAt: '2026-04-22T09:00:00.000Z',
+        status: 'ok' as const,
+        tables: {
+          catalog_source_themes: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          catalog_themes: {
+            insertedCount: 0,
+            readCount: 1,
+            updatedCount: 1,
+            upsertedCount: 1,
+          },
+          catalog_theme_mappings: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          catalog_sets: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          commerce_merchants: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          commerce_benchmark_sets: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          commerce_offer_seeds: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+        },
+      })),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/themes', '/themes/icons'],
+      reason: 'catalog_promote',
+      tags: ['homepage', 'themes', 'catalog'],
+    });
+
+    await server.close();
+  });
+
+  test('skips targeted theme detail revalidation when too many themes changed', async () => {
+    const revalidatePublicWebFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 2,
+      paths: ['/', '/themes'],
+      skipped: false,
+      tagCount: 3,
+      tags: ['homepage', 'themes', 'catalog'],
+    }));
+    const adminPromoteService: AdminPromoteService = {
+      promoteCatalog: vi.fn(async () => ({
+        changedThemeSlugs: Array.from(
+          { length: 51 },
+          (_, index) => `theme-${index}`,
+        ),
+        durationMs: 421,
+        startedAt: '2026-04-22T09:00:00.000Z',
+        status: 'ok' as const,
+        tables: {
+          catalog_source_themes: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          catalog_themes: {
+            insertedCount: 0,
+            readCount: 51,
+            updatedCount: 51,
+            upsertedCount: 51,
+          },
+          catalog_theme_mappings: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          catalog_sets: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          commerce_merchants: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          commerce_benchmark_sets: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          commerce_offer_seeds: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+        },
+      })),
+    };
+    const { server } = await createAdminPromoteServer({
+      adminPromoteService,
+      getExpectedAdminSecret: () => 'promote-secret',
+      revalidatePublicWebFn,
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/promote/catalog',
+      headers: {
+        'x-admin-secret': 'promote-secret',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(revalidatePublicWebFn).toHaveBeenCalledWith({
+      paths: ['/', '/themes'],
+      reason: 'catalog_promote',
+      tags: ['homepage', 'themes', 'catalog'],
     });
 
     await server.close();
