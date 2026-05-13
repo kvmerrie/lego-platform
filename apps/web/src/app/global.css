@@ -1,217 +1,221 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer reset, shared, catalog;
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  color: var(--lego-text);
-  line-height: var(--lego-text-role-body-line-height);
-  position: relative;
-}
-
-body::before {
-  background: none;
-  content: '';
-  inset: 0;
-  pointer-events: none;
-  position: fixed;
-  z-index: -1;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-h1,
-h2,
-h3,
-p,
-ul,
-ol,
-dl {
-  margin: 0;
-}
-
-ul,
-ol {
-  padding-left: 1.15rem;
-}
-
-ul li::marker {
-  color: var(--lego-text-muted);
-  font-size: 0.82em;
-}
-
-/* Legacy shared utilities remain here until non-slice overview, demo, and placeholder surfaces migrate. */
-.surface,
-.metric-card {
-  background: var(--lego-surface-subtle);
-  border: var(--lego-border-width-1) solid transparent;
-  border-radius: var(--lego-surface-radius, var(--lego-radius-md));
-  box-shadow: none;
-  padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-5));
-  padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-5));
-}
-
-section.surface {
-  border-radius: var(
-    --lego-section-surface-radius-md,
-    var(--lego-surface-radius, var(--lego-radius-md))
-  );
-}
-
-.section-heading h2,
-.surface-title,
-.metric-value {
-  font-family: var(--lego-font-family-heading);
-  letter-spacing: -0.02em;
-}
-
-.muted {
-  color: var(--lego-text-muted);
-}
-
-.stack,
-.section-stack,
-.stack-xl {
-  display: grid;
-}
-
-.stack {
-  gap: 0.75rem;
-}
-
-.stack-xl {
-  gap: 2rem;
-}
-
-.section-stack {
-  gap: 1rem;
-}
-
-.section-heading {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.section-copy {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-support-size);
-  line-height: var(--lego-text-role-support-line-height);
-  max-width: 62ch;
-}
-
-.eyebrow {
-  color: var(--lego-accent);
-  font-size: var(--lego-text-role-eyebrow-size);
-  font-weight: var(--lego-font-weight-bold);
-  letter-spacing: var(--lego-text-role-label-tracking);
-  text-transform: uppercase;
-}
-
-.surface-grid,
-.metric-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.metric-card {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.metric-value {
-  font-size: var(--lego-text-role-section-size);
-}
-
-.surface-title {
-  font-size: var(--lego-text-role-card-title-size);
-  line-height: var(--lego-text-role-card-title-line-height);
-}
-
-.detail-list,
-.split-row,
-.split-card {
-  align-items: start;
-  display: flex;
-  gap: 0.75rem;
-}
-
-.split-row,
-.split-card {
-  justify-content: space-between;
-}
-
-.split-card {
-  flex-direction: column;
-}
-
-.detail-list {
-  flex-wrap: wrap;
-}
-
-.detail-list div {
-  min-width: 7rem;
-}
-
-.detail-list dt {
-  color: var(--lego-text-muted);
-  font-size: var(--lego-text-role-label-size);
-  letter-spacing: var(--lego-text-role-label-tracking);
-  text-transform: uppercase;
-}
-
-.detail-list dd {
-  margin: 0.25rem 0 0;
-}
-
-.list {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.dense-row {
-  align-items: baseline;
-  gap: 1rem;
-}
-
-.pill {
-  align-items: center;
-  background: var(--lego-surface-subtle);
-  border: 0;
-  border-radius: var(--lego-radius-pill);
-  color: var(--lego-text-muted);
-  display: inline-flex;
-  font-size: var(--lego-text-role-label-size);
-  font-weight: var(--lego-font-weight-semibold);
-  gap: 0.35rem;
-  line-height: var(--lego-text-role-label-line-height);
-  padding: 0.3rem 0.6rem;
-}
-
-.mono {
-  font-family: var(--lego-font-family-mono);
-}
-
-@media (min-width: 900px) {
-  .surface-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
 
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--lego-text);
+    line-height: var(--lego-text-role-body-line-height);
+    position: relative;
+  }
+
+  body::before {
+    background: none;
+    content: '';
+    inset: 0;
+    pointer-events: none;
+    position: fixed;
+    z-index: -1;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  p,
+  ul,
+  ol,
+  dl {
+    margin: 0;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.15rem;
+  }
+
+  ul li::marker {
+    color: var(--lego-text-muted);
+    font-size: 0.82em;
+  }
+
+  /* Legacy shared utilities remain here until non-slice overview, demo, and placeholder surfaces migrate. */
+  .surface,
+  .metric-card {
+    background: var(--lego-surface-subtle);
+    border: var(--lego-border-width-1) solid transparent;
+    border-radius: var(--lego-surface-radius, var(--lego-radius-md));
+    box-shadow: none;
+    padding-block: var(--lego-surface-padding-lg-block, var(--lego-space-5));
+    padding-inline: var(--lego-surface-padding-lg-inline, var(--lego-space-5));
+  }
+
+  section.surface {
+    border-radius: var(
+      --lego-section-surface-radius-md,
+      var(--lego-surface-radius, var(--lego-radius-md))
+    );
+  }
+
+  .section-heading h2,
+  .surface-title,
+  .metric-value {
+    font-family: var(--lego-font-family-heading);
+    letter-spacing: -0.02em;
+  }
+
+  .muted {
+    color: var(--lego-text-muted);
+  }
+
+  .stack,
+  .section-stack,
+  .stack-xl {
+    display: grid;
+  }
+
+  .stack {
+    gap: 0.75rem;
+  }
+
+  .stack-xl {
+    gap: 2rem;
+  }
+
+  .section-stack {
+    gap: 1rem;
+  }
+
+  .section-heading {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .section-copy {
+    color: var(--lego-text-muted);
+    font-size: var(--lego-text-role-support-size);
+    line-height: var(--lego-text-role-support-line-height);
+    max-width: 62ch;
+  }
+
+  .eyebrow {
+    color: var(--lego-accent);
+    font-size: var(--lego-text-role-eyebrow-size);
+    font-weight: var(--lego-font-weight-bold);
+    letter-spacing: var(--lego-text-role-label-tracking);
+    text-transform: uppercase;
+  }
+
+  .surface-grid,
   .metric-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+    gap: 1rem;
+  }
+
+  .metric-card {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .metric-value {
+    font-size: var(--lego-text-role-section-size);
+  }
+
+  .surface-title {
+    font-size: var(--lego-text-role-card-title-size);
+    line-height: var(--lego-text-role-card-title-line-height);
+  }
+
+  .detail-list,
+  .split-row,
+  .split-card {
+    align-items: start;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .split-row,
+  .split-card {
+    justify-content: space-between;
   }
 
   .split-card {
+    flex-direction: column;
+  }
+
+  .detail-list {
+    flex-wrap: wrap;
+  }
+
+  .detail-list div {
+    min-width: 7rem;
+  }
+
+  .detail-list dt {
+    color: var(--lego-text-muted);
+    font-size: var(--lego-text-role-label-size);
+    letter-spacing: var(--lego-text-role-label-tracking);
+    text-transform: uppercase;
+  }
+
+  .detail-list dd {
+    margin: 0.25rem 0 0;
+  }
+
+  .list {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .dense-row {
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .pill {
     align-items: center;
-    flex-direction: row;
+    background: var(--lego-surface-subtle);
+    border: 0;
+    border-radius: var(--lego-radius-pill);
+    color: var(--lego-text-muted);
+    display: inline-flex;
+    font-size: var(--lego-text-role-label-size);
+    font-weight: var(--lego-font-weight-semibold);
+    gap: 0.35rem;
+    line-height: var(--lego-text-role-label-line-height);
+    padding: 0.3rem 0.6rem;
+  }
+
+  .mono {
+    font-family: var(--lego-font-family-mono);
+  }
+
+  @media (min-width: 900px) {
+    .surface-grid {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .split-card {
+      align-items: center;
+      flex-direction: row;
+    }
   }
 }

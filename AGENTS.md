@@ -97,6 +97,7 @@ If changing a number, threshold, ranking rule, or commercial decision changes pr
 - Accessibility, consistency, and performance are mandatory.
 - Use flat solid tinted surfaces for hierarchy when useful. Avoid gradients, glossy effects, glassmorphism, and decorative borders.
 - Visual hierarchy should come from spacing, layout, typography, and surface tone differences — not decorative effects.
+- Shared UI primitives may provide defaults; domain component variants must not depend on CSS chunk order. Keep global resets in the `reset` cascade layer, shared primitive CSS in the `shared` layer, and domain component CSS in a later domain layer such as `catalog`.
 
 ---
 

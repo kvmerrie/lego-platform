@@ -11,6 +11,22 @@ import {
 } from './catalog-ui';
 
 describe('CatalogSetCard', () => {
+  it('keeps catalog component CSS in a later cascade layer than shared primitives', () => {
+    const catalogCss = readFileSync(
+      resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
+      'utf-8',
+    );
+    const sharedCss = readFileSync(
+      resolve(process.cwd(), 'libs/shared/ui/src/lib/shared-ui.module.css'),
+      'utf-8',
+    );
+
+    expect(sharedCss).toContain('@layer reset, shared, catalog;');
+    expect(sharedCss).toContain('@layer shared {');
+    expect(catalogCss).toContain('@layer reset, shared, catalog;');
+    expect(catalogCss).toContain('@layer catalog {');
+  });
+
   it('renders set detail gallery rounded on desktop and edge-to-edge on mobile', () => {
     const css = readFileSync(
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),

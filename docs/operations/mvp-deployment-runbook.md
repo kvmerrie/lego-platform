@@ -69,6 +69,8 @@ Production guardrails:
 - only browser-safe `NEXT_PUBLIC_*` Supabase values belong in Vercel
 - do not copy `SUPABASE_SERVICE_ROLE_KEY` into Vercel
 - set `WEB_REVALIDATE_SECRET` in Vercel if the public web app should accept on-demand catalog revalidation
+- set repository or environment variable `WEB_BASE_URL=https://www.brickhunt.nl` in GitHub Actions so the post-deploy production revalidation workflow targets the canonical public web origin
+- set GitHub Actions secret `WEB_REVALIDATE_SECRET` to the same value as Vercel `WEB_REVALIDATE_SECRET`; the post-deploy workflow uses it after successful production deployments only
 - keep production Contentful unset entirely if launch is still using mock editorial posture
 
 ### Render For `apps/api`
@@ -255,6 +257,8 @@ Render API:
 CI:
 
 - `REBRICKABLE_API_KEY`
+- `WEB_BASE_URL=https://www.brickhunt.nl` as a GitHub Actions variable for the post-deploy production web revalidation workflow
+- `WEB_REVALIDATE_SECRET=<shared-production-revalidate-secret>` as a GitHub Actions secret for the post-deploy production web revalidation workflow
 
 Note:
 
@@ -312,8 +316,9 @@ CI:
    - `pnpm nx run web:build`
 7. Deploy the API first.
 8. Deploy the web second.
-9. Run the smoke checks immediately after deploy.
-10. Run the manual signed-in validation flow before treating the environment as accepted.
+9. Confirm the GitHub `Post Deploy Public Web Revalidation` workflow succeeds for the production web deployment. It revalidates `/`, `/deals`, and `/themes` with tags `homepage`, `deals`, and `themes` using reason `production_deploy`. Preview deployments are skipped.
+10. Run the smoke checks immediately after deploy.
+11. Run the manual signed-in validation flow before treating the environment as accepted.
 
 ## Post-Deploy Validation
 

@@ -156,6 +156,9 @@ Controleer in Vercel Logs op deze prefixes:
 - `[public-web-revalidation] request`
 - `[public-web-revalidation] response`
 - `[public-web-revalidation] broad tags requested`
+- `[post-deploy-public-web-revalidation] request`
+- `[post-deploy-public-web-revalidation] succeeded`
+- `[post-deploy-public-web-revalidation] failed visibly`
 - `Public web revalidation requested.`
 - `Public web revalidation received broad tags.`
 
@@ -169,6 +172,14 @@ Belangrijke velden:
 - `durationMs` en `status`: response-meting van de outbound `/api/revalidate` call.
 - `broadTagCount` en `broadTags`: waarschuwing voor brede tags zoals `homepage`, `deals`, `prices`, `sitemap`.
 - `changed_sets` in merchant cron logs: aantal sets waarvan offer/seed-inhoud echt wijzigde.
+
+Na een succesvolle production web deployment draait GitHub Actions `Post Deploy Public Web Revalidation`. Die workflow slaat preview deployments en niet-web deployment targets over en roept alleen voor production public web `/api/revalidate` aan met:
+
+- `paths`: `/`, `/deals`, `/themes`
+- `tags`: `homepage`, `deals`, `themes`
+- `reason`: `production_deploy`
+
+Vereiste GitHub Actions configuratie: `WEB_BASE_URL=https://www.brickhunt.nl` als variable en `WEB_REVALIDATE_SECRET` als secret. De secret moet gelijk zijn aan de Vercel `WEB_REVALIDATE_SECRET`. Een HTTP- of fetch-fout laat de workflow falen, zodat stale production HTML niet stil blijft liggen.
 
 Dashboard checks:
 
