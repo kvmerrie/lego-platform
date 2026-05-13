@@ -396,7 +396,9 @@ describe('pricing data access server', () => {
           latestOffer: undefined,
         }),
         buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'alternate' },
           latestOffer: {
+            fetchedAt: '2026-05-11T11:55:00.000Z',
             fetchStatus: 'error',
           },
         }),
@@ -441,6 +443,16 @@ describe('pricing data access server', () => {
         missingLatest: 1,
         staleOrError: 1,
       },
+      staleOrErrorSamples: [
+        {
+          fetchedAt: '2026-05-11T11:55:00.000Z',
+          fetchStatus: 'error',
+          merchantSlug: 'alternate',
+          observedAt: '2026-05-11T10:00:00.000Z',
+          reason: 'fetch_status',
+          setId: '10316',
+        },
+      ],
     });
   });
 
@@ -448,7 +460,9 @@ describe('pricing data access server', () => {
     const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       latestOffers: [
         buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'goodbricks' },
           latestOffer: {
+            fetchedAt: '2026-05-08T11:59:59.000Z',
             observedAt: '2026-05-08T11:59:59.000Z',
           },
         }),
@@ -476,6 +490,16 @@ describe('pricing data access server', () => {
       skipped: {
         staleOrError: 1,
       },
+      staleOrErrorSamples: [
+        {
+          fetchedAt: '2026-05-08T11:59:59.000Z',
+          fetchStatus: 'success',
+          merchantSlug: 'goodbricks',
+          observedAt: '2026-05-08T11:59:59.000Z',
+          reason: 'observed_at_too_old',
+          setId: '10316',
+        },
+      ],
     });
   });
 

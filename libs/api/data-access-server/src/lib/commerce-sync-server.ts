@@ -218,6 +218,7 @@ function buildDailyHistoryInputsFromCommerceSyncSeeds(
       ? {
           availability: syncSeed.offerSeed.latestOffer.availability,
           currencyCode: syncSeed.offerSeed.latestOffer.currencyCode,
+          fetchedAt: syncSeed.offerSeed.latestOffer.fetchedAt,
           fetchStatus: syncSeed.offerSeed.latestOffer.fetchStatus,
           observedAt: syncSeed.offerSeed.latestOffer.observedAt,
           priceMinor: syncSeed.offerSeed.latestOffer.priceMinor,
@@ -281,6 +282,7 @@ function formatDailyHistorySummaryLog({
     `availability_counts=${JSON.stringify(summary.availabilityCounts ?? {})}`,
     `merchant_slug_counts=${JSON.stringify(summary.merchantSlugCounts ?? {})}`,
     `skipped_stale_or_error=${summary.skipped.staleOrError}`,
+    `stale_or_error_samples=${JSON.stringify(summary.staleOrErrorSamples ?? [])}`,
     `skipped_unit_mismatch=${summary.skipped.unitMismatch ?? 0}`,
     `skipped_untrusted_merchant=${summary.skipped.untrustedMerchant ?? 0}`,
     `skipped_inactive_seed_or_merchant=${summary.skipped.inactiveSeedOrMerchant}`,

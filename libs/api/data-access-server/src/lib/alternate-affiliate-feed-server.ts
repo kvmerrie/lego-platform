@@ -223,6 +223,25 @@ function hasLatestOfferContentChanged({
   );
 }
 
+function shouldRefreshLatestOfferObservation({
+  existingOfferSeed,
+  input,
+}: {
+  existingOfferSeed?: CommerceOfferSeed;
+  input: CommerceOfferLatestRecordInput;
+}): boolean {
+  const existingLatestOffer = existingOfferSeed?.latestOffer;
+
+  if (!existingLatestOffer) {
+    return true;
+  }
+
+  return (
+    existingLatestOffer.observedAt !== input.observedAt ||
+    existingLatestOffer.fetchedAt !== input.fetchedAt
+  );
+}
+
 function resolveCatalogSetIdForAlternateRow({
   catalogSetIdByIdentifier,
   feedSetNumber,
@@ -790,8 +809,12 @@ export async function importAffiliateFeedRowsForMerchant({
       existingOfferSeed,
       input: latestOfferInput,
     });
+    const latestOfferObservationChanged = shouldRefreshLatestOfferObservation({
+      existingOfferSeed,
+      input: latestOfferInput,
+    });
 
-    if (latestOfferContentChanged) {
+    if (latestOfferContentChanged || latestOfferObservationChanged) {
       await upsertCommerceOfferLatestRecordFn({
         input: latestOfferInput,
       });

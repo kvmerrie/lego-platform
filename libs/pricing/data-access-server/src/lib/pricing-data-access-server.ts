@@ -63,6 +63,7 @@ export interface CommerceLatestOfferHistoryInput {
   latestOffer?: {
     availability?: string;
     currencyCode?: string;
+    fetchedAt?: string;
     fetchStatus?: string;
     observedAt?: string;
     priceMinor?: number;
@@ -113,8 +114,18 @@ export interface CommerceLatestOfferHistorySummary {
   trustedOfferCount?: number;
   historyPointsFromTrusted?: number;
   ignoredForConfidenceCount?: number;
+  staleOrErrorSamples?: CommerceLatestOfferHistoryStaleSample[];
   unitTypeCounts?: Record<string, number>;
   validationStatusCounts?: Record<string, number>;
+}
+
+export interface CommerceLatestOfferHistoryStaleSample {
+  fetchedAt?: string;
+  fetchStatus?: string;
+  merchantSlug?: string;
+  observedAt?: string;
+  reason: 'fetch_status' | 'observed_at_too_old';
+  setId: string;
 }
 
 export interface BuildDailyPriceHistoryPointsFromCommerceLatestOffersResult {
@@ -152,6 +163,7 @@ interface CommerceLatestOfferHistoryCandidate {
 }
 
 export const DEFAULT_COMMERCE_LATEST_OFFER_HISTORY_MAX_AGE_HOURS = 48;
+const COMMERCE_LATEST_OFFER_HISTORY_STALE_SAMPLE_LIMIT = 12;
 
 function toRecordedOn(now?: Date): string {
   return (now ?? new Date()).toISOString().slice(0, 10);
@@ -169,6 +181,33 @@ function createEmptyCommerceLatestOfferHistorySkipCounts(): CommerceLatestOfferH
     untrustedMerchant: 0,
     unavailableForHeadline: 0,
   };
+}
+
+function appendCommerceLatestOfferHistoryStaleSample({
+  latestOffer,
+  merchantSlug,
+  samples,
+  reason,
+  setId,
+}: {
+  latestOffer: NonNullable<CommerceLatestOfferHistoryInput['latestOffer']>;
+  merchantSlug?: string;
+  samples: CommerceLatestOfferHistoryStaleSample[];
+  reason: CommerceLatestOfferHistoryStaleSample['reason'];
+  setId: string;
+}): void {
+  if (samples.length >= COMMERCE_LATEST_OFFER_HISTORY_STALE_SAMPLE_LIMIT) {
+    return;
+  }
+
+  samples.push({
+    fetchedAt: latestOffer.fetchedAt,
+    fetchStatus: latestOffer.fetchStatus,
+    merchantSlug,
+    observedAt: latestOffer.observedAt,
+    reason,
+    setId,
+  });
 }
 
 function incrementCommerceHistoryCount(
@@ -474,6 +513,7 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
   const availabilityCounts: Record<string, number> = {};
   const fetchStatusCounts: Record<string, number> = {};
   const merchantSlugCounts: Record<string, number> = {};
+  const staleOrErrorSamples: CommerceLatestOfferHistoryStaleSample[] = [];
   const unitTypeCounts: Record<string, number> = {};
   const validationStatusCounts: Record<string, number> = {};
   const bestCandidateBySetId = new Map<
@@ -551,6 +591,13 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
 
     if (latestOffer.fetchStatus !== 'success') {
       skipped.staleOrError += 1;
+      appendCommerceLatestOfferHistoryStaleSample({
+        latestOffer,
+        merchantSlug: merchant?.slug,
+        reason: 'fetch_status',
+        samples: staleOrErrorSamples,
+        setId: offerSeed.setId,
+      });
       continue;
     }
 
@@ -581,6 +628,13 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       })
     ) {
       skipped.staleOrError += 1;
+      appendCommerceLatestOfferHistoryStaleSample({
+        latestOffer,
+        merchantSlug: merchant?.slug,
+        reason: 'observed_at_too_old',
+        samples: staleOrErrorSamples,
+        setId: offerSeed.setId,
+      });
       continue;
     }
 
@@ -674,6 +728,7 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       strategicManualOfferCount,
       skipped,
       excludedUnitMismatchCount,
+      staleOrErrorSamples,
       trustedOfferCount,
       historyPointsFromTrusted: points.length,
       ignoredForConfidenceCount,

@@ -104,7 +104,7 @@ describe('alternate affiliate feed server', () => {
     });
   });
 
-  test('does not report changed sets or write latest offers when feed content is unchanged', async () => {
+  test('refreshes checked timestamps without reporting changed sets when feed content is unchanged', async () => {
     const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();
     const upsertCommerceOfferLatestRecordFn = vi.fn();
 
@@ -190,7 +190,17 @@ describe('alternate affiliate feed server', () => {
     });
 
     expect(upsertCommerceOfferSeedByCompositeKeyFn).not.toHaveBeenCalled();
-    expect(upsertCommerceOfferLatestRecordFn).not.toHaveBeenCalled();
+    expect(upsertCommerceOfferLatestRecordFn).toHaveBeenCalledWith({
+      input: {
+        offerSeedId: 'seed-10316-alternate',
+        fetchStatus: 'success',
+        priceMinor: 29999,
+        currencyCode: 'EUR',
+        availability: 'in_stock',
+        observedAt: '2026-04-24T09:15:00.000Z',
+        fetchedAt: '2026-04-24T09:15:00.000Z',
+      },
+    });
     expect(result).toMatchObject({
       changedSetIds: [],
       changedSetSlugs: [],
