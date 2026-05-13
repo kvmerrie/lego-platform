@@ -264,8 +264,8 @@ Note:
 
 - the catalog drift check in CI depends on `REBRICKABLE_API_KEY`
 - forked pull requests may not receive that secret, so the workflow is expected to skip only that one secret-backed check in those contexts
-- the normal MVP CI path does not need Supabase write credentials because `pnpm sync:commerce:check` is artifact-only
-- only add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to CI if you intentionally introduce a secret-backed commerce write job later
+- the commerce drift check reads Supabase aggregate data. CI skips it with a clear log when `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` is not configured, instead of comparing empty generated artifacts
+- local and pre-push commerce checks stay strict and fail fast when Supabase env is missing
 
 ### Production
 

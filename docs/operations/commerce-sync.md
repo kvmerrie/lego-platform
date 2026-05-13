@@ -170,6 +170,16 @@ values are missing, or the check loads zero seeds/latest rows, the command fails
 before comparing generated artifacts so operators do not chase a false stale
 artifact diff.
 
+In generic GitHub CI, the commerce check is skipped when Supabase service-role
+credentials are not configured. The workflow logs:
+
+```text
+Skipping commerce Supabase check: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not configured
+```
+
+This skip only applies to CI. Local/pre-push checks remain strict so real
+artifact drift is still caught when operator Supabase env is available.
+
 ## Operator Notes
 
 - The current slice is set-detail only.

@@ -45,8 +45,6 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
       REBRICKABLE_API_KEY: ${{ secrets.REBRICKABLE_API_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      SUPABASE_URL: ${{ vars.SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL }}
 
     steps:
       - name: Checkout
@@ -72,8 +70,6 @@ jobs:
         shell: bash
         run: |
           echo "HAS_SUPABASE_URL=$([[ -n "${NEXT_PUBLIC_SUPABASE_URL}" ]] && echo true || echo false)"
-          echo "HAS_SERVER_SUPABASE_URL=$([[ -n "${SUPABASE_URL}" ]] && echo true || echo false)"
-          echo "HAS_SUPABASE_SERVICE_ROLE_KEY=$([[ -n "${SUPABASE_SERVICE_ROLE_KEY}" ]] && echo true || echo false)"
           echo "HAS_REBRICKABLE_API_KEY=$([[ -n "${REBRICKABLE_API_KEY}" ]] && echo true || echo false)"
 
       - name: API tests
@@ -94,4 +90,16 @@ jobs:
         run: echo "Skipping pnpm sync:catalog:check because REBRICKABLE_API_KEY is not available in this workflow context."
 
       - name: Commerce sync drift check
-        run: pnpm sync:commerce:check
+        shell: bash
+        env:
+          COMMERCE_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          COMMERCE_SUPABASE_URL: ${{ vars.SUPABASE_URL || vars.NEXT_PUBLIC_SUPABASE_URL }}
+        run: |
+          if [[ -z "${COMMERCE_SUPABASE_URL}" || -z "${COMMERCE_SUPABASE_SERVICE_ROLE_KEY}" ]]; then
+            echo "Skipping commerce Supabase check: SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY not configured"
+            exit 0
+          fi
+
+          SUPABASE_URL="${COMMERCE_SUPABASE_URL}" \
+            SUPABASE_SERVICE_ROLE_KEY="${COMMERCE_SUPABASE_SERVICE_ROLE_KEY}" \
+            pnpm sync:commerce:check
