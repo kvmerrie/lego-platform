@@ -6,6 +6,14 @@ on:
       - main
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Deploy environment'
+        required: true
+        type: choice
+        default: production
+        options:
+          - production
+          - staging
       deploy_targets:
         description: 'Optional comma-separated manual targets, for example: web,api'
         required: false
@@ -22,6 +30,7 @@ on:
 jobs:
   route-and-deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'staging' && 'Production – lego-platform-web-staging' || 'Production – lego-platform-web-production' }}
     permissions:
       contents: read
 
@@ -103,7 +112,15 @@ jobs:
           --changed-files-file changed-files.txt
           --manual-targets "${{ inputs.deploy_targets }}"
 
-      - name: Trigger selected production deployments
+      - name: Log selected deploy environment
+        env:
+          DEPLOY_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'production' }}
+          DEPLOY_TARGETS: ${{ steps.route.outputs.targets }}
+        run: |
+          echo "[affected-deploy] deploy_environment=${DEPLOY_ENVIRONMENT}"
+          echo "[affected-deploy] deploy_targets=${DEPLOY_TARGETS}"
+
+      - name: Trigger selected deployments
         env:
           DEPLOY_TARGETS: ${{ steps.route.outputs.targets }}
           WEB_DEPLOY_HOOK_URL: ${{ secrets.WEB_DEPLOY_HOOK_URL }}

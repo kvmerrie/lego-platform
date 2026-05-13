@@ -33,7 +33,10 @@ It does not deploy all jobs.
 
 ## Manual deploys
 
-Use the `Affected Production Deploy` workflow dispatch action with `deploy_targets`.
+Use the `Affected Production Deploy` workflow dispatch action with:
+
+- `environment`: `production` or `staging`
+- `deploy_targets`: optional comma-separated targets
 
 Examples:
 
@@ -41,6 +44,8 @@ Examples:
 web
 api,web
 ```
+
+Manual dispatch defaults to `production`. Pushes to `main` always use the production GitHub Environment.
 
 Manual targets override affected detection. Unknown target names fail before any deploy hook is called.
 Only `web` and `api` are supported manual targets for now.
@@ -85,6 +90,11 @@ Set deploy hook secrets only for services that should be deployable by this work
 
 - `WEB_DEPLOY_HOOK_URL`
 - `API_DEPLOY_HOOK_URL`
+
+These secrets are read from the selected GitHub Environment:
+
+- `Production – lego-platform-web-production` for production deploys and `main` pushes
+- `Production – lego-platform-web-staging` for manual staging deploys
 
 If a selected target has no hook configured, the workflow fails visibly.
 
