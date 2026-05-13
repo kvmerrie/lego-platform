@@ -46,6 +46,7 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'source',
     'source_set_number',
     'source_theme_id',
+    'status',
   ],
   [CATALOG_SOURCE_THEMES_TABLE]: [
     'parent_source_theme_id',
@@ -395,6 +396,18 @@ function countRowsWithInvalidPromotionBoolean({
   ).length;
 }
 
+function countRowsWithInvalidPromotionString({
+  column,
+  rows,
+}: {
+  column: string;
+  rows: readonly Readonly<Record<string, unknown>>[];
+}): number {
+  return rows.filter(
+    (row) => readOptionalPromotionString(row[column]) === undefined,
+  ).length;
+}
+
 function sanitizePromotionUpsertTimestamps({
   nowIso,
   rows,
@@ -453,6 +466,33 @@ function logCatalogThemeIsPublicNormalization({
     }),
     nullOrMissingIsPublicBeforeNormalize: nullOrMissingBefore,
     table: CATALOG_THEMES_TABLE,
+  });
+}
+
+function logCatalogSetStatusNormalization({
+  rowsAfter,
+  rowsBefore,
+}: {
+  rowsAfter: readonly Readonly<Record<string, unknown>>[];
+  rowsBefore: readonly Readonly<Record<string, unknown>>[];
+}): void {
+  const nullOrMissingBefore = countRowsWithInvalidPromotionString({
+    column: 'status',
+    rows: rowsBefore,
+  });
+
+  if (nullOrMissingBefore === 0) {
+    return;
+  }
+
+  console.info('[catalog-promotion] catalog set status payload normalized', {
+    inputRows: rowsBefore.length,
+    nullOrMissingStatusAfterNormalize: countRowsWithInvalidPromotionString({
+      column: 'status',
+      rows: rowsAfter,
+    }),
+    nullOrMissingStatusBeforeNormalize: nullOrMissingBefore,
+    table: CATALOG_SETS_TABLE,
   });
 }
 
@@ -563,6 +603,7 @@ function normalizeCatalogSetRow(catalogSet: CatalogSetRow): CatalogSetRow {
     name,
     set_id: setId,
     slug: normalizedSlug,
+    status: readOptionalPromotionString(catalogSet.status) ?? 'active',
   };
 }
 
@@ -1325,6 +1366,12 @@ export async function promoteCatalogFromStagingToProduction({
         row: normalizeCatalogSetRow(catalogSet),
       }),
     );
+    logCatalogSetStatusNormalization({
+      rowsAfter: normalizedCatalogSets as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      rowsBefore: catalogSets as unknown as Readonly<Record<string, unknown>>[],
+    });
     const normalizedCommerceMerchants = commerceMerchants.map((merchant) =>
       normalizePromotionTimestamps({
         nowIso: startedAtIso,
@@ -1394,6 +1441,8 @@ export async function promoteCatalogFromStagingToProduction({
         'source_set_number',
         'slug',
         'name',
+        'source_theme_id',
+        'primary_theme_id',
         'source',
         'status',
         'created_at',

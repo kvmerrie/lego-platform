@@ -42,6 +42,19 @@ begin
 end;
 $$;
 
+create or replace function public.set_missing_catalog_set_status()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.status is null or btrim(new.status) = '' then
+    new.status = 'active';
+  end if;
+
+  return new;
+end;
+$$;
+
 create table if not exists public.profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   display_name text not null,
@@ -347,6 +360,13 @@ create trigger set_catalog_sets_updated_at
 before update on public.catalog_sets
 for each row
 execute function public.set_updated_at();
+
+drop trigger if exists set_catalog_sets_missing_status
+on public.catalog_sets;
+create trigger set_catalog_sets_missing_status
+before insert or update on public.catalog_sets
+for each row
+execute function public.set_missing_catalog_set_status();
 
 drop trigger if exists set_commerce_merchants_updated_at
 on public.commerce_merchants;

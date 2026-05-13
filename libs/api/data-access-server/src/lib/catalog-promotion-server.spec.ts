@@ -1214,6 +1214,7 @@ describe('catalog promotion server', () => {
           source: 'rebrickable',
           source_set_number: '10316-1',
           source_theme_id: 'rebrickable-theme-icons',
+          status: 'inactive',
         },
       ],
       {
@@ -1279,6 +1280,132 @@ describe('catalog promotion server', () => {
         onConflict: 'set_id',
       },
     );
+  });
+
+  test('preserves catalog set status and normalizes null or missing status to active', async () => {
+    const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
+      // Keep promotion diagnostics out of the test output.
+    });
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [],
+        catalog_theme_mappings: [],
+        catalog_sets: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            image_url: null,
+            name: 'Active Set',
+            piece_count: 100,
+            primary_theme_id: 'icons',
+            release_year: 2026,
+            set_id: '10000',
+            slug: 'active-set-10000',
+            source: 'rebrickable',
+            source_set_number: '10000-1',
+            source_theme_id: 'rebrickable-theme-icons',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:01:00.000Z',
+            image_url: null,
+            name: 'Inactive Set',
+            piece_count: 101,
+            primary_theme_id: 'icons',
+            release_year: 2026,
+            set_id: '10001',
+            slug: 'inactive-set-10001',
+            source: 'rebrickable',
+            source_set_number: '10001-1',
+            source_theme_id: 'rebrickable-theme-icons',
+            status: 'inactive',
+            updated_at: '2026-04-21T08:01:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:02:00.000Z',
+            image_url: null,
+            name: 'Null Status Set',
+            piece_count: 102,
+            primary_theme_id: 'icons',
+            release_year: 2026,
+            set_id: '10002',
+            slug: 'null-status-set-10002',
+            source: 'rebrickable',
+            source_set_number: '10002-1',
+            source_theme_id: 'rebrickable-theme-icons',
+            status: null,
+            updated_at: '2026-04-21T08:02:00.000Z',
+          },
+          {
+            created_at: '2026-04-21T08:03:00.000Z',
+            image_url: null,
+            name: 'Missing Status Set',
+            piece_count: 103,
+            primary_theme_id: 'icons',
+            release_year: 2026,
+            set_id: '10003',
+            slug: 'missing-status-set-10003',
+            source: 'rebrickable',
+            source_set_number: '10003-1',
+            source_theme_id: 'rebrickable-theme-icons',
+            updated_at: '2026-04-21T08:03:00.000Z',
+          },
+        ],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {},
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_sets'),
+    ).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          set_id: '10000',
+          status: 'active',
+        }),
+        expect.objectContaining({
+          set_id: '10001',
+          status: 'inactive',
+        }),
+        expect.objectContaining({
+          set_id: '10002',
+          status: 'active',
+        }),
+        expect.objectContaining({
+          set_id: '10003',
+          status: 'active',
+        }),
+      ],
+      {
+        onConflict: 'set_id',
+      },
+    );
+    expect(consoleInfoSpy).toHaveBeenCalledWith(
+      '[catalog-promotion] catalog set status payload normalized',
+      expect.objectContaining({
+        inputRows: 4,
+        nullOrMissingStatusAfterNormalize: 0,
+        nullOrMissingStatusBeforeNormalize: 2,
+        table: 'catalog_sets',
+      }),
+    );
+
+    consoleInfoSpy.mockRestore();
   });
 
   test('keeps catalog set update payload slugs non-null for existing production rows', async () => {
