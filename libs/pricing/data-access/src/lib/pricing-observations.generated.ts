@@ -4062,6 +4062,17 @@ const pricingObservationsPayload = String.raw`[
     "observedAt": "2026-05-12T06:36:13.249Z"
   },
   {
+    "setId": "10989",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 3995,
+    "availability": "in_stock",
+    "commercialUnitType": "full_set",
+    "observedAt": "2026-05-12T21:53:31.933Z"
+  },
+  {
     "setId": "10992",
     "merchantId": "alternate",
     "regionCode": "NL",
@@ -21520,17 +21531,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71039",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 595,
-    "availability": "in_stock",
-    "commercialUnitType": "unknown",
-    "observedAt": "2026-05-12T18:25:58.657Z"
-  },
-  {
-    "setId": "71039",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21539,6 +21539,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "unknown",
     "observedAt": "2026-05-11T12:10:57.772Z"
+  },
+  {
+    "setId": "71039",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19995,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-05-12T21:53:31.933Z"
   },
   {
     "setId": "71049",
@@ -21557,10 +21568,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 5995,
+    "totalPriceMinor": 19995,
     "availability": "in_stock",
-    "commercialUnitType": "display_box",
-    "observedAt": "2026-05-12T18:25:58.657Z"
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-05-12T21:53:31.933Z"
   },
   {
     "setId": "71050",
@@ -21575,17 +21586,6 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71050",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 5995,
-    "availability": "in_stock",
-    "commercialUnitType": "display_box",
-    "observedAt": "2026-05-12T18:25:58.657Z"
-  },
-  {
-    "setId": "71050",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21594,6 +21594,17 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "unknown",
     "observedAt": "2026-05-12T18:11:21.501Z"
+  },
+  {
+    "setId": "71050",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 19995,
+    "availability": "in_stock",
+    "commercialUnitType": "unknown",
+    "observedAt": "2026-05-12T21:53:31.933Z"
   },
   {
     "setId": "71051",
@@ -21619,6 +21630,17 @@ const pricingObservationsPayload = String.raw`[
   },
   {
     "setId": "71051",
+    "merchantId": "goodbricks",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "totalPriceMinor": 4995,
+    "availability": "in_stock",
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-05-12T21:53:31.933Z"
+  },
+  {
+    "setId": "71051",
     "merchantId": "misterbricks",
     "regionCode": "NL",
     "currencyCode": "EUR",
@@ -21627,17 +21649,6 @@ const pricingObservationsPayload = String.raw`[
     "availability": "in_stock",
     "commercialUnitType": "unknown",
     "observedAt": "2026-05-12T18:11:21.501Z"
-  },
-  {
-    "setId": "71051",
-    "merchantId": "goodbricks",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "totalPriceMinor": 12995,
-    "availability": "in_stock",
-    "commercialUnitType": "unknown",
-    "observedAt": "2026-05-12T18:25:58.657Z"
   },
   {
     "setId": "71052",
@@ -21656,10 +21667,10 @@ const pricingObservationsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "totalPriceMinor": 11896,
+    "totalPriceMinor": 4495,
     "availability": "in_stock",
-    "commercialUnitType": "unknown",
-    "observedAt": "2026-05-12T18:25:58.657Z"
+    "commercialUnitType": "display_box",
+    "observedAt": "2026-05-12T21:53:31.933Z"
   },
   {
     "setId": "71390",

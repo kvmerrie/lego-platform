@@ -1,0 +1,120 @@
+name: Affected Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_targets:
+        description: 'Optional comma-separated manual targets, for example: web,api,commerce-sync'
+        required: false
+        type: string
+      base_ref:
+        description: 'Optional base ref/SHA for affected detection'
+        required: false
+        type: string
+      head_ref:
+        description: 'Optional head ref/SHA for affected detection'
+        required: false
+        type: string
+
+jobs:
+  route-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve affected range
+        id: range
+        shell: bash
+        env:
+          DISPATCH_BASE_REF: ${{ inputs.base_ref }}
+          DISPATCH_HEAD_REF: ${{ inputs.head_ref }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          HEAD_REF="${DISPATCH_HEAD_REF:-HEAD}"
+          BASE_REF="${DISPATCH_BASE_REF:-${PUSH_BEFORE_SHA:-}}"
+
+          if [[ -z "${BASE_REF}" || "${BASE_REF}" =~ ^0+$ ]]; then
+            BASE_REF="$(git rev-parse "${HEAD_REF}~1")"
+          fi
+
+          echo "base_ref=${BASE_REF}" >> "${GITHUB_OUTPUT}"
+          echo "head_ref=${HEAD_REF}" >> "${GITHUB_OUTPUT}"
+          echo "[affected-deploy] base_ref=${BASE_REF} head_ref=${HEAD_REF}"
+
+      - name: List changed files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "${{ steps.range.outputs.base_ref }}" "${{ steps.range.outputs.head_ref }}" > changed-files.txt
+          echo "[affected-deploy] changed files:"
+          cat changed-files.txt
+
+      - name: Detect affected Nx projects
+        id: affected
+        shell: bash
+        run: |
+          set +e
+          pnpm nx show projects --affected --base="${{ steps.range.outputs.base_ref }}" --head="${{ steps.range.outputs.head_ref }}" > affected-projects.txt
+          status="$?"
+          set -e
+
+          if [[ "${status}" -ne 0 ]]; then
+            echo "uncertain=true" >> "${GITHUB_OUTPUT}"
+            : > affected-projects.txt
+            echo "[affected-deploy] Nx affected detection failed; falling back to api+web."
+          else
+            echo "uncertain=false" >> "${GITHUB_OUTPUT}"
+            echo "[affected-deploy] affected projects:"
+            cat affected-projects.txt
+          fi
+
+      - name: Route deployment targets
+        id: route
+        env:
+          AFFECTED_DETECTION_UNCERTAIN: ${{ steps.affected.outputs.uncertain }}
+        run: >
+          node scripts/affected-deployment-router.mjs route
+          --affected-projects-file affected-projects.txt
+          --changed-files-file changed-files.txt
+          --manual-targets "${{ inputs.deploy_targets }}"
+
+      - name: Trigger selected production deployments
+        env:
+          DEPLOY_TARGETS: ${{ steps.route.outputs.targets }}
+          WEB_DEPLOY_HOOK_URL: ${{ secrets.WEB_DEPLOY_HOOK_URL }}
+          API_DEPLOY_HOOK_URL: ${{ secrets.API_DEPLOY_HOOK_URL }}
+          COMMERCE_SYNC_DEPLOY_HOOK_URL: ${{ secrets.COMMERCE_SYNC_DEPLOY_HOOK_URL }}
+          ALTERNATE_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.ALTERNATE_FEED_SYNC_DEPLOY_HOOK_URL }}
+          AWIN_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.AWIN_FEED_SYNC_DEPLOY_HOOK_URL }}
+          COPPENSWARENHUIS_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.COPPENSWARENHUIS_FEED_SYNC_DEPLOY_HOOK_URL }}
+          GOODBRICKS_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.GOODBRICKS_FEED_SYNC_DEPLOY_HOOK_URL }}
+          LIDL_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.LIDL_FEED_SYNC_DEPLOY_HOOK_URL }}
+          MEDIAMARKT_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.MEDIAMARKT_FEED_SYNC_DEPLOY_HOOK_URL }}
+          MISTERBRICKS_FEED_SYNC_DEPLOY_HOOK_URL: ${{ secrets.MISTERBRICKS_FEED_SYNC_DEPLOY_HOOK_URL }}
+          WISHLIST_ALERTS_DEPLOY_HOOK_URL: ${{ secrets.WISHLIST_ALERTS_DEPLOY_HOOK_URL }}
+        run: node scripts/affected-deployment-router.mjs deploy

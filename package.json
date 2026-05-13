@@ -32,6 +32,7 @@
     "sync:discover:misterbricks-feed": "pnpm nx run misterbricks-feed-sync:run -- --discover-missing-sets",
     "cleanup:catalog-events": "pnpm nx run catalog-events-cleanup:run",
     "revalidate:public-web:post-deploy": "node scripts/post-deploy-public-web-revalidate.mjs",
+    "deploy:route:affected": "node scripts/affected-deployment-router.mjs route",
     "sync:commerce:check": "pnpm sync:commerce:local:check",
     "sync:commerce:local:check": "pnpm nx run commerce-sync:run -- --check",
     "alerts:wishlist:check": "pnpm nx run wishlist-alerts:run -- --check",

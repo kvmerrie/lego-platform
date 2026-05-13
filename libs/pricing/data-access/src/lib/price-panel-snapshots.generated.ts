@@ -1403,7 +1403,7 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "alternate",
     "lowestMerchantName": "Alternate",
-    "merchantCount": 3,
+    "merchantCount": 4,
     "observedAt": "2026-05-11T12:02:39.905Z"
   },
   {
@@ -7471,39 +7471,27 @@ const pricePanelSnapshotsPayload = String.raw`[
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 595,
+    "headlinePriceMinor": 12900,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
     "merchantCount": 2,
-    "observedAt": "2026-05-12T18:25:58.657Z"
+    "observedAt": "2026-05-11T12:10:57.772Z"
   },
   {
     "setId": "71049",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 5995,
+    "headlinePriceMinor": 375,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-12T18:25:58.657Z"
+    "lowestMerchantId": "misterbricks",
+    "lowestMerchantName": "MisterBricks",
+    "merchantCount": 2,
+    "observedAt": "2026-05-12T18:11:21.501Z"
   },
   {
     "setId": "71050",
-    "regionCode": "NL",
-    "currencyCode": "EUR",
-    "condition": "new",
-    "headlinePriceMinor": 5995,
-    "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "goodbricks",
-    "lowestMerchantName": "Goodbricks",
-    "merchantCount": 1,
-    "observedAt": "2026-05-12T18:25:58.657Z"
-  },
-  {
-    "setId": "71051",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
@@ -7511,20 +7499,32 @@ const pricePanelSnapshotsPayload = String.raw`[
     "lowestAvailabilityLabel": "In stock",
     "lowestMerchantId": "coppenswarenhuis",
     "lowestMerchantName": "Coppenswarenhuis",
-    "merchantCount": 4,
+    "merchantCount": 3,
     "observedAt": "2026-05-12T06:36:13.249Z"
+  },
+  {
+    "setId": "71051",
+    "regionCode": "NL",
+    "currencyCode": "EUR",
+    "condition": "new",
+    "headlinePriceMinor": 4995,
+    "lowestAvailabilityLabel": "In stock",
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-12T21:53:31.933Z"
   },
   {
     "setId": "71052",
     "regionCode": "NL",
     "currencyCode": "EUR",
     "condition": "new",
-    "headlinePriceMinor": 395,
+    "headlinePriceMinor": 4495,
     "lowestAvailabilityLabel": "In stock",
-    "lowestMerchantId": "misterbricks",
-    "lowestMerchantName": "MisterBricks",
-    "merchantCount": 2,
-    "observedAt": "2026-05-12T18:11:21.501Z"
+    "lowestMerchantId": "goodbricks",
+    "lowestMerchantName": "Goodbricks",
+    "merchantCount": 1,
+    "observedAt": "2026-05-12T21:53:31.933Z"
   },
   {
     "setId": "71390",
