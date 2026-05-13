@@ -1130,6 +1130,16 @@ describe('admin editorial agent routes', () => {
 });
 
 describe('admin editorial agent catalog import', () => {
+  function createZeroPieceRefreshMock() {
+    return vi.fn(async () => ({
+      checkedCount: 0,
+      failedCount: 0,
+      stillUnknownCount: 0,
+      updatedCount: 0,
+      updatedSetIds: [],
+    }));
+  }
+
   test('imports a detected bare set number through the Rebrickable -1 variant and matches it for draft output', async () => {
     const importedSummaries: CatalogSetSummary[] = [];
     const rebrickableHerbieResult: CatalogExternalSetSearchResult = {
@@ -1162,11 +1172,13 @@ describe('admin editorial agent catalog import', () => {
         createdAt: '2026-05-01T08:00:00.000Z',
       };
     });
+    const refreshZeroPieceSets = createZeroPieceRefreshMock();
     const service = createAdminEditorialAgentService({
       createCatalogSet,
       hasRebrickableApiConfig: () => true,
       hasServerSupabaseConfig: () => true,
       listCatalogSetSummariesWithOverlay: vi.fn(async () => importedSummaries),
+      refreshZeroPieceSets,
       searchCatalogMissingSets,
     });
 
@@ -1184,6 +1196,10 @@ describe('admin editorial agent catalog import', () => {
     });
     expect(createCatalogSet).toHaveBeenCalledWith({
       input: rebrickableHerbieResult,
+    });
+    expect(refreshZeroPieceSets).toHaveBeenCalledWith({
+      limit: 1,
+      setIds: ['76339'],
     });
     expect(result.catalogImport.importedSets).toEqual([
       expect.objectContaining({
@@ -1252,11 +1268,13 @@ describe('admin editorial agent catalog import', () => {
         createdAt: '2026-05-01T08:00:00.000Z',
       };
     });
+    const refreshZeroPieceSets = createZeroPieceRefreshMock();
     const service = createAdminEditorialAgentService({
       createCatalogSet,
       hasRebrickableApiConfig: () => true,
       hasServerSupabaseConfig: () => true,
       listCatalogSetSummariesWithOverlay: vi.fn(async () => importedSummaries),
+      refreshZeroPieceSets,
       searchCatalogMissingSets,
     });
 
@@ -1276,6 +1294,10 @@ describe('admin editorial agent catalog import', () => {
     });
     expect(searchCatalogMissingSets).toHaveBeenNthCalledWith(2, {
       query: '76339-1',
+    });
+    expect(refreshZeroPieceSets).toHaveBeenCalledWith({
+      limit: 2,
+      setIds: ['76339', '76316'],
     });
     expect(result.catalogImport.importedSets).toEqual([
       expect.objectContaining({
@@ -1369,6 +1391,7 @@ describe('admin editorial agent catalog import', () => {
         title: 'Deze LEGO Ideas-projecten worden als set uitgebracht',
       },
     };
+    const refreshZeroPieceSets = createZeroPieceRefreshMock();
     const service = createAdminEditorialAgentService({
       hasRebrickableApiConfig: () => false,
       hasServerSupabaseConfig: () => true,
@@ -1382,6 +1405,7 @@ describe('admin editorial agent catalog import', () => {
           theme: 'Ideas',
         },
       ]),
+      refreshZeroPieceSets,
     });
 
     const result = await service.generateDraft({
@@ -1395,6 +1419,7 @@ describe('admin editorial agent catalog import', () => {
     );
     expect(result.effectiveExtraction.primarySet).toBeNull();
     expect(result.output.frontmatter.theme).toBe('Ideas');
+    expect(refreshZeroPieceSets).not.toHaveBeenCalled();
     expect(result.output.frontmatter.description).not.toContain('Home Alone');
     expect(result.output.mdx).not.toContain('Home Alone');
     expect(result.output.mdx).not.toContain('<FeaturedSet');
