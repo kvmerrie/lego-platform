@@ -4,6 +4,10 @@ import {
   searchCatalogMissingSets,
 } from '@lego-platform/catalog/data-access-server';
 import {
+  enrichCatalogSetMinifigSummariesBestEffort,
+  type EnrichCatalogSetMinifigSummariesFn,
+} from './catalog-minifig-onboarding-server';
+import {
   listCommerceAffiliateDiscoveredSets,
   upsertCommerceOfferLatestRecord,
   upsertCommerceOfferSeedByCompositeKey,
@@ -18,14 +22,17 @@ import type {
   CommerceAffiliateDiscoveredSetImportResult,
   CommerceAffiliateDiscoveredSetStatus,
 } from '@lego-platform/commerce/util';
+import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export interface ImportAffiliateDiscoveredSetsDependencies {
   createCatalogSetFn?: typeof createCatalogSet;
+  enrichCatalogSetMinifigSummariesFn?: EnrichCatalogSetMinifigSummariesFn;
   getNow?: () => Date;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   listDiscoveredSetsFn?: typeof listCommerceAffiliateDiscoveredSets;
   searchCatalogMissingSetsFn?: typeof searchCatalogMissingSets;
   sleepFn?: (durationMs: number) => Promise<void>;
+  revalidatePublicCatalogPathsFn?: typeof revalidatePublicCatalogPaths;
   updateDiscoveredSetReviewStateFn?: typeof updateCommerceAffiliateDiscoveredSetReviewState;
   upsertCommerceOfferLatestRecordFn?: typeof upsertCommerceOfferLatestRecord;
   upsertCommerceOfferSeedByCompositeKeyFn?: typeof upsertCommerceOfferSeedByCompositeKey;
@@ -217,6 +224,20 @@ function groupDiscoveredSetsBySetId(
   return discoveredSetsBySetId;
 }
 
+function isCatalogSetWithPublicSurface(
+  catalogSet: ResolvedCatalogSet,
+): catalogSet is Pick<CatalogSet, 'setId' | 'slug' | 'theme'> {
+  return (
+    typeof catalogSet.setId === 'string' &&
+    'slug' in catalogSet &&
+    typeof catalogSet.slug === 'string' &&
+    Boolean(catalogSet.slug.trim()) &&
+    'theme' in catalogSet &&
+    typeof catalogSet.theme === 'string' &&
+    Boolean(catalogSet.theme.trim())
+  );
+}
+
 export async function importAffiliateDiscoveredSets({
   dependencies = {},
   discoveredSetIds,
@@ -230,6 +251,7 @@ export async function importAffiliateDiscoveredSets({
 } = {}): Promise<CommerceAffiliateDiscoveredSetImportResult> {
   const {
     createCatalogSetFn = createCatalogSet,
+    enrichCatalogSetMinifigSummariesFn = enrichCatalogSetMinifigSummariesBestEffort,
     getNow = () => new Date(),
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
     listDiscoveredSetsFn = listCommerceAffiliateDiscoveredSets,
@@ -238,6 +260,7 @@ export async function importAffiliateDiscoveredSets({
       new Promise((resolve) => {
         setTimeout(resolve, durationMs);
       }),
+    revalidatePublicCatalogPathsFn = revalidatePublicCatalogPaths,
     updateDiscoveredSetReviewStateFn = updateCommerceAffiliateDiscoveredSetReviewState,
     upsertCommerceOfferLatestRecordFn = upsertCommerceOfferLatestRecord,
     upsertCommerceOfferSeedByCompositeKeyFn = upsertCommerceOfferSeedByCompositeKey,
@@ -309,6 +332,31 @@ export async function importAffiliateDiscoveredSets({
 
     if (catalogResolution.created) {
       createdCatalogSetCount += 1;
+
+      try {
+        const enrichment = await enrichCatalogSetMinifigSummariesFn({
+          setIds: [catalogResolution.catalogSet.setId],
+        });
+
+        if (
+          enrichment.changedSetIds.length > 0 &&
+          isCatalogSetWithPublicSurface(catalogResolution.catalogSet)
+        ) {
+          await revalidatePublicCatalogPathsFn({
+            includeDeals: false,
+            includeHome: false,
+            includeThemeDirectory: false,
+            reason: 'affiliate_discovered_set_minifig_enrichment',
+            targets: [catalogResolution.catalogSet],
+          });
+        }
+      } catch (error) {
+        console.warn(
+          error instanceof Error
+            ? error.message
+            : 'Catalog minifig enrichment failed after affiliate discovered set import.',
+        );
+      }
     } else {
       alreadyCatalogedCount += 1;
     }

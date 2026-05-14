@@ -24,6 +24,10 @@ import {
   runCommerceSync,
   type CommerceSyncRunResult,
 } from './commerce-sync-server';
+import {
+  enrichCatalogSetMinifigSummariesBestEffort,
+  type EnrichCatalogSetMinifigSummariesFn,
+} from './catalog-minifig-onboarding-server';
 import { revalidatePublicCatalogPaths } from './public-web-revalidation-server';
 
 export const catalogBulkOnboardingRunStatuses = [
@@ -198,6 +202,7 @@ export interface CatalogBulkOnboardingRunReadResult {
 
 export interface CatalogBulkOnboardingDependencies {
   createCatalogSetFn?: typeof createCatalogSet;
+  enrichCatalogSetMinifigSummariesFn?: EnrichCatalogSetMinifigSummariesFn;
   generateCommerceOfferSeedCandidatesFn?: typeof generateCommerceOfferSeedCandidates;
   getNow?: () => Date;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
@@ -785,6 +790,7 @@ export async function runCatalogBulkOnboarding({
 }): Promise<CatalogBulkOnboardingRunResult> {
   const {
     createCatalogSetFn = createCatalogSet,
+    enrichCatalogSetMinifigSummariesFn = enrichCatalogSetMinifigSummariesBestEffort,
     generateCommerceOfferSeedCandidatesFn = generateCommerceOfferSeedCandidates,
     getNow = () => new Date(),
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
@@ -927,6 +933,25 @@ export async function runCatalogBulkOnboarding({
         ).length,
         results: importResults,
       };
+      const createdSetIds = importResults.flatMap((result) =>
+        result.status === 'created' && result.catalogSetId
+          ? [result.catalogSetId]
+          : [],
+      );
+
+      if (createdSetIds.length > 0) {
+        try {
+          await enrichCatalogSetMinifigSummariesFn({
+            setIds: createdSetIds,
+          });
+        } catch (error) {
+          console.warn(
+            error instanceof Error
+              ? error.message
+              : 'Catalog minifig enrichment failed after bulk onboarding import.',
+          );
+        }
+      }
 
       completeStage({
         appliedSetIds: setIdsNeedingImport,

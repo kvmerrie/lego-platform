@@ -16,6 +16,11 @@ Promoted from staging:
   image URL, source, status
 - `catalog_themes`: id, slug, display name, status
 
+Generated enrichment promoted from staging:
+
+- `catalog_set_minifig_summaries`: one aggregate minifigure count per set,
+  keyed by `set_id`
+
 ### Curated/public presentation
 
 Promoted from staging:
@@ -37,6 +42,7 @@ Not manually promoted as source data:
 
 - `catalog_theme_summaries` is refreshed by `refresh_catalog_theme_summaries()`
   after theme or set promotion.
+- detailed `catalog_set_minifigs` rows are not promoted yet.
 - pricing history and latest offers are owned by feed jobs and `commerce-sync`.
 - generated TypeScript artifacts are owned by their sync jobs.
 
@@ -109,8 +115,6 @@ deploys. Pushes to `main` use affected routing.
 
 ## Known Risks
 
-- Promote currently does not expose changed theme slugs, so only `/themes` is
-  revalidated automatically.
 - Schema comparison uses known promoted columns through Supabase APIs. Use
   Supabase SQL editor for full `information_schema` checks when investigating
   deeper schema drift.

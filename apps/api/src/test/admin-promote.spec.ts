@@ -49,6 +49,12 @@ async function createAdminPromoteServer({
           updatedCount: 0,
           upsertedCount: 3,
         },
+        catalog_set_minifig_summaries: {
+          insertedCount: 0,
+          readCount: 0,
+          updatedCount: 0,
+          upsertedCount: 0,
+        },
         commerce_merchants: {
           insertedCount: 2,
           readCount: 2,
@@ -205,6 +211,12 @@ describe('admin promote routes', () => {
             updatedCount: 0,
             upsertedCount: 0,
           },
+          catalog_set_minifig_summaries: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
           commerce_merchants: {
             insertedCount: 0,
             readCount: 0,
@@ -288,6 +300,12 @@ describe('admin promote routes', () => {
             upsertedCount: 0,
           },
           catalog_sets: {
+            insertedCount: 0,
+            readCount: 0,
+            updatedCount: 0,
+            upsertedCount: 0,
+          },
+          catalog_set_minifig_summaries: {
             insertedCount: 0,
             readCount: 0,
             updatedCount: 0,

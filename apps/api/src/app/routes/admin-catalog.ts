@@ -7,6 +7,7 @@ import {
 import {
   type CatalogBulkOnboardingRunReadResult,
   type CatalogBulkOnboardingStartResult,
+  enrichCatalogSetMinifigSummariesBestEffort,
   getCatalogBulkOnboardingRun,
   getLatestCatalogBulkOnboardingRun,
   revalidatePublicWeb,
@@ -75,7 +76,16 @@ function createAdminCatalogService(): AdminCatalogService {
           workspaceRoot: process.cwd(),
         },
       }),
-    createSet: (input) => createCatalogSet({ input }),
+    createSet: async (input) => {
+      const catalogSet = await createCatalogSet({ input });
+
+      await enrichCatalogSetMinifigSummariesBestEffort({
+        logPrefix: '[admin-catalog]',
+        setIds: [catalogSet.setId],
+      });
+
+      return catalogSet;
+    },
     listCatalogSets: async () =>
       (await listCanonicalCatalogSets()).map((catalogSet) => ({
         createdAt: catalogSet.createdAt,

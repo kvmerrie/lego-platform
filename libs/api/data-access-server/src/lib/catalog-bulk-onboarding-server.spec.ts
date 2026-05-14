@@ -278,6 +278,14 @@ describe('catalog bulk onboarding server', () => {
       ...createdCatalogSet,
       theme: createdCatalogSet.primaryTheme,
     });
+    const enrichCatalogSetMinifigSummariesFn = vi.fn().mockResolvedValue({
+      changedSetIds: ['10316'],
+      changedSetSlugs: [createdCatalogSet.slug],
+      failedSetIds: [],
+      failedSets: 0,
+      processedSets: 1,
+      summariesUpserted: 1,
+    });
     const generateCommerceOfferSeedCandidatesFn = vi.fn().mockResolvedValue({
       candidateCount: 8,
       insertedCount: 4,
@@ -341,6 +349,7 @@ describe('catalog bulk onboarding server', () => {
     const result = await runCatalogBulkOnboarding({
       dependencies: {
         createCatalogSetFn,
+        enrichCatalogSetMinifigSummariesFn,
         generateCommerceOfferSeedCandidatesFn,
         listCanonicalCatalogSetsFn,
         listCommercePrimaryCoverageGapAuditFn,
@@ -358,6 +367,9 @@ describe('catalog bulk onboarding server', () => {
     });
 
     expect(createCatalogSetFn).toHaveBeenCalledTimes(1);
+    expect(enrichCatalogSetMinifigSummariesFn).toHaveBeenCalledWith({
+      setIds: ['10316'],
+    });
     expect(generateCommerceOfferSeedCandidatesFn).toHaveBeenCalledWith({
       filters: {
         setIds: ['10316', '21061'],
@@ -442,6 +454,14 @@ describe('catalog bulk onboarding server', () => {
     const startedRun = await startCatalogBulkOnboardingRun({
       dependencies: {
         createCatalogSetFn: vi.fn().mockResolvedValue(catalogSet),
+        enrichCatalogSetMinifigSummariesFn: vi.fn().mockResolvedValue({
+          changedSetIds: [],
+          changedSetSlugs: [],
+          failedSetIds: [],
+          failedSets: 0,
+          processedSets: 1,
+          summariesUpserted: 0,
+        }),
         generateCommerceOfferSeedCandidatesFn: vi
           .fn()
           .mockImplementation(async () => generatedSeedGate.promise),

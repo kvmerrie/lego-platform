@@ -63,6 +63,14 @@ pnpm sync:minifigs -- --after-set-id <next_after_set_id> --limit 100
 Use the `next_after_set_id` emitted at the end of each run as the next cursor.
 For a safer interrupted restart, combine the cursor with `--only-missing`.
 
+## New Set Onboarding
+
+Admin manual set creation, bulk onboarding, and affiliate discovered-set import
+trigger minifigure summary enrichment for the affected new set ids only. This is
+best-effort: Rebrickable failures are logged as warnings and do not fail the
+catalog import. Missing summaries remain safe and set pages simply hide the
+minifigure count until enrichment succeeds.
+
 ## Revalidation
 
 When write mode changes a set summary, the sync revalidates only the affected
@@ -92,6 +100,11 @@ curl -X POST "$WEB_BASE_URL/api/revalidate" \
 
 ## Ownership
 
-Minifigure enrichment syncs per environment from Rebrickable. It is not part of
-`promote/catalog`, and production should not be patched manually outside the
-sync unless a production incident requires an explicit reviewed SQL fix.
+Minifigure summary enrichment is generated data created in staging during
+onboarding or by `sync:minifigs`. `promote/catalog` copies
+`catalog_set_minifig_summaries` from staging to production by `set_id` so newly
+promoted sets keep their count. Detailed `catalog_set_minifigs` rows are not
+promoted yet.
+
+Production should not be patched manually outside the sync/promote flow unless a
+production incident requires an explicit reviewed SQL fix.

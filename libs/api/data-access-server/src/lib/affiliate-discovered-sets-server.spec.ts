@@ -96,6 +96,22 @@ describe('affiliate discovered sets import', () => {
       createOfferSeed(),
     );
     const upsertCommerceOfferLatestRecordFn = vi.fn(async () => undefined);
+    const enrichCatalogSetMinifigSummariesFn = vi.fn(async () => ({
+      changedSetIds: ['75313'],
+      changedSetSlugs: ['at-at-75313'],
+      failedSetIds: [],
+      failedSets: 0,
+      processedSets: 1,
+      summariesUpserted: 1,
+    }));
+    const revalidatePublicCatalogPathsFn = vi.fn(async () => ({
+      attempted: true,
+      pathCount: 1,
+      paths: ['/sets/at-at-75313'],
+      skipped: false,
+      tagCount: 2,
+      tags: ['set:75313', 'set:at-at-75313'],
+    }));
     const updateDiscoveredSetReviewStateFn = vi.fn(async () =>
       createDiscoveredSet({ status: 'imported', importedSetId: '75313' }),
     );
@@ -103,9 +119,11 @@ describe('affiliate discovered sets import', () => {
     const result = await importAffiliateDiscoveredSets({
       dependencies: {
         createCatalogSetFn,
+        enrichCatalogSetMinifigSummariesFn,
         getNow: () => new Date('2026-05-06T12:00:00.000Z'),
         listCanonicalCatalogSetsFn: vi.fn(async () => []),
         listDiscoveredSetsFn: vi.fn(async () => [createDiscoveredSet()]),
+        revalidatePublicCatalogPathsFn,
         searchCatalogMissingSetsFn: vi.fn(async () => [
           {
             setId: '75313',
@@ -142,6 +160,22 @@ describe('affiliate discovered sets import', () => {
         setId: '75313',
       }),
     });
+    expect(enrichCatalogSetMinifigSummariesFn).toHaveBeenCalledWith({
+      setIds: ['75313'],
+    });
+    expect(revalidatePublicCatalogPathsFn).toHaveBeenCalledWith({
+      includeDeals: false,
+      includeHome: false,
+      includeThemeDirectory: false,
+      reason: 'affiliate_discovered_set_minifig_enrichment',
+      targets: [
+        expect.objectContaining({
+          setId: '75313',
+          slug: 'at-at-75313',
+          theme: 'Star Wars',
+        }),
+      ],
+    });
     expect(upsertCommerceOfferLatestRecordFn).toHaveBeenCalledWith({
       input: expect.objectContaining({
         offerSeedId: 'seed-1',
@@ -155,6 +189,60 @@ describe('affiliate discovered sets import', () => {
       importedSetId: '75313',
       status: 'imported',
     });
+  });
+
+  test('does not fail import when minifig enrichment fails', async () => {
+    const result = await importAffiliateDiscoveredSets({
+      dependencies: {
+        createCatalogSetFn: vi.fn(async () => ({
+          setId: '75313',
+          sourceSetNumber: '75313-1',
+          slug: 'at-at-75313',
+          name: 'AT-AT',
+          theme: 'Star Wars',
+          pieces: 6785,
+          releaseYear: 2021,
+          source: 'rebrickable' as const,
+          status: 'active' as const,
+          createdAt: '2026-05-06T12:00:00.000Z',
+          updatedAt: '2026-05-06T12:00:00.000Z',
+        })),
+        enrichCatalogSetMinifigSummariesFn: vi.fn(async () => {
+          throw new Error('Rebrickable request failed (429).');
+        }),
+        getNow: () => new Date('2026-05-06T12:00:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn(async () => []),
+        listDiscoveredSetsFn: vi.fn(async () => [createDiscoveredSet()]),
+        revalidatePublicCatalogPathsFn: vi.fn(),
+        searchCatalogMissingSetsFn: vi.fn(async () => [
+          {
+            setId: '75313',
+            sourceSetNumber: '75313-1',
+            slug: 'at-at-75313',
+            name: 'AT-AT',
+            theme: 'Star Wars',
+            pieces: 6785,
+            releaseYear: 2021,
+            source: 'rebrickable',
+          },
+        ]),
+        updateDiscoveredSetReviewStateFn: vi.fn(async () =>
+          createDiscoveredSet({ status: 'imported', importedSetId: '75313' }),
+        ),
+        upsertCommerceOfferLatestRecordFn: vi.fn(async () => undefined),
+        upsertCommerceOfferSeedByCompositeKeyFn: vi.fn(async () =>
+          createOfferSeed(),
+        ),
+      },
+      highConfidenceOnly: true,
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        createdCatalogSetCount: 1,
+        importedCount: 1,
+      }),
+    );
   });
 
   test('prevents duplicate catalog creation when the set already exists', async () => {

@@ -16,11 +16,13 @@ import {
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
+const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const CATALOG_PROMOTION_PAGE_SIZE = 1000;
 const CATALOG_PROMOTION_DEFAULT_CAP_GUARDED_TABLES = new Set([
   CATALOG_SETS_TABLE,
+  CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
 ]);
 const CATALOG_PROMOTION_TIMESTAMPED_TABLES = new Set([
@@ -28,6 +30,7 @@ const CATALOG_PROMOTION_TIMESTAMPED_TABLES = new Set([
   CATALOG_THEMES_TABLE,
   CATALOG_THEME_MAPPINGS_TABLE,
   CATALOG_SETS_TABLE,
+  CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
   COMMERCE_MERCHANTS_TABLE,
   COMMERCE_BENCHMARK_SETS_TABLE,
   COMMERCE_OFFER_SEEDS_TABLE,
@@ -78,6 +81,14 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'status',
   ],
   [CATALOG_THEME_MAPPINGS_TABLE]: ['primary_theme_id'],
+  [CATALOG_SET_MINIFIG_SUMMARIES_TABLE]: [
+    'source_system',
+    'minifig_count',
+    'source_minifig_count',
+    'synced_at',
+    'created_at',
+    'updated_at',
+  ],
   commerce_benchmark_sets: [],
   // TODO(brickhunt): decide whether production commerce seed and merchant
   // operator fields should be promoted at all. Keep manual/protected columns
@@ -149,6 +160,12 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
     ],
     curated: [],
     generatedRuntime: [],
+    protected: ['created_at', 'updated_at'],
+  },
+  [CATALOG_SET_MINIFIG_SUMMARIES_TABLE]: {
+    canonical: ['set_id', 'source_system'],
+    curated: [],
+    generatedRuntime: ['minifig_count', 'source_minifig_count', 'synced_at'],
     protected: ['created_at', 'updated_at'],
   },
   [COMMERCE_MERCHANTS_TABLE]: {
@@ -229,6 +246,16 @@ interface CatalogSetRow {
   updated_at: string;
 }
 
+interface CatalogSetMinifigSummaryRow {
+  created_at: string;
+  minifig_count: number;
+  set_id: string;
+  source_minifig_count: number | null;
+  source_system: string;
+  synced_at: string;
+  updated_at: string;
+}
+
 interface CommerceMerchantRow {
   affiliate_network: string | null;
   created_at: string;
@@ -278,6 +305,7 @@ export interface CatalogPromotionResult {
     catalog_themes: CatalogPromotionTableSummary;
     catalog_theme_mappings: CatalogPromotionTableSummary;
     catalog_sets: CatalogPromotionTableSummary;
+    catalog_set_minifig_summaries: CatalogPromotionTableSummary;
     commerce_merchants: CatalogPromotionTableSummary;
     commerce_benchmark_sets: CatalogPromotionTableSummary;
     commerce_offer_seeds: CatalogPromotionTableSummary;
@@ -703,6 +731,43 @@ function normalizeCatalogSetRow(catalogSet: CatalogSetRow): CatalogSetRow {
     slug: normalizedSlug,
     status: readOptionalPromotionString(catalogSet.status) ?? 'active',
   };
+}
+
+function normalizeCatalogSetMinifigSummaryRow({
+  nowIso,
+  summary,
+}: {
+  nowIso: string;
+  summary: CatalogSetMinifigSummaryRow;
+}): CatalogSetMinifigSummaryRow {
+  const setId = readRequiredPromotionString({
+    column: 'set_id',
+    row: summary as unknown as Readonly<Record<string, unknown>>,
+    table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+  });
+
+  return normalizePromotionTimestamps({
+    nowIso,
+    row: {
+      ...summary,
+      minifig_count:
+        typeof summary.minifig_count === 'number' &&
+        Number.isInteger(summary.minifig_count) &&
+        summary.minifig_count >= 0
+          ? summary.minifig_count
+          : 0,
+      set_id: setId,
+      source_minifig_count:
+        typeof summary.source_minifig_count === 'number' &&
+        Number.isInteger(summary.source_minifig_count) &&
+        summary.source_minifig_count >= 0
+          ? summary.source_minifig_count
+          : null,
+      source_system:
+        readOptionalPromotionString(summary.source_system) ?? 'rebrickable',
+      synced_at: readOptionalPromotionString(summary.synced_at) ?? nowIso,
+    },
+  });
 }
 
 function validatePromotionRowsRequiredColumns({
@@ -1560,6 +1625,7 @@ export async function promoteCatalogFromStagingToProduction({
       catalogThemes,
       catalogThemeMappings,
       catalogSets,
+      catalogSetMinifigSummaries,
       commerceMerchants,
       commerceBenchmarkSets,
       commerceOfferSeeds,
@@ -1591,6 +1657,13 @@ export async function promoteCatalogFromStagingToProduction({
         supabaseClient: stagingSupabaseClient,
         table: CATALOG_SETS_TABLE,
       }),
+      readOrderedRows<CatalogSetMinifigSummaryRow>({
+        columns:
+          'set_id, source_system, minifig_count, source_minifig_count, synced_at, created_at, updated_at',
+        orderBy: 'set_id',
+        supabaseClient: stagingSupabaseClient,
+        table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+      }),
       readOrderedRows<CommerceMerchantRow>({
         columns:
           'id, slug, name, is_active, source_type, affiliate_network, notes, created_at, updated_at',
@@ -1620,6 +1693,10 @@ export async function promoteCatalogFromStagingToProduction({
     assertPromotionReadWasNotDefaultCapped({
       readCount: commerceOfferSeeds.length,
       table: COMMERCE_OFFER_SEEDS_TABLE,
+    });
+    assertPromotionReadWasNotDefaultCapped({
+      readCount: catalogSetMinifigSummaries.length,
+      table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
     });
 
     const normalizedCatalogSourceThemes = catalogSourceThemes.map((theme) =>
@@ -1653,6 +1730,13 @@ export async function promoteCatalogFromStagingToProduction({
         nowIso: startedAtIso,
         row: normalizeCatalogSetRow(catalogSet),
       }),
+    );
+    const normalizedCatalogSetMinifigSummaries = catalogSetMinifigSummaries.map(
+      (summary) =>
+        normalizeCatalogSetMinifigSummaryRow({
+          nowIso: startedAtIso,
+          summary,
+        }),
     );
     logCatalogSetStatusNormalization({
       rowsAfter: normalizedCatalogSets as unknown as Readonly<
@@ -1747,6 +1831,26 @@ export async function promoteCatalogFromStagingToProduction({
         Record<string, unknown>
       >[],
       table: CATALOG_SETS_TABLE,
+    });
+    validatePromotionRowsRequiredColumns({
+      columns: [
+        'set_id',
+        'source_system',
+        'synced_at',
+        'created_at',
+        'updated_at',
+      ],
+      rows: normalizedCatalogSetMinifigSummaries as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+    });
+    validatePromotionRowsRequiredNumberColumns({
+      columns: ['minifig_count'],
+      rows: normalizedCatalogSetMinifigSummaries as unknown as Readonly<
+        Record<string, unknown>
+      >[],
+      table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
     });
     validatePromotionRowsRequiredColumns({
       columns: [
@@ -1847,6 +1951,13 @@ export async function promoteCatalogFromStagingToProduction({
       supabaseClient: productionSupabaseClient,
       table: CATALOG_SETS_TABLE,
     });
+    tables.catalog_set_minifig_summaries = await upsertRows({
+      nowIso: startedAtIso,
+      onConflict: 'set_id',
+      rows: normalizedCatalogSetMinifigSummaries,
+      supabaseClient: productionSupabaseClient,
+      table: CATALOG_SET_MINIFIG_SUMMARIES_TABLE,
+    });
 
     if (
       tables.catalog_themes.upsertedCount > 0 ||
@@ -1889,7 +2000,7 @@ export async function promoteCatalogFromStagingToProduction({
         ? error.message
         : 'Catalog promotion failed unexpectedly.';
     const failedTableMatch = message.match(
-      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
+      /(catalog_source_themes|catalog_themes|catalog_theme_mappings|catalog_sets|catalog_set_minifig_summaries|commerce_merchants|commerce_benchmark_sets|commerce_offer_seeds)/,
     );
 
     throw new CatalogPromotionError(message, {

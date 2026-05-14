@@ -183,6 +183,17 @@ describe('catalog promotion server', () => {
             updated_at: '2026-04-21T08:00:00.000Z',
           },
         ],
+        catalog_set_minifig_summaries: [
+          {
+            created_at: '2026-05-14T10:00:00.000Z',
+            minifig_count: 15,
+            set_id: '10316',
+            source_minifig_count: 15,
+            source_system: 'rebrickable',
+            synced_at: '2026-05-14T10:00:00.000Z',
+            updated_at: '2026-05-14T10:00:00.000Z',
+          },
+        ],
         commerce_merchants: [
           {
             affiliate_network: null,
@@ -255,6 +266,12 @@ describe('catalog promotion server', () => {
       updatedCount: 0,
       upsertedCount: 1,
     });
+    expect(result.tables.catalog_set_minifig_summaries).toEqual({
+      insertedCount: 1,
+      readCount: 1,
+      updatedCount: 0,
+      upsertedCount: 1,
+    });
     expect(result.tables.commerce_merchants).toEqual({
       insertedCount: 0,
       readCount: 1,
@@ -284,6 +301,24 @@ describe('catalog promotion server', () => {
       ],
       {
         onConflict: 'slug',
+      },
+    );
+    expect(
+      productionClient.upsertByTable.get('catalog_set_minifig_summaries'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          created_at: '2026-05-14T10:00:00.000Z',
+          minifig_count: 15,
+          set_id: '10316',
+          source_minifig_count: 15,
+          source_system: 'rebrickable',
+          synced_at: '2026-05-14T10:00:00.000Z',
+          updated_at: '2026-05-14T10:00:00.000Z',
+        },
+      ],
+      {
+        onConflict: 'set_id',
       },
     );
     expect(
