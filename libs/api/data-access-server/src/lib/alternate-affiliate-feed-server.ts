@@ -3,6 +3,7 @@ import {
   createCommerceMerchant,
   listCommerceMerchants,
   listCommerceOfferSeeds,
+  markCommerceOfferLatestUnavailable,
   refreshCommerceOfferLatestObservation,
   upsertCommerceAffiliateDiscoveredSet,
   upsertCommerceOfferLatestRecord,
@@ -70,6 +71,13 @@ export interface AlternateAffiliateFeedImportResult {
   skippedUnmatchedSetCount: number;
   totalRowCount: number;
   unmatchedDebug?: AlternateAffiliateFeedUnmatchedDebugInfo;
+  latestRowsMarkedStaleCount: number;
+  latestRowsSeenCount: number;
+  staleMarkSkippedReason?:
+    | 'disabled'
+    | 'dry_run'
+    | 'merchant_created'
+    | 'no_confident_feed_matches';
   unchangedLatestRefreshSkippedCount: number;
   unchangedLatestTimestampRefreshedCount: number;
   upsertedLatestCount: number;
@@ -86,6 +94,7 @@ export interface AlternateAffiliateFeedImportDependencies {
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   listCommerceMerchantsFn?: typeof listCommerceMerchants;
   listCommerceOfferSeedsFn?: typeof listCommerceOfferSeeds;
+  markCommerceOfferLatestUnavailableFn?: typeof markCommerceOfferLatestUnavailable;
   refreshCommerceOfferLatestObservationFn?: typeof refreshCommerceOfferLatestObservation;
   upsertCommerceOfferLatestRecordFn?: typeof upsertCommerceOfferLatestRecord;
   upsertCommerceOfferSeedByCompositeKeyFn?: typeof upsertCommerceOfferSeedByCompositeKey;
@@ -97,6 +106,7 @@ export interface AlternateAffiliateFeedImportOptions {
   collectUnmatchedDebug?: boolean;
   discoverMissingSets?: boolean;
   dryRun?: boolean;
+  markUnseenLatestOffersUnavailable?: boolean;
   persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
 }
@@ -563,6 +573,7 @@ export async function importAffiliateFeedRowsForMerchant({
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
     listCommerceMerchantsFn = listCommerceMerchants,
     listCommerceOfferSeedsFn = listCommerceOfferSeeds,
+    markCommerceOfferLatestUnavailableFn = markCommerceOfferLatestUnavailable,
     refreshCommerceOfferLatestObservationFn = refreshCommerceOfferLatestObservation,
     upsertCommerceOfferLatestRecordFn = upsertCommerceOfferLatestRecord,
     upsertCommerceOfferSeedByCompositeKeyFn = upsertCommerceOfferSeedByCompositeKey,
@@ -621,6 +632,9 @@ export async function importAffiliateFeedRowsForMerchant({
   let skippedInvalidPriceCount = 0;
   let skippedInvalidDeeplinkCount = 0;
   let unchangedLatestRefreshSkippedCount = 0;
+  let staleMarkSkippedReason:
+    | AlternateAffiliateFeedImportResult['staleMarkSkippedReason']
+    | undefined;
   const unmatchedRowsBySetId = new Map<
     string,
     AlternateAffiliateFeedUnmatchedSetSummary
@@ -853,6 +867,42 @@ export async function importAffiliateFeedRowsForMerchant({
     }
   }
 
+  const staleLatestOfferSeedIds =
+    !options?.dryRun &&
+    !merchantCreated &&
+    options?.markUnseenLatestOffersUnavailable !== false &&
+    rows.length > 0 &&
+    matchedOfferSeedIds.size > 0
+      ? existingOfferSeeds
+          .filter(
+            (offerSeed) =>
+              offerSeed.merchantId === resolvedMerchant.id &&
+              offerSeed.isActive &&
+              offerSeed.validationStatus === 'valid' &&
+              offerSeed.latestOffer?.fetchStatus === 'success' &&
+              !matchedOfferSeedIds.has(offerSeed.id),
+          )
+          .map((offerSeed) => offerSeed.id)
+      : [];
+
+  let latestRowsMarkedStaleCount = 0;
+
+  if (staleLatestOfferSeedIds.length > 0) {
+    latestRowsMarkedStaleCount = await markCommerceOfferLatestUnavailableFn({
+      fetchedAt: observedAt,
+      observedAt,
+      offerSeedIds: staleLatestOfferSeedIds,
+    });
+  } else if (options?.dryRun) {
+    staleMarkSkippedReason = 'dry_run';
+  } else if (merchantCreated) {
+    staleMarkSkippedReason = 'merchant_created';
+  } else if (options?.markUnseenLatestOffersUnavailable === false) {
+    staleMarkSkippedReason = 'disabled';
+  } else if (rows.length === 0 || matchedOfferSeedIds.size === 0) {
+    staleMarkSkippedReason = 'no_confident_feed_matches';
+  }
+
   return {
     changedSetIds: [...changedSetIds].sort(),
     changedSetSlugs: [...changedSetIds]
@@ -876,6 +926,9 @@ export async function importAffiliateFeedRowsForMerchant({
     skippedNonNewCount,
     skippedUnmatchedSetCount,
     totalRowCount: rows.length,
+    latestRowsMarkedStaleCount,
+    latestRowsSeenCount: matchedOfferSeedIds.size,
+    ...(staleMarkSkippedReason ? { staleMarkSkippedReason } : {}),
     unchangedLatestRefreshSkippedCount,
     unchangedLatestTimestampRefreshedCount:
       timestampRefreshedLatestSeedIds.size,

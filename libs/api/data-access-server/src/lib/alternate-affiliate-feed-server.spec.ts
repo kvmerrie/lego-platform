@@ -105,6 +105,7 @@ describe('alternate affiliate feed server', () => {
   });
 
   test('refreshes checked timestamps without reporting changed sets when feed content is unchanged', async () => {
+    const markCommerceOfferLatestUnavailableFn = vi.fn();
     const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();
     const upsertCommerceOfferLatestRecordFn = vi.fn();
     const refreshCommerceOfferLatestObservationFn = vi.fn();
@@ -164,6 +165,7 @@ describe('alternate affiliate feed server', () => {
             },
           },
         ]),
+        markCommerceOfferLatestUnavailableFn,
         refreshCommerceOfferLatestObservationFn,
         updateCommerceMerchantFn: vi.fn().mockResolvedValue(existingMerchant),
         upsertCommerceOfferLatestRecordFn,
@@ -193,6 +195,7 @@ describe('alternate affiliate feed server', () => {
 
     expect(upsertCommerceOfferSeedByCompositeKeyFn).not.toHaveBeenCalled();
     expect(upsertCommerceOfferLatestRecordFn).not.toHaveBeenCalled();
+    expect(markCommerceOfferLatestUnavailableFn).not.toHaveBeenCalled();
     expect(refreshCommerceOfferLatestObservationFn).toHaveBeenCalledWith({
       offerSeedId: 'seed-10316-alternate',
       observedAt: '2026-04-24T09:15:00.000Z',
@@ -202,6 +205,8 @@ describe('alternate affiliate feed server', () => {
       changedSetIds: [],
       changedSetSlugs: [],
       changedLatestOfferCount: 0,
+      latestRowsMarkedStaleCount: 0,
+      latestRowsSeenCount: 1,
       importedOfferCount: 0,
       matchedOfferCount: 1,
       matchedCatalogSetCount: 1,
@@ -212,7 +217,231 @@ describe('alternate affiliate feed server', () => {
     });
   });
 
+  test('marks previously successful unseen merchant offers unavailable after a confident feed run', async () => {
+    const markCommerceOfferLatestUnavailableFn = vi.fn().mockResolvedValue(1);
+    const refreshCommerceOfferLatestObservationFn = vi.fn();
+    const existingMerchant = {
+      id: 'merchant-alternate',
+      slug: 'alternate',
+      name: 'Alternate',
+      isActive: true,
+      sourceType: 'affiliate',
+      affiliateNetwork: 'TradeTracker',
+      notes:
+        'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+      createdAt: '2026-04-22T09:00:00.000Z',
+      updatedAt: '2026-04-22T09:00:00.000Z',
+    } as const;
+
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        createCommerceMerchantFn: vi.fn(),
+        getNow: () => new Date('2026-04-24T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '10316',
+            slug: 'rivendell-10316',
+            sourceSetNumber: '10316-1',
+            status: 'active',
+          },
+          {
+            setId: '43300',
+            slug: 'wednesday-43300',
+            sourceSetNumber: '43300-1',
+            status: 'active',
+          },
+        ]),
+        listCommerceMerchantsFn: vi.fn().mockResolvedValue([existingMerchant]),
+        listCommerceOfferSeedsFn: vi.fn().mockResolvedValue([
+          {
+            id: 'seed-10316-alternate',
+            setId: '10316',
+            merchantId: 'merchant-alternate',
+            productUrl: 'https://clk.tradetracker.example/alternate/10316',
+            isActive: true,
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-24T08:00:00.000Z',
+            notes:
+              'Feed-driven Alternate import via TradeTracker. Exact matched by LEGO set number. Product title: LEGO Icons Rivendell.',
+            createdAt: '2026-04-22T09:00:00.000Z',
+            updatedAt: '2026-04-22T09:00:00.000Z',
+            latestOffer: {
+              id: 'latest-10316-alternate',
+              offerSeedId: 'seed-10316-alternate',
+              setId: '10316',
+              merchantId: 'merchant-alternate',
+              productUrl: 'https://clk.tradetracker.example/alternate/10316',
+              fetchStatus: 'success',
+              priceMinor: 29999,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              fetchedAt: '2026-04-24T08:00:00.000Z',
+              observedAt: '2026-04-24T08:00:00.000Z',
+              createdAt: '2026-04-22T09:00:00.000Z',
+              updatedAt: '2026-04-22T09:00:00.000Z',
+            },
+          },
+          {
+            id: 'seed-43300-alternate',
+            setId: '43300',
+            merchantId: 'merchant-alternate',
+            productUrl: 'https://clk.tradetracker.example/alternate/43300',
+            isActive: true,
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-24T08:00:00.000Z',
+            notes: '',
+            createdAt: '2026-04-22T09:00:00.000Z',
+            updatedAt: '2026-04-22T09:00:00.000Z',
+            latestOffer: {
+              id: 'latest-43300-alternate',
+              offerSeedId: 'seed-43300-alternate',
+              setId: '43300',
+              merchantId: 'merchant-alternate',
+              productUrl: 'https://clk.tradetracker.example/alternate/43300',
+              fetchStatus: 'success',
+              priceMinor: 12990,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              fetchedAt: '2026-05-08T18:01:37.786Z',
+              observedAt: '2026-05-08T18:01:37.786Z',
+              createdAt: '2026-04-22T09:00:00.000Z',
+              updatedAt: '2026-05-08T18:02:25.513Z',
+            },
+          },
+        ]),
+        markCommerceOfferLatestUnavailableFn,
+        refreshCommerceOfferLatestObservationFn,
+        updateCommerceMerchantFn: vi.fn().mockResolvedValue(existingMerchant),
+        upsertCommerceOfferLatestRecordFn: vi.fn(),
+        upsertCommerceOfferSeedByCompositeKeyFn: vi.fn(),
+      },
+      merchant: {
+        affiliateNetwork: 'TradeTracker',
+        name: 'Alternate',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+        sourceType: 'affiliate',
+        slug: 'alternate',
+      },
+      rows: [
+        {
+          affiliateDeeplink: 'https://clk.tradetracker.example/alternate/10316',
+          availabilityText: 'Op voorraad',
+          brand: 'LEGO',
+          condition: 'new',
+          currency: 'EUR',
+          legoSetNumber: '10316',
+          price: '299,99',
+          productTitle: 'LEGO Icons Rivendell',
+        },
+      ],
+    });
+
+    expect(markCommerceOfferLatestUnavailableFn).toHaveBeenCalledWith({
+      offerSeedIds: ['seed-43300-alternate'],
+      observedAt: '2026-04-24T09:15:00.000Z',
+      fetchedAt: '2026-04-24T09:15:00.000Z',
+    });
+    expect(refreshCommerceOfferLatestObservationFn).toHaveBeenCalledWith({
+      offerSeedId: 'seed-10316-alternate',
+      observedAt: '2026-04-24T09:15:00.000Z',
+      fetchedAt: '2026-04-24T09:15:00.000Z',
+    });
+    expect(result).toMatchObject({
+      changedSetIds: [],
+      changedSetSlugs: [],
+      latestRowsMarkedStaleCount: 1,
+      latestRowsSeenCount: 1,
+      unchangedLatestTimestampRefreshedCount: 1,
+    });
+  });
+
+  test('does not mark unseen offers stale for partial or empty feed runs', async () => {
+    const markCommerceOfferLatestUnavailableFn = vi.fn();
+    const existingMerchant = {
+      id: 'merchant-alternate',
+      slug: 'alternate',
+      name: 'Alternate',
+      isActive: true,
+      sourceType: 'affiliate',
+      affiliateNetwork: 'TradeTracker',
+      notes:
+        'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+      createdAt: '2026-04-22T09:00:00.000Z',
+      updatedAt: '2026-04-22T09:00:00.000Z',
+    } as const;
+
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        createCommerceMerchantFn: vi.fn(),
+        getNow: () => new Date('2026-04-24T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '43300',
+            slug: 'wednesday-43300',
+            sourceSetNumber: '43300-1',
+            status: 'active',
+          },
+        ]),
+        listCommerceMerchantsFn: vi.fn().mockResolvedValue([existingMerchant]),
+        listCommerceOfferSeedsFn: vi.fn().mockResolvedValue([
+          {
+            id: 'seed-43300-alternate',
+            setId: '43300',
+            merchantId: 'merchant-alternate',
+            productUrl: 'https://clk.tradetracker.example/alternate/43300',
+            isActive: true,
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-24T08:00:00.000Z',
+            notes: '',
+            createdAt: '2026-04-22T09:00:00.000Z',
+            updatedAt: '2026-04-22T09:00:00.000Z',
+            latestOffer: {
+              id: 'latest-43300-alternate',
+              offerSeedId: 'seed-43300-alternate',
+              setId: '43300',
+              merchantId: 'merchant-alternate',
+              productUrl: 'https://clk.tradetracker.example/alternate/43300',
+              fetchStatus: 'success',
+              priceMinor: 12990,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              fetchedAt: '2026-05-08T18:01:37.786Z',
+              observedAt: '2026-05-08T18:01:37.786Z',
+              createdAt: '2026-04-22T09:00:00.000Z',
+              updatedAt: '2026-05-08T18:02:25.513Z',
+            },
+          },
+        ]),
+        markCommerceOfferLatestUnavailableFn,
+        updateCommerceMerchantFn: vi.fn().mockResolvedValue(existingMerchant),
+        upsertCommerceOfferLatestRecordFn: vi.fn(),
+        upsertCommerceOfferSeedByCompositeKeyFn: vi.fn(),
+      },
+      merchant: {
+        affiliateNetwork: 'TradeTracker',
+        name: 'Alternate',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+        sourceType: 'affiliate',
+        slug: 'alternate',
+      },
+      options: {
+        markUnseenLatestOffersUnavailable: false,
+      },
+      rows: [],
+    });
+
+    expect(markCommerceOfferLatestUnavailableFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      latestRowsMarkedStaleCount: 0,
+      latestRowsSeenCount: 0,
+      staleMarkSkippedReason: 'disabled',
+    });
+  });
+
   test('updates changed feed content and reports changed sets for revalidation', async () => {
+    const markCommerceOfferLatestUnavailableFn = vi.fn();
     const upsertCommerceOfferSeedByCompositeKeyFn = vi.fn();
     const upsertCommerceOfferLatestRecordFn = vi.fn();
     const refreshCommerceOfferLatestObservationFn = vi.fn();
@@ -272,6 +501,7 @@ describe('alternate affiliate feed server', () => {
             },
           },
         ]),
+        markCommerceOfferLatestUnavailableFn,
         refreshCommerceOfferLatestObservationFn,
         updateCommerceMerchantFn: vi.fn().mockResolvedValue(existingMerchant),
         upsertCommerceOfferLatestRecordFn,
@@ -300,6 +530,7 @@ describe('alternate affiliate feed server', () => {
     });
 
     expect(refreshCommerceOfferLatestObservationFn).not.toHaveBeenCalled();
+    expect(markCommerceOfferLatestUnavailableFn).not.toHaveBeenCalled();
     expect(upsertCommerceOfferLatestRecordFn).toHaveBeenCalledWith({
       input: expect.objectContaining({
         offerSeedId: 'seed-10316-alternate',
@@ -310,6 +541,8 @@ describe('alternate affiliate feed server', () => {
       changedSetIds: ['10316'],
       changedSetSlugs: ['rivendell-10316'],
       changedLatestOfferCount: 1,
+      latestRowsMarkedStaleCount: 0,
+      latestRowsSeenCount: 1,
       matchedOfferCount: 1,
       unchangedLatestTimestampRefreshedCount: 0,
       unchangedLatestRefreshSkippedCount: 0,

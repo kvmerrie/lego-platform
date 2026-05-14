@@ -9,6 +9,7 @@ import {
   listActiveCommerceRefreshSeeds,
   listCommerceBenchmarkSets,
   listCommerceOfferSeeds,
+  markCommerceOfferLatestUnavailable,
   upsertCommerceAffiliateDiscoveredSet,
   upsertCommerceOfferSeedByCompositeKey,
   updateCommerceOfferSeedValidationState,
@@ -1097,6 +1098,34 @@ describe('commerce data access server', () => {
         onConflict: 'offer_seed_id',
       },
     );
+  });
+
+  test('marks unseen latest offer records unavailable without deleting prices', async () => {
+    const inFilter = vi.fn().mockResolvedValue({ error: null });
+    const update = vi.fn(() => ({ in: inFilter }));
+    const from = vi.fn(() => ({ update }));
+
+    const result = await markCommerceOfferLatestUnavailable({
+      fetchedAt: '2026-05-14T09:15:00.000Z',
+      observedAt: '2026-05-14T09:15:00.000Z',
+      offerSeedIds: ['seed-1', 'seed-1', 'seed-2'],
+      supabaseClient: { from } as never,
+    });
+
+    expect(result).toBe(2);
+    expect(from).toHaveBeenCalledWith('commerce_offer_latest');
+    expect(update).toHaveBeenCalledWith({
+      availability: 'out_of_stock',
+      fetch_status: 'unavailable',
+      observed_at: '2026-05-14T09:15:00.000Z',
+      fetched_at: '2026-05-14T09:15:00.000Z',
+      error_message:
+        'Offer was not present in the latest successful merchant feed run.',
+    });
+    expect(inFilter).toHaveBeenCalledWith('offer_seed_id', [
+      'seed-1',
+      'seed-2',
+    ]);
   });
 
   test('upserts offer seeds by set and merchant for feed-driven merchants', async () => {

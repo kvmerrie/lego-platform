@@ -1476,6 +1476,46 @@ export async function refreshCommerceOfferLatestObservation({
   }
 }
 
+export async function markCommerceOfferLatestUnavailable({
+  fetchedAt,
+  offerSeedIds,
+  observedAt,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  fetchedAt: string;
+  observedAt: string;
+  offerSeedIds: readonly string[];
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<number> {
+  const uniqueOfferSeedIds = [
+    ...new Set(offerSeedIds.map((offerSeedId) => offerSeedId.trim())),
+  ].filter(Boolean);
+
+  if (!uniqueOfferSeedIds.length) {
+    return 0;
+  }
+
+  const { error } = await supabaseClient
+    .from(COMMERCE_OFFER_LATEST_TABLE)
+    .update({
+      availability: 'out_of_stock',
+      fetch_status: 'unavailable',
+      observed_at: observedAt,
+      fetched_at: fetchedAt,
+      error_message:
+        'Offer was not present in the latest successful merchant feed run.',
+    })
+    .in('offer_seed_id', uniqueOfferSeedIds);
+
+  if (error) {
+    throw new Error(
+      'Unable to mark unseen commerce latest offers as unavailable.',
+    );
+  }
+
+  return uniqueOfferSeedIds.length;
+}
+
 export async function upsertCommerceOfferSeedByCompositeKey({
   input,
   supabaseClient = getServerSupabaseAdminClient(),
