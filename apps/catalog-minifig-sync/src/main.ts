@@ -5,15 +5,12 @@ import {
   runCatalogMinifigSync,
 } from '@lego-platform/catalog/data-access-server';
 import {
-  buildSetDetailPath,
-  cacheTags,
   getMissingRebrickableEnvKeys,
   getMissingServerSupabaseEnvKeys,
   hasRebrickableApiConfig,
   hasServerSupabaseConfig,
-  productEmailEnvKeys,
-  publicWebRevalidationEnvKeys,
 } from '@lego-platform/shared/config';
+import { revalidateCatalogMinifigSetPages } from './lib/catalog-minifig-revalidation';
 
 function getSyncMode(argv: readonly string[]): 'check' | 'write' {
   const hasCheckFlag = argv.includes('--check');
@@ -33,6 +30,7 @@ interface CatalogMinifigSyncCliOptions {
   onlyMissing: boolean;
   requestDelayMs: number;
   selectedSetIds?: readonly string[];
+  strictRevalidation: boolean;
 }
 
 function readFlagValue({
@@ -133,61 +131,7 @@ function getCliOptions(argv: readonly string[]): CatalogMinifigSyncCliOptions {
       flag: '--request-delay-ms',
     }),
     selectedSetIds: parseSetIds(argv),
-  };
-}
-
-async function revalidateChangedSetPages({
-  paths,
-  reason,
-  tags,
-}: {
-  paths: readonly string[];
-  reason: string;
-  tags: readonly string[];
-}): Promise<{
-  attempted: boolean;
-  pathCount: number;
-  skipped: boolean;
-  tagCount: number;
-}> {
-  const webBaseUrl = process.env[productEmailEnvKeys.webBaseUrl]?.trim();
-  const revalidationSecret =
-    process.env[publicWebRevalidationEnvKeys.secret]?.trim();
-
-  if (!webBaseUrl || !revalidationSecret) {
-    return {
-      attempted: false,
-      pathCount: paths.length,
-      skipped: true,
-      tagCount: tags.length,
-    };
-  }
-
-  const targetUrl = new URL('/api/revalidate', webBaseUrl);
-  const response = await fetch(targetUrl.toString(), {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-revalidate-secret': revalidationSecret,
-    },
-    body: JSON.stringify({
-      paths,
-      reason,
-      tags,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Catalog minifig public web revalidation failed with status ${response.status}.`,
-    );
-  }
-
-  return {
-    attempted: true,
-    pathCount: paths.length,
-    skipped: false,
-    tagCount: tags.length,
+    strictRevalidation: argv.includes('--strict-revalidation'),
   };
 }
 
@@ -198,7 +142,7 @@ async function main() {
   const startedAt = Date.now();
 
   console.log(
-    `[catalog-minifig-sync] start mode=${mode} limit=${cliOptions.limit ?? 'all'} after_set_id=${cliOptions.afterSetId ?? 'none'} only_missing=${cliOptions.onlyMissing} selected_set_ids=${cliOptions.selectedSetIds?.length ?? 0} request_delay_ms=${cliOptions.requestDelayMs} max_retries=${cliOptions.maxRetries}`,
+    `[catalog-minifig-sync] start mode=${mode} limit=${cliOptions.limit ?? 'all'} after_set_id=${cliOptions.afterSetId ?? 'none'} only_missing=${cliOptions.onlyMissing} selected_set_ids=${cliOptions.selectedSetIds?.length ?? 0} request_delay_ms=${cliOptions.requestDelayMs} max_retries=${cliOptions.maxRetries} strict_revalidation=${cliOptions.strictRevalidation}`,
   );
 
   if (!hasServerSupabaseConfig()) {
@@ -236,27 +180,26 @@ async function main() {
   }
 
   if (mode === 'write' && result.changedSetSlugs.length > 0) {
-    const paths = result.changedSetSlugs.map((slug) =>
-      buildSetDetailPath(slug),
+    console.log(
+      `[catalog-minifig-sync] data_write_success=true changed_set_count=${result.changedSetSlugs.length} summaries_upserted=${result.summariesUpserted}`,
     );
-    const tags = [
-      ...new Set(
-        result.changedSetIds.flatMap((setId, index) => [
-          cacheTags.set(setId),
-          cacheTags.set(result.changedSetSlugs[index] ?? setId),
-        ]),
-      ),
-    ];
 
-    const revalidation = await revalidateChangedSetPages({
-      paths,
+    const revalidation = await revalidateCatalogMinifigSetPages({
+      changedSetIds: result.changedSetIds,
+      changedSetSlugs: result.changedSetSlugs,
       reason: 'catalog_minifig_sync',
-      tags,
+      strict: cliOptions.strictRevalidation,
     });
 
     console.log(
-      `[catalog-minifig-sync] revalidation attempted=${revalidation.attempted} skipped=${revalidation.skipped} paths=${revalidation.pathCount} tags=${revalidation.tagCount}`,
+      `[catalog-minifig-sync] revalidation attempted=${revalidation.attempted} skipped=${revalidation.skipped} revalidation_batches=${revalidation.batchCount} paths=${revalidation.pathCount} tags=${revalidation.tagCount} revalidation_warning=${revalidation.warning ? 'true' : 'false'}`,
     );
+
+    if (revalidation.warning) {
+      console.warn(
+        `[catalog-minifig-sync] revalidation_warning="${revalidation.warning}" failed_batches=${JSON.stringify(revalidation.failedBatches)}`,
+      );
+    }
   }
 
   console.log(

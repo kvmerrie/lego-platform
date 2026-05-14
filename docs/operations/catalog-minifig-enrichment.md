@@ -75,6 +75,21 @@ set detail paths:
 Homepage, deals, and theme pages are not revalidated because they do not use
 minifigure counts today.
 
+The sync batches public web revalidation to stay within `/api/revalidate`
+limits. Revalidation warnings do not make a successful write batch fail by
+default, because the summary rows in Supabase are the source of truth and the
+page refresh can be retried separately. Use `--strict-revalidation` only when a
+failed public web refresh should fail the whole run.
+
+Manual retry for one set path:
+
+```bash
+curl -X POST "$WEB_BASE_URL/api/revalidate" \
+  -H "content-type: application/json" \
+  -H "x-revalidate-secret: $WEB_REVALIDATE_SECRET" \
+  -d '{"paths":["/sets/<slug>"],"tags":["set:<set_id>","set:<slug>"],"reason":"manual_minifig_revalidation"}'
+```
+
 ## Ownership
 
 Minifigure enrichment syncs per environment from Rebrickable. It is not part of
