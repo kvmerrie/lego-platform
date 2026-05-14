@@ -1673,12 +1673,8 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-20T08:00:00.000Z',
-          display_name: 'Advent',
           id: 'theme:advent',
-          is_public: false,
-          slug: 'advent',
-          status: 'active',
-          updated_at: '2026-04-21T08:00:00.000Z',
+          updated_at: '2026-04-20T09:00:00.000Z',
         },
       ],
       {
@@ -1736,11 +1732,7 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-21T08:00:00.000Z',
-          display_name: 'Advent',
           id: 'theme:advent',
-          is_public: true,
-          slug: 'advent',
-          status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
         },
       ],
@@ -1825,11 +1817,7 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-21T08:00:00.000Z',
-          display_name: 'Icons',
           id: 'theme:icons',
-          is_public: false,
-          slug: 'icons',
-          status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
         },
         {
@@ -1854,7 +1842,104 @@ describe('catalog promotion server', () => {
     );
   });
 
-  test('returns changed public theme slugs for promoted presentation changes', async () => {
+  test('preserves production Super Mario style presentation over staging defaults', async () => {
+    const stagingClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_source_themes: [],
+        catalog_themes: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            display_name: 'Super Mario',
+            id: 'theme:super-mario',
+            is_public: true,
+            public_accent_color: '#31a047',
+            public_description: 'Staging default copy.',
+            public_display_name: 'Super Mario',
+            public_image_url: 'https://cdn.example.com/luigi-default.jpg',
+            public_logo_url: null,
+            public_order: 20,
+            slug: 'super-mario',
+            status: 'active',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_theme_mappings: [
+          {
+            created_at: '2026-04-21T08:00:00.000Z',
+            primary_theme_id: 'theme:super-mario',
+            source_theme_id: 'rebrickable:690',
+            updated_at: '2026-04-21T08:00:00.000Z',
+          },
+        ],
+        catalog_sets: [],
+        commerce_merchants: [],
+        commerce_benchmark_sets: [],
+        commerce_offer_seeds: [],
+      },
+    });
+    const productionClient = createPromotionSupabaseClient({
+      rowsByTable: {
+        catalog_themes: [
+          {
+            created_at: '2026-04-20T08:00:00.000Z',
+            display_name: 'Super Mario',
+            id: 'theme:super-mario',
+            is_public: true,
+            public_accent_color: '#e52521',
+            public_description: 'Production curated Mario presentation.',
+            public_display_name: 'LEGO Super Mario',
+            public_image_url: 'https://cdn.example.com/mario-curated.jpg',
+            public_logo_url: null,
+            public_order: 5,
+            slug: 'super-mario',
+            status: 'active',
+            updated_at: '2026-04-20T09:00:00.000Z',
+          },
+        ],
+      },
+    });
+
+    await promoteCatalogFromStagingToProduction({
+      createProductionSupabaseClient: () => productionClient as never,
+      createStagingSupabaseClient: () => stagingClient as never,
+      now: vi
+        .fn()
+        .mockReturnValueOnce(new Date('2026-04-22T09:00:00.000Z'))
+        .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
+    });
+
+    expect(
+      productionClient.upsertByTable.get('catalog_themes'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          created_at: '2026-04-20T08:00:00.000Z',
+          id: 'theme:super-mario',
+          updated_at: '2026-04-20T09:00:00.000Z',
+        },
+      ],
+      {
+        onConflict: 'id',
+      },
+    );
+    expect(
+      productionClient.upsertByTable.get('catalog_theme_mappings'),
+    ).toHaveBeenCalledWith(
+      [
+        {
+          created_at: '2026-04-21T08:00:00.000Z',
+          primary_theme_id: 'theme:super-mario',
+          source_theme_id: 'rebrickable:690',
+          updated_at: '2026-04-21T08:00:00.000Z',
+        },
+      ],
+      {
+        onConflict: 'source_theme_id',
+      },
+    );
+  });
+
+  test('does not revalidate existing theme slugs when production presentation is preserved', async () => {
     const stagingClient = createPromotionSupabaseClient({
       rowsByTable: {
         catalog_source_themes: [],
@@ -1910,7 +1995,7 @@ describe('catalog promotion server', () => {
         .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
     });
 
-    expect(result.changedThemeSlugs).toEqual(['icons']);
+    expect(result.changedThemeSlugs).toEqual([]);
   });
 
   test('does not return unchanged theme slugs for detail revalidation', async () => {
@@ -2074,11 +2159,7 @@ describe('catalog promotion server', () => {
       [
         {
           created_at: '2026-04-21T08:00:00.000Z',
-          display_name: 'Advent',
           id: 'theme:advent',
-          is_public: false,
-          slug: 'advent',
-          status: 'active',
           updated_at: '2026-04-21T08:00:00.000Z',
         },
         {
@@ -2098,7 +2179,7 @@ describe('catalog promotion server', () => {
     );
   });
 
-  test('preserves source catalog theme visibility and normalizes null visibility to false', async () => {
+  test('preserves production catalog theme visibility and normalizes new theme visibility', async () => {
     const consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => {
       // Keep promotion diagnostics out of the test output.
     });
@@ -2145,6 +2226,16 @@ describe('catalog promotion server', () => {
             status: 'active',
             updated_at: '2026-04-21T08:15:00.000Z',
           },
+          {
+            created_at: '2026-04-21T08:20:00.000Z',
+            display_name: 'New Theme',
+            id: 'theme:new',
+            is_public: null,
+            public_order: null,
+            slug: 'new-theme',
+            status: 'active',
+            updated_at: '2026-04-21T08:20:00.000Z',
+          },
         ],
         catalog_theme_mappings: [],
         catalog_sets: [],
@@ -2185,37 +2276,47 @@ describe('catalog promotion server', () => {
         .mockReturnValue(new Date('2026-04-22T09:00:01.250Z')),
     });
 
-    expect(
-      productionClient.upsertByTable.get('catalog_themes'),
-    ).toHaveBeenCalledWith(
-      [
+    const payload = productionClient.upsertByTable.get('catalog_themes')?.mock
+      .calls[0]?.[0] as Record<string, unknown>[];
+
+    expect(payload).toEqual(
+      expect.arrayContaining([
         expect.objectContaining({
           id: 'theme:public',
-          is_public: true,
         }),
         expect.objectContaining({
           id: 'theme:private',
-          is_public: false,
         }),
         expect.objectContaining({
           id: 'theme:null-visibility',
-          is_public: false,
         }),
         expect.objectContaining({
           id: 'theme:missing-visibility',
+        }),
+        expect.objectContaining({
+          id: 'theme:new',
           is_public: false,
         }),
-      ],
-      {
-        onConflict: 'id',
-      },
+      ]),
     );
+    expect(
+      payload.find((row) => row['id'] === 'theme:public'),
+    ).not.toHaveProperty('is_public');
+    expect(
+      payload.find((row) => row['id'] === 'theme:private'),
+    ).not.toHaveProperty('is_public');
+    expect(
+      payload.find((row) => row['id'] === 'theme:null-visibility'),
+    ).not.toHaveProperty('is_public');
+    expect(
+      payload.find((row) => row['id'] === 'theme:missing-visibility'),
+    ).not.toHaveProperty('is_public');
     expect(consoleInfoSpy).toHaveBeenCalledWith(
       '[catalog-promotion] catalog theme boolean payload normalized',
       expect.objectContaining({
-        inputRows: 4,
+        inputRows: 5,
         nullOrMissingIsPublicAfterNormalize: 0,
-        nullOrMissingIsPublicBeforeNormalize: 2,
+        nullOrMissingIsPublicBeforeNormalize: 3,
         table: 'catalog_themes',
       }),
     );
@@ -2291,8 +2392,7 @@ describe('catalog promotion server', () => {
         expect.objectContaining({
           created_at: '2026-04-20T07:00:00.000Z',
           id: 'theme:existing',
-          status: 'active',
-          updated_at: '2026-04-22T09:00:00.000Z',
+          updated_at: '2026-04-20T08:00:00.000Z',
         }),
         expect.objectContaining({
           created_at: '2026-04-22T09:00:00.000Z',

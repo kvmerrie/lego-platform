@@ -45,6 +45,18 @@ const CATALOG_THEME_PUBLIC_REVALIDATION_FIELDS = [
   'is_public',
   'status',
 ] as const;
+const CATALOG_THEME_PRODUCTION_OWNED_PRESENTATION_FIELDS = [
+  'display_name',
+  'is_public',
+  'public_accent_color',
+  'public_description',
+  'public_display_name',
+  'public_image_url',
+  'public_logo_url',
+  'public_order',
+  'slug',
+  'status',
+] as const;
 const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
   string,
   readonly string[]
@@ -69,16 +81,8 @@ const CATALOG_PROMOTION_MUTABLE_COLUMNS_BY_TABLE: Record<
     'source_theme_name',
   ],
   [CATALOG_THEMES_TABLE]: [
-    'display_name',
-    'is_public',
-    'public_accent_color',
-    'public_description',
-    'public_display_name',
-    'public_image_url',
-    'public_logo_url',
-    'public_order',
-    'slug',
-    'status',
+    // Existing production theme rows own their public presentation. Staging
+    // values are used only when inserting a new theme.
   ],
   [CATALOG_THEME_MAPPINGS_TABLE]: ['primary_theme_id'],
   [CATALOG_SET_MINIFIG_SUMMARIES_TABLE]: [
@@ -125,8 +129,9 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
     protected: ['created_at', 'updated_at'],
   },
   [CATALOG_THEMES_TABLE]: {
-    canonical: ['id', 'slug', 'display_name', 'status'],
+    canonical: ['id'],
     curated: [
+      'display_name',
       'is_public',
       'public_accent_color',
       'public_description',
@@ -134,6 +139,8 @@ const CATALOG_PROMOTION_FIELD_OWNERSHIP_BY_TABLE: Record<
       'public_image_url',
       'public_logo_url',
       'public_order',
+      'slug',
+      'status',
     ],
     generatedRuntime: [],
     protected: ['created_at', 'updated_at'],
@@ -968,15 +975,19 @@ function finalizePromotionUpsertRow({
       readOptionalPromotionString(sourceRow['created_at']) ??
       readOptionalPromotionString(row['created_at']) ??
       nowIso,
-    status:
-      readOptionalPromotionString(row['status']) ??
-      readOptionalPromotionString(sourceRow['status']) ??
-      'active',
     updated_at:
+      readOptionalPromotionString(existingRow?.['updated_at']) ??
       readOptionalPromotionString(sourceRow['updated_at']) ??
       readOptionalPromotionString(row['updated_at']) ??
-      readOptionalPromotionString(existingRow?.['updated_at']) ??
       nowIso,
+    ...(existingRow
+      ? {}
+      : {
+          status:
+            readOptionalPromotionString(row['status']) ??
+            readOptionalPromotionString(sourceRow['status']) ??
+            'active',
+        }),
   };
 }
 
@@ -1157,6 +1168,7 @@ async function upsertRows<TRow>({
 
   let insertedCount = 0;
   let updatedCount = 0;
+  let productionPresentationPreservedCount = 0;
   const changedCanonicalFields = new Map<string, number>();
   const changedCuratedFields = new Map<string, number>();
   const changedGeneratedRuntimeFields = new Map<string, number>();
@@ -1230,6 +1242,18 @@ async function upsertRows<TRow>({
           });
         }
       }
+
+      if (
+        table === CATALOG_THEMES_TABLE &&
+        CATALOG_THEME_PRODUCTION_OWNED_PRESENTATION_FIELDS.some(
+          (field) =>
+            Object.prototype.hasOwnProperty.call(existingRow, field) &&
+            Object.prototype.hasOwnProperty.call(rowRecord, field) &&
+            !valuesArePromotionEqual(existingRow[field], rowRecord[field]),
+        )
+      ) {
+        productionPresentationPreservedCount += 1;
+      }
     }
 
     return finalizePromotionUpsertRow({
@@ -1251,6 +1275,25 @@ async function upsertRows<TRow>({
     readCount: rows.length,
     skippedProtectedFields: toSortedFieldCountRecord(skippedProtectedFields),
     table,
+    ...(table === CATALOG_THEMES_TABLE
+      ? {
+          themes_inserted: insertedCount,
+          themes_presentation_preserved: productionPresentationPreservedCount,
+          themes_updated_canonical: updatedCount,
+        }
+      : {}),
+    ...(table === CATALOG_SOURCE_THEMES_TABLE
+      ? {
+          source_themes_inserted: insertedCount,
+          source_themes_updated: updatedCount,
+        }
+      : {}),
+    ...(table === CATALOG_THEME_MAPPINGS_TABLE
+      ? {
+          mappings_inserted: insertedCount,
+          mappings_updated: updatedCount,
+        }
+      : {}),
     updatedCount,
   });
 

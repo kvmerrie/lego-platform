@@ -1,8 +1,9 @@
 # Catalog Promotion Runbook
 
-Catalog promotion copies the reviewed staging catalog state into production.
-Staging is the source of truth for catalog curation. Production should not be
-manually patched for public theme presentation except as an emergency rollback.
+Catalog promotion copies canonical staging catalog data into production.
+Production owns public theme presentation. Staging defaults must not reset
+production-curated theme imagery, colors, labels, visibility, ordering, or
+status for existing theme rows.
 
 ## Ownership
 
@@ -14,17 +15,20 @@ Promoted from staging:
 - `catalog_theme_mappings`: source theme to public theme mapping
 - `catalog_sets`: set ids, slugs, normalized names, theme ids, release metadata,
   image URL, source, status
-- `catalog_themes`: id, slug, display name, status
+- `catalog_themes`: stable theme id for existing rows. New theme rows are
+  inserted from staging with staging values as initial defaults.
 
 Generated enrichment promoted from staging:
 
 - `catalog_set_minifig_summaries`: one aggregate minifigure count per set,
   keyed by `set_id`
 
-### Curated/public presentation
+### Production-owned public presentation
 
-Promoted from staging:
+Preserved in production for existing `catalog_themes` rows:
 
+- `catalog_themes.slug`
+- `catalog_themes.display_name`
 - `catalog_themes.public_display_name`
 - `catalog_themes.public_description`
 - `catalog_themes.public_image_url`
@@ -32,9 +36,55 @@ Promoted from staging:
 - `catalog_themes.public_logo_url`
 - `catalog_themes.public_order`
 - `catalog_themes.is_public`
+- `catalog_themes.status`
 
-Blank staging presentation values do not overwrite existing non-blank production
-values during updates. Fix curation in staging first, then promote again.
+Staging values are used only when inserting a new production theme row. Existing
+production theme presentation is intentionally not overwritten by staging,
+including non-blank staging defaults. If a production theme image or public
+label needs to change, update production curation through the admin-owned
+curation path rather than relying on catalog promotion.
+
+Emergency recovery for accidentally overwritten presentation fields should only
+touch presentation columns. Example shape:
+
+```sql
+update catalog_themes
+set
+  public_image_url = values.public_image_url,
+  public_accent_color = values.public_accent_color,
+  public_display_name = values.public_display_name,
+  public_description = values.public_description,
+  public_logo_url = values.public_logo_url,
+  public_order = values.public_order,
+  is_public = values.is_public,
+  status = values.status,
+  updated_at = timezone('utc', now())
+from (
+  values
+    (
+      'theme:super-mario',
+      'https://cdn.example.com/mario-curated.jpg',
+      '#e52521',
+      'LEGO Super Mario',
+      'Production curated copy',
+      null,
+      5,
+      true,
+      'active'
+    )
+) as values(
+  id,
+  public_image_url,
+  public_accent_color,
+  public_display_name,
+  public_description,
+  public_logo_url,
+  public_order,
+  is_public,
+  status
+)
+where catalog_themes.id = values.id;
+```
 
 ### Generated/runtime
 
