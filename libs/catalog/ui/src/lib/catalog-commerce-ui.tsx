@@ -74,7 +74,7 @@ export type CatalogSetDetailSupportItem = CatalogSupportItem;
 export interface CatalogKeyFact {
   icon?: ReactNode;
   id: string;
-  label: string;
+  label: ReactNode;
   value: ReactNode;
 }
 

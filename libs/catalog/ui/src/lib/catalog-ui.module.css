@@ -1405,6 +1405,24 @@
     line-height: 1;
   }
 
+  .heroThemeLogoValue {
+    align-items: center;
+    display: inline-flex;
+    inline-size: min(8.5rem, 26vw);
+    justify-content: center;
+    max-inline-size: 100%;
+    min-block-size: 2rem;
+    min-inline-size: 0;
+  }
+
+  .heroThemeLogo {
+    display: block;
+    max-block-size: 2rem;
+    max-inline-size: 100%;
+    object-fit: contain;
+    object-position: center;
+  }
+
   .detailDecisionPanel {
     background: var(--lego-surface-default);
     border-radius: var(--lego-radius-md);

@@ -887,7 +887,7 @@ async function listCatalogThemeIdentityBySetId({
       ? await supabaseClient
           .from(CATALOG_THEMES_TABLE)
           .select(
-            'id, slug, display_name, public_display_name, status, is_public',
+            'id, slug, display_name, public_display_name, public_logo_url, status, is_public',
           )
           .in('id', primaryThemeIdsToLoad)
       : { data: [], error: null };
@@ -950,6 +950,9 @@ async function listCatalogThemeIdentityBySetId({
               publicPrimaryTheme.public_display_name,
             ) ?? publicPrimaryTheme.display_name)
           : undefined;
+        const publicThemeLogoUrl = normalizeCatalogThemePublicLogoUrl(
+          publicPrimaryTheme?.public_logo_url,
+        );
 
         return [
           catalogRow.set_id,
@@ -958,6 +961,11 @@ async function listCatalogThemeIdentityBySetId({
               ? {
                   primaryTheme: publicThemeName,
                   publicTheme: {
+                    ...(publicThemeLogoUrl
+                      ? {
+                          logoUrl: publicThemeLogoUrl,
+                        }
+                      : {}),
                     name: publicThemeName,
                     slug: publicPrimaryTheme.slug,
                   },
@@ -4165,6 +4173,26 @@ function normalizeCatalogThemePublicImageUrl(
   }
 
   return normalizedValue;
+}
+
+function normalizeCatalogThemePublicLogoUrl(
+  value?: string | null,
+): string | undefined {
+  const normalizedValue = value?.trim();
+
+  if (!normalizedValue) {
+    return undefined;
+  }
+
+  if (/^https?:\/\/[^\s"'<>]+$/iu.test(normalizedValue)) {
+    return normalizedValue;
+  }
+
+  if (/^\/[a-z0-9/_+.-]+$/iu.test(normalizedValue)) {
+    return normalizedValue;
+  }
+
+  return undefined;
 }
 
 function normalizeCatalogThemePublicAccentColor(

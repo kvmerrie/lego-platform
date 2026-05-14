@@ -108,6 +108,7 @@ export interface CatalogThemeIdentity {
 }
 
 export interface CatalogPublicThemeReference {
+  logoUrl?: string;
   name: string;
   slug: string;
 }

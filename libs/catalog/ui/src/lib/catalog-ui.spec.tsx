@@ -36,10 +36,12 @@ describe('CatalogSetCard', () => {
     expect(css).toContain('.galleryMainButton {');
     expect(css).toContain('border-radius: var(--lego-radius-md);');
     expect(css).toContain('@media (max-width: 47.999rem)');
-    expect(css).toContain('.galleryMain {\n    margin-inline: calc(');
-    expect(css).toContain('.galleryMainButton,\n  .galleryMainVisual {');
+    expect(css).toMatch(/\.galleryMain \{\s+margin-inline: calc\(/u);
+    expect(css).toMatch(
+      /\.galleryMainButton,\s+\.galleryMainVisual \{\s+border-radius: 0;/u,
+    );
     expect(css).toContain('border-radius: 0;');
-    expect(css).toContain('.galleryMainVisual {\n    border: 0;');
+    expect(css).toMatch(/\.galleryMainVisual \{\s+border: 0;/u);
   });
 
   it('renders a lighter compact-card variant for dense catalog exploration', () => {
@@ -385,7 +387,7 @@ describe('CatalogSetCard', () => {
     const viewportRule = css.match(/\.offerRailViewport \{[^}]+\}/u)?.[0] ?? '';
     const desktopViewportRule =
       css.match(
-        /\.offerRailViewport \{\n {4}margin-inline: calc\(var\(--lego-space-1\) \* -1\);[^}]+\}/u,
+        /\.offerRailViewport \{\s+margin-inline: calc\(var\(--lego-space-1\) \* -1\);[^}]+\}/u,
       )?.[0] ?? '';
 
     expect(viewportRule).toContain('margin-inline: calc(50% - 50vw);');
@@ -966,6 +968,11 @@ describe('CatalogSetCard', () => {
           slug: 'rivendell-10316',
           name: 'Rivendell',
           theme: 'Icons',
+          publicTheme: {
+            logoUrl: '/themes/logos/icons_logo.png',
+            name: 'Icons',
+            slug: 'icons',
+          },
           subtheme: 'The Lord of the Rings',
           releaseYear: 2023,
           pieces: 6181,
@@ -1063,6 +1070,11 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('>10316</span>');
     expect(markup).toContain('aria-label="Afbeeldingen van Rivendell"');
     expect(markup).toContain('Open Rivendell LEGO-set in volledig scherm');
+    expect(markup).toContain('alt="Icons logo"');
+    expect(markup).toContain('src="/themes/logos/icons_logo.png"');
+    expect(markup.indexOf('src="/themes/logos/icons_logo.png"')).toBeLessThan(
+      markup.indexOf('6.181'),
+    );
     expect(markup).toContain('Bekijk deal bij bol');
     expect(markup).toContain(
       '€ 30,00 onder wat we meestal zien voor deze set.',
@@ -1125,6 +1137,35 @@ describe('CatalogSetCard', () => {
       'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
     );
     expect(markup).not.toContain('$499 to $569');
+  });
+
+  it('does not render an empty theme logo spec when the public theme has no logo', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '60488',
+          slug: 'snackbartruck-60488',
+          name: 'Snackbartruck',
+          theme: 'City',
+          publicTheme: {
+            name: 'City',
+            slug: 'city',
+          },
+          releaseYear: 2025,
+          pieces: 345,
+          imageUrl: 'https://images.example/snackbartruck.jpg',
+        }}
+        dealVerdict={{
+          explanation: 'Prijsbeeld bouwt nog op.',
+          label: 'Prijs volgt',
+          tone: 'info',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('345');
+    expect(markup).not.toContain('_logo.png');
+    expect(markup).not.toContain('heroThemeLogo');
   });
 
   it('avoids a thin comparison block when only one offer is available', () => {

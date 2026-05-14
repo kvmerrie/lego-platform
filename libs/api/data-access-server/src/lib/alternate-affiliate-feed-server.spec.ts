@@ -217,7 +217,7 @@ describe('alternate affiliate feed server', () => {
     });
   });
 
-  test('marks previously successful unseen merchant offers unavailable after a confident feed run', async () => {
+  test('marks previously successful unseen merchant offers unavailable for an authoritative feed run', async () => {
     const markCommerceOfferLatestUnavailableFn = vi.fn().mockResolvedValue(1);
     const refreshCommerceOfferLatestObservationFn = vi.fn();
     const existingMerchant = {
@@ -323,6 +323,9 @@ describe('alternate affiliate feed server', () => {
         sourceType: 'affiliate',
         slug: 'alternate',
       },
+      options: {
+        markUnseenLatestOffersUnavailableAuthoritative: true,
+      },
       rows: [
         {
           affiliateDeeplink: 'https://clk.tradetracker.example/alternate/10316',
@@ -352,6 +355,139 @@ describe('alternate affiliate feed server', () => {
       changedSetSlugs: [],
       latestRowsMarkedStaleCount: 1,
       latestRowsSeenCount: 1,
+      unchangedLatestTimestampRefreshedCount: 1,
+    });
+  });
+
+  test('does not retire active seeded live offers from a non-authoritative feed absence', async () => {
+    const markCommerceOfferLatestUnavailableFn = vi.fn();
+    const refreshCommerceOfferLatestObservationFn = vi.fn();
+    const existingMerchant = {
+      id: 'merchant-alternate',
+      slug: 'alternate',
+      name: 'Alternate',
+      isActive: true,
+      sourceType: 'affiliate',
+      affiliateNetwork: 'TradeTracker',
+      notes:
+        'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+      createdAt: '2026-04-22T09:00:00.000Z',
+      updatedAt: '2026-04-22T09:00:00.000Z',
+    } as const;
+
+    const result = await importAffiliateFeedRowsForMerchant({
+      dependencies: {
+        createCommerceMerchantFn: vi.fn(),
+        getNow: () => new Date('2026-04-24T09:15:00.000Z'),
+        listCanonicalCatalogSetsFn: vi.fn().mockResolvedValue([
+          {
+            setId: '10316',
+            slug: 'rivendell-10316',
+            sourceSetNumber: '10316-1',
+            status: 'active',
+          },
+          {
+            setId: '43300',
+            slug: 'winnie-the-pooh-43300',
+            sourceSetNumber: '43300-1',
+            status: 'active',
+          },
+        ]),
+        listCommerceMerchantsFn: vi.fn().mockResolvedValue([existingMerchant]),
+        listCommerceOfferSeedsFn: vi.fn().mockResolvedValue([
+          {
+            id: 'seed-10316-alternate',
+            setId: '10316',
+            merchantId: 'merchant-alternate',
+            productUrl: 'https://clk.tradetracker.example/alternate/10316',
+            isActive: true,
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-04-24T08:00:00.000Z',
+            notes:
+              'Feed-driven Alternate import via TradeTracker. Exact matched by LEGO set number. Product title: LEGO Icons Rivendell.',
+            createdAt: '2026-04-22T09:00:00.000Z',
+            updatedAt: '2026-04-22T09:00:00.000Z',
+            latestOffer: {
+              id: 'latest-10316-alternate',
+              offerSeedId: 'seed-10316-alternate',
+              setId: '10316',
+              merchantId: 'merchant-alternate',
+              productUrl: 'https://clk.tradetracker.example/alternate/10316',
+              fetchStatus: 'success',
+              priceMinor: 29999,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              fetchedAt: '2026-04-24T08:00:00.000Z',
+              observedAt: '2026-04-24T08:00:00.000Z',
+              createdAt: '2026-04-22T09:00:00.000Z',
+              updatedAt: '2026-04-22T09:00:00.000Z',
+            },
+          },
+          {
+            id: 'seed-43300-alternate',
+            setId: '43300',
+            merchantId: 'merchant-alternate',
+            productUrl:
+              'https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Classic-Winnie-de-Poeh-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151401',
+            isActive: true,
+            validationStatus: 'valid',
+            lastVerifiedAt: '2026-05-08T18:01:37.786Z',
+            notes:
+              'Feed-driven Alternate import. Exact matched by LEGO set number.',
+            createdAt: '2026-04-22T09:00:00.000Z',
+            updatedAt: '2026-05-08T18:02:25.513Z',
+            latestOffer: {
+              id: 'latest-43300-alternate',
+              offerSeedId: 'seed-43300-alternate',
+              setId: '43300',
+              merchantId: 'merchant-alternate',
+              productUrl:
+                'https://www.alternate.nl/tt/?tt=904_1594453_508318_&r=https%3A%2F%2Fwww.alternate.nl%2FLEGO%2FDisney-Classic-Winnie-de-Poeh-Constructiespeelgoed%2Fhtml%2Fproduct%2F100151401',
+              fetchStatus: 'success',
+              priceMinor: 12990,
+              currencyCode: 'EUR',
+              availability: 'in_stock',
+              fetchedAt: '2026-05-08T18:01:37.786Z',
+              observedAt: '2026-05-08T18:01:37.786Z',
+              createdAt: '2026-04-22T09:00:00.000Z',
+              updatedAt: '2026-05-08T18:02:25.513Z',
+            },
+          },
+        ]),
+        markCommerceOfferLatestUnavailableFn,
+        refreshCommerceOfferLatestObservationFn,
+        updateCommerceMerchantFn: vi.fn().mockResolvedValue(existingMerchant),
+        upsertCommerceOfferLatestRecordFn: vi.fn(),
+        upsertCommerceOfferSeedByCompositeKeyFn: vi.fn(),
+      },
+      merchant: {
+        affiliateNetwork: 'TradeTracker',
+        name: 'Alternate',
+        notes:
+          'Feed-driven merchant. Current offer state is imported from the Alternate TradeTracker product feed.',
+        sourceType: 'affiliate',
+        slug: 'alternate',
+      },
+      rows: [
+        {
+          affiliateDeeplink: 'https://clk.tradetracker.example/alternate/10316',
+          availabilityText: 'Op voorraad',
+          brand: 'LEGO',
+          condition: 'new',
+          currency: 'EUR',
+          legoSetNumber: '10316',
+          price: '299,99',
+          productTitle: 'LEGO Icons Rivendell',
+        },
+      ],
+    });
+
+    expect(markCommerceOfferLatestUnavailableFn).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      changedSetIds: [],
+      latestRowsMarkedStaleCount: 0,
+      latestRowsSeenCount: 1,
+      staleMarkSkippedReason: 'non_authoritative_feed',
       unchangedLatestTimestampRefreshedCount: 1,
     });
   });

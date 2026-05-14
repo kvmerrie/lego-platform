@@ -77,6 +77,7 @@ export interface AlternateAffiliateFeedImportResult {
     | 'disabled'
     | 'dry_run'
     | 'merchant_created'
+    | 'non_authoritative_feed'
     | 'no_confident_feed_matches';
   unchangedLatestRefreshSkippedCount: number;
   unchangedLatestTimestampRefreshedCount: number;
@@ -106,6 +107,7 @@ export interface AlternateAffiliateFeedImportOptions {
   collectUnmatchedDebug?: boolean;
   discoverMissingSets?: boolean;
   dryRun?: boolean;
+  markUnseenLatestOffersUnavailableAuthoritative?: boolean;
   markUnseenLatestOffersUnavailable?: boolean;
   persistDiscoveredSets?: boolean;
   unmatchedSampleLimit?: number;
@@ -871,6 +873,7 @@ export async function importAffiliateFeedRowsForMerchant({
     !options?.dryRun &&
     !merchantCreated &&
     options?.markUnseenLatestOffersUnavailable !== false &&
+    options?.markUnseenLatestOffersUnavailableAuthoritative === true &&
     rows.length > 0 &&
     matchedOfferSeedIds.size > 0
       ? existingOfferSeeds
@@ -899,6 +902,8 @@ export async function importAffiliateFeedRowsForMerchant({
     staleMarkSkippedReason = 'merchant_created';
   } else if (options?.markUnseenLatestOffersUnavailable === false) {
     staleMarkSkippedReason = 'disabled';
+  } else if (options?.markUnseenLatestOffersUnavailableAuthoritative !== true) {
+    staleMarkSkippedReason = 'non_authoritative_feed';
   } else if (rows.length === 0 || matchedOfferSeedIds.size === 0) {
     staleMarkSkippedReason = 'no_confident_feed_matches';
   }

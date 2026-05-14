@@ -694,7 +694,30 @@ function buildCatalogSetDetailHeroFacts({
     });
   }
 
-  return heroFacts;
+  if (!catalogSetDetail.publicTheme?.logoUrl) {
+    return heroFacts;
+  }
+
+  const themeName = catalogSetDetail.publicTheme.name || catalogSetDetail.theme;
+
+  return [
+    {
+      id: 'theme-logo',
+      label: <VisuallyHidden>Thema</VisuallyHidden>,
+      value: (
+        <span className={styles.heroThemeLogoValue}>
+          <img
+            alt={`${themeName} logo`}
+            className={styles.heroThemeLogo}
+            decoding="async"
+            loading="lazy"
+            src={catalogSetDetail.publicTheme.logoUrl}
+          />
+        </span>
+      ),
+    },
+    ...heroFacts,
+  ];
 }
 
 function getCatalogThemeStyleVariables({

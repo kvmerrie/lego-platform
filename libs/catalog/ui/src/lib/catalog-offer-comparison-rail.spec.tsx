@@ -414,16 +414,14 @@ describe('CatalogOfferComparisonRail overlay', () => {
       resolve(process.cwd(), 'libs/catalog/ui/src/lib/catalog-ui.module.css'),
       'utf-8',
     );
-    const rowRule =
-      css.match(/(?:^|\n)\.offerOverlayRow \{[^}]+\}/u)?.[0] ?? '';
-    const overlayRule =
-      css.match(/(?:^|\n)\.offerOverlay \{[^}]+\}/u)?.[0] ?? '';
-    const headerRule =
-      css.match(/(?:^|\n)\.offerOverlayHeader \{[^}]+\}/u)?.[0] ?? '';
-    const bodyRule =
-      css.match(/(?:^|\n)\.offerOverlayBody \{[^}]+\}/u)?.[0] ?? '';
-    const listRule =
-      css.match(/(?:^|\n)\.offerOverlayList \{[^}]+\}/u)?.[0] ?? '';
+    const ruleBody = (selector: string) =>
+      css.match(new RegExp(`(?:^|\\n)\\s*${selector} \\{[^}]+\\}`, 'u'))?.[0] ??
+      '';
+    const rowRule = ruleBody('\\.offerOverlayRow');
+    const overlayRule = ruleBody('\\.offerOverlay');
+    const headerRule = ruleBody('\\.offerOverlayHeader');
+    const bodyRule = ruleBody('\\.offerOverlayBody');
+    const listRule = ruleBody('\\.offerOverlayList');
     const merchantCellRule =
       css.match(/\.offerOverlayMerchantCell \{[^}]+\}/u)?.[0] ?? '';
     const merchantRule =
@@ -437,18 +435,22 @@ describe('CatalogOfferComparisonRail overlay', () => {
       css.match(/\.offerOverlayPriceCell \{[^}]+\}/u)?.[0] ?? '';
     const chevronRule =
       css.match(/\.offerOverlayChevron \{[^}]+\}/u)?.[0] ?? '';
+    const mobileRuleBodies = (selector: string) =>
+      [...css.matchAll(new RegExp(`${selector} \\{([^}]+)\\}`, 'gu'))].map(
+        (match) => match[1] ?? '',
+      );
     const mobileHeaderRule =
-      css.match(
-        /@media \(max-width: 47\.999rem\) \{[\s\S]*?\.offerOverlayHeader \{([^}]+)\}/u,
-      )?.[1] ?? '';
+      mobileRuleBodies('\\.offerOverlayHeader').find((rule) =>
+        rule.includes('padding: 0 var(--lego-space-2);'),
+      ) ?? '';
     const mobileOverlayRule =
-      css.match(
-        /@media \(max-width: 47\.999rem\) \{[\s\S]*?\.offerOverlay \{([^}]+)\}/u,
-      )?.[1] ?? '';
+      mobileRuleBodies('\\.offerOverlay').find((rule) =>
+        rule.includes('grid-template-rows: 64px minmax(0, 1fr);'),
+      ) ?? '';
     const mobileRowRule =
-      css.match(
-        /@media \(max-width: 47\.999rem\) \{[\s\S]*?\.offerOverlayRow \{([^}]+)\}/u,
-      )?.[1] ?? '';
+      mobileRuleBodies('\\.offerOverlayRow').find((rule) =>
+        rule.includes('minmax(0, 1fr) 8rem 1.5rem'),
+      ) ?? '';
 
     expect(overlayRule).toContain('display: grid;');
     expect(overlayRule).toContain('grid-template-rows: 72px minmax(0, 1fr);');

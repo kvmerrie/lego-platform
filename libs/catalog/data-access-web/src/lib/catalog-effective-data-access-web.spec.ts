@@ -914,6 +914,7 @@ describe('catalog effective data access web', () => {
           id: 'theme:editions',
           is_public: true,
           public_display_name: 'LEGO® Editions',
+          public_logo_url: '/themes/logos/editions_logo.png',
           slug: 'editions',
           status: 'active',
         },
@@ -939,6 +940,7 @@ describe('catalog effective data access web', () => {
 
     expect(catalogSetDetail).toMatchObject({
       publicTheme: {
+        logoUrl: '/themes/logos/editions_logo.png',
         name: 'LEGO® Editions',
         slug: 'editions',
       },
