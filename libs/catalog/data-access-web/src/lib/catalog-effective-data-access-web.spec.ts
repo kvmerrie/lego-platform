@@ -1908,7 +1908,7 @@ describe('catalog effective data access web', () => {
     );
   });
 
-  test('uses Supabase theme names and public ordering without registry overrides', async () => {
+  test('uses Supabase homepage theme ordering without registry overrides', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],
       merchantRows: [],
@@ -1920,7 +1920,8 @@ describe('catalog effective data access web', () => {
           id: 'theme:icons',
           is_public: true,
           public_display_name: 'Icons',
-          public_order: 2,
+          public_homepage_order: 40,
+          public_order: 1,
           slug: 'icons',
           status: 'active',
         },
@@ -1929,7 +1930,8 @@ describe('catalog effective data access web', () => {
           id: 'theme:star-wars',
           is_public: true,
           public_display_name: 'Database Star Wars',
-          public_order: 1,
+          public_homepage_order: 10,
+          public_order: 2,
           slug: 'star-wars',
           status: 'active',
         },
@@ -1961,6 +1963,76 @@ describe('catalog effective data access web', () => {
     expect(secondHomepageThemeItem?.themeSnapshot.name).not.toBe(
       'LEGO® Icons',
     );
+  });
+
+  test('falls back from null homepage order to public order and display name', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Zelda',
+          id: 'theme:zelda',
+          is_public: true,
+          public_homepage_order: null,
+          public_order: 30,
+          slug: 'zelda',
+          status: 'active',
+        },
+        {
+          display_name: 'Animal Crossing',
+          id: 'theme:animal-crossing',
+          is_public: true,
+          public_homepage_order: null,
+          public_order: 20,
+          slug: 'animal-crossing',
+          status: 'active',
+        },
+        {
+          display_name: 'Architecture',
+          id: 'theme:architecture',
+          is_public: true,
+          public_homepage_order: null,
+          public_order: 20,
+          slug: 'architecture',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 1,
+          representative_image_url: 'https://cdn.example.com/zelda.jpg',
+          representative_set_id: '77092',
+          theme_id: 'theme:zelda',
+        },
+        {
+          active_set_count: 1,
+          representative_image_url:
+            'https://cdn.example.com/animal-crossing.jpg',
+          representative_set_id: '77050',
+          theme_id: 'theme:animal-crossing',
+        },
+        {
+          active_set_count: 1,
+          representative_image_url: 'https://cdn.example.com/architecture.jpg',
+          representative_set_id: '21062',
+          theme_id: 'theme:architecture',
+        },
+      ],
+    });
+
+    const homepageItems = await listHomepageThemeDirectoryItems({
+      limit: 3,
+      supabaseClient,
+    });
+
+    expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
+      'Animal Crossing',
+      'Architecture',
+      'Zelda',
+    ]);
   });
 
   test('passes migrated Star Wars and Super Mario surface colors from Supabase', async () => {
@@ -3739,15 +3811,15 @@ describe('catalog effective data access web', () => {
       'Technic',
     ]);
     expect(homepageItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Star Wars™',
-      'Marvel',
-      'Harry Potter™',
-      'LEGO® Icons',
-      'Technic',
       'Botanicals',
+      'Harry Potter™',
+      'Ideas',
+      'LEGO® Icons',
+      'Marvel',
+      'Star Wars™',
     ]);
     expect(spotlightItems.map((item) => item.themeSnapshot.name)).toEqual([
-      'Ideas',
+      'Technic',
     ]);
   });
 

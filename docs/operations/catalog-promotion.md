@@ -12,6 +12,10 @@ fallbacks are allowed only when data is absent, for example using `display_name`
 when `public_display_name` is empty or using a representative set image when
 `public_image_url` is empty.
 
+Homepage theme card ordering is also Supabase-owned through
+`catalog_themes.public_homepage_order`. Public web must not hardcode the
+homepage theme sequence.
+
 ## Ownership
 
 ### Canonical/source-owned
@@ -44,6 +48,7 @@ Preserved in production for existing `catalog_themes` rows:
 - `catalog_themes.public_surface_text_color`
 - `catalog_themes.public_hero_text_color`
 - `catalog_themes.public_logo_url`
+- `catalog_themes.public_homepage_order`
 - `catalog_themes.public_order`
 - `catalog_themes.is_public`
 - `catalog_themes.status`
@@ -73,6 +78,7 @@ set
   public_display_name = values.public_display_name,
   public_description = values.public_description,
   public_logo_url = values.public_logo_url,
+  public_homepage_order = values.public_homepage_order,
   public_order = values.public_order,
   is_public = values.is_public,
   status = values.status,
@@ -89,6 +95,7 @@ from (
       'LEGO Super Mario',
       'Production curated copy',
       null,
+      35,
       5,
       true,
       'active'
@@ -103,6 +110,7 @@ from (
   public_display_name,
   public_description,
   public_logo_url,
+  public_homepage_order,
   public_order,
   is_public,
   status

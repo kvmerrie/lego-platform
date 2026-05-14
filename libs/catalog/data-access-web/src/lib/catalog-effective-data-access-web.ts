@@ -33,7 +33,6 @@ import {
   resolveCatalogThemeIdentityFromPersistence,
   sortCanonicalCatalogSets,
   sortCatalogSetSummaries,
-  sortThemesForHome,
 } from '@lego-platform/catalog/util';
 import {
   buildCatalogCurrentOfferSummariesApiPath,
@@ -168,6 +167,7 @@ interface CatalogThemeRow {
   public_description?: string | null;
   public_display_name?: string | null;
   public_hero_text_color?: string | null;
+  public_homepage_order?: number | null;
   public_image_url?: string | null;
   public_logo_url?: string | null;
   public_order?: number | null;
@@ -4464,10 +4464,12 @@ async function listCatalogBrowseThemeGroupsInternal({
 async function listCatalogThemeDirectoryItemsFromSupabase({
   limit = CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
   offset = 0,
+  sortMode = 'directory',
   supabaseClient,
 }: {
   limit?: number;
   offset?: number;
+  sortMode?: 'directory' | 'homepage';
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
   const activeSupabaseClient =
@@ -4484,13 +4486,22 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
   const safeOffset = normalizeCatalogReadOffset(offset);
 
   try {
-    const { data: themeData, error: themeError } = await activeSupabaseClient
+    let themeQuery = activeSupabaseClient
       .from(CATALOG_THEMES_TABLE)
       .select(
-        'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_order',
+        'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order',
       )
       .eq('status', 'active')
-      .eq('is_public', true)
+      .eq('is_public', true);
+
+    if (sortMode === 'homepage') {
+      themeQuery = themeQuery.order('public_homepage_order', {
+        ascending: true,
+        nullsFirst: false,
+      });
+    }
+
+    const { data: themeData, error: themeError } = await themeQuery
       .order('public_order', { ascending: true, nullsFirst: false })
       .order('display_name', { ascending: true })
       .range(safeOffset, safeOffset + safeLimit - 1);
@@ -4627,6 +4638,14 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
                   themeRow.display_name,
               ) === right.themeSnapshot.slug,
           );
+          const leftHomepageOrder =
+            typeof leftThemeRow?.public_homepage_order === 'number'
+              ? leftThemeRow.public_homepage_order
+              : Number.MAX_SAFE_INTEGER;
+          const rightHomepageOrder =
+            typeof rightThemeRow?.public_homepage_order === 'number'
+              ? rightThemeRow.public_homepage_order
+              : Number.MAX_SAFE_INTEGER;
           const leftPublicOrder =
             typeof leftThemeRow?.public_order === 'number'
               ? leftThemeRow.public_order
@@ -4637,6 +4656,9 @@ async function listCatalogThemeDirectoryItemsFromSupabase({
               : Number.MAX_SAFE_INTEGER;
 
           return (
+            (sortMode === 'homepage'
+              ? leftHomepageOrder - rightHomepageOrder
+              : 0) ||
             leftPublicOrder - rightPublicOrder ||
             left.themeSnapshot.name.localeCompare(
               right.themeSnapshot.name,
@@ -6541,12 +6563,14 @@ export async function listCatalogThemeDirectoryItems({
   limit = CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
   listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
   offset = 0,
+  sortMode = 'directory',
   supabaseClient,
 }: {
   allowFullCatalogRead?: boolean;
   limit?: number;
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   offset?: number;
+  sortMode?: 'directory' | 'homepage';
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
   if (
@@ -6556,6 +6580,7 @@ export async function listCatalogThemeDirectoryItems({
     return listCatalogThemeDirectoryItemsFromSupabase({
       limit,
       offset,
+      sortMode,
       supabaseClient,
     });
   }
@@ -6608,15 +6633,13 @@ export async function listHomepageThemeDirectoryItems({
   supabaseClient?: CatalogSupabaseClient;
 } = {}): Promise<CatalogThemeDirectoryItem[]> {
   const themeDirectoryItems = await listCatalogThemeDirectoryItems({
+    limit: CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
     listCanonicalCatalogSetsFn,
+    sortMode: 'homepage',
     supabaseClient,
   });
 
-  return (
-    listCanonicalCatalogSetsFn === listCanonicalCatalogSets
-      ? themeDirectoryItems
-      : sortThemesForHome(themeDirectoryItems)
-  ).slice(0, limit);
+  return themeDirectoryItems.slice(0, limit);
 }
 
 export async function listHomepageThemeSpotlightItems({
@@ -6641,15 +6664,13 @@ export async function listHomepageThemeSpotlightItems({
   );
 
   const themeDirectoryItems = await listCatalogThemeDirectoryItems({
+    limit: CATALOG_PUBLIC_THEME_DIRECTORY_LIMIT,
     listCanonicalCatalogSetsFn,
+    sortMode: 'homepage',
     supabaseClient,
   });
-  const orderedThemeDirectoryItems =
-    listCanonicalCatalogSetsFn === listCanonicalCatalogSets
-      ? themeDirectoryItems
-      : sortThemesForHome(themeDirectoryItems);
 
-  return orderedThemeDirectoryItems
+  return themeDirectoryItems
     .filter(
       (catalogThemeDirectoryItem) =>
         !primaryHomepageThemeNames.has(
@@ -6717,7 +6738,7 @@ export async function getCatalogThemePageBySlug({
             await activeSupabaseClient
               .from(CATALOG_THEMES_TABLE)
               .select(
-                'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_order',
+                'id, slug, display_name, public_display_name, public_description, public_image_url, public_accent_color, public_surface_color, public_surface_text_color, public_hero_text_color, public_logo_url, status, is_public, public_homepage_order, public_order',
               )
               .eq('slug', slug)
               .eq('status', 'active')

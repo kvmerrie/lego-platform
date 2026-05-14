@@ -144,6 +144,7 @@ create table if not exists public.catalog_themes (
   public_surface_text_color text null,
   public_hero_text_color text null,
   public_logo_url text null,
+  public_homepage_order integer null,
   public_order integer null,
   status text not null default 'active' check (
     status in ('active', 'inactive')
@@ -311,6 +312,10 @@ on public.catalog_themes (
   public_order,
   display_name
 );
+
+create index if not exists catalog_themes_public_homepage_order_idx
+on public.catalog_themes (public_homepage_order)
+where is_public = true and status = 'active';
 
 create index if not exists catalog_theme_mappings_primary_theme_id_idx
 on public.catalog_theme_mappings (primary_theme_id);
