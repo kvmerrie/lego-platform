@@ -404,6 +404,7 @@ export const apiPaths = {
   adminCommerceAffiliateDiscoveredSets:
     '/api/v1/admin/commerce/affiliate-discovered-sets',
   adminCatalogPromotion: '/api/admin/promote/catalog',
+  adminCacheRevalidation: '/admin/cache/revalidate',
 } as const;
 
 export function buildCatalogSetLiveOffersApiPath(setId: string): string {

@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { type CommerceOfferSeed } from '@lego-platform/commerce/util';
 import {
   CommerceAdminApiService,
@@ -40,7 +41,12 @@ function toAdminActionErrorMessage(error: unknown): string {
 
 @Component({
   selector: 'lego-commerce-admin-operations-page',
-  imports: [CommonModule, FormsModule, CommerceAdminOfferSeedDialogComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    CommerceAdminOfferSeedDialogComponent,
+  ],
   templateUrl: './commerce-admin-operations-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

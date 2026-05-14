@@ -3,6 +3,7 @@ import {
   CommerceAdminAddSetPageComponent,
   CommerceAdminAffiliateDiscoveredSetsPageComponent,
   CommerceAdminBulkOnboardingPageComponent,
+  CommerceAdminCacheRevalidationPageComponent,
   CommerceAdminCoveragePageComponent,
   CommerceAdminCoverageQueuePageComponent,
   CommerceAdminDashboardPageComponent,
@@ -57,6 +58,10 @@ export const appRoutes: Route[] = [
       {
         path: 'merchants',
         component: CommerceAdminMerchantsPageComponent,
+      },
+      {
+        path: 'operations/cache-revalidation',
+        component: CommerceAdminCacheRevalidationPageComponent,
       },
       {
         path: 'operations',

@@ -9,6 +9,7 @@ import healthRoutes from './routes/health';
 import rootRoutes from './routes/root';
 import adminArticlesRoutes from './routes/admin-articles';
 import adminEditorialAgentRoutes from './routes/admin-editorial-agent';
+import adminCacheRevalidationRoutes from './routes/admin-cache-revalidation';
 
 export type AppOptions = Record<string, never>;
 
@@ -24,4 +25,5 @@ export async function app(fastify: FastifyInstance, opts: AppOptions) {
   await fastify.register(adminEditorialAgentRoutes, { ...opts });
   await fastify.register(adminCommerceRoutes, { ...opts });
   await fastify.register(adminPromoteRoutes, { ...opts });
+  await fastify.register(adminCacheRevalidationRoutes, { ...opts });
 }

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { buildSupabaseAuthorizationHeaders } from '@lego-platform/shared/data-access-auth';
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSet,
@@ -171,6 +172,30 @@ export interface CommerceAdminProductionSyncResult {
   startedAt: string;
   status: 'ok';
   tables: Record<string, CommerceAdminProductionSyncTableSummary>;
+}
+
+export interface CommerceAdminCacheRevalidationBatchResult {
+  batchIndex: number;
+  pathCount: number;
+  paths: readonly string[];
+  responseBody?: unknown;
+  status: number;
+  success: boolean;
+  tagCount: number;
+  tags: readonly string[];
+  warning?: string;
+}
+
+export interface CommerceAdminCacheRevalidationResult {
+  durationMs: number;
+  pathCount: number;
+  paths: readonly string[];
+  reason: string;
+  results: readonly CommerceAdminCacheRevalidationBatchResult[];
+  status: 'partial_failure' | 'success';
+  tagCount: number;
+  tags: readonly string[];
+  warnings: readonly string[];
 }
 
 export interface CommerceAdminAffiliateDiscoveredSetFilters {
@@ -364,6 +389,29 @@ export class CommerceAdminApiService {
           headers: {
             'x-admin-secret': input.adminSecret,
           },
+        },
+      ),
+    );
+  }
+
+  async revalidatePublicWebCache(input: {
+    paths?: readonly string[];
+    reason: string;
+    tags?: readonly string[];
+  }): Promise<CommerceAdminCacheRevalidationResult> {
+    const authHeaders = await buildSupabaseAuthorizationHeaders();
+    const headers: Record<string, string> = {};
+
+    authHeaders.forEach((value, key) => {
+      headers[key] = value;
+    });
+
+    return firstValueFrom(
+      this.http.post<CommerceAdminCacheRevalidationResult>(
+        apiPaths.adminCacheRevalidation,
+        input,
+        {
+          headers,
         },
       ),
     );

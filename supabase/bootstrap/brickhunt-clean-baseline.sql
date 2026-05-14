@@ -95,6 +95,21 @@ create table if not exists public.user_set_statuses (
   primary key (user_id, set_id)
 );
 
+create table if not exists public.admin_operation_logs (
+  id uuid primary key default gen_random_uuid(),
+  operation_type text not null,
+  actor_id text null,
+  actor_email text null,
+  paths text[] not null default '{}'::text[],
+  tags text[] not null default '{}'::text[],
+  reason text not null,
+  success boolean not null,
+  response_status integer null,
+  duration_ms integer not null check (duration_ms >= 0),
+  metadata jsonb null,
+  created_at timestamptz not null default timezone('utc', now())
+);
+
 create table if not exists public.wishlist_alert_notification_states (
   user_id uuid not null references auth.users(id) on delete cascade,
   set_id text not null,
@@ -329,6 +344,12 @@ on public.catalog_set_minifigs (source_system, source_set_number);
 
 create index if not exists catalog_set_minifigs_source_minifig_number_idx
 on public.catalog_set_minifigs (source_system, source_minifig_number);
+
+create index if not exists admin_operation_logs_created_at_idx
+on public.admin_operation_logs (created_at desc);
+
+create index if not exists admin_operation_logs_operation_type_created_at_idx
+on public.admin_operation_logs (operation_type, created_at desc);
 
 create index if not exists commerce_merchants_is_active_idx
 on public.commerce_merchants (is_active);
@@ -579,6 +600,7 @@ grant execute on function public.refresh_catalog_theme_summaries() to service_ro
 
 alter table public.profiles enable row level security;
 alter table public.user_set_statuses enable row level security;
+alter table public.admin_operation_logs enable row level security;
 alter table public.wishlist_alert_notification_states enable row level security;
 alter table public.catalog_source_themes enable row level security;
 alter table public.catalog_themes enable row level security;
@@ -637,6 +659,12 @@ on public.user_set_statuses
 for delete
 to authenticated
 using ((select auth.uid()) = user_id);
+
+create policy "admin_operation_logs_service_role_all"
+on public.admin_operation_logs
+for all
+using (auth.role() = 'service_role')
+with check (auth.role() = 'service_role');
 
 create policy "wishlist_alert_notification_states_select_own"
 on public.wishlist_alert_notification_states

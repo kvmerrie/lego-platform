@@ -1,0 +1,155 @@
+<section class="admin-section">
+  <header class="admin-section__header">
+    <div class="admin-stack">
+      <p class="admin-eyebrow">Operations</p>
+      <h2>Cache Revalidation</h2>
+      <p class="admin-muted">
+        Revalidate public-web paths en cache-tags via de API. De secret blijft
+        server-side.
+      </p>
+    </div>
+  </header>
+
+  <section class="admin-panel admin-stack">
+    <div class="admin-section__header">
+      <div class="admin-stack admin-stack--tight">
+        <p class="admin-eyebrow">Presets</p>
+        <h3>Snelle invulacties</h3>
+      </div>
+    </div>
+
+    <div class="admin-actions">
+      @for (preset of presets; track preset.label) {
+      <button
+        class="admin-button admin-button--subtle admin-button--small"
+        type="button"
+        (click)="applyPreset(preset)"
+      >
+        {{ preset.label }}
+      </button>
+      }
+    </div>
+  </section>
+
+  <section class="admin-panel admin-stack">
+    <div class="cache-revalidation-grid">
+      <label class="admin-field">
+        <span>Paths</span>
+        <textarea
+          class="admin-textarea"
+          rows="8"
+          [ngModel]="pathsText()"
+          (ngModelChange)="updatePaths($event)"
+          placeholder="/&#10;/deals&#10;/sets/winnie-the-pooh-43300"
+        ></textarea>
+        <span class="admin-muted">Een path per regel. Maximaal 25.</span>
+      </label>
+
+      <label class="admin-field">
+        <span>Tags</span>
+        <textarea
+          class="admin-textarea"
+          rows="8"
+          [ngModel]="tagsText()"
+          (ngModelChange)="updateTags($event)"
+          placeholder="homepage&#10;deals&#10;set:43300"
+        ></textarea>
+        <span class="admin-muted">Een tag per regel. Maximaal 100.</span>
+      </label>
+    </div>
+
+    <label class="admin-field admin-field--full">
+      <span>Reason</span>
+      <input
+        class="admin-input"
+        [ngModel]="reason()"
+        (ngModelChange)="updateReason($event)"
+        placeholder="manual_set_fix"
+        type="text"
+      />
+    </label>
+
+    @if (clientWarnings().length > 0) {
+    <div class="admin-panel admin-panel--danger admin-stack admin-stack--tight">
+      <strong>Controleer deze invoer</strong>
+      <ul class="admin-list">
+        @for (warning of clientWarnings(); track warning) {
+        <li>{{ warning }}</li>
+        }
+      </ul>
+    </div>
+    }
+
+    <div class="admin-actions">
+      <button
+        class="admin-button admin-button--primary"
+        type="button"
+        [disabled]="!canSubmit()"
+        (click)="revalidate()"
+      >
+        {{ isRunning() ? 'Revalidating...' : 'Revalidate' }}
+      </button>
+      <button
+        class="admin-button admin-button--subtle"
+        type="button"
+        [disabled]="isRunning()"
+        (click)="resetForm()"
+      >
+        Reset form
+      </button>
+    </div>
+  </section>
+
+  @if (message()) {
+  <section class="admin-panel admin-stack admin-stack--tight">
+    <strong>Resultaat</strong>
+    <p class="admin-muted">{{ message() }}</p>
+  </section>
+  } @if (result(); as revalidationResult) {
+  <section class="admin-panel admin-stack">
+    <div class="admin-stats-grid">
+      <div class="admin-stat-card">
+        <span class="admin-stat-card__value"
+          >{{ revalidationResult.durationMs }}</span
+        >
+        <span class="admin-stat-card__label">ms</span>
+      </div>
+      <div class="admin-stat-card">
+        <span class="admin-stat-card__value"
+          >{{ revalidationResult.pathCount }}</span
+        >
+        <span class="admin-stat-card__label">paths</span>
+      </div>
+      <div class="admin-stat-card">
+        <span class="admin-stat-card__value"
+          >{{ revalidationResult.tagCount }}</span
+        >
+        <span class="admin-stat-card__label">tags</span>
+      </div>
+      <div class="admin-stat-card">
+        <span class="admin-stat-card__value"
+          >{{ revalidationResult.results.length }}</span
+        >
+        <span class="admin-stat-card__label">batches</span>
+      </div>
+    </div>
+
+    @if (revalidationResult.warnings.length > 0) {
+    <div class="admin-panel admin-panel--danger admin-stack admin-stack--tight">
+      <strong>Warnings</strong>
+      <ul class="admin-list">
+        @for (warning of revalidationResult.warnings; track warning) {
+        <li>{{ warning }}</li>
+        }
+      </ul>
+    </div>
+    }
+
+    <pre class="admin-panel cache-revalidation-result">
+{{
+      formatResult(revalidationResult)
+    }}</pre
+    >
+  </section>
+  }
+</section>

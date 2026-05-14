@@ -8,6 +8,7 @@ export * from './lib/catalog-minifig-onboarding-server';
 export * from './lib/catalog-promotion-server';
 export * from './lib/commerce-refresh-server';
 export * from './lib/commerce-sync-server';
+export * from './lib/admin-operation-log-server';
 export * from './lib/public-web-revalidation-server';
 export * from './lib/scheduled-job-reliability';
 export * from './lib/tradetracker-alternate-sync-server';
