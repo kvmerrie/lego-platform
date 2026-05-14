@@ -8,6 +8,9 @@ const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const REBRICKABLE_SOURCE_SYSTEM = 'rebrickable';
 const CATALOG_MINIFIG_SYNC_PAGE_SIZE = 1000;
 const REBRICKABLE_MINIFIG_PAGE_SIZE = 100;
+export const DEFAULT_CATALOG_MINIFIG_SYNC_LIMIT = 100;
+export const DEFAULT_REBRICKABLE_MINIFIG_REQUEST_DELAY_MS = 750;
+export const DEFAULT_REBRICKABLE_MINIFIG_MAX_RETRIES = 4;
 
 type CatalogMinifigSupabaseClient = Pick<SupabaseClient, 'from'>;
 type CatalogMinifigSyncMode = 'check' | 'write';
@@ -63,7 +66,14 @@ export interface CatalogMinifigSyncResult {
   durationMs: number;
   failedSetIds: readonly string[];
   failedSets: number;
+  isPartial: boolean;
+  lastProcessedSetId?: string;
+  limit: number | null;
   mode: CatalogMinifigSyncMode;
+  nextAfterSetId?: string;
+  processedSets: number;
+  rateLimitCount: number;
+  selectedSetCount: number;
   setsChecked: number;
   summariesUpserted: number;
   zeroMinifigSets: number;
@@ -79,8 +89,15 @@ export interface RunCatalogMinifigSyncOptions {
   loadExistingMinifigSummariesFn?: (
     setIds: readonly string[],
   ) => Promise<Map<string, CatalogSetMinifigSummary>>;
+  afterSetId?: string;
+  limit?: number | null;
+  onlyMissing?: boolean;
+  requestDelayMs?: number;
+  selectedSetIds?: readonly string[];
   mode: CatalogMinifigSyncMode;
+  maxRetries?: number;
   nowImpl?: () => Date;
+  sleepImpl?: (delayMs: number) => Promise<void>;
   upsertCatalogSetMinifigSummariesFn?: (
     rows: readonly CatalogSetMinifigSummaryUpsert[],
   ) => Promise<number>;
@@ -166,40 +183,124 @@ function isRebrickableNotFoundError(error: unknown): boolean {
   );
 }
 
-export async function fetchRebrickableSetMinifigSummary(
-  sourceSetNumber: string,
-): Promise<RebrickableSetMinifigSummary> {
+function isRebrickableRateLimitError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.message.includes('Rebrickable request failed (429)')
+  );
+}
+
+function wait(delayMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
+}
+
+export function selectCatalogSetsForMinifigSync({
+  afterSetId,
+  catalogSets,
+  existingSummaries,
+  limit,
+  onlyMissing = false,
+  selectedSetIds,
+}: {
+  afterSetId?: string;
+  catalogSets: readonly CatalogMinifigSyncCatalogSet[];
+  existingSummaries?: ReadonlyMap<string, CatalogSetMinifigSummary>;
+  limit?: number | null;
+  onlyMissing?: boolean;
+  selectedSetIds?: readonly string[];
+}): CatalogMinifigSyncCatalogSet[] {
+  const selectedSetIdSet = selectedSetIds?.length
+    ? new Set(selectedSetIds)
+    : undefined;
+  const normalizedLimit =
+    typeof limit === 'number' && Number.isInteger(limit) && limit >= 0
+      ? limit
+      : null;
+
+  const filteredSets = catalogSets.filter((catalogSet) => {
+    if (afterSetId && catalogSet.setId <= afterSetId) {
+      return false;
+    }
+
+    if (selectedSetIdSet && !selectedSetIdSet.has(catalogSet.setId)) {
+      return false;
+    }
+
+    if (onlyMissing && existingSummaries?.has(catalogSet.setId)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  return normalizedLimit === null
+    ? filteredSets
+    : filteredSets.slice(0, normalizedLimit);
+}
+
+export function createRebrickableSetMinifigSummaryFetcher({
+  maxRetries = DEFAULT_REBRICKABLE_MINIFIG_MAX_RETRIES,
+  minimumRequestSpacingMs = DEFAULT_REBRICKABLE_MINIFIG_REQUEST_DELAY_MS,
+  onRateLimit,
+}: {
+  maxRetries?: number;
+  minimumRequestSpacingMs?: number;
+  onRateLimit?: () => void;
+} = {}): (sourceSetNumber: string) => Promise<RebrickableSetMinifigSummary> {
   const rebrickableConfig = getRebrickableApiConfig();
   const rebrickableClient = createRebrickableClient({
     apiKey: rebrickableConfig.apiKey,
     baseUrl: rebrickableConfig.baseUrl,
-  });
-  const payloads: unknown[] = [];
-
-  try {
-    for (let page = 1; ; page += 1) {
-      const payload = await rebrickableClient.listSetMinifigs(sourceSetNumber, {
-        page,
-        pageSize: REBRICKABLE_MINIFIG_PAGE_SIZE,
-      });
-      payloads.push(payload);
-
-      if (!isRecord(payload) || !payload['next']) {
-        break;
+    maxRetries,
+    minimumRequestSpacingMs,
+    logImpl: (message) => {
+      if (message.includes('rebrickable 429')) {
+        onRateLimit?.();
       }
-    }
-  } catch (error) {
-    if (isRebrickableNotFoundError(error)) {
-      return {
-        minifigCount: 0,
-        sourceMinifigCount: 0,
-      };
+
+      console.warn(message);
+    },
+  });
+
+  return async (sourceSetNumber) => {
+    const payloads: unknown[] = [];
+
+    try {
+      for (let page = 1; ; page += 1) {
+        const payload = await rebrickableClient.listSetMinifigs(
+          sourceSetNumber,
+          {
+            page,
+            pageSize: REBRICKABLE_MINIFIG_PAGE_SIZE,
+          },
+        );
+        payloads.push(payload);
+
+        if (!isRecord(payload) || !payload['next']) {
+          break;
+        }
+      }
+    } catch (error) {
+      if (isRebrickableNotFoundError(error)) {
+        return {
+          minifigCount: 0,
+          sourceMinifigCount: 0,
+        };
+      }
+
+      throw error;
     }
 
-    throw error;
-  }
+    return summarizeRebrickableSetMinifigPayloads(payloads);
+  };
+}
 
-  return summarizeRebrickableSetMinifigPayloads(payloads);
+export async function fetchRebrickableSetMinifigSummary(
+  sourceSetNumber: string,
+): Promise<RebrickableSetMinifigSummary> {
+  return createRebrickableSetMinifigSummaryFetcher()(sourceSetNumber);
 }
 
 export async function listCatalogSetsForMinifigSync({
@@ -313,12 +414,19 @@ export async function upsertCatalogSetMinifigSummaries({
 }
 
 export async function runCatalogMinifigSync({
-  fetchRebrickableSetMinifigSummaryFn = fetchRebrickableSetMinifigSummary,
+  fetchRebrickableSetMinifigSummaryFn,
+  afterSetId,
   listCatalogSetsForMinifigSyncFn = () => listCatalogSetsForMinifigSync(),
   loadExistingMinifigSummariesFn = (setIds) =>
     loadExistingMinifigSummaries({ setIds }),
+  limit = DEFAULT_CATALOG_MINIFIG_SYNC_LIMIT,
   mode,
+  maxRetries = DEFAULT_REBRICKABLE_MINIFIG_MAX_RETRIES,
   nowImpl = () => new Date(),
+  onlyMissing = false,
+  requestDelayMs = DEFAULT_REBRICKABLE_MINIFIG_REQUEST_DELAY_MS,
+  selectedSetIds,
+  sleepImpl = wait,
   upsertCatalogSetMinifigSummariesFn = (rows) =>
     upsertCatalogSetMinifigSummaries({ rows }),
 }: RunCatalogMinifigSyncOptions): Promise<CatalogMinifigSyncResult> {
@@ -327,15 +435,40 @@ export async function runCatalogMinifigSync({
   const existingSummaries = await loadExistingMinifigSummariesFn(
     catalogSets.map((catalogSet) => catalogSet.setId),
   );
+  const selectedCatalogSets = selectCatalogSetsForMinifigSync({
+    afterSetId,
+    catalogSets,
+    existingSummaries,
+    limit,
+    onlyMissing,
+    selectedSetIds,
+  });
   const failedSetIds: string[] = [];
   const changedSetIds: string[] = [];
   const changedSetSlugs: string[] = [];
   const summaryRowsToUpsert: CatalogSetMinifigSummaryUpsert[] = [];
   let zeroMinifigSets = 0;
+  let rateLimitCount = 0;
+  let lastProcessedSetId: string | undefined;
+  const fetchSetMinifigSummary =
+    fetchRebrickableSetMinifigSummaryFn ??
+    createRebrickableSetMinifigSummaryFetcher({
+      maxRetries,
+      minimumRequestSpacingMs: requestDelayMs,
+      onRateLimit: () => {
+        rateLimitCount += 1;
+      },
+    });
 
-  for (const catalogSet of catalogSets) {
+  for (const [index, catalogSet] of selectedCatalogSets.entries()) {
+    if (index > 0 && requestDelayMs > 0) {
+      await sleepImpl(requestDelayMs);
+    }
+
+    lastProcessedSetId = catalogSet.setId;
+
     try {
-      const fetchedSummary = await fetchRebrickableSetMinifigSummaryFn(
+      const fetchedSummary = await fetchSetMinifigSummary(
         catalogSet.sourceSetNumber,
       );
       const existingSummary = existingSummaries.get(catalogSet.setId);
@@ -369,7 +502,11 @@ export async function runCatalogMinifigSync({
           updated_at: now,
         });
       }
-    } catch {
+    } catch (error) {
+      if (isRebrickableRateLimitError(error)) {
+        rateLimitCount += 1;
+      }
+
       failedSetIds.push(catalogSet.setId);
     }
   }
@@ -379,6 +516,29 @@ export async function runCatalogMinifigSync({
       ? await upsertCatalogSetMinifigSummariesFn(summaryRowsToUpsert)
       : 0;
 
+  const processedSets = selectedCatalogSets.length;
+  const selectedSetIdsSet = selectedSetIds?.length
+    ? new Set(selectedSetIds)
+    : undefined;
+  const remainingCatalogSets = selectCatalogSetsForMinifigSync({
+    afterSetId: lastProcessedSetId ?? afterSetId,
+    catalogSets,
+    existingSummaries,
+    limit: null,
+    onlyMissing,
+    selectedSetIds,
+  });
+  const nextAfterSetId =
+    selectedSetIdsSet || remainingCatalogSets.length === 0
+      ? undefined
+      : (lastProcessedSetId ?? afterSetId);
+  const isPartial =
+    selectedCatalogSets.length < catalogSets.length &&
+    (Boolean(afterSetId) ||
+      Boolean(onlyMissing) ||
+      Boolean(selectedSetIds?.length) ||
+      remainingCatalogSets.length > 0);
+
   return {
     changedSetIds,
     changedSetSlugs,
@@ -386,8 +546,18 @@ export async function runCatalogMinifigSync({
     durationMs: Date.now() - startedAt,
     failedSetIds,
     failedSets: failedSetIds.length,
+    isPartial,
+    ...(lastProcessedSetId ? { lastProcessedSetId } : {}),
+    limit:
+      typeof limit === 'number' && Number.isInteger(limit) && limit >= 0
+        ? limit
+        : null,
     mode,
-    setsChecked: catalogSets.length,
+    ...(nextAfterSetId ? { nextAfterSetId } : {}),
+    processedSets,
+    rateLimitCount,
+    selectedSetCount: selectedCatalogSets.length,
+    setsChecked: processedSets,
     summariesUpserted,
     zeroMinifigSets,
   };

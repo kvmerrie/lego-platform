@@ -20,7 +20,8 @@ currently reports no minifigures for that set.
 
 ```bash
 pnpm sync:minifigs:check
-pnpm sync:minifigs
+pnpm sync:minifigs -- --limit 100
+pnpm sync:minifigs -- --after-set-id 10316 --limit 100
 ```
 
 Required environment:
@@ -33,9 +34,34 @@ Required environment:
   revalidation after write mode changes
 
 Check mode reads Supabase and Rebrickable, reports drift, and writes nothing.
-Write mode upserts changed summaries only, so repeated runs are idempotent.
-If a Rebrickable request fails for a set, the sync logs the failure count and
-does not erase the existing summary.
+By default, check and write mode process a conservative batch of 100 sets. Do
+not run a full all-set check casually; use `--all` only when you intentionally
+want to query every catalog set.
+
+Write mode upserts changed summaries only, so repeated runs are idempotent. If
+a Rebrickable request fails for a set, the sync logs the failure count and does
+not erase the existing summary.
+
+Useful options:
+
+- `--limit <n>`: process at most `n` sets. Default: 100.
+- `--all`: process all selected sets.
+- `--after-set-id <id>`: resume after the last processed catalog set id.
+- `--set-id <id>` or `--set-ids <id,id>`: process specific sets only.
+- `--only-missing`: skip sets that already have a summary row.
+- `--request-delay-ms <n>`: delay between Rebrickable requests. Default: 750.
+- `--max-retries <n>`: cap Rebrickable retry attempts. Retry-After is honored.
+
+Recommended initial backfill:
+
+```bash
+pnpm sync:minifigs -- --limit 100
+pnpm sync:minifigs -- --after-set-id <next_after_set_id> --limit 100
+pnpm sync:minifigs -- --after-set-id <next_after_set_id> --limit 100
+```
+
+Use the `next_after_set_id` emitted at the end of each run as the next cursor.
+For a safer interrupted restart, combine the cursor with `--only-missing`.
 
 ## Revalidation
 

@@ -17,6 +17,19 @@ const catalogSets = [
     sourceSetNumber: '21326-1',
   },
 ];
+const extendedCatalogSets = [
+  ...catalogSets,
+  {
+    setId: '75355',
+    slug: 'x-wing-starfighter-75355',
+    sourceSetNumber: '75355-1',
+  },
+  {
+    setId: '76419',
+    slug: 'hogwarts-castle-and-grounds-76419',
+    sourceSetNumber: '76419-1',
+  },
+];
 
 function toExistingSummary(
   summaries: readonly CatalogSetMinifigSummary[],
@@ -62,6 +75,7 @@ describe('catalog minifig enrichment sync', () => {
       loadExistingMinifigSummariesFn: async () => toExistingSummary([]),
       mode: 'write',
       nowImpl: () => new Date('2026-05-14T10:00:00.000Z'),
+      requestDelayMs: 0,
       upsertCatalogSetMinifigSummariesFn,
     });
 
@@ -98,6 +112,7 @@ describe('catalog minifig enrichment sync', () => {
           },
         ]),
       mode: 'write',
+      requestDelayMs: 0,
       upsertCatalogSetMinifigSummariesFn,
     });
 
@@ -129,6 +144,7 @@ describe('catalog minifig enrichment sync', () => {
           },
         ]),
       mode: 'check',
+      requestDelayMs: 0,
       upsertCatalogSetMinifigSummariesFn,
     });
 
@@ -159,6 +175,7 @@ describe('catalog minifig enrichment sync', () => {
           },
         ]),
       mode: 'write',
+      requestDelayMs: 0,
       upsertCatalogSetMinifigSummariesFn,
     });
 
@@ -189,6 +206,7 @@ describe('catalog minifig enrichment sync', () => {
           },
         ]),
       mode: 'write',
+      requestDelayMs: 0,
       upsertCatalogSetMinifigSummariesFn,
     });
 
@@ -196,5 +214,169 @@ describe('catalog minifig enrichment sync', () => {
     expect(result.changedSetSlugs).toEqual([
       'the-lord-of-the-rings-rivendell-10316',
     ]);
+  });
+
+  test('limit processes only the requested number of sets and reports a cursor', async () => {
+    const fetchedSetNumbers: string[] = [];
+
+    const result = await runCatalogMinifigSync({
+      fetchRebrickableSetMinifigSummaryFn: async (sourceSetNumber) => {
+        fetchedSetNumbers.push(sourceSetNumber);
+
+        return {
+          minifigCount: 1,
+          sourceMinifigCount: 1,
+        };
+      },
+      limit: 2,
+      listCatalogSetsForMinifigSyncFn: async () => extendedCatalogSets,
+      loadExistingMinifigSummariesFn: async () => toExistingSummary([]),
+      mode: 'check',
+      requestDelayMs: 0,
+    });
+
+    expect(fetchedSetNumbers).toEqual(['10316-1', '21326-1']);
+    expect(result).toMatchObject({
+      isPartial: true,
+      lastProcessedSetId: '21326',
+      nextAfterSetId: '21326',
+      processedSets: 2,
+      selectedSetCount: 2,
+    });
+  });
+
+  test('after-set-id resumes after the cursor', async () => {
+    const fetchedSetNumbers: string[] = [];
+
+    const result = await runCatalogMinifigSync({
+      afterSetId: '21326',
+      fetchRebrickableSetMinifigSummaryFn: async (sourceSetNumber) => {
+        fetchedSetNumbers.push(sourceSetNumber);
+
+        return {
+          minifigCount: 1,
+          sourceMinifigCount: 1,
+        };
+      },
+      limit: 1,
+      listCatalogSetsForMinifigSyncFn: async () => extendedCatalogSets,
+      loadExistingMinifigSummariesFn: async () => toExistingSummary([]),
+      mode: 'check',
+      requestDelayMs: 0,
+    });
+
+    expect(fetchedSetNumbers).toEqual(['75355-1']);
+    expect(result).toMatchObject({
+      lastProcessedSetId: '75355',
+      nextAfterSetId: '75355',
+      processedSets: 1,
+    });
+  });
+
+  test('only-missing skips sets with existing summaries before applying limit', async () => {
+    const fetchedSetNumbers: string[] = [];
+
+    const result = await runCatalogMinifigSync({
+      fetchRebrickableSetMinifigSummaryFn: async (sourceSetNumber) => {
+        fetchedSetNumbers.push(sourceSetNumber);
+
+        return {
+          minifigCount: 1,
+          sourceMinifigCount: 1,
+        };
+      },
+      limit: 2,
+      listCatalogSetsForMinifigSyncFn: async () => extendedCatalogSets,
+      loadExistingMinifigSummariesFn: async () =>
+        toExistingSummary([
+          {
+            minifigCount: 15,
+            setId: '10316',
+            sourceMinifigCount: 15,
+          },
+        ]),
+      mode: 'write',
+      onlyMissing: true,
+      requestDelayMs: 0,
+      upsertCatalogSetMinifigSummariesFn: async (rows) => rows.length,
+    });
+
+    expect(fetchedSetNumbers).toEqual(['21326-1', '75355-1']);
+    expect(result.processedSets).toBe(2);
+    expect(result.nextAfterSetId).toBe('75355');
+  });
+
+  test('set-id selection fetches only explicit sets without a resume cursor', async () => {
+    const fetchedSetNumbers: string[] = [];
+
+    const result = await runCatalogMinifigSync({
+      fetchRebrickableSetMinifigSummaryFn: async (sourceSetNumber) => {
+        fetchedSetNumbers.push(sourceSetNumber);
+
+        return {
+          minifigCount: 1,
+          sourceMinifigCount: 1,
+        };
+      },
+      listCatalogSetsForMinifigSyncFn: async () => extendedCatalogSets,
+      loadExistingMinifigSummariesFn: async () => toExistingSummary([]),
+      mode: 'check',
+      requestDelayMs: 0,
+      selectedSetIds: ['76419', '10316'],
+    });
+
+    expect(fetchedSetNumbers).toEqual(['10316-1', '76419-1']);
+    expect(result.nextAfterSetId).toBeUndefined();
+  });
+
+  test('rate-limit failures are counted without erasing existing summaries', async () => {
+    const result = await runCatalogMinifigSync({
+      fetchRebrickableSetMinifigSummaryFn: async () => {
+        throw new Error(
+          'Rebrickable request failed (429) for /lego/sets/10316-1/minifigs/ after 5 attempts.',
+        );
+      },
+      listCatalogSetsForMinifigSyncFn: async () => [catalogSets[0]],
+      loadExistingMinifigSummariesFn: async () =>
+        toExistingSummary([
+          {
+            minifigCount: 15,
+            setId: '10316',
+            sourceMinifigCount: 15,
+          },
+        ]),
+      mode: 'write',
+      requestDelayMs: 0,
+      upsertCatalogSetMinifigSummariesFn: async (rows) => rows.length,
+    });
+
+    expect(result).toMatchObject({
+      failedSetIds: ['10316'],
+      failedSets: 1,
+      rateLimitCount: 1,
+      summariesUpserted: 0,
+    });
+  });
+
+  test('write mode outputs next cursor for resumable backfills', async () => {
+    const result = await runCatalogMinifigSync({
+      fetchRebrickableSetMinifigSummaryFn: async () => ({
+        minifigCount: 1,
+        sourceMinifigCount: 1,
+      }),
+      limit: 2,
+      listCatalogSetsForMinifigSyncFn: async () => extendedCatalogSets,
+      loadExistingMinifigSummariesFn: async () => toExistingSummary([]),
+      mode: 'write',
+      requestDelayMs: 0,
+      upsertCatalogSetMinifigSummariesFn: async (rows) => rows.length,
+    });
+
+    expect(result).toMatchObject({
+      isPartial: true,
+      nextAfterSetId: '21326',
+      processedSets: 2,
+      summariesUpserted: 2,
+    });
   });
 });
