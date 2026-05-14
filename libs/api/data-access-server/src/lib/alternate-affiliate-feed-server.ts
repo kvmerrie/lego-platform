@@ -3,6 +3,7 @@ import {
   createCommerceMerchant,
   listCommerceMerchants,
   listCommerceOfferSeeds,
+  refreshCommerceOfferLatestObservation,
   upsertCommerceAffiliateDiscoveredSet,
   upsertCommerceOfferLatestRecord,
   upsertCommerceOfferSeedByCompositeKey,
@@ -54,7 +55,9 @@ export interface AlternateAffiliateFeedRow {
 export interface AlternateAffiliateFeedImportResult {
   changedSetIds: readonly string[];
   changedSetSlugs: readonly string[];
+  changedLatestOfferCount: number;
   importedOfferCount: number;
+  matchedOfferCount: number;
   matchedCatalogSetCount: number;
   merchantCreated: boolean;
   merchantSlug: string;
@@ -67,6 +70,8 @@ export interface AlternateAffiliateFeedImportResult {
   skippedUnmatchedSetCount: number;
   totalRowCount: number;
   unmatchedDebug?: AlternateAffiliateFeedUnmatchedDebugInfo;
+  unchangedLatestRefreshSkippedCount: number;
+  unchangedLatestTimestampRefreshedCount: number;
   upsertedLatestCount: number;
   upsertedSeedCount: number;
   discoveredMissingSetCount: number;
@@ -81,6 +86,7 @@ export interface AlternateAffiliateFeedImportDependencies {
   listCanonicalCatalogSetsFn?: typeof listCanonicalCatalogSets;
   listCommerceMerchantsFn?: typeof listCommerceMerchants;
   listCommerceOfferSeedsFn?: typeof listCommerceOfferSeeds;
+  refreshCommerceOfferLatestObservationFn?: typeof refreshCommerceOfferLatestObservation;
   upsertCommerceOfferLatestRecordFn?: typeof upsertCommerceOfferLatestRecord;
   upsertCommerceOfferSeedByCompositeKeyFn?: typeof upsertCommerceOfferSeedByCompositeKey;
   upsertDiscoveredAffiliateSetFn?: typeof upsertCommerceAffiliateDiscoveredSet;
@@ -557,6 +563,7 @@ export async function importAffiliateFeedRowsForMerchant({
     listCanonicalCatalogSetsFn = listCanonicalCatalogSets,
     listCommerceMerchantsFn = listCommerceMerchants,
     listCommerceOfferSeedsFn = listCommerceOfferSeeds,
+    refreshCommerceOfferLatestObservationFn = refreshCommerceOfferLatestObservation,
     upsertCommerceOfferLatestRecordFn = upsertCommerceOfferLatestRecord,
     upsertCommerceOfferSeedByCompositeKeyFn = upsertCommerceOfferSeedByCompositeKey,
     upsertDiscoveredAffiliateSetFn = upsertCommerceAffiliateDiscoveredSet,
@@ -597,8 +604,10 @@ export async function importAffiliateFeedRowsForMerchant({
   );
   const observedAt = getNow().toISOString();
   const matchedCatalogSetIds = new Set<string>();
+  const matchedOfferSeedIds = new Set<string>();
   const upsertedSeedIds = new Set<string>();
   const upsertedLatestSeedIds = new Set<string>();
+  const timestampRefreshedLatestSeedIds = new Set<string>();
   const changedSetIds = new Set<string>();
   const discoveredMissingSetIds = new Set<string>();
   const autoImportableMissingSetIds = new Set<string>();
@@ -611,6 +620,7 @@ export async function importAffiliateFeedRowsForMerchant({
   let skippedInvalidCurrencyCount = 0;
   let skippedInvalidPriceCount = 0;
   let skippedInvalidDeeplinkCount = 0;
+  let unchangedLatestRefreshSkippedCount = 0;
   const unmatchedRowsBySetId = new Map<
     string,
     AlternateAffiliateFeedUnmatchedSetSummary
@@ -814,13 +824,23 @@ export async function importAffiliateFeedRowsForMerchant({
       input: latestOfferInput,
     });
 
-    if (latestOfferContentChanged || latestOfferObservationChanged) {
+    if (latestOfferContentChanged) {
       await upsertCommerceOfferLatestRecordFn({
         input: latestOfferInput,
       });
+    } else if (latestOfferObservationChanged) {
+      await refreshCommerceOfferLatestObservationFn({
+        fetchedAt: latestOfferInput.fetchedAt ?? observedAt,
+        observedAt: latestOfferInput.observedAt ?? observedAt,
+        offerSeedId: latestOfferInput.offerSeedId,
+      });
+      timestampRefreshedLatestSeedIds.add(offerSeed.id);
+    } else {
+      unchangedLatestRefreshSkippedCount += 1;
     }
 
     matchedCatalogSetIds.add(matchedCatalogSetId);
+    matchedOfferSeedIds.add(offerSeed.id);
 
     if (seedContentChanged) {
       upsertedSeedIds.add(offerSeed.id);
@@ -842,7 +862,9 @@ export async function importAffiliateFeedRowsForMerchant({
         return slug ? [slug] : [];
       })
       .sort(),
+    changedLatestOfferCount: upsertedLatestSeedIds.size,
     importedOfferCount: upsertedLatestSeedIds.size,
+    matchedOfferCount: matchedOfferSeedIds.size,
     matchedCatalogSetCount: matchedCatalogSetIds.size,
     merchantCreated,
     merchantSlug: resolvedMerchant.slug,
@@ -854,6 +876,9 @@ export async function importAffiliateFeedRowsForMerchant({
     skippedNonNewCount,
     skippedUnmatchedSetCount,
     totalRowCount: rows.length,
+    unchangedLatestRefreshSkippedCount,
+    unchangedLatestTimestampRefreshedCount:
+      timestampRefreshedLatestSeedIds.size,
     upsertedLatestCount: upsertedLatestSeedIds.size,
     upsertedSeedCount: upsertedSeedIds.size,
     discoveredMissingSetCount: discoveredMissingSetIds.size,

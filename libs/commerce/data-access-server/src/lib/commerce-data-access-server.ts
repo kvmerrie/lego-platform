@@ -1450,6 +1450,32 @@ export async function upsertCommerceOfferLatestRecord({
   }
 }
 
+export async function refreshCommerceOfferLatestObservation({
+  fetchedAt,
+  observedAt,
+  offerSeedId,
+  supabaseClient = getServerSupabaseAdminClient(),
+}: {
+  fetchedAt: string;
+  observedAt: string;
+  offerSeedId: string;
+  supabaseClient?: CommerceSupabaseClient;
+}): Promise<void> {
+  const { error } = await supabaseClient
+    .from(COMMERCE_OFFER_LATEST_TABLE)
+    .update({
+      observed_at: observedAt,
+      fetched_at: fetchedAt,
+    })
+    .eq('offer_seed_id', offerSeedId);
+
+  if (error) {
+    throw new Error(
+      'Unable to refresh the commerce latest offer observation timestamp.',
+    );
+  }
+}
+
 export async function upsertCommerceOfferSeedByCompositeKey({
   input,
   supabaseClient = getServerSupabaseAdminClient(),
