@@ -4,6 +4,8 @@ Brickhunt deploys from `main` with an Nx affected-based router so small changes 
 
 The workflow is `.github/workflows/affected-production-deploy.yml` and appears in GitHub Actions as `Production Deploy Router`.
 
+Push deployments are gated by CI. A merge to `main` first runs the `CI` workflow. The deploy router starts only from a `workflow_run` event after `CI` completes successfully on `main`; failed or cancelled CI runs do not deploy anything.
+
 Production providers should use deploy hooks from this workflow as the production trigger. Disable provider-side automatic deploys from every `main` push for services that are managed here, otherwise the provider can still deploy even when the router intentionally selects no target.
 
 For the public web Vercel project, automatic Git deployments from `main` are disabled in `vercel.json` with:
@@ -24,21 +26,25 @@ Do not use Vercel's Ignored Build Step for this policy. Ignored Build Step can c
 
 ## How routing works
 
-1. GitHub Actions checks out the merge commit on `main`.
-2. The workflow calculates changed files with `git diff --name-only <base> <head>`.
-3. Nx calculates affected projects with:
+1. A push to `main` runs `CI`.
+2. When `CI` completes with `conclusion=success` on `head_branch=main`, GitHub starts `Production Deploy Router`.
+3. The workflow checks out `github.event.workflow_run.head_sha`.
+4. The affected range is `github.event.workflow_run.head_sha~1` to `github.event.workflow_run.head_sha`.
+5. The workflow calculates changed files with `git diff --name-only <base> <head>`.
+6. Nx calculates affected projects with:
 
    ```bash
    pnpm nx show projects --affected --base=<base> --head=<head>
    ```
 
-4. `scripts/affected-deployment-router.mjs` maps affected projects to production deploy targets.
-5. The workflow logs:
+7. `scripts/affected-deployment-router.mjs` maps affected projects to production deploy targets.
+8. The workflow logs:
+   - CI trigger metadata
    - changed files
    - affected Nx projects
    - selected deploy targets
    - routing reason
-6. Only the selected deploy hooks are triggered.
+9. Only the selected deploy hooks are triggered.
 
 If Nx affected detection fails or is uncertain, the workflow fails safe by deploying only:
 
@@ -66,6 +72,8 @@ Manual dispatch defaults to `production`. Pushes to `main` always use the produc
 
 When `deploy_targets` is provided, manual targets override affected detection entirely. The workflow skips affected range/diff/project detection and deploys exactly the requested targets after validation. Unknown target names fail before any deploy hook is called.
 Only `web` and `api` are supported manual targets for now.
+
+When `deploy_targets` is omitted on a manual run, the workflow falls back to affected detection. Operators may provide `base_ref` and `head_ref`; otherwise the workflow compares `HEAD~1` to `HEAD`.
 
 ## Target mapping
 

@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import { describe, expect, test, vi } from 'vitest';
+import type { AlternateAffiliateFeedImportResult } from '@lego-platform/api/data-access-server';
 import type {
   CommerceBenchmarkSet,
   CommerceAffiliateDiscoveredSet,
@@ -41,6 +42,40 @@ import {
   type AdminCommerceService,
 } from '../app/routes/admin-commerce';
 
+function createMockAlternateFeedImportResult(
+  overrides: Partial<AlternateAffiliateFeedImportResult> = {},
+): AlternateAffiliateFeedImportResult {
+  return {
+    autoImportableMissingSetCount: 0,
+    changedLatestOfferCount: 1,
+    changedSetIds: ['10316'],
+    changedSetSlugs: ['rivendell-10316'],
+    discoveredMissingSetCount: 0,
+    ignoredOrNonSetMissingSetCount: 0,
+    importedOfferCount: 1,
+    latestRowsMarkedStaleCount: 0,
+    latestRowsSeenCount: 1,
+    matchedCatalogSetCount: 1,
+    matchedOfferCount: 1,
+    merchantCreated: true,
+    merchantSlug: 'alternate',
+    reviewNeededMissingSetCount: 0,
+    skippedInvalidCurrencyCount: 0,
+    skippedInvalidDeeplinkCount: 0,
+    skippedInvalidPriceCount: 0,
+    skippedMissingSetNumberCount: 0,
+    skippedNonLegoCount: 0,
+    skippedNonNewCount: 0,
+    skippedUnmatchedSetCount: 0,
+    totalRowCount: 1,
+    unchangedLatestRefreshSkippedCount: 0,
+    unchangedLatestTimestampRefreshedCount: 0,
+    upsertedLatestCount: 1,
+    upsertedSeedCount: 1,
+    ...overrides,
+  };
+}
+
 async function createAdminCommerceServer({
   commerceService,
   getExpectedAdminSecret,
@@ -51,28 +86,9 @@ async function createAdminCommerceServer({
   isProductionEnvironment?: () => boolean;
 } = {}) {
   const nextCommerceService: AdminCommerceService = commerceService ?? {
-    importAlternateFeed: vi.fn(async () => ({
-      autoImportableMissingSetCount: 0,
-      changedSetIds: ['10316'],
-      changedSetSlugs: ['rivendell-10316'],
-      discoveredMissingSetCount: 0,
-      ignoredOrNonSetMissingSetCount: 0,
-      importedOfferCount: 1,
-      matchedCatalogSetCount: 1,
-      merchantCreated: true,
-      reviewNeededMissingSetCount: 0,
-      merchantSlug: 'alternate',
-      skippedInvalidCurrencyCount: 0,
-      skippedInvalidDeeplinkCount: 0,
-      skippedInvalidPriceCount: 0,
-      skippedMissingSetNumberCount: 0,
-      skippedNonLegoCount: 0,
-      skippedNonNewCount: 0,
-      skippedUnmatchedSetCount: 0,
-      totalRowCount: 1,
-      upsertedLatestCount: 1,
-      upsertedSeedCount: 1,
-    })),
+    importAlternateFeed: vi.fn(async () =>
+      createMockAlternateFeedImportResult(),
+    ),
     importDiscoveredSets: vi.fn(
       async () =>
         ({
