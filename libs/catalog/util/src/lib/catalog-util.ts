@@ -770,6 +770,7 @@ export type CatalogCanonicalSetStatus = CatalogOverlaySetStatus;
 export interface CatalogCanonicalSet {
   createdAt: string;
   imageUrl?: string;
+  minifigureCount?: number;
   name: string;
   pieceCount: number;
   primaryTheme: string;

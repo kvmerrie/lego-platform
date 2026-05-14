@@ -1,5 +1,12 @@
 export interface RebrickableClient {
   getSet(setNumber: string): Promise<unknown>;
+  listSetMinifigs(
+    setNumber: string,
+    options?: {
+      page?: number;
+      pageSize?: number;
+    },
+  ): Promise<unknown>;
   listSets(options?: {
     minYear?: number;
     ordering?: string;
@@ -171,6 +178,28 @@ export function createRebrickableClient({
   return {
     getSet(setNumber: string) {
       return requestJson(`/lego/sets/${encodeURIComponent(setNumber)}/`);
+    },
+    listSetMinifigs(
+      setNumber: string,
+      options?: {
+        page?: number;
+        pageSize?: number;
+      },
+    ) {
+      const page = Math.max(1, Math.floor(options?.page ?? 1));
+      const pageSize = Math.max(
+        1,
+        Math.min(1000, Math.floor(options?.pageSize ?? 100)),
+      );
+
+      return requestJson(
+        `/lego/sets/${encodeURIComponent(
+          setNumber,
+        )}/minifigs/${buildListQueryString({
+          page,
+          page_size: pageSize,
+        })}`,
+      );
     },
     listSets(options) {
       const page = Math.max(1, Math.floor(options?.page ?? 1));

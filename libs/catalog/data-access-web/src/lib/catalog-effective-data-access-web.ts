@@ -63,6 +63,7 @@ import {
 } from '@lego-platform/shared/config';
 
 const CATALOG_SETS_TABLE = 'catalog_sets';
+const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
@@ -149,6 +150,11 @@ interface CatalogSetRow {
   source_set_number: string;
   status: 'active';
   updated_at: string;
+}
+
+interface CatalogSetMinifigSummaryRow {
+  minifig_count: number;
+  set_id: string;
 }
 
 interface CatalogSourceThemeRow {
@@ -629,10 +635,10 @@ function normalizeCatalogResolvedOfferRecord(
   ]);
   const checkedAt = readCatalogOfferStringField(value, [
     'checkedAt',
-    'fetchedAt',
-    'fetched_at',
     'observedAt',
     'observed_at',
+    'fetchedAt',
+    'fetched_at',
     'updatedAt',
     'updated_at',
   ]);
@@ -846,14 +852,18 @@ function toCatalogSetDetailFromCanonicalSet(
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
+    ...(typeof canonicalCatalogSet.minifigureCount === 'number'
+      ? {
+          minifigureCount: canonicalCatalogSet.minifigureCount,
+        }
+      : catalogSetOverlay?.minifigureCount
+        ? {
+            minifigureCount: catalogSetOverlay.minifigureCount,
+          }
+        : {}),
     ...(catalogSetOverlay?.recommendedAge
       ? {
           recommendedAge: catalogSetOverlay.recommendedAge,
-        }
-      : {}),
-    ...(catalogSetOverlay?.minifigureCount
-      ? {
-          minifigureCount: catalogSetOverlay.minifigureCount,
         }
       : {}),
     ...(catalogSetOverlay?.minifigureHighlights?.length
@@ -879,6 +889,32 @@ function toCatalogSetDetailFromCanonicalSet(
         }
       : {}),
   };
+}
+
+async function getCatalogSetMinifigCountBySetId({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<number | undefined> {
+  const { data, error } = await supabaseClient
+    .from(CATALOG_SET_MINIFIG_SUMMARIES_TABLE)
+    .select('set_id, minifig_count')
+    .eq('set_id', setId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load catalog set minifig summary.');
+  }
+
+  const summary = data as CatalogSetMinifigSummaryRow | null;
+
+  if (!summary || typeof summary.minifig_count !== 'number') {
+    return undefined;
+  }
+
+  return summary.minifig_count;
 }
 
 async function listCatalogThemeIdentityBySetId({
@@ -1239,8 +1275,8 @@ function toCatalogRuntimeOffer({
   }
 
   const checkedAt =
-    latestOffer.fetched_at ??
     latestOffer.observed_at ??
+    latestOffer.fetched_at ??
     latestOffer.updated_at ??
     undefined;
 
@@ -6151,7 +6187,30 @@ export async function getCatalogSetBySlug({
     return undefined;
   }
 
-  return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
+  if (listCanonicalCatalogSetsFn !== listCanonicalCatalogSets) {
+    return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
+  }
+
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
+  }
+
+  const minifigureCount = await getCatalogSetMinifigCountBySetId({
+    setId: canonicalCatalogSet.setId,
+    supabaseClient: activeSupabaseClient,
+  });
+
+  return toCatalogSetDetailFromCanonicalSet({
+    ...canonicalCatalogSet,
+    ...(typeof minifigureCount === 'number'
+      ? {
+          minifigureCount,
+        }
+      : {}),
+  });
 }
 
 function getCatalogSearchMatchScore({

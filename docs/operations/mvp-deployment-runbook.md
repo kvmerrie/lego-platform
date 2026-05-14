@@ -9,6 +9,7 @@ This document describes the smallest reliable deployment setup for the current L
 - `docs/operations/production-auth-hardening.md`
 - `docs/operations/supabase-auth-foundation.md`
 - `docs/operations/catalog-sync.md`
+- `docs/operations/catalog-minifig-enrichment.md`
 - `docs/operations/catalog-sync-validation.md`
 - `docs/operations/commerce-sync.md`
 - `docs/operations/commerce-sync-validation.md`

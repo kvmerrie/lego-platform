@@ -353,6 +353,7 @@ function createCatalogSupabaseClientMock({
   primaryThemeRows = [],
   latestOfferRows,
   merchantRows,
+  minifigSummaryRows = [],
   offerSeedRows,
   onSelect,
   sourceThemeRows = [],
@@ -363,6 +364,7 @@ function createCatalogSupabaseClientMock({
   primaryThemeRows?: readonly Record<string, unknown>[];
   latestOfferRows: readonly Record<string, unknown>[];
   merchantRows: readonly Record<string, unknown>[];
+  minifigSummaryRows?: readonly Record<string, unknown>[];
   offerSeedRows: readonly Record<string, unknown>[];
   onSelect?: (table: string, args: unknown[]) => void;
   sourceThemeRows?: readonly Record<string, unknown>[];
@@ -404,6 +406,12 @@ function createCatalogSupabaseClientMock({
 
       if (table === 'catalog_theme_summaries') {
         return createSupabaseTableBuilder(themeSummaryRows, {
+          onSelect: (args) => onSelect?.(table, args),
+        });
+      }
+
+      if (table === 'catalog_set_minifig_summaries') {
+        return createSupabaseTableBuilder(minifigSummaryRows, {
           onSelect: (args) => onSelect?.(table, args),
         });
       }
@@ -1167,6 +1175,87 @@ describe('catalog effective data access web', () => {
       recommendedAge: 18,
     });
     expect(catalogSetDetail?.minifigureCount).toBeGreaterThan(0);
+  });
+
+  test('loads set-detail minifigure count from Supabase enrichment summaries', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      minifigSummaryRows: [
+        {
+          minifig_count: 4,
+          set_id: '43300',
+        },
+      ],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-05-14T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/43300-1/1000.jpg',
+          name: 'Winnie the Pooh',
+          piece_count: 1265,
+          primary_theme_id: 'disney',
+          release_date_precision: 'year',
+          release_year: 2025,
+          set_id: '43300',
+          slug: 'winnie-the-pooh-43300',
+          source: 'rebrickable',
+          source_set_number: '43300-1',
+          source_theme_id: 'rebrickable:608',
+          status: 'active',
+          updated_at: '2026-05-14T08:00:00.000Z',
+        },
+      ],
+    });
+
+    const catalogSetDetail = await getCatalogSetBySlug({
+      slug: 'winnie-the-pooh-43300',
+      supabaseClient,
+    });
+
+    expect(catalogSetDetail).toMatchObject({
+      id: '43300',
+      minifigureCount: 4,
+    });
+  });
+
+  test('treats explicit zero minifigure summary as no visible count', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      minifigSummaryRows: [
+        {
+          minifig_count: 0,
+          set_id: '10316',
+        },
+      ],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'lord-of-the-rings',
+          release_date_precision: 'year',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'the-lord-of-the-rings-rivendell-10316',
+          source: 'rebrickable',
+          source_set_number: '10316-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+    });
+
+    const catalogSetDetail = await getCatalogSetBySlug({
+      slug: 'the-lord-of-the-rings-rivendell-10316',
+      supabaseClient,
+    });
+
+    expect(catalogSetDetail?.minifigureCount).toBe(0);
   });
 
   test('resolves known set detail public themes and logo urls from source theme hierarchy', async () => {
@@ -6842,12 +6931,131 @@ describe('catalog effective data access web', () => {
         merchantName: 'Proshop',
         priceCents: 16541,
         availability: 'in_stock',
-        checkedAt: '2026-04-18T12:15:00.000Z',
+        checkedAt: '2026-04-18T11:44:00.000Z',
       },
       {
         merchantName: 'Amazon',
         priceCents: 17240,
         availability: 'out_of_stock',
+        checkedAt: '2026-04-18T11:40:00.000Z',
+      },
+    ]);
+  });
+
+  test('preserves merchant-specific observed timestamps for live offer cards', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetched_at: '2026-05-14T09:21:00.000Z',
+          fetch_status: 'success',
+          observed_at: '2026-05-14T07:05:00.000Z',
+          offer_seed_id: 'seed-coolblue',
+          price_minor: 6499,
+          updated_at: '2026-05-14T09:21:00.000Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetched_at: '2026-05-14T09:21:00.000Z',
+          fetch_status: 'success',
+          observed_at: '2026-05-14T08:45:00.000Z',
+          offer_seed_id: 'seed-alternate',
+          price_minor: 6999,
+          updated_at: '2026-05-14T09:21:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-coolblue',
+          is_active: true,
+          name: 'Coolblue',
+          slug: 'coolblue',
+        },
+        {
+          id: 'merchant-alternate',
+          is_active: true,
+          name: 'Alternate',
+          slug: 'alternate',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-coolblue',
+          is_active: true,
+          merchant_id: 'merchant-coolblue',
+          product_url: 'https://coolblue.example/43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-alternate',
+          is_active: true,
+          merchant_id: 'merchant-alternate',
+          product_url: 'https://alternate.example/43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const result = await listCatalogSetLiveOffersBySetId({
+      setId: '43300',
+      supabaseClient,
+    });
+
+    expect(
+      result.map((offer) => [offer.merchantSlug, offer.checkedAt]),
+    ).toEqual([
+      ['coolblue', '2026-05-14T07:05:00.000Z'],
+      ['alternate', '2026-05-14T08:45:00.000Z'],
+    ]);
+  });
+
+  test('falls back to fetched timestamp when an offer has no observed timestamp', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetched_at: '2026-05-14T09:21:00.000Z',
+          fetch_status: 'success',
+          observed_at: null,
+          offer_seed_id: 'seed-coolblue',
+          price_minor: 6499,
+          updated_at: '2026-05-14T09:19:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-coolblue',
+          is_active: true,
+          name: 'Coolblue',
+          slug: 'coolblue',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-coolblue',
+          is_active: true,
+          merchant_id: 'merchant-coolblue',
+          product_url: 'https://coolblue.example/43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    await expect(
+      listCatalogSetLiveOffersBySetId({
+        setId: '43300',
+        supabaseClient,
+      }),
+    ).resolves.toMatchObject([
+      {
+        checkedAt: '2026-05-14T09:21:00.000Z',
+        merchantSlug: 'coolblue',
       },
     ]);
   });

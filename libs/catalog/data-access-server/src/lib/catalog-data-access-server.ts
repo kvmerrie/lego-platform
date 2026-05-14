@@ -31,6 +31,7 @@ import { getServerSupabaseAdminClient } from '@lego-platform/shared/data-access-
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const CATALOG_SETS_TABLE = 'catalog_sets';
+const CATALOG_SET_MINIFIG_SUMMARIES_TABLE = 'catalog_set_minifig_summaries';
 const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
@@ -82,6 +83,11 @@ interface CatalogOverlaySetRow {
   status: string;
   theme?: string | null;
   updated_at: string;
+}
+
+interface CatalogSetMinifigSummaryRow {
+  minifig_count: number;
+  set_id: string;
 }
 
 interface CatalogSourceThemeRow {
@@ -515,7 +521,7 @@ function toCatalogLiveOffer({
   }
 
   const checkedAt =
-    latestOffer.fetched_at ?? latestOffer.observed_at ?? latestOffer.updated_at;
+    latestOffer.observed_at ?? latestOffer.fetched_at ?? latestOffer.updated_at;
 
   if (!checkedAt) {
     return undefined;
@@ -786,6 +792,11 @@ function toCatalogSetDetailFromCanonicalSet(
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
+    ...(typeof canonicalCatalogSet.minifigureCount === 'number'
+      ? {
+          minifigureCount: canonicalCatalogSet.minifigureCount,
+        }
+      : {}),
     ...(canonicalCatalogSet.secondaryLabels[0]
       ? {
           subtheme: canonicalCatalogSet.secondaryLabels[0],
@@ -804,6 +815,32 @@ function toCatalogSetDetailFromCanonicalSet(
         }
       : {}),
   };
+}
+
+async function getCatalogSetMinifigCountBySetId({
+  setId,
+  supabaseClient,
+}: {
+  setId: string;
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<number | undefined> {
+  const { data, error } = await supabaseClient
+    .from(CATALOG_SET_MINIFIG_SUMMARIES_TABLE)
+    .select('set_id, minifig_count')
+    .eq('set_id', setId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error('Unable to load catalog set minifig summary.');
+  }
+
+  const summary = data as CatalogSetMinifigSummaryRow | null;
+
+  if (!summary || typeof summary.minifig_count !== 'number') {
+    return undefined;
+  }
+
+  return summary.minifig_count;
 }
 
 async function listCatalogThemeIdentityBySetId({
@@ -2611,7 +2648,20 @@ export async function getCatalogSetBySlugWithOverlay({
     return undefined;
   }
 
-  return toCatalogSetDetailFromCanonicalSet(canonicalCatalogSet);
+  const activeSupabaseClient = supabaseClient ?? getServerSupabaseAdminClient();
+  const minifigureCount = await getCatalogSetMinifigCountBySetId({
+    setId: canonicalCatalogSet.setId,
+    supabaseClient: activeSupabaseClient,
+  });
+
+  return toCatalogSetDetailFromCanonicalSet({
+    ...canonicalCatalogSet,
+    ...(typeof minifigureCount === 'number'
+      ? {
+          minifigureCount,
+        }
+      : {}),
+  });
 }
 
 export async function searchCatalogMissingSets({

@@ -13,6 +13,8 @@
     "sync:catalog:local:check": "pnpm nx run catalog-sync:run -- --local-check",
     "sync:catalog-popularity": "pnpm nx run catalog-popularity-sync:run",
     "sync:catalog-popularity:check": "pnpm nx run catalog-popularity-sync:run -- --check",
+    "sync:minifigs": "pnpm nx run catalog-minifig-sync:run",
+    "sync:minifigs:check": "pnpm nx run catalog-minifig-sync:run -- --check",
     "sync:commerce": "pnpm nx run commerce-sync:run",
     "sync:alternate-feed": "pnpm nx run alternate-feed-sync:run",
     "sync:lidl-feed": "pnpm nx run lidl-feed-sync:run",

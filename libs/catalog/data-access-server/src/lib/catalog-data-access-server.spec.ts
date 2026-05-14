@@ -208,6 +208,7 @@ function createCatalogOverlaySupabaseClient({
   canonicalRows,
   latestOfferRows = [],
   merchantRows = [],
+  minifigSummaryRows = [],
   overlayRows = [],
   offerSeedRows = [],
   priceHistoryRows = [],
@@ -226,6 +227,7 @@ function createCatalogOverlaySupabaseClient({
   canonicalRows?: Record<string, unknown>[];
   latestOfferRows?: Record<string, unknown>[];
   merchantRows?: Record<string, unknown>[];
+  minifigSummaryRows?: Record<string, unknown>[];
   overlayRows?: Record<string, unknown>[];
   offerSeedRows?: Record<string, unknown>[];
   priceHistoryRows?: Record<string, unknown>[];
@@ -314,6 +316,10 @@ function createCatalogOverlaySupabaseClient({
         select: builder.select,
         upsert: themeMappingUpsert,
       };
+    }
+
+    if (table === 'catalog_set_minifig_summaries') {
+      return createSupabaseTableBuilder(minifigSummaryRows);
     }
 
     if (table === 'commerce_offer_seeds') {
@@ -860,7 +866,7 @@ describe('catalog data access server', () => {
       {
         bestOffer: {
           availability: 'in_stock',
-          checkedAt: '2026-04-20T10:15:00.000Z',
+          checkedAt: '2026-04-20T09:30:00.000Z',
           condition: 'new',
           commercialUnitType: 'full_set',
           currency: 'EUR',
@@ -875,7 +881,7 @@ describe('catalog data access server', () => {
         offers: [
           {
             availability: 'in_stock',
-            checkedAt: '2026-04-20T10:15:00.000Z',
+            checkedAt: '2026-04-20T09:30:00.000Z',
             condition: 'new',
             commercialUnitType: 'full_set',
             currency: 'EUR',
