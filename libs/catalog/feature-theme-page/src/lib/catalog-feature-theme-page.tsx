@@ -10,10 +10,9 @@ import {
 } from '@lego-platform/catalog/ui';
 import {
   type CatalogHomepageSetCard,
+  type CatalogThemeVisual,
   type CatalogThemeLandingPage,
   getCatalogThemeMutedTextColor,
-  getCatalogThemeSurfaceTone,
-  getCatalogThemeVisual,
 } from '@lego-platform/catalog/util';
 import {
   buildSetDetailPath,
@@ -38,34 +37,17 @@ export interface CatalogFeatureThemePageArticleLink {
   title: string;
 }
 
-const themeEditorialIntroByName: Record<string, string> = {
-  Icons: 'Voor grote displaysets die je collectie meteen meer statuur geven.',
-  Ideas:
-    'Voor sets die voelen als een hele scene of wereld, niet als een standaard lijn.',
-  Marvel:
-    'Voor torens, hoofdkwartieren en minifig-casts die meteen herkenning op je plank zetten.',
-  'Star Wars':
-    'Voor ships, walkers en grote silhouetten waar schaal en displaywaarde het verschil maken.',
-  'Harry Potter':
-    'Voor Hogwarts-hoeken, Gringotts en sets waar sfeer net zo belangrijk is als stenen.',
-  Technic:
-    'Voor supercars en machines waar de bouw net zo boeiend is als het eindresultaat.',
-  'Speed Champions':
-    'Voor racewagens waar teamkleuren, livery en F1-herkenning de hele display dragen.',
-  Botanicals:
-    'Voor boeketten en planten die kleur geven zonder dat het als speelgoed voelt.',
-  'Super Mario':
-    'Voor Nintendo-herkenning die als displaystuk werkt en niet alleen als gimmick.',
-  NINJAGO:
-    'Voor stadssets vol kleur, hoogte en details waar je steeds iets nieuws in ziet.',
-  'Jurassic World':
-    'Voor dinoscenes waar chaos, voertuigen en displaywaarde samenkomen.',
-  Architecture:
-    'Voor strakke landmarks die rust, schaal en herkenning op één plank brengen.',
-  Art: 'Voor reliëf, kleur en sets die meer kunstwerk dan klassieke bouwset voelen.',
-  Disney:
-    'Voor kastelen en blikvangers die meteen sprookjessfeer in je collectie zetten.',
-};
+function getThemeButtonSurfaceFromVisual(
+  visual?: CatalogThemeVisual,
+): 'dark' | 'light' {
+  const normalizedTextColor = visual?.textColor?.trim().toLowerCase();
+
+  return normalizedTextColor === '#ffffff' ||
+    normalizedTextColor === '#fff' ||
+    normalizedTextColor === 'white'
+    ? 'dark'
+    : 'light';
+}
 
 export function CatalogFeatureThemePage({
   currentPage = 1,
@@ -89,8 +71,8 @@ export function CatalogFeatureThemePage({
   const themeSignatureSet = themeSnapshot.signatureSet;
   const dealSectionId = 'theme-deals';
   const browseSectionId = 'theme-browse';
-  const themeVisual = themePage.visual ?? getCatalogThemeVisual(themeName);
-  const themeHeroButtonSurface = getCatalogThemeSurfaceTone(themeName);
+  const themeVisual = themePage.visual;
+  const themeHeroButtonSurface = getThemeButtonSurfaceFromVisual(themeVisual);
   const normalizedCurrentPage = Math.max(1, Math.floor(currentPage));
   const normalizedPageSize =
     typeof pageSize === 'number' && pageSize > 0
@@ -167,10 +149,7 @@ export function CatalogFeatureThemePage({
               {themeName}
             </span>
           </h1>
-          <p className={styles.introLead}>
-            {themeEditorialIntroByName[themeName] ??
-              'Voor sets die je binnen één lijn rustig naast elkaar wilt vergelijken.'}
-          </p>
+          <p className={styles.introLead}>{themeSnapshot.momentum}</p>
         </div>
         <p className={styles.introSupport}>
           Begin met{' '}

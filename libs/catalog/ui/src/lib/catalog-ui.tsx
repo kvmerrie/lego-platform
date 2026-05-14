@@ -15,7 +15,6 @@ import {
   buildCatalogReleaseLabel,
   buildCatalogThemeSlug,
   getCatalogThemeMutedTextColor,
-  getCatalogThemeVisual,
   type CatalogSetImage,
   normalizeCatalogSetImages,
 } from '@lego-platform/catalog/util';
@@ -696,13 +695,11 @@ function isCatalogThemeHref(href?: string): href is string {
 }
 
 function getCatalogThemeStyleVariables({
-  themeName,
   visual,
 }: {
-  themeName?: string;
   visual?: CatalogThemeVisual;
 }): CSSProperties | undefined {
-  const resolvedVisual = visual ?? getCatalogThemeVisual(themeName);
+  const resolvedVisual = visual;
 
   if (!resolvedVisual?.backgroundColor && !resolvedVisual?.textColor) {
     return undefined;
@@ -767,9 +764,7 @@ export function CatalogSetCard({
   });
   const PrimaryActionIcon = primaryAction.icon;
   const setThemeSlug = buildCatalogThemeSlug(setSummary.theme);
-  const setThemeStyle = getCatalogThemeStyleVariables({
-    themeName: setSummary.theme,
-  });
+  const setThemeStyle = undefined;
   const hasSupportingContext = Boolean(
     (priceContext && priceDisplay === 'subtle') || supportingNote,
   );
@@ -1315,22 +1310,7 @@ export function CatalogSetDetailPanel({
     themeHref,
   });
   const offerComparisonSectionId = 'set-offers';
-  const themeVisual = getCatalogThemeVisual(catalogSetDetail.theme);
-  const themeBadgeStyle =
-    themeVisual?.backgroundColor || themeVisual?.textColor
-      ? ({
-          ...(themeVisual.backgroundColor
-            ? {
-                '--catalog-theme-badge-surface': themeVisual.backgroundColor,
-              }
-            : {}),
-          ...(themeVisual.textColor
-            ? {
-                '--catalog-theme-badge-text': themeVisual.textColor,
-              }
-            : {}),
-        } as CSSProperties)
-      : undefined;
+  const themeBadgeStyle = undefined;
   const hasFollowModule = Boolean(
     priceAlertAction || followCopy || followTitle || followEyebrow,
   );
@@ -1524,7 +1504,6 @@ export function CatalogThemeHighlight({
 }) {
   if (variant === 'portrait') {
     const portraitVisualStyle = getCatalogThemeStyleVariables({
-      themeName: themeSnapshot.name,
       visual,
     });
     const portraitImageUrl = visual?.imageUrl ?? imageUrl;
@@ -1580,7 +1559,6 @@ export function CatalogThemeHighlight({
 
   if (variant === 'feature') {
     const featureVisualStyle = getCatalogThemeStyleVariables({
-      themeName: themeSnapshot.name,
       visual,
     });
     const featureImageUrl = visual?.imageUrl ?? imageUrl;

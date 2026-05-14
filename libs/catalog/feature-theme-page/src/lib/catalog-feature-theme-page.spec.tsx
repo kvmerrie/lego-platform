@@ -93,7 +93,7 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('href="/themes"');
     expect(markup).toContain('href="#theme-browse"');
     expect(markup).toContain('href="#theme-deals"');
-    expect(markup).toContain('interactiveSurfaceDark');
+    expect(markup).toContain('interactiveSurfaceLight');
     expect(markup).not.toContain('_introVisualStage_');
     expect(markup).not.toContain('Klaar voor themabeeld');
     expect(markup).toContain('Hier wil je nu als eerste kijken in');
@@ -194,7 +194,7 @@ describe('CatalogFeatureThemePage', () => {
     expect(markup).toContain('href="/themes/star-wars?page=2"');
   });
 
-  it('uses the shared theme visual mapping for theme page surfaces', () => {
+  it('does not synthesize hardcoded theme visual mapping for theme page surfaces', () => {
     const markup = renderToStaticMarkup(
       <CatalogFeatureThemePage
         themePage={{
@@ -223,9 +223,9 @@ describe('CatalogFeatureThemePage', () => {
       />,
     );
 
-    expect(markup).toContain('--theme-page-surface:#6f8594');
-    expect(markup).toContain('--theme-page-text:#ffffff');
-    expect(markup).toContain('interactiveSurfaceDark');
+    expect(markup).not.toContain('--theme-page-surface:#6f8594');
+    expect(markup).not.toContain('--theme-page-text:#ffffff');
+    expect(markup).toContain('interactiveSurfaceLight');
   });
 
   it('uses curated public theme visual metadata when provided', () => {

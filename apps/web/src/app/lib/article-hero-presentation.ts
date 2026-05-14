@@ -5,10 +5,7 @@ import {
   type ContentArticleListItem,
   normalizeContentArticleSetNumber,
 } from '@lego-platform/content/util';
-import {
-  getThemeTileImage,
-  isCatalogBrowsablePrimaryTheme,
-} from '@lego-platform/catalog/util';
+import { isCatalogBrowsablePrimaryTheme } from '@lego-platform/catalog/util';
 import {
   getArticleCatalogSetImageUrl,
   resolveRepresentativeArticleCatalogSetCardByTheme,
@@ -199,24 +196,7 @@ const resolveArticleHeroPresentationCached = cache(
       }
     }
 
-    const themeTileSetNumber = theme ? getThemeTileImage(theme) : undefined;
-
-    if (!themeTileSetNumber) {
-      return undefined;
-    }
-
-    const [themeTileSetCard] = await resolveArticleCatalogSetCards({
-      canonicalIds: [themeTileSetNumber],
-    });
-    const themeTileSetImageUrl = getArticleCatalogSetImageUrl(themeTileSetCard);
-
-    return themeTileSetCard && themeTileSetImageUrl
-      ? {
-          imageAlt: `${themeTileSetCard.name || theme || title} LEGO-set`,
-          imageUrl: themeTileSetImageUrl,
-          source: 'themeTile',
-        }
-      : undefined;
+    return undefined;
   },
 );
 

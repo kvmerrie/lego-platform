@@ -5,7 +5,6 @@ import {
   buildCatalogSetSlug,
   createCatalogSetRecord,
   getCatalogThemeDisplayName,
-  getCatalogThemeDefinition,
   getCatalogThemeMutedTextColor,
   getCatalogThemeSurfaceTone,
   getCatalogThemeVisual,
@@ -136,120 +135,13 @@ describe('catalog snapshot helpers', () => {
     ).toBe('Lord of the Rings™');
   });
 
-  test('returns curated theme visuals for recognizable theme surfaces', () => {
-    expect(getCatalogThemeVisual('Star Wars')).toEqual({
-      backgroundColor: '#5573b5',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('Architecture')).toEqual({
-      backgroundColor: '#6f8594',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('Modular Buildings')).toEqual({
-      backgroundColor: '#f0c63b',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10326-1/129017.jpg',
-      textColor: '#171a22',
-    });
-    expect(getCatalogThemeVisual('Ultimate Collector Series')).toEqual({
-      backgroundColor: '#5573b5',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeDefinition('Ultimate Collector Series')).toEqual({
-      name: 'Star Wars™',
-      slug: 'star-wars',
-      visual: {
-        backgroundColor: '#5573b5',
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/75367-1/127838.jpg',
-        textColor: '#ffffff',
-      },
-    });
-    expect(getCatalogThemeDefinition('Super Heroes Marvel')).toEqual({
-      name: 'Marvel',
-      slug: 'marvel',
-      visual: {
-        backgroundColor: '#cf554c',
-        imageUrl: 'https://cdn.rebrickable.com/media/sets/76269-1/129297.jpg',
-        textColor: '#ffffff',
-      },
-    });
-    expect(getCatalogThemeVisual('Speed Champions')).toEqual({
-      backgroundColor: '#3c5f96',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('DC')).toEqual({
-      backgroundColor: '#345d9d',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('City')).toEqual({
-      backgroundColor: '#2f7fc0',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('Animal Crossing')).toEqual({
-      backgroundColor: '#6bbf59',
-      textColor: '#10241f',
-    });
-    expect(getCatalogThemeVisual('LEGO® Animal Crossing™')).toEqual({
-      backgroundColor: '#6bbf59',
-      textColor: '#10241f',
-    });
-    expect(getCatalogThemeVisual('The Legend of Zelda')).toEqual({
-      backgroundColor: '#4d8b72',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('Wednesday')).toEqual({
-      backgroundColor: '#5d6170',
-      textColor: '#ffffff',
-    });
-    expect(
-      [
-        'Brickheadz',
-        'BrickLink Designer Program',
-        'Classic',
-        'Creator',
-        'Dreamzzz',
-        'Duplo',
-        'Editions',
-        'Fortnite',
-        'Friends',
-        "Gabby's Dollhouse",
-        'Minecraft',
-        'Minifigures',
-        'Nike',
-        'ONE PIECE',
-        'Pokémon',
-        'Seasonal',
-        'Sonic the Hedgehog',
-        'Wicked',
-      ].every((themeName) => Boolean(getCatalogThemeVisual(themeName))),
-    ).toBe(true);
-    expect(getCatalogThemeVisual('Editions')).toEqual({
-      backgroundColor: '#e0b84f',
-      textColor: '#171a22',
-    });
-    expect(getCatalogThemeVisual('LEGO® Fortnite®')).toEqual({
-      backgroundColor: '#6f4bd8',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('ONE PIECE')).toEqual({
-      backgroundColor: '#d84f45',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeVisual('Icons')?.imageUrl).toContain('10326-1');
-    expect(getCatalogThemeVisual('Icons')?.imageUrl).not.toContain('10316-1');
-    expect(getCatalogThemeVisual('Lord of the Rings')).toEqual({
-      backgroundColor: '#24362f',
-      imageUrl: 'https://cdn.rebrickable.com/media/sets/10333-1/140959.jpg',
-      textColor: '#ffffff',
-    });
-    expect(getCatalogThemeSurfaceTone('Star Wars')).toBe('dark');
-    expect(getCatalogThemeSurfaceTone('Icons')).toBe('light');
-    expect(getCatalogThemeSurfaceTone('Lord of the Rings')).toBe('dark');
-    expect(getCatalogThemeSurfaceTone('Speed Champions')).toBe('dark');
+  test('does not provide hardcoded theme presentation fallbacks', () => {
+    expect(getCatalogThemeVisual('Star Wars')).toBeUndefined();
+    expect(getCatalogThemeVisual('Animal Crossing')).toBeUndefined();
+    expect(getCatalogThemeVisual('Unknown Theme')).toBeUndefined();
+    expect(getCatalogThemeSurfaceTone('Star Wars')).toBe('light');
     expect(getCatalogThemeMutedTextColor('#ffffff')).toBe('#f4f7fb');
     expect(getCatalogThemeMutedTextColor('#171a22')).toBe('#425066');
-    expect(getCatalogThemeVisual('Unknown Theme')).toBeUndefined();
   });
 
   test('resolves primary themes and secondary labels from external subthemes', () => {

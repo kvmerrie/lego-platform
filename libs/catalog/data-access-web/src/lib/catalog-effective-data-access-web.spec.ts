@@ -1580,12 +1580,12 @@ describe('catalog effective data access web', () => {
     ).resolves.toEqual([
       expect.objectContaining({
         themeSnapshot: expect.objectContaining({
-          name: 'LEGO® Icons',
+          name: 'Icons',
         }),
       }),
       expect.objectContaining({
         themeSnapshot: expect.objectContaining({
-          name: 'Star Wars™',
+          name: 'Star Wars',
         }),
       }),
     ]);
@@ -1651,7 +1651,7 @@ describe('catalog effective data access web', () => {
 
     expect(
       directoryItems.filter(
-        (directoryItem) => directoryItem.themeSnapshot.name === 'LEGO® Icons',
+        (directoryItem) => directoryItem.themeSnapshot.name === 'Icons',
       ),
     ).toHaveLength(1);
   });
@@ -1717,7 +1717,7 @@ describe('catalog effective data access web', () => {
 
     expect(
       directoryItems.map((directoryItem) => directoryItem.themeSnapshot.name),
-    ).toEqual(expect.arrayContaining(['City', 'Star Wars™']));
+    ).toEqual(expect.arrayContaining(['City', 'Star Wars']));
     expect(
       directoryItems.find(
         (directoryItem) => directoryItem.themeSnapshot.name === 'City',
@@ -1856,9 +1856,12 @@ describe('catalog effective data access web', () => {
           public_accent_color: '#123abc',
           public_description: 'Grote blikvangers voor op de plank.',
           public_display_name: 'Custom Icons',
+          public_hero_text_color: '#ffffff',
           public_image_url: 'https://cdn.example.com/custom-icons.jpg',
           public_logo_url: 'https://cdn.example.com/icons-logo.svg',
           public_order: 1,
+          public_surface_color: '#234bcd',
+          public_surface_text_color: '#ffffff',
           slug: 'icons',
           status: 'active',
         },
@@ -1891,17 +1894,135 @@ describe('catalog effective data access web', () => {
       'https://cdn.example.com/custom-icons.jpg',
     );
     expect(iconsItem?.visual).toMatchObject({
-      backgroundColor: '#123abc',
+      backgroundColor: '#234bcd',
       imageUrl: 'https://cdn.example.com/custom-icons.jpg',
+      textColor: '#ffffff',
     });
     expect(cityItem?.themeSnapshot.name).toBe('City');
     expect(cityItem?.imageUrl).toBe(
       'https://cdn.example.com/city-representative.jpg',
     );
-    expect(cityItem?.visual?.backgroundColor).toBe('#2f7fc0');
+    expect(cityItem?.visual?.backgroundColor).toBeUndefined();
     expect(cityItem?.visual?.imageUrl).toBe(
       'https://cdn.example.com/city-representative.jpg',
     );
+  });
+
+  test('uses Supabase theme names and public ordering without registry overrides', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Icons',
+          id: 'theme:icons',
+          is_public: true,
+          public_display_name: 'Icons',
+          public_order: 2,
+          slug: 'icons',
+          status: 'active',
+        },
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          is_public: true,
+          public_display_name: 'Database Star Wars',
+          public_order: 1,
+          slug: 'star-wars',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 12,
+          representative_image_url: 'https://cdn.example.com/icons.jpg',
+          representative_set_id: '10316',
+          theme_id: 'theme:icons',
+        },
+        {
+          active_set_count: 20,
+          representative_image_url: 'https://cdn.example.com/star-wars.jpg',
+          representative_set_id: '75313',
+          theme_id: 'theme:star-wars',
+        },
+      ],
+    });
+
+    const [homepageThemeItem, secondHomepageThemeItem] =
+      await listHomepageThemeDirectoryItems({
+        limit: 2,
+        supabaseClient,
+      });
+
+    expect(homepageThemeItem?.themeSnapshot.name).toBe('Database Star Wars');
+    expect(secondHomepageThemeItem?.themeSnapshot.name).toBe('Icons');
+    expect(secondHomepageThemeItem?.themeSnapshot.name).not.toBe(
+      'LEGO® Icons',
+    );
+  });
+
+  test('passes migrated Star Wars and Super Mario surface colors from Supabase', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [],
+      primaryThemeRows: [
+        {
+          display_name: 'Star Wars',
+          id: 'theme:star-wars',
+          is_public: true,
+          public_display_name: 'Star Wars',
+          public_order: 1,
+          public_surface_color: '#5573b5',
+          public_surface_text_color: '#ffffff',
+          slug: 'star-wars',
+          status: 'active',
+        },
+        {
+          display_name: 'Super Mario',
+          id: 'theme:super-mario',
+          is_public: true,
+          public_display_name: 'Super Mario',
+          public_order: 2,
+          public_surface_color: '#d85a50',
+          public_surface_text_color: '#ffffff',
+          slug: 'super-mario',
+          status: 'active',
+        },
+      ],
+      themeSummaryRows: [
+        {
+          active_set_count: 24,
+          representative_image_url: 'https://cdn.example.com/star-wars.jpg',
+          representative_set_id: '75313',
+          theme_id: 'theme:star-wars',
+        },
+        {
+          active_set_count: 8,
+          representative_image_url: 'https://cdn.example.com/super-mario.jpg',
+          representative_set_id: '71411',
+          theme_id: 'theme:super-mario',
+        },
+      ],
+    });
+
+    const [starWarsItem, superMarioItem] = await listCatalogThemeDirectoryItems(
+      {
+        supabaseClient,
+      },
+    );
+
+    expect(starWarsItem?.visual).toMatchObject({
+      backgroundColor: '#5573b5',
+      textColor: '#ffffff',
+    });
+    expect(superMarioItem?.visual).toMatchObject({
+      backgroundColor: '#d85a50',
+      textColor: '#ffffff',
+    });
   });
 
   test('returns server-paginated theme pages with the total theme set count', async () => {
@@ -2146,8 +2267,11 @@ describe('catalog effective data access web', () => {
           id: 'theme:editions',
           is_public: true,
           public_accent_color: '#e0b84f',
+          public_hero_text_color: '#171a22',
           public_image_url: null,
           public_order: 325,
+          public_surface_color: '#e0b84f',
+          public_surface_text_color: '#171a22',
           slug: 'editions',
           status: 'active',
         },
@@ -2236,8 +2360,11 @@ describe('catalog effective data access web', () => {
           id: 'theme:editions',
           is_public: true,
           public_accent_color: '#e0b84f',
+          public_hero_text_color: '#171a22',
           public_image_url: 'https://cdn.example.com/editions-public.jpg',
           public_order: 325,
+          public_surface_color: '#e0b84f',
+          public_surface_text_color: '#171a22',
           slug: 'editions',
           status: 'active',
         },
@@ -2299,8 +2426,11 @@ describe('catalog effective data access web', () => {
           is_public: true,
           public_accent_color: null,
           public_display_name: 'LEGO® Animal Crossing™',
+          public_hero_text_color: '#10241f',
           public_image_url: null,
           public_order: 10,
+          public_surface_color: '#6bbf59',
+          public_surface_text_color: '#10241f',
           slug: 'animal-crossing',
           status: 'active',
         },
@@ -3621,7 +3751,7 @@ describe('catalog effective data access web', () => {
     ]);
   });
 
-  test('gives directory items explicit visuals for canonical themes that previously fell back', async () => {
+  test('does not synthesize hardcoded visuals for fallback directory themes', async () => {
     const [cityItem, zeldaItem] = await listCatalogThemeDirectoryItems({
       listCanonicalCatalogSetsFn: async () => [
         createCanonicalCatalogSet({
@@ -3642,18 +3772,14 @@ describe('catalog effective data access web', () => {
     });
 
     expect(cityItem?.themeSnapshot.name).toBe('City');
-    expect(cityItem?.visual).toMatchObject({
-      backgroundColor: '#2f7fc0',
-      textColor: '#ffffff',
-    });
+    expect(cityItem?.visual?.backgroundColor).toBeUndefined();
+    expect(cityItem?.visual?.textColor).toBeUndefined();
     expect(zeldaItem?.themeSnapshot.name).toBe('LEGO® The Legend of Zelda™');
-    expect(zeldaItem?.visual).toMatchObject({
-      backgroundColor: '#4d8b72',
-      textColor: '#ffffff',
-    });
+    expect(zeldaItem?.visual?.backgroundColor).toBeUndefined();
+    expect(zeldaItem?.visual?.textColor).toBeUndefined();
   });
 
-  test('uses registry image set overrides for theme directory tiles', async () => {
+  test('uses representative set images for fallback theme directory tiles', async () => {
     const [starWarsItem] = await listCatalogThemeDirectoryItems({
       listCanonicalCatalogSetsFn: async () => [
         createCanonicalCatalogSet({
@@ -3771,7 +3897,7 @@ describe('catalog effective data access web', () => {
       directoryItems.find(
         (item) => item.themeSnapshot.slug === 'lord-of-the-rings',
       )?.imageUrl,
-    ).toBe('https://cdn.example.com/10333.jpg');
+    ).toBe('https://cdn.example.com/10316.jpg');
     expect(
       directoryItems.find((item) => item.themeSnapshot.slug === 'icons')
         ?.imageUrl,
@@ -6819,9 +6945,7 @@ describe('catalog effective data access web', () => {
       'Speed Champions',
     ]);
     expect(directoryItems[1]?.visual).toEqual({
-      backgroundColor: '#3c5f96',
       imageUrl: 'https://cdn.rebrickable.com/media/sets/72037-1/1000.jpg',
-      textColor: '#ffffff',
     });
     expect(themePage?.themeSnapshot.name).toBe('Marvel');
     expect(themePage?.setCards[0]?.theme).toBe('Marvel');

@@ -5,6 +5,13 @@ Production owns public theme presentation. Staging defaults must not reset
 production-curated theme imagery, colors, labels, visibility, ordering, or
 status for existing theme rows.
 
+Public web theme presentation reads from `catalog_themes`. Frontend code must
+not carry theme-specific presentation maps for public theme names, descriptions,
+images, logos, accent colors, visibility, ordering, or status. Generic UI
+fallbacks are allowed only when data is absent, for example using `display_name`
+when `public_display_name` is empty or using a representative set image when
+`public_image_url` is empty.
+
 ## Ownership
 
 ### Canonical/source-owned
@@ -33,6 +40,9 @@ Preserved in production for existing `catalog_themes` rows:
 - `catalog_themes.public_description`
 - `catalog_themes.public_image_url`
 - `catalog_themes.public_accent_color`
+- `catalog_themes.public_surface_color`
+- `catalog_themes.public_surface_text_color`
+- `catalog_themes.public_hero_text_color`
 - `catalog_themes.public_logo_url`
 - `catalog_themes.public_order`
 - `catalog_themes.is_public`
@@ -44,6 +54,11 @@ including non-blank staging defaults. If a production theme image or public
 label needs to change, update production curation through the admin-owned
 curation path rather than relying on catalog promotion.
 
+Admin editing for these presentation fields is still intentionally minimal.
+Until a dedicated compact editor exists, use reviewed SQL/admin operations and
+then revalidate `/` and `/themes`. Do not make one-off frontend fallback maps to
+paper over missing curation data.
+
 Emergency recovery for accidentally overwritten presentation fields should only
 touch presentation columns. Example shape:
 
@@ -52,6 +67,9 @@ update catalog_themes
 set
   public_image_url = values.public_image_url,
   public_accent_color = values.public_accent_color,
+  public_surface_color = values.public_surface_color,
+  public_surface_text_color = values.public_surface_text_color,
+  public_hero_text_color = values.public_hero_text_color,
   public_display_name = values.public_display_name,
   public_description = values.public_description,
   public_logo_url = values.public_logo_url,
@@ -65,6 +83,9 @@ from (
       'theme:super-mario',
       'https://cdn.example.com/mario-curated.jpg',
       '#e52521',
+      '#d85a50',
+      '#ffffff',
+      '#ffffff',
       'LEGO Super Mario',
       'Production curated copy',
       null,
@@ -76,6 +97,9 @@ from (
   id,
   public_image_url,
   public_accent_color,
+  public_surface_color,
+  public_surface_text_color,
+  public_hero_text_color,
   public_display_name,
   public_description,
   public_logo_url,

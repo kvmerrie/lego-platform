@@ -125,7 +125,7 @@ describe('CatalogSetCard', () => {
     expect(markup).not.toContain('2026-01-01');
   });
 
-  it('uses the shared theme color mapping for compact set cards', () => {
+  it('does not synthesize hardcoded theme colors for compact set cards', () => {
     const markup = renderToStaticMarkup(
       <CatalogSetCard
         href="/sets/notre-dame-de-paris-21061"
@@ -145,8 +145,8 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('--card-theme-badge-bg:#6f8594');
-    expect(markup).toContain('--card-theme-badge-text:#ffffff');
+    expect(markup).not.toContain('--card-theme-badge-bg:#6f8594');
+    expect(markup).not.toContain('--card-theme-badge-text:#ffffff');
   });
 
   it('renders optional list actions below the default set-card metadata', () => {
@@ -1081,8 +1081,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain(
       '€ 30,00 onder wat we meestal zien voor deze set.',
     );
-    expect(markup).toContain('--catalog-theme-badge-surface:#f0c63b');
-    expect(markup).toContain('--catalog-theme-badge-text:#171a22');
+    expect(markup).not.toContain('--catalog-theme-badge-surface:#f0c63b');
+    expect(markup).not.toContain('--catalog-theme-badge-text:#171a22');
     expect(markup).toContain('Beste prijs nu');
     expect(markup).toContain('Bij bol');
     expect(markup).toContain('€ 30,00 goedkoper dan de rest');
@@ -1698,6 +1698,48 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('--theme-surface:#cf554c');
     expect(markup).toContain('--theme-text:#ffffff');
     expect(markup).toContain('Bekijk sets');
+  });
+
+  it('uses supplied dark and light database theme text colors on theme tiles', () => {
+    const darkMarkup = renderToStaticMarkup(
+      <CatalogThemeHighlight
+        href="/themes/star-wars"
+        themeSnapshot={{
+          name: 'Star Wars',
+          slug: 'star-wars',
+          setCount: 24,
+          momentum: 'Ships en displayhelmen met herkenbare silhouetten.',
+          signatureSet: 'AT-AT',
+        }}
+        variant="portrait"
+        visual={{
+          backgroundColor: '#5573b5',
+          textColor: '#ffffff',
+        }}
+      />,
+    );
+    const lightMarkup = renderToStaticMarkup(
+      <CatalogThemeHighlight
+        href="/themes/animal-crossing"
+        themeSnapshot={{
+          name: 'LEGO® Animal Crossing™',
+          slug: 'animal-crossing',
+          setCount: 9,
+          momentum: 'Eilandscenes en herkenbare villagers.',
+          signatureSet: "Kapp'n's Island Boat Tour",
+        }}
+        variant="portrait"
+        visual={{
+          backgroundColor: '#6bbf59',
+          textColor: '#10241f',
+        }}
+      />,
+    );
+
+    expect(darkMarkup).toContain('--theme-surface:#5573b5');
+    expect(darkMarkup).toContain('--theme-text:#ffffff');
+    expect(lightMarkup).toContain('--theme-surface:#6bbf59');
+    expect(lightMarkup).toContain('--theme-text:#10241f');
   });
 
   it('can render feature theme tiles with only one helper line below the title', () => {
