@@ -8,11 +8,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
-  normalizeRevalidationPaths,
-  normalizeRevalidationTags,
-  validateRevalidationReason,
-} from '@lego-platform/shared/config';
-import {
   CommerceAdminApiService,
   type CommerceAdminCacheRevalidationResult,
 } from './commerce-admin-api.service';
@@ -22,6 +17,12 @@ interface CacheRevalidationPreset {
   paths: readonly string[];
   reason: string;
   tags: readonly string[];
+}
+
+interface BrowserNormalizationResult {
+  invalidValues: readonly string[];
+  values: readonly string[];
+  warnings: readonly string[];
 }
 
 const cacheRevalidationPresets: readonly CacheRevalidationPreset[] = [
@@ -63,6 +64,106 @@ function splitLines(value: string): string[] {
 
 function joinLines(values: readonly string[]): string {
   return values.join('\n');
+}
+
+function normalizeBrowserPaths(
+  paths: readonly string[],
+): BrowserNormalizationResult {
+  const values: string[] = [];
+  const invalidValues: string[] = [];
+  const warnings: string[] = [];
+  const seenValues = new Set<string>();
+
+  for (const path of paths) {
+    const trimmedPath = path.trim();
+
+    if (!trimmedPath) {
+      continue;
+    }
+
+    if (
+      !trimmedPath.startsWith('/') ||
+      trimmedPath.startsWith('//') ||
+      /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmedPath) ||
+      /\s/.test(trimmedPath)
+    ) {
+      invalidValues.push(trimmedPath);
+      warnings.push(`Ongeldig path: ${trimmedPath}`);
+      continue;
+    }
+
+    const normalizedPath =
+      trimmedPath === '/'
+        ? trimmedPath
+        : trimmedPath.replace(/\/+$/, '') || '/';
+
+    if (seenValues.has(normalizedPath)) {
+      warnings.push(`Dubbel path overgeslagen: ${normalizedPath}`);
+      continue;
+    }
+
+    seenValues.add(normalizedPath);
+    values.push(normalizedPath);
+  }
+
+  return {
+    invalidValues,
+    values,
+    warnings,
+  };
+}
+
+function normalizeBrowserTags(
+  tags: readonly string[],
+): BrowserNormalizationResult {
+  const values: string[] = [];
+  const warnings: string[] = [];
+  const seenValues = new Set<string>();
+
+  for (const tag of tags) {
+    const normalizedTag = tag.trim().toLowerCase();
+
+    if (!normalizedTag) {
+      continue;
+    }
+
+    if (seenValues.has(normalizedTag)) {
+      warnings.push(`Dubbele tag overgeslagen: ${normalizedTag}`);
+      continue;
+    }
+
+    seenValues.add(normalizedTag);
+    values.push(normalizedTag);
+  }
+
+  return {
+    invalidValues: [],
+    values,
+    warnings,
+  };
+}
+
+function validateBrowserReason(reason: string): {
+  error?: string;
+  reason?: string;
+} {
+  const normalizedReason = reason.trim();
+
+  if (normalizedReason.length < 3) {
+    return {
+      error: 'Reason is verplicht en moet minimaal 3 tekens zijn.',
+    };
+  }
+
+  if (normalizedReason.length > 120) {
+    return {
+      error: 'Reason mag maximaal 120 tekens zijn.',
+    };
+  }
+
+  return {
+    reason: normalizedReason,
+  };
 }
 
 function toAdminActionErrorMessage(error: unknown): string {
@@ -120,10 +221,10 @@ export class CommerceAdminCacheRevalidationPageComponent {
   readonly message = signal<string | null>(null);
   readonly result = signal<CommerceAdminCacheRevalidationResult | null>(null);
   readonly clientWarnings = computed(() => {
-    const paths = normalizeRevalidationPaths(splitLines(this.pathsText()));
-    const tags = normalizeRevalidationTags(splitLines(this.tagsText()));
+    const paths = normalizeBrowserPaths(splitLines(this.pathsText()));
+    const tags = normalizeBrowserTags(splitLines(this.tagsText()));
     const warnings = [...paths.warnings, ...tags.warnings];
-    const reasonValidation = validateRevalidationReason(this.reason());
+    const reasonValidation = validateBrowserReason(this.reason());
 
     if (reasonValidation.error) {
       warnings.push(reasonValidation.error);
@@ -140,9 +241,9 @@ export class CommerceAdminCacheRevalidationPageComponent {
     return warnings;
   });
   readonly canSubmit = computed(() => {
-    const paths = normalizeRevalidationPaths(splitLines(this.pathsText()));
-    const tags = normalizeRevalidationTags(splitLines(this.tagsText()));
-    const reasonValidation = validateRevalidationReason(this.reason());
+    const paths = normalizeBrowserPaths(splitLines(this.pathsText()));
+    const tags = normalizeBrowserTags(splitLines(this.tagsText()));
+    const reasonValidation = validateBrowserReason(this.reason());
 
     return (
       !this.isRunning() &&
@@ -188,9 +289,9 @@ export class CommerceAdminCacheRevalidationPageComponent {
   }
 
   async revalidate(): Promise<void> {
-    const paths = normalizeRevalidationPaths(splitLines(this.pathsText()));
-    const tags = normalizeRevalidationTags(splitLines(this.tagsText()));
-    const reasonValidation = validateRevalidationReason(this.reason());
+    const paths = normalizeBrowserPaths(splitLines(this.pathsText()));
+    const tags = normalizeBrowserTags(splitLines(this.tagsText()));
+    const reasonValidation = validateBrowserReason(this.reason());
 
     if (
       reasonValidation.error ||

@@ -3,7 +3,6 @@ import {
   type CatalogExternalSetSearchResult,
   type CatalogSet,
 } from '@lego-platform/catalog/util';
-import { buildPublicSetDetailUrl } from '@lego-platform/shared/config';
 import {
   buildCommerceMerchantSearchQuery,
   buildCommerceMerchantSearchUrl,
@@ -72,6 +71,7 @@ export interface CommerceCoverageQueueMerchantAction {
 }
 
 const initialCatalogSetOptions: CommerceCatalogSetOption[] = [];
+const publicSetDetailPathPrefix = '/sets/';
 
 const initialWorkbenchViewState: CommerceWorkbenchViewState = {
   search: '',
@@ -581,11 +581,12 @@ export class CommerceAdminStore {
       return undefined;
     }
 
-    return buildPublicSetDetailUrl({
-      slug: catalogSet.slug,
-      currentOrigin:
-        typeof window === 'undefined' ? undefined : window.location.origin,
-    });
+    const origin =
+      typeof window === 'undefined'
+        ? 'https://www.brickhunt.nl'
+        : window.location.origin;
+
+    return `${origin}${publicSetDetailPathPrefix}${catalogSet.slug}`;
   }
 
   getMerchantSearchUrl(input: {

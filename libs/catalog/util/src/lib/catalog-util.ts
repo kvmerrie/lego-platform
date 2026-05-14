@@ -3,7 +3,6 @@ import {
   formatCompactNumber,
   normalizeCatalogSetId,
 } from '@lego-platform/shared/util';
-import { getDefaultFormattingLocale } from '@lego-platform/shared/config';
 import {
   isThemeVisible,
   normalizeTheme,
@@ -1126,7 +1125,7 @@ export function getCatalogReleaseYear({
 }
 
 function formatCatalogReleaseMonthYear(date: Date): string {
-  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+  return new Intl.DateTimeFormat('nl-NL', {
     month: 'long',
     timeZone: 'UTC',
     year: 'numeric',
@@ -1134,7 +1133,7 @@ function formatCatalogReleaseMonthYear(date: Date): string {
 }
 
 function formatCatalogReleaseDay(date: Date): string {
-  return new Intl.DateTimeFormat(getDefaultFormattingLocale(), {
+  return new Intl.DateTimeFormat('nl-NL', {
     day: 'numeric',
     month: 'long',
     timeZone: 'UTC',

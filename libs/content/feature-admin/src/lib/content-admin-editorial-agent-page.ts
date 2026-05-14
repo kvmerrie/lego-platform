@@ -32,10 +32,6 @@ import {
 } from '@lego-platform/content/util';
 import { normalizeTheme } from '@lego-platform/catalog/util';
 import {
-  buildArticlePath,
-  getPublicWebBaseUrl,
-} from '@lego-platform/shared/config';
-import {
   ContentAdminArticlePublishError,
   ContentAdminEditorialAgentApiService,
 } from './content-admin-editorial-agent-api.service';
@@ -85,6 +81,16 @@ interface EditorialAgentFeedOverlapCandidate {
   theme?: string;
   title: string;
   tokens: readonly string[];
+}
+
+function getAdminPublicWebBaseUrl(): string {
+  return typeof window === 'undefined'
+    ? 'https://www.brickhunt.nl'
+    : window.location.origin;
+}
+
+function buildAdminArticlePath(slug: string, themeSlug = 'lego'): string {
+  return `/artikelen/${themeSlug}/${slug}`;
 }
 
 interface EditorialAgentGalleryImage {
@@ -421,12 +427,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
       return null;
     }
 
-    const publicWebBaseUrl = getPublicWebBaseUrl({
-      currentOrigin:
-        typeof window !== 'undefined' ? window.location.origin : undefined,
-    });
+    const publicWebBaseUrl = getAdminPublicWebBaseUrl();
 
-    return `${publicWebBaseUrl}${buildArticlePath(
+    return `${publicWebBaseUrl}${buildAdminArticlePath(
       slug,
       this.resolveArticleThemeSlug(this.articleEditTheme()),
     )}`;
@@ -829,12 +832,9 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
   }
 
   buildPublishedArticleUrl(slug: string, theme?: string): string {
-    const publicWebBaseUrl = getPublicWebBaseUrl({
-      currentOrigin:
-        typeof window !== 'undefined' ? window.location.origin : undefined,
-    });
+    const publicWebBaseUrl = getAdminPublicWebBaseUrl();
 
-    return `${publicWebBaseUrl}${buildArticlePath(
+    return `${publicWebBaseUrl}${buildAdminArticlePath(
       slug,
       this.resolveArticleThemeSlug(theme),
     )}`;
@@ -2457,14 +2457,11 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
         mdx,
         ...(force ? { force: true } : {}),
       });
-      const publicWebBaseUrl = getPublicWebBaseUrl({
-        currentOrigin:
-          typeof window !== 'undefined' ? window.location.origin : undefined,
-      });
+      const publicWebBaseUrl = getAdminPublicWebBaseUrl();
       const articleThemeSlug = this.resolveArticleThemeSlug(frontmatter.theme);
 
       this.publishedArticleUrl.set(
-        `${publicWebBaseUrl}${buildArticlePath(result.slug, articleThemeSlug)}`,
+        `${publicWebBaseUrl}${buildAdminArticlePath(result.slug, articleThemeSlug)}`,
       );
       this.activeFeedItemId.set(null);
       await this.refreshFeedItems();
@@ -2479,13 +2476,10 @@ export class ContentAdminEditorialAgentPageComponent implements OnInit {
         error instanceof ContentAdminArticlePublishError &&
         error.existingSlug
       ) {
-        const publicWebBaseUrl = getPublicWebBaseUrl({
-          currentOrigin:
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-        });
+        const publicWebBaseUrl = getAdminPublicWebBaseUrl();
 
         this.publishedArticleUrl.set(
-          `${publicWebBaseUrl}${buildArticlePath(
+          `${publicWebBaseUrl}${buildAdminArticlePath(
             error.existingSlug,
             this.resolveArticleThemeSlug(frontmatter.theme),
           )}`,

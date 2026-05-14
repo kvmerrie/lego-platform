@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { platformConfig } from '@lego-platform/shared/config';
 import {
   applyThemeMode,
   getPreferredThemeMode,
@@ -18,7 +17,7 @@ import { getThemeToggleLabel } from '@lego-platform/shared/util';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ShellAdminComponent {
-  readonly productName = platformConfig.productName;
+  readonly productName = 'Brickhunt';
   readonly themeMode = signal<ThemeMode>(getPreferredThemeMode());
   readonly primaryNavigationItems = [
     {

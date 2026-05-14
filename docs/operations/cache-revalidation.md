@@ -6,7 +6,7 @@ Brickhunt admins can manually revalidate public web cache from the admin panel:
 
 The browser calls the authenticated API route:
 
-`POST /admin/cache/revalidate`
+`POST /api/admin/cache/revalidate`
 
 The API then forwards safe batches to the public web endpoint:
 
@@ -17,7 +17,11 @@ the browser.
 
 ## Security Model
 
-- Admin authentication is required through the existing Supabase bearer session.
+- Admin authentication is required through either the existing Supabase bearer
+  session or `x-admin-secret` for local/operator use.
+- `x-admin-secret` is matched server-side against
+  `ADMIN_CACHE_REVALIDATE_SECRET`, falling back to `ADMIN_PROMOTE_SECRET` while
+  the dedicated cache secret is rolled out.
 - The public web revalidation secret is injected server-side as
   `WEB_REVALIDATE_SECRET`.
 - The target public web origin comes from `WEB_BASE_URL`.
@@ -29,6 +33,8 @@ Required API environment:
 
 - `WEB_BASE_URL`
 - `WEB_REVALIDATE_SECRET`
+- `ADMIN_CACHE_REVALIDATE_SECRET` or `ADMIN_PROMOTE_SECRET` for local/operator
+  curl access
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 
@@ -68,7 +74,8 @@ Review the prefilled paths/tags before submitting.
 ## Troubleshooting
 
 `401 Admin authentication is required`
-: Sign in to the admin app again. The browser must send a valid bearer session.
+: Sign in to the admin app again, or use `x-admin-secret` for a local/operator
+curl request.
 
 `503 Public web revalidation is not configured`
 : Check `WEB_BASE_URL` and `WEB_REVALIDATE_SECRET` on the API deployment.
@@ -84,8 +91,20 @@ Missing audit rows
 Manual curl shape for diagnostics:
 
 ```bash
-curl -X POST "$API_BASE_URL/admin/cache/revalidate" \
+curl -X POST "$API_BASE_URL/api/admin/cache/revalidate" \
   -H "authorization: Bearer <admin-access-token>" \
   -H "content-type: application/json" \
   -d '{"paths":["/","/deals"],"tags":["homepage","deals"],"reason":"homepage_hotfix"}'
 ```
+
+Local/operator curl without a Supabase browser session:
+
+```bash
+curl -X POST "$API_BASE_URL/api/admin/cache/revalidate" \
+  -H "x-admin-secret: $ADMIN_CACHE_REVALIDATE_SECRET" \
+  -H "content-type: application/json" \
+  -d '{"paths":["/","/themes"],"tags":["homepage","themes"],"reason":"manual_theme_fix"}'
+```
+
+During rollout, `$ADMIN_PROMOTE_SECRET` is also accepted if
+`ADMIN_CACHE_REVALIDATE_SECRET` is not configured.

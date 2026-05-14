@@ -404,7 +404,7 @@ export const apiPaths = {
   adminCommerceAffiliateDiscoveredSets:
     '/api/v1/admin/commerce/affiliate-discovered-sets',
   adminCatalogPromotion: '/api/admin/promote/catalog',
-  adminCacheRevalidation: '/admin/cache/revalidate',
+  adminCacheRevalidation: '/api/admin/cache/revalidate',
 } as const;
 
 export function buildCatalogSetLiveOffersApiPath(setId: string): string {
@@ -458,6 +458,10 @@ export const productionSupabaseEnvKeys = {
 
 export const adminPromotionEnvKeys = {
   secret: 'ADMIN_PROMOTE_SECRET',
+} as const;
+
+export const adminCacheRevalidationEnvKeys = {
+  secret: 'ADMIN_CACHE_REVALIDATE_SECRET',
 } as const;
 
 export const productEmailEnvKeys = {

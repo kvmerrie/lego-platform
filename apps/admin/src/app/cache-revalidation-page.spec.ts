@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import {
   CommerceAdminApiService,
   CommerceAdminCacheRevalidationPageComponent,
@@ -37,6 +37,10 @@ function createResult(
 }
 
 describe('CommerceAdminCacheRevalidationPageComponent', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   async function createFixture({
     revalidatePublicWebCache = vi.fn(async () => createResult()),
   }: {
@@ -74,9 +78,7 @@ describe('CommerceAdminCacheRevalidationPageComponent', () => {
     fixture.detectChanges();
 
     expect(component.canSubmit()).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain(
-      'Path must start with /',
-    );
+    expect(fixture.nativeElement.textContent).toContain('Ongeldig path');
   });
 
   test('submits normalized paths and shows a successful response', async () => {
@@ -95,6 +97,19 @@ describe('CommerceAdminCacheRevalidationPageComponent', () => {
       'Cache revalidation is afgerond.',
     );
     expect(fixture.nativeElement.textContent).toContain('homepage_hotfix');
+  });
+
+  test('does not depend on browser process env while submitting', async () => {
+    vi.stubGlobal('process', undefined);
+    const { component, revalidatePublicWebCache } = await createFixture();
+
+    await component.revalidate();
+
+    expect(revalidatePublicWebCache).toHaveBeenCalledWith({
+      paths: ['/', '/deals'],
+      reason: 'homepage_hotfix',
+      tags: ['homepage', 'deals'],
+    });
   });
 
   test('shows loading state while the request is running', async () => {

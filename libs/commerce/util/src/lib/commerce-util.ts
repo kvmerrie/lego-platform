@@ -42,6 +42,10 @@ export type CommerceMerchantSourceType =
 export type CommerceMerchantSupportTier =
   (typeof commerceMerchantSupportTiers)[number];
 
+export type CommerceMerchantReliabilityTier =
+  | 'production_feed'
+  | 'strategic_manual';
+
 export type CommerceOfferSeedValidationStatus =
   (typeof commerceOfferSeedValidationStatuses)[number];
 
@@ -639,19 +643,15 @@ export function getCommerceMerchantSupportTierLabel(merchantSlug: string) {
 export function getCommerceMerchantReliabilityTier(
   merchantSlug: string,
 ): CommerceMerchantReliabilityTier {
-  const configuredTier =
-    getConfiguredCommerceMerchantReliabilityTier(merchantSlug);
   const supportProfile = getCommerceMerchantSupportProfile(merchantSlug);
 
-  return supportProfile.reliabilityTier === configuredTier
-    ? supportProfile.reliabilityTier
-    : configuredTier;
+  return supportProfile.reliabilityTier;
 }
 
 export function canCommerceMerchantDriveDealConfidence(
   merchantSlug: string,
 ): boolean {
-  return isConfiguredCommerceMerchantProductionFeed(merchantSlug);
+  return getCommerceMerchantReliabilityTier(merchantSlug) === 'production_feed';
 }
 
 function getCommerceMerchantSupportTierPriority(merchantSlug: string): number {
@@ -1965,8 +1965,3 @@ export function filterCommerceCoverageQueueRows({
     );
   });
 }
-import {
-  getCommerceMerchantReliabilityTier as getConfiguredCommerceMerchantReliabilityTier,
-  isCommerceMerchantProductionFeed as isConfiguredCommerceMerchantProductionFeed,
-  type CommerceMerchantReliabilityTier,
-} from '@lego-platform/shared/config';

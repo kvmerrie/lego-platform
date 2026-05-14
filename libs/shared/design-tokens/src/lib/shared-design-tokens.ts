@@ -1,4 +1,3 @@
-import { platformConfig } from '@lego-platform/shared/config';
 import { ThemeMode } from '@lego-platform/shared/types';
 
 type ThemeTokenMap = Record<string, string>;
@@ -380,7 +379,7 @@ export function getThemeBootstrapScript(): string {
 }
 
 export function getInitialThemeMode(): ThemeMode {
-  return platformConfig.defaultThemeMode;
+  return 'light';
 }
 
 export function getPreferredThemeMode(): ThemeMode {

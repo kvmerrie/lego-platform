@@ -1,4 +1,6 @@
 import Fastify from 'fastify';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { createRequestPrincipalPlugin } from '../app/plugins/request-principal';
 import { createAdminCacheRevalidationRoutes } from '../app/routes/admin-cache-revalidation';
@@ -58,6 +60,7 @@ describe('admin cache revalidation routes', () => {
   test('requires authenticated admin access', async () => {
     process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
     process.env.WEB_REVALIDATE_SECRET = 'server-secret';
+    process.env.ADMIN_CACHE_REVALIDATE_SECRET = 'cache-admin-secret';
     const { fetchImpl, server } = await createServer({
       principal: {
         state: 'anonymous',
@@ -66,7 +69,7 @@ describe('admin cache revalidation routes', () => {
 
     const response = await server.inject({
       method: 'POST',
-      url: '/admin/cache/revalidate',
+      url: '/api/admin/cache/revalidate',
       payload: {
         paths: ['/'],
         reason: 'manual_homepage_fix',
@@ -79,14 +82,14 @@ describe('admin cache revalidation routes', () => {
     await server.close();
   });
 
-  test('forwards the revalidation secret server-side only', async () => {
+  test('accepts a valid bearer admin session', async () => {
     process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
     process.env.WEB_REVALIDATE_SECRET = 'server-secret';
     const { auditLogger, fetchImpl, server } = await createServer();
 
     const response = await server.inject({
       method: 'POST',
-      url: '/admin/cache/revalidate',
+      url: '/api/admin/cache/revalidate',
       headers: {
         authorization: 'Bearer browser-token',
       },
@@ -111,6 +114,10 @@ describe('admin cache revalidation routes', () => {
     expect(auditLogger).toHaveBeenCalledWith({
       input: expect.objectContaining({
         actorEmail: 'admin@example.test',
+        actorId: 'admin-1',
+        metadata: expect.objectContaining({
+          authKind: 'bearer_session',
+        }),
         operationType: 'cache_revalidation',
         paths: ['/', '/deals'],
         reason: 'homepage_hotfix',
@@ -118,6 +125,117 @@ describe('admin cache revalidation routes', () => {
         tags: ['homepage', 'deals'],
       }),
     });
+
+    await server.close();
+  });
+
+  test('accepts a valid x-admin-secret without a bearer session', async () => {
+    process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
+    process.env.WEB_REVALIDATE_SECRET = 'server-secret';
+    process.env.ADMIN_CACHE_REVALIDATE_SECRET = 'cache-admin-secret';
+    const { auditLogger, fetchImpl, server } = await createServer({
+      principal: {
+        state: 'anonymous',
+      },
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/cache/revalidate',
+      headers: {
+        'x-admin-secret': 'cache-admin-secret',
+      },
+      payload: {
+        paths: ['/themes'],
+        reason: 'manual_theme_fix',
+        tags: ['themes'],
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://www.brickhunt.nl/api/revalidate',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'x-revalidate-secret': 'server-secret',
+        }),
+      }),
+    );
+    expect(JSON.stringify(response.json())).not.toContain('server-secret');
+    expect(auditLogger).toHaveBeenCalledWith({
+      input: expect.objectContaining({
+        actorEmail: null,
+        actorId: 'admin-secret',
+        metadata: expect.objectContaining({
+          authKind: 'admin_secret',
+        }),
+        operationType: 'cache_revalidation',
+        paths: ['/themes'],
+        reason: 'manual_theme_fix',
+        success: true,
+        tags: ['themes'],
+      }),
+    });
+
+    await server.close();
+  });
+
+  test('falls back to ADMIN_PROMOTE_SECRET for x-admin-secret auth', async () => {
+    process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
+    process.env.WEB_REVALIDATE_SECRET = 'server-secret';
+    delete process.env.ADMIN_CACHE_REVALIDATE_SECRET;
+    process.env.ADMIN_PROMOTE_SECRET = 'promote-admin-secret';
+    const { server } = await createServer({
+      principal: {
+        state: 'anonymous',
+      },
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/cache/revalidate',
+      headers: {
+        'x-admin-secret': 'promote-admin-secret',
+      },
+      payload: {
+        paths: ['/'],
+        reason: 'manual_homepage_fix',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    await server.close();
+  });
+
+  test('rejects an invalid x-admin-secret', async () => {
+    process.env.WEB_BASE_URL = 'https://www.brickhunt.nl';
+    process.env.WEB_REVALIDATE_SECRET = 'server-secret';
+    process.env.ADMIN_CACHE_REVALIDATE_SECRET = 'cache-admin-secret';
+    const { fetchImpl, server } = await createServer({
+      principal: {
+        state: 'anonymous',
+      },
+    });
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/admin/cache/revalidate',
+      headers: {
+        'x-admin-secret': 'wrong-secret',
+      },
+      payload: {
+        paths: ['/'],
+        reason: 'manual_homepage_fix',
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({
+      message: 'Admin authentication is required.',
+      status: 'error',
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
 
     await server.close();
   });
@@ -143,7 +261,7 @@ describe('admin cache revalidation routes', () => {
 
     const response = await server.inject({
       method: 'POST',
-      url: '/admin/cache/revalidate',
+      url: '/api/admin/cache/revalidate',
       payload: {
         paths: Array.from({ length: 26 }, (_, index) => `/sets/${index}`),
         reason: 'manual_batch_fix',
@@ -171,7 +289,7 @@ describe('admin cache revalidation routes', () => {
 
     const response = await server.inject({
       method: 'POST',
-      url: '/admin/cache/revalidate',
+      url: '/api/admin/cache/revalidate',
       payload: {
         paths: ['https://www.brickhunt.nl/deals'],
         reason: 'manual_fix',
@@ -188,5 +306,43 @@ describe('admin cache revalidation routes', () => {
     expect(fetchImpl).not.toHaveBeenCalled();
 
     await server.close();
+  });
+});
+
+describe('admin cache revalidation browser import safety', () => {
+  const workspaceRoot = join(process.cwd(), '../..');
+  const browserFiles = [
+    'libs/commerce/feature-admin/src/lib/commerce-admin-api.service.ts',
+    'libs/commerce/feature-admin/src/lib/commerce-admin-cache-revalidation-page.ts',
+    'libs/commerce/feature-admin/src/lib/commerce-admin-store.service.ts',
+    'libs/commerce/feature-admin/src/index.ts',
+    'libs/commerce/util/src/lib/commerce-util.ts',
+    'libs/content/feature-admin/src/lib/content-admin-editorial-agent-api.service.ts',
+    'libs/content/feature-admin/src/lib/content-admin-editorial-agent-page.ts',
+    'libs/catalog/util/src/lib/catalog-util.ts',
+    'libs/shared/design-tokens/src/lib/shared-design-tokens.ts',
+    'libs/shell/admin/src/lib/shell-admin/shell-admin.ts',
+    'apps/admin/src/app/app.routes.ts',
+  ];
+  const forbiddenPatterns = [
+    /@lego-platform\/shared\/config/,
+    /@lego-platform\/shared\/data-access-auth['"]/,
+    /public-web-revalidation/,
+    /process\.env/,
+    /\bWEB_BASE_URL\b/,
+    /\bWEB_REVALIDATE_SECRET\b/,
+  ];
+
+  test('keeps the admin cache revalidation browser path free of server config imports', () => {
+    for (const browserFile of browserFiles) {
+      const source = readFileSync(join(workspaceRoot, browserFile), 'utf8');
+
+      for (const forbiddenPattern of forbiddenPatterns) {
+        expect(
+          source,
+          `${browserFile} imports ${forbiddenPattern}`,
+        ).not.toMatch(forbiddenPattern);
+      }
+    }
   });
 });

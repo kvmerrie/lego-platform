@@ -12,8 +12,23 @@ import {
   type EditorialFeedSyncResult,
   type EditorialAgentFactExtractionResult,
 } from '@lego-platform/content/util';
-import { apiPaths } from '@lego-platform/shared/config';
 import { firstValueFrom } from 'rxjs';
+
+const adminContentApiPaths = {
+  adminArticles: '/api/v1/admin/articles',
+  adminArticlesPreview: '/api/v1/admin/articles/preview',
+  adminEditorialAgentArticleImage:
+    '/api/v1/admin/editorial-agent/article-image',
+  adminEditorialAgentDraft: '/api/v1/admin/editorial-agent/draft',
+  adminEditorialAgentExtract: '/api/v1/admin/editorial-agent/extract',
+  adminEditorialAgentFeedItems: '/api/v1/admin/editorial-agent/feed-items',
+  adminEditorialAgentFeedSync: '/api/v1/admin/editorial-agent/feed-sync',
+  adminEditorialAgentHeroImage: '/api/v1/admin/editorial-agent/hero-image',
+  adminEditorialAgentHeroImageUrl:
+    '/api/v1/admin/editorial-agent/hero-image-url',
+  adminEditorialAgentPublish: '/api/v1/admin/editorial-agent/publish',
+  adminRuntimeConfig: '/api/v1/admin/runtime-config',
+} as const;
 
 export class ContentAdminArticlePublishError extends Error {
   constructor(
@@ -36,7 +51,9 @@ export class ContentAdminEditorialAgentApiService {
 
   async getRuntimeConfig(): Promise<ContentAdminRuntimeConfig> {
     return firstValueFrom(
-      this.http.get<ContentAdminRuntimeConfig>(apiPaths.adminRuntimeConfig),
+      this.http.get<ContentAdminRuntimeConfig>(
+        adminContentApiPaths.adminRuntimeConfig,
+      ),
     );
   }
 
@@ -45,7 +62,7 @@ export class ContentAdminEditorialAgentApiService {
   > {
     return firstValueFrom(
       this.http.get<readonly AdminContentArticleSummary[]>(
-        apiPaths.adminArticles,
+        adminContentApiPaths.adminArticles,
       ),
     );
   }
@@ -53,7 +70,7 @@ export class ContentAdminEditorialAgentApiService {
   async getPublishedArticle(slug: string): Promise<AdminContentArticleDetail> {
     return firstValueFrom(
       this.http.get<AdminContentArticleDetail>(
-        `${apiPaths.adminArticles}/${encodeURIComponent(slug)}`,
+        `${adminContentApiPaths.adminArticles}/${encodeURIComponent(slug)}`,
       ),
     );
   }
@@ -65,7 +82,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.patch<AdminContentArticleDetail>(
-          `${apiPaths.adminArticles}/${encodeURIComponent(slug)}`,
+          `${adminContentApiPaths.adminArticles}/${encodeURIComponent(slug)}`,
           input,
         ),
       );
@@ -89,7 +106,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.delete<AdminContentArticleDeleteSummary>(
-          `${apiPaths.adminArticles}/${encodeURIComponent(slug)}`,
+          `${adminContentApiPaths.adminArticles}/${encodeURIComponent(slug)}`,
         ),
       );
     } catch (error) {
@@ -112,7 +129,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.post<{ previewId: string; previewUrl: string }>(
-          apiPaths.adminArticlesPreview,
+          adminContentApiPaths.adminArticlesPreview,
           input,
         ),
       );
@@ -136,7 +153,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.post<EditorialAgentFactExtractionResult>(
-          apiPaths.adminEditorialAgentExtract,
+          adminContentApiPaths.adminEditorialAgentExtract,
           {
             url,
           },
@@ -167,7 +184,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.post<EditorialAgentDraftGenerationResult>(
-          apiPaths.adminEditorialAgentDraft,
+          adminContentApiPaths.adminEditorialAgentDraft,
           {
             extraction,
             importMissingSets,
@@ -205,12 +222,15 @@ export class ContentAdminEditorialAgentApiService {
   }): Promise<{ slug: string }> {
     try {
       return await firstValueFrom(
-        this.http.post<{ slug: string }>(apiPaths.adminEditorialAgentPublish, {
-          feedItemId,
-          frontmatter,
-          mdx,
-          ...(force ? { force: true } : {}),
-        }),
+        this.http.post<{ slug: string }>(
+          adminContentApiPaths.adminEditorialAgentPublish,
+          {
+            feedItemId,
+            frontmatter,
+            mdx,
+            ...(force ? { force: true } : {}),
+          },
+        ),
       );
     } catch (error) {
       if (error instanceof HttpErrorResponse) {
@@ -256,7 +276,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.post<{ publicUrl: string }>(
-          apiPaths.adminEditorialAgentHeroImage,
+          adminContentApiPaths.adminEditorialAgentHeroImage,
           {
             base64Data,
             contentType,
@@ -289,7 +309,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.post<{ heroImage: string; heroImageCredit: string }>(
-          apiPaths.adminEditorialAgentHeroImageUrl,
+          adminContentApiPaths.adminEditorialAgentHeroImageUrl,
           {
             imageUrl,
             slug,
@@ -325,7 +345,7 @@ export class ContentAdminEditorialAgentApiService {
           imageCredit?: string;
           imageUrl: string;
           publicUrl: string;
-        }>(apiPaths.adminEditorialAgentArticleImage, input),
+        }>(adminContentApiPaths.adminEditorialAgentArticleImage, input),
       );
     } catch (error) {
       if (error instanceof HttpErrorResponse) {
@@ -344,7 +364,7 @@ export class ContentAdminEditorialAgentApiService {
   async listFeedItems(): Promise<readonly EditorialFeedItem[]> {
     return firstValueFrom(
       this.http.get<readonly EditorialFeedItem[]>(
-        apiPaths.adminEditorialAgentFeedItems,
+        adminContentApiPaths.adminEditorialAgentFeedItems,
       ),
     );
   }
@@ -357,7 +377,7 @@ export class ContentAdminEditorialAgentApiService {
   ): Promise<EditorialFeedSyncResult> {
     return firstValueFrom(
       this.http.post<EditorialFeedSyncResult>(
-        apiPaths.adminEditorialAgentFeedSync,
+        adminContentApiPaths.adminEditorialAgentFeedSync,
         input,
       ),
     );
@@ -376,7 +396,7 @@ export class ContentAdminEditorialAgentApiService {
         this.http.post<{
           draftResult: EditorialAgentDraftGenerationResult;
           feedItem: EditorialFeedItem;
-        }>(`${apiPaths.adminEditorialAgentFeedItems}/draft`, {
+        }>(`${adminContentApiPaths.adminEditorialAgentFeedItems}/draft`, {
           feedItemId,
           importMissingSets,
           useAiRewrite,
@@ -406,7 +426,7 @@ export class ContentAdminEditorialAgentApiService {
     try {
       return await firstValueFrom(
         this.http.post<EditorialFeedItem>(
-          `${apiPaths.adminEditorialAgentFeedItems}/save-draft`,
+          `${adminContentApiPaths.adminEditorialAgentFeedItems}/save-draft`,
           {
             feedItemId,
             ...input,
@@ -430,7 +450,7 @@ export class ContentAdminEditorialAgentApiService {
   async ignoreFeedItem(feedItemId: string): Promise<EditorialFeedItem> {
     return firstValueFrom(
       this.http.post<EditorialFeedItem>(
-        `${apiPaths.adminEditorialAgentFeedItems}/ignore`,
+        `${adminContentApiPaths.adminEditorialAgentFeedItems}/ignore`,
         {
           feedItemId,
         },

@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { buildSupabaseAuthorizationHeaders } from '@lego-platform/shared/data-access-auth';
 import {
   type CatalogExternalSetSearchResult,
   type CatalogSuggestedSet,
@@ -19,7 +18,6 @@ import {
   type CommerceOfferSeedInput,
   type CommerceSetRefreshResult,
 } from '@lego-platform/commerce/util';
-import { apiPaths } from '@lego-platform/shared/config';
 import { firstValueFrom } from 'rxjs';
 
 export interface CommerceAdminCatalogSetSummary {
@@ -204,6 +202,73 @@ export interface CommerceAdminAffiliateDiscoveredSetFilters {
   status?: CommerceAffiliateDiscoveredSetStatus | 'all';
 }
 
+const adminApiPaths = {
+  adminCacheRevalidation: '/api/admin/cache/revalidate',
+  adminCatalogBulkOnboardingRuns: '/api/v1/admin/catalog/bulk-onboarding/runs',
+  adminCatalogSetSearch: '/api/v1/admin/catalog/search',
+  adminCatalogSets: '/api/v1/admin/catalog/sets',
+  adminCatalogSuggestedSets: '/api/v1/admin/catalog/suggested-sets',
+  adminCommerceAffiliateDiscoveredSets:
+    '/api/v1/admin/commerce/affiliate-discovered-sets',
+  adminCommerceBenchmarkSets: '/api/v1/admin/commerce/benchmark-sets',
+  adminCommerceCoverageQueue: '/api/v1/admin/commerce/coverage-queue',
+  adminCommerceMerchants: '/api/v1/admin/commerce/merchants',
+  adminCommerceOfferSeeds: '/api/v1/admin/commerce/offer-seeds',
+  adminCommerceProductionSync: '/api/v1/admin/commerce/production-sync',
+  adminCommerceSetRefreshes: '/api/v1/admin/commerce/set-refreshes',
+} as const;
+
+function readStoredSupabaseAccessToken(): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  try {
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+
+      if (!key?.startsWith('sb-') || !key.endsWith('-auth-token')) {
+        continue;
+      }
+
+      const rawValue = window.localStorage.getItem(key);
+
+      if (!rawValue) {
+        continue;
+      }
+
+      const parsedValue = JSON.parse(rawValue) as {
+        access_token?: unknown;
+        currentSession?: { access_token?: unknown };
+      };
+      const accessToken =
+        typeof parsedValue.access_token === 'string'
+          ? parsedValue.access_token
+          : typeof parsedValue.currentSession?.access_token === 'string'
+            ? parsedValue.currentSession.access_token
+            : undefined;
+
+      if (accessToken?.trim()) {
+        return accessToken.trim();
+      }
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+function buildBrowserAuthorizationHeaders(): Record<string, string> {
+  const accessToken = readStoredSupabaseAccessToken();
+
+  return accessToken
+    ? {
+        Authorization: `Bearer ${accessToken}`,
+      }
+    : {};
+}
+
 @Injectable({ providedIn: 'root' })
 export class CommerceAdminApiService {
   private readonly http = inject(HttpClient);
@@ -211,7 +276,7 @@ export class CommerceAdminApiService {
   async listCatalogSets(): Promise<CommerceAdminCatalogSetSummary[]> {
     return firstValueFrom(
       this.http.get<CommerceAdminCatalogSetSummary[]>(
-        apiPaths.adminCatalogSets,
+        adminApiPaths.adminCatalogSets,
       ),
     );
   }
@@ -221,7 +286,7 @@ export class CommerceAdminApiService {
   ): Promise<CatalogExternalSetSearchResult[]> {
     return firstValueFrom(
       this.http.get<CatalogExternalSetSearchResult[]>(
-        apiPaths.adminCatalogSetSearch,
+        adminApiPaths.adminCatalogSetSearch,
         {
           params: {
             query,
@@ -233,7 +298,9 @@ export class CommerceAdminApiService {
 
   async listCatalogSuggestedSets(): Promise<CatalogSuggestedSet[]> {
     return firstValueFrom(
-      this.http.get<CatalogSuggestedSet[]>(apiPaths.adminCatalogSuggestedSets),
+      this.http.get<CatalogSuggestedSet[]>(
+        adminApiPaths.adminCatalogSuggestedSets,
+      ),
     );
   }
 
@@ -241,7 +308,7 @@ export class CommerceAdminApiService {
     input: CatalogExternalSetSearchResult,
   ): Promise<CatalogSet> {
     return firstValueFrom(
-      this.http.post<CatalogSet>(apiPaths.adminCatalogSets, input),
+      this.http.post<CatalogSet>(adminApiPaths.adminCatalogSets, input),
     );
   }
 
@@ -250,7 +317,7 @@ export class CommerceAdminApiService {
   ): Promise<CommerceAdminBulkOnboardingStartResult> {
     return firstValueFrom(
       this.http.post<CommerceAdminBulkOnboardingStartResult>(
-        apiPaths.adminCatalogBulkOnboardingRuns,
+        adminApiPaths.adminCatalogBulkOnboardingRuns,
         {
           setIds,
         },
@@ -262,7 +329,7 @@ export class CommerceAdminApiService {
     try {
       return await firstValueFrom(
         this.http.get<CommerceAdminBulkOnboardingRunReadResult>(
-          `${apiPaths.adminCatalogBulkOnboardingRuns}/latest`,
+          `${adminApiPaths.adminCatalogBulkOnboardingRuns}/latest`,
         ),
       );
     } catch (error) {
@@ -280,7 +347,7 @@ export class CommerceAdminApiService {
     try {
       return await firstValueFrom(
         this.http.get<CommerceAdminBulkOnboardingRunReadResult>(
-          `${apiPaths.adminCatalogBulkOnboardingRuns}/${encodeURIComponent(
+          `${adminApiPaths.adminCatalogBulkOnboardingRuns}/${encodeURIComponent(
             runId,
           )}`,
         ),
@@ -297,7 +364,7 @@ export class CommerceAdminApiService {
   async listBenchmarkSets(): Promise<CommerceBenchmarkSet[]> {
     return firstValueFrom(
       this.http.get<CommerceBenchmarkSet[]>(
-        apiPaths.adminCommerceBenchmarkSets,
+        adminApiPaths.adminCommerceBenchmarkSets,
       ),
     );
   }
@@ -305,7 +372,7 @@ export class CommerceAdminApiService {
   async listCoverageQueue(): Promise<CommerceCoverageQueueRow[]> {
     return firstValueFrom(
       this.http.get<CommerceCoverageQueueRow[]>(
-        apiPaths.adminCommerceCoverageQueue,
+        adminApiPaths.adminCommerceCoverageQueue,
       ),
     );
   }
@@ -329,7 +396,7 @@ export class CommerceAdminApiService {
 
     return firstValueFrom(
       this.http.get<CommerceAffiliateDiscoveredSet[]>(
-        apiPaths.adminCommerceAffiliateDiscoveredSets,
+        adminApiPaths.adminCommerceAffiliateDiscoveredSets,
         {
           params,
         },
@@ -344,7 +411,7 @@ export class CommerceAdminApiService {
   }): Promise<CommerceAffiliateDiscoveredSetImportResult> {
     return firstValueFrom(
       this.http.post<CommerceAffiliateDiscoveredSetImportResult>(
-        `${apiPaths.adminCommerceAffiliateDiscoveredSets}/import`,
+        `${adminApiPaths.adminCommerceAffiliateDiscoveredSets}/import`,
         input,
       ),
     );
@@ -356,7 +423,7 @@ export class CommerceAdminApiService {
   }): Promise<CommerceAffiliateDiscoveredSet> {
     return firstValueFrom(
       this.http.post<CommerceAffiliateDiscoveredSet>(
-        `${apiPaths.adminCommerceAffiliateDiscoveredSets}/${input.discoveredSetId}/status`,
+        `${adminApiPaths.adminCommerceAffiliateDiscoveredSets}/${input.discoveredSetId}/status`,
         {
           status: input.status,
         },
@@ -367,7 +434,7 @@ export class CommerceAdminApiService {
   async refreshSet(setId: string): Promise<CommerceSetRefreshResult> {
     return firstValueFrom(
       this.http.post<CommerceSetRefreshResult>(
-        apiPaths.adminCommerceSetRefreshes,
+        adminApiPaths.adminCommerceSetRefreshes,
         { setId },
       ),
     );
@@ -380,7 +447,7 @@ export class CommerceAdminApiService {
   }): Promise<CommerceAdminProductionSyncResult> {
     return firstValueFrom(
       this.http.post<CommerceAdminProductionSyncResult>(
-        apiPaths.adminCommerceProductionSync,
+        adminApiPaths.adminCommerceProductionSync,
         {
           allowDestructive: input.allowDestructive === true,
           dryRun: input.dryRun,
@@ -399,19 +466,12 @@ export class CommerceAdminApiService {
     reason: string;
     tags?: readonly string[];
   }): Promise<CommerceAdminCacheRevalidationResult> {
-    const authHeaders = await buildSupabaseAuthorizationHeaders();
-    const headers: Record<string, string> = {};
-
-    authHeaders.forEach((value, key) => {
-      headers[key] = value;
-    });
-
     return firstValueFrom(
       this.http.post<CommerceAdminCacheRevalidationResult>(
-        apiPaths.adminCacheRevalidation,
+        adminApiPaths.adminCacheRevalidation,
         input,
         {
-          headers,
+          headers: buildBrowserAuthorizationHeaders(),
         },
       ),
     );
@@ -423,7 +483,7 @@ export class CommerceAdminApiService {
   }): Promise<CommerceBenchmarkSet> {
     return firstValueFrom(
       this.http.post<CommerceBenchmarkSet>(
-        apiPaths.adminCommerceBenchmarkSets,
+        adminApiPaths.adminCommerceBenchmarkSets,
         input,
       ),
     );
@@ -431,13 +491,15 @@ export class CommerceAdminApiService {
 
   async deleteBenchmarkSet(setId: string): Promise<void> {
     await firstValueFrom(
-      this.http.delete<void>(`${apiPaths.adminCommerceBenchmarkSets}/${setId}`),
+      this.http.delete<void>(
+        `${adminApiPaths.adminCommerceBenchmarkSets}/${setId}`,
+      ),
     );
   }
 
   async listMerchants(): Promise<CommerceMerchant[]> {
     return firstValueFrom(
-      this.http.get<CommerceMerchant[]>(apiPaths.adminCommerceMerchants),
+      this.http.get<CommerceMerchant[]>(adminApiPaths.adminCommerceMerchants),
     );
   }
 
@@ -445,7 +507,10 @@ export class CommerceAdminApiService {
     input: CommerceMerchantInput,
   ): Promise<CommerceMerchant> {
     return firstValueFrom(
-      this.http.post<CommerceMerchant>(apiPaths.adminCommerceMerchants, input),
+      this.http.post<CommerceMerchant>(
+        adminApiPaths.adminCommerceMerchants,
+        input,
+      ),
     );
   }
 
@@ -455,7 +520,7 @@ export class CommerceAdminApiService {
   }): Promise<CommerceMerchant> {
     return firstValueFrom(
       this.http.put<CommerceMerchant>(
-        `${apiPaths.adminCommerceMerchants}/${input.merchantId}`,
+        `${adminApiPaths.adminCommerceMerchants}/${input.merchantId}`,
         input.input,
       ),
     );
@@ -463,7 +528,7 @@ export class CommerceAdminApiService {
 
   async listOfferSeeds(): Promise<CommerceOfferSeed[]> {
     return firstValueFrom(
-      this.http.get<CommerceOfferSeed[]>(apiPaths.adminCommerceOfferSeeds),
+      this.http.get<CommerceOfferSeed[]>(adminApiPaths.adminCommerceOfferSeeds),
     );
   }
 
@@ -472,7 +537,7 @@ export class CommerceAdminApiService {
   ): Promise<CommerceOfferSeed> {
     return firstValueFrom(
       this.http.post<CommerceOfferSeed>(
-        apiPaths.adminCommerceOfferSeeds,
+        adminApiPaths.adminCommerceOfferSeeds,
         input,
       ),
     );
@@ -484,7 +549,7 @@ export class CommerceAdminApiService {
   }): Promise<CommerceOfferSeed> {
     return firstValueFrom(
       this.http.put<CommerceOfferSeed>(
-        `${apiPaths.adminCommerceOfferSeeds}/${input.offerSeedId}`,
+        `${adminApiPaths.adminCommerceOfferSeeds}/${input.offerSeedId}`,
         input.input,
       ),
     );

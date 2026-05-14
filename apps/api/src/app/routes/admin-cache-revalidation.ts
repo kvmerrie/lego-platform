@@ -1,8 +1,11 @@
+import { timingSafeEqual } from 'node:crypto';
 import {
   logAdminOperation,
   type AdminOperationLogInput,
 } from '@lego-platform/api/data-access-server';
 import {
+  adminCacheRevalidationEnvKeys,
+  adminPromotionEnvKeys,
   apiPaths,
   batchRevalidationPayloads,
   normalizeRevalidationPaths,
@@ -54,6 +57,18 @@ type LogAdminOperationFn = typeof logAdminOperation;
 
 const rateLimitState = new Map<string, number[]>();
 
+type AdminCacheRevalidationActor =
+  | {
+      email: string | null;
+      id: string;
+      kind: 'bearer_session';
+    }
+  | {
+      email: null;
+      id: 'admin-secret';
+      kind: 'admin_secret';
+    };
+
 function readStringArray(value: unknown, fieldName: string): string[] {
   if (value === undefined) {
     return [];
@@ -78,18 +93,91 @@ function isAuthenticatedAdmin(
   return requestPrincipal?.state === 'authenticated';
 }
 
-function getRateLimitKey({
-  ip,
-  requestPrincipal,
-}: {
-  ip: string;
-  requestPrincipal: RequestPrincipal | null;
-}): string {
-  if (requestPrincipal?.state === 'authenticated') {
-    return requestPrincipal.email ?? requestPrincipal.userId;
+function readAdminSecretHeader(
+  headerValue: string | string[] | undefined,
+): string | undefined {
+  if (Array.isArray(headerValue)) {
+    return typeof headerValue[0] === 'string'
+      ? headerValue[0].trim()
+      : undefined;
   }
 
-  return ip;
+  return typeof headerValue === 'string' ? headerValue.trim() : undefined;
+}
+
+function matchesSecret({
+  expectedSecret,
+  providedSecret,
+}: {
+  expectedSecret: string;
+  providedSecret?: string;
+}): boolean {
+  if (!providedSecret) {
+    return false;
+  }
+
+  const expectedBuffer = Buffer.from(expectedSecret, 'utf8');
+  const providedBuffer = Buffer.from(providedSecret, 'utf8');
+
+  if (expectedBuffer.length !== providedBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
+function readExpectedAdminCacheRevalidationSecret(): string | undefined {
+  return (
+    process.env[adminCacheRevalidationEnvKeys.secret]?.trim() ||
+    process.env[adminPromotionEnvKeys.secret]?.trim() ||
+    undefined
+  );
+}
+
+function resolveAdminCacheRevalidationActor({
+  providedAdminSecret,
+  requestPrincipal,
+}: {
+  providedAdminSecret?: string;
+  requestPrincipal: RequestPrincipal | null;
+}): AdminCacheRevalidationActor | null {
+  if (isAuthenticatedAdmin(requestPrincipal)) {
+    return {
+      email: requestPrincipal.email,
+      id: requestPrincipal.userId,
+      kind: 'bearer_session',
+    };
+  }
+
+  const expectedAdminSecret = readExpectedAdminCacheRevalidationSecret();
+
+  if (
+    expectedAdminSecret &&
+    matchesSecret({
+      expectedSecret: expectedAdminSecret,
+      providedSecret: providedAdminSecret,
+    })
+  ) {
+    return {
+      email: null,
+      id: 'admin-secret',
+      kind: 'admin_secret',
+    };
+  }
+
+  return null;
+}
+
+function getRateLimitKey({
+  actor,
+  ip,
+}: {
+  actor: AdminCacheRevalidationActor;
+  ip: string;
+}): string {
+  return actor.kind === 'bearer_session'
+    ? (actor.email ?? actor.id)
+    : `${actor.id}:${ip}`;
 }
 
 function isRateLimited({
@@ -200,20 +288,21 @@ async function postRevalidationBatch({
 
 async function auditAdminCacheRevalidation({
   aggregateResult,
+  actor,
   auditLogger,
-  requestPrincipal,
   responseStatus,
 }: {
   aggregateResult: AdminCacheRevalidationAggregateResult;
+  actor: AdminCacheRevalidationActor;
   auditLogger: LogAdminOperationFn;
-  requestPrincipal: Extract<RequestPrincipal, { state: 'authenticated' }>;
   responseStatus: number;
 }): Promise<void> {
   const input: AdminOperationLogInput = {
-    actorEmail: requestPrincipal.email,
-    actorId: requestPrincipal.userId,
+    actorEmail: actor.email,
+    actorId: actor.id,
     durationMs: aggregateResult.durationMs,
     metadata: {
+      authKind: actor.kind,
       batchCount: aggregateResult.results.length,
       warnings: aggregateResult.warnings,
     },
@@ -240,8 +329,14 @@ export function createAdminCacheRevalidationRoutes({
       apiPaths.adminCacheRevalidation,
       async function (request, reply) {
         const requestPrincipal = request.requestPrincipal;
+        const actor = resolveAdminCacheRevalidationActor({
+          providedAdminSecret: readAdminSecretHeader(
+            request.headers['x-admin-secret'],
+          ),
+          requestPrincipal,
+        });
 
-        if (!isAuthenticatedAdmin(requestPrincipal)) {
+        if (!actor) {
           return reply.status(401).send({
             message: 'Admin authentication is required.',
             status: 'error',
@@ -251,8 +346,8 @@ export function createAdminCacheRevalidationRoutes({
         if (
           isRateLimited({
             key: getRateLimitKey({
+              actor,
               ip: request.ip,
-              requestPrincipal,
             }),
           })
         ) {
@@ -397,8 +492,8 @@ export function createAdminCacheRevalidationRoutes({
         try {
           await auditAdminCacheRevalidation({
             aggregateResult,
+            actor,
             auditLogger,
-            requestPrincipal,
             responseStatus,
           });
         } catch (error) {
