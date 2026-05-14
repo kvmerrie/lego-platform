@@ -949,6 +949,375 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('resolves custom public theme slugs and logos for set detail breadcrumbs', async () => {
+    const themeCases = [
+      {
+        displayName: 'Creator',
+        expectedLogoUrl: '/themes/logos/creator-3-in-1_logo.png',
+        expectedName: 'Creator 3in1',
+        expectedSlug: 'creator-3in1',
+        primaryThemeId: 'theme:creator-3in1',
+        publicDisplayName: 'Creator 3in1',
+        setId: '31168',
+        setName: 'Medieval Horse Knight Castle',
+        setSlug: 'medieval-horse-knight-castle-31168',
+        sourceThemeId: 'rebrickable:creator-3in1',
+        sourceThemeName: 'Creator 3-in-1',
+      },
+      {
+        displayName: "Gabby's Dollhouse",
+        expectedLogoUrl: '/themes/logos/gabbys-dollhouse_logo.png',
+        expectedName: 'LEGO® Gabby’s Dollhouse',
+        expectedSlug: 'gabby-s-poppenhuis',
+        primaryThemeId: 'theme:gabby-s-poppenhuis',
+        publicDisplayName: 'LEGO® Gabby’s Dollhouse',
+        setId: '11204',
+        setName: "Mermaid Gabby's Aquarium Adventure",
+        setSlug: 'mermaid-gabbys-aquarium-adventure-11204',
+        sourceThemeId: 'rebrickable:gabby',
+        sourceThemeName: "Gabby's Dollhouse",
+      },
+      {
+        displayName: 'Lord of the Rings',
+        expectedLogoUrl: '/themes/logos/lord-of-the-rings_logo.png',
+        expectedName: 'Lord of the Rings™',
+        expectedSlug: 'lord-of-the-rings',
+        primaryThemeId: 'lord-of-the-rings',
+        publicDisplayName: 'Lord of the Rings™',
+        setId: '10354',
+        setName: 'The Lord of the Rings: The Shire',
+        setSlug: 'the-lord-of-the-rings-the-shire-10354',
+        sourceThemeId: 'rebrickable:721',
+        sourceThemeName: 'The Lord of the Rings',
+        staleMappedThemeId: 'theme:icons',
+      },
+      {
+        displayName: 'Collectible Minifigures',
+        expectedLogoUrl: '/themes/logos/minifigures_logo.png',
+        expectedName: 'Minifigures',
+        expectedSlug: 'collectible-minifigures',
+        primaryThemeId: 'theme:collectible-minifigures',
+        publicDisplayName: 'Minifigures',
+        setId: '71046',
+        setName: 'Series 26 Random Box',
+        setSlug: 'series-26-random-box-71046',
+        sourceThemeId: 'rebrickable:minifigures',
+        sourceThemeName: 'Collectible Minifigures',
+      },
+      {
+        displayName: 'Star Wars',
+        expectedLogoUrl: '/themes/logos/star-wars_logo.png',
+        expectedName: 'Star Wars™',
+        expectedSlug: 'star-wars',
+        primaryThemeId: 'theme:star-wars',
+        publicDisplayName: 'Star Wars™',
+        setId: '75422',
+        setName: "Yoda's Hut and Jedi Training",
+        setSlug: 'yodas-hut-and-jedi-training-75422',
+        sourceThemeId: 'rebrickable:star-wars',
+        sourceThemeName: 'Star Wars',
+      },
+      {
+        displayName: 'The Legend of Zelda',
+        expectedLogoUrl: '/themes/logos/zelda_logo.png',
+        expectedName: 'LEGO® The Legend of Zelda™',
+        expectedSlug: 'the-legend-of-zelda',
+        primaryThemeId: 'theme:the-legend-of-zelda',
+        publicDisplayName: 'LEGO® The Legend of Zelda™',
+        setId: '77092',
+        setName: 'Great Deku Tree 2-in-1',
+        setSlug: 'great-deku-tree-2-in-1-77092',
+        sourceThemeId: 'rebrickable:zelda',
+        sourceThemeName: 'The Legend of Zelda',
+      },
+    ] as const;
+
+    for (const themeCase of themeCases) {
+      const supabaseClient = createCatalogSupabaseClientMock({
+        latestOfferRows: [],
+        merchantRows: [],
+        offerSeedRows: [],
+        catalogRows: [
+          {
+            created_at: '2026-04-17T08:00:00.000Z',
+            image_url: `https://cdn.example.com/${themeCase.setId}.jpg`,
+            name: themeCase.setName,
+            piece_count: 1200,
+            primary_theme_id: themeCase.primaryThemeId,
+            release_date_precision: 'year',
+            release_year: 2026,
+            set_id: themeCase.setId,
+            slug: themeCase.setSlug,
+            source: 'rebrickable',
+            source_set_number: `${themeCase.setId}-1`,
+            source_theme_id: themeCase.sourceThemeId,
+            status: 'active',
+            updated_at: '2026-04-17T08:00:00.000Z',
+          },
+        ],
+        primaryThemeRows: [
+          {
+            display_name: themeCase.displayName,
+            id: themeCase.primaryThemeId,
+            is_public: true,
+            public_display_name: themeCase.publicDisplayName,
+            public_logo_url: themeCase.expectedLogoUrl,
+            slug: themeCase.expectedSlug,
+            status: 'active',
+          },
+          {
+            display_name: 'Icons',
+            id: 'theme:icons',
+            is_public: true,
+            public_display_name: 'LEGO® Icons',
+            public_logo_url: '/themes/logos/icons_logo.png',
+            slug: 'icons',
+            status: 'active',
+          },
+        ],
+        sourceThemeRows: [
+          {
+            id: themeCase.sourceThemeId,
+            source_theme_name: themeCase.sourceThemeName,
+          },
+        ],
+        themeMappingRows: [
+          {
+            primary_theme_id:
+              'staleMappedThemeId' in themeCase
+                ? themeCase.staleMappedThemeId
+                : themeCase.primaryThemeId,
+            source_theme_id: themeCase.sourceThemeId,
+          },
+        ],
+      });
+
+      const catalogSetDetail = await getCatalogSetBySlug({
+        slug: themeCase.setSlug,
+        supabaseClient,
+      });
+
+      expect(catalogSetDetail, themeCase.setName).toMatchObject({
+        publicTheme: {
+          logoUrl: themeCase.expectedLogoUrl,
+          name: themeCase.expectedName,
+          slug: themeCase.expectedSlug,
+        },
+        theme: themeCase.expectedName,
+      });
+    }
+  });
+
+  test('maps curated set-detail overlay attributes such as minifigures', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      latestOfferRows: [],
+      merchantRows: [],
+      offerSeedRows: [],
+      catalogRows: [
+        {
+          created_at: '2026-04-17T08:00:00.000Z',
+          image_url: 'https://cdn.rebrickable.com/media/sets/10316-1/1000.jpg',
+          name: 'Rivendell',
+          piece_count: 6167,
+          primary_theme_id: 'lord-of-the-rings',
+          release_date_precision: 'year',
+          release_year: 2023,
+          set_id: '10316',
+          slug: 'the-lord-of-the-rings-rivendell-10316',
+          source: 'rebrickable',
+          source_set_number: '10316-1',
+          source_theme_id: 'rebrickable:721',
+          status: 'active',
+          updated_at: '2026-04-17T08:00:00.000Z',
+        },
+      ],
+      primaryThemeRows: [
+        {
+          display_name: 'Lord of the Rings',
+          id: 'lord-of-the-rings',
+          is_public: true,
+          public_display_name: 'Lord of the Rings™',
+          public_logo_url: '/themes/logos/lord-of-the-rings_logo.png',
+          slug: 'lord-of-the-rings',
+          status: 'active',
+        },
+      ],
+      sourceThemeRows: [
+        {
+          id: 'rebrickable:721',
+          source_theme_name: 'The Lord of the Rings',
+        },
+      ],
+      themeMappingRows: [
+        {
+          primary_theme_id: 'lord-of-the-rings',
+          source_theme_id: 'rebrickable:721',
+        },
+      ],
+    });
+
+    const catalogSetDetail = await getCatalogSetBySlug({
+      slug: 'the-lord-of-the-rings-rivendell-10316',
+      supabaseClient,
+    });
+
+    expect(catalogSetDetail).toMatchObject({
+      id: '10316',
+      minifigureCount: 15,
+      recommendedAge: 18,
+    });
+    expect(catalogSetDetail?.minifigureCount).toBeGreaterThan(0);
+  });
+
+  test('resolves known set detail public themes and logo urls from source theme hierarchy', async () => {
+    const subthemeCases = [
+      {
+        expectedLogoUrl: '/themes/logos/star-wars_logo.png',
+        expectedName: 'Star Wars™',
+        expectedSlug: 'star-wars',
+        parentSourceThemeId: null,
+        parentSourceThemeName: undefined,
+        publicThemeId: 'theme:star-wars',
+        publicThemeName: 'Star Wars',
+        setId: '75446',
+        setName: 'Grogu (Mandalorian Apprentice)',
+        setSlug: 'grogu-mandalorian-apprentice-75446',
+        sourceThemeId: 'rebrickable:158',
+        sourceThemeName: 'Star Wars',
+      },
+      {
+        expectedLogoUrl: '/themes/logos/star-wars_logo.png',
+        expectedName: 'Star Wars™',
+        expectedSlug: 'star-wars',
+        parentSourceThemeId: null,
+        parentSourceThemeName: undefined,
+        publicThemeId: 'theme:star-wars',
+        publicThemeName: 'Star Wars',
+        setId: '75448',
+        setName: 'Clone Shock Trooper Mech',
+        setSlug: 'clone-shock-trooper-mech-75448',
+        sourceThemeId: 'rebrickable:158',
+        sourceThemeName: 'Star Wars',
+      },
+      {
+        expectedLogoUrl: '/themes/logos/gabbys-dollhouse_logo.png',
+        expectedName: 'LEGO® Gabby’s Dollhouse',
+        expectedSlug: 'gabby-s-poppenhuis',
+        parentSourceThemeId: null,
+        parentSourceThemeName: undefined,
+        publicThemeId: 'theme:gabby-s-poppenhuis',
+        publicThemeName: "Gabby's Dollhouse",
+        setId: '10788',
+        setName: "Gabby's Dollhouse",
+        setSlug: 'gabbys-dollhouse-10788',
+        sourceThemeId: 'rebrickable:748',
+        sourceThemeName: "Gabby's Dollhouse",
+      },
+      {
+        expectedLogoUrl: '/themes/logos/disney_logo.png',
+        expectedName: 'Disney',
+        expectedSlug: 'disney',
+        parentSourceThemeId: 'rebrickable:754',
+        parentSourceThemeName: 'Disney',
+        publicThemeId: 'theme:disney',
+        publicThemeName: 'Disney',
+        setId: '10465',
+        setName: 'Mickey Mouse Clubhouse with Minnie & Pluto',
+        setSlug: 'mickey-mouse-clubhouse-with-minnie-and-pluto-10465',
+        sourceThemeId: 'rebrickable:641',
+        sourceThemeName: 'Mickey & Friends',
+      },
+    ] as const;
+
+    for (const subthemeCase of subthemeCases) {
+      const supabaseClient = createCatalogSupabaseClientMock({
+        latestOfferRows: [],
+        merchantRows: [],
+        offerSeedRows: [],
+        catalogRows: [
+          {
+            created_at: '2026-04-17T08:00:00.000Z',
+            image_url: `https://cdn.example.com/${subthemeCase.setId}.jpg`,
+            name: subthemeCase.setName,
+            piece_count: 1200,
+            primary_theme_id:
+              subthemeCase.parentSourceThemeId === null
+                ? subthemeCase.publicThemeId
+                : 'theme:icons',
+            release_date_precision: 'year',
+            release_year: 2026,
+            set_id: subthemeCase.setId,
+            slug: subthemeCase.setSlug,
+            source: 'rebrickable',
+            source_set_number: `${subthemeCase.setId}-1`,
+            source_theme_id: subthemeCase.sourceThemeId,
+            status: 'active',
+            updated_at: '2026-04-17T08:00:00.000Z',
+          },
+        ],
+        primaryThemeRows: [
+          {
+            display_name: 'Icons',
+            id: 'theme:icons',
+            is_public: true,
+            public_display_name: 'LEGO® Icons',
+            public_logo_url: '/themes/logos/icons_logo.png',
+            slug: 'icons',
+            status: 'active',
+          },
+          {
+            display_name: subthemeCase.publicThemeName,
+            id: subthemeCase.publicThemeId,
+            is_public: true,
+            public_display_name: subthemeCase.expectedName,
+            public_logo_url: subthemeCase.expectedLogoUrl,
+            slug: subthemeCase.expectedSlug,
+            status: 'active',
+          },
+        ],
+        sourceThemeRows: [
+          {
+            id: subthemeCase.sourceThemeId,
+            parent_source_theme_id: subthemeCase.parentSourceThemeId,
+            source_theme_name: subthemeCase.sourceThemeName,
+          },
+          ...(subthemeCase.parentSourceThemeId &&
+          subthemeCase.parentSourceThemeName
+            ? [
+                {
+                  id: subthemeCase.parentSourceThemeId,
+                  parent_source_theme_id: null,
+                  source_theme_name: subthemeCase.parentSourceThemeName,
+                },
+              ]
+            : []),
+        ],
+        themeMappingRows: [
+          {
+            primary_theme_id: subthemeCase.publicThemeId,
+            source_theme_id:
+              subthemeCase.parentSourceThemeId ?? subthemeCase.sourceThemeId,
+          },
+        ],
+      });
+
+      const catalogSetDetail = await getCatalogSetBySlug({
+        slug: subthemeCase.setSlug,
+        supabaseClient,
+      });
+
+      expect(catalogSetDetail, subthemeCase.setId).toMatchObject({
+        id: subthemeCase.setId,
+        publicTheme: {
+          logoUrl: subthemeCase.expectedLogoUrl,
+          name: subthemeCase.expectedName,
+          slug: subthemeCase.expectedSlug,
+        },
+        theme: subthemeCase.expectedName,
+      });
+    }
+  });
+
   test('does not expose a public theme link target for hidden primary themes', async () => {
     const supabaseClient = createCatalogSupabaseClientMock({
       latestOfferRows: [],

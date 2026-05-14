@@ -1071,6 +1071,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('aria-label="Afbeeldingen van Rivendell"');
     expect(markup).toContain('Open Rivendell LEGO-set in volledig scherm');
     expect(markup).toContain('alt="Icons logo"');
+    expect(markup).toContain('aria-label="Bekijk Icons"');
+    expect(markup).toContain('href="/themes/icons"');
     expect(markup).toContain('src="/themes/logos/icons_logo.png"');
     expect(markup.indexOf('src="/themes/logos/icons_logo.png"')).toBeLessThan(
       markup.indexOf('6.181'),
@@ -1129,9 +1131,14 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('10316');
     expect(markup).toContain('Leeftijd');
     expect(markup).toContain('18+');
-    expect(markup).toContain('Formaat');
-    expect(markup).toContain('72 × 50 × 39 cm');
     expect(markup).toContain('Stenen');
+    expect(markup).toContain('6.181');
+    expect(markup).toContain('Minifiguren');
+    expect(markup).toContain('15');
+    expect(markup).toContain('Release');
+    expect(markup).not.toContain('Formaat');
+    expect(markup).not.toContain('72 × 50 × 39 cm');
+    expect(markup).not.toContain('Uitgebracht in 2023');
     expect(markup).not.toContain('Wat hier blijft hangen');
     expect(markup).not.toContain(
       'Sterke prijs voor deze set. Als je hem wilt hebben, is dit een goed moment om te kopen.',
@@ -1164,8 +1171,105 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('345');
+    expect(markup).toContain('Release');
     expect(markup).not.toContain('_logo.png');
     expect(markup).not.toContain('heroThemeLogo');
+  });
+
+  it('renders only valid compact hero specs and never shows zero values', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '5000000',
+          slug: 'collector-keychain-5000000',
+          name: 'Collector Keychain',
+          theme: 'Gear',
+          releaseYear: 2026,
+          pieces: 0,
+          minifigureCount: 0,
+          imageUrl: 'https://images.example/keychain.jpg',
+        }}
+        dealVerdict={{
+          explanation: 'Prijsbeeld bouwt nog op.',
+          label: 'Prijs volgt',
+          tone: 'info',
+        }}
+      />,
+    );
+
+    expect(markup).toContain('data-label-value-id="release"');
+    expect(markup).toContain('Nieuw');
+    expect(markup).toContain('2026');
+    expect(markup).not.toContain('data-label-value-id="piece-count"');
+    expect(markup).not.toContain('data-label-value-id="minifigures"');
+    expect(markup).not.toContain('0</dd>');
+    expect(markup).not.toContain('Nieuw in 2026');
+  });
+
+  it('links the theme logo to the public theme page when a valid theme href exists', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '76417',
+          slug: 'gringotts-wizarding-bank-collectors-edition-76417',
+          name: 'Goudgrijp Tovenaarsbank - Verzamelaarseditie',
+          theme: 'Harry Potter',
+          publicTheme: {
+            logoUrl: '/themes/logos/harry-potter_logo.png',
+            name: 'Harry Potter',
+            slug: 'harry-potter',
+          },
+          releaseYear: 2023,
+          pieces: 4803,
+          imageUrl: 'https://images.example/gringotts.jpg',
+        }}
+        dealVerdict={{
+          explanation: 'Prijsbeeld bouwt nog op.',
+          label: 'Prijs volgt',
+          tone: 'info',
+        }}
+        themeHref="/themes/harry-potter"
+      />,
+    );
+
+    expect(markup).toContain('href="/themes/harry-potter"');
+    expect(markup).toContain('aria-label="Bekijk Harry Potter"');
+    expect(markup).toContain('alt="Harry Potter logo"');
+    expect(
+      markup.indexOf('src="/themes/logos/harry-potter_logo.png"'),
+    ).toBeLessThan(markup.indexOf('4.803'));
+  });
+
+  it('keeps the theme logo non-clickable when the theme href is not valid', () => {
+    const markup = renderToStaticMarkup(
+      <CatalogSetDetailPanel
+        catalogSetDetail={{
+          id: '75355',
+          slug: 'ucs-x-wing-starfighter-75355',
+          name: 'UCS X-wing Starfighter',
+          theme: 'Star Wars',
+          publicTheme: {
+            logoUrl: '/themes/logos/star-wars_logo.png',
+            name: 'Star Wars',
+            slug: 'star-wars',
+          },
+          releaseYear: 2023,
+          pieces: 1949,
+          imageUrl: 'https://images.example/x-wing.jpg',
+        }}
+        dealVerdict={{
+          explanation: 'Prijsbeeld bouwt nog op.',
+          label: 'Prijs volgt',
+          tone: 'info',
+        }}
+        themeHref="https://example.com/themes/star-wars"
+      />,
+    );
+
+    expect(markup).toContain('src="/themes/logos/star-wars_logo.png"');
+    expect(markup).toContain('alt="Star Wars logo"');
+    expect(markup).not.toContain('aria-label="Bekijk Star Wars"');
+    expect(markup).not.toContain('heroThemeLogoLink');
   });
 
   it('avoids a thin comparison block when only one offer is available', () => {
@@ -1268,7 +1372,8 @@ describe('CatalogSetCard', () => {
     expect(markup).toContain('Recent prijsverloop');
     expect(markup).toContain('Stenen');
     expect(markup).toContain('Release');
-    expect(markup).toContain('Uitgebracht in 2022');
+    expect(markup).toContain('2022');
+    expect(markup).not.toContain('Uitgebracht in 2022');
     expect(markup).not.toContain('Minifiguren');
     expect(markup).not.toContain('Nog niet bekend');
     expect(markup).toContain('<h1');
@@ -1302,8 +1407,9 @@ describe('CatalogSetCard', () => {
       />,
     );
 
-    expect(markup).toContain('Release');
-    expect(markup).toContain('1 mei 2026');
+    expect(markup).toContain('Nieuw');
+    expect(markup).toContain('2026');
+    expect(markup).not.toContain('1 mei 2026');
     expect(markup).not.toContain('2026-01-01');
   });
 
@@ -1487,8 +1593,8 @@ describe('CatalogSetCard', () => {
     );
 
     expect(markup).toContain('Diagon Alley');
-    expect(markup).toContain('Status');
-    expect(markup).toContain('Nabestelling');
+    expect(markup).not.toContain('Status');
+    expect(markup).not.toContain('Nabestelling');
     expect(markup).toContain('Minifiguren');
     expect(markup).toContain('13');
   });

@@ -648,6 +648,7 @@ export function LabelValueList({
             labelValueAppearanceClasses[appearance],
             labelValueSpacingClasses[spacing],
           )}
+          data-label-value-id={item.id}
           key={item.id}
         >
           {item.icon ? (

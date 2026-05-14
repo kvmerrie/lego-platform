@@ -1380,47 +1380,161 @@
   }
 
   .heroSpecsGrid {
+    align-items: center;
+    flex-wrap: nowrap;
     gap: var(--lego-space-3) var(--lego-space-4);
     margin: 0;
+    max-inline-size: 100%;
+    overflow-x: auto;
+    padding-block: 0.28rem;
+    scrollbar-width: none;
+  }
+
+  .heroSpecsGrid::-webkit-scrollbar {
+    display: none;
   }
 
   .heroSpecsGrid > .labelValueListItem {
     align-items: center;
+    flex: 0 0 auto;
     justify-items: center;
+    min-inline-size: auto;
     text-align: center;
   }
 
   .heroSpecsGrid > .labelValueListItem > .labelValueCopy {
+    align-items: center;
+    gap: 0.14rem;
+  }
+
+  .heroSpecsGrid :global([class*='labelValueCopy']) {
+    align-items: center;
+  }
+
+  .heroSpecsGrid :global([class*='labelValueHero'] [class*='labelValueCopy']) {
     align-items: center;
   }
 
   .heroSpecsGrid > .labelValueListItem > .labelValueCopy > .labelValueLabel,
   .heroSpecsGrid > .labelValueListItem > .labelValueCopy > .labelValueValue {
     text-align: center;
+    white-space: nowrap;
+  }
+
+  .heroSpecsGrid > .labelValueListItem > .labelValueCopy > .labelValueLabel {
+    color: var(--lego-text-muted);
+    font-size: var(--lego-font-size-caption);
+    font-weight: var(--lego-font-weight-regular);
+    line-height: 1.15;
+  }
+
+  .heroSpecsGrid :global([class*='labelValueLabel']) {
+    font-size: var(--lego-font-size-caption);
+    font-weight: var(--lego-font-weight-regular);
+    text-align: center;
+  }
+
+  .heroSpecsGrid :global([class*='labelValueHero'] [class*='labelValueLabel']) {
+    font-size: var(--lego-font-size-caption);
+    font-weight: var(--lego-font-weight-regular);
+    text-align: center;
   }
 
   .heroSpecsGrid > .labelValueListItem > .labelValueCopy > .labelValueValue {
-    font-size: clamp(1.45rem, 1.18rem + 1vw, 1.85rem);
-    font-weight: var(--lego-text-role-hero-weight);
+    font-size: clamp(1.32rem, 1.16rem + 0.65vw, 1.72rem);
+    font-weight: var(--lego-font-weight-bold);
     line-height: 1;
   }
 
+  .heroSpecsGrid :global([class*='labelValueValue']) {
+    font-weight: var(--lego-font-weight-bold);
+    text-align: center;
+  }
+
+  .heroSpecsGrid :global([class*='labelValueHero'] [class*='labelValueValue']) {
+    font-weight: var(--lego-font-weight-bold);
+    text-align: center;
+  }
+
   .heroThemeLogoValue {
+    --hero-theme-logo-max-block-size: 2.35rem;
+    --hero-theme-logo-max-inline-size: min(9.25rem, 38vw);
+
     align-items: center;
     display: inline-flex;
-    inline-size: min(8.5rem, 26vw);
     justify-content: center;
     max-inline-size: 100%;
-    min-block-size: 2rem;
     min-inline-size: 0;
+    padding: 0.08rem 0.18rem;
   }
 
   .heroThemeLogo {
+    block-size: auto;
     display: block;
-    max-block-size: 2rem;
-    max-inline-size: 100%;
+    inline-size: auto;
+    max-block-size: var(--hero-theme-logo-max-block-size);
+    max-inline-size: var(--hero-theme-logo-max-inline-size);
     object-fit: contain;
     object-position: center;
+  }
+
+  .heroThemeLogoLink {
+    align-items: center;
+    border-radius: var(--lego-radius-xs);
+    color: inherit;
+    display: inline-flex;
+    justify-content: center;
+    max-block-size: calc(var(--hero-theme-logo-max-block-size) + 0.45rem);
+    max-inline-size: calc(var(--hero-theme-logo-max-inline-size) + 0.45rem);
+    padding: 0.08rem;
+    text-decoration: none;
+    transition:
+      box-shadow var(--lego-motion-duration-fast)
+        var(--lego-motion-ease-standard),
+      opacity var(--lego-motion-duration-fast) var(--lego-motion-ease-standard);
+  }
+
+  .heroThemeLogoLink:hover {
+    opacity: 0.82;
+  }
+
+  .heroThemeLogoLink:focus-visible {
+    box-shadow: 0 0 0 4px var(--lego-focus-ring);
+    outline: none;
+  }
+
+  .heroSpecsGrid > [data-label-value-id='theme-logo'] {
+    align-self: center;
+    min-inline-size: auto;
+  }
+
+  .heroSpecsGrid > [data-label-value-id='theme-logo'] dt {
+    border: 0;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    block-size: 1px;
+    inline-size: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+  }
+
+  .heroSpecsGrid > [data-label-value-id='theme-logo'] dd {
+    line-height: 1;
+  }
+
+  .heroThemeLogoValue[data-theme-logo-slug='star-wars'],
+  .heroThemeLogoValue[data-theme-logo-slug='brickheadz'] {
+    --hero-theme-logo-max-block-size: 2.05rem;
+    --hero-theme-logo-max-inline-size: min(9.5rem, 39vw);
+  }
+
+  .heroThemeLogoValue[data-theme-logo-slug='art'],
+  .heroThemeLogoValue[data-theme-logo-slug='icons'] {
+    --hero-theme-logo-max-block-size: 1.95rem;
+    --hero-theme-logo-max-inline-size: min(8rem, 34vw);
   }
 
   .detailDecisionPanel {
@@ -3292,6 +3406,25 @@
       gap: var(--lego-space-4) var(--lego-space-6);
     }
 
+    .heroThemeLogoValue {
+      --hero-theme-logo-max-block-size: 3rem;
+      --hero-theme-logo-max-inline-size: min(12rem, 20vw);
+
+      padding-inline: 0.22rem;
+    }
+
+    .heroThemeLogoValue[data-theme-logo-slug='star-wars'],
+    .heroThemeLogoValue[data-theme-logo-slug='brickheadz'] {
+      --hero-theme-logo-max-block-size: 2.6rem;
+      --hero-theme-logo-max-inline-size: min(12.5rem, 20vw);
+    }
+
+    .heroThemeLogoValue[data-theme-logo-slug='art'],
+    .heroThemeLogoValue[data-theme-logo-slug='icons'] {
+      --hero-theme-logo-max-block-size: 2.35rem;
+      --hero-theme-logo-max-inline-size: min(9.5rem, 16vw);
+    }
+
     .offerRailCard {
       width: clamp(10.9rem, 15vw, 12.2rem);
     }
@@ -3534,8 +3667,47 @@
       gap: var(--lego-space-5) var(--lego-space-8);
     }
 
+    .heroThemeLogoValue {
+      --hero-theme-logo-max-block-size: 3.5rem;
+      --hero-theme-logo-max-inline-size: min(13.75rem, 16vw);
+    }
+
+    .heroThemeLogoValue[data-theme-logo-slug='star-wars'],
+    .heroThemeLogoValue[data-theme-logo-slug='brickheadz'] {
+      --hero-theme-logo-max-block-size: 3rem;
+      --hero-theme-logo-max-inline-size: min(13.75rem, 16vw);
+    }
+
+    .heroThemeLogoValue[data-theme-logo-slug='art'],
+    .heroThemeLogoValue[data-theme-logo-slug='icons'] {
+      --hero-theme-logo-max-block-size: 2.55rem;
+      --hero-theme-logo-max-inline-size: min(10rem, 12vw);
+    }
+
     .heroSpecsGrid > .labelValueListItem > .labelValueCopy > .labelValueValue {
-      font-size: clamp(1.7rem, 1.45rem + 0.7vw, 2.15rem);
+      font-size: var(--lego-font-size-2xl);
+    }
+
+    .heroSpecsGrid :global([class*='labelValueValue']) {
+      font-size: var(--lego-font-size-2xl);
+    }
+
+    .heroSpecsGrid
+      :global([class*='labelValueHero'] [class*='labelValueValue']) {
+      font-size: var(--lego-font-size-2xl);
+    }
+
+    .heroSpecsGrid > .labelValueListItem > .labelValueCopy > .labelValueLabel {
+      font-size: var(--lego-font-size-caption);
+    }
+
+    .heroSpecsGrid :global([class*='labelValueLabel']) {
+      font-size: var(--lego-font-size-caption);
+    }
+
+    .heroSpecsGrid
+      :global([class*='labelValueHero'] [class*='labelValueLabel']) {
+      font-size: var(--lego-font-size-caption);
     }
   }
 

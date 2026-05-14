@@ -22,16 +22,12 @@ import {
 import {
   ArrowDown,
   Blocks,
-  Cake,
   CalendarDays,
   ChevronRight,
   Clock3,
   Eye,
   Hash,
   Minus,
-  Package2,
-  Ruler,
-  UsersRound,
 } from 'lucide-react';
 import {
   CatalogKeyFacts,
@@ -588,28 +584,6 @@ function formatMinifigureCount(minifigureCount?: number): string {
   return minifigureCount.toLocaleString();
 }
 
-function formatCatalogSetStatus(
-  setStatus: CatalogSetDetail['setStatus'],
-): string | undefined {
-  if (!setStatus) {
-    return undefined;
-  }
-
-  if (setStatus === 'available') {
-    return 'Nu beschikbaar';
-  }
-
-  if (setStatus === 'backorder') {
-    return 'Nabestelling';
-  }
-
-  if (setStatus === 'retiring_soon') {
-    return 'Gaat bijna uit assortiment';
-  }
-
-  return 'Uit assortiment';
-}
-
 function formatCatalogRecommendedAge(
   recommendedAge?: number,
 ): string | undefined {
@@ -626,10 +600,10 @@ function formatCatalogRecommendedAge(
 
 function buildCatalogSetDetailHeroFacts({
   catalogSetDetail,
-  setStatusLabel,
+  themeHref,
 }: {
   catalogSetDetail: CatalogSetDetail;
-  setStatusLabel?: string;
+  themeHref?: string;
 }): CatalogKeyFact[] {
   const heroFacts: CatalogKeyFact[] = [];
   const recommendedAgeLabel = formatCatalogRecommendedAge(
@@ -639,58 +613,38 @@ function buildCatalogSetDetailHeroFacts({
   if (recommendedAgeLabel) {
     heroFacts.push({
       id: 'recommended-age',
-      icon: <Cake aria-hidden="true" size={17} strokeWidth={2.2} />,
       label: 'Leeftijd',
       value: recommendedAgeLabel,
     });
   }
 
-  if (catalogSetDetail.displaySize?.value) {
+  if (catalogSetDetail.pieces > 0) {
     heroFacts.push({
-      id: 'display-size',
-      icon: <Ruler aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: catalogSetDetail.displaySize.label ?? 'Formaat',
-      value: catalogSetDetail.displaySize.value,
+      id: 'piece-count',
+      label: 'Stenen',
+      value: catalogSetDetail.pieces.toLocaleString('nl-NL'),
     });
   }
 
-  heroFacts.push({
-    id: 'piece-count',
-    icon: <Blocks aria-hidden="true" size={17} strokeWidth={2.2} />,
-    label: 'Stenen',
-    value: catalogSetDetail.pieces.toLocaleString('nl-NL'),
-  });
-
-  if (typeof catalogSetDetail.minifigureCount === 'number') {
+  if (
+    typeof catalogSetDetail.minifigureCount === 'number' &&
+    catalogSetDetail.minifigureCount > 0
+  ) {
     heroFacts.push({
       id: 'minifigures',
-      icon: <UsersRound aria-hidden="true" size={17} strokeWidth={2.2} />,
       label: 'Minifiguren',
       value: formatMinifigureCount(catalogSetDetail.minifigureCount),
     });
   }
 
-  const releaseFact = buildCatalogReleaseLabel({
-    releaseDate: catalogSetDetail.releaseDate,
-    releaseDatePrecision: catalogSetDetail.releaseDatePrecision,
-    releaseYear: catalogSetDetail.releaseYear,
-  });
-
-  if (heroFacts.length < 5) {
+  if (catalogSetDetail.releaseYear > 0) {
     heroFacts.push({
       id: 'release',
-      icon: <CalendarDays aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: releaseFact?.label ?? 'Jaar',
-      value: releaseFact?.value ?? catalogSetDetail.releaseYear,
-    });
-  }
-
-  if (heroFacts.length < 5 && setStatusLabel) {
-    heroFacts.push({
-      id: 'status',
-      icon: <Package2 aria-hidden="true" size={17} strokeWidth={2.2} />,
-      label: 'Status',
-      value: setStatusLabel,
+      label:
+        catalogSetDetail.releaseYear >= new Date().getUTCFullYear()
+          ? 'Nieuw'
+          : 'Release',
+      value: catalogSetDetail.releaseYear,
     });
   }
 
@@ -699,25 +653,46 @@ function buildCatalogSetDetailHeroFacts({
   }
 
   const themeName = catalogSetDetail.publicTheme.name || catalogSetDetail.theme;
+  const themeLogo = (
+    <img
+      alt={`${themeName} logo`}
+      className={styles.heroThemeLogo}
+      decoding="async"
+      loading="lazy"
+      src={catalogSetDetail.publicTheme.logoUrl}
+    />
+  );
+  const validThemeHref = isCatalogThemeHref(themeHref) ? themeHref : undefined;
 
   return [
     {
       id: 'theme-logo',
       label: <VisuallyHidden>Thema</VisuallyHidden>,
       value: (
-        <span className={styles.heroThemeLogoValue}>
-          <img
-            alt={`${themeName} logo`}
-            className={styles.heroThemeLogo}
-            decoding="async"
-            loading="lazy"
-            src={catalogSetDetail.publicTheme.logoUrl}
-          />
+        <span
+          className={styles.heroThemeLogoValue}
+          data-theme-logo-slug={catalogSetDetail.publicTheme.slug}
+        >
+          {validThemeHref ? (
+            <a
+              aria-label={`Bekijk ${themeName}`}
+              className={styles.heroThemeLogoLink}
+              href={validThemeHref}
+            >
+              {themeLogo}
+            </a>
+          ) : (
+            themeLogo
+          )}
         </span>
       ),
     },
     ...heroFacts,
   ];
+}
+
+function isCatalogThemeHref(href?: string): href is string {
+  return typeof href === 'string' && /^\/themes\/[^/\s]+$/.test(href);
 }
 
 function getCatalogThemeStyleVariables({
@@ -1335,10 +1310,9 @@ export function CatalogSetDetailPanel({
   themeHref?: string;
   trustSignals?: readonly CatalogSetDetailTrustSignal[];
 }) {
-  const setStatusLabel = formatCatalogSetStatus(catalogSetDetail.setStatus);
   const heroSpecs = buildCatalogSetDetailHeroFacts({
     catalogSetDetail,
-    setStatusLabel,
+    themeHref,
   });
   const offerComparisonSectionId = 'set-offers';
   const themeVisual = getCatalogThemeVisual(catalogSetDetail.theme);

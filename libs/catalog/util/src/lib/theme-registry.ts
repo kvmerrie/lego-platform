@@ -279,7 +279,7 @@ export const brickhuntThemeRegistry = [
     aliases: ['Fortnite'],
   }),
   createThemeOverride({
-    displayName: "LEGO® Gabby's poppenhuis",
+    displayName: 'LEGO® Gabby’s Dollhouse',
     aliases: [
       "Gabby's Dollhouse",
       "Gabby's poppenhuis",
@@ -288,6 +288,7 @@ export const brickhuntThemeRegistry = [
       'Gabby’s Poppenhuis',
       'Gabby’s poppenhuis',
     ],
+    key: 'gabby-s-poppenhuis',
   }),
   createThemeOverride({
     displayName: 'Gear',
@@ -347,6 +348,7 @@ export const brickhuntThemeRegistry = [
   createThemeOverride({
     displayName: 'Minifiguren',
     aliases: ['Collectible Minifigures', 'Minifigures'],
+    key: 'collectible-minifigures',
   }),
   createThemeOverride({
     displayName: 'Monkie Kid™',
@@ -407,7 +409,7 @@ export const brickhuntThemeRegistry = [
   }),
   createThemeOverride({
     displayName: 'LEGO® The Legend of Zelda™',
-    aliases: ['The Legend of Zelda'],
+    aliases: ['The Legend of Zelda', 'Zelda'],
   }),
   createThemeOverride({
     displayName: 'LEGO® Wednesday',

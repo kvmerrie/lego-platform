@@ -18,6 +18,18 @@ describe('Brickhunt theme registry', () => {
     );
   });
 
+  it('normalizes theme aliases with custom public slugs', () => {
+    expect(normalizeTheme('Creator 3-in-1')?.key).toBe('creator-3in1');
+    expect(normalizeTheme("Gabby's Dollhouse")?.key).toBe('gabby-s-poppenhuis');
+    expect(normalizeTheme('Lord of the Rings')?.key).toBe('lord-of-the-rings');
+    expect(normalizeTheme('Minifigures')?.key).toBe('collectible-minifigures');
+    expect(normalizeTheme('Star Wars')?.key).toBe('star-wars');
+    expect(normalizeTheme('Zelda')?.key).toBe('the-legend-of-zelda');
+    expect(normalizeTheme('The Legend of Zelda')?.key).toBe(
+      'the-legend-of-zelda',
+    );
+  });
+
   it('maps child themes to a parent when hierarchy context says they belong there', () => {
     expect(
       normalizeTheme('Toy Story', {

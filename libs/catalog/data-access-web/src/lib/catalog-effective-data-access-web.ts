@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { unstable_cache } from 'next/cache';
+import { catalogSetOverlays } from '@lego-platform/catalog/data-access';
 import type {
   CatalogCanonicalSet,
   CatalogBrowseThemeGroup,
@@ -81,6 +82,12 @@ const CATALOG_SET_SELECT_COLUMNS =
 const PRIMARY_CATALOG_MERCHANT_SLUGS = commerceProductionFeedMerchantSlugs;
 const genericCatalogThemeMomentum =
   'Nieuw in Brickhunt. We bouwen hier nu de eerste prijsvergelijkingen op.';
+const catalogSetOverlayByCanonicalId = new Map(
+  catalogSetOverlays.map((catalogSetOverlay) => [
+    catalogSetOverlay.canonicalId,
+    catalogSetOverlay,
+  ]),
+);
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 
@@ -146,6 +153,7 @@ interface CatalogSetRow {
 
 interface CatalogSourceThemeRow {
   id: string;
+  parent_source_theme_id?: string | null;
   source_theme_name: string;
 }
 
@@ -171,6 +179,34 @@ function isPublicCatalogThemeRow(
     catalogTheme.is_public === true &&
     catalogTheme.status === 'active' &&
     Boolean(catalogTheme.slug)
+  );
+}
+
+function isGenericPublicCatalogThemeRow(
+  catalogTheme: CatalogThemeRow,
+): boolean {
+  return new Set(['icons', 'other', 'theme:icons', 'theme:other']).has(
+    catalogTheme.id,
+  );
+}
+
+function resolvePublicCatalogThemeRowCandidate(
+  candidatePrimaryThemeIds: readonly string[],
+  primaryThemeById: ReadonlyMap<string, CatalogThemeRow>,
+): CatalogThemeRow | undefined {
+  const publicThemeCandidates = [
+    ...new Map(
+      candidatePrimaryThemeIds
+        .map((themeId) => primaryThemeById.get(themeId))
+        .filter(isPublicCatalogThemeRow)
+        .map((catalogTheme) => [catalogTheme.id, catalogTheme] as const),
+    ).values(),
+  ];
+
+  return (
+    publicThemeCandidates.find(
+      (catalogTheme) => !isGenericPublicCatalogThemeRow(catalogTheme),
+    ) ?? publicThemeCandidates[0]
   );
 }
 
@@ -773,7 +809,11 @@ function toCatalogSummaryFromCanonicalSet(
 function toCatalogSetDetailFromCanonicalSet(
   canonicalCatalogSet: CatalogCanonicalSet,
 ): CatalogSetDetail {
+  const catalogSetOverlay = catalogSetOverlayByCanonicalId.get(
+    canonicalCatalogSet.setId,
+  );
   const displayTheme =
+    canonicalCatalogSet.publicTheme?.name ??
     getCatalogThemeDisplayName(canonicalCatalogSet.primaryTheme, {
       name: canonicalCatalogSet.name,
       secondaryLabels: canonicalCatalogSet.secondaryLabels,
@@ -781,7 +821,10 @@ function toCatalogSetDetailFromCanonicalSet(
       slug: canonicalCatalogSet.slug,
       sourceSetNumber: canonicalCatalogSet.sourceSetNumber,
       theme: canonicalCatalogSet.primaryTheme,
-    }) ?? canonicalCatalogSet.primaryTheme;
+    }) ??
+    canonicalCatalogSet.primaryTheme;
+  const subtheme =
+    catalogSetOverlay?.subtheme ?? canonicalCatalogSet.secondaryLabels[0];
 
   return {
     createdAt: canonicalCatalogSet.createdAt,
@@ -803,9 +846,24 @@ function toCatalogSetDetailFromCanonicalSet(
     releaseYear: canonicalCatalogSet.releaseYear,
     pieces: canonicalCatalogSet.pieceCount,
     imageUrl: canonicalCatalogSet.imageUrl,
-    ...(canonicalCatalogSet.secondaryLabels[0]
+    ...(catalogSetOverlay?.recommendedAge
       ? {
-          subtheme: canonicalCatalogSet.secondaryLabels[0],
+          recommendedAge: catalogSetOverlay.recommendedAge,
+        }
+      : {}),
+    ...(catalogSetOverlay?.minifigureCount
+      ? {
+          minifigureCount: catalogSetOverlay.minifigureCount,
+        }
+      : {}),
+    ...(catalogSetOverlay?.minifigureHighlights?.length
+      ? {
+          minifigureHighlights: catalogSetOverlay.minifigureHighlights,
+        }
+      : {}),
+    ...(subtheme
+      ? {
+          subtheme,
         }
       : {}),
     ...(canonicalCatalogSet.imageUrl
@@ -854,27 +912,66 @@ async function listCatalogThemeIdentityBySetId({
   }
 
   try {
-    const [sourceThemeResponse, themeMappingResponse] = await Promise.all([
-      sourceThemeIds.length
-        ? supabaseClient
-            .from(CATALOG_SOURCE_THEMES_TABLE)
-            .select('id, source_theme_name')
-            .in('id', sourceThemeIds)
-        : Promise.resolve({ data: [], error: null }),
-      sourceThemeIds.length
-        ? supabaseClient
-            .from(CATALOG_THEME_MAPPINGS_TABLE)
-            .select('source_theme_id, primary_theme_id')
-            .in('source_theme_id', sourceThemeIds)
-        : Promise.resolve({ data: [], error: null }),
-    ]);
+    const sourceThemeResponse = sourceThemeIds.length
+      ? await supabaseClient
+          .from(CATALOG_SOURCE_THEMES_TABLE)
+          .select('id, source_theme_name, parent_source_theme_id')
+          .in('id', sourceThemeIds)
+      : { data: [], error: null };
 
-    if (sourceThemeResponse.error || themeMappingResponse.error) {
+    if (sourceThemeResponse.error) {
       return new Map();
     }
 
-    const sourceThemes =
+    const directSourceThemes =
       (sourceThemeResponse.data as CatalogSourceThemeRow[]) ?? [];
+    const parentSourceThemeIds = [
+      ...new Set(
+        directSourceThemes
+          .map((sourceTheme) => sourceTheme.parent_source_theme_id)
+          .filter(
+            (sourceThemeId): sourceThemeId is string =>
+              typeof sourceThemeId === 'string' &&
+              !sourceThemeIds.includes(sourceThemeId),
+          ),
+      ),
+    ];
+    const parentSourceThemeResponse = parentSourceThemeIds.length
+      ? await supabaseClient
+          .from(CATALOG_SOURCE_THEMES_TABLE)
+          .select('id, source_theme_name, parent_source_theme_id')
+          .in('id', parentSourceThemeIds)
+      : { data: [], error: null };
+
+    if (parentSourceThemeResponse.error) {
+      return new Map();
+    }
+
+    const sourceThemes = [
+      ...directSourceThemes,
+      ...((parentSourceThemeResponse.data as CatalogSourceThemeRow[]) ?? []),
+    ];
+    const relatedSourceThemeIds = [
+      ...new Set([
+        ...sourceThemeIds,
+        ...sourceThemes
+          .map((sourceTheme) => sourceTheme.parent_source_theme_id)
+          .filter((sourceThemeId): sourceThemeId is string =>
+            Boolean(sourceThemeId),
+          ),
+      ]),
+    ];
+    const themeMappingResponse = relatedSourceThemeIds.length
+      ? await supabaseClient
+          .from(CATALOG_THEME_MAPPINGS_TABLE)
+          .select('source_theme_id, primary_theme_id')
+          .in('source_theme_id', relatedSourceThemeIds)
+      : { data: [], error: null };
+
+    if (themeMappingResponse.error) {
+      return new Map();
+    }
+
     const themeMappings =
       (themeMappingResponse.data as CatalogThemeMappingRow[]) ?? [];
     const primaryThemeIdsToLoad = [
@@ -916,16 +1013,25 @@ async function listCatalogThemeIdentityBySetId({
         const sourceThemeName = catalogRow.source_theme_id
           ? sourceThemeById.get(catalogRow.source_theme_id)?.source_theme_name
           : undefined;
+        const parentSourceThemeId = catalogRow.source_theme_id
+          ? sourceThemeById.get(catalogRow.source_theme_id)
+              ?.parent_source_theme_id
+          : undefined;
+        const mappedParentPrimaryThemeId = parentSourceThemeId
+          ? primaryThemeIdBySourceThemeId.get(parentSourceThemeId)
+          : undefined;
         const mappedPrimaryThemeId = catalogRow.source_theme_id
           ? primaryThemeIdBySourceThemeId.get(catalogRow.source_theme_id)
           : undefined;
         const candidatePrimaryThemeIds = [
-          mappedPrimaryThemeId,
           catalogRow.primary_theme_id,
+          mappedPrimaryThemeId,
+          mappedParentPrimaryThemeId,
         ].filter((themeId): themeId is string => Boolean(themeId));
-        const publicPrimaryTheme = candidatePrimaryThemeIds
-          .map((themeId) => primaryThemeById.get(themeId))
-          .find(isPublicCatalogThemeRow);
+        const publicPrimaryTheme = resolvePublicCatalogThemeRowCandidate(
+          candidatePrimaryThemeIds,
+          primaryThemeById,
+        );
         const primaryThemeId =
           publicPrimaryTheme?.id ??
           catalogRow.primary_theme_id ??

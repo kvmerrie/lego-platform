@@ -87,6 +87,7 @@ import styles from './page.module.css';
 
 export const dynamicParams = true;
 export const revalidate = 21_600;
+const SET_DETAIL_CACHE_VERSION = 'v2';
 
 const BRICKHUNT_TIME_ZONE = 'Europe/Amsterdam';
 const SIMILAR_SETS_RAIL_LIMIT = 20;
@@ -207,7 +208,7 @@ function measureSetPageSync<T>({
 async function getCachedCatalogSetBySlug({ slug }: { slug: string }) {
   return unstable_cache(
     () => getCatalogSetBySlug({ slug }),
-    ['catalog-set-detail', slug],
+    ['catalog-set-detail', SET_DETAIL_CACHE_VERSION, slug],
     {
       revalidate,
       tags: [cacheTags.set(slug)],
