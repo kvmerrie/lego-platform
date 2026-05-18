@@ -23,6 +23,7 @@ import {
   type CatalogResolvedOffer,
   getCanonicalCatalogSetById,
   getCanonicalCatalogSetBySlug,
+  listCatalogAllCurrentOfferSummaries,
   listCatalogCurrentOfferSummaries,
   getCatalogCurrentOfferSummaryBySetId,
   getCatalogThemePageBySlug,
@@ -6972,8 +6973,8 @@ describe('catalog effective data access web', () => {
 
     expect(result.map((themeGroup) => themeGroup.theme)).toEqual([
       'LEGO® Icons',
-      'Marvel',
       'Lord of the Rings™',
+      'Marvel',
     ]);
     expect(result[0]?.totalSetCount).toBe(1);
   });
@@ -8060,6 +8061,51 @@ describe('catalog effective data access web', () => {
           priceCents: 22499,
         },
       ],
+    });
+  });
+
+  test('all current-offer summaries paginate beyond the first latest-offer page', async () => {
+    const latestOfferRows = Array.from({ length: 1001 }, (_, index) => ({
+      availability: 'in_stock',
+      currency_code: 'EUR',
+      fetch_status: 'success',
+      observed_at: `2026-05-18T09:${String(index % 60).padStart(2, '0')}:00.000Z`,
+      offer_seed_id: `seed-${index}`,
+      price_minor: 10000 + index,
+      updated_at: `2026-05-18T09:${String(index % 60).padStart(2, '0')}:00.000Z`,
+    }));
+    const offerSeedRows = latestOfferRows.map((latestOfferRow, index) => ({
+      id: latestOfferRow.offer_seed_id,
+      is_active: true,
+      merchant_id: 'merchant-goodbricks',
+      product_url: `https://goodbricks.example/${index}`,
+      set_id: index === 1000 ? '42177' : `9${index}`,
+      validation_status: 'valid',
+    }));
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows,
+      merchantRows: [
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+      ],
+      offerSeedRows,
+    });
+
+    const summaries = await listCatalogAllCurrentOfferSummaries({
+      supabaseClient,
+    });
+
+    expect(summaries.get('42177')).toMatchObject({
+      bestOffer: {
+        priceCents: 11000,
+        setId: '42177',
+      },
+      setId: '42177',
     });
   });
 

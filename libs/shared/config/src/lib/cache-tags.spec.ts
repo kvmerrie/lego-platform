@@ -12,6 +12,7 @@ import {
 
 describe('cache tags', () => {
   test('builds stable domain cache tags', () => {
+    expect(cacheTags.catalog()).toBe('catalog');
     expect(cacheTags.sets()).toBe('sets');
     expect(cacheTags.set('Rivendell 10316')).toBe('set:rivendell-10316');
     expect(cacheTags.theme('Harry Potter')).toBe('theme:harry-potter');

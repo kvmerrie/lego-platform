@@ -3,13 +3,7 @@ export interface BrickhuntThemeRegistryEntry {
   displayName: string;
   legoDisplayName?: string;
   aliases: readonly string[];
-  isVisible?: boolean;
   parentThemeKey?: string;
-  imageSetId?: string;
-  logoAsset?: string;
-  colorToken?: string;
-  sortPriority?: number;
-  isFeatured?: boolean;
 }
 
 export interface ThemeNormalizationContext {
@@ -37,8 +31,6 @@ type ThemeSortable =
         setCount?: number;
       };
     };
-
-const unknownSortPriority = Number.MAX_SAFE_INTEGER;
 
 const utilityThemeNames = new Set([
   'books',
@@ -179,16 +171,10 @@ function inferThemeFromContext(
 
 function createThemeOverride({
   aliases = [],
-  colorToken,
   displayName,
-  imageSetId,
-  isFeatured,
-  isVisible,
   key = buildThemeKey(displayName),
   legoDisplayName,
-  logoAsset,
   parentThemeKey,
-  sortPriority,
 }: Pick<BrickhuntThemeRegistryEntry, 'displayName'> &
   Partial<
     Omit<BrickhuntThemeRegistryEntry, 'displayName'>
@@ -198,13 +184,7 @@ function createThemeOverride({
     displayName,
     ...(legoDisplayName ? { legoDisplayName } : {}),
     aliases,
-    ...(typeof isVisible === 'boolean' ? { isVisible } : {}),
     ...(parentThemeKey ? { parentThemeKey } : {}),
-    ...(imageSetId ? { imageSetId } : {}),
-    ...(logoAsset ? { logoAsset } : {}),
-    ...(colorToken ? { colorToken } : {}),
-    ...(typeof sortPriority === 'number' ? { sortPriority } : {}),
-    ...(isFeatured ? { isFeatured } : {}),
   };
 }
 
@@ -224,13 +204,9 @@ export const brickhuntThemeRegistry = [
   createThemeOverride({
     displayName: 'Botanicals',
     aliases: ['Botanical Collection', 'The Botanical Collection'],
-    imageSetId: '10280',
-    isFeatured: true,
-    sortPriority: 8,
   }),
   createThemeOverride({
     displayName: 'BrickLink Designer Program',
-    isVisible: false,
   }),
   createThemeOverride({
     displayName: 'BrickHeadz',
@@ -238,20 +214,13 @@ export const brickhuntThemeRegistry = [
   }),
   createThemeOverride({
     displayName: 'City',
-    imageSetId: '60488',
-    isFeatured: true,
-    sortPriority: 15,
   }),
   createThemeOverride({
     displayName: 'Creator 3in1',
     aliases: ['Creator', 'Creator 3-in-1', 'Creator 3in1'],
-    isFeatured: true,
-    sortPriority: 12,
   }),
   createThemeOverride({
     displayName: 'Disney',
-    isFeatured: true,
-    sortPriority: 5,
   }),
   createThemeOverride({
     displayName: 'LEGO® DREAMZzz™',
@@ -259,7 +228,6 @@ export const brickhuntThemeRegistry = [
   }),
   createThemeOverride({
     displayName: 'Editions',
-    isVisible: true,
   }),
   createThemeOverride({
     displayName: 'LEGO® DUPLO®',
@@ -292,28 +260,18 @@ export const brickhuntThemeRegistry = [
   }),
   createThemeOverride({
     displayName: 'Gear',
-    isVisible: false,
   }),
   createThemeOverride({
     displayName: 'Harry Potter™',
     aliases: ['Harry Potter'],
-    imageSetId: '76419',
-    isFeatured: true,
-    sortPriority: 3,
   }),
   createThemeOverride({
     displayName: 'LEGO® Icons',
     aliases: ['Icons', 'Modular Buildings', 'LEGO Exclusive'],
-    imageSetId: '10326',
-    isFeatured: true,
-    sortPriority: 4,
   }),
   createThemeOverride({
     displayName: 'Ideas',
     aliases: ['LEGO Ideas and CUUSOO'],
-    imageSetId: '21348',
-    isFeatured: true,
-    sortPriority: 9,
   }),
   createThemeOverride({
     displayName: 'Looney Tunes™',
@@ -322,9 +280,6 @@ export const brickhuntThemeRegistry = [
   createThemeOverride({
     displayName: 'Lord of the Rings™',
     aliases: ['Lord of the Rings', 'The Lord of the Rings', 'LOTR'],
-    colorToken: 'fantasy-dark',
-    imageSetId: '10333',
-    isVisible: true,
   }),
   createThemeOverride({
     displayName: 'Marvel',
@@ -336,14 +291,10 @@ export const brickhuntThemeRegistry = [
       'The Infinity Saga',
       'X-Men',
     ],
-    imageSetId: '76269',
-    isFeatured: true,
-    sortPriority: 2,
   }),
   createThemeOverride({
     displayName: 'Minecraft®',
     aliases: ['Minecraft'],
-    sortPriority: 10,
   }),
   createThemeOverride({
     displayName: 'Minifiguren',
@@ -361,7 +312,6 @@ export const brickhuntThemeRegistry = [
   createThemeOverride({
     displayName: 'NINJAGO®',
     aliases: ['Ninjago', 'NINJAGO'],
-    sortPriority: 14,
   }),
   createThemeOverride({
     displayName: 'ONE PIECE',
@@ -374,12 +324,10 @@ export const brickhuntThemeRegistry = [
   createThemeOverride({
     displayName: 'Powered UP',
     aliases: ['Powered Up'],
-    isVisible: false,
   }),
   createThemeOverride({
     displayName: 'SERIOUS PLAY®',
     aliases: ['Serious Play', 'SERIOUS PLAY'],
-    isVisible: false,
   }),
   createThemeOverride({
     displayName: 'Sonic the Hedgehog™',
@@ -387,25 +335,17 @@ export const brickhuntThemeRegistry = [
   }),
   createThemeOverride({
     displayName: 'Speed Champions',
-    sortPriority: 7,
-    isFeatured: true,
   }),
   createThemeOverride({
     displayName: 'Star Wars™',
     aliases: ['Star Wars', 'Ultimate Collector Series'],
-    imageSetId: '75313',
-    isFeatured: true,
-    sortPriority: 1,
   }),
   createThemeOverride({
     displayName: 'LEGO® Super Mario™',
     aliases: ['Super Mario'],
-    sortPriority: 11,
   }),
   createThemeOverride({
     displayName: 'Technic',
-    isFeatured: true,
-    sortPriority: 6,
   }),
   createThemeOverride({
     displayName: 'LEGO® The Legend of Zelda™',
@@ -466,7 +406,11 @@ export function shouldMapThemeToParent({
   const normalizedRawTheme = normalizeRegistryText(rawTheme);
   const rawThemeOverride = themeByAlias.get(normalizedRawTheme);
 
-  if (rawThemeOverride?.isVisible === true) {
+  if (
+    rawThemeOverride &&
+    utilityThemeNames.has(normalizedParentTheme) &&
+    !utilityThemeNames.has(normalizeRegistryText(rawThemeOverride.displayName))
+  ) {
     return false;
   }
 
@@ -548,23 +492,18 @@ export function isThemeVisible(
     return false;
   }
 
-  if (typeof normalizedTheme.isVisible === 'boolean') {
-    return normalizedTheme.isVisible;
-  }
-
   return !utilityThemeNames.has(
     normalizeRegistryText(normalizedTheme.displayName),
   );
 }
 
 export function getFeaturedThemes(): BrickhuntThemeRegistryEntry[] {
-  return sortThemesForHome(
-    brickhuntThemeRegistry.filter((theme) => theme.isFeatured),
-  );
+  return [];
 }
 
 export function getThemeTileImage(themeKeyOrRaw?: string): string | undefined {
-  return normalizeTheme(themeKeyOrRaw)?.imageSetId;
+  void themeKeyOrRaw;
+  return undefined;
 }
 
 function getSortableThemeName(theme: ThemeSortable): string {
@@ -590,23 +529,10 @@ function getSortableThemeSetCount(theme: ThemeSortable): number {
   return theme.themeSnapshot?.setCount ?? 0;
 }
 
-function getThemeSortPriority(theme: ThemeSortable): number {
-  const themeName = getSortableThemeName(theme);
-
-  return normalizeTheme(themeName)?.sortPriority ?? unknownSortPriority;
-}
-
 export function sortThemesForHome<T extends ThemeSortable>(
   themes: readonly T[],
 ): T[] {
   return [...themes].sort((left, right) => {
-    const leftPriority = getThemeSortPriority(left);
-    const rightPriority = getThemeSortPriority(right);
-
-    if (leftPriority !== rightPriority) {
-      return leftPriority - rightPriority;
-    }
-
     const setCountDifference =
       getSortableThemeSetCount(right) - getSortableThemeSetCount(left);
 

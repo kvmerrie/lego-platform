@@ -36,6 +36,7 @@ export function normalizeCacheTags(tags: readonly string[]): string[] {
 }
 
 export const cacheTags = {
+  catalog: () => 'catalog',
   sets: () => 'sets',
   set: (setNumberOrSlug: string) => buildScopedTag('set', setNumberOrSlug),
   themes: () => 'themes',

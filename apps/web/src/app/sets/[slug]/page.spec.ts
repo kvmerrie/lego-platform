@@ -130,6 +130,33 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+function createCurrentOfferSummaryMap({
+  offers,
+  setId,
+}: {
+  offers: readonly {
+    availability: 'in_stock' | 'out_of_stock' | 'unknown';
+    checkedAt: string;
+    currency: 'EUR';
+    merchant: 'amazon' | 'bol' | 'lego' | 'other';
+    merchantName: string;
+    priceCents: number;
+    url: string;
+  }[];
+  setId: string;
+}) {
+  return new Map([
+    [
+      setId,
+      {
+        bestOffer: offers[0],
+        offers,
+        setId,
+      },
+    ],
+  ]);
+}
+
 describe('set detail live offer loading', () => {
   it('tags live offer reads with price and set cache tags', async () => {
     setPageMocks.listCatalogSetLiveOffersBySetId.mockResolvedValue([]);
@@ -584,7 +611,20 @@ describe('set detail page JSON-LD', () => {
     );
     setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
+      createCurrentOfferSummaryMap({
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-05T10:00:00.000Z',
+            currency: 'EUR',
+            merchant: 'bol',
+            merchantName: 'bol',
+            priceCents: 39999,
+            url: 'https://partner.example/10316',
+          },
+        ],
+        setId: '10316',
+      }),
     );
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
 
@@ -669,7 +709,29 @@ describe('set detail page JSON-LD', () => {
     );
     setPageMocks.listCatalogSimilarSetCards.mockResolvedValue([]);
     setPageMocks.listCatalogCurrentOfferSummariesBySetIds.mockResolvedValue(
-      new Map(),
+      createCurrentOfferSummaryMap({
+        offers: [
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-05T10:00:00.000Z',
+            currency: 'EUR',
+            merchant: 'other',
+            merchantName: 'Wehkamp',
+            priceCents: 19999,
+            url: 'https://partner.example/42177',
+          },
+          {
+            availability: 'in_stock',
+            checkedAt: '2026-05-05T10:00:00.000Z',
+            currency: 'EUR',
+            merchant: 'lego',
+            merchantName: 'LEGO',
+            priceCents: 24999,
+            url: 'https://partner.example/42177-lego',
+          },
+        ],
+        setId: '42177',
+      }),
     );
     setPageMocks.listPublishedArticlesByPrimarySetNumber.mockResolvedValue([]);
 

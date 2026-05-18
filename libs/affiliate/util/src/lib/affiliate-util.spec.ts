@@ -47,7 +47,7 @@ describe('affiliate util catalog offers', () => {
     });
   });
 
-  test('falls back to the cheapest offer when none are in stock', () => {
+  test('falls back to the best availability rank when none are in stock', () => {
     expect(
       getBestOffer([
         {
@@ -64,8 +64,8 @@ describe('affiliate util catalog offers', () => {
         },
       ]),
     ).toMatchObject({
-      availability: 'out_of_stock',
-      priceCents: 19999,
+      availability: 'unknown',
+      priceCents: 20999,
     });
   });
 

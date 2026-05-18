@@ -18,10 +18,8 @@ import {
   buildCatalogThemeSlug,
   catalogDiscoverDealCandidateIds,
   catalogDiscoverSetOrder,
-  catalogDiscoverThemeOrder,
   catalogHomepageDealCandidateIds,
   catalogHomepageFeaturedSetIds,
-  catalogThemeOverlays,
   getCanonicalCatalogSetId,
   getCatalogReleaseYear,
   getCatalogThemeDisplayName,
@@ -68,6 +66,17 @@ const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 const CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT = 300;
+const CATALOG_CURRENT_OFFER_PAGE_SIZE = 1000;
+
+function chunkCatalogValues<T>(values: readonly T[], chunkSize: number): T[][] {
+  const chunks: T[][] = [];
+
+  for (let index = 0; index < values.length; index += chunkSize) {
+    chunks.push(values.slice(index, index + chunkSize));
+  }
+
+  return chunks;
+}
 const CATALOG_PUBLIC_DEFAULT_PAGE_SIZE = 96;
 const CATALOG_PUBLIC_RAIL_CANDIDATE_LIMIT = 240;
 const CATALOG_PUBLIC_SEARCH_CANDIDATE_LIMIT = 120;
@@ -4208,27 +4217,8 @@ function sortDiscoverThemeSetCards({
 }
 
 function getCatalogThemeBrowseOrder(theme: string): number {
-  const themeSlug = buildCatalogThemeSlug(theme);
-  const curatedThemeOrderIndex = catalogDiscoverThemeOrder.findIndex(
-    (catalogDiscoverTheme) =>
-      buildCatalogThemeSlug(catalogDiscoverTheme) === themeSlug,
-  );
-
-  if (curatedThemeOrderIndex !== -1) {
-    return curatedThemeOrderIndex;
-  }
-
-  const fallbackThemeOrder = catalogThemeOverlays.map(
-    (catalogThemeOverlay) => catalogThemeOverlay.name,
-  );
-  const fallbackThemeOrderIndex = fallbackThemeOrder.findIndex(
-    (fallbackThemeName) =>
-      buildCatalogThemeSlug(fallbackThemeName) === themeSlug,
-  );
-
-  return fallbackThemeOrderIndex === -1
-    ? Number.MAX_SAFE_INTEGER
-    : fallbackThemeOrderIndex + catalogDiscoverThemeOrder.length;
+  void theme;
+  return Number.MAX_SAFE_INTEGER;
 }
 
 function getCatalogThemeRepresentativeImageUrl({
@@ -4258,22 +4248,13 @@ function createThemeSnapshot({
 }): CatalogThemeSnapshot {
   const displayThemeName = getCatalogThemeDisplayName(theme) ?? theme;
   const themeSlug = buildCatalogThemeSlug(displayThemeName);
-  const catalogThemeOverlay = catalogThemeOverlays.find(
-    (themeOverlay) =>
-      themeOverlay.name === theme ||
-      themeOverlay.name === displayThemeName ||
-      buildCatalogThemeSlug(themeOverlay.name) === themeSlug,
-  );
 
   return {
     name: displayThemeName,
     slug: themeSlug,
     setCount: setCards.length,
-    momentum: catalogThemeOverlay?.momentum ?? genericCatalogThemeMomentum,
-    signatureSet:
-      catalogThemeOverlay?.signatureSet ??
-      setCards[0]?.name ??
-      displayThemeName,
+    momentum: genericCatalogThemeMomentum,
+    signatureSet: setCards[0]?.name ?? displayThemeName,
   };
 }
 
@@ -4994,6 +4975,136 @@ async function listCatalogRuntimeOffersByCurrentOffersFromSupabase({
   });
 }
 
+async function listCatalogRuntimeOffersByAllCurrentOffersFromSupabase({
+  supabaseClient,
+}: {
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<Map<string, CatalogRuntimeOffer[]>> {
+  const latestOfferBySeedId = new Map<string, CatalogCommerceOfferLatestRow>();
+
+  for (let offset = 0; ; offset += CATALOG_CURRENT_OFFER_PAGE_SIZE) {
+    const { data: latestOfferData, error: latestOfferError } =
+      await supabaseClient
+        .from(COMMERCE_OFFER_LATEST_TABLE)
+        .select(
+          'offer_seed_id, price_minor, currency_code, availability, fetch_status, observed_at, fetched_at, updated_at',
+        )
+        .eq('fetch_status', 'success')
+        .eq('currency_code', 'EUR')
+        .order('updated_at', {
+          ascending: false,
+        })
+        .range(offset, offset + CATALOG_CURRENT_OFFER_PAGE_SIZE - 1);
+
+    if (latestOfferError) {
+      throw new Error('Unable to load live catalog offers.');
+    }
+
+    const latestOffers =
+      (latestOfferData as CatalogCommerceOfferLatestRow[] | null) ?? [];
+
+    for (const latestOffer of latestOffers) {
+      if (
+        typeof latestOffer.price_minor === 'number' &&
+        latestOffer.price_minor > 0 &&
+        !latestOfferBySeedId.has(latestOffer.offer_seed_id)
+      ) {
+        latestOfferBySeedId.set(latestOffer.offer_seed_id, latestOffer);
+      }
+    }
+
+    if (latestOffers.length < CATALOG_CURRENT_OFFER_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  const offerSeedIds = [...latestOfferBySeedId.keys()];
+
+  if (!offerSeedIds.length) {
+    return new Map();
+  }
+
+  const offerSeeds: CatalogCommerceOfferSeedRow[] = [];
+
+  for (const seedIdChunk of chunkCatalogValues(
+    offerSeedIds,
+    CATALOG_CURRENT_OFFER_PAGE_SIZE,
+  )) {
+    const { data: seedData, error: seedError } = await supabaseClient
+      .from(COMMERCE_OFFER_SEEDS_TABLE)
+      .select(
+        'id, set_id, merchant_id, product_url, is_active, validation_status, notes',
+      )
+      .in('id', seedIdChunk)
+      .eq('is_active', true)
+      .eq('validation_status', 'valid');
+
+    if (seedError) {
+      throw new Error('Unable to load live catalog offers.');
+    }
+
+    offerSeeds.push(
+      ...((seedData as CatalogCommerceOfferSeedRow[] | null) ?? []),
+    );
+  }
+
+  const merchantIds = [
+    ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
+  ];
+
+  if (!offerSeeds.length || !merchantIds.length) {
+    return new Map();
+  }
+
+  const { data: merchantData, error: merchantError } = await supabaseClient
+    .from(COMMERCE_MERCHANTS_TABLE)
+    .select('id, slug, name, is_active')
+    .in('id', merchantIds)
+    .eq('is_active', true);
+
+  if (merchantError) {
+    throw new Error('Unable to load live catalog offers.');
+  }
+
+  const merchantById = new Map(
+    ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
+      (merchantRow) => [merchantRow.id, merchantRow],
+    ),
+  );
+  const liveOffersBySetId = new Map<string, CatalogRuntimeOffer[]>();
+
+  for (const offerSeed of offerSeeds) {
+    const latestOffer = latestOfferBySeedId.get(offerSeed.id);
+    const merchant = merchantById.get(offerSeed.merchant_id);
+
+    if (!latestOffer || !merchant) {
+      continue;
+    }
+
+    const catalogRuntimeOffer = toCatalogRuntimeOffer({
+      latestOffer,
+      merchant,
+      offerSeed,
+    });
+
+    if (!catalogRuntimeOffer) {
+      continue;
+    }
+
+    const existingOffers =
+      liveOffersBySetId.get(catalogRuntimeOffer.setId) ?? [];
+    existingOffers.push(catalogRuntimeOffer);
+    liveOffersBySetId.set(catalogRuntimeOffer.setId, existingOffers);
+  }
+
+  return new Map(
+    [...liveOffersBySetId.entries()].map(([setId, offers]) => [
+      setId,
+      sortResolvedCatalogOffers(offers) as CatalogRuntimeOffer[],
+    ]),
+  );
+}
+
 export async function getCatalogCommerceRailRuntimeDiagnostics({
   environment = process.env,
   limit = CATALOG_CURRENT_OFFER_CANDIDATE_LIMIT,
@@ -5672,6 +5783,57 @@ export async function listCachedCatalogCurrentOfferSummaries({
       return [...currentOfferSummaryBySetId.entries()];
     },
     ['catalog-current-offer-summaries-v2', String(limit)],
+    {
+      revalidate: cacheOptions.revalidateSeconds ?? 21_600,
+      tags: [...cacheOptions.tags],
+    },
+  );
+
+  return new Map(await cachedRead());
+}
+
+export async function listCatalogAllCurrentOfferSummaries({
+  supabaseClient,
+}: {
+  supabaseClient?: CatalogSupabaseClient;
+} = {}): Promise<Map<string, CatalogCurrentOfferSummary>> {
+  const activeSupabaseClient =
+    supabaseClient ?? getWebCatalogSupabaseReadClient();
+
+  if (!activeSupabaseClient) {
+    return new Map();
+  }
+
+  try {
+    const liveOffersBySetId =
+      await listCatalogRuntimeOffersByAllCurrentOffersFromSupabase({
+        supabaseClient: activeSupabaseClient,
+      });
+
+    return toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
+  } catch (error) {
+    if (!supabaseClient) {
+      return new Map();
+    }
+
+    throw error;
+  }
+}
+
+export async function listCachedCatalogAllCurrentOfferSummaries({
+  cacheOptions,
+}: {
+  cacheOptions: Required<Pick<CatalogApiReadCacheOptions, 'tags'>> &
+    Pick<CatalogApiReadCacheOptions, 'revalidateSeconds'>;
+}): Promise<Map<string, CatalogCurrentOfferSummary>> {
+  const cachedRead = unstable_cache(
+    async () => {
+      const currentOfferSummaryBySetId =
+        await listCatalogAllCurrentOfferSummaries();
+
+      return [...currentOfferSummaryBySetId.entries()];
+    },
+    ['catalog-all-current-offer-summaries-v1'],
     {
       revalidate: cacheOptions.revalidateSeconds ?? 21_600,
       tags: [...cacheOptions.tags],

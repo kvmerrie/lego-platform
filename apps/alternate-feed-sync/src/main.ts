@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import {
   buildTradeTrackerAlternateOnboardingQueue,
   logScheduledJobFailure,
+  revalidatePublicCatalogPriceChanges,
   resolveAffiliateFeedDiscoveryEnabled,
   syncAlternateTradeTrackerFeed,
 } from '@lego-platform/api/data-access-server';
@@ -198,6 +199,24 @@ async function main() {
   console.log(
     `[alternate-feed-sync] missing_sets discovered=${result.discoveredMissingSetCount} auto_importable=${result.autoImportableMissingSetCount} review_needed=${result.reviewNeededMissingSetCount} ignored_or_non_set=${result.ignoredOrNonSetMissingSetCount}`,
   );
+
+  if (result.changedSetIds.length > 0) {
+    try {
+      const revalidationResult = await revalidatePublicCatalogPriceChanges({
+        changedSetIds: result.changedSetIds,
+        changedSetSlugs: result.changedSetSlugs,
+        reason: 'alternate_feed_sync',
+      });
+      console.log(
+        `[alternate-feed-sync] revalidation attempted=${revalidationResult.attempted} skipped=${revalidationResult.skipped} changed_set_count=${result.changedSetIds.length} revalidated_set_path_count=${result.changedSetSlugs.length} path_count=${revalidationResult.pathCount} tag_count=${revalidationResult.tagCount}`,
+      );
+    } catch (error) {
+      console.warn('[alternate-feed-sync] revalidation warning', {
+        changed_set_count: result.changedSetIds.length,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
   console.log(
     `[alternate-feed-sync] end status=imported source=tradetracker merchant=alternate affiliate_site_id=${result.affiliateSiteId} affiliate_site_name=${JSON.stringify(result.affiliateSiteName)} feed_id=${result.feedId} feed_name=${JSON.stringify(result.feedName)} campaign_id=${result.campaignId} campaign_name=${JSON.stringify(result.campaignName)} selection=${result.selectionStrategy} fetched_products=${result.fetchedProductCount} normalized_rows=${result.normalizedRowCount} pages=${result.pageCount} matched_catalog_sets=${result.matchedCatalogSetCount} imported_offers=${result.importedOfferCount} upserted_seeds=${result.upsertedSeedCount} upserted_latest=${result.upsertedLatestCount} matched_offers_seen=${result.matchedOfferCount} latest_rows_seen=${result.latestRowsSeenCount} changed_latest_offers=${result.changedLatestOfferCount} unchanged_latest_timestamps_refreshed=${result.unchangedLatestTimestampRefreshedCount} unchanged_latest_refresh_skipped=${result.unchangedLatestRefreshSkippedCount} latest_rows_marked_stale=${result.latestRowsMarkedStaleCount} stale_mark_skipped_reason=${result.staleMarkSkippedReason ?? 'none'} changed_sets=${result.changedSetIds.length} skipped_non_lego=${result.skippedNonLegoCount} skipped_invalid_currency=${result.skippedInvalidCurrencyCount} skipped_invalid_price=${result.skippedInvalidPriceCount} skipped_invalid_deeplink=${result.skippedInvalidDeeplinkCount} skipped_missing_set_number=${result.skippedMissingSetNumberCount} skipped_unmatched_set=${result.skippedUnmatchedSetCount} skipped_non_new=${result.skippedNonNewCount} duration_ms=${Date.now() - startedAt}`,

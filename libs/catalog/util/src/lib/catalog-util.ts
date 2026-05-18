@@ -557,13 +557,6 @@ export interface CatalogSetOverlay {
   primaryImage?: string;
 }
 
-export interface CatalogThemeOverlay {
-  name: string;
-  setCount: number;
-  momentum: string;
-  signatureSet: string;
-}
-
 export interface CatalogBrowseThemeGroup {
   slug: string;
   setCards: CatalogHomepageSetCard[];
@@ -582,106 +575,6 @@ export interface CatalogThemeDirectoryItem {
   themeSnapshot: CatalogThemeSnapshot;
   visual?: CatalogThemeVisual;
 }
-
-export const catalogThemeOverlays: readonly CatalogThemeOverlay[] = [
-  {
-    name: 'Icons',
-    setCount: 17,
-    momentum:
-      'Rivendell, Titanic, Concorde. Dit zijn de dozen waar je ruimte voor maakt.',
-    signatureSet: 'Rivendell',
-  },
-  {
-    name: 'Ideas',
-    setCount: 10,
-    momentum:
-      'Rode draak, boshut, sterrennacht. Ideas zet meteen een hele wereld neer.',
-    signatureSet: "Dungeons & Dragons: Red Dragon's Tale",
-  },
-  {
-    name: 'Marvel',
-    setCount: 5,
-    momentum:
-      'Torens, chaos en bekende gezichten. Marvel komt hier meteen vol binnen.',
-    signatureSet: 'Avengers Tower',
-  },
-  {
-    name: 'Botanicals',
-    setCount: 4,
-    momentum:
-      'Boeketten en planten die tafel, kast en cadeau meteen meer kleur geven.',
-    signatureSet: 'Flower Bouquet',
-  },
-  {
-    name: 'Technic',
-    setCount: 5,
-    momentum:
-      'Supercars en machines met techniek waar je ook na het bouwen in blijft kijken.',
-    signatureSet: 'Ferrari Daytona SP3',
-  },
-  {
-    name: 'Speed Champions',
-    setCount: 1,
-    momentum:
-      'Racewagens met F1- en endurance-DNA die meteen snelheid en teamkleuren op je plank zetten.',
-    signatureSet: 'Oracle Red Bull Racing RB20 F1 Race Car',
-  },
-  {
-    name: 'Super Mario',
-    setCount: 1,
-    momentum:
-      'Nintendo-herkenning op displayformaat, met Bowser als pure blikvanger.',
-    signatureSet: 'The Mighty Bowser',
-  },
-  {
-    name: 'NINJAGO',
-    setCount: 1,
-    momentum:
-      'Een stadsdisplay vol kleur, hoogte en hoekjes die je steeds opnieuw ziet.',
-    signatureSet: 'NINJAGO City Gardens',
-  },
-  {
-    name: 'Jurassic World',
-    setCount: 1,
-    momentum:
-      'Dino, hekwerk en chaos in een scene die meteen spanning op je plank zet.',
-    signatureSet: 'T. rex Breakout',
-  },
-  {
-    name: 'Star Wars',
-    setCount: 6,
-    momentum:
-      'Walkers, kruisers en schepen met silhouetten die je van ver al herkent.',
-    signatureSet: 'AT-AT',
-  },
-  {
-    name: 'Harry Potter',
-    setCount: 6,
-    momentum:
-      'Van Burrow-warmte tot Gringotts-drama. Hier kies je je favoriete tovenaarsgevoel.',
-    signatureSet: "Gringotts Wizarding Bank – Collectors' Edition",
-  },
-  {
-    name: 'Architecture',
-    setCount: 1,
-    momentum:
-      'Wereldiconen in strakke lijnen, gemaakt voor een rustige plank met klasse.',
-    signatureSet: 'Notre-Dame de Paris',
-  },
-  {
-    name: 'Art',
-    setCount: 1,
-    momentum: 'LEGO met reliëf en kleur. Meer kunstwerk dan bouwset.',
-    signatureSet: 'Hokusai - The Great Wave',
-  },
-  {
-    name: 'Disney',
-    setCount: 1,
-    momentum:
-      'Torens, goud en sprookjessfeer met genoeg statuur voor een echte blikvanger.',
-    signatureSet: 'Disney Castle',
-  },
-] as const;
 
 export const catalogHomepageFeaturedSetIds = [
   '10316',
@@ -745,23 +638,6 @@ export const catalogDiscoverSetOrder = [
   '43222',
   '71411',
   '71741',
-] as const;
-
-export const catalogDiscoverThemeOrder = [
-  'Icons',
-  'Marvel',
-  'Ideas',
-  'Star Wars',
-  'Harry Potter',
-  'Technic',
-  'Speed Champions',
-  'Botanicals',
-  'Architecture',
-  'Art',
-  'Disney',
-  'NINJAGO',
-  'Super Mario',
-  'Jurassic World',
 ] as const;
 
 export interface CatalogSyncManifest {

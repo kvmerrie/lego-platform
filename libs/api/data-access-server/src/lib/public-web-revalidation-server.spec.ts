@@ -3,6 +3,7 @@ import {
   buildPublicCatalogRevalidationPaths,
   buildPublicCatalogRevalidationTags,
   revalidatePublicCatalogPaths,
+  revalidatePublicCatalogPriceChanges,
   revalidatePublicWeb,
 } from './public-web-revalidation-server';
 
@@ -98,6 +99,8 @@ describe('public web revalidation server', () => {
       }),
     ).toEqual([
       'homepage',
+      'prices',
+      'catalog',
       'themes',
       'deals',
       'set:10316',
@@ -159,9 +162,11 @@ describe('public web revalidation server', () => {
         '/themes/icons',
       ],
       skipped: true,
-      tagCount: 6,
+      tagCount: 8,
       tags: [
         'homepage',
+        'prices',
+        'catalog',
         'themes',
         'deals',
         'set:10316',
@@ -351,6 +356,8 @@ describe('public web revalidation server', () => {
           reason: 'commerce_sync',
           tags: [
             'homepage',
+            'prices',
+            'catalog',
             'themes',
             'deals',
             'set:10316',
@@ -371,15 +378,60 @@ describe('public web revalidation server', () => {
         '/themes/icons',
       ],
       skipped: false,
-      tagCount: 6,
+      tagCount: 8,
       tags: [
         'homepage',
+        'prices',
+        'catalog',
         'themes',
         'deals',
         'set:10316',
         'set:rivendell-10316',
         'theme:icons',
       ],
+    });
+  });
+
+  test('batches price-change set path revalidation within public web limits', async () => {
+    process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
+    process.env.WEB_BASE_URL = 'https://staging.brickhunt.nl';
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ revalidated: true }), {
+        headers: {
+          'content-type': 'application/json',
+        },
+        status: 200,
+      }),
+    );
+    const changedSetIds = Array.from({ length: 30 }, (_, index) =>
+      String(10_000 + index),
+    );
+    const changedSetSlugs = changedSetIds.map((setId) => `set-${setId}`);
+
+    const result = await revalidatePublicCatalogPriceChanges({
+      changedSetIds,
+      changedSetSlugs,
+      fetchImpl,
+      reason: 'feed_sync_test',
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const firstRequest = JSON.parse(
+      (fetchImpl.mock.calls[0]?.[1] as RequestInit).body as string,
+    ) as { paths: string[]; tags: string[] };
+    const secondRequest = JSON.parse(
+      (fetchImpl.mock.calls[1]?.[1] as RequestInit).body as string,
+    ) as { paths: string[]; tags: string[] };
+
+    expect(firstRequest.paths).toHaveLength(25);
+    expect(secondRequest.paths).toHaveLength(7);
+    expect(firstRequest.tags).toContain('prices');
+    expect(firstRequest.tags).toContain('catalog');
+    expect(result).toMatchObject({
+      attempted: true,
+      pathCount: 32,
+      skipped: false,
+      tagCount: 64,
     });
   });
 });

@@ -7,7 +7,10 @@ import {
   listCatalogSetCardsByIdsForBrowser,
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogHomepageSetCard } from '@lego-platform/catalog/util';
-import { CatalogSetCardRailSection } from '@lego-platform/catalog/ui';
+import {
+  CatalogSetCardRailSection,
+  type CatalogSetCardPriceContext,
+} from '@lego-platform/catalog/ui';
 import { buildSetDetailPath } from '@lego-platform/shared/config';
 import { trackBrickhuntAnalyticsEvent } from '@lego-platform/shared/util';
 
@@ -79,6 +82,11 @@ export function CatalogFeatureRecentlyViewed({
       items={setCards.map((setCard) => ({
         href: buildSetDetailPath(setCard.slug),
         id: setCard.id,
+        priceContext: (
+          setCard as CatalogHomepageSetCard & {
+            priceContext?: CatalogSetCardPriceContext;
+          }
+        ).priceContext,
         setSummary: setCard,
         trackingEvent: {
           event: 'catalog_set_click',

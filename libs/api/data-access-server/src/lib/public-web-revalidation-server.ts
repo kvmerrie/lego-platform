@@ -1,5 +1,6 @@
 import { buildCatalogThemeSlug } from '@lego-platform/catalog/util';
 import {
+  batchRevalidationPayloads,
   buildSetDetailPath,
   buildThemePath,
   cacheTags,
@@ -33,6 +34,7 @@ export interface PublicWebRevalidationResult {
 }
 
 const broadRevalidationTags = new Set([
+  'catalog',
   'homepage',
   'deals',
   'prices',
@@ -536,6 +538,9 @@ export function buildPublicCatalogRevalidationTags({
     dedupedTags.add(cacheTags.homepage());
   }
 
+  dedupedTags.add(cacheTags.prices());
+  dedupedTags.add(cacheTags.catalog());
+
   if (includeThemeDirectory) {
     dedupedTags.add(cacheTags.themes());
   }
@@ -581,13 +586,43 @@ export async function revalidatePublicCatalogPaths({
     targets,
   });
 
-  return sendPublicWebRevalidationRequest({
-    fetchImpl,
+  const batches = batchRevalidationPayloads({
     paths,
-    reason,
-    source: 'catalog',
+    reason: reason ?? 'catalog_revalidation',
     tags,
   });
+  const results: PublicWebCatalogRevalidationResult[] = [];
+
+  for (const batch of batches) {
+    results.push(
+      await sendPublicWebRevalidationRequest({
+        fetchImpl,
+        paths: batch.paths,
+        reason,
+        source: 'catalog',
+        tags: batch.tags,
+      }),
+    );
+  }
+
+  if (results.length === 0) {
+    return sendPublicWebRevalidationRequest({
+      fetchImpl,
+      paths: [],
+      reason,
+      source: 'catalog',
+      tags: [],
+    });
+  }
+
+  return {
+    attempted: results.some((result) => result.attempted),
+    pathCount: paths.length,
+    paths,
+    skipped: results.every((result) => result.skipped),
+    tagCount: tags.length,
+    tags,
+  };
 }
 
 export async function revalidatePublicWeb({
@@ -610,11 +645,81 @@ export async function revalidatePublicWeb({
   ];
   const normalizedTags = [...new Set(tags)];
 
-  return sendPublicWebRevalidationRequest({
-    fetchImpl,
+  const batches = batchRevalidationPayloads({
     paths: normalizedPaths,
-    reason,
-    source: 'generic',
+    reason: reason ?? 'manual_revalidation',
     tags: normalizedTags,
+  });
+  const results: PublicWebRevalidationResult[] = [];
+
+  for (const batch of batches) {
+    results.push(
+      await sendPublicWebRevalidationRequest({
+        fetchImpl,
+        paths: batch.paths,
+        reason,
+        source: 'generic',
+        tags: batch.tags,
+      }),
+    );
+  }
+
+  if (results.length === 0) {
+    return sendPublicWebRevalidationRequest({
+      fetchImpl,
+      paths: [],
+      reason,
+      source: 'generic',
+      tags: [],
+    });
+  }
+
+  return {
+    attempted: results.some((result) => result.attempted),
+    pathCount: normalizedPaths.length,
+    paths: normalizedPaths,
+    skipped: results.every((result) => result.skipped),
+    tagCount: normalizedTags.length,
+    tags: normalizedTags,
+  };
+}
+
+export async function revalidatePublicCatalogPriceChanges({
+  changedSetIds,
+  changedSetSlugs = [],
+  fetchImpl = fetch,
+  reason,
+}: {
+  changedSetIds: readonly string[];
+  changedSetSlugs?: readonly string[];
+  fetchImpl?: typeof fetch;
+  reason: string;
+}): Promise<PublicWebRevalidationResult> {
+  const setPaths = changedSetSlugs
+    .map((slug) => normalizeRevalidationPath(buildSetDetailPath(slug)))
+    .filter((path): path is string => Boolean(path));
+  const paths = [webPathnames.home, webPathnames.deals, ...setPaths];
+  const tags = [
+    cacheTags.homepage(),
+    cacheTags.deals(),
+    cacheTags.prices(),
+    cacheTags.catalog(),
+    ...changedSetIds.map((setId) => cacheTags.set(setId)),
+    ...changedSetSlugs.map((slug) => cacheTags.set(slug)),
+  ];
+
+  console.info('[public-web-revalidation] price changes', {
+    changed_set_count: changedSetIds.length,
+    reason,
+    revalidated_set_path_count: setPaths.length,
+    set_slug_sample: changedSetSlugs.slice(0, loggedValueLimit),
+    tag_count: tags.length,
+  });
+
+  return revalidatePublicWeb({
+    fetchImpl,
+    paths,
+    reason,
+    tags,
   });
 }

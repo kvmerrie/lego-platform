@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 const dealsPageMocks = vi.hoisted(() => ({
   getCatalogCommerceRailRuntimeDiagnostics: vi.fn(),
   getCatalogPartnerOfferRailDiagnostics: vi.fn(),
-  listCachedCatalogCurrentOfferSummaries: vi.fn(),
+  listCachedCatalogAllCurrentOfferSummaries: vi.fn(),
   listCatalogCurrentOfferSummaries: vi.fn(),
   listCatalogDiscoverySignalsBySetId: vi.fn(),
   listCatalogSetCardsByIds: vi.fn(),
@@ -17,8 +17,8 @@ vi.mock('@lego-platform/catalog/data-access-web', () => ({
     dealsPageMocks.getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics:
     dealsPageMocks.getCatalogPartnerOfferRailDiagnostics,
-  listCachedCatalogCurrentOfferSummaries:
-    dealsPageMocks.listCachedCatalogCurrentOfferSummaries,
+  listCachedCatalogAllCurrentOfferSummaries:
+    dealsPageMocks.listCachedCatalogAllCurrentOfferSummaries,
   listCatalogCurrentOfferSummaries:
     dealsPageMocks.listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId:
@@ -53,7 +53,7 @@ vi.mock('@lego-platform/wishlist/feature-wishlist-toggle', () => ({
 
 describe('deals page discovery signals', () => {
   it('scopes discovery signals to current commerce candidate cards', async () => {
-    dealsPageMocks.listCachedCatalogCurrentOfferSummaries.mockResolvedValue(
+    dealsPageMocks.listCachedCatalogAllCurrentOfferSummaries.mockResolvedValue(
       new Map([
         ['42177', { setId: '42177', offers: [] }],
         ['75398', { setId: '75398', offers: [] }],
@@ -78,7 +78,7 @@ describe('deals page discovery signals', () => {
     ).toHaveBeenCalledWith({
       cacheOptions: {
         revalidateSeconds: 21_600,
-        tags: ['deals'],
+        tags: ['deals', 'prices'],
       },
       setIds: ['42177', '75398'],
     });

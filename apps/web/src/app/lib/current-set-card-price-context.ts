@@ -4,7 +4,10 @@ import type {
 } from '@lego-platform/catalog/data-access-web';
 import type { CatalogFeatureSearchReviewedPriceContext } from '@lego-platform/catalog/feature-search-results';
 import type { CatalogSetCardPriceContext } from '@lego-platform/catalog/ui';
-import { buildSetDecisionPresentation } from '@lego-platform/pricing/data-access';
+import {
+  buildSetDecisionPresentation,
+  getFeaturedSetPriceContext,
+} from '@lego-platform/pricing/data-access';
 import {
   formatPriceMinor,
   type FeaturedSetPriceContext,
@@ -263,6 +266,35 @@ export function buildCurrentSetCardPriceContext({
     pricePositionTone: decisionPresentation.verdict.tone,
     reviewedLabel: `Nagekeken ${formatCheckedOn(bestOffer.checkedAt)}`,
   };
+}
+
+export function buildCurrentSetCardPriceContextBySetId<
+  SetCard extends { id: string; theme: string },
+>({
+  catalogDiscoverySignalBySetId,
+  currentOfferSummaryBySetId,
+  setCards,
+}: {
+  catalogDiscoverySignalBySetId?: ReadonlyMap<string, CatalogDiscoverySignal>;
+  currentOfferSummaryBySetId: ReadonlyMap<string, CatalogCurrentOfferSummary>;
+  setCards: readonly SetCard[];
+}): Map<string, CatalogSetCardPriceContext> {
+  const priceContextBySetId = new Map<string, CatalogSetCardPriceContext>();
+
+  for (const setCard of setCards) {
+    const priceContext = buildCurrentSetCardPriceContext({
+      catalogDiscoverySignal: catalogDiscoverySignalBySetId?.get(setCard.id),
+      currentOfferSummary: currentOfferSummaryBySetId.get(setCard.id),
+      pricePanelSnapshot: getFeaturedSetPriceContext(setCard.id),
+      theme: setCard.theme,
+    });
+
+    if (priceContext) {
+      priceContextBySetId.set(setCard.id, priceContext);
+    }
+  }
+
+  return priceContextBySetId;
 }
 
 export function buildCurrentSearchReviewedPriceContext({

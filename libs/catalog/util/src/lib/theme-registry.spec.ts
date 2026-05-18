@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   getThemeDisplayName,
-  getThemeTileImage,
   isThemeVisible,
   normalizeTheme,
   sortThemesForHome,
@@ -117,7 +116,7 @@ describe('Brickhunt theme registry', () => {
     expect(getThemeDisplayName('Collectible Minifigures')).toBe('Minifiguren');
   });
 
-  it('sorts featured homepage themes before popularity and alphabetical fallback themes', () => {
+  it('sorts themes by set count and alphabetical fallback without presentation priority', () => {
     expect(
       sortThemesForHome([
         { themeSnapshot: { name: 'Unknown A', setCount: 2 } },
@@ -125,20 +124,6 @@ describe('Brickhunt theme registry', () => {
         { themeSnapshot: { name: 'Marvel', setCount: 1 } },
         { themeSnapshot: { name: 'Star Wars', setCount: 1 } },
       ]).map((item) => item.themeSnapshot.name),
-    ).toEqual(['Star Wars', 'Marvel', 'Unknown B', 'Unknown A']);
-  });
-
-  it('returns tile image overrides without requiring every theme to be registered', () => {
-    expect(getThemeTileImage('Star Wars')).toBe('75313');
-    expect(getThemeTileImage('Lord of the Rings')).toBe('10333');
-    expect(getThemeTileImage('LEGO® Icons')).toBe('10326');
-    expect(getThemeTileImage('LEGO® Icons')).not.toBe('10316');
-    expect(getThemeTileImage('LEGO® Icons')).not.toBe('10333');
-    expect(getThemeTileImage('LEGO® Icons')).not.toBe('10354');
-    expect(getThemeTileImage('Lord of the Rings')).not.toBe(
-      getThemeTileImage('LEGO® Icons'),
-    );
-    expect(isThemeVisible('Lord of the Rings')).toBe(true);
-    expect(isThemeVisible('LEGO® Icons')).toBe(true);
+    ).toEqual(['Unknown B', 'Unknown A', 'Marvel', 'Star Wars']);
   });
 });

@@ -31,7 +31,7 @@ import type { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import React, { Suspense } from 'react';
-import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
+import { buildCurrentSetCardPriceContextBySetId } from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
 import {
   buildCollectionPageJsonLd,
@@ -203,18 +203,16 @@ function toThemeDealSetCards({
   >;
   setCards: readonly CatalogFeatureThemePageDealItem[];
 }): CatalogFeatureThemePageDealItem[] {
-  return setCards.flatMap((setCard) => {
-    const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
-    const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
+  const priceContextBySetId = buildCurrentSetCardPriceContextBySetId({
+    currentOfferSummaryBySetId,
+    setCards,
+  });
 
+  return setCards.flatMap((setCard) => {
     return [
       {
         ...setCard,
-        priceContext: buildCurrentSetCardPriceContext({
-          currentOfferSummary,
-          pricePanelSnapshot: featuredSetPriceContext,
-          theme: setCard.theme,
-        }),
+        priceContext: priceContextBySetId.get(setCard.id),
       },
     ];
   });
@@ -263,7 +261,7 @@ async function loadThemeDealSetCards({
       listCatalogDiscoverySignalsBySetId({
         cacheOptions: {
           revalidateSeconds: revalidate,
-          tags: [cacheTags.theme(slug)],
+          tags: [cacheTags.theme(slug), cacheTags.prices()],
         },
         setIds: themePage.setCards.map((setCard) => setCard.id),
       }),
@@ -293,6 +291,7 @@ async function loadThemeDealSetCards({
           revalidateSeconds: revalidate,
           tags: [
             cacheTags.theme(slug),
+            cacheTags.prices(),
             ...themeDiscoverySetCards.map((setCard) =>
               cacheTags.set(setCard.id),
             ),

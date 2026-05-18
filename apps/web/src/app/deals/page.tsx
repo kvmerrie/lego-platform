@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
-  listCachedCatalogCurrentOfferSummaries,
+  listCachedCatalogAllCurrentOfferSummaries,
   listCatalogCurrentOfferSummaries,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCardsByIds,
@@ -32,7 +32,7 @@ import {
 import { ShellWeb } from '@lego-platform/shell/web';
 import { WishlistFeatureWishlistToggle } from '@lego-platform/wishlist/feature-wishlist-toggle';
 import {
-  buildCurrentSetCardPriceContext,
+  buildCurrentSetCardPriceContextBySetId,
   compareReliableDealDiscounts,
   buildReliableDealDiscount,
 } from '../lib/current-set-card-price-context';
@@ -250,6 +250,12 @@ function toDealsRailSetCards({
   sectionId: string;
   setCards: readonly CatalogHomepageSetCard[];
 }): DealsRailItem[] {
+  const priceContextBySetId = buildCurrentSetCardPriceContextBySetId({
+    catalogDiscoverySignalBySetId,
+    currentOfferSummaryBySetId,
+    setCards,
+  });
+
   return setCards
     .map((setCard, index) => {
       const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
@@ -258,12 +264,7 @@ function toDealsRailSetCards({
       const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
         featuredSetPriceContext?.deltaMinor,
       );
-      const priceContext = buildCurrentSetCardPriceContext({
-        catalogDiscoverySignal: catalogDiscoverySignalBySetId.get(setCard.id),
-        currentOfferSummary,
-        pricePanelSnapshot: featuredSetPriceContext,
-        theme: setCard.theme,
-      });
+      const priceContext = priceContextBySetId.get(setCard.id);
       const primaryActionTrackingEvent:
         | BrickhuntAnalyticsEventDescriptor
         | undefined = bestCurrentOffer
@@ -460,12 +461,11 @@ function selectDealDisplaySetCards({
 
 export default async function DealsPage() {
   const currentOfferSummaryBySetId =
-    await listCachedCatalogCurrentOfferSummaries({
+    await listCachedCatalogAllCurrentOfferSummaries({
       cacheOptions: {
         revalidateSeconds: revalidate,
-        tags: [cacheTags.deals()],
+        tags: [cacheTags.deals(), cacheTags.prices()],
       },
-      limit: 300,
     });
   const commerceCandidateSetCards = await listCatalogSetCardsByIds({
     canonicalIds: [...currentOfferSummaryBySetId.keys()],
@@ -474,7 +474,7 @@ export default async function DealsPage() {
     await listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
         revalidateSeconds: revalidate,
-        tags: [cacheTags.deals()],
+        tags: [cacheTags.deals(), cacheTags.prices()],
       },
       setIds: commerceCandidateSetCards.map((setCard) => setCard.id),
     });

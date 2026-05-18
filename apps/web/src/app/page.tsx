@@ -1,6 +1,6 @@
 import { getEditorialQueryMode } from './lib/editorial-query-mode';
 import { getMetadataFromSeoFields } from './lib/editorial-metadata';
-import { buildCurrentSetCardPriceContext } from './lib/current-set-card-price-context';
+import { buildCurrentSetCardPriceContextBySetId } from './lib/current-set-card-price-context';
 import styles from './page.module.css';
 import React from 'react';
 import {
@@ -15,8 +15,9 @@ import {
   getCatalogCommerceRailRuntimeDiagnostics,
   getCatalogHomepageDealQualityDiagnostics,
   getCatalogPartnerOfferRailDiagnostics,
-  listCachedCatalogCurrentOfferSummaries,
+  listCachedCatalogAllCurrentOfferSummaries,
   listCatalogCurrentOfferSummaries,
+  listCatalogCurrentOfferSummariesBySetIds,
   listCatalogDiscoverySignalsBySetId,
   listCatalogSetCards,
   listCatalogSetCardsByIds,
@@ -90,6 +91,12 @@ function toFeatureSetListItems(
     sectionId: string;
   },
 ): CatalogFeatureSetListItem[] {
+  const priceContextBySetId = buildCurrentSetCardPriceContextBySetId({
+    catalogDiscoverySignalBySetId,
+    currentOfferSummaryBySetId,
+    setCards,
+  });
+
   return setCards.map((homepageSetCard, index) => {
     const featuredSetPriceContext = getFeaturedSetPriceContext(
       homepageSetCard.id,
@@ -98,6 +105,7 @@ function toFeatureSetListItems(
       homepageSetCard.id,
     );
     const bestCurrentOffer = currentOfferSummary?.bestOffer;
+    const priceContext = priceContextBySetId.get(homepageSetCard.id);
     const priceVerdict = getBrickhuntAnalyticsPriceVerdictFromDelta(
       featuredSetPriceContext?.deltaMinor,
     );
@@ -124,23 +132,12 @@ function toFeatureSetListItems(
     return {
       ...homepageSetCard,
       ctaMode: cardSurface === 'deal' ? ('commerce' as const) : 'default',
-      priceContext: (() => {
-        const currentSetCardPriceContext = buildCurrentSetCardPriceContext({
-          catalogDiscoverySignal: catalogDiscoverySignalBySetId?.get(
-            homepageSetCard.id,
-          ),
-          currentOfferSummary,
-          pricePanelSnapshot: featuredSetPriceContext,
-          theme: homepageSetCard.theme,
-        });
-
-        return currentSetCardPriceContext
-          ? {
-              ...currentSetCardPriceContext,
-              primaryActionTrackingEvent,
-            }
-          : undefined;
-      })(),
+      priceContext: priceContext
+        ? {
+            ...priceContext,
+            primaryActionTrackingEvent,
+          }
+        : undefined,
       trackingEvent: {
         event: 'catalog_set_click',
         properties: {
@@ -283,6 +280,11 @@ function logHomepageCommerceRailDiagnostics({
         setId: currentOfferSummary.setId,
       };
     });
+  const homepageCardsMissingOffers = homepageFollowRailDiagnostics
+    ? homepageFollowRailDiagnostics.selectedSetIds.filter(
+        (setId) => !currentOfferSummaryBySetId.get(setId)?.bestOffer,
+      )
+    : [];
 
   console.info('[commerce-rails] homepage diagnostics', {
     candidates: {
@@ -305,6 +307,10 @@ function logHomepageCommerceRailDiagnostics({
     },
     ...(runtimeDiagnostics ? { runtimeDiagnostics } : {}),
     finalRailCounts: {
+      cards_missing_offer_count: homepageCardsMissingOffers.length,
+      eligible_offer_count:
+        (homepageFollowRailDiagnostics?.selectedCount ?? 0) -
+        homepageCardsMissingOffers.length,
       renderedDeals: homepageRenderedDealSetCards.length,
       softPriceOpportunities: homepageSoftDealSetCards.length,
       strongDealsNow: homepageStrongDealSetCards.length,
@@ -346,6 +352,7 @@ function logHomepageCommerceRailDiagnostics({
         .slice(0, 20),
       nonEmptySummaryCount: nonEmptyOfferSummaries.length,
       sampleOfferSummaries,
+      sampleMissingOfferSetIds: homepageCardsMissingOffers.slice(0, 8),
       setsInStock,
       setsWithAffiliateDeeplink,
       setsWithCurrentPrice,
@@ -385,12 +392,11 @@ export default async function HomePage() {
   ]);
   const commerceRailRotationSeed = 0;
   const currentOfferSummaryBySetId =
-    await listCachedCatalogCurrentOfferSummaries({
+    await listCachedCatalogAllCurrentOfferSummaries({
       cacheOptions: {
         revalidateSeconds: revalidate,
-        tags: [cacheTags.homepage()],
+        tags: [cacheTags.homepage(), cacheTags.prices()],
       },
-      limit: 300,
     });
   const commerceRailRuntimeDiagnostics = isHomepageCommerceRailsDebugEnabled()
     ? await getCatalogCommerceRailRuntimeDiagnostics({
@@ -404,7 +410,7 @@ export default async function HomePage() {
     await listCatalogDiscoverySignalsBySetId({
       cacheOptions: {
         revalidateSeconds: HOMEPAGE_COMMERCE_RAIL_REVALIDATE_SECONDS,
-        tags: [cacheTags.homepage()],
+        tags: [cacheTags.homepage(), cacheTags.prices()],
       },
       setIds: getUniqueCatalogSetIds([
         allCatalogSetCards,
@@ -491,9 +497,29 @@ export default async function HomePage() {
         rotationSeed: commerceRailRotationSeed,
       })
     : undefined;
+  const homepageFollowCurrentOfferSummaryBySetId =
+    homepageFollowSetCards.length > 0
+      ? await listCatalogCurrentOfferSummariesBySetIds({
+          cacheOptions: {
+            revalidateSeconds: revalidate,
+            tags: [
+              cacheTags.homepage(),
+              cacheTags.prices(),
+              ...homepageFollowSetCards.map((setCard) =>
+                cacheTags.set(setCard.id),
+              ),
+            ],
+          },
+          setIds: homepageFollowSetCards.map((setCard) => setCard.id),
+        })
+      : new Map();
+  const homepageCardCurrentOfferSummaryBySetId = new Map([
+    ...currentOfferSummaryBySetId,
+    ...homepageFollowCurrentOfferSummaryBySetId,
+  ]);
   const homepageSetCards = toFeatureSetListItems(
     homepageFollowSetCards,
-    currentOfferSummaryBySetId,
+    homepageCardCurrentOfferSummaryBySetId,
     {
       cardSurface: 'featured',
       catalogDiscoverySignalBySetId,
@@ -505,7 +531,7 @@ export default async function HomePage() {
     allCatalogSetCards,
     catalogDiscoverySignalBySetId,
     commerceCandidateSetCards,
-    currentOfferSummaryBySetId,
+    currentOfferSummaryBySetId: homepageCardCurrentOfferSummaryBySetId,
     homepageRenderedDealSetCards,
     homepageFollowRailDiagnostics,
     homepageSoftDealCandidateSetCards,

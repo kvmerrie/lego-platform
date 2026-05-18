@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import {
   logScheduledJobFailure,
+  revalidatePublicCatalogPriceChanges,
   resolveAffiliateFeedDiscoveryEnabled,
   syncTradeTrackerLidlFeed,
 } from '@lego-platform/api/data-access-server';
@@ -173,6 +174,24 @@ async function main() {
       console.log(
         `[lidl-feed-sync] unmatched_report_written path=${JSON.stringify(reportUnmatchedPath)} rows=${result.unmatchedDebug.totalUnmatchedRows} unique_sets=${result.unmatchedDebug.uniqueUnmatchedSetCount}`,
       );
+    }
+  }
+
+  if (result.changedSetIds.length > 0) {
+    try {
+      const revalidationResult = await revalidatePublicCatalogPriceChanges({
+        changedSetIds: result.changedSetIds,
+        changedSetSlugs: result.changedSetSlugs,
+        reason: 'lidl_feed_sync',
+      });
+      console.log(
+        `[lidl-feed-sync] revalidation attempted=${revalidationResult.attempted} skipped=${revalidationResult.skipped} changed_set_count=${result.changedSetIds.length} revalidated_set_path_count=${result.changedSetSlugs.length} path_count=${revalidationResult.pathCount} tag_count=${revalidationResult.tagCount}`,
+      );
+    } catch (error) {
+      console.warn('[lidl-feed-sync] revalidation warning', {
+        changed_set_count: result.changedSetIds.length,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

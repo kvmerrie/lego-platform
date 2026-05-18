@@ -166,22 +166,8 @@ export function sortCatalogOffers(
 export function getBestOffer(
   catalogOffers: readonly CatalogOffer[],
 ): CatalogOffer | null {
-  const inStockOffers = catalogOffers.filter(
-    (catalogOffer) => catalogOffer.availability === 'in_stock',
-  );
-  const candidateOffers =
-    inStockOffers.length > 0 ? inStockOffers : [...catalogOffers];
-
-  if (!candidateOffers.length) {
-    return null;
-  }
-
-  const [bestOffer] = [...candidateOffers].sort(
-    (left, right) =>
-      left.priceCents - right.priceCents ||
-      left.checkedAt.localeCompare(right.checkedAt) ||
-      left.merchantName.localeCompare(right.merchantName),
-  );
+  const sortedOffers = sortCatalogOffers(catalogOffers);
+  const [bestOffer] = sortedOffers;
 
   return bestOffer ?? null;
 }

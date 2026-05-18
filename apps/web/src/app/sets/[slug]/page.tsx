@@ -1,5 +1,4 @@
 import {
-  getBestOffer,
   sortCatalogOffers,
   type CatalogOffer,
 } from '@lego-platform/affiliate/util';
@@ -43,7 +42,6 @@ import {
   buildBrickhuntValueItems,
   buildSetDecisionSupportItems,
   buildSetDealVerdict,
-  getFeaturedSetPriceContext,
   getPricePanelSnapshot,
 } from '@lego-platform/pricing/data-access';
 import {
@@ -76,7 +74,7 @@ import {
   type CatalogReleaseDatePrecision,
   type CatalogSetStatus,
 } from '@lego-platform/catalog/util';
-import { buildCurrentSetCardPriceContext } from '../../lib/current-set-card-price-context';
+import { buildCurrentSetCardPriceContextBySetId } from '../../lib/current-set-card-price-context';
 import { JsonLdScript } from '../../lib/json-ld';
 import { buildSimilarSetsRailDescription } from '../../lib/similar-sets-rail-copy';
 import {
@@ -1288,18 +1286,16 @@ function toSimilarSetRailItems({
   >;
   setCards: readonly CatalogFeatureSetListItem[];
 }): CatalogFeatureSetListItem[] {
-  return setCards.map((setCard) => {
-    const currentOfferSummary = currentOfferSummaryBySetId.get(setCard.id);
-    const featuredSetPriceContext = getFeaturedSetPriceContext(setCard.id);
+  const priceContextBySetId = buildCurrentSetCardPriceContextBySetId({
+    currentOfferSummaryBySetId,
+    setCards,
+  });
 
+  return setCards.map((setCard) => {
     return {
       ...setCard,
       ctaMode: 'default' as const,
-      priceContext: buildCurrentSetCardPriceContext({
-        currentOfferSummary,
-        pricePanelSnapshot: featuredSetPriceContext,
-        theme: setCard.theme,
-      }),
+      priceContext: priceContextBySetId.get(setCard.id),
     };
   });
 }
@@ -1390,14 +1386,18 @@ export async function generateMetadata({
       }),
   });
   const localizedMetadataOffers = metadataOffers.filter(isEuroCatalogOffer);
-  const metadataCurrentOfferSummary: CatalogCurrentOfferSummary | undefined =
-    localizedMetadataOffers.length
-      ? {
-          bestOffer: getBestOffer(localizedMetadataOffers) ?? undefined,
-          offers: localizedMetadataOffers,
-          setId: catalogSetDetail.id,
-        }
-      : undefined;
+  const metadataCurrentOfferSummaryBySetId = localizedMetadataOffers.length
+    ? await listCatalogCurrentOfferSummariesBySetIds({
+        cacheOptions: {
+          revalidateSeconds: revalidate,
+          tags: [cacheTags.prices(), cacheTags.set(catalogSetDetail.id)],
+        },
+        setIds: [catalogSetDetail.id],
+      })
+    : new Map();
+  const metadataCurrentOfferSummary = metadataCurrentOfferSummaryBySetId.get(
+    catalogSetDetail.id,
+  );
 
   const metadata = measureSetPageSync({
     label: 'metadata:build',
@@ -1480,7 +1480,24 @@ export default async function SetDetailPage({
   });
   const hasTrackedAvailabilityFallback =
     availabilityFallbackState !== 'available';
-  const bestOffer = getBestOffer(localizedSetDetailOffers);
+  const currentOfferSummaryBySetId = localizedSetDetailOffers.length
+    ? await measureSetPageFetch({
+        label: 'current-offer-summary',
+        slug,
+        load: () =>
+          listCatalogCurrentOfferSummariesBySetIds({
+            cacheOptions: {
+              revalidateSeconds: revalidate,
+              tags: [cacheTags.prices(), cacheTags.set(catalogSetDetail.id)],
+            },
+            setIds: [catalogSetDetail.id],
+          }),
+      })
+    : new Map();
+  const currentOfferSummary = currentOfferSummaryBySetId.get(
+    catalogSetDetail.id,
+  );
+  const bestOffer = currentOfferSummary?.bestOffer;
   const pricePanelSnapshot = getPricePanelSnapshot(catalogSetDetail.id);
   const hasLiveCurrentOffer =
     Boolean(bestOffer) && !hasTrackedAvailabilityFallback;
@@ -1853,6 +1870,7 @@ async function loadSetDetailSimilarSetsRail({
               cacheOptions: {
                 revalidateSeconds: revalidate,
                 tags: [
+                  cacheTags.prices(),
                   ...similarSetCards.map((setCard) =>
                     cacheTags.set(setCard.id),
                   ),
