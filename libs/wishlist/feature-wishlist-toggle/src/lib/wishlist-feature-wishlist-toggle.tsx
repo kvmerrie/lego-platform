@@ -3,20 +3,9 @@
 import { useEffect, useState } from 'react';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
 import {
-  subscribeToBrowserAccountDataChanges,
-  subscribeToSupabaseAuthChanges,
-} from '@lego-platform/shared/data-access-auth';
-import {
   trackBrickhuntAnalyticsEvent,
   type BrickhuntAnalyticsProperties,
 } from '@lego-platform/shared/util';
-import {
-  addWantedSet,
-  addLocalFollowedPriceSet,
-  getWantedSetContext,
-  removeLocalFollowedPriceSet,
-  removeWantedSet,
-} from '@lego-platform/wishlist/data-access';
 import { WantedSetToggleCard } from '@lego-platform/wishlist/ui';
 import { WantedSetState } from '@lego-platform/wishlist/util';
 
@@ -72,9 +61,14 @@ export function WishlistFeatureWishlistToggle({
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeAuth: () => void = () => undefined;
+    let unsubscribeAccount: () => void = () => undefined;
 
     async function loadWantedSetState() {
       try {
+        const { getWantedSetContext } = await import(
+          '@lego-platform/wishlist/data-access'
+        );
         const wantedSetContext = await getWantedSetContext(setId);
 
         if (!isMounted) {
@@ -105,26 +99,37 @@ export function WishlistFeatureWishlistToggle({
     }
 
     void loadWantedSetState();
-    const unsubscribe = subscribeToSupabaseAuthChanges(() => {
-      if (!isMounted) {
-        return;
-      }
+    void import('@lego-platform/shared/data-access-auth').then(
+      ({
+        subscribeToBrowserAccountDataChanges,
+        subscribeToSupabaseAuthChanges,
+      }) => {
+        if (!isMounted) {
+          return;
+        }
 
-      setIsLoading(true);
-      setSuccessMessage(undefined);
-      void loadWantedSetState();
-    });
-    const unsubscribeAccount = subscribeToBrowserAccountDataChanges(() => {
-      if (!isMounted) {
-        return;
-      }
+        unsubscribeAuth = subscribeToSupabaseAuthChanges(() => {
+          if (!isMounted) {
+            return;
+          }
 
-      void loadWantedSetState();
-    });
+          setIsLoading(true);
+          setSuccessMessage(undefined);
+          void loadWantedSetState();
+        });
+        unsubscribeAccount = subscribeToBrowserAccountDataChanges(() => {
+          if (!isMounted) {
+            return;
+          }
+
+          void loadWantedSetState();
+        });
+      },
+    );
 
     return () => {
       isMounted = false;
-      unsubscribe();
+      unsubscribeAuth();
       unsubscribeAccount();
     };
   }, [productIntent, setId]);
@@ -164,6 +169,8 @@ export function WishlistFeatureWishlistToggle({
       }
 
       try {
+        const { addLocalFollowedPriceSet, removeLocalFollowedPriceSet } =
+          await import('@lego-platform/wishlist/data-access');
         const nextWantedSetState =
           nextAction === 'add'
             ? addLocalFollowedPriceSet(setId)
@@ -219,6 +226,9 @@ export function WishlistFeatureWishlistToggle({
     }
 
     try {
+      const { addWantedSet, removeWantedSet } = await import(
+        '@lego-platform/wishlist/data-access'
+      );
       const nextWantedSetState =
         nextAction === 'remove'
           ? await removeWantedSet(setId)

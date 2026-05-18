@@ -2,17 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { getSetDealVerdict } from '@lego-platform/pricing/data-access';
 import { buildWebPath, webPathnames } from '@lego-platform/shared/config';
-import {
-  subscribeToBrowserAccountDataChanges,
-  subscribeToSupabaseAuthChanges,
-} from '@lego-platform/shared/data-access-auth';
 import {
   buildBrickhuntAnalyticsAttributes,
   trackBrickhuntAnalyticsEvent,
 } from '@lego-platform/shared/util';
-import { getFollowedPriceSetCollection } from '@lego-platform/wishlist/data-access';
 import styles from './shell-web.module.css';
 
 let lastFollowingNavExposurePathname: string | undefined;
@@ -93,9 +87,16 @@ export function ShellWebFollowLink({
 
   useEffect(() => {
     let isMounted = true;
+    let unsubscribeAuth: () => void = () => undefined;
+    let unsubscribeAccount: () => void = () => undefined;
 
     async function loadFollowedSetCount() {
       try {
+        const [{ getSetDealVerdict }, { getFollowedPriceSetCollection }] =
+          await Promise.all([
+            import('@lego-platform/pricing/data-access'),
+            import('@lego-platform/wishlist/data-access'),
+          ]);
         const followedPriceSetCollection =
           await getFollowedPriceSetCollection();
 
@@ -123,20 +124,31 @@ export function ShellWebFollowLink({
 
     void loadFollowedSetCount();
 
-    const unsubscribeAuth = subscribeToSupabaseAuthChanges(() => {
-      if (!isMounted) {
-        return;
-      }
+    void import('@lego-platform/shared/data-access-auth').then(
+      ({
+        subscribeToBrowserAccountDataChanges,
+        subscribeToSupabaseAuthChanges,
+      }) => {
+        if (!isMounted) {
+          return;
+        }
 
-      void loadFollowedSetCount();
-    });
-    const unsubscribeAccount = subscribeToBrowserAccountDataChanges(() => {
-      if (!isMounted) {
-        return;
-      }
+        unsubscribeAuth = subscribeToSupabaseAuthChanges(() => {
+          if (!isMounted) {
+            return;
+          }
 
-      void loadFollowedSetCount();
-    });
+          void loadFollowedSetCount();
+        });
+        unsubscribeAccount = subscribeToBrowserAccountDataChanges(() => {
+          if (!isMounted) {
+            return;
+          }
+
+          void loadFollowedSetCount();
+        });
+      },
+    );
 
     return () => {
       isMounted = false;

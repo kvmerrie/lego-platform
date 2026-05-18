@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import {
@@ -27,11 +27,14 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('ShellWeb', () => {
-  it('keeps desktop search wide while layering focused search above the backdrop', () => {
-    const css = readFileSync(
-      resolve(process.cwd(), 'libs/shell/web/src/lib/shell-web.module.css'),
+  const readShellCss = () =>
+    readFileSync(
+      fileURLToPath(new URL('./shell-web.module.css', import.meta.url)),
       'utf-8',
     );
+
+  it('keeps desktop search wide while layering focused search above the backdrop', () => {
+    const css = readShellCss();
 
     expect(css).toContain('inline-size: clamp(18rem, 32vw, 25rem);');
     expect(css).toContain('max-inline-size: 25rem;');
@@ -57,10 +60,7 @@ describe('ShellWeb', () => {
   });
 
   it('keeps navbar interactive controls on the same 40px rhythm', () => {
-    const css = readFileSync(
-      resolve(process.cwd(), 'libs/shell/web/src/lib/shell-web.module.css'),
-      'utf-8',
-    );
+    const css = readShellCss();
 
     expect(css).toContain('--shell-navbar-control-height: 2.5rem;');
     expect(css).toContain('.brandLink {');
@@ -92,10 +92,7 @@ describe('ShellWeb', () => {
   });
 
   it('aligns icon action hover and focus treatment with desktop nav links', () => {
-    const css = readFileSync(
-      resolve(process.cwd(), 'libs/shell/web/src/lib/shell-web.module.css'),
-      'utf-8',
-    );
+    const css = readShellCss();
 
     expect(css).toContain('.navLink:hover,');
     expect(css).toContain(
