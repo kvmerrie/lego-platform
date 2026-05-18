@@ -76,10 +76,7 @@ function formatSetCount(count: number): string {
 }
 
 function isDealsCommerceRailsDebugEnabled(): boolean {
-  return (
-    process.env['DEBUG_COMMERCE_RAILS'] === 'true' ||
-    process.env['NODE_ENV'] === 'development'
-  );
+  return process.env['DEBUG_COMMERCE_RAILS'] === 'true';
 }
 
 function logDealsCommerceRailDiagnostics({

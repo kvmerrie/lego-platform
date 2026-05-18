@@ -70,6 +70,12 @@ function isProductionEnvironment(
     : false;
 }
 
+function isPublicWebRevalidationDebugEnabled(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return environment['DEBUG_REVALIDATION'] === 'true';
+}
+
 function buildRequestDiagnostics(
   environment: Record<string, string | undefined> = process.env,
 ): PublicWebRevalidationRequestDiagnostics {
@@ -160,30 +166,38 @@ function logPublicWebRevalidationRequest({
   const pathSummary = summarizeValues(paths);
   const tagSummary = summarizeValues(tags);
 
-  console.info('[public-web-revalidation] request', {
-    attempted,
-    broadTagCount: broadTags.length,
-    pathCount: paths.length,
-    pathSample: pathSummary.sample,
-    pathSampleOmittedCount: pathSummary.omittedCount,
-    reason,
-    skipReason,
-    skipped,
-    source,
-    tagCount: tags.length,
-    tagSample: tagSummary.sample,
-    tagSampleOmittedCount: tagSummary.omittedCount,
-  });
+  if (skipped) {
+    console.info('[public-web-revalidation] skipped', {
+      attempted,
+      pathCount: paths.length,
+      reason,
+      skipReason,
+      source,
+      tagCount: tags.length,
+    });
+  }
+
+  if (!isPublicWebRevalidationDebugEnabled()) {
+    return;
+  }
 
   console.info('[public-web-revalidation] request diagnostics', {
+    attempted,
+    broad_tag_count: broadTags.length,
     event: 'public_web_revalidation_request',
     has_origin: diagnostics.hasOrigin,
     has_secret: diagnostics.hasSecret,
     origin_env_name: diagnostics.originEnvName,
     path_count: paths.length,
+    path_sample: pathSummary.sample,
+    path_sample_omitted_count: pathSummary.omittedCount,
     reason,
+    skipped,
+    skip_reason: skipReason,
     source,
     tag_count: tags.length,
+    tag_sample: tagSummary.sample,
+    tag_sample_omitted_count: tagSummary.omittedCount,
     target_host: diagnostics.targetHost,
     target_pathname: diagnostics.targetPathname,
   });
@@ -214,15 +228,6 @@ function logPublicWebRevalidationResponse({
   status: number;
   tagCount: number;
 }): void {
-  console.info('[public-web-revalidation] response', {
-    durationMs,
-    pathCount,
-    reason,
-    source,
-    status,
-    tagCount,
-  });
-
   console.info('[public-web-revalidation] success', {
     duration_ms: durationMs,
     event: 'public_web_revalidation_succeeded',
@@ -234,6 +239,20 @@ function logPublicWebRevalidationResponse({
     target_host: diagnostics.targetHost,
     target_pathname: diagnostics.targetPathname,
   });
+
+  if (isPublicWebRevalidationDebugEnabled()) {
+    console.info('[public-web-revalidation] response diagnostics', {
+      duration_ms: durationMs,
+      event: 'public_web_revalidation_response',
+      path_count: pathCount,
+      reason,
+      source,
+      status,
+      tag_count: tagCount,
+      target_host: diagnostics.targetHost,
+      target_pathname: diagnostics.targetPathname,
+    });
+  }
 }
 
 function getErrorCauseDiagnostics(error: unknown): {

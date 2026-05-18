@@ -45,9 +45,56 @@ const THEME_DISCOVERY_RAIL_LIMIT = 6;
 const THEME_SET_PAGE_SIZE = 20;
 const THEME_RELATED_ARTICLE_LIMIT = 3;
 const THEME_NON_CRITICAL_TIMEOUT_MS = 350;
+const THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
+const THEME_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
+let themePagePerfLogCount = 0;
 
 function isThemePagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
+}
+
+function isThemePagePerfVerboseEnabled(): boolean {
+  return process.env['DEBUG_THEME_PAGE_PERF_VERBOSE'] === 'true';
+}
+
+function getThemePagePerfNumber({
+  defaultValue,
+  envName,
+}: {
+  defaultValue: number;
+  envName: string;
+}): number {
+  const value = Number(process.env[envName]);
+
+  return Number.isFinite(value) && value >= 0 ? value : defaultValue;
+}
+
+function shouldLogThemePagePerf({
+  durationMs,
+  status,
+}: {
+  durationMs: number;
+  status: 'ok' | 'error' | 'timeout';
+}): boolean {
+  if (!isThemePagePerfDebugEnabled()) {
+    return status === 'timeout';
+  }
+
+  if (isThemePagePerfVerboseEnabled()) {
+    return true;
+  }
+
+  if (status !== 'ok') {
+    return true;
+  }
+
+  return (
+    durationMs >=
+    getThemePagePerfNumber({
+      defaultValue: THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS,
+      envName: 'DEBUG_THEME_PAGE_PERF_SLOW_MS',
+    })
+  );
 }
 
 function logThemePagePerf({
@@ -63,11 +110,25 @@ function logThemePagePerf({
   slug: string;
   status: 'ok' | 'error' | 'timeout';
 }) {
-  if (!isThemePagePerfDebugEnabled()) {
+  if (!shouldLogThemePagePerf({ durationMs, status })) {
     return;
   }
 
-  console.info('[theme-page-perf]', {
+  const logLimit = getThemePagePerfNumber({
+    defaultValue: THEME_PAGE_PERF_DEFAULT_LOG_LIMIT,
+    envName: 'DEBUG_THEME_PAGE_PERF_LOG_LIMIT',
+  });
+
+  if (status !== 'error' && themePagePerfLogCount >= logLimit) {
+    return;
+  }
+
+  themePagePerfLogCount += 1;
+
+  const log =
+    status === 'timeout' || status === 'error' ? console.warn : console.info;
+
+  log('[theme-page-perf]', {
     ...details,
     durationMs,
     label,

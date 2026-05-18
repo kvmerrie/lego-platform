@@ -188,10 +188,7 @@ function getUniqueCatalogSetIds(
 }
 
 function isHomepageCommerceRailsDebugEnabled(): boolean {
-  return (
-    process.env['DEBUG_COMMERCE_RAILS'] === 'true' ||
-    process.env['NODE_ENV'] === 'development'
-  );
+  return process.env['DEBUG_COMMERCE_RAILS'] === 'true';
 }
 
 function logHomepageCommerceRailDiagnostics({
@@ -470,16 +467,18 @@ export default async function HomePage() {
   const homepageRenderedDealSetCards = homepageStrongDealSetCards.length
     ? homepageStrongDealSetCards
     : homepageSoftDealSetCards;
-  console.info('[homepage-deal-quality]', {
-    ...getCatalogHomepageDealQualityDiagnostics({
-      catalogDiscoverySignalBySetId,
-      currentOfferSummaryBySetId,
-      selectedSetCards: homepageRenderedDealSetCards,
-      softSetCards: homepageSoftDealSetCards,
-      strongSetCards: homepageStrongDealSetCards,
-      setCards: commerceCandidateSetCards,
-    }),
-  });
+  if (isHomepageCommerceRailsDebugEnabled()) {
+    console.info('[homepage-deal-quality]', {
+      ...getCatalogHomepageDealQualityDiagnostics({
+        catalogDiscoverySignalBySetId,
+        currentOfferSummaryBySetId,
+        selectedSetCards: homepageRenderedDealSetCards,
+        softSetCards: homepageSoftDealSetCards,
+        strongSetCards: homepageStrongDealSetCards,
+        setCards: commerceCandidateSetCards,
+      }),
+    });
+  }
   const homepageFollowExcludedSetIds = getUniqueCatalogSetIds([
     homepageRenderedDealSetCards,
   ]);

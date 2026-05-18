@@ -18,6 +18,7 @@ describe('public web revalidation server', () => {
   test('logs compact outbound revalidation metrics and warns for broad tags', async () => {
     process.env.WEB_REVALIDATE_SECRET = 'revalidate-secret';
     process.env.WEB_BASE_URL = 'https://staging.brickhunt.nl';
+    process.env.DEBUG_REVALIDATION = 'true';
     const infoSpy = vi
       .spyOn(console, 'info')
       .mockImplementation(() => undefined);
@@ -41,26 +42,16 @@ describe('public web revalidation server', () => {
     });
 
     expect(infoSpy).toHaveBeenCalledWith(
-      '[public-web-revalidation] request',
+      '[public-web-revalidation] request diagnostics',
       expect.objectContaining({
-        attempted: true,
-        broadTagCount: 1,
-        pathCount: 14,
-        pathSampleOmittedCount: 2,
+        broad_tag_count: 1,
+        event: 'public_web_revalidation_request',
+        path_count: 14,
+        path_sample_omitted_count: 2,
         reason: 'observability_test',
         skipped: false,
         source: 'generic',
-        tagCount: 2,
-      }),
-    );
-    expect(infoSpy).toHaveBeenCalledWith(
-      '[public-web-revalidation] response',
-      expect.objectContaining({
-        pathCount: 14,
-        reason: 'observability_test',
-        source: 'generic',
-        status: 200,
-        tagCount: 2,
+        tag_count: 2,
       }),
     );
     expect(infoSpy).toHaveBeenCalledWith(
@@ -74,6 +65,17 @@ describe('public web revalidation server', () => {
         tag_count: 2,
         target_host: 'staging.brickhunt.nl',
         target_pathname: '/api/revalidate',
+      }),
+    );
+    expect(infoSpy).toHaveBeenCalledWith(
+      '[public-web-revalidation] response diagnostics',
+      expect.objectContaining({
+        event: 'public_web_revalidation_response',
+        path_count: 14,
+        reason: 'observability_test',
+        source: 'generic',
+        status: 200,
+        tag_count: 2,
       }),
     );
     expect(warnSpy).toHaveBeenCalledWith(
@@ -201,14 +203,14 @@ describe('public web revalidation server', () => {
     });
     expect(fetchImpl).not.toHaveBeenCalled();
     expect(infoSpy).toHaveBeenCalledWith(
-      '[public-web-revalidation] request diagnostics',
+      '[public-web-revalidation] skipped',
       expect.objectContaining({
-        event: 'public_web_revalidation_request',
-        has_origin: false,
-        has_secret: true,
-        origin_env_name: 'runtime:web.baseUrl',
+        attempted: false,
+        pathCount: 1,
         reason: 'missing_origin_test',
-        target_pathname: '/api/revalidate',
+        skipReason: 'missing_WEB_BASE_URL',
+        source: 'generic',
+        tagCount: 1,
       }),
     );
   });

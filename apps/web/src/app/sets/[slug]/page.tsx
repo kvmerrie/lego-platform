@@ -96,9 +96,56 @@ const SET_DETAIL_RECENT_RELEASE_LOOKAHEAD_DAYS = 30;
 const DEFAULT_SET_DETAIL_OG_IMAGE = '/favicon.ico';
 const SET_DETAIL_OG_IMAGE_WIDTH = 1200;
 const SET_DETAIL_OG_IMAGE_HEIGHT = 1200;
+const SET_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
+const SET_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
+let setPagePerfLogCount = 0;
 
 function isSetPagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_SET_PAGE_PERF'] === 'true';
+}
+
+function isSetPagePerfVerboseEnabled(): boolean {
+  return process.env['DEBUG_SET_PAGE_PERF_VERBOSE'] === 'true';
+}
+
+function getSetPagePerfNumber({
+  defaultValue,
+  envName,
+}: {
+  defaultValue: number;
+  envName: string;
+}): number {
+  const value = Number(process.env[envName]);
+
+  return Number.isFinite(value) && value >= 0 ? value : defaultValue;
+}
+
+function shouldLogSetPagePerf({
+  durationMs,
+  status,
+}: {
+  durationMs: number;
+  status: 'ok' | 'error' | 'timeout';
+}): boolean {
+  if (!isSetPagePerfDebugEnabled()) {
+    return status === 'timeout';
+  }
+
+  if (isSetPagePerfVerboseEnabled()) {
+    return true;
+  }
+
+  if (status !== 'ok') {
+    return true;
+  }
+
+  return (
+    durationMs >=
+    getSetPagePerfNumber({
+      defaultValue: SET_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS,
+      envName: 'DEBUG_SET_PAGE_PERF_SLOW_MS',
+    })
+  );
 }
 
 function logSetPagePerf({
@@ -114,11 +161,25 @@ function logSetPagePerf({
   slug: string;
   status: 'ok' | 'error' | 'timeout';
 }) {
-  if (!isSetPagePerfDebugEnabled()) {
+  if (!shouldLogSetPagePerf({ durationMs, status })) {
     return;
   }
 
-  console.info('[set-page-perf]', {
+  const logLimit = getSetPagePerfNumber({
+    defaultValue: SET_PAGE_PERF_DEFAULT_LOG_LIMIT,
+    envName: 'DEBUG_SET_PAGE_PERF_LOG_LIMIT',
+  });
+
+  if (status !== 'error' && setPagePerfLogCount >= logLimit) {
+    return;
+  }
+
+  setPagePerfLogCount += 1;
+
+  const log =
+    status === 'timeout' || status === 'error' ? console.warn : console.info;
+
+  log('[set-page-perf]', {
     ...details,
     durationMs,
     label,

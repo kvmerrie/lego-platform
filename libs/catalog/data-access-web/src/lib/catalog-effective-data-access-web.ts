@@ -97,8 +97,56 @@ const catalogSetOverlayByCanonicalId = new Map(
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from'>;
 
+const CATALOG_THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS = 500;
+const CATALOG_THEME_PAGE_PERF_DEFAULT_LOG_LIMIT = 12;
+let catalogThemePagePerfLogCount = 0;
+
 function isCatalogThemePagePerfDebugEnabled(): boolean {
   return process.env['DEBUG_THEME_PAGE_PERF'] === 'true';
+}
+
+function isCatalogThemePagePerfVerboseEnabled(): boolean {
+  return process.env['DEBUG_THEME_PAGE_PERF_VERBOSE'] === 'true';
+}
+
+function getCatalogThemePagePerfNumber({
+  defaultValue,
+  envName,
+}: {
+  defaultValue: number;
+  envName: string;
+}): number {
+  const value = Number(process.env[envName]);
+
+  return Number.isFinite(value) && value >= 0 ? value : defaultValue;
+}
+
+function shouldLogCatalogThemePagePerf({
+  durationMs,
+  status,
+}: {
+  durationMs: number;
+  status: 'ok' | 'error';
+}): boolean {
+  if (!isCatalogThemePagePerfDebugEnabled()) {
+    return false;
+  }
+
+  if (isCatalogThemePagePerfVerboseEnabled()) {
+    return true;
+  }
+
+  if (status !== 'ok') {
+    return true;
+  }
+
+  return (
+    durationMs >=
+    getCatalogThemePagePerfNumber({
+      defaultValue: CATALOG_THEME_PAGE_PERF_DEFAULT_SLOW_THRESHOLD_MS,
+      envName: 'DEBUG_THEME_PAGE_PERF_SLOW_MS',
+    })
+  );
 }
 
 async function measureCatalogThemePageQuery<T>({
@@ -118,22 +166,37 @@ async function measureCatalogThemePageQuery<T>({
 
   try {
     const result = await load();
+    const durationMs = Date.now() - startedAt;
 
-    console.info('[theme-page-perf]', {
-      durationMs: Date.now() - startedAt,
-      label,
-      slug,
-      status: 'ok',
-    });
+    if (shouldLogCatalogThemePagePerf({ durationMs, status: 'ok' })) {
+      const logLimit = getCatalogThemePagePerfNumber({
+        defaultValue: CATALOG_THEME_PAGE_PERF_DEFAULT_LOG_LIMIT,
+        envName: 'DEBUG_THEME_PAGE_PERF_LOG_LIMIT',
+      });
+
+      if (catalogThemePagePerfLogCount < logLimit) {
+        catalogThemePagePerfLogCount += 1;
+        console.info('[theme-page-perf]', {
+          durationMs,
+          label,
+          slug,
+          status: 'ok',
+        });
+      }
+    }
 
     return result;
   } catch (error) {
-    console.info('[theme-page-perf]', {
-      durationMs: Date.now() - startedAt,
-      label,
-      slug,
-      status: 'error',
-    });
+    const durationMs = Date.now() - startedAt;
+
+    if (shouldLogCatalogThemePagePerf({ durationMs, status: 'error' })) {
+      console.warn('[theme-page-perf]', {
+        durationMs,
+        label,
+        slug,
+        status: 'error',
+      });
+    }
 
     throw error;
   }
