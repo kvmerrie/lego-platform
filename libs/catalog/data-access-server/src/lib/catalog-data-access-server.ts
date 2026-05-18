@@ -503,6 +503,17 @@ function sortLiveCatalogOffers<Offer extends CatalogLiveOffer>(
   });
 }
 
+function selectBestLiveCatalogOffer<Offer extends CatalogLiveOffer>(
+  offers: readonly Offer[],
+): Offer | undefined {
+  return sortLiveCatalogOffers(offers).find(
+    (offer) =>
+      offer.availability === 'in_stock' &&
+      offer.priceCents > 0 &&
+      offer.url.length > 0,
+  );
+}
+
 function toCatalogLiveOffer({
   latestOffer,
   merchant,
@@ -2617,7 +2628,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
 
       return [
         {
-          bestOffer: offers[0],
+          bestOffer: selectBestLiveCatalogOffer(offers),
           offers,
           setId,
         },

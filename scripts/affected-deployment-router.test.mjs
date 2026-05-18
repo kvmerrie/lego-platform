@@ -42,6 +42,19 @@ test('does not auto deploy feed apps and emits a manual cron warning', () => {
   assert.equal(result.reason, 'no_deployable_projects');
 });
 
+test('does not auto deploy Conrad feed app and emits a manual cron warning', () => {
+  const result = routeAffectedDeployments({
+    affectedProjects: ['conrad-feed-sync'],
+    changedFiles: ['apps/conrad-feed-sync/src/main.ts'],
+  });
+
+  assert.deepEqual(result.targets, []);
+  assert.deepEqual(result.manualActions, [
+    'conrad-feed-sync: feed cron code changed; redeploy the Render cron job manually',
+  ]);
+  assert.equal(result.reason, 'no_deployable_projects');
+});
+
 test('does not auto deploy commerce-sync and emits a manual cron warning', () => {
   const result = routeAffectedDeployments({
     affectedProjects: ['commerce-sync'],

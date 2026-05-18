@@ -513,6 +513,12 @@ export const tradeTrackerCoppenswarenhuisEnvKeys = {
   merchantName: 'TRADETRACKER_COPPENSWARENHUIS_MERCHANT_NAME',
 } as const;
 
+export const tradeTrackerConradEnvKeys = {
+  feedUrl: 'TRADETRACKER_CONRAD_FEED_URL',
+  merchantSlug: 'TRADETRACKER_CONRAD_MERCHANT_SLUG',
+  merchantName: 'TRADETRACKER_CONRAD_MERCHANT_NAME',
+} as const;
+
 export const awinCoolblueEnvKeys = {
   feedUrl: 'AWIN_COOLBLUE_FEED_URL',
   merchantSlug: 'AWIN_COOLBLUE_MERCHANT_SLUG',
@@ -593,6 +599,12 @@ export interface TradeTrackerLidlFeedConfig {
 }
 
 export interface TradeTrackerCoppenswarenhuisFeedConfig {
+  feedUrl: string;
+  merchantName: string;
+  merchantSlug: string;
+}
+
+export interface TradeTrackerConradFeedConfig {
   feedUrl: string;
   merchantName: string;
   merchantSlug: string;
@@ -1482,6 +1494,21 @@ export function getTradeTrackerCoppenswarenhuisFeedConfig(
   };
 }
 
+export function getTradeTrackerConradFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): TradeTrackerConradFeedConfig {
+  return {
+    feedUrl: requireEnvValue({
+      environment,
+      key: tradeTrackerConradEnvKeys.feedUrl,
+    }),
+    merchantSlug:
+      environment[tradeTrackerConradEnvKeys.merchantSlug]?.trim() || 'conrad',
+    merchantName:
+      environment[tradeTrackerConradEnvKeys.merchantName]?.trim() || 'Conrad',
+  };
+}
+
 export function getAwinCoolblueFeedConfig(
   environment: Record<string, string | undefined> = process.env,
 ): AwinCoolblueFeedConfig {
@@ -1653,6 +1680,20 @@ export function getMissingTradeTrackerCoppenswarenhuisEnvKeys(
   return environment[tradeTrackerCoppenswarenhuisEnvKeys.feedUrl]
     ? []
     : [tradeTrackerCoppenswarenhuisEnvKeys.feedUrl];
+}
+
+export function hasTradeTrackerConradFeedConfig(
+  environment: Record<string, string | undefined> = process.env,
+): boolean {
+  return Boolean(environment[tradeTrackerConradEnvKeys.feedUrl]);
+}
+
+export function getMissingTradeTrackerConradEnvKeys(
+  environment: Record<string, string | undefined> = process.env,
+): string[] {
+  return environment[tradeTrackerConradEnvKeys.feedUrl]
+    ? []
+    : [tradeTrackerConradEnvKeys.feedUrl];
 }
 
 export function getRuntimeBaseUrl(runtimeName: RuntimeName): string {

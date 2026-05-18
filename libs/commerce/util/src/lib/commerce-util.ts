@@ -132,6 +132,13 @@ const commerceMerchantSupportProfiles = {
     defaultRefresh: false,
     operatorLabel: 'Production feed',
   },
+  conrad: {
+    tier: 'primary',
+    reliabilityTier: 'production_feed',
+    defaultSeedGeneration: false,
+    defaultRefresh: false,
+    operatorLabel: 'Production feed',
+  },
   coppenswarenhuis: {
     tier: 'secondary',
     reliabilityTier: 'strategic_manual',

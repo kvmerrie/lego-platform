@@ -7302,6 +7302,117 @@ describe('catalog effective data access web', () => {
     });
   });
 
+  test('selects the same lowest eligible in-stock offer for cards and detail comparison', () => {
+    const liveOffers = [
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-18T09:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Coppenswarenhuis',
+        merchantSlug: 'coppenswarenhuis',
+        priceCents: 22499,
+        setId: '76419',
+        url: 'https://coppens.example/hogwarts-main-tower',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-18T09:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'MisterBricks',
+        merchantSlug: 'misterbricks',
+        priceCents: 20900,
+        setId: '76419',
+        url: 'https://misterbricks.example/hogwarts-main-tower',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-18T09:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+        priceCents: 19995,
+        setId: '76419',
+        url: 'https://goodbricks.example/hogwarts-main-tower',
+      },
+    ];
+
+    const detailOffers = resolveCatalogSetDetailOffers({
+      generatedOffers: [],
+      liveOffers,
+    });
+    const summary = summarizeCatalogCurrentOffers({
+      generatedOffers: [],
+      liveOffers,
+      setId: '76419',
+    });
+
+    expect(detailOffers[0]).toMatchObject({
+      merchantSlug: 'goodbricks',
+      priceCents: 19995,
+    });
+    expect(summary.bestOffer).toMatchObject({
+      merchantSlug: 'goodbricks',
+      priceCents: 19995,
+    });
+  });
+
+  test('does not let stale or unavailable current offers win card summaries', () => {
+    const liveOffers = [
+      {
+        availability: 'out_of_stock' as const,
+        checkedAt: '2026-05-18T09:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Coppenswarenhuis',
+        merchantSlug: 'coppenswarenhuis',
+        priceCents: 17995,
+        setId: '76419',
+        url: 'https://coppens.example/hogwarts-main-tower',
+      },
+      {
+        availability: 'in_stock' as const,
+        checkedAt: '2026-05-18T09:00:00.000Z',
+        commercialUnitType: 'full_set' as const,
+        condition: 'new' as const,
+        currency: 'EUR' as const,
+        market: 'NL' as const,
+        merchant: 'other' as const,
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+        priceCents: 19995,
+        setId: '76419',
+        url: 'https://goodbricks.example/hogwarts-main-tower',
+      },
+    ];
+
+    const summary = summarizeCatalogCurrentOffers({
+      generatedOffers: [],
+      liveOffers,
+      setId: '76419',
+    });
+
+    expect(summary.bestOffer).toMatchObject({
+      availability: 'in_stock',
+      merchantSlug: 'goodbricks',
+      priceCents: 19995,
+    });
+  });
+
   test('prefers trusted production-feed offers when strategic manual prices are near-equal', () => {
     const liveOffers = [
       {
@@ -7590,6 +7701,88 @@ describe('catalog effective data access web', () => {
     expect(summaries.get('43247')?.offers).toHaveLength(1);
   });
 
+  test('recomputes API summary best offer from the normalized offer list', async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            bestOffer: {
+              availability: 'in_stock',
+              checkedAt: '2026-05-18T09:00:00.000Z',
+              condition: 'new',
+              currency: 'EUR',
+              market: 'NL',
+              merchant: 'other',
+              merchantName: 'Coppenswarenhuis',
+              merchantSlug: 'coppenswarenhuis',
+              priceCents: 22499,
+              setId: '76419',
+              url: 'https://coppens.example/hogwarts-main-tower',
+            },
+            offers: [
+              {
+                availability: 'in_stock',
+                checkedAt: '2026-05-18T09:00:00.000Z',
+                condition: 'new',
+                currency: 'EUR',
+                market: 'NL',
+                merchant: 'other',
+                merchantName: 'Goodbricks',
+                merchantSlug: 'goodbricks',
+                priceCents: 19995,
+                setId: '76419',
+                url: 'https://goodbricks.example/hogwarts-main-tower',
+              },
+              {
+                availability: 'in_stock',
+                checkedAt: '2026-05-18T09:00:00.000Z',
+                condition: 'new',
+                currency: 'EUR',
+                market: 'NL',
+                merchant: 'other',
+                merchantName: 'MisterBricks',
+                merchantSlug: 'misterbricks',
+                priceCents: 20900,
+                setId: '76419',
+                url: 'https://misterbricks.example/hogwarts-main-tower',
+              },
+              {
+                availability: 'in_stock',
+                checkedAt: '2026-05-18T09:00:00.000Z',
+                condition: 'new',
+                currency: 'EUR',
+                market: 'NL',
+                merchant: 'other',
+                merchantName: 'Coppenswarenhuis',
+                merchantSlug: 'coppenswarenhuis',
+                priceCents: 22499,
+                setId: '76419',
+                url: 'https://coppens.example/hogwarts-main-tower',
+              },
+            ],
+            setId: '76419',
+          },
+        ]),
+        {
+          headers: {
+            'content-type': 'application/json',
+          },
+          status: 200,
+        },
+      ),
+    );
+
+    const summaries = await listCatalogCurrentOfferSummariesBySetIds({
+      fetchImpl,
+      setIds: ['76419'],
+    });
+
+    expect(summaries.get('76419')?.bestOffer).toMatchObject({
+      merchantSlug: 'goodbricks',
+      priceCents: 19995,
+    });
+  });
+
   test('matches current offer summaries with canonical set ids', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(
@@ -7761,6 +7954,113 @@ describe('catalog effective data access web', () => {
     expect(commerceCandidateSetCards.map((setCard) => setCard.id)).toEqual([
       '43247',
     ]);
+  });
+
+  test('global current-offer summaries reload the complete offer universe for candidate sets', async () => {
+    const supabaseClient = createCatalogSupabaseClientMock({
+      catalogRows: [],
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-18T09:02:00.000Z',
+          offer_seed_id: 'seed-coppens',
+          price_minor: 22499,
+          updated_at: '2026-05-18T09:02:00.000Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-18T09:01:00.000Z',
+          offer_seed_id: 'seed-misterbricks',
+          price_minor: 20900,
+          updated_at: '2026-05-18T09:01:00.000Z',
+        },
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-18T09:00:00.000Z',
+          offer_seed_id: 'seed-goodbricks',
+          price_minor: 19995,
+          updated_at: '2026-05-18T09:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-coppens',
+          is_active: true,
+          name: 'Coppenswarenhuis',
+          slug: 'coppenswarenhuis',
+        },
+        {
+          id: 'merchant-goodbricks',
+          is_active: true,
+          name: 'Goodbricks',
+          slug: 'goodbricks',
+        },
+        {
+          id: 'merchant-misterbricks',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-coppens',
+          is_active: true,
+          merchant_id: 'merchant-coppens',
+          product_url: 'https://coppens.example/hogwarts-main-tower',
+          set_id: '76419',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-goodbricks',
+          is_active: true,
+          merchant_id: 'merchant-goodbricks',
+          product_url: 'https://goodbricks.example/hogwarts-main-tower',
+          set_id: '76419',
+          validation_status: 'valid',
+        },
+        {
+          id: 'seed-misterbricks',
+          is_active: true,
+          merchant_id: 'merchant-misterbricks',
+          product_url: 'https://misterbricks.example/hogwarts-main-tower',
+          set_id: '76419',
+          validation_status: 'valid',
+        },
+      ],
+    });
+
+    const summaries = await listCatalogCurrentOfferSummaries({
+      limit: 1,
+      supabaseClient,
+    });
+
+    expect(summaries.get('76419')).toMatchObject({
+      bestOffer: {
+        merchantSlug: 'goodbricks',
+        priceCents: 19995,
+      },
+      offers: [
+        {
+          merchantSlug: 'goodbricks',
+          priceCents: 19995,
+        },
+        {
+          merchantSlug: 'misterbricks',
+          priceCents: 20900,
+        },
+        {
+          merchantSlug: 'coppenswarenhuis',
+          priceCents: 22499,
+        },
+      ],
+    });
   });
 
   test('returns clear commerce rail diagnostics when runtime Supabase config is missing', async () => {

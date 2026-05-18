@@ -28,6 +28,7 @@ import {
   getMissingStagingSupabaseEnvKeys,
   getMissingTradeTrackerEnvKeys,
   getMissingTradeTrackerCoppenswarenhuisEnvKeys,
+  getMissingTradeTrackerConradEnvKeys,
   getMissingTradeTrackerLidlEnvKeys,
   getMissingTradeDoublerMediaMarktEnvKeys,
   getPublicWebRevalidationConfig,
@@ -39,6 +40,7 @@ import {
   getProductionSupabaseConfig,
   getTradeTrackerAffiliateConfig,
   getTradeTrackerCoppenswarenhuisFeedConfig,
+  getTradeTrackerConradFeedConfig,
   getTradeTrackerLidlFeedConfig,
   getTradeDoublerMediaMarktFeedConfig,
   getServerWebBaseUrl,
@@ -54,6 +56,7 @@ import {
   hasStagingSupabaseConfig,
   hasTradeTrackerAffiliateConfig,
   hasTradeTrackerCoppenswarenhuisFeedConfig,
+  hasTradeTrackerConradFeedConfig,
   hasTradeTrackerLidlFeedConfig,
   hasTradeDoublerMediaMarktFeedConfig,
   isArticlePreviewEnabled,
@@ -63,6 +66,7 @@ import {
   misterBricksEnvKeys,
   tradeDoublerMediaMarktEnvKeys,
   tradeTrackerCoppenswarenhuisEnvKeys,
+  tradeTrackerConradEnvKeys,
   webNavigation,
 } from './config';
 
@@ -822,6 +826,49 @@ describe('shared config TradeTracker Coppenswarenhuis feed helpers', () => {
     expect(hasTradeTrackerCoppenswarenhuisFeedConfig()).toBe(false);
     expect(getMissingTradeTrackerCoppenswarenhuisEnvKeys()).toEqual([
       tradeTrackerCoppenswarenhuisEnvKeys.feedUrl,
+    ]);
+  });
+});
+
+describe('shared config TradeTracker Conrad feed helpers', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  test('reads the TradeTracker Conrad feed config with sensible merchant defaults', () => {
+    process.env.TRADETRACKER_CONRAD_FEED_URL =
+      'https://pf.tradetracker.net/example/conrad.xml';
+
+    expect(hasTradeTrackerConradFeedConfig()).toBe(true);
+    expect(getMissingTradeTrackerConradEnvKeys()).toEqual([]);
+    expect(getTradeTrackerConradFeedConfig()).toEqual({
+      feedUrl: 'https://pf.tradetracker.net/example/conrad.xml',
+      merchantSlug: 'conrad',
+      merchantName: 'Conrad',
+    });
+  });
+
+  test('allows explicit Conrad merchant overrides for the TradeTracker feed config', () => {
+    process.env.TRADETRACKER_CONRAD_FEED_URL =
+      'https://pf.tradetracker.net/example/conrad.xml';
+    process.env.TRADETRACKER_CONRAD_MERCHANT_SLUG = 'conrad-nl';
+    process.env.TRADETRACKER_CONRAD_MERCHANT_NAME = 'Conrad Nederland';
+
+    expect(getTradeTrackerConradFeedConfig()).toEqual({
+      feedUrl: 'https://pf.tradetracker.net/example/conrad.xml',
+      merchantSlug: 'conrad-nl',
+      merchantName: 'Conrad Nederland',
+    });
+  });
+
+  test('reports the missing TradeTracker Conrad feed URL', () => {
+    delete process.env.TRADETRACKER_CONRAD_FEED_URL;
+
+    expect(hasTradeTrackerConradFeedConfig()).toBe(false);
+    expect(getMissingTradeTrackerConradEnvKeys()).toEqual([
+      tradeTrackerConradEnvKeys.feedUrl,
     ]);
   });
 });

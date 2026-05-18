@@ -12,6 +12,7 @@ export * from './lib/admin-operation-log-server';
 export * from './lib/public-web-revalidation-server';
 export * from './lib/scheduled-job-reliability';
 export * from './lib/tradetracker-alternate-sync-server';
+export * from './lib/tradetracker-conrad-feed-sync-server';
 export * from './lib/tradetracker-coppenswarenhuis-feed-sync-server';
 export * from './lib/tradetracker-lidl-feed-sync-server';
 export * from './lib/tradedoubler-mediamarkt-sync-server';

@@ -706,15 +706,21 @@ function normalizeCatalogCurrentOfferSummaryRecord(
       return normalizedOffer ? [normalizedOffer] : [];
     }),
   ) as CatalogRuntimeOffer[];
-  const bestOffer =
+  const normalizedBestOffer =
     normalizeCatalogResolvedOfferRecord(
       value['bestOffer'] ?? value['best_offer'] ?? value['currentOffer'],
       setId,
-    ) ?? offers[0];
+    ) ?? undefined;
+  const resolvedOffers = offers.length
+    ? offers
+    : normalizedBestOffer
+      ? [normalizedBestOffer]
+      : [];
+  const bestOffer = selectBestResolvedCatalogOffer(resolvedOffers);
 
   return {
     ...(bestOffer ? { bestOffer } : {}),
-    offers: offers.length ? offers : bestOffer ? [bestOffer] : [],
+    offers: resolvedOffers,
     setId,
   };
 }
@@ -1247,6 +1253,18 @@ function sortResolvedCatalogOffers<Offer extends CatalogResolvedOffer>(
   );
 }
 
+function selectBestResolvedCatalogOffer<Offer extends CatalogResolvedOffer>(
+  catalogOffers: readonly Offer[],
+): Offer | undefined {
+  return sortResolvedCatalogOffers(catalogOffers).find(
+    (catalogOffer) =>
+      catalogOffer.availability === 'in_stock' &&
+      catalogOffer.priceCents > 0 &&
+      catalogOffer.url.length > 0 &&
+      isResolvedEuroCatalogOffer(catalogOffer),
+  );
+}
+
 function isResolvedEuroCatalogOffer(
   catalogOffer: CatalogResolvedOffer,
 ): boolean {
@@ -1397,10 +1415,33 @@ export function summarizeCatalogCurrentOffers({
   });
 
   return {
-    bestOffer: offers[0],
+    bestOffer: selectBestResolvedCatalogOffer(offers),
     offers,
     setId,
   };
+}
+
+function toCatalogCurrentOfferSummaryMap(
+  liveOffersBySetId: ReadonlyMap<string, readonly CatalogRuntimeOffer[]>,
+): Map<string, CatalogCurrentOfferSummary> {
+  return new Map(
+    [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
+      if (!offers.length) {
+        return [];
+      }
+
+      return [
+        [
+          setId,
+          summarizeCatalogCurrentOffers({
+            generatedOffers: [],
+            liveOffers: offers,
+            setId,
+          }),
+        ] as const,
+      ];
+    }),
+  );
 }
 
 export async function listCanonicalCatalogSets({
@@ -4935,56 +4976,22 @@ async function listCatalogRuntimeOffersByCurrentOffersFromSupabase({
     return new Map();
   }
 
-  const merchantIds = [
-    ...new Set(offerSeeds.map((offerSeed) => offerSeed.merchant_id)),
-  ];
-  const { data: merchantData, error: merchantError } = await supabaseClient
-    .from(COMMERCE_MERCHANTS_TABLE)
-    .select('id, slug, name, is_active')
-    .in('id', merchantIds)
-    .eq('is_active', true);
-
-  if (merchantError) {
-    throw new Error('Unable to load live catalog offers.');
-  }
-
-  const merchantById = new Map(
-    ((merchantData as CatalogCommerceMerchantRow[] | null) ?? []).map(
-      (merchantRow) => [merchantRow.id, merchantRow],
+  const candidateSetIds = [
+    ...new Set(
+      offerSeeds
+        .map((offerSeed) => getCanonicalCatalogSetId(offerSeed.set_id))
+        .filter((setId) => setId.length > 0),
     ),
-  );
-  const liveOffersBySetId = new Map<string, CatalogRuntimeOffer[]>();
+  ];
 
-  for (const offerSeed of offerSeeds) {
-    const merchant = merchantById.get(offerSeed.merchant_id);
-    const latestOffer = latestOfferBySeedId.get(offerSeed.id);
-
-    if (!merchant || !latestOffer) {
-      continue;
-    }
-
-    const catalogRuntimeOffer = toCatalogRuntimeOffer({
-      latestOffer,
-      merchant,
-      offerSeed,
-    });
-
-    if (!catalogRuntimeOffer) {
-      continue;
-    }
-
-    const canonicalSetId = getCanonicalCatalogSetId(offerSeed.set_id);
-    const existingOffers = liveOffersBySetId.get(canonicalSetId) ?? [];
-    existingOffers.push(catalogRuntimeOffer);
-    liveOffersBySetId.set(canonicalSetId, existingOffers);
+  if (!candidateSetIds.length) {
+    return new Map();
   }
 
-  return new Map(
-    [...liveOffersBySetId.entries()].map(([setId, offers]) => [
-      setId,
-      sortResolvedCatalogOffers(offers) as CatalogRuntimeOffer[],
-    ]),
-  );
+  return listCatalogRuntimeOffersBySetIdsFromSupabase({
+    setIds: candidateSetIds,
+    supabaseClient,
+  });
 }
 
 export async function getCatalogCommerceRailRuntimeDiagnostics({
@@ -5559,35 +5566,27 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
         }),
       );
 
-      if (summaryBySetId.size > 0 || !hasServerSupabaseConfig()) {
+      if (summaryBySetId.size === uniqueSetIds.length) {
+        return summaryBySetId;
+      }
+
+      if (!hasServerSupabaseConfig()) {
         return summaryBySetId;
       }
 
       try {
+        const missingSetIds = uniqueSetIds.filter(
+          (setId) => !summaryBySetId.has(setId),
+        );
         const liveOffersBySetId =
           await listCatalogRuntimeOffersBySetIdsFromSupabase({
-            setIds: uniqueSetIds,
+            setIds: missingSetIds,
             supabaseClient: getWebCatalogSupabaseAdminClient(),
           });
+        const liveSummaryBySetId =
+          toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
 
-        return new Map(
-          [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
-            if (!offers.length) {
-              return [];
-            }
-
-            return [
-              [
-                setId,
-                summarizeCatalogCurrentOffers({
-                  generatedOffers: [],
-                  liveOffers: offers,
-                  setId,
-                }),
-              ] as const,
-            ];
-          }),
-        );
+        return new Map([...summaryBySetId, ...liveSummaryBySetId]);
       } catch {
         return summaryBySetId;
       }
@@ -5599,24 +5598,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
         supabaseClient,
       });
 
-    return new Map(
-      [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
-        if (!offers.length) {
-          return [];
-        }
-
-        return [
-          [
-            setId,
-            summarizeCatalogCurrentOffers({
-              generatedOffers: [],
-              liveOffers: offers,
-              setId,
-            }),
-          ] as const,
-        ];
-      }),
-    );
+    return toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
   } catch (error) {
     if (!supabaseClient && hasServerSupabaseConfig()) {
       try {
@@ -5626,24 +5608,7 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
             supabaseClient: getWebCatalogSupabaseAdminClient(),
           });
 
-        return new Map(
-          [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
-            if (!offers.length) {
-              return [];
-            }
-
-            return [
-              [
-                setId,
-                summarizeCatalogCurrentOffers({
-                  generatedOffers: [],
-                  liveOffers: offers,
-                  setId,
-                }),
-              ] as const,
-            ];
-          }),
-        );
+        return toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
       } catch {
         return new Map();
       }
@@ -5678,24 +5643,7 @@ export async function listCatalogCurrentOfferSummaries({
         supabaseClient: activeSupabaseClient,
       });
 
-    return new Map(
-      [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
-        if (!offers.length) {
-          return [];
-        }
-
-        return [
-          [
-            setId,
-            summarizeCatalogCurrentOffers({
-              generatedOffers: [],
-              liveOffers: offers,
-              setId,
-            }),
-          ] as const,
-        ];
-      }),
-    );
+    return toCatalogCurrentOfferSummaryMap(liveOffersBySetId);
   } catch (error) {
     if (!supabaseClient) {
       return new Map();

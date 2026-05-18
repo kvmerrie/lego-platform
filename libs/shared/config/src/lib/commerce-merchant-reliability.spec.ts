@@ -13,6 +13,7 @@ describe('commerce merchant reliability config', () => {
     expect(getCommerceMerchantReliabilityTier(' mediamarkt ')).toBe(
       'production_feed',
     );
+    expect(isCommerceMerchantProductionFeed('conrad')).toBe(true);
     expect(isCommerceMerchantProductionFeed('alternate')).toBe(true);
   });
 

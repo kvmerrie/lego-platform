@@ -7,6 +7,7 @@ export const deployTargets = ['web', 'api'];
 const feedJobProjects = new Set([
   'alternate-feed-sync',
   'awin-feed-sync',
+  'conrad-feed-sync',
   'coppenswarenhuis-feed-sync',
   'goodbricks-feed-sync',
   'lidl-feed-sync',

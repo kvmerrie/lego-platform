@@ -273,6 +273,7 @@ Available feed commands:
 - `pnpm sync:alternate-feed`
 - `pnpm sync:awin-feed`
 - `pnpm sync:coppenswarenhuis-feed`
+- `pnpm sync:conrad-feed`
 - `pnpm sync:goodbricks-feed`
 - `pnpm sync:mediamarkt-feed`
 - `pnpm sync:misterbricks-feed`
@@ -319,6 +320,32 @@ Coppenswarenhuis job notes:
 - use `--dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
 - use `--max-products <n>` only for local/debug runs, never for the production job
 - the sync never uses EAN, SKU, product IDs, feed IDs, affiliate IDs or deeplink IDs as LEGO set numbers
+
+Conrad uses the TradeTracker XML v2 feed and writes through the same strict
+affiliate importer. The sync streams XML product entries, keeps only LEGO
+construction-set candidates with a detected set number, and filters accessories,
+display cases, lighting, books, keychains, loose parts and alternative brick
+brands before offer import.
+
+Recommended Render scheduled job command:
+
+```bash
+pnpm sync:conrad-feed
+```
+
+Recommended cadence:
+
+- every 6 hours, offset from the other feed jobs, for example `35 */6 * * *`
+
+Conrad job notes:
+
+- keep `TRADETRACKER_CONRAD_FEED_URL`, `TRADETRACKER_CONRAD_MERCHANT_SLUG`, `TRADETRACKER_CONRAD_MERCHANT_NAME`, `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` scoped to the scheduled job
+- use `pnpm sync:conrad-feed -- --dry-run --debug-samples 10 --debug-unmatched-samples 20` for local parser review
+- use `pnpm sync:conrad-feed -- --dry-run --max-products 200 --debug-samples 5` for quick feed-shape checks
+- use `--report-unmatched-path tmp/conrad-unmatched.json` when reviewing LEGO candidates that do not match the catalog
+- use `--max-products <n>` only for local/debug runs, never for the production job
+- the sync never uses EAN, TradeTracker product IDs, affiliate IDs or deeplink IDs as LEGO set numbers
+- after a production import changes offers, the normal commerce aggregation and public-web revalidation flow can refresh generated deal artifacts and public pages
 
 MisterBricks uses a Channable XML feed and writes through the same strict offer
 import path as the affiliate feeds, but the merchant is stored as a direct

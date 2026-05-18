@@ -178,6 +178,9 @@ describe('commerce util', () => {
     expect(getCommerceMerchantReliabilityTier('misterbricks')).toBe(
       'production_feed',
     );
+    expect(getCommerceMerchantReliabilityTier('conrad')).toBe(
+      'production_feed',
+    );
     expect(getCommerceMerchantReliabilityTier('coppenswarenhuis')).toBe(
       'strategic_manual',
     );
