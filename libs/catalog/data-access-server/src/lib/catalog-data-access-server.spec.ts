@@ -49,6 +49,42 @@ function createCatalogOverlayRow(
   };
 }
 
+function createCurrentOfferSnapshotRow(
+  overrides: Partial<Record<string, unknown>> = {},
+) {
+  return {
+    best_availability: 'in_stock',
+    best_checked_at: '2026-05-19T09:00:00.000Z',
+    best_commercial_unit_type: 'full_set',
+    best_merchant_name: 'Goodbricks',
+    best_merchant_slug: 'goodbricks',
+    best_price_minor: 19995,
+    best_product_url: 'https://goodbricks.example/lego-43300',
+    computed_at: '2026-05-19T10:00:00.000Z',
+    condition: 'new',
+    currency_code: 'EUR',
+    offer_count: 1,
+    offers: [
+      {
+        availability: 'in_stock',
+        checkedAt: '2026-05-19T09:00:00.000Z',
+        commercialUnitType: 'full_set',
+        condition: 'new',
+        currency: 'EUR',
+        market: 'NL',
+        merchantName: 'Goodbricks',
+        merchantSlug: 'goodbricks',
+        priceMinor: 19995,
+        setId: '43300',
+        url: 'https://goodbricks.example/lego-43300',
+      },
+    ],
+    region_code: 'NL',
+    set_id: '43300',
+    ...overrides,
+  };
+}
+
 function createSupabaseTableBuilder<Row extends Record<string, unknown>>(
   rows: readonly Row[],
 ) {
@@ -213,6 +249,7 @@ function createCatalogOverlaySupabaseClient({
   offerSeedRows = [],
   priceHistoryRows = [],
   primaryThemeRows = [],
+  snapshotRows = [],
   sourceThemeRows = [],
   themeMappingRows = [],
 }: {
@@ -232,6 +269,7 @@ function createCatalogOverlaySupabaseClient({
   offerSeedRows?: Record<string, unknown>[];
   priceHistoryRows?: Record<string, unknown>[];
   primaryThemeRows?: Record<string, unknown>[];
+  snapshotRows?: Record<string, unknown>[];
   sourceThemeRows?: Record<string, unknown>[];
   themeMappingRows?: Record<string, unknown>[];
 } = {}) {
@@ -324,6 +362,10 @@ function createCatalogOverlaySupabaseClient({
 
     if (table === 'commerce_offer_seeds') {
       return createSupabaseTableBuilder(offerSeedRows);
+    }
+
+    if (table === 'commerce_current_offer_snapshots') {
+      return createSupabaseTableBuilder(snapshotRows);
     }
 
     if (table === 'commerce_merchants') {
@@ -1183,6 +1225,248 @@ describe('catalog data access server', () => {
           priceCents: 22499,
         },
       ],
+    });
+  });
+
+  test('uses current-offer snapshots before live reconstruction', async () => {
+    const { from, supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-19T09:00:00.000Z',
+          offer_seed_id: 'seed-live',
+          price_minor: 24995,
+          updated_at: '2026-05-19T09:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-live',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-live',
+          is_active: true,
+          merchant_id: 'merchant-live',
+          product_url: 'https://misterbricks.example/lego-43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+      snapshotRows: [createCurrentOfferSnapshotRow()],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['43300'],
+      supabaseClient,
+    });
+
+    expect(result[0]).toMatchObject({
+      bestOffer: {
+        merchantSlug: 'goodbricks',
+        priceCents: 19995,
+      },
+      setId: '43300',
+    });
+    expect(from).toHaveBeenCalledWith('commerce_current_offer_snapshots');
+    expect(from).not.toHaveBeenCalledWith('commerce_offer_seeds');
+  });
+
+  test('falls back to live reconstruction when a snapshot is missing', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-19T09:00:00.000Z',
+          offer_seed_id: 'seed-live',
+          price_minor: 24995,
+          updated_at: '2026-05-19T09:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-live',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-live',
+          is_active: true,
+          merchant_id: 'merchant-live',
+          product_url: 'https://misterbricks.example/lego-43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+      snapshotRows: [],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['43300'],
+      supabaseClient,
+    });
+
+    expect(result[0]?.bestOffer).toMatchObject({
+      merchantSlug: 'misterbricks',
+      priceCents: 24995,
+    });
+  });
+
+  test('falls back to live reconstruction for stale snapshots', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-19T09:00:00.000Z',
+          offer_seed_id: 'seed-live',
+          price_minor: 24995,
+          updated_at: '2026-05-19T09:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-live',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-live',
+          is_active: true,
+          merchant_id: 'merchant-live',
+          product_url: 'https://misterbricks.example/lego-43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+      snapshotRows: [
+        createCurrentOfferSnapshotRow({
+          computed_at: '2020-01-01T00:00:00.000Z',
+        }),
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['43300'],
+      supabaseClient,
+    });
+
+    expect(result[0]?.bestOffer).toMatchObject({
+      merchantSlug: 'misterbricks',
+      priceCents: 24995,
+    });
+  });
+
+  test('falls back to live reconstruction when a snapshot has no best offer', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-19T09:00:00.000Z',
+          offer_seed_id: 'seed-live',
+          price_minor: 24995,
+          updated_at: '2026-05-19T09:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-live',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-live',
+          is_active: true,
+          merchant_id: 'merchant-live',
+          product_url: 'https://misterbricks.example/lego-43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+      snapshotRows: [
+        createCurrentOfferSnapshotRow({
+          best_price_minor: null,
+        }),
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['43300'],
+      supabaseClient,
+    });
+
+    expect(result[0]?.bestOffer).toMatchObject({
+      merchantSlug: 'misterbricks',
+      priceCents: 24995,
+    });
+  });
+
+  test('falls back to live reconstruction when snapshot offers JSON is invalid', async () => {
+    const { supabaseClient } = createCatalogOverlaySupabaseClient({
+      latestOfferRows: [
+        {
+          availability: 'in_stock',
+          currency_code: 'EUR',
+          fetch_status: 'success',
+          observed_at: '2026-05-19T09:00:00.000Z',
+          offer_seed_id: 'seed-live',
+          price_minor: 24995,
+          updated_at: '2026-05-19T09:00:00.000Z',
+        },
+      ],
+      merchantRows: [
+        {
+          id: 'merchant-live',
+          is_active: true,
+          name: 'MisterBricks',
+          slug: 'misterbricks',
+        },
+      ],
+      offerSeedRows: [
+        {
+          id: 'seed-live',
+          is_active: true,
+          merchant_id: 'merchant-live',
+          product_url: 'https://misterbricks.example/lego-43300',
+          set_id: '43300',
+          validation_status: 'valid',
+        },
+      ],
+      snapshotRows: [
+        createCurrentOfferSnapshotRow({
+          offers: 'not-json-array',
+        }),
+      ],
+    });
+
+    const result = await listCatalogCurrentOfferSummariesBySetIds({
+      setIds: ['43300'],
+      supabaseClient,
+    });
+
+    expect(result[0]?.bestOffer).toMatchObject({
+      merchantSlug: 'misterbricks',
+      priceCents: 24995,
     });
   });
 

@@ -36,6 +36,8 @@ const CATALOG_SOURCE_THEMES_TABLE = 'catalog_source_themes';
 const CATALOG_THEMES_TABLE = 'catalog_themes';
 const CATALOG_THEME_MAPPINGS_TABLE = 'catalog_theme_mappings';
 const COMMERCE_MERCHANTS_TABLE = 'commerce_merchants';
+const COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE =
+  'commerce_current_offer_snapshots';
 const COMMERCE_OFFER_LATEST_TABLE = 'commerce_offer_latest';
 const COMMERCE_OFFER_SEEDS_TABLE = 'commerce_offer_seeds';
 const PRICING_DAILY_SET_HISTORY_TABLE = 'pricing_daily_set_history';
@@ -43,6 +45,7 @@ const DUTCH_REGION_CODE = 'NL';
 const EURO_CURRENCY_CODE = 'EUR';
 const NEW_OFFER_CONDITION = 'new';
 const CATALOG_DISCOVERY_PRICE_HISTORY_ROWS_PER_SET = 8;
+const CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 
 type CatalogSupabaseClient = Pick<SupabaseClient, 'from' | 'rpc'>;
 
@@ -135,6 +138,37 @@ interface CatalogCommerceOfferSeedRow {
   product_url: string;
   set_id: string;
   validation_status: string;
+}
+
+interface CatalogCommerceCurrentOfferSnapshotOfferRow {
+  availability?: string | null;
+  checkedAt?: string | null;
+  commercialUnitType?: CommerceCommercialUnitType | null;
+  condition?: string | null;
+  currency?: string | null;
+  market?: string | null;
+  merchantName?: string | null;
+  merchantSlug?: string | null;
+  priceMinor?: number | null;
+  setId?: string | null;
+  url?: string | null;
+}
+
+interface CatalogCommerceCurrentOfferSnapshotRow {
+  best_availability: string | null;
+  best_checked_at: string | null;
+  best_commercial_unit_type: CommerceCommercialUnitType | null;
+  best_merchant_name: string | null;
+  best_merchant_slug: string | null;
+  best_price_minor: number | null;
+  best_product_url: string | null;
+  computed_at: string | null;
+  condition: string | null;
+  currency_code: string | null;
+  offer_count: number | null;
+  offers: unknown;
+  region_code: string | null;
+  set_id: string;
 }
 
 interface CatalogPriceHistoryRow {
@@ -514,6 +548,172 @@ function selectBestLiveCatalogOffer<Offer extends CatalogLiveOffer>(
   );
 }
 
+function isKnownCommercialUnitType(
+  value: unknown,
+): value is CommerceCommercialUnitType {
+  return (
+    value === 'full_set' ||
+    value === 'display_box' ||
+    value === 'blind_bag' ||
+    value === 'single_unit' ||
+    value === 'accessory' ||
+    value === 'magazine_bonus' ||
+    value === 'unknown'
+  );
+}
+
+function normalizeCatalogLiveOfferAvailability(
+  availability: string | null | undefined,
+): CatalogLiveOffer['availability'] {
+  return availability === 'in_stock' || availability === 'out_of_stock'
+    ? availability
+    : 'unknown';
+}
+
+function toCatalogLiveOfferFromSnapshotOffer(
+  offer: CatalogCommerceCurrentOfferSnapshotOfferRow,
+): CatalogLiveOffer | undefined {
+  const setId = getCanonicalCatalogSetId(offer.setId ?? '');
+  const merchantSlug = offer.merchantSlug?.trim();
+  const merchantName = offer.merchantName?.trim();
+  const url = offer.url?.trim();
+  const checkedAt = offer.checkedAt?.trim();
+
+  if (
+    !setId ||
+    !merchantSlug ||
+    !merchantName ||
+    !url ||
+    !checkedAt ||
+    offer.currency !== EURO_CURRENCY_CODE ||
+    offer.market !== DUTCH_REGION_CODE ||
+    offer.condition !== NEW_OFFER_CONDITION ||
+    !isInteger(offer.priceMinor) ||
+    !isKnownCommercialUnitType(offer.commercialUnitType)
+  ) {
+    return undefined;
+  }
+
+  return {
+    availability: normalizeCatalogLiveOfferAvailability(offer.availability),
+    checkedAt,
+    condition: NEW_OFFER_CONDITION,
+    commercialUnitType: offer.commercialUnitType,
+    currency: EURO_CURRENCY_CODE,
+    market: DUTCH_REGION_CODE,
+    merchant: getCatalogOfferMerchantFromMerchantSlug(merchantSlug),
+    merchantName,
+    merchantSlug,
+    priceCents: offer.priceMinor,
+    setId,
+    url,
+  };
+}
+
+function toCatalogBestOfferFromSnapshotRow({
+  row,
+  setId,
+}: {
+  row: CatalogCommerceCurrentOfferSnapshotRow;
+  setId: string;
+}): CatalogLiveOffer | undefined {
+  if (
+    !row.best_checked_at ||
+    !row.best_merchant_name ||
+    !row.best_merchant_slug ||
+    !row.best_product_url ||
+    !isInteger(row.best_price_minor) ||
+    !isKnownCommercialUnitType(row.best_commercial_unit_type)
+  ) {
+    return undefined;
+  }
+
+  return {
+    availability: normalizeCatalogLiveOfferAvailability(row.best_availability),
+    checkedAt: row.best_checked_at,
+    condition: NEW_OFFER_CONDITION,
+    commercialUnitType: row.best_commercial_unit_type,
+    currency: EURO_CURRENCY_CODE,
+    market: DUTCH_REGION_CODE,
+    merchant: getCatalogOfferMerchantFromMerchantSlug(row.best_merchant_slug),
+    merchantName: row.best_merchant_name,
+    merchantSlug: row.best_merchant_slug,
+    priceCents: row.best_price_minor,
+    setId,
+    url: row.best_product_url,
+  };
+}
+
+function getSnapshotInvalidReason(
+  row: CatalogCommerceCurrentOfferSnapshotRow,
+  now = new Date(),
+): string | undefined {
+  if (
+    row.region_code !== DUTCH_REGION_CODE ||
+    row.currency_code !== EURO_CURRENCY_CODE ||
+    row.condition !== NEW_OFFER_CONDITION
+  ) {
+    return 'invalid_scope';
+  }
+
+  if (!row.computed_at) {
+    return 'missing_computed_at';
+  }
+
+  const computedAt = new Date(row.computed_at);
+
+  if (
+    Number.isNaN(computedAt.getTime()) ||
+    now.getTime() - computedAt.getTime() > CURRENT_OFFER_SNAPSHOT_MAX_AGE_MS
+  ) {
+    return 'stale_snapshot';
+  }
+
+  if (!isInteger(row.best_price_minor)) {
+    return 'missing_best_offer';
+  }
+
+  if (!Array.isArray(row.offers)) {
+    return 'invalid_offers_json';
+  }
+
+  return undefined;
+}
+
+function toCatalogCurrentOfferSummaryFromSnapshotRow(
+  row: CatalogCommerceCurrentOfferSnapshotRow,
+): CatalogCurrentOfferSummaryRecord | undefined {
+  const setId = getCanonicalCatalogSetId(row.set_id);
+  const bestOffer = toCatalogBestOfferFromSnapshotRow({
+    row,
+    setId,
+  });
+
+  if (!setId || !bestOffer || !Array.isArray(row.offers)) {
+    return undefined;
+  }
+
+  const offers = row.offers
+    .map((offer) =>
+      typeof offer === 'object' && offer !== null
+        ? toCatalogLiveOfferFromSnapshotOffer(
+            offer as CatalogCommerceCurrentOfferSnapshotOfferRow,
+          )
+        : undefined,
+    )
+    .filter((offer): offer is CatalogLiveOffer => Boolean(offer));
+
+  if (!offers.length) {
+    return undefined;
+  }
+
+  return {
+    bestOffer,
+    offers,
+    setId,
+  };
+}
+
 function toCatalogLiveOffer({
   latestOffer,
   merchant,
@@ -683,6 +883,165 @@ async function listCatalogLiveOffersBySetIdsInternal({
       sortLiveCatalogOffers(offers),
     ]),
   );
+}
+
+function shouldLogCurrentOfferSnapshotDiagnostics({
+  fallbackCount,
+  invalidSample,
+}: {
+  fallbackCount: number;
+  invalidSample: readonly Record<string, unknown>[];
+}): boolean {
+  return (
+    process.env['DEBUG_CURRENT_OFFER_SNAPSHOT_READ'] === 'true' ||
+    fallbackCount > 0 ||
+    invalidSample.length > 0
+  );
+}
+
+function logCurrentOfferSnapshotDiagnostics({
+  invalidSample,
+  liveFallbackCount,
+  liveFallbackDurationMs,
+  requestedCount,
+  snapshotDurationMs,
+  snapshotHitCount,
+  snapshotMissingBestOfferCount,
+  snapshotMissCount,
+  snapshotStaleCount,
+}: {
+  invalidSample: readonly Record<string, unknown>[];
+  liveFallbackCount: number;
+  liveFallbackDurationMs: number;
+  requestedCount: number;
+  snapshotDurationMs: number;
+  snapshotHitCount: number;
+  snapshotMissingBestOfferCount: number;
+  snapshotMissCount: number;
+  snapshotStaleCount: number;
+}): void {
+  if (
+    !shouldLogCurrentOfferSnapshotDiagnostics({
+      fallbackCount: liveFallbackCount,
+      invalidSample,
+    })
+  ) {
+    return;
+  }
+
+  console.info(
+    [
+      '[catalog-current-offer-snapshots]',
+      `snapshot_requested_count=${requestedCount}`,
+      `snapshot_hit_count=${snapshotHitCount}`,
+      `snapshot_miss_count=${snapshotMissCount}`,
+      `snapshot_stale_count=${snapshotStaleCount}`,
+      `snapshot_missing_best_offer_count=${snapshotMissingBestOfferCount}`,
+      `live_fallback_count=${liveFallbackCount}`,
+      `snapshot_read_duration_ms=${snapshotDurationMs}`,
+      `live_fallback_duration_ms=${liveFallbackDurationMs}`,
+      invalidSample.length
+        ? `snapshot_invalid_sample=${JSON.stringify(invalidSample)}`
+        : undefined,
+    ]
+      .filter((part): part is string => Boolean(part))
+      .join(' '),
+  );
+}
+
+async function listCatalogCurrentOfferSnapshotsBySetIds({
+  setIds,
+  supabaseClient,
+}: {
+  setIds: readonly string[];
+  supabaseClient: CatalogSupabaseClient;
+}): Promise<{
+  fallbackSetIds: string[];
+  invalidSample: Record<string, unknown>[];
+  snapshotMissingBestOfferCount: number;
+  snapshotStaleCount: number;
+  summaryBySetId: Map<string, CatalogCurrentOfferSummaryRecord>;
+}> {
+  const summaryBySetId = new Map<string, CatalogCurrentOfferSummaryRecord>();
+  const fallbackSetIds = new Set(setIds);
+  const invalidSample: Record<string, unknown>[] = [];
+  let snapshotMissingBestOfferCount = 0;
+  let snapshotStaleCount = 0;
+
+  const { data, error } = await supabaseClient
+    .from(COMMERCE_CURRENT_OFFER_SNAPSHOTS_TABLE)
+    .select(
+      'set_id, region_code, currency_code, condition, best_availability, best_checked_at, best_commercial_unit_type, best_merchant_name, best_merchant_slug, best_price_minor, best_product_url, offer_count, offers, computed_at',
+    )
+    .in('set_id', setIds);
+
+  if (error) {
+    return {
+      fallbackSetIds: [...fallbackSetIds],
+      invalidSample: [
+        {
+          reason: 'snapshot_query_failed',
+        },
+      ],
+      snapshotMissingBestOfferCount,
+      snapshotStaleCount,
+      summaryBySetId,
+    };
+  }
+
+  for (const row of (data as CatalogCommerceCurrentOfferSnapshotRow[] | null) ??
+    []) {
+    const setId = getCanonicalCatalogSetId(row.set_id);
+
+    if (!setId) {
+      continue;
+    }
+
+    const invalidReason = getSnapshotInvalidReason(row);
+
+    if (invalidReason) {
+      if (invalidReason === 'stale_snapshot') {
+        snapshotStaleCount += 1;
+      }
+
+      if (invalidReason === 'missing_best_offer') {
+        snapshotMissingBestOfferCount += 1;
+      }
+
+      if (invalidSample.length < 5) {
+        invalidSample.push({
+          reason: invalidReason,
+          setId,
+        });
+      }
+
+      continue;
+    }
+
+    const summary = toCatalogCurrentOfferSummaryFromSnapshotRow(row);
+
+    if (!summary) {
+      if (invalidSample.length < 5) {
+        invalidSample.push({
+          reason: 'snapshot_parse_failed',
+          setId,
+        });
+      }
+
+      continue;
+    }
+
+    fallbackSetIds.delete(setId);
+    summaryBySetId.set(setId, summary);
+  }
+
+  return {
+    fallbackSetIds: [...fallbackSetIds],
+    invalidSample,
+    snapshotMissingBestOfferCount,
+    snapshotStaleCount,
+    summaryBySetId,
+  };
 }
 
 function toCatalogSet({
@@ -2616,23 +2975,63 @@ export async function listCatalogCurrentOfferSummariesBySetIds({
   try {
     const activeSupabaseClient =
       supabaseClient ?? getServerSupabaseAdminClient();
-    const liveOffersBySetId = await listCatalogLiveOffersBySetIdsInternal({
+    const snapshotStartedAt = Date.now();
+    const snapshotResult = await listCatalogCurrentOfferSnapshotsBySetIds({
       setIds: uniqueSetIds,
       supabaseClient: activeSupabaseClient,
     });
+    const snapshotDurationMs = Date.now() - snapshotStartedAt;
+    const liveFallbackStartedAt = Date.now();
+    const liveFallbackOffersBySetId = snapshotResult.fallbackSetIds.length
+      ? await listCatalogLiveOffersBySetIdsInternal({
+          setIds: snapshotResult.fallbackSetIds,
+          supabaseClient: activeSupabaseClient,
+        })
+      : new Map<string, CatalogLiveOffer[]>();
+    const liveFallbackDurationMs = Date.now() - liveFallbackStartedAt;
+    const liveFallbackSummaryBySetId = new Map(
+      [...liveFallbackOffersBySetId.entries()].flatMap(([setId, offers]) => {
+        if (!offers.length) {
+          return [];
+        }
 
-    return [...liveOffersBySetId.entries()].flatMap(([setId, offers]) => {
-      if (!offers.length) {
-        return [];
-      }
+        return [
+          [
+            setId,
+            {
+              bestOffer: selectBestLiveCatalogOffer(offers),
+              offers,
+              setId,
+            },
+          ] as const,
+        ];
+      }),
+    );
+    const summaryBySetId = new Map([
+      ...snapshotResult.summaryBySetId,
+      ...liveFallbackSummaryBySetId,
+    ]);
 
-      return [
-        {
-          bestOffer: selectBestLiveCatalogOffer(offers),
-          offers,
-          setId,
-        },
-      ];
+    logCurrentOfferSnapshotDiagnostics({
+      invalidSample: snapshotResult.invalidSample,
+      liveFallbackCount: snapshotResult.fallbackSetIds.length,
+      liveFallbackDurationMs,
+      requestedCount: uniqueSetIds.length,
+      snapshotDurationMs,
+      snapshotHitCount: snapshotResult.summaryBySetId.size,
+      snapshotMissingBestOfferCount:
+        snapshotResult.snapshotMissingBestOfferCount,
+      snapshotMissCount:
+        uniqueSetIds.length -
+        snapshotResult.summaryBySetId.size -
+        snapshotResult.invalidSample.length,
+      snapshotStaleCount: snapshotResult.snapshotStaleCount,
+    });
+
+    return uniqueSetIds.flatMap((setId) => {
+      const summary = summaryBySetId.get(setId);
+
+      return summary && summary.offers.length > 0 ? [summary] : [];
     });
   } catch (error) {
     if (!supabaseClient) {
