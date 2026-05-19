@@ -308,6 +308,9 @@ function formatDailyHistorySummaryLog({
     `availability_counts=${JSON.stringify(summary.availabilityCounts ?? {})}`,
     `merchant_slug_counts=${JSON.stringify(summary.merchantSlugCounts ?? {})}`,
     `skipped_stale_or_error=${summary.skipped.staleOrError}`,
+    `stale_or_error_merchant_counts=${JSON.stringify(summary.staleOrErrorMerchantCounts ?? {})}`,
+    `stale_fetch_status_merchant_counts=${JSON.stringify(summary.staleFetchStatusMerchantCounts ?? {})}`,
+    `stale_observed_at_too_old_merchant_counts=${JSON.stringify(summary.staleObservedAtTooOldMerchantCounts ?? {})}`,
     `stale_or_error_samples=${JSON.stringify(summary.staleOrErrorSamples ?? [])}`,
     `skipped_unit_mismatch=${summary.skipped.unitMismatch ?? 0}`,
     `skipped_untrusted_merchant=${summary.skipped.untrustedMerchant ?? 0}`,
@@ -317,6 +320,7 @@ function formatDailyHistorySummaryLog({
     `skipped_non_eur=${summary.skipped.nonEur}`,
     `skipped_missing_or_invalid_price=${summary.skipped.missingOrInvalidPrice}`,
     `skipped_unavailable_for_headline=${summary.skipped.unavailableForHeadline}`,
+    `unavailable_for_headline_merchant_counts=${JSON.stringify(summary.unavailableForHeadlineMerchantCounts ?? {})}`,
     summary.dailyHistoryPointsBuilt === 0
       ? 'zero_points_reason=no_eligible_latest_offers'
       : undefined,

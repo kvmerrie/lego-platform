@@ -114,8 +114,12 @@ export interface CommerceLatestOfferHistorySummary {
   trustedOfferCount?: number;
   historyPointsFromTrusted?: number;
   ignoredForConfidenceCount?: number;
+  staleOrErrorMerchantCounts?: Record<string, number>;
+  staleFetchStatusMerchantCounts?: Record<string, number>;
+  staleObservedAtTooOldMerchantCounts?: Record<string, number>;
   staleOrErrorSamples?: CommerceLatestOfferHistoryStaleSample[];
   unitTypeCounts?: Record<string, number>;
+  unavailableForHeadlineMerchantCounts?: Record<string, number>;
   validationStatusCounts?: Record<string, number>;
 }
 
@@ -513,8 +517,12 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
   const availabilityCounts: Record<string, number> = {};
   const fetchStatusCounts: Record<string, number> = {};
   const merchantSlugCounts: Record<string, number> = {};
+  const staleFetchStatusMerchantCounts: Record<string, number> = {};
+  const staleObservedAtTooOldMerchantCounts: Record<string, number> = {};
+  const staleOrErrorMerchantCounts: Record<string, number> = {};
   const staleOrErrorSamples: CommerceLatestOfferHistoryStaleSample[] = [];
   const unitTypeCounts: Record<string, number> = {};
+  const unavailableForHeadlineMerchantCounts: Record<string, number> = {};
   const validationStatusCounts: Record<string, number> = {};
   const bestCandidateBySetId = new Map<
     string,
@@ -591,6 +599,11 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
 
     if (latestOffer.fetchStatus !== 'success') {
       skipped.staleOrError += 1;
+      incrementCommerceHistoryCount(
+        staleFetchStatusMerchantCounts,
+        merchant?.slug,
+      );
+      incrementCommerceHistoryCount(staleOrErrorMerchantCounts, merchant?.slug);
       appendCommerceLatestOfferHistoryStaleSample({
         latestOffer,
         merchantSlug: merchant?.slug,
@@ -628,6 +641,11 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       })
     ) {
       skipped.staleOrError += 1;
+      incrementCommerceHistoryCount(
+        staleObservedAtTooOldMerchantCounts,
+        merchant?.slug,
+      );
+      incrementCommerceHistoryCount(staleOrErrorMerchantCounts, merchant?.slug);
       appendCommerceLatestOfferHistoryStaleSample({
         latestOffer,
         merchantSlug: merchant?.slug,
@@ -640,6 +658,10 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
 
     if (!isHeadlineHistoryAvailability(latestOffer.availability)) {
       skipped.unavailableForHeadline += 1;
+      incrementCommerceHistoryCount(
+        unavailableForHeadlineMerchantCounts,
+        merchant?.slug,
+      );
       continue;
     }
 
@@ -729,10 +751,14 @@ export function buildDailyPriceHistoryPointsFromCommerceLatestOffers({
       skipped,
       excludedUnitMismatchCount,
       staleOrErrorSamples,
+      staleOrErrorMerchantCounts,
+      staleFetchStatusMerchantCounts,
+      staleObservedAtTooOldMerchantCounts,
       trustedOfferCount,
       historyPointsFromTrusted: points.length,
       ignoredForConfidenceCount,
       unitTypeCounts,
+      unavailableForHeadlineMerchantCounts,
       validationStatusCounts,
     },
   };

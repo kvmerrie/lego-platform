@@ -443,6 +443,13 @@ describe('pricing data access server', () => {
         missingLatest: 1,
         staleOrError: 1,
       },
+      staleFetchStatusMerchantCounts: {
+        alternate: 1,
+      },
+      staleObservedAtTooOldMerchantCounts: {},
+      staleOrErrorMerchantCounts: {
+        alternate: 1,
+      },
       staleOrErrorSamples: [
         {
           fetchedAt: '2026-05-11T11:55:00.000Z',
@@ -490,6 +497,13 @@ describe('pricing data access server', () => {
       skipped: {
         staleOrError: 1,
       },
+      staleFetchStatusMerchantCounts: {},
+      staleObservedAtTooOldMerchantCounts: {
+        goodbricks: 1,
+      },
+      staleOrErrorMerchantCounts: {
+        goodbricks: 1,
+      },
       staleOrErrorSamples: [
         {
           fetchedAt: '2026-05-08T11:59:59.000Z',
@@ -500,6 +514,45 @@ describe('pricing data access server', () => {
           setId: '10316',
         },
       ],
+    });
+  });
+
+  test('counts unavailable headline skips by merchant for freshness diagnostics', () => {
+    const result = buildDailyPriceHistoryPointsFromCommerceLatestOffers({
+      latestOffers: [
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'coppenswarenhuis' },
+          latestOffer: {
+            availability: 'unknown',
+            observedAt: '2026-05-11T10:00:00.000Z',
+            priceMinor: 1999,
+          },
+        }),
+        buildLatestOfferInput({
+          merchant: { isActive: true, slug: 'coppenswarenhuis' },
+          latestOffer: {
+            availability: 'out_of_stock',
+            observedAt: '2026-05-11T10:00:00.000Z',
+            priceMinor: 2999,
+          },
+          offerSeed: {
+            isActive: true,
+            setId: '10316',
+            validationStatus: 'valid',
+          },
+        }),
+      ],
+      now: new Date('2026-05-11T12:00:00.000Z'),
+    });
+
+    expect(result.points).toEqual([]);
+    expect(result.summary).toMatchObject({
+      skipped: {
+        unavailableForHeadline: 2,
+      },
+      unavailableForHeadlineMerchantCounts: {
+        coppenswarenhuis: 2,
+      },
     });
   });
 

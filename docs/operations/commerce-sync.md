@@ -282,6 +282,25 @@ Available feed commands:
 - `pnpm sync:mediamarkt-feed`
 - `pnpm sync:misterbricks-feed`
 
+Recommended feed cadence:
+
+| Merchant         | Source       | Production cadence                        | Notes                                                                 |
+| ---------------- | ------------ | ----------------------------------------- | --------------------------------------------------------------------- |
+| Conrad           | TradeTracker | every 6 hours, offset from other jobs     | Newer broad feed. Watch duration, parse failures and 429s.            |
+| Goodbricks       | Adtraction   | every 6 hours, offset from other jobs     | Trusted feed merchant; timestamp refreshes should keep rows current.  |
+| Alternate        | TradeTracker | every 6 hours, offset from other jobs     | Trusted feed merchant; production imports should not be capped.       |
+| Coolblue         | Awin         | every 6 hours, offset from other jobs     | Trusted feed merchant; watch gzip/CSV fetch failures.                 |
+| Lidl             | TradeTracker | every 6 hours while campaign stock exists | Seasonal coverage; no-op/low row runs can be expected.                |
+| MediaMarkt       | TradeDoubler | once daily after feed refresh             | Large XML feed; keep streaming and do not use `--max-products`.       |
+| MisterBricks     | Channable    | once daily after feed refresh             | Direct non-affiliate feed; trusted for current offer comparisons.     |
+| Coppenswarenhuis | TradeTracker | once daily after feed refresh             | Strategic/manual until availability quality is consistently reliable. |
+
+All feed jobs currently treat missing-from-feed as non-authoritative unless a
+job explicitly opts into authoritative stale retirement. That is intentional:
+missing rows should not hide known live product URLs when a feed is incomplete
+or scoped. A healthy run should still refresh timestamps for all matched rows
+that are present in the feed, even if price and availability did not change.
+
 MediaMarkt uses the TradeDoubler unlimited XML feed with gzip compression. The
 sync streams download, decompressing and parsing product-by-product, and keeps
 only strict LEGO rows with exact set-number matches.
@@ -382,3 +401,73 @@ Common commerce sync interpretations:
 - `Generated commerce artifacts are stale` means artifact drift was detected and needs review
 - `pnpm sync:commerce:check` does not write history rows; only `pnpm sync:commerce` does
 - missing Supabase write envs on the scheduled job will surface as history-write failures even when artifact generation itself is healthy
+- `skipped_stale_or_error` is paired with `stale_or_error_merchant_counts`, `stale_fetch_status_merchant_counts`, and `stale_observed_at_too_old_merchant_counts`; use those merchant-scoped counts before changing ranking or freshness policy.
+- `skipped_unavailable_for_headline` is paired with `unavailable_for_headline_merchant_counts`; high counts usually mean `unknown`, `out_of_stock`, or `preorder` availability is being excluded from headline history as intended.
+- `zero_points_reason=no_eligible_latest_offers` means all loaded latest rows were filtered out by status, freshness, currency, price, availability, merchant trust, or unit comparability.
+- `latest_rows_loaded=0` on a non-scoped production run usually means the Supabase input query or env is wrong, not that generated artifacts are stale.
+- `current_offer_snapshot_mismatches > 0` blocks snapshot-first read rollout and needs parity investigation before deploy.
+
+Freshness audit queries:
+
+```sql
+-- Top merchants causing stale/error/unavailable latest rows.
+select
+  m.slug as merchant_slug,
+  l.fetch_status,
+  l.availability,
+  count(*) as rows,
+  min(coalesce(l.observed_at, l.fetched_at, l.updated_at)) as oldest_seen_at,
+  max(coalesce(l.observed_at, l.fetched_at, l.updated_at)) as newest_seen_at
+from commerce_offer_latest l
+join commerce_offer_seeds s on s.id = l.offer_seed_id
+join commerce_merchants m on m.id = s.merchant_id
+group by m.slug, l.fetch_status, l.availability
+order by rows desc, merchant_slug asc
+limit 50;
+
+-- Old success rows that should be excluded by freshness before they become headline history.
+select
+  m.slug as merchant_slug,
+  s.set_id,
+  l.fetch_status,
+  l.availability,
+  l.price_minor,
+  l.currency_code,
+  l.observed_at,
+  l.fetched_at,
+  l.updated_at,
+  s.validation_status,
+  s.is_active as seed_active,
+  m.is_active as merchant_active
+from commerce_offer_latest l
+join commerce_offer_seeds s on s.id = l.offer_seed_id
+join commerce_merchants m on m.id = s.merchant_id
+where l.fetch_status = 'success'
+  and coalesce(l.observed_at, l.fetched_at, l.updated_at) < now() - interval '48 hours'
+order by coalesce(l.observed_at, l.fetched_at, l.updated_at) asc
+limit 100;
+
+-- Feed-owned rows whose checked timestamp was not refreshed recently.
+select
+  m.slug as merchant_slug,
+  count(*) as stale_success_rows,
+  min(l.observed_at) as oldest_observed_at,
+  max(l.observed_at) as newest_observed_at
+from commerce_offer_latest l
+join commerce_offer_seeds s on s.id = l.offer_seed_id
+join commerce_merchants m on m.id = s.merchant_id
+where l.fetch_status = 'success'
+  and s.is_active = true
+  and s.validation_status = 'valid'
+  and m.is_active = true
+  and l.observed_at < now() - interval '48 hours'
+group by m.slug
+order by stale_success_rows desc, merchant_slug asc;
+```
+
+Operator triage:
+
+1. If one merchant dominates `stale_fetch_status_merchant_counts`, inspect that feed job for upstream 403/429/timeouts or parser errors.
+2. If one merchant dominates `stale_observed_at_too_old_merchant_counts` but its feed job reports healthy `matched_offers_seen`, check timestamp refresh and source identity matching.
+3. If one merchant dominates `unavailable_for_headline_merchant_counts`, inspect raw availability mapping before changing merchant reliability or deal logic.
+4. If stale rows belong to strategic/manual merchants, prefer queue cleanup or seed validation review over changing public ranking.
